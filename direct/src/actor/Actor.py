@@ -519,23 +519,20 @@ class Actor(PandaObject, NodePath):
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             
-    def instance(self, partName, anotherPart, jointName, lodName="lodRoot"):
-        """instance(self, string, string, string, key="lodRoot")
-        Instance one actor part to another at a joint called jointName"""
+    def instance(self, path, part, jointName, lodName="lodRoot"):
+        """instance(self, NodePath, string, string, key="lodRoot")
+        Instance a nodePath to an actor part at a joint called jointName"""
         if (self.__partBundleDict.has_key(lodName)):
             partBundleDict = self.__partBundleDict[lodName]
-            if (partBundleDict.has_key(partName)):
-                if (partBundleDict.has_key(anotherPart)):
-                    joint = NodePath(partBundleDict[anotherPart],
-                                     "**/" + jointName)
-                    if (joint.isEmpty()):
-                        Actor.notify.warning("%s not found!" % (jointName))
-                    else:
-                        return partBundleDict[partName].instanceTo(joint)
+            if (partBundleDict.has_key(part)):
+                joint = NodePath(partBundleDict[part],
+                                 "**/" + jointName)
+                if (joint.isEmpty()):
+                    Actor.notify.warning("%s not found!" % (jointName))
                 else:
-                    Actor.notify.warning("no part named %s!" % (anotherPart))
+                    return path.instanceTo(joint)
             else:
-                Actor.notify.warning("no part named %s!" % (partName))
+                Actor.notify.warning("no part named %s!" % (part))
         else:
             Actor.notify.warning("no lod named %s!" % (lodName))
 
