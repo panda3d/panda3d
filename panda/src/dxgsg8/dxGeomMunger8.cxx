@@ -32,6 +32,7 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
   // We have to build a completely new format that includes only the
   // appropriate components, in the appropriate order, in just one
   // array.
+  PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*orig);
   PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
 
   const qpGeomVertexDataType *vertex_type = 
@@ -47,6 +48,7 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
     new_array_format->add_data_type
       (InternalName::get_vertex(), 3, qpGeomVertexDataType::NT_float32,
        qpGeomVertexDataType::C_point);
+    new_format->remove_data_type(vertex_type->get_name());
   } else {
     // If we don't have a vertex type, not much we can do.
     return orig;
@@ -56,12 +58,14 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
     new_array_format->add_data_type
       (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float32,
        qpGeomVertexDataType::C_vector);
+    new_format->remove_data_type(normal_type->get_name());
   }
 
   if (color_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
       (InternalName::get_color(), 1, qpGeomVertexDataType::NT_packed_8888,
        qpGeomVertexDataType::C_argb);
+    new_format->remove_data_type(color_type->get_name());
   }
 
   // To support multitexture, we will need to add all of the relevant
@@ -71,9 +75,18 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
     new_array_format->add_data_type
       (InternalName::get_texcoord(), texcoord_type->get_num_values(),
        qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_texcoord);
+    new_format->remove_data_type(texcoord_type->get_name());
   }
 
-  PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(new_array_format);
+  if (new_array_format->is_data_subset_of(*orig->get_array(0))) {
+    // If the new array format we have built is essentially the same
+    // as the first data array anyway, go ahead and keep the original.
+    return orig;
+  }
+
+  // Use the new format; make sure the DX8-friendly array is first in
+  // the list.
+  new_format->insert_array(0, new_array_format);
   return qpGeomVertexFormat::register_format(new_format);
 }
 

@@ -163,6 +163,25 @@ add_array(qpGeomVertexArrayFormat *array_format) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::insert_array
+//       Access: Published
+//  Description: Adds the indicated array definition to the list of
+//               arrays at the indicated position.  This works just
+//               like add_array(), except that you can specify which
+//               array index the new array should have.
+//
+//               This may not be called once the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexFormat::
+insert_array(int array, qpGeomVertexArrayFormat *array_format) {
+  nassertv(!_is_registered);
+  nassertv(array >= 0 && array <= (int)_arrays.size());
+
+  _arrays.insert(_arrays.begin() + array, array_format);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::clear_arrays
 //       Access: Published
 //  Description: Removes all of the array definitions from the format

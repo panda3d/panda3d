@@ -843,6 +843,13 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
   qpGeomVertexReader from(this, InternalName::get_vertex());
   qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
 
+  if (!blendi.has_data_type()) {
+    gobj_cat.warning()
+      << "Vertex data " << get_name()
+      << " has a transform_blend_palette, but no transform_blend data.\n";
+    return;
+  }
+
   if (from.get_data_type()->get_num_values() == 4) {
     for (int i = 0; i < num_vertices; i++) {
       LPoint4f vertex = from.get_data4f();
