@@ -290,8 +290,16 @@ class ShowBase:
 
     def createAudioManager(self):
         if self.wantAnySound:
-            self.sfxManager = AudioManager.createAudioManager()
-            self.musicManager = AudioManager.createAudioManager()
+            if self.wantSfx:
+                self.sfxManager = AudioManager.createAudioManager()
+                if not self.sfxManager.isValid():
+                    self.wantSfx=None
+            if self.wantMusic:
+                self.musicManager = AudioManager.createAudioManager()
+                if not self.musicManager.isValid():
+                    self.wantMusic=None
+            if not (self.wantSfx or self.wantMusic):
+                self.wantAnySound=None
 
     def loadSfx(self, name):
         if (name and base.wantSfx):
