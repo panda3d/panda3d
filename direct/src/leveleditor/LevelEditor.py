@@ -125,9 +125,9 @@ except NameError:
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
     loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_BR.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_BR.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
@@ -214,7 +214,7 @@ class LevelEditor(NodePath, PandaObject):
     # Primary variables:
     # DNAData: DNA object holding DNA info about level
     # DNAToplevel: Top level DNA Node, all DNA objects descend from this node
-    # NPTopLevel: Corresponding Node Path
+    # NPToplevel: Corresponding Node Path
     # DNAParent: Current DNA Node that new objects get added to
     # NPParent: Corresponding Node Path
     # selectedDNARoot: DNA Node of currently selected object
@@ -299,6 +299,8 @@ class LevelEditor(NodePath, PandaObject):
             ('right', self.keyboardXformSelected, ['right']),
             ('up', self.keyboardXformSelected, ['up']),
             ('down', self.keyboardXformSelected, ['down']),
+            ('S', self.placeSuitPoint),
+            ('C', self.placeBattleCell),
             ]
 	        
         # Initialize state
@@ -320,6 +322,22 @@ class LevelEditor(NodePath, PandaObject):
         self.enable()
         # Editing toontown_central
         self.setEditMode('toontown_central')
+
+        # SUIT POINTS
+        # Create a sphere model to show suit points
+        self.suitPointMarker = loader.loadModel('models/misc/sphere')
+        self.suitPointMarker.setScale(0.25)
+
+        # Initialize the suit points
+        self.startSuitPoint = None
+        self.endSuitPoint = None
+        self.currentSuitPointType = DNASuitPoint.STREETPOINT
+
+        # BATTLE CELLS
+        self.battleCellMarker = loader.loadModel('models/misc/sphere')
+        self.battleCellMarker.setScale(1)
+        self.currentBattleCellType = "20w 20l"
+
 
     # ENABLE/DISABLE
     def enable(self):
@@ -368,6 +386,8 @@ class LevelEditor(NodePath, PandaObject):
 	DNASTORE.resetDNAGroups()
         # Reset DNA VIS Groups
         DNASTORE.resetDNAVisGroups()
+        DNASTORE.resetSuitPoints()
+        DNASTORE.resetBattleCells()
         
 	# Create fresh DNA DATA
 	self.DNAData = DNAData('level_data')
@@ -1466,6 +1486,13 @@ class LevelEditor(NodePath, PandaObject):
         # Calc intersection point
         return planeIntersect(mouseOrigin, mouseDir, ZERO_POINT, NEG_Y_AXIS)
 
+    def getGridSnapIntersectionPoint(self):
+	"""
+        Return point of intersection between ground plane and line from cam
+        through mouse. Return false, if nothing selected. Snap to grid.
+        """
+        return direct.grid.computeSnapPoint(self.getGridIntersectionPoint())
+
     def getGridIntersectionPoint(self):
 	"""
         Return point of intersection between ground plane and line from cam
@@ -1758,6 +1785,100 @@ class LevelEditor(NodePath, PandaObject):
     def getLastAngle(self):
         return self.lastAngle
 
+    def placeSuitPoint(self):
+        v = self.getGridSnapIntersectionPoint()
+        marker = self.suitPointMarker.instanceTo(self.NPParent)
+        if (self.currentSuitPointType == DNASuitPoint.STREETPOINT):
+            marker.setColor(0,0,0.6)
+        elif (self.currentSuitPointType == DNASuitPoint.FRONTDOORPOINT):
+            marker.setColor(0,0,1)
+            marker.setScale(0.5)
+        elif (self.currentSuitPointType == DNASuitPoint.SIDEDOORPOINT):
+            marker.setColor(0,0.2,0.4)
+            marker.setScale(0.5)
+
+        # v is relative to the grid
+        marker.setPos(direct.grid, v)
+        # get the absolute pos relative to the top level. That is what gets stored in the point
+        absPos = marker.getPos(self.NPToplevel)
+        print 'Suit point: ' + str(absPos)
+        # Store the point in the DNA. If this point is already in there, it returns
+        # the existing point
+        suitPoint = DNASTORE.storeSuitPoint(self.currentSuitPointType, absPos)
+        self.currentSuitPointIndex = suitPoint.getIndex()
+
+        if self.startSuitPoint:
+            self.endSuitPoint = suitPoint
+
+            # Draw a line from start to end
+            edgeLine = LineNodePath(self.NPParent)
+            edgeLine.lineNode.setName('suitEdge')
+            edgeLine.setColor(VBase4(0.0, 0.0, 0.5 ,1))
+            edgeLine.setThickness(1)
+            edgeLine.reset()
+            # We need to draw the arrow relative to the parent, but the
+            # point positions are relative to the NPToplevel. So get the
+            # start and end positions relative to the parent, then draw
+            # the arrow using those points
+            tempNode = self.NPToplevel.attachNewNode('tempNode')
+            tempNode.setPos(self.startSuitPoint.getPos())
+            relStartPos = tempNode.getPos(self.NPParent)
+            tempNode.setPos(self.endSuitPoint.getPos())
+            relEndPos = tempNode.getPos(self.NPParent)
+            tempNode.remove()
+            edgeLine.drawArrow(relStartPos, relEndPos,
+                               15, # arrow angle
+                               1) # arrow length
+            edgeLine.create()
+            
+            # Make a new dna edge
+            if DNAClassEqual(self.DNAParent, DNA_VIS_GROUP):
+                zoneId = self.DNAParent.getName()
+                suitEdge = DNASuitEdge(self.startSuitPoint, self.endSuitPoint, zoneId)
+                DNASTORE.storeSuitEdge(suitEdge)
+                # Add the edge to the current vis group so it can be written out
+                self.DNAParent.addSuitEdge(suitEdge)
+                print 'Added dnaSuitEdge to zone: ' + zoneId
+            else:
+                print 'Error: DNAParent is not a dnaVisGroup. Did not add edge'
+
+            # Reset
+            self.startSuitPoint = None
+            self.endSuitPoint = None
+
+        else:
+            # First point, store it
+            self.startSuitPoint = suitPoint
+
+    def placeBattleCell(self):
+        v = self.getGridSnapIntersectionPoint()
+        marker = self.battleCellMarker.instanceTo(self.NPParent)
+        # v is relative to the grid
+        marker.setPos(direct.grid, v)
+        marker.setColor(0.25,0.75,0.25,0.5)
+        # get the absolute pos relative to the top level. That is what gets stored in the point
+        absPos = marker.getPos(self.NPToplevel)
+        print 'Battle cell: ' + str(absPos)
+        if (self.currentBattleCellType == '20w 20l'):
+            marker.setScale(10,10,1)
+            cell = DNABattleCell(20, 20, absPos)
+        elif (self.currentBattleCellType == '20w 30l'):
+            marker.setScale(10,15,1)
+            cell = DNABattleCell(20, 30, absPos)
+        elif (self.currentBattleCellType == '30w 20l'):
+            marker.setScale(15,10,1)
+            cell = DNABattleCell(30, 20, absPos)
+        elif (self.currentBattleCellType == '30w 30l'):
+            marker.setScale(15,15,1)
+            cell = DNABattleCell(30, 30, absPos)
+        # Store the battle cell in the storage
+        DNASTORE.storeBattleCell(cell)
+        # Store the battle cell in the current vis group
+        if DNAClassEqual(self.DNAParent, DNA_VIS_GROUP):
+            self.DNAParent.addBattleCell(cell)
+        else:
+            print 'Error: DNAParent is not a dnaVisGroup. Did not add battle cell'
+            
 class LevelStyleManager:
     """Class which reads in style files and manages class variables"""
     def __init__(self):
@@ -2707,9 +2828,42 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         streetsPage = notebook.add('Streets')
         toonBuildingsPage = notebook.add('Toon Bldgs')
         landmarkBuildingsPage = notebook.add('Landmark Bldgs')
+        suitPathPage = notebook.add('Paths')
+        battleCellPage = notebook.add('Cells')
         # suitBuildingsPage = notebook.add('Suit Buildings')
         propsPage = notebook.add('Props')
         sceneGraphPage = notebook.add('SceneGraph')
+
+
+        self.suitPointSelector = Pmw.ComboBox(
+            suitPathPage,
+            dropdown = 0,
+            listheight = 200,
+            labelpos = W,
+            label_text = 'Point type:',
+            label_width = 12,
+            label_anchor = W,
+            entry_width = 30,
+            selectioncommand = self.setSuitPointType,
+            scrolledlist_items = ['street', 'front door', 'side door']
+            )
+        self.suitPointSelector.selectitem('street')
+        self.suitPointSelector.pack(expand = 1, fill = 'both')
+
+        self.battleCellSelector = Pmw.ComboBox(
+            battleCellPage,
+            dropdown = 0,
+            listheight = 200,
+            labelpos = W,
+            label_text = 'Cell type:',
+            label_width = 12,
+            label_anchor = W,
+            entry_width = 30,
+            selectioncommand = self.setBattleCellType,
+            scrolledlist_items = ['20w 20l', '20w 30l', '30w 20l', '30w 30l']
+            )
+        self.battleCellSelector.selectitem('20w 20l')
+        self.battleCellSelector.pack(expand = 1, fill = 'both')
 
         self.addStreetButton = Button(
             streetsPage,
@@ -2808,8 +2962,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.propSelector.selectitem(
             self.styleManager.getCatalogCode('prop',0)[5:])
         self.propSelector.pack(expand = 1, fill = 'both')
+
+
         # Compact down notebook
         notebook.setnaturalsize()
+
 
         self.colorEntry = VectorWidgets.ColorEntry(
             hull, text = 'Select Color',
@@ -3002,6 +3159,18 @@ class LevelEditorPanel(Pmw.MegaToplevel):
              int(colorVec[1] * 255.0),
              int(colorVec[2] * 255.0),
              255])
+
+    def setSuitPointType(self,name):
+        if (name == "street"):
+            self.levelEditor.currentSuitPointType = DNASuitPoint.STREETPOINT
+        elif (name == "front door"):
+            self.levelEditor.currentSuitPointType = DNASuitPoint.FRONTDOORPOINT
+        elif (name == "side door"):
+            self.levelEditor.currentSuitPointType = DNASuitPoint.SIDEDOORPOINT
+        print self.levelEditor.currentSuitPointType
+
+    def setBattleCellType(self,name):
+        self.levelEditor.currentBattleCellType = name
 
     def updateSelectedObjColor(self, color):
         try:
@@ -3216,3 +3385,5 @@ class VisGroupsEditor(Pmw.MegaToplevel):
             self.balloon.configure(state = 'balloon')
         else:
             self.balloon.configure(state = 'none')
+
+        

@@ -1,5 +1,6 @@
 from PandaModules import *
 from PandaObject import *
+import math
 
 X_AXIS = Vec3(1,0,0)
 Y_AXIS = Vec3(0,1,0)
@@ -70,7 +71,31 @@ class LineNodePath(NodePath):
 
     def getVertexColor( self ):
         return self.lineSegs.getVertexColor()
-
+    
+    def drawArrow(self, sv, ev, arrowAngle, arrowLength):
+        """
+        Do the work of moving the cursor around to draw an arrow from
+        sv to ev. Hack: the arrows take the z value of the end point
+        """
+        self.moveTo(sv)
+        self.drawTo(ev)
+        v = sv - ev
+        # Find the angle of the line
+        angle = math.atan2(v[1], v[0])
+        # Get the arrow angles
+        a1 = angle + deg2Rad(arrowAngle)
+        a2 = angle - deg2Rad(arrowAngle)
+        # Get the arrow points
+        a1x = arrowLength * math.cos(a1)
+        a1y = arrowLength * math.sin(a1)
+        a2x = arrowLength * math.cos(a2)
+        a2y = arrowLength * math.sin(a2)
+        z = ev[2]
+        self.moveTo(ev)
+        self.drawTo(Point3(ev + Point3(a1x, a1y, z)))
+        self.moveTo(ev)
+        self.drawTo(Point3(ev + Point3(a2x, a2y, z)))
+        
 
 ##
 ## Given a point in space, and a direction, find the point of intersection
