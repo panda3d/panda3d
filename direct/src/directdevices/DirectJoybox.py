@@ -103,7 +103,7 @@ class DirectJoybox(PandaObject):
             self.buttons.setButtonMap(
                 i, self.breg.getButton(self.getEventName(i)))
         self.eventThrower = self.buttons.getNodePath().attachNewNode(
-            ButtonThrower())
+            ButtonThrower('JB Button Thrower'))
     
     def setNodePath(self, nodePath):
         self.nodePath = nodePath
