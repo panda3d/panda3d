@@ -19,26 +19,27 @@
 #ifndef CLIENTBASE_H
 #define CLIENTBASE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "clientDevice.h"
 
-#include <typedReferenceCount.h>
-#include <luse.h>
-#include <vector_string.h>
-#include <vector_int.h>
-#include <clockObject.h>
-#include <pointerTo.h>
+#include "typedReferenceCount.h"
+#include "luse.h"
+#include "vector_string.h"
+#include "vector_int.h"
+#include "clockObject.h"
+#include "pointerTo.h"
+#include "coordinateSystem.h"
 
 #ifdef HAVE_IPC
-#include <ipc_thread.h>
+#include "ipc_thread.h"
 #endif
 
 #include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ClientBase
-// Description : An abstract base class for a family of of client
+// Description : An abstract base class for a family of client
 //               device interfaces--including trackers, buttons,
 //               dials, and other analog inputs.
 //
@@ -58,6 +59,9 @@ PUBLISHED:
   INLINE bool is_forked() const;
   INLINE bool poll();
   INLINE double get_last_poll_time() const;
+
+  INLINE void set_coordinate_system(CoordinateSystem cs);
+  INLINE CoordinateSystem get_coordinate_system() const;
 
 public:
   PT(ClientDevice) get_device(TypeHandle device_type,
@@ -81,6 +85,7 @@ private:
   bool _forked;
   double _last_poll_time;
   int _last_poll_frame;
+  CoordinateSystem _cs;
 
 #ifdef HAVE_IPC
   int _sleep_time;

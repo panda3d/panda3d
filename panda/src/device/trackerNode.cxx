@@ -37,6 +37,9 @@ TrackerNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
 {
   nassertv(client != (ClientBase *)NULL);
+  set_tracker_coordinate_system(client->get_coordinate_system());
+  set_graph_coordinate_system(CS_default);
+
   PT(ClientDevice) device =
     client->get_device(ClientTrackerDevice::get_class_type(), device_name);
 
@@ -87,6 +90,10 @@ transmit_data(AllTransitionsWrapper &data) {
     _tracker->unlock();
 
     _data.get_orient().extract_to_matrix(_transform);
+    if (_tracker_cs != _graph_cs) {
+      // Convert the rotation for passing down the data graph.
+      _transform = _transform * LMatrix4f::convert_mat(_tracker_cs, _graph_cs);
+    }
     _transform.set_row(3, _data.get_pos());
 
     _transform_attrib->set_value(_transform);

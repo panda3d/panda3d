@@ -36,13 +36,31 @@ const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_z_to_y_up_mat =
                       0.0f, 1.0f, 0.0f, 0.0f,
                       0.0f, 0.0f, 0.0f, 1.0f);
 
+const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_flip_y_mat =
+  FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
+                      0.0f,-1.0f, 0.0f, 0.0f,
+                      0.0f, 0.0f, 1.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 1.0f);
+
+const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_flip_z_mat =
+  FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
+                      0.0f, 1.0f, 0.0f, 0.0f,
+                      0.0f, 0.0f,-1.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 1.0f);
+
+const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_lz_to_ry_mat =
+  FLOATNAME(LMatrix4)::_flip_y_mat * FLOATNAME(LMatrix4)::_z_to_y_up_mat;
+
+const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ly_to_rz_mat =
+  FLOATNAME(LMatrix4)::_flip_z_mat * FLOATNAME(LMatrix4)::_y_to_z_up_mat;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::convert_mat
 //       Access: Public, Static
 //  Description: Returns a matrix that transforms from the indicated
 //               coordinate system to the indicated coordinate system.
 ////////////////////////////////////////////////////////////////////
-FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
+const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 convert_mat(CoordinateSystem from, CoordinateSystem to) {
   if (from == CS_default) {
     from = default_coordinate_system;
@@ -53,40 +71,40 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
   switch (from) {
   case CS_zup_left:
     switch (to) {
-    case CS_zup_left: return ident_mat();
-    case CS_yup_left: return z_to_y_up_mat();
-    case CS_zup_right: return scale_mat(1.0f, -1.0f, 1.0f);
-    case CS_yup_right: return scale_mat(1.0f, -1.0f, 1.0f) * z_to_y_up_mat();
+    case CS_zup_left: return _ident_mat;
+    case CS_yup_left: return _z_to_y_up_mat;
+    case CS_zup_right: return _flip_y_mat;
+    case CS_yup_right: return _lz_to_ry_mat;
     default: break;
     }
     break;
 
   case CS_yup_left:
     switch (to) {
-    case CS_zup_left: return y_to_z_up_mat();
-    case CS_yup_left: return ident_mat();
-    case CS_zup_right: return scale_mat(1.0f, 1.0f, -1.0f) * y_to_z_up_mat();
-    case CS_yup_right: return scale_mat(1.0f, 1.0f, -1.0f);
+    case CS_zup_left: return _y_to_z_up_mat;
+    case CS_yup_left: return _ident_mat;
+    case CS_zup_right: return _ly_to_rz_mat;
+    case CS_yup_right: return _flip_z_mat;
     default: break;
     }
     break;
 
   case CS_zup_right:
     switch (to) {
-    case CS_zup_left: return scale_mat(1.0f, -1.0f, 1.0f);
-    case CS_yup_left: return scale_mat(1.0f, -1.0f, 1.0f) * z_to_y_up_mat();
-    case CS_zup_right: return ident_mat();
-    case CS_yup_right: return z_to_y_up_mat();
+    case CS_zup_left: return _flip_y_mat;
+    case CS_yup_left: return _lz_to_ry_mat;
+    case CS_zup_right: return _ident_mat;
+    case CS_yup_right: return _z_to_y_up_mat;
     default: break;
     }
     break;
 
   case CS_yup_right:
     switch (to) {
-    case CS_zup_left: return scale_mat(1.0f, 1.0f, -1.0f) * y_to_z_up_mat();
-    case CS_yup_left: return scale_mat(1.0f, 1.0f, -1.0f);
-    case CS_zup_right: return y_to_z_up_mat();
-    case CS_yup_right: return ident_mat();
+    case CS_zup_left: return _ly_to_rz_mat;
+    case CS_yup_left: return _flip_z_mat;
+    case CS_zup_right: return _y_to_z_up_mat;
+    case CS_yup_right: return _ident_mat;
     default: break;
     }
     break;
@@ -97,7 +115,7 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
 
   linmath_cat.error()
     << "Invalid coordinate system value!\n";
-  return ident_mat();
+  return _ident_mat;
 }
 
 ////////////////////////////////////////////////////////////////////

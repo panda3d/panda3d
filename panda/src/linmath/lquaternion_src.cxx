@@ -47,9 +47,9 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
   xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
   yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
 
-  m = FLOATNAME(LMatrix3)((1. - (yy + zz)), (xy - wz), (xz + wy),
-                          (xy + wz), (1. - (xx + zz)), (yz - wx),
-                          (xz - wy), (yz + wx), (1. - (xx + yy)));
+  m.set((1. - (yy + zz)), (xy - wz), (xz + wy),
+        (xy + wz), (1. - (xx + zz)), (yz - wx),
+        (xz - wy), (yz + wx), (1. - (xx + yy)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,10 +68,10 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
   xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
   yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
 
-  m = FLOATNAME(LMatrix4)((1. - (yy + zz)), (xy - wz), (xz + wy), 0.,
-                          (xy + wz), (1. - (xx + zz)), (yz - wx), 0.,
-                          (xz - wy), (yz + wx), (1. - (xx + yy)), 0.,
-                          0., 0., 0., 1.);
+  m.set((1. - (yy + zz)), (xy - wz), (xz + wy), 0.,
+        (xy + wz), (1. - (xx + zz)), (yz - wx), 0.,
+        (xz - wy), (yz + wx), (1. - (xx + yy)), 0.,
+        0., 0., 0., 1.);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,15 +165,17 @@ get_hpr() const {
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 set_from_matrix(const FLOATNAME(LMatrix3) &m) {
-  FLOATTYPE m00 = m(0, 0);
-  FLOATTYPE m01 = m(0, 1);
-  FLOATTYPE m02 = m(0, 2);
-  FLOATTYPE m10 = m(1, 0);
-  FLOATTYPE m11 = m(1, 1);
-  FLOATTYPE m12 = m(1, 2);
-  FLOATTYPE m20 = m(2, 0);
-  FLOATTYPE m21 = m(2, 1);
-  FLOATTYPE m22 = m(2, 2);
+  FLOATTYPE m00, m01, m02, m10, m11, m12, m20, m21, m22;
+
+  m00 = m(0, 0);
+  m01 = m(0, 1);
+  m02 = m(0, 2);
+  m10 = m(1, 0);
+  m11 = m(1, 1);
+  m12 = m(1, 2);
+  m20 = m(2, 0);
+  m21 = m(2, 1);
+  m22 = m(2, 2);
 
   FLOATTYPE T = m00 + m11 + m22;
 

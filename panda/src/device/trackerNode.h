@@ -52,6 +52,11 @@ PUBLISHED:
   INLINE const LOrientationf &get_orient() const;
   INLINE const LMatrix4f &get_transform() const;
 
+  INLINE void set_tracker_coordinate_system(CoordinateSystem cs);
+  INLINE CoordinateSystem get_tracker_coordinate_system() const;
+
+  INLINE void set_graph_coordinate_system(CoordinateSystem cs);
+  INLINE CoordinateSystem get_graph_coordinate_system() const;
 
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode
@@ -70,6 +75,7 @@ private:
   PT(ClientTrackerDevice) _tracker;
   TrackerData _data;
   LMatrix4f _transform;
+  CoordinateSystem _tracker_cs, _graph_cs;
 
 public:
   virtual TypeHandle get_type() const {

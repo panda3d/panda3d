@@ -32,6 +32,7 @@ ClientBase() {
   _forked = false;
   _last_poll_time = 0.0f;
   _last_poll_frame = 0;
+  _cs = CS_default;
 
 #ifdef HAVE_IPC
   _client_thread = (thread *)NULL;

@@ -42,6 +42,9 @@ VrpnClient::
 VrpnClient(const string &server_name) :
   _server_name(server_name)
 {
+  // By convention, VRPN always uses a Y-up coordinate system.
+  set_coordinate_system(CS_yup_right);
+
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
       << "Attempting to connect to VRPN server " << _server_name

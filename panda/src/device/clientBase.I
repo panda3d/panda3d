@@ -60,3 +60,27 @@ INLINE double ClientBase::
 get_last_poll_time() const {
   return _last_poll_time;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClientBase::set_coordinate_system
+//       Access: Published
+//  Description: Specifies the coordinate system that all devices
+//               associated with this client will operate in.
+//               Normally, this is CS_default.
+////////////////////////////////////////////////////////////////////
+void ClientBase::
+set_coordinate_system(CoordinateSystem cs) {
+  _cs = cs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClientBase::get_coordinate_system
+//       Access: Published
+//  Description: Returns the coordinate system that all devices
+//               associated with this client will operate in.
+//               Normally, this is CS_default.
+////////////////////////////////////////////////////////////////////
+INLINE CoordinateSystem ClientBase::
+get_coordinate_system() const {
+  return _cs;
+}

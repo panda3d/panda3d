@@ -157,6 +157,9 @@ PUBLISHED:
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
 
+  static const FLOATNAME(LMatrix3) &convert_mat(CoordinateSystem from,
+                                                CoordinateSystem to);
+
   // We don't have a scale_mat() that takes a single uniform scale
   // parameter, because it would be ambiguous whether we mean a 2-d or
   // a 3-d scale.
@@ -175,20 +178,26 @@ public:
 
 public:
   union {
-        struct {
-           FLOATTYPE  _00, _01, _02;
-           FLOATTYPE  _10, _11, _12;
-           FLOATTYPE  _20, _21, _22;
-        } m;
-
-                FLOATTYPE data[3 * 3];
+    struct {
+      FLOATTYPE  _00, _01, _02;
+      FLOATTYPE  _10, _11, _12;
+      FLOATTYPE  _20, _21, _22;
+    } m;
+    
+    FLOATTYPE data[3 * 3];
   } _m;
 
 private:
   INLINE_LINMATH FLOATTYPE mult_cel(const FLOATNAME(LMatrix3) &other, int x, int y) const;
   INLINE_LINMATH FLOATTYPE det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const;
 
-  static FLOATNAME(LMatrix3) _ident_mat;
+  static const FLOATNAME(LMatrix3) _ident_mat;
+  static const FLOATNAME(LMatrix3) _y_to_z_up_mat;
+  static const FLOATNAME(LMatrix3) _z_to_y_up_mat;
+  static const FLOATNAME(LMatrix3) _flip_y_mat;
+  static const FLOATNAME(LMatrix3) _flip_z_mat;
+  static const FLOATNAME(LMatrix3) _lz_to_ry_mat;
+  static const FLOATNAME(LMatrix3) _ly_to_rz_mat;
 
   //Functionality for reading and writing from/to a binary source
 public:

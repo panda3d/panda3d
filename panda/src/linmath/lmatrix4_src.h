@@ -155,8 +155,8 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &y_to_z_up_mat();
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &z_to_y_up_mat();
 
-  static FLOATNAME(LMatrix4) convert_mat(CoordinateSystem from,
-                                         CoordinateSystem to);
+  static const FLOATNAME(LMatrix4) &convert_mat(CoordinateSystem from,
+                                                CoordinateSystem to);
 
   bool almost_equal(const FLOATNAME(LMatrix4) &other,
                     FLOATTYPE threshold) const;
@@ -171,14 +171,14 @@ public:
 
 public:
   union {
-        struct {
-                   FLOATTYPE  _00, _01, _02, _03;
-           FLOATTYPE  _10, _11, _12, _13;
-           FLOATTYPE  _20, _21, _22, _23;
-           FLOATTYPE  _30, _31, _32, _33;
-        } m;
-
-        FLOATTYPE data[4 * 4];
+    struct {
+      FLOATTYPE  _00, _01, _02, _03;
+      FLOATTYPE  _10, _11, _12, _13;
+      FLOATTYPE  _20, _21, _22, _23;
+      FLOATTYPE  _30, _31, _32, _33;
+    } m;
+    
+    FLOATTYPE data[4 * 4];
   } _m;
 
 private:
@@ -189,6 +189,10 @@ private:
   static const FLOATNAME(LMatrix4) _ident_mat;
   static const FLOATNAME(LMatrix4) _y_to_z_up_mat;
   static const FLOATNAME(LMatrix4) _z_to_y_up_mat;
+  static const FLOATNAME(LMatrix4) _flip_y_mat;
+  static const FLOATNAME(LMatrix4) _flip_z_mat;
+  static const FLOATNAME(LMatrix4) _lz_to_ry_mat;
+  static const FLOATNAME(LMatrix4) _ly_to_rz_mat;
 
   //Functionality for reading and writing from/to a binary source
 public:

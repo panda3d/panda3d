@@ -62,3 +62,58 @@ get_transform() const {
   return _transform;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerNode::set_tracker_coordinate_system
+//       Access: Published
+//  Description: Specifies the coordinate system that the tracker
+//               associated with this node will operate in.  Normally,
+//               this is set from the ClientBase that's used to create
+//               the TrackerNode, so it should not need to be set on
+//               an individual tracker basis.
+////////////////////////////////////////////////////////////////////
+void TrackerNode::
+set_tracker_coordinate_system(CoordinateSystem cs) {
+  _tracker_cs = cs;
+  if (_tracker_cs == CS_default) {
+    _tracker_cs = default_coordinate_system;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerNode::get_tracker_coordinate_system
+//       Access: Published
+//  Description: Returns the coordinate system that the tracker
+//               associated with this node will operate in.
+////////////////////////////////////////////////////////////////////
+INLINE CoordinateSystem TrackerNode::
+get_tracker_coordinate_system() const {
+  return _tracker_cs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerNode::set_graph_coordinate_system
+//       Access: Published
+//  Description: Specifies the coordinate system that the TrackerNode
+//               will convert its transform into for passing down the
+//               data graph.  Normally, this is CS_default.
+////////////////////////////////////////////////////////////////////
+void TrackerNode::
+set_graph_coordinate_system(CoordinateSystem cs) {
+  _graph_cs = cs;
+  if (_graph_cs == CS_default) {
+    _graph_cs = default_coordinate_system;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerNode::get_graph_coordinate_system
+//       Access: Published
+//  Description: Returns the coordinate system that the TrackerNode
+//               will convert its transform into for passing down the
+//               data graph.  Normally, this is CS_default.
+////////////////////////////////////////////////////////////////////
+INLINE CoordinateSystem TrackerNode::
+get_graph_coordinate_system() const {
+  return _graph_cs;
+}
