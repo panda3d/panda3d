@@ -23,7 +23,6 @@
 
 #include "eggSurface.h"
 #include "eggNurbsCurve.h"
-#include "nurbsSurfaceEvaluator.h"
 #include "vector_double.h"
 #include "plist.h"
 
