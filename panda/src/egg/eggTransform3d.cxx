@@ -135,9 +135,22 @@ add_rotz(double angle) {
 ////////////////////////////////////////////////////////////////////
 void EggTransform3d::
 add_rotate(double angle, const LVector3d &axis) {
+  LVector3d normaxis = normalize(axis);
   _components.push_back(Component(CT_rotate, angle));
-  _components.back()._vector = new LVector3d(axis);
-  _transform *= LMatrix4d::rotate_mat(angle, axis);
+  _components.back()._vector = new LVector3d(normaxis);
+  _transform *= LMatrix4d::rotate_mat(angle, normaxis);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTransform3d::add_rotate
+//       Access: Public
+//  Description: Appends an arbitrary rotation to the current
+//               transform, expressed as a quaternion.  This is
+//               converted to axis-angle notation for the egg file.
+////////////////////////////////////////////////////////////////////
+void EggTransform3d::
+add_rotate(const LQuaterniond &quat) {
+  add_rotate(quat.get_angle(), quat.get_axis());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -44,6 +44,7 @@ public:
   void add_roty(double angle); 
   void add_rotz(double angle); 
   void add_rotate(double angle, const LVector3d &axis);
+  void add_rotate(const LQuaterniond &quat);
   void add_scale(const LVecBase3d &scale);
   void add_uniform_scale(double scale);
   void add_matrix(const LMatrix4d &mat);
