@@ -30,6 +30,7 @@
 #include "configVariableInt.h"
 #include "configVariableDouble.h"
 #include "configVariableList.h"
+#include "configFlags.h"
 
 #include <vector>
 #include <map>
@@ -157,7 +158,7 @@ ConfigTable::Symbol& Config<GetConfig>::GetAll(const ConfigString sym,
                                                 ConfigTable::Symbol& s)
 {
    Init();
-   ConfigVariableList var(sym, "DConfig");
+   ConfigVariableList var(sym, "DConfig", ConfigFlags::F_dconfig);
 
    int num_values = var.get_num_values();
    for (int i = 0; i < num_values; i++) {
@@ -172,7 +173,7 @@ template<class GetConfig>
 bool Config<GetConfig>::GetBool(const ConfigString sym, bool def)
 {
    Init();
-   ConfigVariableBool var(sym, def, "DConfig");
+   ConfigVariableBool var(sym, def, "DConfig", ConfigFlags::F_dconfig);
    return var.get_value();
 }
 
@@ -180,7 +181,7 @@ template<class GetConfig>
 int Config<GetConfig>::GetInt(const ConfigString sym, int def)
 {
    Init();
-   ConfigVariableInt var(sym, def, "DConfig");
+   ConfigVariableInt var(sym, def, "DConfig", ConfigFlags::F_dconfig);
    return var.get_value();
 }
 
@@ -188,7 +189,7 @@ template<class GetConfig>
 float Config<GetConfig>::GetFloat(const ConfigString sym, float def)
 {
    Init();
-   ConfigVariableDouble var(sym, def, "DConfig");
+   ConfigVariableDouble var(sym, def, "DConfig", ConfigFlags::F_dconfig);
    return var.get_value();
 }
 
@@ -196,7 +197,7 @@ template<class GetConfig>
 double Config<GetConfig>::GetDouble(const ConfigString sym, double def)
 {
    Init();
-   ConfigVariableDouble var(sym, def, "DConfig");
+   ConfigVariableDouble var(sym, def, "DConfig", ConfigFlags::F_dconfig);
    return var.get_value();
 }
 
@@ -205,7 +206,7 @@ ConfigString Config<GetConfig>::GetString(const ConfigString sym,
                                            const ConfigString def)
 {
    Init();
-   ConfigVariableString var(sym, def, "DConfig");
+   ConfigVariableString var(sym, def, "DConfig", ConfigFlags::F_dconfig);
    return var.get_value();
 }
 

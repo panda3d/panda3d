@@ -54,6 +54,11 @@ PUBLISHED:
     // (possibly from a very large pool) and should not be included in
     // the normal list of variable names.
     F_dynamic           = 0x00004000,
+
+    // F_dconfig means that the variable was constructed from the
+    // legacy DConfig system, rather than directly by the user.  You
+    // shouldn't pass this in directly.
+    F_dconfig           = 0x00008000,
   };
 };
 

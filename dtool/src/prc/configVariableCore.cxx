@@ -95,11 +95,11 @@ ConfigVariableCore::
 void ConfigVariableCore::
 set_value_type(ConfigVariableCore::ValueType value_type) {
   if (_value_queried && _value_type != value_type) {
-    if (_description == "DConfig") {
-      // As a special exception, if the current description is
-      // "DConfig", we don't report a warning for changing the type,
-      // assuming the variable is being defined through the older
-      // DConfig interface.
+    if ((_flags & F_dconfig) != 0) {
+      // As a special exception, if the flags include F_dconfig, we
+      // don't report a warning for changing the type, assuming the
+      // variable is being defined through the older DConfig
+      // interface.
       
     } else {
       prc_cat->warning()
@@ -147,9 +147,9 @@ set_flags(int flags) {
 void ConfigVariableCore::
 set_description(const string &description) {
   if (_value_queried && _description != description) {
-    if (description == "DConfig") {
-      // As a special exception, if the new description is "DConfig",
-      // we don't change it, since this is presumably coming from the
+    if ((_flags & F_dconfig) != 0) {
+      // As a special exception, if the flags include F_dconfig, we
+      // don't change it, since this is presumably coming from the
       // older DConfig interface.
       return;
     }
@@ -179,11 +179,11 @@ set_default_value(const string &default_value) {
     // Modifying an existing default value.
 
     if (_default_value->get_string_value() != default_value) {
-      if (_description == "DConfig") {
-        // As a special exception, if the current description is
-        // "DConfig", we don't report a warning for changing the
-        // default value, assuming the variable is being defined
-        // through the older DConfig interface.
+      if ((_flags & F_dconfig) != 0) {
+        // As a special exception, if the flags include F_dconfig, we
+        // don't report a warning for changing the default value,
+        // assuming the variable is being defined through the older
+        // DConfig interface.
 
       } else {
         prc_cat->warning()
