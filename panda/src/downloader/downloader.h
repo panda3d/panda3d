@@ -46,6 +46,8 @@ PUBLISHED:
   Downloader(void);
   virtual ~Downloader(void);
 
+  int connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
+		const string &server_name, uint server_port=80);
   int connect_to_server(const string &name, uint port=80);
   void disconnect_from_server(void);
 
@@ -98,6 +100,7 @@ private:
   int fast_receive(int socket, DownloadStatus *status, int rec_size);
   int parse_http_response(const string &resp);
   int parse_header(DownloadStatus *status);
+  int parse_proxy_response(DownloadStatus *status);
   int write_to_disk(DownloadStatus *status);
   int run_to_ram(void);
   int write_to_ram(DownloadStatus *status);
