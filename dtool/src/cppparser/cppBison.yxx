@@ -1421,6 +1421,11 @@ formal_parameter_identifier:
   $$->add_modifier(IIT_paren);
   $$->add_func_modifier($5, $7);
 }
+        | '(' formal_parameter_identifier ')'
+{
+  $$ = $2;
+  $$->add_modifier(IIT_paren);
+}
         ;
 
 empty_instance_identifier:
