@@ -30,6 +30,7 @@ $[cdefine COMPILE_IN_DEFAULT_FONT]
 
 /* Define if we have Maya available. */
 $[cdefine HAVE_MAYA]
+$[cdefine MAYA_PRE_5_0]
 
 /* Define if we have SoftImage available. */
 $[cdefine HAVE_SOFTIMAGE]

@@ -19,8 +19,8 @@
 // This header file works in conjunction with pre_maya_include.h; it
 // cleans up some of the definitions that it left open.
 
-// This header is no longer necessary owing to the existence of
-// REQUIRE_IOSTREAM in Maya5.0.  We'll keep it around for now in case
-// we ever need it again.
-
-
+// Remove the symbols defined from pre_maya_include.h.
+#ifndef MAYA_PRE_5_0
+#undef ostream
+#undef istream
+#endif  // MAYA_PRE_5_0
