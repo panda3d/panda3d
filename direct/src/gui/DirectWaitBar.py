@@ -2,7 +2,7 @@ from DirectFrame import *
 
 """
 import DirectWaitBar
-d = DirectWaitBar.DirectWaitBar()
+d = DirectWaitBar(borderWidth=(0,0))
 
 """
 
@@ -20,15 +20,14 @@ class DirectWaitBar(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('pgFunc',          PGWaitBar,        None),
-            ('width',           1.0,              self.setup),
-            ('height',          0.2,              self.setup),
-            ('range',           100,              self.setup),
+            ('frameSize',       (-1,1,-0.1,0.1),  None),
+            ('range',           100,              self.setRange),
             ('value',           50,               self.setValue),
             ('barBorderWidth',  (0,0),            self.setBarBorderWidth),
-            ('barColor',        (1,0,0,1),     self.setBarColor),
+            ('barColor',        (1,0,0,1),        self.setBarColor),
             ('barRelief',       FLAT,             self.setBarRelief),
             )
-
+        
         self.barStyle = PGFrameStyle()
         
         # Merge keyword options with default options
@@ -40,13 +39,10 @@ class DirectWaitBar(DirectFrame):
         # Call option initialization functions
         self.initialiseoptions(DirectWaitBar)
 
-        self.setup()
         self.updateBarStyle()
         
-
-    def setup(self):
-        print self['width'], self['height'], self['range']
-        self.guiItem.setup(self['width'], self['height'], self['range'])
+    def setRange(self):
+        self.guiItem.setRange(self['range'])
 
     def setValue(self):
         self.guiItem.setValue(self['value'])
@@ -56,21 +52,17 @@ class DirectWaitBar(DirectFrame):
 
     def updateBarStyle(self):
         if not self.fInit:
-            print 'updateing'
             self.guiItem.setBarStyle(self.barStyle)            
 
     def setBarRelief(self):
-        print 1
         self.barStyle.setType(self['barRelief'])
         self.updateBarStyle()
 
     def setBarBorderWidth(self):
-        print 2
         self.barStyle.setWidth(*self['barBorderWidth'])
         self.updateBarStyle()
 
     def setBarColor(self):
-        print 3
         self.barStyle.setColor(*self['barColor'])
         self.updateBarStyle()
         

@@ -23,6 +23,7 @@ class StateData(DirectObject):
     def cleanup(self):
         """cleanup(self)
         """
+        print "state data cleanup!!!"
         self.unload()
         return None
 

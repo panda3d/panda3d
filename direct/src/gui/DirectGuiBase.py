@@ -958,3 +958,12 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
     def taskName(self, idString):
         return (idString + "-" + str(self.guiId))
+
+    def setProp(self, propString, value):
+        """
+        Allows you to set a property like frame['text'] = 'Joe' in
+        a function instead of an assignment.
+        This is useful for setting properties inside function intervals
+        where must input a function and extraArgs, not an assignment.
+        """
+        self[propString] = value
