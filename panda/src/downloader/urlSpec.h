@@ -60,6 +60,7 @@ PUBLISHED:
   string get_server_and_port() const;
   string get_path() const;
   INLINE string get_query() const;
+  INLINE bool is_ssl() const;
 
   INLINE const string &get_url() const;
 

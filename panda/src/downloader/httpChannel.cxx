@@ -1813,16 +1813,16 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
 
   // An https-style request means we'll need to establish an SSL
   // connection.
-  _want_ssl = (_request.get_url().get_scheme() == "https");
+  _want_ssl = _request.get_url().is_ssl();
 
   _proxy_tunnel = false;
   _proxy_serves_document = false;
 
   if (!_proxy.empty()) {
-    // If we're opening an SSL connection, or we ask for a direct
-    // connection of some kind, or if we have a SOCKS-style proxy,
-    // that demands a tunnel through the proxy to speak directly to
-    // the http server.
+    // If we're opening an SSL connection, or the user has explicitly
+    // asked for a direct connection of some kind, or if we have a
+    // SOCKS-style proxy; each of these demands a tunnel through the
+    // proxy to speak directly to the http server.
     _proxy_tunnel =
       (_want_ssl || _method == HTTPEnum::M_connect || _proxy.get_scheme() == "socks");
 

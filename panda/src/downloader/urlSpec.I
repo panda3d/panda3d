@@ -228,6 +228,28 @@ get_query() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::is_ssl
+//       Access: Published
+//  Description: Returns true if the URL's scheme specifies an
+//               SSL-secured protocol such as https, or false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool URLSpec::
+is_ssl() const {
+  if (has_scheme() && _scheme_end > 0) {
+    // If we have a scheme specification, assume it is SSL-secured if
+    // it ends in "s", except for the special case of "socks".
+    if (_url.substr(0, _scheme_end) == "socks") {
+      return false;
+    }
+    return (_url[_scheme_end - 1] == 's');
+  }
+
+  // If we have no scheme specification, it's not SSL-secured.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: URLSpec::get_url
 //       Access: Published
 //  Description: Returns the complete URL specification.
