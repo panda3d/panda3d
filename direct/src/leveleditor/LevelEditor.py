@@ -153,7 +153,6 @@ OBJECT_SNAP_POINTS = {
     'street_keyboard_40x40': [(Vec3(40.0,0,0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
     }
-SNAP_ANGLE = 15.0
 
 # NEIGHBORHOOD DATA
 # If you run this from the command line you can pass in the hood codes
@@ -884,6 +883,7 @@ class LevelEditor(NodePath, PandaObject):
     def showAllVisibles(self):
         for i in self.nodeList:
             i.show()
+            i.clearColor()
 
     def visibilityOn(self):
         self.visibilityOff()
@@ -938,7 +938,7 @@ class LevelEditor(NodePath, PandaObject):
                 i.show()
         # Make sure we changed zones
         if newZoneId != self.__zoneId:
-            if visualizeZones:
+            if self.panel.fVisZones.get():
                 # Set a color override on our zone to make it obvious what
                 # zone we're in.
                 if self.__zoneId != None:
@@ -1098,10 +1098,11 @@ class LevelEditor(NodePath, PandaObject):
                 # Move DNA to new parent (if active parent set)
                 if self.DNAParent != None:
                     self.DNAParent.add(dnaNode)
-
-    def reparentSelected(self):
-        for nodePath in direct.selected:
-            self.reparent(nodePath)
+                    # It is, is it a DNA_NODE (i.e. it has pos/hpr/scale)?
+                    # Update pose to reflect new relationship
+                    if DNAIsDerivedFrom(dnaNode, DNA_NODE):
+                        # Update DNA
+                        self.updatePose(dnaNode, nodePath)
 
     def setActiveParent(self, nodePath = None):
         """ Set NPParent and DNAParent to node path and its DNA """
@@ -1372,7 +1373,7 @@ class LevelEditor(NodePath, PandaObject):
         # Create new building
         newDNAFlatBuilding = DNAFlatBuilding()
         self.setRandomBuildingStyle(newDNAFlatBuilding,
-                                    name = 'tb0:'+buildingType + '_DNARoot')
+                                    name = 'tb0:'+ buildingType + '_DNARoot')
         # Now place new building in the world
         self.initDNANode(newDNAFlatBuilding)
 
@@ -1935,10 +1936,17 @@ class LevelEditor(NodePath, PandaObject):
     # MANIPULATION FUNCTIONS
     def keyboardRotateSelected(self, arrowDirection):
         """ Rotate selected objects using arrow keys """
+        # Get snap angle
+        if direct.fShift:
+            oldSnapAngle = direct.grid.snapAngle
+            direct.grid.setSnapAngle(1.0)
+        snapAngle = direct.grid.snapAngle
+        print direct.fShift, snapAngle
+        # Compute new angle
         if ((arrowDirection == 'left') or (arrowDirection == 'up')):
-            self.setLastAngle(self.getLastAngle() + SNAP_ANGLE)
+            self.setLastAngle(self.getLastAngle() + snapAngle)
         else:
-            self.setLastAngle(self.getLastAngle() - SNAP_ANGLE)
+            self.setLastAngle(self.getLastAngle() - snapAngle)
         
         if (self.getLastAngle() < -180.0):
             self.setLastAngle(self.getLastAngle() + 360.0)
@@ -1949,6 +1957,8 @@ class LevelEditor(NodePath, PandaObject):
             selectedNode.setHpr(self.getLastAngle(), 0, 0)
         # Snap objects to grid and update DNA if necessary
         self.updateSelectedPose()
+        if direct.fShift:
+            direct.grid.setSnapAngle(oldSnapAngle)
 
     def keyboardTranslateSelected(self, arrowDirection):
         gridToCamera = direct.grid.getMat(direct.camera)
@@ -1957,6 +1967,11 @@ class LevelEditor(NodePath, PandaObject):
         xzDot = camXAxis.dot(Z_AXIS)
 
         # what is the current grid spacing?
+        if direct.fShift:
+            # If shift, divide grid spacing by 10.0
+            oldGridSpacing = direct.grid.gridSpacing
+            # Use back door to set grid spacing to avoid grid update
+            direct.grid.gridSpacing = direct.grid.gridSpacing/10.0
         deltaMove = direct.grid.gridSpacing
 
         # Compute the specified delta
@@ -1993,6 +2008,10 @@ class LevelEditor(NodePath, PandaObject):
                                 selectedNode.getPos(direct.grid) + deltaPos)
         # Snap objects to grid and update DNA if necessary
         self.updateSelectedPose()
+        # Restore grid spacing
+        if direct.fShift:
+            # Use back door to set grid spacing to avoid grid update
+            direct.grid.gridSpacing = oldGridSpacing
 
     def keyboardXformSelected(self, arrowDirection):
         if direct.fControl:
@@ -2179,7 +2198,8 @@ class LevelEditor(NodePath, PandaObject):
                               state.deltaHpr)
         if direct.grid.getHprSnap():
             # Clean up grid angle
-            direct.grid.setH(ROUND_TO(direct.grid.getH(), SNAP_ANGLE))
+            direct.grid.setH(ROUND_TO(direct.grid.getH(),
+                                      direct.grid.snapAngle))
 
     def getNextSnapPoint(self):
         """ Pull next pos hpr deltas off of snap list then rotate list """
@@ -4731,7 +4751,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.directModeButton.pack(side = LEFT, fill = X, expand = 1)
         self.driveModeButton = Radiobutton(
             buttonFrame4,
-            text = 'Drive Mode',
+            text = 'Drive',
             value = 0,
             variable = self.driveMode,
             command = self.levelEditor.useDriveMode)
@@ -4742,7 +4762,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         direct.collButton = Checkbutton(
             buttonFrame4,
             text = 'Collide',
-            width = 6,
             variable = self.fColl,
             command = self.levelEditor.toggleCollisions)
         direct.collButton.pack(side = LEFT, expand = 1, fill = X)
@@ -4752,12 +4771,19 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         direct.visButton = Checkbutton(
             buttonFrame4,
             text = 'Visibility',
-            width = 6,
             variable = self.fVis,
             command = self.levelEditor.toggleVisibility)
         direct.visButton.pack(side = LEFT, expand = 1, fill = X)
 
-        buttonFrame4.pack(fill = X, padx = 15)
+        self.fVisZones = IntVar()
+        self.fVisZones.set(visualizeZones)
+        direct.visZonesButton = Checkbutton(
+            buttonFrame4,
+            text = 'Show Zones',
+            variable = self.fVisZones)
+        direct.visZonesButton.pack(side = LEFT, expand = 1, fill = X)
+
+        buttonFrame4.pack(fill = X, padx = 5)
         
         # Make sure input variables processed 
         self.initialiseoptions(LevelEditorPanel)
