@@ -60,9 +60,12 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
   }
   ActorNode *actor=DCAST(ActorNode, def._node);
   LVector3f vel=actor->get_physics_object()->get_velocity();
+  if (vel == LVector3f::zero()) {
+    return;
+  }
   physics_debug("apply_linear_force() {");
-  physics_debug("  vel "<<vel<<" len "<<vel.length());
-  physics_debug("  force "<<force<<" len "<<force.length());
+  physics_debug("  vel            "<<vel<<" len "<<vel.length());
+  physics_debug("  force          "<<force<<" len "<<force.length());
   LVector3f old_vel=vel;
 
   // Copy the force vector while translating it 
@@ -83,8 +86,10 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
 
   float adjustmentLength=-(adjustment.dot(vel));
   physics_debug("  adjustmentLength "<<adjustmentLength);
+  float angle=-normalize(old_vel).dot(normalize(force));
+  physics_debug("  angle "<<angle);
   // Are we in contact with something:
-  if (adjustmentLength>0.0f) {
+  if (angle>0.0f) {
     physics_debug("  positive contact");
     adjustment*=adjustmentLength;
     physics_debug("  adjustment mul "<<adjustment<<" len "<<adjustment.length());
@@ -92,24 +97,30 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
     // but will deflect us parallel (or tangent) to the surface:
     vel+=adjustment;
     physics_debug("  vel "<<vel<<" len "<<vel.length());
-    physics_debug("  angle "<<adjustmentLength);
-    const float almostStationary=0.1f;
-    float friction=0.9f;
-    // This velocity is not very accurate, but it's better than using 
-    // the pre-collision-tested velocity for now.  This may need to be 
-    // better:
-    LVector3f implicitVel=actor->get_physics_object()->get_implicit_velocity();
-    physics_debug("  implicitVel "<<implicitVel<<" len "<<implicitVel.length());
-    // Determine the friction:
-    if (implicitVel.length()<almostStationary) {
-      physics_debug("  static friction");
-      friction=0.9f;
-    } else {
-      physics_debug("  dynamic friction");
-      friction=0.1f;
+    if (vel!=LVector3f::zero()) {
+      const float almostStationary=0.1f;
+      float frictionCoefficient=0.0f;
+      // Determine the friction:
+      if (vel.length()<almostStationary) {
+        physics_debug("  static friction");
+        frictionCoefficient=0.9f;
+      } else {
+        physics_debug("  dynamic friction");
+        frictionCoefficient=0.5f;
+      }
+      // Apply the friction:
+      physics_debug("  vel pre  friction "<<vel<<" len "<<vel.length());
+      float friction=frictionCoefficient*angle;
+      physics_debug("  friction "<<friction);
+      assert(friction>=0.0f && friction<=1.0f);
+      #if 0
+      float dt=ClockObject::get_global_clock()->get_dt();
+      vel *= (1.0f-friction) * dt * dt;
+      #else
+      vel *= 1.0f-friction;
+      #endif
+      physics_debug("  vel post friction "<<vel<<" len "<<vel.length());
     }
-    // Apply the friction:
-    vel*=1.0f-friction;
   } else if (adjustmentLength==0.0f) {
     physics_debug("  brushing contact");
   } else {
