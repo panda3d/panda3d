@@ -102,6 +102,16 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::get_desc
+//       Access: Public
+//  Description: Returns the one-line description for the directory.
+////////////////////////////////////////////////////////////////////
+const string &RollDirectory::
+get_desc() const {
+  return _desc;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RollDirectory::scan
 //       Access: Public
 //  Description: Scans the directory for all the listed photos.
@@ -111,9 +121,47 @@ scan(const string &extension) {
   bool reverse_order = false;
   bool explicit_list = false;
 
+  // Check for a .ds file, which contains a one-line description of
+  // the contents of the directory.
+  Filename ds_filename(_basename);
+  ds_filename.set_extension("ds");
+  if (cm_search.is_empty() || !ds_filename.resolve_filename(cm_search)) {
+    // If the ds file isn't found along the search path specified
+    // via -cmdir on the command line, then look for it in the
+    // appropriate source directory.
+    ds_filename = Filename(_dir, ds_filename);
+  }
+  if (ds_filename.exists()) {
+    ds_filename.set_text();
+    ifstream ds;
+    if (!ds_filename.open_read(ds)) {
+      nout << "Could not read " << ds_filename << "\n";
+    } else {
+      // Get the words out one at a time and put just one space
+      // between them.
+      string word;
+      ds >> word;
+      while (!ds.eof() && !ds.fail()) {
+	if (!_desc.empty()) {
+	  _desc += ' ';
+	}
+	_desc += word;
+	word = string();
+	ds >> word;
+      }
+      if (!word.empty()) {
+	if (!_desc.empty()) {
+	  _desc += ' ';
+	}
+	_desc += word;
+      }
+    }
+  }
+
   // Check for an .ls file in the roll directory, which may give an
   // explicit ordering, or if empty, it specifies reverse ordering.
-  Filename ls_filename(_dir, _basename + ".ls");
+  Filename ls_filename(_dir, _basename);
+  ls_filename.set_extension("ls");
   if (ls_filename.exists()) {
     add_contributing_filename(ls_filename);
     ls_filename.set_text();
@@ -214,6 +262,51 @@ collect_index_images() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::sort_date_before
+//       Access: Public
+//  Description: Returns true if the given directory name should sort
+//               before the other one, assuming the Rose naming
+//               convention of mmyyss is in place.
+////////////////////////////////////////////////////////////////////
+bool RollDirectory::
+sort_date_before(const RollDirectory &other) const {
+  if (_name == _basename && other._name == other._basename) {
+    // If Rose naming convention is not in place in either case, sort
+    // alphabetically.
+    return _basename < other._basename;
+
+  } else if (_name == _basename) {
+    // If Rose naming convention is in place on this one and not the
+    // other, it sorts first.
+    return true;
+
+  } else if (other._name == other._basename) {
+    // And vice-versa.
+    return false;
+
+  } else {
+    // Rose naming convention holds.  Sort based on year first.  Years
+    // above 90 are deemed to belong to the previous century.
+    string yy = _basename.substr(2, 2);
+    string other_yy = other._basename.substr(2, 2);
+    int year = atoi(yy.c_str());
+    int other_year = atoi(other_yy.c_str());
+    if (year < 90) {
+      year += 100;
+    }
+    if (other_year < 90) {
+      other_year += 100;
+    }
+    if (year != other_year) {
+      return year < other_year;
+    }
+
+    // After year, sort alphabetically.
+    return _basename < other._basename;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RollDirectory::get_newest_contributing_filename
 //       Access: Public
 //  Description: Returns the Filename with the newest timestamp that
@@ -310,17 +403,18 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
 //       Access: Public
 //  Description: Generates all appropriate HTML files for this
 //               directory, and generate the appropriate HTML code
-//               into the root_html file.
+//               into the html strings (retrieved by
+//               get_comment_html() and get_index_html()).
 ////////////////////////////////////////////////////////////////////
 bool RollDirectory::
-generate_html(ostream &root_html, const Filename &archive_dir, 
-              const Filename &roll_dir_root) {
+generate_html(const Filename &archive_dir, const Filename &roll_dir_root) {
   if (is_empty()) {
     return true;
   }
   nassertr(!_index_images.empty(), false);
 
-  root_html
+  ostringstream comment_strm;
+  comment_strm
     << "<a name=\"" << _basename << "\">\n";
 
   if (!omit_roll_headers) {
@@ -336,30 +430,120 @@ generate_html(ostream &root_html, const Filename &archive_dir,
     if (cm_filename.exists()) {
       // If the comment file for the roll exists, insert its contents
       // here instead of the generic header.
-      if (!insert_html_comment(root_html, cm_filename)) {
+      if (!insert_html_comment(comment_strm, cm_filename)) {
 	return false;
       }
       
     } else {
-      root_html
+      comment_strm
 	<< "<h2>" << _name << "</h2>\n";
+      if (!_desc.empty()) {
+	comment_strm << "<p>" << escape_html(_desc) << ".</p>\n";
+      }
     }
   }
+  _comment_html = comment_strm.str();
 
-  nout << "Generating " << Filename(archive_dir, "html/")
-       << _basename << "/*\n";
+  Filename html_dir(archive_dir, "html");
+  nout << "Generating " << Filename(html_dir, _basename) << "/*\n";
 
-  root_html << "<p>\n";
+  ostringstream index_strm;
+  index_strm << "<p>\n";
   IndexImages::iterator ii;
   for (ii = _index_images.begin(); ii != _index_images.end(); ++ii) {
     IndexImage *index_image = (*ii);
-    if (!index_image->generate_html(root_html, archive_dir, roll_dir_root)) {
+    if (!index_image->generate_html(index_strm, archive_dir, roll_dir_root)) {
       return false;
     }
   }
-  root_html << "</p>\n";
+  index_strm << "</p>\n";
+  _index_html = index_strm.str();
 
+  // Also generate the index html for this directory.
+  Filename html_filename(html_dir, _basename);
+  html_filename.set_extension("htm");
+  nout << "Generating " << html_filename << "\n";
+  html_filename.set_text();
+  ofstream index_html;
+  if (!html_filename.open_write(index_html)) {
+    nout << "Unable to write to " << html_filename << "\n";
+    exit(1);
+  }
+
+  string up_href = "../index.htm#" + _basename;
+
+  Filename prev_roll_filename;
+  Filename next_roll_filename;
+
+  if (_prev != (RollDirectory *)NULL) {
+    prev_roll_filename = _prev->_basename;
+    prev_roll_filename.set_extension("htm");
+  }
+  if (_next != (RollDirectory *)NULL) {
+    next_roll_filename = _next->_basename;
+    next_roll_filename.set_extension("htm");
+  }
+
+  index_html
+    << "<html>\n"
+    << "<head>\n";
+  if (_desc.empty()) {
+    index_html
+      << "<title>" << _name << "</title>\n";
+  } else {
+    index_html
+      << "<title>" << _name << " " << escape_html(_desc) << "</title>\n";
+  }
+  index_html
+    << "</head>\n"
+    << "<body>\n"
+    << get_comment_html();
+
+  generate_nav_buttons(index_html, prev_roll_filename, next_roll_filename,
+                       up_href);
+  index_html << get_index_html();
+  generate_nav_buttons(index_html, prev_roll_filename, next_roll_filename,
+                       up_href);
+
+  index_html
+    << "<a href=\"complete.htm#" << _basename << "\">(complete archive)</a>\n"
+    << "</body>\n"
+    << "</html>\n";
+
+  
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::get_comment_html
+//       Access: Public
+//  Description: Returns the HTML text that describes this directory's
+//               index.  This is set when generate_html() returns
+//               true.
+//
+//               This text may be inserted into the middle of a HTML
+//               page to include the imagemap that references each of
+//               the images in this directory.
+////////////////////////////////////////////////////////////////////
+const string &RollDirectory::
+get_comment_html() const {
+  return _comment_html;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::get_index_html
+//       Access: Public
+//  Description: Returns the HTML text that describes this directory's
+//               index.  This is set when generate_html() returns
+//               true.
+//
+//               This text may be inserted into the middle of a HTML
+//               page to include the imagemap that references each of
+//               the images in this directory.
+////////////////////////////////////////////////////////////////////
+const string &RollDirectory::
+get_index_html() const {
+  return _index_html;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -492,23 +676,103 @@ format_basename(const string &basename) {
     return basename;
   }
 
-  // The first four characters must be digits.
-  for (size_t i = 0; i < 4; i++) {
-    if (!isdigit(basename[i])) {
-      return basename;
-    }
+  // The first two characters must be alphanumeric.
+  if (!isalnum(basename[0]) || !isalnum(basename[1])) {
+    return basename;
   }
+
+  // The next two characters must be digits.
+  if (!isdigit(basename[2]) || !isdigit(basename[3])) {
+    return basename;
+  }
+
+  // If the first two were digits as well as being alphanumeric, then
+  // we have mm-yy/sequence.  Otherwise, we just have xxyy/sequence.
+  bool mm_is_month = (isdigit(basename[0]) && isdigit(basename[1]));
 
   string mm = basename.substr(0, 2);
   string yy = basename.substr(2, 2);
   string ss = basename.substr(4);
 
-  if (mm[0] == '0') {
+  if (mm_is_month && mm[0] == '0') {
     mm = mm[1];
   }
   while (ss.length() > 1 && ss[0] == '0') {
     ss = ss.substr(1);
   }
 
-  return mm + "-" + yy + "/" + ss;
+  if (mm_is_month) {
+    return mm + "-" + yy + "/" + ss;
+  } else {
+    return mm + yy + "/" + ss;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::generate_nav_buttons
+//       Access: Private, Static
+//  Description: Outputs the HTML code to generate the next, prev,
+//               up buttons when viewing each reduced image.
+////////////////////////////////////////////////////////////////////
+void RollDirectory::
+generate_nav_buttons(ostream &html, const Filename &prev_roll_filename,
+                     const Filename &next_roll_filename, 
+                     const string &up_href) {
+  html << "<p>\n";
+
+  bool first_icons = false;
+  if (!prev_icon.empty() && !next_icon.empty()) {
+    first_icons = true;
+    // Use icons to go forward and back.
+    Filename prev_icon_href = compose_href("..", prev_icon);
+    if (prev_roll_filename.empty()) {
+      html << "<img src=\"" << prev_icon_href << "\" alt=\"No previous roll\">\n";
+    } else {
+      html << "<a href=\"" << prev_roll_filename
+           << "\"><img src=\"" << prev_icon_href << "\" alt=\"previous\"></a>\n";
+    }
+
+    Filename next_icon_href = compose_href("..", next_icon);
+    if (next_roll_filename.empty()) {
+      html << "<img src=\"" << next_icon_href << "\" alt=\"No next roll\">\n";
+    } else {
+      html << "<a href=\"" << next_roll_filename
+           << "\"><img src=\"" << next_icon_href << "\" alt=\"next\"></a>\n";
+    }
+
+  } else {
+    // No prev/next icons; use text to go forward and back.
+    if (prev_roll_filename.empty()) {
+      html << "(This is the first roll.)\n";
+    } else {
+      html << "<a href=\"" << prev_roll_filename
+           << "\">Back to previous roll</a>\n";
+    }
+    
+    if (next_roll_filename.empty()) {
+      html << "<br>(This is the last roll.)\n";
+    } else {
+      html << "<br><a href=\"" << next_roll_filename
+           << "\">On to next roll</a>\n";
+    }
+  }
+
+  if (!up_href.empty()) {
+    if (!up_icon.empty()) {
+      // Use an icon to go up.
+      if (!first_icons) {
+        html << "<br>";
+      } else {
+        html << "&nbsp;&nbsp;&nbsp;";
+      }
+      Filename up_icon_href = compose_href("..", up_icon);
+      html << "<a href=\"" << up_href
+           << "\"><img src=\"" << up_icon_href << "\" alt=\"return to index\"></a>\n";
+    } else {
+      // No up icon; use text to go up.
+      html << "<br><a href=\"" << up_href
+           << "\">Return to index</a>\n";
+    }
+  }
+  html << "</p>\n";
 }

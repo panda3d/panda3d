@@ -41,8 +41,11 @@ public:
   const Filename &get_dir() const;
   const string &get_basename() const;
   const string &get_name() const;
+  const string &get_desc() const;
   bool scan(const string &extension);
   void collect_index_images();
+
+  bool sort_date_before(const RollDirectory &other) const;
 
   const Filename &get_newest_contributing_filename() const;
 
@@ -54,8 +57,10 @@ public:
   IndexImage *get_index_image(int n) const;
 
   bool generate_images(const Filename &archive_dir, PNMTextMaker *text_maker);
-  bool generate_html(ostream &root_html, const Filename &archive_dir,
-                     const Filename &roll_dir_root);
+  bool generate_html(const Filename &archive_dir,
+		     const Filename &roll_dir_root);
+  const string &get_comment_html() const;
+  const string &get_index_html() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
@@ -66,6 +71,10 @@ private:
   void add_contributing_filename(const Filename &filename);
   static bool insert_html_comment_body(ostream &html, istream &cm);
   static string format_basename(const string &basename);
+  void generate_nav_buttons(ostream &html, 
+			    const Filename &prev_roll_filename,
+			    const Filename &next_roll_filename, 
+			    const string &up_href);
 
 public:
   RollDirectory *_prev;
@@ -75,6 +84,7 @@ private:
   Filename _dir;
   string _basename;
   string _name;
+  string _desc;
   typedef pvector<Photo *> Photos;
   Photos _photos;
   
@@ -82,6 +92,9 @@ private:
 
   typedef pvector<IndexImage *> IndexImages;
   IndexImages _index_images;
+
+  string _comment_html;
+  string _index_html;
 };
 
 INLINE ostream &operator << (ostream &out, const RollDirectory &d) {

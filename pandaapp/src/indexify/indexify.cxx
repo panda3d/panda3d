@@ -25,6 +25,8 @@
 #include "indexParameters.h"
 #include "string_utils.h"
 
+#include <algorithm>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Indexify::Constructor
 //       Access: Public
@@ -34,6 +36,7 @@ Indexify::
 Indexify() {
   clear_runlines();
   add_runline("[opts] roll1-dir roll2-dir [roll3-dir ...]");
+  add_runline("[opts] full/*");
 
   set_program_description
     ("This program reads a collection of directories containing photo "
@@ -47,18 +50,24 @@ Indexify() {
      "should be within the same parent directory.  Each directory is "
      "considered a \"roll\", which may or may not correspond to a physical "
      "roll of film, and the photos within each directory are grouped "
-     "correspondingly on the generated HTML pages.\n\n"
+     "correspondingly on the generated HTML pages.  One common special case "
+     "is in which all the roll directories are found in the subdirectory "
+     "named \"full\" (e.g., the second example above) or \"reduced\".  This "
+     "keeps the root directory nice and clean.\n\n"
 
      "If a file exists by the same name as an image file but with the "
      "extension \"cm\", that file is taken to be a HTML comment about that "
      "particular image and is inserted the HTML page for that image.  "
      "Similarly, if there is a file within a roll directory with the same "
      "name as the directory itself (but with the extension \"cm\"), that file "
-     "is inserted into the front page to introduce that particular roll.\n\n"
+     "is inserted into the front page to introduce that particular roll.  "
+     "Finally, a file with the name of the directory, but with the extension "
+     "\"ds\" may contain a brief one-line description of the directory, for "
+     "the toplevel index page.\n\n"
 
      "Normally, all image files with the specified extension (normally "
      "\"jpg\") within a roll directory are included in the index, and sorted "
-     "into alphabetical (or numeric) order.  If you wish to specify a "
+     "into alphabetical (or numerical) order.  If you wish to specify a "
      "different order, or use only a subset of the images in a directory, "
      "create a file in the roll directory with the same name as the "
      "directory itself, and the extension \"ls\".  This file should "
@@ -81,8 +90,8 @@ Indexify() {
 
   add_option
     ("r", "relative-dir", 0,
-     "When -a is specifies to place the generate html files in a directory "
-     "other than the one above the actual roll directories, you may need "
+     "When -a is specified to place the generated html files in a directory "
+     "other than the default, you may need "
      "to specify how the html files will address the roll directories.  This "
      "parameter specifies the relative path to the directory above the roll "
      "directories, from the directory named by -a.",
@@ -102,6 +111,12 @@ Indexify() {
      "year, and ss is a sequence number of the roll within the month.  This "
      "name will be reformatted to m-yy/s for output.",
      &Indexify::dispatch_none, &format_rose);
+
+  add_option
+    ("s", "", 0,
+     "When used in conjunction with -r, requests sorting of the roll "
+     "directory names by date.",
+     &Indexify::dispatch_none, &sort_date);
 
   add_option
     ("d", "", 0,
@@ -261,7 +276,8 @@ handle_args(ProgramBase::Args &args) {
     filename.standardize();
     if (filename.is_directory()) {
       string basename = filename.get_basename();
-      if (basename == "icons" || basename == "html" || basename == "reduced") {
+      if (basename == "icons" || basename == "html" || 
+	  basename == "reduced" || basename == "thumbs") {
 	nout << "Ignoring " << filename << "; indexify-generated directory.\n";
 
       } else {
@@ -287,6 +303,13 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
+class SortRollDirs {
+public:
+  bool operator () (const RollDirectory *a, const RollDirectory *b) const {
+    return a->sort_date_before(*b);
+  }
+};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Indexify::post_command_line
 //       Access: Protected, Virtual
@@ -307,6 +330,12 @@ post_command_line() {
   if (_archive_dir.empty()) {
     // Choose a default archive directory, above the first roll directory.
     _archive_dir = _roll_dirs.front()->get_dir().get_dirname();
+    string parent_dirname = _archive_dir.get_basename();
+    if (parent_dirname == "full" || parent_dirname == "reduced") {
+      // As a special case, if the subdirectory name is "full" or
+      // "reduced", use the directory above that.
+      _archive_dir = _archive_dir.get_dirname();
+    }
     if (_archive_dir.empty()) {
       _archive_dir = ".";
     }
@@ -317,12 +346,17 @@ post_command_line() {
     _roll_dir_root.standardize();
   }
 
+  // Sort the roll directories, if specified.
+  if (format_rose && sort_date) {
+    sort(_roll_dirs.begin(), _roll_dirs.end(), SortRollDirs());
+  }
+
   if (_front_title.empty()) {
     // Supply a default title.
     if (_roll_dirs.size() == 1) {
       _front_title = _roll_dirs.front()->get_name();
     } else {
-      _front_title = _roll_dirs.front()->get_name() + " to " + _roll_dirs.back()->get_name();
+      _front_title = _roll_dirs.front()->get_name() + " through " + _roll_dirs.back()->get_name();
     }
   }
     
@@ -479,17 +513,26 @@ run() {
   }
 
   // Then go back and generate the HTML.
+  for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
+    RollDirectory *roll_dir = (*di);
+    if (!roll_dir->generate_html(_archive_dir, _roll_dir_root)) {
+      nout << "Failure.\n";
+      exit(1);
+    }
+  }
 
-  Filename html_filename(_archive_dir, "index.htm");
-  nout << "Generating " << html_filename << "\n";
-  html_filename.set_text();
-  ofstream root_html;
-  if (!html_filename.open_write(root_html)) {
-    nout << "Unable to write to " << html_filename << "\n";
+  // Generate the complete index that browses all the roll directories
+  // at once.
+  Filename complete_filename(_archive_dir, "html/complete.htm");
+  nout << "Generating " << complete_filename << "\n";
+  complete_filename.set_text();
+  ofstream complete_html;
+  if (!complete_filename.open_write(complete_html)) {
+    nout << "Unable to write to " << complete_filename << "\n";
     exit(1);
   }
 
-  root_html
+  complete_html
     << "<html>\n"
     << "<head>\n"
     << "<title>" << _front_title << "</title>\n"
@@ -499,13 +542,63 @@ run() {
 
   for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
     RollDirectory *roll_dir = (*di);
-    if (!roll_dir->generate_html(root_html, _archive_dir, _roll_dir_root)) {
-      nout << "Failure.\n";
-      exit(1);
+    complete_html
+      << roll_dir->get_comment_html()
+      << roll_dir->get_index_html();
+  }
+
+  complete_html << "<p>\n";
+  if (!up_icon.empty()) {
+    // Use an icon to go up.
+    Filename up_icon_href = compose_href("..", up_icon);
+    complete_html 
+      << "<a href=\"../index.htm\"><img src=\"" << up_icon_href
+      << "\" alt=\"return to index\"></a>\n";
+  } else {
+    // No up icon; use text to go up.
+    complete_html
+      << "<br><a href=\"../index.htm\">Return to index</a>\n";
+  }
+  complete_html << "</p>\n";
+
+  complete_html
+    << "</body>\n"
+    << "</html>\n";
+
+  // And finally, generate the index HTML file that sits on the top of
+  // all of this.
+  Filename index_filename(_archive_dir, "index.htm");
+  nout << "Generating " << index_filename << "\n";
+  index_filename.set_text();
+  ofstream index_html;
+  if (!index_filename.open_write(index_html)) {
+    nout << "Unable to write to " << index_filename << "\n";
+    exit(1);
+  }
+
+  index_html
+    << "<html>\n"
+    << "<head>\n"
+    << "<title>" << _front_title << "</title>\n"
+    << "</head>\n"
+    << "<body>\n"
+    << "<h1>" << _front_title << "</h1>\n"
+    << "<ul>\n";
+
+  for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
+    RollDirectory *roll_dir = (*di);
+    if (!roll_dir->is_empty()) {
+      index_html
+	<< "<a name=\"" << roll_dir->get_basename() << "\">\n"
+	<< "<a href=\"html/" << roll_dir->get_basename() << ".htm\"><li>"
+	<< roll_dir->get_name() << " " << escape_html(roll_dir->get_desc())
+	<< "</li></a>\n";
     }
   }
 
-  root_html
+  index_html
+    << "</ul>\n"
+    << "<a href=\"html/complete.htm\">(complete archive)</a>\n"
     << "</body>\n"
     << "</html>\n";
 }

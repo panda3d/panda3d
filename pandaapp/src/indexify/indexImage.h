@@ -56,9 +56,6 @@ private:
                             const Filename &next_photo_filename, 
                             const string &up_href);
 
-  Filename compose_href(const Filename &rel_dir, const Filename &user_prefix,
-                        const Filename &basename = Filename());
-
   static void compute_reduction(const PNMImageHeader &source_image,
                                 PNMImage &dest_image,
                                 int x_size, int y_size);

@@ -20,8 +20,9 @@
 #include "pnmTextMaker.h"
 #include "default_font.h"
 #include "pnmImage.h"
-
 #include "notify.h"
+
+#include <stdio.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FontSamples::Constructor

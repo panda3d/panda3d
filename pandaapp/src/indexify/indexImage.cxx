@@ -96,8 +96,8 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
   PNMImage index_image;
 
   Filename reduced_dir(archive_dir, "reduced/" + _dir->get_basename());
-
-  Filename output_filename(archive_dir, _name);
+  Filename thumbnail_dir(archive_dir, "thumbs");
+  Filename output_filename(thumbnail_dir, _name);
   output_filename.set_extension("jpg");
 
   Photos::const_iterator pi;
@@ -161,9 +161,11 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
     Photo *photo = _dir->get_photo(pinfo._photo_index);
     Filename photo_filename(_dir->get_dir(), photo->get_basename());
     Filename reduced_filename(reduced_dir, photo->get_basename());
+    photo_filename.standardize();
+    reduced_filename.standardize();
     PNMImage reduced_image;
 
-    if (!dummy_mode &&
+    if (!dummy_mode && photo_filename != reduced_filename &&
 	(force_regenerate || 
 	 reduced_filename.compare_timestamps(photo_filename) < 0)) {
       // If the reduced filename does not exist or is older than the
@@ -182,6 +184,10 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
       
       // Generate a reduced image for the photo.
       compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
+
+      photo->_reduced_x_size = reduced_image.get_x_size();
+      photo->_reduced_y_size = reduced_image.get_y_size();
+
       reduced_image.quick_filter_from(photo_image);
       reduced_filename.make_dir();
       nout << "Writing " << reduced_filename << "\n";
@@ -189,9 +195,6 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
 	nout << "Unable to write.\n";
 	return false;
       }
-
-      photo->_reduced_x_size = reduced_image.get_x_size();
-      photo->_reduced_y_size = reduced_image.get_y_size();
 
     } else {
       // If the reduced image already exists and is newer than the
@@ -262,7 +265,8 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
 		   pinfo._x_place + x_center, pinfo._y_place + y_center,
 		   thumbnail_image.get_x_size(), thumbnail_image.get_y_size());
       }
-      
+
+      thumbnail_image.set_color_type(index_image.get_color_type());
       index_image.copy_sub_image(thumbnail_image, 
 				 pinfo._x_place + x_center, 
 				 pinfo._y_place + y_center);
@@ -277,6 +281,7 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
 
   if (generate_index_image) {
     nout << "Writing " << output_filename << "\n";
+    output_filename.make_dir();
     if (!index_image.write(output_filename)) {
       nout << "Unable to write.\n";
       return false;
@@ -304,21 +309,22 @@ generate_html(ostream &root_html, const Filename &archive_dir,
               const Filename &roll_dir_root) {
   root_html
     << "<a name=\"" << _name << "\">\n"
-    << "<img src=\"" << _index_basename
+    << "<img src=\"../thumbs/" << _index_basename
     << "\" width=" << _index_x_size << " height=" << _index_y_size
     << " ismap usemap=\"#" << _name << "\">\n"
     << "<map name=\"" << _name << "\"><br>\n";
+
+  Filename html_dir(archive_dir, "html");
 
   Photos::const_iterator pi;
   for (pi = _photos.begin(); pi != _photos.end(); ++pi) {
     const PhotoInfo &pinfo = (*pi);
     int photo_index = pinfo._photo_index;
     Photo *photo = _dir->get_photo(pinfo._photo_index);
-    Filename html_relname("html/" + _dir->get_basename(), 
-                          photo->get_basename());
+    Filename html_relname(_dir->get_basename(), photo->get_basename());
     html_relname.set_extension("htm");
 
-    Filename html_filename(archive_dir, html_relname);
+    Filename html_filename(html_dir, html_relname);
     html_filename.make_dir();
     html_filename.set_text();
     ofstream reduced_html;
@@ -382,15 +388,18 @@ write(ostream &out, int indent_level) const {
 bool IndexImage::
 generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
                       const Filename &roll_dir_root) {
-  Filename full_dir =
+  Filename full_dir;
+  if (roll_dir_root.empty()) {
+    full_dir = Filename("../..", _dir->get_dir());
+  } else {
     compose_href("../..", roll_dir_root, _dir->get_basename());
+  }
   Filename full(full_dir, photo->get_basename());
 
   Filename reduced_dir("../../reduced", _dir->get_basename());
   Filename reduced(reduced_dir, photo->get_basename());
 
-  Filename root_html("../..", "index.htm");
-  string up_href = root_html.get_fullpath() + "#" + _name;
+  string up_href = "../" + _dir->get_basename() + ".htm#" + _name;
 
   Filename prev_photo_filename;
   Filename next_photo_filename;
@@ -485,7 +494,9 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
     << " height=" << photo->_reduced_y_size << " alt=\"" << photo->get_name()
     << "\"></a></p>\n";
 
-  if (!omit_full_links) {
+  if (!omit_full_links && 
+      (photo->_full_x_size != photo->_reduced_x_size || 
+       photo->_full_y_size != photo->_reduced_y_size)) {
     html
       << "<p><a href=\"" << full << "\">View full size image ("
       << photo->_full_x_size << " x " << photo->_full_y_size << ")</a></p>";
@@ -503,7 +514,7 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IndexImage::generate_nav_buttons
-//       Access: Private, Static
+//       Access: Private
 //  Description: Outputs the HTML code to generate the next, prev,
 //               up buttons when viewing each reduced image.
 ////////////////////////////////////////////////////////////////////
@@ -568,54 +579,6 @@ generate_nav_buttons(ostream &html, const Filename &prev_photo_filename,
     }
   }
   html << "</p>\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: IndexImage::compose_href
-//       Access: Private
-//  Description: Combines a user-supplied prefix with a relative
-//               directory to generate the appropriate href to the
-//               file.
-//
-//               rel_dir is the relative path to archive_dir.
-//               user_prefix is the string the user indicated as the
-//               relative or absolute path to the file's parent
-//               directory from archive_dir.  basename is the name
-//               of the file, or empty if the filename is part of
-//               user_prefix.
-////////////////////////////////////////////////////////////////////
-Filename IndexImage::
-compose_href(const Filename &rel_dir, const Filename &user_prefix,
-             const Filename &basename) {
-  Filename result;
-
-  if (user_prefix.empty()) {
-    result = rel_dir;
-
-  } else {
-    // Check to see if the user prefix begins with a URL designator,
-    // like http:// or ftp://.
-    size_t ui = 0;
-    while (ui < user_prefix.length() && isalpha(user_prefix[ui])) {
-      ui++;
-    }
-    bool is_url = (user_prefix.get_fullpath().substr(ui, 3) == "://");
-    
-    if (!is_url && user_prefix.is_local()) {
-      Filename rel_user_dir(rel_dir, user_prefix);
-      result = rel_user_dir;
-      result.standardize();
-      
-    } else {
-      result = user_prefix;
-    }
-  }
-
-  if (basename.empty()) {
-    return result;
-  } else {
-    return Filename(result, basename);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -83,6 +83,9 @@ extern bool force_regenerate;
 // True to use the Rose formatting convention for roll directory names.
 extern bool format_rose;
 
+// True to sort roll directory names by date.  Useful only with -r.
+extern bool sort_date;
+
 // True to place dummy thumbnails instead of loading actual images.
 extern bool dummy_mode;
 
@@ -126,6 +129,11 @@ extern int actual_index_width;
 // scaled into, accounting for the presence of a frame.
 extern int thumb_interior_width;
 extern int thumb_interior_height;
+
+Filename compose_href(const Filename &rel_dir, const Filename &user_prefix,
+		      const Filename &basename = Filename());
+
+string escape_html(const string &input);
 
 #endif
 
