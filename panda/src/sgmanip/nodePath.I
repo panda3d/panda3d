@@ -1284,9 +1284,9 @@ has_two_sided() const {
 //               will rotate in two dimensions around the up axis.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_billboard_axis() {
+set_billboard_axis(float offset) {
   nassertv(has_arcs());
-  arc()->set_transition(new BillboardTransition(BillboardTransition::axis()));
+  arc()->set_transition(new BillboardTransition(BillboardTransition::axis(offset)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1298,9 +1298,9 @@ set_billboard_axis() {
 //               camera.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_billboard_point_eye() {
+set_billboard_point_eye(float offset) {
   nassertv(has_arcs());
-  arc()->set_transition(new BillboardTransition(BillboardTransition::point_eye()));
+  arc()->set_transition(new BillboardTransition(BillboardTransition::point_eye(offset)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1311,9 +1311,9 @@ set_billboard_point_eye() {
 //               keeping its up vector oriented to the sky.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_billboard_point_world() {
+set_billboard_point_world(float offset) {
   nassertv(has_arcs());
-  arc()->set_transition(new BillboardTransition(BillboardTransition::point_world()));
+  arc()->set_transition(new BillboardTransition(BillboardTransition::point_world(offset)));
 }
 
 ////////////////////////////////////////////////////////////////////

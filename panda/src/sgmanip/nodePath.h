@@ -73,6 +73,13 @@ class GraphicsStateGuardianBase;
 // just a special case of this.)  The globbing characters may not be
 // used with the typename matches.
 //
+// The special characters "@@", appearing at the beginning of a node
+// name, indicate a stashed node.  Normally, stashed nodes are not
+// returned by a find (but see the special flags, below), but a
+// stashed node may be found if it is explicitly named with its
+// leading @@ characters.  By extension, "@@*" may be used to identify
+// any stashed node.
+//
 // Examples:
 //
 // "room//graph" will look for a node named "graph", which is a child
@@ -95,6 +102,18 @@ class GraphicsStateGuardianBase;
 // method (such as find_all_matches) is to return all of the matching
 // paths, it will sort them so that the shortest paths appear first in
 // the output.
+//
+//
+// Special flags.  The entire string may optionally be followed by the
+// ";" character, followed by one or more of the following special
+// control flags, with no intervening spaces or punctuation:
+//
+//    -h    Do not return hidden nodes.
+//    +h    Do return hidden nodes.
+//    -s    Do not return stashed nodes unless explicitly referenced with @@.
+//    +s    Return stashed nodes even without any explicit @@ characters.
+//
+// The default flags are +h-s.
 //
 
 ////////////////////////////////////////////////////////////////////
@@ -448,12 +467,12 @@ PUBLISHED:
   INLINE bool has_two_sided() const;
   bool get_two_sided() const;
 
-  void do_billboard_axis(const NodePath &camera);
-  void do_billboard_point_eye(const NodePath &camera);
-  void do_billboard_point_world(const NodePath &camera);
-  INLINE void set_billboard_axis();
-  INLINE void set_billboard_point_eye();
-  INLINE void set_billboard_point_world();
+  void do_billboard_axis(const NodePath &camera, float offset);
+  void do_billboard_point_eye(const NodePath &camera, float offset);
+  void do_billboard_point_world(const NodePath &camera, float offset);
+  INLINE void set_billboard_axis(float offset = 0.0);
+  INLINE void set_billboard_point_eye(float offset = 0.0);
+  INLINE void set_billboard_point_world(float offset = 0.0);
   INLINE void clear_billboard();
   INLINE bool has_billboard() const;
 

@@ -2482,12 +2482,12 @@ get_two_sided() const {
 //  Description: Performs a billboard-type rotate to the indicated
 //               camera node, one time only, and leaves the object
 //               rotated.  This is similar in principle to heads_up().
+//               However, it does lose both translate and scale
+//               components of the matrix.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-do_billboard_axis(const NodePath &camera) {
+do_billboard_axis(const NodePath &camera, float offset) {
   nassertv(has_arcs());
-
-  LPoint3f pos = get_pos();
 
   NodePath parent(*this);
   parent.shorten(1);
@@ -2498,7 +2498,16 @@ do_billboard_axis(const NodePath &camera) {
 
   LMatrix4f mat;
   ::heads_up(mat, rel_pos, up);
-  mat.set_row(3, pos);
+
+  // Also slide the geometry towards the camera according to the
+  // offset factor.
+  if (offset != 0.0f) {
+    LVector3f translate = rel_mat.get_row3(3);
+    translate.normalize();
+    translate *= offset;
+    mat.set_row(3, translate);
+  }
+
   set_mat(mat);
 }
 
@@ -2512,10 +2521,8 @@ do_billboard_axis(const NodePath &camera) {
 //               achieved using the ordinary look_at() call.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-do_billboard_point_eye(const NodePath &camera) {
+do_billboard_point_eye(const NodePath &camera, float offset) {
   nassertv(has_arcs());
-
-  LPoint3f pos = get_pos();
 
   NodePath parent(*this);
   parent.shorten(1);
@@ -2526,7 +2533,16 @@ do_billboard_point_eye(const NodePath &camera) {
 
   LMatrix4f mat;
   ::look_at(mat, rel_pos, up);
-  mat.set_row(3, pos);
+
+  // Also slide the geometry towards the camera according to the
+  // offset factor.
+  if (offset != 0.0f) {
+    LVector3f translate = rel_mat.get_row3(3);
+    translate.normalize();
+    translate *= offset;
+    mat.set_row(3, translate);
+  }
+
   set_mat(mat);
 }
 
@@ -2538,10 +2554,8 @@ do_billboard_point_eye(const NodePath &camera) {
 //               rotated.  This is similar in principle to look_at().
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-do_billboard_point_world(const NodePath &camera) {
+do_billboard_point_world(const NodePath &camera, float offset) {
   nassertv(has_arcs());
-
-  LPoint3f pos = get_pos();
 
   NodePath parent(*this);
   parent.shorten(1);
@@ -2552,7 +2566,16 @@ do_billboard_point_world(const NodePath &camera) {
 
   LMatrix4f mat;
   ::look_at(mat, rel_pos, up);
-  mat.set_row(3, pos);
+
+  // Also slide the geometry towards the camera according to the
+  // offset factor.
+  if (offset != 0.0f) {
+    LVector3f translate = rel_mat.get_row3(3);
+    translate.normalize();
+    translate *= offset;
+    mat.set_row(3, translate);
+  }
+
   set_mat(mat);
 }
 
