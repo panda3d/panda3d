@@ -20,43 +20,6 @@
 #include <graphicsWindow.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::set_pack_alignment
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-set_pack_alignment(int alignment) {
-  #ifdef NDEBUG
-    dxgsg_cat.error() << "set_pack_alignment() unimplemented, has no meaning in DX\n";
-  #endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::set_unpack_alignment
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-set_unpack_alignment(int alignment) {
-  #ifdef NDEBUG
-    dxgsg_cat.error() << "set_unpack_alignment() unimplemented, has no meaning in DX\n";
-  #endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_multisample
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-enable_multisample(bool val) {
-  _multisample_enabled = val;
-  #ifdef NDEBUG
-    dxgsg_cat.error() << "dx multisample unimplemented!!\n";
-  #endif
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_line_smooth
 //       Access:
 //  Description:
@@ -75,20 +38,6 @@ enable_line_smooth(bool val) {
     _d3dDevice->SetRenderState(D3DRENDERSTATE_EDGEANTIALIAS, (DWORD)val);
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_point_smooth
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-enable_point_smooth(bool val) {
-  _point_smooth_enabled = val;
-  #ifdef NDEBUG
-    dxgsg_cat.error() << "dx point smoothing unimplemented!!\n";
-  #endif
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_lighting
@@ -122,7 +71,6 @@ enable_dither(bool val) {
   #endif
 
     _dither_enabled = val;
-
     _d3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, (DWORD)val);
   }
 }
@@ -173,32 +121,6 @@ enable_clip_plane(int clip_plane, bool val)
     }
 }
 
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_multisample_alpha_one
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-enable_multisample_alpha_one(bool val) {
-  if (_multisample_alpha_one_enabled != val) {
-    _multisample_alpha_one_enabled = val;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_multisample_alpha_mask
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-enable_multisample_alpha_mask(bool val) {
-  if (_multisample_alpha_mask_enabled != val) {
-    _multisample_alpha_mask_enabled = val;
-  }
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_blend
 //       Access:
@@ -222,15 +144,6 @@ set_shademode(D3DSHADEMODE val) {
   if (_CurShadeMode != val) {
     _CurShadeMode = val;
     _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, (DWORD)val);
-  }
-}
-
-INLINE void DXGraphicsStateGuardian::
-SetDeviceTexture(LPDIRECTDRAWSURFACE7 pTexture) {
-  // this fn is useful because GetTexture() does an AddRef, so faster to cache it ourself
-  if (_pCurDeviceTexture != pTexture) {
-    _pCurDeviceTexture = pTexture;
-    _d3dDevice->SetTexture(0,_pCurDeviceTexture);
   }
 }
 
@@ -272,8 +185,7 @@ call_dxLightModelAmbient( const Colorf& color)
   if (_lmodel_ambient != color) {
     _lmodel_ambient = color;
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-      << "glLightModel(GL_LIGHT_MODEL_AMBIENT, " << color << ")" << endl;
+    dxgsg_cat.debug() << "dxLightModel(LIGHT_MODEL_AMBIENT, " << color << ")" << endl;
 #endif
     _d3dDevice->SetRenderState( D3DRENDERSTATE_AMBIENT,
                 D3DRGBA(color[0], color[1], color[2], color[3]));
@@ -413,4 +325,59 @@ call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc )
 #endif
     }
 }
+
+
+/**  unimplemented
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_multisample
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
+enable_multisample(bool val) {
+  _multisample_enabled = val;
+  #ifdef NDEBUG
+    dxgsg_cat.error() << "dx multisample unimplemented!!\n";
+  #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_multisample_alpha_one
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
+enable_multisample_alpha_one(bool val) {
+  if (_multisample_alpha_one_enabled != val) {
+    _multisample_alpha_one_enabled = val;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_multisample_alpha_mask
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
+enable_multisample_alpha_mask(bool val) {
+  if (_multisample_alpha_mask_enabled != val) {
+    _multisample_alpha_mask_enabled = val;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_point_smooth
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
+enable_point_smooth(bool val) {
+  // _point_smooth_enabled = val;
+
+  #ifdef NDEBUG
+    dxgsg_cat.error() << "dx point smoothing unimplemented!!\n";
+  #endif
+}
+*/
 

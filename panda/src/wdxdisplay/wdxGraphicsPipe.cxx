@@ -62,9 +62,11 @@ TypeHandle wdxGraphicsPipe::get_class_type(void) {
     return _type_handle;
 }
 
+const char *pipe_type_name="wdxGraphicsPipe";
+
 void wdxGraphicsPipe::init_type(void) {
     InteractiveGraphicsPipe::init_type();
-    register_type(_type_handle, "wdxGraphicsPipe",
+    register_type(_type_handle, pipe_type_name,
                   InteractiveGraphicsPipe::get_class_type());
 }
 
@@ -74,18 +76,17 @@ TypeHandle wdxGraphicsPipe::get_type(void) const {
 
 wdxGraphicsPipe::wdxGraphicsPipe(void) {
     wdxdisplay_cat.error()
-    << "wdxGraphicsPipes should not be created with the default constructor"
-    << endl;
+    << pipe_type_name <<"s should not be created with the default constructor" << endl;
 }
 
 wdxGraphicsPipe::wdxGraphicsPipe(const wdxGraphicsPipe&) {
     wdxdisplay_cat.error()
-    << "wdxGraphicsPipes should not be copied" << endl;
+    << pipe_type_name << "s should not be copied" << endl;
 }
 
 wdxGraphicsPipe& wdxGraphicsPipe::operator=(const wdxGraphicsPipe&) {
     wdxdisplay_cat.error()
-    << "wdxGraphicsPipes should not be assigned" << endl;
+    << pipe_type_name << "s should not be assigned" << endl;
     return *this;
 }
 

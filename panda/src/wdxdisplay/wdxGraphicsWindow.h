@@ -44,8 +44,8 @@ const int WDXWIN_EVENT =    8;
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsWindow : public GraphicsWindow {
-
-friend class DXGraphicsStateGuardian;
+ friend class DXGraphicsStateGuardian;
+ friend class DXTextureContext;
 
 public:
   wdxGraphicsWindow(GraphicsPipe* pipe);
@@ -59,6 +59,9 @@ public:
 
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wdxGraphicsWindow(const FactoryParams &params);
+  void CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,
+                                    LPDIRECTDRAW7 pDD,LPDIRECT3D7 pD3DI,
+                                    D3DDEVICEDESC7 *pD3DDevDesc);
 
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void process_events(void);
@@ -78,10 +81,11 @@ public:
   void show_frame();
   DXGraphicsStateGuardian *_dxgsg;
   
-//  virtual void resize(unsigned int xsize,unsigned int ysize);
-//  virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
+  virtual void resize(unsigned int xsize,unsigned int ysize);
+  virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
 
 protected:
+  void CreateScreenBuffersAndDevice(LPDIRECTDRAW7 pDD,LPDIRECT3D7 pD3DI);
   ButtonHandle lookup_key(WPARAM wparam) const;
   virtual void config( void );
   void setup_colormap(void);
@@ -90,6 +94,7 @@ protected:
   void enable_mouse_motion(bool val);
   void enable_mouse_passive_motion(bool val);
   void enable_mouse_entry(bool val);
+  DDDEVICEIDENTIFIER2 _DXDeviceID;
 
 public:
   HWND              _mwindow;
@@ -130,5 +135,9 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+extern void set_global_parameters(void);
+extern void restore_global_parameters(void);
+
 
 #endif

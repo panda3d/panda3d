@@ -109,6 +109,7 @@ TypeHandle DXGraphicsStateGuardian::_type_handle;
 static D3DMATRIX matIdentity;
 
 #ifdef COUNT_DRAWPRIMS
+// you should just use Intel GPT instead of this stuff
 
 static DWORD cDPcount=0;
 static DWORD cVertcount=0;
@@ -124,7 +125,7 @@ static void CountDPs(DWORD nVerts,DWORD nTris) {
     cVertcount+=nVerts;
     cTricount+=nTris;
 
-    if(_pCurDeviceTexture==pLastTexture) {
+    if(_pCurDeviceTexture==pLastTexture) {  
         cDP_noTexChangeCount++;
     } else pLastTexture = _pCurDeviceTexture;
 }
@@ -139,20 +140,17 @@ static bool bTexStatsRetrievalImpossible=false;
 //#define Colorf_to_D3DCOLOR(out_color) (D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
 
 INLINE DWORD
-Colorf_to_D3DCOLOR(Colorf &cColorf) {
+Colorf_to_D3DCOLOR(const Colorf &cColorf) {
 // MS VC defines _M_IX86 for x86.  gcc should define _X86_
 #if defined(_M_IX86) || defined(_X86_)
     DWORD d3dcolor,tempcolorval=255;
-//    DWORD *Colorf_addr=(DWORD*)&cColorf;
 
     // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode
     // dont think this makes much difference
 
     __asm {
-;        push eax
         push ebx   ; want to save this in case this fn is inlined
         push ecx
-;        mov ecx, Colorf_addr  ; must be a better way to do this w/o using ecx
         mov ecx, cColorf
         fild tempcolorval
         fld [ecx]
@@ -185,14 +183,19 @@ Colorf_to_D3DCOLOR(Colorf &cColorf) {
         mov d3dcolor,eax
         pop ecx
         pop ebx
-;        pop eax
     }
 
-//   dxgsg_cat.debug() << (void*)d3dcolor << endl;
+   //   dxgsg_cat.debug() << (void*)d3dcolor << endl;
    return d3dcolor;
 #else //!_X86_
    return D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
 #endif //!_X86_
+}
+
+void DXGraphicsStateGuardian::
+set_color_clear_value(const Colorf& value) {
+  _color_clear_value = value;
+  _d3dcolor_clear_value =  Colorf_to_D3DCOLOR(value);
 }
 
 void DXGraphicsStateGuardian::SetFPSMeterPosition(RECT &view_rect) {
@@ -278,7 +281,7 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
     ZeroMemory(ddsd.lpSurface,ddsd.dwWidth*ddsd.dwHeight*2);
     _fpsmeter_font_surf->Unlock(NULL);
 
-    // draw text using GDI
+    // draw FPS text using GDI
     HDC hDC;
     if(FAILED( hr = _fpsmeter_font_surf->GetDC(&hDC))) {
         dxgsg_cat.error() << "fps meter creation failed, GetDC failed on fps font surface! hr = " << ConvD3DErrorToString(hr) << "\n";
@@ -340,32 +343,27 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian::
 DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
-    _light_enabled = (bool *)NULL;
-    _cur_light_enabled = (bool *)NULL;
-    _clip_plane_enabled = (bool *)NULL;
-    _cur_clip_plane_enabled = (bool *)NULL;
+    // allocate local buffers used during rendering
+
+    GraphicsStateGuardian::reset();
+
     _pCurFvfBufPtr = NULL;
     _pFvfBufBasePtr = new char[VERT_BUFFER_SIZE];  // allocate storage for vertex info.
     _index_buf = new WORD[D3DMAXNUMVERTICES];  // allocate storage for vertex index info.
     _fpsmeter_verts=NULL;
     _fpsmeter_font_surf=NULL;
     _dx_ready = false;
-    _pCurDeviceTexture = NULL;
-
-    _CurShadeMode =  D3DSHADE_FLAT;
 
     _pri = _zbuf = _back = NULL;
     _pDD = NULL;
     _d3dDevice = NULL;
 
-    _cur_read_pixel_buffer=RenderBuffer::T_front;
+    // non-dx obj values inited here should not change if resize is 
+    // called and dx objects need to be recreated (otherwise they
+    // belong in dx_init, with other renderstate
 
     ZeroMemory(&matIdentity,sizeof(D3DMATRIX));
     matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
-
-    _cNumTexPixFmts = 0;
-    _pTexPixFmts = NULL;
-    _pCurTexContext = NULL;
 
     // Create a default RenderTraverser.
     if (dx_cull_traversal) {
@@ -374,14 +372,21 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
         _render_traverser = new DirectRenderTraverser(this, RenderRelation::get_class_type());
     }
 
-    //Color and alpha transform variables
-    _color_transform_enabled = false;
-    _alpha_transform_enabled = false;
-    _current_color_mat = LMatrix4f::ident_mat();
-    _current_alpha_offset = 0;
-    _current_alpha_scale = 1;
+    // All implementations have the following buffers.
+    _buffer_mask = (RenderBuffer::T_color |
+                    RenderBuffer::T_depth |
+                    RenderBuffer::T_back
+//                  RenderBuffer::T_stencil |
+//                  RenderBuffer::T_accum
+                    );
 
-    reset();
+    //   this is incorrect for general mono displays, need both right and left flags set.
+    //   stereo has not been handled yet for dx
+    //    _buffer_mask &= ~RenderBuffer::T_right;
+
+    _cur_read_pixel_buffer=RenderBuffer::T_front;
+
+    set_color_clear_value(_color_clear_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,71 +412,36 @@ DXGraphicsStateGuardian::
 //               created.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-reset() {
-    free_pointers();
+reset(void) {
     GraphicsStateGuardian::reset();
-    _buffer_mask = 0;
+    dxgsg_cat.error() << "DXGSG reset() not implemented properly yet!\n";
+    // delete all the objs too, right?
+    //dx_init();
+}
 
-    // All implementations have the following buffers.
-    _buffer_mask = (RenderBuffer::T_color |
-                    RenderBuffer::T_depth |
-                    RenderBuffer::T_back
-//                  RenderBuffer::T_stencil |
-//                  RenderBuffer::T_accum
-                    );
+// recreate dx objects without modifying gsg state, other than clearing state cache
+void DXGraphicsStateGuardian::
+free_dxgsg_objects(void) {
+    ULONG refcnt;
 
-    _current_projection_mat = LMatrix4f::ident_mat();
-    _projection_mat_stack_count = 0;
+    free_pointers();
 
-    _issued_color_enabled = false;
-    _enable_all_color = true;
-
-//   this is incorrect for general mono displays, need both right and left flags set.
-//   stereo has not been handled yet for dx
-//    _buffer_mask &= ~RenderBuffer::T_right;
-
-    // Set up our clear values to invalid values, so the glClear* calls
-    // will be made initially.
-    _clear_color_red = -1.0f;
-    _clear_color_green = -1.0f;
-    _clear_color_blue = -1.0f;
-    _clear_color_alpha = -1.0f;
-    _clear_depth = -1.0f;
-    _clear_stencil = -1;
-    _clear_accum_red = -1.0f;
-    _clear_accum_green = -1.0f;
-    _clear_accum_blue = -1.0f;
-    _clear_accum_alpha = -1.0f;
-    _line_width = 1.0f;
-    _point_size = 1.0f;
-    _depth_mask = false;
-    _fog_mode = D3DFOG_EXP;
-    _alpha_func = D3DCMP_ALWAYS;
-    _alpha_func_ref = 0;
-//  _polygon_mode = GL_FILL;
-
-//  _pack_alignment = 4;
-//  _unpack_alignment = 4;
-
-    // Set up all the enabled/disabled flags to GL's known initial
-    // values: everything off.
-    _multisample_enabled = false;
-    _line_smooth_enabled = false;
-    _point_smooth_enabled = false;
-    _color_material_enabled = false;
-//  _scissor_enabled = false;
-    _lighting_enabled = false;
-    _normals_enabled = false;
-    _texturing_enabled = false;
-    _multisample_alpha_one_enabled = false;
-    _multisample_alpha_mask_enabled = false;
-    _blend_enabled = false;
-    _depth_test_enabled = false;
-    _fog_enabled = false;
-    _alpha_test_enabled = false;
-    _decal_level = 0;
+    // dont want a full reset of gsg, just a state clear      
+    GraphicsStateGuardian::clear_cached_state(); // want gsg to pass all state settings through
 
     _dx_ready = false;
+
+    if (_d3dDevice!=NULL) {
+        _d3dDevice->SetTexture(0,NULL);  // should release this stuff internally anyway
+        RELEASE(_d3dDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
+    }
+
+    DeleteAllVideoSurfaces();
+
+    // Release the DDraw and D3D objects used by the app
+    RELEASE(_zbuf,dxgsg,"zbuffer",false);
+    RELEASE(_back,dxgsg,"backbuffer",false);
+    RELEASE(_pri,dxgsg,"primary surface",false);
 }
 
 HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param ) {
@@ -490,7 +460,7 @@ HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param ) {
 //               set up.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-init_dx(  LPDIRECTDRAW7     context,
+dx_init(  LPDIRECTDRAW7     context,
           LPDIRECTDRAWSURFACE7  pri,
           LPDIRECTDRAWSURFACE7  back,
           LPDIRECTDRAWSURFACE7  zbuf,
@@ -504,6 +474,69 @@ init_dx(  LPDIRECTDRAW7     context,
     _d3d = pD3D;
     _d3dDevice = pDevice;
     _view_rect = viewrect;
+
+    _depth_write_enabled = true;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled);
+
+    ZeroMemory(&_lmodel_ambient,sizeof(Colorf));
+    _d3dDevice->SetRenderState( D3DRENDERSTATE_AMBIENT, 0x0);
+
+    _light_enabled = (bool *)NULL;
+    _cur_light_enabled = (bool *)NULL;
+    _clip_plane_enabled = (bool *)NULL;
+    _cur_clip_plane_enabled = (bool *)NULL;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CLIPPLANEENABLE , 0x0);
+
+    _CurShadeMode =  D3DSHADE_FLAT;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
+
+    // need to free these properly
+    _cNumTexPixFmts = 0;
+    _pTexPixFmts = NULL;
+    _pCurTexContext = NULL;
+
+    //Color and alpha transform variables
+    _color_transform_enabled = false;
+    _alpha_transform_enabled = false;
+    _current_color_mat = LMatrix4f::ident_mat();
+    _current_alpha_offset = 0;
+    _current_alpha_scale = 1;
+
+    // none of these are implemented
+    //_multisample_enabled = false;
+    //_point_smooth_enabled = false;
+
+    _line_smooth_enabled = false;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_EDGEANTIALIAS, false);
+
+
+    _color_material_enabled = false;
+    _normals_enabled = false;
+    
+    _depth_test_enabled = D3DZB_FALSE;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_FALSE);
+
+    _blend_enabled = false;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, (DWORD)_blend_enabled);
+
+    _d3dDevice->GetRenderState(D3DRENDERSTATE_SRCBLEND, (DWORD*)&_blend_source_func);
+    _d3dDevice->GetRenderState(D3DRENDERSTATE_DESTBLEND, (DWORD*)&_blend_dest_func);
+
+    _fog_enabled = false;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGENABLE, _fog_enabled);
+
+    _decal_level = 0;
+    _current_projection_mat = LMatrix4f::ident_mat();
+    _projection_mat_stack_count = 0;
+    _issued_color_enabled = false;
+    _enable_all_color = true;
+
+//  GL stuff that hasnt been translated to DX
+//    _scissor_enabled = false;
+//    _multisample_alpha_one_enabled = false;
+//    _multisample_alpha_mask_enabled = false;
+//    _line_width = 1.0f;
+//    _point_size = 1.0f;
 
     assert(_back!=NULL);  // dxgsg is always double-buffered right now
 
@@ -521,6 +554,8 @@ init_dx(  LPDIRECTDRAW7     context,
     HRESULT hr;
 
     _pTexPixFmts = new DDPIXELFORMAT[MAX_DX_TEXPIXFMTS];
+    _cNumTexPixFmts = 0;
+
     assert(_pTexPixFmts!=NULL);
 
     if (pDevice->EnumTextureFormats(EnumTexFmtsCallback, this) != S_OK) {
@@ -542,7 +577,6 @@ init_dx(  LPDIRECTDRAW7     context,
 
     if ((dx_decal_type==GDT_offset) && !(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
 #ifdef _DEBUG
-
         // dx7 doesnt support PLANEMASK renderstate
 #if(DIRECT3D_VERSION < 0x700)
         dxgsg_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to decal masking\n";
@@ -571,13 +605,13 @@ init_dx(  LPDIRECTDRAW7     context,
 
     if ((dx_decal_type==GDT_mask) && !(_D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKPLANES)) {
 #ifdef _DEBUG
-        dxgsg_cat.error() << "No hardware support for colorwrite disabling, switching to dx-decal-type 'mask' to 'blend'\n";
+        dxgsg_cat.debug() << "No hardware support for colorwrite disabling, switching to dx-decal-type 'mask' to 'blend'\n";
 #endif
         dx_decal_type = GDT_blend;
     }
 
     if (((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(_D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ)) {
-        dxgsg_cat.error() << "dx-decal-type mask impossible to implement, no hardware support for Z-masking, decals will not appear correctly\n";
+        dxgsg_cat.error() << "dx-decal-type mask impossible to implement, no hardware support for Z-masking, decals will not appear correctly!\n";
     }
 
 //#define REQUIRED_BLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE|D3DPBLENDCAPS_SRCCOLOR|D3DPBLENDCAPS_INVSRCCOLOR| \
@@ -637,25 +671,24 @@ init_dx(  LPDIRECTDRAW7     context,
         }
     }
 
-    SetRect(&clip_rect, 0,0,0,0);     // no clip rect set
+    SetRect(&clip_rect, 0,0,0,0);  // no clip rect set
 
     // Lighting, let's turn it off by default
-    _lighting_enabled = true;
-    enable_lighting(false);
+    _lighting_enabled = false;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, _lighting_enabled);
 
     // turn on dithering if the rendertarget is < 8bits/color channel
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_back);
     _back->GetSurfaceDesc(&ddsd_back);
     _dither_enabled = ((ddsd_back.ddpfPixelFormat.dwRGBBitCount < 24) &&
                        (_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER));
-   _d3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, _dither_enabled);
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, _dither_enabled);
 
-   _d3dDevice->SetRenderState(D3DRENDERSTATE_CLIPPING,true);
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CLIPPING,true);
 
     // Stencil test is off by default
     _stencil_test_enabled = false;
-//  _stencil_func = D3DCMP_NOTEQUAL;
-//  _stencil_op = D3DSTENCILOP_REPLACE;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILENABLE, _stencil_test_enabled);
 
     // Antialiasing.
     enable_line_smooth(false);
@@ -700,24 +733,12 @@ init_dx(  LPDIRECTDRAW7     context,
     // initial clip rect
     SetRect(&clip_rect, 0,0,0,0);     // no clip rect set
 
-    // Make sure the GL state matches all of our initial attribute
-    // states.
-    PT(DepthTestTransition) dta = new DepthTestTransition;
-    PT(DepthWriteTransition) dwa = new DepthWriteTransition;
-    PT(CullFaceTransition) cfa = new CullFaceTransition;
-    PT(LightTransition) la = new LightTransition;
-    PT(TextureTransition) ta = new TextureTransition;
-
-    dta->issue(this);
-    dwa->issue(this);
-    cfa->issue(this);
-    la->issue(this);
-
     // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
     // initial conditions must be correct
 
     _CurTexBlendMode = TextureApplyProperty::M_modulate;
     SetTextureBlendMode(_CurTexBlendMode,FALSE);
+    _texturing_enabled = false;
     _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
 
     // Init more Texture State
@@ -735,16 +756,12 @@ init_dx(  LPDIRECTDRAW7     context,
     _d3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSU,get_texture_wrap_mode(_CurTexWrapModeU));
     _d3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSV,get_texture_wrap_mode(_CurTexWrapModeV));
 
-    ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
-
 #ifdef _DEBUG
     if ((_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_MIPMAPLODBIAS) &&
         (dx_global_miplevel_bias!=0.0f)) {
         _d3dDevice->SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, *((LPDWORD) (&dx_global_miplevel_bias)) );
     }
 #endif
-
-    _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
 
     if(dx_full_screen_antialiasing) {
       if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT) {
@@ -770,7 +787,16 @@ init_dx(  LPDIRECTDRAW7     context,
     }
 #endif
 
-    // need to release this better, so init_dx can be called multiple times
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, dx_force_backface_culling);
+
+    _alpha_func = D3DCMP_ALWAYS;
+    _alpha_func_ref = 0;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, _alpha_func);
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, _alpha_func_ref);
+    _alpha_test_enabled = false;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, _alpha_test_enabled);
+
+    // need to release this better, so dx_init can be called multiple times
 
     if(dx_show_fps_meter) {
         _start_time = timeGetTime();
@@ -841,7 +867,10 @@ init_dx(  LPDIRECTDRAW7     context,
         ddsd.dwWidth = texdim_x;
         ddsd.dwHeight = texdim_y;
 
-        assert(_fpsmeter_font_surf==NULL);
+        if(_fpsmeter_font_surf!=NULL) {
+            ULONG refcnt;
+            RELEASE(_fpsmeter_font_surf,dxgsg,"fpsmeter fontsurf",false);
+        }
 
         PRINTREFCNT(_pDD,"pre-fpsmeter-font-create IDirectDraw7");
 
@@ -863,13 +892,27 @@ init_dx(  LPDIRECTDRAW7     context,
 
         int numverts=(NUM_FPSMETER_LETTERS+1)*2*3;  // +1 for square to hold suffix
 
-        _fpsmeter_verts = (DWORD *) new BYTE[_fps_vertexsize*numverts];  //bugbug remember to release this
+        if(_fpsmeter_verts == NULL)
+            _fpsmeter_verts = (DWORD *) new BYTE[_fps_vertexsize*numverts];
 
         _fps_u_usedwidth = letterfontareaWidth/(float)texdim_x;
         _fps_v_usedheight = fontareaHeight/(float)texdim_y;
 
         SetFPSMeterPosition(_view_rect);
     }
+
+    // Make sure the DX state matches all of our initial attribute states.
+    PT(DepthTestTransition) dta = new DepthTestTransition;
+    PT(DepthWriteTransition) dwa = new DepthWriteTransition;
+    PT(CullFaceTransition) cfa = new CullFaceTransition;
+    PT(LightTransition) la = new LightTransition;
+    PT(TextureTransition) ta = new TextureTransition;
+
+    dta->issue(this);
+    dwa->issue(this);
+    cfa->issue(this);
+    la->issue(this);
+    ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -894,9 +937,7 @@ clear(const RenderBuffer &buffer) {
     if (buffer_type & RenderBuffer::T_stencil)
         flags |=  D3DCLEAR_STENCIL;
 
-    D3DCOLOR  clear_colr = Colorf_to_D3DCOLOR(_color_clear_value);
-
-    HRESULT  hr = _d3dDevice->Clear(0, NULL, flags, clear_colr,
+    HRESULT  hr = _d3dDevice->Clear(0, NULL, flags, _d3dcolor_clear_value,
                                     (D3DVALUE) _depth_clear_value, (DWORD)_stencil_clear_value);
     if (hr != DD_OK)
         dxgsg_cat.error() << "clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr) << endl;
@@ -1299,7 +1340,7 @@ render_frame() {
             _d3dDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, saved_fill_state);            
         }
 
-        _d3dDevice->SetTexture(0, _pCurDeviceTexture);
+        _d3dDevice->SetTexture(0, ((_pCurTexContext != NULL) ? _pCurTexContext->_surface : NULL));
   }
 
   hr = _d3dDevice->EndScene();  
@@ -2707,9 +2748,9 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
     DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
     DO_PSTATS_STUFF(_vertices_tri_pcollector.add_level(geom->get_num_vertices()));
 
-#ifdef _DEBUG
-    if (_pCurTexContext!=NULL) {
-//    dxgsg_cat.spam() << "Cur active DX texture: " << _pCurTexContext->_tex->get_name() << "\n";
+#if 0
+    if (_pCurTexContext!=NULL) { 
+        dxgsg_cat.spam() << "Cur active DX texture: " << _pCurTexContext->_tex->get_name() << "\n";
     }
 #endif
 
@@ -3808,7 +3849,7 @@ apply_texture(TextureContext *tc) {
 //  bind_texture(tc);
 
 //  specify_texture(tc->_texture);
-    // Note: if this code changes, make sure to change initialization SetTSS code in init_dx as well
+    // Note: if this code changes, make sure to change initialization SetTSS code in dx_init as well
     // so DX TSS renderstate matches dxgsg state
 
     DXTextureContext *dtc = DCAST(DXTextureContext, tc);
@@ -3844,13 +3885,7 @@ apply_texture(TextureContext *tc) {
     int aniso_degree=tex->get_anisotropic_degree();
     Texture::FilterType ft=tex->get_magfilter();
 
-    if (aniso_degree>1) {
-        if (aniso_degree!=_CurTexAnisoDegree) {
-            _CurTexAnisoDegree = aniso_degree;
-            _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_ANISOTROPIC );
-            _d3dDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,aniso_degree);
-        }
-    } else {
+    if (aniso_degree<=1) {
         if (_CurTexMagFilter!=ft) {
 
             _CurTexMagFilter = ft;
@@ -3860,6 +3895,12 @@ apply_texture(TextureContext *tc) {
                 dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";
             }
 #endif
+        }
+    } else {
+        if (aniso_degree!=_CurTexAnisoDegree) {
+            _CurTexAnisoDegree = aniso_degree;
+            _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_ANISOTROPIC );
+            _d3dDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,aniso_degree);
         }
     }
 
@@ -3942,7 +3983,7 @@ apply_texture(TextureContext *tc) {
     // bugbug:  does this handle the case of untextured geometry?
     //          we dont see this bug cause we never mix textured/untextured
 
-    SetDeviceTexture(dtc->_surface);
+    _d3dDevice->SetTexture(0,dtc->_surface);
 
 #if 0
     if (dtc!=NULL) {
@@ -4399,6 +4440,7 @@ apply_fog(Fog *fog) {
 
     Fog::Mode panda_fogmode = fog->get_mode();
     D3DFOGMODE d3dfogmode = get_fog_mode_type(panda_fogmode);
+
 
     // should probably avoid doing redundant SetRenderStates, but whatever
     _d3dDevice->SetRenderState((D3DRENDERSTATETYPE)_doFogType, d3dfogmode);
@@ -5068,8 +5110,7 @@ void DXGraphicsStateGuardian::issue_light(const LightTransition *attrib ) {
   }
 }
 
-
-
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::reset_ambient
 //       Access: Public, Virtual
@@ -5079,7 +5120,7 @@ void DXGraphicsStateGuardian::
 reset_ambient() {
     _lmodel_ambient += 2.0f;
 }
-
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_color_blend       //
@@ -5300,26 +5341,19 @@ issue_stencil(const StencilTransition *attrib) {
 
   StencilProperty::Mode mode = attrib->get_mode();
 
-#if 1
-  if (mode != StencilProperty::M_none) {
-    dxgsg_cat.error() << "stencil buffering unimplemented for DX GSG renderer!!!\n";
-    // to implement stenciling, need to change wdxGraphicsWindow to create a stencil
-    // z-buffer or maybe do a SetRenderTarget on a new zbuffer
-  }
-
-#else
-
     if (mode == StencilProperty::M_none) {
         enable_stencil_test(false);
-
     } else {
         enable_stencil_test(true);
+        // TODO: need to cache all these
         _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFUNC, get_stencil_func_type(mode));
-        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILPASS, get_stencil_action_type(attrib->get_action()));
-        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFAIL, get_stencil_action_type(attrib->get_action()));
-        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILZFAIL, get_stencil_action_type(attrib->get_action()));
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILPASS, get_stencil_action_type(attrib->get_pass_action()));
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFAIL, get_stencil_action_type(attrib->get_fail_action()));
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILZFAIL, get_stencil_action_type(attrib->get_zfail_action()));
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILREF, attrib->get_reference_value());
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILMASK, attrib->get_func_mask());
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILWRITEMASK, attrib->get_write_mask());
     }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5818,9 +5852,6 @@ get_depth_func_type(DepthTestProperty::Mode m) const {
     return D3DCMP_LESS;
 }
 
-#if 0
-// ifdef out until stencil zbuf creation works in wdxGraphicsWindow.c
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_stencil_func_type
 //       Access: Protected
@@ -5838,8 +5869,7 @@ get_stencil_func_type(StencilProperty::Mode m) const {
         case StencilProperty::M_greater_equal: return D3DCMP_GREATEREQUAL;
         case StencilProperty::M_always: return D3DCMP_ALWAYS;
     }
-    dxgsg_cat.error()
-    << "Invalid StencilProperty::Mode value" << endl;
+    dxgsg_cat.error() << "Invalid StencilProperty::Mode value" << endl;
     return D3DCMP_LESS;
 }
 
@@ -5859,12 +5889,9 @@ get_stencil_action_type(StencilProperty::Action a) const {
         case StencilProperty::A_decrement: return D3DSTENCILOP_DECR;
         case StencilProperty::A_invert: return D3DSTENCILOP_INVERT;
     }
-    dxgsg_cat.error()
-    << "Invalid StencilProperty::Action value" << endl;
+    dxgsg_cat.error() << "Invalid StencilProperty::Action value" << endl;
     return D3DSTENCILOP_KEEP;
 }
-
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_fog_mode_type
@@ -6226,6 +6253,55 @@ bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
      // which just got restored now.
      HRESULT hr=dtc->FillDDSurfTexturePixels();
      return hr==S_OK;
+}
+
+bool delete_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
+     DXTextureContext *dtc = DCAST(DXTextureContext, tc);
+
+     // release DDSurf (but not the texture context)
+     dtc->DeleteTexture();
+     return true;
+}
+
+bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
+     DXTextureContext *dtc = DCAST(DXTextureContext, tc);
+     DXGraphicsStateGuardian *dxgsg = (DXGraphicsStateGuardian *)void_dxgsg_ptr;
+
+     // Re-fill the contents of textures and vertex buffers
+     // which just got restored now.
+
+     LPDIRECTDRAWSURFACE7 ddtex = dtc->CreateTexture(dxgsg->_d3dDevice,
+                                                     dxgsg->_cNumTexPixFmts,dxgsg->_pTexPixFmts);
+     return ddtex!=NULL;
+}
+
+// release all textures and vertex/index buffers
+HRESULT DXGraphicsStateGuardian::DeleteAllVideoSurfaces(void) {
+  // BUGBUG: need to handle vertexbuffer handling here
+
+  // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
+  traverse_prepared_textures(delete_tex_callback,this);
+
+  ULONG refcnt;
+
+  if(dx_show_fps_meter)
+     RELEASE(_fpsmeter_font_surf,dxgsg,"fpsmeter fontsurf",false);
+
+  if(dxgsg_cat.is_debug())
+      dxgsg_cat.debug() << "release of all textures complete\n";
+  return S_OK;
+}
+
+// recreate all textures and vertex/index buffers
+HRESULT DXGraphicsStateGuardian::RecreateAllVideoSurfaces(void) {
+  // BUGBUG: need to handle vertexbuffer handling here
+
+  // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
+  traverse_prepared_textures(recreate_tex_callback,this);
+
+  if(dxgsg_cat.is_debug())
+      dxgsg_cat.debug() << "recreation of all textures complete\n";
+  return S_OK;
 }
 
 HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {

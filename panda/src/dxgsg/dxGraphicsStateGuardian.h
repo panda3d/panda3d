@@ -122,6 +122,9 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 //               outside of this object.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGraphicsStateGuardian : public GraphicsStateGuardian {
+  friend class wdxGraphicsWindow;
+  friend class DXTextureContext;
+
 public:
   DXGraphicsStateGuardian(GraphicsWindow *win);
   ~DXGraphicsStateGuardian();
@@ -220,11 +223,17 @@ public:
   virtual void end_decal(GeomNode *base_geom);
 
   INLINE float compute_distance_to(const LPoint3f &point) const;
+  virtual void set_color_clear_value(const Colorf& value);
 
-  void reset_ambient();
+public:
+  // recreate_tex_callback needs these to be public
+  LPDIRECT3DDEVICE7 _d3dDevice;
+  LPDDPIXELFORMAT   _pTexPixFmts;
+  int               _cNumTexPixFmts;
 
 protected:
-  void free_pointers();
+  void free_pointers();            // free local internal buffers
+  void free_dxgsg_objects(void);   // free the DirectX objects we create
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                          CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
@@ -245,15 +254,12 @@ protected:
   LPDIRECTDRAWSURFACE7  _back;
   LPDIRECTDRAWSURFACE7  _zbuf;
   LPDIRECT3D7           _d3d;
-  LPDIRECT3DDEVICE7     _d3dDevice;
   LPDIRECTDRAWSURFACE7  _pri;
   LPDIRECTDRAW7         _pDD;
 
   RECT                _view_rect;
   RECT                clip_rect;
   HDC               _front_hdc;
-  int               _cNumTexPixFmts;
-  LPDDPIXELFORMAT   _pTexPixFmts;
   DXTextureContext  *_pCurTexContext;
 
   bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
@@ -268,14 +274,16 @@ protected:
                     D3DVECTOR *pCenter, float fRadius,
                     DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
                     DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize);
-  HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void);
+  HRESULT RestoreAllVideoSurfaces(void);
+  HRESULT RecreateAllVideoSurfaces(void);
+  HRESULT DeleteAllVideoSurfaces(void);
 
-  INLINE void set_pack_alignment(int alignment);
-  INLINE void set_unpack_alignment(int alignment);
-
+/*
   INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
   INLINE void enable_multisample(bool val);
+*/  
+
   INLINE void enable_color_material(bool val);
   INLINE void enable_clip_plane(int clip_plane, bool val);
   INLINE void enable_fog(bool val);
@@ -285,15 +293,9 @@ protected:
   INLINE D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
   INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
 
-  #if 0
-    INLINE D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
-    INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
-  #endif
+  INLINE D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
+  INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
 
-/*  INLINE void enable_multisample_alpha_one(bool val);
-  INLINE void enable_multisample_alpha_mask(bool val);
-  INLINE void enable_multisample(bool val, LPDIRECT3DDEVICE7 d3dDevice);
-*/
   INLINE void enable_alpha_test(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_blend(bool val);
@@ -328,6 +330,7 @@ protected:
   bool  _enable_all_color;
   Colorf _issued_color;           // WBD ADDED
   D3DCOLOR _issued_color_D3DCOLOR;           // WBD ADDED
+  D3DCOLOR _d3dcolor_clear_value;
 
   D3DSHADEMODE _CurShadeMode;
 
@@ -340,27 +343,12 @@ protected:
   Geom::TexCoordIterator ti;
   Geom::ColorIterator ci;
 
-  float  _clear_color_red, _clear_color_green, _clear_color_blue,_clear_color_alpha;
-  double _clear_depth;
-  int    _clear_stencil;
-  float  _clear_accum_red, _clear_accum_green, _clear_accum_blue,_clear_accum_alpha;
-  int _scissor_x;
-  int _scissor_y;
-  int _scissor_width;
-  int _scissor_height;
-  int _viewport_x;
-  int _viewport_y;
-  int _viewport_width;
-  int _viewport_height;
   Colorf _lmodel_ambient;
   float _material_ambient;
   float _material_diffuse;
   float _material_specular;
   float _material_shininess;
   float _material_emission;
-  float _line_width;
-  float _point_size;
-  bool  _depth_mask;
 
   typedef enum {None,
                 PerVertexFog=D3DRENDERSTATE_FOGVERTEXMODE,
@@ -368,19 +356,20 @@ protected:
                } DxgsgFogType;
   DxgsgFogType _doFogType;
   bool _fog_enabled;
-  int   _fog_mode;
+/*  
+  TODO: cache fog state
   float _fog_start;
   float _fog_end;
   float _fog_density;
   float _fog_color;
-  float _alpha_func_ref;
-  D3DCMPFUNC  _alpha_func;
+*/    
+  float      _alpha_func_ref;
+  D3DCMPFUNC _alpha_func;
+
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
 
-  bool _multisample_enabled;
   bool _line_smooth_enabled;
-  bool _point_smooth_enabled;
   bool* _light_enabled;      // bool[_max_lights]
   bool _color_material_enabled;
   bool _lighting_enabled;
@@ -389,16 +378,11 @@ protected:
   bool _dither_enabled;
   bool _stencil_test_enabled;
   bool* _clip_plane_enabled;      // bool[_max_clip_planes]
-  bool _multisample_alpha_one_enabled;
-  bool _multisample_alpha_mask_enabled;
   bool _blend_enabled;
   bool _depth_test_enabled;
   bool _depth_write_enabled;
-  DWORD _old_colormaskval;
   bool _alpha_test_enabled;
   int _decal_level;
-  LPDIRECTDRAWSURFACE7 _pCurDeviceTexture;
-  INLINE void SetDeviceTexture(LPDIRECTDRAWSURFACE7 pTexture);
 
   RenderModeProperty::Mode _current_fill_mode;  //poinr/wireframe/solid
 
@@ -432,8 +416,6 @@ protected:
   LMatrix4f _current_color_mat;
   float _current_alpha_offset;
   float _current_alpha_scale;
-
-  int _pass_number;
 
   // vars for frames/sec meter
   DWORD _start_time;
@@ -476,7 +458,7 @@ public:
   void  show_frame();
   void  show_full_screen_frame();
   void  show_windowed_frame();
-  void  init_dx(  LPDIRECTDRAW7     context,
+  void  dx_init(  LPDIRECTDRAW7     context,
           LPDIRECTDRAWSURFACE7  pri,
           LPDIRECTDRAWSURFACE7  back,
           LPDIRECTDRAWSURFACE7  zbuf,

@@ -45,6 +45,9 @@
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXTextureContext : public TextureContext {
+  friend class DXGraphicsStateGuardian;
+  friend class wdxGraphicsWindow;
+
 public:
   DXTextureContext(Texture *tex);
   ~DXTextureContext();
@@ -54,10 +57,11 @@ public:
 
   LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts);
 
-  void DeleteTexture();
-
   bool _bHasMipMaps;
   DWORD _PixBufConversionType;  // enum ConversionType
+
+  // must be public since called from global callback fns
+  void DeleteTexture(void);
   HRESULT FillDDSurfTexturePixels(void);
 
 protected:
@@ -79,8 +83,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class DXGraphicsStateGuardian;
 };
 
 

@@ -60,6 +60,8 @@ init_libwdxdisplay() {
   GraphicsWindow::get_factory().register_factory(
             wdxGraphicsWindow::get_class_type(),
                 wdxGraphicsWindow::make_wdxGraphicsWindow);
+
+  set_global_parameters();
 }
 
 // cant use global var cleanly because global var static init executed after init_libwdxdisplay(), incorrectly reiniting var
