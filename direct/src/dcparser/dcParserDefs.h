@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #ifndef DCPARSERDEFS_H
-#define DCPARSERDEFs_H
+#define DCPARSERDEFS_H
 
 #include "dcbase.h"
 #include "dcSubatomicType.h"
