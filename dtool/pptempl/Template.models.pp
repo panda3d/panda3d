@@ -321,21 +321,21 @@ $[TAB]touch $[pt]
     #define source $[pal_egg_dir]/$[notdir $[egg]]
     #define target $[bam_dir]/$[notdir $[egg:%.egg=%.bam]]
 $[target] : $[source] $[bam_dir]/stamp
-$[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
+$[TAB]egg2bam -ps rel -pd $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
   #end egg
 
   #foreach egg $[UNPAL_SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[notdir $[egg:%.egg=%.bam]]
 $[target] : $[source] $[bam_dir]/stamp
-$[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
+$[TAB]egg2bam -ps rel -pd $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
   #end egg
 
   #foreach egg $[UNPAL_SOURCES_NC]
     #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[notdir $[egg:%.egg=%.bam]]
 $[target] : $[source] $[bam_dir]/stamp
-$[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -NC -o $[target] $[source]
+$[TAB]egg2bam -ps rel -pd $[install_dir] $[EGG2BAM_OPTS] -NC -o $[target] $[source]
   #end egg
 #end install_egg
 
