@@ -198,6 +198,8 @@
     zStream.I zStream.h zStreamBuf.h
 
   #define IGATESCAN all
+  #define WIN_SYS_LIBS \
+     advapi32.lib ws2_32.lib $[WIN_SYS_LIBS]
 
 #end lib_target
 

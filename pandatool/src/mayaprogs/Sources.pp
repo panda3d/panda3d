@@ -74,6 +74,7 @@
 
 
 #begin lib_target
+  #define BUILD_TARGET $[not $[LINK_ALL_STATIC]]
   #define USE_PACKAGES maya
   #define TARGET mayapview
   #define LOCAL_LIBS mayaegg maya
@@ -99,6 +100,7 @@
 #end lib_target
 
 #begin lib_target
+  #define BUILD_TARGET $[not $[LINK_ALL_STATIC]]
   #define USE_PACKAGES maya
   #define TARGET mayasavepview
 

@@ -40,7 +40,6 @@ PandaFramework() :
 {
   _is_open = false;
   _made_default_pipe = false;
-  _data_root = NodePath("data");
   _window_title = string();
   _start_time = 0.0;
   _frame_count = 0;
@@ -49,24 +48,8 @@ PandaFramework() :
   _two_sided_enabled = false;
   _lighting_enabled = false;
   _background_type = WindowFramework::BT_default;
-  _highlight_wireframe = NodePath("wireframe");
-  _highlight_wireframe.set_render_mode_wireframe(1);
-  _highlight_wireframe.set_color(1.0f, 0.0f, 0.0f, 1.0f, 1);
   _default_keys_enabled = false;
   _exit_flag = false;
-
-  if (!playback_session.empty()) {
-    // If the config file so indicates, create a recorder and start it
-    // playing.
-    _recorder = new RecorderController;
-    _recorder->begin_playback(Filename::from_os_specific(playback_session));
-    
-  } else if (!record_session.empty()) {
-    // If the config file so indicates, create a recorder and start it
-    // recording.
-    _recorder = new RecorderController;
-    _recorder->begin_record(Filename::from_os_specific(record_session));
-  } 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,6 +83,24 @@ open_framework(int &argc, char **&argv) {
 
   reset_frame_rate();
 
+  _data_root = NodePath("data");
+  _highlight_wireframe = NodePath("wireframe");
+  _highlight_wireframe.set_render_mode_wireframe(1);
+  _highlight_wireframe.set_color(1.0f, 0.0f, 0.0f, 1.0f, 1);
+
+  if (!playback_session.empty()) {
+    // If the config file so indicates, create a recorder and start it
+    // playing.
+    _recorder = new RecorderController;
+    _recorder->begin_playback(Filename::from_os_specific(playback_session));
+    
+  } else if (!record_session.empty()) {
+    // If the config file so indicates, create a recorder and start it
+    // recording.
+    _recorder = new RecorderController;
+    _recorder->begin_record(Filename::from_os_specific(record_session));
+  } 
+
   _event_handler.add_hook("window-event", event_window_event, this);
 }
 
@@ -118,7 +119,11 @@ close_framework() {
 
   close_all_windows();
   // Also close down any other windows that might have been opened.
-  _engine.remove_all_windows();
+  if (_engine != (GraphicsEngine *)NULL) {
+    delete _engine;
+    _engine = NULL;
+  }
+
   _event_handler.remove_all_hooks();
 
   _is_open = false;
@@ -317,7 +322,8 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe,
   wf->set_lighting(get_lighting());
   wf->set_background_type(get_background_type());
 
-  GraphicsWindow *win = wf->open_window(props, &_engine, pipe, gsg);
+  GraphicsWindow *win = wf->open_window(props, get_graphics_engine(), 
+                                        pipe, gsg);
   if (win == (GraphicsWindow *)NULL) {
     // Oops, couldn't make an actual window.
     framework_cat.error()
@@ -380,7 +386,7 @@ close_window(int n) {
 
   GraphicsWindow *win = wf->get_graphics_window();
   if (win != (GraphicsWindow *)NULL) {
-    _engine.remove_window(win);
+    _engine->remove_window(win);
   }
   
   wf->close_window();
@@ -401,7 +407,7 @@ close_all_windows() {
 
     GraphicsWindow *win = wf->get_graphics_window();
     if (win != (GraphicsWindow *)NULL) {
-      _engine.remove_window(win);
+      _engine->remove_window(win);
     }
     
     wf->close_window();
@@ -695,8 +701,10 @@ do_frame() {
   if (_recorder != (RecorderController *)NULL) {
     _recorder->record_frame();
   }
-
-  _engine.render_frame();
+  
+  if (_engine != (GraphicsEngine *)NULL) {
+    _engine->render_frame();
+  }
 
   if (_recorder != (RecorderController *)NULL) {
     _recorder->play_frame();
@@ -1166,7 +1174,7 @@ event_f9(CPT_Event event, void *data) {
 
     if (self->clear_text()) {
       // Render one more frame to remove the text.
-      self->_engine.render_frame();
+      self->_engine->render_frame();
     }
 
     Filename filename = wf->get_graphics_window()->save_screenshot_default();

@@ -150,7 +150,7 @@ private:
   string _window_title;
 
   PT(GraphicsPipe) _default_pipe;
-  GraphicsEngine _engine;
+  GraphicsEngine *_engine;
 
   NodePath _data_root;
   EventHandler _event_handler;

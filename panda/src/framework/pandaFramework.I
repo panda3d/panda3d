@@ -26,7 +26,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsEngine *PandaFramework::
 get_graphics_engine() {
-  return &_engine;
+  if (_engine == (GraphicsEngine *)NULL) {
+    _engine = new GraphicsEngine;
+  }
+  return _engine;
 }
 
 ////////////////////////////////////////////////////////////////////

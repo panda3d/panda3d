@@ -444,6 +444,10 @@ assert_failure(const char *expression, int line,
 
   nout << "Assertion failed: " << message << "\n";
 
+  // This is redeclared here to ensure that it is initialized before
+  // use, in case we get into a static-init loop.
+  bool assert_abort = true;
+  //  ConfigVariableBool assert_abort("assert-abort", false);
   if (assert_abort) {
 #ifdef WIN32
     // How to trigger an exception in VC++ that offers to take us into
