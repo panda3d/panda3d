@@ -78,10 +78,25 @@
 
 #include $[DTOOL]/pptempl/compilerSettings.pp
 
-#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] DO_PSTATS
-#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] DO_PSTATS
-#defer CDEFINES_OPT3 $[dlink_all_static] DO_PSTATS
-#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[if $[ne $[DO_PSTATS],],DO_PSTATS]
+#define WARNING_LEVEL_FLAG /W3
+
+#if $[or $[ne $[DO_PSTATS],],$[<= $[OPTIMIZE],3]]
+// this should probably only be defined for panda-specific dirs
+#define EXTRA_CDEFS $[EXTRA_CDEFS] DO_PSTATS
+#endif
+
+#if $[TEST_INLINING]
+// /W4 will make MSVC spit out if it inlined a fn or not, but also cause a lot of other spam warnings
+#define WARNING_LEVEL_FLAG /W4
+#define EXTRA_CDEFS $[EXTRA_CDEFS] FORCE_INLINING
+#elif $[or $[ne $[FORCE_INLINING],],$[>= $[OPTIMIZE],2]]
+#define EXTRA_CDEFS $[EXTRA_CDEFS] FORCE_INLINING
+#endif
+
+#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
 
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
@@ -119,17 +134,6 @@
 
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
-
-#define WARNING_LEVEL_FLAG /W3
-
-#if $[FORCE_INLINING]
-#define WARNING_LEVEL_FLAG /W3 /DFORCE_INLINING
-#endif
-
-#if $[TEST_INLINING]
-// /W4 will make MSVC spit out if it inlined a fn or not
-#define WARNING_LEVEL_FLAG /W4 /DFORCE_INLINING
-#endif
 
 #defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
