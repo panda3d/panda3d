@@ -47,7 +47,9 @@ public:
 PUBLISHED:
   void queue_event(CPT_Event event);
 
+
   bool is_queue_empty() const;
+  bool is_queue_full() const;
   CPT_Event dequeue_event();
 
   INLINE static EventQueue *

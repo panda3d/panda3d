@@ -78,6 +78,11 @@ is_queue_empty() const {
   return _queue.empty();
 }
 
+bool EventQueue::
+is_queue_full() const {
+  return _queue.full();
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::dequeue_event
