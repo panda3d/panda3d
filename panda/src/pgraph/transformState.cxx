@@ -235,8 +235,20 @@ operator < (const TransformState &other) const {
     return c < 0;
   }
 
+  /*
   // Otherwise, compare the matrices.
   return get_mat() < other.get_mat();
+  */
+
+  // On second thought, we don't gain a lot of benefit by going
+  // through all the work of comparing different transforms by matrix.
+  // Doing so ensures that two differently-computed transforms that
+  // happen to encode the same matrix (an unlikely occurrence) will be
+  // collapsed into a single pointer (a tiny benefit).  We're better
+  // off not paying the cost of this comparison, and just assuming
+  // that any two differently-computed transforms are essentially
+  // different.
+  return (this < &other);
 }
 
 ////////////////////////////////////////////////////////////////////

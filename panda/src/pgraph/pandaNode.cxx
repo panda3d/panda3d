@@ -150,6 +150,18 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   _effects = DCAST(RenderEffects, p_list[pi++]);
   _transform = DCAST(TransformState, p_list[pi++]);
 
+  // Finalize these pointers now to decrement their artificially-held
+  // reference counts.  We do this now, rather than later, in case
+  // some other object reassigns them a little later on during
+  // initialization, before they can finalize themselves normally (for
+  // instance, the character may change the node's transform).  If
+  // that happens, the pointer may discover that no one else holds its
+  // reference count when it finalizes, which will constitute a memory
+  // leak (see the comments in TransformState::finalize(), etc.).
+  manager->finalize_now((RenderState *)_state.p());
+  manager->finalize_now((RenderEffects *)_effects.p());
+  manager->finalize_now((TransformState *)_transform.p());
+
   // Get the parent and child pointers.
   pi += complete_up_list(_up, p_list + pi, manager);
   pi += complete_down_list(_down, p_list + pi, manager);
