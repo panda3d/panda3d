@@ -25,7 +25,7 @@
 
 typedef map<const MouseWatcherRegion*, GuiButton*> ButtonMap;
 static ButtonMap buttons;
-static bool added_hooks = false;
+static bool bAddedHooks = false;
 
 TypeHandle GuiButton::_type_handle;
 
@@ -556,13 +556,13 @@ GuiButton::~GuiButton(void) {
   buttons.erase(this->_rgn.p());
   if (gui_cat.is_debug())
     gui_cat->debug() << "erased from button map" << endl;
-  if ((buttons.size() == 0) && added_hooks) {
+  if ((buttons.size() == 0) && bAddedHooks) {
     /*
     _eh->remove_hook("gui-enter", enter_button);
     _eh->remove_hook("gui-exit" + get_name(), exit_button);
     _eh->remove_hook("gui-button-press", click_button_down);
     _eh->remove_hook("gui-button-release", click_button_up);
-    added_hooks = false;
+    bAddedHooks = false;
     */
   }
 
@@ -577,14 +577,14 @@ GuiButton::~GuiButton(void) {
 }
 
 void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
-  if (!added_hooks) {
+  if (!bAddedHooks) {
     mgr->get_private_handler()->add_hook("gui-enter", enter_button);
     mgr->get_private_handler()->add_hook("gui-exit", exit_button);
     mgr->get_private_handler()->add_hook("gui-button-press",
                                          click_button_down);
     mgr->get_private_handler()->add_hook("gui-button-release",
                                          click_button_up);
-    added_hooks = true;
+    bAddedHooks = true;
   }
   if (_mgr == (GuiManager*)0L) {
     GuiBehavior::manage(mgr, eh);
@@ -597,14 +597,14 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
 }
 
 void GuiButton::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
-  if (!added_hooks) {
+  if (!bAddedHooks) {
     mgr->get_private_handler()->add_hook("gui-enter", enter_button);
     mgr->get_private_handler()->add_hook("gui-exit", exit_button);
     mgr->get_private_handler()->add_hook("gui-button-press",
                                          click_button_down);
     mgr->get_private_handler()->add_hook("gui-button-release",
                                          click_button_up);
-    added_hooks = true;
+    bAddedHooks = true;
   }
   if (_mgr == (GuiManager*)0L) {
     GuiBehavior::manage(mgr, eh, n);
