@@ -41,7 +41,9 @@ protected:
   virtual bool handle_args(Args &args);
 
 protected:
-  bool _got_output_filename;
+  bool _got_output_filename, _bDoResize, _bUseHighQualityFiltering;
+  int _newsize[2];
+  double _filter_radius;
   Filename _output_filename;
 };
 
