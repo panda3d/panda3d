@@ -223,8 +223,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if not DistributedLevel.WantVisibility:
             zones = list(self.zoneNums)
             zones.remove(0)
-            zones.remove(16)
-            self.sendSetZone(16, zones)
+            self.sendSetZone(0, zones)
 
     def enterZone(self, zoneNum):
         if not DistributedLevel.WantVisibility:
