@@ -34,6 +34,7 @@
 #include "configVariableBase.h"
 #include "configVariableBool.h"
 #include "configVariableDouble.h"
+#include "configVariableFilename.h"
 #include "configVariableInt.h"
 #include "configVariableList.h"
 #include "configVariableManager.h"

@@ -15,6 +15,7 @@ forcetype ConfigVariable
 forcetype ConfigVariableBase
 forcetype ConfigVariableBool
 forcetype ConfigVariableDouble
+forcetype ConfigVariableFilename
 forcetype ConfigVariableInt
 forcetype ConfigVariableList
 forcetype ConfigVariableManager
