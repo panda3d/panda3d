@@ -118,21 +118,25 @@
 
 #endif  /* WIN32_VC */
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(CPPPARSER)
 #define INLINE_LINMATH __forceinline
 #define INLINE_MATHUTIL __forceinline
 
 #ifdef BUILDING_PANDA
 #define INLINE_GRAPH __forceinline
+#define INLINE_DISPLAY __forceinline
 #else
 #define INLINE_GRAPH
 #define DONT_INLINE_GRAPH
+#define INLINE_DISPLAY 
+#define DONT_INLINE_DISPLAY 
 #endif
 
 #else
 #define INLINE_LINMATH INLINE
 #define INLINE_MATHUTIL INLINE
 #define INLINE_GRAPH INLINE
+#define INLINE_DISPLAY INLINE
 #endif
 
 #define INLINE_CHAR INLINE
@@ -143,10 +147,8 @@
 #define INLINE_CULL INLINE
 #define INLINE_DEVICE INLINE
 #define INLINE_DGRAPH INLINE
-#define INLINE_DISPLAY INLINE
 #define INLINE_GOBJ INLINE
 #define INLINE_GRUTIL INLINE
-
 #define INLINE_GSGBASE INLINE
 #define INLINE_GSGMISC INLINE
 #define INLINE_LIGHT INLINE
