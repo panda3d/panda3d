@@ -81,7 +81,7 @@ public:
   void dx_setup();
   virtual void begin_frame( void );
   void show_frame();
-  virtual void resize(unsigned int xsize,unsigned int ysize);
+  virtual bool resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
   virtual int get_depth_bitwidth(void);
 
@@ -96,7 +96,7 @@ protected:
                                     D3DFORMAT *pSuggestedPixFmt);
   bool FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE &TestDisplayMode,D3DFORMAT *pBestFmt,bool bWantStencil,bool bForce16bpp) const;
   void init_resized_window(void);
-  bool reset_device_resize_window(RECT &viewrect);
+  bool reset_device_resize_window(UINT new_xsize, UINT new_ysize);
   void setup_colormap(void);
   INLINE void track_mouse_leaving(HWND hwnd);
 
@@ -130,7 +130,7 @@ public:
   virtual void do_close_window();
   void deactivate_window(void);
   void reactivate_window(void);
-  void handle_windowed_resize(HWND hWnd,bool bDoDXReset);
+  bool handle_windowed_resize(HWND hWnd,bool bDoDXReset);
 
 private:
   static TypeHandle _type_handle;
