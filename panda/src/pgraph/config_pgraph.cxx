@@ -127,6 +127,10 @@ const bool paranoid_compose = config_pgraph.GetBool("paranoid-compose", false);
 // by matrix.
 const bool compose_componentwise = config_pgraph.GetBool("compose-componentwise", true);
 
+// Set this true to view some info statements regarding the polylight
+// It is helpful for debugging
+const bool polylight_info = config_pgraph.GetBool("polylight-info", false);
+
 // Set this false to disable TransparencyAttrib::M_dual altogether
 // (and use M_alpha in its place).
 const bool m_dual = config_pgraph.GetBool("m-dual", true);

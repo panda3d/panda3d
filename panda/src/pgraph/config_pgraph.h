@@ -36,6 +36,8 @@ extern const bool allow_unrelated_wrt;
 extern const bool paranoid_compose;
 extern const bool compose_componentwise;
 
+extern const bool polylight_info;
+
 extern const bool m_dual;
 extern const bool m_dual_opaque;
 extern const bool m_dual_transparent;

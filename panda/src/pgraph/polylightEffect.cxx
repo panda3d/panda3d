@@ -156,10 +156,13 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
       }
 
       if (dist <= light_radius) { // If node is in range of this light
-        pgraph_cat.debug() << "light's position = " << light->get_pos() << endl;
-        pgraph_cat.debug() << "relative position = " << point << endl;
-        pgraph_cat.debug() << "effect center = " << _effect_center << endl;
-        pgraph_cat.debug() << "close to this light = " << light->get_name() << endl;
+        if (polylight_info) {
+          pgraph_cat.info() << "light's position = " << light->get_pos() << endl;
+          pgraph_cat.info() << "relative position = " << point << endl;
+          pgraph_cat.info() << "effect center = " << _effect_center << endl;
+          //pgraph_cat.info() << "close to this light = " << light->get_name() << endl;
+          pgraph_cat.info() << "dist = " << dist << ";radius = " << light_radius << endl;
+        }
 
         PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
         Colorf light_color;
@@ -189,16 +192,16 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
           light_scale = 1.0;
         }
 
-        pgraph_cat.debug() << "dist = " << dist << ";radius = " << light_radius << endl;
-             
         // Keep accumulating each lights contribution... 
         // we have to prevent color snap, so factor in the weight.
         // weight becomes negligent as you are closer to the light
         // and opposite otherwise
         weight_scale = _weight * (1.0 - light_scale);
 
-        pgraph_cat.debug() << "weight_scale = " << weight_scale
-             << "; light_scale " << light_scale << endl;
+        if (polylight_info) {
+          pgraph_cat.debug() << "weight_scale = " << weight_scale
+                             << "; light_scale " << light_scale << endl;
+        }
 
         Rcollect += light_color[0] * light_scale + weight_scale;
         Gcollect += light_color[1] * light_scale + weight_scale;
@@ -222,7 +225,8 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
     r = Rcollect / num_lights;
     g = Gcollect / num_lights;
     b = Bcollect / num_lights;
-    pgraph_cat.debug() << "r=" << r << "; g=" << g << "; b=" << b << endl;
+    if (polylight_info)
+      pgraph_cat.info() << "r=" << r << "; g=" << g << "; b=" << b << endl;
   }
 
   return ColorScaleAttrib::make(LVecBase4f(r, g, b, 1.0));
