@@ -9,10 +9,14 @@ class Notifier:
     serverDelta = 0
 
     def __init__(self, name, logger=None):
-        """__init__(self, string, Logger=None)
+        """
+        name is a string
+        logger is a Logger
+
         Create a new instance of the Notifier class with a given name
         and an optional Logger class for piping output to. If no logger
-        specified, use the global default"""
+        specified, use the global default
+        """
         self.__name = name
 
         if (logger==None):
@@ -47,14 +51,21 @@ class Notifier:
         Return the time as a string suitable for printing at the
         head of any notify message
         """
-
         # for some strange reason, time.time() updates only once/minute if
-        # the task is out of focus on win32.  time.clock doesnt have this prob
+        # the task is out of focus on win32.  time.clock doesn't have this problem.
         return time.strftime(":%m-%d-%Y %H:%M:%S ", time.localtime(time.time() + self.serverDelta))
 
+    def getOnlyTime(self):
+        """
+        Return the time as a string.
+        The Only in the name is referring to not showing the date.
+        """
+        return time.strftime("%H:%M:%S", time.localtime(time.time() + self.serverDelta))
+
     def __str__(self):
-        """__str__(self)
-        Print handling routine"""
+        """
+        Print handling routine
+        """
         return "%s: info = %d, warning = %d, debug = %d, logging = %d" % \
                (self.__name, self.__info, self.__warning, self.__debug, self.__logging)
 
@@ -149,13 +160,14 @@ class Notifier:
         return 1 # to allow assert(myNotify.info("blah"))
 
     def getInfo(self):
-        """getInfo(self)
+        """
         Return whether the printing of info messages is on or off"""
         return(self.__info)
 
     def setInfo(self, bool):
-        """setInfo(self, int)
-        Enable/Disable informational message  printing"""
+        """
+        Enable/Disable informational message  printing
+        """
         self.__info = bool
 
     # log funcs
@@ -166,19 +178,55 @@ class Notifier:
             self.__logger.log(logEntry)
 
     def getLogging(self):
-        """getLogging(self)
+        """
         Return 1 if logging enabled, 0 otherwise"""
         return (self.__logging)
 
     def setLogging(self, bool):
-        """setLogging(self, int)
+        """
         Set the logging flag to int (1=on, 0=off)"""
         self.__logging = bool
 
     def __print(self, string):
-        """__print(self, string)
+        """
         Prints the string to standard output followed by a newline.
         If we ever need to do something else than Python print, you
         could put it here.
         """
         print string
+
+    def debugStateCall(self, obj=None):
+        """
+        If this notify is in debug mode, print the time of the 
+        call followed by the [fsm state] notifier category and
+        the function call (with parameters).
+        """
+        if (self.__debug):
+            state = ''
+            if obj is not None:
+                if hasattr(obj, 'fsm'):
+                    #state = "%s=%s"%(obj.fsm.getName(), obj.fsm.getCurrentState().getName())
+                    state = obj.fsm.getCurrentState().getName()
+            string = ":%s [%-7s] %s.%s"%(
+                self.getOnlyTime(),
+                state,
+                self.__name,
+                PythonUtil.traceParentCall())
+            self.__log(string)
+            self.__print(string)
+        return 1 # to allow assert(myNotify.debug("blah"))
+
+    def debugCall(self, debugString=''):
+        """
+        
+        """
+        if (self.__debug):
+            string = ":%s %s %s.%s %s"%(
+                self.getOnlyTime(),
+                debugString,
+                self.__name,
+                PythonUtil.traceParentCall())
+            self.__log(string)
+            self.__print(string)
+        return 1 # to allow assert(myNotify.debug("blah"))
+
