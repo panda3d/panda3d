@@ -34,9 +34,9 @@
 #include <frustum.h>
 #include <orthoProjection.h>
 #include <appTraverser.h>
-#include <collisionTraverser.h>
 #include <get_config_path.h>
 #include <allAttributesWrapper.h>
+#include <dataGraphTraversal.h>
 
 ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
@@ -47,8 +47,6 @@ get_particle_path() {
   static DSearchPath *particle_path = NULL;
   return get_config_path("particle-path", particle_path);
 }
-
-static CollisionTraverser *collision_traverser = NULL;
 
 // Default channel config
 std::string chan_config = "single";
@@ -67,35 +65,24 @@ void render_frame(GraphicsPipe *pipe,
 
 class WindowCallback : public GraphicsWindow::Callback {
 public:
-  WindowCallback(GraphicsPipe *pipe, Node *render, Node *data_root,
-		  NodeAttributes *initial_state) :
+  WindowCallback(GraphicsPipe *pipe, Node *render,
+		 NodeAttributes *initial_state) :
     _pipe(pipe),
     _render(render),
-    _data_root(data_root),
     _initial_state(initial_state),
     _app_traverser(RenderRelation::get_class_type()) { }
   virtual ~WindowCallback() { }
   
   virtual void draw(bool) {
     _app_traverser.traverse(_render);
-    // Initiate the data traversal, to send device data down its
-    // respective pipelines.
-    traverse_data_graph(_data_root);
-    if (collision_traverser != (CollisionTraverser *)NULL) {
-      collision_traverser->traverse(_render);
-    }
     render_frame(_pipe, *_initial_state);
   }
   
   virtual void idle(void) {
-    // We used to do the collision traversal here, but it's better to
-    // do it immediately before the draw, so we don't get one frame of
-    // lag in collision updates.
   }
   
   PT(GraphicsPipe) _pipe;
   PT(Node) _render;
-  PT(Node) _data_root;
   NodeAttributes *_initial_state;
   AppTraverser _app_traverser;
 };
@@ -127,7 +114,6 @@ PT(GraphicsPipe) make_graphics_pipe() {
 PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe, 
 					NamedNode *render,
 					NamedNode *camera,
-					NamedNode *data_root,
 					NodeAttributes &initial_state) {
   PT(GraphicsWindow) main_win;
   ChanCfgOverrides override;
@@ -152,7 +138,7 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
   assert(main_win != (GraphicsWindow*)0L);
 
   WindowCallback *wcb = 
-    new WindowCallback(pipe, render, data_root, &initial_state);
+    new WindowCallback(pipe, render, &initial_state);
 
   // Set draw and idle callbacks
   main_win->set_draw_callback(wcb);
@@ -217,20 +203,18 @@ add_render_layer(GraphicsWindow *win, Node *render_top, Camera *camera) {
   dr->set_camera(camera);
 }
 
-// Enable the collision traversal using a particular traverser.
-void set_collision_traverser(CollisionTraverser *traverser) {
-  collision_traverser = traverser;
-}
-CollisionTraverser *get_collision_traverser() {
-  return collision_traverser;
-}
-// Stop the collision traversal.
-void clear_collision_traverser() {
-  collision_traverser = NULL;
+
+// This function is just a simple wrapper around traverse_data_graph()
+// in Panda.  It's just here for the very short term, until everyone
+// can build a fresh Panda with traverse_data_graph() properly
+// exposed.
+void
+direct_traverse_data_graph(Node *node) {
+  traverse_data_graph(node);
 }
 
-
-void toggle_wireframe(NodeAttributes &initial_state) {
+void
+toggle_wireframe(NodeAttributes &initial_state) {
   static bool wireframe_mode = false;
 
   wireframe_mode = !wireframe_mode;
@@ -255,7 +239,8 @@ void toggle_wireframe(NodeAttributes &initial_state) {
 }
 
 
-void toggle_backface(NodeAttributes &initial_state) {
+void
+toggle_backface(NodeAttributes &initial_state) {
   static bool backface_mode = false;
 
   // Toggle the state variable

@@ -55,9 +55,13 @@ class ShowBase:
         self.win = makeGraphicsWindow(self.pipe,
                                       self.renderTop.node(),
                                       self.camera.node(),
-                                      self.dataRoot.node(),
                                       self.initialState)
 
+        # This is a placeholder for a CollisionTraverser.  If someone
+        # stores a CollisionTraverser pointer here, we'll traverse it
+        # in the igloop task.
+        self.cTrav = 0
+        
         # This is a list of cams associated with the display region's cameras
         self.camList = []
         for camera in self.cameraList:
@@ -187,6 +191,9 @@ class ShowBase:
             self.tkroot = None
 
     def igloop(self, state):
+        directTraverseDataGraph(self.dataRoot.node())
+        if self.cTrav:
+            self.cTrav.traverse(self.render)
         self.win.update()
         return Task.cont
     
