@@ -1683,7 +1683,7 @@ expand_standardize(const string &params) {
   }
 
   filename.standardize();
-  return filename;
+  return filename.get_fullpath();
 }
 
 
@@ -1704,7 +1704,7 @@ string PPScope::
 expand_canonical(const string &params) {
   Filename filename = trim_blanks(expand_string(params));
   filename.make_canonical();
-  return filename;
+  return filename.get_fullpath();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -20,7 +20,7 @@ AC_CANONICAL_HOST
 if test "${CXXFLAGS+set}" != set -a "${CFLAGS+set}" = set; then
   CXXFLAGS=$CFLAGS
 fi
-CPPFLAGS="${CPPFLAGS} -DINSTALL_DIR="'$(prefix)'
+CPPFLAGS="${CPPFLAGS} -DINSTALL_DIR='\""'$(prefix)'"\"'"
 
 # Save these variables for later, so we can easily append to them or
 # change them.

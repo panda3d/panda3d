@@ -10,7 +10,11 @@
 #include "tokenize.h"
 #include "sedProcess.h"
 
-#ifdef HAVE_GETOPT
+#ifdef HAVE_UNISTD_H
+  #include <unistd.h>
+#endif
+
+#if HAVE_GETOPT
   #ifdef HAVE_GETOPT_H
     #include <getopt.h>
   #endif  // HAVE_GETOPT_H
@@ -18,17 +22,11 @@
   #include "gnu_getopt.h"
 #endif  // HAVE_GETOPT
 
-#ifdef HAVE_UNISTD_H
-  #include <unistd.h>
-#endif
-
 #include <set>
 #include <vector>
 #include <algorithm>
 #include <sys/stat.h>
 #include <assert.h>
-
-#define STRINGIZE(x) #x
 
 bool unix_platform = false;
 bool windows_platform = false;
@@ -108,8 +106,7 @@ report_version() {
 
 static void
 report_install_dir() {
-  cerr << "Default value for INSTALL_DIR is "
-       << STRINGIZE(INSTALL_DIR) << ".\n";
+  cerr << "Default value for INSTALL_DIR is " << INSTALL_DIR << ".\n";
 }
 
 static void
@@ -353,7 +350,7 @@ main(int argc, char *argv[]) {
   global_scope.define_variable("PLATFORM", platform);
   global_scope.define_variable("PACKAGE_FILENAME", PACKAGE_FILENAME);
   global_scope.define_variable("SOURCE_FILENAME", SOURCE_FILENAME);
-  global_scope.define_variable("INSTALL_DIR", STRINGIZE(INSTALL_DIR));
+  global_scope.define_variable("INSTALL_DIR", INSTALL_DIR);
 
   if (got_ppremake_config) {
     // If this came in on the command line, define a variable as such.
