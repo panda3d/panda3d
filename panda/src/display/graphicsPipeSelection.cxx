@@ -202,8 +202,8 @@ make_default_pipe() {
   PipeTypes::const_iterator ti;
 
   if (!_default_pipe_name.empty()) {
-    // First, look for an exact match of the requested type (excepting
-    // case and hyphen/underscore).
+    // First, look for an exact match of the default type name from
+    // the Configrc file (excepting case and hyphen/underscore).
     for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
       const PipeType &ptype = (*ti);
       if (cmp_nocase_uh(ptype._type.get_name(), _default_pipe_name) == 0) {

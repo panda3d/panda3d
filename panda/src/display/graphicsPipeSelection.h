@@ -35,13 +35,6 @@ class GraphicsWindow;
 //               are available for creation.  Normally there is one
 //               default interactive GraphicsPipe, and possibly other
 //               types available as well.
-//
-//               This is used to manage creation of a GraphicsPipe
-//               when you don't particularly care what kind of pipe
-//               you create; you just want to render to the screen.
-//               If your application does have a preference, you can
-//               of course invoke the appropriate GraphicsPipe
-//               constructor yourself.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsPipeSelection {
 protected:
