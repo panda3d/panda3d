@@ -12,6 +12,7 @@ import Slider
 import VectorWidgets
 import SceneGraphExplorer
 from TaskManagerPanel import TaskManagerWidget
+import UsePgraph
 
 """
 Possible to add:
@@ -837,10 +838,10 @@ class DirectSessionPanel(AppShell):
 
     def setSpecularColor(self, color):
         if self.activeLight:
-            self.activeLight.getLight().setSpecular(Vec4(color[0]/255.0,
-                                                         color[1]/255.0,
-                                                         color[2]/255.0,
-                                                         color[3]/255.0))
+            self.activeLight.getLight().setSpecularColor(Vec4(color[0]/255.0,
+                                                              color[1]/255.0,
+                                                              color[2]/255.0,
+                                                              color[3]/255.0))
 
     def setConstantAttenuation(self, value):
         if self.activeLight:
@@ -904,51 +905,43 @@ class DirectSessionPanel(AppShell):
 
     def updateLightInfo(self, page = None):
         # Set main lighting button
-        try:
-            # Old scene graph interface
+        if UsePgraph.use:
             self.enableLights.set(
-                render.arc().hasTransition(LightTransition.getClassType()))
-        except:
-            # No new scene graph equivalent yet
-            self.enableLights.set(0)
+                render.node().hasAttrib(LightAttrib.getClassType()))
             
         # Set light specific info
         if self.activeLight:
             l = self.activeLight.getLight()
-            self.lightActive.set(direct.lights.lt.isOn(l))
+            self.lightActive.set(direct.lights.la.hasLight(l))
             lightColor = l.getColor() * 255.0
             self.lightColor.set([lightColor[0], lightColor[1],
                                  lightColor[2], lightColor[3]], 0)
             if isinstance(l, DirectionalLight):
-                specularColor = l.getSpecular() * 255.0
+                specularColor = l.getSpecularColor() * 255.0
                 self.dSpecularColor.set([specularColor[0],
                                          specularColor[1],
                                          specularColor[2],
                                          specularColor[3]], 0)
             elif isinstance(l, PointLight):
-                specularColor = l.getSpecular() * 255.0
+                specularColor = l.getSpecularColor() * 255.0
                 self.pSpecularColor.set([specularColor[0],
                                          specularColor[1],
                                          specularColor[2],
                                          specularColor[3]], 0)
-                constantAtten = l.getConstantAttenuation()
-                self.pConstantAttenuation.set(constantAtten, 0)
-                linearAtten = l.getLinearAttenuation()
-                self.pLinearAttenuation.set(linearAtten, 0)
-                quadraticAtten = l.getQuadraticAttenuation()
-                self.pQuadraticAttenuation.set(quadraticAtten, 0)
+                att = l.getAttenuation()
+                self.pConstantAttenuation.set(att[0], 0)
+                self.pLinearAttenuation.set(att[1], 0)
+                self.pQuadraticAttenuation.set(att[2], 0)
             elif isinstance(l, Spotlight):
-                specularColor = l.getSpecular() * 255.0
+                specularColor = l.getSpecularColor() * 255.0
                 self.sSpecularColor.set([specularColor[0],
                                          specularColor[1],
                                          specularColor[2],
                                          specularColor[3]], 0)
-                constantAtten = l.getConstantAttenuation()
-                self.sConstantAttenuation.set(constantAtten, 0)
-                linearAtten = l.getLinearAttenuation()
-                self.sLinearAttenuation.set(linearAtten, 0)
-                quadraticAtten = l.getQuadraticAttenuation()
-                self.sQuadraticAttenuation.set(quadraticAtten, 0)
+                att = l.getAttenuation()
+                self.pConstantAttenuation.set(att[0], 0)
+                self.pLinearAttenuation.set(att[1], 0)
+                self.pQuadraticAttenuation.set(att[2], 0)
 
     def updateGridInfo(self):
         self.enableGrid.set(direct.grid.isEnabled())

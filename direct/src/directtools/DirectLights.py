@@ -1,6 +1,7 @@
 from PandaObject import *
 from DirectGeometry import *
 from string import lower
+import UsePgraph
 
 class DirectLight(NodePath):
     def __init__(self, light, parent):
@@ -12,15 +13,15 @@ class DirectLight(NodePath):
 
         # Upcast the light object to its node base pointer
         if isinstance(light, Spotlight):
-            node = light.upcastToProjectionNode()
+            node = light.upcastToLensNode()
         else:
-            node = light.upcastToNamedNode()
+            node = light.upcastToPandaNode()
 
         # Attach node to self
-        try:
-            self.assign(parent.attachNewNode(none))
-        except:
-            # New scene graph doesn't have lights yet.
+        if UsePgraph.use:
+            self.assign(parent.attachNewNode(node))
+        else:
+            # Old scene graph no longer has lights.
             pass
 
     def getName(self):
@@ -37,8 +38,8 @@ class DirectLights(NodePath):
             parent = direct.group
         # Create a node for the lights
         self.assign(parent.attachNewNode('DIRECT Lights'))
-        # Create a light transition 
-        self.lt = LightTransition()
+        # Create a light attrib
+        self.la = LightAttrib.makeAllOff()
         # Create a list of all active lights
         self.lightDict = {}
         # Counts of the various types of lights
@@ -108,37 +109,35 @@ class DirectLights(NodePath):
 
     def allOn(self):
         """ Turn on all DIRECT lights """
-        try:
-            # Old-style scene graph
-            render.arc().setTransition(self.lt)
-        except:
-            # No new-style equivalent yet.
-            pass
+        if UsePgraph.use:
+            # new-style scene graph
+            render.node().setAttrib(self.la)
         # Make sure there is a default material
         render.setMaterial(Material())
 
     def allOff(self):
         """ Turn off all DIRECT lights """
-        try:
-            # Old-style scene graph
-            render.arc().clearTransition(LightTransition.getClassType())
-        except:
-            # No new-style equivalent yet.
-            pass
+        if UsePgraph.use:
+            # new-style scene graph
+            render.node().clearAttrib(LightAttrib.getClassType())
 
     def toggle(self):
         """ Toggles light attribute, but doesn't toggle individual lights """
-        if render.arc().hasTransition(LightTransition.getClassType()):
+        if render.node().hasAttrib(LightAttrib.getClassType()):
             self.allOff()
         else:
             self.allOn()
 
     def setOn(self, directLight):
         """ setOn(directLight) """
-        self.lt.setOn(directLight.getLight())
-
+        self.la = self.la.addLight(directLight.getLight())
+        if render.node().hasAttrib(LightAttrib.getClassType()):
+            render.node().setAttrib(self.la)
+            
     def setOff(self, directLight):
         """ setOff(directLight)"""
-        self.lt.setOff(directLight.getLight())
+        self.la = self.la.removeLight(directLight.getLight())
+        if render.node().hasAttrib(LightAttrib.getClassType()):
+            render.node().setAttrib(self.la)
 
 
