@@ -1114,9 +1114,9 @@ class ParticlePanel(AppShell):
     def setFactoryZSpinInitialAngleSpread(self, spread):
 	self.particles.factory.setInitialAngleSpread(spread)
     def setFactoryZSpinFinalAngle(self, angle):
-	self.particles.factory.setFinaleAngle(angle)
+	self.particles.factory.setFinalAngle(angle)
     def setFactoryZSpinFinalAngleSpread(self, spread):
-	self.particles.factory.setInitialAngleSpread(spread)
+	self.particles.factory.setFinalAngleSpread(spread)
 
     ## EMITTER PAGE ##
     def selectEmitterType(self, type):
