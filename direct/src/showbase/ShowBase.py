@@ -31,7 +31,7 @@ import DirectObject
 import SfxPlayer
 if __debug__:
     from direct.directutil import DeltaProfiler
-    import OnScreenDebug
+import OnScreenDebug
 
 __builtins__["FADE_SORT_INDEX"] = 1000
 __builtins__["NO_FADE_SORT_INDEX"] = 2000
@@ -267,7 +267,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["__dev__"] = base.config.GetBool('want-dev', 0)
         if __debug__:
             __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")
-            __builtins__["onScreenDebug"] = OnScreenDebug.OnScreenDebug()
+        __builtins__["onScreenDebug"] = OnScreenDebug.OnScreenDebug()
 
         ShowBase.notify.info('__dev__ == %s' % __dev__)
 
@@ -1183,10 +1183,9 @@ class ShowBase(DirectObject.DirectObject):
         return Task.cont
 
     def igLoop(self, state):
-        if __debug__:
-            # We render the watch variables for the onScreenDebug as soon
-            # as we reasonably can before the renderFrame().
-            onScreenDebug.render()
+        # We render the watch variables for the onScreenDebug as soon
+        # as we reasonably can before the renderFrame().
+        onScreenDebug.render()
 
         if self.recorder:
             self.recorder.recordFrame()
@@ -1196,10 +1195,9 @@ class ShowBase(DirectObject.DirectObject):
         if self.clusterSyncFlag:
             self.graphicsEngine.syncFrame()
 
-        if __debug__:
-            # We clear the text buffer for the onScreenDebug as soon
-            # as we reasonably can after the renderFrame().
-            onScreenDebug.clear()
+        # We clear the text buffer for the onScreenDebug as soon
+        # as we reasonably can after the renderFrame().
+        onScreenDebug.clear()
 
         if self.recorder:
             self.recorder.playFrame()
