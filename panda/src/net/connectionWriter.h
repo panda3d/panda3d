@@ -54,13 +54,14 @@ PUBLISHED:
             const PT(Connection) &connection,
             const NetAddress &address);
 
-  bool send_raw(const Datagram &datagram, const PT(Connection) &connection);
-
   bool is_valid_for_udp(const Datagram &datagram) const;
 
   ConnectionManager *get_manager() const;
   bool is_immediate() const;
   int get_num_threads() const;
+
+  void set_raw_mode(bool mode);
+  bool get_raw_mode() const;
 
 protected:
   void clear_manager();
@@ -74,6 +75,7 @@ protected:
   ConnectionManager *_manager;
 
 private:
+  bool _raw_mode;
   DatagramQueue _queue;
 
   typedef pvector<PRThread *> Threads;

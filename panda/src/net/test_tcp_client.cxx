@@ -85,6 +85,7 @@ main(int argc, char *argv[]) {
       if (reader.get_data(datagram)) {
         nout << "Got datagram " << datagram << "from "
              << datagram.get_address() << "\n";
+        datagram.dump_hex(nout);
       }
     }
 

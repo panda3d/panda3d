@@ -81,6 +81,7 @@ ConnectionReader::
 ConnectionReader(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
+  _raw_mode = false;
   _polling = (num_threads <= 0);
 
   _shutdown = false;
@@ -322,6 +323,30 @@ get_num_threads() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConnectionReader::set_raw_mode
+//       Access: Public
+//  Description: Sets the ConnectionReader into raw mode (or turns off
+//               raw mode).  In raw mode, datagram headers are not
+//               expected; instead, all the data available on the pipe
+//               is treated as a single datagram.
+////////////////////////////////////////////////////////////////////
+void ConnectionReader::
+set_raw_mode(bool mode) {
+  _raw_mode = mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionReader::get_raw_mode
+//       Access: Public
+//  Description: Returns the current setting of the raw mode flag.
+//               See set_raw_mode().
+////////////////////////////////////////////////////////////////////
+bool ConnectionReader::
+get_raw_mode() const {
+  return _raw_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::shutdown
 //       Access: Protected
 //  Description: Terminates all threads cleanly.  Normally this is
@@ -412,10 +437,18 @@ finish_socket(SocketInfo *sinfo) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionReader::
 process_incoming_data(SocketInfo *sinfo) {
-  if (sinfo->is_udp()) {
-    process_incoming_udp_data(sinfo);
+  if (_raw_mode) {
+    if (sinfo->is_udp()) {
+      process_raw_incoming_udp_data(sinfo);
+    } else {
+      process_raw_incoming_tcp_data(sinfo);
+    }
   } else {
-    process_incoming_tcp_data(sinfo);
+    if (sinfo->is_udp()) {
+      process_incoming_udp_data(sinfo);
+    } else {
+      process_incoming_tcp_data(sinfo);
+    }
   }
 }
 
@@ -454,31 +487,31 @@ process_incoming_udp_data(SocketInfo *sinfo) {
     return;
   }
 
-  // Now we must decode the header to determine how big the datagram
-  // is.  This means we must have read at least a full header.
+  // Since we are not running in raw mode, we decode the header to
+  // determine how big the datagram is.  This means we must have read
+  // at least a full header.
   if (bytes_read < datagram_udp_header_size) {
     net_cat.error()
       << "Did not read entire header, discarding UDP datagram.\n";
     finish_socket(sinfo);
     return;
   }
-
+  
   DatagramUDPHeader header(buffer);
-
+  
   PRInt8 *dp = buffer + datagram_udp_header_size;
   bytes_read -= datagram_udp_header_size;
-
+  
   NetDatagram datagram(dp, bytes_read);
-
-  if (_shutdown) {
-    finish_socket(sinfo);
-    return;
-  }
-
+  
   // Now that we've read all the data, it's time to finish the socket
   // so another thread can read the next datagram.
   finish_socket(sinfo);
-
+  
+  if (_shutdown) {
+    return;
+  }
+  
   // And now do whatever we need to do to process the datagram.
   if (!header.verify_datagram(datagram)) {
     net_cat.error()
@@ -614,14 +647,13 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     }
   }
 
-  if (_shutdown) {
-    finish_socket(sinfo);
-    return;
-  }
-
   // Now that we've read all the data, it's time to finish the socket
   // so another thread can read the next datagram.
   finish_socket(sinfo);
+
+  if (_shutdown) {
+    return;
+  }
 
   // And now do whatever we need to do to process the datagram.
   if (!header.verify_datagram(datagram)) {
@@ -632,6 +664,113 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     datagram.set_address(NetAddress(addr));
     receive_datagram(datagram);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionReader::process_raw_incoming_udp_data
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void ConnectionReader::
+process_raw_incoming_udp_data(SocketInfo *sinfo) {
+  PRFileDesc *socket = sinfo->get_socket();
+  PRNetAddr addr;
+
+  // Read as many bytes as we can.
+  PRInt8 buffer[read_buffer_size];
+  PRInt32 bytes_read;
+
+  bytes_read = PR_RecvFrom(socket, buffer, read_buffer_size, 0,
+                           &addr, PR_INTERVAL_NO_TIMEOUT);
+
+  if (bytes_read < 0) {
+    PRErrorCode errcode = PR_GetError();
+    if (errcode != PR_PENDING_INTERRUPT_ERROR) {
+      pprerror("PR_RecvFrom");
+    }
+    finish_socket(sinfo);
+    return;
+
+  } else if (bytes_read == 0) {
+    // The socket was closed (!).  This shouldn't happen with a UDP
+    // connection.  Oh well.  Report that and return.
+    if (_manager != (ConnectionManager *)NULL) {
+      _manager->connection_reset(sinfo->_connection);
+    }
+    finish_socket(sinfo);
+    return;
+  }
+
+  // In raw mode, we simply extract all the bytes and make that a
+  // datagram.
+  NetDatagram datagram(buffer, bytes_read);
+  
+  // Now that we've read all the data, it's time to finish the socket
+  // so another thread can read the next datagram.
+  finish_socket(sinfo);
+  
+  if (_shutdown) {
+    return;
+  }
+  
+  datagram.set_connection(sinfo->_connection);
+  datagram.set_address(NetAddress(addr));
+  receive_datagram(datagram);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionReader::process_raw_incoming_tcp_data
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void ConnectionReader::
+process_raw_incoming_tcp_data(SocketInfo *sinfo) {
+  PRFileDesc *socket = sinfo->get_socket();
+  PRNetAddr addr;
+
+  // Read as many bytes as we can.
+  PRInt8 buffer[read_buffer_size];
+  PRInt32 bytes_read;
+
+  if (PR_GetSockName(socket, &addr) != PR_SUCCESS) {
+    pprerror("PR_GetSockName");
+  }
+
+  bytes_read = PR_Recv(socket, buffer, read_buffer_size, 0,
+                       PR_INTERVAL_NO_TIMEOUT);
+
+  if (bytes_read < 0) {
+    PRErrorCode errcode = PR_GetError();
+    if (errcode != PR_PENDING_INTERRUPT_ERROR) {
+      pprerror("PR_RecvFrom");
+    }
+    finish_socket(sinfo);
+    return;
+
+  } else if (bytes_read == 0) {
+    // The socket was closed.  Report that and return.
+    if (_manager != (ConnectionManager *)NULL) {
+      _manager->connection_reset(sinfo->_connection);
+    }
+    finish_socket(sinfo);
+    return;
+  }
+
+  // In raw mode, we simply extract all the bytes and make that a
+  // datagram.
+  NetDatagram datagram(buffer, bytes_read);
+  
+  // Now that we've read all the data, it's time to finish the socket
+  // so another thread can read the next datagram.
+  finish_socket(sinfo);
+  
+  if (_shutdown) {
+    return;
+  }
+  
+  datagram.set_connection(sinfo->_connection);
+  datagram.set_address(NetAddress(addr));
+  receive_datagram(datagram);
 }
 
 

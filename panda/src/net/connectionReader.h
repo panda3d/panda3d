@@ -82,6 +82,9 @@ PUBLISHED:
   bool is_polling() const;
   int get_num_threads() const;
 
+  void set_raw_mode(bool mode);
+  bool get_raw_mode() const;
+
 protected:
   virtual void receive_datagram(const NetDatagram &datagram)=0;
 
@@ -103,6 +106,8 @@ protected:
   virtual void process_incoming_data(SocketInfo *sinfo);
   virtual void process_incoming_udp_data(SocketInfo *sinfo);
   virtual void process_incoming_tcp_data(SocketInfo *sinfo);
+  virtual void process_raw_incoming_udp_data(SocketInfo *sinfo);
+  virtual void process_raw_incoming_tcp_data(SocketInfo *sinfo);
 
 private:
   static void thread_start(void *data);
@@ -117,6 +122,7 @@ protected:
   ConnectionManager *_manager;
 
 private:
+  bool _raw_mode;
   bool _shutdown;
 
   typedef pvector<PRThread *> Threads;

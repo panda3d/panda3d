@@ -38,6 +38,7 @@ ConnectionWriter::
 ConnectionWriter(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
+  _raw_mode = false;
   _immediate = (num_threads <= 0);
 
   for (int i = 0; i < num_threads; i++) {
@@ -118,7 +119,11 @@ send(const Datagram &datagram, const PT(Connection) &connection) {
   copy.set_connection(connection);
 
   if (_immediate) {
-    return connection->send_datagram(copy);
+    if (_raw_mode) {
+      return connection->send_raw_datagram(copy);
+    } else {
+      return connection->send_datagram(copy);
+    }
   } else {
     return _queue.insert(copy);
   }
@@ -166,41 +171,14 @@ send(const Datagram &datagram, const PT(Connection) &connection,
   copy.set_address(address);
 
   if (_immediate) {
-    return connection->send_datagram(copy);
+    if (_raw_mode) {
+      return connection->send_raw_datagram(copy);
+    } else {
+      return connection->send_datagram(copy);
+    }
   } else {
     return _queue.insert(copy);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionWriter::send_raw
-//       Access: Public
-//  Description: Enqueues a datagram for transmission on the indicated
-//               socket, *without* sending the Datagram header.  This
-//               will not be intelligible to a ConnectionReader on the
-//               other end, which will expect to receive a Datagram
-//               header.  However, it may be necessary to send raw
-//               data to some other kind of client (like a proxy
-//               server).
-//
-//               The data is always sent immediately, regardless of
-//               whether this is a queued connection or not.
-////////////////////////////////////////////////////////////////////
-bool ConnectionWriter::
-send_raw(const Datagram &datagram, const PT(Connection) &connection) {
-  nassertr(connection != (Connection *)NULL, false);
-  nassertr(PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_TCP, false);
-
-  if (net_cat.is_debug()) {
-    net_cat.debug()
-      << "Sending TCP raw datagram of " << datagram.get_length()
-      << " bytes\n";
-  }
-
-  NetDatagram copy(datagram);
-  copy.set_connection(connection);
-
-  return connection->send_raw_datagram(copy);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -248,6 +226,36 @@ get_num_threads() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::set_raw_mode
+//       Access: Public
+//  Description: Sets the ConnectionWriter into raw mode (or turns off
+//               raw mode).  In raw mode, datagrams are not sent along
+//               with their headers; the bytes in the datagram are
+//               simply sent down the pipe.
+//
+//               Setting the ConnectionWriter to raw mode must be done
+//               with care.  This can only be done when the matching
+//               ConnectionReader is also set to raw mode, or when the
+//               ConnectionWriter is communicating to a process that
+//               does not expect datagrams.
+////////////////////////////////////////////////////////////////////
+void ConnectionWriter::
+set_raw_mode(bool mode) {
+  _raw_mode = mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::get_raw_mode
+//       Access: Public
+//  Description: Returns the current setting of the raw mode flag.
+//               See set_raw_mode().
+////////////////////////////////////////////////////////////////////
+bool ConnectionWriter::
+get_raw_mode() const {
+  return _raw_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::clear_manager
 //       Access: Protected
 //  Description: This should normally only be called when the
@@ -287,6 +295,10 @@ thread_run() {
 
   NetDatagram datagram;
   while (_queue.extract(datagram)) {
-    datagram.get_connection()->send_datagram(datagram);
+    if (_raw_mode) {
+      datagram.get_connection()->send_raw_datagram(datagram);
+    } else {
+      datagram.get_connection()->send_datagram(datagram);
+    }
   }
 }

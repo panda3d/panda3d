@@ -90,6 +90,7 @@ main(int argc, char *argv[]) {
         nout << "Got datagram " << datagram << "from "
              << datagram.get_address() << ", sending to "
              << clients.size() << " clients.\n";
+        datagram.dump_hex(nout);
 
         Clients::iterator ci;
         for (ci = clients.begin(); ci != clients.end(); ++ci) {
