@@ -13,9 +13,11 @@ class ForceAcknowledge(StateData.StateData):
 	StateData.StateData.__init__(self, doneEvent)
 	self.soundRollover = None
 	self.soundOk = None
+	return None
 
     def enter(self, message):
-	"""enter(self, string)"""
+	"""enter(self, string)
+	"""
 	if self.isLoaded == 0:
 	    self.load()
 
@@ -31,7 +33,8 @@ class ForceAcknowledge(StateData.StateData):
 	return None
 
     def exit(self):
-	"""exit(self)"""
+	"""exit(self)
+	"""
 	if self.isLoaded == 0:
 	    return None
 
@@ -40,9 +43,11 @@ class ForceAcknowledge(StateData.StateData):
 
 	self.text.reparentTo(hidden)
 	self.okButton.unmanage()
+	return None
 	
     def load(self):
-	"""load(self)"""
+	"""load(self)
+	"""
 	if self.isLoaded == 1:
 	    return None
 
@@ -62,9 +67,11 @@ class ForceAcknowledge(StateData.StateData):
 	self.okButton.button.setPriority(GuiItem.PHigh)
 
 	self.isLoaded = 1
+	return None
 	
     def unload(self):
-	"""unload(self)"""
+	"""unload(self)
+	"""
 	if self.isLoaded == 0:
 	    return None
 	
@@ -74,6 +81,7 @@ class ForceAcknowledge(StateData.StateData):
 	self.text.removeNode()
 	del(self.okButton)
 	self.isLoaded = 0
+	return None
 
     def __handleRollover(self):
 	return None

@@ -12,22 +12,57 @@ class StateData(DirectObject):
         """
 	self.doneEvent = doneEvent
 	self.isLoaded = 0
+	self.isEntered = 0
+	return None
+
+    def __del__(self):
+	"""__del__(self)
+	Only define this if you construct any classes in your __init__()
+	so you can del them explicitly
+	"""
+	self.unload()
+	return None
 
     def enter(self):
-        """enter(self)"""
-	print "Called abstract enter function"
+        """enter(self)
+	"""
+	# Use isEntered to avoid redundant entry work
+	if self.isEntered == 1:
+	    return None
+	self.isEntered = 1
+	# Use isLoaded to avoid redundant loading
+	if self.isLoaded == 0:
+	    self.load()
+	print "Called StateData enter function"
+	return None
 
     def exit(self):
-	"""exit(self)"""
-	print "Called abstract exit function"
+	"""exit(self)
+	"""
+	if self.isEntered == 0:
+	    return None
+	self.isEntered = 0
+	print "Called StateData exit function"
+	return None
 
     def load(self):
-	"""load(self)"""
-	print "Called abstract load function"
+	"""load(self)
+	"""
+	if self.isLoaded == 1:
+	    return None
+	self.isLoaded = 1
+	print "Called StateData load function"
+	return None
 	
     def unload(self):
-	"""unload(self)"""
-	print "Called abstract unload function"
+	"""unload(self)
+	"""
+	if self.isLoaded == 0:
+	    return None
+	self.isLoaded = 0
+	self.exit()
+	print "Called StateData unload function"
+	return None
 
 
             
