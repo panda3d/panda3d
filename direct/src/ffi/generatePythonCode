@@ -109,6 +109,5 @@ else:
 # Ok, now we can start generating code
 import FFIInterrogateDatabase
 db = FFIInterrogateDatabase.FFIInterrogateDatabase()
-db.updateBindings()
 db.generateCode(outputDir, extensionsDir)
 

@@ -8,20 +8,22 @@ exit = -1
 done = 0
 cont = 1
 
+# Store the global clock
+globalClock = ClockObject.getGlobalClock()
 
 def getTimeFrame():
     # WARNING: If you are testing tasks without an igloop,
     # you must manually tick the clock
 
     # Ask for the time last frame
-    t = ClockObject.getGlobalClock().getTime()
+    t = globalClock.getTime()
 
     # Set the clock to have last frame's time in case we were
     # Paused at the prompt for a long time
-    ClockObject.getGlobalClock().setTime(t)
+    globalClock.setTime(t)
     
     # Get the new frame count
-    f = ClockObject.getGlobalClock().getFrameCount()
+    f = globalClock.getFrameCount()
 
     return t, f
 

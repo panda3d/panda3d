@@ -21,26 +21,30 @@ FFIConstants.notify.info('Importing interrogate library: ' + FFIConstants.Interr
 # to be dependent on the name of the interrogate library in this code
 exec('from ' + FFIConstants.InterrogateModuleName + ' import *')
 
-# Import all the C++ modules
-for CModuleName in FFIConstants.CodeModuleNameList:
-    FFIConstants.notify.info('Importing code library: ' + CModuleName)
-    exec('import ' + CModuleName)
-
-def constructGlobalFile(codeDir):
+def constructGlobalFile(codeDir, CModuleName):
     """
     Open a file that will hold the global values and functions code
     """
-    file = open(os.path.join(codeDir, FFIConstants.globalModuleName + '.py'), 'w')
+    file = open(os.path.join(codeDir, CModuleName + 'Globals' + '.py'), 'w')
     return file
 
-def constructImportFile(codeDir):
+
+def constructDowncastFile(codeDir, CModuleName):
     """
     Open a file that will hold the global values and functions code
     """
-    file = open(os.path.join(codeDir, FFIConstants.importModuleName + '.py'), 'w')
+    file = open(os.path.join(codeDir, CModuleName + 'Downcasts' + '.py'), 'w')
     return file
 
-def outputGlobalFileImports(file, methodList):
+
+def constructImportFile(codeDir, CModuleName):
+    """
+    Open a file that will hold the global values and functions code
+    """
+    file = open(os.path.join(codeDir, CModuleName + 'Modules' + '.py'), 'w')
+    return file
+
+def outputGlobalFileImports(file, methodList, CModuleName):
     # Print the standard header
     file.write(FFIConstants.generatedHeader)
 
@@ -48,15 +52,34 @@ def outputGlobalFileImports(file, methodList):
     file.write('import types\n')
 
     # Import the C modules
-    for CModuleName in FFIConstants.CodeModuleNameList:
+    CModuleList = []
+    for method in methodList:
+        if (not (method.typeDescriptor.moduleName in CModuleList)):
+            CModuleList.append(method.typeDescriptor.moduleName)
+    for CModuleName in CModuleList:
         file.write('import ' + CModuleName + '\n')
 
     moduleList = []
     for method in methodList:
         returnType = method.typeDescriptor.returnType.recursiveTypeDescriptor()
-        if (not (returnType.foreignTypeName in moduleList)):
+        returnTypeName = returnType.foreignTypeName
+        if (not (returnTypeName in moduleList)):
             if (returnType.__class__ == FFITypes.ClassTypeDescriptor):
-                moduleList.append(returnType.foreignTypeName)
+                moduleList.append(returnTypeName)
+
+        # Look at all the arguments
+        argTypes = method.typeDescriptor.argumentTypes
+        for argType in argTypes:
+            # Get the real return type (not derived)
+            argType = argType.typeDescriptor.recursiveTypeDescriptor()
+            argTypeName = argType.foreignTypeName
+            # Do not put our own module in the import list
+            # Do not put modules already in the list (like a set)
+            if (not (argTypeName in moduleList)):
+                # If this is a class (not a primitive), put it on the list
+                if (argType.__class__ == FFITypes.ClassTypeDescriptor):
+                    moduleList.append(argTypeName)
+
     
     for moduleName in moduleList:
         file.write('import ' + moduleName + '\n')
@@ -64,7 +87,7 @@ def outputGlobalFileImports(file, methodList):
     file.write('\n')
 
 
-def outputImportFileImports(file, typeList):
+def outputImportFileImports(file, typeList, CModuleName):
     """
     This is the file that we will import to get all the panda modules
     """
@@ -76,10 +99,8 @@ def outputImportFileImports(file, typeList):
     file.write('import ' + FFIConstants.InterrogateModuleName + '\n')
     file.write('\n')
     
-    file.write('# Import the C modules\n')
-    for CModuleName in FFIConstants.CodeModuleNameList:
-        file.write('import ' + CModuleName + '\n')
-    file.write('\n')
+    file.write('# Import the C module\n')
+    file.write('import ' + CModuleName + '\n')
 
     # Filter out only the class and enum type descriptors (not const, pointers, etc)
     classTypeList = []
@@ -96,11 +117,8 @@ def outputImportFileImports(file, typeList):
     classTypeList.sort(FFIOverload.inheritanceLevelSort)
 
     moduleList = []
-    for type in classTypeList:    
+    for type in classTypeList:
         moduleList.append(type.foreignTypeName)
-
-    file.write('import FFIExternalObject\n')
-    file.write('\n')
 
     file.write('# Import enums into the global name space\n')
     for type in enumTypeList:
@@ -113,24 +131,27 @@ def outputImportFileImports(file, typeList):
     file.write('\n')
 
     file.write('# Import the global module file into our name space\n')
-    file.write('from ' + FFIConstants.globalModuleName + ' import *\n')
+    file.write('from ' + CModuleName + 'Globals' + ' import *\n')
     file.write('\n')
 
-    file.write('# Now generate the classes\n')
+    file.write('# Generate the classes\n')
     for moduleName in moduleList:
         file.write(moduleName + '.generateClass_' + moduleName + '()\n')
     file.write('\n')
         
-    file.write('# Now put the classes in the wrapper class map\n')
-    for moduleName in moduleList:
-        file.write('obj = ' + moduleName + '.' + moduleName + '(None)\n')
-        file.write('obj.registerInTypeMap()\n')
-    file.write('\n')
-
-    file.write('# Now copy the classes into our own namespace\n')
+    file.write('# Copy the classes into our own namespace\n')
     for moduleName in moduleList:
         file.write(moduleName + ' = ' + moduleName + '.' + moduleName + '\n')
     file.write('\n')
+
+    file.write('# Put the classes in the wrapper class map\n')
+    file.write('from FFIExternalObject import registerInTypeMap\n')
+    file.write('\n')
+    for moduleName in moduleList:
+        file.write('registerInTypeMap(' + moduleName + ')\n')
+    file.write('\n')
+
+
 
 def generateStaticClass(codeDir):
     """
@@ -472,6 +493,10 @@ class FFIInterrogateDatabase:
         built into the class they are being downcast from. For instance, a method
         downcastToNode(ptrBoundedObject) will appear in Node's list of methods
         but should be compiled into BoundedObject's class
+        UPDATE: These are no longer compiled into the from-class. That was
+        preventing the libraries from being independent since the from class
+        now had knowledge of the to class which is potentially in a library
+        downstream. Now these functions are just global functions
         """
         numFuncs = interrogate_type_number_of_derivations(typeIndex)
         for i in range(numFuncs):
@@ -481,15 +506,21 @@ class FFIInterrogateDatabase:
                     funcIndex = interrogate_type_get_downcast(typeIndex, i)
                     typeDescs = self.constructFunctionTypeDescriptors(funcIndex)
                     for typeDesc in typeDescs:
-                        funcSpec = FFISpecs.MethodSpecification()
+                        funcSpec = FFISpecs.GlobalFunctionSpecification()
                         funcSpec.name = FFIRename.methodNameFromCppName(
                             interrogate_function_name(funcIndex))
                         funcSpec.typeDescriptor = typeDesc
                         funcSpec.index = funcIndex
                         # Here we look for the class in the first argument
                         fromClass = typeDesc.argumentTypes[0].typeDescriptor.recursiveTypeDescriptor()
+
+                        # Append the from class name on the method to uniquify it now
+                        # that these are global methods
+                        funcSpec.name = funcSpec.name + 'From' + fromClass.foreignTypeName
+                        
                         # Append this funcSpec to that class's downcast methods
-                        fromClass.downcastMethods.append(funcSpec)
+                        # fromClass.downcastMethods.append(funcSpec)
+                        self.environment.addDowncastFunction(funcSpec)
     
     def constructConstructorSpecifications(self, typeIndex):
         funcSpecs = []
@@ -532,8 +563,14 @@ class FFIInterrogateDatabase:
     def addEnvironmentTypes(self):
         for descriptor in self.typeIndexMap.values():
             self.environment.addType(descriptor, descriptor.foreignTypeName)
+
+    def functionInCModule(self, funcIndex, CModuleName):
+        if interrogate_function_has_module_name(funcIndex):
+            moduleName = 'lib' + interrogate_function_module_name(funcIndex)
+            return (moduleName == CModuleName)
+
     
-    def constructGlobal(self, globalIndex):
+    def constructGlobal(self, globalIndex, CModuleName):
         # We really do not need the descriptor for the value, just
         # the getter and setter
         # typeIndex = interrogate_element_type(globalIndex)
@@ -541,12 +578,18 @@ class FFIInterrogateDatabase:
         
         if interrogate_element_has_getter(globalIndex):
             getterIndex = interrogate_element_getter(globalIndex)
+            # If this function is not in this Cmodule just return
+            if not self.functionInCModule(getterIndex, CModuleName):
+                return None
             getter = self.constructGlobalFunction(getterIndex)
         else:
             getter = None
 
         if interrogate_element_has_setter(globalIndex):
             setterIndex = interrogate_element_setter(globalIndex)
+            # If this function is not in this Cmodule just return
+            if not self.functionInCModule(setterIndex, CModuleName):
+                return None
             setter = self.constructGlobalFunction(setterIndex)
         else:
             setter = None
@@ -570,21 +613,23 @@ class FFIInterrogateDatabase:
             funcSpec.index = globalIndex
             return funcSpec
         
-    def addGlobalFunctions(self):
+    def addGlobalFunctions(self, CModuleName):
         numGlobals = interrogate_number_of_global_functions()
         for i in range(numGlobals):
             funcIndex = interrogate_get_global_function(i)
-            newGlob = self.constructGlobalFunction(funcIndex)
-            if newGlob:
-                self.environment.addGlobalFunction(newGlob)
+            if self.functionInCModule(funcIndex, CModuleName):
+                newGlob = self.constructGlobalFunction(funcIndex)
+                if newGlob:
+                    self.environment.addGlobalFunction(newGlob)
 
+        """
         # Take all the global functions that have a Panda Class as their
         # first argument and make them class methods on that class
         # For example the global function
         #    get_distance(node1, node2)
         # becomes:
         #    node1.getDistance(node2)
-       
+
         # Functions that do not get moved will be stored here temporarily
         tempGlobalFunctions = []
         for funcSpec in self.environment.globalFunctions:
@@ -602,15 +647,17 @@ class FFIInterrogateDatabase:
             else:
                 # Copy this function into the temp list
                 tempGlobalFunctions.append(funcSpec)
-        # Now copy the temp list back over the real list
+        # Copy the temp list back over the real list
         self.environment.globalFunctions = tempGlobalFunctions
+        """
                     
-    def addGlobalValues(self):
+    def addGlobalValues(self, CModuleName):
         numGlobals = interrogate_number_of_globals()
         for i in range(numGlobals):
             globalIndex = interrogate_get_global(i)
-            newGlob = self.constructGlobal(globalIndex)
-            self.environment.addGlobalValue(newGlob)
+            newGlob = self.constructGlobal(globalIndex, CModuleName)
+            if newGlob:
+                self.environment.addGlobalValue(newGlob)
 
 
     def constructManifest(self, manifestIndex):
@@ -656,18 +703,50 @@ class FFIInterrogateDatabase:
         FFIConstants.notify.info( 'Generating static class...')
         generateStaticClass(codeDir)
 
+        # Import all the C++ modules
+        for CModuleName in FFIConstants.CodeModuleNameList:
+            self.generateCodeLib(codeDir, extensionsDir, CModuleName)
+
+        # For convenience, output a file that imports all the c module files
+        file = open(os.path.join(codeDir, FFIConstants.importModuleName + '.py'), 'w')
+        for CModuleName in FFIConstants.CodeModuleNameList:
+            file.write('from ' + CModuleName + 'Modules import *\n')
+        file.close()
+
+        FFIConstants.notify.info( 'Compiling code...')
+        compileall.compile_dir(codeDir)
+
+    def generateCodeLib(self, codeDir, extensionsDir, CModuleName):
+        # Reset the environment so we are clean from any old modules
+        self.environment.reset()
+
+        FFIConstants.notify.info('==================================================')
+        FFIConstants.notify.info('Importing code library: ' + CModuleName)
+        exec('import ' + CModuleName)
+
+        self.updateBindings(CModuleName)
+        
         FFIConstants.notify.info( 'Generating type code...')
         for type in self.environment.types.values():
             # Do not generate code for nested types at the top level
             if (not type.isNested):
                 type.generateGlobalCode(codeDir, extensionsDir)
+
+
+        FFIConstants.notify.info( 'Generating global downcast code...')
+        downcastFile = constructDowncastFile(codeDir, CModuleName)
+        # Output all the imports based on this list of functions
+        outputGlobalFileImports(downcastFile, self.environment.downcastFunctions, CModuleName)
+        for type in self.environment.downcastFunctions:
+            type.generateGlobalCode(downcastFile)
             
         FFIConstants.notify.info( 'Generating global value code...')
-        globalFile = constructGlobalFile(codeDir)
+        globalFile = constructGlobalFile(codeDir, CModuleName)
 
         # Make a list of all the global functions. This includes the normal
         # global functions as well as the getters and setters on all the
         # global values. This list is used to figure out what files to import
+        # Only include the global functions from the current C module
         globalFunctions = self.environment.globalFunctions
         for globalValue in self.environment.globalValues:
             if globalValue.getter:
@@ -675,7 +754,7 @@ class FFIInterrogateDatabase:
             if globalValue.setter:
                 globalFunctions.append(globalValue.setter)
         # Output all the imports based on this list of functions
-        outputGlobalFileImports(globalFile, globalFunctions)
+        outputGlobalFileImports(globalFile, globalFunctions, CModuleName)
 
         FFIConstants.notify.info( 'Generating global value code...')
         for type in self.environment.globalValues:
@@ -692,21 +771,17 @@ class FFIInterrogateDatabase:
         globalFile.close()
 
         FFIConstants.notify.info( 'Generating import code...')
-        importFile = constructImportFile(codeDir)
-        outputImportFileImports(importFile, self.environment.types.values())
+        importFile = constructImportFile(codeDir, CModuleName)
+        outputImportFileImports(importFile, self.environment.types.values(), CModuleName)
 
-        FFIConstants.notify.info( 'Compiling code...')
-        compileall.compile_dir(codeDir)
-        
-
-    def updateBindings(self):
+    def updateBindings(self, CModuleName):
         FFIConstants.notify.info( 'Updating Bindings')
         FFIConstants.notify.info( 'Adding Types...')
         self.addTypes()
         FFIConstants.notify.info( 'Adding global values...')
-        self.addGlobalValues()
+        self.addGlobalValues(CModuleName)
         FFIConstants.notify.info( 'Adding global functions...')
-        self.addGlobalFunctions()
+        self.addGlobalFunctions(CModuleName)
         FFIConstants.notify.info( 'Adding manifests symbols...')
         self.addManifestSymbols()
         FFIConstants.notify.info( 'Adding environment types...')

@@ -42,12 +42,13 @@ class ShowBase:
         self.dataRoot = NodePath(NamedNode('dataRoot'), DataRelation.getClassType())
         self.dataUnused = NodePath(NamedNode('dataUnused'), DataRelation.getClassType())
         self.pipe = makeGraphicsPipe()
-        self.win = self.pipe.makeGraphicsWindow(self.renderTop.node(),
-                                                self.camera.node(),
-                                                self.dataRoot.node(),
-                                                self.initialState)
+        self.win = makeGraphicsWindow(self.pipe,
+                                      self.renderTop.node(),
+                                      self.camera.node(),
+                                      self.dataRoot.node(),
+                                      self.initialState)
 
-        self.render2d = NodePath(self.win.setupPanda2d())
+        self.render2d = NodePath(setupPanda2d(self.win))
         # This is a list of cams associated with the display region's cameras
         self.camList = []
         for camera in self.cameraList:
@@ -105,13 +106,13 @@ class ShowBase:
         self.eventMgr.shutdown()
 
     def toggleBackface(self):
-        self.initialState.toggleBackface()
+        toggleBackface(self.initialState)
 
     def toggleTexture(self):
-        self.initialState.toggleTexture()
+        toggleTexture(self.initialState)
 
     def toggleWireframe(self):
-        self.initialState.toggleWireframe()
+        toggleWireframe(self.initialState)
 
     def disableMouse(self):
         self.drive.reparentTo(self.dataUnused)

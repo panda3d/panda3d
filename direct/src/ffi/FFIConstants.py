@@ -3,10 +3,6 @@
 from  DirectNotifyGlobal import *
 notify = directNotify.newCategory("FFI")
 
-# This is the name of the file that the global functions and values
-# will be stored
-globalModuleName = 'PandaGlobals'
-
 # This is the name of the file that the importing code will be stored
 importModuleName = 'PandaModules'
 

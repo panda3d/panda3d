@@ -235,29 +235,35 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         Return a list of all the C modules this class references
         """
-        moduleList = []
-        for method in (self.constructors + [self.destructor] + self.instanceMethods
-                       + self.upcastMethods + self.downcastMethods 
-                       + self.staticMethods + self.globalMethods):
-            if method:
-                if (not (method.typeDescriptor.moduleName in moduleList)):
-                    moduleList.append(method.typeDescriptor.moduleName)
-
-        # Now look at all the methods that we might inherit if we are at
-        # a multiple inheritance node and get their C modules
-        if (len(self.parentTypes) >= 2):
-            for parentType in self.parentTypes:
-                for method in parentType.instanceMethods:
-                    if (not (method.typeDescriptor.moduleName in moduleList)):
-                        moduleList.append(method.typeDescriptor.moduleName)
-                for method in parentType.upcastMethods:
-                    if (not (method.typeDescriptor.moduleName in moduleList)):
-                        moduleList.append(method.typeDescriptor.moduleName)
-                for method in parentType.globalMethods:
-                    if (not (method.typeDescriptor.moduleName in moduleList)):
-                        moduleList.append(method.typeDescriptor.moduleName)
-                    
-        return moduleList
+        try:
+            # Prevent from doing the work twice
+            # if CModules is already defined, just return it
+            return self.CModules
+        except:
+            # Otherwise, it must be our first time through, do the real work
+            self.CModules = []
+            for method in (self.constructors + [self.destructor] + self.instanceMethods
+                           + self.upcastMethods + self.downcastMethods 
+                           + self.staticMethods + self.globalMethods):
+                if method:
+                    if (not (method.typeDescriptor.moduleName in self.CModules)):
+                        self.CModules.append(method.typeDescriptor.moduleName)
+                        
+                        # Now look at all the methods that we might inherit if we are at
+                        # a multiple inheritance node and get their C modules
+                        if (len(self.parentTypes) >= 2):
+                            for parentType in self.parentTypes:
+                                for method in parentType.instanceMethods:
+                                    if (not (method.typeDescriptor.moduleName in self.CModules)):
+                                        self.CModules.append(method.typeDescriptor.moduleName)
+                                for method in parentType.upcastMethods:
+                                    if (not (method.typeDescriptor.moduleName in self.CModules)):
+                                        self.CModules.append(method.typeDescriptor.moduleName)
+                                for method in parentType.globalMethods:
+                                    if (not (method.typeDescriptor.moduleName in self.CModules)):
+                                        self.CModules.append(method.typeDescriptor.moduleName)
+                                        
+            return self.CModules
 
 
     def getReturnTypeModules(self):
@@ -586,6 +592,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, 0, '# Import all the C modules this class uses\n')
         for moduleName in self.getCModules():
             indent(file, 0, 'import ' + moduleName + '\n')            
+            indent(file, 0, 'import ' + moduleName + 'Downcasts\n')
         indent(file, 0, '\n')
         indent(file, 0, 'import FFIExternalObject\n')
         
@@ -637,7 +644,12 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         # that we will call later
         if (nesting==0):
             indent(file, nesting, '# Delay the definition of this class until all the imports are done\n')
+            indent(file, nesting, '# Make sure we only define this class once\n')
+            indent(file, nesting, 'classDefined = 0\n')
             indent(file, nesting, 'def generateClass_' + self.foreignTypeName + '():\n')
+            indent(file, nesting, ' if classDefined: return\n')
+            indent(file, nesting, ' global classDefined\n')
+            indent(file, nesting, ' classDefined = 1\n')
             # Start the class definition indented a space to account for the function
             indent(file, nesting, ' class ' + self.foreignTypeName)
         else:
@@ -655,13 +667,22 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             file.write(parentTypeName + '.' + parentTypeName)
             file.write(', ')
         file.write('FFIExternalObject.FFIExternalObject):\n')
+
         # Store the class C modules for the class so they do not
         # get garbage collected before we do
+        # TODO: this did not appear to work
         indent(file, nesting+1, '__CModules__ = [')
         for moduleName in self.getCModules():
             file.write(moduleName + ',')
         file.write(']\n')
-            
+
+        # Store the downcast function modules so the FFIExternalObject
+        # can index into them to find the downcast functions
+        indent(file, nesting+1, '__CModuleDowncasts__ = [')
+        for moduleName in self.getCModules():
+            file.write(moduleName + 'Downcasts,')
+        file.write(']\n')
+
 
     def outputClassFooter(self, file):
         indent(file, 0, " # When this class gets defined, put it in this module's namespace\n")
@@ -744,8 +765,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         if userManagesMemory:
             indent(file, nesting, 'returnObject.userManagesMemory = 1\n')
         if needsDowncast:
-            indent(file, nesting, 'downcastObject = returnObject.setPointer()\n')
-            indent(file, nesting, 'return downcastObject\n')
+            indent(file, nesting, 'return returnObject.setPointer()\n')
         else:
             indent(file, nesting, 'return returnObject\n')
             

@@ -2,8 +2,12 @@ import FFIConstants
 
 class FFIEnvironment:
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self.types = {}
         self.globalFunctions = []
+        self.downcastFunctions = []
         self.globalValues = []
         self.manifests = []
     
@@ -20,6 +24,8 @@ class FFIEnvironment:
     
     def addGlobalFunction(self, typeDescriptor):
         self.globalFunctions.append(typeDescriptor)
+    def addDowncastFunction(self, typeDescriptor):
+        self.downcastFunctions.append(typeDescriptor)
     def addGlobalValue(self, typeDescriptor):
         self.globalValues.append(typeDescriptor)
     def addManifest(self, typeDescriptor):

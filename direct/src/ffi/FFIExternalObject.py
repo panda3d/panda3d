@@ -4,26 +4,19 @@ import TypedObject
 
 WrapperClassMap = {}
 
+# For testing, you can turn verbose and debug on
+FFIConstants.notify.setVerbose(1)
+FFIConstants.notify.setDebug(1)
 
 
-def getDowncastFunctions(thisClass, baseClass, chain):
-    if (thisClass == baseClass):
-        # Found it, return true
-        return 1
-    elif (len(thisClass.__bases__) == 0):
-        # Not here, return 0
-        return 0
-    else:
-        # Look recursively in the classes thisClass inherits from
-        for base in thisClass.__bases__:
-            # If it finds it, append the base class's downcast function
-            # to the chain if it has one
-            if getDowncastFunctions(base, baseClass, chain):
-                downcastFuncName = 'downcastTo' + thisClass.__name__
-                if base.__dict__.has_key(downcastFuncName):
-                    FFIConstants.notify.debug('Found downcast function %s in %s'                        % (downcastFuncName, base.__name__))
-                    chain.append(base.__dict__[downcastFuncName])
-                return chain
+# Register a python class in the type map if it is a typed object
+# The type map is used for upcasting and downcasting through
+# the panda inheritance chain
+def registerInTypeMap(pythonClass):
+    if issubclass(pythonClass, TypedObject.TypedObject):
+        typeIndex = pythonClass.getClassType().getIndex()
+        WrapperClassMap[typeIndex] = pythonClass
+
 
 
 class FFIExternalObject:
@@ -32,23 +25,52 @@ class FFIExternalObject:
         self.userManagesMemory = 0
         # Start with a null this pointer
         self.this = 0
+
+
+    def getDowncastFunctions(self, thisClass, baseClass, chain):
+        if (thisClass == baseClass):
+            # Found it, return true
+            return 1
+        elif (len(thisClass.__bases__) == 0):
+            # Not here, return 0
+            return 0
+        else:
+            # Look recursively in the classes thisClass inherits from
+            for base in thisClass.__bases__:
+                # If it finds it, append the base class's downcast function
+                # to the chain if it has one
+                if self.getDowncastFunctions(base, baseClass, chain):
+                    downcastFuncName = ('downcastTo' + thisClass.__name__
+                                        + 'From' + base.__name__)
+                    # Look over this classes global modules dictionaries
+                    # for the downcast function name
+                    for globmod in self.__class__.__CModuleDowncasts__:
+                        if globmod.__dict__.has_key(downcastFuncName):
+                            func = globmod.__dict__[downcastFuncName]
+                            FFIConstants.notify.debug('Found downcast function %s in %s'
+                                                      % (downcastFuncName, globmod.__name__))
+                            chain.append(func)
+                            return chain
+                        else:
+                            FFIConstants.notify.debug('Did not find downcast function %s in %s'
+                                                      % (downcastFuncName, globmod.__name__))
+                    # In any case, return the chain
+                    return chain
+                # Probably went up the wrong tree and did not find the rootClass
+                else:
+                    return []
+
         
-    def asExactType(self):
-        return self.getType()
-    
-    def isTypedObject(self):
-        return isinstance(self, TypedObject.TypedObject)
-    
     def setPointer(self):
         if (self.this == 0):
             # Null pointer, return None
             return None
         # If it is not a typed object, our work is done, just return the object
-        if (not self.isTypedObject()):
+        if (not isinstance(self, TypedObject.TypedObject)): 
             return self
         # Ok, it is a typed object. See what type it really is and downcast
         # to that type (if necessary)
-        exactWrapperClass = self.wrapperClassForTypeHandle(self.asExactType())
+        exactWrapperClass = self.wrapperClassForTypeHandle(self.getType())
         # We do not need to downcast if we already have the same class
         if (exactWrapperClass and (exactWrapperClass != self.__class__)):
             # Create a new wrapper class instance
@@ -71,16 +93,10 @@ class FFIExternalObject:
         else:
             return None
         
-    def registerInTypeMap(self):
-        global WrapperClassMap
-        if self.isTypedObject():
-            typeIndex = self.__class__.getClassType().getIndex()
-            WrapperClassMap[typeIndex] = self.__class__
-
     def downcast(self, specificClass):
         FFIConstants.notify.debug('downcasting from %s to %s' % \
             (self.__class__.__name__, specificClass.__name__))
-        downcastChain = getDowncastFunctions(specificClass, self.__class__, [])
+        downcastChain = self.getDowncastFunctions(specificClass, self.__class__, [])
         FFIConstants.notify.debug('downcast chain: ' + `downcastChain`)
         newObject = self
         if (downcastChain == None):
@@ -120,9 +136,6 @@ class FFIExternalObject:
 
     def __hash__(self):
         return self.this
-
-
-
 
 
 
