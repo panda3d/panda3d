@@ -39,7 +39,7 @@ class DistributedObject(PandaObject):
         self.cr.sendUpdate(self, fieldName, args)
 
     def taskName(self, taskString):
-        return (taskString + "-" + str(self.getDoId))
+        return (taskString + "-" + str(self.getDoId()))
     
 
 
