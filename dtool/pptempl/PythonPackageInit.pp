@@ -41,7 +41,7 @@ There are two cases:
     is crafted so that it will do no harm if it is installed.
 """
 
-package = '$[upcase $[notdir $[TOPDIR]]]'
+package = '$[upcase $[PACKAGE]]'
 
 import os
 import sys
