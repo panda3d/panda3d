@@ -7,6 +7,7 @@ import DirectNotifyGlobal
 import EditMgr
 import EntrancePoint
 import LevelMgr
+import LogicGate
 import ZoneEntity
 import ModelEntity
 import PathEntity
@@ -34,7 +35,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
             'editMgr': EditMgr.EditMgr,
             'entrancePoint': EntrancePoint.EntrancePoint,
             'levelMgr': LevelMgr.LevelMgr,
-            'logicGate': nothing,
+            'logicGate': LogicGate.LogicGate,
             'model' : ModelEntity.ModelEntity,
             'nodepath': BasicEntities.NodePathEntity,
             'path' : PathEntity.PathEntity,
