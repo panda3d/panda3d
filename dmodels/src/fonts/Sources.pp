@@ -3,6 +3,6 @@
 
 
 #begin install_egg
-  #define SOURCES Comic.egg Humanist.egg
+  #define SOURCES Comic.egg
 #end install_egg
 
