@@ -26,6 +26,17 @@ ConfigureFn(config_lerp) {
   SimpleLerpFunctor<LVector2f>::init_type();
   SimpleLerpFunctor<LVector3f>::init_type();
   SimpleLerpFunctor<LVector4f>::init_type();
+  SimpleQueryLerpFunctor<int>::init_type();
+  SimpleQueryLerpFunctor<float>::init_type();
+  SimpleQueryLerpFunctor<LPoint2f>::init_type();
+  SimpleQueryLerpFunctor<LPoint3f>::init_type();
+  SimpleQueryLerpFunctor<LPoint4f>::init_type();
+  SimpleQueryLerpFunctor<LVecBase2f>::init_type();
+  SimpleQueryLerpFunctor<LVecBase3f>::init_type();
+  SimpleQueryLerpFunctor<LVecBase4f>::init_type();
+  SimpleQueryLerpFunctor<LVector2f>::init_type();
+  SimpleQueryLerpFunctor<LVector3f>::init_type();
+  SimpleQueryLerpFunctor<LVector4f>::init_type();
   MultiLerpFunctor::init_type();
 
   LerpBlendType::init_type();

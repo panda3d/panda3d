@@ -84,6 +84,49 @@ private:
 template <class value>
 TypeHandle SimpleLerpFunctor<value>::_type_handle;
 
+template <class value>
+class SimpleQueryLerpFunctor : public SimpleLerpFunctor<value> {
+private:
+  value _save;
+protected:
+  /*
+  SimpleQueryLerpFunctor(const SimpleQueryLerpFucntor<value>& c);
+  */
+public:
+  SimpleQueryLerpFunctor(value start, value end)
+    : SimpleLerpFunctor<value>(start, end) {}
+  virtual ~SimpleQueryLerpFunctor(void);
+  SimpleQueryLerpFunctor<value>& operator=(const SimpleQueryLerpFunctor<value>&);
+  virtual void operator()(float);
+PUBLISHED:
+  value get_value(void);
+
+  static TypeHandle get_class_type(void) {
+    return _type_handle;
+  }
+public:
+  static void init_type(void) {
+    SimpleLerpFunctor<value>::init_type();
+    ostringstream os;
+    os << "SimpleQueryLerpFunctor<" << get_type_handle(value).get_name()
+       << ">";
+    register_type(_type_handle, os.str(),
+		  SimpleLerpFunctor<value>::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
+};
+
+template <class value>
+TypeHandle SimpleQueryLerpFunctor<value>::_type_handle;
+
 #include <luse.h>
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleLerpFunctor<int>)
@@ -98,6 +141,18 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleLerpFunctor<LVector2f>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleLerpFunctor<LVector3f>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleLerpFunctor<LVector4f>)
 
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<int>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<float>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LPoint2f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LPoint3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LPoint4f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LVecBase2f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LVecBase3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LVecBase4f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LVector2f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LVector3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleQueryLerpFunctor<LVector4f>)
+
 typedef SimpleLerpFunctor<int> IntLerpFunctor;
 typedef SimpleLerpFunctor<float> FloatLerpFunctor;
 typedef SimpleLerpFunctor<LPoint2f> LPoint2fLerpFunctor;
@@ -109,6 +164,18 @@ typedef SimpleLerpFunctor<LVecBase4f> LVecBase4fLerpFunctor;
 typedef SimpleLerpFunctor<LVector2f> LVector2fLerpFunctor;
 typedef SimpleLerpFunctor<LVector3f> LVector3fLerpFunctor;
 typedef SimpleLerpFunctor<LVector4f> LVector4fLerpFunctor;
+
+typedef SimpleQueryLerpFunctor<int> IntQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<float> FloatQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LPoint2f> LPoint2fQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LPoint3f> LPoint3fQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LPoint4f> LPoint4fQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LVecBase2f> LVecBase2fQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LVecBase3f> LVecBase3fQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LVecBase4f> LVecBase4fQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LVector2f> LVector2fQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LVector3f> LVector3fQueryLerpFunctor;
+typedef SimpleQueryLerpFunctor<LVector4f> LVector4fQueryLerpFunctor;
 
 #include <set>
 #include <pointerTo.h>
@@ -180,6 +247,34 @@ void SimpleLerpFunctor<value>::operator()(float) {
 template <class value>
 value SimpleLerpFunctor<value>::interpolate(float t) {
   return ((t * _diff_cache) + _start);
+}
+
+/*
+template <class value>
+SimpleQueryLerpFunctor<value>::SimpleQueryLerpFunctor(const SimpleQueryLerpFunctor& c) : SimpleLerpFunctor<value>(c), _save(c._save) {}
+*/
+
+template <class value>
+SimpleQueryLerpFunctor<value>::~SimpleQueryLerpFunctor(void)
+{
+}
+
+template <class value>
+SimpleQueryLerpFunctor<value>&
+SimpleQueryLerpFunctor<value>::operator=(const SimpleQueryLerpFunctor& c) {
+  _save = c._save;
+  SimpleLerpFunctor::operator=(c);
+  return *this;
+}
+
+template <class value>
+void SimpleQueryLerpFunctor<value>::operator()(float t) {
+  _save = interpolate(t);
+}
+
+template <class value>
+value SimpleQueryLerpFunctor<value>::get_value(void) {
+  return _save;
 }
 
 #endif /* __LERPFUNCTOR_H__ */
