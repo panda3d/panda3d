@@ -91,7 +91,6 @@ class FourStateAI:
         off (and so is state 2 which is oposite of state 4 and therefore 
         oposite of 'on').
         """
-        self.isOn = 0 # used in debugPrint()
         assert(self.debugPrint(
                 "FourStateAI(names=%s, durations=%s)"
                 %(names, durations)))
@@ -144,28 +143,46 @@ class FourStateAI:
         del self.fsm
     
     def getInitialState(self):
+        assert(self.debugPrint("getInitialState() returning %s"%(self.stateIndex,)))
         return self.stateIndex
+    
+    def setInitialState(self):
+        assert(self.debugPrint("setInitialState()"))
+        self.sendUpdate('setInitialState', [self.getInitialState()])
     
     def setIsOn(self, isOn):
         assert(self.debugPrint("setIsOn(isOn=%s)"%(isOn,)))
-        if self.isOn != isOn:
-            self.isOn = isOn
-            self.changedOnState()
+        if isOn:
+            if self.stateIndex == 3:
+                self.stateIndex = 4
+                self.fsm.request(self.states[self.stateIndex])
+            elif self.stateIndex != 4:
+                self.stateIndex = 3
+                self.fsm.request(self.states[self.stateIndex])
+        else:
+            if self.stateIndex == 3:
+                self.stateIndex = 4
+                self.fsm.request(self.states[self.stateIndex])
+            elif self.stateIndex == 4:
+                self.stateIndex = 1
+                self.fsm.request(self.states[self.stateIndex])
     
-    def getIsOn(self):
-        assert(self.debugPrint("getIsOn() returning %s"%(self.isOn,)))
-        return self.isOn
+    #def getIsOn(self):
+    #    assert(self.debugPrint("getIsOn() returning %s"%(self.stateIndex==4,)))
+    #    return self.stateIndex==4
 
-    def changedOnState(self):
+    def changedOnState(self, isOn):
         """
         Allow derived classes to overide this.
+        The self.isOn value has toggled.  Call getIsOn() to
+        get the current state.
         """
-        pass
+        assert(self.debugPrint("changedOnState(isOn=%s)"%(isOn,)))
 
     ##### states #####
 
     def switchToNextStateTask(self, task):
-        assert(self.debugPrint("switchToState1Task()"))
+        assert(self.debugPrint("switchToNextStateTask()"))
         self.fsm.request(self.states[self.nextStateIndex])
         return Task.done
 
@@ -174,14 +191,15 @@ class FourStateAI:
         This function is intentionaly simple so that derived classes 
         may easily alter the network message.
         """
+        assert(self.debugPrint("distributeStateChange()"))
+        self.setInitialState()
         self.sendUpdate('setState', [self.stateIndex, globalClockDelta.getRealNetworkTime()])
     
-    def enterStateN(self, isOn, stateIndex, nextStateIndex):
+    def enterStateN(self, stateIndex, nextStateIndex):
         assert(self.debugPrint("enterStateN(stateIndex=%s, nextStateIndex=%s)"%(
             stateIndex, nextStateIndex)))
         self.stateIndex = stateIndex
         self.nextStateIndex = nextStateIndex
-        self.setIsOn(isOn)
         self.distributeStateChange()
         if self.durations[stateIndex] is not None:
             assert self.doLaterTask is None
@@ -191,6 +209,7 @@ class FourStateAI:
                 "enterStateN-timer-%s"%id(self))
     
     def exitStateN(self):
+        assert(self.debugPrint("exitStateN()"))
         if self.doLaterTask:
             taskMgr.remove(self.doLaterTask)
             self.doLaterTask=None
@@ -200,7 +219,6 @@ class FourStateAI:
     def enterState0(self):
         assert(self.debugPrint("enter0()"))
         self.stateIndex = 0
-        self.isOn = 0
     
     def exitState0(self):
         assert(self.debugPrint("exit0()"))
@@ -208,7 +226,8 @@ class FourStateAI:
     ##### state 1 #####
     
     def enterState1(self):
-        self.enterStateN(0, 1, 2)
+        #assert(self.debugPrint("enterState1()"))
+        self.enterStateN(1, 2)
     
     def exitState1(self):
         assert(self.debugPrint("exitState1()"))
@@ -217,7 +236,8 @@ class FourStateAI:
     ##### state 2 #####
     
     def enterState2(self):
-        self.enterStateN(0, 2, 3)
+        #assert(self.debugPrint("enterState2()"))
+        self.enterStateN(2, 3)
     
     def exitState2(self):
         assert(self.debugPrint("exitState2()"))
@@ -226,7 +246,8 @@ class FourStateAI:
     ##### state 3 #####
     
     def enterState3(self):
-        self.enterStateN(0, 3, 4)
+        #assert(self.debugPrint("enterState3()"))
+        self.enterStateN(3, 4)
     
     def exitState3(self):
         assert(self.debugPrint("exitState3()"))
@@ -235,15 +256,18 @@ class FourStateAI:
     ##### state 4 #####
     
     def enterState4(self):
-        self.enterStateN(1, 4, 1)
+        assert(self.debugPrint("enterState4()"))
+        self.enterStateN(4, 1)
+        self.changedOnState(1)
     
     def exitState4(self):
         assert(self.debugPrint("exitState4()"))
         self.exitStateN()
+        self.changedOnState(0)
     
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""
             return self.notify.debug("%d (%d) %s"%(
-                    id(self), self.isOn, message))
+                    id(self), self.stateIndex==4, message))
 

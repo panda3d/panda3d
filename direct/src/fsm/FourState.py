@@ -85,10 +85,7 @@ class FourState:
         off (and so is state 2 which is oposite of 4 and therefore 
         oposite of 'on').
         """
-        self.isOn = 0 # used in debugPrint()
-        assert(self.debugPrint(
-                "FourState(names=%s)"
-                %(names)))
+        assert(self.debugPrint("FourState(names=%s)"%(names)))
         self.doLaterTask = None
         self.names = names
         self.durations = durations
@@ -127,28 +124,25 @@ class FourState:
                           )
         self.fsm.enterInitialState()
     
-    def setIsOn(self, isOn):
-        assert(self.debugPrint("setIsOn(isOn=%s)"%(isOn,)))
-        if self.isOn != isOn:
-            self.isOn = isOn
-            self.changedOnState()
+    #def setIsOn(self, isOn):
+    #    assert(self.debugPrint("setIsOn(isOn=%s)"%(isOn,)))
+    #    pass
     
-    def getIsOn(self):
-        assert(self.debugPrint("getIsOn() returning %s"%(self.isOn,)))
-        return self.isOn
+    #def getIsOn(self):
+    #    assert(self.debugPrint("getIsOn() returning %s"%(self.isOn,)))
+    #    return self.stateIndex==4
 
-    def changedOnState(self):
+    def changedOnState(self, isOn):
         """
         Allow derived classes to overide this.
         """
-        pass
+        assert(self.debugPrint("changedOnState(isOn=%s)"%(isOn,)))
     
     ##### state 0 #####
     
     def enterState0(self):
         assert(self.debugPrint("enter0()"))
         self.stateIndex = 0
-        self.setIsOn(0)
     
     def exitState0(self):
         assert(self.debugPrint("exit0()"))
@@ -156,8 +150,8 @@ class FourState:
     ##### state 1 #####
     
     def enterState1(self):
+        assert(self.debugPrint("enterState1()"))
         self.stateIndex = 1
-        self.setIsOn(0)
     
     def exitState1(self):
         assert(self.debugPrint("exitState1()"))
@@ -165,8 +159,8 @@ class FourState:
     ##### state 2 #####
     
     def enterState2(self):
+        assert(self.debugPrint("enterState2()"))
         self.stateIndex = 2
-        self.setIsOn(0)
     
     def exitState2(self):
         assert(self.debugPrint("exitState2()"))
@@ -174,8 +168,8 @@ class FourState:
     ##### state 3 #####
     
     def enterState3(self):
+        assert(self.debugPrint("enterState3()"))
         self.stateIndex = 2
-        self.setIsOn(0)
     
     def exitState3(self):
         assert(self.debugPrint("exitState3()"))
@@ -183,15 +177,17 @@ class FourState:
     ##### state 4 #####
     
     def enterState4(self):
+        assert(self.debugPrint("enterState4()"))
         self.stateIndex = 4
-        self.setIsOn(1)
+        self.changedOnState(1)
     
     def exitState4(self):
         assert(self.debugPrint("exitState4()"))
+        self.changedOnState(0)
     
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""
             return self.notify.debug("%d (%d) %s"%(
-                    id(self), self.isOn, message))
+                    id(self), self.stateIndex==4, message))
 
