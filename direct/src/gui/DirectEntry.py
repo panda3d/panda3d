@@ -97,6 +97,11 @@ class DirectEntry(DirectFrame):
         if self['initialText']:
             self.set(self['initialText'])
 
+    def destroy(self):
+        self.ignore(self.guiItem.getFocusInEvent())
+        self.ignore(self.guiItem.getFocusOutEvent())
+        DirectFrame.destroy(self)
+
     def setup(self):
         self.node().setup(self['width'], self['numLines'])
 

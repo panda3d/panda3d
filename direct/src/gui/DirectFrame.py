@@ -35,6 +35,9 @@ class DirectFrame(DirectGuiWidget):
         # Call option initialization functions
         self.initialiseoptions(DirectFrame)
 
+    def destroy(self):
+        DirectGuiWidget.destroy(self)
+
     def setText(self):
         # Determine if user passed in single string or a sequence
         if self['text'] == None:
