@@ -49,7 +49,7 @@ class Messenger:
     def ignore(self, event, object):
         """ ignore(self, string, DirectObject)
         Make this object no longer respond to this event.
-        It is safe to call even if it was not alread
+        It is safe to call even if it was not already accepting
         """
 
         Messenger.notify.debug(`object` + '\n now ignoring: ' + `event`)

@@ -9,7 +9,7 @@ class DirectObject:
     def __del__(self):
 	"""__del__(self)
 	"""
-        print "Destructing: ", self.__class__.__name__
+        # print "Destructing: ", self.__class__.__name__
 	try: 
 	    self.cleanup()
 	except AttributeError:
