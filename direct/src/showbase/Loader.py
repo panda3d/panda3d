@@ -9,17 +9,14 @@ from direct.directnotify.DirectNotifyGlobal import *
 phaseChecker = None
 
 class Loader:
-
-    """Loader class: contains method to load models, sounds and code"""
-
+    """
+    Load models, textures, sounds, and code.
+    """
     notify = directNotify.newCategory("Loader")
     modelCount = 0
     
     # special methods
     def __init__(self, base):
-        """
-        Loader constructor
-        """
         self.base = base
         self.loader = PandaLoader()
 
@@ -174,7 +171,7 @@ class Loader:
             if anisotropicDegree != None:
                 font.setAnisotropicDegree(anisotropicDegree)
 
-        if lineHeight != None:
+        if lineHeight is not None:
             # If the line height is specified, it overrides whatever
             # the font itself thinks the line height should be.  This
             # and spaceAdvance should be set last, since some of the
@@ -182,7 +179,7 @@ class Loader:
             # default.
             font.setLineHeight(lineHeight)
 
-        if spaceAdvance != None:
+        if spaceAdvance is not None:
             font.setSpaceAdvance(spaceAdvance)
 
         return font
@@ -193,9 +190,9 @@ class Loader:
         texturePath is a string.
 
         Attempt to load a texture from the given file path using
-        TexturePool class. Returns None if not found"""
-
-        if alphaPath == None:
+        TexturePool class. Returns None if not found
+        """
+        if alphaPath is None:
             assert(Loader.notify.debug("Loading texture: %s" % (texturePath) ))
             if phaseChecker:
                 phaseChecker(texturePath)
