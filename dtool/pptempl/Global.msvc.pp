@@ -6,7 +6,7 @@
 // Template.msvc.pp.
 //
 
-#define REQUIRED_PPREMAKE_VERSION 1.02
+#define REQUIRED_PPREMAKE_VERSION 1.12
 
 #if $[< $[PPREMAKE_VERSION],$[REQUIRED_PPREMAKE_VERSION]]
   #error You need at least ppremake version $[REQUIRED_PPREMAKE_VERSION] to use BUILD_TYPE msvc.
@@ -17,7 +17,7 @@
   // encapsulates each of the libraries we'd be linking with normally.
   // In the case where a particular library is not part of a metalib,
   // we include the library itself.
-  
+
   #define actual_libs
   #foreach lib $[complete_libs]
     // Only consider libraries that we're actually building.
@@ -38,11 +38,7 @@
 
 #defun decygwin frompat,topat,path
   #foreach file $[path]
-    #if $[isfullpath $[file]]
-      $[patsubstw $[frompat],$[topat],$[cygpath_w $[file]]]
-    #else
-      $[patsubstw $[frompat],$[topat],$[osfilename $[file]]]
-    #endif
+    $[patsubstw $[frompat],$[topat],$[osfilename $[file]]]
   #end file
 #end decygwin
 
@@ -54,10 +50,6 @@
 #define install_config_dir $[decygwin %,%,$[install_config_dir]]
 #define install_parser_inc_dir $[decygwin %,%,$[install_parser_inc_dir]]
 
-// In the Windows command shell, we need to use double quotes instead
-// of single quotes.
-#defer SED ppremake -s "$[script]" <$[source] >$[target]
-
 // Define this if we want to make .sbr files.
 #if $[USE_BROWSEINFO]
 #defer BROWSEINFO_FLAG /Fr"$[osfilename $[target:%.obj=%.sbr]]"
@@ -65,18 +57,20 @@
 #define BROWSEINFO_FLAG
 #endif
 
+#define CFLAGS_SHARED
+
 // Define LINK_ALL_STATIC to generate static libs instead of DLL's.
-#if $[LINK_ALL_STATIC]
+#if $[ne $[LINK_ALL_STATIC],]
   #define dlink_all_static LINK_ALL_STATIC
   #define build_dlls
+  #define build_libs yes
   #define dlllib lib
 #else
   #define dlink_all_static
   #define build_dlls yes
+  #define build_libs
   #define dlllib dll
 #endif
-
-#define CFLAGS_SHARED
 
 #include $[THISDIRPREFIX]compilerSettings.pp
 
@@ -86,16 +80,27 @@
 #define EXTRA_CDEFS FORCE_INLINING $[EXTRA_CDEFS]
 #endif
 
-#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT1]
-#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT2]
-#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT3]
-#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT4]
+// do NOT try to do #defer #defer CDEFINES_OPT1 $[CDEFINES_OPT1] here!  it wont let Sources.pp define their own CDEFINES_OPT1!  they must use EXTRA_CDEFS!
+#defer CDEFINES_OPT1 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT2 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
 
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS]
+//  Opt1 /GZ disables OPT flags, so make sure its OPT1 only
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[OPT4FLAGS] $[DEBUGPDBFLAGS]
 
+//#if $[FORCE_DEBUG_FLAGS]
+// make them all link with non-debug msvc runtime dlls for this case
+//#defer DEBUGFLAGS $[subst /MDd,,$[DEBUGFLAGS]]
+//#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
+//#define LINKER_FLAGS $[LINKER_FLAGS] /debug
+//#else
+//#endif
+
+// NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
 #defer LDFLAGS_OPT1 $[LINKER_FLAGS] $[LDFLAGS_OPT1]
 #defer LDFLAGS_OPT2 $[LINKER_FLAGS] $[LDFLAGS_OPT2]
 #defer LDFLAGS_OPT3 $[LINKER_FLAGS] $[LDFLAGS_OPT3]
@@ -109,39 +114,52 @@
 // distinction is so important in Windows).
 #define dllext $[if $[<= $[OPTIMIZE],2],_d]
 
+// note: does NOT include .dll or .lib at end
+#defun get_dllname dll_basename
+ $[if $[ne $[DONT_USE_PANDA_DLL_NAMING],], $[dll_basename], lib$[dll_basename]$[dllext]]
+#end get_dllname
+
+// Because Visual Studio .NET prefers to generate object files using the same
+// base name as the source file, we don't want an object file prefix.
+#define obj_prefix
+
+// Additional global defines for building under Microsoft Visual Studio .NET.
+#define extra_defines FORCE_INLINING HAVE_DINKUM WIN32_VC WIN32
+
+// Additional compiler flags.
+#defer extra_cflags /EHsc /Zm300 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
+
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
 
-#defer extra_cflags /EHsc /Zm300 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
-
 #defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH]]
-#defer MAIN_C_COMPILE_ARGS /nologo /c  $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] $[source]
+#defer MAIN_C_COMPILE_ARGS /nologo /c $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] "$[osfilename $[source]]"
 
 #defer COMPILE_C $[COMPILER] /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS]
 #defer COMPILE_C++ $[COMPILE_C]
 
-#defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
+#defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]"
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
+
+#defer COMPILE_IDL midl /nologo /env win32 /Oicf $[DECYGWINED_INC_PATHLIST_ARGS]
+#defer COMPILE_RC rc /R /D "NDEBUG" /L 0x409 $[DECYGWINED_INC_PATHLIST_ARGS]
 
 // if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
 #if $[ne $[DTOOL],]
 // use predefined bases to speed dll loading and simplify debugging
-#defer DLLNAMEBASE lib$[TARGET]$[dllext]
+#defer DLLNAMEBASE $[get_dllname $[TARGET]]
 #defer DLLBASEADDRFILENAME dllbase.txt
 #defer DLLBASEARG "/BASE:@$[dtool_ver_dir]\$[DLLBASEADDRFILENAME],$[DLLNAMEBASE]"
-
-#if $[GENERATE_BUILDDATE]
-#defer ver_resource "$[directory]\ver.res"
 #else
-#define ver_resource
-#endif
-
-#else
-// cant get builddate without dtool envvar
+// requires dtool envvar
 #define GENERATE_BUILDDATE
 #endif
 
-#defer SHARED_LIB_C $[LINKER] /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] $[sources] $[ver_resource] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINKER_DEF_FILE_ARG $[if $[LINKER_DEF_FILE],/DEF:"$[LINKER_DEF_FILE]",]
+
+//#defer ver_resource $[directory]\ver.res
+//#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
+#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
 #defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
@@ -152,4 +170,3 @@
   #defer SHARED_LIB_C++ $[STATIC_LIB_C++]
   #defer ODIR_SHARED $[ODIR_STATIC]
 #endif
-

@@ -1,12 +1,10 @@
 //
 // Template.msvc.pp
 //
-// This file defines the set of output files that will be generated to
-// support a makefile build system invoking Microsoft's Visual C++
-// command-line compiler.  It rolls libraries into their metalibs,
-// generates .dll files, compiles source files to .obj files, and does
-// other Windows-specific things.
-//
+// This file defines the set of ouput files that will be generated to
+// support a Microsoft Visual C++ .NET solution / project build.  It rolls
+// libraries into their metalibs, generates .dll files, compiles source
+// files to .obj files, and does other Windows-specific things.
 
 // Before this file is processed, the following files are read and
 // processed (in order):
@@ -36,14 +34,12 @@
 #end decygwin
 
 // should overwrite read-only files
-#define NT_COPYCMD xcopy /Y /Q /R 
+#define COPYCMD xcopy /Y /Q /R
 
 #if $[ne $[DTOOL],]
 #define dtool_ver_dir_cyg $[DTOOL]/src/dtoolbase
 #define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
 #endif
-
-#define win_temp_output_dir $[decygwin %,%,$[TEMP]]
 
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
@@ -67,61 +63,63 @@
         $[patsubst %_src.cxx,,%.c %.cxx %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources] $[get_igateoutput]]
     #endif
   #end lib_target
-  
+
+  #defer lib_projects \
+    $[active_target(metalib_target lib_target noinst_lib_target)] \
+    $[real_lib_targets]
+  #defer static_lib_projects \
+    $[active_target(static_lib_target ss_lib_target)]
+  #defer bin_projects \
+    $[active_target(bin_target noinst_bin_target)]
+  #defer test_bin_projects \
+    $[active_target(test_bin_target)]
+
   // We need to know the various targets we'll be building.
   // $[lib_targets] will be the list of dynamic libraries,
   // $[static_lib_targets] the list of static libraries, and
   // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
   // list of binaries that are to be built only when specifically asked
   // for.
-  #define lib_targets $[patsubst %,$[so_dir]\lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
-  #define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[st_dir]\lib%$[dllext].lib]
-  #define bin_targets \
-      $[active_target(bin_target noinst_bin_target):%=$[st_dir]\%.exe] \
-      $[active_target(sed_bin_target):%=$[st_dir]\%]
-  #define test_bin_targets $[active_target(test_bin_target):%=$[st_dir]\%.exe]
-  
-  // And these variables will define the various things we need to
-  // install.
-  #define install_lib $[active_target(metalib_target static_lib_target ss_lib_target)] $[real_lib_targets]
-  #define install_bin $[active_target(bin_target)]
-  #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
-  #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
-  #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
-  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
-  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
-  #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
-  
+  #define lib_targets $[patsubst %,lib%$[dllext].$[dlllib],$[lib_projects]]
+  #define static_lib_targets $[static_lib_projects:%=lib%$[dllext].lib]
+  #define bin_targets $[bin_projects:%=%.exe] $[active_target(sed_bin_target)]
+  #define test_bin_targets $[test_bin_projects:%=%.exe]
+
+  #define all_targets $[unique $[lib_targets] $[static_lib_targets] \
+                               $[bin_targets] $[test_bin_targets]]
+
   // $[so_sources] is the set of sources that belong on a shared object,
   // and $[st_sources] is the set of sources that belong on a static
   // object, like a static library or an executable.  In Windows, we
   // don't need to make this distinction, but we do anyway in case we
   // might in the future for some nutty reason.
-  #define so_sources $[get_sources(metalib_target lib_target noinst_lib_target)]
-  #define st_sources $[get_sources(static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
-  
+  #defer so_sources $[get_sources(metalib_target lib_target noinst_lib_target)]
+  #defer st_sources $[get_sources(static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
+
   // These are the source files that our dependency cache file will
   // depend on.  If it's an empty list, we won't bother writing rules to
   // freshen the cache file.
   #define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.I,$[so_sources] $[st_sources]]]
-  
+
   #if $[eq $[so_dir],$[st_dir]]
     // If the static and shared directories are the same, we have to use the
     // same rules to build both shared and static targets.
     #set st_sources $[so_sources] $[st_sources]
     #set so_sources
   #endif
-#endif  // $[build_directory]  
+#endif  // $[build_directory]
 
 // And these are the various source files, extracted out by type.
-#define cxx_so_sources $[filter_out %_src.cxx,$[filter %.cxx,$[so_sources]]]
-#define cxx_st_sources $[filter_out %_src.cxx,$[filter %.cxx,$[st_sources]]]
-#define c_so_sources $[filter %.c,$[so_sources]]
-#define c_st_sources $[filter %.c,$[st_sources]]
-#define yxx_so_sources $[filter %.yxx,$[so_sources]]
-#define yxx_st_sources $[filter %.yxx,$[st_sources]]
-#define lxx_so_sources $[filter %.lxx,$[so_sources]]
-#define lxx_st_sources $[filter %.lxx,$[st_sources]]
+#defer cxx_so_sources $[filter_out %_src.cxx,$[filter %.cxx,$[so_sources]]]
+#defer cxx_st_sources $[filter_out %_src.cxx,$[filter %.cxx,$[st_sources]]]
+#defer c_so_sources $[filter %.c,$[so_sources]]
+#defer c_st_sources $[filter %.c,$[st_sources]]
+#defer yxx_so_sources $[filter %.yxx,$[so_sources]]
+#defer yxx_st_sources $[filter %.yxx,$[st_sources]]
+#defer lxx_so_sources $[filter %.lxx,$[so_sources]]
+#defer lxx_st_sources $[filter %.lxx,$[st_sources]]
+#defer h_sources $[filter %.h,$[so_sources] $[st_sources]]
+#defer i_sources $[filter %.I,$[so_sources] $[st_sources]]
 
 #if $[DO_PCH]
 #define pch_header_source $[get_precompiled_header(metalib_target lib_target noinst_lib_target)]
@@ -155,7 +153,12 @@
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
-#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%\include] $[get_ipath]
+#defer target_ipath $[RELDIR] $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%\include] $[get_ipath]
+
+// $[converted_ipath] is the properly-formatted version of the include path
+// for Visual Studio .NET.  The resulting list is semicolon separated and uses
+// Windows-style pathnames.
+#defer converted_ipath $[join ;,$[osfilename $[target_ipath]]]
 
 // $[file_ipath] is the ipath from the context of a particular source
 // file, given in $[file].  It uses the all_sources map to look up
@@ -164,181 +167,55 @@
 
 // These are the complete set of extra flags the compiler requires,
 // from the context of a particular file, given in $[file].
-#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] 
-#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] 
+#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
+#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
 
 // These are the same flags, sans the compiler optimizations.
 #defer noopt_c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
-#defer complete_lpath $[static_libs $[RELDIR:%=%\$[st_dir]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%\$[so_dir]],$[actual_local_libs]]
+#defer complete_lpath $[static_libs $[RELDIR:%=%\$[ODIR]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%\$[ODIR]],$[actual_local_libs]]
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
 #defer lpath $[sort $[complete_lpath]] $[other_trees:%=%\lib] $[get_lpath]
 
+// $[converted_lpath] is the properly-formatted version of the library path
+// for Visual Studio .NET.  The resulting list is semicolon separated and uses
+// Windows-style pathnames.
+#defer converted_lpath $[join ;,$[osfilename $[lpath]]]
+
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
+
+#defer converted_libs $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
 
 // This is the set of files we might copy into *.prebuilt, if we have
 // bison and flex (or copy from *.prebuilt if we don't have them).
 #define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.yxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_so_sources] $[lxx_st_sources]]
 
-// for single-processor builds (all nmake msvc-type builds can use only a single-proc), 
-// write out *_composite.cxx files that include all composite
-// files into 1 in order to speed the build of our heavily templated source
-#forscopes lib_target bin_target static_lib_target ss_lib_target
-#if $[and $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]
-#output $[TARGET]_composite.cxx notouch
+// Pre-compiled headers are one way to speed the compilation of many
+// C++ source files that include similar headers, but it turns out a
+// more effective (and more portable) way is simply to compile all the
+// similar source files in one pass.
+
+// We do this by generating a *_composite.cxx file that has an
+// #include line for each of several actual source files, and then we
+// compile the composite file instead of the original files.
+#foreach composite_file $[composite_list]
+#output $[composite_file] notouch
 #format collapse
-/* Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
+/* Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]
+. */
 /* ################################# DO NOT EDIT ########################### */
 
-#foreach file $[COMBINED_SOURCES]
+#foreach file $[$[composite_file]_sources]
 ##include "$[file]"
 #end file
 
-#end $[TARGET]_composite.cxx
-#endif
-#end lib_target bin_target static_lib_target ss_lib_target
-
-// Okay, we're ready.  Start outputting the Makefile now.
-#output Makefile
-#format makefile
-#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
-################################# DO NOT EDIT ###########################
-
-
-// The 'all' rule makes all the stuff in the directory except for the
-// test_bin_targets.  It doesn't do any installation, however.
-#define all_targets \
-    Makefile \
-    $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
-    $[if $[so_sources],$[so_dir]] \
-    $[if $[st_sources],$[st_dir]] \
-    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]] \
-    $[deferred_objs] \
-    $[TARGET(special_target)]
-all : $[all_targets]
-
-// The 'test' rule makes all the test_bin_targets.
-test : $[test_bin_targets]
-
-// We implement 'clean' simply by removing the odirs, since all of our
-// generated output ends up in one or the other of these.  Effective.
-// It does assume that the odirs are not '.', however.
-clean :
-#if $[so_sources]
-$[TAB] -rmdir /s /q $[so_dir]
-#endif
-#if $[st_sources]
-$[TAB] -rmdir /s /q $[st_dir]
-#endif
-$[TAB] -del /f *.pyc *.pyo  // Also scrub out old generated Python code.
-
-// 'cleanall' is not much more thorough than 'clean': At the moment,
-// it also cleans up the bison and flex output, as well as the
-// dependency cache file.
-cleanall : clean
-#if $[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]
-$[TAB] -del /f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
-#endif
-#if $[ne $[DEPENDENCY_CACHE_FILENAME],]
-$[TAB] -del /f $[DEPENDENCY_CACHE_FILENAME]
-#endif
-$[TAB] rm -f *_composite.cxx  // eliminate generated *_composite.cxx files for uniprocessor builds
-
-clean-igate :
-#forscopes metalib_target lib_target ss_lib_target
-  #define igatedb $[get_igatedb]
-  #define igateoutput $[get_igateoutput]
-  #define igatemscan $[components $[get_igatedb:%=$[RELDIR]/$[so_dir]/%],$[active_component_libs]]
-  #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
-  #if $[igatedb]
-$[TAB] -del /f $[so_dir]\$[igatedb]
-  #endif
-  #if $[igateoutput]
-$[TAB] -del /f $[so_dir]\$[igateoutput] $[igateoutput:%.cxx=$[so_dir]\%.obj]
-  #endif
-  #if $[igatemout]
-$[TAB] -del /f $[so_dir]\$[igatemout] $[igatemout:%.cxx=$[so_dir]\%.obj]
-  #endif
-#end metalib_target lib_target ss_lib_target
-
-// Now, 'install' and 'uninstall'.  These simply copy files into the
-// install directory (or remove them).  The 'install' rule also makes
-// the directories if necessary.
-#define installed_files \
-     $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
-     $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
-     $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]\%] \
-     $[INSTALL_DATA:%=$[install_data_dir]\%] \
-     $[INSTALL_CONFIG:%=$[install_config_dir]\%]
-
-#define installed_igate_files \
-     $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[install_igatedb_dir]\%]
-
-#define install_targets \
-     $[sort \
-       $[if $[install_lib],$[install_lib_dir]] \
-       $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
-       $[if $[install_headers],$[install_headers_dir]] \
-       $[if $[install_parser_inc],$[install_parser_inc_dir]] \
-       $[if $[install_data],$[install_data_dir]] \
-       $[if $[install_config],$[install_config_dir]] \
-       $[if $[install_igatedb],$[install_igatedb_dir]] \
-     ] \
-     $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=install-lib%] \
-     $[active_target(bin_target sed_bin_target):%=install-%] \
-     $[installed_files]
-
-install : all $[install_targets]
-
-install-igate : $[sort $[installed_igate_files]]
-
-uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
-#foreach file $[sort $[installed_files]]
-$[TAB] -del /f $[file]
-#end file
-
-uninstall-igate :
-#foreach file $[sort $[installed_igate_files]]
-$[TAB] -del /f $[file]
-#end file
-
-#if $[HAVE_BISON]
-prebuild-bison : $[patsubst %,%.prebuilt,$[bison_prebuilt]]
-clean-prebuild-bison : 
-#foreach file $[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]
-$[TAB] -del /f $[file]
-#end file
-#endif
-
-
-// We need a rule for each directory we might need to make.  This
-// loops through the full set of directories and creates a rule to
-// make each one, as needed.
-#foreach directory $[sort \
-    $[if $[so_sources],$[so_dir]] \
-    $[if $[st_sources],$[st_dir]] \
-    $[if $[install_lib],$[install_lib_dir]] \
-    $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
-    $[if $[install_headers],$[install_headers_dir]] \
-    $[if $[install_parser_inc],$[install_parser_inc_dir]] \
-    $[if $[install_data],$[install_data_dir]] \
-    $[if $[install_config],$[install_config_dir]] \
-    $[if $[install_igatedb],$[install_igatedb_dir]] \
-    ]
-$[osfilename $[directory]] :
-$[TAB] mkdir $[osfilename $[directory]]
-#end directory
-
-
-// Now it's time to start generating the rules to make our actual
-// targets.
-
-igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]\%]
+#end $[composite_file]
+#end composite_file
 
 
 /////////////////////////////////////////////////////////////////////
@@ -347,7 +224,6 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]\%]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes metalib_target lib_target
-
 // In Windows, we don't actually build all the libraries.  In
 // particular, we don't build any libraries that are listed on a
 // metalib.  Is this one such library?
@@ -358,6 +234,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]\%]
 // this; but in some cases, where the library isn't part of a metalib,
 // we define BUILDING_DLL directly for the target.
 #define building_var $[or $[BUILDING_DLL],$[module $[BUILDING_DLL],$[TARGET]]]
+#define defines $[join ;,$[extra_defines] $[building_var]]
 
 // $[igatescan] is the set of C++ headers and source files that we
 // need to scan for interrogate.  $[igateoutput] is the name of the
@@ -380,172 +257,162 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]\%]
 // component libraries.  If it is nonempty, then we do need to
 // generate a module, and $[igatemout] is the name of the .cxx file
 // that interrogate will produce to make this module.
-#define igatemscan $[components $[get_igatedb:%=$[RELDIR]\$[so_dir]\%],$[active_component_libs]]
-#define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
+#define igatemscan $[get_igatemscan]
+#define igatemout $[get_igatemout]
 
 #if $[build_it]
-  // Now output the rule to actually link the library from all of its
-  // various .obj files.
-  #define sources \
-   $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
-   $[components $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput] $[get_pch_outputcxx]]],$[active_component_libs]]
+  #define target $[ODIR]\$[get_dllname $[TARGET]].$[dlllib]
 
-  #define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[osfilename $[sources]]
-  #define target $[so_dir]\lib$[TARGET]$[dllext].$[dlllib]
-  #define sources $($[varname])
-  #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-#if $[GENERATE_BUILDDATE]
-$[target] : $[sources] "$[dtool_ver_dir]\version.rc" "$[dtool_ver_dir]\$[DLLBASEADDRFILENAME]"
-// first generate builddate for rc compiler
-$[TAB] cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp" > "$[win_temp_output_dir]\verdate.h"
-$[TAB] rc /n /I"$[win_temp_output_dir]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[ver_resource] $[filter /D%, $[flags]] "$[dtool_ver_dir]\version.rc"
-$[TAB] rm -f "$[dtool_ver_dir]\verdate.h"
-#else
-$[target] : $[sources]
-#endif
-  #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[SHARED_LIB_C++]
-  #else
-$[TAB] $[SHARED_LIB_C]
+  // Installation paths
+  #define mybasename $[basename $[notdir $[target]]]
+  #define tmpdirname_cyg $[install_lib_dir]/$[mybasename]
+  #define tmpdirname_win $[osfilename $[tmpdirname_cyg]]
+
+  // List of object files that will be combined to form this metalib target.
+  #define objects \
+    $[components \
+      $[osfilename $[patsubst %,$[RELDIR]\$[%_obj],$[compile_sources]]], \
+      $[active_component_libs]]
+#endif $[build_it]
+
+// Additional rules to generate and compile the interrogate data, if needed.
+#if $[igatescan]
+  #define igatelib lib$[TARGET]
+
+  // The module name comes from the metalib that includes this library.
+  #define igatemod $[module $[TARGET],$[TARGET]]
+  #if $[eq $[igatemod],]
+    // ... unless no metalib includes this library.
+    #define igatemod $[TARGET]
   #endif
 
-#if $[build_dlls]
-$[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
-#endif
-#if $[build_pdbs]
-$[so_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].dll
-#endif
+  // Built the complete interrogate.exe commandline
+  #define igate_commandline \
+    $[install_bin_dir]\$[INTERROGATE] -od $[igatedb] -oc $[igateoutput] \
+    $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" \
+    $[igatescan]
 
-#endif
+  // TODO: Install $[igatedb] in $[install_igatedb_dir]
+#endif  // igatescan
 
-// Here are the rules to install and uninstall the library and
-// everything that goes along with it.
-#define installed_files \
-    $[if $[build_it], \
-      $[if $[build_dlls],$[install_lib_dir]\lib$[TARGET]$[dllext].dll] \
-      $[install_lib_dir]\lib$[TARGET]$[dllext].lib \
-      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]\lib$[TARGET]$[dllext].pdb] \
-    ] \
-    $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
-    $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
-    $[INSTALL_DATA:%=$[install_data_dir]\%] \
-    $[INSTALL_CONFIG:%=$[install_config_dir]\%] \
-    $[igatedb:%=$[install_igatedb_dir]\%]
-
-install-lib$[TARGET] : $[installed_files]
-
-uninstall-lib$[TARGET] :
-#foreach file $[sort $[installed_files]]
-$[TAB] -del /f $[file]
-#end file
-
-#if $[build_dlls]
-$[install_lib_dir]\lib$[TARGET]$[dllext].dll : $[so_dir]\lib$[TARGET]$[dllext].dll
-#define local lib$[TARGET]$[dllext].dll
-#define dest $[install_lib_dir]
-$[TAB] $[NT_COPYCMD] $[so_dir]\$[local] $[dest]
-#endif
-
-$[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].lib
-#define local lib$[TARGET]$[dllext].lib
-#define dest $[install_lib_dir]
-$[TAB] $[NT_COPYCMD] $[so_dir]\$[local] $[dest]
-
-#if $[and $[build_dlls],$[build_pdbs]]
-$[install_lib_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].pdb
-#define local lib$[TARGET]$[dllext].pdb
-#define dest $[install_lib_dir]
-$[TAB] $[NT_COPYCMD] $[so_dir]\$[local] $[dest]
-#endif
-
-#if $[igatescan]
-// Now, some additional rules to generate and compile the interrogate
-// data, if needed.
-
-// The library name is based on this library.
-#define igatelib lib$[TARGET]
-// The module name comes from the metalib that includes this library.
-#define igatemod $[module $[TARGET],$[TARGET]]
-#if $[eq $[igatemod],]
-  // Unless no metalib includes this library.
-  #define igatemod $[TARGET]
-#endif
-
-$[install_igatedb_dir]\$[igatedb] : $[so_dir]\$[igatedb]
-#define local $[igatedb]
-#define dest $[install_igatedb_dir]
-$[TAB] $[NT_COPYCMD] $[so_dir]\$[local] $[dest]
-
-lib$[TARGET]_igatescan = $[osfilename $[igatescan]]
-$[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
-// We use forward slash for interrogate because it prefers those.
-$[TAB] $[INTERROGATE] -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
-
-#define target $[igateoutput:%.cxx=$[so_dir]\%.obj]
-#define source $[so_dir]\$[igateoutput]
-#define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-$[target] : $[source]
-$[TAB] $[COMPILE_C++]
-#endif  // $[igatescan]
-
-#if $[igatemout]
 // And finally, some additional rules to build the interrogate module
 // file into the library, if this is a metalib that includes
 // interrogated components.
+#if $[igatemout]
+  #define igatelib lib$[TARGET]
+  #define igatemod $[TARGET]
 
-#define igatelib lib$[TARGET]
-#define igatemod $[TARGET]
+  #define igatemod_commandline \
+    $[install_bin_dir]\$[INTERROGATE_MODULE] -oc $[igatemout] \
+    -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] \
+    $[igatemscan]
+#endif  // igatemout
 
-lib$[TARGET]_igatemscan = $[osfilename $[igatemscan]]
-#define target $[so_dir]\$[igatemout]
-#define sources $(lib$[TARGET]_igatemscan)
-$[target] : $[sources]
-$[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
-
-#define target $[igatemout:%.cxx=$[so_dir]\%.obj]
-#define source $[so_dir]\$[igatemout]
-#define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-$[target] : $[source]
-$[TAB] $[COMPILE_C++]
-#endif  // $[igatescan]
-
-#end metalib_target lib_target
-
-
-
-
-/////////////////////////////////////////////////////////////////////
-// Now, the noninstalled dynamic libraries.  These are presumably used
-// only within this directory, or at the most within this tree, and
-// also presumably will never include interrogate data.  That, plus
-// the fact that we don't need to generate install rules, makes it a
-// lot simpler.
-/////////////////////////////////////////////////////////////////////
-
-#forscopes noinst_lib_target
-#define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[osfilename $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources]]]]
-#define target $[so_dir]\lib$[TARGET]$[dllext].$[dlllib]
-#define sources $($[varname])
-$[target] : $[sources]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[SHARED_LIB_C++]
+#output $[TARGET].vcproj
+#format straight
+<?xml version="1.0" encoding = "Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.00"
+	Name="$[TARGET]"
+	ProjectGUID="{$[makeguid $[TARGET]]}"
+	Keyword="CustomAppWizProj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="$[ODIR]|Win32"
+			IntermediateDirectory="$[ODIR]"
+			OutputDirectory="$[ODIR]"
+#if $[build_it]
+			ConfigurationType="2">
 #else
-$[TAB] $[SHARED_LIB_C]
+			ConfigurationType="4">
 #endif
-
-#if $[build_dlls]
-$[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm300"
+				AdditionalIncludeDirectories="$[converted_ipath]"
+				PreprocessorDefinitions="$[defines]"
+				RuntimeLibrary="2"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+#if $[build_it]
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="$[converted_libs] $[objects]"
+				OutputFile="$[target]"
+				AdditionalLibraryDirectories="$[converted_lpath]"/>
+#else
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=""/>
 #endif
-#if $[build_pdbs]
-$[so_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].dll
+			<Tool
+				Name="VCMIDLTool"/>
+#if $[build_it]
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Copying $[target] to $[install_lib_dir]..."
+				CommandLine="$[COPYCMD] $[target] $[install_bin_dir]"/>
+#else
+			<Tool
+				Name="VCPostBuildEventTool"/>
 #endif
-
-#end noinst_lib_target
-
+#if $[igatescan]
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Generating $[igateoutput] using $[INTERROGATE]..."
+				CommandLine='$[igate_commandline]'/>
+#elif $[igatemscan]
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Generating $[igatemout] using $[INTERROGATE_MODULE]..."
+				CommandLine='$[igatemod_commandline]'/>
+#else
+			<Tool
+				Name="VCPreBuildEventTool"/>
+#endif
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+		<Filter
+			Name="Build"
+			Filter="">
+			<File
+				RelativePath="Sources.pp">
+			</File>
+			<File
+				RelativePath="$[TARGET].vcproj">
+			</File>
+		</Filter>
+#if $[compile_sources]
+#foreach file $[sort $[compile_sources]]
+		<File
+			RelativePath="$[file]">
+#if $[or $[eq $[file],$[igateoutput]],$[eq $[file],$[igatemout]]]
+			<FileConfiguration
+				Name="Opt3-Win32|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$[patsubst %,$[%_obj],$[file]]"/>
+			</FileConfiguration>
+#endif
+		</File>
+#end file
+#endif
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
+#end $[TARGET].vcproj
+#end metalib_target lib_target
 
 
 /////////////////////////////////////////////////////////////////////
@@ -555,71 +422,67 @@ $[so_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].dll
 /////////////////////////////////////////////////////////////////////
 
 #forscopes static_lib_target ss_lib_target
-#define varname $[subst -,_,lib$[TARGET]_a]
-$[varname] = $[osfilename $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
-#define target $[st_dir]\lib$[TARGET]$[dllext].lib
-#define sources $($[varname])
-$[target] : $[sources]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[STATIC_LIB_C++]
-#else
-$[TAB] $[STATIC_LIB_C]
+#define target $[ODIR]\$[get_dllname $[TARGET]].lib
+#define defines $[join ;,$[extra_defines]]
+
+#output $[TARGET].vcproj
+#format straight
+<?xml version="1.0" encoding = "Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.00"
+	Name="$[TARGET]"
+	ProjectGUID="{$[makeguid $[TARGET]]}"
+	Keyword="CustomAppWizProj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="$[ODIR]|Win32"
+			IntermediateDirectory="$[ODIR]"
+			OutputDirectory="$[ODIR]"
+			ConfigurationType="4">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm300"
+				AdditionalIncludeDirectories="$[converted_ipath]"
+				PreprocessorDefinitions="$[defines]"
+				RuntimeLibrary="2"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="$[target]"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Copying $[target] to $[install_lib_dir]..."
+				CommandLine="$[COPYCMD] $[target] $[install_lib_dir]"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+#if $[compile_sources]
+#foreach file $[sort $[compile_sources]]
+		<File
+			RelativePath="$[file]">
+		</File>
+#end file
 #endif
-
-#define installed_files \
-    $[install_lib_dir]\lib$[TARGET]$[dllext].lib \
-    $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
-    $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
-    $[INSTALL_DATA:%=$[install_data_dir]\%] \
-    $[INSTALL_CONFIG:%=$[install_config_dir]\%]
-
-install-lib$[TARGET] : $[installed_files]
-
-uninstall-lib$[TARGET] :
-#foreach file $[sort $[installed_files]]
-$[TAB] -del /f $[file]
-#end file
-
-$[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[st_dir]\lib$[TARGET]$[dllext].lib
-#define local lib$[TARGET]$[dllext].lib
-#define dest $[install_lib_dir]
-$[TAB] $[NT_COPYCMD] $[st_dir]\$[local] $[dest]
-
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
+#end $[TARGET].vcproj
 #end static_lib_target ss_lib_target
-
-
-
-/////////////////////////////////////////////////////////////////////
-// The sed_bin_targets are a special bunch.  These are scripts that
-// are to be preprocessed with sed before being installed, for
-// instance to insert a path or something in an appropriate place.
-/////////////////////////////////////////////////////////////////////
-
-#forscopes sed_bin_target
-$[TARGET] : $[st_dir]\$[TARGET]
-
-#define target $[st_dir]\$[TARGET]
-#define source $[SOURCE]
-#define script $[COMMAND]
-$[target] : $[source]
-$[TAB] $[SED]
-
-#define installed_files \
-    $[install_bin_dir]\$[TARGET]
-
-install-$[TARGET] : $[installed_files]
-
-uninstall-$[TARGET] :
-#foreach file $[sort $[installed_files]]
-$[TAB] -del /f $[file]
-#end file
-
-#define local $[TARGET]
-#define dest $[install_bin_dir]
-$[install_bin_dir]\$[TARGET] : $[st_dir]\$[TARGET]
-$[TAB] $[NT_COPYCMD] $[st_dir]\$[local] $[dest]
-
-#end sed_bin_target
 
 
 /////////////////////////////////////////////////////////////////////
@@ -628,332 +491,69 @@ $[TAB] $[NT_COPYCMD] $[st_dir]\$[local] $[dest]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
-$[TARGET] : $[st_dir]\$[TARGET].exe
+#define target $[ODIR]\$[TARGET].exe
+#define defines $[join ;,$[extra_defines]]
 
-#define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[osfilename $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
-#define target $[st_dir]\$[TARGET].exe
-#define sources $($[varname])
-#define ld $[get_ld]
-#define transitive_link $[complete_local_libs]
-$[target] : $[sources]
-#if $[ld]
-  // If there's a custom linker defined for the target, we have to use it.
-$[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] 
-#else
-  // Otherwise, we can use the normal linker.
-  #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[LINK_BIN_C++]
-  #else
-$[TAB] $[LINK_BIN_C]
-  #endif
-#endif
-#define transitive_link
-
-#if $[build_pdbs]
-$[st_dir]\$[TARGET].pdb : $[st_dir]\$[TARGET].exe
-#endif
-
-#define installed_files \
-    $[install_bin_dir]\$[TARGET].exe \
-    $[if $[build_pdbs],$[install_bin_dir]\$[TARGET].pdb] \
-    $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
-    $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
-    $[INSTALL_DATA:%=$[install_data_dir]\%] \
-    $[INSTALL_CONFIG:%=$[install_config_dir]\%]
-
-install-$[TARGET] : $[installed_files]
-
-uninstall-$[TARGET] :
-#foreach file $[sort $[installed_files]]
-$[TAB] -del /f $[file]
+#output $[TARGET].vcproj
+#format straight
+<?xml version="1.0" encoding = "Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.00"
+	Name="$[TARGET]"
+	ProjectGUID="{$[makeguid $[TARGET]]}"
+	Keyword="CustomAppWizProj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="$[ODIR]|Win32"
+			IntermediateDirectory="$[ODIR]"
+			OutputDirectory="$[ODIR]"
+			ConfigurationType="1">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm300"
+				AdditionalIncludeDirectories="$[converted_ipath]"
+				PreprocessorDefinitions="$[defines]"
+				RuntimeLibrary="2"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="$[converted_libs] $[objects]"
+				OutputFile="$[target]"
+				AdditionalLibraryDirectories="$[converted_lpath]"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Copying $[target] to $[install_bin_dir]..."
+				CommandLine="$[COPYCMD] $[target] $[install_bin_dir]"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+#if $[compile_sources]
+#foreach file $[sort $[compile_sources]]
+		<File
+			RelativePath="$[file]">
+		</File>
 #end file
-
-$[install_bin_dir]\$[TARGET].exe : $[st_dir]\$[TARGET].exe
-#define local $[TARGET].exe
-#define dest $[install_bin_dir]
-$[TAB] $[NT_COPYCMD] $[st_dir]\$[local] $[dest]
-
-#if $[build_pdbs]
-$[install_bin_dir]\$[TARGET].pdb : $[st_dir]\$[TARGET].pdb
-#define local $[TARGET].pdb
-#define dest $[install_bin_dir]
-$[TAB] $[NT_COPYCMD] $[st_dir]\$[local] $[dest]
 #endif
-
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
+#end $[TARGET].vcproj
 #end bin_target
-
-
-
-/////////////////////////////////////////////////////////////////////
-// The noinst_bin_targets and the test_bin_targets share the property
-// of being built (when requested), but having no install rules.
-/////////////////////////////////////////////////////////////////////
-
-#forscopes noinst_bin_target test_bin_target
-$[TARGET] : $[st_dir]\$[TARGET].exe
-
-#define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[osfilename $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
-#define target $[st_dir]\$[TARGET].exe
-#define sources $($[varname])
-$[target] : $[sources]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[LINK_BIN_C++]
-#else
-$[TAB] $[LINK_BIN_C]
-#endif
-
-#end noinst_bin_target test_bin_target
-
-
-
-
-/////////////////////////////////////////////////////////////////////
-// Finally, we put in the rules to compile each source file into a .obj
-// file.
-/////////////////////////////////////////////////////////////////////
-
-// Rules to generate a C++ file from a Bison input file.
-#foreach file $[sort $[yxx_so_sources] $[yxx_st_sources]]
-#define target $[patsubst %.yxx,%.cxx,$[file]]
-#define target_header $[patsubst %.yxx,%.h,$[file]]
-#if $[HAVE_BISON]
-#define source $[file]
-$[target] : $[source]
-$[TAB] $[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
-$[TAB] move y.tab.c $[target]
-$[TAB] move y.tab.h $[patsubst %.yxx,%.h,$[source]]
-$[target_header] : $[target]
-$[target].prebuilt : $[target]
-$[TAB] copy $[target] $[target].prebuilt
-$[target_header].prebuilt : $[target_header]
-$[TAB] copy $[target_header] $[target_header].prebuilt
-#else // HAVE_BISON
-#define source $[target].prebuilt
-$[target] : $[source]
-$[TAB] copy $[source] $[target]
-#define source $[target_header].prebuilt
-$[target_header] : $[source]
-$[TAB] copy $[source] $[target_header]
-#endif // HAVE_BISON
-
-#end file
-
-// Rules to generate a C++ file from a Flex input file.
-#foreach file $[sort $[lxx_so_sources] $[lxx_st_sources]]
-#define target $[patsubst %.lxx,%.cxx,$[file]]
-#if $[HAVE_BISON]
-#define source $[file]
-$[target] : $[source]
-$[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
-#define source lex.yy.c
-#define script /#include <unistd.h>/d
-$[TAB] $[SED]
-$[TAB] -del $[source]
-$[target].prebuilt : $[target]
-$[TAB] copy $[target] $[target].prebuilt
-#else // HAVE_BISON
-#define source $[target].prebuilt
-$[target] : $[source]
-$[TAB] copy $[source] $[target]
-#endif // HAVE_BISON
-
-#end file
-
-// Rules to compile ordinary C files that appear on a shared library.
-#foreach file $[sort $[c_so_sources]]
-#define target $[patsubst %.c,$[so_dir]\%.obj,$[file]]
-#define source $[file]
-#define ipath $[file_ipath]
-#define flags $[cflags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[source]]
-$[TAB] $[COMPILE_C]
-
-#end file
-
-// Rules to compile ordinary C files that appear on a static library
-// or in an executable.
-#foreach file $[sort $[c_st_sources]]
-#define target $[patsubst %.c,$[st_dir]\%.obj,$[file]]
-#define source $[file]
-#define ipath $[file_ipath]
-#define flags $[cflags] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[source]] $[st_pch_files]
-$[TAB] $[COMPILE_C]
-
-#end file
-
-// Rules to compile C++ files that appear on a shared library.
-#foreach file $[sort $[cxx_so_sources]]
-#define target $[patsubst %.cxx,$[so_dir]\%.obj,$[file]]
-#define source $[file]
-#define ipath $[file_ipath]
-
-
-#if $[DO_PCH]
-// best way to find out if file use pch (and needs /Yu) is to check dependencies
-// these must be defined before flags (or could defer them)
-#define target_pch $[subst \./,\,$[patsubst %.h,$[so_dir]\%.pch,$[filter %_headers.h, $[dependencies $[file]]]]]
-#endif
-
-// COMPILE_LINE uses flags which uses pdb_filename
-
-#define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
-
-#if $[target_pch]
-// for pch, pch .pdb filename must match .obj filename
-#define pdb_filename $[osfilename $[so_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
-#define COMPILE_LINE $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_C_WITH_PCH]]
-#else
-#define COMPILE_LINE $[COMPILE_C++]
-#endif
-
-// Yacc must run before some files can be compiled, so all files
-// depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.h] $[target_pch]
-$[TAB] $[COMPILE_LINE]
-
-#end file
-
-// Rules to compile C++ files that appear on a static library or in an
-// executable.
-#foreach file $[sort $[cxx_st_sources]]
-
-#define target $[patsubst %.cxx,$[st_dir]\%.obj,$[file]]
-#define source $[file]
-#define ipath $[file_ipath]
-
-#define pdb_filename $[st_dir]/$[TARGET(lib_target metalib_target)]
-
-#if $[DO_PCH]
-// best way to find out if file use pch (and needs /Yu) is to check dependencies
-// these must be defined before flags (or could defer them)
-#define target_pch $[subst \./,\,$[patsubst %.h,$[st_dir]\%.pch,$[filter %_headers.h, $[dependencies $[file]]]]]
-#endif
-
-#define flags $[c++flags] $[all_sources $[building_var:%=/D%],$[file]]
-
-#if $[target_pch]
-// for pch, pch .pdb filename must match .obj filename
-#define pdb_filename $[osfilename $[st_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
-#define COMPILE_LINE $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_C_WITH_PCH]]
-#else
-#define COMPILE_LINE $[COMPILE_C++]
-#endif
-
-// Yacc must run before some files can be compiled, so all files
-// depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.h] $[target_pch]
-$[TAB] $[COMPILE_LINE]
-
-#end file
-
-#if $[DO_PCH]
-// Rules to compile _headers.pch from _header.h in static lib
-#foreach file $[pch_header_source]
-#define target_pch $[patsubst %.h,$[st_dir]\%.pch,$[file]]
-#define target_obj $[patsubst %.h,$[st_dir]\%.obj,$[file]]
-#define target $[target_obj]
-#define source $[file]
-#define ipath $[file_ipath]
-#define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
-
-#define pdb_filename $[osfilename $[st_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
-#define COMPILE_CXXSTYLE_PCH $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_CXXSTYLE_PCH]]
-
-// Yacc must run before some files can be compiled, so all files
-// depend on yacc having run.
-$[target_obj] : $[source] $[dependencies $[file]]
-$[TAB] $[COMPILE_CXXSTYLE_PCH]
-
-$[target_pch] : $[target_obj]
-
-#end file
-#endif
-
-// Rules to compile generated C++ files that appear on a shared library.
-#foreach file $[sort $[yxx_so_sources] $[lxx_so_sources]]
-#define target $[patsubst %.lxx %.yxx,$[so_dir]\%.obj,$[file]]
-#define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
-#define ipath $[file_ipath]
-#define flags $[noopt_c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
-// Yacc must run before some files can be compiled, so all files
-// depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.h]
-$[TAB] $[COMPILE_C++]
-
-#end file
-
-// Rules to compile generated C++ files that appear on a static
-// library or in an executable.
-#foreach file $[sort $[yxx_st_sources] $[lxx_st_sources]]
-#define target $[patsubst %.lxx %.yxx,$[st_dir]\%.obj,$[file]]
-#define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
-#define ipath $[file_ipath]
-#define flags $[noopt_c++flags] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.h]
-$[TAB] $[COMPILE_C++]
-
-#end file
-
-// And now the rules to install the auxiliary files, like headers and
-// data files.
-#foreach file $[install_scripts]
-$[install_bin_dir]\$[file] : $[file]
-#define local $[file]
-#define dest $[install_bin_dir]
-$[TAB] $[NT_COPYCMD] $[local] $[dest]
-#end file
-
-#foreach file $[install_headers]
-$[install_headers_dir]\$[file] : $[file]
-#define local $[file]
-#define dest $[install_headers_dir]
-$[TAB] $[NT_COPYCMD] $[local] $[dest]
-#end file
-
-#foreach file $[install_parser_inc]
-$[install_parser_inc_dir]\$[file] : $[file]
-#define local $[file]
-#define dest $[install_parser_inc_dir]
-$[TAB] $[NT_COPYCMD] $[local] $[dest]
-#end file
-
-#foreach file $[install_data]
-$[install_data_dir]\$[file] : $[file]
-#define local $[file]
-#define dest $[install_data_dir]
-$[TAB] $[NT_COPYCMD] $[local] $[dest]
-#end file
-
-#foreach file $[install_config]
-$[install_config_dir]\$[file] : $[file]
-#define local $[file]
-#define dest $[install_config_dir]
-$[TAB] $[NT_COPYCMD] $[local] $[dest]
-#end file
-
-// Finally, all the special targets.  These are commands that just need
-// to be invoked; we don't pretend to know what they are.
-#forscopes special_target
-$[TARGET] :
-$[TAB] $[COMMAND]
-
-#end special_target
-
-
-// Finally, the rules to freshen the Makefile itself.
-Makefile : $[SOURCE_FILENAME]
-$[TAB] ppremake
-
-#if $[and $[DEPENDENCY_CACHE_FILENAME],$[dep_sources]]
-$[DEPENDENCY_CACHE_FILENAME] : $[dep_sources]
-$[TAB] @ppremake -D $[DEPENDENCY_CACHE_FILENAME]
-#endif
-
-
-#end Makefile
 
 
 //////////////////////////////////////////////////////////////////////
@@ -965,132 +565,56 @@ $[TAB] @ppremake -D $[DEPENDENCY_CACHE_FILENAME]
 // this directory.
 
 
-
 //////////////////////////////////////////////////////////////////////
 #elif $[eq $[DIR_TYPE], toplevel]
 //////////////////////////////////////////////////////////////////////
 
 // This is the toplevel directory, e.g. $DTOOL.  Here we build the
-// root makefile and also synthesize the dtool_config.h (or whichever
-// file) we need.
+// package solution file and also synthesize the dtool_config.h (or
+// whichever file) we need.
 
-#map subdirs
-// Iterate through all of our known source files.  Each src and
-// metalib type file gets its corresponding Makefile listed
-// here.  However, we test for $[DIR_TYPE] of toplevel, because the
-// source directories typically don't define their own DIR_TYPE
-// variable, and they end up inheriting this one dynamically.
-#forscopes */
-#if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib],$[and $[eq $[DIR_TYPE], toplevel],$[ne $[DIRNAME],top]]]
-#if $[build_directory]
-  #addmap subdirs $[DIRNAME]
-#endif
-#endif
-#end */
+//#define project_scopes */static_lib_target */ss_lib_target */lib_target */noinst_lib_target */test_lib_target */metalib_target */bin_target */test_bin_target
+#define project_scopes */metalib_target */lib_target */static_lib_target */ss_lib_target */bin_target
 
-#output Makefile
-#format makefile
-#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
-################################# DO NOT EDIT ###########################
-
-all : $[subdirs]
-test : $[subdirs:%=test-%]
-igate : $[subdirs:%=igate-%]
-clean : $[subdirs:%=clean-%]
-clean-igate : $[subdirs:%=clean-igate-%]
-cleanall : $[subdirs:%=cleanall-%]
-install : $[if $[CONFIG_HEADER],$[install_headers_dir] $[install_headers_dir]\$[CONFIG_HEADER]] $[subdirs:%=install-%]
-install-igate : $[subdirs:%=install-igate-%]
-uninstall : $[subdirs:%=uninstall-%]
-#if $[CONFIG_HEADER]
-$[TAB] -del /f $[install_headers_dir]\$[CONFIG_HEADER]
-#endif
-uninstall-igate : $[subdirs:%=uninstall-igate-%]
-
-#if $[HAVE_BISON]
-prebuild-bison : $[subdirs:%=prebuild-bison-%]
-clean-prebuild-bison : $[subdirs:%=clean-prebuild-bison-%]
-#endif
-
-#formap dirname subdirs
-#define depends 
-$[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo all
-#end dirname
-
-#formap dirname subdirs
-test-$[dirname] :
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo test
-#end dirname
-
-#formap dirname subdirs
-igate-$[dirname] :
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo igate
-#end dirname
-
-#formap dirname subdirs
-clean-$[dirname] :
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo clean
-#end dirname
-
-#formap dirname subdirs
-clean-igate-$[dirname] :
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo clean-igate
-#end dirname
-
-#formap dirname subdirs
-cleanall-$[dirname] : $[patsubst %,cleanall-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo cleanall
-#end dirname
-
-#formap dirname subdirs
-install-$[dirname] : $[patsubst %,install-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo install
-#end dirname
-
-#formap dirname subdirs
-install-igate-$[dirname] :
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo install-igate
-#end dirname
-
-#formap dirname subdirs
-uninstall-$[dirname] :
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo uninstall
-#end dirname
-
-#formap dirname subdirs
-uninstall-igate-$[dirname] :
-$[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo uninstall-igate
-#end dirname
-
-#if $[HAVE_BISON]
-#formap dirname subdirs
-prebuild-bison-$[dirname] :
-$[TAB]cd $[osfilename $[PATH]] && $(MAKE) /nologo prebuild-bison
-clean-prebuild-bison-$[dirname] :
-$[TAB]cd $[osfilename $[PATH]] && $(MAKE) /nologo clean-prebuild-bison
-#end dirname
-#endif
-
-#if $[ne $[CONFIG_HEADER],]
-$[install_headers_dir] :
-$[TAB] mkdir $[install_headers_dir]
-
-$[install_headers_dir]\$[CONFIG_HEADER] : $[CONFIG_HEADER]
-#define local $[CONFIG_HEADER]
-#define dest $[install_headers_dir]
-$[TAB] $[NT_COPYCMD] $[local] $[dest]
-#endif
-
-#end Makefile
+#output $[PACKAGE].sln
+#format straight
+Microsoft Visual Studio Solution File, Format Version 7.00
+#forscopes $[project_scopes]
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$[TARGET]", "$[osfilename $[PATH]]\$[TARGET].vcproj", "{$[makeguid $[TARGET]]}"
+EndProject
+#end $[project_scopes]
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = $[ODIR]
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+#forscopes $[project_scopes]
+  #define count 0
+  #foreach dependency $[DEPEND_DIRS]
+		{$[makeguid $[TARGET]]}.$[count] = {$[makeguid $[dependency]]}
+    #set count $[+ $[count],1]
+  #end dependency
+#end $[project_scopes]
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+#forscopes $[project_scopes]
+#define guid $[makeguid $[TARGET]]
+		{$[guid]}.$[ODIR].ActiveCfg = $[ODIR]|Win32
+		{$[guid]}.$[ODIR].Build.0 = $[ODIR]|Win32
+#end $[project_scopes]
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
+#end $[PACKAGE].sln
 
 // If there is a file called LocalSetup.pp in the package's top
 // directory, then invoke that.  It might contain some further setup
 // instructions.
 #sinclude $[TOPDIRPREFIX]LocalSetup.msvc.pp
 #sinclude $[TOPDIRPREFIX]LocalSetup.pp
-
-
 
 //////////////////////////////////////////////////////////////////////
 #elif $[or $[eq $[DIR_TYPE], models],$[eq $[DIR_TYPE], models_toplevel],$[eq $[DIR_TYPE], models_group]]
