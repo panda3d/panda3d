@@ -118,7 +118,7 @@ istream_dont_write(thandle_t, tdata_t, tsize_t) {
 }
 
 static toff_t
-istream_seek(thandle_t fd, off_t off, int whence) {
+istream_seek(thandle_t fd, toff_t off, int whence) {
   istream *in = (istream *)fd;
 
   ios_seekdir dir;
@@ -140,11 +140,17 @@ istream_seek(thandle_t fd, off_t off, int whence) {
   }
 
   in->seekg(off, dir);
+
+  if (pnmimage_tiff_cat->is_spam()) {
+    pnmimage_tiff_cat->spam()
+      << "istream_seek(" << (void *)in << ", " << off << ", " 
+      << whence << "), result = " << in->tellg() << "\n";
+  }
   return in->tellg();
 }
 
 static toff_t
-ostream_seek(thandle_t fd, off_t off, int whence) {
+ostream_seek(thandle_t fd, toff_t off, int whence) {
   ostream *out = (ostream *)fd;
 
   ios_seekdir dir;
@@ -166,6 +172,12 @@ ostream_seek(thandle_t fd, off_t off, int whence) {
   }
 
   out->seekp(off, dir);
+
+  if (pnmimage_tiff_cat->is_spam()) {
+    pnmimage_tiff_cat->spam()
+      << "ostream_seek(" << (void *)out << ", " << off << ", " 
+      << whence << "), result = " << out->tellp() << "\n";
+  }
   return out->tellp();
 }
 
