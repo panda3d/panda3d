@@ -66,7 +66,7 @@
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    linmath:c panda:m \
+    putil:c linmath:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
