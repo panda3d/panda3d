@@ -104,6 +104,10 @@ BoundingVolume *BoundedObject::
 recompute_bound() {
   CDWriter cdata(_cycler);
   switch (cdata->_bound_type) {
+  case BVT_static:
+    // Don't change it if it's a static volume.
+    break;
+
   case BVT_dynamic_sphere:
     cdata->_bound = new BoundingSphere;
     break;

@@ -20,6 +20,7 @@
 #include "pgMouseWatcherParameter.h"
 
 #include "qpcullTraverser.h"
+#include "cullTraverserData.h"
 #include "throw_event.h"
 #include "transformState.h"
 #include "mouseWatcherParameter.h"
@@ -50,10 +51,8 @@ qpPGEntry(const string &name) :
   _blink_start = 0.0f;
   _blink_rate = 1.0f;
 
-  _text_render_root = new PandaNode("text_root");
-  _current_text_node = (PandaNode *)NULL;
-  _cursor_def = new PandaNode("cursor");
-  _text_render_root->add_child(_cursor_def);
+  _text_render_root = qpNodePath("text_root");
+  _cursor_def = _text_render_root.attach_new_node("cursor");
   _cursor_visible = true;
 
   _cursor_keys_active = true;
@@ -149,8 +148,8 @@ cull_callback(qpCullTraverser *trav, CullTraverserData &data) {
   update_cursor();
 
   // Now render the text.
-  nassertr(_text_render_root != (PandaNode *)NULL, true);
-  trav->traverse(_text_render_root, data);
+  CullTraverserData next_data(data, _text_render_root.node());
+  trav->traverse(next_data);
 
   // Now continue to render everything else below this node.
   return true;
@@ -596,12 +595,12 @@ setup(float width, int num_lines) {
   ls.set_color(0.0f, 0.0f, 0.0f, 1.0f);
   ls.move_to(0.0f, 0.0f, -0.15f * line_height);
   ls.draw_to(0.0f, 0.0f, 0.85f * line_height);
-  get_cursor_def()->add_child(ls.create());
+  get_cursor_def().attach_new_node(ls.create());
   
   /*
   // An underscore cursor would work too.
   text_node->set_text("_");
-  get_cursor_def()->add_child(text_node->generate());
+  get_cursor_def().attach_new_node(text_node->generate());
   */
 }
 
@@ -782,11 +781,11 @@ update_text() {
       line._left = _last_text_def->get_left();
     }
 
-    if (_current_text_node != (PandaNode *)NULL) {
-      _text_render_root->remove_child(_current_text_node);
+    if (!_current_text.is_empty()) {
+      _current_text.remove_node();
     }
-    _current_text_node = _last_text_def->generate();
-    _text_render_root->add_child(_current_text_node);
+    _current_text = 
+      _text_render_root.attach_new_node(_last_text_def->generate());
     _text_geom_stale = false;
     _cursor_stale = true;
   }
@@ -824,7 +823,7 @@ update_cursor() {
     float line_height = _last_text_def->get_line_height();
 
     LVecBase3f trans(_ww_lines[row]._left + width, 0.0f, -line_height * row);
-    _cursor_def->set_transform(TransformState::make_pos(trans));
+    _cursor_def.set_pos(trans);
 
     _cursor_stale = false;
   }
@@ -851,11 +850,9 @@ void qpPGEntry::
 show_hide_cursor(bool visible) {
   if (visible != _cursor_visible) {
     if (visible) {
-      // Reveal the cursor.
-      _cursor_def->set_draw_mask(DrawMask::all_on());
+      _cursor_def.show();
     } else {
-      // Hide the cursor.
-      _cursor_def->set_draw_mask(DrawMask::all_off());
+      _cursor_def.hide();
     }
     _cursor_visible = visible;
   }

@@ -66,6 +66,21 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpModelNode::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to combine this
+//               particular kind of PandaNode with other kinds of
+//               PandaNodes, adding children or whatever.  For
+//               instance, an LODNode should not be combined with any
+//               other PandaNode, because its set of children is
+//               meaningful.
+////////////////////////////////////////////////////////////////////
+bool qpModelNode::
+safe_to_combine() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpModelNode::preserve_name
 //       Access: Public, Virtual
 //  Description: Returns true if the node's name has extrinsic meaning

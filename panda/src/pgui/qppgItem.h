@@ -25,6 +25,7 @@
 #include "pgFrameStyle.h"
 
 #include "pandaNode.h"
+#include "qpnodePath.h"
 #include "luse.h"
 #include "pointerTo.h"
 #include "qptextNode.h"
@@ -34,7 +35,6 @@
 class PGTop;
 class MouseWatcherParameter;
 class AudioSound;
-class qpNodePath;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : qpPGItem
@@ -108,8 +108,8 @@ PUBLISHED:
   int get_num_state_defs() const;
   void clear_state_def(int state);
   bool has_state_def(int state) const;
-  PandaNode *get_state_def(int state);
-  void instance_to_state_def(int state, const qpNodePath &chain);
+  qpNodePath &get_state_def(int state);
+  qpNodePath instance_to_state_def(int state, const qpNodePath &path);
 
   PGFrameStyle get_frame_style(int state);
   void set_frame_style(int state, const PGFrameStyle &style);
@@ -171,9 +171,9 @@ private:
 
   class StateDef {
   public:
-    PT(PandaNode) _node;
+    qpNodePath _root;
     PGFrameStyle _frame_style;
-    PT(PandaNode) _frame_node;
+    qpNodePath _frame;
     bool _frame_stale;
   };
   typedef pvector<StateDef> StateDefs;

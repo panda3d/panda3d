@@ -28,6 +28,7 @@
 #include "string_utils.h"
 #include "qpnodePath.h"
 #include "qpcullTraverser.h"
+#include "cullTraverserData.h"
 
 #ifdef HAVE_AUDIO
 #include "audioSound.h"
@@ -118,15 +119,13 @@ xform(const LMatrix4f &mat) {
   // Transform the individual states and their frame styles.
   StateDefs::iterator di;
   for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
-    PandaNode *node = (*di)._node;
-    if (node != (PandaNode *)NULL) {
-      // Apply the matrix to the previous transform.
-      node->set_transform(node->get_transform()->compose(TransformState::make_mat(mat)));
+    qpNodePath &root = (*di)._root;
+    // Apply the matrix to the previous transform.
+    root.set_transform(root.get_transform()->compose(TransformState::make_mat(mat)));
 
-      // Now flatten the transform into the subgraph.
-      qpSceneGraphReducer gr;
-      gr.apply_attribs(node);
-    }
+    // Now flatten the transform into the subgraph.
+    qpSceneGraphReducer gr;
+    gr.apply_attribs(root.node());
 
     // Transform the frame style too.
     if ((*di)._frame_style.xform(mat)) {
@@ -193,8 +192,9 @@ cull_callback(qpCullTraverser *trav, CullTraverserData &data) {
   if (has_state_def(get_state())) {
     // This item has a current state definition that we should use
     // to render the item.
-    PandaNode *def = get_state_def(get_state());
-    trav->traverse(def, data);
+    qpNodePath &root = get_state_def(get_state());
+    CullTraverserData next_data(data, root.node());
+    trav->traverse(next_data);
   }
 
   // Now continue to render everything else below this node.
@@ -223,9 +223,9 @@ recompute_internal_bound() {
   // get_state_def() on each one, to ensure that the frames are
   // updated correctly before we measure their bounding volumes.
   for (int i = 0; i < (int)_state_defs.size(); i++) {
-    PandaNode *node = get_state_def(i);
-    if (node != (PandaNode *)NULL) {
-      child_volumes.push_back(&node->get_bound());
+    qpNodePath &root = get_state_def(i);
+    if (!root.is_empty()) {
+      child_volumes.push_back(&root.node()->get_bound());
     }
   }
 
@@ -582,7 +582,7 @@ has_state_def(int state) const {
   if (state < 0 || state >= (int)_state_defs.size()) {
     return false;
   }
-  return (_state_defs[state]._node != (PandaNode *)NULL);
+  return (!_state_defs[state]._root.is_empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -598,12 +598,8 @@ clear_state_def(int state) {
     return;
   }
 
-  PandaNode *node = _state_defs[state]._node;
-  if (node != (PandaNode *)NULL) {
-    node->remove_all_children();
-  }
-
-  _state_defs[state]._frame_node = (PandaNode *)NULL;
+  _state_defs[state]._root = qpNodePath();
+  _state_defs[state]._frame = qpNodePath();
   _state_defs[state]._frame_stale = true;
 
   mark_bound_stale();
@@ -617,14 +613,14 @@ clear_state_def(int state) {
 //               indicated state.  The first time this is called for a
 //               particular state index, it may create the Node.
 ////////////////////////////////////////////////////////////////////
-PandaNode *qpPGItem::
+qpNodePath &qpPGItem::
 get_state_def(int state) {
-  nassertr(state >= 0 && state < 1000, (PandaNode *)NULL);  // Sanity check.
+  nassertr(state >= 0 && state < 1000, get_state_def(0));  // Sanity check.
   slot_state_def(state);
 
-  if (_state_defs[state]._node == (PandaNode *)NULL) {
+  if (_state_defs[state]._root.is_empty()) {
     // Create a new node.
-    _state_defs[state]._node = new PandaNode("state_" + format_string(state));
+    _state_defs[state]._root = qpNodePath("state_" + format_string(state));
     _state_defs[state]._frame_stale = true;
   }
 
@@ -632,7 +628,7 @@ get_state_def(int state) {
     update_frame(state);
   }
 
-  return _state_defs[state]._node;
+  return _state_defs[state]._root;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -641,16 +637,16 @@ get_state_def(int state) {
 //  Description: Parents an instance of the bottom node of the
 //               indicated NodePath to the indicated state index.
 ////////////////////////////////////////////////////////////////////
-void qpPGItem::
+qpNodePath qpPGItem::
 instance_to_state_def(int state, const qpNodePath &path) {
   if (path.is_empty()) {
-    // If the path is empty, quietly do nothing.
-    return;
+    // If the source is empty, quietly do nothing.
+    return qpNodePath();
   }
 
-  get_state_def(state)->add_child(path.node());
-
   mark_bound_stale();
+
+  return path.instance_to(get_state_def(state));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -677,8 +673,8 @@ void qpPGItem::
 set_frame_style(int state, const PGFrameStyle &style) {
   // Get the state def node, mainly to ensure that this state is
   // slotted and listed as having been defined.
-  PandaNode *def = get_state_def(state);
-  nassertv(def != (PandaNode *)NULL);
+  qpNodePath &root = get_state_def(state);
+  nassertv(!root.is_empty());
 
   _state_defs[state]._frame_style = style;
   _state_defs[state]._frame_stale = true;
@@ -799,13 +795,7 @@ void qpPGItem::
 update_frame(int state) {
   // First, remove the old frame geometry, if any.
   if (state >= 0 && state < (int)_state_defs.size()) {
-    PandaNode *old_frame = _state_defs[state]._frame_node;
-    if (old_frame != (PandaNode *)NULL) {
-      PandaNode *node = _state_defs[state]._node;
-      nassertv(node != (PandaNode *)NULL);
-      node->remove_child(old_frame);
-      _state_defs[state]._frame_node = (PandaNode *)NULL;
-    }
+    _state_defs[state]._frame.remove_node();
   }
 
   // We must turn off the stale flag first, before we call
@@ -815,10 +805,9 @@ update_frame(int state) {
 
   // Now create new frame geometry.
   if (has_frame()) {
-    PandaNode *node = get_state_def(state);
-    nassertv(node != (PandaNode *)NULL);
-    _state_defs[state]._frame_node = 
-      _state_defs[state]._frame_style.generate_into(node, _frame);
+    qpNodePath &root = get_state_def(state);
+    _state_defs[state]._frame = 
+      _state_defs[state]._frame_style.generate_into(root, _frame);
   }
 }
 
@@ -834,14 +823,7 @@ mark_frames_stale() {
   StateDefs::iterator di;
   for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
     // Remove the old frame, if any.
-    PandaNode *old_frame = (*di)._frame_node;
-    if (old_frame != (PandaNode *)NULL) {
-      PandaNode *node = (*di)._node;
-      nassertv(node != (PandaNode *)NULL);
-      node->remove_child(old_frame);
-      (*di)._frame_node = (PandaNode *)NULL;
-    }
-
+    (*di)._frame.remove_node();
     (*di)._frame_stale = true;
   }
   mark_bound_stale();

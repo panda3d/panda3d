@@ -69,6 +69,21 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpLODNode::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to combine this
+//               particular kind of PandaNode with other kinds of
+//               PandaNodes, adding children or whatever.  For
+//               instance, an LODNode should not be combined with any
+//               other PandaNode, because its set of children is
+//               meaningful.
+////////////////////////////////////////////////////////////////////
+bool qpLODNode::
+safe_to_combine() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpLODNode::xform
 //       Access: Public, Virtual
 //  Description: Transforms the contents of this PandaNode by the

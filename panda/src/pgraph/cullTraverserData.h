@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "workingNodePath.h"
 #include "renderState.h"
 #include "transformState.h"
 #include "geometricBoundingVolume.h"
@@ -46,18 +47,28 @@ class qpCullTraverser;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullTraverserData {
 public:
-  INLINE CullTraverserData(const TransformState *render_transform,
+  INLINE CullTraverserData(const qpNodePath &start,
+                           const TransformState *render_transform,
                            const TransformState *net_transform,
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
                            GeometricBoundingVolume *guard_band);
+  INLINE CullTraverserData(const CullTraverserData &parent, 
+                           PandaNode *child);
+
+private:
   INLINE CullTraverserData(const CullTraverserData &copy);
-  INLINE void operator = (const CullTraverserData &copy);
+  INLINE void operator = (const CullTraverserData &copy); 
+
+public:
   INLINE ~CullTraverserData();
 
-  INLINE bool is_in_view(PandaNode *node, const DrawMask &camera_mask);
-  void apply_transform_and_state(qpCullTraverser *trav, PandaNode *node);
+  INLINE PandaNode *node() const;
 
+  INLINE bool is_in_view(const DrawMask &camera_mask);
+  void apply_transform_and_state(qpCullTraverser *trav);
+
+  WorkingNodePath _node_path;
   CPT(TransformState) _render_transform;
   CPT(TransformState) _net_transform;
   CPT(RenderState) _state;
@@ -65,7 +76,7 @@ public:
   PT(GeometricBoundingVolume) _guard_band;
 
 private:
-  bool is_in_view_impl(PandaNode *node);
+  bool is_in_view_impl();
   static CPT(RenderState) get_fake_view_frustum_cull_effect();
 };
 

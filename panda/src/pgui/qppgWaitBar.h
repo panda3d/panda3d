@@ -63,7 +63,7 @@ private:
   float _range, _value;
   int _bar_state;
   PGFrameStyle _bar_style;
-  PT(PandaNode) _bar_node;
+  qpNodePath _bar;
 
 public:
   static TypeHandle get_class_type() {

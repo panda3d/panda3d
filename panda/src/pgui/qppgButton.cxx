@@ -186,10 +186,10 @@ setup(const string &label) {
   PT(PandaNode) rollover = new PandaNode("rollover");
   PT(PandaNode) inactive = new PandaNode("inactive");
 
-  get_state_def(S_ready)->add_child(ready);
-  get_state_def(S_depressed)->add_child(depressed);
-  get_state_def(S_rollover)->add_child(rollover);
-  get_state_def(S_inactive)->add_child(inactive);
+  get_state_def(S_ready).attach_new_node(ready);
+  get_state_def(S_depressed).attach_new_node(depressed);
+  get_state_def(S_rollover).attach_new_node(rollover);
+  get_state_def(S_inactive).attach_new_node(inactive);
 
   ready->add_child(geom);
   depressed->add_child(geom);

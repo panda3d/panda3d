@@ -45,7 +45,7 @@ class Filename;
 //               common scene graph files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BamFile {
-public:
+PUBLISHED:
   BamFile();
   ~BamFile();
 

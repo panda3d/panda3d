@@ -88,7 +88,7 @@ PUBLISHED:
   INLINE void set_blink_rate(float blink_rate);
   INLINE float get_blink_rate() const;
 
-  INLINE PandaNode *get_cursor_def();
+  INLINE const qpNodePath &get_cursor_def();
   INLINE void clear_cursor_def();
 
   INLINE void set_cursor_keys_active(bool flag);
@@ -139,13 +139,12 @@ private:
   typedef pvector< PT(qpTextNode) > TextDefs;
   TextDefs _text_defs;
 
-  // This node is the root of the subgraph that renders both the text
-  // and the cursor.
-  PT(PandaNode) _text_render_root;
+  // This is the subgraph that renders both the text and the cursor.
+  qpNodePath _text_render_root;
 
   // This is the node for rendering the actual text that is parented
   // to the above node when the text is generated.
-  PT(PandaNode) _current_text_node;
+  qpNodePath _current_text;
   qpTextNode *_last_text_def;
   bool _text_geom_stale;
 
@@ -163,7 +162,7 @@ private:
   // This is the node that represents the cursor geometry.  It is also
   // attached to the above node, and is transformed around and/or
   // hidden according to the cursor's position and blink state.
-  PandaNode *_cursor_def;
+  qpNodePath _cursor_def;
 
   double _blink_start;
   double _blink_rate;

@@ -23,6 +23,7 @@
 #include "pandaNode.h"
 #include "transparencyAttrib.h"
 #include "pointerTo.h"
+#include "qpnodePath.h"
 
 #include "geomNode.h"
 #include "transparencyProperty.h"
@@ -168,16 +169,16 @@ generate_into(Node *node, const LVecBase4f &frame) {
 //               indicated size, and parents it to the indicated node,
 //               with a scene graph sort order of -1.
 //
-//               The return value is the generated node, if any, or
-//               NULL if nothing is generated.
+//               The return value is the generated NodePath, if any,
+//               or an empty NodePath if nothing is generated.
 ////////////////////////////////////////////////////////////////////
-PandaNode *PGFrameStyle::
-generate_into(PandaNode *node, const LVecBase4f &frame) {
+qpNodePath PGFrameStyle::
+generate_into(const qpNodePath &parent, const LVecBase4f &frame) {
   PT(PandaNode) new_node;
 
   switch (_type) {
   case T_none:
-    return (PandaNode *)NULL;
+    return qpNodePath();
 
   case T_flat:
     new_node = qpgenerate_flat_geom(frame);
@@ -209,8 +210,7 @@ generate_into(PandaNode *node, const LVecBase4f &frame) {
   }
 
   // Adding the node to the parent keeps the reference count.
-  node->add_child(new_node);
-  return new_node;
+  return parent.attach_new_node(new_node);
 }
 
 ////////////////////////////////////////////////////////////////////

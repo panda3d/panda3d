@@ -41,7 +41,7 @@
     materialAttrib.I materialAttrib.h \
     qpmodelNode.I qpmodelNode.h \
     qpmodelRoot.I qpmodelRoot.h \
-    qpnodePath.I qpnodePath.h \
+    qpnodePath.I qpnodePath.h qpnodePath.cxx \
     qpnodePathCollection.I qpnodePathCollection.h \
     qpnodePathComponent.I qpnodePathComponent.h \
     qpnodePathLerps.h \

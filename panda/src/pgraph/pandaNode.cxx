@@ -1157,17 +1157,21 @@ propagate_stale_bound() {
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *PandaNode::
 recompute_bound() {
-  // First, get ourselves a fresh, empty bounding volume.
+  // Get the internal bound before we do anything else, since the
+  // is_bound_stale() flag may also apply to this.
+  const BoundingVolume *internal_bound = &get_internal_bound();
+
+  // Now, get ourselves a fresh, empty bounding volume.  This will
+  // reset the is_bound_stale() flag if it was set.
   BoundingVolume *bound = BoundedObject::recompute_bound();
   nassertr(bound != (BoundingVolume*)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
   // of our child bounding volumes.
-
   pvector<const BoundingVolume *> child_volumes;
 
   // It goes around this node's internal bounding volume . . .
-  child_volumes.push_back(&get_internal_bound());
+  child_volumes.push_back(internal_bound);
 
   CDReader cdata(_cycler);
   Down::const_iterator di;

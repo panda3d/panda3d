@@ -28,13 +28,13 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::apply_transform_and_state
 //       Access: Public
-//  Description: Applies the transform and state from the indicated
+//  Description: Applies the transform and state from the current
 //               node onto the current data.  This also evaluates
 //               billboards, etc.
 ////////////////////////////////////////////////////////////////////
 void CullTraverserData::
-apply_transform_and_state(qpCullTraverser *trav, PandaNode *node) {
-  const TransformState *node_transform = node->get_transform();
+apply_transform_and_state(qpCullTraverser *trav) {
+  const TransformState *node_transform = node()->get_transform();
   if (!node_transform->is_identity()) {
     _render_transform = _render_transform->compose(node_transform);
     _net_transform = _net_transform->compose(node_transform);
@@ -69,9 +69,9 @@ apply_transform_and_state(qpCullTraverser *trav, PandaNode *node) {
     }
   }
 
-  _state = _state->compose(node->get_state());
+  _state = _state->compose(node()->get_state());
 
-  const RenderEffects *node_effects = node->get_effects();
+  const RenderEffects *node_effects = node()->get_effects();
   const BillboardEffect *billboard = node_effects->get_billboard();
   if (billboard != (const BillboardEffect *)NULL) {
     // Got to apply a billboard transform here.
@@ -94,11 +94,11 @@ apply_transform_and_state(qpCullTraverser *trav, PandaNode *node) {
 //  Description: The private implementation of is_in_view().
 ////////////////////////////////////////////////////////////////////
 bool CullTraverserData::
-is_in_view_impl(PandaNode *node) {
+is_in_view_impl() {
   // By the time we get here, we know we have a viewing frustum.
   nassertr(_view_frustum != (GeometricBoundingVolume *)NULL, true);
 
-  const BoundingVolume &node_volume = node->get_bound();
+  const BoundingVolume &node_volume = node()->get_bound();
   nassertr(node_volume.is_of_type(GeometricBoundingVolume::get_class_type()), false);
   const GeometricBoundingVolume *node_gbv =
     DCAST(GeometricBoundingVolume, &node_volume);
@@ -123,7 +123,7 @@ is_in_view_impl(PandaNode *node) {
     _view_frustum = (GeometricBoundingVolume *)NULL;
 
   } else {
-    if (node->is_final()) {
+    if (node()->is_final()) {
       // The bounding volume is partially, but not completely,
       // within the viewing frustum.  Normally we'd keep testing
       // child bounding volumes as we continue down.  But this node

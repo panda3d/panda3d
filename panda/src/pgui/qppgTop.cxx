@@ -118,7 +118,7 @@ cull_callback(qpCullTraverser *trav, CullTraverserData &data) {
   // PGTop node, for the convenience of PGItems to register themselves
   // as they are drawn.
   PGCullTraverser pg_trav(this, trav);
-  pg_trav.traverse_below(this, data);
+  pg_trav.traverse_below(data);
 
   // We've taken care of the traversal, thank you.
   return false;

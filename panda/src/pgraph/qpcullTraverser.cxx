@@ -65,44 +65,39 @@ qpCullTraverser(const qpCullTraverser &copy) :
 //  Description: Begins the traversal from the indicated node.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-traverse(PandaNode *root) {
+traverse(qpNodePath &root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
 
-  CullTraverserData data(_render_transform, TransformState::make_identity(),
+  CullTraverserData data(root,
+                         _render_transform, TransformState::make_identity(),
                          _initial_state, _view_frustum, _guard_band);
-  traverse(root, data);
+  traverse(data);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::traverse
 //       Access: Public
-//  Description: Traverses from the indicated node with the given
-//               data, which has not yet been converted into the
-//               node's space.
+//  Description: Traverses from the next node with the given
+//               data, which has been constructed with the node but
+//               has not yet been converted into the node's space.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-traverse(PandaNode *node, const CullTraverserData &data) {
+traverse(CullTraverserData &data) {
   // Most nodes will have no transform or state, and will not
   // contain decals or require a special cull callback.  As an
   // optimization, we should tag nodes with these properties as
   // being "fancy", and skip this processing for non-fancy nodes.
+  if (data.is_in_view(_camera_mask)) {
+    data.apply_transform_and_state(this);
 
-  if (node->get_transform()->is_invalid()) {
-    // If the transform is invalid, forget it.
-    return;
-  }
-
-  CullTraverserData next_data(data);
-  if (next_data.is_in_view(node, _camera_mask)) {
-    next_data.apply_transform_and_state(this, node);
-
+    PandaNode *node = data.node();
     if (node->has_cull_callback()) {
-      if (!node->cull_callback(this, next_data)) {
+      if (!node->cull_callback(this, data)) {
         return;
       }
     }
 
-    traverse_below(node, next_data);
+    traverse_below(data);
   }
 }
 
@@ -114,10 +109,11 @@ traverse(PandaNode *node, const CullTraverserData &data) {
 //               node's space.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-traverse_below(PandaNode *node, const CullTraverserData &data) {
+traverse_below(const CullTraverserData &data) {
+  PandaNode *node = data.node();
   const RenderEffects *node_effects = node->get_effects();
   if (node_effects->has_decal()) {
-    start_decal(node, data);
+    start_decal(data);
     
   } else {
     if (node->is_geom_node()) {
@@ -139,13 +135,15 @@ traverse_below(PandaNode *node, const CullTraverserData &data) {
     if (node->has_selective_visibility()) {
       int i = node->get_first_visible_child();
       while (i < num_children) {
-        traverse(node->get_child(i), data);
+        CullTraverserData next_data(data, node->get_child(i));
+        traverse(next_data);
         i = node->get_next_visible_child(i);
       }
       
     } else {
       for (int i = 0; i < num_children; i++) {
-        traverse(node->get_child(i), data);
+        CullTraverserData next_data(data, node->get_child(i));
+        traverse(next_data);
       }
     }
   }
@@ -159,7 +157,8 @@ traverse_below(PandaNode *node, const CullTraverserData &data) {
 //               to find all the decal geoms.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-start_decal(PandaNode *node, const CullTraverserData &data) {
+start_decal(const CullTraverserData &data) {
+  PandaNode *node = data.node();
   if (!node->is_geom_node()) {
     pgraph_cat.error()
       << "DecalEffect applied to " << *node << ", not a GeomNode.\n";
@@ -179,13 +178,15 @@ start_decal(PandaNode *node, const CullTraverserData &data) {
   if (node->has_selective_visibility()) {
     int i = node->get_first_visible_child();
     while (i < num_children) {
-      decals = r_get_decals(cr.get_child(i), data, decals);
+      CullTraverserData next_data(data, cr.get_child(i));
+      decals = r_get_decals(next_data, decals);
       i = node->get_next_visible_child(i);
     }
     
   } else {
     for (int i = num_children - 1; i >= 0; i--) {
-      decals = r_get_decals(cr.get_child(i), data, decals);
+      CullTraverserData next_data(data, cr.get_child(i));
+      decals = r_get_decals(next_data, decals);
     }
   }
 
@@ -219,30 +220,26 @@ start_decal(PandaNode *node, const CullTraverserData &data) {
 //               they were encountered in the scene graph).
 ////////////////////////////////////////////////////////////////////
 CullableObject *qpCullTraverser::
-r_get_decals(PandaNode *node, const CullTraverserData &data,
-             CullableObject *decals) {
-  if (node->get_transform()->is_invalid()) {
-    // If the transform is invalid, forget it.
-    return decals;
-  }
+r_get_decals(CullTraverserData &data, CullableObject *decals) {
+  if (data.is_in_view(_camera_mask)) {
+    data.apply_transform_and_state(this);
 
-  CullTraverserData next_data(data);
-  if (next_data.is_in_view(node, _camera_mask)) {
-    next_data.apply_transform_and_state(this, node);
+    PandaNode *node = data.node();
 
     // First, visit all of the node's children.
-    PandaNode::Children cr = node->get_children();
-    int num_children = cr.get_num_children();
+    int num_children = node->get_num_children();
     if (node->has_selective_visibility()) {
       int i = node->get_first_visible_child();
       while (i < num_children) {
-        decals = r_get_decals(cr.get_child(i), next_data, decals);
+        CullTraverserData next_data(data, node->get_child(i));
+        decals = r_get_decals(next_data, decals);
         i = node->get_next_visible_child(i);
       }
       
     } else {
       for (int i = num_children - 1; i >= 0; i--) {
-        decals = r_get_decals(cr.get_child(i), next_data, decals);
+        CullTraverserData next_data(data, node->get_child(i));
+        decals = r_get_decals(next_data, decals);
       }
     }
 
@@ -252,7 +249,7 @@ r_get_decals(PandaNode *node, const CullTraverserData &data,
       
       int num_geoms = geom_node->get_num_geoms();
       for (int i = num_geoms - 1; i >= 0; i--) {
-        decals = new CullableObject(next_data, geom_node, i, decals);
+        decals = new CullableObject(data, geom_node, i, decals);
       }
     }
   }

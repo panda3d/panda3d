@@ -63,5 +63,8 @@ operator < (const qpGeomTransformer::SourceTexCoords &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomTransformer::SourceColors::
 operator < (const qpGeomTransformer::SourceColors &other) const {
+  if (_colors != other._colors) {
+    return _colors < other._colors;
+  }
   return (_scale.compare_to(other._scale) < 0);
 }

@@ -235,7 +235,7 @@ write_geoms(ostream &out, int indent_level) const {
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
     indent(out, indent_level + 2) 
-      << *entry._geom << " (" << *entry._state << ")\n";
+      << *entry._geom << " " << *entry._state << "\n";
   }
 }
 
@@ -253,7 +253,7 @@ write_verbose(ostream &out, int indent_level) const {
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
     indent(out, indent_level + 2) 
-      << *entry._geom << " (" << *entry._state << ")\n";
+      << *entry._geom << " " << *entry._state << "\n";
     entry._geom->write_verbose(out, indent_level + 4);
   }
 }

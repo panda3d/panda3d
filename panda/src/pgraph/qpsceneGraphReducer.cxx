@@ -23,8 +23,10 @@
 #include "colorScaleAttrib.h"
 
 #include "qpgeomNode.h"
+#include "pointerTo.h"
 #include "geom.h"
 #include "indent.h"
+#include "plist.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpSceneGraphReducer::AccumulatedAttribs::write
@@ -487,7 +489,9 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
   // saved above is no longer accurate, so hereafter we must ask the
   // node for its real child list.
   if (combine_siblings && parent_node->get_num_children() >= 2) {
-    num_nodes += flatten_siblings(parent_node);
+    if (parent_node->safe_to_combine()) {
+      num_nodes += flatten_siblings(parent_node);
+    }
   }
 
   if (parent_node->get_num_children() == 1) {
@@ -646,7 +650,7 @@ consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpSceneGraphReducer::consider_siblings
+//     Function: qpSceneGraphReducer:c:onsider_siblings
 //       Access: Protected, Virtual
 //  Description: Decides whether or not the indicated sibling nodes
 //               should be collapsed into a single node or not.

@@ -40,6 +40,7 @@ protected:
   INLINE qpLODNode(const qpLODNode &copy);
 public:
   virtual PandaNode *make_copy() const;
+  virtual bool safe_to_combine() const;
   virtual void xform(const LMatrix4f &mat);
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(qpCullTraverser *trav, CullTraverserData &data);

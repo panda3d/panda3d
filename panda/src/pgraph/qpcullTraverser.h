@@ -32,6 +32,7 @@ class PandaNode;
 class CullHandler;
 class CullTraverserData;
 class CullableObject;
+class qpNodePath;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullTraverser
@@ -67,14 +68,13 @@ public:
   INLINE void set_cull_handler(CullHandler *cull_handler);
   INLINE CullHandler *get_cull_handler() const;
 
-  void traverse(PandaNode *root);
-  void traverse(PandaNode *node, const CullTraverserData &data);
-  void traverse_below(PandaNode *node, const CullTraverserData &data);
+  void traverse(qpNodePath &root);
+  void traverse(CullTraverserData &data);
+  void traverse_below(const CullTraverserData &data);
 
 private:
-  void start_decal(PandaNode *node, const CullTraverserData &data);
-  CullableObject *r_get_decals(PandaNode *node,
-                               const CullTraverserData &data,
+  void start_decal(const CullTraverserData &data);
+  CullableObject *r_get_decals(CullTraverserData &data,
                                CullableObject *decals);
 
   CPT(RenderState) _initial_state;

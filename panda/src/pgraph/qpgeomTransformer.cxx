@@ -296,6 +296,7 @@ transform_colors(Geom *geom, const LVecBase4f &scale) {
     // transformed this array?
     SourceColors sc;
     sc._scale = scale;
+    sc._colors = colors;
 
     PTA_Colorf &new_colors = _tcolors[sc];
 

@@ -34,7 +34,6 @@ qpPGWaitBar(const string &name) : qpPGItem(name)
   _range = 100.0;
   _value = 0.0;
   _bar_state = -1;
-  _bar_node = (PandaNode *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +57,6 @@ qpPGWaitBar(const qpPGWaitBar &copy) :
   _value(copy._value)
 {
   _bar_state = -1;
-  _bar_node = (PandaNode *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,16 +153,12 @@ update() {
   }
 
   // Remove the old bar geometry, if any.
-  if (_bar_node != (PandaNode *)NULL) {
-    PandaNode *parent_node = _bar_node->get_parent(0);
-    parent_node->remove_child(_bar_node);
-    _bar_node = (PandaNode *)NULL;
-  }
+  _bar.remove_node();
 
   // Now create new bar geometry.
   if (_value != 0.0 && _range != 0.0) {
-    PandaNode *node = get_state_def(state);
-    nassertv(node != (PandaNode *)NULL);
+    qpNodePath &root = get_state_def(state);
+    nassertv(!root.is_empty());
 
     PGFrameStyle style = get_frame_style(state);
     const LVecBase4f &frame = get_frame();
@@ -181,7 +175,7 @@ update() {
     frac = max(min(frac, 1.0f), 0.0f);
     bar_frame[1] = bar_frame[0] + frac * (bar_frame[1] - bar_frame[0]);
     
-    _bar_node = _bar_style.generate_into(node, bar_frame);
+    _bar = _bar_style.generate_into(root, bar_frame);
   }
 
   // Indicate that the bar is current for this state.

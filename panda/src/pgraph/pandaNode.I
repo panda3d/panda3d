@@ -739,7 +739,7 @@ get_bound() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const BoundingVolume &PandaNode::
 get_internal_bound() const {
-  if (_internal_bound.is_bound_stale()) {
+  if (is_bound_stale() || _internal_bound.is_bound_stale()) {
     ((PandaNode *)this)->recompute_internal_bound();
   }
   return _internal_bound.get_bound();

@@ -284,9 +284,8 @@ PUBLISHED:
   INLINE bool has_mat() const;
   INLINE const LMatrix4f &get_mat() const;
 
-  INLINE bool has_color_scale() const;
-  INLINE void clear_color_scale();
-
+  bool has_color_scale() const;
+  void clear_color_scale();
   void set_color_scale(const LVecBase4f &scale);
   INLINE void set_color_scale(float sx, float sy, float sz, float sa);
   INLINE void set_sr(float sr);

@@ -598,34 +598,6 @@ get_mat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::has_color_scale
-//       Access: Published
-//  Description: Returns true if a color scale has been applied
-//               to the referenced node, false otherwise.  It is still
-//               possible that color at this node might have been
-//               scaled by an ancestor node.
-////////////////////////////////////////////////////////////////////
-INLINE bool qpNodePath::
-has_color_scale() const {
-  nassertr(false, false);
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::clear_color_scale
-//       Access: Published
-//  Description: Completely removes any color scale from the
-//               referenced node.  This is preferable to simply
-//               setting the color scale to identity, as it also
-//               removes the overhead associated with having a color
-//               scale at all.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-clear_color_scale() {
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::set_color_scale
 //       Access: Published
 //  Description: Sets the color scale component of the transform

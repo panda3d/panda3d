@@ -47,6 +47,7 @@ public:
 
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_transform() const;
+  virtual bool safe_to_combine() const;
   virtual bool preserve_name() const;
 
 PUBLISHED:

@@ -23,11 +23,13 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
-CullTraverserData(const TransformState *render_transform,
+CullTraverserData(const qpNodePath &start,
+                  const TransformState *render_transform,
                   const TransformState *net_transform,
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
                   GeometricBoundingVolume *guard_band) :
+  _node_path(start),
   _render_transform(render_transform),
   _net_transform(net_transform),
   _state(state),
@@ -37,32 +39,42 @@ CullTraverserData(const TransformState *render_transform,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::Copy Constructor
+//     Function: CullTraverserData::Constructor
 //       Access: Public
-//  Description: 
+//  Description: This constructor creates a CullTraverserData object
+//               that reflects the next node down in the traversal.
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
-CullTraverserData(const CullTraverserData &copy) :
-  _render_transform(copy._render_transform),
-  _net_transform(copy._net_transform),
-  _state(copy._state),
-  _view_frustum(copy._view_frustum),
-  _guard_band(copy._guard_band)
+CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
+  _node_path(parent._node_path, child),
+  _render_transform(parent._render_transform),
+  _net_transform(parent._net_transform),
+  _state(parent._state),
+  _view_frustum(parent._view_frustum),
+  _guard_band(parent._guard_band)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::Copy Constructor
+//       Access: Private
+//  Description: Do not copy CullTraverserData objects.
+////////////////////////////////////////////////////////////////////
+INLINE CullTraverserData::
+CullTraverserData(const CullTraverserData &copy) :
+  _node_path(qpNodePath())
+{
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::Copy Assignment Operator
-//       Access: Public
-//  Description: 
+//       Access: Private
+//  Description: Do not copy CullTraverserData objects.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverserData::
 operator = (const CullTraverserData &copy) {
-  _render_transform = copy._render_transform;
-  _net_transform = copy._net_transform;
-  _state = copy._state;
-  _view_frustum = copy._view_frustum;
-  _guard_band = copy._guard_band;
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,17 +87,32 @@ INLINE CullTraverserData::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::node
+//       Access: Public
+//  Description: Returns the node traversed to so far.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *CullTraverserData::
+node() const {
+  return _node_path.node();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::is_in_view
 //       Access: Public
-//  Description: Returns true if the node is within the view frustum,
-//               false otherwise.  If the node's bounding volume falls
-//               completely within the view frustum, this will also
-//               reset the view frustum pointer, saving some work for
-//               future nodes.
+//  Description: Returns true if the current node is within the view
+//               frustum, false otherwise.  If the node's bounding
+//               volume falls completely within the view frustum, this
+//               will also reset the view frustum pointer, saving some
+//               work for future nodes.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullTraverserData::
-is_in_view(PandaNode *node, const DrawMask &camera_mask) {
-  if ((node->get_draw_mask() & camera_mask).is_zero()) {
+is_in_view(const DrawMask &camera_mask) {
+  if (node()->get_transform()->is_invalid()) {
+    // If the transform is invalid, forget it.
+    return false;
+  }
+
+  if ((node()->get_draw_mask() & camera_mask).is_zero()) {
     // If there are no draw bits in common with the camera, the node
     // is out.
     return false;
@@ -98,5 +125,5 @@ is_in_view(PandaNode *node, const DrawMask &camera_mask) {
   }
 
   // Otherwise, compare the bounding volume to the frustum.
-  return is_in_view_impl(node);
+  return is_in_view_impl();
 }

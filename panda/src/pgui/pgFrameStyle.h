@@ -27,6 +27,7 @@
 class NodeRelation;
 class Node;
 class PandaNode;
+class qpNodePath;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGFrameStyle
@@ -65,7 +66,7 @@ PUBLISHED:
 public:
   bool xform(const LMatrix4f &mat);
   NodeRelation *generate_into(Node *node, const LVecBase4f &frame);
-  PandaNode *generate_into(PandaNode *node, const LVecBase4f &frame);
+  qpNodePath generate_into(const qpNodePath &parent, const LVecBase4f &frame);
 
 private:
   PT_Node generate_flat_geom(const LVecBase4f &frame);

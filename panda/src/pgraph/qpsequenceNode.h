@@ -37,6 +37,7 @@ public:
   qpSequenceNode(const qpSequenceNode &copy);
 
   virtual PandaNode *make_copy() const;
+  virtual bool safe_to_combine() const;
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(qpCullTraverser *trav, CullTraverserData &data);

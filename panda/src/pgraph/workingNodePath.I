@@ -70,3 +70,13 @@ get_node_path() const {
   nassertr(result._head != (qpNodePathComponent *)NULL, qpNodePath::fail());
   return result;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::node
+//       Access: Public
+//  Description: Returns the node traversed to so far.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *WorkingNodePath::
+node() const {
+  return _node;
+}

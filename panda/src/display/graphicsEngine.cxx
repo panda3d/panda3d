@@ -281,8 +281,7 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
     }
   }
   
-  
-  trav.traverse(scene.node());
+  trav.traverse(scene);
 }
 
 ////////////////////////////////////////////////////////////////////

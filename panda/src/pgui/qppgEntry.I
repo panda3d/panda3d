@@ -191,7 +191,7 @@ get_blink_rate() const {
 //               the cursor.  You can attach suitable cursor geometry
 //               to this node.
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *qpPGEntry:: 
+INLINE const qpNodePath &qpPGEntry:: 
 get_cursor_def() {
   return _cursor_def;
 }
@@ -204,7 +204,8 @@ get_cursor_def() {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpPGEntry:: 
 clear_cursor_def() {
-  get_cursor_def()->remove_all_children();
+  _cursor_def.remove_node();
+  _cursor_def = _text_render_root.attach_new_node("cursor");
 }
 
 ////////////////////////////////////////////////////////////////////
