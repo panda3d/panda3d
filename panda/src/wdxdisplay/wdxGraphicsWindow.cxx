@@ -1756,6 +1756,11 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     // assume buggy drivers (this means you, FireGL2) may return zero for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
     _dxgsg->scrn.bIsLowVidMemCard = ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && (dwVidMemTotal< LOWVIDMEMTHRESHOLD));   
 
+    if(!dx_do_vidmemsize_check) {
+       _dxgsg->scrn.MaxAvailVidMem = 0xFFFFFFFF;
+       _dxgsg->scrn.bIsLowVidMemCard = false; 
+    }
+
     if(DeviceIdx==SWRASTIDX) {
         // this will force 640x480x16, is this what we want for all sw rast?
         _dxgsg->scrn.bIsLowVidMemCard = true; 

@@ -33,6 +33,9 @@ bool dx_force_16bpp_zbuffer = config_wdxdisplay.GetBool("dx-force-16bpp-zbuffer"
 bool bResponsive_minimized_fullscreen_window = config_wdxdisplay.GetBool("responsive-minimized-fullscreen-window",false);
 bool dx_preserve_fpu_state = config_wdxdisplay.GetBool("dx-preserve-fpu-state", false);
 
+// if true, use ddraw's GetAvailVidMem to fail if driver says it has too little video mem
+bool dx_do_vidmemsize_check = config_wdxdisplay.GetBool("do-vidmemsize-check", true);
+
 // For now, set this true to use the IME correctly on Win2000, or
 // false on Win98.  This is temporary; once we have been able to
 // verify that this distinction is actually necessary, we can replace
