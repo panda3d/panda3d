@@ -2,6 +2,7 @@
    for the programmer/user"""
 
 from LoggerGlobal import *
+import PythonUtil
 import time
 
 class Notifier:
@@ -34,7 +35,7 @@ class Notifier:
         of day, and also switches into the server's timezone.
         """
         delta = int(round(delta))
-        Notifier.serverDelta = delta + timezone - time.timezone
+        Notifier.serverDelta = delta + time.timezone - timezone
 
         import NotifyCategory
         # Temporary try .. except for old Panda.
@@ -43,7 +44,7 @@ class Notifier:
         except:
             pass
             
-        self.info("Notify clock adjusted by %s seconds (and timezone adjusted by %s hours) to synchronize with server." % (delta, (timezone - time.timezone) / 3600))
+        self.info("Notify clock adjusted by %s (and timezone adjusted by %s hours) to synchronize with server." % (PythonUtil.formatElapsedSeconds(delta), (time.timezone - timezone) / 3600))
 
     def getTime(self):
         """
