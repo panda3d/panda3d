@@ -771,7 +771,7 @@ do_invert_compose(const TransformState *other) const {
       pos += quat.xform(other->get_pos()) * scale;
       quat = other->get_quat() * quat;
       quat.normalize();
-      new_scale = other->get_uniform_scale() * scale;
+      new_scale = other->get_scale() * scale;
     }
 
     CPT(TransformState) result =
