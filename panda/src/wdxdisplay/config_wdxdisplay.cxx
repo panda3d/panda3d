@@ -29,6 +29,8 @@ ConfigureFn(config_wdxdisplay) {
   init_libwdxdisplay();
 }
 
+extern void AtExitFn(void);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwdxdisplay
 //  Description: Initializes the library.  This must be called at
@@ -44,6 +46,8 @@ init_libwdxdisplay() {
     return;
   }
   initialized = true;
+
+  atexit(AtExitFn);
 
   wdxGraphicsPipe::init_type();
   GraphicsPipe::get_factory().register_factory(

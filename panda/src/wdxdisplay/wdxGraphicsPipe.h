@@ -67,8 +67,8 @@ private:
 
   static TypeHandle _type_handle;
 
-  int               _width;
-  int               _height;
+//  int               _width;
+//  int               _height;
   bool              _shift;
 
 protected:

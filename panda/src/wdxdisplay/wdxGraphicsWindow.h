@@ -60,8 +60,6 @@ public:
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wdxGraphicsWindow(const FactoryParams &params);
 
-  static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,
-    LPARAM lparam);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void process_events(void);
 
@@ -92,14 +90,14 @@ protected:
 
 public:
   HWND              _mwindow;
-  HWND              _hParentWindow;
+  HWND              _hOldForegroundWindow;  
 
 private:
   HDC               _hdc;
   HPALETTE          _colormap;
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
   WindowAdjustType _WindowAdjustingType;
-  HCURSOR _hMouseCrossIcon;
+  HCURSOR _hMouseCursor;
   bool    _bSizeIsMaximized;
   bool              _mouse_input_enabled;
   bool              _mouse_motion_enabled;
@@ -107,12 +105,17 @@ private:
   bool              _mouse_entry_enabled;
   int               _entry_state;
   bool              _ignore_key_repeat;
+  bool              _exiting_window;
+  bool              _window_inactive;
 
 public:
   static TypeHandle get_class_type(void);
   static void init_type(void);
   virtual TypeHandle get_type(void) const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  void DestroyMe(bool bAtExitFnCalled);
+  virtual void close_window(int exit_status);
 
 private:
   static TypeHandle _type_handle;
