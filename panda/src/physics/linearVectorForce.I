@@ -22,3 +22,13 @@ INLINE void LinearVectorForce::
 set_vector(float x, float y, float z) {
   _fvec.set(x, y, z);
 }
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_vector
+//      Access : Public
+// Description :
+////////////////////////////////////////////////////////////////////
+INLINE LVector3f LinearVectorForce::
+get_vector(void) const {
+  return _fvec;
+}
