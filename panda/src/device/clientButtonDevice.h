@@ -85,6 +85,7 @@ public:
  
 private:
   static TypeHandle _type_handle;
+  friend class ButtonState;
 };
 
 #include "clientButtonDevice.I"
