@@ -22,6 +22,10 @@
 #include <pandabase.h>
 #include <referenceCount.h>
 
+#if ! defined(HAVE_RAD_MSS)
+  #error where is rad mss?
+#endif
+
 class EXPCL_PANDA AudioTraits {
 public:
   class SoundClass;
@@ -73,20 +77,5 @@ public:
     virtual bool adjust_volume(PlayingClass*) = 0;
   };
 };
-
-// this is really ugly.  But since we have to be able to include/compile
-// all of the driver files on any system, I need to centralize a switch
-// for which one is real.
-#ifdef HAVE_SYS_SOUNDCARD_H
-  #define AUDIO_USE_LINUX
-#elif defined(HAVE_RAD_MSS)
-  #define AUDIO_USE_RAD_MSS
-#elif defined(WIN32_VC)
-  #define AUDIO_USE_WIN32
-#elif defined(HAVE_MIKMOD)
-  #define AUDIO_USE_MIKMOD
-#else
-  #define AUDIO_USE_NULL
-#endif
 
 #endif /* __AUDIO_TRAIT_H__ */
