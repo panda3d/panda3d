@@ -155,7 +155,7 @@ run() {
     }
 
     if (_ls) {
-      root->ls();
+      root->ls(nout, 0);
     }
     
     // This should be guaranteed because we pass false to the
