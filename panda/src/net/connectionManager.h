@@ -19,15 +19,15 @@
 #ifndef CONNECTIONMANAGER_H
 #define CONNECTIONMANAGER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "netDatagram.h"
 #include "connection.h"
-
-#include <pointerTo.h>
+#include "pointerTo.h"
+#include "pset.h"
 
 #include <prlock.h>
-#include "pset.h"
+#include <prerror.h>
 
 class NetAddress;
 class ConnectionReader;
@@ -42,11 +42,12 @@ class ConnectionWriter;
 //               is handled via ConnectionReader, ConnectionWriter,
 //               and ConnectionListener.
 //
-//               This is actually an abstract class, since it does not
-//               define what to do when a connection is externally
-//               reset (i.e. closed on the other end, or dropped
-//               because of network errors).  See
-//               QueuedConnectionManager.
+//               You may use this class directly if you don't care
+//               about tracking which connections have been
+//               unexpectedly closed; otherwise, you should use
+//               QueuedConnectionManager to get reports about these
+//               events (or derive your own class to handle these
+//               events properly).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ConnectionManager {
 PUBLISHED:
@@ -67,7 +68,8 @@ PUBLISHED:
 
 protected:
   void new_connection(const PT(Connection) &connection);
-  virtual void connection_reset(const PT(Connection) &connection)=0;
+  virtual void connection_reset(const PT(Connection) &connection, 
+                                PRErrorCode errcode);
 
   void add_reader(ConnectionReader *reader);
   void remove_reader(ConnectionReader *reader);

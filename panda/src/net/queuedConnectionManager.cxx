@@ -98,12 +98,11 @@ get_reset_connection(PT(Connection) &connection) {
 //               been reset.
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionManager::
-connection_reset(const PT(Connection) &connection) {
+connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
+  ConnectionManager::connection_reset(connection, errcode);
+
   // Largely, we don't care if this particular queue fills up.  If it
   // does, it probably just means the user isn't bothering to track
   // this.
-  if (enqueue_unique_thing(connection)) {
-    net_cat.info()
-      << "Lost connection\n";
-  }
+  enqueue_unique_thing(connection);
 }

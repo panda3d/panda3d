@@ -257,6 +257,10 @@ close_connection(const PT(Connection) &connection) {
     // shut it down.  It will be eventually closed when all the
     // pointers let go.
 
+    net_cat.info()
+      << "Shutting down connection " << (void *)connection
+      << " locally.\n";
+
     PRStatus result = PR_Shutdown(socket, PR_SHUTDOWN_BOTH);
     if (result != PR_SUCCESS) {
       PRErrorCode errcode = PR_GetError();
@@ -300,6 +304,54 @@ new_connection(const PT(Connection) &connection) {
   PR_Lock(_set_mutex);
   _connections.insert(connection);
   PR_Unlock(_set_mutex);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::connection_reset
+//       Access: Protected, Virtual
+//  Description: An internal function called by the ConnectionReader,
+//               ConnectionWriter, or ConnectionListener when a
+//               connection has been externally reset.  This adds the
+//               connection to the queue of those which have recently
+//               been reset.
+////////////////////////////////////////////////////////////////////
+void ConnectionManager::
+connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
+  if (net_cat.is_info()) {
+    if (errcode == 0) {
+      net_cat.info()
+        << "Connection " << (void *)connection
+        << " was closed normally by the other end.\n";
+
+    } else {
+      net_cat.info()
+        << "Lost connection " << (void *)connection
+        << " unexpectedly: ";
+
+      switch (errcode) {
+      case PR_CONNECT_RESET_ERROR:
+        net_cat.info(false)
+          << "connection reset\n";
+        break;
+        
+#ifdef PR_SOCKET_SHUTDOWN_ERROR
+      case PR_SOCKET_SHUTDOWN_ERROR:
+        net_cat.info(false)
+          << "socket shutdown\n";
+        break;
+        
+      case PR_CONNECT_ABORTED_ERROR:
+        net_cat.info(false)
+          << "connection aborted\n";
+        break;
+#endif
+
+      default:
+        net_cat.info(false)
+          << "NSPR error code " << errcode << "\n";
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

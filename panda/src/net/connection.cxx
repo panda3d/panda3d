@@ -520,7 +520,7 @@ check_send_error(PRInt32 result, PRErrorCode errcode, PRInt32 bytes_to_send) {
       // The connection has been reset; tell our manager about it
       // and ignore it.
       if (_manager != (ConnectionManager *)NULL) {
-        _manager->connection_reset(this);
+        _manager->connection_reset(this, errcode);
       }
 
     } else if (errcode != PR_PENDING_INTERRUPT_ERROR) {

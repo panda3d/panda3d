@@ -19,13 +19,13 @@
 #ifndef QUEUEDCONNECTIONMANAGER_H
 #define QUEUEDCONNECTIONMANAGER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "connectionManager.h"
 #include "queuedReturn.h"
+#include "pdeque.h"
 
 #include <prlock.h>
-#include "pdeque.h"
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn< PT(Connection) >);
 
@@ -52,7 +52,8 @@ PUBLISHED:
   bool get_reset_connection(PT(Connection) &connection);
 
 protected:
-  virtual void connection_reset(const PT(Connection) &connection);
+  virtual void connection_reset(const PT(Connection) &connection, 
+                                PRErrorCode errcode);
 };
 
 #endif

@@ -481,7 +481,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
     // The socket was closed (!).  This shouldn't happen with a UDP
     // connection.  Oh well.  Report that and return.
     if (_manager != (ConnectionManager *)NULL) {
-      _manager->connection_reset(sinfo->_connection);
+      _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
     return;
@@ -558,7 +558,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
           ) {
         // The socket was closed.
         if (_manager != (ConnectionManager *)NULL) {
-          _manager->connection_reset(sinfo->_connection);
+          _manager->connection_reset(sinfo->_connection, errcode);
         }
 
       } else if (errcode != PR_PENDING_INTERRUPT_ERROR) {
@@ -570,7 +570,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     } else if (bytes_read == 0) {
       // The socket was closed.  Report that and return.
       if (_manager != (ConnectionManager *)NULL) {
-        _manager->connection_reset(sinfo->_connection);
+        _manager->connection_reset(sinfo->_connection, 0);
       }
       finish_socket(sinfo);
       return;
@@ -616,7 +616,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
           ) {
         // The socket was closed.
         if (_manager != (ConnectionManager *)NULL) {
-          _manager->connection_reset(sinfo->_connection);
+          _manager->connection_reset(sinfo->_connection, errcode);
         }
 
       } else if (errcode != PR_PENDING_INTERRUPT_ERROR) {
@@ -628,7 +628,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     } else if (bytes_read == 0) {
       // The socket was closed.  Report that and return.
       if (_manager != (ConnectionManager *)NULL) {
-        _manager->connection_reset(sinfo->_connection);
+        _manager->connection_reset(sinfo->_connection, 0);
       }
       finish_socket(sinfo);
       return;
@@ -695,7 +695,7 @@ process_raw_incoming_udp_data(SocketInfo *sinfo) {
     // The socket was closed (!).  This shouldn't happen with a UDP
     // connection.  Oh well.  Report that and return.
     if (_manager != (ConnectionManager *)NULL) {
-      _manager->connection_reset(sinfo->_connection);
+      _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
     return;
@@ -750,7 +750,7 @@ process_raw_incoming_tcp_data(SocketInfo *sinfo) {
   } else if (bytes_read == 0) {
     // The socket was closed.  Report that and return.
     if (_manager != (ConnectionManager *)NULL) {
-      _manager->connection_reset(sinfo->_connection);
+      _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
     return;
@@ -866,7 +866,17 @@ get_next_available_socket(PRIntervalTime timeout,
           // Something bad happened to this socket.  Tell the
           // ConnectionManager to drop it.
           if (_manager != (ConnectionManager *)NULL) {
-            _manager->connection_reset(sinfo->_connection);
+            // Perform a recv to force an error code.
+            char buffer[1];
+            PRInt32 got_bytes =
+              PR_Recv(sinfo->get_socket(), buffer, 1, 0, PR_INTERVAL_NO_WAIT);
+            if (got_bytes > 0) {
+              net_cat.error()
+                << "poll returned error flags " << hex << _poll[i].out_flags
+                << dec << " but read " << got_bytes << " from socket.\n";
+            }
+            PRErrorCode errcode = PR_GetError();
+            _manager->connection_reset(sinfo->_connection, errcode);
           }
           sinfo->_error = true;
           _reexamine_sockets = true;
