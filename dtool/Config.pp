@@ -108,14 +108,24 @@
 // nonempty string to force the package to be marked as installed).
 
 
-// Do you want to generate a C-callable interrogate interface?  This
-// is not presently used by any VR Studio code.
-#define INTERROGATE_C_INTERFACE
-
 // Do you want to generate a Python-callable interrogate interface?
-// This is done only if HAVE_PYTHON, below, is also true.
+// This is only necessary if you plan to make calls into Panda from a
+// program written in Python.  This is done only if HAVE_PYTHON,
+// below, is also true.
 #define INTERROGATE_PYTHON_INTERFACE 1
 
+// Do you want to generate a C-callable interrogate interface?  This
+// generates an interface similar to the Python interface above, with
+// a C calling convention.  It should be useful for most other kinds
+// of scripting language; the VR Studio used to use this to make calls
+// into Panda from Squeak.  This is not presently used by any VR
+// Studio code.
+#define INTERROGATE_C_INTERFACE
+
+// What additional options should be passed to interrogate when
+// generating either of the above two interfaces?  Generally, you
+// probably don't want to mess with this.
+#define INTERROGATE_OPTIONS -fnames -string -refcount -assert -promiscuous
 
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?  (If the directory

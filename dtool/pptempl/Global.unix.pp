@@ -36,3 +36,11 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 #else
   #define install_parser_inc_dir $[install_headers_dir]/parser-inc
 #endif
+
+#defer interrogate_options \
+    -DCPPPARSER -D__cplusplus $[SYSTEM_IGATE_FLAGS] \
+    -S$[install_parser_inc_dir] $[target_ipath:%=-I%] \
+    $[filter -D%,$[get_cflags] $[C++FLAGS]] \
+    $[INTERROGATE_OPTIONS] \
+    $[if $[INTERROGATE_PYTHON_INTERFACE],-python] \
+    $[if $[INTERROGATE_C_INTERFACE],-c]

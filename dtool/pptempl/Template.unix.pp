@@ -202,7 +202,7 @@ $[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb]
 
 lib$[TARGET]_igatescan = $[igatescan]
 $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out .c .cxx,$[igatescan]]
-	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] -DCPPPARSER -D__cplusplus $[SYSTEM_IGATE_FLAGS] -S$[install_parser_inc_dir] $[target_ipath:%=-I%] $[filter -D%,$[get_cflags] $[C++FLAGS]] -module "$[igatemod]" -library "$[igatelib]" -fnames -string -refcount -assert -promiscuous -python $(lib$[TARGET]_igatescan)
+	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
 $[igateoutput:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igateoutput]
 #define target $@
