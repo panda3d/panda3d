@@ -1,0 +1,33 @@
+#!/usr/local/bin/perl
+
+if ($#ARGV != -1) {
+   exit print "Usage: ctihave\n" ;
+}
+
+$tool = $ENV{"DTOOL"} ;
+if ( $tool eq "" ) {
+   die "not configured for using CTtools\n" ;
+}
+
+require "$tool/inc/ctutils.pl" ;
+require "$tool/inc/ctvspec.pl" ;
+require "$tool/inc/ctquery.pl" ;
+require "$tool/inc/ctproj.pl" ;
+require "$tool/inc/ctcm.pl" ;
+
+$projname = &CTProj ;
+$projname =~ tr/A-Z/a-z/ ;
+$flav = &CTQueryProj( $projname ) ;
+$spec = &CTResolveSpec( $projname, $flav ) ;
+
+if ( $projname eq "" ) {
+   exit print "Not currently in any project tree\n" ;
+}
+
+$result = &CTCMIHave( $projname, $flav, $spec ) ;
+if ( $result ne "" ) {
+    @splitlist = split( /\n/, $result ) ;
+    foreach $item ( @splitlist ) {
+	print $item . "\n" ;
+    }
+}

@@ -1,0 +1,23 @@
+#!/usr/local/bin/perl
+
+$tool = $ENV{"DTOOL"} ;
+if ( $tool eq "" ) {
+    die "not configured for using ct-tools\n" ;
+}
+
+require "$tool/inc/ctutils.pl" ;
+require "$tool/inc/ctvspec.pl" ;
+require "$tool/inc/ctquery.pl" ;
+require "$tool/inc/ctproj.pl" ;
+require "$tool/inc/ctcm.pl" ;
+
+$projname = &CTProj ;
+$projname =~ tr/A-Z/a-z/ ;
+$flav = &CTQueryProj( $projname ) ;
+$spec = &CTResolveSpec( $projname, $flav ) ;
+
+$line = join( " ", @ARGV ) ;
+
+if ( ! &CTCMMake( $line, $projname, $spec ) ) {
+    print STDERR "Could not make '$line'\n" ;
+}

@@ -1,0 +1,82 @@
+// Filename: configTable.h
+// Created by:  drose (15May00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#ifndef CONFIGTABLE_H
+#define CONFIGTABLE_H
+
+#include <dtoolbase.h>
+
+#include "config_setup.h"
+#include "config_dconfig.h"
+#include "symbolEnt.h"
+
+#include <vector>
+#include <map>
+
+namespace Config {
+
+class EXPCL_DTOOL ConfigTable {
+   private:
+      static ConfigTable* _instance;
+   public:
+      typedef SymbolEnt           SymEnt;
+      typedef vector_SymbolEnt    Symbol;
+   private:
+      typedef std::map<ConfigString, Symbol>      SymbolTable;
+      typedef std::map<ConfigString, SymbolTable> TableMap;
+      SymbolTable unqualified;
+      TableMap qualified;
+      bool _initializing;
+      bool configdbg;
+      bool readargs;
+      bool readenvs;
+      ConfigString pathsep;
+      ConfigString filesep;
+      ConfigString configname;
+      ConfigString configsuffix;
+      ConfigString configpath;
+      ConfigString configcmt;
+      ConfigString argsuffix;
+      ConfigString commandstub;
+
+      static void CropString(ConfigString& S);
+      bool IsComment(const ConfigString&);
+      static void UpCase(ConfigString&);
+      ConfigString NextWord(const ConfigString& S);
+      ConfigString PopNextWord(ConfigString& S);
+      void ParseConfigFile(istream&, const ConfigString&);
+      void ReadConfigFile(void);
+      void ParseCommandEnv(ConfigString&, const ConfigString&);
+      void ParseArgs(void);
+      INLINE void ConfigDbgDefault(void);
+      INLINE void ReadArgsDefault(void);
+      INLINE void ReadEnvsDefault(void);
+      INLINE void PathSepDefault(void);
+      INLINE void FileSepDefault(void);
+      INLINE void ConfigNameDefault(void);
+      INLINE void ConfigSuffixDefault(void);
+      INLINE void ConfigPathDefault(void);
+      INLINE void ConfigCmtDefault(void);
+      INLINE void ArgSuffixDefault(void);
+      INLINE void CommandStubDefault(void);
+      void MicroConfig(void);
+      void GetData(void);
+   protected:
+      ConfigTable(void) : _initializing(true) {}
+   public:
+      static ConfigTable* Instance(void);
+      bool AmInitializing(void);
+      static bool TrueOrFalse(const ConfigString& in, bool def = false);
+      bool Defined(const ConfigString& sym, const ConfigString qual="");
+      SymEnt Get(const ConfigString& sym, const ConfigString qual = "");
+      const Symbol& GetSym(const ConfigString& sym,
+			   const ConfigString qual = "");
+};
+
+#include "configTable.I"
+
+} // close Config namespace
+
+#endif

@@ -1,0 +1,104 @@
+#! /bin/sh
+#
+# get-cttree.sh
+#
+# Usage:
+#
+# get-cttree.sh [opts] output-file.tgz
+#
+# This script must be executed from within a project tree.
+#
+# Options:
+#
+#   None at present.
+#
+#ENDCOMMENT
+
+while getopts "h" flag; do
+  case $flag in
+    h) sed '/#ENDCOMMENT/,$d' <$0 >&2
+       exit 1;;
+    \?) exit 1;
+  esac
+done
+
+shift `expr $OPTIND - 1`
+output=$1
+projroot=`ctproj -r`
+
+if [ -z "$projroot" ]; then
+  echo ""
+  echo "You must execute this script in a project tree."
+  echo ""
+  exit 1
+fi
+
+if [ -z "$output" ]; then
+  sed '/#ENDCOMMENT/,$d' <$0 >&2
+  exit 1
+fi
+
+
+# Perform some sanity checks on input parameters.
+
+if [ ! -d "$projroot" ]; then
+  echo ""
+  echo "$projroot is not a directory!"
+  echo ""
+  exit 1
+fi
+
+if [ `basename $output .tgz` = `basename $output` ]; then
+  echo ""
+  echo "$output should end in .tgz"
+  echo ""
+  exit 1
+fi
+
+if [ ! -d /usr/atria ]; then
+  echo ""
+  echo "This script is intended to be run on an actual ClearCase vobs."
+  echo ""
+  exit 1
+fi
+
+projname=`basename $projroot`
+projtop=`dirname $projroot`
+
+if [ "$projname" = "tool" ]; then
+  echo ""
+  echo "This script should not be used on the tool tree."
+  echo ""
+  exit 1
+fi
+
+if [ -f "$output" ]; then
+  if rm -i $output; then
+    echo ""
+  else
+    echo "Not overwriting $output"
+    exit 1
+  fi
+elif [ -r "$output" -o -w "$output" ]; then
+  echo "Cannot overwrite $output"
+  exit 1
+else
+  echo ""
+fi
+
+# Check to make sure the local machine doesn't have anything checked out.
+cd $projroot
+outfile=/tmp/gc.$username.$projname.out
+cleartool lsco -s -me -recurse >$outfile
+if [ -s $outfile ]; then
+  echo ""
+  echo "Cannot build tarball; files still checked out in vobs:"
+  sed 's/^/  /;s/\.ct0\.//' $outfile
+  rm -f $outfile
+  echo ""
+  exit 1
+fi
+rm -f $outfile
+
+(cd $projtop; cleartool find $projname -nxn -print | grep -v '/lost+found' | cpio -H tar -v -o | gzip) >$output
+

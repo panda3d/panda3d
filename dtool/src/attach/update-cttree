@@ -1,0 +1,189 @@
+#! /bin/sh
+#
+# update-cttree.sh
+#
+# Usage:
+# 
+# update-cttree.sh [opts] hostname
+#
+# Uses rsh and rdist to update the indicated host with a fresh copy of the 
+# current project tree.
+#
+# This script must be executed from within a project tree.
+#
+# Options:
+#
+#   -u username  Specify the login name on the remote host.
+#
+#   -d dir       Specify the player install dir on the remote host.  This
+#                the directory above the project-tree-specific directory
+#                like 'panda' or 'tool'.  The default is 'player'.
+#
+#   -t           Touch the build-request timestamp file after updating.
+#                This assumes there's a cron job running on the remote
+#                machine checking the date on this file from time to time.
+#
+#   -f           Assume the user knows what he/she is doing, and don't bother
+#                to check that there are no files checked out in the vobs
+#                before releasing.  This can save considerable time when the
+#                system is extremely slow; however, it can be dangerous
+#                to accidentally release a checked-out file (because the
+#                file will then be write-access on the remote host, and
+#                neartool will not be able to track local changes made to it.)
+#
+#ENDCOMMENT
+
+username=`whoami`
+dirname=player
+touch_request=
+cocky_user=
+
+while getopts "u:d:tfh" flag; do
+  case $flag in
+    u) username=$OPTARG;;
+    d) dirname=$OPTARG;;
+    t) touch_request=y;;
+    f) cocky_user=y;;
+    h) sed '/#ENDCOMMENT/,$d' <$0 >&2
+       exit 1;;
+    \?) exit 1;
+  esac
+done
+
+shift `expr $OPTIND - 1`
+remote_host=$1
+projroot=`ctproj -r`
+
+if [ -z "$projroot" ]; then
+  echo ""
+  echo "You must execute this script in a project tree."
+  echo ""
+  exit 1
+fi
+
+if [ -z "$remote_host" ]; then
+  echo ""
+  echo "You must specify a remote hostname.  -h for help."
+  echo ""
+  exit 1
+fi
+
+if [ ! -d /usr/atria ]; then
+  echo ""
+  echo "This script is intended to be run on an actual ClearCase vobs."
+  echo ""
+  exit 1
+fi
+
+projname=`basename $projroot`
+projtop=`dirname $projroot`
+
+if [ "$projname" = "tool" ]; then
+  echo ""
+  echo "This script should not be used on the tool tree."
+  echo ""
+  exit 1
+fi
+
+outfile=/tmp/uc.$username.$projname.$remote_host.out
+errfile=/tmp/uc.$username.$projname.$remote_host.err
+rm -f $outfile $errfile
+
+# Check to make sure we can run rsh to the remote machine, and that
+# the remote machine doesn't have anything checked out.
+
+if rsh $remote_host -l $username "cd $dirname; find $projname -name .ct0.\* -print" >$outfile 2>$errfile; then
+  if [ ! -f $outfile ]; then
+    echo ""
+    echo "Error in processing; unable to generate $outfile."
+    echo ""
+    rm -f $outfile $errfile
+    exit 1
+  fi
+  if [ ! -f $errfile ]; then
+    echo ""
+    echo "Error in processing; unable to generate $errfile."
+    echo ""
+    rm -f $outfile $errfile
+    exit 1
+  fi
+  if [ -s $errfile ]; then
+    echo ""
+    echo "Unable to scan project tree $dirname/$projname on $remote_host."
+    echo ""
+    rm -f $outfile $errfile
+    exit 1
+  fi
+  if [ -s $outfile ]; then
+    echo ""
+    echo "Cannot update $remote_host; files still checked out on remote:"
+    sed 's/^/  /;s/\.ct0\.//' $outfile
+    rm -f $outfile $errfile
+    echo ""
+    exit 1
+  fi
+else
+  echo ""
+  echo "Cannot rsh to $remote_host as $username."
+  echo ""
+  rm -f $outfile $errfile
+  exit 1
+fi
+
+# Check to make sure the local machine doesn't have anything checked out.
+if [ -z "$cocky_user" ]; then
+  cd $projroot
+  cleartool lsco -s -me -recurse >$outfile
+  if [ -s $outfile ]; then
+    echo ""
+    echo "Cannot update from "`hostname`"; files still checked out in vobs:"
+    sed 's/^/  /;s/\.ct0\.//' $outfile
+    rm -f $outfile $errfile
+    echo ""
+    exit 1
+  fi
+fi
+
+rm -f $outfile $errfile
+
+
+#
+# Get the complete list of files in the tree we need to update.
+#
+cd $projtop
+filelist=${outfile}.files
+rm -f $filelist
+cleartool find $projname -nxn -print | grep -v '/lost+found' > $filelist
+
+#
+# Now build up a number of rdist files, as needed, to update these files.
+# We have to do this in stages because there seems to be a limit of about
+# 2000 files in one rdist file.
+#
+numlines=`wc -l $filelist | awk '{ print $1 }'`
+echo $projname contains $numlines files.
+
+startline=1
+while [ $startline -le $numlines ]; do
+  echo "FILES = (" >> $outfile
+  tail +$startline $filelist | head -2000 >> $outfile
+  echo ")" >> $outfile
+
+  echo '${FILES} -> '$username@$remote_host >>$outfile
+  echo "	install $dirname;" >> $outfile
+
+  if [ $touch_request ]; then
+    echo "  cmdspecial \"touch $dirname/$projname/build-request\" ;" >>$outfile
+  fi
+
+  if rdist -onochkowner,nochkgroup,numchkgroup,whole,nodescend -f $outfile; then
+    rm -f $outfile
+  else
+    echo "Error in rdist."
+    rm -f $outfile $filelist $errfile
+    exit 1
+  fi
+  startline=`expr $startline + 2000`
+done
+
+rm -f $filelist $errfile

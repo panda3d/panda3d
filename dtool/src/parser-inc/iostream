@@ -1,0 +1,32 @@
+// Filename: iostream
+// Created by:  drose (12May00)
+// 
+////////////////////////////////////////////////////////////////////
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef IOSTREAM_H
+#define IOSTREAM_H
+
+// We don't care about the actual definition of the various iostream
+// classes, but we do need to know the classnames that are available.
+
+class iostream {};
+class ostream {};
+class istream {};
+class fstream {};
+class ofstream {};
+class ifstream {};
+class stringstream {};
+class ostringstream {};
+class istringstream {};
+class streambuf {};
+
+extern istream cin;
+extern ostream cout;
+extern ostream cerr;
+
+#endif

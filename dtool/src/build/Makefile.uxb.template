@@ -1,0 +1,7 @@
+# Makefile for uxb (teleuse)
+
+#### flags to pass to uxb
+UFLAGS = 
+
+#### The uxb action is here.
+include $(DTOOL)/inc/Makefile.uxb.rules

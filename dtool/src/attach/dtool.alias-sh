@@ -1,0 +1,46 @@
+#! /bin/sh
+
+if [ -e $DTOOL/bin/neartool ]; then HAVE_NEARTOOL="yes"; fi
+if [ -z "$HAVE_NEARTOOL" ]; then HAVE_NEARTOOL="no"; fi
+export HAVE_NEARTOOL
+
+if [ -z "$HAVE_ATRIA" ]; then HAVE_ATRIA="no"; fi
+export HAVE_ATRIA
+
+if [ $HAVE_NEARTOOL = "yes" ]; then
+  alias ct='neartool'
+else
+  alias ct='cleartool'
+fi
+
+alias ctshowprojs='echo -n "\033P1.y"$USER"@"$HOST" -- "$CTPROJS"\033\\"; echo -n "\033P3.y"`echo $CTPROJS | cut -f1 -d:`\(`uname -n`\)"\033\\"'
+alias ctattach='source `ctattach.drv $*`; ctshowprojs'
+alias cta='ctattach'
+alias cta-ship='setenv CTSAVE $CTDEFAULT_FLAV ; setenv CTDEFAULT_FLAV ship ; ctattach $* ; setenv CTDEFAULT_FLAV $CTSAVE ; unsetenv CTSAVE'
+alias cta-release='setenv CTSAVE $CTDEFAULT_FLAV ; setenv CTDEFAULT_FLAV release ; ctattach $* ; setenv CTDEFAULT_FLAV $CTSAVE ; unsetenv CTSAVE'
+alias cta-install='setenv CTSAVE $CTDEFAULT_FLAV ; setenv CTDEFAULT_FLAV install ; ctattach $* ; setenv CTDEFAULT_FLAV $CTSAVE ; unsetenv CTSAVE'
+alias ctunattach='source `ctunattach.drv $*`; ctshowprojs'
+alias ctuna='ctunattach'
+
+if [ "$PENV" = "WIN32_DREAMCAST" ]; then
+  alias ctci='neartool ci'
+  alias ctco='neartool co'
+  alias ctmake='gmake'
+  alias emacs='/emacs/bin/runemacs'
+  alias emacs='/emacs/bin/runemacs -T "`logname`@`uname -n`  $CTPROJS" -xrm "Emacs*iconName: `echo $CTPROJS | cut -f1 -d:`(`uname -n`)" $CTEMACS_OPTS'
+
+elif [ "$HAVE_NEARTOOL" = "yes" ]; then
+  alias ctci='neartool ci'
+  alias ctco='neartool co'
+  alias ctmake='make'
+  alias emacs='emacs -T "`logname`@`uname -n`  $CTPROJS" -xrm "Emacs*iconName: `echo $CTPROJS | cut -f1 -d:`(`uname -n`)" $CTEMACS_OPTS'
+
+elif [ "$HAVE_ATRIA" = "yes" ]; then
+  alias ctci='cleartool ci'
+  alias ctco='cleartool co'
+  alias ctmake 'clearmake -C gnu $* |& grep -v "^clearmake: Warning: Config"'
+  alias emacs='emacs -T "`logname`@`uname -n`  $CTPROJS" -xrm "Emacs*iconName: `echo $CTPROJS | cut -f1 -d:`(`uname -n`)" $CTEMACS_OPTS'
+fi
+
+alias rlogin='rlogin $*; ctshowprojs'
+alias telnet='telnet $*; ctshowprojs'

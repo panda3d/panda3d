@@ -1,0 +1,23 @@
+#### Makefile for binaries.  Any fields commented out are optional.
+
+#### Target's name:
+#CTTARGET
+
+#CTINCLUDE $DTOOL/lib/Makefile.o.include
+
+#### Pull in standard binary make variables.
+include $(DTOOL)/inc/Makefile.bin.vars
+
+#### Other files and lib.  Include $(ODIR) in any .o names.
+# OFILES = 
+# LIBS = 
+
+#### Additional search directories for lib:
+# LPATH := $(LPATH) -L/my/directory -L/my/other/directory
+
+#### Other linker flags. 
+# LDFLAGS = 
+
+#### The bin action is here.
+include $(DTOOL)/inc/Makefile.bin.rules
+

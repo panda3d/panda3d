@@ -1,0 +1,210 @@
+// Filename: interrogateType.C
+// Created by:  drose (31Jul00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "interrogateType.h"
+#include "indexRemapper.h"
+#include "interrogate_datafile.h"
+
+#include <algorithm>
+
+// This static string is just kept around as a handy bogus return
+// value for functions that must return a const string reference.
+string InterrogateType::_empty_string;
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::Derivation::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void InterrogateType::Derivation::
+output(ostream &out) const {
+  out << _flags << " " << _base << " " << _upcast << " " << _downcast;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::Derivation::input
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void InterrogateType::Derivation::
+input(istream &in) {
+  in >> _flags >> _base >> _upcast >> _downcast;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::EnumValue::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void InterrogateType::EnumValue::
+output(ostream &out) const {
+  idf_output_string(out, _name);
+  idf_output_string(out, _scoped_name);
+  out << _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::EnumValue::input
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void InterrogateType::EnumValue::
+input(istream &in) {
+  idf_input_string(in, _name);
+  idf_input_string(in, _scoped_name);
+  in >> _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void InterrogateType::
+operator = (const InterrogateType &copy) {
+  InterrogateComponent::operator = (copy);
+  _flags = copy._flags;
+  _scoped_name = copy._scoped_name;
+  _true_name = copy._true_name;
+  _comment = copy._comment;
+  _outer_class = copy._outer_class;
+  _atomic_token = copy._atomic_token;
+  _wrapped_type = copy._wrapped_type;
+  _constructors = copy._constructors;
+  _destructor = copy._destructor;
+  _elements = copy._elements;
+  _methods = copy._methods;
+  _casts = copy._casts;
+  _derivations = copy._derivations;
+  _enum_values = copy._enum_values;
+  _nested_types = copy._nested_types;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::merge_with
+//       Access: Public
+//  Description: Combines type with the other similar definition.  If
+//               one type is "fully defined" and the other one isn't,
+//               the fully-defined type wins.
+////////////////////////////////////////////////////////////////////
+void InterrogateType::
+merge_with(const InterrogateType &other) {
+  // The only thing we care about copying from the non-fully-defined
+  // type right now is the global flag.
+
+  if (is_fully_defined()) {
+    // We win.
+    _flags |= (other._flags & F_global);
+
+  } else {
+    // They win.
+    int old_flags = (_flags & F_global);
+    (*this) = other;
+    _flags |= old_flags;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::output
+//       Access: Public
+//  Description: Formats the InterrogateType data for output to a data
+//               file.
+////////////////////////////////////////////////////////////////////
+void InterrogateType::
+output(ostream &out) const {
+  InterrogateComponent::output(out);
+
+  out << _flags << " ";
+  idf_output_string(out, _scoped_name);
+  idf_output_string(out, _true_name);
+  out << _outer_class << " "
+      << (int)_atomic_token << " "
+      << _wrapped_type << " ";
+  idf_output_vector(out, _constructors);
+  out << _destructor << " ";
+  idf_output_vector(out, _elements);
+  idf_output_vector(out, _methods);
+  idf_output_vector(out, _casts);
+  idf_output_vector(out, _derivations);
+  idf_output_vector(out, _enum_values);
+  idf_output_vector(out, _nested_types);
+  idf_output_string(out, _comment, '\n');
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::input
+//       Access: Public
+//  Description: Reads the data file as previously formatted by
+//               output().
+////////////////////////////////////////////////////////////////////
+void InterrogateType::
+input(istream &in) {
+  InterrogateComponent::input(in);
+
+  in >> _flags;
+  idf_input_string(in, _scoped_name);
+  idf_input_string(in, _true_name);
+
+  in >> _outer_class;
+  int token;
+  in >> token;
+  _atomic_token = (AtomicToken)token;
+  in >> _wrapped_type;
+
+  idf_input_vector(in, _constructors);
+  in >> _destructor;
+
+  idf_input_vector(in, _elements);
+  idf_input_vector(in, _methods);
+  idf_input_vector(in, _casts);
+  idf_input_vector(in, _derivations);
+  idf_input_vector(in, _enum_values);
+  idf_input_vector(in, _nested_types);
+  idf_input_string(in, _comment);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::remap_indices
+//       Access: Public
+//  Description: Remaps all internal index numbers according to the
+//               indicated map.  This called from
+//               InterrogateDatabase::remap_indices().
+////////////////////////////////////////////////////////////////////
+void InterrogateType::
+remap_indices(const IndexRemapper &remap) {
+  _outer_class = remap.map_from(_outer_class);
+  _wrapped_type = remap.map_from(_wrapped_type);
+
+  Functions::iterator fi;
+  for (fi = _constructors.begin(); fi != _constructors.end(); ++fi) {
+    (*fi) = remap.map_from(*fi);
+  }
+  _destructor = remap.map_from(_destructor);
+
+  Elements::iterator ei;
+  for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
+    (*ei) = remap.map_from(*ei);
+  }
+
+  for (fi = _methods.begin(); fi != _methods.end(); ++fi) {
+    (*fi) = remap.map_from(*fi);
+  }
+  for (fi = _casts.begin(); fi != _casts.end(); ++fi) {
+    (*fi) = remap.map_from(*fi);
+  }
+
+  Derivations::iterator di;
+  for (di = _derivations.begin(); di != _derivations.end(); ++di) {
+    (*di)._base = remap.map_from((*di)._base);
+    (*di)._upcast = remap.map_from((*di)._upcast);
+    (*di)._downcast = remap.map_from((*di)._downcast);
+  }
+
+  Types::iterator ti;
+  for (ti = _nested_types.begin(); ti != _nested_types.end(); ++ti) {
+    (*ti) = remap.map_from(*ti);
+  }
+
+}

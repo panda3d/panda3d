@@ -1,0 +1,57 @@
+// Filename: cppFile.h
+// Created by:  drose (11Nov99)
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef CPPFILE_H
+#define CPPFILE_H
+
+#include <dtoolbase.h>
+#include <filename.h>
+
+///////////////////////////////////////////////////////////////////
+// 	 Class : CPPFile
+// Description : This defines a source file (typically a C++ header
+//               file) that is parsed by the CPPParser.  Each
+//               declaration indicates the source file where it
+//               appeared.
+////////////////////////////////////////////////////////////////////
+class CPPFile {
+public:
+  enum Source {
+    S_local,       // File resides in the current directory
+    S_alternate,   // File resides in some other directory
+    S_system,      // File resides in a system directory
+    S_none,        // File is internally generated
+  };
+
+  CPPFile(const Filename &filename = "", 
+	  const Filename &filename_as_referenced = "", 
+	  Source source = S_none);
+  CPPFile(const CPPFile &copy);
+  void operator = (const CPPFile &copy);
+  ~CPPFile();
+
+  bool is_c_file() const;
+  static bool is_c_file(const Filename &filename);
+
+  void replace_nearer(const CPPFile &other);
+
+  bool operator < (const CPPFile &other) const;
+  bool operator == (const CPPFile &other) const;
+  bool operator != (const CPPFile &other) const;
+
+  const char *c_str() const;
+  bool empty() const;
+
+  Filename _filename;
+  Filename _filename_as_referenced;
+  Source _source;
+};
+
+inline ostream &operator << (ostream &out, const CPPFile &file) {
+  return out << file._filename;
+}
+
+#endif
+

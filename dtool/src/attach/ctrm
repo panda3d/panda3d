@@ -1,0 +1,31 @@
+#!/usr/local/bin/perl
+
+if ( $#ARGV < 0 ) {
+	exit print "Usage: ctrmelem element-name [...]\n" ;
+}
+
+$tool = $ENV{"DTOOL"} ;
+if ( $tool eq "" ) {
+   die "Environment not configured for CTtools" ;
+}
+
+require "$tool/inc/ctutils.pl" ;
+require "$tool/inc/ctvspec.pl" ;
+require "$tool/inc/ctquery.pl" ;
+require "$tool/inc/ctproj.pl" ;
+require "$tool/inc/ctcm.pl" ;
+
+$projname = &CTProj ;
+$projname =~ tr/A-Z/a-z/ ;
+$flav = &CTQueryProj( $projname ) ;
+$spec = &CTResolveSpec( $projname, $flav ) ;
+
+foreach $item ( @ARGV ) {
+    if ( -e $item ) {
+	if ( ! &CTCMRmElem( $item, $projname, $spec ) ) {
+	    print STDERR "Could not rmname '$item'\n" ;
+	}
+    } else {
+	print STDERR "No such file '$item'.\n" ;
+    }
+}

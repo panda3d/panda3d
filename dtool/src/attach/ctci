@@ -1,0 +1,55 @@
+#!/usr/local/bin/perl
+
+sub CTCiUsage {
+    print STDERR "Usage: ctci [-c \"comment\"] [-nc] element-name [...]\n" ;
+    print STDERR "Options:\n" ;
+    print STDERR "  -c \"comment\" : provide a comment about this action\n" ;
+    print STDERR "  -nc : expect no comment on this action\n" ;
+    exit;
+}
+
+if ( $#ARGV < 0 ) {
+    &CTCiUsage ;
+}
+
+$tool = $ENV{"DTOOL"} ;
+if ( $tool eq "" ) {
+   die "Environment not configured for CTtools" ;
+}
+
+require "$tool/inc/ctutils.pl" ;
+require "$tool/inc/ctvspec.pl" ;
+require "$tool/inc/ctquery.pl" ;
+require "$tool/inc/ctproj.pl" ;
+require "$tool/inc/ctcm.pl" ;
+
+$comment = "" ;
+if ( $ARGV[0] eq "-nc" ) {
+    shift( @ARGV ) ;
+    &CTUDebug( "-nc processed\n" ) ;
+}
+if ( $ARGV[0] eq "-c" ) {
+    shift( @ARGV ) ;
+    $comment = $ARGV[0] ;
+    shift( @ARGV ) ;
+    &CTUDebug( "setting comment to '" . $comment . "'\n" ) ;
+}
+
+if ( $#ARGV < 0 ) {
+    &CTCiUsage ;
+}
+
+$projname = &CTProj ;
+$projname =~ tr/A-Z/a-z/ ;
+$flav = &CTQueryProj( $projname ) ;
+$spec = &CTResolveSpec( $projname, $flav ) ;
+
+foreach $item ( @ARGV ) {
+    if ( -e $item ) {
+	if ( ! &CTCMCheckin( $item, $projname, $spec, $comment ) ) {
+	    print STDERR "Could not checkin '$item'\n" ;
+	}
+    } else {
+	print STDERR "No such file '$item'.\n" ;
+    }
+}

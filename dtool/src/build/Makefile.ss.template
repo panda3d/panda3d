@@ -1,0 +1,21 @@
+#### Makefile for ss interfaces.  Any fields commented out are optional.
+
+#### Target's name:
+#CTTARGET
+
+#### Pull in standard .ss make variables
+include $(DTOOL)/inc/Makefile.ss.vars
+
+#### Source files
+# HFILES  = 
+# HHFILES = 
+# HHDIRS  = 
+
+#### Additional ss files to be inlcuded.
+# OTHERSSFILES = 
+
+#### Flags to control meta-ss creation.
+# STRAIGHTINCLUDE = TRUE
+
+#### The .ss action is here.
+include $(DTOOL)/inc/Makefile.ss.rules

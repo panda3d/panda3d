@@ -1,0 +1,481 @@
+#! /usr/local/bin/bash
+#
+# get-delta.sh
+#
+# Usage:
+# 
+# get-delta.sh [opts] output-file.sh [file ...]
+#
+# This script must be executed from within a project tree.  It
+# examines the set of files that have been checked out (via neartool)
+# and modified, and generates a script file that can be used to apply
+# the changes made back to the main ClearCase vobs.
+#
+# By default, it generates a script for all checked-out files.  You
+# can restrict its operation to certain files and/or directories by
+# listing them on the command line.
+#
+# Options:
+#
+#   -c  collapse versioning information on local copy after completion.
+#       Use this option with caution, as it is irreversible (and
+#       noninterruptible).  Once the versioning information has been
+#       collapsed, it will be impossible to regenerate a script
+#       representing the changes that have been made locally; you
+#       should only do this when you are sure that your changes have
+#       been successfully applied to the other end.
+#
+#       On the other hand, if you forget to run get-delta with -c after
+#       you have successfully applied your changes, you may
+#       inadvertently attempt to apply them again if you subsequently
+#       try to apply more changes.
+#
+#ENDCOMMENT
+
+function usage {
+  sed '/#ENDCOMMENT/,$d' <$0 >&2
+  exit 1
+}
+
+#
+# list_comments ( dirname basename )
+#
+# Writes to stdout any comments associated with checked-out versions of
+# the indicated file, in order.
+#
+function list_comments {
+  local dirname=$1
+  local basename=$2
+  local filename=$dirname/$basename
+  local file comment version
+
+  if [ -f $dirname/.ct0.$basename ]; then
+    # Now look for comments, in version-number order.
+
+    # We use a series of ls commands so we don't try to sort the
+    # filenames between the one-, two-, and three-digit version
+    # numbers.
+
+    for file in `(cd $dirname; ls .ct[0-9].$basename; ls .ct[0-9][0-9].$basename; ls .ct[0-9][0-9][0-9].$basename) 2>/dev/null`; do
+      version=`echo $file | sed "s/^\.ct\([0-9]*\).*$/\1/"`
+      comment=$dirname/.ct${version}comment.$basename
+      if [ -f $comment ]; then
+	cat $comment 
+      fi
+    done
+  fi
+}
+
+#
+# get_fullpath ( local_dir )
+#
+# Sets $fullpath to the fully-qualified pathname associated with $local_dir.
+#
+function get_fullpath {
+  local local_dir=$1
+
+  if [ -z "$local_dir" ]; then
+    fullpath=`pwd`
+  else
+    if [ ! -d "$local_dir" ]; then
+      echo "Invalid directory: $local_dir" 1>&2
+      exit 1
+    fi
+    # If we use pwd instead of /bin/pwd, $PWD will be used, which will give
+    # the wrong answer
+    fullpath=`(cd $local_dir; /bin/pwd)`
+  fi
+}
+
+
+#
+# get_rel_dir ( root_dir local_dir )
+#
+# Sets $rel_dir to the string which represents $local_dir relative to
+# $root_dir.  This is a simple string-prefix operation, and could fail
+# in some obscure cases.
+#
+function get_rel_dir {
+  get_fullpath $1
+  local root_dir=$fullpath
+
+  get_fullpath $2
+  local local_dir=$fullpath
+
+  # Now remove the initial prefix.
+  if [ "$root_dir" = "$local_dir" ]; then
+    rel_dir="."
+  else
+    rel_dir=`echo $local_dir | sed 's:^'$root_dir/'::'`
+
+    if [ "$rel_dir" = "$local_dir" ]; then
+      echo "$local_dir is not a directory within $root_dir." 1>&2
+      exit 1
+    fi
+  fi
+}
+
+
+collapse=
+while getopts "ch" flag; do
+  case $flag in
+    c) collapse=y;;
+    h) usage;;
+    \?) exit 1;
+  esac
+done
+
+shift `expr $OPTIND - 1`
+output=$1
+shift
+projroot=`ctproj -r`
+
+if [ -z "$projroot" ]; then
+  echo "You must execute this script in a project tree."
+  exit 1
+fi
+
+if [ -z "$output" ]; then
+  usage
+fi
+
+
+# Perform some sanity checks on input parameters.
+
+if [ ! -d "$projroot" ]; then
+  echo "$projroot is not a directory!"
+  exit 1
+fi
+
+if [ `basename $output .sh` = `basename $output` ]; then
+  echo "$output should end in .sh"
+  exit 1
+fi
+
+if [ -f "$output" ]; then
+  rm -i $output
+  if [ -f "$output" ]; then
+    echo "Not overwriting $output"
+    exit 1
+  fi
+elif [ -e "$output" ]; then
+  echo "Cannot overwrite $output"
+  exit 1
+fi  
+
+echo ""
+
+# Temporary files we'll build up as we process the files.
+
+base=`basename $output`
+temp_ct0=/tmp/gd.ct0.$base
+temp_checkout=/tmp/gd.checkout.$base
+temp_dirs=/tmp/gd.dirs.$base
+temp_files=/tmp/gd.files.$base
+temp_diffs=/tmp/gd.diffs.$base
+
+rm -f $temp_ct0 $temp_checkout $temp_dirs $temp_files $temp_diffs
+touch $temp_ct0 $temp_dirs $temp_files
+
+
+# Get the list of files we'll want to delta in.
+
+if [ $# -eq 0 ]; then
+  # No explicit files, get all of them.
+  (cd $projroot; find . -name .ct0.\* -print) >>$temp_ct0
+else
+  # An explicit list of files.
+  for filename in $*; do
+    if [ -f $filename ]; then
+      dirname=`dirname $filename`
+      basename=`basename $filename`
+
+      if [ -f $dirname/.ct0.$basename ]; then
+        get_rel_dir $projroot $dirname
+	echo ./$rel_dir/.ct0.$basename >>$temp_ct0
+      else
+        echo $filename has no versions.
+      fi
+
+    elif [ -d $filename ]; then
+      get_rel_dir $projroot $filename
+
+      (cd $projroot; find ./$rel_dir -name .ct0.\* -print) >>$temp_ct0
+    
+    else
+      echo $filename not found.
+    fi
+  done
+fi
+
+
+# Now start to build up the script.
+
+echo "#! /bin/sh" >$output
+chmod 755 $output
+
+if [ ! -w $output ]; then
+  echo "Cannot write to $output!"
+  exit 1
+fi
+
+projname=`basename $projroot`
+
+# This part we cat in quoted, verbatim.
+cat << 'EOF' >>$output
+
+any_opts=
+list=
+checkout=
+patch=
+cleanup=
+checkin=
+delta=
+help=
+while getopts "lopcidfh" flag; do
+  any_opts=y
+  only_list=y
+  case $flag in
+    l) list=y;;
+    o) checkout=y; only_list=;;
+    p) patch=y; only_list=;;
+    c) cleanup=y; only_list=;;
+    i) checkin=y; only_list=;;
+    d) delta=y; only_list=;;
+    f) checkout=y
+       patch=y
+       cleanup=y
+       checkin=y
+       delta=y
+       only_list=;;
+    h) help=y;;
+    \?) exit 1;
+  esac
+done
+
+EOF
+
+# This part we cat in unquoted, so we can substitute the projname
+# variable.
+
+cat << EOFOUTER >>$output
+if [ \$help ]; then
+cat << 'EOF'
+
+This patch file was generated using get-delta on a remote $projname tree.
+It's designed to be run one time to apply the changes made remotely
+back to the main branch of the tree.
+
+It should be run from within your own view, somewhere within the
+$projname hierarchy on the ClearCase system.
+
+Options:
+
+  -l   List information about the patch file, including the creation
+       date and the list of modified files.
+
+  -o   Checkout all the relevant files and perform other ClearCase
+       operations (like renaming, creating, and removing files).
+
+  -p   Apply the relevant patches to all files after they have been
+       checked out.  If this operation fails, the rest of the script
+       will not continue.
+
+  -c   Cleanup after successfully patching by removing .orig and .rej
+       files.
+
+  -i   Checkin modified files after successfully patching.
+
+  -d   Perform final merge by executing ctdelta on modified files.
+
+  -f   Perform full checkout/patch/merge cycle.  This is equivalent to
+       specifying -opcid.
+
+  -h   This help page.
+
+If no options are specified, the default is -opc.
+
+EOF
+exit 0
+fi
+
+if [ -z "\$any_opts" ]; then
+  checkout=y
+  patch=y
+  cleanup=y
+fi
+EOFOUTER
+
+any_merged=
+
+# We start with the commands given in the project's .ctcmds file.
+ctcmds=$projroot/.ctcmds
+if [ -f $ctcmds ]; then
+  any_merged=y
+  cat $ctcmds >>$temp_checkout
+  if [ $collapse ]; then
+    rm $ctcmds
+  fi
+fi
+  
+
+for ct0 in `cat $temp_ct0`; do
+  dir=`dirname $ct0`
+  base=`basename $ct0 | sed 's/^\.ct0\.//'`
+  file=$dir/$base
+  ctnew=$projroot/$dir/.ctnew.$base
+
+  if (cd $projroot; diff -u $ct0 $file >>$temp_diffs); then
+    # If diff returned success, it means the files were identical.  In
+    # this case, don't bother checking it out.
+    echo "$file is unchanged."
+
+  else
+    # Otherwise, the files were genuinely different.  Check it out on
+    # the remote end.
+    echo $file
+
+    if [ -f $ctnew ]; then
+      # This file is newly created.  We need to create an element for
+      # it on the remote end.
+      eltype=`cat $ctnew`
+      if grep -x $dir $temp_dirs >/dev/null; then 
+        echo directory already checked out >/dev/null
+      else
+        echo "ctco -nc $dir" >>$temp_checkout
+        echo $dir >> $temp_dirs
+      fi
+      echo "touch $file" >>$temp_checkout
+      echo "ctmkelem -eltype $eltype $file << 'EOF' 2>/dev/null" >>$temp_checkout
+      list_comments $projroot/$dir $base >>$temp_checkout
+      echo EOF >>$temp_checkout
+
+      echo $file >> $temp_files
+    else
+      echo "ctco $file << 'EOF' 2>/dev/null" >>$temp_checkout
+      list_comments $projroot/$dir $base >>$temp_checkout
+      echo EOF >>$temp_checkout
+
+      echo $file >> $temp_files
+    fi
+  fi
+
+  if [ $collapse ]; then
+    echo Collapsing $file
+    neartool collapse $projroot/$file
+  fi
+done
+echo ""
+
+# Handle -l, list files modified
+echo "" >>$output
+echo 'if [ $list ]; then' >>$output
+echo '  echo ""' >>$output
+echo '  echo Patch file for '$projname' tree, built on '`date` >> $output
+echo '  echo File was built by '`whoami` on `hostname` >>$output
+echo '  echo ""' >>$output
+echo '  echo Affected files are:' >>$output
+echo '  cat <<EOF' >>$output
+sed "s/^\./  $projname/" $temp_files >>$output
+echo 'EOF' >>$output
+echo '  echo ""' >>$output
+echo 'fi' >>$output
+
+# Everything else depends on being in the proper tree.
+
+cat <<EOF >>$output
+if [ \$only_list ]; then
+  exit 0
+fi
+
+projroot=\`ctproj -r\`
+if [ -z "\$projroot" ]; then
+  echo ""
+  echo "You must execute this script within the $projname tree."
+  echo ""
+  exit 1
+fi
+if [ \`basename \$projroot\` != "$projname" ]; then
+  echo ""
+  echo "This script is intended for the $projname tree."
+  echo ""
+  exit 1
+fi
+if [ ! -d /usr/atria ]; then
+  echo ""
+  echo "This script is intended to be run on an actual ClearCase vobs."
+  echo ""
+  exit 1
+fi
+tmpfile=\`whoami\`-merge-$projname.tmp
+cd \$projroot
+touch \$tmpfile
+EOF
+
+
+# Handle -o, checkout stuff (and perform general ClearCase changes)
+echo "" >>$output
+echo 'if [ $checkout ]; then' >>$output
+if [ -f $temp_checkout ]; then
+  cat $temp_checkout >> $output
+else
+  echo 'echo Nothing to checkout.' >>$output
+fi
+echo 'fi' >>$output
+
+# Handle -p, apply patch
+echo "" >>$output
+echo 'if [ $patch ]; then' >>$output
+if [ -f $temp_diffs ]; then
+  any_merged=y;
+
+  echo "  echo ''" >> $output
+  echo "  echo Applying patches." >> $output
+  echo "  if sed 's/^X//' << 'EOF' | patch -fsu; then" >>$output
+
+  sed 's/^/X/' < $temp_diffs >>$output
+  echo EOF >>$output
+
+  echo "    echo All patches applied successfully." >>$output
+  echo "    echo ''" >>$output
+  echo "  else" >>$output
+  echo "    echo Some conflicts detected:" >>$output
+  echo "    find . -name '*.rej' -newer \$tmpfile -print" >>$output
+  echo "    rm -f \$tmpfile" >>$output
+  echo "    exit 1" >>$output
+  echo "  fi" >>$output
+else
+  echo '  echo No patches to apply.' >>$output
+fi
+echo 'fi' >>$output
+echo "rm -f \$tmpfile" >>$output
+
+# Handle -c, cleanup
+echo "" >>$output
+echo 'if [ $cleanup ]; then' >>$output
+sed 's/^\(.*\)$/  rm -f \1.orig \1.rej/' <$temp_files >>$output
+echo 'fi' >>$output
+
+# Handle -i, checkin
+echo "" >>$output
+echo 'if [ $checkin ]; then' >>$output
+sed 's/^\(.*\)$/  ctci -nc \1/' <$temp_files >>$output
+sed 's/^\(.*\)$/  ctci -nc \1/' <$temp_dirs >>$output
+echo 'fi' >>$output
+
+# Handle -d, delta
+echo "" >>$output
+echo 'if [ $delta ]; then' >>$output
+sed 's/^\(.*\)$/  ctdelta \1/' <$temp_files >>$output
+sed 's/^\(.*\)$/  ctdelta \1/' <$temp_dirs >>$output
+echo 'fi' >>$output
+
+rm -f $temp_ct0 $temp_checkout $temp_dirs $temp_files $temp_diffs
+
+if [ -z "$any_merged" ]; then
+  echo "Nothing to do!"
+  echo ""
+  rm -f $output
+  exit 1
+fi
+

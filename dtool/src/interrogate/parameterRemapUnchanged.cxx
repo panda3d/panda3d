@@ -1,0 +1,17 @@
+// Filename: parameterRemapUnchanged.C
+// Created by:  drose (01Aug00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "parameterRemapUnchanged.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParameterRemapUnchanged::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ParameterRemapUnchanged::
+ParameterRemapUnchanged(CPPType *orig_type) :
+  ParameterRemap(orig_type)
+{
+}

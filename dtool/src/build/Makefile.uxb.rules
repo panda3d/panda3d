@@ -1,0 +1,20 @@
+# UXB (teleuse) Makefile rules
+
+ifneq (,$(OPTIMIZE))
+UFLAGS := $(UFLAGS) -DOPTIMIZE
+endif
+
+all:
+	uxb $(UFLAGS)
+
+clean:
+	uxb $(UFLAGS) clean
+
+cleanall:
+	uxb $(UFLAGS) delete
+	rm -rf ii_files
+
+list:
+	@echo -n	
+
+install: all
