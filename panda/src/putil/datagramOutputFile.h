@@ -19,7 +19,7 @@
 #ifndef DATAGRAMOUTPUTFILE_H
 #define DATAGRAMOUTPUTFILE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "datagramSink.h"
 #include "filename.h"
@@ -34,18 +34,21 @@ class EXPCL_PANDA DatagramOutputFile : public DatagramSink {
 public:
   INLINE DatagramOutputFile();
 
-  INLINE bool open(Filename filename);
+  bool open(Filename filename);
+  bool open(ostream &out);
+
+  void close();
 
   bool write_header(const string &header);
   virtual bool put_datagram(const Datagram &data);
   virtual bool is_error();
 
-  INLINE void close();
-
 private:
   bool _wrote_first_datagram;
   bool _error;
-  ofstream _out;
+  ofstream _out_file;
+  ostream *_out;
+  bool _owns_out;
 };
 
 #include "datagramOutputFile.I"

@@ -35,13 +35,13 @@
 //     Function: DatagramInputFile::open
 //       Access: Public
 //  Description: Opens the indicated filename for reading.  Returns
-//               true if successful, false on failure.
+//               true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
 open(Filename filename) {
+  close();
+
   // DatagramInputFiles are always binary.
-  _read_first_datagram = false;
-  _error = false;
   filename.set_binary();
 
   if (use_vfs) {
@@ -63,6 +63,44 @@ open(Filename filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::open
+//       Access: Public
+//  Description: Starts reading from the indicated stream.  Returns
+//               true on success, false on failure.  The
+//               DatagramInputFile does not take ownership of the
+//               stream; you are responsible for closing or deleting
+//               it when you are done.
+////////////////////////////////////////////////////////////////////
+bool DatagramInputFile::
+open(istream &in) {
+  close();
+
+  _in = &in;
+  _owns_in = false;
+
+  return !_in->fail();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::close
+//       Access: Public
+//  Description: Closes the file.  This is also implicitly done when
+//               the DatagramInputFile destructs.
+////////////////////////////////////////////////////////////////////
+void DatagramInputFile::
+close() {
+  _in_file.close();
+  if (_owns_in) {
+    delete _in;
+  }
+  _in = (istream *)NULL;
+  _owns_in = false;
+
+  _read_first_datagram = false;
+  _error = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::read_header
 //       Access: Public
 //  Description: Reads a sequence of bytes from the beginning of the
@@ -74,6 +112,7 @@ open(Filename filename) {
 bool DatagramInputFile::
 read_header(string &header, size_t num_bytes) {
   nassertr(!_read_first_datagram, false);
+  nassertr(_in != (istream *)NULL, false);
 
   char *buffer = (char *)alloca(num_bytes);
   nassertr(buffer != (char *)NULL, false);
@@ -99,6 +138,7 @@ get_datagram(Datagram &data) {
   #ifdef SKYLER_TIMER //[
     Skyler_timer_file.on();
   #endif //]
+  nassertr(_in != (istream *)NULL, false);
   _read_first_datagram = true;
 
   // First, get the size of the upcoming datagram.  We do this with
@@ -147,7 +187,7 @@ get_datagram(Datagram &data) {
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
 is_eof() {
-  return _in->eof();
+  return _in != (istream *)NULL ? _in->eof() : true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,6 +198,10 @@ is_eof() {
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
 is_error() {
+  if (_in == (istream *)NULL) {
+    return true;
+  }
+
   if (_in->fail()) {
     _error = true;
   }

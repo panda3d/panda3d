@@ -26,6 +26,7 @@
 #include "filename.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamFile::Constructor
@@ -55,10 +56,8 @@ BamFile::
 //               Returns true if successful, false on error.
 ////////////////////////////////////////////////////////////////////
 bool BamFile::
-open_read(const Filename &filename, bool report_errors) {
+open_read(const Filename &bam_filename, bool report_errors) {
   close();
-
-  Filename bam_filename(filename);
 
   if (use_vfs) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -84,24 +83,26 @@ open_read(const Filename &filename, bool report_errors) {
     return false;
   }
 
-  string head;
-  if (!_din.read_header(head, _bam_header.size())) {
-    loader_cat.error() << bam_filename << " is not a valid BAM file.\n";
+  return continue_open_read(bam_filename, report_errors);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamFile::open_read
+//       Access: Public
+//  Description: Attempts to open the indicated stream for reading.
+//               The filename is just for information purposes only.
+//               Returns true if successful, false on error.
+////////////////////////////////////////////////////////////////////
+bool BamFile::
+open_read(istream &in, const string &bam_filename, bool report_errors) {
+  close();
+
+  if (!_din.open(in)) {
+    loader_cat.error() << "Could not read bam: " << bam_filename << "\n";
     return false;
   }
 
-  if (head != _bam_header) {
-    loader_cat.error() << bam_filename << " is not a valid BAM file.\n";
-    return false;
-  }
-
-  _reader = new BamReader(&_din);
-  if (!_reader->init()) {
-    close();
-    return false;
-  }
-
-  return true;
+  return continue_open_read(bam_filename, report_errors);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,6 +157,67 @@ resolve() {
   return _reader->resolve();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BamFile::read_node
+//       Access: Public
+//  Description: Although the bam file format is general enough to
+//               store a list of objects of arbitrary type, bam files
+//               on disk usually contain just one object, a PandaNode
+//               that is the root of a scene graph.  (Bam files that
+//               store other kinds of things are usually given the
+//               extension "boo", for "binary other objects", to
+//               differentiate them from the normal scene graph type
+//               file.)
+//
+//               This is a convenience method for when you believe you
+//               are reading a scene graph bam file.  It reads the one
+//               PandaNode and returns it.  It also calls resolve() to
+//               fully resolve the object, since we expect this will
+//               be the only object in the file.
+//
+//               If the bam file contains something other than a
+//               PandaNode, an error is printed and NULL is returned.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) BamFile::
+read_node(bool report_errors) {
+  PT(PandaNode) result;
+
+  TypedWritable *object = read_object();
+  if (object == TypedWritable::Null) {
+    if (report_errors) {
+      loader_cat.error() << "Bam file " << _bam_filename << " is empty.\n";
+    }
+
+  } else if (!object->is_of_type(PandaNode::get_class_type())) {
+    if (report_errors) {
+      loader_cat.error()
+        << "Bam file " << _bam_filename
+        << " contains a " << object->get_type() << ", not a PandaNode.\n";
+    }
+
+  } else {
+    result = DCAST(PandaNode, object);
+
+    if (report_errors) {
+      read_object();
+      if (!is_eof()) {
+        loader_cat.warning()
+          << "Ignoring extra objects in " << _bam_filename << "\n";
+      }
+    }
+  }
+
+  if (!resolve()) {
+    if (report_errors) {
+      loader_cat.error()
+        << "Unable to resolve Bam file.\n";
+      result = (PandaNode *)NULL;
+    }
+  }
+
+  return result;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamFile::open_write
@@ -166,30 +228,39 @@ resolve() {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool BamFile::
-open_write(const Filename &filename, bool) {
+open_write(const Filename &bam_filename, bool report_errors) {
   close();
 
-  loader_cat.info() << "Writing " << filename << "\n";
+  loader_cat.info() << "Writing " << bam_filename << "\n";
 
-  filename.unlink();
-  if (!_dout.open(filename)) {
-    loader_cat.error() << "Unable to open " << filename << "\n";
+  bam_filename.unlink();
+  if (!_dout.open(bam_filename)) {
+    if (report_errors) {
+      loader_cat.error() << "Unable to open " << bam_filename << "\n";
+    }
     return false;
   }
 
-  if (!_dout.write_header(_bam_header)) {
-    loader_cat.error() << "Unable to write to " << filename << "\n";
+  return continue_open_write(bam_filename, report_errors);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamFile::open_write
+//       Access: Public
+//  Description: Attempts to open the indicated stream for writing.
+//               The filename is just for information purposes only.
+//               Returns true if successful, false on error.
+////////////////////////////////////////////////////////////////////
+bool BamFile::
+open_write(ostream &out, const string &bam_filename, bool report_errors) {
+  close();
+
+  if (!_dout.open(out)) {
+    loader_cat.error() << "Could not write bam: " << bam_filename << "\n";
     return false;
   }
 
-  _writer = new BamWriter(&_dout);
-
-  if (!_writer->init()) {
-    close();
-    return false;
-  }
-
-  return true;
+  return continue_open_write(bam_filename, report_errors);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,4 +358,67 @@ get_current_major_ver() {
 int BamFile::
 get_current_minor_ver() {
   return _bam_minor_ver;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamFile::continue_open_read
+//       Access: Private
+//  Description: Reads the header of the recently-opened bam stream
+//               and prepares to read the contents of the file.
+//               Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool BamFile::
+continue_open_read(const string &bam_filename, bool report_errors) {
+  _bam_filename = bam_filename;
+
+  string head;
+  if (!_din.read_header(head, _bam_header.size())) {
+    if (report_errors) {
+      loader_cat.error() << _bam_filename << " is not a valid BAM file.\n";
+    }
+    return false;
+  }
+
+  if (head != _bam_header) {
+    if (report_errors) {
+      loader_cat.error() << _bam_filename << " is not a valid BAM file.\n";
+    }
+    return false;
+  }
+
+  _reader = new BamReader(&_din);
+  if (!_reader->init()) {
+    close();
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamFile::continue_open_write
+//       Access: Private
+//  Description: Writers the header of the recently-opened bam stream
+//               and prepares to write the contents of the file.
+//               Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool BamFile::
+continue_open_write(const string &bam_filename, bool report_errors) {
+  _bam_filename = bam_filename;
+
+  if (!_dout.write_header(_bam_header)) {
+    if (report_errors) {
+      loader_cat.error() << "Unable to write to " << _bam_filename << "\n";
+    }
+    return false;
+  }
+
+  _writer = new BamWriter(&_dout);
+
+  if (!_writer->init()) {
+    close();
+    return false;
+  }
+
+  return true;
 }

@@ -23,6 +23,8 @@
 
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"
+#include "pandaNode.h"
+#include "pointerTo.h"
 
 class BamReader;
 class BamWriter;
@@ -49,12 +51,18 @@ PUBLISHED:
   BamFile();
   ~BamFile();
 
-  bool open_read(const Filename &filename, bool report_errors = true);
+  bool open_read(const Filename &bam_filename, bool report_errors = true);
+  bool open_read(istream &in, const string &bam_filename = "stream",
+                 bool report_errors = true);
   TypedWritable *read_object();
   bool is_eof() const;
   bool resolve();
 
-  bool open_write(const Filename &filename, bool report_errors = true);
+  PT(PandaNode) read_node(bool report_errors = true);
+
+  bool open_write(const Filename &bam_filename, bool report_errors = true);
+  bool open_write(ostream &out, const string &bam_filename = "stream",
+                  bool report_errors = true);
   bool write_object(const TypedWritable *object);
 
   void close();
@@ -68,6 +76,10 @@ PUBLISHED:
   int get_current_minor_ver();
 
 private:
+  bool continue_open_read(const string &bam_filename, bool report_errors);
+  bool continue_open_write(const string &bam_filename, bool report_errors);
+
+  string _bam_filename;
   DatagramInputFile _din;
   DatagramOutputFile _dout;
   BamReader *_reader;

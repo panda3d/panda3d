@@ -19,6 +19,62 @@
 #include "datagramOutputFile.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::open
+//       Access: Public
+//  Description: Opens the indicated filename for reading.  Returns
+//               true if successful, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DatagramOutputFile::
+open(Filename filename) {
+  close();
+
+  // DatagramOutputFiles are always binary.
+  filename.set_binary();
+
+  _out = &_out_file;
+  _owns_out = false;
+  return filename.open_write(_out_file);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::open
+//       Access: Public
+//  Description: Starts writing to the indicated stream.  Returns
+//               true on success, false on failure.  The
+//               DatagramOutputFile does not take ownership of the
+//               stream; you are responsible for closing or deleting
+//               it when you are done.
+////////////////////////////////////////////////////////////////////
+bool DatagramOutputFile::
+open(ostream &out) {
+  close();
+
+  _out = &out;
+  _owns_out = false;
+
+  return !_out->fail();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::close
+//       Access: Public
+//  Description: Closes the file.  This is also implicitly done when
+//               the DatagramOutputFile destructs.
+////////////////////////////////////////////////////////////////////
+void DatagramOutputFile::
+close() {
+  _out_file.close();
+  if (_owns_out) {
+    delete _out;
+  }
+  _out = (ostream *)NULL;
+  _owns_out = false;
+
+  _wrote_first_datagram = false;
+  _error = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramOutputFile::write_header
 //       Access: Public
 //  Description: Writes a sequence of bytes to the beginning of the
@@ -29,10 +85,11 @@
 ////////////////////////////////////////////////////////////////////
 bool DatagramOutputFile::
 write_header(const string &header) {
+  nassertr(_out != (ostream *)NULL, false);
   nassertr(!_wrote_first_datagram, false);
 
-  _out.write(header.data(), header.size());
-  return !_out.fail();
+  _out->write(header.data(), header.size());
+  return !_out->fail();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,18 +100,19 @@ write_header(const string &header) {
 ////////////////////////////////////////////////////////////////////
 bool DatagramOutputFile::
 put_datagram(const Datagram &data) {
+  nassertr(_out != (ostream *)NULL, false);
   _wrote_first_datagram = true;
 
   // First, write the size of the upcoming datagram.  We do this with
   // the help of a second datagram.
   Datagram size;
   size.add_uint32(data.get_length());
-  _out.write((const char *)size.get_data(), size.get_length());
+  _out->write((const char *)size.get_data(), size.get_length());
 
   // Now, write the datagram itself.
-  _out.write((const char *)data.get_data(), data.get_length());
+  _out->write((const char *)data.get_data(), data.get_length());
 
-  return !_out.fail();
+  return !_out->fail();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +123,11 @@ put_datagram(const Datagram &data) {
 ////////////////////////////////////////////////////////////////////
 bool DatagramOutputFile::
 is_error() {
-  if (_out.fail()) {
+  if (_out == (ostream *)NULL) {
+    return true;
+  }
+
+  if (_out->fail()) {
     _error = true;
   }
   return _error;

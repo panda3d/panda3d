@@ -24,24 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE DatagramInputFile::
 DatagramInputFile() {
-  _error = true;
+  _error = false;
   _read_first_datagram = false;
   _in = (istream *)NULL;
   _owns_in = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramInputFile::close
-//       Access: Public
-//  Description: Closes the file.  This is also implicitly done when
-//               the DatagramInputFile destructs.
-////////////////////////////////////////////////////////////////////
-INLINE void DatagramInputFile::
-close() {
-  _in_file.close();
-  if (_owns_in) {
-    delete _in;
-    _in = (istream *)NULL;
-    _owns_in = false;
-  }
 }

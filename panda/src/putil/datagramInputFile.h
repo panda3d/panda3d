@@ -19,7 +19,7 @@
 #ifndef DATAGRAMINPUTFILE_H
 #define DATAGRAMINPUTFILE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "datagramGenerator.h"
 #include "filename.h"
@@ -35,13 +35,14 @@ public:
   INLINE DatagramInputFile();
 
   bool open(Filename filename);
+  bool open(istream &in);
+
+  void close();
 
   bool read_header(string &header, size_t num_bytes);
   virtual bool get_datagram(Datagram &data);
   virtual bool is_eof();
   virtual bool is_error();
-
-  INLINE void close();
 
 private:
   bool _read_first_datagram;

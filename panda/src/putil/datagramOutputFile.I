@@ -24,32 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE DatagramOutputFile::
 DatagramOutputFile() {
-  _error = true;
-  _wrote_first_datagram = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::open
-//       Access: Public
-//  Description: Opens the indicated filename for reading.  Returns
-//               true if successful, false on failure.
-////////////////////////////////////////////////////////////////////
-INLINE bool DatagramOutputFile::
-open(Filename filename) {
-  // DatagramOutputFiles are always binary.
-  _wrote_first_datagram = false;
   _error = false;
-  filename.set_binary();
-  return filename.open_write(_out);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::close
-//       Access: Public
-//  Description: Closes the file.  This is also implicitly done when
-//               the DatagramOutputFile destructs.
-////////////////////////////////////////////////////////////////////
-INLINE void DatagramOutputFile::
-close() {
-  _out.close();
+  _wrote_first_datagram = false;
+  _out = (ostream *)NULL;
+  _owns_out = false;
 }
