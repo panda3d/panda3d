@@ -97,6 +97,9 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         # level editors should call this func to tweak attributes of level
         # entities
         def setAttribChange(self, entId, attribName, value, username='SYSTEM'):
+            DistributedLevelAI.notify.info(
+                "setAttribChange(%s): %s, %s = %s" %
+                (username, entId, attribName, repr(value)))
             # send a copy to the client-side level obj FIRST
             # (it may be a message that creates an entity)
             self.sendUpdate('setAttribChange',
