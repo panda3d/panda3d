@@ -138,3 +138,5 @@ INLINE void Texture::
 apply(GraphicsStateGuardianBase *gsg) {
   gsg->apply_texture(prepare(gsg));
 }
+
+

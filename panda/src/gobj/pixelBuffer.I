@@ -70,6 +70,20 @@ INLINE PixelBuffer::
 ~PixelBuffer(void) {
 }
 
+
+INLINE void PixelBuffer::
+set_size(int x_org, int y_org, int x_size, int y_size) {
+  if ((_xsize != x_size) || (_ysize != y_size) ||
+      (_xorg != x_org) || (_yorg != y_org)) {
+    make_dirty();
+  }
+
+  _xsize = x_size;
+  _ysize = y_size;
+  _xorg = x_org;
+  _yorg = y_org;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PixelBuffer::set_xsize
 //       Access:

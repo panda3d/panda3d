@@ -70,6 +70,30 @@ PixelBuffer(int xsize, int ysize, int components, int component_width,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Constructor
+//       Access: Public
+//  Description:  create a pixel buffer with specified format but do not alloc CPU RAM for it
+////////////////////////////////////////////////////////////////////
+PixelBuffer::
+PixelBuffer(int xsize, int ysize, int components, int component_width, Type type, Format format,
+            bool bAllocateRAM) : ImageBuffer()
+{
+  _xsize = xsize;
+  _ysize = ysize;
+  _xorg = 0;
+  _yorg = 0;
+  _border = 0;
+  _components = components;
+  _component_width = component_width;
+  _type = type;
+  _format = format;
+  if(bAllocateRAM)
+    _image = PTA_uchar::empty_array((unsigned int)(_xsize * _ysize * _components * _component_width));
+   else _image = PTA_uchar();
+  _loaded = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PixelBuffer::Copy Constructor
 //       Access: Public
 //  Description:

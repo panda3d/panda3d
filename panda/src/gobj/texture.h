@@ -75,6 +75,8 @@ PUBLISHED:
 
 PUBLISHED:
   Texture();
+  Texture(int xsize, int ysize, int components, int component_width, PixelBuffer::Type type, PixelBuffer::Format format,
+          bool bAllocateRAM);
   ~Texture();
 
   bool read(const Filename &name);
@@ -158,6 +160,7 @@ public:
   // pixel buffer when needed.  Know what you are doing!
   PT(PixelBuffer) _pbuffer;
 
+/*
   // If you request a region from the framebuffer that is not a power of 2,
   // we need to grab a larger region that is a power of 2 that contains the
   // requested region and set the pixel buffer size accordingly.  We store
@@ -165,7 +168,7 @@ public:
   bool _has_requested_size;
   int _requested_w;
   int _requested_h;
-
+*/
 
 
   // Datagram stuff

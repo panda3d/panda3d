@@ -124,7 +124,28 @@ Texture() : ImageBuffer() {
   _anisotropic_degree = 1;
   _keep_ram_image = false;
   _pbuffer = new PixelBuffer;
-  _has_requested_size = false;
+  // _has_requested_size = false;
+  _all_dirty_flags = 0;
+  memset(&_border_color,0,sizeof(Colorf));
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+Texture::
+Texture(int xsize, int ysize, int components, int component_width, PixelBuffer::Type type, 
+        PixelBuffer::Format format, bool bAllocateRAM) : ImageBuffer() {
+  _magfilter = FT_nearest;
+  _minfilter = FT_nearest;
+  _wrapu = WM_repeat;
+  _wrapv = WM_repeat;
+  _anisotropic_degree = 1;
+  _keep_ram_image = bAllocateRAM;
+  _pbuffer = new PixelBuffer(xsize,ysize,components,component_width,type,format,bAllocateRAM);
+  // _has_requested_size = false;
   _all_dirty_flags = 0;
   memset(&_border_color,0,sizeof(Colorf));
 }

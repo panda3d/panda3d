@@ -70,7 +70,10 @@ public:
     F_blue,
     F_alpha,
     F_rgb,     // any suitable RGB mode, whatever the hardware prefers
-    F_rgb5,    // specifically, 5 bits per R,G,B channel
+    F_rgb5,    // specifically, 5 bits per R,G,B channel.  
+               // this is paired with T_unsigned_byte.  really T_unsigned_byte
+               // should not be specified for this one, it should use
+               // T_unsigned_5bits or something
     F_rgb8,    // 8 bits per R,G,B channel
     F_rgb12,   // 12 bits per R,G,B channel
     F_rgb332,  // 3 bits per R & G, 2 bits for B
@@ -88,6 +91,9 @@ public:
   PixelBuffer(void);
   PixelBuffer(int xsize, int ysize, int components,
               int component_width, Type type, Format format);
+  PixelBuffer(int xsize, int ysize, int components,
+              int component_width, Type type, Format format,
+              bool bAllocateRAM);
   PixelBuffer(const PixelBuffer &copy);
   void operator = (const PixelBuffer &copy);
 
@@ -117,6 +123,7 @@ public:
   INLINE void set_ysize(int size);
   INLINE void set_xorg(int org);
   INLINE void set_yorg(int org);
+  INLINE void set_size(int x_org, int y_org, int x_size, int y_size);
   INLINE void set_format(Format format);
 
   INLINE int get_xsize() const;
