@@ -482,7 +482,10 @@ class TaskManager:
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
         t = globalClock.getFrameTime()
+        timeDelta = t - globalClock.getRealTime()
         globalClock.setRealTime(t)
+
+        messenger.send("resetClock", [timeDelta])
 
         if self.resumeFunc != None:
             self.resumeFunc()
