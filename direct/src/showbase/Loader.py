@@ -145,28 +145,11 @@ class Loader:
         if phaseChecker:
             phaseChecker(modelPath)
 
-        # Check the filename extension.
-        fn = Filename(modelPath)
-        extension = fn.getExtension()
-
-        if extension == "" or extension == "egg" or extension == "bam":
-            # A traditional model file is probably an old-style,
-            # static font.
-            node = ModelPool.loadModel(modelPath)
-            if node == None:
-                # If we couldn't load the model, at least return an
-                # empty font.
-                font = StaticTextFont(PandaNode("empty"))
-            else:
-                # Create a temp node path so you can adjust priorities
-                nodePath = NodePath(node)
-                nodePath.adjustAllPriorities(priority)
-                # Now create the text font from the node
-                font = StaticTextFont(node)
-        else:
-            # Otherwise, it must be a new-style, dynamic font.  Maybe
-            # it's just a TTF file or something.
-            font = DynamicTextFont(fn, faceIndex)
+        font = FontPool.loadFont(modelPath)
+        if font == None:
+            # If we couldn't load the model, at least return an
+            # empty font.
+            font = StaticTextFont(PandaNode("empty"))
 
         # The following properties may only be set for dynamic fonts.
         if hasattr(font, "setPointSize"):
