@@ -5,6 +5,7 @@
   #define LOCAL_LIBS cvscopy flt
 
   #define OTHER_LIBS \
+    egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
@@ -19,6 +20,7 @@
   #define LOCAL_LIBS \
     progbase flt
   #define OTHER_LIBS \
+    egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
@@ -33,6 +35,7 @@
   #define LOCAL_LIBS \
     progbase flt
   #define OTHER_LIBS \
+    egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub

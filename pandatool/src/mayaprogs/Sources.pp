@@ -42,11 +42,12 @@
 
 
 #begin bin_target
-  #define USE_PACKAGES_maya
+  #define USE_PACKAGES maya
   #define TARGET mayacopy
   #define LOCAL_LIBS cvscopy maya progbase
 
   #define OTHER_LIBS \
+    egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub

@@ -5,7 +5,7 @@
   #define OTHER_LIBS \
     parametrics:c collide:c chan:c char:c \
     loader:c egg:c pnmimagetypes:c pgraph:c gobj:c \
-    putil:c linmath:c express:c panda:m pandaexpress:m \
+    putil:c linmath:c express:c pandaegg:m panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
