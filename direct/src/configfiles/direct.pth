@@ -1,0 +1,12 @@
+lib
+lib/py
+src/actor
+src/directutil
+src/distributed
+src/ffi
+src/gui
+src/leveleditor
+src/net
+src/showbase
+src/tkpanels
+src/tkwidgets
