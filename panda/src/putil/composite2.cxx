@@ -17,6 +17,6 @@
 #include "vector_ushort.cxx"
 #include "vector_writable.cxx"
 #include "writable.cxx"
-#include "writableConfigurable.cxx "
-#include "writableParam.cxx "
+#include "writableConfigurable.cxx"
+#include "writableParam.cxx"
 
