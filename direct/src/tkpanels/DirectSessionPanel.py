@@ -706,14 +706,12 @@ class DirectSessionPanel(AppShell):
 
     ## ENVIRONMENT CONTROLS ##
     # Background # 
-    def setBackgroundColor(self, r,g,b):
-        self.setBackgroundColor(Vec3(r,g,b))
+    def setBackgroundColor(self, r, g, b):
+        self.setBackgroundColorVec((r, g, b))
     def setBackgroundColorVec(self, color):
-        base.win.getGsg().setColorClearValue(
-            VBase4(color[0]/255.0,
-                   color[1]/255.0,
-                   color[2]/255.0,
-                   1.0))
+        base.setBackgroundColor(color[0]/255.0,
+                                color[1]/255.0,
+                                color[2]/255.0)
 
     def selectDisplayRegionNamed(self, name):
         if (string.find(name, 'Display Region ') >= 0):

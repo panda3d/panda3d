@@ -31,10 +31,6 @@ def getTkColorString(color):
     return "#" + r + g + b
 
 ## Background Color ##
-def setBackgroundColor(r,g,b):
-    """ Wrapper function to set background color """
-    base.win.getGsg().setColorClearValue(VBase4(r, g, b, 1.0))
-
 def lerpBackgroundColor(r,g,b,duration):
     """ Function to lerp background color to a new value """
     def lerpColor(state):
@@ -42,13 +38,13 @@ def lerpBackgroundColor(r,g,b,duration):
         state.time += dt
         sf = state.time / state.duration
         if sf >= 1.0:
-            setBackgroundColor(state.ec[0], state.ec[1], state.ec[2])
+            base.setBackgroundColor(state.ec[0], state.ec[1], state.ec[2])
             return Task.done
         else:
             r = sf * state.ec[0] + (1 - sf) * state.sc[0]
             g = sf * state.ec[1] + (1 - sf) * state.sc[1]
             b = sf * state.ec[2] + (1 - sf) * state.sc[2]
-            setBackgroundColor(r,g,b)
+            base.setBackgroundColor(r,g,b)
             return Task.cont
     taskMgr.remove('lerpBackgroundColor')
     t = taskMgr.add(lerpColor, 'lerpBackgroundColor')

@@ -563,6 +563,41 @@ class ShowBase:
         self.taskMgr.remove('dataloop')
         self.eventMgr.shutdown()
 
+    def getBackgroundColor(self):
+        """ Returns the current window background color.  This assumes
+        the window is set up to clear the color each frame (this is
+        the normal setting). """
+        # Temporary try .. except for old Pandas.
+        try:
+            return VBase4(self.win.getClearColor())
+        except:
+            return VBase4(self.win.getGsg().getColorClearValue())
+
+    def setBackgroundColor(self, *args):
+        """ Sets the window background color to the indicated value.
+        This assumes the window is set up to clear the color each
+        frame (this is the normal setting).
+
+        The color may be either a VBase3 or a VBase4, or a 3-component
+        tuple, or the individual r, g, b parameters.
+        """
+
+        numArgs = len(args)
+        if numArgs == 3 or numArgs == 4:
+            color = VBase4(args[0], args[1], args[2], 1.0)
+        elif numArgs == 1:
+            arg = args[0]
+            color = VBase4(arg[0], arg[1], arg[2], 1.0)
+        else:
+            raise TypeError, ('Invalid number of arguments: %d, expected 1, 3, or 4.' % numArgs)
+            
+            
+        # Temporary try .. except for old Pandas.
+        try:
+            self.win.setClearColor(color)
+        except:
+            self.win.getGsg().setColorClearValue(color)
+                
     def toggleBackface(self):
         if self.backfaceCullingEnabled:
             self.backfaceCullingOff()
