@@ -36,8 +36,8 @@ without some functionality.
   to an external library.  We have used this in the past, for
   instance, to interface Panda with Squeak, an implementation of
   Smalltalk.  At the present, the Python interface is the only one we
-  actively maintain.  We use Python 2.2; you can get Python at
-  http://www.python.org .
+  actively maintain.  We use Python 2.2, but almost any version should
+  work; you can get Python at http://www.python.org .
 
 * NSPR.  This is the Netscape Portable Runtime library, an OS
   compatibility layer written by the folks at Mozilla for support of
@@ -67,11 +67,55 @@ without some functionality.
   at http://www.ijg.org , and libtiff from SGI at
   ftp://ftp.sgi.com/graphics/tiff .
 
+* zlib.  This very common free library provides basic
+  compression/decompression routines, and is the basis for the Unix
+  gzip tool (among many other things).  If available, Panda uses it to
+  enable storing compressed files within its native multifile format,
+  as well as in a few other places here and there.  It's far from
+  essential.  If you don't have it already, you can get it at
+  http://www.gzip.org/zlib .
+
+* Fmod.  This is a free sound library that our friends at CMU have
+  recently integrated into Panda.  It provides basic support for
+  playing WAV files, MP3 files, and MIDI files within Panda.  Get it
+  at http://www.fmod.org .
+
+* Freetype.  This free library provides support for loading TTF font
+  files (as well as many other types of font files) directly for
+  rendering text within Panda (using Panda's TextNode interface, as
+  well as the whole suite of DirectGui 2-d widgets in direct).  If you
+  do not have this library, you can still render text in Panda, but
+  you are limited to using fonts that have been pre-generated and
+  stored in egg files.  There are a handful of provided font files of
+  this nature in the models directory (specifically, cmr12, cmss12,
+  and cmtt12); these were generated from some of the free fonts
+  supplied with TeX.  This can be found at http://www.freetype.org ;
+  you will need at least version 2.0.
+
+* OpenSSL.  This free library provides an interface to secure SSL
+  communications (as well as a normal, unsecured TCP/IP library).  It
+  is used to implement the HTTP client code in Panda for communicating
+  with web servers and/or loading files directly from web servers, in
+  both normal http and secure https modes.  If you do not have any
+  need to contact web servers with your Panda client, you do not need
+  to install this library.  Find it at http://www.openssl.org .  We
+  used version 0.9.6 or 0.9.7, but if there is a more recent version
+  it should be fine.
+
+* FFTW, the "Fastest Fourier Transform in the West".  This free
+  whimsically-named library provides the mathematical support for
+  compressing animation tables into Panda's binary bam format.  If
+  enabled, animation tables can be compressed in a lossy form similar
+  to jpeg, which provides approximately a 5:1 compression ratio better
+  than gzip alone even at the most conservative setting.  If you don't
+  need to have particularly small animation files, you don't need this
+  library.  Get it at http://www.fftw.org .
+
 * Gtk--.  This is a C++ graphical toolkit library, and is only used
   for one application, the PStats viewer for graphical analysis of
   real-time performance, which is part of the pandatool package.
-  Gtk-- only compiles on Unix, and primarily Linux; it may be possible
-  to compile it with considerable difficulty on Irix.  We have used
+  Gtk-- only compiles on Unix, and primarily Linux; it is possible to
+  compile it with considerable difficulty on Irix.  We have used
   version 1.2.1.  You can find it at http://www.gtkmm.org .
 
 
@@ -421,17 +465,27 @@ ENVIRONMENT, above.
 
 HOW TO BUILD PANDA ON A WINDOWS SYSTEM, WITHOUT CYGWIN
 
+Note: although Panda can be built without Cygwin, for the moment we
+have dropped support for the Microsoft nmake program (which is not
+really supported by Microsoft either).  Thus, even though you do not
+need to have all of Cygwin installed, you will need to have at least
+GNU make.  This program is available from Cygwin (make.exe); you can
+copy this program from someone who has installed Cygwin, or you can go
+to www.cygwin.com and try to install just this one program.  You will
+also need the support DLL, cygwin1.dll.
+
 You will need a directory for holding the installed Panda.  This can
 be anywhere you like; in this example we'll assume you use a directory
 called "panda3d" on the root of the C drive.
 
   md c:\panda3d
 
-Panda3D includes a pre-compiled ppremake.exe, but not the cygwin DLL.
-Since ppremake is a Cygwin program (even though the rest of Panda is
-not), you will need the DLL in order to run ppremake.
-
-The cygwin1.dll should be available at http://www.cygwin.com
+You will first need to build a copy of ppremake.exe.  There is a
+Microsoft project file in the ppremake directory that will build this.
+Once it is built, copy it to the Panda bin directory (which you will
+have to make yourself).  This will be a directory called "bin" below
+the root of the installed directory you created above; for instance,
+c:\panda3d\bin.
 
 Make sure the Panda bin and lib directories are on your path, and set
 a few environment variables for building.  We suggest creating a file
@@ -472,32 +526,32 @@ Now you should be able to build dtool.
   c:
   cd \panda3d\dtool
   ppremake
-  nmake
-  nmake install
+  make
+  make install
 
 And then build panda.
 
   c:
   cd \panda3d\panda
   ppremake
-  nmake
-  nmake install
+  make
+  make install
 
 And (optionally) build direct.
 
   c:
   cd \panda3d\direct
   ppremake
-  nmake
-  nmake install
+  make
+  make install
 
 And (optionally) build pandatool.
 
   c:
   cd \panda3d\pandatool
   ppremake
-  nmake
-  nmake install
+  make
+  make install
 
 
 
@@ -544,7 +598,7 @@ For now, add just the line:
 Or, if you are on Windows and prefer to use DirectX instead of OpenGL,
 add instead the line:
 
-  load-display pandadx
+  load-display pandadx8
 
 Later you may add additional lines here to control the default
 behavior of Panda in other ways.
@@ -554,8 +608,8 @@ in the current directory, so for now try to run pview from within the
 same directory as your Configrc file.  If all goes well, it should
 open up a window with a blue triangle.  You can use the mouse to move
 the triangle around.  You can also pass the name of an egg file, if
-you have one, on the command line, and pview will load up and display
-the egg file.
+you have one (look in the models directory for some sample egg files),
+on the command line, and pview will load up and display the egg file.
 
 If you want to load the Configrc from other than the current
 directory, set the following two environment variables:
