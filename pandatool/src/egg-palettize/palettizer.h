@@ -37,6 +37,7 @@ public:
   void read_txa_file(const Filename &txa_filename);
   void process_command_line_eggs();
   void process_all();
+  void optimal_resize();
   void reset_images();
   void generate_images(bool redo_all);
   bool read_stale_eggs(bool redo_all);

@@ -346,6 +346,21 @@ process_all() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::optimal_resize
+//       Access: Public
+//  Description: Attempts to resize each PalettteImage down to its
+//               smallest possible size.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+optimal_resize() {
+  Groups::iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    PaletteGroup *group = (*gi).second;
+    group->optimal_resize();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::reset_images
 //       Access: Public
 //  Description: Throws away all of the current PaletteImages, so that

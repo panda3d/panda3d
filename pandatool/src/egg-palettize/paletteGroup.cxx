@@ -307,6 +307,21 @@ write_image_info(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::optimal_resize
+//       Access: Public
+//  Description: Attempts to resize each PalettteImage down to its
+//               smallest possible size.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+optimal_resize() {
+  Pages::iterator pai;
+  for (pai = _pages.begin(); pai != _pages.end(); ++pai) {
+    PalettePage *page = (*pai).second;
+    page->optimal_resize();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroup::reset_images
 //       Access: Public
 //  Description: Throws away all of the current PaletteImages, so that

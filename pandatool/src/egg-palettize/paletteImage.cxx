@@ -258,6 +258,113 @@ check_solitary() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::optimal_resize
+//       Access: Public
+//  Description: Attempts to resize the palette image to as small as
+//               it can go.
+////////////////////////////////////////////////////////////////////
+void PaletteImage::
+optimal_resize() {
+  if (is_empty()) {
+    return;
+  }
+
+  bool resized_any = false;
+  bool success;
+  do {
+    success = false;
+    nassertv(_x_size > 0 && _y_size > 0);
+
+    // Try to cut it in half in both dimensions, one at a time.
+    if (resize_image(_x_size, _y_size / 2)) {
+      success = true;
+      resized_any = true;
+    }
+    if (resize_image(_x_size / 2, _y_size)) {
+      success = true;
+      resized_any = true;
+    }
+  } while (success);
+
+  if (resized_any) {
+    nout << "Resizing " 
+	 << FilenameUnifier::make_user_filename(get_filename()) << " to "
+	 << _x_size << " " << _y_size << "\n";
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::resize_image
+//       Access: Public
+//  Description: Attempts to resize the palette image, and repack all
+//               of the textures within the new size.  Returns true if
+//               successful, false otherwise.  If this fails, it will
+//               still result in repacking all the textures in the
+//               original size.
+////////////////////////////////////////////////////////////////////
+bool PaletteImage::
+resize_image(int x_size, int y_size) {
+  // We already know we're going to be generating a new image from
+  // scratch after this.
+  _cleared_regions.clear();
+  unlink();
+  _new_image = true;
+
+  // First, Save the current placement list, while simultaneously
+  // clearing it.
+  Placements saved;
+  saved.swap(_placements);
+
+  // Also save our current size.
+  int saved_x_size = _x_size;
+  int saved_y_size = _y_size;
+
+  // Then, sort the textures to in order from biggest to smallest, as
+  // an aid to optimal packing.
+  sort(saved.begin(), saved.end(), SortPlacementBySize());
+
+  // And while we're at it, we need to officially unplace each of
+  // these.
+  Placements::iterator pi;
+  for (pi = saved.begin(); pi != saved.end(); ++pi) {
+    (*pi)->force_replace();
+  }
+
+  // Finally, apply the new size and try to fit all the textures.
+  _x_size = x_size;
+  _y_size = y_size;
+
+  bool packed = true;
+  for (pi = saved.begin(); pi != saved.end() && packed; ++pi) {
+    if (!place(*pi)) {
+      packed = false;
+    }
+  }
+
+  if (!packed) {
+    // If it didn't work, phooey.  Put 'em all back.
+    _x_size = saved_x_size;
+    _y_size = saved_y_size;
+    
+    Placements remove;
+    remove.swap(_placements);
+    for (pi = remove.begin(); pi != remove.end(); ++pi) {
+      (*pi)->force_replace();
+    }
+
+    bool all_packed = true;
+    for (pi = saved.begin(); pi != saved.end(); ++pi) {
+      if (!place(*pi)) {
+	all_packed = false;
+      }
+    }
+    nassertr(all_packed, false);
+  }
+
+  return packed;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::write_placements
 //       Access: Public
 //  Description: Writes a list of the textures that have been placed

@@ -19,27 +19,6 @@
 
 TypeHandle PalettePage::_type_handle;
 
-// This is an STL object to sort an array of TexturePlacement pointers
-// in order from biggest to smallest.
-class SortPlacementBySize {
-public:
-  bool operator ()(TexturePlacement *a, TexturePlacement *b) const {
-    if (a->get_y_size() < b->get_y_size()) {
-      return false;
-
-    } else if (b->get_y_size() < a->get_y_size()) {
-      return true;
-
-    } else if (a->get_x_size() < b->get_x_size()) {
-      return false;
-
-    } else if (b->get_x_size() < a->get_x_size()) {
-      return true;
-    }
-    return false;
-  }
-};
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PalettePage::Default Constructor
 //       Access: Private
@@ -187,6 +166,21 @@ write_image_info(ostream &out, int indent_level) const {
       out << "\n";
       image->write_placements(out, indent_level + 2);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PalettePage::optimal_resize
+//       Access: Public
+//  Description: Attempts to resize each PalettteImage down to its
+//               smallest possible size.
+////////////////////////////////////////////////////////////////////
+void PalettePage::
+optimal_resize() {
+  Images::iterator ii;
+  for (ii = _images.begin(); ii != _images.end(); ++ii) {
+    PaletteImage *image = (*ii);
+    image->optimal_resize();
   }
 }
 

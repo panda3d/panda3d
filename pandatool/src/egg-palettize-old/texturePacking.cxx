@@ -573,7 +573,7 @@ transfer() {
 
   } else {
     // Should we scale it?
-    if (nx != image->get_x_size() && ny != image->get_y_size()) {
+    if (nx != image->get_x_size() || ny != image->get_y_size()) {
       nout << "Resizing " << new_filename << " to " 
 	   << nx << " " << ny << "\n";
       PNMImage *new_image =

@@ -133,5 +133,13 @@ private:
   static TypeHandle _type_handle;
 };
 
+
+// This is an STL object to sort an array of TexturePlacement pointers
+// in order from biggest to smallest.
+class SortPlacementBySize {
+public:
+  bool operator ()(TexturePlacement *a, TexturePlacement *b) const;
+};
+
 #endif
 

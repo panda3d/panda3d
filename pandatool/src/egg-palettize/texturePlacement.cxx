@@ -968,3 +968,28 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _num_references = scan.get_int32();
   manager->read_pointers(scan, this, _num_references);
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: SortPlacementBySize::Function Operator
+//       Access: Public
+//  Description: Compares two TexturePlacement objects and returns
+//               true if the first one is bigger than the second one,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool SortPlacementBySize::
+operator ()(TexturePlacement *a, TexturePlacement *b) const {
+  if (a->get_y_size() < b->get_y_size()) {
+    return false;
+    
+  } else if (b->get_y_size() < a->get_y_size()) {
+    return true;
+    
+  } else if (a->get_x_size() < b->get_x_size()) {
+    return false;
+    
+  } else if (b->get_x_size() < a->get_x_size()) {
+    return true;
+  }
+  return false;
+}

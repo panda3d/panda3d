@@ -41,6 +41,7 @@ public:
   void unplace(TexturePlacement *placement);
 
   void write_image_info(ostream &out, int indent_level = 0) const;
+  void optimal_resize();
   void reset_images();
   void update_images(bool redo_all);
 

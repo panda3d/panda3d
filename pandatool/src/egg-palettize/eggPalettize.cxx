@@ -340,6 +340,12 @@ run() {
     pal->process_command_line_eggs();
   }
 
+  if (_force_optimal) {
+    // If we're asking for optimal packing, this also implies we want
+    // to resize the big empty palette images down.
+    pal->optimal_resize();
+  }
+
   if (_redo_eggs) {
     if (!pal->read_stale_eggs(_redo_all)) {
       okflag = false;

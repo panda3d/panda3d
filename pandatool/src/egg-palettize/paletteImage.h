@@ -39,6 +39,9 @@ public:
   void unplace(TexturePlacement *placement);
   void check_solitary();
 
+  void optimal_resize();
+  bool resize_image(int x_size, int y_size);
+
   void write_placements(ostream &out, int indent_level = 0) const;
   void reset_image();
   void update_image(bool redo_all);
