@@ -28,7 +28,7 @@ class LevelMgr(Entity):
     attribs = (
         ('cogLevel', 0, 'int', {'min':0, 'max':11}),
         ('cogTrack', 'c', 'choice', {'choiceSet':['c','s','l','m']}),
-        ('modelFilename', None, 'modelpath'),
+        ('modelFilename', '', 'bamfilename'),
         )
 
 class EditMgr(Entity):
@@ -80,9 +80,9 @@ class CutScene(Entity):
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
         ('startStopEvent', 0, 'entId', {'output':'bool'}),
-        ('effect', 'irisInOut'),
-        ('motion', 'foo1'),
-        ('duration', 5.0),
+        ('effect', 'irisInOut', 'choice', {'choiceSet':['nothing','irisInOut','letterBox']}),
+        ('motion', 'foo1', 'choice', {'choiceSet':['foo1']}),
+        ('duration', 5.0, 'float'),
         )
 
 class BarrelBase(Nodepath):
