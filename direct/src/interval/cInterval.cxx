@@ -197,17 +197,7 @@ resume(double start_t) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 resume_until(double end_t) {
-  double duration = get_duration();
-
-  if (end_t < 0.0 || end_t >= duration) {
-    _end_t = duration;
-    _end_t_at_end = true;
-  } else {
-    _end_t = end_t;
-    _end_t_at_end = false;
-  }
-
-  setup_resume();
+  setup_resume_until(end_t);
   _manager->add_c_interval(this, false);
 }
 
@@ -515,6 +505,29 @@ setup_resume() {
     _clock_start = now - ((get_t() - _end_t) / _play_rate);
   }
   _loop_count = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::setup_resume_until
+//       Access: Published
+//  Description: Called to prepare the interval for restarting from
+//               the current point after a previous call to pause()
+//               (or a previous play-to-point-and-stop), to play until
+//               the indicated point and then stop.
+////////////////////////////////////////////////////////////////////
+void CInterval::
+setup_resume_until(double end_t) {
+  double duration = get_duration();
+
+  if (end_t < 0.0 || end_t >= duration) {
+    _end_t = duration;
+    _end_t_at_end = true;
+  } else {
+    _end_t = end_t;
+    _end_t_at_end = false;
+  }
+
+  setup_resume();
 }
 
 ////////////////////////////////////////////////////////////////////

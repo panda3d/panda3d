@@ -124,7 +124,7 @@ class IntervalManager(CIntervalManager):
     def __storeInterval(self, interval, index):
         while index >= len(self.ivals):
             self.ivals.append(None)
-        assert(self.ivals[index] == None)
+        assert(self.ivals[index] == None or self.ivals[index] == interval)
         self.ivals[index] = interval
 
     def __repr__(self):

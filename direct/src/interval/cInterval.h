@@ -119,6 +119,7 @@ PUBLISHED:
   void setup_play(double start_time, double end_time, double play_rate,
                   bool do_loop);
   void setup_resume();
+  void setup_resume_until(double end_t);
   bool step_play();
 
 public:

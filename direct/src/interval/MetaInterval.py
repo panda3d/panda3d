@@ -357,11 +357,16 @@ class MetaInterval(CMetaInterval):
         self.privPostEvent()
         return self.getT()
 
-    def resume(self, t0 = None):
+    def resume(self, startT = None):
         self.__updateIvals()
-        if t0 != None:
-            self.setT(t0)
+        if startT != None:
+            self.setT(startT)
         self.setupResume()
+        self.__manager.addInterval(self)
+
+    def resumeUntil(self, endT):
+        self.__updateIvals()
+        self.setupResumeUntil(endT)
         self.__manager.addInterval(self)
         
     def finish(self):
