@@ -729,10 +729,6 @@ assemble_paragraph(TextAssembler::TextString::const_iterator si,
     }
 
     // Advance to the next line.
-    if (si != send) {
-      // Skip past the newline.
-      ++si;
-    }
     num_rows++;
   }
 
@@ -760,7 +756,7 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
   float xpos = 0.0f;
   align = TextProperties::A_left;
 
-  while (si != send && (*si)._character != '\n') {
+  while (si != send) {
     wchar_t character = (*si)._character;
     const TextProperties *properties = (*si)._properties;
 
@@ -768,12 +764,19 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
     nassertv(font != (TextFont *)NULL);
 
     // We get the row's alignment property from that of the last
-    // character to be placed in the row.
+    // character to be placed in the row (or the newline character).
     align = properties->get_align();
 
     // And the height of the row is the maximum of all the fonts used
     // within the row.
     line_height = max(line_height, font->get_line_height());
+
+    if (character == '\n') {
+      // The newline character marks the end of the row.
+      row_width = xpos;
+      ++si;
+      return;
+    }
 
     if (character == ' ') {
       // A space is a special case.
