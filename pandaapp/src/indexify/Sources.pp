@@ -6,7 +6,7 @@
   #define TARGET indexify
   #define OTHER_LIBS \
     progbase pandatoolbase \
-    pnmimage:c pnmimagetypes:c panda:m pandaexpress:m \
+    pnmtext:c pnmimage:c pnmimagetypes:c panda:m pandaexpress:m \
     dtool:m dtoolconfig:m \
     pystub
 
@@ -17,9 +17,7 @@
     indexParameters.cxx indexParameters.h \
     indexify.cxx indexify.h \
     photo.cxx photo.h \
-    rollDirectory.cxx rollDirectory.h \
-    pnmTextGlyph.cxx pnmTextGlyph.h \
-    pnmTextMaker.cxx pnmTextMaker.h
+    rollDirectory.cxx rollDirectory.h
 
 #end bin_target
 
@@ -29,14 +27,12 @@
   #define TARGET font-samples
   #define OTHER_LIBS \
     progbase pandatoolbase \
-    pnmimage:c pnmimagetypes:c panda:m pandaexpress:m \
+    pnmtext:c pnmimage:c pnmimagetypes:c panda:m pandaexpress:m \
     dtool:m dtoolconfig:m \
     pystub
 
   #define SOURCES \
     default_font.cxx default_font.h \
-    fontSamples.cxx fontSamples.h \
-    pnmTextGlyph.cxx pnmTextGlyph.h \
-    pnmTextMaker.cxx pnmTextMaker.h
+    fontSamples.cxx fontSamples.h
 
 #end bin_target

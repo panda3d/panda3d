@@ -181,7 +181,8 @@ post_command_line() {
   }
   
   if (_name_text_maker != (PNMTextMaker *)NULL) {
-    _name_text_maker->set_pixel_size(_name_height, _font_aa_factor);
+    _name_text_maker->set_scale_factor(_font_aa_factor);
+    _name_text_maker->set_pixel_size(_name_height);
   } else {
     _name_height = 0;
   }
@@ -229,7 +230,8 @@ run() {
     if (!text_maker->is_valid()) {
       all_ok = false;
     } else {
-      text_maker->set_pixel_size(_sample_height, _font_aa_factor);
+      text_maker->set_scale_factor(_font_aa_factor);
+      text_maker->set_pixel_size(_sample_height);
       text_maker->generate_into(_sample_text, output_image, 
 				16, y + _sample_height);
       if (_name_text_maker != (PNMTextMaker *)NULL) {
@@ -243,15 +245,16 @@ run() {
     delete text_maker;
   }
 
-  if (!all_ok) {
-    exit(1);
-  }
-
   snprintf(output_filename, output_filename_size,
 	   _output_filename.c_str(), output_index);
   nout << "Writing " << output_filename << "\n";
   if (!output_image.write(output_filename)) {
     nout << "Unable to write to " << output_filename << "\n";
+    exit(1);
+  }
+
+  if (!all_ok) {
+    nout << "Problem loading fonts.\n";
     exit(1);
   }
 }

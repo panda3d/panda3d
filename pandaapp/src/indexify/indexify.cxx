@@ -386,7 +386,8 @@ post_command_line() {
     }
     
     if (_text_maker != (PNMTextMaker *)NULL) {
-      _text_maker->set_pixel_size(caption_font_size, _font_aa_factor);
+      _text_maker->set_scale_factor(_font_aa_factor);
+      _text_maker->set_pixel_size(caption_font_size);
       _text_maker->set_align(PNMTextMaker::A_center);
     }
   }
