@@ -33,6 +33,7 @@
 #include "textureApplyTransition.h"
 #include "clipPlaneTransition.h"
 #include "transparencyTransition.h"
+#include "fog.h"
 #include "fogTransition.h"
 #include "linesmoothTransition.h"
 #include "transformTransition.h"
@@ -132,6 +133,7 @@ ConfigureFn(config_sgattrib) {
   TextureApplyTransition::init_type();
   ClipPlaneTransition::init_type();
   TransparencyTransition::init_type();
+  Fog::init_type();
   FogTransition::init_type();
   LinesmoothTransition::init_type();
   PruneTransition::init_type();

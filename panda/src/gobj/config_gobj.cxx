@@ -20,7 +20,6 @@
 #include "config_gobj.h"
 #include "LOD.h"
 #include "drawable.h"
-#include "fog.h"
 #include "geom.h"
 #include "geomprimitives.h"
 #include "imageBuffer.h"
@@ -163,7 +162,6 @@ ConfigureFn(config_gobj) {
     textures_down_square = config_gobj.GetBool("textures-square", false);
   }
 
-  Fog::init_type();
   Geom::init_type();
   GeomLine::init_type();
   GeomLinestrip::init_type();

@@ -19,10 +19,10 @@
 #ifndef FOGTRANSITION_H
 #define FOGTRANSITION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <onOffTransition.h>
-#include <fog.h>
+#include "onOffTransition.h"
+#include "fog.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FogTransition

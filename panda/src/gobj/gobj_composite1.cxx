@@ -10,5 +10,4 @@
 #include "geomTri.cxx"
 #include "geomTrifan.cxx"
 #include "geomTristrip.cxx"
-#include "fog.cxx"
 

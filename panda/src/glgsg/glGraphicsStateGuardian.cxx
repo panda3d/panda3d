@@ -2422,20 +2422,24 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 apply_fog(Fog *fog) {
-  Fog::Mode fmode=fog->get_mode();
+  Fog::Mode fmode = fog->get_mode();
   call_glFogMode(get_fog_mode_type(fmode));
-  switch(fmode) {
-  case Fog::M_linear:
-    float fog_start,fog_end;
-    fog->get_range(fog_start,fog_end);
-    call_glFogStart(fog_start);
-    call_glFogEnd(fog_end);
-    break;
-  case Fog::M_exponential:
-  case Fog::M_exponential_squared:
-    call_glFogDensity(fog->get_density());
-    break;
+
+  if (fmode == Fog::M_linear) {
+    // Linear fog may be world-relative or camera-relative.  The fog
+    // object knows how to decode its parameters into camera-relative
+    // properties.
+    float onset, opaque;
+    fog->compute_linear_range(onset, opaque, _current_projection_node,
+                              _coordinate_system);
+    call_glFogStart(onset);
+    call_glFogEnd(opaque);
+
+  } else {
+    // Exponential fog is always camera-relative.
+    call_glFogDensity(fog->get_exp_density());
   }
+
   call_glFogColor(fog->get_color());
   report_errors();
 }

@@ -28,7 +28,7 @@
      depthTestTransition.I depthTestTransition.h \
      depthWriteTransition.I depthWriteTransition.h \
      drawBoundsTransition.I drawBoundsTransition.h \
-     fogTransition.I fogTransition.h \
+     fog.I fog.h fogTransition.I fogTransition.h \
      linesmoothTransition.I linesmoothTransition.h \
      materialTransition.I \
      materialTransition.h pointShapeProperty.I \
@@ -61,7 +61,7 @@
         cullFaceProperty.cxx cullFaceTransition.cxx \
         decalTransition.cxx depthTestProperty.cxx \
         depthTestTransition.cxx depthWriteTransition.cxx \
-        drawBoundsTransition.cxx fogTransition.cxx \
+        drawBoundsTransition.cxx fog.cxx fogTransition.cxx \
         linesmoothTransition.cxx \
         materialTransition.cxx pointShapeProperty.cxx \
         pointShapeTransition.cxx \
@@ -96,7 +96,7 @@
     depthTestTransition.I depthTestTransition.h \
     depthWriteTransition.I depthWriteTransition.h \
     drawBoundsTransition.I drawBoundsTransition.h \
-    fogTransition.I fogTransition.h \
+    fog.I fog.h fogTransition.I fogTransition.h \
     linesmoothTransition.I \
     linesmoothTransition.h \
     materialTransition.I materialTransition.h \

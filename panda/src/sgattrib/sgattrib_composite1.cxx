@@ -11,3 +11,4 @@
 #include "depthTestTransition.cxx"
 #include "depthWriteTransition.cxx"
 #include "drawBoundsTransition.cxx"
+#include "fog.cxx"
