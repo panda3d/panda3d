@@ -714,21 +714,30 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
       // Pre-bam 4.11, a null pointer meant to turn off texturing.
       _off_all_stages = true;
     }
-  }
-  else {
-    pgraph_cat.debug() << "came here filling in textureattrib " << (void *)this << "\n";
+
+  } else {
     OffStages::iterator ci = _off_stages.begin();
     while (ci != _off_stages.end()) {
       TextureStage *ts = DCAST(TextureStage, p_list[pi++]);
       *ci = ts;
       ++ci;
     }
+
     // read the pointers of the on_textures
-    for (int i=0; i<_num_on_textures; ++i) {
+    _on_stages.reserve(_num_on_textures);
+
+    for (int i = 0; i < _num_on_textures; ++i) {
       TextureStage *ts = DCAST(TextureStage, p_list[pi++]);
       Texture *tx = DCAST(Texture, p_list[pi++]);
-      _on_textures[ts] = tx;
-      _on_stages.push_back(ts);
+      if (tx != (Texture *)NULL) {
+        _on_textures[ts] = tx;
+        _on_stages.push_back(ts);
+
+      } else {
+        // If we couldn't load a texture pointer, turn off that
+        // particular texture stage.
+        _off_stages.push_back(ts);
+      }
     }
   }
   _sort_seq = UpdateSeq::old();
