@@ -408,7 +408,7 @@ class InspectorWindow:
         part = self.topInspector().partNumber(partNumber)
         print part
         from PandaModules import NodePath
-        import FSM
+        import ClassicFSM
         popupMenu = None
         if isinstance(part, NodePath):
             popupMenu = self.createPopupMenu(
@@ -416,11 +416,11 @@ class InspectorWindow:
                 [('Explore', NodePath.explore),
                  ('Place', NodePath.place),
                  ('Set Color', NodePath.rgbPanel)])
-        elif isinstance(part, FSM.FSM):
+        elif isinstance(part, ClassicFSM.ClassicFSM):
             import FSMInspector
             popupMenu = self.createPopupMenu(
                 part,
-                [('Inspect FSM', FSMInspector.FSMInspector)])
+                [('Inspect ClassicFSM', FSMInspector.FSMInspector)])
         print popupMenu
         if popupMenu:
             popupMenu.post(event.widget.winfo_pointerx(),

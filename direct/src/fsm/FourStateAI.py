@@ -2,14 +2,14 @@
 
 import DirectNotifyGlobal
 #import DistributedObjectAI
-import FSM
+import ClassicFSM
 import State
 import Task
 
 
 class FourStateAI:
     """
-    Generic four state FSM base class.
+    Generic four state ClassicFSM base class.
     
     This is a mix-in class that expects that your derived class
     is a DistributedObjectAI.
@@ -34,7 +34,7 @@ class FourStateAI:
                      +------+
     
     There is a fifth off state, but that is an implementation
-    detail (and that's why it's not called a five state FSM).
+    detail (and that's why it's not called a five state ClassicFSM).
     
     I found that this pattern repeated in several things I was
     working on, so this base class was created.
@@ -58,7 +58,7 @@ class FourStateAI:
         durations is a list of durations in seconds or None values.
             The list of duration values should be the same length
             as the list of state names and the lists correspond.
-            For each state, after n seconds, the FSM will move to 
+            For each state, after n seconds, the ClassicFSM will move to 
             the next state.  That does not happen for any duration
             values of None.
         
@@ -125,7 +125,7 @@ class FourStateAI:
                            self.exitState4,
                            [names[1]]),
             }
-        self.fsm = FSM.FSM('FourState',
+        self.fsm = ClassicFSM.ClassicFSM('FourState',
                            self.states.values(),
                            # Initial State
                            names[0],

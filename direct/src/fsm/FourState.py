@@ -2,14 +2,14 @@
 
 import DirectNotifyGlobal
 #import DistributedObject
-import FSM
+import ClassicFSM
 import State
 import Task
 
 
 class FourState:
     """
-    Generic four state FSM base class.
+    Generic four state ClassicFSM base class.
     
     This is a mix-in class that expects that your derived class
     is a DistributedObject.
@@ -34,7 +34,7 @@ class FourState:
                      +------+
     
     There is a fifth off state, but that is an implementation
-    detail (and that's why it's not called a five state FSM).
+    detail (and that's why it's not called a five state ClassicFSM).
     
     I found that this pattern repeated in several things I was
     working on, so this base class was created.
@@ -120,7 +120,7 @@ class FourState:
                            [names[1]]),
             }
         self.stateIndex = 0
-        self.fsm = FSM.FSM('FourState',
+        self.fsm = ClassicFSM.ClassicFSM('FourState',
                            self.states.values(),
                            # Initial State
                            names[0],

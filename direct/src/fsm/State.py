@@ -5,7 +5,7 @@ from DirectObject import *
 import types
 
 # This gets set by a dconfig variable in ShowBase.py
-# We cannot put a dconfig in here because FSM is not
+# We cannot put a dconfig in here because ClassicFSM is not
 # dependent on Panda
 FsmRedefine = 0
 
@@ -193,20 +193,20 @@ class State(DirectObject):
         return(self.__FSMList)
 
     def setChildren(self, FSMList):
-        """setChildren(self, FSM[])
+        """setChildren(self, ClassicFSM[])
         Set the children to given list of FSMs"""
         self.__FSMList = FSMList
 
-    def addChild(self, FSM):
-        """addChild(self, FSM)
-        Add the given FSM to list of child FSMs"""
-        self.__FSMList.append(FSM)
+    def addChild(self, ClassicFSM):
+        """addChild(self, ClassicFSM)
+        Add the given ClassicFSM to list of child FSMs"""
+        self.__FSMList.append(ClassicFSM)
 
-    def removeChild(self, FSM):
-        """removeChild(self, FSM)
-        Remove the given FSM from list of child FSMs"""
-        if FSM in self.__FSMList:
-            self.__FSMList.remove(FSM)
+    def removeChild(self, ClassicFSM):
+        """removeChild(self, ClassicFSM)
+        Remove the given ClassicFSM from list of child FSMs"""
+        if ClassicFSM in self.__FSMList:
+            self.__FSMList.remove(ClassicFSM)
 
     def hasChildren(self):
         """hasChildren(self)

@@ -21,7 +21,7 @@ import math
 import sys
 import Loader
 import time
-import FSM
+import ClassicFSM
 import State
 import DirectObject
 import SfxPlayer

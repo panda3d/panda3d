@@ -5,7 +5,7 @@ from ShowBaseGlobal import *
 from ClockDelta import *
 
 import DirectNotifyGlobal
-import FSM
+import ClassicFSM
 import DistributedEntity
 
 class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
@@ -22,7 +22,7 @@ class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
         DistributedEntity.DistributedEntity.__init__(self, cr)
         assert(self.debugPrint("DistributedInteractiveEntity()"))
 
-        self.fsm = FSM.FSM('DistributedInteractiveEntity',
+        self.fsm = ClassicFSM.ClassicFSM('DistributedInteractiveEntity',
                            [State.State('off',
                                         self.enterOff,
                                         self.exitOff,

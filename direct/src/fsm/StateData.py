@@ -8,7 +8,7 @@ import DirectNotifyGlobal
 class StateData(DirectObject):
     """
     A StateData is a base class for a single state within a Finite
-    State Machine (FSM).
+    State Machine (ClassicFSM).
     """
 
     notify = DirectNotifyGlobal.directNotify.newCategory('StateData')

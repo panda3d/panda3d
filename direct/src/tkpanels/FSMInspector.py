@@ -10,7 +10,7 @@ DELTA = (5.0 / 360.) * 2.0 * math.pi
 
 class FSMInspector(AppShell):
     # Override class variables
-    appname = 'FSM Inspector'
+    appname = 'ClassicFSM Inspector'
     frameWidth  = 400
     frameHeight = 450
     usecommandarea = 0
@@ -44,23 +44,23 @@ class FSMInspector(AppShell):
         interior = self.interior()
         menuBar = self.menuBar
 
-        # FSM Menu
-        menuBar.addmenu('FSM', 'FSM Operations')
-        menuBar.addmenuitem('FSM', 'command',
+        # ClassicFSM Menu
+        menuBar.addmenu('ClassicFSM', 'ClassicFSM Operations')
+        menuBar.addmenuitem('ClassicFSM', 'command',
                                   'Input grid spacing',
                                   label = 'Grid spacing...',
                                   command = self.popupGridDialog)
         # Create the checkbutton variable
         self._fGridSnap = IntVar()
         self._fGridSnap.set(1)
-        menuBar.addmenuitem('FSM', 'checkbutton',
+        menuBar.addmenuitem('ClassicFSM', 'checkbutton',
                                   'Enable/disable grid',
                                   label = 'Snap to grid',
                                   variable = self._fGridSnap,
                                   command = self.toggleGridSnap)
-        menuBar.addmenuitem('FSM', 'command',
-                                  'Print out FSM layout',
-                                  label = 'Print FSM layout',
+        menuBar.addmenuitem('ClassicFSM', 'command',
+                                  'Print out ClassicFSM layout',
+                                  label = 'Print ClassicFSM layout',
                                   command = self.printLayout)
         
         # States Menu
@@ -238,7 +238,7 @@ class FSMInspector(AppShell):
             self.stateInspectorDict[key].setGridSize(size)
 
     def popupGridDialog(self):
-        spacing = askstring('FSM Grid Spacing', 'Grid Spacing:')
+        spacing = askstring('ClassicFSM Grid Spacing', 'Grid Spacing:')
         if spacing:
             self.setGridSize(spacing)
             self._gridSize = spacing
@@ -253,7 +253,7 @@ class FSMInspector(AppShell):
         dict = self.stateInspectorDict
         keys = dict.keys()
         keys.sort
-        print "FSM.FSM('%s', [" % self.name
+        print "ClassicFSM.ClassicFSM('%s', [" % self.name
         for key in keys[:-1]:
             si = dict[key]
             center = si.center()
@@ -282,7 +282,7 @@ class FSMInspector(AppShell):
             self.balloon.configure(state = 'none')
             
     def onDestroy(self, event):
-        """ Called on FSM Panel shutdown """
+        """ Called on ClassicFSM Panel shutdown """
         self.fsm.inspecting = 0
         for si in self.stateInspectorDict.values():
             self.ignore(self.name + '_' + si.getName() + '_entered')
@@ -454,7 +454,7 @@ want-tk #t
 
 from ShowBaseGlobal import *
 
-import FSM
+import ClassicFSM
 import State
 
 def enterState():
@@ -463,7 +463,7 @@ def enterState():
 def exitState():
     print 'exitState'
 
-fsm = FSM.FSM('stopLight',
+fsm = ClassicFSM.ClassicFSM('stopLight',
           [ State.State('red', enterState, exitState, ['green']),
             State.State('yellow', enterState, exitState, ['red']),
             State.State('green', enterState, exitState, ['yellow']) ],
@@ -476,7 +476,7 @@ inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
 
 # Note, the inspectorPos argument is optional, the inspector will
 # automagically position states on startup
-fsm = FSM.FSM('stopLight', [
+fsm = ClassicFSM.ClassicFSM('stopLight', [
     State.State('yellow',
                 enterState,
                 exitState,
@@ -510,8 +510,8 @@ Features:
    -  Middle mouse button will grab the canvas and slide things around
         if your state machine is bigger than the viewing area
    -  There are some self explanatory menu options up at the top, the most
-        useful being: "print FSM layout" which will print out python code
-        which will create an FSM augmented with layout information for the
+        useful being: "print ClassicFSM layout" which will print out python code
+        which will create an ClassicFSM augmented with layout information for the
         viewer so everything shows up in the same place the next time you
         inspect the state machine
 

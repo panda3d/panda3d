@@ -7,7 +7,7 @@ from AIBaseGlobal import *
 from ClockDelta import *
 
 import DirectNotifyGlobal
-import FSM
+import ClassicFSM
 import DistributedEntityAI
 import State
 
@@ -30,7 +30,7 @@ class DistributedInteractiveEntityAI(DistributedEntityAI.DistributedEntityAI):
         assert(self.debugPrint(
                 "DistributedInteractiveEntityAI(entId=%s)"
                 %(entId)))
-        self.fsm = FSM.FSM('DistributedInteractiveEntityAI',
+        self.fsm = ClassicFSM.ClassicFSM('DistributedInteractiveEntityAI',
                            [State.State('off',
                                         self.enterOff,
                                         self.exitOff,
