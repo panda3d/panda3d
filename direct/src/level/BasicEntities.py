@@ -14,8 +14,12 @@ class NodePathAttribs:
         self.callSetters('pos','x','y','z',
                          'hpr','h','p','r',
                          'scale','sx','sy','sz')
-        if doReparent and hasattr(self, 'parent'):
-            self.level.requestReparent(self.getNodePath(), self.parent)
+        if doReparent:
+            self.callSetters('parentEntId')
+
+    def setParentEntId(self, parentEntId):
+        self.parentEntId = parentEntId
+        self.level.requestReparent(self.getNodePath(), self.parentEntId)
 
     def reparentTo(self, *args): self.getNodePath().reparentTo(*args)
 
@@ -46,9 +50,13 @@ class privNodePathImpl(NodePath.NodePath):
         of its attributes have been set"""
         self.callSetters('pos','x','y','z',
                          'hpr','h','p','r',
-                         'scale','sx','sy','sz')
-        self.level.requestReparent(self, self.parent)
+                         'scale','sx','sy','sz',
+                         'parentEntId')
         
+    def setParentEntId(self, parentEntId):
+        self.parentEntId = parentEntId
+        self.level.requestReparent(self.getNodePath(), self.parentEntId)
+
     def destroy(self):
         if __debug__:
             self.clearTag('entity')

@@ -87,9 +87,9 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             # table; but since zone entities are currently not distributed,
             # it's fine to return None.
             return self.zoneNum2zoneId.get(spec['modelZoneNum'])
-        if not spec.has_key('parent'):
+        if not spec.has_key('parentEntId'):
             return None
-        return self.getEntityZoneId(spec['parent'])
+        return self.getEntityZoneId(spec['parentEntId'])
 
     if __debug__:
         # level editors should call this func to tweak attributes of level

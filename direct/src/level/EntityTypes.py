@@ -44,7 +44,7 @@ class LogicGate(Entity):
 class Nodepath(Entity):
     type = 'nodepath'
     attribs = (
-        ('parent', 0, 'entId', {'type':'nodepath'}),
+        ('parentEntId', 0, 'entId', {'type':'nodepath'}),
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
         )
@@ -52,7 +52,7 @@ class Nodepath(Entity):
 class Zone(Nodepath):
     type = 'zone'
     delAttribs = (
-        'parent',
+        'parentEntId',
         'pos',
         'hpr',
         )

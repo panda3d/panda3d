@@ -121,8 +121,8 @@ class LevelSpec:
             for name, desc in attribDescs.items():
                 spec[name] = desc.getDefaultValue()
             spec['type'] = entType
-            if 'parent' in spec:
-                spec['parent'] = parentEntId
+            if 'parentEntId' in spec:
+                spec['parentEntId'] = parentEntId
 
             # notify the level
             self.level.handleEntityInsert(entId)
@@ -222,7 +222,7 @@ class LevelSpec:
                     return result
    
                 firstTypes = ('levelMgr', 'editMgr', 'zone',)
-                firstAttribs = ('type', 'name', 'comment', 'parent',
+                firstAttribs = ('type', 'name', 'comment', 'parentEntId',
                                 'pos', 'x', 'y', 'z',
                                 'hpr', 'h', 'p', 'r',
                                 'scale', 'sx', 'sy', 'sz',
