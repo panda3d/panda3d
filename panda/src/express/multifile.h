@@ -15,21 +15,19 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef MULTIFILE_H
 #define MULTIFILE_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include "typedef.h"
+#include "pandabase.h"
+
 #include "datagram.h"
 #include "datagramIterator.h"
 
-#include <notify.h>
-#include <filename.h>
-#include "plist.h"
+#include "filename.h"
+#include "ordered_vector.h"
+#include "indirectLess.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Multifile
@@ -37,95 +35,120 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Multifile {
 PUBLISHED:
-  enum Type {
-    T_unknown,
-    T_valid,
-    T_invalid,
-  };
+  Multifile();
+  ~Multifile();
 
-  Multifile(void);
-  ~Multifile(void);
+  bool open_read(const Filename &multifile_name);
+  bool open_write(const Filename &multifile_name);
+  bool open_read_write(const Filename &multifile_name);
+  void close();
 
-  INLINE int get_header_length(void) const;
+  INLINE bool is_read_valid() const;
+  INLINE bool is_write_valid() const;
+  INLINE bool needs_repack() const;
 
-  static int evaluate(const char *start, int size);
+  INLINE void set_scale_factor(size_t scale_factor);
+  INLINE size_t get_scale_factor() const;
 
-  bool add(const Filename &name);
-  bool remove(const Filename &name);
-  bool has_file(const Filename &name);
+  bool add_subfile(const string &subfile_name, const Filename &filename);
+  bool flush();
+  bool repack();
 
-  bool read(Filename &name);
-  bool write(Filename name);
-  int write(char *&start, int &size, const Filename &rel_path = "");
-  bool write_extract(char *&start, int &size, const Filename &rel_path = "");
-  bool extract(const Filename &name, const Filename &rel_path = "");
-  void extract_all(const Filename &rel_path = "");
+  int get_num_subfiles() const;
+  int find_subfile(const string &subfile_name) const;
+  void remove_subfile(int index);
+  const string &get_subfile_name(int index) const;
+  size_t get_subfile_length(int index) const;
 
-  void reset(void);
-  int parse_header(char *&start, int &size);
-
-private:
-
-  INLINE void write_header(ofstream &write_stream);
+  void read_subfile(int index, Datagram &datagram);
+  bool extract_subfile(int index, const Filename &filename);
 
 public:
-  // This nested class must be public so we can make a list of its
-  // pointers.  Weird.
-  class Memfile {
-  public:
-    Memfile(void);
-    ~Memfile(void);
-    bool parse_header_length(char *&start, int &size);
-    bool parse_header(char *&start, int &size);
+  // Special interfaces to work with iostreams, not necessarily files.
+  bool open_read(istream *multifile_stream);
+  bool open_write(ostream *multifile_stream);
+  bool open_read_write(iostream *multifile_stream);
+  bool add_subfile(const string &subfile_name, istream *subfile_data);
 
-    bool read(const Filename &name);
-    bool read_from_multifile(ifstream &read_stream);
-    bool write(const Filename &rel_path);
-    void write_to_multifile(ofstream &write_stream);
-    int write(char *&start, int &size, const Filename &rel_path = "");
-    void reset(void);
-
-  public:
-    bool _header_length_parsed;
-    bool _header_parsed;
-    Datagram _datagram;
-    char *_header_length_buf;
-    int _header_length_buf_length;
-
-    PN_int32 _header_length;
-    Filename _name;
-    PN_int32 _buffer_length;
-    char* _buffer;
-
-    bool _file_open;
-    ofstream _write_stream;
-    int _bytes_written;
-  };
+  bool extract_subfile_to(int index, ostream &out);
+  istream &open_read_subfile(int index);
+  void close_subfile();
 
 private:
-  typedef plist<Memfile *> MemfileList;
-
-  class MemfileMatch {
-  public:
-    MemfileMatch(const Filename &name) {
-      _want_name = name;
-    }
-    bool operator()(Memfile *mfile) const {
-      return mfile->_name == _want_name;
-    }
-    Filename _want_name;
+  enum SubfileFlags {
+    SF_deleted        = 0x0001,
+    SF_index_invalid  = 0x0002,
+    SF_data_invalid   = 0x0004,
   };
 
-private:
-  MemfileList _files;
-  PN_int32 _num_mfiles;
-  bool _header_parsed;
-  Memfile *_current_mfile;
-  Datagram _datagram;
-  int _header_length;
-  int _mfiles_written;
+  class Subfile {
+  public:
+    INLINE Subfile(const string &name);
+    INLINE bool operator < (const Subfile &other) const;
+    streampos read_index(istream &read, streampos fpos,
+                         Multifile *multfile);
+    streampos write_index(ostream &write, streampos fpos,
+                          Multifile *multifile);
+    streampos write_data(ostream &write, istream *read, streampos fpos);
+    void rewrite_index_data_start(ostream &write, Multifile *multifile);
+    void rewrite_index_flags(ostream &write);
+    INLINE bool is_deleted() const;
+    INLINE bool is_index_invalid() const;
+    INLINE bool is_data_invalid() const;
 
-  static PN_uint32 _magic_number;
+    string _name;
+    streampos _index_start;
+    streampos _data_start;
+    size_t _data_length;
+    istream *_source;
+    Filename _source_filename;
+    int _flags;
+  };
+
+  INLINE streampos word_to_streampos(size_t word) const;
+  INLINE size_t streampos_to_word(streampos fpos) const;
+  INLINE streampos normalize_streampos(streampos fpos) const;
+  streampos pad_to_streampos(streampos fpos);
+
+  bool add_new_subfile(Subfile *subfile);
+  void clear_subfiles();
+  bool read_index();
+  bool write_header();
+
+
+  typedef ov_set<Subfile *, IndirectLess<Subfile> > Subfiles;
+  Subfiles _subfiles;
+  typedef pvector<Subfile *> PendingSubfiles;
+  PendingSubfiles _new_subfiles;
+  PendingSubfiles _removed_subfiles;
+
+  istream *_read;
+  ostream *_write;
+  streampos _next_index;
+  streampos _last_index;
+
+  bool _needs_repack;
+  size_t _scale_factor;
+
+  ifstream _read_file;
+  ofstream _write_file;
+  fstream _read_write_file;
+  Filename _multifile_name;
+
+  int _file_major_ver;
+  int _file_minor_ver;
+
+  Subfile *_open_subfile;
+  // This is just to support open_read_subfile() for those subfiles
+  // that have recently been added but not flushed.
+  ifstream _subfile_read;
+
+  static const char _header[];
+  static const size_t _header_size;
+  static const int _current_major_ver;
+  static const int _current_minor_ver;
+
+  friend class Subfile;
 };
 
 #include "multifile.I"

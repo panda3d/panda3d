@@ -30,13 +30,11 @@
     globalPointerRegistry.I globalPointerRegistry.h \
     indirectCompareNames.I indirectCompareNames.h \
     indirectCompareTo.I indirectCompareTo.h \
-    indirectLess.I indirectLess.h \
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h \
     modifierButtons.I modifierButtons.h mouseButton.h \
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
-    ordered_vector.h ordered_vector.I ordered_vector.T \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
     pipelineCyclerBase.h pipelineCyclerBase.I \
@@ -67,7 +65,6 @@
     keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
     nameUniquifier.cxx \
-    ordered_vector.cxx \
     pipeline.cxx \
     pipelineCycler.cxx \
     pipelineCyclerBase.cxx \
@@ -100,13 +97,12 @@
     globPattern.I globPattern.h \
     globalPointerRegistry.I globalPointerRegistry.h \
     indirectCompareNames.I indirectCompareNames.h indirectCompareTo.I \
-    indirectCompareTo.h indirectLess.I indirectLess.h \
+    indirectCompareTo.h \
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h modifierButtons.I \
     modifierButtons.h mouseButton.h mouseData.I mouseData.h \
     nameUniquifier.I nameUniquifier.h \
-    ordered_vector.h ordered_vector.I ordered_vector.T \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
     pipelineCyclerBase.h pipelineCyclerBase.I \
@@ -168,16 +164,5 @@
 
   #define SOURCES \
     test_linestream.cxx
-
-#end test_bin_target
-
-#begin test_bin_target
-  #define TARGET test_ordered_vector
-
-  #define SOURCES \
-    test_ordered_vector.cxx
-
-  #define LOCAL_LIBS $[LOCAL_LIBS] putil
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
 
 #end test_bin_target

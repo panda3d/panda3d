@@ -19,7 +19,7 @@
 #ifndef INDIRECTLESS_H
 #define INDIRECTLESS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IndirectLess

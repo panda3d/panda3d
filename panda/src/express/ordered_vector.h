@@ -20,7 +20,6 @@
 #define ORDERED_VECTOR_H
 
 #include "pandabase.h"
-#include "config_util.h"
 
 #include "pvector.h"
 #include "pset.h"

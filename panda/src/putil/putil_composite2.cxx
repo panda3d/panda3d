@@ -1,5 +1,4 @@
 #include "nameUniquifier.cxx"
-#include "ordered_vector.cxx"
 #include "pipeline.cxx"
 #include "pipelineCycler.cxx"
 #include "pipelineCyclerBase.cxx"

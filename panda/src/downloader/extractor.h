@@ -17,49 +17,51 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef EXTRACTOR_H
 #define EXTRACTOR_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
-#include <filename.h>
-#include <buffer.h>
-#include <multifile.h>
-#include <pointerTo.h>
+
+#include "pandabase.h"
+#include "filename.h"
+#include "buffer.h"
+#include "multifile.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Extractor
-// Description :
+// Description : This class automatically extracts the contents of a
+//               Multifile to the current directory (or to a specified
+//               directory) in the background.
+//
+//               It is designed to limit its use of system resources
+//               and run unobtrusively in the background.  After
+//               initiate(), each call to run() extracts another small
+//               portion of the Multifile.  Call run() repeatedly
+//               whenever you have spare cycles until run() returns
+//               EU_success.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Extractor {
 PUBLISHED:
-  Extractor(void);
-  Extractor(PT(Buffer) buffer);
-  virtual ~Extractor(void);
+  Extractor();
+  ~Extractor();
 
-  int initiate(Filename &source_file, const Filename &rel_path = "");
-  int run(void);
+  int initiate(const Filename &multifile_name, const Filename &extract_to = "");
+  int run();
 
-  bool extract(Filename &source_file, const Filename &rel_path = "");
+  bool extract(const Filename &multifile_name, const Filename &extract_to = "");
 
   INLINE float get_progress(void) const;
 
 private:
-  void init(PT(Buffer) buffer);
-  void cleanup(void);
+  void cleanup();
 
   bool _initiated;
-  PT(Buffer) _buffer;
+  Filename _multifile_name;
+  Filename _extract_to;
+  Multifile _multifile;
 
-  ifstream _read_stream;
-  int _source_file_length;
-  Multifile *_mfile;
-  int _total_bytes_read;
-  bool _read_all_input;
-  bool _handled_all_input;
-  int _source_buffer_length;
-  Filename _source_file;
-  Filename _rel_path;
+  int _subfile_index;
+  size_t _subfile_pos;
+  size_t _subfile_length;
+  istream *_read;
+  ofstream _write;
 };
 
 #include "extractor.I"

@@ -16,696 +16,1141 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
-#include "config_express.h"
-#include "error_utils.h"
-
-#include <algorithm>
-#include <errno.h>
-
 #include "multifile.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
-PN_uint32 Multifile::_magic_number = 0xbeeffeeb;
+#include "config_express.h"
+#include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-Multifile::Memfile::
-Memfile(void) {
-  if (express_cat.is_debug())
-    express_cat.debug()
-      << "Multifile::Memfile constructor called" << endl;
-  reset();
-  _header_length_buf_length = sizeof(_header_length);
-  _header_length_buf = new char[_header_length_buf_length];
-}
+// This sequence of bytes begins each Multifile to identify it as a
+// Multifile.
+const char Multifile::_header[] = "pmf\0\n\r";
+const size_t Multifile::_header_size = 6;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-Multifile::Memfile::
-~Memfile(void) {
-  if (express_cat.is_debug())
-    express_cat.debug()
-      << "Multifile::Memfile destructor called" << endl;
-  if (_buffer != (char *)0L)
-    delete _buffer;
-  _buffer = (char *)0L;
-  delete _header_length_buf;
-}
+// These numbers identify the version of the Multifile.  Generally, a
+// change in the major version is intolerable; while a Multifile with
+// an older minor version may still be read.
+const int Multifile::_current_major_ver = 1;
+const int Multifile::_current_minor_ver = 0;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::reset
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Multifile::Memfile::
-reset(void) {
-  if (express_cat.is_debug())
-    express_cat.debug()
-      << "Multifile::Memfile reset called" << endl;
-  _header_length_parsed = false;
-  _header_parsed = false;
-  _header_length = 0;
-  _buffer_length = 0;
-  //if (_buffer != (char *)0L)
-  //  delete _buffer;
-  _buffer = (char *)0L;
-  _file_open = false;
-  _bytes_written = 0;
-  //_datagram.clear();
-}
+//
+// A Multifile consists of the following elements:
+//
+// (1) A header.  This is always the first n bytes of the Multifile,
+// and contains a magic number to identify the file, as well as
+// version numbers and any file-specific parameters.
+//
+//   char[6]    The string Multifile::_header, a magic number.
+//   int16      The file's major version number
+//   int16      The file's minor version number
+//   uint32     Scale factor.  This scales all address references within
+//              the file.  Normally 1, this may be set larger to
+//              support Multifiles larger than 4GB.
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::parse_header_length
-//       Access: Public
-//  Description: Fills up _datagram until it has sizeof(_header_length)
-//               bytes and then extracts _header_length from _datagram.
-//               Returns true when this has been accomplished.
-//               Advances start to end of header_length.
-////////////////////////////////////////////////////////////////////
-bool Multifile::Memfile::
-parse_header_length(char *&start, int &size) {
-  if (_header_length_parsed == true)
-    return true;
-
-  int bytes_so_far = _datagram.get_length();
-  if (bytes_so_far + size < _header_length_buf_length) {
-    _datagram.append_data(start, size);
-    start += size;
-    size = 0;
-    return false;
-  }
-
-  _datagram.append_data(start, _header_length_buf_length - bytes_so_far);
-  nassertr((int)_datagram.get_length() == _header_length_buf_length, false);
-
-  // Advance start and adjust size
-  nassertr(_header_length_buf_length >= bytes_so_far, false);
-  start += (_header_length_buf_length - bytes_so_far);
-  nassertr(size >= _header_length_buf_length, false);
-  size -= (_header_length_buf_length - bytes_so_far);
-
-  DatagramIterator di(_datagram);
-  _header_length = di.get_int32();
-
-  if (express_cat.is_debug())
-    express_cat.debug()
-      << "Multifile::Memfile::parse_header_length() - header length: "
-      << _header_length << endl;
-
-  nassertr(_header_length > _header_length_buf_length + (int)sizeof(_buffer_length), false);
-
-  _header_length_parsed = true;
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::parse_header
-//       Access: Public
-//  Description: Returns true when a complete header has been parsed.
-//               Advances the start pointer to the end of the header.
-////////////////////////////////////////////////////////////////////
-bool Multifile::Memfile::
-parse_header(char *&start, int& size) {
-  if (_header_parsed == true)
-    return true;
-
-  // Determine header length
-  if (parse_header_length(start, size) == false)
-    return false;
-
-  int bytes_so_far = _datagram.get_length();
-
-  // Make sure we don't exceed the length of the header
-  int tsize = size;
-  if ((size + bytes_so_far) >= _header_length) {
-    nassertr(bytes_so_far <= _header_length, false);
-    tsize = _header_length - bytes_so_far;
-    _header_parsed = true;
-  }
-
-  // Accumulate bytes collected so far
-  _datagram.append_data(start, tsize);
-
-  // Fill in data for the memfile
-  if (_header_parsed == true) {
-    nassertr((int)_datagram.get_length() == _header_length, false);
-    DatagramIterator di(_datagram);
-    PN_int32 header_length = di.get_int32();
-    nassertr(header_length == _header_length, false);
-    _name = di.extract_bytes(_header_length - _header_length_buf_length -
-                             sizeof(_buffer_length));
-    _buffer_length = di.get_int32();
-    nassertr(_buffer_length >= 0, false);
-
-    express_cat.debug()
-      << "Multifile::Memfile::parse_header() - Got a header for mem "
-      << "file: " << _name << " header length: " << _header_length
-      << " buffer length: " << _buffer_length << endl;
-
-    // Advance start pointer to the end of the header
-    start += tsize;
-    nassertr(size >= tsize, false);
-    size -= tsize;
-    _datagram.clear();
-  }
-
-  return _header_parsed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::read
-//       Access: Public
-//  Description: Reads from an individual file
-////////////////////////////////////////////////////////////////////
-bool Multifile::Memfile::
-read(const Filename &name) {
-  ifstream read_stream;
-  if (!name.open_read(read_stream)) {
-    express_cat.error()
-      << "Multifile::Memfile() - Failed to open input file: "
-      << name << endl;
-    return false;
-  }
-
-  if (express_cat.is_debug())
-    express_cat.debug()
-      << "Multifile::Memfile::read() - Reading file: " << name << endl;
-
-  _header_length = name.length() + sizeof(_header_length) +
-        sizeof(_buffer_length);
-  _name = name;
-
-  // Determine the length of the file
-  read_stream.seekg(0, ios::end);
-  _buffer_length = read_stream.tellg();
-  _buffer = new char[_buffer_length];
-
-  // Read the file
-  read_stream.seekg(0, ios::beg);
-  read_stream.read(_buffer, _buffer_length);
-
-  return (_buffer_length > 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::read_from_multifile
-//       Access: Public
-//  Description: Reads a Memfile from an open Multifile ifstream
-////////////////////////////////////////////////////////////////////
-bool Multifile::Memfile::
-read_from_multifile(ifstream &read_stream) {
-  read_stream.read(_header_length_buf, _header_length_buf_length);
-  char *start = _header_length_buf;
-  int size = _header_length_buf_length;
-  if (parse_header_length(start, size) == false) {
-    express_cat.error()
-      << "Multifile::Memfile::read_from_multifile() - invalid header "
-      << "length" << endl;
-    return false;
-  }
-
-  // Read the rest of the header
-  char *header_buf = new char[_header_length - _header_length_buf_length];
-  read_stream.read(header_buf, _header_length - _header_length_buf_length);
-  start = header_buf;
-  size = _header_length;
-  if (parse_header(start, size) == false) {
-    delete header_buf;
-    express_cat.error()
-      << "Multifile::Memfile::read_from_multifile() - Invalid header"
-      << endl;
-    return false;
-  }
-
-  delete header_buf;
-
-  express_cat.debug()
-    << "Multifile::Memfile::read_from_multifile() - Got a valid Memfile "
-    << "header: name: " << _name << " length: " << _buffer_length << endl;
-
-  _buffer = new char[_buffer_length];
-  read_stream.read(_buffer, _buffer_length);
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::write
-//       Access: Public
-//  Description: Writes to a individual file
-////////////////////////////////////////////////////////////////////
-bool Multifile::Memfile::
-write(const Filename &rel_path) {
-  ofstream write_stream;
-  Filename name = rel_path.get_fullpath() + _name.get_fullpath();
-  name.set_binary();
-  name.make_dir();
-  if (!name.open_write(write_stream)) {
-    express_cat.error()
-      << "Multifile::Memfile::write() - Failed to open output file: "
-      << name << endl;
-    return false;
-  }
-
-  express_cat.debug()
-    << "Writing to file: " << name << endl;
-
-  write_stream.write(_buffer, _buffer_length);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::write
-//       Access: Public
-//  Description: Writes a Memfile to an open Multifile ofstream
-////////////////////////////////////////////////////////////////////
-void Multifile::Memfile::
-write_to_multifile(ofstream &write_stream) {
-  express_cat.debug()
-    << "Writing: " << _name << " to multifile" << endl;
-
-  _datagram.clear();
-  _datagram.add_int32(_header_length);
-  string path_name = _name.get_fullpath();
-  _datagram.append_data(path_name.c_str(), path_name.length());
-  _datagram.add_int32(_buffer_length);
-
-  string msg = _datagram.get_message();
-  write_stream.write((char *)msg.data(), msg.length());
-  write_stream.write(_buffer, _buffer_length);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Memfile::write
-//       Access: Public
-//  Description: Returns true when the memfile has been parsed and
-//               written to disk.
-//               Advances the start pointer as it writes.
-////////////////////////////////////////////////////////////////////
-int Multifile::Memfile::
-write(char *&start, int &size, const Filename &rel_path) {
-  // Make sure we've got a complete header first
-  if (parse_header(start, size) == false) {
-    return EU_ok;
-  }
-
-  // Try to open the file for writing
-  if (_file_open == false) {
-    Filename name = rel_path.get_fullpath() + _name.get_fullpath();
-    name.set_binary();
-    name.make_dir();
-    if (express_cat.is_debug())
-      express_cat.debug()
-        << "Multifile::Memfile::write() - Opening mem file: " << name
-        << " for writing" << endl;
-    if ((_file_open = name.open_write(_write_stream)) == false) {
-      express_cat.error()
-        << "Multfile::Memfile::write() - Couldn't open file: "
-        << name << " : " << strerror(errno) << endl;
-      return get_write_error();
-    }
-    _file_open = true;
-  }
-
-  // Don't write more than the buffer length
-  int done = EU_ok;
-  int tsize = size;
-  nassertr(_buffer_length >= _bytes_written, false);
-  int missing_bytes = _buffer_length - _bytes_written;
-  if (size >= missing_bytes) {
-    tsize = missing_bytes;
-    done = EU_success;
-  }
-
-  _write_stream.write(start, tsize);
-  start += tsize;
-  _bytes_written += tsize;
-  nassertr(size >= tsize, false);
-  size -= tsize;
-
-  if (done == EU_success) {
-    _write_stream.close();
-    express_cat.debug()
-      << "Multifile::Memfile::write() - Closing mem file" << endl;
-  }
-
-  return done;
-}
-
-
+//
+// (2) Zero or more index entries, one for each subfile within the
+// Multifile.  These entries are of variable length.  The first one of
+// these immediately follows the header, and the first word of each
+// index entry contains the address of the next index entry.  A zero
+// "next" address marks the end of the chain.  These may appear at any
+// point within the Multifile; they do not necessarily appear in
+// sequential order at the beginning of the file (although they will
+// after the file has been "packed").
+//
+//   uint32     The address of the next entry.
+//   uint32     The address of this subfile's data record.
+//   uint32     The length in bytes of this subfile's data record.
+//   uint16     The Subfile::_flags member.
+//   uint16     The length in bytes of the subfile's name.
+//   char[n]    The subfile's name.
+//
+// (3) Zero or more data entries, one for each subfile.  These may
+// appear at any point within the Multifile; they do not necessarily
+// follow each index entry, nor are they necessarily all grouped
+// together at the end (although they will be all grouped together at
+// the end after the file has been "packed").  These are just blocks
+// of literal data.
+//
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Multifile::
-Multifile(void) {
-  if (express_cat.is_debug())
-    express_cat.debug()
-      << "Multifile constructor called" << endl;
-  reset();
-  _header_length = sizeof(_magic_number) + sizeof(_num_mfiles);
+Multifile() {
+  _read = (istream *)NULL;
+  _write = (ostream *)NULL;
+  _next_index = 0;
+  _last_index = 0;
+  _needs_repack = false;
+  _scale_factor = 1;
+  _file_major_ver = 0;
+  _file_minor_ver = 0;
+  _open_subfile = (Subfile *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Multifile::
-~Multifile(void) {
-  if (express_cat.is_debug())
-    express_cat.debug()
-      << "Multifile destructor called" << endl;
-  _files.erase(_files.begin(), _files.end());
-  if (_current_mfile != NULL)
-    delete _current_mfile;
+~Multifile() {
+  close();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::evaluate
-//       Access: Public
-//  Description: Checks for a valid compressed or uncompressed
+//     Function: Multifile::open_read
+//       Access: Published
+//  Description: Opens the named Multifile on disk for reading.  The
+//               Multifile index is read in, and the list of subfiles
+//               becomes available; individual subfiles may then be
+//               extracted or read, but the list of subfiles may not
+//               be modified.
+//
+//               Also see the version of open_read() which accepts an
+//               istream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+open_read(const Filename &multifile_name) {
+  close();
+  Filename fname = multifile_name;
+  fname.set_binary();
+  if (!fname.open_read(_read_file)) {
+    return false;
+  }
+  _read = &_read_file;
+  _multifile_name = multifile_name;
+  return read_index();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_write
+//       Access: Published
+//  Description: Opens the named Multifile on disk for writing.  If
+//               there already exists a file by that name, it is
+//               deleted.  The Multifile is then prepared for
+//               accepting a brand new set of subfiles, which will be
+//               written to the indicated filename.  Individual
+//               subfiles may not be extracted or read.
+//
+//               Also see the version of open_write() which accepts an
+//               ostream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+open_write(const Filename &multifile_name) {
+  close();
+  Filename fname = multifile_name;
+  fname.set_binary();
+  if (!fname.open_write(_write_file)) {
+    return false;
+  }
+  _write = &_write_file;
+  _multifile_name = multifile_name;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_read_write
+//       Access: Published
+//  Description: Opens the named Multifile on disk for reading and
+//               writing.  If there already exists a file by that
+//               name, its index is read.  Subfiles may be added or
+//               removed, and the resulting changes will be written to
+//               the named file.
+//
+//               Also see the version of open_read_write() which
+//               accepts an iostream.  Returns true on success, false
+//               on failure.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+open_read_write(const Filename &multifile_name) {
+  close();
+  Filename fname = multifile_name;
+  fname.set_binary();
+  bool exists = fname.exists();
+  if (!fname.open_read_write(_read_write_file)) {
+    return false;
+  }
+  _read = &_read_write_file;
+  _write = &_read_write_file;
+  _multifile_name = multifile_name;
+
+  if (exists) {
+    return read_index();
+  } else {
+    return true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::close
+//       Access: Published
+//  Description: Closes the Multifile if it is open.  All changes are
+//               flushed to disk, and the file becomes invalid for
+//               further operations until the next call to open().
+////////////////////////////////////////////////////////////////////
+void Multifile::
+close() {
+  close_subfile();
+  flush();
+  _read = (istream *)NULL;
+  _write = (ostream *)NULL;
+  _next_index = 0;
+  _last_index = 0;
+  _needs_repack = false;
+  _scale_factor = 1;
+  _file_major_ver = 0;
+  _file_minor_ver = 0;
+
+  _read_file.close();
+  _write_file.close();
+  _read_write_file.close();
+  _multifile_name = Filename();
+
+  clear_subfiles();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::add_subfile
+//       Access: Published
+//  Description: Adds a file on disk as a subfile to the Multifile.
+//               The file named by filename will be read and added to
+//               the Multifile at the next call to flush().
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+add_subfile(const string &subfile_name, const Filename &filename) {
+  nassertr(is_write_valid(), false);
+
+  if (!filename.exists()) {
+    return false;
+  }
+  Subfile *subfile = new Subfile(subfile_name);
+
+  subfile->_source_filename = filename;
+  subfile->_source_filename.set_binary();
+
+  return add_new_subfile(subfile);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::flush
+//       Access: Published
+//  Description: Writes all contents of the Multifile to disk.  Until
+//               flush() is called, add_subfile() and remove_subfile()
+//               do not actually do anything to disk.  At this point,
+//               all of the recently-added subfiles are read and their
+//               contents are added to the end of the Multifile, and
+//               the recently-removed subfiles are marked gone from
+//               the Multifile.
+//
+//               This may result in a suboptimal index.  To guarantee
+//               that the index is written at the beginning of the
+//               file, call repack() instead of flush().
+//
+//               It is not necessary to call flush() explicitly unless
+//               you are concerned about reading the recently-added
+//               subfiles immediately.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+flush() {
+  if (!is_write_valid()) {
+    return false;
+  }
+
+  if (_next_index == 0) {
+    // If we don't have an index yet, we don't have a header.  Write
+    // the header.
+    if (!write_header()) {
+      return false;
+    }
+  }
+
+  nassertr(_write != (ostream *)NULL, false);
+
+  // First, mark out all of the removed subfiles.
+  PendingSubfiles::iterator pi;
+  for (pi = _removed_subfiles.begin(); pi != _removed_subfiles.end(); ++pi) {
+    Subfile *subfile = (*pi);
+    subfile->rewrite_index_flags(*_write);
+    delete subfile;
+  }
+  _removed_subfiles.clear();
+
+  bool wrote_ok = true;
+
+  if (!_new_subfiles.empty()) {
+    // Add a few more files to the end.  We always add subfiles at the
+    // end of the multifile, so go there first.
+    if (_last_index != 0) {
+      _write->seekp(0, ios::end);
+      if (_write->fail()) {
+        express_cat.info()
+          << "Unable to seek Multifile " << _multifile_name << ".\n";
+        return false;
+      }
+      _next_index = _write->tellp();
+      _next_index = pad_to_streampos(_next_index);
+
+      // And update the forward link from the last_index to point to
+      // this new index location.
+      _write->seekp(_last_index);
+      Datagram dg;
+      dg.add_uint32(streampos_to_word(_next_index));
+      _write->write(dg.get_data(), dg.get_length());
+    }
+
+    _write->seekp(_next_index);
+    nassertr(_next_index == _write->tellp(), false);
+    
+    // Ok, here we are at the end of the file.  Write out the
+    // recently-added subfiles here.  First, count up the index size.
+    for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
+      Subfile *subfile = (*pi);
+      _last_index = _next_index;
+      _next_index = subfile->write_index(*_write, _next_index, this);
+      _next_index = pad_to_streampos(_next_index);
+      nassertr(_next_index == _write->tellp(), false);
+    }
+    
+    // Now we're at the end of the index.  Write a 0 here to mark the
+    // end.
+    Datagram dg;
+    dg.add_uint32(0);
+    _write->write(dg.get_data(), dg.get_length());
+    _next_index += 4;
+    _next_index = pad_to_streampos(_next_index);
+
+    // All right, now write out each subfile's data.
+    for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
+      Subfile *subfile = (*pi);
+      _next_index = subfile->write_data(*_write, _read, _next_index);
+      _next_index = pad_to_streampos(_next_index);
+      if (subfile->is_data_invalid()) {
+        wrote_ok = false;
+      }
+      nassertr(_next_index == _write->tellp(), false);
+    }
+    
+    // Now go back and fill in the proper addresses for the data start.
+    // We didn't do it in the first pass, because we don't really want
+    // to keep all those pile handles open, and so we didn't have to
+    // determine each pile's length ahead of time.
+    for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
+      Subfile *subfile = (*pi);
+      subfile->rewrite_index_data_start(*_write, this);
+    }
+
+    _new_subfiles.clear();
+  }
+
+  _write->flush();
+  if (!wrote_ok || _write->fail()) {
+    express_cat.info()
+      << "Unable to update Multifile " << _multifile_name << ".\n";
+    close();
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::repack
+//       Access: Published
+//  Description: Forces a complete rewrite of the Multifile and all of
+//               its contents, so that its index will appear at the
+//               beginning of the file with all of the subfiles listed
+//               in alphabetical order.  This is considered optimal
+//               for reading, and is the standard configuration; but
+//               it is not essential to do this.
+//
+//               It is only valid to call this if the Multifile was
+//               opened using open_read_write() and an explicit
+//               filename, rather than an iostream.  Also, we must
+//               have write permission to the directory containing the
+//               Multifile.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+repack() {
+  nassertr(is_write_valid() && is_read_valid(), false);
+  nassertr(!_multifile_name.empty(), false);
+
+  // First, we open a temporary filename to copy the Multifile to.
+  Filename temp_filename =
+    Filename::temporary(_multifile_name.get_dirname(), "mftemp");
+  temp_filename.set_binary();
+  ofstream temp;
+  if (!temp_filename.open_write(temp)) {
+    express_cat.info()
+      << "Unable to open temporary file " << temp_filename << "\n";
+    return false;
+  }
+
+  // Now we scrub our internal structures so it looks like we're a
+  // brand new Multifile.
+  PendingSubfiles::iterator pi;
+  for (pi = _removed_subfiles.begin(); pi != _removed_subfiles.end(); ++pi) {
+    Subfile *subfile = (*pi);
+    delete subfile;
+  }
+  _removed_subfiles.clear();
+  _new_subfiles.clear();
+  copy(_subfiles.begin(), _subfiles.end(), back_inserter(_new_subfiles));
+  _next_index = 0;
+  _last_index = 0;
+
+  // And we write our contents to our new temporary file.
+  _write = &temp;
+  if (!flush()) {
+    temp.close();
+    temp_filename.unlink();
+    return false;
+  }
+
+  // Now close everything, and move the temporary file back over our
+  // original file.
+  Filename orig_name = _multifile_name;
+  temp.close();
+  close();
+  if (!temp_filename.rename_to(orig_name)) {
+    express_cat.info()
+      << "Unable to rename temporary file " << temp_filename << " to "
+      << orig_name.get_basename() << ".\n";
+    return false;
+  }
+
+  if (!open_read_write(orig_name)) {
+    express_cat.info()
+      << "Unable to read newly repacked " << _multifile_name 
+      << ".\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_num_subfiles
+//       Access: Published
+//  Description: Returns the number of subfiles within the Multifile.
+//               The subfiles may be accessed in alphabetical order by
+//               iterating through [0 .. get_num_subfiles()).
+////////////////////////////////////////////////////////////////////
+int Multifile::
+get_num_subfiles() const {
+  return _subfiles.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::find_subfile
+//       Access: Published
+//  Description: Returns the index of the subfile with the indicated
+//               name, or -1 if the named subfile is not within the
 //               Multifile.
 ////////////////////////////////////////////////////////////////////
 int Multifile::
-evaluate(const char *start, int size) {
-  if (size < (int)sizeof(_magic_number)) {
-    express_cat.debug()
-      << "Multifile::evaluate() - not enough bytes to determine" << endl;
-    return T_unknown;
+find_subfile(const string &subfile_name) const {
+  Subfile find_subfile(subfile_name);
+  Subfiles::const_iterator fi;
+  fi = _subfiles.find(&find_subfile);
+  if (fi == _subfiles.end()) {
+    // Not present.
+    return -1;
   }
-
-  Datagram dgram;
-  dgram.append_data(start, sizeof(_magic_number));
-  DatagramIterator di(dgram);
-  PN_uint32 magic_number = di.get_uint32();
-  if (magic_number == _magic_number)
-    return T_valid;
-
-  express_cat.debug()
-    << "Invalid magic number: " << magic_number << " ("
-    << _magic_number << ")" << endl;
-
-  return T_invalid;
+  return (fi - _subfiles.begin());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::parse_header
-//       Access: Public
-//  Description: Returns true when a complete header has been parsed.
+//     Function: Multifile::remove_subfile
+//       Access: Published
+//  Description: Removes the nth subfile from the Multifile.  This
+//               will cause all subsequent index numbers to decrease
+//               by one.  The file will not actually be removed from
+//               the disk until the next call to flush().
+//
+//               Note that this does not actually remove the data from
+//               the indicated subfile; it simply removes it from the
+//               index.  The Multifile will not be reduced in size
+//               after this operation, until the next call to
+//               repack().
 ////////////////////////////////////////////////////////////////////
-int Multifile::
-parse_header(char *&start, int &size) {
-  if (_header_parsed == true)
-    return EU_success;
+void Multifile::
+remove_subfile(int index) {
+  nassertv(is_write_valid());
+  nassertv(index >= 0 && index < (int)_subfiles.size());
+  Subfile *subfile = _subfiles[index];
+  subfile->_flags |= SF_deleted;
+  _removed_subfiles.push_back(subfile);
+  _subfiles.erase(_subfiles.begin() + index);
 
-  int dgramsize = _datagram.get_length();
-  int tsize = size;
-
-  // Make sure we don't exceed the length of the header
-  nassertr(_header_length >= dgramsize, EU_error_abort);
-  int missing_bytes = _header_length - dgramsize;
-  if (size >= missing_bytes) {
-    tsize = missing_bytes;
-    _header_parsed = true;
-  }
-
-  // Accumulate bytes collected so far
-  _datagram.append_data(start, tsize);
-
-  // Verify magic number
-  if (_header_parsed == true) {
-    DatagramIterator di(_datagram);
-    PN_uint32 magic_number = di.get_uint32();
-    if (magic_number != _magic_number) {
-      express_cat.error()
-        << "Multifile::parse_header() - Invalid magic number: "
-        << magic_number << " (" << _magic_number << ")" << endl;
-      return EU_error_abort;
-    }
-    _num_mfiles = di.get_int32();
-    if (_num_mfiles <= 0) {
-      express_cat.debug()
-        << "Multifile::parse_header() - No memfiles in multifile"
-        << endl;
-      return EU_error_file_empty;
-    }
-
-    // Advance start pointer to the end of the header
-    start += tsize;
-    nassertr(size >= tsize, false);
-    size -= tsize;
-    _datagram.clear();
-    return EU_success;
-  }
-
-  return EU_ok;
+  _needs_repack = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add
-//       Access: Public
-//  Description:
+//     Function: Multifile::get_subfile_name
+//       Access: Published
+//  Description: Returns the name of the nth subfile.
+////////////////////////////////////////////////////////////////////
+const string &Multifile::
+get_subfile_name(int index) const {
+#ifndef NDEBUG
+  static string empty_string;
+  nassertr(index >= 0 && index < (int)_subfiles.size(), empty_string);
+#endif
+  return _subfiles[index]->_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_subfile_length
+//       Access: Published
+//  Description: Returns the data length of the nth subfile.  This
+//               might return 0 if the subfile has recently been added
+//               and flush() has not yet been called.
+////////////////////////////////////////////////////////////////////
+size_t Multifile::
+get_subfile_length(int index) const {
+  nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
+  return _subfiles[index]->_data_length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::read_subfile
+//       Access: Published
+//  Description: Fills the indicated Datagram with the data from the
+//               nth subfile.
+////////////////////////////////////////////////////////////////////
+void Multifile::
+read_subfile(int index, Datagram &data) {
+  nassertv(is_read_valid());
+  nassertv(index >= 0 && index < (int)_subfiles.size());
+  data.clear();
+
+  istream &in = open_read_subfile(index);
+  size_t length = _subfiles[index]->_data_length;
+  for (size_t p = 0; p < length; p++) {
+    int byte = in.get();
+    data.add_int8(byte);
+  }
+  bool failed = in.fail();
+  close_subfile();
+  nassertv(!failed);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::extract_subfile
+//       Access: Published
+//  Description: Extracts the nth subfile into a file with the given
+//               name.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-add(const Filename &name) {
-  Memfile *mfile = new Memfile;
-  if (mfile->read(name)) {
-    _files.push_back(mfile);
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::remove
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool Multifile::
-remove(const Filename &name) {
-  MemfileList::iterator found;
-  found = find_if(_files.begin(), _files.end(), MemfileMatch(name));
-  if (found != _files.end()) {
-    _files.erase(found);
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::has_file
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool Multifile::
-has_file(const Filename &name) {
-  MemfileList::iterator found;
-  found = find_if(_files.begin(), _files.end(), MemfileMatch(name));
-  return (found != _files.end());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::read
-//       Access: Public
-//  Description: Reads a multifile from disk
-////////////////////////////////////////////////////////////////////
-bool Multifile::
-read(Filename &name) {
-
-  // Open the multifile for reading
-  ifstream read_stream;
-  name.set_binary();
-  if (!name.open_read(read_stream)) {
-    express_cat.error()
-      << "Multifile::read() - Failed to open input file: "
-      << name << endl;
+extract_subfile(int index, const Filename &filename) {
+  nassertr(is_read_valid(), false);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
+  
+  Filename fname = filename;
+  fname.set_binary();
+  fname.make_dir();
+  ofstream out;
+  if (!fname.open_write(out)) {
+    express_cat.info()
+      << "Unable to write to file " << filename << "\n";
     return false;
   }
 
-  // Check for a valid header
-  char *buffer = new char[_header_length];
-  read_stream.read(buffer, _header_length);
-  char *start = buffer;
-  int len = _header_length;
-  int ret = parse_header(start, len);
-  delete buffer;
-  if (ret < 0) {
-    express_cat.error()
-      << "Multifile::read() - invalid header" << endl;
-    return false;
-  }
+  return extract_subfile_to(index, out);
+}
 
-  if (_num_mfiles <= 0) {
-    express_cat.error()
-      << "Multfile::read() - No files in Multfile: " << name << endl;
-    return false;
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_read
+//       Access: Public
+//  Description: Opens an anonymous Multifile for reading using an
+//               istream.  There must be seek functionality via
+//               seekg() and tellg() on the istream.
+//
+//               This version of open_read() does not close the
+//               istream when Multifile.close() is called.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+open_read(istream *multifile_stream) {
+  close();
+  _read = multifile_stream;
+  return read_index();
+}
 
-  // Read all the Memfiles
-  for (int i = 0; i < _num_mfiles; i++) {
-    Memfile *mfile = new Memfile;
-    mfile->read_from_multifile(read_stream);
-    _files.push_back(mfile);
-  }
-
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_write
+//       Access: Public
+//  Description: Opens an anonymous Multifile for writing using an
+//               ostream.  There must be seek functionality via
+//               seekp() and tellp() on the pstream.
+//
+//               This version of open_write() does not close the
+//               ostream when Multifile.close() is called.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+open_write(ostream *multifile_stream) {
+  close();
+  _write = multifile_stream;
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::write
+//     Function: Multifile::open_read_write
 //       Access: Public
-//  Description:
+//  Description: Opens an anonymous Multifile for reading and writing
+//               using an iostream.  There must be seek functionality
+//               via seekg()/seekp() and tellg()/tellp() on the
+//               iostream.
+//
+//               This version of open_read_write() does not close the
+//               iostream when Multifile.close() is called.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-write(Filename name) {
+open_read_write(iostream *multifile_stream) {
+  close();
+  _read = multifile_stream;
+  _write = multifile_stream;
 
-  ofstream write_stream;
-  name.set_binary();
-  if (!name.open_write(write_stream)) {
-    express_cat.error()
-      << "Multifile::write() - Error opening file: " << name << endl;
-    return false;
+  // Check whether the read stream is empty.
+  _read->seekg(0, ios::end);
+  if (_read->tellg() == 0) {
+    // The read stream is empty, which is always valid.
+    return true;
   }
 
-  _num_mfiles = _files.size();
-  if (_num_mfiles == 0) {
-    express_cat.debug()
-      << "No files in Multifile to write" << endl;
-    return false;
+  // The read stream is not empty, so we'd better have a valid
+  // Multifile.
+  _read->seekg(0);
+  return read_index();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::add_subfile
+//       Access: Published
+//  Description: Adds a file on disk as a subfile to the Multifile.
+//               The indicated istream will be read and its contents
+//               added to the Multifile at the next call to flush().
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+add_subfile(const string &subfile_name, istream *subfile_data) {
+  nassertr(is_write_valid(), false);
+
+  Subfile *subfile = new Subfile(subfile_name);
+
+  subfile->_source = subfile_data;
+
+  return add_new_subfile(subfile);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::extract_subfile_to
+//       Access: Public
+//  Description: Extracts the nth subfile to the indicated ostream.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+extract_subfile_to(int index, ostream &out) {
+  nassertr(is_read_valid(), false);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
+
+  istream &in = open_read_subfile(index);
+  size_t length = _subfiles[index]->_data_length;
+  for (size_t p = 0; p < length; p++) {
+    int byte = in.get();
+    out.put(byte);
+  }
+  bool failed = in.fail();
+  close_subfile();
+  nassertr(!failed, false);
+
+  return (!out.fail());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_read_subfile
+//       Access: Public
+//  Description: Returns an istream that may be used to read the
+//               indicated subfile.  The istream may or may not be a
+//               reference within the Multifile itself, so relative
+//               seeks are acceptable but global seeks will fail.
+//               Also, checking for eof() may fail; you must use
+//               get_subfile_length() instead.
+//
+//               It is not valid to perform any other operations on
+//               this Multifile until the indicated subfile has been
+//               read to completion and close_subfile() has been
+//               called.
+////////////////////////////////////////////////////////////////////
+istream &Multifile::
+open_read_subfile(int index) {
+#ifndef NDEBUG
+  ifstream empty_stream;
+  nassertr(_open_subfile == (Subfile *)NULL, empty_stream);
+  nassertr(is_read_valid(), empty_stream);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), empty_stream);
+#endif
+  _open_subfile = _subfiles[index];
+  if (_open_subfile->_source != (istream *)NULL) {
+    _open_subfile->_source->seekg(0);
+    return *_open_subfile->_source;
+  }
+  if (!_open_subfile->_source_filename.empty()) {
+    _open_subfile->_source_filename.open_read(_subfile_read);
+    return _subfile_read;
+  }
+  nassertr(_open_subfile->_data_start != 0, empty_stream);
+  _read->seekg(_open_subfile->_data_start);
+  return *_read;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::close_subfile
+//       Access: Public
+//  Description: "Closes" the istream that was returned via a previous
+//               call to open_read_subfile(), and makes other
+//               operations on the Multifile valid once more.
+////////////////////////////////////////////////////////////////////
+void Multifile::
+close_subfile() {
+  _open_subfile = (Subfile *)NULL;
+  _subfile_read.close();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::pad_to_streampos
+//       Access: Private
+//  Description: Assumes the _write pointer is at the indicated fpos,
+//               rounds the fpos up to the next legitimate address
+//               (using normalize_streampos()), and writes enough
+//               zeros to the stream to fill the gap.  Returns the new
+//               fpos.
+////////////////////////////////////////////////////////////////////
+streampos Multifile::
+pad_to_streampos(streampos fpos) {
+  nassertr(_write != (ostream *)NULL, fpos);
+  nassertr(_write->tellp() == fpos, fpos);
+  streampos new_fpos = normalize_streampos(fpos);
+  while (fpos < new_fpos) {
+    _write->put(0);
+    fpos++;
+  }
+  return fpos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::add_new_subfile
+//       Access: Private
+//  Description: Adds a newly-allocated Subfile pointer to the
+//               Multifile.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+add_new_subfile(Subfile *subfile) {
+  if (_next_index != 0) {
+    // If we're adding a Subfile to an already-existing Multifile, we
+    // will eventually need to repack the file.
+    _needs_repack = true;
   }
 
-  express_cat.debug()
-    << "Multifile::write() - Writing multifile: " << name << endl;
+  pair<Subfiles::iterator, bool> insert_result = _subfiles.insert(subfile);
+  if (!insert_result.second) {
+    // Hmm, unable to insert.  There must already be a subfile by that
+    // name.  Remove the old one.
+    Subfile *old_subfile = (*insert_result.first);
+    old_subfile->_flags |= SF_deleted;
+    _removed_subfiles.push_back(old_subfile);
+    (*insert_result.first) = subfile;
+  }
 
-  write_header(write_stream);
-
-  MemfileList::iterator i;
-  for (i = _files.begin(); i != _files.end(); ++i)
-    (*i)->write_to_multifile(write_stream);
-
-  write_stream.close();
-
+  _new_subfiles.push_back(subfile);
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::write
-//       Access: Public
-//  Description: Returns true when all the memfiles have been
-//               written.
-//               Advances the start pointer as it writes.
+//     Function: Multifile::clear_subfiles
+//       Access: Private
+//  Description: Removes the set of subfiles from the tables and frees
+//               their associated memory.
 ////////////////////////////////////////////////////////////////////
-int Multifile::
-write(char *&start, int &size, const Filename &rel_path) {
-  // Make sure we have a complete header first
-  int parse_ret = parse_header(start, size);
-  if (parse_ret < 0) {
-    express_cat.error()
-     << "Multifile::write() - bad header" << endl;
-    return parse_ret;
+void Multifile::
+clear_subfiles() {
+  PendingSubfiles::iterator pi;
+  for (pi = _removed_subfiles.begin(); pi != _removed_subfiles.end(); ++pi) {
+    Subfile *subfile = (*pi);
+    subfile->rewrite_index_flags(*_write);
+    delete subfile;
+  }
+  _removed_subfiles.clear();
+
+  // We don't have to delete the ones in _new_subfiles, because these
+  // also appear in _subfiles.
+  _new_subfiles.clear();
+
+  Subfiles::iterator fi;
+  for (fi = _subfiles.begin(); fi != _subfiles.end(); ++fi) {
+    Subfile *subfile = (*fi);
+    delete subfile;
+  }
+  _subfiles.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::read_index
+//       Access: Private
+//  Description: Reads the Multifile header and index.  Returns true
+//               if successful, false if the Multifile is not valid.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+read_index() {
+  nassertr(_read != (istream *)NULL, false);
+  static const size_t header_followup_size = 2 + 2 + 4;
+  static const size_t total_header_size = _header_size + header_followup_size;
+  char this_header[total_header_size];
+  _read->read(this_header, total_header_size);
+  if (_read->fail() || _read->gcount() != total_header_size) {
+    express_cat.info()
+      << "Unable to read Multifile header " << _multifile_name << ".\n";
+    close();
+    return false;
+  }
+  if (memcmp(this_header, _header, _header_size) != 0) {
+    express_cat.info()
+      << _multifile_name << " is not a Multifile.\n";
+    return false;
   }
 
-  while (_num_mfiles > 0) {
-    if (_current_mfile == NULL) {
-      _current_mfile = new Memfile;
-    }
-    int write_ret = _current_mfile->write(start, size, rel_path);
-    if (write_ret == EU_success) {
-      _num_mfiles--;
-      delete _current_mfile;
-      _current_mfile = NULL;
+  // Now get the version numbers out.
+  Datagram dg(this_header + _header_size, header_followup_size);
+  DatagramIterator dgi(dg);
+  _file_major_ver = dgi.get_int16();
+  _file_minor_ver = dgi.get_int16();
+  _scale_factor = dgi.get_uint32();
+
+  if (_file_major_ver != _current_major_ver ||
+      (_file_major_ver == _current_major_ver && 
+       _file_minor_ver > _current_minor_ver)) {
+    express_cat.info()
+      << _multifile_name << " has version " << _file_major_ver << "."
+      << _file_minor_ver << ", expecting version " 
+      << _current_major_ver << "." << _current_minor_ver << ".\n";
+    return false;
+  }
+
+
+  // Now read the index out.
+  _next_index = _read->tellg();
+  _next_index = normalize_streampos(_next_index);  
+  _read->seekg(_next_index);
+  _last_index = 0;
+  streampos index_forward;
+
+  Subfile *subfile = new Subfile("");
+  index_forward = subfile->read_index(*_read, _next_index, this);
+  while (index_forward != 0) {
+    _last_index = _next_index;
+    if (subfile->is_deleted()) {
+      // Ignore deleted Subfiles in the index.
+      _needs_repack = true;
+      delete subfile;
     } else {
-      if (write_ret < 0) {
-        express_cat.error()
-          << "Multifile::write() - bad write: " << write_ret << endl;
-      }
-      return write_ret;
+      _subfiles.push_back(subfile);
+    }
+    if (index_forward != normalize_streampos(_read->tellg())) {
+      // If the index entries don't follow exactly sequentially, the
+      // file ought to be repacked.
+      _needs_repack = true;
+    }
+    _read->seekg(index_forward);
+    _next_index = index_forward;
+    subfile = new Subfile("");
+    index_forward = subfile->read_index(*_read, _next_index, this);
+  }
+  if (subfile->is_index_invalid()) {
+    express_cat.info()
+      << "Error reading index for " << _multifile_name << ".\n";
+    close();
+    delete subfile;
+    return false;
+  }
+
+  size_t before_size = _subfiles.size();
+  _subfiles.sort();
+  size_t after_size = _subfiles.size();
+
+  // If these don't match, the same filename appeared twice in the
+  // index, which shouldn't be possible.
+  nassertr(before_size == after_size, true);
+
+  delete subfile;
+  return true;
+}  
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::write_header
+//       Access: Private
+//  Description: Writes just the header part of the Multifile, not the
+//               index.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+write_header() {
+  nassertr(_write != (ostream *)NULL, false);
+  nassertr(_write->tellp() == 0, false);
+  _write->write(_header, _header_size);
+  Datagram dg;
+  dg.add_int16(_current_major_ver);
+  dg.add_int16(_current_minor_ver);
+  dg.add_uint32(_scale_factor);
+  _write->write(dg.get_data(), dg.get_length());
+
+  _next_index = _write->tellp();
+  _next_index = pad_to_streampos(_next_index);
+  _last_index = 0;
+
+  if (_write->fail()) {
+    express_cat.info()
+      << "Unable to write header for " << _multifile_name << ".\n";
+    close();
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::Subfile::read_index
+//       Access: Public
+//  Description: Reads the index record for the Subfile from the
+//               indicated istream.  Assumes the istream has already
+//               been positioned to the indicated stream position,
+//               fpos, the start of the index record.  Returns the
+//               position within the file of the next index record.
+////////////////////////////////////////////////////////////////////
+streampos Multifile::Subfile::
+read_index(istream &read, streampos fpos, Multifile *multifile) {
+  nassertr(read.tellg() == fpos, fpos);
+
+  // First, get the next stream position.  We do this separately,
+  // because if it is zero, we don't get anything else.
+
+  static const size_t next_index_size = 4;
+  char next_index_buffer[next_index_size];
+  read.read(next_index_buffer, next_index_size);
+  if (read.fail() || read.gcount() != next_index_size) {
+    _flags |= SF_index_invalid;
+    return 0;
+  }
+
+  Datagram idg(next_index_buffer, next_index_size);
+  DatagramIterator idgi(idg);
+  streampos next_index = multifile->word_to_streampos(idgi.get_uint32());
+
+  if (next_index == 0) {
+    return 0;
+  }
+
+  // Now get the rest of the index (except the name, which is variable
+  // length).
+
+  _index_start = fpos;
+
+  static const size_t index_size = 4 + 4 + 2 + 2;
+  char index_buffer[index_size];
+  read.read(index_buffer, index_size);
+  if (read.fail() || read.gcount() != index_size) {
+    _flags |= SF_index_invalid;
+    return 0;
+  }
+
+  Datagram dg(index_buffer, index_size);
+  DatagramIterator dgi(dg);
+  _data_start = multifile->word_to_streampos(dgi.get_uint32());
+  _data_length = dgi.get_uint32();
+  _flags = dgi.get_uint16();
+  size_t name_length = dgi.get_uint16();
+
+  // And finally, get the rest of the name.
+  char *name_buffer = new char[name_length];
+  nassertr(name_buffer != (char *)NULL, next_index);
+  for (size_t ni = 0; ni < name_length; ni++) {
+    name_buffer[ni] = read.get() ^ 0xff;
+  }
+  _name = string(name_buffer, name_length);
+  delete[] name_buffer;
+
+  return next_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::Subfile::write_index
+//       Access: Public
+//  Description: Writes the index record for the Subfile to the
+//               indicated ostream.  Assumes the istream has already
+//               been positioned to the indicated stream position,
+//               fpos, the start of the index record, and that this is
+//               the effective end of the file.  Returns the position
+//               within the file of the next index record.
+//
+//               The _index_start member is updated by this operation.
+////////////////////////////////////////////////////////////////////
+streampos Multifile::Subfile::
+write_index(ostream &write, streampos fpos, Multifile *multifile) {
+  nassertr(write.tellp() == fpos, fpos);
+
+  _index_start = fpos;
+
+  // This will be the contents of this particular index record.
+  Datagram dg;
+  dg.add_uint32(multifile->streampos_to_word(_data_start));
+  dg.add_uint32(_data_length);
+  dg.add_uint16(_flags);
+  dg.add_uint16(_name.length());
+
+  // For no real good reason, we'll invert all the bits in the name.
+  // The only reason we do this is to make it inconvenient for a
+  // casual browser of the Multifile to discover the names of the
+  // files stored within it.  Naturally, this isn't real obfuscation
+  // or security.
+  string::iterator ni;
+  for (ni = _name.begin(); ni != _name.end(); ++ni) {
+    dg.add_int8((*ni) ^ 0xff);
+  }
+
+  size_t this_index_size = 4 + dg.get_length();
+
+  // Plus, we will write out the next index address first.
+  streampos next_index = fpos + this_index_size;
+  Datagram idg;
+  idg.add_uint32(multifile->streampos_to_word(next_index));
+
+  write.write(idg.get_data(), idg.get_length());
+  write.write(dg.get_data(), dg.get_length());
+
+  return next_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::Subfile::write_index
+//       Access: Public
+//  Description: Writes the data record for the Subfile to the
+//               indicated ostream: the actual contents of the
+//               Subfile.  Assumes the istream has already been
+//               positioned to the indicated stream position, fpos,
+//               the start of the data record, and that this is the
+//               effective end of the file.  Returns the position
+//               within the file of the next data record.
+//
+//               The _data_start and _data_length members are updated
+//               by this operation.
+//
+//               If the "read" pointer is non-NULL, it is the readable
+//               istream of a Multifile in which the Subfile might
+//               already be packed.  This is used for reading the
+//               contents of the Subfile during a repack() operation.
+////////////////////////////////////////////////////////////////////
+streampos Multifile::Subfile::
+write_data(ostream &write, istream *read, streampos fpos) {
+  nassertr(write.tellp() == fpos, fpos);
+
+  _data_start = fpos;
+
+  istream *source = _source;
+  ifstream source_file;
+  if (source == (istream *)NULL && !_source_filename.empty()) {
+    // If we have a filename, open it up and read that.
+    if (!_source_filename.open_read(source_file)) {
+      // Unable to open the source file.
+      express_cat.info()
+        << "Unable to read " << _source_filename << ".\n";
+      _flags |= SF_data_invalid;
+      _data_length = 0;
+    } else {
+      source = &source_file;
     }
   }
 
-  return EU_success;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::write_extract
-//       Access: Public
-//  Description: Returns true when entire Multifile has been
-//               extracted to disk files.
-////////////////////////////////////////////////////////////////////
-bool Multifile::
-write_extract(char *&start, int &size, const Filename &rel_path) {
-  int parse_ret = parse_header(start, size);
-  if (parse_ret < 0)
-    return false;
-  if (_current_mfile == (Memfile *)0L)
-    _current_mfile = new Memfile;
-  for (;;) {
-    if (_current_mfile->write(start, size, rel_path) == false)
-      return false;
-    if (++_mfiles_written == _num_mfiles)
-      return true;
-    _current_mfile->reset();
+  if (source == (istream *)NULL) {
+    // We don't have any source data.  Perhaps we're reading from an
+    // already-packed Subfile (e.g. during repack()).
+    if (read == (istream *)NULL) {
+      // No, we're just screwed.
+      express_cat.info()
+        << "No source for subfile " << _name << ".\n";
+      _flags |= SF_data_invalid;
+    } else {
+      // Read the data from the original Multifile.
+      for (size_t p = 0; p < _data_length; p++) {
+        int byte = read->get();
+        if (read->eof() || read->fail()) {
+          // Unexpected EOF or other failure on the source file.
+          express_cat.info()
+            << "Unexpected EOF for subfile " << _name << ".\n";
+          _flags |= SF_data_invalid;
+        }
+        write.put(byte);
+      }
+    }
+  } else {
+    // We do have source data.  Copy it in, and also measure its
+    // length.
+    _data_length = 0;
+    int byte = source->get();
+    while (!source->eof() && !source->fail()) {
+      _data_length++;
+      write.put(byte);
+      byte = source->get();
+    }
   }
+
+  _source = (istream *)NULL;
+  _source_filename = Filename();
+  source_file.close();
+
+  return fpos + _data_length;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::reset
+//     Function: Multifile::Subfile::rewrite_index_data_start
 //       Access: Public
-//  Description:
+//  Description: Seeks within the indicate fstream back to the index
+//               record and rewrites just the _data_start and
+//               _data_length part of the index record.
 ////////////////////////////////////////////////////////////////////
-void Multifile::
-reset(void) {
-  if (express_cat.is_debug())
-    express_cat.debug()
-      << "Multifile reset called" << endl;
-  _header_parsed = false;
-  _num_mfiles = 0;
-  _current_mfile = (Memfile *)0L;
-  _datagram.clear();
-  _files.erase(_files.begin(), _files.end());
-  _mfiles_written = 0;
+void Multifile::Subfile::
+rewrite_index_data_start(ostream &write, Multifile *multifile) {
+  nassertv(_index_start != 0);
+
+  static const size_t data_start_offset = 4;
+  size_t data_start_pos = _index_start + data_start_offset;
+  write.seekp(data_start_pos);
+  nassertv(!write.fail());
+
+  Datagram dg;
+  dg.add_uint32(multifile->streampos_to_word(_data_start));
+  dg.add_uint32(_data_length);
+  write.write(dg.get_data(), dg.get_length());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::extract
+//     Function: Multifile::Subfile::rewrite_index_flags
 //       Access: Public
-//  Description:
+//  Description: Seeks within the indicate fstream back to the index
+//               record and rewrites just the _flags part of the
+//               index record.
 ////////////////////////////////////////////////////////////////////
-bool Multifile::
-extract(const Filename &name, const Filename &rel_path) {
-  MemfileList::iterator found;
-  found = find_if(_files.begin(), _files.end(), MemfileMatch(name));
-  if (found != _files.end()) {
-    (*found)->write(rel_path);
-    return true;
-  }
-  return false;
-}
+void Multifile::Subfile::
+rewrite_index_flags(ostream &write) {
+  nassertv(_index_start != 0);
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::extract_all
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Multifile::
-extract_all(const Filename &rel_path) {
-  express_cat.debug()
-    << "Multifile::extract_all() - Extracting all files" << endl;
+  static const size_t flags_offset = 4 + 4 + 4;
+  size_t flags_pos = _index_start + flags_offset;
+  write.seekp(flags_pos);
+  nassertv(!write.fail());
 
-  MemfileList::iterator i;
-  for (i = _files.begin(); i != _files.end(); ++i)
-    (*i)->write(rel_path);
+  Datagram dg;
+  dg.add_uint16(_flags);
+  write.write(dg.get_data(), dg.get_length());
 }

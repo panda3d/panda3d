@@ -2,6 +2,7 @@
 #include "multifile.cxx"
 #include "namable.cxx"
 #include "nativeNumericData.cxx"
+#include "ordered_vector.cxx"
 #include "profileTimer.cxx"
 #include "pta_uchar.cxx"
 #include "referenceCount.cxx"
