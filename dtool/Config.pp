@@ -175,7 +175,7 @@
 // directory (presumably so you can develop them and make changes
 // without having to reinstall), comment out this definition and put
 // your source directory on your PYTHONPATH.
-#define INSTALL_PYTHON_SOURCE 1
+//#define INSTALL_PYTHON_SOURCE 1
 
 // Do you want to enable the "in_interpreter" global variable?  This
 // will enable some callbacks, particularly the MemoryUsage object, to
