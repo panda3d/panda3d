@@ -14,8 +14,48 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <utime.h>
+#include <assert.h>
 
 static const string begin_comment(BEGIN_COMMENT);
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::IfNesting::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PPCommandFile::IfNesting::
+IfNesting(IfState state) :
+  _state(state)
+{
+  _block = (PPCommandFile::BlockNesting *)NULL;
+  _next = (PPCommandFile::IfNesting *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::IfNesting::push
+//       Access: Public
+//  Description: Adds this IfNesting object to the top of the
+//               nesting stack.
+////////////////////////////////////////////////////////////////////
+void PPCommandFile::IfNesting::
+push(PPCommandFile *file) {
+  _block = file->_block_nesting;
+  _next = file->_if_nesting;
+  file->_if_nesting = this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::IfNesting::pop
+//       Access: Public
+//  Description: Removes this IfNesting object from the top of the
+//               nesting stack, and restores the command file's
+//               nesting state.
+////////////////////////////////////////////////////////////////////
+void PPCommandFile::IfNesting::
+pop(PPCommandFile *file) {
+  assert(file->_if_nesting == this);
+  file->_if_nesting = _next;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPCommandFile::WriteState::Constructor
@@ -126,6 +166,58 @@ write_makefile_line(const string &line) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::BlockNesting::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PPCommandFile::BlockNesting::
+BlockNesting(BlockState state, const string &name) :
+  _state(state),
+  _name(name)
+{
+  _if = (PPCommandFile::IfNesting *)NULL;
+  _write_state = (PPCommandFile::WriteState *)NULL;
+  _scope = (PPScope *)NULL;
+  _tempnam = (char *)NULL;
+  _flags = 0;
+  _next = (PPCommandFile::BlockNesting *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::BlockNesting::push
+//       Access: Public
+//  Description: Adds this BlockNesting object to the top of the
+//               nesting stack.
+////////////////////////////////////////////////////////////////////
+void PPCommandFile::BlockNesting::
+push(PPCommandFile *file) {
+  _if = file->_if_nesting;
+  _write_state = file->_write_state;
+  _scope = file->_scope;
+  _next = file->_block_nesting;
+  file->_block_nesting = this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::BlockNesting::pop
+//       Access: Public
+//  Description: Removes this BlockNesting object from the top of the
+//               nesting stack, and restores the command file's
+//               nesting state.
+////////////////////////////////////////////////////////////////////
+void PPCommandFile::BlockNesting::
+pop(PPCommandFile *file) {
+  assert(file->_block_nesting == this);
+
+  if (file->_write_state != _write_state) {
+    delete file->_write_state;
+    file->_write_state = _write_state;
+  }
+  file->_scope = _scope;
+  file->_block_nesting = _next;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -424,7 +516,7 @@ handle_command(const string &line) {
     _params = line.substr(p);
   }
 
-  if (_params[_params.length() - 1] == '\\') {
+  if (!_params.empty() && _params[_params.length() - 1] == '\\') {
     // If the line ends with a backslash, there's more to come before
     // we can process the command.
     _got_command = true;
@@ -470,28 +562,29 @@ handle_command(const string &line) {
   } else if (_command == "formap") {
     return handle_formap_command();
 
-  } else if (_command == "format") {
-    return handle_format_command();
-
-  } else if (_command == "output") {
-    return handle_output_command();
-
-  } else if (_command == "print") {
-    return handle_print_command();
-
   } else if (_command == "defsub") {
     return handle_defsub_command(true);
 
   } else if (_command == "defun") {
     return handle_defsub_command(false);
 
+  } else if (_command == "output") {
+    return handle_output_command();
+
   } else if (_command == "end") {
     return handle_end_command();
 
   } else if (_in_for) {
-    // If we're saving up #forscopes commands, we ignore any following
-    // commands for now.
+    // If we're currently saving up lines within a block sequence, we
+    // ignore all commands except for the block-related commands,
+    // above.
     return true;
+
+  } else if (_command == "format") {
+    return handle_format_command();
+
+  } else if (_command == "print") {
+    return handle_print_command();
 
   } else if (_command == "include") {
     return handle_include_command();
@@ -537,10 +630,8 @@ handle_if_command() {
     // If we're *already* inside a failed if, we don't have to
     // evaluate this one, but we do need to record the nesting level.
 
-    IfNesting *nest = new IfNesting;
-    nest->_state = IS_done;
-    nest->_next = _if_nesting;
-    _if_nesting = nest;
+    IfNesting *nest = new IfNesting(IS_done);
+    nest->push(this);
 
   } else {
 
@@ -548,20 +639,19 @@ handle_if_command() {
     // Otherwise the case is true.  However, if we're currently
     // scanning #forscopes or something, we don't evaluate this at
     // all, because it doesn't matter.
+
+    bool is_empty = true;
     if (!_in_for) {
       _params = _scope->expand_string(_params);
+      string::const_iterator si;
+      for (si = _params.begin(); si != _params.end() && is_empty; ++si) {
+	is_empty = isspace(*si);
+      }
     }
     
-    bool is_empty = true;
-    string::const_iterator si;
-    for (si = _params.begin(); si != _params.end() && is_empty; ++si) {
-      is_empty = isspace(*si);
-    }
-    
-    IfNesting *nest = new IfNesting;
-    nest->_state = is_empty ? IS_off : IS_on;
-    nest->_next = _if_nesting;
-    _if_nesting = nest;
+    IfState state = is_empty ? IS_off : IS_on;
+    IfNesting *nest = new IfNesting(state);
+    nest->push(this);
   }
 
   return true;
@@ -591,14 +681,13 @@ handle_elif_command() {
 
   // If the parameter string evaluates to empty, the case is false.
   // Otherwise the case is true.
+  bool is_empty = true;
   if (!_in_for) {
     _params = _scope->expand_string(_params);
-  }
-
-  bool is_empty = true;
-  string::const_iterator si;
-  for (si = _params.begin(); si != _params.end() && is_empty; ++si) {
-    is_empty = isspace(*si);
+    string::const_iterator si;
+    for (si = _params.begin(); si != _params.end() && is_empty; ++si) {
+      is_empty = isspace(*si);
+    }
   }
 
   _if_nesting->_state = is_empty ? IS_off : IS_on;
@@ -645,7 +734,13 @@ handle_endif_command() {
   }
 
   IfNesting *nest = _if_nesting;
-  _if_nesting = _if_nesting->_next;
+  nest->pop(this);
+
+  if (nest->_block != _block_nesting) {
+    cerr << "If block not closed within scoping block.\n";
+    return false;
+  }
+
   delete nest;
 
   return true;
@@ -661,39 +756,27 @@ handle_endif_command() {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 handle_begin_command() {
-  BlockNesting *nest = new BlockNesting;
-  nest->_state = BS_begin;
-  nest->_name = trim_blanks(_scope->expand_string(_params));
-  nest->_write_state = _write_state;
-  nest->_scope = _scope;
-  nest->_next = _block_nesting;
+  string name = trim_blanks(_scope->expand_string(_params));
+  BlockNesting *nest = new BlockNesting(BS_begin, name);
 
-  if (contains_whitespace(nest->_name)) {
-    cerr << "Attempt to define scope named \"" << nest->_name 
+  if (contains_whitespace(name)) {
+    cerr << "Attempt to define scope named \"" << name 
 	 << "\".\nScope names may not contain whitespace.\n";
     return false;
   }
 
-  if (nest->_name.find(SCOPE_DIRNAME_SEPARATOR) != string::npos) {
-    cerr << "Attempt to define scope named \"" << nest->_name 
+  if (name.find(SCOPE_DIRNAME_SEPARATOR) != string::npos) {
+    cerr << "Attempt to define scope named \"" << name 
 	 << "\".\nScope names may not contain the '"
 	 << SCOPE_DIRNAME_SEPARATOR << "' character.\n";
     return false;
   }
 
-  _block_nesting = nest;
+  nest->push(this);
 
-  if (nest->_name == "global") {
-    // There's a special case for the named scope "global": this
-    // refers to the global scope, allowing us to define macros
-    // etc. that all scopes can see.
-    _scope = PPScope::get_bottom_scope();
-
-  } else {
-    PPScope *named_scope = _scope->get_named_scopes()->make_scope(nest->_name);
-    named_scope->set_parent(_scope);
-    _scope = named_scope;
-  }
+  PPScope *named_scope = _scope->get_named_scopes()->make_scope(name);
+  named_scope->set_parent(_scope);
+  _scope = named_scope;
 
   return true;
 }
@@ -708,14 +791,10 @@ handle_begin_command() {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 handle_forscopes_command() {
-  BlockNesting *nest = new BlockNesting;
-  nest->_state = _in_for ? BS_nested_forscopes : BS_forscopes;
-  nest->_name = trim_blanks(_scope->expand_string(_params));
-  nest->_write_state = _write_state;
-  nest->_scope = _scope;
-  nest->_next = _block_nesting;
-
-  _block_nesting = nest;
+  BlockState state = _in_for ? BS_nested_forscopes : BS_forscopes;
+  string name = trim_blanks(_scope->expand_string(_params));
+  BlockNesting *nest = new BlockNesting(state, name);
+  nest->push(this);
 
   if (!_in_for) {
     _in_for = true;
@@ -748,17 +827,12 @@ handle_foreach_command() {
 
   string variable_name = words.front();
 
-  BlockNesting *nest = new BlockNesting;
-  nest->_state = _in_for ? BS_nested_foreach : BS_foreach;
-  nest->_name = variable_name;
-  nest->_write_state = _write_state;
-  nest->_scope = _scope;
-  nest->_next = _block_nesting;
+  BlockState state = _in_for ? BS_nested_foreach : BS_foreach;
+  BlockNesting *nest = new BlockNesting(state, variable_name);
+  nest->push(this);
 
   // We insert in all but the first word in the words vector.
   nest->_words.insert(nest->_words.end(), words.begin() + 1, words.end());
-
-  _block_nesting = nest;
 
   if (!_in_for) {
     _in_for = true;
@@ -792,143 +866,17 @@ handle_formap_command() {
 
   string variable_name = words.front();
 
-  BlockNesting *nest = new BlockNesting;
-  nest->_state = _in_for ? BS_nested_formap : BS_formap;
-  nest->_name = words[0];
-  nest->_write_state = _write_state;
-  nest->_scope = _scope;
-  nest->_next = _block_nesting;
+  BlockState state = _in_for ? BS_nested_formap : BS_formap;
+  BlockNesting *nest = new BlockNesting(state, words[0]);
+  nest->push(this);
 
   nest->_words.push_back(words[1]);
-
-  _block_nesting = nest;
 
   if (!_in_for) {
     _in_for = true;
     _saved_lines.clear();
   }
 
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPCommandFile::handle_format_command
-//       Access: Protected
-//  Description: Handles the #format command: change the formatting
-//               mode of lines as they are output.
-////////////////////////////////////////////////////////////////////
-bool PPCommandFile::
-handle_format_command() {
-  _params = trim_blanks(_scope->expand_string(_params));
-  if (_params == "straight") {
-    _write_state->_format = WF_straight;
-
-  } else if (_params == "collapse") {
-    _write_state->_format = WF_collapse;
-
-  } else if (_params == "makefile") {
-    _write_state->_format = WF_makefile;
-
-  } else {
-    cerr << "Ignoring invalid write format: " << _params << "\n";
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPCommandFile::handle_output_command
-//       Access: Protected
-//  Description: Handles the #output command: all text between this
-//               command and the corresponding #end command will be
-//               sent to the indicated output file.
-////////////////////////////////////////////////////////////////////
-bool PPCommandFile::
-handle_output_command() {
-  vector<string> words;
-  tokenize_whitespace(_scope->expand_string(_params), words);
-
-  if (words.empty()) {
-    cerr << "#output command requires one parameter.\n";
-    return false;
-  }
-
-  BlockNesting *nest = new BlockNesting;
-  nest->_state = BS_output;
-  nest->_name = words[0];
-  nest->_write_state = _write_state;
-  nest->_scope = _scope;
-  nest->_next = _block_nesting;
-
-  // Also check the output flags.
-  nest->_flags = 0;
-  for (int i = 1; i < (int)words.size(); i++) {
-    if (words[i] == "notouch") {
-      nest->_flags |= OF_notouch;
-    } else {
-      cerr << "Invalid output flag: " << words[i] << "\n";
-    }
-  }
-
-  _block_nesting = nest;
-
-  if (!_in_for) {
-    string filename = nest->_name;
-    if (filename.empty()) {
-      cerr << "Attempt to output to empty filename\n";
-      return false;
-    }
-    
-    string prefix = _scope->expand_variable("DIRPREFIX");
-    if (filename[0] != '/') {
-      filename = prefix + filename;
-    }
-    
-    nest->_true_name = filename;
-    nest->_tempnam = (char *)NULL;
-
-    if (access(filename.c_str(), F_OK) == 0) {
-      // If the file already exists, create a temporary file first.
-      
-      nest->_tempnam = tempnam((prefix + ".").c_str(), "pptmp");
-      assert(nest->_tempnam != (char *)NULL);
-      
-      nest->_output.open(nest->_tempnam);
-      if (nest->_output.fail()) {
-	cerr << "Unable to open output file " << nest->_tempnam << "\n";
-	return false;
-      }
-      
-    } else {
-      // If the file does not already exist, create it directly instead
-      // of monkeying around with temporary files.
-      cerr << "Generating " << filename << "\n";
-      
-      nest->_output.open(filename.c_str(), ios::out, 0666);
-      if (nest->_output.fail()) {
-	cerr << "Unable to open output file " << filename << "\n";
-	return false;
-      }
-    }
-    
-    _write_state = new WriteState(*_write_state);
-    _write_state->_out = &nest->_output;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPCommandFile::handle_print_command
-//       Access: Protected
-//  Description: Handles the #print command: immediately output the
-//               arguments to this line to standard error.
-////////////////////////////////////////////////////////////////////
-bool PPCommandFile::
-handle_print_command() {
-  if (!_in_for) {
-    cerr << _scope->expand_string(_params) << "\n";
-  }
   return true;
 }
 
@@ -980,18 +928,90 @@ handle_defsub_command(bool is_defsub) {
     return false;
   }
 
-  BlockNesting *nest = new BlockNesting;
-  nest->_state = is_defsub ? BS_defsub : BS_defun;
-  nest->_name = subroutine_name;
-  nest->_write_state = _write_state;
-  nest->_scope = _scope;
-  nest->_next = _block_nesting;
-  nest->_words.swap(formals);
+  BlockState state = is_defsub ? BS_defsub : BS_defun;
+  BlockNesting *nest = new BlockNesting(state, subroutine_name);
 
-  _block_nesting = nest;
+  nest->push(this);
+  nest->_words.swap(formals);
 
   _in_for = true;
   _saved_lines.clear();
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_output_command
+//       Access: Protected
+//  Description: Handles the #output command: all text between this
+//               command and the corresponding #end command will be
+//               sent to the indicated output file.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_output_command() {
+  vector<string> words;
+  tokenize_whitespace(_scope->expand_string(_params), words);
+
+  if (words.empty()) {
+    cerr << "#output command requires one parameter.\n";
+    return false;
+  }
+
+  BlockNesting *nest = new BlockNesting(BS_output, words[0]);
+
+  // Also check the output flags.
+  for (int i = 1; i < (int)words.size(); i++) {
+    if (words[i] == "notouch") {
+      nest->_flags |= OF_notouch;
+    } else {
+      cerr << "Invalid output flag: " << words[i] << "\n";
+    }
+  }
+
+  nest->push(this);
+
+  if (!_in_for) {
+    string filename = nest->_name;
+    if (filename.empty()) {
+      cerr << "Attempt to output to empty filename\n";
+      return false;
+    }
+    
+    string prefix = _scope->expand_variable("DIRPREFIX");
+    if (filename[0] != '/') {
+      filename = prefix + filename;
+    }
+    
+    nest->_true_name = filename;
+    nest->_tempnam = (char *)NULL;
+
+    if (access(filename.c_str(), F_OK) == 0) {
+      // If the file already exists, create a temporary file first.
+      
+      nest->_tempnam = tempnam((prefix + ".").c_str(), "pptmp");
+      assert(nest->_tempnam != (char *)NULL);
+      
+      nest->_output.open(nest->_tempnam);
+      if (nest->_output.fail()) {
+	cerr << "Unable to open output file " << nest->_tempnam << "\n";
+	return false;
+      }
+      
+    } else {
+      // If the file does not already exist, create it directly instead
+      // of monkeying around with temporary files.
+      cerr << "Generating " << filename << "\n";
+      
+      nest->_output.open(filename.c_str(), ios::out, 0666);
+      if (nest->_output.fail()) {
+	cerr << "Unable to open output file " << filename << "\n";
+	return false;
+      }
+    }
+    
+    _write_state = new WriteState(*_write_state);
+    _write_state->_out = &nest->_output;
+  }
 
   return true;
 }
@@ -1017,14 +1037,12 @@ handle_end_command() {
   }
 
   BlockNesting *nest = _block_nesting;
+  nest->pop(this);
 
-  _scope = nest->_scope;
-  if (_write_state != nest->_write_state) {
-    delete _write_state;
-    _write_state = nest->_write_state;
+  if (nest->_if != _if_nesting) {
+    cerr << "If block not closed within scoping block.\n";
+    return false;
   }
-
-  _block_nesting = nest->_next;
 
   if (nest->_state == BS_forscopes) {
     // Now replay all of the saved lines.
@@ -1088,6 +1106,43 @@ handle_end_command() {
 
   delete nest;
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_format_command
+//       Access: Protected
+//  Description: Handles the #format command: change the formatting
+//               mode of lines as they are output.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_format_command() {
+  _params = trim_blanks(_scope->expand_string(_params));
+  if (_params == "straight") {
+    _write_state->_format = WF_straight;
+
+  } else if (_params == "collapse") {
+    _write_state->_format = WF_collapse;
+
+  } else if (_params == "makefile") {
+    _write_state->_format = WF_makefile;
+
+  } else {
+    cerr << "Ignoring invalid write format: " << _params << "\n";
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_print_command
+//       Access: Protected
+//  Description: Handles the #print command: immediately output the
+//               arguments to this line to standard error.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_print_command() {
+  cerr << _scope->expand_string(_params) << "\n";
   return true;
 }
 
@@ -1418,6 +1473,8 @@ include_file(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 replay_forscopes(const string &name) {
+  assert(!_in_for);
+
   bool okflag = true;
 
   vector<string> lines;
@@ -1442,9 +1499,13 @@ replay_forscopes(const string &name) {
     named_scopes->get_scopes(*wi, scopes);
   }
   PPNamedScopes::sort_by_dependency(scopes);
-    
+
+  // And finally, replay all of the saved lines.
+  BlockNesting *saved_block = _block_nesting;
+  IfNesting *saved_if = _if_nesting;
+
   PPNamedScopes::Scopes::const_iterator si;
-  for (si = scopes.begin(); si != scopes.end(); ++si) {
+  for (si = scopes.begin(); si != scopes.end() && okflag; ++si) {
     PPScope::push_scope(_scope);
     _scope = (*si);
     
@@ -1453,6 +1514,11 @@ replay_forscopes(const string &name) {
       okflag = read_line(*li);
     }
     _scope = PPScope::pop_scope();
+  }
+
+  if (saved_block != _block_nesting || saved_if != _if_nesting) {
+    cerr << "Misplaced #end or #endif.\n";
+    okflag = false;
   }
 
   return okflag;
@@ -1466,6 +1532,8 @@ replay_forscopes(const string &name) {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 replay_foreach(const string &varname, const vector<string> &words) {
+  assert(!_in_for);
+
   bool okflag = true;
 
   vector<string> lines;
@@ -1477,13 +1545,21 @@ replay_foreach(const string &varname, const vector<string> &words) {
   lines.pop_back();
 
   // Now traverse through the saved words.
+  BlockNesting *saved_block = _block_nesting;
+  IfNesting *saved_if = _if_nesting;
+
   vector<string>::const_iterator wi;
-  for (wi = words.begin(); wi != words.end(); ++wi) {
+  for (wi = words.begin(); wi != words.end() && okflag; ++wi) {
     _scope->define_variable(varname, (*wi));
     vector<string>::const_iterator li;
     for (li = lines.begin(); li != lines.end() && okflag; ++li) {
       okflag = read_line(*li);
     }
+  }
+
+  if (saved_block != _block_nesting || saved_if != _if_nesting) {
+    cerr << "Misplaced #end or #endif.\n";
+    okflag = false;
   }
 
   return okflag;
@@ -1497,6 +1573,8 @@ replay_foreach(const string &varname, const vector<string> &words) {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 replay_formap(const string &varname, const string &mapvar) {
+  assert(!_in_for);
+
   bool okflag = true;
 
   vector<string> lines;
@@ -1516,6 +1594,9 @@ replay_formap(const string &varname, const string &mapvar) {
   }
 
   // Now traverse through the map definition.
+  BlockNesting *saved_block = _block_nesting;
+  IfNesting *saved_if = _if_nesting;
+
   PPScope::MapVariableDefinition::const_iterator di;
   for (di = def.begin(); di != def.end() && okflag; ++di) {
     _scope->define_variable(varname, (*di).first);
@@ -1529,6 +1610,11 @@ replay_formap(const string &varname, const string &mapvar) {
     }
 
     _scope = PPScope::pop_scope();
+  }
+
+  if (saved_block != _block_nesting || saved_if != _if_nesting) {
+    cerr << "Misplaced #end or #endif.\n";
+    okflag = false;
   }
 
   return okflag;

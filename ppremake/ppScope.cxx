@@ -2658,6 +2658,7 @@ expand_function(const string &funcname,
   if (okflag) {
     okflag = command.end_read();
   }
+  // We don't do anything with okflag here.  What can we do?
 
   PPScope::pop_scope();
 

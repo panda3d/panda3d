@@ -46,12 +46,12 @@ protected:
   bool handle_forscopes_command();
   bool handle_foreach_command();
   bool handle_formap_command();
-  bool handle_format_command();
-  bool handle_output_command();
-  bool handle_print_command();
   bool handle_defsub_command(bool is_defsub);
+  bool handle_output_command();
   bool handle_end_command();
 
+  bool handle_format_command();
+  bool handle_print_command();
   bool handle_include_command();
   bool handle_sinclude_command();
   bool handle_call_command();
@@ -85,8 +85,7 @@ private:
   };
 
 private:
-  PPScope *_native_scope;
-  PPScope *_scope;
+  class BlockNesting;
 
   enum IfState {
     IS_on,   // e.g. a passed #if
@@ -97,7 +96,12 @@ private:
 
   class IfNesting {
   public:
+    IfNesting(IfState state);
+    void push(PPCommandFile *file);
+    void pop(PPCommandFile *file);
+
     IfState _state;
+    BlockNesting *_block;
     IfNesting *_next;
   };
 
@@ -139,8 +143,13 @@ private:
   
   class BlockNesting {
   public:
+    BlockNesting(BlockState state, const string &name);
+    void push(PPCommandFile *file);
+    void pop(PPCommandFile *file);
+
     BlockState _state;
     string _name;
+    IfNesting *_if;
     WriteState *_write_state;
     PPScope *_scope;
     string _true_name;
@@ -151,6 +160,8 @@ private:
     BlockNesting *_next;
   };
 
+  PPScope *_native_scope;
+  PPScope *_scope;
   bool _got_command;
   bool _in_for;
   IfNesting *_if_nesting;

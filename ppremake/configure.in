@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(ppremake.cxx)
-AM_INIT_AUTOMAKE(ppremake, 0.51)
+AM_INIT_AUTOMAKE(ppremake, 0.52)
 AM_CONFIG_HEADER(config.h)
 
 AC_PREFIX_DEFAULT(/usr/local/panda)
