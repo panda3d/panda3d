@@ -323,6 +323,12 @@ class TaskManager:
         # Return the number of tasks removed
         return len(removedTasks)
 
+    def hasTaskNamed(self, taskName):
+	for task in self.taskList:
+	    if (task.name == taskName):
+		return 1
+	return 0
+
     def removeTasksMatching(self, taskPattern):
         """removeTasksMatching(self, string taskPattern)
 

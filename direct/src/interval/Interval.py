@@ -108,6 +108,9 @@ class Interval(DirectObject):
         self.setT(self.curr_t, event = IVAL_STOP)
 	return self.curr_t
 
+    def isPlaying(self):
+	return taskMgr.hasTaskNamed(self.name + '-play')
+
     def __playTask(self, task):
         """ __playTask(task)
         """
