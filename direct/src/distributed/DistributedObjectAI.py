@@ -10,7 +10,7 @@ from PyDatagramIterator import PyDatagramIterator
 class DistributedObjectAI(DirectObject.DirectObject):
     notify = directNotify.newCategory("DistributedObjectAI")
     QuietZone = 1
-    
+
     def __init__(self, air):
         try:
             self.DistributedObjectAI_initialized
@@ -105,14 +105,14 @@ class DistributedObjectAI(DirectObject.DirectObject):
         Returns true if the object has been deleted,
         or if it is brand new and hasn't yet been generated.
         """
-        return (self.air == None)
+        return self.air == None
 
     def isGenerated(self):
         """
         Returns true if the object has been generated
         """
         return hasattr(self, 'zoneId')
-    
+
     def getDoId(self):
         """
         Return the distributed object id
@@ -134,11 +134,24 @@ class DistributedObjectAI(DirectObject.DirectObject):
         of its required fields filled in. Overwrite when needed.
         """
         pass
-    
+
+    if wantOtpServer:
+        def addInterest(self, zoneId, note="", event=None):
+            self.air.addInterest(self.getDoId(), zoneId, note, event)
+
+        if 0: # this is untested:
+            def setLocation(self, parentId, zoneId):
+                # The store must run first so we know the old location
+                self.air.storeObjectLocation(self.doId, parentId, zoneId)
+                self.__location = (parentId, zoneId)
+
+            def getLocation(self):
+                return self.__location
+
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
-    
+
     def updateAllRequiredFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
@@ -171,7 +184,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
         # arguments are newZoneId, oldZoneId
         # does not include the quiet zone.
         return 'DOLogicalChangeZone-%s' % self.doId
-    
+
     def handleZoneChange(self, newParentId, newZoneId, oldParentId, oldZoneId):
         if wantOtpServer:
             assert oldParentId == self.parentId
@@ -232,12 +245,12 @@ class DistributedObjectAI(DirectObject.DirectObject):
 
     def generateWithRequired(self, zoneId, optionalFields=[]):
         assert self.notify.debugStateCall(self)
-        # have we already allocated a doId?      
+        # have we already allocated a doId?
         if self.__preallocDoId:
             self.__preallocDoId = 0
             return self.generateWithRequiredAndId(
                 self.doId, zoneId, optionalFields)
-            
+
         # The repository is the one that really does the work
         self.air.generateWithRequired(self, zoneId, optionalFields)
         if wantOtpServer:
@@ -275,7 +288,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
                 assert doId is None or doId == self.__preallocDoId
                 doId=self.__preallocDoId
                 self.__preallocDoId = 0
-                
+
             # The repository is the one that really does the work
             self.air.sendGenerateOtpObject(
                     self, parentId, zoneId, optionalFields, doId=doId)
@@ -325,7 +338,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
                     repository.ourChannel,
                     optionalFields)
         repository.send(dg)
-            
+
     def initFromServerResponse(self, valDict):
         assert self.notify.debugStateCall(self)
         # This is a special method used for estates, etc., which get
@@ -349,13 +362,13 @@ class DistributedObjectAI(DirectObject.DirectObject):
             return
         self.air.requestDelete(self)
         self._DOAI_requestedDelete = True
-        
+
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId()))
 
     def uniqueName(self, idString):
         return (idString + "-" + str(self.getDoId()))
-    
+
     def validate(self, avId, bool, msg):
         if not bool:
             self.air.writeServerEvent('suspicious', avId, msg)
@@ -369,7 +382,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
         # made it through.  There may be multiple barriers waiting
         # simultaneously on different lists of avatars, although they
         # should have different names.
-        
+
         from toontown.ai import ToonBarrier
         context = self.__nextBarrierContext
         # We assume the context number is passed as a uint16.
@@ -433,5 +446,5 @@ class DistributedObjectAI(DirectObject.DirectObject):
             callback(avIds)
         else:
             self.notify.warning("Unexpected completion from barrier %s" % (context))
-        
-        
+
+
