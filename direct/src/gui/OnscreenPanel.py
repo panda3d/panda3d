@@ -29,8 +29,11 @@ def cleanupPanel(uniqueName):
     """
         
     if OnscreenPanel.AllPanels.has_key(uniqueName):
+        # calling cleanup() will remove it out of the AllPanels dict
+        # This way it will get removed from the dict even it we did
+        # not clean it up using this interface (ie somebody called
+        # self.cleanup() directly
         OnscreenPanel.AllPanels[uniqueName].cleanup()
-        del OnscreenPanel.AllPanels[uniqueName]
 
 
 class OnscreenPanel(PandaObject.PandaObject, NodePath):
@@ -188,6 +191,11 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         if not self.isEmpty():
             self.removeNode()
+
+        # Remove this panel out of the AllPanels list
+        uniqueName = self.getUniqueName()
+        if OnscreenPanel.AllPanels.has_key(uniqueName):
+            del OnscreenPanel.AllPanels[uniqueName]
 
         self.panelSetup = 0
         return 1
