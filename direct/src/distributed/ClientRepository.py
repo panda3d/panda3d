@@ -180,7 +180,13 @@ class ClientRepository(DirectObject.DirectObject):
     def handleDisable(self, di):
         # Get the DO Id
         doId = di.getArg(STUint32)
-        # Make sure the object exists
+        # disable it.
+        self.disableDoId(doId)
+
+        return None
+
+    def disableDoId(self, doId):
+         # Make sure the object exists
         if self.doId2do.has_key(doId):
             # Look up the object
             distObj = self.doId2do[doId]
