@@ -37,6 +37,9 @@
 ////////////////////////////////////////////////////////////////////
 ZCompressor::
 ZCompressor(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "ZCompressor constructor called" << endl;
   _stream = new z_stream;
   reset_stream(_stream);
   int ret = deflateInit(_stream, 9);
@@ -54,6 +57,9 @@ ZCompressor(void) {
 ////////////////////////////////////////////////////////////////////
 ZCompressor::
 ~ZCompressor(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "ZCompressor destructor called" << endl;
   handle_zerror(deflateEnd(_stream), _stream);
   delete _stream;
 }
@@ -109,6 +115,9 @@ compress_to_stream(char *&next_in, int &avail_in, char *&next_out,
 ////////////////////////////////////////////////////////////////////
 ZDecompressor::
 ZDecompressor(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "ZDecompressor constructor called" << endl;
   _stream = new z_stream;
   reset_stream(_stream);
   int ret = inflateInit(_stream);
@@ -126,6 +135,9 @@ ZDecompressor(void) {
 ////////////////////////////////////////////////////////////////////
 ZDecompressor::
 ~ZDecompressor(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "ZDecompressor destructor called" << endl;
   handle_zerror(inflateEnd(_stream), _stream);
 }
 

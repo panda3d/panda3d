@@ -40,6 +40,9 @@ PN_uint32 DownloadDb::_bogus_magic_number = 0x11111111;
 ////////////////////////////////////////////////////////////////////
 DownloadDb::
 DownloadDb(Ramfile &server_file, Filename &client_file) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "DownloadDb constructor called" << endl;
   _client_db = read_db(client_file, 0);
   _client_db._filename = client_file;
   _server_db = read_db(server_file, 1);
@@ -63,6 +66,9 @@ DownloadDb(void) {
 ////////////////////////////////////////////////////////////////////
 DownloadDb::
 ~DownloadDb(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "DownloadDb destructor called" << endl;    
 }
 
 

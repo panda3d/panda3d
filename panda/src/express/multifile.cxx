@@ -37,6 +37,9 @@ PN_uint32 Multifile::_magic_number = 0xbeeffeeb;
 ////////////////////////////////////////////////////////////////////
 Multifile::Memfile::
 Memfile(void) {
+  if (express_cat.is_debug())
+    express_cat.debug()
+      << "Multifile::Memfile constructor called" << endl;
   reset();
   _header_length_buf_length = sizeof(_header_length);
   _header_length_buf = new char[_header_length_buf_length];
@@ -49,6 +52,9 @@ Memfile(void) {
 ////////////////////////////////////////////////////////////////////
 Multifile::Memfile::
 ~Memfile(void) {
+  if (express_cat.is_debug())
+    express_cat.debug()
+      << "Multifile::Memfile destructor called" << endl;
   if (_buffer != (char *)0L)
     delete _buffer;
   _buffer = (char *)0L;
@@ -62,6 +68,9 @@ Multifile::Memfile::
 ////////////////////////////////////////////////////////////////////
 void Multifile::Memfile::
 reset(void) {
+  if (express_cat.is_debug())
+    express_cat.debug()
+      << "Multifile::Memfile reset called" << endl;
   _header_length_parsed = false;
   _header_parsed = false;
   _header_length = 0;
@@ -107,9 +116,10 @@ parse_header_length(char *&start, int &size) {
   DatagramIterator di(_datagram);
   _header_length = di.get_int32();
 
-  express_cat.debug()
-    << "Multifile::Memfile::parse_header_length() - header length: "
-    << _header_length << endl;
+  if (express_cat.is_debug())
+    express_cat.debug()
+      << "Multifile::Memfile::parse_header_length() - header length: "
+      << _header_length << endl;
 
   nassertr(_header_length > _header_length_buf_length + (int)sizeof(_buffer_length), false);
 
@@ -361,6 +371,9 @@ write(char *&start, int &size, const Filename &rel_path) {
 ////////////////////////////////////////////////////////////////////
 Multifile::
 Multifile(void) {
+  if (express_cat.is_debug())
+    express_cat.debug()
+      << "Multifile constructor called" << endl;
   reset();
   _header_length = sizeof(_magic_number) + sizeof(_num_mfiles);
 }
@@ -372,6 +385,9 @@ Multifile(void) {
 ////////////////////////////////////////////////////////////////////
 Multifile::
 ~Multifile(void) {
+  if (express_cat.is_debug())
+    express_cat.debug()
+      << "Multifile destructor called" << endl;
   _files.erase(_files.begin(), _files.end());
   if (_current_mfile != NULL)
     delete _current_mfile;
@@ -652,6 +668,9 @@ write_extract(char *&start, int &size, const Filename &rel_path) {
 ////////////////////////////////////////////////////////////////////
 void Multifile::
 reset(void) {
+  if (express_cat.is_debug())
+    express_cat.debug()
+      << "Multifile reset called" << endl;
   _header_parsed = false;
   _num_mfiles = 0;
   _current_mfile = (Memfile *)0L;

@@ -69,6 +69,9 @@ Decompressor(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 void Decompressor::
 init(PT(Buffer) buffer) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Decompressor constructor called" << endl;
   _initiated = false;
   nassertv(!buffer.is_null());
   _half_buffer_length = buffer->get_length()/2;
@@ -87,6 +90,9 @@ init(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 Decompressor::
 ~Decompressor(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Decompressor destructor called" << endl;
   _temp_file_name.unlink();
   if (_initiated == true)
     cleanup();
@@ -219,6 +225,9 @@ initiate(Ramfile &source_file) {
 ////////////////////////////////////////////////////////////////////
 void Decompressor::
 cleanup(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Decompressor cleanup called" << endl;
   if (_initiated == false) {
     downloader_cat.error()
       << "Decompressor::cleanup() - Decompression has not been "

@@ -56,6 +56,9 @@ Extractor(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 void Extractor::
 init(PT(Buffer) buffer) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Extractor constructor called" << endl;
   _initiated = false;
   nassertv(!buffer.is_null());
   _buffer = buffer;
@@ -69,6 +72,9 @@ init(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 Extractor::
 ~Extractor(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Extractor destructor called" << endl;
   if (_initiated == true)
     cleanup();
 }
@@ -120,6 +126,9 @@ initiate(Filename &source_file, const Filename &rel_path) {
 ////////////////////////////////////////////////////////////////////
 void Extractor::
 cleanup(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Extractor cleanup called" << endl;
   if (_initiated == false) {
     downloader_cat.error()
       << "Extractor::cleanup() - Extraction has not been initiated"
