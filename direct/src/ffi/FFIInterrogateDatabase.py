@@ -723,7 +723,7 @@ class FFIInterrogateDatabase:
         for type in self.environment.downcastFunctions:
             type.generateGlobalDowncastCode(downcastFile)
             
-        FFIConstants.notify.info( 'Generating global value code...')
+        FFIConstants.notify.info( 'Generating global code...')
         globalFile = constructGlobalFile(codeDir, CModuleName)
 
         # Make a list of all the global functions. This includes the normal
@@ -751,15 +751,15 @@ class FFIInterrogateDatabase:
             treeColl = FFIOverload.FFIMethodArgumentTreeCollection(None, methodSpecList)
             treeColl.generateCode(globalFile, -1)
 
-        FFIConstants.notify.info( 'Generating global value code...')
+        FFIConstants.notify.info( 'Generating global values...')
         for type in self.environment.globalValues:
             type.generateGlobalCode(globalFile)
             
-        FFIConstants.notify.info( 'Generating global function code...')
+        FFIConstants.notify.info( 'Generating global functions...')
         for type in self.environment.globalFunctions:
             type.generateGlobalCode(globalFile)
 
-        FFIConstants.notify.info( 'Generating manifest code...')
+        FFIConstants.notify.info( 'Generating manifests...')
         for type in self.environment.manifests:
             type.generateGlobalCode(globalFile)
 
