@@ -8,7 +8,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define SOURCES \
-    config_audio.h audioManager.I audioManager.h \
+    config_audio.h audioManager.h \
     audioSound.h nullAudioManager.h nullAudioSound.h
     
   #define INCLUDED_SOURCES \
@@ -18,7 +18,7 @@
   #define INSTALL_HEADERS \
     config_audio.h \
     audio.h \
-    audioManager.h audioManager.I \
+    audioManager.h \
     audioSound.h \
     nullAudioManager.h \
     nullAudioSound.h \
@@ -37,4 +37,3 @@
     test_audio.cxx
 
 #end test_bin_target
-

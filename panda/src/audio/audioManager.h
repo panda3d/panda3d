@@ -35,7 +35,10 @@ PUBLISHED:
   //   ...
   //   my_sound = MySoundEffects.get_sound("neatSfx.mp3");
   //   my_music = MyMusicManager.get_sound("introTheme.mid");
-  static PT(AudioManager) create_AudioManager();
+
+  // bOneAtATime: if true, turn off any currently-playing sounds before playing
+  //              a new one (useful for midi songs)
+static PT(AudioManager) create_AudioManager(/*bool bOneAtATime*/);
   virtual ~AudioManager() {}
   
   virtual bool is_valid() = 0;
@@ -83,7 +86,5 @@ protected:
     // intentionally blank.
   }
 };
-
-#include "audioManager.I"
 
 #endif /* __AUDIO_MANAGER_H__ */
