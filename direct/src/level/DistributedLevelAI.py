@@ -155,14 +155,17 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
                 return
             
             spec = None
+            # don't need to hit disk if we're just sending 'None' over the wire
+            useDisk = 0
             if hash(self.levelSpec) != specHash:
                 spec = self.levelSpec
+                useDisk=simbase.config.GetBool('spec-by-disk', 0)
             specStr = repr(spec)
 
             import DistributedLargeBlobSenderAI
             largeBlob = DistributedLargeBlobSenderAI.\
                         DistributedLargeBlobSenderAI(
                 self.air, self.zoneId, senderId, specStr,
-                useDisk=simbase.config.GetBool('spec-by-disk', 0))
+                useDisk=useDisk)
             self.sendUpdateToAvatarId(senderId,
                                       'setSpecSenderDoId', [largeBlob.doId])
