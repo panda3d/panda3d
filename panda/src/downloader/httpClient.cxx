@@ -313,8 +313,14 @@ set_direct_host_spec(const string &direct_host_spec) {
   for (vector_string::const_iterator hi = hosts.begin();
        hi != hosts.end();
        ++hi) {
-    const string &spec = (*hi);
-    add_direct_host(trim_blanks(spec));
+    string spec = trim_blanks(*hi);
+
+    // We should be careful to avoid adding any empty hostnames to the
+    // list.  In particular, we will get one empty hostname if the
+    // direct_host_spec is empty.
+    if (!spec.empty()) {
+      add_direct_host(spec);
+    }
   }
 }
 
@@ -449,11 +455,13 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
   // First, check if the hostname matches any listed in direct_hosts.
   string hostname = url.get_server();
 
-  if (!hostname.empty()) { // skip if hostname is just an empty 'http://' scheme
+  // If the hostname is empty, treat it as a special case: we don't
+  // match any of the hostnames listed in direct_hosts (even "*").
+  if (!hostname.empty()) {
     DirectHosts::const_iterator si;
     for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
       if ((*si).matches(hostname)) {
-      // It matches, so don't use any proxies.
+        // It matches, so don't use any proxies.
         return;
       }
     }
