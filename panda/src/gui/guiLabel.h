@@ -43,7 +43,6 @@ private:
   float _width;
   bool _have_height;
   float _height;
-  float _depth;
 
   PriorityMap _priorities;
   int _hard_pri;
@@ -73,7 +72,6 @@ PUBLISHED:
   void get_extents(float&, float&, float&, float&);
   float get_width(void);
   float get_height(void);
-  INLINE float get_depth(void) const;
 
   INLINE void set_width(float);
   INLINE void set_height(float);
@@ -81,7 +79,6 @@ PUBLISHED:
   INLINE void set_scale(float);
   INLINE void set_pos(float, float, float);
   INLINE void set_pos(const LVector3f&);
-  INLINE void set_depth(float);
 
   INLINE float get_scale(void) const;
   INLINE LVector3f get_pos(void) const;
