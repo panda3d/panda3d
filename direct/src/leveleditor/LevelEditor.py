@@ -363,7 +363,7 @@ class LevelEditor(NodePath, PandaObject):
         if fDeleteToplevel:
             # First destroy existing scene-graph/DNA hierarchy
             self.deleteToplevel()
-
+        
 	# Clear DNASTORE
 	DNASTORE.resetDNAGroups()
         # Reset DNA VIS Groups
@@ -394,6 +394,8 @@ class LevelEditor(NodePath, PandaObject):
         self.lastBuilding = None
         # Code of last selected object (for autopositionGrid)
         self.snapList = []
+        # Last menu used
+        self.activeMenu = None
 
     def deleteToplevel(self):
         # Destory old toplevel node path and DNA
@@ -708,6 +710,10 @@ class LevelEditor(NodePath, PandaObject):
         # self.panel.sceneGraphExplorer.update()
         
         # Position it
+        # First kill autoposition task so grid can jump to its final
+        # destination (part of cleanup
+        taskMgr.removeTasksNamed('autoPositionGrid')
+        # Now find where to put node path
         if (hotKey is not None) & nodeClass.eq(DNA_PROP):
             # If its a prop and a copy, place it based upon current
             # mouse position
@@ -946,7 +952,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def getFlatBuildingMode(self, dnaObject):
         # Where are we hitting the building?
-        hitPt = self.getWallIntersectionPoint()
+        hitPt = self.getWallIntersectionPoint(self.selectedNPRoot)
         wallNum = self.computeWallNum(dnaObject, hitPt)
         if wallNum < 0:
             # Do building related operations
@@ -1145,13 +1151,15 @@ class LevelEditor(NodePath, PandaObject):
             direct.deselect(nodePath)
             # And select parent
             direct.select(dnaParent, direct.fShift)
-        else:
+        elif dnaNode:
             # We got a valid node path/DNA object, continue
             self.selectedNPRoot = nodePath
             self.selectedDNARoot = dnaNode
             # Reset last Code (for autoPositionGrid)
             if DNAClassEqual(dnaNode, DNA_STREET):
                 self.snapList = OBJECT_SNAP_POINTS[dnaNode.getCode()]
+        else:
+            pass
 
     def deselectedNodePathHook(self, nodePath):
         # Clear out old root variables
@@ -1366,6 +1374,7 @@ class LevelEditor(NodePath, PandaObject):
             return 1
 
     def autoPositionGrid(self):
+        taskMgr.removeTasksNamed('autoPositionGrid')
 	# Move grid to prepare for placement of next object
 	selectedNode = direct.selected.last
         if selectedNode:
@@ -1393,7 +1402,6 @@ class LevelEditor(NodePath, PandaObject):
 
             # Position grid for placing next object
             # Eventually we need to setHpr too
-            taskMgr.removeTasksNamed('autoPositionGrid')
             t = direct.grid.lerpPosHpr(
                 deltaPos, deltaHpr, 0.25,
                 other = selectedNode,
@@ -1430,14 +1438,11 @@ class LevelEditor(NodePath, PandaObject):
         else:
             return (ZERO_VEC, ZERO_VEC)
 
-    def getWallIntersectionPoint(self):
+    def getWallIntersectionPoint(self, selectedNode):
 	"""
         Return point of intersection between building's wall and line from cam
-        through mouse. Return false, if nothing selected
+        through mouse. 
         """
-	selectedNode = direct.selected.last
-        if not selectedNode:
-            return 0
         # Find mouse point on near plane
     	mouseX = direct.dr.mouseX
   	mouseY = direct.dr.mouseY

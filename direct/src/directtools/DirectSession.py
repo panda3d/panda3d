@@ -242,7 +242,7 @@ class DirectSession(PandaObject):
             self.readout.reparentTo(render2d)
             self.readout.setText(dnp.name)
             # Show the manipulation widget
-            self.widget.showWidgetIfActive()
+            self.widget.showWidget()
             # Update camera controls coa to this point
             # Coa2Camera = Coa2Dnp * Dnp2Camera
             mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(self.camera)

@@ -543,6 +543,9 @@ class ObjectHandles(NodePath,PandaObject):
         if self.fActive:
             self.reparentTo(direct.group)
 
+    def showWidget(self):
+        self.reparentTo(direct.group)
+
     def hideWidget(self):
         self.reparentTo(hidden)
 
