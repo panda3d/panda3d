@@ -222,7 +222,7 @@ class FSM(DirectObject):
                                  (self.__name, aStateName))
             return 0
         else:
-            if FSM.notify.getDebug():
+            if FSM.notify.getWarning():
                 FSM.notify.warning("[%s]: no transition exists from %s to %s" %
                                    (self.__name,
                                     self.__currentState.getName(),
