@@ -11,7 +11,7 @@ globalClock = ClockObject.getGlobalClock()
 # If a packet appears to have originated from more than MaxFuture
 # seconds in the future, assume we're out of sync with the other
 # avatar and suggest a resync for both.
-MaxFuture = base.config.GetFloat("smooth-max-future", 0.1)
+MaxFuture = base.config.GetFloat("smooth-max-future", 0.2)
 
 # These flags indicate whether global smoothing and/or prediction is
 # allowed or disallowed.
@@ -20,9 +20,12 @@ EnablePrediction = base.config.GetBool("smooth-enable-prediction", 1)
 
 # These values represent the amount of time, in seconds, to delay the
 # apparent position of other avatars, when non-predictive and
-# predictive smoothing is in effect, respectively.
-Lag = base.config.GetDouble("smooth-lag", 0.2)
-PredictionLag = base.config.GetDouble("smooth-prediction-lag", 0.0)
+# predictive smoothing is in effect, respectively.  This is in
+# addition to the automatic delay of the observed average latency from
+# each avatar, which is intended to compensate for relative clock
+# skew.
+Lag = base.config.GetDouble("smooth-lag", 0.1)
+PredictionLag = base.config.GetDouble("smooth-prediction-lag", -0.1)
 
 
 
@@ -165,7 +168,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         """
         self.smoother.clearPositions(0)
         self.smoother.setMat(self.getMat())
-        self.smoother.setTimestamp()
+        self.smoother.setPhonyTimestamp()
         self.smoother.markPosition()
         
 
@@ -279,8 +282,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         # represent a time up to about 5 minutes in the past), but we
         # don't really need to know the timestamp anyway.  We'll just
         # arbitrarily place it at right now.
-        now = globalClock.getFrameTime()
-        self.smoother.setTimestamp(now)
+        self.smoother.setPhonyTimestamp()
         self.smoother.clearPositions(1)
         self.smoother.markPosition()
 

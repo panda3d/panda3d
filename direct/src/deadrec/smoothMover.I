@@ -237,18 +237,17 @@ set_r(float r) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_timestamp
+//     Function: SmoothMover::set_phony_timestamp
 //       Access: Published
-//  Description: Specifies the time that the current position report
-//               applies.  This should be called, along with set_pos()
-//               and set_hpr(), before a call to mark_position().
-//
-//               With no parameter, set_timestamp uses
-//               ClockObject::get_frame_time() as the default time.
+//  Description: Lies and specifies that the current position report
+//               was received now.  This is usually used for very old
+//               position reports for which we're not sure of the
+//               actual receipt time.
 ////////////////////////////////////////////////////////////////////
 INLINE void SmoothMover::
-set_timestamp() {
-  set_timestamp(ClockObject::get_global_clock()->get_frame_time());
+set_phony_timestamp() {
+  double now = ClockObject::get_global_clock()->get_frame_time();
+  _sample._timestamp = now;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,7 +260,7 @@ set_timestamp() {
 INLINE void SmoothMover::
 set_timestamp(double timestamp) {
   _sample._timestamp = timestamp;
-  _sample._flags |= F_got_timestamp;
+  record_timestamp_delay(timestamp);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -420,6 +419,38 @@ get_delay() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_accept_clock_skew
+//       Access: Published, Static
+//  Description: Sets the 'accept clock skew' flag.  When this flag is
+//               true, clock skew from the other clients will be
+//               tolerated by delaying each smooth mover's position an
+//               additional amount, on top of that specified by
+//               set_delay(), based on the measured average latency
+//               for timestamp messages received by the client.
+//
+//               In this way, if the other client has significant
+//               clock skew with respect to our clock, it will be
+//               evident as a large positive or negative average
+//               latency for timestamps.  By subtracting out this
+//               average latency, we compensate for poor clock sync.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+set_accept_clock_skew(bool flag) {
+  _accept_clock_skew = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_accept_clock_skew
+//       Access: Published, Static
+//  Description: Returns the current state of the 'accept clock skew'
+//               flag.  See set_accept_clock_skew().
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
+get_accept_clock_skew() {
+  return _accept_clock_skew;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::set_max_position_age
 //       Access: Published, Static
 //  Description: Sets the maximum amount of time a position is allowed
@@ -468,4 +499,20 @@ set_reset_velocity_age(double age) {
 INLINE double SmoothMover::
 get_reset_velocity_age() {
   return _reset_velocity_age;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_avg_timestamp_delay
+//       Access: Private
+//  Description: Returns the average delay observed in the last n
+//               timestamps received from this client, in seconds.
+//               This number represents the combination of the network
+//               lag from this client, as well as the client's clock
+//               skew relative to our clock.  It could be negative if
+//               the client's clock is running faster than our clock.
+////////////////////////////////////////////////////////////////////
+INLINE double SmoothMover::
+get_avg_timestamp_delay() const {
+  nassertr(!_timestamp_delays.empty(), 0.0);
+  return (double)_net_timestamp_delay / (double)_timestamp_delays.size() / 1000.0;
 }

@@ -23,6 +23,7 @@
 SmoothMover::SmoothMode SmoothMover::_smooth_mode = SmoothMover::SM_off;
 SmoothMover::PredictionMode SmoothMover::_prediction_mode = SmoothMover::PM_off;
 double SmoothMover::_delay = 0.2;
+bool SmoothMover::_accept_clock_skew = true;
 double SmoothMover::_max_position_age = 0.25;
 double SmoothMover::_reset_velocity_age = 0.3;
 
@@ -37,7 +38,6 @@ SmoothMover() {
   _sample._pos.set(0.0, 0.0, 0.0);
   _sample._hpr.set(0.0, 0.0, 0.0);
   _sample._timestamp = 0.0;
-  _sample._flags = 0;
 
   _smooth_pos.set(0.0, 0.0, 0.0);
   _smooth_hpr.set(0.0, 0.0, 0.0);
@@ -52,6 +52,13 @@ SmoothMover() {
 
   _last_point_before = -1;
   _last_point_after = -1;
+
+  _net_timestamp_delay = 0;
+  // Record one delay of 0 on the top of the delays array, just to
+  // guarantee that the array is never completely empty.
+  _timestamp_delays.push_back(0);
+
+  _last_heard_from = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +142,6 @@ mark_position() {
     }
     
     _points.push_back(_sample);
-    _sample._flags = 0;
   }
 }
 
@@ -207,8 +213,12 @@ compute_smooth_position(double timestamp) {
 
   // First, back up in time by the specified delay factor.
   timestamp -= _delay;
+  if (_accept_clock_skew) {
+    timestamp -= get_avg_timestamp_delay();
+  }
 
   // Now look for the two bracketing position reports.
+  int point_way_before = -1;
   int point_before = -1;
   double timestamp_before = 0.0;
   int point_after = -1;
@@ -226,6 +236,7 @@ compute_smooth_position(double timestamp) {
       // This point is before the desired time.  Find the newest of
       // these.
       if (point_before == -1 || point._timestamp > timestamp_before) {
+        point_way_before = point_before;
         point_before = i;
         timestamp_before = point._timestamp;
       }
@@ -261,23 +272,20 @@ compute_smooth_position(double timestamp) {
     // the avatar is going by a tiny bit, if we don't have current
     // enough data.  This works only if we have at least two points of
     // old data.
-    if (point_before > 0) {
+    if (point_way_before != -1) {
       // To implement simple prediction, we simply back up in time to
       // the previous two timestamps, and base our linear
       // interpolation off of those two, extending into the future.
-      int point_before_before = point_before - 1;
-      SamplePoint &point = _points[point_before_before];
-      if (point._timestamp < timestamp_before) {
-        point_after = point_before;
-        timestamp_after = timestamp_before;
-        point_before = point_before_before;
-        timestamp_before = point._timestamp;
-
-        if (timestamp > timestamp_after + _max_position_age) {
-          // Don't allow the prediction to get too far into the
-          // future.
-          timestamp = timestamp_after + _max_position_age;
-        }
+      SamplePoint &point = _points[point_way_before];
+      point_after = point_before;
+      timestamp_after = timestamp_before;
+      point_before = point_way_before;
+      timestamp_before = point._timestamp;
+      
+      if (timestamp > timestamp_after + _max_position_age) {
+        // Don't allow the prediction to get too far into the
+        // future.
+        timestamp = timestamp_after + _max_position_age;
       }
     }
   }
@@ -285,11 +293,22 @@ compute_smooth_position(double timestamp) {
   if (point_after == -1) {
     // If we only have a before point even after we've checked for the
     // possibility of using prediction, then we have to stop there.
-    const SamplePoint &point = _points[point_before];
-    set_smooth_pos(point._pos, point._hpr, timestamp);
-    if (timestamp - point._timestamp > _reset_velocity_age) {
-      // Furthermore, if the before point is old enough, zero out the
-      // velocity.
+    if (point_way_before != -1) {
+      // Use the previous two points, if we've got 'em, so we can
+      // still reflect the avatar's velocity.
+      linear_interpolate(point_way_before, point_before, timestamp_before);
+
+    } else {
+      // If we really only have one point, use it.
+      const SamplePoint &point = _points[point_before];
+      set_smooth_pos(point._pos, point._hpr, timestamp);
+    }
+
+    if (timestamp - _last_heard_from > _reset_velocity_age) {
+      // Furthermore, if we haven't heard from this client in a while,
+      // reset the velocity.  This decision is based entirely on our
+      // local timestamps, not on the other client's reported
+      // timestamps.
       _smooth_forward_velocity = 0.0;
       _smooth_rotational_velocity = 0.0;
     }
@@ -306,8 +325,9 @@ compute_smooth_position(double timestamp) {
 
   // Assume we'll never get another compute_smooth_position() request
   // for an older time than this, and remove all the timestamps at the
-  // head of the queue before point_before.
-  while (!_points.empty() && _points.front()._timestamp < timestamp_before) {
+  // head of the queue before point_way_before.
+  double timestamp_way_before = _points[point_way_before]._timestamp;
+  while (!_points.empty() && _points.front()._timestamp < timestamp_way_before) {
     _points.pop_front();
 
     // This invalidates the index numbers.
@@ -474,4 +494,30 @@ compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
   
   _smooth_forward_velocity = forward_distance / age;
   _smooth_rotational_velocity = hpr_delta[0] / age;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::record_timestamp_delay
+//       Access: Private
+//  Description: Records the delay measured in receiving this
+//               particular timestamp.  The average delay of the last
+//               n timestamps will be used to smooth the motion
+//               properly.
+////////////////////////////////////////////////////////////////////
+void SmoothMover::
+record_timestamp_delay(double timestamp) {
+  double now = ClockObject::get_global_clock()->get_frame_time();
+
+  // Convert the delay to an integer number of milliseconds.  Integers
+  // are better than doubles because they don't accumulate errors over
+  // time.
+  int delay = (int)((now - timestamp) * 1000.0);
+  if (_timestamp_delays.full()) {
+    _net_timestamp_delay -= _timestamp_delays.front();
+    _timestamp_delays.pop_front();
+  }
+  _net_timestamp_delay += delay;
+  _timestamp_delays.push_back(delay);
+
+  _last_heard_from = now;
 }

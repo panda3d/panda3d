@@ -25,6 +25,7 @@
 #include "circBuffer.h"
 
 static const int max_position_reports = 10;
+static const int max_timestamp_delays = 10;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SmoothMover
@@ -77,7 +78,7 @@ PUBLISHED:
 
   bool set_mat(const LMatrix4f &mat);
 
-  INLINE void set_timestamp();
+  INLINE void set_phony_timestamp();
   INLINE void set_timestamp(double timestamp);
 
   void mark_position();
@@ -120,6 +121,9 @@ PUBLISHED:
   INLINE static void set_delay(double delay); 
   INLINE static double get_delay(); 
 
+  INLINE static void set_accept_clock_skew(bool flag); 
+  INLINE static bool get_accept_clock_skew(); 
+
   INLINE static void set_max_position_age(double age); 
   INLINE static double get_max_position_age(); 
 
@@ -138,9 +142,8 @@ private:
                         const LVecBase3f &hpr_delta,
                         double age);
 
-  enum Flags {
-    F_got_timestamp  = 0x0001,
-  };
+  void record_timestamp_delay(double timestamp);
+  INLINE double get_avg_timestamp_delay() const;
 
   LVecBase3f _scale;
 
@@ -149,7 +152,6 @@ private:
     LPoint3f _pos;
     LVecBase3f _hpr;
     double _timestamp;
-    int _flags;
   };
   SamplePoint _sample;
 
@@ -169,9 +171,20 @@ private:
   int _last_point_before;
   int _last_point_after;
 
+  // This array is used to record the average delay in receiving
+  // timestamps from a particular client, in milliseconds.  This value
+  // will measure both the latency and clock skew from that client,
+  // allowing us to present smooth motion in spite of extreme latency
+  // or poor clock synchronization.
+  typedef CircBuffer<int, max_timestamp_delays> TimestampDelays;
+  TimestampDelays _timestamp_delays;
+  int _net_timestamp_delay;
+  double _last_heard_from;
+
   static SmoothMode _smooth_mode;
   static PredictionMode _prediction_mode;
   static double _delay;
+  static bool _accept_clock_skew;
   static double _max_position_age;
   static double _reset_velocity_age;
 };
