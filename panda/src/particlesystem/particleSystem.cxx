@@ -187,7 +187,7 @@ birth_particle(void) {
   if (_local_velocity_flag == false)
     new_vel = new_vel * birth_to_render_xform;
 
-  bp->set_position_HandOfGod(world_pos/* + (NORMALIZED_RAND() * new_vel)*/);
+  bp->reset_position(world_pos/* + (NORMALIZED_RAND() * new_vel)*/);
   bp->set_velocity(new_vel);
 
   _living_particles++;
@@ -204,7 +204,7 @@ birth_particle(void) {
 // Description : spawns a new batch of particles
 ////////////////////////////////////////////////////////////////////
 void ParticleSystem::
-birth_litter(void) {
+birth_litter() {
   int litter_size, i;
 
   litter_size = _litter_size;
