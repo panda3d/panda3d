@@ -124,6 +124,14 @@ def doGetopts():
     # Store the program arguments into the codeLibs
     codeLibs += pargs
 
+    # Make sure each name appears on codeLibs exactly once.
+    newLibs = []
+    for codeLib in codeLibs:
+        if codeLib not in newLibs:
+            newLibs.append(codeLib)
+    codeLibs = newLibs
+        
+
 def doErrorCheck():
     global outputDir
     global extensionsDir
