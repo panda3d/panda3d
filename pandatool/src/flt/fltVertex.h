@@ -31,10 +31,10 @@ public:
   int get_record_length() const;
 
   enum Flags {
-    F_hard_edge         = 0x80000000,
-    F_normal_frozen     = 0x40000000,
-    F_no_color          = 0x20000000,
-    F_packed_color      = 0x10000000
+    F_hard_edge         = 0x8000,
+    F_normal_frozen     = 0x4000,
+    F_no_color          = 0x2000,
+    F_packed_color      = 0x1000
   };
 
   int _color_name_index;
