@@ -374,6 +374,8 @@ void GuiLabel::set_text(const string& val) {
 }
 
 bool GuiLabel::operator<(const GuiLabel& c) const {
+  if (_highest_pri)
+    return false;
   PriorityMap::const_iterator pi;
   pi = _priorities.find((GuiLabel*)(&c));
   if (pi != _priorities.end()) {

@@ -493,14 +493,25 @@ void GuiButton::reset_behavior(void) {
 }
 
 void GuiButton::set_priority(GuiItem* i, const GuiItem::Priority p) {
-  i->set_priority(_up, ((p==P_Low)?P_High:P_Low));
-  i->set_priority(_down, ((p==P_Low)?P_High:P_Low));
-  if (_up_rollover != (GuiLabel*)0L)
-    i->set_priority(_up_rollover, ((p==P_Low)?P_High:P_Low));
-  if (_down_rollover != (GuiLabel*)0L)
-    i->set_priority(_down_rollover, ((p==P_Low)?P_High:P_Low));
-  if (_inactive != (GuiLabel*)0L)
-    i->set_priority(_inactive, ((p==P_Low)?P_High:P_Low));
+  if (p == P_Highest) {
+    _up->set_priority(_up, GuiLabel::P_HIGHEST);
+    _down->set_priority(_up, GuiLabel::P_HIGHEST);
+    if (_up_rollover != (GuiLabel*)0L)
+      _up_rollover->set_priority(_up, GuiLabel::P_HIGHEST);
+    if (_down_rollover != (GuiLabel*)0L)
+      _down_rollover->set_priority(_up, GuiLabel::P_HIGHEST);
+    if (_inactive != (GuiLabel*)0L)
+      _inactive->set_priority(_up, GuiLabel::P_HIGHEST);
+  } else {
+    i->set_priority(_up, ((p==P_Low)?P_High:P_Low));
+    i->set_priority(_down, ((p==P_Low)?P_High:P_Low));
+    if (_up_rollover != (GuiLabel*)0L)
+      i->set_priority(_up_rollover, ((p==P_Low)?P_High:P_Low));
+    if (_down_rollover != (GuiLabel*)0L)
+      i->set_priority(_down_rollover, ((p==P_Low)?P_High:P_Low));
+    if (_inactive != (GuiLabel*)0L)
+      i->set_priority(_inactive, ((p==P_Low)?P_High:P_Low));
+  }
   GuiBehavior::set_priority(i, p);
 }
 

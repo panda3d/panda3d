@@ -78,7 +78,10 @@ void GuiBackground::set_pos(const LVector3f& p) {
 
 void GuiBackground::set_priority(GuiItem* it, const GuiItem::Priority p) {
   _item->set_priority(it, p);
-  it->set_priority(_bg, ((p==P_Low)?P_High:P_Low));
+  if (p == P_Highest)
+    _bg->set_priority(_bg, GuiLabel::P_HIGHEST);
+  else 
+    it->set_priority(_bg, ((p==P_Low)?P_High:P_Low));
   GuiItem::set_priority(it, p);
 }
 

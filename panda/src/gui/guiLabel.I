@@ -14,7 +14,8 @@ INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
 				  _background(0., 0., 0., 0.),
 				  _have_width(false), _width(0.),
 				  _have_height(false), _height(0.),
-				  _depth(0.), _hard_pri(0) {
+				  _depth(0.), _hard_pri(0),
+				  _highest_pri(false) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {
@@ -108,5 +109,8 @@ INLINE void GuiLabel::recompute(void) {
 }
 
 INLINE void GuiLabel::set_priority(GuiLabel* l, const PriorityType t) {
-  this->_priorities[l] = t;
+  if (t == P_HIGHEST)
+    _highest_pri = true;
+  else
+    this->_priorities[l] = t;
 }

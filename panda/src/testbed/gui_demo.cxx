@@ -907,7 +907,7 @@ static void setup_gui(void) {
   //  test9(mgr, font);
   //  g_mgr = mgr;
   // test 10
-  test10(mgr, font);
+  //  test10(mgr, font);
   // test 11
   //  test11(mgr, font);
   // test 12
@@ -917,7 +917,7 @@ static void setup_gui(void) {
   // test 14
   //  test14(mgr, font);
   // test 15
-  //  test15(mgr, font);
+  test15(mgr, font);
 }
 
 static void event_2(CPT_Event) {
