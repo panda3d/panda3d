@@ -14,6 +14,7 @@
 
 extern "C" {
 #include <jpeglib.h>
+#include <setjmp.h>
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,8 +46,13 @@ public:
     virtual int read_data(xel *array, xelval *alpha);
 
   private:
-    struct jpeg_decompress_struct cinfo;
-    FILE *_my_file;
+    struct jpeg_decompress_struct _cinfo;
+    struct my_error_mgr {
+      struct jpeg_error_mgr pub;
+      jmp_buf setjmp_buffer;
+    };
+    typedef struct my_error_mgr *_my_error_ptr;
+    struct my_error_mgr _jerr;
     unsigned long	pos;
     
     unsigned long offBits;
