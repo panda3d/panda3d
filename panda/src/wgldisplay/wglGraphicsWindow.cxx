@@ -1710,42 +1710,41 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       break;
 
     case WM_KEYDOWN: {
-            POINT point;
+      POINT point;
 
-            GetCursorPos(&point);
-            ScreenToClient(hwnd, &point);
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      handle_keypress(lookup_key(wparam), point.x, point.y);
 
-          #ifdef NDEBUG
-               handle_keypress(lookup_key(wparam), point.x, point.y);
-          #else
-            // handle Cntrl-V paste from clipboard
-            if (!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
-               handle_keypress(lookup_key(wparam), point.x, point.y);
-            } else {
-                HGLOBAL   hglb;
-                char    *lptstr;
+      // Handle Cntrl-V paste from clipboard.  Is there a better way
+      // to detect this hotkey?
+      if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) && 
+          !_input_devices.empty()) {
+        HGLOBAL hglb;
+        char *lptstr;
 
-                if (!IsClipboardFormatAvailable(CF_TEXT))
-                   return 0;
+        if (!IsClipboardFormatAvailable(CF_TEXT))
+          return 0;
 
-                if (!OpenClipboard(NULL))
-                   return 0;
-
-                hglb = GetClipboardData(CF_TEXT);
-                if (hglb!=NULL) {
-                    lptstr = (char *) GlobalLock(hglb);
-                    if (lptstr != NULL)  {
-                        char *pChar;
-                        for(pChar=lptstr;*pChar!=NULL;pChar++) {
-                           handle_keypress(KeyboardButton::ascii_key((uchar)*pChar), point.x, point.y);
-                        }
-                        GlobalUnlock(hglb);
-                    }
-                }
-                CloseClipboard();
+        if (!OpenClipboard(NULL))
+          return 0;
+        
+        // Maybe we should support CF_UNICODETEXT if it is available
+        // too?
+        hglb = GetClipboardData(CF_TEXT);
+        if (hglb!=NULL) {
+          lptstr = (char *) GlobalLock(hglb);
+          if (lptstr != NULL)  {
+            char *pChar;
+            for(pChar=lptstr;*pChar!=NULL;pChar++) {
+              _input_devices[0].keystroke((uchar)*pChar);
             }
-          #endif
-            break;
+            GlobalUnlock(hglb);
+          }
+        }
+        CloseClipboard();
+      }
+      break;
     }
 
     case WM_SYSKEYUP:
