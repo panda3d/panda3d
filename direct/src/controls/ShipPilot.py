@@ -162,12 +162,20 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         Set up the collision sphere
         """
         # This is a sphere on the ground to detect barrier collisions
-        self.avatarRadius = avatarRadius
-        self.cSphere = CollisionSphere(0.0, 0.0, 0.0, avatarRadius)
-        cSphereNode = CollisionNode('SP.cSphereNode')
-        cSphereNode.addSolid(self.cSphere)
-        self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
-        self.cSphereBitMask = bitmask
+        if 0:
+            self.avatarRadius = avatarRadius
+            self.cSphere = CollisionTube(Point3(0.0, 0.0, 0.0), Point3(0.0, 40.0, 0.0), avatarRadius)
+            cSphereNode = CollisionNode('SP.cSphereNode')
+            cSphereNode.addSolid(self.cSphere)
+            self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
+            self.cSphereBitMask = bitmask
+        else:
+            self.avatarRadius = avatarRadius
+            self.cSphere = CollisionSphere(0.0, -5.0, 0.0, avatarRadius)
+            cSphereNode = CollisionNode('SP.cSphereNode')
+            cSphereNode.addSolid(self.cSphere)
+            self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
+            self.cSphereBitMask = bitmask
 
         cSphereNode.setFromCollideMask(self.cSphereBitMask)
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
@@ -178,6 +186,18 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.pusher.setOutPattern("exit%in")
 
         self.pusher.addCollider(self.cSphereNodePath, self.avatarNodePath)
+
+        if 1:
+            self.cBowSphere = CollisionSphere(0.0, 20.0, 0.0, avatarRadius)
+            cBowSphereNode = CollisionNode('SP.cBowSphereNode')
+            cBowSphereNode.addSolid(self.cBowSphere)
+            self.cBowSphereNodePath = self.avatarNodePath.attachNewNode(cBowSphereNode)
+            self.cBowSphereBitMask = bitmask
+
+            cBowSphereNode.setFromCollideMask(self.cSphereBitMask)
+            cBowSphereNode.setIntoCollideMask(BitMask32.allOff())
+
+            self.pusher.addCollider(self.cBowSphereNodePath, self.avatarNodePath)
 
     def takedownPhysics(self):
         assert(self.debugPrint("takedownPhysics()"))
@@ -391,6 +411,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.collisionsActive = active
             if active:
                 self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+                self.cTrav.addCollider(self.cBowSphereNodePath, self.pusher)
                 if self.useHeightRay:
                     if self.useLifter:
                         self.cTrav.addCollider(self.cRayNodePath, self.lifter)
@@ -398,6 +419,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                         self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
             else:
                 self.cTrav.removeCollider(self.cSphereNodePath)
+                self.cTrav.removeCollider(self.cBowSphereNodePath)
                 if self.useHeightRay:
                     self.cTrav.removeCollider(self.cRayNodePath)
                 # Now that we have disabled collisions, make one more pass
