@@ -339,6 +339,9 @@ $[target] : $[sources] "$[dtool_ver_dir]\version.rc"
 #if $[build_dlls]
 $[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
 #endif
+#if $[build_pdbs]
+$[so_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].dll
+#endif
 
 #endif
 
@@ -348,6 +351,7 @@ $[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
     $[if $[build_it], \
       $[if $[build_dlls],$[install_lib_dir]\lib$[TARGET]$[dllext].dll] \
       $[install_lib_dir]\lib$[TARGET]$[dllext].lib \
+      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]\lib$[TARGET]$[dllext].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
@@ -373,6 +377,13 @@ $[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].l
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
 	copy $[so_dir]\$[local] $[dest]
+
+#if $[and $[build_dlls],$[build_pdbs]]
+$[install_lib_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].pdb
+#define local lib$[TARGET]$[dllext].pdb
+#define dest $[install_lib_dir]
+	copy $[so_dir]\$[local] $[dest]
+#endif
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
@@ -454,6 +465,9 @@ $[target] : $[sources]
 
 #if $[build_dlls]
 $[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
+#endif
+#if $[build_pdbs]
+$[so_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].dll
 #endif
 
 #end noinst_lib_target
@@ -564,6 +578,7 @@ $[target] : $[sources]
 
 #define installed_files \
     $[install_bin_dir]\$[TARGET].exe \
+    $[if $[build_pdbs],$[install_bin_dir]\$[TARGET].pdb] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
     $[INSTALL_DATA:%=$[install_data_dir]\%] \
@@ -580,6 +595,13 @@ $[install_bin_dir]\$[TARGET].exe : $[st_dir]\$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
 	copy $[st_dir]\$[local] $[dest]
+
+#if $[build_pdbs]
+$[install_bin_dir]\$[TARGET].pdb : $[st_dir]\$[TARGET].pdb
+#define local $[TARGET].pdb
+#define dest $[install_bin_dir]
+	copy $[st_dir]\$[local] $[dest]
+#endif
 
 #end bin_target
 

@@ -59,19 +59,63 @@
 #define BROWSEINFO_FLAG
 #endif
 
-#defer CFLAGS_SHARED
-#defer OPTFLAGS /O2 /Ob1 /Ogity /G6
-//#defer OPTFLAGS /O2 /G6  (this is actually equivalent to above)
+// Define LINK_ALL_STATIC to generate static libs instead of DLL's.
+#if $[LINK_ALL_STATIC]
+  #define dlink_all_static LINK_ALL_STATIC
+  #define build_dlls
+  #define dlllib lib
+#else
+  #define dlink_all_static
+  #define build_dlls yes
+  #define dlllib dll
+#endif
 
-#defer CDEFINES_OPT1 _DEBUG
-#defer CDEFINES_OPT2 _DEBUG
-#defer CDEFINES_OPT3
-#defer CDEFINES_OPT4 NDEBUG
+#define CFLAGS_SHARED
 
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /Gi- /GZ /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] /MDd /Gi- /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] /MD /Gi-
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] /MD /Gi-
+#if $[eq $[USE_COMPILER], MSVC]
+  #define COMPILER cl
+  #define LINKER link
+  #define LIBBER lib
+  #define COMMONFLAGS /Gi-
+  #define OPTFLAGS /O2 /Ob1 /Ogity /G6
+  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #define RELEASEFLAGS /MD
+  #define EXTRA_LIBPATH
+
+#elif $[eq $[USE_COMPILER], BOUNDS]
+  #define COMPILER nmcl
+  #define LINKER nmlink
+  #define LIBBER lib
+  #define COMMONFLAGS
+  #define OPTFLAGS /O2 /Ogity /G6
+  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #define RELEASEFLAGS /MD
+  #define EXTRA_LIBPATH
+
+#elif $[eq $[USE_COMPILER], INTEL]
+  #define COMPILER icl
+  #define LINKER xilink
+  #define LIBBER xilib
+  #define COMMONFLAGS /Gi-
+  #define OPTFLAGS /O3 /Ob1 /Ogity /G6 /Qip
+  #define DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG]
+  #define RELEASEFLAGS /MD
+  // We assume the Intel compiler installation dir is mounted as /ia32.
+  #define EXTRA_LIBPATH /ia32/lib
+
+#else
+  #error Invalid value specified for USE_COMPILER.
+#endif
+
+#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
+#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static]
+#defer CDEFINES_OPT3 $[dlink_all_static]
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
+
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
 
 #if $[ENABLE_PROFILING]
 // note according to docs, this should force /PDB:none /DEBUGTYPE:cv, so no pdb file is generated for debug??  (doesnt seem to be true)
@@ -85,6 +129,14 @@
 #defer LDFLAGS_OPT2 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[PROFILE_FLAG]
 #defer LDFLAGS_OPT3 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[PROFILE_FLAG] /OPT:REF
 #defer LDFLAGS_OPT4 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[PROFILE_FLAG] /OPT:REF
+
+// $[build_pdbs] will be nonempty (true) if we should expect to
+// generate a .pdb file when we build a DLL or EXE.
+#if $[and $[eq $[USE_COMPILER], MSVC],$[<= $[OPTIMIZE],2]]
+  #define build_pdbs yes
+#else
+  #define build_pdbs
+#endif
 
 // $[dllext] will be "_d" for debug builds, and empty for non-debug
 // builds.  This is the extra bit of stuff we tack on to the end of a
@@ -105,16 +157,23 @@
 
 #defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG]
 
-#defer COMPILE_C cl /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
+#defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
 
-#defer STATIC_LIB_C lib /nologo $[sources] /OUT:"$[osfilename $[target]]" 
+#defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
 //#defer ver_resource $[directory]\ver.res
-//#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
-#defer SHARED_LIB_C link /nologo /dll  $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
+//#defer SHARED_LIB_C $[LINKER] /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
+#defer SHARED_LIB_C $[LINKER] /nologo /dll  $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C link /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer LINK_BIN_C++ $[LINK_BIN_C]
+
+#if $[LINK_ALL_STATIC]
+  #defer SHARED_LIB_C $[STATIC_LIB_C]
+  #defer SHARED_LIB_C++ $[STATIC_LIB_C++]
+  #defer ODIR_SHARED $[ODIR_STATIC]
+#endif
+

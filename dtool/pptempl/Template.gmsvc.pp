@@ -360,7 +360,12 @@ $[varname] = $[sources]
   #endif
 
 
+#if $[build_dlls]
 $[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
+#endif
+#if $[build_pdbs]
+$[so_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].dll
+#endif
 
 #endif
 
@@ -368,8 +373,9 @@ $[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_it], \
-      $[install_lib_dir]/lib$[TARGET]$[dllext].dll \
+      $[if $[build_dlls],$[install_lib_dir]/lib$[TARGET]$[dllext].dll] \
       $[install_lib_dir]/lib$[TARGET]$[dllext].lib \
+      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]/lib$[TARGET]$[dllext].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -384,15 +390,24 @@ uninstall-lib$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
+#if $[build_dlls]
 $[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[so_dir]/lib$[TARGET]$[dllext].dll $[so_dir]/stamp
 #define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
 	cp -f $[so_dir]/$[local] $[dest]
+#endif
 
 $[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].lib $[so_dir]/stamp
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
 	cp -f $[so_dir]/$[local] $[dest]
+
+#if $[and $[build_dlls],$[build_pdbs]]
+$[install_lib_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].pdb $[so_dir]/stamp
+#define local lib$[TARGET]$[dllext].pdb
+#define dest $[install_lib_dir]
+	cp -f $[so_dir]/$[local] $[dest]
+#endif
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
@@ -475,7 +490,12 @@ $[target] : $[sources] $[so_dir]/stamp
 	$[SHARED_LIB_C]
 #endif
 
+#if $[build_dlls]
 $[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
+#endif
+#if $[build_pdbs]
+$[so_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].dll
+#endif
 
 #end noinst_lib_target
 
@@ -584,6 +604,7 @@ $[target] : $[sources] $[st_dir]/stamp
 
 #define installed_files \
     $[install_bin_dir]/$[TARGET].exe \
+    $[if $[build_pdbs],$[install_bin_dir]/$[TARGET].pdb] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -600,6 +621,13 @@ $[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
 	cp -f $[st_dir]/$[local] $[dest]
+
+#if $[build_pdbs]
+$[install_bin_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].pdb $[st_dir]/stamp
+#define local $[TARGET].pdb
+#define dest $[install_bin_dir]
+	cp -f $[st_dir]/$[local] $[dest]
+#endif
 
 #end bin_target
 
