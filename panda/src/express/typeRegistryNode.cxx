@@ -21,7 +21,7 @@
 #include <algorithm>
 
 // Define this to double-check all the inheritance derivations.
-//#define PARANOID_INHERITANCE
+#define PARANOID_INHERITANCE
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistryNode::Constructor
