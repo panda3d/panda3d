@@ -175,6 +175,8 @@ PUBLISHED:
   NodePathCollection
   find_all_matches(const string &path) const;
 
+  NodePath find_singular_transform() const;
+
 
   // Methods that actually move nodes around in the scene graph.  The
   // optional "sort" parameter can be used to force a particular
@@ -374,6 +376,7 @@ PUBLISHED:
   INLINE void set_color(float r, float g, float b, float a = 1.0,
 			int priority = 0);
   void set_color(const Colorf &color, int priority = 0);
+  void set_color_off(int priority = 0);
   INLINE void clear_color();
   INLINE bool has_color() const;
   Colorf get_color() const;
@@ -461,8 +464,6 @@ private:
   void r_find_matches(NodePathCollection &result,
 		      const FindApproxLevel &level, 
 		      int max_matches, int num_levels_remaining) const;
-
-  void r_prepare_scene(Node *node);
 
   void r_list_descendants(ostream &out, int indent_level) const;
   void r_list_transitions(ostream &out, int indent_level) const;

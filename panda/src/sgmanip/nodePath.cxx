@@ -354,6 +354,41 @@ find_all_matches(const string &path) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_singular_transform
+//       Access: Public
+//  Description: Scans the subgraph beginning at the bottom node of
+//               the scene graph, looking for a node with a singular
+//               matrix transform above it.  Returns the first such
+//               node encountered, or an empty NodePath if no singular
+//               transforms exist in the scene graph.
+//
+//               This is a handy function for tracking down mysterious
+//               "tried in invert a singular matrix" errors, which are
+//               almost always caused by zero-scale transform matrices
+//               in the scene graph.
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+find_singular_transform() const {
+  if (has_mat()) {
+    LMatrix4f mat;
+    if (!mat.invert_from(get_mat())) {
+      // Here's a singular matrix!
+      return *this;
+    }
+  }
+
+  int num_children = get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    NodePath result = get_child(i).find_singular_transform();
+    if (!result.is_empty()) {
+      return result;
+    }
+  }
+
+  return NodePath();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_node
 //       Access: Public
 //  Description: Returns the nth node of the path, where 0 is the
@@ -1797,6 +1832,26 @@ set_color(const Colorf &color, int priority) {
   nassertv(_head != (ArcComponent *)NULL);
 
   ColorTransition *col_trans = new ColorTransition(color);
+  _head->_arc->set_transition(col_trans, priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_color_off
+//       Access: Public
+//  Description: Sets the geometry at this level and below to render
+//               using the geometry color.  This is normally the
+//               default, but it may be useful to use this to
+//               contradict set_color() at a higher node level (or,
+//               with a priority, to override a set_color() at a lower
+//               level).
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_color_off(int priority) {
+  nassertv(has_arcs());
+  nassertv(_head != (ArcComponent *)NULL);
+
+  ColorTransition *col_trans = 
+    new ColorTransition(ColorTransition::off());
   _head->_arc->set_transition(col_trans, priority);
 }
 
