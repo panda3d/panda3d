@@ -64,7 +64,10 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 #define PRINTVIDMEM(pDD,pCaps,pMsg)
 #endif
 
-const int VERT_BUFFER_SIZE = (8*1024L);
+//const int VERT_BUFFER_SIZE = (8*1024L);
+// For sparkle particles, we can have 4 vertices per sparkle, and a 
+// particle pool size of 1024 particles
+const int VERT_BUFFER_SIZE = (32*4*1024L);
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : DXGraphicsStateGuardian
