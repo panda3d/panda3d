@@ -2649,8 +2649,8 @@ report_errors_loop(int line, const char *source_file, GLenum error_code,
     error_count++;
   }
 
-  return (error_code == GL_NO_ERROR);
 #endif
+  return (error_code == GL_NO_ERROR);
 }
 
 ////////////////////////////////////////////////////////////////////
