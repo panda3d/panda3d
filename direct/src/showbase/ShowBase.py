@@ -115,6 +115,7 @@ class ShowBase(DirectObject.DirectObject):
         # base.win is the main, or only window; base.winList is a list of
         # *all* windows.  Similarly with base.camList.
         self.win = None
+        self.frameRateMeter = None
         self.winList = []
         self.mainWinMinimized = 0
         self.pipe = None
@@ -368,6 +369,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if win == self.win:
             self.win = None
+            self.frameRateMeter = None
 
     def openMainWindow(self):
         """
@@ -415,6 +417,10 @@ class ShowBase(DirectObject.DirectObject):
                 self.win.setClearColor(oldClearColor)
                 self.win.setClearDepthActive(oldClearDepthActive)
                 self.win.setClearDepth(oldClearDepth)
+
+            if self.config.GetBool('show-frame-rate-meter', 0):
+                self.frameRateMeter = FrameRateMeter('frameRateMeter')
+                self.frameRateMeter.setupLayer(self.win)
 
         return success
     
