@@ -49,7 +49,7 @@ doIt(const MArgList &) {
   }
 
   MString filename = MFileIO::currentFile();
-  MString command = MString("pview \"") + filename + MString("\"");
+  MString command = MString("pview -c \"") + filename + MString("\"");
 
   int command_result = system(command.asChar());
   if (command_result != 0) {
@@ -79,7 +79,7 @@ EXPCL_MISC MStatus
 initializePlugin(MObject obj) {
   MFnPlugin plugin(obj, "VR Studio", "1.0");
   MStatus status;
-  status = plugin.registerCommand("savePview", MayaSavePview::creator);
+  status = plugin.registerCommand("pview", MayaSavePview::creator);
   if (!status) {
     status.perror("registerCommand");
   }
@@ -95,7 +95,7 @@ EXPCL_MISC MStatus
 uninitializePlugin(MObject obj) {
   MFnPlugin plugin(obj);
   MStatus status;
-  status = plugin.deregisterCommand("savePview");
+  status = plugin.deregisterCommand("pview");
 
   if (!status) {
     status.perror("deregisterCommand");
