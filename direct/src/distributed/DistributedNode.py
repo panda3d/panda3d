@@ -39,7 +39,9 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             # reparent to parent
             parent = base.cr.doId2do.get(parentId)
             if parent and isinstance(parent, NodePath):
-                self.reparentTo(parent)
+                if self.getParent() != parent:
+                    print "generate: reparenting %s to %s" % (self, parent)
+                    self.wrtReparentTo(parent)
             
 
     def __cmp__(self, other):
