@@ -146,7 +146,7 @@ append_character(char ch) {
   string text = _str + ch;
   if (_text_node->has_wordwrap()) {
     text =
-      _text_node->wordwrap_to(text, _text_node->get_wordwrap());
+      _text_node->wordwrap_to(text, _text_node->get_wordwrap(), false);
   }
 
   if (has_max_width()) {

@@ -28,7 +28,7 @@ string add_line_wraps(const string& str, int line_length) {
   string new_str;
   string old_str = str;
 
-  if (str.length() <= line_length)
+  if ((int)str.length() <= line_length)
     return old_str;
 
   int length_so_far = 0;
