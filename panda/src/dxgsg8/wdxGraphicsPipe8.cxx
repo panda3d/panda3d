@@ -262,8 +262,8 @@ find_all_card_memavails() {
         wdxdisplay8_cat.error()
           << "GetAvailableVidMem failed for device #" << i 
           << D3DERRORSTRING(hr);
-        // goto skip_device;
-        exit(1);  // probably want to exit, since it may be my fault
+        //goto skip_device;
+        //exit(1);  // probably want to exit, since it may be my fault
       }
     }
 
