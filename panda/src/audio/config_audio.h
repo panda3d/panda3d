@@ -46,7 +46,7 @@ extern EXPCL_PANDA void audio_load_loaders();
   #define audio_debug(msg) \
   if (audio_cat.is_debug()) { \
     audio_cat->debug() << msg << endl; \
-  }
+  } else {}
 
   #define audio_info(msg) \
     audio_cat->info() << msg << endl
