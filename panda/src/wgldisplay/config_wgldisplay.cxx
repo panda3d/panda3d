@@ -44,6 +44,12 @@ bool bResponsive_minimized_fullscreen_window = config_wgldisplay.GetBool("respon
 // will crab out WireGL.
 bool support_wiregl = config_wgldisplay.GetBool("support-wiregl", false);
 
+// For now, set this true to use the IME correctly on Win2000, or
+// false on Win98.  This is temporary; once we have been able to
+// verify that this distinction is actually necessary, we can replace
+// this config variable with an actual OS detection.
+bool ime_composition_w = config_wgldisplay.GetBool("ime-composition-w", true);
+
 extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////

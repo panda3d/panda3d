@@ -37,6 +37,7 @@ extern bool gl_sync_video;
 extern int gl_forced_pixfmt;
 extern bool bResponsive_minimized_fullscreen_window;
 extern bool support_wiregl;
+extern bool ime_composition_w;
 
 extern EXPCL_PANDAGL void init_libwgldisplay();
 

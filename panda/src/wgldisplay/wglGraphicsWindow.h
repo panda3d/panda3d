@@ -131,6 +131,7 @@ private:
   bool              _mouse_passive_motion_enabled;
   bool              _mouse_entry_enabled;
   bool              _ime_open;
+  bool              _ime_composition_w;
 
   // vars for frames/sec meter
   DWORD _start_time;
