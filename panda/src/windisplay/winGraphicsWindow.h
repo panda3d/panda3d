@@ -24,6 +24,8 @@
 // newer fns
 #define _WIN32_WINNT 0x0502
 
+// Jesse thinks that this is supposed to say WIN32_LEAN_AND_MEAN, but he
+// doesn't want to fix what isn't broken.
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #undef WINDOWS_LEAN_AND_MEAN
@@ -111,7 +113,17 @@ private:
 
   // This is used to remember the state of the keyboard when keyboard
   // focus is lost.
-  static const int num_virtual_keys = 256;
+  enum { num_virtual_keys = 256 };
+  // You might be wondering why the above is an enum. Originally the line
+  // read "static const int num_virtual_keys = 256"
+  // but in trying to support the MSVC6 compiler, we found that you
+  // were not allowed to define the value of a const within a class like
+  // that. Defining the value outside the class helps, but then we can't
+  // use the value to define the length of the _keyboard_state array, and
+  // also it creates multiply defined symbol errors when you link, because
+  // other files include this header file. This enum is a clever solution
+  // to work around the problem.
+
   BYTE _keyboard_state[num_virtual_keys];
 
 protected:
@@ -162,7 +174,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
 
 #define PRINT_LAST_ERROR 0
 extern EXPCL_PANDAWIN void PrintErrorMessage(DWORD msgID);

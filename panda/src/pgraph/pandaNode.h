@@ -232,7 +232,9 @@ private:
   void fix_path_lengths(const CData *cdata);
   void r_list_descendants(ostream &out, int indent_level) const;
 
-private:
+public:
+  // This must be declared public so that VC6 will allow the nested
+  // CData class to access it.
   class EXPCL_PANDA DownConnection {
   public:
     INLINE DownConnection(PandaNode *child, int sort);
@@ -248,6 +250,8 @@ private:
     PT(PandaNode) _child;
     int _sort;
   };
+
+private:
   typedef ov_multiset<DownConnection> Down;
 
   class EXPCL_PANDA UpConnection {

@@ -328,6 +328,7 @@ do_fullscreen_resize(int x_size, int y_size) {
   DCAST_INTO_R(dxpipe, _pipe, false);
 
   bool bIsGoodMode=false;
+  bool bResizeSucceeded=false;
 
   if (!dxpipe->special_check_fullscreen_resolution(_wcontext, x_size,y_size)) {
     // bypass the lowvidmem test below for certain "lowmem" cards we know have valid modes
@@ -364,7 +365,7 @@ do_fullscreen_resize(int x_size, int y_size) {
 
   _wcontext.PresParams.BackBufferFormat = pixFmt;   // make reset_device_resize use presparams or displaymode??
 
-  bool bResizeSucceeded = reset_device_resize_window(x_size, y_size);
+  bResizeSucceeded = reset_device_resize_window(x_size, y_size);
 
   if (!bResizeSucceeded) {
     wdxdisplay8_cat.error() << "resize() failed with OUT-OF-MEMORY error!\n";
@@ -640,6 +641,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   DWORD dwRenderWidth=Display.DisplayMode.Width;
   DWORD dwRenderHeight=Display.DisplayMode.Height;
+  DWORD dwBehaviorFlags=0x0;
   LPDIRECT3D8 pD3D8=Display.pD3D8;
   D3DCAPS8 *pD3DCaps = &Display.d3dcaps;
   D3DPRESENT_PARAMETERS* pPresParams = &Display.PresParams;
@@ -720,7 +722,6 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   pPresParams->hDeviceWindow = Display.hWnd;
   pPresParams->BackBufferWidth = Display.DisplayMode.Width;
   pPresParams->BackBufferHeight = Display.DisplayMode.Height;
-  DWORD dwBehaviorFlags=0x0;
 
   if (_wcontext.bIsTNLDevice) {
     dwBehaviorFlags|=D3DCREATE_HARDWARE_VERTEXPROCESSING;

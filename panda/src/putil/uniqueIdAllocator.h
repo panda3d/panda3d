@@ -57,10 +57,15 @@ PUBLISHED:
   void output(ostream& os, bool verbose=false) const;
 
 public:
-  static const U32 IndexEnd=(U32)-1;
+  // VC6 does not support declaring const values within the class
+  // definition; we must therefore define the value for this in the
+  // .cxx file.  This does potentially change the way the code is
+  // generated (since the compiler does not necessarily know the value
+  // of this constant).
+  static const U32 IndexEnd;
 
 protected:
-  static const U32 IndexAllocated=(U32)-2;
+  static const U32 IndexAllocated;
   U32* _table;
   U32 _min;
   U32 _max;

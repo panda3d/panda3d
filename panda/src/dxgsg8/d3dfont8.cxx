@@ -143,7 +143,8 @@ HRESULT CD3DFont::InitDeviceObjects( LPDIRECT3DDEVICE8 pd3dDevice ) {
     SIZE size;
     SIZE sizes [ 127 - 32 ] ;
 
-    for(TCHAR c=32; c<127; c++) {
+    TCHAR c;
+    for(c=32; c<127; c++) {
         str[0] = c;
         // GetTextExtentPoint32 does not care that the font is Italic or not, it will 
         // return the same value. However, if we specify an Italic font, the output 
@@ -272,7 +273,7 @@ HRESULT CD3DFont::InitDeviceObjects( LPDIRECT3DDEVICE8 pd3dDevice ) {
     x = 0 ; 
     y = 0 ; 
 
-    for(TCHAR c=32; c<127; c++) {
+    for(c=32; c<127; c++) {
         str[0] = c;
         GetTextExtentPoint32( hDC, str, 1, &size );
         if((DWORD)(x+size.cx+1) > m_dwTexWidth) {
@@ -662,7 +663,8 @@ HRESULT CD3DFont::EndText ( void ) {
     // User will make another batch if necessary
     //  
     bool bFiltered = false ; 
-    for(UINT i = 0 ; i < m_nDeferedCalls ; ++ i) {
+    UINT i;
+    for(i = 0 ; i < m_nDeferedCalls ; ++ i) {
         DWORD   dwFlags = m_DTArgs [ i ].m_dwFlags ; 
         if(dwFlags & D3DFONT_FILTERED) {
             bFiltered = true ; 
@@ -686,7 +688,7 @@ HRESULT CD3DFont::EndText ( void ) {
 
     bool bItalic = 0 != ( m_dwFontFlags & D3DFONT_ITALIC ) ; 
     // loop on our batched sets of arguments 
-    for(UINT i = 0 ; i < m_nDeferedCalls ; ++ i) {
+    for(i = 0 ; i < m_nDeferedCalls ; ++ i) {
         bool    bScaled = m_DTArgs [ i ].m_bScaled ; 
         FLOAT   x       = m_DTArgs [ i ].m_x       ; 
         FLOAT   y       = m_DTArgs [ i ].m_y       ; 

@@ -76,13 +76,17 @@ public:
 protected:
   virtual BoundingVolume *recompute_internal_bound();
 
-private:
+public:
+  // This must be declared public so that VC6 will allow the nested
+  // CData class to access it.
   class GeomEntry {
   public:
     INLINE GeomEntry(Geom *geom, const RenderState *state);
     PT(Geom) _geom;
     CPT(RenderState) _state;
   };
+
+private:
   typedef pvector<GeomEntry> Geoms;
 
   // This is the data that must be cycled between pipeline stages.

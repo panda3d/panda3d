@@ -25,6 +25,9 @@
 NotifyCategoryDecl(uniqueIdAllocator, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDef(uniqueIdAllocator, "");
 
+const U32 UniqueIdAllocator::IndexEnd=(U32)-1;
+const U32 UniqueIdAllocator::IndexAllocated=(U32)-2;
+
 #ifndef NDEBUG //[
   // Non-release build:
   #define uniqueIdAllocator_debug(msg) \

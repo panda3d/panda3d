@@ -72,8 +72,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const ButtonEventList &list) {
-  list.output(out);
+INLINE ostream &operator << (ostream &out, const ButtonEventList &buttonlist) {
+  buttonlist.output(out);
   return out;
 }
 

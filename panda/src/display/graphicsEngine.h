@@ -86,6 +86,15 @@ PUBLISHED:
   void render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
                        bool cull_sorting);
 
+public:
+  enum ThreadState {
+    TS_wait,
+    TS_do_frame,
+    TS_do_flip,
+    TS_do_release,
+    TS_terminate
+  };
+
 private:
   typedef pset< PT(GraphicsWindow) > Windows;
   typedef pset< PT(GraphicsStateGuardian) > GSGs;
@@ -137,14 +146,6 @@ private:
     Windows _pending_close;   // moved from _window, pending close.
     GSGs _gsgs;       // draw stage
     Mutex _wl_lock;
-  };
-
-  enum ThreadState {
-    TS_wait,
-    TS_do_frame,
-    TS_do_flip,
-    TS_do_release,
-    TS_terminate
   };
 
   class RenderThread : public Thread, public WindowRenderer {
