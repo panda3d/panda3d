@@ -1901,7 +1901,6 @@ if (sys.platform == "win32"):
 
 CopyFile(PREFIX+"/", "doc/LICENSE")
 CopyFile(PREFIX+"/", "doc/ReleaseNotes")
-CopyFile(PREFIX+"/", "doc/InstallerNotes")
 CopyTree(PREFIX+'/Pmw', 'thirdparty/Pmw')
 CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
 
