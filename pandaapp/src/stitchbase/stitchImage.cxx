@@ -129,7 +129,7 @@ has_filename() const {
 
 string StitchImage::
 get_filename() const {
-  return _filename;
+  return _filename.get_fullpath();
 }
 
 bool StitchImage::
@@ -139,7 +139,7 @@ has_fade_filename() const {
 
 string StitchImage::
 get_fade_filename() const {
-  return _fade_filename;
+  return _fade_filename.get_fullpath();
 }
 
 void StitchImage::
