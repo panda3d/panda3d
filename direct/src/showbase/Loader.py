@@ -61,6 +61,7 @@ class Loader:
 
     def unloadModel(self, modelPath):
 	"""unloadModel(self, string)
+	"""
 	Loader.notify.info("Unloading model: %s" % (modelPath))
 	ModelPool.releaseModel(modelPath)
             
@@ -75,6 +76,7 @@ class Loader:
 
     def unloadTexture(self, texture):
 	"""unloadTexture(self, texture)
+	"""
 	TexturePool.releaseTexture(texture)
 
     # sound loading funcs
@@ -88,6 +90,7 @@ class Loader:
 
     def unloadSound(self, sound):
 	"""unloadSound(self, sound)
+	"""
 	AudioPool.releaseSound(sound)
 
 
