@@ -16,6 +16,14 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET egg-crop
+
+  #define SOURCES \
+    eggCrop.cxx eggCrop.h
+
+#end bin_target
+
+#begin bin_target
   #define TARGET egg-texture-cards
 
   #define SOURCES \

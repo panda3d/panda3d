@@ -1,5 +1,5 @@
-// Filename: eggTrans.h
-// Created by:  drose (14Feb00)
+// Filename: eggCrop.h
+// Created by:  drose (10Jun02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,31 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EGGTRANS_H
-#define EGGTRANS_H
+#ifndef EGGCROP_H
+#define EGGCROP_H
 
 #include "pandatoolbase.h"
 
 #include "eggFilter.h"
 
+class EggGroupNode;
+
 ////////////////////////////////////////////////////////////////////
-//       Class : EggTrans
+//       Class : EggCrop
 // Description : A program to read an egg file and write an equivalent
 //               egg file, possibly performing some minor operations
 //               along the way.
 ////////////////////////////////////////////////////////////////////
-class EggTrans : public EggFilter {
+class EggCrop : public EggFilter {
 public:
-  EggTrans();
+  EggCrop();
 
+  virtual bool post_command_line();
   void run();
 
-  bool _flatten_transforms;
-  bool _apply_texmats;
-  bool _collapse_equivalent_textures;
-  bool _remove_invalid_primitives;
-  bool _triangulate_polygons;
-  bool _standardize_names;
+private:
+  int strip_prims(EggGroupNode *group);
+
+  bool _got_min, _got_max;
+  LVecBase3d _min, _max;
 };
 
 #endif
