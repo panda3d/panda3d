@@ -251,6 +251,32 @@ zero_channels(const string &components) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::quantize_channels
+//       Access: Public, Virtual
+//  Description: Rounds the named components of the transform to the
+//               nearest multiple of quantum.
+////////////////////////////////////////////////////////////////////
+void EggMatrixTablePointer::
+quantize_channels(const string &components, double quantum) {
+  if (_xform == (EggXfmSAnim *)NULL) {
+    return;
+  }
+
+  // This is similar to the above: we quantize children of the _xform
+  // object whose name is listed in the components.
+  string::const_iterator si;
+  for (si = components.begin(); si != components.end(); ++si) {
+    string table_name(1, *si);
+    EggNode *child = _xform->find_child(table_name);
+    if (child != (EggNode *)NULL && 
+        child->is_of_type(EggSAnimData::get_class_type())) {
+      EggSAnimData *anim = DCAST(EggSAnimData, child);
+      anim->quantize(quantum);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggMatrixTablePointer::make_new_joint
 //       Access: Public, Virtual
 //  Description: Creates a new child of the current joint in the

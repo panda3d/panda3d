@@ -50,6 +50,7 @@ public:
 
   virtual void optimize();
   virtual void zero_channels(const string &components);
+  virtual void quantize_channels(const string &components, double quantum);
 
   virtual EggJointPointer *make_new_joint(const string &name);
 

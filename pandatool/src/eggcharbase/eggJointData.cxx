@@ -401,6 +401,31 @@ zero_channels(const string &components) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::quantize_channels
+//       Access: Public
+//  Description: Calls quantize_channels() on all models for this joint,
+//               and then recurses downwards to all joints below.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+quantize_channels(const string &components, double quantum) {
+  BackPointers::iterator bpi;
+  for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
+    EggBackPointer *back = (*bpi);
+    if (back != (EggBackPointer *)NULL) {
+      EggJointPointer *joint;
+      DCAST_INTO_V(joint, back);
+      joint->quantize_channels(components, quantum);
+    }
+  }
+
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    child->quantize_channels(components, quantum);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::add_back_pointer
 //       Access: Public, Virtual
 //  Description: Adds the indicated model joint or anim table to the

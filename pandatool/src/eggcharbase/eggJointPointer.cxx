@@ -125,3 +125,13 @@ expose(EggGroup::DCSType) {
 void EggJointPointer::
 zero_channels(const string &) {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointPointer::quantize_channels
+//       Access: Public, Virtual
+//  Description: Rounds the named components of the transform to the
+//               nearest multiple of quantum.
+////////////////////////////////////////////////////////////////////
+void EggJointPointer::
+quantize_channels(const string &, double) {
+}

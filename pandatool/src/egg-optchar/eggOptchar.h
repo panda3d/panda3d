@@ -54,6 +54,7 @@ protected:
 private:
   static bool dispatch_vector_string_pair(const string &opt, const string &arg, void *var);
   static bool dispatch_name_components(const string &opt, const string &arg, void *var);
+  static bool dispatch_double_components(const string &opt, const string &arg, void *var);
   static bool dispatch_flag_groups(const string &opt, const string &arg, void *var);
 
   void determine_removed_components();
@@ -64,6 +65,7 @@ private:
 
   bool apply_user_reparents();
   bool zero_channels();
+  bool quantize_channels();
   void analyze_joints(EggJointData *joint_data, int level);
   void analyze_sliders(EggCharacterData *char_data);
   void list_joints(EggJointData *joint_data, int indent_level, bool verbose);
@@ -98,6 +100,14 @@ private:
   vector_string _keep_components;
   vector_string _drop_components;
   vector_string _expose_components;
+
+  class DoubleString {
+  public:
+    double _a;
+    string _b;
+  };
+  typedef pvector<DoubleString> DoubleStrings;
+  DoubleStrings _quantize_anims;
 
   typedef pvector<GlobPattern> Globs;
 

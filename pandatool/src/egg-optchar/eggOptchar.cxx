@@ -149,10 +149,23 @@ EggOptchar() {
   add_option
     ("q", "quantum", 0,
      "Quantize joint membership values to the given unit.  This is "
-     "the smallest significant change in joint membership.  The "
-     "default is 0.01; specifying 0 means to preserve the original "
-     "values.",
+     "the smallest significant change in joint membership.  There can "
+     "be a significant performance (and memory utilization) runtime "
+     "benefit for eliminating small differences in joint memberships "
+     "between neighboring vertices.  The default is 0.01; specifying "
+     "0 means to preserve the original values.",
      &EggOptchar::dispatch_double, NULL, &_vref_quantum);
+
+  add_option
+    ("qa", "quantum[,hprxyzijkabc]", 0,
+     "Quantizes animation channels to the given unit.  This rounds each "
+     "of the named components of all joints to the nearest multiple of unit.  "
+     "There is no performance benefit, and little compression benefit, "
+     "for doing this; and this may introduce visible artifacts to the "
+     "animation.  However, sometimes it is a useful tool for animation "
+     "analysis and comparison.  This option may be repeated several times "
+     "to quantize different channels by a different amount.",
+     &EggOptchar::dispatch_double_components, NULL, &_quantize_anims);
 
   _optimal_hierarchy = false;
   _vref_quantum = 0.01;
@@ -218,15 +231,18 @@ run() {
       do_reparent();
     }
 
+    // We currently do not implement optimizing morph sliders.  Need
+    // to add this at some point; it's quite easy.  Identity and empty
+    // morph sliders can simply be removed, while static sliders need
+    // to be applied to the vertices and then removed.
+
     // Quantize the vertex memberships.  We call this even if
     // _vref_quantum is 0, because this also normalizes the vertex
     // memberships.
     quantize_vertices();
 
-    // We currently do not implement optimizing morph sliders.  Need
-    // to add this at some point; it's quite easy.  Identity and empty
-    // morph sliders can simply be removed, while static sliders need
-    // to be applied to the vertices and then removed.
+    // Also quantize the animation channels, if the user so requested.
+    quantize_channels();
 
     // Finally, flag all the groups as the user requested.
     if (!_flag_groups.empty()) {
@@ -314,6 +330,63 @@ dispatch_name_components(const string &opt, const string &arg, void *var) {
   } else {
     nout << "-" << opt
          << " requires a pair of strings separated by a comma.\n";
+    return false;
+  }
+
+  if (sp._b.empty()) {
+    sp._b = matrix_component_letters;
+  } else {
+    for (string::const_iterator si = sp._b.begin(); si != sp._b.end(); ++si) {
+      if (strchr(matrix_component_letters, *si) == NULL) {
+        nout << "Not a standard matrix component: \"" << *si << "\"\n"
+             << "-" << opt << " requires a joint name followed by a set "
+             << "of component names.  The standard component names are \"" 
+             << matrix_component_letters << "\".\n";
+        return false;
+      }
+    }
+  }
+
+  ip->push_back(sp);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_double_components
+//       Access: Protected, Static
+//  Description: Accepts a double value optionally followed by a comma
+//               and some of the nine standard component letters,
+//
+//               The data pointer is to a DoubleStrings vector; the
+//               pair will be pushed onto the end of the vector.
+////////////////////////////////////////////////////////////////////
+bool EggOptchar::
+dispatch_double_components(const string &opt, const string &arg, void *var) {
+  DoubleStrings *ip = (DoubleStrings *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  bool valid_double = false;
+
+  DoubleString sp;
+  if (words.size() == 1) {
+    valid_double = string_to_double(words[0], sp._a);
+
+  } else if (words.size() == 2) {
+    valid_double = string_to_double(words[0], sp._a);
+    sp._b = words[1];
+
+  } else {
+    nout << "-" << opt
+         << " requires a numeric value followed by a string.\n";
+    return false;
+  }
+
+  if (!valid_double) {
+    nout << "-" << opt
+         << " requires a numeric value followed by a string.\n";
     return false;
   }
 
@@ -767,6 +840,38 @@ zero_channels() {
              << ".\n";
       } else {
         joint_data->zero_channels(p._b);
+        did_anything = true;
+      }
+    }
+  }
+
+  return did_anything;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::quantize_channels
+//       Access: Private
+//  Description: Quantizes the channels specified by the user on the
+//               command line.
+//
+//               Returns true if any operation was performed, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggOptchar::
+quantize_channels() {
+  bool did_anything = false;
+  int num_characters = _collection->get_num_characters();
+
+  DoubleStrings::const_iterator spi;
+  for (spi = _quantize_anims.begin(); spi != _quantize_anims.end(); ++spi) {
+    const DoubleString &p = (*spi);
+
+    for (int ci = 0; ci < num_characters; ci++) {
+      EggCharacterData *char_data = _collection->get_character(ci);
+      EggJointData *joint_data = char_data->get_root_joint();
+
+      if (joint_data != (EggJointData *)NULL) {
+        joint_data->quantize_channels(p._b, p._a);
         did_anything = true;
       }
     }
