@@ -36,7 +36,7 @@ has_newline() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LineStreamBuf::write_chars
-//       Access: Public
+//       Access: Private
 //  Description: An internal function called by sync() and overflow()
 //               to store one or more characters written to the stream
 //               into the memory buffer.

@@ -10,13 +10,19 @@
 // risk infinite recursion.
 #include <assert.h>
 
+#if defined(WIN32_VC)
+#define WINDOWS_LEAN_AND_MEAN
+#include <windows.h>
+#undef WINDOWS_LEAN_AND_MEAN
+#endif
+
 #ifndef HAVE_STREAMSIZE
 // Some compilers--notably SGI--don't define this for us.
 typedef int streamsize;
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Output::wrinte_string
+//     Function: MultiplexStreamBuf::Output::write_string
 //       Access: Public
 //  Description: Dumps the indicated string to the appropriate place.
 ////////////////////////////////////////////////////////////////////
@@ -29,11 +35,12 @@ write_string(const string &str) {
     break;
 
   case OT_system_debug:
+#ifdef WIN32_VC
+    OutputDebugString(str.c_str());
+#endif
     break;
   }
 }
-
-static char test[1024];
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiplexStreamBuf::Constructor
@@ -43,6 +50,8 @@ static char test[1024];
 MultiplexStreamBuf::
 MultiplexStreamBuf() {
 #ifndef WIN32_VC
+  // These lines, which are essential on Irix and Linux, seem to be
+  // unnecessary and not understood on Windows.
   allocate();
   setp(base(), ebuf());
 #endif

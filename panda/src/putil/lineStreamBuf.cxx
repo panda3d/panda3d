@@ -58,6 +58,7 @@ int LineStreamBuf::
 sync() { 
   streamsize n = pptr() - pbase();
   write_chars(pbase(), n);
+  pbump(-n);  // Reset pptr().
   return 0;  // EOF to indicate write full.
 }
 
@@ -81,6 +82,5 @@ overflow(int ch) {
     write_chars(&c, 1);
   }
 
-  pbump(-n);  // Reset pptr().
   return 0;
 }
