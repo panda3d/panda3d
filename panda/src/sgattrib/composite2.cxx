@@ -1,6 +1,4 @@
 
-#include "alphaTransformAttribute.cxx"
-#include "alphaTransformProperty.cxx"
 #include "alphaTransformTransition.cxx"
 #include "billboardTransition.cxx"
 #include "clipPlaneTransition.cxx"
