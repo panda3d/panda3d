@@ -444,8 +444,13 @@ do_rebuild() {
   
   if (has_shadow()) {
     // Make a shadow by instancing the text behind itself.
+
+    // For now, the depth offset is 0.0 because we don't expect to see
+    // text with shadows in the 3-d world that aren't decals.  Maybe
+    // this will need to be addressed in the future.
+
     LMatrix4f offset =
-      LMatrix4f::translate_mat(_shadow_offset[0], 0.01, -_shadow_offset[1]);
+      LMatrix4f::translate_mat(_shadow_offset[0], 0.0, -_shadow_offset[1]);
     RenderRelation *shadow_arc = 
       new RenderRelation(_root, _text_root, _draw_order + 1);
     shadow_arc->set_transition(new TransformTransition(offset));
