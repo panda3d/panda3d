@@ -348,7 +348,7 @@
 // the target is not to be interrogated.
 #defer get_igatedb \
   $[if $[and $[run_interrogate],$[IGATESCAN]], \
-    lib$[TARGET].in]
+    lib$[TARGET]$[dllext].in]
 
 // This variable returns the name of the interrogate code file
 // that will be generated for a particular target, or empty string if
@@ -761,6 +761,14 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 #endif
 
 // Set up the correct interrogate options.
+
+// $[dllext] is redefined in the Windows Global.platform.pp files to
+// the string _d if we are building a debug tree.  This is inserted
+// into the .dll and .in filenames before the extension to make a
+// runtime distinction between debug and non-debug builds.  For now,
+// we make a global definition to empty string, since non-Windows
+// platforms will leave this empty.
+#define dllext
 
 // Caution!  interrogate_ipath might be redefined in the
 // Global.platform.pp file.
