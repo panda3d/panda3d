@@ -51,9 +51,15 @@ public:
   INLINE CycleDataType *elevate_to_write(PipelineCycler<CycleDataType> &cycler);
 
 private:
+#ifdef DO_PIPELINING
+  // This is the data stored for a real pipelining implementation.
   const PipelineCycler<CycleDataType> &_cycler;
   const CycleDataType *_pointer;
   CycleDataType *_write_pointer;
+#else  // !DO_PIPELINING
+  // This is all we need for the trivial, do-nothing implementation.
+  const CycleDataType *_pointer;
+#endif  // DO_PIPELINING
 };
 
 #include "cycleDataReader.I"

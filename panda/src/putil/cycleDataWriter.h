@@ -51,8 +51,14 @@ public:
   INLINE operator CycleDataType * ();
 
 private:
+#ifdef DO_PIPELINING
+  // This is the data stored for a real pipelining implementation.
   PipelineCycler<CycleDataType> &_cycler;
   CycleDataType *_pointer;
+#else  // !DO_PIPELINING
+  // This is all we need for the trivial, do-nothing implementation.
+  CycleDataType *_pointer;
+#endif  // DO_PIPELINING
 };
 
 #include "cycleDataWriter.I"

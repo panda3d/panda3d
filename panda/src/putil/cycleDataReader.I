@@ -16,9 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef DO_PIPELINING
+// This is the implementation for full support of pipelining (as well
+// as the sanity-check only implementation).
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Constructor
+//     Function: CycleDataReader::Constructor (full)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -32,7 +35,7 @@ CycleDataReader(const PipelineCycler<CycleDataType> &cycler) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Constructor
+//     Function: CycleDataReader::Copy Constructor (full)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +54,7 @@ CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Destructor
+//     Function: CycleDataReader::Destructor (full)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +72,7 @@ INLINE CycleDataReader<CycleDataType>::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::operator ->
+//     Function: CycleDataReader::operator -> (full)
 //       Access: Public
 //  Description: This provides an indirect member access to the actual
 //               CycleData data.
@@ -82,7 +85,7 @@ operator -> () const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Typecast pointer
+//     Function: CycleDataReader::Typecast pointer (full)
 //       Access: Public
 //  Description: This allows the CycleDataReader to be passed to any
 //               function that expects a const CycleDataType pointer.
@@ -95,7 +98,7 @@ operator const CycleDataType * () const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::take_pointer
+//     Function: CycleDataReader::take_pointer (full)
 //       Access: Public
 //  Description: This is intended to be called only from
 //               CycleDataWriter when it elevates the pointer from
@@ -115,7 +118,7 @@ take_pointer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::elevate_to_write
+//     Function: CycleDataReader::elevate_to_write (full)
 //       Access: Public
 //  Description: Call this to permanently elevate the readable pointer
 //               to a writable pointer.  This returns a writable
@@ -132,3 +135,95 @@ elevate_to_write(PipelineCycler<CycleDataType> &cycler) {
   }
   return _write_pointer;
 }
+
+#else  // !DO_PIPELINING
+// This is the trivial, do-nothing implementation.
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::Constructor (trivial)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataReader<CycleDataType>::
+CycleDataReader(const PipelineCycler<CycleDataType> &cycler) {
+  _pointer = cycler.read();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::Copy Constructor (trivial)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataReader<CycleDataType>::
+CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
+  _pointer(copy._pointer)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::Destructor (trivial)
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataReader<CycleDataType>::
+~CycleDataReader() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::operator -> (trivial)
+//       Access: Public
+//  Description: This provides an indirect member access to the actual
+//               CycleData data.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+operator -> () const {
+  return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::Typecast pointer (trivial)
+//       Access: Public
+//  Description: This allows the CycleDataReader to be passed to any
+//               function that expects a const CycleDataType pointer.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataReader<CycleDataType>::
+operator const CycleDataType * () const {
+  return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::take_pointer (trivial)
+//       Access: Public
+//  Description: This is intended to be called only from
+//               CycleDataWriter when it elevates the pointer from
+//               read to write status.  This function returns the
+//               reader's pointer and relinquishes ownership of the
+//               pointer, rendering the reader invalid for future
+//               reads.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+take_pointer() {
+  return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::elevate_to_write (trivial)
+//       Access: Public
+//  Description: Call this to permanently elevate the readable pointer
+//               to a writable pointer.  This returns a writable
+//               pointer; subsequent calls to the same function will
+//               trivially return the same writable pointer.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *CycleDataReader<CycleDataType>::
+elevate_to_write(PipelineCycler<CycleDataType> &cycler) {
+  return (CycleDataType *)_pointer;
+}
+
+#endif  // DO_PIPELINING
