@@ -670,7 +670,9 @@ finish_decal() {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-begin_draw_primitives(const qpGeom *, const qpGeomVertexData *data) {
+begin_draw_primitives(const qpGeom *, const qpGeomMunger *munger,
+                      const qpGeomVertexData *data) {
+  _munger = munger;
   _vertex_data = data;
   return true;
 }
@@ -719,6 +721,7 @@ draw_trifans(const qpGeomTrifans *primitive) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_draw_primitives() {
+  _munger = NULL;
   _vertex_data = NULL;
 }
 

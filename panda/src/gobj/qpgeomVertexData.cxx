@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomVertexData.h"
+#include "qpgeomVertexIterator.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -24,7 +25,9 @@
 
 TypeHandle qpGeomVertexData::_type_handle;
 
-PStatCollector qpGeomVertexData::_munge_data_pcollector("Cull:Munge:Data");
+PStatCollector qpGeomVertexData::_convert_pcollector("Cull:Munge:Convert");
+PStatCollector qpGeomVertexData::_scale_color_pcollector("Cull:Munge:Scale color");
+PStatCollector qpGeomVertexData::_set_color_pcollector("Cull:Munge:Set color");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::Default Constructor
@@ -219,7 +222,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
     gobj_cat.debug()
       << "Converting " << num_vertices << " vertices.\n";
   }
-  PStatTimer timer(_munge_data_pcollector);
+  PStatTimer timer(_convert_pcollector);
 
   PT(qpGeomVertexData) new_data = 
     new qpGeomVertexData(new_format, get_usage_hint());
@@ -283,6 +286,159 @@ convert_to(const qpGeomVertexFormat *new_format) const {
       }
     }
   }
+
+  return new_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::scale_color
+//       Access: Published
+//  Description: Returns a new GeomVertexData object with the color
+//               table replaced with a new color table that has been
+//               scaled by the indicated value.  The new color table
+//               will be added as a new array; if the old color table
+//               was interleaved with a previous array, the previous
+//               array will not be repacked.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexData) qpGeomVertexData::
+scale_color(const LVecBase4f &color_scale, int num_components,
+            qpGeomVertexDataType::NumericType numeric_type) const {
+  int old_color_array = _format->get_array_with(InternalName::get_color());
+  if (old_color_array == -1) {
+    // Oops, no color anyway.
+    return this;
+  }
+
+  int num_vertices = get_num_vertices();
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Scaling color for " << num_vertices << " vertices by "
+      << color_scale << ".\n";
+  }
+  PStatTimer timer(_scale_color_pcollector);
+
+  PT(qpGeomVertexData) new_data = replace_data_type
+    (InternalName::get_color(), num_components, numeric_type);
+
+  // Now go through and apply the scale, copying it to the new data.
+  qpGeomVertexIterator from(this, InternalName::get_color());
+  qpGeomVertexIterator to(new_data, InternalName::get_color());
+
+  for (int i = 0; i < num_vertices; i++) {
+    Colorf color = from.get_data4();
+    to.set_data4(color[0] * color_scale[0],
+                 color[1] * color_scale[1],
+                 color[2] * color_scale[2],
+                 color[3] * color_scale[3]);
+  }
+
+  return new_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_color
+//       Access: Published
+//  Description: Returns a new GeomVertexData object with the color
+//               table replaced with a new color table for which each
+//               vertex has the indicated value.  The new color table
+//               will be added as a new array; if the old color table
+//               was interleaved with a previous array, the previous
+//               array will not be repacked.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexData) qpGeomVertexData::
+set_color(const Colorf &color, int num_components,
+          qpGeomVertexDataType::NumericType numeric_type) const {
+  int num_vertices = get_num_vertices();
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Setting color for " << num_vertices << " vertices to "
+      << color << ".\n";
+  }
+  PStatTimer timer(_set_color_pcollector);
+
+  PT(qpGeomVertexData) new_data = replace_data_type
+    (InternalName::get_color(), num_components, numeric_type);
+
+  // Now go through and set the new color value.
+  qpGeomVertexIterator to(new_data, InternalName::get_color());
+
+  for (int i = 0; i < num_vertices; i++) {
+    to.set_data4(color);
+  }
+
+  return new_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::replace_data_type
+//       Access: Published
+//  Description: Returns a new GeomVertexData object, suitable for
+//               modification, with the indicated data type replaced
+//               with a new table filled with undefined values.  The
+//               new table will be added as a new array; if the old
+//               table was interleaved with a previous array, the
+//               previous array will not be repacked.
+////////////////////////////////////////////////////////////////////
+PT(qpGeomVertexData) qpGeomVertexData::
+replace_data_type(const InternalName *name, int num_components,
+                  qpGeomVertexDataType::NumericType numeric_type) const {
+  PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
+
+  // Remove the old description of the type from the format.
+  bool removed_type_array = false;
+  int old_type_array = _format->get_array_with(name);
+  if (old_type_array != -1) {
+    qpGeomVertexArrayFormat *array_format = new_format->modify_array(old_type_array);
+    if (array_format->get_num_data_types() == 1) {
+      // Actually, this array didn't have any other data types, so
+      // just drop the whole array.
+      new_format->remove_array(old_type_array);
+      removed_type_array = true;
+      
+    } else {
+      // Remove the description for the type, but don't bother to
+      // repack the array.
+      array_format->remove_data_type(name);
+    }
+  }
+    
+  // Now define a new array to contain just the type.
+  PT(qpGeomVertexArrayFormat) type_array_format = 
+    new qpGeomVertexArrayFormat(name, num_components, numeric_type);
+  int new_type_array = new_format->add_array(type_array_format);
+  
+  PT(qpGeomVertexData) new_data = 
+    new qpGeomVertexData(qpGeomVertexFormat::register_format(new_format),
+                         get_usage_hint());
+
+  int j = 0;
+  int num_arrays = get_num_arrays();
+  for (int i = 0; i < num_arrays; ++i) {
+    if (i == old_type_array) {
+      if (!removed_type_array) {
+        // Pointer-copy the original array that includes the type
+        // (since it also includes other data).
+        new_data->set_array(j, get_array(i));
+        ++j;
+      }
+
+    } else {
+      // Just pointer-copy any arrays other than type.
+      new_data->set_array(j, get_array(i));
+      ++j;
+    }
+  }
+
+  nassertr(j == new_type_array, new_data);
+
+  // For the new type array, we set up a temporary array that has
+  // room for the right number of vertices.
+  PT(qpGeomVertexArrayData) new_array = new qpGeomVertexArrayData
+    (new_format->get_array(j), get_usage_hint());
+  new_array->set_num_vertices(get_num_vertices());
+  new_data->set_array(j, new_array);
 
   return new_data;
 }

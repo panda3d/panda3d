@@ -26,6 +26,7 @@
 INLINE qpGeomVertexIterator::
 qpGeomVertexIterator(qpGeomVertexData *data) :
   _data(data),
+  _const_data(false),
   _array(0),
   _data_type(NULL),
   _start_vertex(0),
@@ -44,6 +45,7 @@ qpGeomVertexIterator(qpGeomVertexData *data) :
 INLINE qpGeomVertexIterator::
 qpGeomVertexIterator(qpGeomVertexData *data, const string &name) :
   _data(data),
+  _const_data(false),
   _array(0),
   _data_type(NULL),
   _start_vertex(0),
@@ -63,6 +65,65 @@ qpGeomVertexIterator(qpGeomVertexData *data, const string &name) :
 INLINE qpGeomVertexIterator::
 qpGeomVertexIterator(qpGeomVertexData *data, const InternalName *name) :
   _data(data),
+  _const_data(false),
+  _array(0),
+  _data_type(NULL),
+  _start_vertex(0),
+  _read_vertex(0),
+  _write_vertex(0)
+{
+  set_data_type(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexIterator::Constructor
+//       Access: Published
+//  Description: Constructs a new iterator to process the vertices of
+//               the indicated data object.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexIterator::
+qpGeomVertexIterator(const qpGeomVertexData *data) :
+  _data((qpGeomVertexData *)data),
+  _const_data(true),
+  _array(0),
+  _data_type(NULL),
+  _start_vertex(0),
+  _read_vertex(0),
+  _write_vertex(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexIterator::Constructor
+//       Access: Published
+//  Description: Constructs a new iterator to process the vertices of
+//               the indicated data object.  This flavor creates the
+//               iterator specifically to process the named data type.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexIterator::
+qpGeomVertexIterator(const qpGeomVertexData *data, const string &name) :
+  _data((qpGeomVertexData *)data),
+  _const_data(true),
+  _array(0),
+  _data_type(NULL),
+  _start_vertex(0),
+  _read_vertex(0),
+  _write_vertex(0)
+{
+  set_data_type(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexIterator::Constructor
+//       Access: Published
+//  Description: Constructs a new iterator to process the vertices of
+//               the indicated data object.  This flavor creates the
+//               iterator specifically to process the named data type.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexIterator::
+qpGeomVertexIterator(const qpGeomVertexData *data, const InternalName *name) :
+  _data((qpGeomVertexData *)data),
+  _const_data(true),
   _array(0),
   _data_type(NULL),
   _start_vertex(0),
@@ -78,7 +139,7 @@ qpGeomVertexIterator(qpGeomVertexData *data, const InternalName *name) :
 //  Description: Returns the current data object that the iterator is
 //               processing.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexData *qpGeomVertexIterator::
+INLINE const qpGeomVertexData *qpGeomVertexIterator::
 get_data() const {
   return _data;
 }
@@ -237,6 +298,7 @@ get_write_vertex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
 set_data1(float data) {
+  nassertv(!_const_data);
   _data->set_data(_array, _data_type, _write_vertex, &data, 1);
   ++_write_vertex;
 }
@@ -260,6 +322,7 @@ set_data2(float x, float y) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
 set_data2(const LVecBase2f &data) {
+  nassertv(!_const_data);
   _data->set_data(_array, _data_type, _write_vertex, data.get_data(), 2);
   ++_write_vertex;
 }
@@ -283,6 +346,7 @@ set_data3(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
 set_data3(const LVecBase3f &data) {
+  nassertv(!_const_data);
   _data->set_data(_array, _data_type, _write_vertex, data.get_data(), 3);
   ++_write_vertex;
 }
@@ -306,6 +370,7 @@ set_data4(float x, float y, float z, float w) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
 set_data4(const LVecBase4f &data) {
+  nassertv(!_const_data);
   _data->set_data(_array, _data_type, _write_vertex, data.get_data(), 4);
   ++_write_vertex;
 }

@@ -71,7 +71,7 @@ PUBLISHED:
   qpGeomVertexArrayFormat *modify_array(int array);
   void set_array(int array, qpGeomVertexArrayFormat *format);
   void remove_array(int array);
-  void add_array(qpGeomVertexArrayFormat *array_format);
+  int add_array(qpGeomVertexArrayFormat *array_format);
   void clear_arrays();
 
   int get_num_data_types() const;

@@ -35,6 +35,7 @@ munge_geom(const qpGeomMunger *munger) {
     // Temporary test and dcast until the experimental Geom rewrite
     // becomes the actual Geom rewrite.
     if (_geom->is_exact_type(qpGeom::get_class_type())) {
+      _munger = munger;
       CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
       qpgeom->munge_geom(munger, qpgeom, _munged_data);
       _geom = qpgeom;

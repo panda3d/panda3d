@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-TypeHandle CLP(GeomMunger)::_type_handle;
+#include "dcast.h"
 
+TypeHandle CLP(GeomMunger)::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GeomMunger)::munge_format_impl
@@ -64,4 +65,40 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
   */
 
   return format;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomMunger)::compare_to_impl
+//       Access: Protected, Virtual
+//  Description: Called to compare two GeomMungers who are known to be
+//               of the same type, for an apples-to-apples comparison.
+//               This will never be called on two pointers of a
+//               different type.
+////////////////////////////////////////////////////////////////////
+int CLP(GeomMunger)::
+compare_to_impl(const qpGeomMunger *other) const {
+  const CLP(GeomMunger) *om = DCAST(CLP(GeomMunger), other);
+  if (_texture != om->_texture) {
+    return _texture < om->_texture ? -1 : 1;
+  }
+  if (_tex_gen != om->_tex_gen) {
+    return _tex_gen < om->_tex_gen ? -1 : 1;
+  }
+  return ColorMunger::compare_to_impl(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomMunger)::geom_compare_to_impl
+//       Access: Protected, Virtual
+//  Description: Called to compare two GeomMungers who are known to be
+//               of the same type, for an apples-to-apples comparison.
+//               This will never be called on two pointers of a
+//               different type.
+////////////////////////////////////////////////////////////////////
+int CLP(GeomMunger)::
+geom_compare_to_impl(const qpGeomMunger *other) const {
+  // We don't consider _texture and _tex_gen for these purposes; they
+  // affect only whether the GL display list should be regenerated or
+  // not.
+  return ColorMunger::compare_to_impl(other);
 }

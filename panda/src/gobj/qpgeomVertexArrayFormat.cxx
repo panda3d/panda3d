@@ -188,8 +188,11 @@ qpGeomVertexArrayFormat::
 //               "vertex" or "normal"; you must specify where in each
 //               record the table starts, and how many components
 //               (dimensions) exist per vertex.
+//
+//               The return value is the index number of the new data
+//               type.
 ////////////////////////////////////////////////////////////////////
-void qpGeomVertexArrayFormat::
+int qpGeomVertexArrayFormat::
 add_data_type(const InternalName *name, int num_components, 
               qpGeomVertexDataType::NumericType numeric_type, int start) {
   if (start < 0) {
@@ -200,8 +203,8 @@ add_data_type(const InternalName *name, int num_components,
     start = ((start + pad_to - 1) / pad_to) * pad_to;
   }
 
-  add_data_type(qpGeomVertexDataType(name, num_components, 
-                                     numeric_type, start));
+  return add_data_type(qpGeomVertexDataType(name, num_components, 
+                                            numeric_type, start));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,10 +219,13 @@ add_data_type(const InternalName *name, int num_components,
 //               Adding a data type with the same name as a previous
 //               type, or that overlaps with one or more previous
 //               types, quietly removes the previous type(s).
+//
+//               The return value is the index number of the new data
+//               type.
 ////////////////////////////////////////////////////////////////////
-void qpGeomVertexArrayFormat::
+int qpGeomVertexArrayFormat::
 add_data_type(const qpGeomVertexDataType &data_type) {
-  nassertv(!_is_registered);
+  nassertr(!_is_registered, -1);
 
   // Make sure there isn't already a data type with this name.
   remove_data_type(data_type.get_name());
@@ -242,8 +248,11 @@ add_data_type(const qpGeomVertexDataType &data_type) {
     _data_types_unsorted = true;
   }
 
+  int new_index = (int)_data_types.size();
   _data_types.push_back(new_data_type);
   _data_types_by_name.insert(DataTypesByName::value_type(new_data_type->get_name(), new_data_type));
+
+  return new_index;
 }
 
 ////////////////////////////////////////////////////////////////////

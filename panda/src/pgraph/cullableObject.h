@@ -74,6 +74,7 @@ PUBLISHED:
 
 public:
   CPT(Geom) _geom;
+  CPT(qpGeomMunger) _munger;
   CPT(qpGeomVertexData) _munged_data;
   CPT(RenderState) _state;
   CPT(TransformState) _transform;

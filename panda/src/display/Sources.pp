@@ -11,6 +11,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
  
   #define SOURCES  \
+    colorMunger.I colorMunger.h \
     config_display.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h  \
@@ -34,6 +35,7 @@
     lensStack.I lensStack.h
     
  #define INCLUDED_SOURCES  \
+    colorMunger.cxx \
     config_display.cxx \
     drawableRegion.cxx \
     displayRegion.cxx \
@@ -51,6 +53,7 @@
     windowProperties.cxx
 
   #define INSTALL_HEADERS \
+    colorMunger.I colorMunger.h \
     config_display.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h displayRegionStack.I \

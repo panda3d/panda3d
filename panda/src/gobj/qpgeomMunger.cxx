@@ -140,13 +140,24 @@ do_munge_format(const qpGeomVertexFormat *format) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomMunger::do_munge_data
-//       Access: Protected
-//  Description: The protected implementation of munge_data().  This
-//               exists just to cast away the const pointer.
+//     Function: qpGeomMunger::munge_format_impl
+//       Access: Protected, Virtual
+//  Description: Given a source GeomVertexFormat, converts it if
+//               necessary to the appropriate format for rendering.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexFormat) qpGeomMunger::
+munge_format_impl(const qpGeomVertexFormat *orig) {
+  return orig;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::munge_data_impl
+//       Access: Protected, Virtual
+//  Description: Given a source GeomVertexData, converts it as
+//               necessary for rendering.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomMunger::
-do_munge_data(const qpGeomVertexData *data) {
+munge_data_impl(const qpGeomVertexData *data) {
   nassertr(_is_registered, NULL);
 
   CPT(qpGeomVertexFormat) orig_format = data->get_format();
@@ -161,24 +172,14 @@ do_munge_data(const qpGeomVertexData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomMunger::munge_format_impl
-//       Access: Protected, Virtual
-//  Description: Given a source GeomVertexFormat, converts it if
-//               necessary to the appropriate format for rendering.
-////////////////////////////////////////////////////////////////////
-CPT(qpGeomVertexFormat) qpGeomMunger::
-munge_format_impl(const qpGeomVertexFormat *orig) {
-  return orig;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::munge_geom_impl
 //       Access: Protected, Virtual
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
 void qpGeomMunger::
 munge_geom_impl(CPT(qpGeom) &, CPT(qpGeomVertexData) &) {
-  // The default implementation does nothing.
+  // The default implementation does nothing (the work has already
+  // been done in munge_format_impl).
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,6 +193,19 @@ munge_geom_impl(CPT(qpGeom) &, CPT(qpGeomVertexData) &) {
 int qpGeomMunger::
 compare_to_impl(const qpGeomMunger *other) const {
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::geom_compare_to_impl
+//       Access: Protected, Virtual
+//  Description: Called to compare two GeomMungers who are known to be
+//               of the same type, for an apples-to-apples comparison.
+//               This will never be called on two pointers of a
+//               different type.
+////////////////////////////////////////////////////////////////////
+int qpGeomMunger::
+geom_compare_to_impl(const qpGeomMunger *other) const {
+  return compare_to_impl(other);
 }
 
 ////////////////////////////////////////////////////////////////////

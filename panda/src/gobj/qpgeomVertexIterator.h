@@ -41,8 +41,13 @@ PUBLISHED:
                               const string &name);
   INLINE qpGeomVertexIterator(qpGeomVertexData *data,
                               const InternalName *name);
+  INLINE qpGeomVertexIterator(const qpGeomVertexData *data);
+  INLINE qpGeomVertexIterator(const qpGeomVertexData *data,
+                              const string &name);
+  INLINE qpGeomVertexIterator(const qpGeomVertexData *data,
+                              const InternalName *name);
 
-  INLINE qpGeomVertexData *get_data() const;
+  INLINE const qpGeomVertexData *get_data() const;
 
   INLINE void set_data_type(int data_type);
   INLINE void set_data_type(const string &name);
@@ -73,6 +78,7 @@ PUBLISHED:
 
 private:
   PT(qpGeomVertexData) _data;
+  bool _const_data;
   int _array;
   const qpGeomVertexDataType *_data_type;
 

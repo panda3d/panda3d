@@ -2607,10 +2607,11 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
+begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
+                      const qpGeomVertexData *vertex_data) {
   DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom, vertex_data)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom, munger, vertex_data)) {
     return false;
   }
   nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);

@@ -915,7 +915,8 @@ release_all() {
 //  Description: Actually draws the Geom with the indicated GSG.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-draw(GraphicsStateGuardianBase *gsg, const qpGeomVertexData *) const {
+draw(GraphicsStateGuardianBase *gsg, 
+     const qpGeomMunger *, const qpGeomVertexData *) const {
   PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
   if (is_dirty()) {
     ((Geom *)this)->config(); 

@@ -286,7 +286,10 @@ operator < (const qpGeomVertexCacheManager::Entry &other) const {
     if (_u._geom._source != other._u._geom._source) {
       return _u._geom._source < other._u._geom._source;
     }
-    return _u._geom._modifier < other._u._geom._modifier;
+    if (_u._geom._modifier != other._u._geom._modifier) {
+      return _u._geom._modifier->geom_compare_to(*other._u._geom._modifier) < 0;
+    }
+    return 0;
   }
 
   return false;

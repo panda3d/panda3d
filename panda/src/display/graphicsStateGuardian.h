@@ -148,7 +148,9 @@ public:
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
 
-  virtual bool begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data);
+  virtual bool begin_draw_primitives(const qpGeom *geom, 
+                                     const qpGeomMunger *munger,
+                                     const qpGeomVertexData *vertex_data);
   virtual void draw_triangles(const qpGeomTriangles *primitive);
   virtual void draw_tristrips(const qpGeomTristrips *primitive);
   virtual void draw_trifans(const qpGeomTrifans *primitive);
@@ -251,6 +253,7 @@ protected:
 
   CPT(RenderState) _state;
   CPT(TransformState) _transform;
+  CPT(qpGeomMunger) _munger;
   CPT(qpGeomVertexData) _vertex_data;
 
   int _buffer_mask;

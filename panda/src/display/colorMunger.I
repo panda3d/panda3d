@@ -1,5 +1,5 @@
-// Filename: glGeomMunger_src.I
-// Created by:  drose (10Mar05)
+// Filename: colorMunger.I
+// Created by:  drose (21Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,16 +16,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE CLP(GeomMunger)::
-CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
-  ColorMunger(gsg, state, 4, qpGeomVertexDataType::NT_uint8),
-  _texture(state->get_texture()),
-  _tex_gen(state->get_tex_gen())
-{
-}

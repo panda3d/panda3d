@@ -72,6 +72,30 @@ compare_to(const qpGeomMunger &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::geom_compare_to
+//       Access: Public
+//  Description: Compares two GeomMungers, considering only whether
+//               they would produce a different answer to
+//               munge_format(), munge_data(), or munge_geom().  (They
+//               still might be different in other ways, but if they
+//               would produce the same answer, this function consider
+//               them to be the same.)
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomMunger::
+geom_compare_to(const qpGeomMunger &other) const {
+  // First, we compare the types; if they are of different types then
+  // they sort differently.
+  TypeHandle type = get_type();
+  TypeHandle other_type = other.get_type();
+  if (type != other_type) {
+    return type.get_index() - other_type.get_index();
+  }
+
+  // We only call compare_to_impl() if they have the same type.
+  return geom_compare_to_impl(&other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::munge_format
 //       Access: Public
 //  Description: Given a source GeomVertexFormat, converts it if
@@ -96,7 +120,7 @@ munge_data(const qpGeomVertexData *data) const {
   // We cast away the const pointer, because do_munge_data() needs to
   // update caches and stuff, but we trust it not to change any
   // user-definable parameters.
-  return ((qpGeomMunger *)this)->do_munge_data(data);
+  return ((qpGeomMunger *)this)->munge_data_impl(data);
 }
 
 ////////////////////////////////////////////////////////////////////

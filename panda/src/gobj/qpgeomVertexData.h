@@ -85,6 +85,16 @@ PUBLISHED:
   INLINE UpdateSeq get_modified() const;
 
   CPT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
+  CPT(qpGeomVertexData) 
+    scale_color(const LVecBase4f &color_scale, int num_components,
+                qpGeomVertexDataType::NumericType numeric_type) const;
+  CPT(qpGeomVertexData) 
+    set_color(const Colorf &color, int num_components,
+              qpGeomVertexDataType::NumericType numeric_type) const;
+
+  PT(qpGeomVertexData) 
+    replace_data_type(const InternalName *name, int num_components,
+                      qpGeomVertexDataType::NumericType numeric_type) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -135,7 +145,9 @@ private:
 private:
   bool do_set_num_vertices(int n, CDWriter &cdata);
 
-  static PStatCollector _munge_data_pcollector;
+  static PStatCollector _convert_pcollector;
+  static PStatCollector _scale_color_pcollector;
+  static PStatCollector _set_color_pcollector;
 
 public:
   static void register_with_read_factory();

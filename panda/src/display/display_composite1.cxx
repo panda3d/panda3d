@@ -1,3 +1,4 @@
+#include "colorMunger.cxx"
 #include "drawableRegion.cxx"
 #include "displayRegion.cxx"
 #include "graphicsEngine.cxx"

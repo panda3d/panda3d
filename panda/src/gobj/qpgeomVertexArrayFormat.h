@@ -83,10 +83,10 @@ PUBLISHED:
   INLINE int get_total_bytes() const;
   INLINE int get_pad_to() const;
 
-  void add_data_type(const InternalName *name, int num_components,
-                     qpGeomVertexDataType::NumericType numeric_type,
-                     int start = -1);
-  void add_data_type(const qpGeomVertexDataType &data_type);
+  int add_data_type(const InternalName *name, int num_components,
+                    qpGeomVertexDataType::NumericType numeric_type,
+                    int start = -1);
+  int add_data_type(const qpGeomVertexDataType &data_type);
   void remove_data_type(const InternalName *name);
   void clear_data_types();
 

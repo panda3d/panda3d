@@ -74,14 +74,16 @@ public:
 
 public:
   INLINE int compare_to(const qpGeomMunger &other) const;
+  INLINE int geom_compare_to(const qpGeomMunger &other) const;
 
 protected:
   CPT(qpGeomVertexFormat) do_munge_format(const qpGeomVertexFormat *format);
-  CPT(qpGeomVertexData) do_munge_data(const qpGeomVertexData *data);
 
   virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig);
+  virtual CPT(qpGeomVertexData) munge_data_impl(const qpGeomVertexData *data);
   virtual void munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
   virtual int compare_to_impl(const qpGeomMunger *other) const;
+  virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
 
 private:
   class Registry;
@@ -91,6 +93,7 @@ private:
   void do_register();
   void do_unregister();
 
+private:
   typedef pmap<const qpGeomVertexFormat *, const qpGeomVertexFormat *> Formats;
   Formats _formats;
 

@@ -124,7 +124,7 @@ munge_geom(GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CullableObject::
 draw(GraphicsStateGuardianBase *gsg) {
-  _geom->draw(gsg, _munged_data);
+  _geom->draw(gsg, _munger, _munged_data);
 }
 
 ////////////////////////////////////////////////////////////////////

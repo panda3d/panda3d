@@ -241,6 +241,7 @@ public:
 
   // From parent dDrawable
   virtual void draw(GraphicsStateGuardianBase *gsg, 
+                    const qpGeomMunger *munger,
                     const qpGeomVertexData *vertex_data) const;
 
   // From parent Configurable

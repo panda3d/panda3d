@@ -354,7 +354,8 @@ clear_cache() {
 //               pre-munged to support the GSG's needs).
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
-draw(GraphicsStateGuardianBase *gsg, const qpGeomVertexData *vertex_data) const {
+draw(GraphicsStateGuardianBase *gsg, const qpGeomMunger *munger,
+     const qpGeomVertexData *vertex_data) const {
 #ifdef DO_PIPELINING
   // Make sure the usage_hint is already updated before we start to
   // draw, so we don't end up with a circular lock if the GSG asks us
@@ -373,7 +374,7 @@ draw(GraphicsStateGuardianBase *gsg, const qpGeomVertexData *vertex_data) const 
 
   CDReader cdata(_cycler);
   
-  if (gsg->begin_draw_primitives(this, vertex_data)) {
+  if (gsg->begin_draw_primitives(this, munger, vertex_data)) {
     Primitives::const_iterator pi;
     for (pi = cdata->_primitives.begin(); 
          pi != cdata->_primitives.end();

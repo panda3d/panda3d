@@ -1,5 +1,5 @@
-// Filename: glGeomMunger_src.h
-// Created by:  drose (10Mar05)
+// Filename: colorMunger.h
+// Created by:  drose (21Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,40 +16,47 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef COLORMUNGER_H
+#define COLORMUNGER_H
+
 #include "pandabase.h"
-#include "colorMunger.h"
-#include "graphicsStateGuardian.h"
-#include "textureAttrib.h"
-#include "texGenAttrib.h"
-#include "renderState.h"
+#include "qpgeomMunger.h"
+#include "colorAttrib.h"
+#include "colorScaleAttrib.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : GLGeomMunger
-// Description : This specialization on GeomMunger finesses vertices
-//               for OpenGL rendering.  In particular, it makes sure
-//               colors aren't stored in DirectX's packed_argb format.
+//       Class : ColorMunger
+// Description : Applies ColorAttrib and ColorScaleAttrib by munging
+//               the vertex data.
+//
+//               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_GL CLP(GeomMunger) : public ColorMunger {
+class EXPCL_PANDA ColorMunger : public qpGeomMunger {
 public:
-  INLINE CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
+  ColorMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
+              int num_components,
+              qpGeomVertexDataType::NumericType numeric_type);
+  virtual ~ColorMunger();
 
 protected:
-  virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig);
+  virtual CPT(qpGeomVertexData) munge_data_impl(const qpGeomVertexData *data);
   virtual int compare_to_impl(const qpGeomMunger *other) const;
-  virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
 
 private:
-  CPT(TextureAttrib) _texture;
-  CPT(TexGenAttrib) _tex_gen;
+  int _num_components;
+  qpGeomVertexDataType::NumericType _numeric_type;
+  CPT(ColorAttrib) _color;
+  CPT(ColorScaleAttrib) _color_scale;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    ColorMunger::init_type();
-    register_type(_type_handle, CLASSPREFIX_QUOTED "GeomMunger",
-                  ColorMunger::get_class_type());
+    qpGeomMunger::init_type();
+    register_type(_type_handle, "ColorMunger",
+                  qpGeomMunger::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -60,5 +67,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "glGeomMunger_src.I"
+#include "colorMunger.I"
+
+#endif
 

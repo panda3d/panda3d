@@ -138,12 +138,16 @@ remove_array(int array) {
 //       Access: Published
 //  Description: Adds the indicated array definition to the list of
 //               arrays included within this vertex format definition.
+//               The return value is the index number of the new
+//               array.
 ////////////////////////////////////////////////////////////////////
-void qpGeomVertexFormat::
+int qpGeomVertexFormat::
 add_array(qpGeomVertexArrayFormat *array_format) {
-  nassertv(!_is_registered);
+  nassertr(!_is_registered, -1);
 
+  int new_array = (int)_arrays.size();
   _arrays.push_back(array_format);
+  return new_array;
 }
 
 ////////////////////////////////////////////////////////////////////

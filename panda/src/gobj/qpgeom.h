@@ -90,6 +90,7 @@ PUBLISHED:
 
 public:
   void draw(GraphicsStateGuardianBase *gsg, 
+            const qpGeomMunger *munger,
             const qpGeomVertexData *vertex_data) const;
 
   static UpdateSeq get_next_modified();

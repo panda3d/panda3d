@@ -18,6 +18,7 @@
 
 
 #include "config_display.h"
+#include "colorMunger.h"
 #include "graphicsStateGuardian.h"
 #include "graphicsPipe.h"
 #include "graphicsOutput.h"
@@ -246,7 +247,8 @@ init_libdisplay() {
     return;
   }
   initialized = true;
-
+  
+  ColorMunger::init_type();
   GraphicsStateGuardian::init_type();
   GraphicsPipe::init_type();
   GraphicsOutput::init_type();

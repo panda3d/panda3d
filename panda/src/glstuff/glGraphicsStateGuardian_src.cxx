@@ -2037,8 +2037,9 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom, vertex_data)) {
+begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
+                      const qpGeomVertexData *vertex_data) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom, munger, vertex_data)) {
     return false;
   }
   nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
