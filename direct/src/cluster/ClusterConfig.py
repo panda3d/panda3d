@@ -421,5 +421,24 @@ ClientConfigs = {
                               'pos' : Vec3(.105,0,0),
                               'hpr' : Vec3(0,0,-90)}
                              ],
+    'composite'           : [{'display name' : 'master',
+                              'display mode' : 'client',
+                              'pos' : Vec3(0),
+                              },
+                             {'display name' : 'left',
+                              'pos' : Vec3(-0.105, -0.020, 5.000),
+                              'hpr' : Vec3(-0.370, 0.000, 0.000),
+                              'focal length' : 0.815,
+                              'film size' : (1.000, 0.831),
+                              'film offset' : (0.000, 0.173),
+                              },
+                             {'display name' : 'right',
+                              'pos' : Vec3(0.105, -0.020, 5.000),
+                              'hpr' : Vec3(0.370, 0.000, 0.000),
+                              'focal length' : 0.815,
+                              'film size' : (1.000, 0.831),
+                              'film offset' : (0.000, 0.173),
+                              }
+                             ],
     }
 

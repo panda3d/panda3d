@@ -55,16 +55,23 @@ class ClusterClient(DirectObject.DirectObject):
                                    serverConfig.serverName,
                                    serverConfig.serverPort))
             else:
+                self.notify.debug('send cam pos')
+                #server.sendMoveCam(Point3(0), Vec3(0))
+                self.notify.debug('send cam offset')
                 server.sendCamOffset(serverConfig.xyz,serverConfig.hpr)
                 if serverConfig.fFrustum:
+                    self.notify.debug('send cam frustum')
                     server.sendCamFrustum(serverConfig.focalLength,
                                           serverConfig.filmSize,
                                           serverConfig.filmOffset)
                 self.serverList.append(server)
+        self.notify.debug('pre startMoveCam')
         self.startMoveCamTask()
+        self.notify.debug('post startMoveCam')
         self.startMoveSelectedTask()
 
     def startMoveCamTask(self):
+        self.notify.debug('adding move cam')
         taskMgr.add(self.moveCameraTask, "moveCamTask", 49)
 
     def moveCameraTask(self,task):
@@ -351,7 +358,9 @@ def createClusterClient():
     # Create Cluster Managers (opening connections to servers)
     # Are the servers going to be synced?
     if base.clusterSyncFlag:
+        base.notify.warning('autoflip')
         base.graphicsEngine.setAutoFlip(0)
+        base.notify.warning('ClusterClientSync')
         return ClusterClientSync(displayConfigs, base.clusterSyncFlag)
     else:
         return ClusterClient(displayConfigs, base.clusterSyncFlag)
