@@ -340,6 +340,24 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.floorOffset = floorOffset
         self.reach = reach
 
+    def deleteCollisions(self):
+        assert(self.debugPrint("deleteCollisions()"))
+        del self.cTrav
+
+        if self.useHeightRay:
+            del self.cRayQueue
+            self.cRayNodePath.removeNode()
+            del self.cRayNodePath
+
+        if hasattr(self, "cSphere"):
+            del self.cSphere
+            self.cSphereNodePath.removeNode()
+            del self.cSphereNodePath
+
+            del self.pusher
+        
+        self.getAirborneHeight = None
+
     def setAirborneHeightFunc(self, getAirborneHeight):
         self.getAirborneHeight = getAirborneHeight
 
@@ -397,23 +415,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             point=Point3(contact+self.physContactIndicator.getPos())
             self.physContactIndicator.lookAt(point)
         return Task.cont
-
-    def deleteCollisions(self):
-        assert(self.debugPrint("deleteCollisions()"))
-        del self.cTrav
-
-        if self.useHeightRay:
-            del self.cRayQueue
-            self.cRayNodePath.removeNode()
-            del self.cRayNodePath
-
-        del self.cSphere
-        self.cSphereNodePath.removeNode()
-        del self.cSphereNodePath
-
-        del self.pusher
-        
-        del self.getAirborneHeight
 
     def setCollisionsActive(self, active = 1):
         assert(self.debugPrint("collisionsActive(active=%s)"%(active,)))
