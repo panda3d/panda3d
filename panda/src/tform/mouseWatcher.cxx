@@ -909,6 +909,10 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
       case ButtonEvent::T_keystroke:
         keystroke(be._keycode);
         break;
+
+      case ButtonEvent::T_resume_down:
+        // Ignore this, since the button wasn't pressed just now.
+        break;
       }
     }
   }
