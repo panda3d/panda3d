@@ -35,10 +35,8 @@
 #include <textureTransition.h>
 #include <renderModeTransition.h>
 #include <cullFaceTransition.h>
-#include <cullFaceAttribute.h>
 #include <clockObject.h>
 #include <config_gobj.h>
-#include <allAttributesWrapper.h>
 #include <renderRelation.h>
 #include <dataRelation.h>
 
@@ -196,7 +194,9 @@ setup() {
        << "' graphics pipe." << endl;
 
   // Create the render node
+  _render_top = new NamedNode("render_top");
   _render = new NamedNode("render");
+  _render_arc = new RenderRelation(_render_top, _render);
 
   ChanConfig chanConfig(_main_pipe, chan_cfg, _render, override);
   _main_win = chanConfig.get_win();
@@ -214,9 +214,8 @@ setup() {
   NodeRelation *cam_trans = new RenderRelation(_render, cameras);
 
   // Turn on backface culling.
-  CullFaceAttribute *cfa = new CullFaceAttribute;
-  cfa->set_mode(CullFaceProperty::M_cull_clockwise);
-  _initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+  CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+  _render_arc->set_transition(cfa);
 
   // Create the data graph root.
   _data_root = new NamedNode( "data" );
@@ -351,7 +350,7 @@ draw(bool) {
   int num_windows = _main_pipe->get_num_windows();
   for (int w = 0; w < num_windows; w++) {
     GraphicsWindow *win = _main_pipe->get_window(w);
-    win->get_gsg()->render_frame(_initial_state);
+    win->get_gsg()->render_frame();
   }
   ClockObject::get_global_clock()->tick();
 }

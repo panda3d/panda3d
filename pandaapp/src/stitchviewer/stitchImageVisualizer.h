@@ -84,8 +84,9 @@ protected:
 
   PT(GraphicsPipe) _main_pipe;
   PT(GraphicsWindow) _main_win;
-  NodeAttributes _initial_state;
+  PT(NamedNode) _render_top;
   PT(NamedNode) _render;
+  NodeRelation *_render_arc;
   PT(NamedNode) _data_root;
   PT(MouseAndKeyboard) _mak;
   PT(Trackball) _trackball;
