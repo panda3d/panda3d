@@ -25,6 +25,7 @@
 #include "pointerTo.h"
 #include "typeHandle.h"
 #include "pmutex.h"
+#include "vector_string.h"
 
 class HardwareChannel;
 class GraphicsWindow;
@@ -73,7 +74,7 @@ private:
   PipeTypes _pipe_types;
   Mutex _lock;
 
-  typedef pset<string> DisplayModules;
+  typedef vector_string DisplayModules;
   DisplayModules _display_modules;
   string _default_display_module;
   string _default_pipe_name;

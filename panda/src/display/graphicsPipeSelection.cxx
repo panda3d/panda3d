@@ -22,6 +22,7 @@
 #include "filename.h"
 #include "load_dso.h"
 #include "config_display.h"
+#include "pset.h"
 
 GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = NULL;
 
@@ -32,18 +33,9 @@ GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = NULL;
 ////////////////////////////////////////////////////////////////////
 GraphicsPipeSelection::
 GraphicsPipeSelection() {
-  // Get the set of modules named in the various aux-display Configrc
-  // variables.  We'll want to know this when we call load_modules()
-  // later.
-  Config::ConfigTable::Symbol disp;
-  config_display.GetAll("aux-display", disp);
+  pset<string> got_display_modules;
 
-  Config::ConfigTable::Symbol::iterator ci;
-  for (ci = disp.begin(); ci != disp.end(); ++ci) {
-    _display_modules.insert((*ci).Val());
-  }
-
-  // Also get the name of the default module from the load-display
+  // First get the name of the default module from the load-display
   // variable.  We get this explicitly from Configrc now (instead of
   // retrieving it in config_display), in case this constructor is
   // running at static init time.
@@ -65,7 +57,26 @@ GraphicsPipeSelection() {
     _default_display_module = string();
 
   } else if (!_default_display_module.empty()) {
-    _display_modules.insert(_default_display_module);
+    // Don't insert a particular display more than once.
+    if (got_display_modules.insert(_default_display_module).second) {
+      _display_modules.push_back(_default_display_module);
+    }
+  }
+
+  // Also get the set of modules named in the various aux-display
+  // Configrc variables.  We'll want to know this when we call
+  // load_modules() later.
+  Config::ConfigTable::Symbol disp;
+  config_display.GetAll("aux-display", disp);
+
+  Config::ConfigTable::Symbol::iterator ci;
+  for (ci = disp.begin(); ci != disp.end(); ++ci) {
+    string aux_display = trim_right((*ci).Val());
+
+    // Don't insert a particular display more than once.
+    if (got_display_modules.insert(aux_display).second) {
+      _display_modules.push_back(aux_display);
+    }
   }
 
   _default_module_loaded = false;
@@ -230,7 +241,8 @@ make_default_pipe() {
     }
   }
     
-  // Couldn't find a matching pipe type; choose one arbitrarily. 
+  // Couldn't find a matching pipe type; choose the first one on the
+  // list.
   for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
     const PipeType &ptype = (*ti);
     PT(GraphicsPipe) pipe = (*ptype._constructor)();
@@ -309,15 +321,27 @@ add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsPipeSelection::
 do_load_default_module() {
-  _default_module_loaded = true;
-
   if (_default_display_module.empty()) {
     load_aux_modules();
     return;
   }
 
   load_named_module(_default_display_module);
-  _display_modules.erase(_default_display_module);
+
+  DisplayModules::iterator di =
+    find(_display_modules.begin(), _display_modules.end(), 
+         _default_display_module);
+  if (di != _display_modules.end()) {
+    _display_modules.erase(di);
+  }
+
+  _default_module_loaded = true;
+
+  if (_pipe_types.empty()) {
+    // If we still don't have any pipes after loading the default
+    // module, automatically load the aux modules.
+    load_aux_modules();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
