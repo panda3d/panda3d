@@ -33,6 +33,9 @@ static RenderRelation* my_arc;
 static LPoint3f my_pos;
 static LPoint3f target_pos;
 static LPoint3f telemetry_pos;
+static LVector3f my_vel;
+static LVector3f target_vel;
+static LVector3f telemetry_vel;
 static int hostport = deadrec.GetInt("deadrec-rec-port", 0xdead);
 static thread* monitor;
 static bool stop_monitoring;
@@ -44,7 +47,7 @@ static float clock_skew = 0.;
 static bool doing_sync = false;
 static float my_time, target_time, telemetry_time;
 static bool new_telemetry;
-static bool reinit_correction;
+static bool reinit_correction, reinit_prediction;
 
 enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num, T_Time, T_Sync };
 enum PredictToken { P_Null, P_Linear };
@@ -373,15 +376,32 @@ static void deadrec_setup(EventHandler& eh) {
   pnullButton->inactive();
   curr_corr = C_Pop;
   cpopButton->inactive();
+  reinit_correction = true;
+  reinit_prediction = true;
 }
 
 inline static void predict_null(void) {
+  static bool have_vel = false;
+
+  if (reinit_prediction) {
+    have_vel = false;
+    target_vel = LVector3f(0., 0., 0.);
+    reinit_prediction = false;
+  }
+  if (have_vel) {
+    if (new_telemetry)
+      target_vel = target_pos - telemetry_pos;
+  } else {
+    if (new_telemetry)
+      have_vel = true;
+  }
   target_pos = telemetry_pos;
 }
 
 inline static void predict_linear(void) {
   // DO THIS
   target_pos = telemetry_pos;
+  reinit_prediction = false;
 }
 
 inline static void run_predict(void) {
@@ -404,20 +424,19 @@ inline static void correction_pop(void) {
 }
 
 inline static void correction_lerp(void) {
-  // DO THIS
   static LPoint3f prev_pos, save_pos;
   static bool have_both = false;
   static float time;
 
   if (reinit_correction) {
-    if (new_telemetry) {
+    if (save_pos != target_pos) {
       prev_pos = save_pos = target_pos;
       reinit_correction = false;
       have_both = false;
     }
   } else {
     if (have_both) {
-      if (new_telemetry) {
+      if (save_pos != target_pos) {
 	time = 0.;
 	prev_pos = my_pos;
 	save_pos = target_pos;
@@ -431,7 +450,7 @@ inline static void correction_lerp(void) {
 	}
       }
     } else {
-      if (new_telemetry) {
+      if (save_pos != target_pos) {
 	save_pos = target_pos;
 	my_pos = prev_pos;
 	time = 0.;
@@ -442,8 +461,55 @@ inline static void correction_lerp(void) {
 }
 
 inline static void correction_spline(void) {
-  // DO THIS
-  my_pos = target_pos;
+  static LPoint3f A, B, C, D;
+  static bool have_both = false;
+  static LPoint3f prev_pos, save_pos;
+  static LVector3f prev_vel, save_vel;
+  static float time;
+
+  if (reinit_correction) {
+    if (save_pos != target_pos) {
+      prev_pos = save_pos = target_pos;
+      prev_vel = save_vel = target_vel;
+      reinit_correction = false;
+      have_both = false;
+    }
+  } else {
+    if (have_both) {
+      if (save_pos != target_pos) {
+	time = 0.;
+	prev_pos = my_pos;
+	prev_vel = my_vel;
+	save_pos = target_pos;
+	save_vel = target_vel;
+	A = (2. * (prev_pos - save_pos)) + prev_vel + save_vel;
+	B = (3. * (save_pos - prev_pos)) - (2. * prev_vel) - save_vel;
+	C = prev_vel;
+	D = prev_pos;
+      } else {
+	if (time < 0.5) {
+	  // half second lerp
+	  float tmp = time * 2.;
+	  my_pos = (tmp * tmp * tmp * A) + (tmp * tmp * B) + (tmp * C) + D;
+	  my_vel = (3. * tmp * tmp * A) + (2. * tmp * B) + C;
+	  time += ClockObject::get_global_clock()->get_dt();
+	}
+      }
+    } else {
+      if (save_pos != target_pos) {
+	save_pos = target_pos;
+	save_vel = target_vel;
+	my_pos = prev_pos;
+	my_vel = prev_vel;
+	time = 0.;
+	A = (2. * (prev_pos - save_pos)) + prev_vel + save_vel;
+	B = (3. * (save_pos - prev_pos)) - (2. * prev_vel) - save_vel;
+	C = prev_vel;
+	D = prev_pos;
+	have_both = true;
+      }
+    }
+  }
 }
 
 inline static void run_correct(void) {
