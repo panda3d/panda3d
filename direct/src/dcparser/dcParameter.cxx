@@ -216,5 +216,5 @@ generate_hash(HashGenerator &hashgen) const {
   // We specifically don't call up to DCField::generate_hash(), since
   // the parameter name is not actually significant to the hash.
 
-  hashgen.add_int(get_flags());
+  //  hashgen.add_int(get_flags());
 }
