@@ -117,12 +117,12 @@ protected:
 
   void set_current_regions(VRegions &regions);
   void clear_current_regions();
-  static void intersect_regions(MouseWatcher::VRegions &result,
-                                const MouseWatcher::VRegions &regions_a,
-                                const MouseWatcher::VRegions &regions_b);
-  static void remove_region_from(MouseWatcher::VRegions &regions,
+  static void intersect_regions(qpMouseWatcher::VRegions &result,
+                                const qpMouseWatcher::VRegions &regions_a,
+                                const qpMouseWatcher::VRegions &regions_b);
+  static void remove_region_from(qpMouseWatcher::VRegions &regions,
                                  MouseWatcherRegion *region);
-  static void remove_regions_from(MouseWatcher::VRegions &regions,
+  static void remove_regions_from(qpMouseWatcher::VRegions &regions,
                                   MouseWatcherGroup *group);
 
     
