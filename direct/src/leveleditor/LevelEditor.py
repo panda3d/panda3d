@@ -698,8 +698,9 @@ class LevelEditor(NodePath, PandaObject):
                 # If insert, pick a new random style
                 if hotKey == 'insert':
                     self.setRandomBuildingStyle(dnaNode, dnaNode.getName())
-                # Get a new building width
-                self.setCurrent('building_width', self.getRandomWallWidth())
+                    # Get a new building width
+                    self.setCurrent('building_width',
+                                    self.getRandomWallWidth())
                 dnaNode.setWidth(self.getCurrent('building_width'))
         
 	# Add the DNA to the active parent
