@@ -164,7 +164,7 @@
 // optimize 1 only, since turning this on does perform some additional
 // sanity checks, but doesn't do anything else useful other than
 // increase run-time overhead.
-#define DO_PIPELINING $[<= $[OPTIMIZE], 1]
+#defer DO_PIPELINING $[<= $[OPTIMIZE], 1]
 
 // Is NSPR installed, and where?  This is the Netscape Portable
 // Runtime library, downloadable as part of the Mozilla package from
