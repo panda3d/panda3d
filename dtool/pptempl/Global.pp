@@ -342,11 +342,10 @@
 
 // This variable returns the name of the fake precompiled header cxx
 // that will be used to force linking of the generated pch .obj into libs
-// returns non-empty if sources var contains a *_headers.h
-// should probably use PRECOMPILED_HEADER var directly here instead
+
 #defer get_pch_outputcxx \
-  $[if $[and $[DO_PCH], $[filter %_headers.h, $[get_sources]]], \
-  $[TARGET]_headers.cxx]
+  $[if $[and $[DO_PCH], $[PRECOMPILED_HEADER]], \
+  $[patsubst %.h,%.cxx, $[PRECOMPILED_HEADER]]]
 
 // This variable returns the name of the interrogate module, if the
 // current metalib target should include one, or empty string if it
