@@ -19,6 +19,7 @@
 #include "polylightEffect.h"
 #include "polylightNode.h"
 #include "config_pgraph.h"
+#include "pStatTimer.h"
 #include "nodePath.h"
 #include "pmap.h"
 #include "colorScaleAttrib.h"
@@ -27,6 +28,10 @@
 #include <math.h>
 
 TypeHandle PolylightEffect::_type_handle;
+
+#ifndef CPPPARSER
+PStatCollector PolylightEffect::_cull_pcollector("Cull:Polylight");
+#endif /// CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::make
@@ -107,7 +112,8 @@ void PolylightEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &node_state) const {
-  CPT(RenderAttrib) poly_light_attrib = do_poly_light(trav->get_scene()->get_scene_root(), &data, node_transform); 
+  //CPT(RenderAttrib) poly_light_attrib = do_poly_light(trav->get_scene()->get_scene_root(), &data, node_transform); 
+  CPT(RenderAttrib) poly_light_attrib = do_poly_light(trav->get_scene(), &data, node_transform); 
   CPT(RenderState) poly_light_state = RenderState::make(poly_light_attrib);
   node_state = node_state->compose(poly_light_state); 
 }
@@ -123,7 +129,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 //               in respect to that light's proximity.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) PolylightEffect::
-do_poly_light(const NodePath & root, const CullTraverserData *data, const TransformState *node_transform) const {
+do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const TransformState *node_transform) const {
   //static bool was_under_polylight = false;
   float dist; // To calculate the distance of each light from the node
   float r,g,b; // To hold the color calculation
@@ -133,6 +139,12 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
   float weight_scale; // Variable to compensate snap of color when you walk inside the light volume
   float Rcollect, Gcollect, Bcollect;
 
+  PStatTimer timer(_cull_pcollector);
+
+  const NodePath &root = scene->get_scene_root();
+  //const NodePath &camera = scene->get_camera_path();
+  const NodePath &camera = scene->get_cull_center();
+
   // Initialize Color variables
   r = g = b = 1.0;
   Rcollect = Gcollect = Bcollect = 0.0;
@@ -140,7 +152,7 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
   // get the avatar's base color scale
   Colorf scene_color = root.get_color_scale();
   if (polylight_info) {
-    pgraph_cat.info() << "scene color scale = " << scene_color << endl;
+    pgraph_cat.debug() << "scene color scale = " << scene_color << endl;
   }
   min_dist = 100000.0;
   // Cycle through all the lights in this effect's lightgroup
@@ -154,25 +166,45 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
       // Calculate the distance of the node from the light
       //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
       const NodePath lightnp = *light_iter;
-      LPoint3f point = data->_node_path.get_node_path().get_relative_point(lightnp,
-        light->get_pos());
+      LPoint3f avatar_position = data->_node_path.get_node_path().get_relative_point(lightnp, light->get_pos());
 
       if (_effect_center[2]) {
-        dist = (point - _effect_center).length(); // this counts height difference
+        dist = (avatar_position - _effect_center).length(); // this counts height difference
       } else {
         // get distance as if the light is at the same height of player
-        LVector2f xz(point[0], point[1]);
+        LVector2f xz(avatar_position[0], avatar_position[1]);
         dist = xz.length(); // this does not count height difference
       }
 
       if (dist <= light_radius) { // If node is in range of this light
+      /*
+        // as to Schuyler's suggestion, lets do some vector processing relative to camera
+        LPoint3f light_position = light->get_pos();
+        LPoint3f camera_position = camera.get_relative_point(lightnp, light->get_pos());
+        LVector3f light_camera = camera_position - LPoint3f(0,0,0);
+        LVector3f light_avatar = avatar_position - LPoint3f(0,0,0);
+        light_camera.normalize();
+        light_avatar.normalize();
+        float intensity = light_camera.dot(light_avatar);
+        
         if (polylight_info) {
           pgraph_cat.debug() << "light's position = " << light->get_pos() << endl;
-          pgraph_cat.debug() << "relative position = " << point << endl;
+          pgraph_cat.debug() << "relative avatar position = " << avatar_position << endl;
+          pgraph_cat.debug() << "relative camera position = " << camera_position << endl;
+          pgraph_cat.debug() << "light_camera " << light_camera << endl;
+          pgraph_cat.debug() << "light_avatar " << light_avatar << endl;
+          pgraph_cat.info() << "light_camera dot light_avatar = " << intensity << endl;
           pgraph_cat.debug() << "effect center = " << _effect_center << endl;
-          //pgraph_cat.info() << "close to this light = " << light->get_name() << endl;
-          pgraph_cat.info() << "dist = " << dist << ";radius = " << light_radius << endl;
+          //pgraph_cat.debug() << "close to this light = " << light->get_name() << endl;
+          pgraph_cat.debug() << "dist = " << dist << ";radius = " << light_radius << endl;
         }
+
+        // map -1 to 1 into 0 to 1; and flip it
+        intensity = 1.0 - ((intensity + 1.0) * 0.5);
+        if (polylight_info) {
+          pgraph_cat.info() << "intensity = " << intensity << endl;
+        }
+      */
 
         PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
         Colorf light_color;
@@ -212,6 +244,8 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
           light_scale = 1.0;
         }
 
+        //light_scale *= intensity;
+
         if (min_dist > dist) {
           min_dist = dist;
           // Keep accumulating each lights contribution... 
@@ -222,7 +256,7 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
         }
 
         if (polylight_info) {
-          pgraph_cat.info() << "weight_scale = " << weight_scale
+          pgraph_cat.debug() << "weight_scale = " << weight_scale
                              << "; light_scale " << light_scale << endl;
         }
 
@@ -257,7 +291,7 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
     //was_under_polylight = true;
     //data->_node_path.get_node_path().set_color_scale_off();
     if (polylight_info)
-      pgraph_cat.info() << "num lights = " << num_lights << endl;
+      pgraph_cat.debug() << "num lights = " << num_lights << endl;
 
     // divide by number of lights to get average.
     r = Rcollect;// / num_lights;
@@ -265,14 +299,14 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
     b = Bcollect;// / num_lights;
 
     if (polylight_info)
-      pgraph_cat.info() << "avg: r=" << r << "; g=" << g << "; b=" << b << endl;
+      pgraph_cat.debug() << "avg: r=" << r << "; g=" << g << "; b=" << b << endl;
 
     // Now add the scene_color multiplied by weight_scale
     r += scene_color[0] * weight_scale;
     g += scene_color[1] * weight_scale;
     b += scene_color[2] * weight_scale;
     if (polylight_info)
-      pgraph_cat.info() << "weighed: r=" << r << "; g=" << g << "; b=" << b << endl;
+      pgraph_cat.debug() << "weighed: r=" << r << "; g=" << g << "; b=" << b << endl;
 
     /*
     // normalize the color
@@ -283,7 +317,7 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
     b = color_vector[2];
 
     if (polylight_info)
-      pgraph_cat.info() << "unit: r=" << r << "; g=" << g << "; b=" << b << endl;
+      pgraph_cat.debug() << "unit: r=" << r << "; g=" << g << "; b=" << b << endl;
     */
 
     // cap it
@@ -292,7 +326,7 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
     b = (b > 1.0)? 1.0 : b;
 
     if (polylight_info)
-      pgraph_cat.info() << "capped: r=" << r << "; g=" << g << "; b=" << b << endl;
+      pgraph_cat.debug() << "capped: r=" << r << "; g=" << g << "; b=" << b << endl;
 
     // since this rgb will be scaled by scene_color by day night
     // cycle, lets undo that effect by dividing this rgb by the
@@ -305,7 +339,7 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
       b /= scene_color[2];
 
     if (polylight_info)
-      pgraph_cat.info() << "final: r=" << r << "; g=" << g << "; b=" << b << endl;
+      pgraph_cat.debug() << "final: r=" << r << "; g=" << g << "; b=" << b << endl;
 
   }
   /*

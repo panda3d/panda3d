@@ -28,6 +28,8 @@
 #include "polylightNode.h"
 #include "pmap.h"
 #include "notify.h"
+#include "sceneSetup.h"
+#include "pStatCollector.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -73,7 +75,8 @@ public:
                              CPT(TransformState) &node_transform,
                              CPT(RenderState) &node_state) const;
 
-  CPT(RenderAttrib) do_poly_light(const NodePath &root, const CullTraverserData *data, const TransformState *node_transform) const;
+  CPT(RenderAttrib) do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const TransformState *node_transform) const;
+  //CPT(RenderAttrib) do_poly_light(const NodePath &root, const CullTraverserData *data, const TransformState *node_transform) const;
 
   virtual void output(ostream &out) const;
 
@@ -99,6 +102,8 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  static PStatCollector _cull_pcollector;
 
 private:
   static TypeHandle _type_handle;
