@@ -35,8 +35,8 @@ LODNode(const LODNode &copy) :
 //     Function: LODNode::add_switch
 //       Access: Public
 //  Description: Adds a switch range to the LODNode.  This implies
-//               that an corresponding child node is also parent to
-//               the node.
+//               that the corresponding child node has been parented
+//               to the node.
 //
 //               The sense of in vs. out distances is as if the object
 //               were coming towards you from far away: it switches
@@ -52,7 +52,8 @@ add_switch(float in, float out) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LODNode::set_switch
 //       Access: Public
-//  Description:
+//  Description: Changes the switching range of a particular child of
+//               the LODNode.  See add_switch().
 ////////////////////////////////////////////////////////////////////
 INLINE bool LODNode::
 set_switch(int index, float in, float out) {
@@ -64,7 +65,9 @@ set_switch(int index, float in, float out) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LODNode::clear_switches
 //       Access: Public
-//  Description:
+//  Description: Removes the set of switching ranges for the LODNode,
+//               presumably in conjunction with removing all of its
+//               children.  See add_switch().
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::
 clear_switches(void) {
