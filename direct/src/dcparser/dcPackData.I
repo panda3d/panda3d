@@ -54,7 +54,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackData::append_data
-//       Access: Published
+//       Access: Public
 //  Description: Adds the indicated bytes to the end of the data.
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackData::
@@ -65,7 +65,7 @@ append_data(const char *buffer, size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackData::get_write_pointer
-//       Access: Published
+//       Access: Public
 //  Description: Adds the indicated number of bytes to the end of the
 //               data without initializing them, and returns a pointer
 //               to the beginning of the new data.
@@ -78,7 +78,7 @@ get_write_pointer(size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackData::append_junk
-//       Access: Published
+//       Access: Public
 //  Description: Adds some uninitialized bytes to the end of the data.
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackData::
@@ -88,7 +88,7 @@ append_junk(size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackData::rewrite_data
-//       Access: Published
+//       Access: Public
 //  Description: Changes the data at the indicated position to the
 //               given value.  It is an error if there are not at
 //               least position + size bytes in the data.
@@ -101,7 +101,7 @@ rewrite_data(size_t position, const char *buffer, size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackData::get_rewrite_pointer
-//       Access: Published
+//       Access: Public
 //  Description: Returns a pointer into the middle of the data at the
 //               indicated point.
 ////////////////////////////////////////////////////////////////////

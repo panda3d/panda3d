@@ -133,7 +133,8 @@ get_live_catalog(const char *data, size_t length) const {
   }
   
   DCPacker packer;
-  packer.begin_unpack(data, length, _root);
+  packer.set_unpack_data(data, length, false);
+  packer.begin_unpack(_root);
   const DCSwitch *last_switch = NULL;
   r_fill_live_catalog(live_catalog, packer, last_switch);
   bool okflag = packer.end_unpack();

@@ -124,7 +124,8 @@ as_switch() {
 string DCField::
 format_data(const string &packed_data) {
   DCPacker packer;
-  packer.begin_unpack(packed_data, this);
+  packer.set_unpack_data(packed_data);
+  packer.begin_unpack(this);
   string result = packer.unpack_and_format();
   if (!packer.end_unpack()) {
     return string();
@@ -168,7 +169,8 @@ parse_string(const string &formatted_string) {
 bool DCField::
 validate_ranges(const string &packed_data) const {
   DCPacker packer;
-  packer.begin_unpack(packed_data, this);
+  packer.set_unpack_data(packed_data);
+  packer.begin_unpack(this);
   packer.unpack_validate();
   if (!packer.end_unpack()) {
     return false;
@@ -182,18 +184,15 @@ validate_ranges(const string &packed_data) const {
 //     Function: DCField::pack_args
 //       Access: Published
 //  Description: Packs the Python arguments from the indicated tuple
-//               into the datagram, appending to the end of the
-//               datagram.  Returns true on success, false on failure.
+//               into the packer.  Returns true on success, false on
+//               failure.
 ////////////////////////////////////////////////////////////////////
 bool DCField::
-pack_args(Datagram &datagram, PyObject *sequence) const {
+pack_args(DCPacker &packer, PyObject *sequence) const {
   nassertr(PySequence_Check(sequence), false);
-  DCPacker packer;
   packer.begin_pack(this);
   packer.pack_object(sequence);
   if (packer.end_pack()) {
-    datagram.append_data(packer.get_data(), packer.get_length());
-
     /*
     PyObject *str = PyObject_Str(sequence);
     cerr << "pack " << get_name() << PyString_AsString(str) << "\n";
@@ -227,24 +226,20 @@ pack_args(Datagram &datagram, PyObject *sequence) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::unpack_args
 //       Access: Published
-//  Description: Unpacks the values from the datagram, beginning at
-//               the current point in the interator, into a Python
+//  Description: Unpacks the values from the packer, beginning at
+//               the current point in the unpack_buffer, into a Python
 //               tuple and returns the tuple.  If there are remaining
-//               bytes in the datagram, they are ignored (but the
-//               iterator is left at the first unread byte).
+//               bytes in the unpack buffer, they are ignored (but the
+//               packer is left at the first unread byte).
 ////////////////////////////////////////////////////////////////////
 PyObject *DCField::
-unpack_args(DatagramIterator &iterator) const {
-  DCPacker packer;
-  string data = iterator.get_remaining_bytes();
-  packer.begin_unpack(data, this);
+unpack_args(DCPacker &packer) const {
+  packer.begin_unpack(this);
 
   PyObject *object = packer.unpack_object();
 
   if (packer.end_unpack()) {
     // Successfully unpacked.
-    iterator.skip_bytes(packer.get_num_unpacked_bytes());
-
     /*
     PyObject *str = PyObject_Str(object);
     cerr << "recv " << get_name() << PyString_AsString(str) << "\n";
@@ -283,8 +278,8 @@ unpack_args(DatagramIterator &iterator) const {
 //               appropriate method.
 ////////////////////////////////////////////////////////////////////
 void DCField::
-receive_update(PyObject *distobj, DatagramIterator &iterator) const {
-  PyObject *args = unpack_args(iterator);
+receive_update(DCPacker &packer, PyObject *distobj) const {
+  PyObject *args = unpack_args(packer);
 
   if (PyObject_HasAttrString(distobj, (char *)_name.c_str())) {
     PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
@@ -307,14 +302,12 @@ receive_update(PyObject *distobj, DatagramIterator &iterator) const {
 //               to send an update for the indicated distributed
 //               object from the client.
 ////////////////////////////////////////////////////////////////////
-Datagram DCField::
-client_format_update(int do_id, PyObject *args) const {
-  Datagram dg;
-  dg.add_uint16(CLIENT_OBJECT_UPDATE_FIELD);
-  dg.add_uint32(do_id);
-  dg.add_uint16(_number);
-  pack_args(dg, args);
-  return dg;
+void DCField::
+client_format_update(DCPacker &packer, int do_id, PyObject *args) const {
+  packer.raw_pack_uint16(CLIENT_OBJECT_UPDATE_FIELD);
+  packer.raw_pack_uint32(do_id);
+  packer.raw_pack_uint16(_number);
+  pack_args(packer, args);
 }
 #endif  // HAVE_PYTHON
 
@@ -326,17 +319,15 @@ client_format_update(int do_id, PyObject *args) const {
 //               to send an update for the indicated distributed
 //               object from the AI.
 ////////////////////////////////////////////////////////////////////
-Datagram DCField::
-ai_format_update(int do_id, int to_id, int from_id, PyObject *args) const {
-  Datagram dg;
-  dg.add_uint32(to_id);
-  dg.add_uint32(from_id);
-  dg.add_uint8('A');
-  dg.add_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
-  dg.add_uint32(do_id);
-  dg.add_uint16(_number);
-  pack_args(dg, args);
-  return dg;
+void DCField::
+ai_format_update(DCPacker &packer, int do_id, int to_id, int from_id, PyObject *args) const {
+  packer.raw_pack_uint32(to_id);
+  packer.raw_pack_uint32(from_id);
+  packer.raw_pack_uint8('A');
+  packer.raw_pack_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
+  packer.raw_pack_uint32(do_id);
+  packer.raw_pack_uint16(_number);
+  pack_args(packer, args);
 }
 #endif  // HAVE_PYTHON
 

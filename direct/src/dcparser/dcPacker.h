@@ -44,21 +44,21 @@ PUBLISHED:
   DCPacker();
   ~DCPacker();
 
+  INLINE void clear_data();
+
   void begin_pack(const DCPackerInterface *root);
   bool end_pack();
 
+  void set_unpack_data(const string &data);
 public:
-  void begin_unpack(const char *data, size_t length,
-                    const DCPackerInterface *root);
+  void set_unpack_data(const char *unpack_data, size_t unpack_length, 
+                       bool owns_unpack_data);
+
 PUBLISHED:
-  void begin_unpack(const string &data, const DCPackerInterface *root);
+  void begin_unpack(const DCPackerInterface *root);
   bool end_unpack();
 
-public:
-  void begin_repack(const char *data, size_t length,
-                    const DCPackerInterface *root);
-PUBLISHED:
-  void begin_repack(const string &data, const DCPackerInterface *root);
+  void begin_repack(const DCPackerInterface *root);
   bool end_repack();
 
   bool seek(const string &field_name);
@@ -125,6 +125,49 @@ PUBLISHED:
 public:
   INLINE const char *get_data() const;
 
+  INLINE void append_data(const char *buffer, size_t size);
+  INLINE char *get_write_pointer(size_t size);
+
+PUBLISHED:
+  // The following methods are used only for packing (or unpacking)
+  // raw data into the buffer between packing sessions (e.g. between
+  // calls to end_pack() and the next begin_pack()).
+
+  INLINE void raw_pack_int8(int value);
+  INLINE void raw_pack_int16(int value);
+  INLINE void raw_pack_int32(int value);
+  INLINE void raw_pack_int64(PN_int64 value);
+  INLINE void raw_pack_uint8(unsigned int value);
+  INLINE void raw_pack_uint16(unsigned int value);
+  INLINE void raw_pack_uint32(unsigned int value);
+  INLINE void raw_pack_uint64(PN_uint64 value);
+  INLINE void raw_pack_float64(double value);
+  INLINE void raw_pack_string(const string &value);
+
+  INLINE int raw_unpack_int8();
+  INLINE int raw_unpack_int16();
+  INLINE int raw_unpack_int32();
+  INLINE PN_int64 raw_unpack_int64();
+  INLINE unsigned int raw_unpack_uint8();
+  INLINE unsigned int raw_unpack_uint16();
+  INLINE unsigned int raw_unpack_uint32();
+  INLINE PN_uint64 raw_unpack_uint64();
+  INLINE double raw_unpack_float64();
+  INLINE string raw_unpack_string();
+
+public:
+  INLINE void raw_unpack_int8(int &value);
+  INLINE void raw_unpack_int16(int &value);
+  INLINE void raw_unpack_int32(int &value);
+  INLINE void raw_unpack_int64(PN_int64 &value);
+  INLINE void raw_unpack_uint8(unsigned int &value);
+  INLINE void raw_unpack_uint16(unsigned int &value);
+  INLINE void raw_unpack_uint32(unsigned int &value);
+  INLINE void raw_unpack_uint64(PN_uint64 &value);
+  INLINE void raw_unpack_float64(double &value);
+  INLINE void raw_unpack_string(string &value);
+
+public:
   static void enquote_string(ostream &out, char quote_mark, const string &str);
   static void output_hex_string(ostream &out, const string &str);
 
@@ -132,8 +175,6 @@ private:
   INLINE void advance();
   void handle_switch(const DCSwitch *dswitch);
   void clear();
-  void set_unpack_data(const char *unpack_data, size_t unpack_length, 
-                       bool owns_unpack_data);
 
 #ifdef HAVE_PYTHON
   PyObject *unpack_class_object(DCClass *dclass);
@@ -150,7 +191,6 @@ private:
   Mode _mode;
 
   DCPackData _pack_data;
-  string _unpack_str;
   const char *_unpack_data;
   size_t _unpack_length;
   bool _owns_unpack_data;

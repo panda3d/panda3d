@@ -59,20 +59,21 @@ PUBLISHED:
   void set_class_def(PyObject *class_def);
   PyObject *get_class_def() const;
 
-  void receive_update(PyObject *distobj, DatagramIterator &iterator) const;
-  void receive_update_broadcast_required(PyObject *distobj, DatagramIterator &iterator) const;
-  void receive_update_all_required(PyObject *distobj, DatagramIterator &iterator) const;
-  void receive_update_other(PyObject *distobj, DatagramIterator &iterator) const;
+  void receive_update(PyObject *distobj, DatagramIterator &di) const;
+  void receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const;
+  void receive_update_all_required(PyObject *distobj, DatagramIterator &di) const;
+  void receive_update_other(PyObject *distobj, DatagramIterator &di) const;
+
   void direct_update(PyObject *distobj, const string &field_name, 
                      const string &value_blob);
   void direct_update(PyObject *distobj, const string &field_name, 
                      const Datagram &datagram);
-  bool pack_required_field(Datagram &dg, PyObject *distobj, 
+  bool pack_required_field(DCPacker &packer, PyObject *distobj, 
                            DCField *field) const;
 
 
-  Datagram client_format_update(const string &field_name, int do_id, 
-                                PyObject *args) const;
+  Datagram client_format_update(const string &field_name,
+                                int do_id, PyObject *args) const;
   Datagram ai_format_update(const string &field_name, int do_id, 
                             int to_id, int from_id, PyObject *args) const;
   Datagram ai_format_generate(PyObject *distobj, int do_id, int zone_id,

@@ -49,6 +49,7 @@ DCPacker() {
 ////////////////////////////////////////////////////////////////////
 DCPacker::
 ~DCPacker() {
+  clear_data();
   clear();
 }
 
@@ -58,6 +59,12 @@ DCPacker::
 //  Description: Begins a packing session.  The parameter is the DC
 //               object that describes the packing format; it may be a
 //               DCParameter or DCField.
+//
+//               Unless you call clear_data() between sessions,
+//               multiple packing sessions will be concatenated
+//               together into the same buffer.  If you wish to add
+//               bytes to the buffer between packing sessions, use
+//               append_data() or get_write_pointer().
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
 begin_pack(const DCPackerInterface *root) {
@@ -66,7 +73,6 @@ begin_pack(const DCPackerInterface *root) {
   _mode = M_pack;
   _pack_error = false;
   _range_error = false;
-  _pack_data.clear();
 
   _root = root;
   _catalog = NULL;
@@ -102,36 +108,63 @@ end_pack() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::begin_unpack
-//       Access: Published
-//  Description: Begins an unpacking session.  Unlike the other
-//               version of begin_unpack(), this version makes a copy
-//               of the data string.
+//     Function: DCPacker::set_unpack_data
+//       Access: Public
+//  Description: Sets up the unpack_data pointer.  You may call this
+//               before calling the version of begin_unpack() that
+//               takes only one parameter.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-begin_unpack(const string &data, const DCPackerInterface *root) {
-  _unpack_str = data;
-  begin_unpack(_unpack_str.data(), _unpack_str.length(), root);
+set_unpack_data(const string &data) {
+  nassertv(_mode == M_idle);
+
+  char *buffer = new char[data.length()];
+  memcpy(buffer, data.data(), data.length());
+  set_unpack_data(buffer, data.length(), true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::set_unpack_data
+//       Access: Public
+//  Description: Sets up the unpack_data pointer.  You may call this
+//               before calling the version of begin_unpack() that
+//               takes only one parameter.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+set_unpack_data(const char *unpack_data, size_t unpack_length, 
+                bool owns_unpack_data) {
+  nassertv(_mode == M_idle);
+
+  if (_owns_unpack_data) {
+    delete[] _unpack_data;
+  }
+  _unpack_data = unpack_data;
+  _unpack_length = unpack_length;
+  _owns_unpack_data = owns_unpack_data;
+  _unpack_p = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::begin_unpack
 //       Access: Public
-//  Description: Begins an unpacking session.  The data pointer is
-//               used directly; the data buffer is not copied.
-//               Therefore, you must not delete or modify the data
-//               pointer until you call end_unpack().
+//  Description: Begins an unpacking session.  You must have
+//               previously called set_unpack_data() to specify a
+//               buffer to unpack.
+//
+//               If there was data left in the buffer after a previous
+//               begin_unpack() .. end_unpack() session, the new
+//               session will resume from the current point.  This
+//               method may be used, therefore, to unpack a sequence
+//               of objects from the same buffer.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-begin_unpack(const char *data, size_t length,
-             const DCPackerInterface *root) {
+begin_unpack(const DCPackerInterface *root) {
   nassertv(_mode == M_idle);
+  nassertv(_unpack_data != NULL);
   
   _mode = M_unpack;
   _pack_error = false;
   _range_error = false;
-  set_unpack_data(data, length, false);
-  _unpack_p = 0;
 
   _root = root;
   _catalog = NULL;
@@ -177,42 +210,32 @@ end_unpack() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::begin_repack
-//       Access: Published
-//  Description: Begins an repacking session.  Unlike the other
-//               version of begin_repack(), this version makes a copy
-//               of the data string.
-////////////////////////////////////////////////////////////////////
-void DCPacker::
-begin_repack(const string &data, const DCPackerInterface *root) {
-  _unpack_str = data;
-  begin_repack(_unpack_str.data(), _unpack_str.length(), root);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::begin_repack
 //       Access: Public
-//  Description: Begins an repacking session.  The data pointer is
-//               used directly; the data buffer is not copied.
-//               Therefore, you must not delete or modify the data
-//               pointer until you call end_repack().
+//  Description: Begins a repacking session.  You must have previously
+//               called set_unpack_data() to specify a buffer to
+//               unpack.
 //
-//               When repacking, unlike in packing or unpacking modes,
-//               you may not walk through the fields from beginning to
-//               end, or even pack two consecutive fields at once.
-//               Instead, you must call seek() for each field you wish
-//               to modify and pack only that one field; then call
-//               seek() again to modify another field.
+//               Unlike begin_pack() or begin_unpack() you may not
+//               concatenate the results of multiple begin_repack()
+//               sessions in one buffer.
+//
+//               Also, unlike in packing or unpacking modes, you may
+//               not walk through the fields from beginning to end, or
+//               even pack two consecutive fields at once.  Instead,
+//               you must call seek() for each field you wish to
+//               modify and pack only that one field; then call seek()
+//               again to modify another field.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-begin_repack(const char *data, size_t length,
-             const DCPackerInterface *root) {
+begin_repack(const DCPackerInterface *root) {
   nassertv(_mode == M_idle);
+  nassertv(_unpack_data != NULL);
+  nassertv(_unpack_p == 0);
   
   _mode = M_repack;
   _pack_error = false;
   _range_error = false;
-  set_unpack_data(data, length, false);
-  _unpack_p = 0;
+  _pack_data.clear();
 
   // In repack mode, we immediately get the catalog, since we know
   // we'll need it.
@@ -1009,24 +1032,6 @@ clear() {
   }
   _catalog = NULL;
   _root = NULL;
-
-  set_unpack_data(NULL, 0, false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::set_unpack_data
-//       Access: Private
-//  Description: Sets up the unpack_data pointer.
-////////////////////////////////////////////////////////////////////
-void DCPacker::
-set_unpack_data(const char *unpack_data, size_t unpack_length, 
-                bool owns_unpack_data) {
-  if (_owns_unpack_data) {
-    delete[] _unpack_data;
-  }
-  _unpack_data = unpack_data;
-  _unpack_length = unpack_length;
-  _owns_unpack_data = owns_unpack_data;
 }
 
 #ifdef HAVE_PYTHON

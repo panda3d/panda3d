@@ -459,7 +459,8 @@ output(ostream &out, bool brief) const {
   if (!brief && _has_default_value) {
     out << " = ";
     DCPacker packer;
-    packer.begin_unpack(_default_value, _param);
+    packer.set_unpack_data(_default_value);
+    packer.begin_unpack(_param);
     packer.unpack_and_format(out);
     packer.end_unpack();
   }

@@ -18,8 +18,27 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::clear_data
+//       Access: Published
+//  Description: Empties the data in the pack buffer and unpack
+//               buffer.  This should be called between calls to
+//               begin_pack(), unless you want to concatenate all of
+//               the pack results together.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+clear_data() {
+  _pack_data.clear();
+
+  if (_owns_unpack_data) {
+    delete[] _unpack_data;
+    _owns_unpack_data = false;
+  }
+  _unpack_data = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::has_nested_fields
-//       Access: Public, Virtual
+//       Access: Published
 //  Description: Returns true if the current field has any nested
 //               fields (and thus expects a push() .. pop()
 //               interface), or false otherwise.  If this returns
@@ -619,6 +638,456 @@ get_length() const {
 INLINE const char *DCPacker::
 get_data() const {
   return _pack_data.get_data();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::append_data
+//       Access: Public
+//  Description: Adds the indicated bytes to the end of the data.
+//               This may only be called between packing sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+append_data(const char *buffer, size_t size) {
+  nassertv(_mode == M_idle);
+  _pack_data.append_data(buffer, size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_write_pointer
+//       Access: Public
+//  Description: Adds the indicated number of bytes to the end of the
+//               data without initializing them, and returns a pointer
+//               to the beginning of the new data.  This may only be
+//               called between packing sessions.
+////////////////////////////////////////////////////////////////////
+INLINE char *DCPacker::
+get_write_pointer(size_t size) {
+  nassertr(_mode == M_idle, NULL);
+  return _pack_data.get_write_pointer(size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_int8
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_int8(int value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_int8(_pack_data.get_write_pointer(1), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_int16
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_int16(int value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_int16(_pack_data.get_write_pointer(2), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_int32
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_int32(int value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_int32(_pack_data.get_write_pointer(4), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_int64
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_int64(PN_int64 value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_int64(_pack_data.get_write_pointer(8), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_uint8
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_uint8(unsigned int value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_uint8(_pack_data.get_write_pointer(1), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_uint16
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_uint16(unsigned int value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_uint16(_pack_data.get_write_pointer(2), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_uint32
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_uint32(unsigned int value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_uint32(_pack_data.get_write_pointer(4), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_uint64
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_uint64(PN_uint64 value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_uint64(_pack_data.get_write_pointer(8), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_float64
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_float64(double value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_float64(_pack_data.get_write_pointer(8), value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_pack_string
+//       Access: Published
+//  Description: Packs the data into the buffer between packing
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_pack_string(const string &value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_uint16(_pack_data.get_write_pointer(2), value.length());
+  _pack_data.append_data(value.data(), value.length());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_int8
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE int DCPacker::
+raw_unpack_int8() {
+  int value = 0;
+  raw_unpack_int8(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_int16
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE int DCPacker::
+raw_unpack_int16() {
+  int value = 0;
+  raw_unpack_int16(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_int32
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE int DCPacker::
+raw_unpack_int32() {
+  int value = 0;
+  raw_unpack_int32(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_int64
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE PN_int64 DCPacker::
+raw_unpack_int64() {
+  PN_int64 value = 0;
+  raw_unpack_int64(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_int8
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_int8(int &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 1 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_int8(_unpack_data + _unpack_p);
+  _unpack_p++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_int16
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_int16(int &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 2 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_int16(_unpack_data + _unpack_p);
+  _unpack_p += 2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_int32
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_int32(int &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 4 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_int32(_unpack_data + _unpack_p);
+  _unpack_p += 4;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_uint8
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int DCPacker::
+raw_unpack_uint8() {
+  unsigned int value = 0;
+  raw_unpack_uint8(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_uint16
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int DCPacker::
+raw_unpack_uint16() {
+  unsigned int value = 0;
+  raw_unpack_uint16(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_uint32
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int DCPacker::
+raw_unpack_uint32() {
+  unsigned int value = 0;
+  raw_unpack_uint32(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_uint64
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE PN_uint64 DCPacker::
+raw_unpack_uint64() {
+  PN_uint64 value = 0;
+  raw_unpack_uint64(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_float64
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE double DCPacker::
+raw_unpack_float64() {
+  double value = 0;
+  raw_unpack_float64(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_string
+//       Access: Published
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE string DCPacker::
+raw_unpack_string() {
+  string value;
+  raw_unpack_string(value);
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_int64
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_int64(PN_int64 &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 8 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_int64(_unpack_data + _unpack_p);
+  _unpack_p += 8;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_uint8
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_uint8(unsigned int &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 1 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_uint8(_unpack_data + _unpack_p);
+  _unpack_p++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_uint16
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_uint16(unsigned int &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 2 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_uint16(_unpack_data + _unpack_p);
+  _unpack_p += 2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_uint32
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_uint32(unsigned int &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 4 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_uint32(_unpack_data + _unpack_p);
+  _unpack_p += 4;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_uint64
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_uint64(PN_uint64 &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 8 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_uint64(_unpack_data + _unpack_p);
+  _unpack_p += 8;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_float64
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_float64(double &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  if (_unpack_p + 8 > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+  value = DCPackerInterface::do_unpack_float64(_unpack_data + _unpack_p);
+  _unpack_p += 8;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::raw_unpack_string
+//       Access: Public
+//  Description: Unpacks the data from the buffer between unpacking
+//               sessions.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+raw_unpack_string(string &value) {
+  nassertv(_mode == M_idle && _unpack_data != NULL);
+  unsigned int string_length = raw_unpack_uint16();
+
+  if (_unpack_p + string_length > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+
+  value.assign(_unpack_data + _unpack_p, string_length);
+  _unpack_p += string_length;
 }
 
 ////////////////////////////////////////////////////////////////////

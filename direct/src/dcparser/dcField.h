@@ -23,6 +23,7 @@
 #include "dcPackerInterface.h"
 #include "dcPython.h"
 
+class DCPacker;
 class DCAtomicField;
 class DCMolecularField;
 class DCParameter;
@@ -54,13 +55,13 @@ PUBLISHED:
   bool validate_ranges(const string &packed_data) const;
 
 #ifdef HAVE_PYTHON
-  bool pack_args(Datagram &datagram, PyObject *sequence) const;
-  PyObject *unpack_args(DatagramIterator &iterator) const;
+  bool pack_args(DCPacker &packer, PyObject *sequence) const;
+  PyObject *unpack_args(DCPacker &packer) const;
 
-  void receive_update(PyObject *distobj, DatagramIterator &iterator) const;
+  void receive_update(DCPacker &packer, PyObject *distobj) const;
 
-  Datagram client_format_update(int do_id, PyObject *args) const;
-  Datagram ai_format_update(int do_id, int to_id, int from_id, PyObject *args) const;
+  void client_format_update(DCPacker &packer, int do_id, PyObject *args) const;
+  void ai_format_update(DCPacker &packer, int do_id, int to_id, int from_id, PyObject *args) const;
 #endif 
 
 public:

@@ -275,16 +275,21 @@ get_class_def() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::receive_update
 //       Access: Published
-//  Description: Extracts the update message out of the datagram and
+//  Description: Extracts the update message out of the packer and
 //               applies it to the indicated object by calling the
 //               appropriate method.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-receive_update(PyObject *distobj, DatagramIterator &iterator) const {
-  int field_id = iterator.get_uint16();
+receive_update(PyObject *distobj, DatagramIterator &di) const {
+  DCPacker packer;
+  packer.set_unpack_data(di.get_remaining_bytes());
+
+  int field_id = packer.raw_unpack_uint16();
   DCField *field = get_inherited_field(field_id);
   nassertv_always(field != NULL);
-  field->receive_update(distobj, iterator);
+  field->receive_update(packer, distobj);
+
+  di.skip_bytes(packer.get_num_unpacked_bytes());
 }
 #endif  // HAVE_PYTHON
 
@@ -298,16 +303,21 @@ receive_update(PyObject *distobj, DatagramIterator &iterator) const {
 //               atomic fields that are marked "broadcast required".
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-receive_update_broadcast_required(PyObject *distobj, DatagramIterator &iterator) const {
+receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const {
+  DCPacker packer;
+  packer.set_unpack_data(di.get_remaining_bytes());
+
   int num_fields = get_num_inherited_fields();
   for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL &&
         atom->is_required() && atom->is_broadcast()) {
-      atom->receive_update(distobj, iterator);
+      atom->receive_update(packer, distobj);
     }
   }
+
+  di.skip_bytes(packer.get_num_unpacked_bytes());
 }
 #endif  // HAVE_PYTHON
 
@@ -321,15 +331,20 @@ receive_update_broadcast_required(PyObject *distobj, DatagramIterator &iterator)
 //               marked "required", whether they are broadcast or not.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-receive_update_all_required(PyObject *distobj, DatagramIterator &iterator) const {
+receive_update_all_required(PyObject *distobj, DatagramIterator &di) const {
+  DCPacker packer;
+  packer.set_unpack_data(di.get_remaining_bytes());
+
   int num_fields = get_num_inherited_fields();
   for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL && atom->is_required()) {
-      atom->receive_update(distobj, iterator);
+      atom->receive_update(packer, distobj);
     }
   }
+
+  di.skip_bytes(packer.get_num_unpacked_bytes());
 }
 #endif  // HAVE_PYTHON
 
@@ -341,10 +356,10 @@ receive_update_all_required(PyObject *distobj, DatagramIterator &iterator) const
 //               fields that are broadcast in one chunk.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-receive_update_other(PyObject *distobj, DatagramIterator &iterator) const {
-  int num_fields = iterator.get_uint16();
+receive_update_other(PyObject *distobj, DatagramIterator &di) const {
+  int num_fields = di.get_uint16();
   for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
-    receive_update(distobj, iterator);
+    receive_update(distobj, di);
   }
 }
 #endif  // HAVE_PYTHON
@@ -359,8 +374,12 @@ receive_update_other(PyObject *distobj, DatagramIterator &iterator) const {
 void DCClass::
 direct_update(PyObject *distobj, const string &field_name, 
               const string &value_blob) {
-  Datagram datagram(value_blob);
-  direct_update(distobj, field_name, datagram);
+  DCField *field = get_field_by_name(field_name);
+  nassertv_always(field != NULL);
+
+  DCPacker packer;
+  packer.set_unpack_data(value_blob);
+  field->receive_update(packer, distobj);
 }
 #endif  // HAVE_PYTHON
 
@@ -374,10 +393,7 @@ direct_update(PyObject *distobj, const string &field_name,
 void DCClass::
 direct_update(PyObject *distobj, const string &field_name, 
               const Datagram &datagram) {
-  DCField *field = get_field_by_name(field_name);
-  nassertv_always(field != NULL);
-  DatagramIterator iterator(datagram);
-  field->receive_update(distobj, iterator);
+  direct_update(distobj, field_name, datagram.get_message());
 }
 #endif  // HAVE_PYTHON
 
@@ -387,7 +403,7 @@ direct_update(PyObject *distobj, const string &field_name,
 //       Access: Published
 //  Description: Looks up the current value of the indicated field by
 //               calling the appropriate get*() function, then packs
-//               that value into the datagram.  This field is
+//               that value into the packer.  This field is
 //               presumably either a required field or a specified
 //               optional field, and we are building up a datagram for
 //               the generate-with-required message.
@@ -395,7 +411,7 @@ direct_update(PyObject *distobj, const string &field_name,
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCClass::
-pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
+pack_required_field(DCPacker &packer, PyObject *distobj, DCField *field) const {
   DCAtomicField *atom = field->as_atomic_field();
   if (atom == (DCAtomicField *)NULL) {
     ostringstream strm;
@@ -461,7 +477,7 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
   }        
   
   // Now pack the arguments into the datagram.
-  bool pack_ok = atom->pack_args(dg, result);
+  bool pack_ok = atom->pack_args(packer, result);
   Py_DECREF(result);
 
   return pack_ok;
@@ -487,7 +503,10 @@ client_format_update(const string &field_name, int do_id,
     nassert_raise(strm.str());
     return Datagram();
   }
-  return field->client_format_update(do_id, args);
+
+  DCPacker packer;
+  field->client_format_update(packer, do_id, args);
+  return Datagram(packer.get_data(), packer.get_length());
 }
 #endif  // HAVE_PYTHON
 
@@ -510,7 +529,10 @@ ai_format_update(const string &field_name, int do_id,
     nassert_raise(strm.str());
     return Datagram();
   }
-  return field->ai_format_update(do_id, to_id, from_id, args);
+
+  DCPacker packer;
+  field->ai_format_update(packer, do_id, to_id, from_id, args);
+  return Datagram(packer.get_data(), packer.get_length());
 }
 #endif  // HAVE_PYTHON
 
@@ -530,22 +552,23 @@ Datagram DCClass::
 ai_format_generate(PyObject *distobj, int do_id, 
                    int zone_id, int district_id, int from_channel_id,
                    PyObject *optional_fields) const {
-  Datagram dg;
-  dg.add_uint32(district_id);
-  dg.add_uint32(from_channel_id);
-  dg.add_uint8('A');
+  DCPacker packer;
+
+  packer.raw_pack_uint32(district_id);
+  packer.raw_pack_uint32(from_channel_id);
+  packer.raw_pack_uint8('A');
 
   bool has_optional_fields = (PyObject_IsTrue(optional_fields) != 0);
 
   if (has_optional_fields) {
-    dg.add_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER);
+    packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER);
   } else {
-    dg.add_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED);
+    packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED);
   }
 
-  dg.add_uint32(zone_id);
-  dg.add_uint16(_number);
-  dg.add_uint32(do_id);
+  packer.raw_pack_uint32(zone_id);
+  packer.raw_pack_uint16(_number);
+  packer.raw_pack_uint32(do_id);
 
   // Specify all of the required fields.
   int num_fields = get_num_inherited_fields();
@@ -553,7 +576,7 @@ ai_format_generate(PyObject *distobj, int do_id,
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL && atom->is_required()) {
-      if (!pack_required_field(dg, distobj, atom)) {
+      if (!pack_required_field(packer, distobj, atom)) {
         return Datagram();
       }
     }
@@ -562,7 +585,7 @@ ai_format_generate(PyObject *distobj, int do_id,
   // Also specify the optional fields.
   if (has_optional_fields) {
     int num_optional_fields = PySequence_Size(optional_fields);
-    dg.add_uint16(num_optional_fields);
+    packer.raw_pack_uint16(num_optional_fields);
 
     for (int i = 0; i < num_optional_fields; i++) {
       PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
@@ -578,13 +601,13 @@ ai_format_generate(PyObject *distobj, int do_id,
         return Datagram();
       }
 
-      if (!pack_required_field(dg, distobj, field)) {
+      if (!pack_required_field(packer, distobj, field)) {
         return Datagram();
       }
     }
   }
 
-  return dg;
+  return Datagram(packer.get_data(), packer.get_length());
 }
 #endif  // HAVE_PYTHON
 
