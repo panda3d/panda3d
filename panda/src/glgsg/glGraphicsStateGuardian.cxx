@@ -3719,6 +3719,68 @@ specify_texture(Texture *tex) {
   report_errors();
 }
 
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: compute_gl_image_size
+//  Description: Calculates how many bytes GL will expect to read for
+//               a texture image, based on the number of pixels and
+//               the GL format and type.  This is only used for
+//               debugging.
+////////////////////////////////////////////////////////////////////
+static int
+compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
+  int num_components = 0;
+  switch (external_format) {
+  case GL_COLOR_INDEX:
+  case GL_STENCIL_INDEX:
+  case GL_DEPTH_COMPONENT:
+  case GL_RED:
+  case GL_GREEN:
+  case GL_BLUE:
+  case GL_ALPHA:
+  case GL_LUMINANCE:
+    num_components = 1;
+    break;
+
+  case GL_LUMINANCE_ALPHA:
+    num_components = 2;
+    break;
+
+  case GL_RGB:
+    num_components = 3;
+    break;
+
+  case GL_RGBA:
+    num_components = 4;
+    break;
+  }
+
+  int pixel_width = 0;
+  switch (type) {
+  case GL_UNSIGNED_BYTE:
+    pixel_width = 1 * num_components;
+    break;
+
+  case GL_UNSIGNED_SHORT:
+    pixel_width = 2 * num_components;
+    break;
+
+#ifdef GL_UNSIGNED_BYTE_3_3_2_EXT
+  case GL_UNSIGNED_BYTE_3_3_2_EXT:
+    nassertr(num_components == 3, 0);
+    pixel_width = 1;
+    break;
+#endif
+
+  case GL_FLOAT:
+    pixel_width = 4 * num_components;
+    break;
+  }
+
+  return xsize * ysize * pixel_width;
+}
+#endif  // NDEBUG
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_texture_immediate
@@ -3740,6 +3802,15 @@ apply_texture_immediate(Texture *tex) {
   GLenum internal_format = get_internal_image_format(pb->get_format());
   GLenum external_format = get_external_image_format(pb->get_format());
   GLenum type = get_image_type(pb->get_image_type());
+
+#ifndef NDEBUG
+  int wanted_size = 
+    compute_gl_image_size(pb->get_xsize(), pb->get_ysize(),
+                          external_format, type);
+  nassertr(wanted_size == pb->_image.size(), false);
+#endif  // NDEBUG
+
+  set_unpack_alignment(1);
 
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
@@ -4390,7 +4461,7 @@ save_mipmap_images(Texture *tex) {
   int ysize = pb->get_ysize();
 
   // Specify byte-alignment for the pixels on output.
-  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  set_pack_alignment(1);
 
   int mipmap_level = 0;
   do {
