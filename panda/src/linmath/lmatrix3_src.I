@@ -786,7 +786,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   // which is what we usually pass in anyway. screws up if you happen to
   // pass in something like (.5,.5,0).  need to add flag parameter so caller
   // can request normalization if needed
-  if((axis_0+axis_1+axis_2) != 1.0) {
+  if((cabs(axis_0)+cabs(axis_1)+cabs(axis_2)) != 1.0) {
 	  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
 	  #ifdef _DEBUG
 	      nassertr(length_sq != 0.0, ident_mat());
