@@ -26,8 +26,19 @@ INLINE CLP(GeomContext)::
 CLP(GeomContext)(Geom *geom) :
   GeomContext(geom)
 {
-  _index = 0;
+  _deprecated_index = 0;
 #ifdef DO_PSTATS
   _num_verts = 0;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomContext)::DisplayList::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CLP(GeomContext)::DisplayList::
+DisplayList() :
+  _index(0)
+{
 }

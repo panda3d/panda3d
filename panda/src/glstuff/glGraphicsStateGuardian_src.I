@@ -31,7 +31,7 @@ draw_display_list(GeomContext *gc) {
   if (gc != (GeomContext *)NULL && _vertex_colors_enabled) {
     _draw_primitive_pcollector.start();
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
+    GLP(CallList)(ggc->_deprecated_index);
 #ifdef DO_PSTATS
     _vertices_display_list_pcollector.add_level(ggc->_num_verts);
 #endif

@@ -25,7 +25,19 @@
 INLINE CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   ColorMunger(gsg, state, 4, qpGeomVertexDataType::NT_uint8),
+  _gsg(gsg),
   _texture(state->get_texture()),
   _tex_gen(state->get_tex_gen())
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomMunger)::get_gsg
+//       Access: Public
+//  Description: Returns a pointer to the GSG that created this
+//               munger.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardian *CLP(GeomMunger)::
+get_gsg() const {
+  return _gsg;
 }

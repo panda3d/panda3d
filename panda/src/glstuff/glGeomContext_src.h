@@ -18,6 +18,12 @@
 
 #include "pandabase.h"
 #include "geomContext.h"
+#include "qpgeomMunger.h"
+#include "qpgeomVertexData.h"
+#include "pointerTo.h"
+#include "pmap.h"
+
+class CLP(GeomMunger);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLGeomContext
@@ -26,11 +32,28 @@
 class EXPCL_GL CLP(GeomContext) : public GeomContext {
 public:
   INLINE CLP(GeomContext)(Geom *geom);
+  virtual ~CLP(GeomContext)();
 
-  // This is the GL display list index.
-  GLuint _index;
+  bool get_display_list(GLuint &index, const CLP(GeomMunger) *munger, 
+                        UpdateSeq modified);
+  void release_display_lists();
 
-  UpdateSeq _modified;
+  void remove_munger(CLP(GeomMunger) *munger);
+
+  // This is used only for the old Geom interface.
+  GLuint _deprecated_index;
+
+  // The different variants of the display list, for storing the
+  // different states the geom might have been rendered in (each using
+  // a different munger).
+  class DisplayList {
+  public:
+    INLINE DisplayList();
+    GLuint _index;
+    UpdateSeq _modified;
+  };
+  typedef pmap<CLP(GeomMunger) *, DisplayList> DisplayLists;
+  DisplayLists _display_lists;
 
   // The number of vertices encoded in the display list, for stats
   // reporting.

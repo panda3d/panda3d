@@ -155,7 +155,10 @@ CacheEntry(const qpGeomMunger *modifier) :
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeom::CacheEntry::
 operator < (const CacheEntry &other) const {
-  return (_modifier < other._modifier);
+  if (_modifier != other._modifier) {
+    return (_modifier->geom_compare_to(*other._modifier) < 0);
+  }
+  return 0;
 }
 
 

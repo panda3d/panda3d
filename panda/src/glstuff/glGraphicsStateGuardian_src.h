@@ -38,6 +38,7 @@
 #include "pset.h"
 #include "pmap.h"
 #include "qpgeomVertexArrayData.h"
+#include "pmutex.h"
 #ifdef HAVE_CGGL
 #include "cgShader.h"
 #endif
@@ -107,6 +108,7 @@ public:
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
+  void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(qpGeomVertexArrayData *data);
   void apply_vertex_buffer(VertexBufferContext *vbc);
@@ -319,7 +321,7 @@ protected:
 
   int _pass_number;
   bool _auto_rescale_normal;
-  CLP(GeomContext) *_geom_display_list;
+  GLuint _geom_display_list;
   int _last_max_stage_index;
   
   int _error_count;
@@ -361,6 +363,10 @@ public:
   GLenum _mirror_clamp;
   GLenum _mirror_edge_clamp;
   GLenum _mirror_border_clamp;
+
+  Mutex _lock;
+  typedef pvector<GLuint> DeletedDisplayLists;
+  DeletedDisplayLists _deleted_display_lists;
 
 public:
   static GraphicsStateGuardian *

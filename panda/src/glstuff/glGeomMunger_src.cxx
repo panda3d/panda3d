@@ -21,6 +21,22 @@
 TypeHandle CLP(GeomMunger)::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomMunger)::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CLP(GeomMunger)::
+~CLP(GeomMunger)() {
+  // We need to remove this pointer from all of the geom contexts that
+  // reference this object.
+  GeomContexts::iterator gci;
+  for (gci = _geom_contexts.begin(); gci != _geom_contexts.end(); ++gci) {
+    (*gci)->remove_munger(this);
+  }
+  _geom_contexts.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GeomMunger)::munge_format_impl
 //       Access: Protected, Virtual
 //  Description: Given a source GeomVertexFormat, converts it if

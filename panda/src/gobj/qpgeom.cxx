@@ -234,7 +234,7 @@ munge_geom(const qpGeomMunger *munger,
     // object, and require a write.
     const CData *cdata = _cycler.read();
     CacheEntry temp_entry(munger);
-    temp_entry.ref();  // big ugly hack to allow a static ReferenceCount object.
+    temp_entry.ref();  // big ugly hack to allow a stack-allocated ReferenceCount object.
     Cache::const_iterator ci = cdata->_cache.find(&temp_entry);
     if (ci != cdata->_cache.end()) {
       _cycler.release_read(cdata);
@@ -302,7 +302,7 @@ output(ostream &out) const {
   for (ti = types.begin(); ti != types.end(); ++ti) {
     out << " " << (*ti);
   }
-  out << " ], " << cdata->_data->get_num_vertices() << " vertices.";
+  out << " ], " << cdata->_data->get_num_vertices() << " vertices";
 }
 
 ////////////////////////////////////////////////////////////////////

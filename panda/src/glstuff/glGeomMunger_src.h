@@ -23,6 +23,8 @@
 #include "texGenAttrib.h"
 #include "renderState.h"
 
+class CLP(GeomContext);
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GLGeomMunger
 // Description : This specialization on GeomMunger finesses vertices
@@ -32,6 +34,9 @@
 class EXPCL_GL CLP(GeomMunger) : public ColorMunger {
 public:
   INLINE CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
+  virtual ~CLP(GeomMunger)();
+
+  INLINE GraphicsStateGuardian *get_gsg() const;
 
 protected:
   virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig);
@@ -39,8 +44,12 @@ protected:
   virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
 
 private:
+  PT(GraphicsStateGuardian) _gsg;
   CPT(TextureAttrib) _texture;
   CPT(TexGenAttrib) _tex_gen;
+
+  typedef pset<CLP(GeomContext) *> GeomContexts;
+  GeomContexts _geom_contexts;
 
 public:
   static TypeHandle get_class_type() {
@@ -58,6 +67,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class CLP(GeomContext);
 };
 
 #include "glGeomMunger_src.I"

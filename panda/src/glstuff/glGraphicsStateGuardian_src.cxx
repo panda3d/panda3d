@@ -58,6 +58,7 @@
 #include "string_utils.h"
 #include "pnmImage.h"
 #include "config_gobj.h"
+#include "mutexHolder.h"
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
 #endif
@@ -952,6 +953,24 @@ begin_frame() {
 void CLP(GraphicsStateGuardian)::
 end_frame() {
   GraphicsStateGuardian::end_frame();
+
+  // Now is a good time to delete any pending display lists.
+  {
+    MutexHolder holder(_lock);
+    if (!_deleted_display_lists.empty()) {
+      DeletedDisplayLists::iterator ddli;
+      for (ddli = _deleted_display_lists.begin();
+           ddli != _deleted_display_lists.end();
+           ++ddli) {
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "releasing index " << (*ddli) << "\n";
+        }
+        GLP(DeleteLists)((*ddli), 1);
+      }
+      _deleted_display_lists.clear();
+    }
+  }
 
   {
 #ifdef DO_PSTATS
@@ -2044,7 +2063,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   }
   nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
 
-  _geom_display_list = NULL;
+  _geom_display_list = 0;
 
   if (geom->get_usage_hint() == qpGeomUsageHint::UH_static && 
       _vertex_data->get_usage_hint() == qpGeomUsageHint::UH_static &&
@@ -2054,15 +2073,16 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     GeomContext *gc = ((qpGeom *)geom)->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
     UpdateSeq modified = max(geom->get_modified(), _vertex_data->get_modified());
-    if (ggc->_modified == modified) {
+    if (ggc->get_display_list(_geom_display_list, gmunger, modified)) {
       // If it hasn't been modified, just play the display list again.
       if (GLCAT.is_spam()) {
         GLCAT.spam()
-          << "calling display list " << ggc->_index << "\n";
+          << "calling display list " << _geom_display_list << "\n";
       }
 
-      GLP(CallList)(ggc->_index);
+      GLP(CallList)(_geom_display_list);
 #ifdef DO_PSTATS
       _vertices_display_list_pcollector.add_level(ggc->_num_verts);
 #endif
@@ -2073,21 +2093,16 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "compiling display list " << ggc->_index << "\n";
-      cerr << "ggc = " << ggc << "," << ggc->_modified
-           << " geom = " << geom << "," << geom->get_modified()
-           << " vertex_data = " << _vertex_data << "," 
-           << _vertex_data->get_modified() << "\n";
+        << "compiling display list " << _geom_display_list << "\n";
     }
 
     // If it has been modified, or this is the first time, then we
     // need to build the display list up.
     if (CLP(compile_and_execute)) {
-      GLP(NewList)(ggc->_index, GL_COMPILE_AND_EXECUTE);
+      GLP(NewList)(_geom_display_list, GL_COMPILE_AND_EXECUTE);
     } else {
-      GLP(NewList)(ggc->_index, GL_COMPILE);
+      GLP(NewList)(_geom_display_list, GL_COMPILE);
     }      
-    ggc->_modified = modified;
 
 #ifdef DO_PSTATS
     // Count up the number of vertices used by primitives in the Geom,
@@ -2097,8 +2112,6 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       ggc->_num_verts += geom->get_primitive(i)->get_num_vertices();
     }
 #endif
-
-    _geom_display_list = ggc;
   }
 
   const qpGeomVertexArrayData *array_data;
@@ -2163,18 +2176,15 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
         GLP(TexCoordPointer)(num_components, get_numeric_type(numeric_type), 
                              stride, client_pointer + start);
         GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
-        cerr << "sending " << *name << "\n";
 
       } else {
         // The vertex data doesn't have texcoords for this stage (even
         // though they're needed).
         GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
-        cerr << "not defined " << *name << "\n";
       }
     } else {
       // No texcoords are needed for this stage.
       GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
-      cerr << "not sending " << *stage->get_texcoord_name() << "\n";
     }
 
     ++stage_index;
@@ -2249,14 +2259,14 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 end_draw_primitives() {
-  if (_geom_display_list != NULL) {
+  if (_geom_display_list != 0) {
     // If we were building a display list, close it now.
     GLP(EndList)();
     if (!CLP(compile_and_execute)) {
-      GLP(CallList)(_geom_display_list->_index);
+      GLP(CallList)(_geom_display_list);
     }      
   }
-  _geom_display_list = NULL;
+  _geom_display_list = 0;
 
   GraphicsStateGuardian::end_draw_primitives();
 }
@@ -2354,19 +2364,6 @@ prepare_geom(Geom *geom) {
   // actual Geom implementation.
   if (geom->is_exact_type(qpGeom::get_class_type())) {
     CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
-    ggc->_index = GLP(GenLists)(1);
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "preparing " << *geom << ", index " << ggc->_index << "\n";
-    }
-    if (ggc->_index == 0) {
-      GLCAT.error()
-        << "Ran out of display list indices.\n";
-      delete ggc;
-      return NULL;
-    }
-
-    report_my_gl_errors();
     return ggc;
 
   } else {
@@ -2389,12 +2386,12 @@ prepare_geom(Geom *geom) {
     }
 
     CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
-    ggc->_index = GLP(GenLists)(1);
+    ggc->_deprecated_index = GLP(GenLists)(1);
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "preparing " << *geom << ", index " << ggc->_index << "\n";
+        << "preparing " << *geom << ", index " << ggc->_deprecated_index << "\n";
     }
-    if (ggc->_index == 0) {
+    if (ggc->_deprecated_index == 0) {
       GLCAT.error()
         << "Ran out of display list indices.\n";
       delete ggc;
@@ -2418,7 +2415,7 @@ prepare_geom(Geom *geom) {
 #endif
 
     // Now define the display list.
-    GLP(NewList)(ggc->_index, GL_COMPILE);
+    GLP(NewList)(ggc->_deprecated_index, GL_COMPILE);
     geom->draw_immediate(this, NULL);
     GLP(EndList)();
 
@@ -2451,16 +2448,24 @@ prepare_geom(Geom *geom) {
 void CLP(GraphicsStateGuardian)::
 release_geom(GeomContext *gc) {
   CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "releasing index " << ggc->_index << "\n";
-  }
-
-  GLP(DeleteLists)(ggc->_index, 1);
+  ggc->release_display_lists();
   report_my_gl_errors();
 
-  ggc->_index = 0;
   delete ggc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::record_deleted_display_list
+//       Access: Public
+//  Description: This is intended to be called only from the
+//               GLGeomContext destructor.  It saves the indicated
+//               display list index in the list to be deleted at the
+//               end of the frame.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+record_deleted_display_list(GLuint index) {
+  MutexHolder holder(_lock);
+  _deleted_display_lists.push_back(index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2577,7 +2582,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
     // No support for buffer objects; always render from client.
     return data->get_data();
   }
-  if (!vertex_buffers || _geom_display_list != NULL ||
+  if (!vertex_buffers || _geom_display_list != 0 ||
       data->get_usage_hint() == qpGeomUsageHint::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
@@ -2708,7 +2713,7 @@ setup_primitive(const qpGeomPrimitive *data) {
     // No support for buffer objects; always render from client.
     return data->get_flat_last_vertices();
   }
-  if (!vertex_buffers || _geom_display_list != NULL ||
+  if (!vertex_buffers || _geom_display_list != 0 ||
       data->get_usage_hint() == qpGeomUsageHint::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
