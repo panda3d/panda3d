@@ -1593,7 +1593,7 @@ ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.h',conf)
 ##########################################################################################
 
 if (sys.platform == "win32"):
-  IPATH=["dtool/src/dtoolutil"]
+  IPATH=["panda/src/configfiles"]
   OPTS=[]
   CompileRES(ipath=IPATH, opts=OPTS, src='pandaIcon.rc', obj='pandaIcon.res')
 
