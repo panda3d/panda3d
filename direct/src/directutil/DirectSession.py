@@ -34,10 +34,6 @@ class DirectSession(PandaObject):
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
-        self.in2DWidget = 0
-
-        self.mouseX = 0
-        self.mouseY = 0
 
         self.pos = VBase3()
         self.hpr = VBase3()
@@ -54,8 +50,7 @@ class DirectSession(PandaObject):
                              ('deselect', self.deselect),
                              ('deselectAll', self.deselectAll),
                              ('highlightAll', self.selected.highlightAll),
-                             ('preRemoveNodePath', self.deselect),
-                             ('in2DWidget', self.in2DWidget)]
+                             ('preRemoveNodePath', self.deselect)]
         self.keyEvents = ['left', 'right', 'up', 'down',
                           'escape', 'space', 'delete',
                           'shift', 'shift-up', 'alt', 'alt-up',
@@ -118,9 +113,6 @@ class DirectSession(PandaObject):
         self.readout.reparentTo(hidden)
         self.readout.setText(' ')
         taskMgr.removeTasksNamed('followSelectedNodePath')
-
-    def in2DWidget(self):
-        self.in2DWidget = 1
 
     def enable(self):
         # Make sure old tasks are shut down
@@ -202,18 +194,10 @@ class DirectSession(PandaObject):
 
     def inputHandler(self, input):
 	# Deal with keyboard and mouse input
-	if ((input != 'mouse1-up') & (input != 'mouse2-up') &
-            (input != 'mouse3-up')):
-            self.in2DWidget = 0
-            
         if input == 'mouse1':
-            messenger.send('handle2DMouse1')
-            if not self.in2DWidget:
-                messenger.send('handleMouse1')
+            messenger.send('handleMouse1')
         elif input == 'mouse1-up':
-            messenger.send('handle2DMouse1Up')
-            if not self.in2DWidget:
-                messenger.send('handleMouse1Up')
+            messenger.send('handleMouse1Up')
         elif input == 'mouse2': 
             messenger.send('handleMouse2')
         elif input == 'mouse2-up':

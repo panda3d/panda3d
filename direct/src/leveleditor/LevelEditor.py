@@ -1,76 +1,69 @@
 from PandaObject import *
 from PieMenu import *
 from OnscreenText import *
-from whrandom import *
 from Tkinter import *
 from DirectGeometry import *
 from SceneGraphExplorer import *
 from tkSimpleDialog import askstring
 from tkFileDialog import *
+from whrandom import *
 import Pmw
-import Dial
-import Floater
 import EntryScale
 import VectorWidgets
 import string
 
 
 class LevelEditor(NodePath, PandaObject):
+    """Class used to create a Toontown LevelEditor object"""
     def __init__(self,direct,parent = None):
         # Initialize superclass
         NodePath.__init__(self)
+        # Become the new node path
         self.assign(hidden.attachNewNode( NamedNode('LevelEditor')))
-
         # Record handle to direct session
         self.direct = direct
 	# Make sure direct is running
 	self.direct.enable()
+        # And only the appropriate handles are showing
         self.direct.widget.disableHandles(['x-ring', 'x-disc',
                                            'y-ring', 'y-disc',
                                            'z-post'])
-	# Create level editor dictionaries
+	# CREATE LEVEL EDITOR DICTIONARIES
 	# This dictionary stores information about new objects added
         # to the level
 	self.levelDictionary = {}
-	# This dictionary stores information about module hooks,
-        # grouped by level
-	self.hooksDictionary = {}
 	# This dictionary stores information about the various
         # pie menus in use
 	self.pieMenuDictionary = {}
-	# This dictionary stores all the different color palettes
-	self.colorPaletteDictionary = {}
 	# This dictionary stores info about current and possible
         # object attributes
 	self.attributeDictionary = {}
 	# This dictionary stores pleasing style combinations
 	self.styleDictionary = {}
+	# This dictionary stores all the different color palettes
+	self.colorPaletteDictionary = {}
         # This dictionary stores pointers to the various maps
         self.mapDictionary = {}
         self.activeMap = None
 
 	# DNAStorage instance for storing level DNA info
 	self.dnaStore = DNAStorage()
-	loadDNAFile(self.dnaStore, 'dna/storage.dna',
-                    CSDefault)
-        self.dnaOutputDir = 'ToontownCentral'
-        self.dnaOutputFile = 'toontown_working.dna'
-
+	loadDNAFile(self.dnaStore, 'dna/storage.dna', CSDefault)
 	# Top level DNA Data Object
-	self.levelObjectsDNA = DNAData('LevelObjects')
-
+	self.groupParentDNA = self.levelObjectsDNA = DNAData('LevelObjects')
 	# Create top level node
-	self.levelObjects = self.attachNewNode(NamedNode('LevelObjects'))
-
+	self.groupParent = self.levelObjects = self.attachNewNode(
+            NamedNode('LevelObjects'))
 	# Create a top level group
-	self.createTopLevelGroup()
-
-	# Set used to iterate over module categories
-	self.categorySet = []
+	#self.createTopLevelGroup()
 
 	self.selectedLevelObject = None
 	self.targetDNAObject = None
 	self.activeMenu = None
+
+        self.dnaOutputDir = 'ToontownCentral'
+        self.dnaOutputFile = 'toontown_working.dna'
+
 
         # Get a handle to the grid
 	self.grid = self.direct.grid
@@ -125,7 +118,6 @@ class LevelEditor(NodePath, PandaObject):
 	self.enable()
 
     def initializeAttributeDictionary(self):
-
 	# Retrieve lists of available attributes from DNAStorage object
 	# Cornices
 	attributeList = self.getCatalogCodesSuffix('cornice', '_ur')
@@ -174,9 +166,6 @@ class LevelEditor(NodePath, PandaObject):
 
     def setBuildingHeight(self, height):
 	self.attributeDictionary['buildingHeight'] = height
-
-    def getCategorySet(self):
-	return self.categorySet
 
     def getCorniceColor(self):
 	return self.attributeDictionary['corniceColor']
@@ -229,9 +218,6 @@ class LevelEditor(NodePath, PandaObject):
         if parentDNA:
             self.groupParent = nodePath
             self.groupParentDNA = parentDNA
-
-    def getHooksDictionary(self):
-	return self.hooksDictionary
 
     def getLevelDictionary(self):
 	return self.levelDictionary
@@ -363,9 +349,25 @@ class LevelEditor(NodePath, PandaObject):
     def getWindowTextures(self):
 	return self.attributeDictionary['windowTextures']
 
-    def destroy(self):
-	self.disable()
-	self.removeNode()
+    def enable(self):
+        self.reparentTo(render)
+	self.show()
+        self.accept('selectedNodePath', self.selectDNARoot)
+	self.accept('preRemoveNodePath', self.preRemoveNodePath)
+	self.accept('toggleMapViz', self.toggleMapViz)
+	self.accept('reparentNodePath', self.reparentNodePath)
+	self.accept('createNewLevelGroup', self.createNewLevelGroup)
+	self.accept('setNodePathName', self.setNodePathName)
+        self.accept('manipulateObjectCleanup', self.updateSelectedPose)
+	self.accept('SGEFlashNodePath', self.flashNodePath)
+        self.accept('SGESelectNodePath', self.selectNodePath)
+        self.accept('SGEIsolateNodePath', self.isolateNodePath)
+        self.accept('SGEToggle VizNodePath', self.toggleNodePathViz)
+        self.accept('SGESet ParentNodePath', self.setGroupParent)
+        self.accept('SGEAdd GroupNodePath', self.addGroupToSelected)
+	self.accept('showAll', self.showAll)
+	self.accept('p',self.plantSelectedNodePath)
+	self.enableManipulation()
 
     def disable(self):
 	self.direct.deselectAll()
@@ -387,6 +389,30 @@ class LevelEditor(NodePath, PandaObject):
 	self.ignore('showAll')
 	self.ignore('p')
 	self.disableManipulation()
+
+    def destroy(self):
+	self.disable()
+	self.removeNode()
+
+    def resetLevel(self):
+	# Clear out all objects
+	self.direct.deselectAll()
+	children = self.levelObjects.getChildren()
+        for i in range(children.getNumPaths()):
+            path = children.getPath(i)
+            path.reparentTo(hidden)
+            path.remove()
+
+	# Create fresh DNA Object
+	self.levelObjectsDNA = DNAData('LevelObjects')
+
+	# Create new levelDictionary
+	self.levelDictionary = {}
+
+	# Create root node
+	#self.createTopLevelGroup()
+
+	self.grid.setPosHpr(0,0,0,0,0,0)
 
     def disableManipulation(self):
 	# Disable handling of mouse events
@@ -461,26 +487,6 @@ class LevelEditor(NodePath, PandaObject):
             self.activeMap.reparentTo(hidden)
         self.activeMap = self.mapDictionary[mapName]
         self.activeMap.reparentTo(self.levelMap)
-
-    def enable(self):
-        self.reparentTo(render)
-	self.show()
-        self.accept('selectedNodePath', self.selectDNARoot)
-	self.accept('preRemoveNodePath', self.preRemoveNodePath)
-	self.accept('toggleMapViz', self.toggleMapViz)
-	self.accept('reparentNodePath', self.reparentNodePath)
-	self.accept('createNewLevelGroup', self.createNewLevelGroup)
-	self.accept('setNodePathName', self.setNodePathName)
-        self.accept('manipulateObjectCleanup', self.updateSelectedPose)
-	self.accept('SGEFlashNodePath', self.flashNodePath)
-        self.accept('SGESelectNodePath', self.selectNodePath)
-        self.accept('SGEIsolateNodePath', self.isolateNodePath)
-        self.accept('SGEToggle VizNodePath', self.toggleNodePathViz)
-        self.accept('SGESet ParentNodePath', self.setGroupParent)
-        self.accept('SGEAdd GroupNodePath', self.addGroupToSelected)
-	self.accept('showAll', self.showAll)
-	self.accept('p',self.plantSelectedNodePath)
-	self.enableManipulation()
 
     def enableManipulation(self):
 	# Enable interactive placement of a nodePath
@@ -1594,178 +1600,6 @@ class LevelEditor(NodePath, PandaObject):
 	self.styleDictionary = (
             self.attributeDictionary['toontownCentralStyleDictionary'])
 
-    def initializeTheBurrrghStyleDictionary(self):
-	dictionary = {}
-	styleCount = 0
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_blank_ur',
-                      Vec4(0.417323, 0.15711, 0.15711, 1.0),
-                      'window_sm_square_ur',
-                      Vec4(0.874016, 0.654655, 0.329041, 1.0),
-                      'cornice_marble_ur',
-                      Vec4(0.76378, 0.572086, 0.287541, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.874016, 0.610097, 0.610097, 1.0),
-                      'window_sm_shuttered_ur',
-                      Vec4(0.874016, 0.548402, 0.329041, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
-                      'cornice_horizontal_ur',
-                      Vec4(1.0, 0.501961, 0.376471, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
-                      'cornice_shingles_ur',
-                      Vec4(0.732283, 0.511163, 0.511163, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_blank_ur',
-                      Vec4(0.384314, 0.305635, 0.187618, 1.0),
-                      'window_sm_round_ur',
-                      Vec4(0.779528, 0.489115, 0.293469, 1.0),
-                      'cornice_dental_ur',
-                      Vec4(0.574803, 0.38771, 0.340374, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_bricks_dr',
-                      Vec4(0.629921, 0.471823, 0.237147, 1.0),
-                      'window_sm_shuttered_ur',
-                      Vec4(1.0, 0.627451, 0.376471, 1.0),
-                      None,
-                      None)
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0, 0.532747, 0.317894, 1.0),
-                      'cornice_shingles_ur',
-                      Vec4(0.944882, 0.715146, 0.659565, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_lg_brick_ur',
-                      Vec4(0.166003, 0.440945, 0.276671, 1.0),
-                      'window_md_curtains_ur',
-                      Vec4(0.17258, 0.637795, 0.450208, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0, 0.532747, 0.317894, 1.0),
-                      None,
-                      None)
-
-	# Store this dictionary in the self.attributeDictionary
-	self.attributeDictionary['theBurrrghStyleDictionary'] = dictionary
-
-    def initializeMinniesMelodyLandStyleDictionary(self):
-	dictionary = {}
-	styleCount = 0
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_blank_ur',
-                      Vec4(0.417323, 0.15711, 0.15711, 1.0),
-                      'window_sm_square_ur',
-                      Vec4(0.874016, 0.654655, 0.329041, 1.0),
-                      'cornice_marble_ur',
-                      Vec4(0.76378, 0.572086, 0.287541, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.874016, 0.610097, 0.610097, 1.0),
-                      'window_sm_shuttered_ur',
-                      Vec4(0.874016, 0.548402, 0.329041, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
-                      'cornice_horizontal_ur',
-                      Vec4(1.0, 0.501961, 0.376471, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
-                      'cornice_shingles_ur',
-                      Vec4(0.732283, 0.511163, 0.511163, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_blank_ur',
-                      Vec4(0.384314, 0.305635, 0.187618, 1.0),
-                      'window_sm_round_ur',
-                      Vec4(0.779528, 0.489115, 0.293469, 1.0),
-                      'cornice_dental_ur',
-                      Vec4(0.574803, 0.38771, 0.340374, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_bricks_dr',
-                      Vec4(0.629921, 0.471823, 0.237147, 1.0),
-                      'window_sm_shuttered_ur',
-                      Vec4(1.0, 0.627451, 0.376471, 1.0),
-                      None,
-                      None)
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0, 0.532747, 0.317894, 1.0),
-                      'cornice_shingles_ur',
-                      Vec4(0.944882, 0.715146, 0.659565, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_lg_brick_ur',
-                      Vec4(0.166003, 0.440945, 0.276671, 1.0),
-                      'window_md_curtains_ur',
-                      Vec4(0.17258, 0.637795, 0.450208, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0, 0.532747, 0.317894, 1.0),
-                      None,
-                      None)
-
-	# Store this dictionary in the self.attributeDictionary
-	self.attributeDictionary['minniesMelodyLandStyleDictionary'] = dictionary
-
     def addDNAGroup(self,dnaGroup):
 	# Add hook to allow placement of a new dna Group of this type
         # by simply hitting the space bar
@@ -2294,8 +2128,7 @@ class LevelEditor(NodePath, PandaObject):
         # Reset DNA VIS Groups
         self.dnaStore.resetDNAVisGroups()
 	# Now load in new file
-	self.groupParent = loadDNAFile(self.dnaStore, filename,
-                                       CSDefault)
+	self.groupParent = loadDNAFile(self.dnaStore, filename, CSDefault)
  	# Make sure the topmost level object gets put under level objects dna
  	self.groupParentDNA = self.dnaStore.findDNAGroup(
             self.groupParent.getBottomArc())
@@ -2935,26 +2768,6 @@ class LevelEditor(NodePath, PandaObject):
                 # Update props placement to reflect current mouse position
                 dnaGroup.setPos(self.direct.selected.last.getPos())
 
-    def resetLevel(self):
-	# Clear out all objects
-	self.direct.deselectAll()
-	children = self.levelObjects.getChildren()
-        for i in range(children.getNumPaths()):
-            path = children.getPath(i)
-            path.reparentTo(hidden)
-            path.remove()
-
-	# Create fresh DNA Object
-	self.levelObjectsDNA = DNAData('LevelObjects')
-
-	# Create new levelDictionary
-	self.levelDictionary = {}
-
-	# Create root node
-	self.createTopLevelGroup()
-
-	self.grid.setPosHpr(0,0,0,0,0,0)
-
     def selectNodePath(self, aNodePath):
         # Select new node path
 	self.direct.select(aNodePath)
@@ -3322,8 +3135,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.levelEditor.addLandmark(self.landmarkType)
 
     def setPropType(self,name):
-        import pdb
-        pdb.set_trace()
         self.propType = 'prop_' + name
         
     def addProp(self):
@@ -3360,7 +3171,9 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             if ((objClass.eq(DNAWall.getClassType())) |
                 (objClass.eq(DNAWindows.getClassType())) |
                 (objClass.eq(DNADoor.getClassType())) |
-                (objClass.eq(DNACornice.getClassType()))):
+                (objClass.eq(DNACornice.getClassType())) |
+                (objClass.eq(DNAProp.getClassType()))
+                ):
                 self.levelEditor.updateObjColor(
                     self.levelEditor.targetDNAObject,
                     VBase4((color[0]/255.0),
