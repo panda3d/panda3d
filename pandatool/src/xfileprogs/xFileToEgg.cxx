@@ -37,8 +37,8 @@ XFileToEgg() :
 
   set_program_description
     ("This program converts DirectX retained-mode (.x) files to egg.  This "
-     "is a simple file format that only supports basic polygons, materials, "
-     "and textures, in a hierarchy.");
+     "is a simple converter that only supports basic polygons, materials, "
+     "and textures, in a hierarchy; animation is not supported at this time.");
 
   redescribe_option
     ("cs",
