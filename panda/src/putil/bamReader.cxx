@@ -739,9 +739,9 @@ p_read_object() {
       }
     }
 
-    //Just some sanity checks
+    // Just some sanity checks
     if (object == (TypedWritable *)NULL) {
-      bam_cat.error()
+      bam_cat.info()
         << "Unable to create an object of type " << type << endl;
 
     } else if (object->get_type() != type) {
