@@ -22,7 +22,9 @@
 #ifndef HAVE_GETOPT
 #include "gnu_getopt.h"
 #else
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 #endif
 
 #include <stdio.h>
@@ -36,20 +38,102 @@
 #include <time.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <assert.h>
 
 char **params = NULL;
 char *logfile_name = NULL;
 int logfile_fd = -1;
 int stop_on_terminate = 0;
+char *respawn_script = NULL;
+int respawn_count_time = 0;
+
+/* We shouldn't respawn more than (spam_respawn_count - 1) times over
+   spam_respawn_time seconds. */
+int spam_respawn_count = 5;
+int spam_respawn_time = 30;
 
 pid_t child_pid = 0;
 
 #define TIME_BUFFER_SIZE 128
 
-/* We shouldn't respawn more than (COUNT_RESPAWN - 1) times over
-   COUNT_RESPAWN_TIME seconds. */
-#define COUNT_RESPAWN 5
-#define COUNT_RESPAWN_TIME 30
+/* Keep track of the frequency with which we respawn, so we can report
+   this to our respawn script. */
+typedef struct respawn_record_struct {
+  time_t _time;
+  struct respawn_record_struct *_next;
+} respawn_record;
+
+respawn_record *respawns = NULL;
+
+int
+record_respawn(time_t now) {
+  /* Records the respawning event in the respawn_record, and returns
+     the number of respawns in the last respawn_count_time
+     interval. */
+  respawn_record *rec;
+  respawn_record *next;
+  int count;
+
+  if (respawn_count_time <= 0) {
+    /* We're not tracking respawns if respawn_count_time is 0. */
+    return 0;
+  }
+
+  rec = (respawn_record *)malloc(sizeof(respawn_record));
+  rec->_time = now;
+  rec->_next = respawns;
+  respawns = rec;
+
+  /* Now walk through the rest of the list and count up the number of
+     respawn events until we reach a record more than
+     respawn_count_time seconds old. */
+  count = 0;
+  while (rec->_next != NULL &&
+         (now - rec->_time) <= respawn_count_time) {
+    rec = rec->_next;
+    count++;
+  }
+
+  /* The remaining respawn records get removed. */
+  next = rec->_next;
+  rec->_next = NULL;
+  while (next != NULL) {
+    rec = next;
+    next = rec->_next;
+    free(rec);
+  }
+
+  return count;
+}
+
+void
+invoke_respawn_script(time_t now) {
+  char buffer[32];
+  char *new_command;
+  int new_command_length;
+
+  /* The process is about to be respawned; run the script that we were
+     given on the command line. */
+  if (respawn_count_time <= 0) {
+    /* We're not counting respawn times, so just run the script
+       directly. */
+    system(respawn_script);
+
+  } else {
+    /* We are counting respawn times, so append that information as a
+       parameter to the command. */
+    sprintf(buffer, " %d", record_respawn(now));
+    new_command_length = strlen(respawn_script) + strlen(buffer);
+    new_command = (char *)malloc(new_command_length + 1);
+    strcpy(new_command, respawn_script);
+    strcat(new_command, buffer);
+    assert(strlen(new_command) == new_command_length);
+
+    system(new_command);
+
+    free(new_command);
+  }
+}
 
 void
 exec_process() {
@@ -148,9 +232,13 @@ void
 do_autorestart() {
   char time_buffer[TIME_BUFFER_SIZE];
   time_t now;
-  time_t count_respawn[COUNT_RESPAWN];
-  int cri, num_cri;
+  time_t *spam_respawn = NULL;
+  int sri, num_sri;
   struct sigaction sa;
+
+  if (spam_respawn_count > 1) {
+    spam_respawn = (time_t *)malloc(sizeof(time_t) * spam_respawn_count);
+  }
 
   /* Make our process its own process group. */
   setpgid(0, 0);
@@ -168,10 +256,6 @@ do_autorestart() {
     dup2(logfile_fd, STDOUT_FILENO);
     dup2(logfile_fd, STDERR_FILENO);
     close(logfile_fd);
-  } else {
-    /* Otherwise, close them. */
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
   }
 
   /* Make sure stdin is closed. */
@@ -181,23 +265,31 @@ do_autorestart() {
   strftime(time_buffer, TIME_BUFFER_SIZE, "%T on %A, %d %b %Y", localtime(&now));
   fprintf(stderr, "autorestart begun at %s.\n", time_buffer);
 
-  cri = 1;
-  num_cri = 1;
-  count_respawn[1] = now;
+  sri = 1;
+  num_sri = 1;
+  if (spam_respawn_count > 1) {
+    spam_respawn[1] = now;
+  }
   
   while (spawn_process()) {
     now = time(NULL);
 
+    if (respawn_script != NULL) {
+      invoke_respawn_script(now);
+    }
+
     /* Make sure we're not respawning too fast. */
-    cri = (cri + 1) % COUNT_RESPAWN;
-    count_respawn[cri] = now;
-    if (num_cri < COUNT_RESPAWN) {
-      num_cri++;
-    } else {
-      time_t last = count_respawn[(cri + 1) % COUNT_RESPAWN];
-      if (now - last < COUNT_RESPAWN_TIME) {
-        fprintf(stderr, "respawning too fast, giving up.\n");
-        break;
+    if (spam_respawn_count > 1) {
+      sri = (sri + 1) % spam_respawn_count;
+      spam_respawn[sri] = now;
+      if (num_sri < spam_respawn_count) {
+        num_sri++;
+      } else {
+        time_t last = spam_respawn[(sri + 1) % spam_respawn_count];
+        if (now - last < spam_respawn_time) {
+          fprintf(stderr, "respawning too fast, giving up.\n");
+          break;
+        }
       }
     }
       
@@ -266,7 +358,8 @@ void
 usage() {
   fprintf(stderr,
           "\n"
-          "autorestart [-l logfilename] program [args . . . ]\n\n");
+          "autorestart [opts] program [args . . . ]\n"
+          "autorestart -h\n\n");
 }
 
 void
@@ -282,7 +375,58 @@ help() {
 
           "If the program is terminated via a TERM or KILL signal (e.g. via\n"
           "kill [pid] or kill -9 [pid]), it is assumed the user meant for the\n"
-          "process to stop, and it is not restarted.\n\n");
+          "process to stop, and it is not restarted.\n\n"
+
+          "Options:\n\n"
+
+          "  -l logfilename\n"
+          "     Route stdout and stderr from the child process into the indicated\n"
+          "     log file.\n\n"
+
+          "  -t\n"
+          "     Stop on terminate: don't restart if the child process exits\n"
+          "     normally or is killed with a SIGTERM.  With this flag, the\n"
+          "     child process will be restarted only if it exits with a\n"
+          "     non-zero exit status, or if it is killed with a signal other\n"
+          "     than SIGTERM.  Without this flag, the default behavior is to\n"
+          "     restarted the child process if it exits for any reason.\n\n"
+
+          "  -r count,secs\n"
+          "     Give up if the process respawns 'count' times within 'secs'\n"
+          "     seconds.  This is designed to prevent respawning from using\n"
+          "     too many system resources if something is wrong with the child\n"
+          "     process.  The default value is %d,%d.  Use -r 0,0 to disable\n"
+          "     this feature.\n\n"
+
+          "  -s \"command\"\n"
+          "     Run the indicated command or script each time the process is\n"
+          "     respawned, using the system() call.  This may be useful, for\n"
+          "     instance, to notify an operator via email each time a respawn\n"
+          "     occurs.  If -c is also specified, an additional parameter will\n"
+          "     be appended to the command, indicating the number of times the\n"
+          "     respawn has occurred in the given time interval.\n\n"
+
+          "  -c secs\n"
+          "     Specifies the number of seconds over which to count respawn events\n"
+          "     for the purposes of passing an argument to the script named with\n"
+          "     -s.\n\n"
+
+          "  -h\n"
+          "     Output this help information.\n\n",
+          spam_respawn_count, spam_respawn_time);
+}
+
+void
+parse_int_pair(char *param, int *a, int *b) {
+  char *comma = strchr(param, ',');
+  if (comma == NULL) {
+    fprintf(stderr, "Comma required: %s\n", param);
+    exit(1);
+  }
+
+  *comma = '\0';
+  *a = atoi(param);
+  *b = atoi(comma + 1);
 }
 
 int 
@@ -290,7 +434,7 @@ main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
   /* The initial '+' instructs GNU getopt not to reorder switches. */
-  static const char *optflags = "+l:th";
+  static const char *optflags = "+l:tr:s:c:h";
   int flag;
 
   flag = getopt(argc, argv, optflags);
@@ -302,6 +446,18 @@ main(int argc, char *argv[]) {
 
     case 't':
       stop_on_terminate = 1;
+      break;
+
+    case 'r':
+      parse_int_pair(optarg, &spam_respawn_count, &spam_respawn_time);
+      break;
+
+    case 's':
+      respawn_script = optarg;
+      break;
+
+    case 'c':
+      respawn_count_time = atoi(optarg);
       break;
 
     case 'h':
