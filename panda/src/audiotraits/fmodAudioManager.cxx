@@ -142,7 +142,7 @@ get_sound(const string &file_name) {
 
   if(!is_valid()) {
      audio_debug("invalid FmodAudioManager returning NullSound");
-     return new NullAudioSound();
+     return get_null_sound();
   }
 
   assert(is_valid());
@@ -170,7 +170,7 @@ get_sound(const string &file_name) {
     new_entry.data = load(path, new_entry.size);
     if (!new_entry.data) {
       audio_error("FmodAudioManager::load failed.");
-      return 0;
+      return get_null_sound();
     }
     new_entry.refcount = 0;
     new_entry.stale = true;
@@ -211,7 +211,7 @@ get_sound(const string &file_name) {
   }
   if (stream == NULL) {
     audio_error("FmodAudioManager::get_sound failed.");
-    return 0;
+    return get_null_sound();
   }
   inc_refcount(path);
   most_recently_used(path);
