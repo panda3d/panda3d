@@ -10,15 +10,17 @@
     config_parametrics.cxx config_parametrics.h \
     curve.cxx curve.h \
     curveDrawer.cxx curveDrawer.h \
-    nurbsCurve.cxx nurbsCurve.h \
-    nurbsCurveDrawer.cxx nurbsCurveDrawer.h \
+    curveFitter.cxx curveFitter.h \
     hermiteCurve.cxx hermiteCurve.h \
-    curveFitter.cxx curveFitter.h
+    nurbsCurve.cxx nurbsCurve.h \
+    nurbsCurveDrawer.cxx nurbsCurveDrawer.h
 
   #define INSTALL_HEADERS \
     config_parametrics.h \
     curve.h \
     curveDrawer.h \
+    curveFitter.h \
+    hermiteCurve.h \
     nurbsCurve.h \
     nurbsCurveDrawer.h
 
