@@ -352,7 +352,7 @@ class ShowBase:
                 sfx.play()
 
     def playMusic(self, music, looping = 0, interupt = 1, volume = None,
-                  restart = None, time = 0.):
+                  time = 0.0):
         if (music and base.wantMusic):
             if volume != None:
                 music.setVolume(volume)
@@ -360,18 +360,14 @@ class ShowBase:
                 music.setTime(time)
                 music.setLoop(looping)
                 music.play()
-            if restart:
-                restart[0].accept("restart-music", restart[1])
 
     def stopSfx(self, sfx):
         if (sfx and base.wantSfx):
             sfx.stop()
 
-    def stopMusic(self, music, restart = None):
+    def stopMusic(self, music):
         if (music and base.wantMusic):
             music.stop()
-            if restart:
-                restart[0].ignore("restart-music")
 
     def dataloop(self, state):
         # traverse the data graph.  This reads all the control
