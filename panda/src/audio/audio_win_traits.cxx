@@ -986,6 +986,8 @@ void WinMusicPlayer::stop_sound(AudioTraits::SoundClass* music,
     HRESULT result = _perf->Stop(_msc, 0, 0, 0);
     if (result != S_OK)
       audio_cat->error() << "music stop failed" << endl;
+    else if (audio_cat->is_debug())
+      audio_cat->debug() << "music stop succeeded" << endl;
   }
 }
 
