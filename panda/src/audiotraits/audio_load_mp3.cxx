@@ -10,6 +10,8 @@
 
 Configure(audio_load_mp3);
 
+#include <math.h>
+
 extern "C" {
 #include <mpg123.h>
 }
