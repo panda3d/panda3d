@@ -9,6 +9,15 @@ class Entity:
         ('comment', ''),
         )
 
+
+class ActiveCell(Entity):
+    type = 'activeCell'
+    attribs = (
+        ('row', 0),
+        ('col', 0),
+        ('gridId', None)
+        )
+    
 class LevelMgr(Entity):
     type = 'levelMgr'
     attribs = (
