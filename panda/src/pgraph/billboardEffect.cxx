@@ -110,6 +110,11 @@ do_billboard(const TransformState *net_transform,
     camera_transform = _look_at.get_net_transform();
   }
 
+  if (net_transform->is_singular()) {
+    // If we're under a singular transform, never mind.
+    return TransformState::make_identity();
+  }
+
   CPT(TransformState) rel_transform =
     net_transform->invert_compose(camera_transform);
   const LMatrix4f &rel_mat = rel_transform->get_mat();
