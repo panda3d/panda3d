@@ -72,11 +72,12 @@ class Particles(ParticleSystem.ParticleSystem):
         self.clearAngularForces()
         self.setRenderParent(self.node)
         self.node.removePhysical(self)
-        self.nodePath.detachNode()
-        self.node = None
-        self.factory = None
-        self.renderer = None
-        self.emitter = None
+        self.nodePath.removeNode()
+        del self.node
+        del self.nodePath
+        del self.factory
+        del self.renderer
+        del self.emitter
 
     def enable(self):
         """enable()"""

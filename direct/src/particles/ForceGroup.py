@@ -27,10 +27,11 @@ class ForceGroup(DirectObject):
         self.particleEffect = None
 
     def cleanup(self):
-        for f in self.asList():
-            self.removeForce(f)
-        self.nodePath.detachNode()
-        self.particleEffect = None
+        self.node.clear()
+        self.nodePath.removeNode()
+        del self.nodePath
+        del self.node
+        del self.particleEffect
 
     def enable(self):
         """enable(self)
@@ -78,9 +79,7 @@ class ForceGroup(DirectObject):
     def __getitem__(self, index):
         """__getItem__(self, index)"""
         numForces = self.node.getNumForces()
-        if numForces == 0:
-            raise IndexError
-        if ((index < 0) | (index >= self.node.getNumForces())):
+        if ((index < 0) or (index >= numForces)):
             raise IndexError
         return self.node.getForce(index)
 

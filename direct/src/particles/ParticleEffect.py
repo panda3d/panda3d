@@ -34,12 +34,15 @@ class ParticleEffect(NodePath):
             self.reparentTo(parent)
 
     def cleanup(self):
-        self.detachNode()
+        self.removeNode()
         self.disable()
         for f in self.forceGroupDict.values():
             f.cleanup()
         for p in self.particlesDict.values():
             p.cleanup()
+        del self.renderParent
+        del self.particlesDict
+        del self.forceGroupDict
 
     def reset(self):
         self.removeAllForces()
@@ -83,8 +86,8 @@ class ParticleEffect(NodePath):
         self.forceGroupDict[forceGroup.getName()] = forceGroup
 
         # Associate the force group with all particles
-        for f in forceGroup.asList():
-            self.addForce(f)
+        for i in range(len(forceGroup)):
+            self.addForce(forceGroup[i])
 
     def addForce(self, force):
         """addForce(force)"""
@@ -94,10 +97,10 @@ class ParticleEffect(NodePath):
     def removeForceGroup(self, forceGroup):
         """removeForceGroup(forceGroup)"""
         # Remove forces from all particles
-        for f in forceGroup.asList():
-            self.removeForce(f)
+        for i in range(len(forceGroup)):
+            self.removeForce(forceGroup[i])
 
-        forceGroup.nodePath.detachNode()
+        forceGroup.nodePath.removeNode()
         forceGroup.particleEffect = None
         del self.forceGroupDict[forceGroup.getName()]
 
@@ -117,8 +120,8 @@ class ParticleEffect(NodePath):
 
         # Associate all forces in all force groups with the particles
         for fg in self.forceGroupDict.values():
-            for f in fg.asList():
-                particles.addForce(f)
+            for i in range(len(fg)):
+                particles.addForce(fg[i])
 
     def removeParticles(self, particles):
         """removeParticles(particles)"""
