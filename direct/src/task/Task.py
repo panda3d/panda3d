@@ -531,15 +531,16 @@ class TaskManager:
             return 0
 
     def __removeTasksNamed(self, taskName):
-        if not self.nameDict.has_key(taskName):
+        tasks = self.nameDict.get(taskName)
+        if not tasks:
             return 0
         # TaskManager.notify.debug('__removeTasksNamed: removing tasks named: %s' % (taskName))
-        for task in self.nameDict[taskName]:
+        for task in tasks:
             # Flag for removal
             task.remove()
             task.finishTask(self.fVerbose)
         # Record the number of tasks removed
-        num = len(self.nameDict[taskName])
+        num = len(tasks)
         # Blow away the nameDict entry completely
         del self.nameDict[taskName]
         return num
