@@ -41,6 +41,8 @@ public:
   Texture *_tex;            // ptr to parent, primarily for access to namestr
   IDirect3DTexture8 *CreateTexture(DXScreenData &scrn);
 
+  D3DFORMAT _PixBufD3DFmt;    // the 'D3DFORMAT' the Panda PixelBuffer fmt corresponds to
+
   bool _bHasMipMaps;
 
 #ifdef DO_CUSTOM_CONVERSIONS
@@ -49,7 +51,7 @@ public:
 
   // must be public since called from global callback fns
   void DeleteTexture(void);
-  HRESULT FillDDSurfTexturePixels(DWORD TargetWidth,DWORD TargetHeight,D3DFORMAT PixBufD3DFmt);
+  HRESULT FillDDSurfTexturePixels(void);
 
 protected:
     unsigned int get_bits_per_pixel(PixelBuffer::Format format, int *alphbits);

@@ -32,9 +32,6 @@
 #include <pStatTimer.h>
 #endif
 
-#define D3D_OVERLOADS
-//#define  INITGUID  dont want this if linking w/dxguid.lib
-#include <d3d8.h>
 #include <ddraw.h>
 
 #include <map>
@@ -58,8 +55,6 @@ wdxGraphicsWindow* global_wdxwinptr = NULL;  // need this for temporary windproc
 
 extern bool dx_full_screen_antialiasing;  // defined in dxgsg_config.cxx
 
-#define MOUSE_ENTERED 0
-#define MOUSE_EXITED 1
 #define PAUSED_TIMER_ID  7   // completely arbitrary choice
 #define DXREADY ((_dxgsg!=NULL)&&(_dxgsg->GetDXReady()))
 
@@ -140,7 +135,8 @@ void PrintErrorMessage(DWORD msgID) {
 }
 
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
-#ifdef _DEBUG
+//#ifdef _DEBUG
+#if 0
 extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *pMsg) {
     DWORD dwTotal,dwFree;
     HRESULT hr;
@@ -176,17 +172,6 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 }
 #endif
 
-#define MAX_DX_ZBUF_FMTS 20
-static int cNumZBufFmts;
-
-HRESULT CALLBACK EnumZBufFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param )  {
-    DDPIXELFORMAT *ZBufFmtsArr = (DDPIXELFORMAT *) param;
-    assert(cNumZBufFmts < MAX_DX_ZBUF_FMTS);
-    memcpy( &(ZBufFmtsArr[cNumZBufFmts]), pddpf, sizeof(DDPIXELFORMAT) );
-    cNumZBufFmts++;
-    return DDENUMRET_OK;
-}
-
 // fn exists so AtExitFn can call it without refcntr blowing up since its !=0
 void wdxGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
   if(wdxdisplay_cat.is_spam())
@@ -207,16 +192,14 @@ void wdxGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
 //    _hdc = NULL;
   }
 */  
-/*
+
   if((scrn._hOldForegroundWindow!=NULL) && (scrn.hWnd==GetForegroundWindow())) {
       SetForegroundWindow(scrn._hOldForegroundWindow);
   }
-"*/
+
   if(scrn.hWnd!=NULL) {
-/*
     if(_bLoadedCustomCursor && (_hMouseCursor!=NULL))
         DestroyCursor(_hMouseCursor);
-*/      
       DestroyWindow(scrn.hWnd);
       hwnd_pandawin_map.erase(scrn.hWnd);
   }
@@ -277,6 +260,20 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
    }
 }
 
+// Note: could use _TrackMouseEvent in comctrl32.dll (part of IE 3.0+) which emulates
+// TrackMouseEvent on w95, but that requires another 500K of memory to hold that DLL,
+// which is lame just to support w95, which probably has other issues anyway
+INLINE void wdxGraphicsWindow::
+track_mouse_leaving(HWND hwnd) {
+  TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT),TME_LEAVE,hwnd,0};
+  BOOL bSucceeded = TrackMouseEvent(&tme);  // tell win32 to post WM_MOUSELEAVE msgs
+
+  if((!bSucceeded) && wdxdisplay_cat.is_debug())
+     wdxdisplay_cat.debug() << "TrackMouseEvent failed!, LastError=" << GetLastError() << endl;
+
+  _tracking_mouse_leaving=true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: window_proc
 //       Access:
@@ -302,7 +299,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         case WM_MOUSEMOVE:
             if(!DXREADY)
                 break;
-        
+
             // Win32 doesn't return the same numbers as X does when the mouse
             // goes beyond the upper or left side of the window
             #define SET_MOUSE_COORD(iVal,VAL) { \
@@ -310,18 +307,54 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     if(iVal & 0x8000)             \
                       iVal -= 0x10000;            \
             }
-        
+
+            if(!_tracking_mouse_leaving) {
+                // need to re-call TrackMouseEvent every time mouse re-enters window
+                track_mouse_leaving(hwnd);
+            }
+
             SET_MOUSE_COORD(x,LOWORD(lparam));
             SET_MOUSE_COORD(y,HIWORD(lparam));
 
-            if(mouse_motion_enabled()
-               && wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
-                handle_mouse_motion(x, y);
-            } else if(mouse_passive_motion_enabled() &&
-                      ((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
-                handle_mouse_motion(x, y);
-            }
+            handle_mouse_motion(x, y);
             return 0;
+
+        // if cursor is invisible, make it visible when moving in the window bars,etc
+        case WM_NCMOUSEMOVE: {
+            if(!_props._bCursorIsVisible) {
+                if(!_cursor_in_windowclientarea) {
+                    ShowCursor(true);
+                    _cursor_in_windowclientarea=true;
+                }
+            }
+            break;
+        }
+
+        case WM_NCMOUSELEAVE: {
+            if(!_props._bCursorIsVisible) {
+                ShowCursor(false);
+                _cursor_in_windowclientarea=false;
+            }
+            break;
+        }
+
+        case WM_MOUSELEAVE: {
+           // wdxdisplay_cat.fatal() << "XXXXX WM_MOUSELEAVE received\n";
+
+           _tracking_mouse_leaving=false;  
+           handle_mouse_exit();
+           break;
+        }
+
+        case WM_CREATE: {
+          track_mouse_leaving(hwnd);
+
+          _cursor_in_windowclientarea=false;
+          if(!_props._bCursorIsVisible)
+              ShowCursor(false);
+          break;
+        }
+
       #if 0
         case WM_SYSCHAR:
         case WM_CHAR:  // shouldnt receive WM_CHAR unless WM_KEYDOWN stops returning 0 and passes on to DefWindProc
@@ -435,14 +468,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             #endif
             
             if(_WindowAdjustingType==Resizing) {
-                handle_reshape(true);
+                handle_windowed_resize(hwnd,true);
             }
 
             _WindowAdjustingType = NotAdjusting;
             return 0;
 
         case WM_ENTERSIZEMOVE: {
-                if(_dxgsg==NULL)
+                if(_dxgsg!=NULL)
                     _dxgsg->SetDXReady(true);   // dont disable here because I want to see pic as I resize
                 _WindowAdjustingType = MovingOrResizing;
             }
@@ -511,9 +544,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
               break;
             }
 
-            if(_mouse_entry_enabled)
-                handle_mouse_entry(MOUSE_ENTERED,_pParentWindowGroup->_hMouseCursor);
-
             POINT point;
             GetCursorPos(&point);
             ScreenToClient(hwnd, &point);
@@ -523,8 +553,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             // a key-down. it would be better to know the exact set of ModifierButtons the
             // user is using, since we may miss some here
 
-            int i;
-            for(i=0;i<NUM_MODIFIER_KEYS;i++) {
+            for(int i=0;i<NUM_MODIFIER_KEYS;i++) {
               if(GetKeyState(hardcoded_modifier_buttons[i]) < 0) 
                 handle_keypress(lookup_key(hardcoded_modifier_buttons[i]),point.x,point.y);
             }
@@ -536,9 +565,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(!DXREADY) {
               break;
             }
-
-            if(_mouse_entry_enabled)
-                  handle_mouse_entry(MOUSE_EXITED,_pParentWindowGroup->_hMouseCursor);
 
             int i;
             for(i=0;i<NUM_MODIFIER_KEYS;i++) {
@@ -616,9 +642,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
           return 0;
 
-        //case WM_CREATE:
-        //        break;
-
         case WM_ACTIVATEAPP: {
             #ifdef _DEBUG
               wdxdisplay_cat.spam()  << "WM_ACTIVATEAPP(" << (bool)(wparam!=0) <<") received\n";
@@ -641,18 +664,21 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::handle_reshape(bool bDoDxReset) {
-    
+void wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
+  // handles windowed, non-fullscreen resizing    
     GdiFlush();
 
-    if(bDoDxReset && _dxgsg!=NULL) {
+    assert(!dx_full_screen);
+
+    if(bDoDxReset && (_dxgsg!=NULL)) {
         HRESULT hr;
 
-        if(_dxgsg->scrn.pddsBack==NULL) {
-            //assume this is initial creation reshape and ignore this call
+        if(_dxgsg->scrn.pD3DDevice==NULL) {
+            //assume this is initial creation reshape, so ignore this call
             return;
         }
 
+/*  bugbug: dont we need this?  dx8 clear() just clears the backbuf.  try BitBlt, or an erase-backgnd GDI flag?
         // Clear the back/primary surface to black
         DX_DECLARE_CLEAN(DDBLTFX, bltfx)
         bltfx.dwDDFX |= DDBLTFX_NOTEARING;
@@ -666,10 +692,10 @@ void wdxGraphicsWindow::handle_reshape(bool bDoDxReset) {
              wdxdisplay_cat.error() << "TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
              return;
         }
+*/
+//        _dxgsg->SetDXReady(false);  // disable rendering whilst we mess with surfs
 
-        _dxgsg->SetDXReady(false);  // disable rendering whilst we mess with surfs
-
-        _dxgsg->RestoreAllVideoSurfaces();
+      /*  this stuff should all be done be d3ddev Reset() now
 
         // Want to change rendertarget size without destroying d3d device.  To save vid memory
         // (and make resizing work on memory-starved 4MB cards), we need to construct
@@ -677,6 +703,10 @@ void wdxGraphicsWindow::handle_reshape(bool bDoDxReset) {
         // NULL rendertarget) before creating the fully resized buffers.  The old
         // rendertargets will be freed when these temp targets are set, and that will give
         // us the memory to create the resized target
+        
+        _dxgsg->RestoreAllDeviceObjects();  // right now this doesnt do anything
+
+        
     
         LPDIRECTDRAWSURFACE7 pddsDummy = NULL, pddsDummyZ = NULL;
         ULONG refcnt;
@@ -723,32 +753,55 @@ void wdxGraphicsWindow::handle_reshape(bool bDoDxReset) {
         }
         RELEASE(pddsDummyZ,wdxdisplay,"dummy resize zbuffer",false);
         RELEASE(pddsDummy,wdxdisplay,"dummy resize rendertarget buffer",false);
+    */
     }
-    
+
+
+
+    if(_dxgsg!=NULL)
+       _dxgsg->SetDXReady(false);
+
     RECT view_rect;
 
-    assert(!dx_full_screen);
-
-    HWND hWnd=_dxgsg->scrn.hWnd;
     GetClientRect( hWnd, &view_rect );
     ClientToScreen( hWnd, (POINT*)&view_rect.left );   // translates top,left pnt
     ClientToScreen( hWnd, (POINT*)&view_rect.right );  // translates right,bottom pnt
-    
-    // change _props xsize,ysize
-    resized((view_rect.right - view_rect.left),(view_rect.bottom - view_rect.top));
-    
+
+    bool bResizeSucceeded=true;
+
     _props._xorg = view_rect.left;  // _props origin should reflect upper left of view rectangle
     _props._yorg = view_rect.top;
-    
-    if(wdxdisplay_cat.is_spam()) {
-      wdxdisplay_cat.spam() << "reshape to origin: (" << _props._xorg << "," << _props._yorg << "), size: (" << _props._xsize << "," << _props._ysize << ")\n";
+
+    DWORD xsize=(view_rect.right - view_rect.left);
+    DWORD ysize=(view_rect.bottom - view_rect.top);
+
+    do {
+        // change _props xsize,ysize
+        resized(xsize,ysize);
+        
+        if((_dxgsg!=NULL)&& bDoDxReset) {
+          bResizeSucceeded=_dxgsg->dx_resize_window(hWnd,view_rect);  // create the new resized rendertargets
+          if(!bResizeSucceeded) {
+              // size was too large.  try a smaller size
+              if(wdxdisplay_cat.is_debug()) {
+                  wdxdisplay_cat.debug() << "windowed_resize to size: (" << xsize << "," << ysize << ") failed due to out-of-memory, retrying w/reduced size\n";
+              }
+
+              xsize *= 0.8f;
+              ysize *= 0.8f;
+
+              viewrect.right=viewrect.left+xsize;
+              viewrect.bottom=viewrect.top+ysize;
+          }
+        }
+    } while(!bResizeSucceeded);
+
+    if(wdxdisplay_cat.is_debug()) {
+      wdxdisplay_cat.debug() << "windowed_resize to origin: (" << _props._xorg << "," << _props._yorg << "), size: (" << _props._xsize << "," << _props._ysize << ")\n";
     }
-    
-    if(_dxgsg!=NULL) {
-      if(bDoDxReset)
-          _dxgsg->dx_setup_after_resize(view_rect,hWnd);  // create the new resized rendertargets
-      _dxgsg->SetDXReady(true);
-    }
+
+    if(_dxgsg!=NULL)
+       _dxgsg->SetDXReady(true);
 }
 
 void wdxGraphicsWindow::deactivate_window(void) {
@@ -1006,24 +1059,10 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
     DWORD base_window_style = WS_POPUP | WS_SYSMENU;  // for CreateWindow
 
-
     global_wdxwinptr = _windows[0];  // for use during createwin()  bugbug look at this again
 
-    HINSTANCE hUser32 = NULL;
-
     // rect now contains the coords for the entire window, not the client
-    if(dx_full_screen) {
-        // get upper-left corner coords using GetMonitorInfo
-
-        // GetMonInfo doesnt exist on w95, so dont statically link to it
-        hUser32 = (HINSTANCE) LoadLibrary("user32.dll");
-        assert(hUser32);
-        typedef BOOL (WINAPI* LPGETMONITORINFO)(HMONITOR, LPMONITORINFO);   
-        LPGETMONITORINFO pfnGetMonitorInfo = (LPGETMONITORINFO) GetProcAddress(hUser32, "GetMonitorInfoA");
-    }
-
     // extra windows must be parented to the first so app doesnt minimize when user selects them
-
     for(int devnum=0;devnum<_windows.size();devnum++) {
         DWORD xleft,ytop,xsize,ysize;
         GraphicsWindow::Properties *props = &_windows[devnum]->_props;
@@ -1035,11 +1074,9 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             MONITORINFO minfo;
             ZeroMemory(&minfo, sizeof(MONITORINFO));
             minfo.cbSize = sizeof(MONITORINFO);
-            if(pfnGetMonitorInfo)
-                (*pfnGetMonitorInfo)(_windows[devnum]->_dxgsg->scrn.hMon, &minfo);
-             else {
-                 minfo.rcMonitor.left = minfo.rcMonitor.top = 0;
-             }
+            // since DX8 cant be installed on w95, ok to statically link to GetMonInfo
+            // get upper-left corner coords using GetMonitorInfo
+            GetMonitorInfo(_windows[devnum]->_dxgsg->scrn.hMon, &minfo);
             xleft=minfo.rcMonitor.left;
             ytop=minfo.rcMonitor.top;
             xsize=props->_xsize;
@@ -1087,8 +1124,6 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             _hParentWindow=hWin;
     }
 
-    if(hUser32)
-      FreeLibrary(hUser32);
 /*
     } else {
 //        assert(_windows.size()==1);
@@ -1181,18 +1216,6 @@ void wdxGraphicsWindow::config_window(wdxGraphicsWindowGroup *pParentGroup) {
 }
 
 void wdxGraphicsWindow::finish_window_setup(void) {
-    // init panda input handling
-    _mouse_input_enabled = false;
-    _mouse_motion_enabled = false;
-    _mouse_passive_motion_enabled = false;
-    _mouse_entry_enabled = false;
-
-    // Enable detection of mouse input
-    enable_mouse_input(true);
-    enable_mouse_motion(true);
-    enable_mouse_passive_motion(true);
-    //  enable_mouse_entry(true);   re-enable this??
-
     // Now indicate that we have our keyboard/mouse device ready.
     GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
     _input_devices.push_back(device);
@@ -1310,6 +1333,8 @@ BOOL WINAPI DriverEnumCallback_MultiMon( GUID* pGUID, TCHAR* strDesc,TCHAR* strN
     return save_devinfo(pGUID,strDesc,strName,argptr,hm);
 }
 */
+
+// this handles external programmatic requests for resizing
 void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
 
    if (!_props._fullscreen) {
@@ -1325,7 +1350,7 @@ void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
         
          // this doesnt seem to be working in toontown resize, so I put ddraw blackblt in handle_reshape instead
          //window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);  
-        handle_reshape(true);
+        handle_windowed_resize(_dxgsg->scrn.hWnd,true);
         return;
    }
 
@@ -2153,7 +2178,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     Display.pD3DDevice=pD3DDevice;
     Display.view_rect = view_rect;
 
-    _dxgsg->dx_init();
+    _dxgsg->dx_init(_pParentWindowGroup->_hMouseCursor);
     // do not SetDXReady() yet since caller may want to do more work before letting rendering proceed
 
     return;
@@ -2263,8 +2288,6 @@ void wdxGraphicsWindow::end_frame(void) {
     GraphicsWindow::end_frame();
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: handle_window_move
 //       Access:
@@ -2286,16 +2309,12 @@ void wdxGraphicsWindow::handle_mouse_motion(int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: handle_mouse_entry
+//     Function: handle_mouse_exit
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::handle_mouse_entry(int state,HCURSOR hCursor) {
-    if(state == MOUSE_EXITED) {
-        _input_devices[0].set_pointer_out_of_window();
-    } else {
-//        SetCursor(hCursor);  believe this is not necessary, handled by windows
-    }
+void wdxGraphicsWindow::handle_mouse_exit(void) {
+    _input_devices[0].set_pointer_out_of_window();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2417,34 +2436,6 @@ void wdxGraphicsWindow::update(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_input
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::enable_mouse_input(bool val) {
-    _mouse_input_enabled = val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_motion
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::enable_mouse_motion(bool val) {
-    _mouse_motion_enabled = val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_passive_motion
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::enable_mouse_passive_motion(bool val) {
-    _mouse_passive_motion_enabled = val;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow::get_gsg_type
 //       Access: Public, Virtual
 //  Description: Returns the TypeHandle of the kind of GSG preferred
@@ -2480,7 +2471,7 @@ TypeHandle wdxGraphicsWindow::get_class_type(void) {
 
 void wdxGraphicsWindow::init_type(void) {
     GraphicsWindow::init_type();
-    register_type(_type_handle, "wdxGraphicsWindow",
+    register_type(_type_handle, "wdxGraphicsWindow8",
                   GraphicsWindow::get_class_type());
 }
 

@@ -27,13 +27,6 @@
 #include <interactiveGraphicsPipe.h>
 #include "wdxGraphicsWindow8.h"
 
-#ifndef STRICT
-#define STRICT
-#endif
-#define WINDOWS_LEAN_AND_MEAN
-#include <windows.h>
-#undef WINDOWS_LEAN_AND_MEAN
-
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////

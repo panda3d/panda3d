@@ -19,33 +19,10 @@
 #ifndef DXGEOMNODECONTEXT_H
 #define DXGEOMNODECONTEXT_H
 
-#include <pandabase.h>
-
-#ifdef WIN32_VC
-// Must include windows.h before dx.h on NT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef WIN32_LEAN_AND_MEAN
-#endif
-
+#include "dxgsg8base.h"
 #include <geomNodeContext.h>
 #include <geomNode.h>
 #include "pvector.h"
-
-#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
-#include <d3d8.h>
-
-#if D3D_SDK_VERSION != 220
-#error you have DX 8.0 headers, not DX 8.1, you need to install newer MS Platform SDK!
-#endif
-
-#if DIRECT3D_VERSION != 0x0800
-#error DX8.1 headers not available, you need to install newer MS Platform SDK!
-#endif
-
-#ifndef D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD
-#error you have pre-release DX8.1 headers, you need to install newer MS Platform SDK!
-#endif
 
 typedef struct {
      DWORD nVerts;

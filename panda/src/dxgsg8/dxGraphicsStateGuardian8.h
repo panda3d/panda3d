@@ -46,15 +46,10 @@
 class PlaneNode;
 class Light;
 
-#ifdef GSG_VERBOSE
-ostream &output_gl_enum(ostream &out, GLenum v);
-INLINE ostream &operator << (ostream &out, GLenum v) {
-  return output_gl_enum(out, v);
-}
-#endif
-
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
-#ifdef _DEBUG
+//#ifdef _DEBUG
+// is there something in DX8 to replace this?
+#if 0
 // This function now serves both to print a debug message to the
 // console, as well as to notify PStats about the change in texture
 // memory.  Thus, we compile it in if we are building with support for
@@ -198,7 +193,7 @@ protected:
   INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
   WORD *_index_buf;  // base of malloced array
 
-  bool                  _dx_ready;
+  bool                  _bDXisReady;
   HRESULT               _last_testcooplevel_result;
   bool                  _bShowFPSMeter;
 //  HDC               _front_hdc;
@@ -214,9 +209,9 @@ protected:
                     D3DXVECTOR3 *pCenter, float fRadius,
                     DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
                     DWORD *pNumVertices,DWORD *pNumTris,DWORD fvfFlags,DWORD dwVertSize);
-  HRESULT RestoreAllVideoSurfaces(void);
-  HRESULT RecreateAllVideoSurfaces(void);
-  HRESULT DeleteAllVideoSurfaces(void);
+  HRESULT RestoreAllDeviceObjects(void);
+  HRESULT RecreateAllDeviceObjects(void);
+  HRESULT DeleteAllDeviceObjects(void);
 
 /*
   INLINE void enable_multisample_alpha_one(bool val);
@@ -348,6 +343,7 @@ protected:
   int _max_lights;
   bool* _cur_light_enabled;
   int _cur_light_id;
+  float _max_light_range;
   Colorf _cur_ambient_light;
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;
@@ -375,7 +371,8 @@ protected:
   float _current_fps;
   DWORD *_fpsmeter_verts;
   DWORD _fpsmeter_fvfflags;
-  LPDIRECTDRAWSURFACE7 _fpsmeter_font_surf;
+//  LPDIRECTDRAWSURFACE7 _fpsmeter_font_surf;
+  void *_fpsmeter_font_surf;
   float _fps_u_usedwidth,_fps_v_usedheight;  // fraction of fps font texture actually used
   DWORD _fps_vertexsize;   // size of verts used to render fps meter
   void  SetFPSMeterPosition(RECT &view_rect);
@@ -390,20 +387,20 @@ public:
   virtual TypeHandle get_type(void) const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
   void adjust_view_rect(int x, int y);
-  INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
-  INLINE bool GetDXReady(void)  { return _dx_ready;}
+  INLINE void SetDXReady(bool status)  { _bDXisReady = status; }
+  INLINE bool GetDXReady(void)  { return _bDXisReady;}
   void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
 
   #define DO_REACTIVATE_WINDOW true
-  bool  CheckCooperativeLevel(bool bDoReactivateWindow = false);
+  bool CheckCooperativeLevel(bool bDoReactivateWindow = false);
 
-  void  dx_setup_after_resize(RECT viewrect,HWND mwindow) ;
+  bool  dx_resize_window(HWND hWnd, RECT viewrect) ;
   void  show_frame();
   void  show_full_screen_frame();
   void  show_windowed_frame();
-  void dx_init(void);
+  void dx_init(HCURSOR hMouseCursor);
   
 private:
   static TypeHandle _type_handle;

@@ -72,6 +72,7 @@ TypeHandle DXTextureContext::_type_handle;
 #define SWAPDWORDS(X,Y)  { DWORD temp=X;  X=Y; Y=temp; }
 
 #ifdef _DEBUG
+/*
 static void DebugPrintPixFmt(DDPIXELFORMAT* pddpf) {
     static int iddpfnum=0;
     ostream *dbgout = &dxgsg_cat.debug();
@@ -96,7 +97,7 @@ static void DebugPrintPixFmt(DDPIXELFORMAT* pddpf) {
 
     iddpfnum++;
 }
-
+*/
 void PrintLastError(char *msgbuf) {
     DWORD dwFlags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
 
@@ -1054,31 +1055,32 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
         }
     }
 
+    _PixBufD3DFmt=D3DFMT_UNKNOWN;
+
 #ifndef DO_CUSTOM_CONVERSIONS
     // figure out what 'D3DFMT' the PixelBuffer is in, so D3DXLoadSurfFromMem knows how to perform copy
-    PixBufD3DFmt=D3DFMT_UNKNOWN;
 
     switch(cNumColorChannels) {
         case 1:  
             if(cNumAlphaBits>0)
-                PixBufD3DFmt=D3DFMT_A8;
+                _PixBufD3DFmt=D3DFMT_A8;
             else if(bNeedLuminance)
-                   PixBufD3DFmt=D3DFMT_L8;
+                   _PixBufD3DFmt=D3DFMT_L8;
             break;
         case 2:
             assert(bNeedLuminance && (cNumAlphaBits>0));
-            PixBufD3DFmt=D3DFMT_A8L8;
+            _PixBufD3DFmt=D3DFMT_A8L8;
             break;
         case 3:
-            PixBufD3DFmt=D3DFMT_R8G8B8;
+            _PixBufD3DFmt=D3DFMT_R8G8B8;
             break;
         case 4:
-            PixBufD3DFmt=D3DFMT_A8R8G8B8;
+            _PixBufD3DFmt=D3DFMT_A8R8G8B8;
             break;
     }
 
     // make sure we handled all the possible cases
-    assert(PixBufD3DFmt!=D3DFMT_UNKNOWN);
+    assert(_PixBufD3DFmt!=D3DFMT_UNKNOWN);
 #endif
 
     DWORD TargetWidth=dwOrigWidth;
@@ -1457,7 +1459,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 #endif
 #endif
 
-    hr = FillDDSurfTexturePixels(TargetWidth,TargetHeight,PixBufD3DFmt);
+    hr = FillDDSurfTexturePixels();
     if(FAILED(hr)) {
         goto error_exit;
     }
@@ -1473,7 +1475,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 }
 
 HRESULT DXTextureContext::
-FillDDSurfTexturePixels(DWORD TargetWidth,DWORD TargetHeight,D3DFORMAT PixBufD3DFmt) {
+FillDDSurfTexturePixels(void) {
     HRESULT hr=E_FAIL;
     PixelBuffer *pbuf = _texture->get_ram_image();
     if (pbuf == (PixelBuffer *)NULL) {
@@ -1506,7 +1508,7 @@ FillDDSurfTexturePixels(DWORD TargetWidth,DWORD TargetHeight,D3DFORMAT PixBufD3D
     Lev0Filter = D3DX_FILTER_LINEAR | D3DX_FILTER_DITHER;
 
     // filtering may be done here if texture if targetsize!=origsize
-    hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID) pbuf,PixBufD3DFmt,
+    hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID) pbuf,_PixBufD3DFmt,
                                  OrigWidth*cNumColorChannels,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
     if(FAILED(hr)) {
        dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem returns hr = " << D3DERRORSTRING(hr);

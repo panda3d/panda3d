@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_dxgsg8.h"
-#include <graphicsWindow.h>
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_line_smooth
 //       Access:
@@ -171,7 +168,7 @@ INLINE void DXGraphicsStateGuardian::
 enable_gouraud_shading(bool val) {
   if (_bGouraudShadingOn != val) {
     _bGouraudShadingOn = val;
-    scrn.pD3DDevice->SetRenderState(D3DRS_COLORVERTEX, (DWORD)val);
+    scrn.pD3DDevice->SetRenderState(D3DRS_SHADEMODE, (val ? D3DSHADE_GOURAUD : D3DSHADE_FLAT));
   }
 }
 

@@ -17,20 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef WDXGRAPHICSWINDOW_H
 #define WDXGRAPHICSWINDOW_H
-//#define WBD_GL_MODE 1    // if setting this, do it in wdxGraphicsStateGuardian.h too
-//
+
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
-
 #include <graphicsWindow.h>
-#define WINDOWS_LEAN_AND_MEAN
-#include <windows.h>
-#undef WINDOWS_LEAN_AND_MEAN
-#include <d3d8.h>
-#include <dxerr8.h>
-
 #include "dxGraphicsStateGuardian8.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -80,12 +72,9 @@ public:
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void process_events(void);
 
-  INLINE bool mouse_entry_enabled(void) { return _mouse_entry_enabled; }
-  INLINE bool mouse_motion_enabled(void) { return _mouse_motion_enabled; }
-  INLINE bool mouse_passive_motion_enabled(void) { return _mouse_passive_motion_enabled; }
   void handle_window_move( int x, int y );
   void handle_mouse_motion( int x, int y );
-  void handle_mouse_entry( int state, HCURSOR hMouseCursor );
+  void handle_mouse_exit( HCURSOR hMouseCursor );
   void handle_keypress( ButtonHandle key, int x, int y );
   void handle_keyrelease( ButtonHandle key);
   void dx_setup();
@@ -105,11 +94,6 @@ protected:
   bool search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevinfo);
   void setup_colormap(void);
 
-  void enable_mouse_input(bool val);
-  void enable_mouse_motion(bool val);
-  void enable_mouse_passive_motion(bool val);
-  void enable_mouse_entry(bool val);
-
 public:
   UINT_PTR _PandaPausedTimer;
   DXGraphicsStateGuardian *_dxgsg;
@@ -122,14 +106,12 @@ private:
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
   WindowAdjustType  _WindowAdjustingType;
   bool              _bSizeIsMaximized;
-  bool              _mouse_input_enabled;
-  bool              _mouse_motion_enabled;
-  bool              _mouse_passive_motion_enabled;
-  bool              _mouse_entry_enabled;
   bool              _exiting_window;
   bool              _window_inactive;
   bool              _active_minimized_fullscreen;
   bool              _return_control_to_app;
+  bool              _cursor_in_windowclientarea;
+  bool              _tracking_mouse_leaving;
   int               _depth_buffer_bpp;
 
 public:
@@ -142,7 +124,7 @@ public:
   virtual void do_close_window();
   void deactivate_window(void);
   void reactivate_window(void);
-  void handle_reshape(bool bDoDXReset);
+  void handle_windowed_resize(HWND hWnd,bool bDoDXReset);
 
 private:
   static TypeHandle _type_handle;

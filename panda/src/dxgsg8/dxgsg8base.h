@@ -1,5 +1,5 @@
-// Filename: dxTextureContext.h
-// Created by:  drose (07Oct99)
+// Filename: dxgsg8base.h
+// Created by:  georges (07Oct01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -21,6 +21,11 @@
 
 #include <pandabase.h>
 
+// include win32 defns for everything up to XP, and assume I'm smart enough to
+// use GetProcAddress for backward compat on newer fns
+// Note DX8 cannot be installed on w95, so OK to assume base of win98
+#define _WIN32_WINNT 0x0501
+
 #define WIN32_LEAN_AND_MEAN   // get rid of mfc win32 hdr stuff
 #ifndef STRICT
 // enable strict type checking in windows.h, see msdn
@@ -28,13 +33,24 @@
 #endif
 
 #include <windows.h>
-#include <ddraw.h>
 
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
 #include <d3d8.h>
 #include <d3dx8.h>
 #include <dxerr8.h>
 #undef WIN32_LEAN_AND_MEAN
+
+#if D3D_SDK_VERSION != 220
+#error you have DX 8.0 headers, not DX 8.1, you need to install DX 8.1 SDK!
+#endif
+
+#if DIRECT3D_VERSION != 0x0800
+#error DX8.1 headers not available, you need to install newer MS Platform SDK!
+#endif
+
+#ifndef D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD
+#error you have pre-release DX8.1 headers, you need to install final DX 8.1 SDK!
+#endif
 
 #ifndef D3DERRORSTRING
 #define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString8(HRESULT) << ": " << DXGetErrorDescription8(HRESULT) << endl

@@ -108,6 +108,8 @@ typedef enum { NothingSet=0,NormalOnly,ColorOnly,Normal_Color,TexCoordOnly,
 
 static D3DMATRIX matIdentity;
 
+#define __D3DLIGHT_RANGE_MAX ((float)sqrt(FLT_MAX))  //for some reason this is missing in dx8 hdrs
+
 #ifdef COUNT_DRAWPRIMS
 // you should just use Intel GPT instead of this stuff
 
@@ -310,6 +312,7 @@ void DXGraphicsStateGuardian::SetFPSMeterPosition(RECT &view_rect) {
 }
 
 void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
+/*
     assert(_fpsmeter_font_surf!=NULL);
     HRESULT hr;
 
@@ -375,13 +378,14 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
             WORD wPixel=*pPixel;
             if(wPixel & 0x0FFF) {
                 *pPixel |= 0xF000;  //  make written pixels opaque
-            }/* else {
-                *pPixel = 0x700F;  // otherwise background is translucent blue
-            }*/
+            }// else {
+             //   *pPixel = 0x700F;  // otherwise background is translucent blue
+              // }
             pPixel++;
         }
     #endif
     _fpsmeter_font_surf->Unlock(NULL);
+*/
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -402,8 +406,9 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     _index_buf = new WORD[PANDA_MAXNUMVERTS];  // allocate storage for vertex index info.
     _fpsmeter_verts=NULL;
     _fpsmeter_font_surf=NULL;
-    _dx_ready = false;
+    _bDXisReady = false;
     _CurFVFType = 0x0;
+    _max_light_range = __D3DLIGHT_RANGE_MAX;
 
 //    scrn.pD3DDevicesPrimary = scrn.pD3DDevicesZBuf = scrn.pD3DDevicesBack = NULL;
 //    _pDD = NULL;
@@ -480,12 +485,12 @@ free_dxgsg_objects(void) {
     // dont want a full reset of gsg, just a state clear      
     GraphicsStateGuardian::clear_cached_state(); // want gsg to pass all state settings through
 
-    _dx_ready = false;
+    _bDXisReady = false;
     
     if (scrn.pD3DDevice!=NULL)
         scrn.pD3DDevice->SetTexture(0,NULL);  // should release this stuff internally anyway
 
-    DeleteAllVideoSurfaces();
+    DeleteAllDeviceObjects();
 
     if (scrn.pD3DDevice!=NULL)
         RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
@@ -500,14 +505,14 @@ free_dxgsg_objects(void) {
 //               set up.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-dx_init(void) {
+dx_init(HCURSOR hMouseCursor) {
     HRESULT hr;
 
     assert(scrn.pD3D8!=NULL);
     assert(scrn.pD3DDevice!=NULL);
 
     ZeroMemory(&_lmodel_ambient,sizeof(Colorf));
-    scrn.pD3DDevice->SetRenderState( D3DRS_AMBIENT, 0x0);
+    scrn.pD3DDevice->SetRenderState(D3DRS_AMBIENT, 0x0);
 
     _light_enabled = (bool *)NULL;
     _cur_light_enabled = (bool *)NULL;
@@ -521,7 +526,11 @@ dx_init(void) {
     _clipping_enabled = true;
 
     _bGouraudShadingOn = false;
-    scrn.pD3DDevice->SetRenderState(D3DRS_COLORVERTEX, _bGouraudShadingOn);
+    scrn.pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
+
+//   this specifies if lighting model uses material color or vertex color
+//   (not related to gouraud/flat shading)
+//   scrn.pD3DDevice->SetRenderState(D3DRS_COLORVERTEX, true);
 
     _depth_test_enabled = true; 
     scrn.pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, _depth_test_enabled);
@@ -810,7 +819,7 @@ dx_init(void) {
     // must check (scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon85, no on TNT)
     scrn.pD3DDevice->SetRenderState(D3DRS_BLENDOP,D3DBLENDOP_ADD);
 
-    hr = CreateDX8Cursor(scrn.pD3DDevice,_hCursor,true);
+    hr = CreateDX8Cursor(scrn.pD3DDevice,hMouseCursor,true);
     if(FAILED(hr))
         dxgsg_cat.error() << "CreateDX8Cursor failed!\n";
 
@@ -1008,9 +1017,12 @@ enable_light(int light_id, bool val) {
         dxgsg_cat.debug() << "LightEnable(" << light_id << "=" << val << ")" << endl;
 #endif
 
-        return(hr == DD_OK);
+        if (FAILED(hr)) {
+            dxgsg_cat.error() << "LightEnable(" << light_id << "=" << val << ") failed, hr=" << D3DERRORSTRING(hr);
+            return false;
+        }
     }
-    return TRUE;
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1108,7 +1120,7 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3D
         if(FAILED(hr)) {
             // loss of exclusive mode is not a real DrawPrim problem, ignore it
             HRESULT testcooplvl_hr = pD3DDevice->TestCooperativeLevel();
-            if((testcooplvl_hr != DDERR_NOEXCLUSIVEMODE)||(testcooplvl_hr != DDERR_EXCLUSIVEMODEALREADYSET)) {
+            if((testcooplvl_hr != D3DERR_DEVICELOST)||(testcooplvl_hr != D3DERR_DEVICENOTRESET)) {
                 dxgsg_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << D3DERRORSTRING(hr);
                 exit(1);
             }
@@ -1129,7 +1141,7 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3D
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_frame() {
-  if (!_dx_ready) 
+  if (!_bDXisReady) 
     return;
 
   _win->begin_frame();
@@ -1152,10 +1164,9 @@ render_frame() {
   HRESULT hr = scrn.pD3DDevice->BeginScene();
 
   if(FAILED(hr)) {
-    if((hr==D3DERR_DEVICELOST)||(hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
+    if(hr==D3DERR_DEVICELOST) {
           if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "BeginScene returns " << D3DERRORSTRING(hr);
-
+              dxgsg_cat.debug() << "BeginScene returns DeviceLost\n";
           CheckCooperativeLevel();
     } else {
         dxgsg_cat.error() << "BeginScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
@@ -1277,7 +1288,7 @@ render_frame() {
         #endif
         
         if(_bGouraudShadingOn)
-            scrn.pD3DDevice->SetRenderState(D3DRS_COLORVERTEX, false);
+            scrn.pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
 
         DWORD saved_zfunc;
         scrn.pD3DDevice->GetRenderState(D3DRS_ZFUNC,&saved_zfunc);
@@ -1363,7 +1374,7 @@ render_frame() {
         scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, saved_alphaarg1);
 
         if(_bGouraudShadingOn)
-            scrn.pD3DDevice->SetRenderState(D3DRS_COLORVERTEX, true);
+            scrn.pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 
         if(_current_fill_mode != RenderModeProperty::M_filled) {
             scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, saved_fill_state);            
@@ -1401,18 +1412,18 @@ render_frame() {
         // at all?
    }
 
-  if(FAILED(hr)) {
-    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
-          if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "EndScene returns " << D3DERRORSTRING(hr);
 
+   if(FAILED(hr)) {
+    if(hr==D3DERR_DEVICELOST) {
+          if(dxgsg_cat.is_debug())
+              dxgsg_cat.debug() << "EndScene returns DeviceLost\n";
           CheckCooperativeLevel();
     } else {
-       dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
-       exit(1);
+        dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
+        exit(1);
     }
     return;
-  }
+   }
 
    if(_bShowFPSMeter) {
          DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
@@ -2863,7 +2874,6 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                                      (TexCoordBinding != G_OFF));
 
         bool bPerPrimNormal;
-        bool bPerPrimColor=((_perPrim & PER_COLOR)!=0);
 
         if(bUseTexCoordOnlyLoop) {
            _perVertex |= PER_TEXCOORD;  // TexCoords are either G_OFF or G_PER_VERTEX 
@@ -2879,6 +2889,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                _perVertex |= PER_TEXCOORD;
         } 
 
+        bool bPerPrimColor=((_perPrim & PER_COLOR)!=0);
         if(bPerPrimColor)
            _perPrim |= PER_COLOR;
           else if(ColorBinding == G_PER_VERTEX)    
@@ -3011,24 +3022,21 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
 
     {
-        size_t vertex_size = draw_prim_setup(geom);
-
         // this is the old geom setup, it reformats every vtx into an output array passed to d3d
         _perVertex = 0x0;
         _perPrim = 0x0;
         _perComp = 0x0;
 
         bool bIsTriList=(trilisttype==D3DPT_TRIANGLESTRIP);
-        bool bPerPrimColor=false;
+        bool bPerPrimColor=(ColorBinding == G_PER_PRIM);
         bool bPerPrimNormal;
-        bool bUseTexCoordOnlyLoop = (((ColorBinding == G_OVERALL) || (ColorBinding == G_PER_PRIM)) &&
+        bool bUseTexCoordOnlyLoop = (((ColorBinding == G_OVERALL) || bPerPrimColor) &&
                                      (NormalBinding == G_OFF) &&
                                      (TexCoordBinding != G_OFF));
 
         if(bUseTexCoordOnlyLoop) {
-           if(ColorBinding == G_PER_PRIM) {
+           if(bPerPrimColor) {
                 _perPrim |= PER_COLOR;
-                 bPerPrimColor=true;
            }
         } else {
             switch (NormalBinding) {
@@ -3060,6 +3068,8 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                     break;
             }
         }
+
+        size_t vertex_size = draw_prim_setup(geom);
 
         // iterate through the triangle primitives
 
@@ -4080,12 +4090,12 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_material( const Material* material ) {
-    D3DMATERIAL7 cur_material;
-    cur_material.dcvDiffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
-    cur_material.dcvAmbient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
-    cur_material.dcvSpecular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
-    cur_material.dcvEmissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
-    cur_material.dvPower   =  material->get_shininess();
+    D3DMATERIAL8 cur_material;
+    cur_material.Diffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
+    cur_material.Ambient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
+    cur_material.Specular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
+    cur_material.Emissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
+    cur_material.Power   =  material->get_shininess();
     scrn.pD3DDevice->SetMaterial(&cur_material);
 }
 
@@ -4105,7 +4115,7 @@ apply_fog(Fog *fog) {
 
 
     // should probably avoid doing redundant SetRenderStates, but whatever
-    scrn.pD3DDevice->SetRenderState((D3DRSTYPE)_doFogType, d3dfogmode);
+    scrn.pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)_doFogType, d3dfogmode);
 
     const Colorf &fog_colr = fog->get_color();
     scrn.pD3DDevice->SetRenderState(D3DRS_FOGCOLOR,
@@ -4155,22 +4165,24 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
     // solution later.
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
-    D3DLIGHT7  alight;
-    alight.dltType =  D3DLIGHT_POINT;
-    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-    alight.dcvAmbient  =  black ;
-    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
+    D3DLIGHT8  alight;
+    ZeroMemory(&alight, sizeof(alight));
+
+    alight.Type =  D3DLIGHT_POINT;
+    alight.Diffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+    alight.Ambient  =  black ;
+    alight.Specular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
 
     // Position needs to specify x, y, z, and w
     // w == 1 implies non-infinite position
-    alight.dvPosition = *(D3DXVECTOR3 *)(get_rel_pos( light, _current_root_node ).get_data());
+    memcpy(&alight.Position,get_rel_pos(light,_current_root_node).get_data(),3*sizeof(float));
 
-    alight.dvRange =  D3DLIGHT_RANGE_MAX;
-    alight.dvFalloff =  1.0f;
+    alight.Range =  _max_light_range;
+    alight.Falloff =  1.0f;
 
-    alight.dvAttenuation0 = (float)light->get_constant_attenuation();
-    alight.dvAttenuation1 = (float)light->get_linear_attenuation();
-    alight.dvAttenuation2 = (float)light->get_quadratic_attenuation();
+    alight.Attenuation0 = light->get_constant_attenuation();
+    alight.Attenuation1 = light->get_linear_attenuation();
+    alight.Attenuation2 = light->get_quadratic_attenuation();
     
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
 }
@@ -4187,23 +4199,22 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
 
-    D3DLIGHT7  alight;
-    ZeroMemory(&alight, sizeof(D3DLIGHT7));
+    D3DLIGHT8 alight;
+    ZeroMemory(&alight, sizeof(alight));
 
-    alight.dltType =  D3DLIGHT_DIRECTIONAL;
-    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-    alight.dcvAmbient  =  black ;
-    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
+    alight.Type =  D3DLIGHT_DIRECTIONAL;
+    alight.Diffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+    alight.Ambient  =  black ;
+    alight.Specular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
 
-    alight.dvDirection = *(D3DXVECTOR3 *)
-                         (get_rel_forward( light, _current_camera, CS_yup_left).get_data());
+    memcpy(&alight.Direction,get_rel_forward(light,_current_camera,CS_yup_left).get_data(),3*sizeof(float));
 
-    alight.dvRange =  D3DLIGHT_RANGE_MAX;
-    alight.dvFalloff =  1.0f;
+    alight.Range =  _max_light_range;
+    alight.Falloff =  1.0f;
 
-    alight.dvAttenuation0 = 1.0f;       // constant
-    alight.dvAttenuation1 = 0.0f;       // linear
-    alight.dvAttenuation2 = 0.0f;       // quadratic
+    alight.Attenuation0 = 1.0f;       // constant
+    alight.Attenuation1 = 0.0f;       // linear
+    alight.Attenuation2 = 0.0f;       // quadratic
 
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
 //    scrn.pD3DDevice->LightEnable( _cur_light_id, TRUE );
@@ -4215,84 +4226,37 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
+void DXGraphicsStateGuardian::apply_light( Spotlight *light ) {
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
-#ifdef WBD_GL_MODE
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glMatrixMode(GL_MODELVIEW)" << endl;
-    dxgsg_cat.debug()
-    << "glPushMatrix()" << endl;
-    dxgsg_cat.debug()
-    << "glLoadIdentity()" << endl;
-#endif
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
-                  .get_data());
 
-    GLenum id = get_light_id( _cur_light_id );
-    Colorf black(0, 0, 0, 1);
-    glLightfv(id, GL_AMBIENT, black.get_data());
-    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
-
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
-    LPoint3f pos = get_rel_pos( light, _current_camera );
-    LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-    glLightfv( id, GL_POSITION, fpos.get_data() );
-
-    glLightfv( id, GL_SPOT_DIRECTION,
-               get_rel_forward( light, _current_camera,
-                                _coordinate_system ).get_data() );
-    glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
-    glLightf( id, GL_SPOT_CUTOFF,
-              light->get_cutoff_angle() );
-    glLightf( id, GL_CONSTANT_ATTENUATION,
-              light->get_constant_attenuation() );
-    glLightf( id, GL_LINEAR_ATTENUATION,
-              light->get_linear_attenuation() );
-    glLightf( id, GL_QUADRATIC_ATTENUATION,
-              light->get_quadratic_attenuation() );
-
-    glPopMatrix();
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glPopMatrix()" << endl;
-#endif
-#else       // DX Spotlight
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
 
-    D3DLIGHT7  alight;
-    ZeroMemory(&alight, sizeof(D3DLIGHT7));
+    D3DLIGHT8 alight;
+    ZeroMemory(&alight, sizeof(alight));
 
-    alight.dltType =  D3DLIGHT_SPOT;
-    alight.dcvAmbient  =  black ;
-    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
+    alight.Type =  D3DLIGHT_SPOT;
+    alight.Ambient  =  black ;
+    alight.Diffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+    alight.Specular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
 
-    alight.dvPosition = *(D3DXVECTOR3 *)
+    alight.Position = *(D3DXVECTOR3 *)
                         (get_rel_pos( light, _current_root_node ).get_data());
 
-    alight.dvDirection = *(D3DXVECTOR3 *)
-                         (get_rel_forward( light, _current_root_node, _coordinate_system).get_data());
+    memcpy(&alight.Direction,get_rel_forward(light,_current_camera,CS_yup_left).get_data(),3*sizeof(float));
 
-    alight.dvRange =  D3DLIGHT_RANGE_MAX;
-    alight.dvFalloff =  1.0f;
-    alight.dvTheta =  0.0f;
-    alight.dvPhi =  light->get_cutoff_angle();
+    alight.Range =  _max_light_range;
+    alight.Falloff =  1.0f;
+    alight.Theta =  0.0f;
+    alight.Phi =  light->get_cutoff_angle();
 
-    alight.dvAttenuation0 = (float)light->get_constant_attenuation(); // constant
-    alight.dvAttenuation1 = (float)light->get_linear_attenuation();   // linear
-    alight.dvAttenuation2 = (float)light->get_quadratic_attenuation();// quadratic
+    alight.Attenuation0 = (float)light->get_constant_attenuation(); // constant
+    alight.Attenuation1 = (float)light->get_linear_attenuation();   // linear
+    alight.Attenuation2 = (float)light->get_quadratic_attenuation();// quadratic
 
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
-
-#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4334,8 +4298,9 @@ issue_transform(const TransformTransition *attrib) {
             {0.0f, 0.0f, 3.0,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},       // blu
         };
 
-        HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
-                                  vert_buf, 6, NULL);
+        set_vertex_format(D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL);
+
+        HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST,6, vert_buf, 6*sizeof(float)+sizeof(DWORD));
         TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,6,0);
 
         enable_lighting(lighting_was_enabled);
@@ -4344,7 +4309,7 @@ issue_transform(const TransformTransition *attrib) {
 #endif
 
     scrn.pD3DDevice->SetTransform(D3DTS_WORLD/*VIEW*/,
-                             (LPD3DMATRIX) attrib->get_matrix().get_data());
+                             (D3DMATRIX*) attrib->get_matrix().get_data());
     _bTransformIssued = true;
 }
 
@@ -4367,7 +4332,7 @@ issue_tex_matrix(const TexMatrixTransition *attrib) {
     glLoadMatrixf(attrib->get_matrix().get_data());
 #else
     scrn.pD3DDevice->SetTransform( D3DTS_TEXTURE0,
-                              (LPD3DMATRIX)attrib->get_matrix().get_data());
+                              (D3DMATRIX *)attrib->get_matrix().get_data());
 #endif              // WBD_GL_MODE
 }
 
@@ -4911,13 +4876,13 @@ issue_stencil(const StencilTransition *attrib) {
         D3DSTENCILOP zfail_op = get_stencil_action_type(attrib->get_zfail_action());
 
         #ifdef _DEBUG
-           if(!(scrn.D3DDevDesc.dwStencilCaps & (1<<(pass_op-1)))) {
+           if(!(scrn.d3dcaps.StencilCaps & (1<<(pass_op-1)))) {
                dxgsg_cat.warning() << "driver doesnt support pass stencil operation: " << pass_op << endl;
            }
-           if(!(scrn.D3DDevDesc.dwStencilCaps & (1<<(fail_op-1)))) {
+           if(!(scrn.d3dcaps.StencilCaps & (1<<(fail_op-1)))) {
                dxgsg_cat.warning() << "driver doesnt support fail stencil operation: " << fail_op << endl;
            }
-           if(!(scrn.D3DDevDesc.dwStencilCaps & (1<<(zfail_op-1)))) {
+           if(!(scrn.d3dcaps.StencilCaps & (1<<(zfail_op-1)))) {
                dxgsg_cat.warning() << "driver doesnt support zfail stencil operation: " << zfail_op << endl;
            }
         #endif
@@ -5414,7 +5379,7 @@ set_read_buffer(const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian::
 get_texture_wrap_mode(Texture::WrapMode wm) const {
-  static DWORD PandaTexWrapMode_to_D3DTexWrapMode[Texture::WM_invalid] = {
+  static D3DTEXTUREADDRESS PandaTexWrapMode_to_D3DTexWrapMode[Texture::WM_invalid] = {
     D3DTADDRESS_CLAMP,D3DTADDRESS_WRAP,D3DTADDRESS_MIRROR,D3DTADDRESS_MIRRORONCE,D3DTADDRESS_BORDER};
 
     return PandaTexWrapMode_to_D3DTexWrapMode[wm];
@@ -5651,13 +5616,17 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     // msg already delivered to d3d.dll and it's unloaded itself
     if(!bAtExitFnEverCalled) {
 
-        PRINTREFCNT(scrn.pD3DDevice,"exit start IDirectDraw7");
+        PRINTREFCNT(scrn.pD3DDevice,"exit start IIDirect3DDevice8");
 
         // these 2 calls release ddraw surfaces and vbuffers.  unsafe unless not on exit
         release_all_textures();
         release_all_geoms();
 
-        PRINTREFCNT(scrn.pD3DDevice,"after release_all_textures IDirectDraw7");
+        PRINTREFCNT(scrn.pD3DDevice,"after release_all_textures IDirect3DDevice8");
+
+
+//        RELEASE(_fpsmeter_font_surf,dxgsg,"fpsmeter fontsurf",false);
+//        PRINTREFCNT(scrn.pD3DDevice,"after fpsfont release IDirect3DDevice8");
 
         // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
         // if we're called from exit(), scrn.pD3DDevice may already have been released
@@ -5665,34 +5634,13 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
             scrn.pD3DDevice->SetTexture(0,NULL);  // should release this stuff internally anyway
             RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
         }
-
-        PRINTREFCNT(scrn.pD3DDevice,"after d3ddevice release IDirectDraw7");
-
-        RELEASE(_fpsmeter_font_surf,dxgsg,"fpsmeter fontsurf",false);
-
-        PRINTREFCNT(scrn.pD3DDevice,"after fpsfont release IDirectDraw7");
-
-        if((scrn.pD3DDevicesBack!=NULL)&&(scrn.pD3DDevicesZBuf!=NULL))
-            scrn.pD3DDevicesBack->DeleteAttachedSurface(0x0,scrn.pD3DDevicesZBuf);
-
-        // Release the DDraw and D3D objects used by the app
-        RELEASE(scrn.pD3DDevicesZBuf,dxgsg,"zbuffer",false);
-
-        PRINTREFCNT(scrn.pD3DDevice,"before releasing d3d obj, IDirectDraw7");
-        RELEASE(scrn.pD3D,dxgsg,"IDirect3D7 scrn.pD3D",false); //RELEASE_DOWN_TO_ZERO);
-        PRINTREFCNT(scrn.pD3DDevice,"after releasing d3d obj, IDirectDraw7");
-    
-        // is it wrong to explictly release scrn.pD3DDevicesBack if it is part of complex surface chain (as in fullscrn mode)?
-        RELEASE(scrn.pD3DDevicesBack,dxgsg,"backbuffer",false);
-        RELEASE(scrn.pD3DDevicesPrimary,dxgsg,"primary surface",false);
-
-        PRINTREFCNT(scrn.pD3DDevice,"after releasing all surfs, IDirectDraw7");
     }
 
+#if 0
     // for some reason, DLL_PROCESS_DETACH has not yet been sent to ddraw, so we can still call its fns
-
     // Do a safe check for releasing DDRAW. RefCount should be zero.
     if (scrn.pD3DDevice!=NULL) {
+        // note: restoredisplaymode may get done anyway when you release the d3ddevice
         if(bRestoreDisplayMode) {
           HRESULT hr = scrn.pD3DDevice->RestoreDisplayMode(); 
           if(dxgsg_cat.is_spam())
@@ -5717,20 +5665,23 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
            }
         }
     }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: dx_setup_after_resize
-//  Description: Recreate the back buffer and zbuffers at the new size
+//     Function: dx_resize_window
+//  Description: Recreate the device and render buffers at the new size
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-dx_setup_after_resize(RECT viewrect, HWND mwindow) {
-    if (scrn.pD3DDevicesBack == NULL) // nothing created yet
-        return;
+bool DXGraphicsStateGuardian::
+dx_resize_window(HWND mwindow, RECT viewrect) {
+    if (scrn.pD3DDevice == NULL) // nothing created yet
+        return true;
+
+    // first need to release any non-D3DPOOL_MANAGED objects.  then call Reset.
+    // then recreate any non-D3DPOOL_MANAGED objects.  (textures/VBs/etc)
 
     // for safety, need some better error-cleanup here
-    assert((scrn.pD3DDevicesPrimary!=NULL) && (scrn.pD3DDevicesBack!=NULL) && (scrn.pD3DDevicesZBuf!=NULL));
-
+/*
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_back);
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_zbuf);
 
@@ -5816,18 +5767,35 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
         dxgsg_cat.fatal() << "resize() - SetRenderTarget failed : result = " << D3DERRORSTRING(hr);
         exit(1);
     }
+*/
 
+    scrn.PresParams.BackBufferWidth = viewrect.bottom-viewrect.top;
+    scrn.PresParams.BackBufferHeight = viewrect.right-viewrect.left;
+    HRESULT hr=scrn.pD3DDevice->Reset(&scrn.PresParams);
+
+    if(FAILED(hr)) {
+        if(hr==D3DERR_OUTOFVIDEOMEMORY)
+            return false;
+
+        dxgsg_cat.error() << "dx_resize_window failed, hr = " << D3DERRORSTRING(hr);
+        exit(1);
+    }
+        
     // Create the viewport
-    D3DVIEWPORT7 vp = { 0, 0, renderWid, renderHt, 0.0f, 1.0f};
+    D3DVIEWPORT8 vp = {0, 0,    
+                       scrn.PresParams.BackBufferWidth,scrn.PresParams.BackBufferHeight,
+                       0.0f, 1.0f};
+
     hr = scrn.pD3DDevice->SetViewport( &vp );
-    if (hr != DD_OK) {
-        dxgsg_cat.fatal()
-        << "SetViewport failed : result = " << D3DERRORSTRING(hr);
+    if(FAILED(hr)) {
+        dxgsg_cat.fatal() << "SetViewport failed!  hr = " << D3DERRORSTRING(hr);
         exit(1);
     }
 
     if(_bShowFPSMeter) 
         SetFPSMeterPosition(scrn.view_rect);
+
+    return true;
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
@@ -5855,21 +5823,23 @@ bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
      // Re-fill the contents of textures and vertex buffers
      // which just got restored now.
 
-     LPDIRECTDRAWSURFACE7 ddtex = dtc->CreateTexture(dxgsg->scrn);
+     IDirect3DTexture8 *ddtex = dtc->CreateTexture(dxgsg->scrn);
      return ddtex!=NULL;
 }
 
 // release all textures and vertex/index buffers
-HRESULT DXGraphicsStateGuardian::DeleteAllVideoSurfaces(void) {
+HRESULT DXGraphicsStateGuardian::DeleteAllDeviceObjects(void) {
   // BUGBUG: need to handle vertexbuffer handling here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
   traverse_prepared_textures(delete_tex_callback,this);
 
+#if 0
   ULONG refcnt;
 
   if(_bShowFPSMeter)
      RELEASE(_fpsmeter_font_surf,dxgsg,"fpsmeter fontsurf",false);
+#endif
 
   if(dxgsg_cat.is_debug())
       dxgsg_cat.debug() << "release of all textures complete\n";
@@ -5877,7 +5847,7 @@ HRESULT DXGraphicsStateGuardian::DeleteAllVideoSurfaces(void) {
 }
 
 // recreate all textures and vertex/index buffers
-HRESULT DXGraphicsStateGuardian::RecreateAllVideoSurfaces(void) {
+HRESULT DXGraphicsStateGuardian::RecreateAllDeviceObjects(void) {
   // BUGBUG: need to handle vertexbuffer handling here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
@@ -5888,25 +5858,28 @@ HRESULT DXGraphicsStateGuardian::RecreateAllVideoSurfaces(void) {
   return S_OK;
 }
 
-HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
+HRESULT DXGraphicsStateGuardian::RestoreAllDeviceObjects(void) {
   // BUGBUG: this should also restore vertex buffer contents when they are implemented
   // You will need to destroy and recreate
   // optimized vertex buffers however, restoring is not enough.
 
+/*
   HRESULT hr;
-
   // note: could go through and just restore surfs that return IsLost() true
   // apparently that isnt as reliable w/some drivers tho
   if (FAILED(hr = scrn.pD3DDevice->RestoreAllSurfaces() )) {
         dxgsg_cat.fatal() << "RestoreAllSurfs failed : result = " << D3DERRORSTRING(hr);
     exit(1);
   }
+*/
+
+  // DX8 should handle restoring contents of managed textures automatically
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
-  traverse_prepared_textures(refill_tex_callback,this);
+//  traverse_prepared_textures(refill_tex_callback,this);
 
-  if(_bShowFPSMeter)
-      FillFPSMeterTexture();
+//  if(_bShowFPSMeter)
+//      FillFPSMeterTexture();
 
   if(dxgsg_cat.is_debug())
       dxgsg_cat.debug() << "restore and refill of video surfaces complete...\n";
@@ -5920,7 +5893,7 @@ HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
 //       Description:   Repaint primary buffer from back buffer
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_frame(void) {
-  if(scrn.pD3DDevicesPrimary==NULL)
+  if(scrn.pD3DDevice==NULL)
     return;
 
   DO_PSTATS_STUFF(PStatTimer timer(_win->_swap_pcollector));  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
@@ -6052,9 +6025,9 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
               else dxgsg_cat.debug() << "Another app has DDRAW exclusive mode, waiting...\n";
           }
 
-          if(_dx_ready) {
+          if(_bDXisReady) {
              _win->deactivate_window();
-             _dx_ready = FALSE;
+             _bDXisReady = FALSE;
           }
         } else if(hr==DDERR_WRONGMODE) {
             // This means that the desktop mode has changed
@@ -6083,7 +6056,7 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
 
           RestoreAllVideoSurfaces();  
 
-          _dx_ready = TRUE;
+          _bDXisReady = TRUE;
 
         } else if(hr==DDERR_WRONGMODE) {
             // This means that the desktop mode has changed
@@ -6981,8 +6954,10 @@ End:
         DeleteDC( hdcColor );
     if( hdcMask != NULL )
         DeleteDC( hdcMask );
+
     SAFE_DELETE_ARRAY( pcrArrayColor );
     SAFE_DELETE_ARRAY( pcrArrayMask );
-    SAFE_RELEASE( pCursorBitmap );
+    ULONG refcnt; 
+    RELEASE(pCursorBitmap,dxgsg,"pCursorBitmap",RELEASE_ONCE);
     return hr;
 }

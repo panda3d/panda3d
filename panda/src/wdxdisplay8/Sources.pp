@@ -7,8 +7,7 @@
 #if $[BUILD_DX8]
 #begin lib_target
   #define TARGET wdxdisplay8
-  #define LOCAL_LIBS \
-    dxgsg
+  #define LOCAL_LIBS dxgsg8
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
   
