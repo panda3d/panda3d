@@ -8,19 +8,24 @@
   #define USE_FFTW yes
   #define UNIX_SYS_LIBS m
 
-  #define SOURCES \
-    boundingHexahedron.I boundingHexahedron.cxx boundingHexahedron.h  \
-    boundingLine.I boundingLine.cxx boundingLine.h boundingSphere.I \
-    boundingSphere.cxx boundingSphere.h boundingVolume.I \
-    boundingVolume.cxx boundingVolume.h config_mathutil.cxx \
-    config_mathutil.h fftCompressor.cxx fftCompressor.h \
-    finiteBoundingVolume.cxx finiteBoundingVolume.h frustum.h \
-    frustum_src.I frustum_src.h geometricBoundingVolume.I \
-    geometricBoundingVolume.cxx geometricBoundingVolume.h look_at.cxx \
-    look_at.h look_at_src.I look_at_src.cxx look_at_src.h \
-    omniBoundingVolume.I omniBoundingVolume.cxx omniBoundingVolume.h \
-    plane.cxx plane.h plane_src.I plane_src.cxx plane_src.h \
-    rotate_to.cxx rotate_to.h rotate_to_src.cxx
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
+
+  #define SOURCES  \
+     boundingHexahedron.I boundingHexahedron.h boundingLine.I  \
+     boundingLine.h boundingSphere.I boundingSphere.h  \
+     boundingVolume.I boundingVolume.h config_mathutil.h  \
+     fftCompressor.h finiteBoundingVolume.h frustum.h  \
+     frustum_src.I frustum_src.h geometricBoundingVolume.I  \
+     geometricBoundingVolume.h look_at.h look_at_src.I  \
+     look_at_src.cxx look_at_src.h omniBoundingVolume.I  \
+     omniBoundingVolume.h plane.h plane_src.I plane_src.cxx  \
+     plane_src.h rotate_to.h rotate_to_src.cxx
+     
+  #define INCLUDED_SOURCES \
+     boundingHexahedron.cxx boundingLine.cxx boundingSphere.cxx  \
+     boundingVolume.cxx config_mathutil.cxx fftCompressor.cxx  \
+     finiteBoundingVolume.cxx geometricBoundingVolume.cxx  \
+     look_at.cxx omniBoundingVolume.cxx plane.cxx rotate_to.cxx
 
   #define INSTALL_HEADERS \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I \
