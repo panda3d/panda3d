@@ -110,6 +110,23 @@ get_lens() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_cull_center
+//       Access: Public
+//  Description: Returns the point from which the culling operations
+//               will be performed.  This is normally the camera, but
+//               if camera->set_cull_center() has been specified, it
+//               will be that special node instead.
+////////////////////////////////////////////////////////////////////
+INLINE const NodePath &SceneSetup::
+get_cull_center() const {
+  if (_camera_node->get_cull_center().is_empty()) {
+    return _camera_path;
+  } else {
+    return _camera_node->get_cull_center();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_camera_transform
 //       Access: Public
 //  Description: Specifies the position of the camera relative to the

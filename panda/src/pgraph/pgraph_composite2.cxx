@@ -18,6 +18,7 @@
 #include "pandaNode.cxx"
 #include "planeNode.cxx"
 #include "pointLight.cxx"
+#include "portalClipper.cxx"
 #include "renderAttrib.cxx"
 #include "renderEffect.cxx"
 #include "renderEffects.cxx"

@@ -26,11 +26,9 @@
 #include "geomNode.h"
 #include "config_pgraph.h"
 #include "boundingSphere.h"
+#include "boundingHexahedron.h"
 #include "geomSphere.h"
-#include "colorAttrib.h"
-#include "renderModeAttrib.h"
-#include "cullFaceAttrib.h"
-#include "depthOffsetAttrib.h"
+#include "portalClipper.h"
 
 #ifndef CPPPARSER
 PStatCollector CullTraverser::_nodes_pcollector("Nodes");
@@ -79,10 +77,65 @@ traverse(const NodePath &root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
   nassertv(_scene_setup != (SceneSetup *)NULL);
 
-  CullTraverserData data(root, get_render_transform(),
-                         TransformState::make_identity(),
-                         _initial_state, _view_frustum, _guard_band);
-  traverse(data);
+  if (allow_portal_cull) {
+    PT(GeometricBoundingVolume) vf = _view_frustum;
+    pgraph_cat.spam() << "_view_frustum is " << *_view_frustum << "\n";
+
+    GeometricBoundingVolume *local_frustum = NULL;
+    PT(BoundingVolume) bv = _scene_setup->get_lens()->make_bounds();
+    if (bv != (BoundingVolume *)NULL &&
+        bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+      
+      local_frustum = DCAST(GeometricBoundingVolume, bv);
+    }
+    pgraph_cat.spam() << "local_frustum is " << *local_frustum << "\n";
+      
+    PortalClipper portal_viewer(local_frustum, _scene_setup);
+    portal_viewer.draw_camera_frustum();
+
+    // for each portal draw its frustum
+    for (int portal_idx=1; portal_idx<2; ++portal_idx) {
+      PT(BoundingVolume) reduced_frustum;
+
+      portal_viewer.prepare_portal(portal_idx);
+      portal_viewer.clip_portal(portal_idx);
+      if ((reduced_frustum = portal_viewer.get_reduced_frustum(portal_idx))) {
+        pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
+        vf = DCAST(GeometricBoundingVolume, reduced_frustum);
+        CPT(TransformState) cull_center_transform = 
+          _scene_setup->get_cull_center().get_transform(_scene_setup->get_scene_root());
+        vf->xform(cull_center_transform->get_mat());
+      }
+    }
+    pgraph_cat.spam() << "vf is " << *vf << "\n";
+
+    CullTraverserData data(root, get_render_transform(),
+                           TransformState::make_identity(),
+                           _initial_state, _view_frustum, 
+                           vf, _guard_band);
+
+    traverse(data);
+    
+    // finally add the lines to be drawn
+    portal_viewer.draw_lines();
+      
+    // Render the frustum relative to the cull center.
+    NodePath cull_center = _scene_setup->get_cull_center();
+    CPT(TransformState) transform = cull_center.get_transform(root);
+    
+    CullTraverserData my_data(data, portal_viewer._previous);
+    my_data._render_transform = my_data._render_transform->compose(transform);
+    traverse(my_data);
+    pgraph_cat.debug() << "finished portal culling\n";
+  }
+  else {
+    CullTraverserData data(root, get_render_transform(),
+                           TransformState::make_identity(),
+                           _initial_state, _view_frustum, 
+                           NULL, _guard_band);
+    
+    traverse(data);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,9 +151,29 @@ traverse(CullTraverserData &data) {
   // contain decals or require a special cull callback.  As an
   // optimization, we should tag nodes with these properties as
   // being "fancy", and skip this processing for non-fancy nodes.
+  
   if (data.is_in_view(_camera_mask)) {
     PandaNode *node = data.node();
+    pgraph_cat.spam() << "\n" << data._node_path << "\n";
+    
+    // let me see the names, curious
+    unsigned int loc = node->get_name().find("pTypeArchway");
+    if (loc != string::npos) {
+      node->output(pgraph_cat.debug());
+      pgraph_cat.spam() << endl;
+      if (data._reduced_frustum) {
+        pgraph_cat.debug() << "setting reduced frustum to this node\n";
 
+        if (data._view_frustum) {
+          pgraph_cat.spam() << *data._view_frustum << endl;
+        }
+        pgraph_cat.spam() << *data._reduced_frustum << endl;
+
+        data._view_frustum = data._reduced_frustum;
+        data._reduced_frustum = NULL;
+      }
+    }
+  
     const RenderEffects *node_effects = node->get_effects();
     if (node_effects->has_show_bounds()) {
       // If we should show the bounding volume for this node, make it
@@ -141,6 +214,7 @@ void CullTraverser::
 traverse_below(CullTraverserData &data) {
   _nodes_pcollector.add_level(1);
   PandaNode *node = data.node();
+
   const RenderEffects *node_effects = node->get_effects();
   bool has_decal = node_effects->has_decal();
   if (has_decal && !_depth_offset_decals) {

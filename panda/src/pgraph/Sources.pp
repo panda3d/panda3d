@@ -69,6 +69,7 @@
     pandaNode.I pandaNode.h \
     planeNode.I planeNode.h \
     pointLight.I pointLight.h \
+    portalClipper.I portalClipper.h \
     renderAttrib.I renderAttrib.h \
     renderEffect.I renderEffect.h \
     renderEffects.I renderEffects.h \
@@ -153,6 +154,7 @@
     pandaNode.cxx \
     planeNode.cxx \
     pointLight.cxx \
+    portalClipper.cxx \
     renderAttrib.cxx \
     renderEffect.cxx \
     renderEffects.cxx \
@@ -233,6 +235,7 @@
     pandaNode.I pandaNode.h \
     planeNode.I planeNode.h \
     pointLight.I pointLight.h \
+    portalClipper.I portalClipper.h \
     renderAttrib.I renderAttrib.h \
     renderEffect.I renderEffect.h \
     renderEffects.I renderEffects.h \

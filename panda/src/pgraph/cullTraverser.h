@@ -33,8 +33,9 @@
 
 class PandaNode;
 class CullHandler;
-class CullTraverserData;
 class CullableObject;
+class CullTraverserData;
+class PortalClipper;
 class NodePath;
 
 ////////////////////////////////////////////////////////////////////

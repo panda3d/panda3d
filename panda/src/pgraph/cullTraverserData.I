@@ -28,12 +28,14 @@ CullTraverserData(const NodePath &start,
                   const TransformState *net_transform,
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
+                  GeometricBoundingVolume *reduced_frustum,
                   GeometricBoundingVolume *guard_band) :
   _node_path(start),
   _render_transform(render_transform),
   _net_transform(net_transform),
   _state(state),
   _view_frustum(view_frustum),
+  _reduced_frustum(reduced_frustum),
   _guard_band(guard_band)
 {
 }
@@ -50,6 +52,7 @@ CullTraverserData(const CullTraverserData &copy) :
   _net_transform(copy._net_transform),
   _state(copy._state),
   _view_frustum(copy._view_frustum),
+  _reduced_frustum(copy._reduced_frustum),
   _guard_band(copy._guard_band)
 {
 }
@@ -66,6 +69,7 @@ operator = (const CullTraverserData &copy) {
   _net_transform = copy._net_transform;
   _state = copy._state;
   _view_frustum = copy._view_frustum;
+  _reduced_frustum = copy._reduced_frustum;
   _guard_band = copy._guard_band;
 }
 
@@ -82,6 +86,7 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _net_transform(parent._net_transform),
   _state(parent._state),
   _view_frustum(parent._view_frustum),
+  _reduced_frustum(parent._reduced_frustum),
   _guard_band(parent._guard_band)
 {
 }

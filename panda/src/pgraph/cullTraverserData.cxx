@@ -62,6 +62,7 @@ apply_transform_and_state(CullTraverser *trav,
     _render_transform = _render_transform->compose(node_transform);
 
     if ((_view_frustum != (GeometricBoundingVolume *)NULL) ||
+        (_reduced_frustum != (GeometricBoundingVolume *)NULL) ||
         (_guard_band != (GeometricBoundingVolume *)NULL)) {
       // We need to move the viewing frustums into the node's
       // coordinate space by applying the node's inverse transform.
@@ -70,6 +71,7 @@ apply_transform_and_state(CullTraverser *trav,
         // trying, we'll just give up on frustum culling from this
         // point down.
         _view_frustum = (GeometricBoundingVolume *)NULL;
+        _reduced_frustum = (GeometricBoundingVolume *)NULL;
         _guard_band = (GeometricBoundingVolume *)NULL;
 
       } else {
@@ -81,6 +83,11 @@ apply_transform_and_state(CullTraverser *trav,
         if (_view_frustum != (GeometricBoundingVolume *)NULL) {
           _view_frustum = DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
           _view_frustum->xform(inv_transform->get_mat());
+        }
+
+        if (_reduced_frustum != (GeometricBoundingVolume *)NULL) {
+          _reduced_frustum = DCAST(GeometricBoundingVolume, _reduced_frustum->make_copy());
+          _reduced_frustum->xform(inv_transform->get_mat());
         }
         
         if (_guard_band != (GeometricBoundingVolume *)NULL) {

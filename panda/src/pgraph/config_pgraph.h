@@ -30,6 +30,7 @@ NotifyCategoryDecl(pgraph, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(loader, EXPCL_PANDA, EXPTP_PANDA);
 
 extern const bool fake_view_frustum_cull;
+extern const bool allow_portal_cull;
 extern const bool unambiguous_graph;
 extern const bool allow_unrelated_wrt;
 extern const bool paranoid_compose;

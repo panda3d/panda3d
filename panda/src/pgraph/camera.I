@@ -115,3 +115,30 @@ INLINE DrawMask Camera::
 get_camera_mask() const {
   return _camera_mask;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_cull_center
+//       Access: Public
+//  Description: Specifies the point from which the culling operations
+//               are performed.  Normally, this is the same as the
+//               camera, and that is the default if this is not
+//               specified; but it may sometimes be useful to perform
+//               the culling from some other viewpoint, particularly
+//               when you are debugging the culling itself.
+////////////////////////////////////////////////////////////////////
+INLINE void Camera::
+set_cull_center(const NodePath &cull_center) {
+  _cull_center = cull_center;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_cull_center
+//       Access: Public
+//  Description: Returns the point from which the culling operations
+//               will be performed, if it was set by
+//               set_cull_center(), or the empty NodePath otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE const NodePath &Camera::
+get_cull_center() const {
+  return _cull_center;
+}

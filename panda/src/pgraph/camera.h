@@ -59,12 +59,16 @@ PUBLISHED:
   INLINE void set_camera_mask(DrawMask mask);
   INLINE DrawMask get_camera_mask() const;
 
+  INLINE void set_cull_center(const NodePath &cull_center);
+  INLINE const NodePath &get_cull_center() const;
+
 private:
   void add_display_region(DisplayRegion *display_region);
   void remove_display_region(DisplayRegion *display_region);
 
   bool _active;
   NodePath _scene;
+  NodePath _cull_center;
 
   DrawMask _camera_mask;
 

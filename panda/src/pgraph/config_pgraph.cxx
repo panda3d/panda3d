@@ -62,6 +62,7 @@
 #include "pandaNode.h"
 #include "planeNode.h"
 #include "pointLight.h"
+#include "portalClipper.h"
 #include "renderAttrib.h"
 #include "renderEffect.h"
 #include "renderEffects.h"
@@ -94,6 +95,10 @@ ConfigureFn(config_pgraph) {
 // object in red wireframe, rather than actually culling it.  This
 // helps make culling errors obvious.
 const bool fake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cull", false);
+
+// Set this true to enable portal clipping. This will enable the renderer to cull
+// more objects that are clipped if not in the current list ot portals
+const bool allow_portal_cull = config_pgraph.GetBool("allow-portal-cull", false);
 
 // Set this true to make ambiguous path warning messages generate an
 // assertion failure instead of just a warning (which can then be
@@ -203,6 +208,7 @@ init_libpgraph() {
   PandaNode::init_type();
   PlaneNode::init_type();
   PointLight::init_type();
+  PortalClipper::init_type();
   RenderAttrib::init_type();
   RenderEffect::init_type();
   RenderEffects::init_type();
@@ -256,6 +262,7 @@ init_libpgraph() {
   PandaNode::register_with_read_factory();
   PlaneNode::register_with_read_factory();
   PointLight::register_with_read_factory();
+  //PortalClipper::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();

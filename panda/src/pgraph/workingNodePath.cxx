@@ -111,6 +111,13 @@ r_get_node_path() const {
   nassertr(comp != (NodePathComponent *)NULL, NULL);
 
   PT(NodePathComponent) result = PandaNode::get_component(comp, _node);
-  nassertr(result != (NodePathComponent *)NULL, NULL);
+  if (result == (NodePathComponent *)NULL) {
+    // This means we found a disconnected chain in the
+    // WorkingNodePath's ancestry: the node above this node isn't
+    // connected.  In this case, don't attempt to go higher; just
+    // truncate the NodePath at the bottom of the disconnect.
+    return PandaNode::get_top_component(_node, true);
+  }
+
   return result;
 }

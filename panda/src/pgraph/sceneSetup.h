@@ -50,6 +50,8 @@ public:
   INLINE void set_lens(const Lens *lens);
   INLINE const Lens *get_lens() const;
 
+  INLINE const NodePath &get_cull_center() const;
+
   INLINE void set_camera_transform(const TransformState *camera_transform);
   INLINE const TransformState *get_camera_transform() const;
 
