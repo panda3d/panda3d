@@ -1,22 +1,12 @@
 SETABS PANDA_VER 0.8
 MODREL ETC_PATH etc
-DOCSH if ( -e /usr/local/mozilla ) setenv USE_NSPR t
-DOCSH if ( -e /for/program/mozilla ) setenv USE_NSPR t
-DOCSH if (( -e /usr/include/GL ) || ( -e /usr/local/include/GL )) setenv HAVE_GL "yes"
 DOCSH if ( ! $?CONFIG_CONFIG ) then
 DOCSH   setenv CONFIG_CONFIG :configpath=CFG_PATH:configpath=ETC_PATH
 DOCSH   setenv CFG_PATH ~
 DOCSH   setenv CFG_PATH .:${CFG_PATH}:/usr/local/etc
 DOCSH endif
-DOCSH if ( -e /usr/local/libmikmod ) setenv USE_MIKMOD t
-DOCSH if ( -e /for/program/libmikmod ) setenv USE_MIKMOD t
-DOSH if [ -e /usr/local/mozilla ]; then USE_NSPR="t"; export USE_NSPR; fi
-DOSH if [ -e /for/program/mozilla ]; then USE_NSPR="t"; export USE_NSPR; fi
-DOSH if [ -e /usr/include/GL -o -e /usr/local/include/GL ]; then HAVE_GL="yes"; export HAVE_GL; fi
 DOSH if [ -z "$CONFIG_CONFIG" ]; then
 DOSH   CONFIG_CONFIG=:configpath=CFG_PATH:configpath=ETC_PATH
 DOSH   CFG_PATH=.:$HOME:/usr/local/etc
 DOSH   export CONFIG_CONFIG CFG_PATH
 DOSH fi
-DOSH if [ -e /usr/local/libmikmod ]; then USE_MIKMOD="t"; export USE_MIKMOD; fi
-DOSH if [ -e /for/program/libmikmod ]; then USE_MIKMOD="t"; export USE_MIKMOD; fi
