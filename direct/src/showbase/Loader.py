@@ -17,14 +17,17 @@ class Loader:
     
     # special methods
     def __init__(self, base):
-        """__init__(self)
-        Loader constructor"""
+        """
+        Loader constructor
+        """
         self.base = base
         self.loader = PandaLoader()
         
     # model loading funcs
     def loadModel(self, modelPath, fMakeNodeNamesUnique = 0):
-        """loadModel(self, string)
+        """
+        modelPath is a string.
+
         Attempt to load a model from given file path, return
         a nodepath to the model if successful or None otherwise."""
         assert(Loader.notify.debug("Loading model: %s" % (modelPath) ))
@@ -40,7 +43,9 @@ class Loader:
         return nodePath
 
     def loadModelOnce(self, modelPath):
-        """loadModelOnce(self, string)
+        """
+        modelPath is a string.
+
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise"""
@@ -94,7 +99,9 @@ class Loader:
             return None
 
     def loadModelNode(self, modelPath):
-        """loadModelNode(self, string)
+        """
+        modelPath is a string.
+        
         This is like loadModelOnce in that it loads a model from the
         modelPool, but it does not then instance it to hidden and it
         returns a Node instead of a NodePath.  This is particularly
@@ -111,7 +118,8 @@ class Loader:
         return ModelPool.loadModel(modelPath)
 
     def unloadModel(self, modelPath):
-        """unloadModel(self, string)
+        """
+        modelPath is a string.
         """
         assert(Loader.notify.debug("Unloading model: %s" % (modelPath)))
         ModelPool.releaseModel(modelPath)
@@ -124,7 +132,8 @@ class Loader:
                  minFilter = None, magFilter = None,
                  anisotropicDegree = None,
                  lineHeight = None):
-        """loadFont(self, string)
+        """
+        modelPath is a string.
 
         This loads a special model as a TextFont object, for rendering
         text with a TextNode.  A font file must be either a special
@@ -193,7 +202,9 @@ class Loader:
 
     # texture loading funcs
     def loadTexture(self, texturePath, alphaPath = None):
-        """loadTexture(self, string)
+        """
+        texturePath is a string.
+
         Attempt to load a texture from the given file path using
         TexturePool class. Returns None if not found"""
 
@@ -210,8 +221,6 @@ class Loader:
         return texture
 
     def unloadTexture(self, texture):
-        """unloadTexture(self, texture)
-        """
         assert(Loader.notify.debug("Unloading texture: %s" % (texture) ))
         TexturePool.releaseTexture(texture)
 

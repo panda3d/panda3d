@@ -56,8 +56,9 @@ NotifyCategory(const string &fullname, const string &basename,
 
   if (!config_name.empty()) {
     string severity_name;
-    if (!config_notify.AmInitializing())
+    if (!config_notify.AmInitializing()) {
       severity_name = config_notify.GetString(config_name, "");
+    }
     if (!severity_name.empty()) {
       // The user specified a particular severity for this category at
       // config time.  Use it.

@@ -16,20 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <boundingLine.h>
-#include <boundingSphere.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <geom.h>
-#include <geomLinestrip.h>
-#include <geomNode.h>
-#include <pointerToArray.h>
-#include <lens.h>
-#include <lensNode.h>
-#include <renderRelation.h>
-#include <transformTransition.h>
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "boundingLine.h"
+#include "boundingSphere.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "geom.h"
+#include "geomLinestrip.h"
+#include "geomNode.h"
+#include "pointerToArray.h"
+#include "lens.h"
+#include "lensNode.h"
+#include "renderRelation.h"
+#include "transformTransition.h"
 
 #include "collisionEntry.h"
 #include "collisionHandler.h"

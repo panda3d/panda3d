@@ -63,27 +63,27 @@ EXPCL_DTOOLCONFIG extern int total_num_get;
 
 template <class GetConfig>
 class Config {
-   protected:
-      static void ConfigFunc();
-      static void Flag(bool);
-   public:
-      Config();
-      ~Config();
-      static bool         AmInitializing();
-      static ConfigString Name();
-      static bool         Flag();
-      static void         Init();
-      static bool         Defined(const ConfigString& sym);
-      static ConfigString Get(const ConfigString sym);
-      static ConfigTable::Symbol& GetAll(const ConfigString,
-                                         ConfigTable::Symbol&);
-   PUBLISHED:
-      static bool         GetBool(const ConfigString sym, bool def = false);
-      static int          GetInt(const ConfigString sym, int def = 0);
-      static float        GetFloat(const ConfigString sym, float def = 0.);
-      static double       GetDouble(const ConfigString sym, double def = 0.);
-      static ConfigString GetString(const ConfigString sym,
-                                    const ConfigString def = "");
+public:
+  Config();
+  ~Config();
+  static bool         AmInitializing();
+  static ConfigString Name();
+  static bool         Flag();
+  static void         Init();
+  static bool         Defined(const ConfigString& sym);
+  static ConfigString Get(const ConfigString sym);
+  static ConfigTable::Symbol& GetAll(const ConfigString,
+                                     ConfigTable::Symbol&);
+PUBLISHED:
+  static bool         GetBool(const ConfigString sym, bool def = false);
+  static int          GetInt(const ConfigString sym, int def = 0);
+  static float        GetFloat(const ConfigString sym, float def = 0.);
+  static double       GetDouble(const ConfigString sym, double def = 0.);
+  static ConfigString GetString(const ConfigString sym,
+                                const ConfigString def = "");
+protected:
+  static void ConfigFunc();
+  static void Flag(bool);
 };
 
 // Implementation follows

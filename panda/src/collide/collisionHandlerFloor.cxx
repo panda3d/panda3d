@@ -76,7 +76,6 @@ handle_entries() {
         << get_type() << " doesn't know about "
         << *from_node << ", disabling.\n";
       okflag = false;
-
     } else {
       ColliderDef &def = (*ci).second;
       if (!def.is_valid()) {
@@ -84,7 +83,6 @@ handle_entries() {
           << "Removing invalid collider " << *from_node << " from "
           << get_type() << "\n";
         _colliders.erase(ci);
-
       } else {
         // Get the maximum height for all collisions with this node.
         bool got_max = false;
