@@ -364,7 +364,8 @@ PyUtilProfileDefaultFilename = 'profiledata'
 PyUtilProfileDefaultLines = 80
 PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
 
-# first, call this from the prompt
+# call this from the prompt, and break back out to the prompt
+# to stop profiling
 def startProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
@@ -374,7 +375,7 @@ def startProfile(filename=PyUtilProfileDefaultFilename,
     if not silent:
         printProfile(filename, lines, sorts)
 
-# finally, break out to the prompt and call this
+# call this to see the results again
 def printProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,):
