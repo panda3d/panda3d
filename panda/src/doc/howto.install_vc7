@@ -1,0 +1,63 @@
+VC7 upgrade instructions in 2 easy steps
+------------------------
+Step 1. cvs update wintools & dtool
+
+Step 2.
+Run v:\msvc7\vc_setup\setup.exe, or install from the MSDN 'Visual
+Studio.NET' CD
+Click on 'Windows Component Update' (if it is highlighted, else click '2')
+Click 'Continue' (Selecting 'Do not use this machine to host web projects')
+You will install IE6, which will requires a reboot.  Give your pw if you
+want it to happen automatically.
+
+After rebooting, setup should start again.  If it does not, go back and
+rerun
+it, it should remember where it left off.
+
+After installing components, you are ready to install VC7 in Step 2.
+Enter this step and enter the product-key, which is stored in
+V:\msvc7\vc7-prodkey.txt
+
+On the 'select items to install page', you need uncheck things to avoid
+wasting 
+gigs of extra space and install time.  Uncheck everything except for
+Language Tools->Visual C++, Server Components->Remote Debugger->Native
+Remote
+Debugger, and if you want, Documentation (this is a gig, and is only a
+slight
+update if you already have MSDN installed locally though.  you will want to
+uninstall the separately-installed MSDN docs if you get this.)
+
+Unlike VC 6.0, there is no option to add the required compiler bin 
+directories to the environment path automatically.  To do this, if you 
+are running from the NT command line, run 
+"C:\Program Files\Microsoft Visual Studio .NET\Vc7\bin\vcvars32.bat"
+
+If you are using tcsh.exe under cygwin,
+'source $WINTOOLS/bin/setup_msvc7.csh'
+should enable VC7.  You will want to copy the top portion of setup_msvc7.csh
+to your .cshrc,
+so you can do 'set_msvc7' to set up the PATH properly in the future, or you
+can
+add the required dirs to the front of your path explicitly as well as
+'setenv USE_COMPILER MSVC7'
+to always use VC7.
+
+---
+Notes:
+The debug C runtime seems significantly slower than the vc6 one, which has
+slowed Opt2 
+install builds considerably.
+---------
+To distribute toontown,
+We need to rebuild the python and nspr DLLs to link to the new
+VC7 C and C++ runtime DLLs, which are 
+msvcp70.dll
+msvcr70.dll
+
+and these must replace 
+msvcp60.dll
+msvcrt.dll
+in the Toontown download.
+
+The nspr work is already checked in.
