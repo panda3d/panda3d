@@ -92,7 +92,8 @@ PUBLISHED:
   INLINE int get_client_num_files(string mfname) const;
   INLINE int get_server_num_files(string mfname) const;
 
-  INLINE string get_client_file_name(string mfname, int index) const;
+  // The client does not store the names of all the files anymore
+  // INLINE string get_client_file_name(string mfname, int index) const;
   INLINE string get_server_file_name(string mfname, int index) const;
 
   // Queries from the Launcher
@@ -156,8 +157,8 @@ public:
     int parse_record_header(uchar *start, int size);
     PT(MultifileRecord) parse_mfr(uchar *start, int size);
     PT(FileRecord) parse_fr(uchar *start, int size);
-    bool read(istream &read_stream);
-    bool write(ofstream &write_stream);
+    bool read(istream &read_stream, bool want_server_info);
+    bool write(ofstream &write_stream, bool want_server_info);
     Filename _filename;
     MultifileRecords _mfile_records;
   private:
@@ -170,12 +171,12 @@ public:
   };
 
 PUBLISHED:
-  Db read_db(Filename &file);
-  Db read_db(Ramfile &file);
-  bool write_db(Filename &file, Db db);
+  Db read_db(Filename &file, bool want_server_info);
+  Db read_db(Ramfile &file, bool want_server_info);
+  bool write_db(Filename &file, Db db, bool want_server_info);
 
 public:
-  // The doenload db stores two databases, one that represents the client's state
+  // The download db stores two databases, one that represents the client's state
   // and one that represents the server state
   Db _client_db;
   Db _server_db;

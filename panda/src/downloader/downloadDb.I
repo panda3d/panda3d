@@ -85,7 +85,7 @@ get_client_multifile_size(string mfname) const {
 INLINE void DownloadDb::
 set_client_multifile_size(string mfname, int size) {
   (_client_db.get_multifile_record_named(mfname))->_size = size;
-  write_db(_client_db._filename, _client_db);
+  write_client_db(_client_db._filename);
 }
 
 
@@ -97,7 +97,7 @@ set_client_multifile_size(string mfname, int size) {
 INLINE int DownloadDb::
 set_client_multifile_delta_size(string mfname, int size) {
   (_client_db.get_multifile_record_named(mfname))->_size += size;
-  write_db(_client_db._filename, _client_db);
+  write_client_db(_client_db._filename);
   // Return the new total
   return (_client_db.get_multifile_record_named(mfname))->_size;
 }
@@ -134,7 +134,7 @@ set_server_multifile_size(string mfname, int size) {
 INLINE void DownloadDb::
 set_client_multifile_incomplete(string mfname) {
   (_client_db.get_multifile_record_named(mfname))->_status = Status_incomplete;
-  write_db(_client_db._filename, _client_db);
+  write_client_db(_client_db._filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ set_client_multifile_incomplete(string mfname) {
 INLINE void DownloadDb::
 set_client_multifile_complete(string mfname) {
   (_client_db.get_multifile_record_named(mfname))->_status = Status_complete;
-  write_db(_client_db._filename, _client_db);
+  write_client_db(_client_db._filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ set_client_multifile_complete(string mfname) {
 INLINE void DownloadDb::
 set_client_multifile_decompressed(string mfname) {
   (_client_db.get_multifile_record_named(mfname))->_status = Status_decompressed;
-  write_db(_client_db._filename, _client_db);
+  write_client_db(_client_db._filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,7 +167,7 @@ set_client_multifile_decompressed(string mfname) {
 INLINE void DownloadDb::
 set_client_multifile_extracted(string mfname) {
   (_client_db.get_multifile_record_named(mfname))->_status = Status_extracted;
-  write_db(_client_db._filename, _client_db);
+  write_client_db(_client_db._filename);
 }
 
 
@@ -188,16 +188,6 @@ get_client_num_files(string mfname) const {
 INLINE int DownloadDb::
 get_server_num_files(string mfname) const {
   return (_server_db.get_multifile_record_named(mfname))->get_num_files();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE string DownloadDb::
-get_client_file_name(string mfname, int index) const {
-  return (_client_db.get_multifile_record_named(mfname))->get_file_name(index);
 }
 
 ////////////////////////////////////////////////////////////////////
