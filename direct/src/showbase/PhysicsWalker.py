@@ -56,9 +56,14 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__slideSpeed=0.0
         self.__vel=Vec3(0.0)
         self.__slideButton = 0
+        
+        self.isAirborne = 0
+        self.highMark = 0
 
     def spawnTest(self):
         assert(self.debugPrint("\n\nspawnTest()\n"))
+        if not self.wantAvatarPhysicsIndicator:
+            return
         from PandaModules import *
         from IntervalGlobal import *
         import MovingPlatform
@@ -70,7 +75,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.platform.destroy()
             del self.platform
         
-        model = loader.loadModelCopy('phase_7/models/cogHQ/platform1')
+        model = loader.loadModelCopy('phase_9/models/cogHQ/platform1')
         fakeId = id(self)
         self.platform = MovingPlatform.MovingPlatform()
         self.platform.setupCopyModel(fakeId, model, 'platformcollision')
@@ -288,7 +293,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         if self.wantAvatarPhysicsIndicator:
             onScreenDebug.append("localToon pos = %s\n"%(toonbase.localToon.getPos().pPrintValues(),))
-            onScreenDebug.append("localToon hpr = %s\n"%(toonbase.localToon.getHpr().pPrintValues(),))
+            onScreenDebug.append("localToon h = % 10.4f\n"%(toonbase.localToon.getH(),))
+            #onScreenDebug.append("localToon name = %s\n"%(toonbase.localToon.getName(),))
+            onScreenDebug.append("localToon anim = %s\n"%(toonbase.localToon.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
         physObject=self.actorNode.getPhysicsObject()
         #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
@@ -385,23 +392,39 @@ class PhysicsWalker(DirectObject.DirectObject):
                         self.__oldPosDelta.pPrintValues())
 
                 if 1:
+                    onScreenDebug.add("__oldContact",
+                        contact.pPrintValues())
+                    onScreenDebug.add("contact",
+                        contact.pPrintValues())
+                    onScreenDebug.add("__oldAirborneHeight", "% 10.4f"%(
+                        self.getAirborneHeight(),))
                     onScreenDebug.add("airborneHeight", "% 10.4f"%(
                         self.getAirborneHeight(),))
         airborneHeight=self.getAirborneHeight()
+        if airborneHeight > self.highMark:
+            self.highMark = airborneHeight
+            onScreenDebug.add("highMark", "% 10.4f"%(
+                self.highMark,))
         #if airborneHeight < 0.1: #contact!=Vec3.zero():
-        if contact!=Vec3.zero():
-            contactLength = contact.length()
-            contact.normalize()
-            angle=contact.dot(Vec3.up())
-            if angle>self.__standableGround:
-                # ...avatar is on standable ground.
-                if self.__oldAirborneHeight > 0.1: #self.__oldContact==Vec3.zero():
-                    # ...avatar was airborne.
+        if 1:
+            onScreenDebug.add("isAirborne", "%d"%(
+                self.isAirborne,))
+            if airborneHeight > 0.7:
+                # ...the avatar is airborne (maybe a lot or a tiny amount).
+                self.isAirborne = 1
+            else:
+                # ...the avatar has touched something (but might not be on the ground).
+                if self.isAirborne:
+                    contactLength = contact.length()
                     if contactLength>self.__hardLandingForce:
+                        #print "jumpHardLand"
                         messenger.send("jumpHardLand")
                     else:
+                        #print "jumpLand"
                         messenger.send("jumpLand")
+                self.isAirborne = 0
                 if self.__jumpButton:
+                    #print "jump"
                     self.__jumpButton=0
                     messenger.send("jumpStart")
                     jump=Vec3(contact+Vec3.up())
@@ -409,6 +432,35 @@ class PhysicsWalker(DirectObject.DirectObject):
                     jump.normalize()
                     jump*=self.avatarControlJumpForce
                     physObject.addImpulse(Vec3(jump))
+        
+        else:
+            if contact!=Vec3.zero():
+                contactLength = contact.length()
+                contact.normalize()
+                angle=contact.dot(Vec3.up())
+                if angle>self.__standableGround:
+                    # ...avatar is on standable ground.
+                    if self.__oldContact==Vec3.zero():
+                    #if self.__oldAirborneHeight > 0.1: #self.__oldContact==Vec3.zero():
+                        # ...avatar was airborne.
+                        self.jumpCount-=1
+                        if contactLength>self.__hardLandingForce:
+                            print "jumpHardLand"
+                            messenger.send("jumpHardLand")
+                        else:
+                            print "jumpLand"
+                            messenger.send("jumpLand")
+                    elif self.__jumpButton:
+                        self.jumpCount+=1
+                        print "jump"
+                        self.__jumpButton=0
+                        messenger.send("jumpStart")
+                        jump=Vec3(contact+Vec3.up())
+                        #jump=Vec3(rotAvatarToPhys.xform(jump))
+                        jump.normalize()
+                        jump*=self.avatarControlJumpForce
+                        physObject.addImpulse(Vec3(jump))
+
         if contact!=self.__oldContact:
             # We must copy the vector to preserve it:
             self.__oldContact=Vec3(contact)
@@ -572,7 +624,14 @@ class PhysicsWalker(DirectObject.DirectObject):
         assert(self.debugPrint("resetPhys()"))
         self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         self.priorParent.setVector(Vec3.zero())
+        self.highMark = 0
         self.actorNode.setContactVector(Vec3.zero())
+
+    def getForwardButton(self):
+        return self.__forwardButton
+    
+    def getReverseButton(self):
+        return self.__reverseButton
 
     def enableAvatarControls(self):
         """
