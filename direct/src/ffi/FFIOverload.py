@@ -137,6 +137,11 @@ def inheritsFrom(type1, type2):
         return 0
 
 def getInheritanceLevel(type, checkNested = 1):
+    if type.__class__ == FFITypes.PyObjectTypeDescriptor:
+        # A special case: PyObject * is always the most general
+        # object.  Everything is a PyObject.
+        return -1
+    
     # If this is a nested type, return the inheritance level of the outer type.
     if type.isNested:
         # Check the level of your outer class
@@ -364,20 +369,25 @@ class FFIMethodArgumentTree:
                 oneTreeHasArgs = 1
                 typeName = getTypeName(self.classTypeDesc, typeDesc)
                 typeNameList.append(typeName)
-                if (i == 0):
-                    indent(file, nesting+2, 'if (isinstance(_args[' + `level` + '], '
-                           + typeName
-                           + '))')
+                if typeDesc.__class__ == FFITypes.PyObjectTypeDescriptor:
+                    # A special case: if one of the parameters is
+                    # PyObject *, that means anything is accepted.
+                    condition = '1'
+
                 else:
-                    indent(file, nesting+2, 'elif (isinstance(_args[' + `level` + '], '
-                           + typeName
-                           + '))')                    
-                # If it is looking for a float, make it accept an integer too
-                if (typeName == 'types.FloatType'):
-                    file.write(' or (isinstance(_args[' + `level` + '], '
-                               + 'types.IntType'
-                               + '))')
-                file.write(':\n')
+                    # Otherwise, we'll check the particular type of
+                    # the object.
+                    condition = '(isinstance(_args[' + `level` + '], ' + typeName + '))'
+                    # If it is looking for a float, make it accept an integer too
+                    if (typeName == 'types.FloatType'):
+                        condition += (' or (isinstance(_args[' + `level` + '], '
+                                      + 'types.IntType'
+                                      + '))')
+                    
+                if (i == 0):
+                    indent(file, nesting+2, 'if ' + condition + ':\n')
+                else:
+                    indent(file, nesting+2, 'elif ' + condition + ':\n')
                 # Get to the bottom of this chain
                 if (self.tree[typeDesc][0] != None):
                     self.tree[typeDesc][0].traverse(file, nesting+1, level+1)
