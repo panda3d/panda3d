@@ -335,9 +335,9 @@ run() {
   }
 
   if (_all_textures) {
-    pal->process_all();
+    pal->process_all(_redo_all);
   } else {
-    pal->process_command_line_eggs();
+    pal->process_command_line_eggs(_redo_all);
   }
 
   if (_force_optimal) {

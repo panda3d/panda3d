@@ -193,9 +193,13 @@ read_txa_file(const Filename &txa_filename) {
 //  Description: Processes all the textures named in the
 //               _command_line_eggs, placing them on the appropriate
 //               palettes or whatever needs to be done with them.
+//
+//               If force_texture_read is true, it forces each texture
+//               image file to be read (and thus legitimately checked
+//               for grayscaleness etc.) before placing.
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-process_command_line_eggs() {
+process_command_line_eggs(bool force_texture_read) {
   _command_line_textures.clear();
 
   // Start by scanning all the egg files we read up on the command
@@ -221,6 +225,10 @@ process_command_line_eggs() {
        ti != _command_line_textures.end();
        ++ti) {
     TextureImage *texture = *ti;
+
+    if (force_texture_read) {
+      texture->read_source_image();
+    }
 
     texture->pre_txa_file();
     _txa_file.match_texture(texture);
@@ -273,9 +281,13 @@ process_command_line_eggs() {
 //     Function: Palettizer::process_all
 //       Access: Public
 //  Description: Reprocesses all textures known.
+//
+//               If force_texture_read is true, it forces each texture
+//               image file to be read (and thus legitimately checked
+//               for grayscaleness etc.) before placing.
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-process_all() {
+process_all(bool force_texture_read) {
   // If there *were* any egg files on the command line, deal with
   // them.
   CommandLineEggs::const_iterator ei;
@@ -303,6 +315,10 @@ process_all() {
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
+
+    if (force_texture_read) {
+      texture->read_source_image();
+    }
 
     texture->pre_txa_file();
     _txa_file.match_texture(texture);

@@ -29,6 +29,9 @@ TextureImage() {
   _read_source_image = false;
   _got_dest_image = false;
   _is_surprise = true;
+  _ever_read_image = false;
+  _forced_grayscale = false;
+  _forced_unalpha = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +58,13 @@ note_egg_file(EggFile *egg_file) {
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
 assign_groups() {
-  nassertv(!_egg_files.empty());
+  if (_egg_files.empty()) {
+    // If we're not referenced by any egg files any more, assign us to
+    // no groups.
+    PaletteGroups empty;
+    assign_to_groups(empty);
+    return;
+  }
 
   PaletteGroups definitely_in;
 
@@ -265,12 +274,12 @@ post_txa_file() {
   } else {
     // If we didn't request a particular number of channels, examine
     // the image to determine if we can downgrade it, for instance
-    // from color to grayscale.
+    // from color to grayscale.  
     if (_properties._got_num_channels &&
 	(_properties._num_channels == 3 || _properties._num_channels == 4)) {
       consider_grayscale();
     }
-
+    
     // Also consider downgrading from alpha to non-alpha.
     if (_properties._got_num_channels &&
 	(_properties._num_channels == 2 || _properties._num_channels == 4)) {
@@ -504,6 +513,7 @@ read_source_image() {
       source->read(_source_image);
     }
     _read_source_image = true;
+    _ever_read_image = true;
   }
 
   return _source_image;
@@ -570,7 +580,24 @@ write_source_pathnames(ostream &out, int indent_level) const {
 void TextureImage::
 write_scale_info(ostream &out, int indent_level) {
   SourceTextureImage *source = get_preferred_source();
-  indent(out, indent_level) << get_name() << " orig ";
+  indent(out, indent_level) << get_name();
+
+  // Write the list of groups we're placed in.
+  if (_placement.empty()) {
+    out << " (not used)";
+  } else {
+    Placement::const_iterator pi;
+    pi = _placement.begin();
+    out << " (" << (*pi).second->get_group()->get_name();
+    ++pi;
+    while (pi != _placement.end()) {
+      out << " " << (*pi).second->get_group()->get_name();
+      ++pi;
+    }
+    out << ")";
+  }
+
+  out << " orig ";
 
   if (source == (SourceTextureImage *)NULL ||
       !source->is_size_known()) {
@@ -694,6 +721,19 @@ assign_to_groups(const PaletteGroups &groups) {
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
 consider_grayscale() {
+  // Since this isn't likely to change for a particular texture after
+  // its creation, we save a bit of time by not performing this check
+  // unless this is the first time we've ever seen this texture.  This
+  // will save us from having to load the texture images time we look
+  // at them.  On the other hand, if we've already loaded up the
+  // image, then go ahead.
+  if (!_read_source_image && _ever_read_image) {
+    if (_forced_grayscale) {
+      _properties._num_channels -= 2;
+    }
+    return;
+  }
+
   const PNMImage &source = read_source_image();
   if (!source.is_valid()) {
     return;
@@ -704,6 +744,7 @@ consider_grayscale() {
       const xel &v = source.get_xel_val(x, y);
       if (PPM_GETR(v) != PPM_GETG(v) || PPM_GETR(v) != PPM_GETB(v)) {
 	// Here's a colored pixel.  We can't go grayscale.
+	_forced_grayscale = false;
 	return;
       }
     }
@@ -711,6 +752,7 @@ consider_grayscale() {
 
   // All pixels in the image were grayscale!
   _properties._num_channels -= 2;
+  _forced_grayscale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -723,6 +765,15 @@ consider_grayscale() {
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
 consider_unalpha() {
+  // As above, we don't bother doing this if we've already done this
+  // in a previous session.
+  if (!_read_source_image && _ever_read_image) {
+    if (_forced_unalpha) {
+      _properties._num_channels--;
+    }
+    return;
+  }
+
   const PNMImage &source = read_source_image();
   if (!source.is_valid()) {
     return;
@@ -736,6 +787,7 @@ consider_unalpha() {
     for (int x = 0; x < source.get_x_size(); x++) {
       if (source.get_alpha_val(x, y) != source.get_maxval()) {
 	// Here's a non-white pixel; the alpha channel is meaningful.
+	_forced_unalpha = false;
 	return;
       }
     }
@@ -743,6 +795,7 @@ consider_unalpha() {
 
   // All alpha pixels in the image were white!
   _properties._num_channels--;
+  _forced_unalpha = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -860,6 +913,9 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   // session.
 
   datagram.add_bool(_is_surprise);
+  datagram.add_bool(_ever_read_image);
+  datagram.add_bool(_forced_grayscale);
+  datagram.add_bool(_forced_unalpha);
 
   // We don't write out _explicitly_assigned_groups; this is re-read
   // from the .txa file each time.
@@ -971,6 +1027,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
 
   _is_surprise = scan.get_bool();
+  _ever_read_image = scan.get_bool();
+  _forced_grayscale = scan.get_bool();
+  _forced_unalpha = scan.get_bool();
 
   _actual_assigned_groups.fillin(scan, manager);
 

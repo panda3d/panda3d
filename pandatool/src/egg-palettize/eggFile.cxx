@@ -16,6 +16,8 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
+#include <executionEnvironment.h>
+#include <dSearchPath.h>
 
 TypeHandle EggFile::_type_handle;
 
@@ -44,6 +46,12 @@ from_command_line(EggData *data,
 		  const Filename &source_filename, 
 		  const Filename &dest_filename) {
   _data = data;
+
+  // We save the current directory at the time the egg file appeared
+  // on the command line, so that we'll later be able to properly
+  // resolve external references (like textures) that might be
+  // relative to this directory.
+  _current_directory = ExecutionEnvironment::get_cwd();
   _source_filename = source_filename;
   _dest_filename = dest_filename;
 
@@ -367,6 +375,14 @@ read_egg() {
     return false;
   }
 
+  // We also want to search for filenames based on our current
+  // directory from which we originally loaded the egg file.  This is
+  // important because it's possible the egg file referenced some
+  // textures or something relative to that directory.
+  DSearchPath dir;
+  dir.append_directory(_current_directory);
+  data->resolve_filenames(dir);
+
   if (!data->resolve_externals()) {
     // Failure reading an external.
     delete data;
@@ -390,7 +406,8 @@ write_egg() {
   nassertr(!_dest_filename.empty(), false);
 
   _dest_filename.make_dir();
-  nout << "Writing " << _dest_filename << "\n";
+  nout << "Writing " << FilenameUnifier::make_user_filename(_dest_filename)
+       << "\n";
   if (!_data->write_egg(_dest_filename)) {
     // Some error while writing.  Most unusual.
     _is_stale = true;
@@ -464,6 +481,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 
   // We don't write out _data; that needs to be reread each session.
 
+  datagram.add_string(FilenameUnifier::make_bam_filename(_current_directory));
   datagram.add_string(FilenameUnifier::make_bam_filename(_source_filename));
   datagram.add_string(FilenameUnifier::make_bam_filename(_dest_filename));
 
@@ -545,6 +563,7 @@ make_EggFile(const FactoryParams &params) {
 void EggFile::
 fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
+  _current_directory = FilenameUnifier::get_bam_filename(scan.get_string());
   _source_filename = FilenameUnifier::get_bam_filename(scan.get_string());
   _dest_filename = FilenameUnifier::get_bam_filename(scan.get_string());
 

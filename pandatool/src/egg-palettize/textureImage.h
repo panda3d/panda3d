@@ -92,6 +92,10 @@ private:
   TextureProperties _pre_txa_properties;
   SourceTextureImage *_preferred_source;
   bool _is_surprise;
+ 
+  bool _ever_read_image;
+  bool _forced_grayscale;
+  bool _forced_unalpha;
 
   PaletteGroups _explicitly_assigned_groups;
   PaletteGroups _actual_assigned_groups;

@@ -123,6 +123,9 @@ get_group() const {
 void TexturePlacement::
 add_egg(TextureReference *reference) {
   reference->mark_egg_stale();
+
+  // Turns out that turning these off is a bad idea, because it may
+  // make us forget the size information halfway through processing.
   /*
   _has_uvs = false;
   _size_known = false;
@@ -207,11 +210,17 @@ determine_size() {
     return false;
   }
 
+  // This seems to be unnecessary (because of omit_solitary() and
+  // not_solitary()), and in fact bitches the logic in omit_solitary()
+  // and not_solitary() so that we call mark_egg_stale()
+  // unnecessarily.
+  /*
   if (_omit_reason == OR_solitary) {
     // If the texture was previously 'omitted' for being solitary, we
     // give it a second chance now.
     _omit_reason = OR_none;
   }
+  */
 
   // Determine the actual minmax of the UV's in use, as well as
   // whether we should wrap or clamp.
@@ -552,8 +561,10 @@ force_replace() {
     _image->unplace(this);
     _image = (PaletteImage *)NULL;
   }
+  if (_omit_reason == OR_none) {
+    mark_eggs_stale();
+  }
   _omit_reason = OR_working;
-  mark_eggs_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

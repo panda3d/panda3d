@@ -25,6 +25,9 @@ void FilenameUnifier::
 set_txa_filename(const Filename &txa_filename) {
   _txa_filename = txa_filename;
   _txa_dir = txa_filename.get_dirname();
+  if (_txa_dir.empty()) {
+    _txa_dir = ".";
+  }
   _txa_dir.make_canonical();
 }
 

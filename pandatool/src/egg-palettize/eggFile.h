@@ -67,6 +67,7 @@ public:
 
 private:
   EggData *_data;
+  Filename _current_directory;
   Filename _source_filename;
   Filename _dest_filename;
 
