@@ -266,8 +266,8 @@ prepare_blind(const float &angle, const float &tnear)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
-render_child(RenderRelation *arc,
-             AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
+render_child(RenderRelation *arc, const AllTransitionsWrapper &trans,
+             GraphicsStateGuardian *gsg)
 {
 
   AllTransitionsWrapper new_trans(trans);
@@ -290,7 +290,8 @@ render_child(RenderRelation *arc,
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
 render_children(const vector_relation &arcs, 
-                AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
+                const AllTransitionsWrapper &trans,
+                GraphicsStateGuardian *gsg)
 {
   for(int i = 0; i < (int)arcs.size(); i++)
   {

@@ -98,9 +98,11 @@ private:
 
 
   void render_child(RenderRelation *arc,
-                    AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg);
+                    const AllTransitionsWrapper &trans,
+                    GraphicsStateGuardian *gsg);
   void render_children(const vector_relation &arcs,
-                       AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg);
+                       const AllTransitionsWrapper &trans,
+                       GraphicsStateGuardian *gsg);
 
 public:
   static void register_with_read_factory();
