@@ -41,10 +41,8 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
    */
 
   /* Step 4: set parameters for decompression */
-
-  /* In this example, we don't need to change any of the defaults set by
-   * jpeg_read_header(), so we do nothing here.
-   */
+  _cinfo.scale_num = jpeg_scale_num;
+  _cinfo.scale_denom = jpeg_scale_denom;
 
   /* Step 5: Start decompressor */
 
@@ -141,6 +139,7 @@ read_data(xel *array, xelval *) {
 
   /* We can ignore the return value since suspension is not possible
    * with the stdio data source.
+   */
 
   /* At this point you may want to check to see whether any corrupt-data
    * warnings occurred (test whether jerr.pub.num_warnings is nonzero).

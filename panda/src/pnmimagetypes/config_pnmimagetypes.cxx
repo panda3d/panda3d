@@ -55,7 +55,21 @@ IMGHeaderType img_header_type;
 const int img_xsize = config_pnmimagetypes.GetInt("img-xsize", 0);
 const int img_ysize = config_pnmimagetypes.GetInt("img-ysize", 0);
 
+// Set this to the quality percentage for writing JPEG files.  95 is
+// the highest useful value (values greater than 95 do not lead to
+// significantly better quality, but do lead to significantly greater
+// size).
 const int jpeg_quality = config_pnmimagetypes.GetInt("jpeg-quality", 95);
+
+// These control the scaling that is automatically performed on a JPEG
+// file for decompression.  You might specify to scale down by a
+// fraction, e.g. 1/8, by specifying jpeg_scale_num = 1 and
+// jpeg_scale_denom = 8.  This will reduce decompression time
+// correspondingly.  Attempting to use this to scale up, or to scale
+// by any fraction other than an even power of two, may not be
+// supported.
+const int jpeg_scale_num = config_pnmimagetypes.GetInt("jpeg-scale-num", 1);
+const int jpeg_scale_denom = config_pnmimagetypes.GetInt("jpeg-scale-denom", 1);
 
 ConfigureFn(config_pnmimagetypes) {
   PNMFileTypePNM::init_type();

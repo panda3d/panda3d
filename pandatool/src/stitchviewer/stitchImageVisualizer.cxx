@@ -23,8 +23,21 @@
 #include <cullFaceTransition.h>
 #include <cullFaceAttribute.h>
 #include <clockObject.h>
+#include <config_gobj.h>
+
+#include <algorithm>
 
 StitchImageVisualizer *StitchImageVisualizer::_static_siv;
+
+// Returns the largest power of 2 less than or equal to value.
+static int
+to_power_2(int value) {
+  int x = 1;
+  while ((x << 1) <= value) {
+    x = (x << 1);
+  }
+  return x;
+}
 
 StitchImageVisualizer::Image::
 Image(StitchImage *image, int index, bool scale) :
@@ -39,11 +52,28 @@ Image(StitchImage *image, int index, bool scale) :
   }
 
   if (scale && image->_data != NULL) {
-    nout << "Scaling " << image->get_name() << "\n";
-    PNMImage *n = new PNMImage(1024, 1024);
-    n->quick_filter_from(*image->_data);
-    delete image->_data;
-    image->_data = n;
+    // We have to make it a power of 2.
+    int old_xsize = image->_data->get_x_size();
+    int old_ysize = image->_data->get_y_size();
+    int new_xsize = old_xsize;
+    int new_ysize = old_ysize;
+    if (max_texture_dimension > 0) {
+      new_xsize = min(new_xsize, max_texture_dimension);
+      new_ysize = min(new_ysize, max_texture_dimension);
+    }
+    new_xsize = to_power_2(new_xsize);
+    new_ysize = to_power_2(new_ysize);
+
+    if (new_xsize != old_xsize || new_ysize != old_ysize) {
+      nout << "Scaling " << image->get_name() << " from " 
+	   << old_xsize << " " << old_ysize << " to "
+	   << new_xsize << " " << new_ysize << "\n";
+      
+      PNMImage *n = new PNMImage(new_xsize, new_ysize);
+      n->quick_filter_from(*image->_data);
+      delete image->_data;
+      image->_data = n;
+    }
   }
 }
 
@@ -214,8 +244,12 @@ toggle_viz(StitchImageVisualizer::Image &im) {
 
 void StitchImageVisualizer::
 create_image_geometry(StitchImageVisualizer::Image &im) {
+  /*
   int x_verts = im._image->get_x_verts();
   int y_verts = im._image->get_y_verts();
+  */
+  int x_verts = 2;
+  int y_verts = 2;
   TriangleMesh mesh(x_verts, y_verts);
 
   LVector3f center = LCAST(float, im._image->extrude(LPoint2d(0.5, 0.5)));
@@ -223,11 +257,12 @@ create_image_geometry(StitchImageVisualizer::Image &im) {
 
   for (int xi = 0; xi < x_verts; xi++) {
     for (int yi = 0; yi < y_verts; yi++) {
-      LVector3f p = LCAST(float, im._image->get_grid_vector(xi, yi));
-      LPoint2f uv = LCAST(float, im._image->get_grid_uv(xi, yi));
+      LPoint2d uv = LPoint2d((double)xi / (double)(x_verts - 1),
+			     1.0 - (double)yi / (double)(y_verts - 1));
+      LVector3d p = im._image->extrude(uv);
 
-      mesh._coords.push_back(p * scale);
-      mesh._texcoords.push_back(uv);
+      mesh._coords.push_back(LCAST(float, p) * scale);
+      mesh._texcoords.push_back(LCAST(float, uv));
     }
   }
 
