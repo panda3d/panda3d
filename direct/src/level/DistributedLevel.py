@@ -201,7 +201,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.notify.debug(
                 'entity %s requesting reparent to %s, not yet created' %
                 (entity, parentId))
-            print self.entities
 
             entId = entity.entId
             entity.reparentTo(hidden)
