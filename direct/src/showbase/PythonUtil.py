@@ -747,18 +747,6 @@ def describeException(backTrace = 4):
     description += "%s: %s" % (exceptionName, extraInfo)
     return description
 
-class PureVirtual:
-    """ Python classes that want to have C++-style pure-virtual functions
-    can derive from this class and call 'derivedMustOverride' from their
-    'pure virtual' methods. Such Python classes can still be instantiated,
-    but they will give an informative error when a pure-virtual method
-    is invoked. """
-    def derivedMustOverride(self):
-        """ call this function from methods that must be overriden
-        and are not meant to be chained down to. This simulates C++
-        pure-virtual methods. """
-        raise 'error: derived class must implement %s' % callerInfo()[2]
-
 def mostDerivedLast(classList):
     """pass in list of classes. sorts list in-place, with derived classes
     appearing after their bases"""
