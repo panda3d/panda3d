@@ -103,8 +103,13 @@ class ActorInterval(Interval.Interval):
         Interval.Interval.__init__(self, name, duration)
 
     def privStep(self, t):
+        if self.reverse:
+            absFrame = self.endFrame - t * self.frameRate
+        else:
+            absFrame = self.startFrame + t * self.frameRate
+
         # Calc integer frame number
-        absFrame = int(math.floor(t * self.frameRate + 0.0001))
+        absFrame = int(math.floor(absFrame + 0.0001))
 
         # Pose anim
 
@@ -118,11 +123,6 @@ class ActorInterval(Interval.Interval):
                 frame = absFrame % numFrames
             else:
                 frame = max(min(absFrame, numFrames - 1), 0)
-
-            if self.reverse:
-                frame = self.endFrame - frame
-            else:
-                frame = self.startFrame + frame
 
             control.pose(frame)
             
