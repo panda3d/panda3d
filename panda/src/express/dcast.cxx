@@ -37,7 +37,7 @@ _dcast_verify(TypeHandle want_handle, size_t want_size,
   if (get_verify_dcast()) {
     if ((ptr == (const TypedObject *)NULL)
 #if defined(_DEBUG) && defined(_WIN32)
-        || IsBadWritePtr(ptr, want_size)
+        || IsBadWritePtr((TypedObject *)ptr, want_size)
 #endif
         ) {
       express_cat->warning()
