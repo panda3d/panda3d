@@ -39,7 +39,7 @@ public:
   ~BackupCatalog();
 
   bool read(const Filename &filename);
-  bool write(const Filename &filename) const;
+  bool write(const Filename &filename);
   void clear();
 
   class Entry {
@@ -65,6 +65,8 @@ public:
   
   typedef pset<string> Filenames;
   Filenames _filenames;
+
+  bool _dirty;
 };
 
 INLINE istream &operator >> (istream &in, BackupCatalog::Entry &entry);

@@ -32,6 +32,7 @@ static const char * const acceptable_chars = "~/:";
 ////////////////////////////////////////////////////////////////////
 BackupCatalog::
 BackupCatalog() {
+  _dirty = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,7 +96,7 @@ read(const Filename &filename) {
 //               on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool BackupCatalog::
-write(const Filename &filename) const {
+write(const Filename &filename) {
   ofstream file;
   if (!filename.open_write(file)) {
     nout << "Unable to write: " << filename << "\n";
@@ -112,7 +113,12 @@ write(const Filename &filename) const {
     }
   }
 
-  return file.good();
+  if (file) {
+    _dirty = false;
+    return true;
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,6 +136,7 @@ clear() {
       delete (*ei);
     }
   }
+  _dirty = false;
 }
 
 ////////////////////////////////////////////////////////////////////

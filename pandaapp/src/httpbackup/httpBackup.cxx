@@ -87,7 +87,7 @@ HTTPBackup() {
      "Specifies how the date is appended onto the filename (see -n) for "
      "each version of the file.  This string should contain the sequence "
      "of characters from strftime() that correspond to the desired date "
-     "format to append to the filename.  The default is '.%Y-%m-%d.%H:%M', "
+     "format to append to the filename.  The default is '.%Y-%m-%d.%H-%M', "
      "or the year, month, day, hour, and minute.  (The date is always "
      "represented in GMT, according to HTTP convention.)",
      &HTTPBackup::dispatch_string, NULL, &_version_append);
@@ -120,7 +120,7 @@ HTTPBackup() {
 
   _dirname = ".";
   _catalog_name = "Catalog";
-  _version_append = ".%Y-%m-%d.%H:%M";
+  _version_append = ".%Y-%m-%d.%H-%M";
   _max_keep_days = 0.0;
   _min_keep_days = 0.0;
   _max_keep_versions = 0;
@@ -236,9 +236,11 @@ dispatch_url(const string &opt, const string &arg, void *var) {
 ////////////////////////////////////////////////////////////////////
 void HTTPBackup::
 run() {
-  _catalog_name.set_text();
+  // Output the current date and time in GMT, for logging.
+  nout << _now.get_string() << "\n";
 
   // First, read in the catalog.
+  _catalog_name.set_text();
   if (!_catalog_name.exists()) {
     nout << _catalog_name << " does not yet exist.\n";
   } else {
@@ -259,12 +261,14 @@ run() {
     // We don't bother to exit the program in this case.
   }
 
-  // Now write out the modified catalog.
-  nout << "Writing " << _catalog_name << "\n";
-  _catalog_name.make_dir();
-  if (!_catalog.write(_catalog_name)) {
-    nout << "Unable to rewrite " << _catalog_name << ".\n";
-    exit(1);
+  if (_catalog._dirty) {
+    // Now write out the modified catalog.
+    nout << "Writing " << _catalog_name << "\n";
+    _catalog_name.make_dir();
+    if (!_catalog.write(_catalog_name)) {
+      nout << "Unable to rewrite " << _catalog_name << ".\n";
+      exit(1);
+    }
   }
 }
 
@@ -286,12 +290,28 @@ fetch_latest() {
     BackupCatalog::Entry *latest = entries[entries.size() - 1];
     document_spec = latest->_document_spec;
     document_spec.set_url(_url);
+    if (!document_spec.has_date()) {
+      // If we didn't get a last-modified date, use the download date
+      // instead.
+      document_spec.set_date(latest->get_date());
+    }
     if (!_always_download) {
       document_spec.set_request_mode(DocumentSpec::RM_newer);
     }
   }
 
+  // Since the purpose of this program is to check to see if a more
+  // recent document is available, we probably always want any proxies
+  // in the way to revalidate their cache.
+  document_spec.set_cache_control(DocumentSpec::CC_revalidate);
+ 
+  if (document_spec.get_request_mode() == DocumentSpec::RM_newer &&
+      document_spec.has_date()) {
+    nout << "Checking for newer than "<< document_spec.get_date().get_string()
+         << ".\n";
+  }
   nout << "Fetching " << document_spec.get_url() << "\n";
+
   PT(HTTPChannel) channel = _http.make_channel(true);
   if (_always_download) {
     channel->get_document(document_spec);
@@ -368,6 +388,7 @@ fetch_latest() {
 
   // The file is successfully downloaded; save the entry.
   entries.push_back(entry);
+  _catalog._dirty = true;
   return true;
 }
 
@@ -394,6 +415,7 @@ cleanup_old() {
       delete entries[i];
     }
     entries.erase(entries.begin(), entries.begin() + num_delete);
+    _catalog._dirty = true;
   }
 
   if (_got_max_keep_days && 
@@ -412,6 +434,7 @@ cleanup_old() {
       delete entries[i];
     }
     entries.erase(entries.begin(), entries.begin() + num_delete);
+    _catalog._dirty = true;
   }
 
   return true;
