@@ -171,6 +171,30 @@ read(const Filename &filename, PNMFileType *type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::read
 //       Access: Public
+//  Description: Reads the image data from the indicated stream.  
+//
+//               The filename is advisory only, and may be used
+//               suggest a type if it has a known extension.
+//
+//               If type is non-NULL, it is a suggestion for the type
+//               of file it is.  Returns true if successful, false on
+//               error.
+////////////////////////////////////////////////////////////////////
+bool PNMImage::
+read(istream &data, const string &filename, PNMFileType *type) {
+  clear();
+
+  PNMReader *reader = PNMImageHeader::make_reader
+    (&data, false, filename, string(), type);
+  if (reader == (PNMReader *)NULL) {
+    return false;
+  }
+  return read(reader);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::read
+//       Access: Public
 //  Description: This flavor of read() uses an already-existing
 //               PNMReader to read the image file.  You can get a
 //               reader via the PNMImageHeader::make_reader() methods.
@@ -224,6 +248,32 @@ write(const Filename &filename, PNMFileType *type) const {
   }
 
   PNMWriter *writer = PNMImageHeader::make_writer(filename, type);
+  if (writer == (PNMWriter *)NULL) {
+    return false;
+  }
+
+  return write(writer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::write
+//       Access: Public
+//  Description: Writes the image to the indicated ostream.
+//
+//               The filename is advisory only, and may be used
+//               suggest a type if it has a known extension.
+//
+//               If type is non-NULL, it is a suggestion for the type
+//               of image file to write.
+////////////////////////////////////////////////////////////////////
+bool PNMImage::
+write(ostream &data, const string &filename, PNMFileType *type) const {
+  if (!is_valid()) {
+    return false;
+  }
+
+  PNMWriter *writer = PNMImageHeader::make_writer
+    (&data, false, filename, type);
   if (writer == (PNMWriter *)NULL) {
     return false;
   }
