@@ -55,7 +55,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     def delete(self):
         self.notify.debug('delete')
         if __debug__:
-            self.removeBackupTask()
+            self.removeAutosaveTask()
         self.destroyLevel()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
