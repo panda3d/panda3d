@@ -57,14 +57,16 @@ class ControlManager:
         inputState.watch("pie", "begin-pie", "end-pie")
         
         #inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
-        #inputState.watch("slideLeft", "control-arrow_up", "control-arrow_up-up")
-        #inputState.watch("slideLeft", "alt-arrow_up", "alt-arrow_up-up")
-        #inputState.watch("slideLeft", "shift-arrow_up", "shift-arrow_up-up")
+        #inputState.watch("slideLeft", "control-arrow_left", "control-arrow_left-up")
+        #inputState.watch("slideLeft", "alt-arrow_left", "alt-arrow_left-up")
+        #inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
+        inputState.watch("slideLeft", "slide-is-disabled", "slide-is-disabled")
         
         #inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
-        #inputState.watch("slideRight", "control-arrow_up", "control-arrow_up-up")
-        #inputState.watch("slideRight", "alt-arrow_up", "alt-arrow_up-up")
-        #inputState.watch("slideRight", "shift-arrow_up", "shift-arrow_up-up")
+        #inputState.watch("slideRight", "control-arrow_right", "control-arrow_right-up")
+        #inputState.watch("slideRight", "alt-arrow_right", "alt-arrow_right-up")
+        #inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
+        inputState.watch("slideRight", "slide-is-disabled", "slide-is-disabled")
 
     def useSwimControls(self):
         assert(self.debugPrint("useSwimControls()"))

@@ -44,6 +44,10 @@ class PhysicsWalker(DirectObject.DirectObject):
         
         self.needToDeltaPos = 0
         self.physVelocityIndicator=None
+        self.avatarControlForwardSpeed=0
+        self.avatarControlJumpForce=0
+        self.avatarControlReverseSpeed=0
+        self.avatarControlRotateSpeed=0
         self.__oldAirborneHeight=None
         self.getAirborneHeight=None
         self.__oldContact=None
@@ -369,26 +373,6 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.collisionsActive,)))
         return self.collisionsActive
 
-    #def collisionsOff(self):
-    # replaced by setCollisionsActive
-    #    assert(self.debugPrint("collisionsOff()"))
-    #    self.cTrav.removeCollider(self.cSphereNodePath)
-    #    if self.useHeightRay:
-    #        self.cTrav.removeCollider(self.cRayNodePath)
-    #    # Now that we have disabled collisions, make one more pass
-    #    # right now to ensure we aren't standing in a wall.
-    #    self.oneTimeCollide()
-
-    #def collisionsOn(self):
-    # replaced by setCollisionsActive
-    #    assert(self.debugPrint("collisionsOn()"))
-    #    self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
-    #    if self.useHeightRay:
-    #        if self.useLifter:
-    #            self.cTrav.addCollider(self.cRayNodePath, self.lifter)
-    #        else:
-    #            self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
-
     def oneTimeCollide(self):
         """
         Makes one quick collision pass for the avatar, for instance as
@@ -427,14 +411,20 @@ class PhysicsWalker(DirectObject.DirectObject):
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
         slide = inputState.isSet("slide")
+        slideLeft = inputState.isSet("slideLeft")
+        slideRight = inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
         pie = inputState.isSet("pie")
         # Determine what the speeds are based on the buttons:
         self.__speed=(forward and self.avatarControlForwardSpeed or 
                 reverse and -self.avatarControlReverseSpeed)
-        self.__slideSpeed=slide and (
-                (turnLeft and -self.avatarControlForwardSpeed) or 
-                (turnRight and self.avatarControlForwardSpeed))
+        avatarSlideSpeed=self.avatarControlForwardSpeed*0.5
+        #self.__slideSpeed=slide and (
+        #        (turnLeft and -avatarSlideSpeed) or 
+        #        (turnRight and avatarSlideSpeed))
+        self.__slideSpeed=(
+                (slideLeft and -avatarSlideSpeed) or 
+                (slideRight and avatarSlideSpeed))
         self.__rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
@@ -616,7 +606,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             moveToGround = Vec3(0.0, 0.0, -self.determineHeight())
             onScreenDebug.add("phys", "off")
         # Check to see if we're moving at all:
-        if 1 or self.__speed or self.__slideSpeed or self.__rotationSpeed:
+        if self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
             distance = dt * self.__speed
             slideDistance = dt * self.__slideSpeed
             rotation = dt * self.__rotationSpeed

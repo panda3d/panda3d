@@ -484,7 +484,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.curVisibleZoneNums = visibleZoneNums
 
     def setVisibility(self, vizList):
-        # accepts list of visible zone numbers
+        """
+        vizList is a list of visible zone numbers.
+        """
         # convert the zone numbers into their actual zoneIds
         # always include Toontown and factory uberZones
         uberZone = self.getZoneId(zoneNum=LevelConstants.UberZoneNum)
@@ -611,8 +613,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     delay = period - timeSinceLastOuch
 
             if delay > 0:
-                taskMgr.doMethodLater(period, doOuch,
-                                      DistributedLevel.OuchTaskName)
+                taskMgr.doMethodLater(
+                        period, doOuch,
+                        DistributedLevel.OuchTaskName)
             else:
                 doOuch(None)
             self.doingOuch = 1
