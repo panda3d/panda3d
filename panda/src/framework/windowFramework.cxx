@@ -211,7 +211,7 @@ get_render_2d() {
     PT(GraphicsChannel) channel = _window->get_channel(0);
 
     // Make a layer on the channel to hold our display region.
-    PT(GraphicsLayer) layer = channel->make_layer();
+    PT(GraphicsLayer) layer = channel->make_layer(10);
     
     // And create a display region that covers the entire window.
     PT(DisplayRegion) dr = layer->make_display_region();
