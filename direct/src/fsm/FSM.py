@@ -224,7 +224,7 @@ class FSM(DirectObject.DirectObject):
         """From the off state, we can always go directly to any other
         state."""
         if request[0] in string.uppercase:
-            return request
+            return (request,) + args
         return self.defaultFilter(request, args)
         
 
