@@ -20,13 +20,13 @@
 #include "pStatClient.h"
 #include "pStatCollector.h"
 
-#include <luse.h>
-#include <queuedConnectionManager.h>
-#include <queuedConnectionReader.h>
-#include <connectionWriter.h>
-#include <netAddress.h>
-#include <connection.h>
-#include <netDatagram.h>
+#include "luse.h"
+#include "queuedConnectionManager.h"
+#include "queuedConnectionReader.h"
+#include "connectionWriter.h"
+#include "netAddress.h"
+#include "connection.h"
+#include "netDatagram.h"
 
 #include <signal.h>
 #include <algorithm>
@@ -49,7 +49,7 @@ SampleData dataset_zero[] = {
   { "Draw", 10, 10, false },
   { "Cull", 5, 6, false },
   { "App", 0, 5, false },
-  { "Texture memory", 1, 0.01, true },
+  { "Texture memory", 8000000, 100000, true },
   { NULL },
 };
 
