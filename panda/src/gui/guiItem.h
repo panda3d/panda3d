@@ -31,6 +31,9 @@ PUBLISHED:
   virtual void manage(GuiManager*, EventHandler&) = 0;
   virtual void unmanage(void) = 0;
 
+  virtual int freeze();
+  virtual int thaw();
+
   virtual void set_scale(float) = 0;
   virtual void set_pos(const LVector3f&) = 0;
   INLINE void set_priority(const Priority);

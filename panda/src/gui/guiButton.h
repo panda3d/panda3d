@@ -48,6 +48,9 @@ public:
   virtual void unmanage(void);
 
 PUBLISHED:
+  virtual int freeze();
+  virtual int thaw();
+
   INLINE void enter(void);
   INLINE void exit(void);
   INLINE void up(void);

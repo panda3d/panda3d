@@ -84,6 +84,9 @@ PUBLISHED:
   GuiFrame(const string&);
   ~GuiFrame(void);
 
+  virtual int freeze();
+  virtual int thaw();
+
   void add_item(GuiItem*);
   void remove_item(GuiItem*);
   void pack_item(GuiItem*, Packing, GuiItem*, float = 0.);

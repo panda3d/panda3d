@@ -303,6 +303,32 @@ void GuiButton::unmanage(void) {
   GuiItem::unmanage();
 }
 
+int GuiButton::freeze() {
+  _up->freeze();
+  _down->freeze();
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->freeze();
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->freeze();
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->freeze();
+
+  return 0;
+}
+
+int GuiButton::thaw() {
+  _up->thaw();
+  _down->thaw();
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->thaw();
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->thaw();
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->thaw();
+
+  return 0;
+}
+
 void GuiButton::set_scale(float f) {
   _up->set_scale(f * _up_scale);
   _down->set_scale(f * _down_scale);

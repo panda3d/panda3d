@@ -40,6 +40,14 @@ void GuiSign::unmanage(void) {
   GuiItem::unmanage();
 }
 
+int GuiSign::freeze() {
+  return _sign->freeze();
+}
+
+int GuiSign::thaw() {
+  return _sign->thaw();
+}
+
 void GuiSign::set_scale(float f) {
   _sign->set_scale(f * _sign_scale);
   GuiItem::set_scale(f);

@@ -25,6 +25,9 @@ PUBLISHED:
   virtual void manage(GuiManager*, EventHandler&);
   virtual void unmanage(void);
 
+  virtual int freeze();
+  virtual int thaw();
+
   virtual void set_scale(float);
   virtual void set_pos(const LVector3f&);
 

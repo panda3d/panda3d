@@ -55,6 +55,9 @@ PUBLISHED:
   static GuiLabel* make_simple_text_label(const string&, Node*,
 					  Texture* = (Texture*)0L);
 
+  int freeze();
+  int thaw();
+
   void get_extents(float&, float&, float&, float&);
   float get_width(void);
   float get_height(void);

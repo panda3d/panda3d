@@ -23,7 +23,11 @@ GuiFrame::Boxes::iterator GuiFrame::find_box(GuiItem* item) {
 
 void GuiFrame::recompute_frame(void) {
   GuiItem::recompute_frame();
+
+  freeze();
+
   Boxes::iterator i;
+
   // go thru and make sure everything is packed correctly.  This is a stupid
   // and brute-force algorithm.  Hopefully it will be replaced with something
   // more ellegant later
@@ -202,6 +206,8 @@ void GuiFrame::recompute_frame(void) {
     tmp = (*i).get_item()->get_top();
     _top = (_top<tmp)?tmp:_top;
   }
+
+  thaw();
 }
 
 GuiFrame::GuiFrame(const string& name) : GuiItem(name), _align_to_left(false),
@@ -212,6 +218,32 @@ GuiFrame::GuiFrame(const string& name) : GuiItem(name), _align_to_left(false),
 
 GuiFrame::~GuiFrame(void) {
   this->unmanage();
+}
+
+int GuiFrame::freeze() {
+  int result = 0;
+  Boxes::iterator i;
+
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    GuiItem* here = (*i).get_item();
+    int count = here->freeze();
+    result = max(result, count);
+  }
+
+  return result;
+}
+
+int GuiFrame::thaw() {
+  int result = 0;
+  Boxes::iterator i;
+
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    GuiItem* here = (*i).get_item();
+    int count = here->thaw();
+    result = max(result, count);
+  }
+
+  return result;
 }
 
 void GuiFrame::add_item(GuiItem* item) {

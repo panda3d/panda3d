@@ -25,6 +25,7 @@ class ScrollingLabel(PandaObject.PandaObject):
         label = GuiLabel.GuiLabel.makeSimpleTextLabel(self.name, font)
         label.setForegroundColor(1., 0., 0., 1.)
         label.setBackgroundColor(1., 1., 1., 0.)
+        label.thaw()
         self.title = Sign.Sign(self.name, label)
         self.frame.addItem(self.title)
 
@@ -36,6 +37,7 @@ class ScrollingLabel(PandaObject.PandaObject):
         label = GuiLabel.GuiLabel.makeSimpleTextLabel(longest, font)
         label.setForegroundColor(0., 0., 0., 1.)
         label.setBackgroundColor(1., 1., 1., 1.)
+        label.thaw()
         self.itemSign = Sign.Sign(longest, label)
         self.frame.addItem(self.itemSign)
             

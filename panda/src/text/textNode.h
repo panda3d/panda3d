@@ -11,6 +11,8 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 
+#include "config_text.h"
+
 #include <pt_Node.h>
 #include <namedNode.h>
 #include <luse.h>

@@ -160,6 +160,10 @@ GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font,
   TextNode* n = new TextNode("GUI label");
   ret->_geom = n;
   ret->_tex = tex;
+
+  // The GuiLabel is initially frozen at the time it is created.
+  n->freeze();
+
   n->set_font(font);
   n->set_align(TM_ALIGN_CENTER);
   n->set_text_color(ret->get_foreground_color());
@@ -170,6 +174,32 @@ GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font,
   ret->set_pos(LVector3f(0., 0., 0.));
   ret->recompute_transform();
   return ret;
+}
+
+int GuiLabel::freeze() {
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      return n->freeze();
+    }
+
+  default:
+    return 0;
+  }
+}
+
+int GuiLabel::thaw() {
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      return n->thaw();
+    }
+
+  default:
+    return 0;
+  }
 }
 
 void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {

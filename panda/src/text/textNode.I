@@ -26,6 +26,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE int TextNode::
 freeze() {
+  if (text_cat.is_debug()) {
+    text_cat.debug()
+      << "Freezing " << this->get_name() << ", level = " 
+      << _freeze_level << "\n";
+  }
   return _freeze_level++;
 }
 
@@ -52,6 +57,11 @@ get_freeze_level() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int TextNode::
 thaw() {
+  if (text_cat.is_debug()) {
+    text_cat.debug()
+      << "Thawing " << this->get_name() << ", level = " 
+      << _freeze_level-1 << "\n";
+  }
   nassertr(_freeze_level > 0, _freeze_level);
   _freeze_level--;
   

@@ -52,10 +52,12 @@ class ForceAcknowledge(StateData.StateData):
 
 	# create a message
 	self.text = OnscreenText.OnscreenText("", 0.0, 0.25)
+        self.text.freeze()
 	self.text.node().setAlign(0)
 	self.text.node().setTextColor(0.0, 0.0, 0.0, 1.0)
 	self.text.node().setFrameColor(1.0, 1.0, 1.0, 1.0)
 	self.text.setScale(0.08)
+        self.text.thaw()
 
 	# create a button
 	self.okButton = Button.Button("ForceAcknowledge", "OK")

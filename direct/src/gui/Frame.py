@@ -47,6 +47,12 @@ class Frame(DirectObject):
         self.offset = offset
 
     # actions
+    def freeze(self):
+        self.frame.freeze()
+
+    def thaw(self):
+        self.frame.thaw()
+
     def manage(self):
         self.frame.manage(guiMgr, base.eventMgr.eventHandler)
         self.managed = 1

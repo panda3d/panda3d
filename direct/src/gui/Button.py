@@ -20,18 +20,22 @@ class Button(DirectObject):
         # up
         self.l1 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
         self.l1.setForegroundColor(0., 0., 0., 1.)
+        self.l1.thaw()
         # roll-over up
         self.l2 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
         self.l2.setForegroundColor(0., 0., 0., 1.)
-        self.l2.setBackgroundColor(1., 1., 0., 1.)        
+        self.l2.setBackgroundColor(1., 1., 0., 1.)         
+        self.l2.thaw()
         # roll-over down
         self.l3 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
         self.l3.setForegroundColor(1., 1., 1., 1.)
         self.l3.setBackgroundColor(0., 0., 0., 1.)
+        self.l3.thaw()
         self.button = GuiButton.GuiButton(self.name, self.l1, self.l2,
                                           self.l3, self.l3, self.l1)
         self.setScale(0.1)
         self.managed = 0
+
 	return None
 
     def cleanup(self):
@@ -44,6 +48,7 @@ class Button(DirectObject):
         
     def __str__(self):
         return "Button: %s" % self.name
+
     
     def getName(self):
         return self.name
@@ -62,6 +67,18 @@ class Button(DirectObject):
         self.l1.setWidth(width)
         self.l2.setWidth(width)
         self.l3.setWidth(width)
+
+    def freeze(self):
+        self.l1.freeze()
+        self.l2.freeze()
+        self.l3.freeze()
+        self.button.freeze()
+
+    def thaw(self):
+        self.l1.thaw()
+        self.l2.thaw()
+        self.l3.thaw()
+        self.button.thaw()
         
     def manage(self):
         self.button.manage(guiMgr, base.eventMgr.eventHandler)

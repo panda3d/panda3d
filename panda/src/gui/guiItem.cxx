@@ -24,6 +24,14 @@ GuiItem::~GuiItem(void) {
   this->unmanage();
 }
 
+int GuiItem::freeze() {
+  return 0;
+}
+
+int GuiItem::thaw() {
+  return 0;
+}
+
 void GuiItem::manage(GuiManager* mgr, EventHandler&) {
   test_ref_count_integrity();
   _mgr = mgr;

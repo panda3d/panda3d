@@ -10,7 +10,7 @@
     config_text.cxx config_text.h textNode.I textNode.cxx textNode.h
 
   #define INSTALL_HEADERS \
-    textNode.I textNode.h
+    config_text.h textNode.I textNode.h
 
   #define IGATESCAN all
 

@@ -53,6 +53,12 @@ class OnscreenText(PandaObject, NodePath):
 	    self.isClean = 1
        	    NodePath.__del__(self) 
 	return None
+
+    def freeze(self):
+        self.textNode.freeze()
+
+    def thaw(self):
+        self.textNode.thaw()
  
     def setText(self, string):
         """setText(self, string)
