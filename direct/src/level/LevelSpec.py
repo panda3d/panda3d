@@ -19,6 +19,9 @@ class LevelSpec:
         If not passed in, will create a new spec."""
         newSpec = 0
         if type(spec) is types.ModuleType:
+            if __debug__:
+                # reload the spec module to pick up changes
+                reload(spec)
             self.specDict = spec.levelSpec
             if __debug__:
                 self.setFilename(spec.__file__)
