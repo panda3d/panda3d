@@ -140,7 +140,7 @@ class Track(Interval):
 		    ival.setT(tc, entry=1)
 		    self.currentInterval = ival
 		else:
-		     ival.setT(tc)
+		    ival.setT(tc)
 
     def printParams(self, indent=0):
 	""" printParams(indent)

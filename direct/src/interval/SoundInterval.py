@@ -14,10 +14,6 @@ class SoundInterval(Interval):
         """
 	self.sound = sound
 	duration = self.sound.length() 
-	if (duration == 0.0):
-	    Interval.notify.warning(
-		'SoundInterval(): zero length sound - setting duration = 1.0')
-	    duration = 1.0
 	self.loop = loop
 	self.isPlaying = 0
 	if (name == None):
