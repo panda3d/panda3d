@@ -7,10 +7,10 @@ ANALOG_MIN = -0.95
 ANALOG_MAX = 0.95
 ANALOG_DEADBAND = 0.125
 
-#try:
-#    myBase = base
-#except:
-#    myBase = simbase
+try:
+    myBase = base
+except:
+    myBase = simbase
 
 class DirectDeviceManager(VrpnClient, DirectObject):
     def __init__(self, server = None):
