@@ -78,11 +78,11 @@ enum ErrorUtilCode {
   EU_error_zlib = -80,
 };
 
-EXPCL_PANDAEXPRESS const char *error_to_text(int err);
+EXPCL_PANDAEXPRESS string error_to_text(int err);
 EXPCL_PANDAEXPRESS int get_write_error(void);
 
 #ifdef HAVE_NET
-EXPCL_PANDAEXPRESS const char *handle_socket_error(void);
+EXPCL_PANDAEXPRESS string handle_socket_error(void);
 EXPCL_PANDAEXPRESS int get_network_error(void);
 #endif
 

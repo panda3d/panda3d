@@ -31,80 +31,85 @@
 //     Function: error_to_text
 //  Description:
 ////////////////////////////////////////////////////////////////////
-const char*
-error_to_text(int err) {
+string error_to_text(int err) {
+  char *errmsg;
+
   switch (err) {
     case EU_eof:
-      return "EU_eof";
+      errmsg = "EU_eof";
     case EU_network_no_data:
-      return "EU_network_no_data";
+      errmsg = "EU_network_no_data";
     case EU_ok:
-      return "EU_ok";
+      errmsg = "EU_ok";
     case EU_write:
-      return "EU_write";
+      errmsg = "EU_write";
     case EU_success:
-      return "EU_success";
+      errmsg = "EU_success";
     case EU_error_abort:
-      return "EU_error_abort";
+      errmsg = "EU_error_abort";
     case EU_error_file_empty:
-      return "EU_error_file_empty";
+      errmsg = "EU_error_file_empty";
     case EU_error_file_invalid:
-      return "EU_error_file_invalid";
+      errmsg = "EU_error_file_invalid";
     case EU_error_invalid_checksum:
-      return "EU_error_invalid_checksum";
+      errmsg = "EU_error_invalid_checksum";
     case EU_error_network_dead:
-      return "EU_error_network_dead";
+      errmsg = "EU_error_network_dead";
     case EU_error_network_unreachable:
-      return "EU_error_network_unreachable";
+      errmsg = "EU_error_network_unreachable";
     case EU_error_network_disconnected:
-      return "EU_error_network_disconnected";
+      errmsg = "EU_error_network_disconnected";
     case EU_error_network_timeout:
-      return "EU_error_network_timeout";
+      errmsg = "EU_error_network_timeout";
     case EU_error_network_no_data:
-      return "EU_error_network_no_data";
+      errmsg = "EU_error_network_no_data";
     case EU_error_network_disconnected_locally:
-      return "EU_error_network_disconnected_locally";
+      errmsg = "EU_error_network_disconnected_locally";
     case EU_error_network_buffer_overflow:
-      return "EU_error_network_buffer_overflow";
+      errmsg = "EU_error_network_buffer_overflow";
     case EU_error_network_disk_quota_exceeded:
-      return "EU_error_network_disk_quota_exceeded";
+      errmsg = "EU_error_network_disk_quota_exceeded";
     case EU_error_network_remote_host_disconnected:
-      return "EU_error_network_remote_host_disconnected";
+      errmsg = "EU_error_network_remote_host_disconnected";
     case EU_error_network_remote_host_down:
-      return "EU_error_network_remote_host_down";
+      errmsg = "EU_error_network_remote_host_down";
     case EU_error_network_remote_host_unreachable:
-      return "EU_error_network_remote_host_unreachable";
+      errmsg = "EU_error_network_remote_host_unreachable";
     case EU_error_network_remote_host_not_found:
-      return "EU_error_network_remote_host_not_found";
+      errmsg = "EU_error_network_remote_host_not_found";
     case EU_error_network_remote_host_no_response:
-      return "EU_error_network_remote_host_no_response";
+      errmsg = "EU_error_network_remote_host_no_response";
     case EU_error_write_out_of_files:
-      return "EU_error_write_out_of_files";
+      errmsg = "EU_error_write_out_of_files";
     case EU_error_write_out_of_memory:
-      return "EU_error_write_out_of_memory";
+      errmsg = "EU_error_write_out_of_memory";
     case EU_error_write_sharing_violation:
-      return "EU_error_write_sharing_violation";
+      errmsg = "EU_error_write_sharing_violation";
     case EU_error_write_disk_full:
-      return "EU_error_write_disk_full";
+      errmsg = "EU_error_write_disk_full";
     case EU_error_write_disk_not_found:
-      return "EU_error_write_disk_not_found";
+      errmsg = "EU_error_write_disk_not_found";
     case EU_error_write_disk_sector_not_found:
-      return "EU_error_write_disk_sector_not_found";
+      errmsg = "EU_error_write_disk_sector_not_found";
     case EU_error_write_disk_fault:
-      return "EU_error_write_disk_fault";
+      errmsg = "EU_error_write_disk_fault";
     case EU_error_write_file_rename:
-      return "EU_error_write_file_rename";
+      errmsg = "EU_error_write_file_rename";
     case EU_error_http_server_timeout:
-      return "EU_error_http_server_timeout";
+      errmsg = "EU_error_http_server_timeout";
     case EU_error_http_gateway_timeout:
-      return "EU_error_http_gateway_timeout";
+      errmsg = "EU_error_http_gateway_timeout";
     case EU_error_http_service_unavailable:
-      return "EU_error_http_service_unavailable";
+      errmsg = "EU_error_http_service_unavailable";
     case EU_error_zlib:
-      return "EU_error_zlib";
+      errmsg = "EU_error_zlib";
     default:
-      return "Unknown error";
+      errmsg = "Unknown error";
   }
+
+  char msgbuf[1024];
+  sprintf(msgbuf,"%d: %s",err,errmsg);
+  return string(msgbuf);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,53 +154,56 @@ get_write_error(void) {
 //     Function: handle_socket_error
 //  Description:
 ////////////////////////////////////////////////////////////////////
-const char*
-handle_socket_error(void) {
+string handle_socket_error(void) {
 #ifndef WIN32
-  return strerror(errno);
+  return string(strerror(errno));
 #else
   int err = WSAGetLastError();
+  char *errmsg;
   switch (err) {
     case 10022:
-      return "An invalid argument was supplied";
+      errmsg =  "An invalid argument was supplied";
     case 10036:
-      return "A blocking operation is currently executing";
+      errmsg =  "A blocking operation is currently executing";
     case 10040:
-      return "Message was larger than internal buffer or network limit";
+      errmsg =  "Message was larger than internal buffer or network limit";
     case 10050:
-      return "Network dead";
+      errmsg =  "Network dead";
     case 10051:
-      return "Network unreachable";
+      errmsg =  "Network unreachable";
     case 10052:
-      return "Connection broken because keep-alive detected a failure";
+      errmsg =  "Connection broken because keep-alive detected a failure";
     case 10053:
-      return "Connection aborted by local host software";
+      errmsg =  "Connection aborted by local host software";
     case 10054:
-      return "Connection closed by remote host";
+      errmsg =  "Connection closed by remote host";
     case 10055:
-      return "Out of buffer space or queue overflowed";
+      errmsg =  "Out of buffer space or queue overflowed";
     case 10057:
-      return "Socket was not connected";
+      errmsg =  "Socket was not connected";
     case 10058:
-      return "Socket was previously shut down";
+      errmsg =  "Socket was previously shut down";
     case 10060:
-      return "Connection timed out";
+      errmsg =  "Connection timed out";
     case 10061:
-      return "Connection refused by remote host";
+      errmsg =  "Connection refused by remote host";
     case 10064:
-      return "Remote host is down";
+      errmsg =  "Remote host is down";
     case 10065:
-      return "Remote host is unreachable";
+      errmsg =  "Remote host is unreachable";
     case 10093:
-      return "WSAStartup() was not called";
+      errmsg =  "WSAStartup() was not called";
     case 0:
-      return strerror(errno);
+      errmsg = strerror(errno);
     default:
       if (express_cat.is_debug())
-        express_cat.debug()
-          << "handle_socket_error - unknown error: " << err << endl;
-      return "Unknown WSA error";
+        express_cat.debug() << "handle_socket_error - unknown error: " << err << endl;
+      errmsg = "Unknown WSA error";
   }
+
+  char msgbuf[1024];
+  sprintf(msgbuf,"%d: %s",err,errmsg);
+  return string(msgbuf);
 #endif
 }
 #endif
