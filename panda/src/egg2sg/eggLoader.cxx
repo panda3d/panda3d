@@ -1244,6 +1244,19 @@ make_node(EggPrimitive *egg_prim, NamedNode *parent) {
   assert(!parent->is_of_type(GeomNode::get_class_type()));
 
   if (egg_prim->cleanup()) {
+    if (parent->is_of_type(SwitchNode::get_class_type())) {
+      // If we're putting a primitive under a SwitchNode of some kind,
+      // its exact position within the group is relevant, so we need
+      // to create a placeholder now.
+      NamedNode *group = new NamedNode(egg_prim->get_name());
+      make_nonindexed_primitive(egg_prim, group);
+      return new RenderRelation(parent, group);
+    }
+
+    // Otherwise, we don't really care what the position of this
+    // primitive is within its parent's list of children, and in fact
+    // we want to allow it to be combined with other polygons added to
+    // the same parent.
     make_nonindexed_primitive(egg_prim, parent);
   }
   return (RenderRelation *)NULL;
