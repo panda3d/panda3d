@@ -804,6 +804,27 @@ joint_has_primitives() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::has_normals
+//       Access: Published, Virtual
+//  Description: Returns true if any of the primitives (e.g. polygons)
+//               defined within this group or below have either face
+//               or vertex normals defined, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggGroupNode::
+has_normals() const {
+  Children::const_iterator ci;
+  for (ci = _children.begin();
+       ci != _children.end();
+       ++ci) {
+    if ((*ci)->has_normals()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::update_under
 //       Access: Protected, Virtual
 //  Description: This function is called from within EggGroupNode

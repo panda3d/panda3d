@@ -103,6 +103,7 @@ protected:
   virtual void adjust_under();
   virtual bool has_primitives() const;
   virtual bool joint_has_primitives() const;
+  virtual bool has_normals() const;
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
                            CoordinateSystem to_cs);

@@ -356,6 +356,29 @@ joint_has_primitives() const {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::has_normals
+//       Access: Published, Virtual
+//  Description: Returns true if any of the primitives (e.g. polygons)
+//               defined within this group or below have either face
+//               or vertex normals defined, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggPrimitive::
+has_normals() const {
+  if (has_normal()) {
+    return true;
+  }
+
+  const_iterator vi;
+  for (vi = begin(); vi != end(); ++vi) {
+    if ((*vi)->has_normal()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::erase

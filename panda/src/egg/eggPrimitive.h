@@ -102,6 +102,7 @@ PUBLISHED:
   void remove_nonunique_verts();
   virtual bool has_primitives() const;
   virtual bool joint_has_primitives() const;
+  virtual bool has_normals() const;
 
 
   // The EggPrimitive itself appears to be an STL container of

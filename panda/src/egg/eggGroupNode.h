@@ -134,6 +134,7 @@ PUBLISHED:
   int remove_invalid_primitives();
   virtual bool has_primitives() const;
   virtual bool joint_has_primitives() const;
+  virtual bool has_normals() const;
 
 protected:
   virtual void update_under(int depth_offset);
