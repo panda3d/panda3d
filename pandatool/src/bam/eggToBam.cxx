@@ -87,6 +87,17 @@ EggToBam() :
      "written exactly as they are, losslessly.",
      &EggToBam::dispatch_none, &_compression_off);
 
+  add_option
+    ("rawtex", "", 0,
+     "Record texture data directly in the bam file, instead of storing "
+     "a reference to the texture elsewhere on disk.  The textures are "
+     "stored uncompressed.  A particular texture that is encoded into "
+     "multiple different bam files in this way cannot be unified into "
+     "the same part of texture memory if the different bam files are loaded "
+     "together.  All that being said, this can sometimes be a convenient "
+     "way to ensure the bam file is completely self-contained.",
+     &EggToBam::dispatch_none, &_tex_rawdata);
+
   redescribe_option
     ("cs",
      "Specify the coordinate system of the resulting " + _format_name +
@@ -174,8 +185,12 @@ handle_args(ProgramBase::Args &args) {
   // If the user specified a path store option, we need to set the
   // bam-texture-mode Configrc variable directly to support this
   // (otherwise the bam code will do what it wants to do anyway).
-  if (_got_path_store) {
+  if (_tex_rawdata) {
+    bam_texture_mode = BTM_rawdata;
+
+  } else if (_got_path_store) {
     bam_texture_mode = BTM_unchanged;
+
   } else {
     // Otherwise, the default path store is absolute; then the
     // bam-texture-mode can do the appropriate thing to it.
