@@ -188,8 +188,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.initVisibility()
         self.placeLocalToon()
 
-        self.acceptOnce('leavingFactory', self.announceLeaving)
-
     def announceLeaving(self):
         """call this just before leaving the level; this may result in
         the factory being destroyed on the AI"""
@@ -315,6 +313,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
         # remove special camera views
         del self.factoryViews
+        # make sure the ouch task is stopped
+        self.stopOuch()
         
     def getZoneNode(self, zoneNum):
         return self.zoneNum2node[zoneNum]
