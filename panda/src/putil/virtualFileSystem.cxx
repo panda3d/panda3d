@@ -24,6 +24,7 @@
 #include "dcast.h"
 #include "config_util.h"
 #include "executionEnvironment.h"
+#include "pset.h"
 
 VirtualFileSystem *VirtualFileSystem::_global_ptr = NULL;
 
@@ -448,24 +449,50 @@ get_global_ptr() {
     // Then, we add whatever mounts are listed in the Configrc file.
     Config::ConfigTable::Symbol mounts;
     config_util.GetAll("vfs-mount", mounts);
+
+    // When we use GetAll(), we might inadvertently read duplicate
+    // lines.  Filter them out with a set.
+    pset<string> already_read;
+
     Config::ConfigTable::Symbol::iterator si;
     for (si = mounts.begin(); si != mounts.end(); ++si) {
       string mount_desc = (*si).Val();
+      if (already_read.insert(mount_desc).second) {
 
-      // The last space marks the beginning of the mount point.
-      // Spaces before that are part of the system filename.
-      size_t space = mount_desc.rfind(' ');
-      if (space == string::npos) {
-        util_cat.warning()
-          << "No space in vfs-mount descriptor: " << mount_desc << "\n";
+        // The vfs-mount syntax is:
 
-      } else {
-        string fn = trim_right(mount_desc.substr(0, space));
-        fn = ExecutionEnvironment::expand_string(fn);
-        Filename physical_filename = Filename::from_os_specific(fn);
+        // vfs-mount system-filename mount-point [options]
 
-        string mount_point = mount_desc.substr(space + 1);
-        _global_ptr->mount(physical_filename, mount_point, 0);
+        // The last two spaces mark the beginning of the mount point,
+        // and of the options, respectively.  There might be multiple
+        // spaces in the system filename, which are part of the
+        // filename.
+
+        // The last space marks the beginning of the mount point.
+        // Spaces before that are part of the system filename.
+        size_t space = mount_desc.rfind(' ');
+        if (space == string::npos) {
+          util_cat.warning()
+            << "No space in vfs-mount descriptor: " << mount_desc << "\n";
+          
+        } else {
+          string mount_point = mount_desc.substr(space + 1);
+          mount_desc = trim_right(mount_desc.substr(0, space)); 
+          string options;
+
+          space = mount_desc.rfind(' ');
+          if (space != string::npos) {
+            // If there's another space, we have the optional options field.
+            options = mount_point;
+            mount_point = mount_desc.substr(space + 1);
+            mount_desc = trim_right(mount_desc.substr(0, space)); 
+          }
+
+          mount_desc = ExecutionEnvironment::expand_string(mount_desc);
+          Filename physical_filename = Filename::from_os_specific(mount_desc);
+
+          _global_ptr->mount(physical_filename, mount_point, 0);
+        }
       }
     }
   }
