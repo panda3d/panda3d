@@ -49,6 +49,9 @@ class Sign(DirectObject):
     
     def getGuiItem(self):
         return self.sign
+
+    def setPos(self, x, y):
+        self.label.setPos(x, 0, y)
         
     def setScale(self, scale):
         self.sign.setScale(scale)
