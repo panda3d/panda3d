@@ -15,15 +15,12 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
+#include <pStatTimer.h>
 
 TypeHandle Character::_type_handle;
 
-#ifdef DO_PSTATS
-#include <pStatTimer.h>
-
 PStatCollector Character::_anim_pcollector =
   PStatCollector("Animation", RGBColorf(1,0,1), 30);
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::Copy Constructor
@@ -35,10 +32,8 @@ Character(const Character &copy) :
   PartBundleNode(copy.get_name(), new CharacterJointBundle(copy.get_name())),
   _cv(DynamicVertices::deep_copy(copy._cv)),
   _computed_vertices(copy._computed_vertices),
-  _parts(copy._parts)
-#ifdef DO_PSTATS
-  , _char_pcollector(copy._char_pcollector)
-#endif
+  _parts(copy._parts),
+  _char_pcollector(copy._char_pcollector)
 {
   // Now make a copy of the joint/slider hierarchy.  We could just use
   // the PartBundleNode's copy constructor, but if we do it ourselves
@@ -54,10 +49,8 @@ Character(const Character &copy) :
 ////////////////////////////////////////////////////////////////////
 Character::
 Character(const string &name) :
-  PartBundleNode(name, new CharacterJointBundle(name))
-#ifdef DO_PSTATS
-  , _char_pcollector(_anim_pcollector, name.empty() ? string("Unnamed Character") : name)
-#endif
+  PartBundleNode(name, new CharacterJointBundle(name)),
+  _char_pcollector(_anim_pcollector, name)
 {
 }
 
@@ -110,9 +103,11 @@ app_traverse() {
   double now = ClockObject::get_global_clock()->get_frame_time();
   get_bundle()->advance_time(now);
 
+#ifndef NDEBUG
   if (char_cat.is_debug()) {
     char_cat.debug() << "Animating " << *this << " at time " << now << "\n";
   }
+#endif
 
   update();
 }
@@ -127,10 +122,8 @@ app_traverse() {
 ////////////////////////////////////////////////////////////////////
 void Character::
 update() {
-#ifdef DO_PSTATS
   // Statistics
   PStatTimer timer(_char_pcollector);
-#endif
 
   // First, update all the joints and sliders.
   get_bundle()->update();

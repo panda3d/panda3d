@@ -4,7 +4,8 @@
 #begin lib_target
   #define TARGET collide
   #define LOCAL_LIBS \
-    sgmanip light tform sgraphutil gobj graph putil $[if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]], pstatclient] 
+    sgmanip light tform sgraphutil gobj graph putil \
+    pstatclient
 
   #define SOURCES \
     collisionEntry.I collisionEntry.cxx collisionEntry.h \

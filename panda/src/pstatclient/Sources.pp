@@ -5,16 +5,19 @@
   #define LOCAL_LIBS \
     net linmath putil express
 
-#if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]]
   #define TARGET pstatclient
 
   #define SOURCES \
     config_pstats.cxx config_pstats.h pStatClient.I pStatClient.cxx \
     pStatClient.h pStatClientControlMessage.cxx \
-    pStatClientControlMessage.h pStatCollectorDef.cxx \
+    pStatClientControlMessage.h \
+    pStatCollector.I pStatCollector.h \
+    pStatCollectorDef.cxx \
     pStatCollectorDef.h pStatFrameData.I pStatFrameData.cxx \
     pStatFrameData.h pStatServerControlMessage.cxx \
-    pStatServerControlMessage.h
+    pStatServerControlMessage.h \
+    pStatThread.I pStatThread.h \
+    pStatTimer.I pStatTimer.h
 
   #define INSTALL_HEADERS \
     config_pstats.h pStatClient.I pStatClient.h \
@@ -24,12 +27,6 @@
     pStatTimer.I pStatTimer.h
 
   #define IGATESCAN all
-#else
-  #define TARGET
-  #define SOURCES
-  #define INSTALL_HEADERS  
-  #define IGATESCAN
-#endif  
 
 #end lib_target
 

@@ -5,7 +5,7 @@
   #define TARGET display
   #define LOCAL_LIBS \
     putil gsgbase gobj linmath graph mathutil sgraph \
-    $[if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]], pstatclient]  
+    pstatclient
 
   #define SOURCES \
     config_display.cxx config_display.h displayRegion.I \

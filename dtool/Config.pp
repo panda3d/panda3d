@@ -279,6 +279,12 @@
 #endif
 #defer HAVE_NET $[HAVE_NSPR]
 
+// Do you want to build the PStats interface, for graphical run-time
+// performance statistics?  This requires NET to be available.  By
+// default, we don't build PStats when OPTIMIZE = 4, although this is
+// possible.
+#defer DO_PSTATS $[and $[HAVE_NET],$[< $[OPTIMIZE], 4]]
+
 // Do you want to build the audio interface?  What additional
 // libraries are required?
 #define AUDIO_IPATH /mspsdk/Include
@@ -405,10 +411,10 @@
 // options to interrogate, guaranteeing that the correct interfaces
 // are generated.  Do not include -D here; that will be supplied
 // automatically.
-#defer CDEFINES_OPT1 _DEBUG DO_PSTATS
-#defer CDEFINES_OPT2 _DEBUG DO_PSTATS
-#defer CDEFINES_OPT3 DO_PSTATS
-#defer CDEFINES_OPT4 NDEBUG $[if $[ne $[DO_PSTATS],],DO_PSTATS]
+#defer CDEFINES_OPT1 _DEBUG
+#defer CDEFINES_OPT2 _DEBUG
+#defer CDEFINES_OPT3
+#defer CDEFINES_OPT4 NDEBUG
 
 // What additional flags should be passed for each value of OPTIMIZE
 // (above)?  We separate out the compiler-optimization flags, above,

@@ -85,6 +85,9 @@ $[cdefine HAVE_IPC]
 /* Define if we want to compile the net code.  */
 $[cdefine HAVE_NET]
 
+/* Define if we want to use PStats.  */
+$[cdefine DO_PSTATS]
+
 /* Define if we want to compile the audio code.  */
 $[cdefine HAVE_AUDIO]
 

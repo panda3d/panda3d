@@ -4,8 +4,6 @@
 #define USE_NET yes
 
 #begin bin_target
-
-#if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]]
   #define TARGET gtk-stats
   #define LOCAL_LIBS \
     gtkbase progbase pstatserver
@@ -24,12 +22,6 @@
     gtkStatsServer.h gtkStatsStripChart.I gtkStatsStripChart.cxx \
     gtkStatsStripChart.h gtkStatsStripWindow.cxx gtkStatsStripWindow.h \
     gtkStatsWindow.cxx gtkStatsWindow.h
-#else
-  #define TARGET
-  #define SOURCES
-  #define INSTALL_HEADERS  
-#endif  	
-	
 
 #end bin_target
 

@@ -5,7 +5,7 @@
   #define TARGET char
   #define LOCAL_LIBS \
     chan graph sgraph linmath putil event sgattrib mathutil gsgbase \
-    $[if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]], pstatclient]  
+    pstatclient    
 
   #define SOURCES \
     character.I character.cxx character.h characterJoint.cxx \

@@ -22,11 +22,19 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PStatTimer {
 public:
+#ifdef DO_PSTATS
   INLINE PStatTimer(PStatCollector &collector);
   INLINE ~PStatTimer();
 
 private:
   PStatCollector &_collector;
+
+#else // DO_PSTATS
+
+  INLINE PStatTimer(PStatCollector &) { }
+  INLINE ~PStatTimer() { }
+
+#endif  // DO_PSTATS
 };
 
 #include "pStatTimer.I"

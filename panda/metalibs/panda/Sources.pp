@@ -9,7 +9,7 @@
 #define USE_NET yes
 
 #define COMPONENT_LIBS \
-    pvrpn grutil chan chancfg $[if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]], pstatclient] \
+    pvrpn grutil chan chancfg pstatclient \
     char chat collide cull device \
     dgraph display gobj graph gsgbase \
     gsgmisc light linmath mathutil net \

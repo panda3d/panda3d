@@ -5,7 +5,7 @@
   #define TARGET cull
   #define LOCAL_LIBS \
     gobj sgraphutil graph putil sgraph mathutil sgattrib display \
-    $[if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]], pstatclient]     
+    pstatclient
 
   #define SOURCES \
     config_cull.cxx config_cull.h cullState.I cullState.cxx cullState.h \

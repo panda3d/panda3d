@@ -14,7 +14,7 @@
 #include <vector_int.h>
 #include <luse.h>
 
-#ifdef HAVE_NET
+#ifdef DO_PSTATS
 #include <connectionManager.h>
 #include <queuedConnectionReader.h>
 #include <connectionWriter.h>
@@ -31,11 +31,11 @@ class PStatThread;
 // Description : Manages the communications to report statistics via a
 //               network connection to a remote PStatServer.
 //
-//               If HAVE_NET is not defined, we don't have a network
-//               interface, and therefore this class can't do very
-//               much.  It's therefore defined as a stub class.
+//               If DO_PSTATS is not defined, we don't want to use
+//               stats at all.  This class is therefore defined as a
+//               stub class.
 ////////////////////////////////////////////////////////////////////
-#ifdef HAVE_NET
+#ifdef DO_PSTATS
 class EXPCL_PANDA PStatClient : public ConnectionManager {
 public:
   PStatClient();
@@ -69,7 +69,7 @@ PUBLISHED:
   bool is_connected() const;
 
 private:
-  PStatCollector make_collector(int parent_index, const string &fullname);
+  PStatCollector make_collector(int parent_index, string fullname);
   PStatCollector make_collector(int parent_index, const string &fullname,
 				const RGBColorf &suggested_color, int sort);
   PStatThread make_thread(const string &name);
@@ -143,7 +143,7 @@ private:
 
 #include "pStatClient.I"
 
-#else  // HAVE_NET
+#else  // DO_PSTATS
 
 class EXPCL_PANDA PStatClient {
 public:
@@ -153,7 +153,7 @@ public:
   static void main_tick() { }
 };
 
-#endif  // HAVE_NET
+#endif  // DO_PSTATS
 
 #endif
 

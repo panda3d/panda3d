@@ -4,7 +4,7 @@
     framework putil collide loader sgmanip chan text chancfg cull \
     pnmimage pnmimagetypes event effects shader graph gobj display \
     mathutil sgattrib putil express light dgraph device tform sgraph \
-    linmath sgraphutil panda $[if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]], pstatclient]  
+    linmath sgraphutil pstatclient
 
 #if $[LINK_ALL_STATIC]
   // If we're statically linking, we need to explicitly link with

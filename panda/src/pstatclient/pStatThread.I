@@ -40,7 +40,7 @@ PStatThread(PStatClient *client, int index) :
 ////////////////////////////////////////////////////////////////////
 INLINE PStatThread::
 PStatThread(const string &name, PStatClient *client) {
-#ifdef HAVE_NET
+#ifdef DO_PSTATS
   if (client == (PStatClient *)NULL) {
     client = PStatClient::get_global_pstats();
   }
@@ -85,7 +85,7 @@ operator = (const PStatThread &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatThread::
 new_frame() {
-#ifdef HAVE_NET
+#ifdef DO_PSTATS
   _client->new_frame(_index);
 #endif
 }

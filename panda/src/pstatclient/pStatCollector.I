@@ -4,6 +4,8 @@
 ////////////////////////////////////////////////////////////////////
 
 
+#ifndef DO_PSTATS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::Default Constructor
 //       Access: Private
@@ -52,16 +54,11 @@ PStatCollector(PStatClient *client, int index) :
 INLINE PStatCollector::
 PStatCollector(const string &name, const RGBColorf &suggested_color,
 	       int sort, PStatClient *client) {
-#ifdef HAVE_NET
   if (client == (PStatClient *)NULL) {
     client = PStatClient::get_global_pstats();
   }
   PStatCollector collector(client->make_collector(0, name, suggested_color, sort));
   (*this) = collector;
-#else
-  _client = (PStatClient *)NULL;
-  _index = 0;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,15 +87,10 @@ PStatCollector(const string &name, const RGBColorf &suggested_color,
 INLINE PStatCollector::
 PStatCollector(const PStatCollector &parent, const string &name, 
 	       const RGBColorf &suggested_color, int sort) {
-#ifdef HAVE_NET
   nassertv(parent._client != (PStatClient *)NULL);
   PStatCollector collector(parent._client->make_collector
 			   (parent._index, name, suggested_color, sort));
   (*this) = collector;
-#else
-  _client = (PStatClient *)NULL;
-  _index = 0;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,9 +124,7 @@ operator = (const PStatCollector &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 start() {
-#ifdef HAVE_NET
   _client->start(_index, 0, _client->_clock.get_real_time());
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,9 +134,7 @@ start() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 start(const PStatThread &thread) {
-#ifdef HAVE_NET
   _client->start(_index, thread._index, _client->_clock.get_real_time());
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,9 +148,7 @@ start(const PStatThread &thread) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 start(const PStatThread &thread, double as_of) {
-#ifdef HAVE_NET
   _client->start(_index, thread._index, as_of);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,9 +159,7 @@ start(const PStatThread &thread, double as_of) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 stop() {
-#ifdef HAVE_NET
   _client->stop(_index, 0, _client->_clock.get_real_time());
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,9 +169,7 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 stop(const PStatThread &thread) {
-#ifdef HAVE_NET
   _client->stop(_index, thread._index, _client->_clock.get_real_time());
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +183,7 @@ stop(const PStatThread &thread) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 stop(const PStatThread &thread, double as_of) {
-#ifdef HAVE_NET
   _client->stop(_index, thread._index, as_of);
-#endif
 }
+
+#endif  // DO_PSTATS

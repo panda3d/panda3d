@@ -80,11 +80,6 @@
 
 #define WARNING_LEVEL_FLAG /W3
 
-#if $[or $[ne $[DO_PSTATS],],$[<= $[OPTIMIZE],3]]
-// this should probably only be defined for panda-specific dirs
-#define EXTRA_CDEFS $[EXTRA_CDEFS] DO_PSTATS
-#endif
-
 #if $[TEST_INLINING]
 // /W4 will make MSVC spit out if it inlined a fn or not, but also cause a lot of other spam warnings
 #define WARNING_LEVEL_FLAG /W4

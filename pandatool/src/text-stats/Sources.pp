@@ -2,10 +2,6 @@
 #define USE_NET yes
 
 #begin bin_target
-
-
-#if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]]
-	
   #define TARGET text-stats
   #define LOCAL_LIBS \
     progbase pstatserver
@@ -19,14 +15,6 @@
     textMonitor.cxx textMonitor.h textStats.cxx textStats.h
 
   #define INSTALL_HEADERS 
-  
-#else
-  #define TARGET
-  #define SOURCES
-  #define INSTALL_HEADERS  
-#endif  	  
-
-
 
 #end bin_target
 

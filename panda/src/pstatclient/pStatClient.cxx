@@ -5,11 +5,9 @@
 
 #include "pStatClient.h"
 
-#ifdef HAVE_NET 
-// This file only defines anything interesting if we have a network
-// interface, in which case the PStatClient actually does something.
-// If we don't have a network interface, there's nothing to define
-// here.
+#ifdef DO_PSTATS 
+// This file only defines anything interesting if DO_PSTATS is
+// defined.
 
 #include "pStatClientControlMessage.h"
 #include "pStatServerControlMessage.h"
@@ -205,7 +203,11 @@ get_main_thread() const {
 //               called by a PStatCollector constructor.
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
-make_collector(int parent_index, const string &fullname) {
+make_collector(int parent_index, string fullname) {
+  if (fullname.empty()) {
+    fullname = "Unnamed";
+  }
+
   // Skip any colons at the beginning of the name.
   size_t start = 0;
   while (start < fullname.size() && fullname[start] == ':') {
@@ -761,4 +763,4 @@ connection_reset(const PT(Connection) &connection) {
   }
 }
 
-#endif // HAVE_NET
+#endif // DO_PSTATS

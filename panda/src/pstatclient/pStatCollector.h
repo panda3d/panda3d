@@ -20,6 +20,8 @@
 //               timed with calls to start() and stop().
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PStatCollector {
+#ifdef DO_PSTATS
+
 private:
   INLINE PStatCollector();
   INLINE PStatCollector(PStatClient *client, int index);
@@ -50,6 +52,27 @@ private:
   int _index;
 
 friend class PStatClient;
+
+#else  // DO_PSTATS
+
+  INLINE PStatCollector(const string &, 
+			const RGBColorf & = RGBColorf::zero(),
+			int = -1,
+			PStatClient * = NULL) { }
+  INLINE PStatCollector(const PStatCollector &,
+			const string &,
+			const RGBColorf & = RGBColorf::zero(),
+			int = -1) { }
+
+  INLINE void start() { }
+  INLINE void start(const PStatThread &) { }
+  INLINE void start(const PStatThread &, double) { }
+
+  INLINE void stop() { }
+  INLINE void stop(const PStatThread &) { }
+  INLINE void stop(const PStatThread &, double) { }
+
+#endif  // DO_PSTATS
 };
 
 #include "pStatCollector.I"
