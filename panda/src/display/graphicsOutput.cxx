@@ -629,6 +629,8 @@ make_cube_map(const string &name, int size, bool to_ram,
 
   PT(Texture) tex = new Texture(name);
   tex->setup_cube_map();
+  tex->set_wrap_u(Texture::WM_clamp);
+  tex->set_wrap_v(Texture::WM_clamp);
   GraphicsOutput *buffer = make_texture_buffer(name, size, size, tex, to_ram);
 
   // We don't need to clear the overall buffer; instead, we'll clear
