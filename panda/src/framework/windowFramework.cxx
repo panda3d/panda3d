@@ -29,6 +29,7 @@
 #include "texturePool.h"
 #include "textureAttrib.h"
 #include "perspectiveLens.h"
+#include "orthographicLens.h"
 #include "auto_bind.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
@@ -36,6 +37,9 @@
 #include "boundingSphere.h"
 #include "deg_2_rad.h"
 #include "config_framework.h"
+#include "depthTestAttrib.h"
+#include "depthWriteAttrib.h"
+#include "pgTop.h"
 
 // This number is chosen arbitrarily to override any settings in model
 // files.
@@ -162,8 +166,86 @@ const NodePath &WindowFramework::
 get_render_2d() {
   if (_render_2d.is_empty()) {
     _render_2d = NodePath("render_2d");
+
+    // Some standard properties for the 2-d display.
+
+    // It's particularly important to turn off the depth test,
+    // since we'll be keeping the same depth buffer already filled
+    // by the previously-drawn 3-d scene--we don't want to pay for
+    // a clear operation, but we also don't want to collide with
+    // that depth buffer.
+    CPT(RenderAttrib) dt = DepthTestAttrib::make(DepthTestAttrib::M_none);
+    CPT(RenderAttrib) dw = DepthWriteAttrib::make(DepthWriteAttrib::M_off);
+    _render_2d.node()->set_attrib(dt, 1);
+    _render_2d.node()->set_attrib(dw, 1);
+
+    _render_2d.set_material_off(1);
+    _render_2d.set_two_sided(1, 1);
+
+    // Now set up a 2-d camera to view render_2d.
+
+    // Get the first channel on the window.  This will be the only
+    // channel on non-SGI hardware.
+    PT(GraphicsChannel) channel = _window->get_channel(0);
+
+    // Make a layer on the channel to hold our display region.
+    PT(GraphicsLayer) layer = channel->make_layer();
+    
+    // And create a display region that covers the entire window.
+    PT(DisplayRegion) dr = layer->make_display_region();
+    
+    // Finally, we need a camera to associate with the display region.
+    PT(Camera) camera = new Camera("camera2d");
+    NodePath camera_np = _render_2d.attach_new_node(camera);
+    
+    PT(Lens) lens = new OrthographicLens;
+
+    static const float left = -1.0f;
+    static const float right = 1.0f;
+    static const float bottom = -1.0f;
+    static const float top = 1.0f;
+    lens->set_film_size(right - left, top - bottom);
+    lens->set_film_offset((right + left) * 0.5, (top + bottom) * 0.5);
+    lens->set_near_far(-1000, 1000);
+
+    camera->set_lens(lens);
+    camera->set_scene(_render_2d);
+    dr->set_camera(camera_np);
   }
+
   return _render_2d;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_aspect_2d
+//       Access: Public
+//  Description: Returns the node under the 2-d scene graph that is
+//               scaled to suit the window's aspect ratio.
+////////////////////////////////////////////////////////////////////
+const NodePath &WindowFramework::
+get_aspect_2d() {
+  if (_aspect_2d.is_empty()) {
+    _aspect_2d = get_render_2d().attach_new_node(new PGTop("aspect_2d"));
+
+    float this_aspect_ratio = aspect_ratio;
+    if (this_aspect_ratio == 0.0f) {
+      // An aspect ratio of 0.0 means to try to infer it.
+      this_aspect_ratio = 1.0f;
+
+      WindowProperties properties = _window->get_properties();
+      if (!properties.has_size()) {
+        properties = _window->get_requested_properties();
+      }
+      if (properties.has_size() && properties.get_y_size() != 0.0f) {
+        this_aspect_ratio = 
+          (float)properties.get_x_size() / (float)properties.get_y_size();
+      }
+    }
+
+    _aspect_2d.set_scale(1.0f / this_aspect_ratio, 1.0f, 1.0f);
+  }
+
+  return _aspect_2d;
 }
 
 ////////////////////////////////////////////////////////////////////

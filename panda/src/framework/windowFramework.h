@@ -62,6 +62,7 @@ public:
 
   const NodePath &get_render();
   const NodePath &get_render_2d();
+  const NodePath &get_aspect_2d();
   const NodePath &get_mouse();
 
   void enable_keyboard();
@@ -110,6 +111,7 @@ private:
 
   NodePath _render;
   NodePath _render_2d;
+  NodePath _aspect_2d;
   AnimControlCollection _anim_controls;
 
   NodePath _mouse;

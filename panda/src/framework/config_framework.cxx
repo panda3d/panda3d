@@ -33,6 +33,7 @@ const int win_height = config_framework.GetInt("win-height", 480);
 const bool fullscreen = config_framework.GetBool("fullscreen", false);
 const bool undecorated = config_framework.GetBool("undecorated", false);
 const bool cursor_hidden = config_framework.GetBool("cursor-hidden", false);
+const float aspect_ratio = config_framework.GetFloat("aspect-ratio", 0.0f);
 
 // The default window background color.
 const float win_background_r = config_framework.GetFloat("win-background-r", 0.41);

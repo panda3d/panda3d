@@ -30,6 +30,7 @@ extern const int win_height;
 extern const bool fullscreen;
 extern const bool undecorated;
 extern const bool cursor_hidden;
+extern const float aspect_ratio;
 
 extern const float win_background_r;
 extern const float win_background_g;
