@@ -11,25 +11,15 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCMolecularField::get_number
-//       Access: Public
-//  Description: Returns a unique index number associated with this
-//               field.  This is defined implicitly when the .dc
-//               file(s) are read.
+//     Function: DCMolecularField::as_molecular_field
+//       Access: Public, Virtual
+//  Description: Returns the same field pointer converted to a
+//               molecular field pointer, if this is in fact a
+//               molecular field; otherwise, returns NULL.
 ////////////////////////////////////////////////////////////////////
-int DCMolecularField::
-get_number() const {
-  return _number;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCMolecularField::get_name
-//       Access: Public
-//  Description: Returns the name of this field.
-////////////////////////////////////////////////////////////////////
-string DCMolecularField::
-get_name() const {
-  return _name;
+DCMolecularField *DCMolecularField::
+as_molecular_field() {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +59,7 @@ DCMolecularField() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCMolecularField::write
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Generates a parseable description of the object to
 //               the indicated output stream.
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +77,6 @@ write(ostream &out, int indent_level) const {
     }
   }
 
-  out << ";  // molecular " << _number << "\n";
+  out << ";  // field " << _number << "\n";
 }
 

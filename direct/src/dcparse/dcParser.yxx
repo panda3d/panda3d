@@ -9,6 +9,7 @@
 #include "dcFile.h"
 #include "dcClass.h"
 #include "dcAtomicField.h"
+#include "dcMolecularField.h"
 
 // Because our token type contains objects of type string, which
 // require correct copy construction (and not simply memcpying), we
@@ -139,7 +140,7 @@ atomic_field:
   current_atomic = new DCAtomicField;
   current_atomic->_name = $1;
   if (!current_class->add_field(current_atomic)) {
-    yyerror("Duplicate atomic field name: " + current_atomic->_name);
+    yyerror("Duplicate field name: " + current_atomic->_name);
   }
 }
 	parameter_list ')' atomic_flags
@@ -148,9 +149,15 @@ atomic_field:
 atomic_name:
 	IDENTIFIER
 {
-  $$ = current_class->get_atomic_by_name($1);
-  if ($$ == (DCAtomicField *)NULL) {
-    yyerror("Unknown atomic field: " + $1);
+  DCField *field = current_class->get_field_by_name($1);
+  $$ = (DCAtomicField *)NULL;
+  if (field == (DCField *)NULL) {
+    yyerror("Unknown field: " + $1);
+  } else {
+    $$ = field->as_atomic_field();
+    if ($$ == (DCAtomicField *)NULL) {
+      yyerror("Not an atomic field: " + $1);
+    }
   }
 }
 
@@ -270,7 +277,7 @@ molecular_field:
   current_molecular = new DCMolecularField;
   current_molecular->_name = $1;
   if (!current_class->add_field(current_molecular)) {
-    yyerror("Duplicate molecular field name: " + current_molecular->_name);
+    yyerror("Duplicate field name: " + current_molecular->_name);
   }
 }
 	molecular_atom_list
@@ -287,6 +294,11 @@ molecular_atom_list:
 {
   if ($3 != (DCAtomicField *)NULL) {
     current_molecular->_fields.push_back($3);
+    if (current_molecular->_fields[0]->_flags != $3->_flags) {
+      yyerror("Mismatched flags in molecule between " + 
+	      current_molecular->_fields[0]->_name + " and " +
+	      $3->_name);
+    }
   }
 }
 	;

@@ -18,25 +18,15 @@ operator << (ostream &out, const DCAtomicField::ElementType &et) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::get_number
-//       Access: Public
-//  Description: Returns a unique index number associated with this
-//               field.  This is defined implicitly when the .dc
-//               file(s) are read.
+//     Function: DCAtomicField::as_atomic_field
+//       Access: Public, Virtual
+//  Description: Returns the same field pointer converted to an atomic
+//               field pointer, if this is in fact an atomic field;
+//               otherwise, returns NULL.
 ////////////////////////////////////////////////////////////////////
-int DCAtomicField::
-get_number() const {
-  return _number;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::get_name
-//       Access: Public
-//  Description: Returns the name of this field.
-////////////////////////////////////////////////////////////////////
-string DCAtomicField::
-get_name() const {
-  return _name;
+DCAtomicField *DCAtomicField::
+as_atomic_field() {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,7 +178,7 @@ DCAtomicField() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::write
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Generates a parseable description of the object to
 //               the indicated output stream.
 ////////////////////////////////////////////////////////////////////
@@ -236,5 +226,5 @@ write(ostream &out, int indent_level) const {
     out << " airecv";
   }
 
-  out << ";  // atomic " << _number << "\n";
+  out << ";  // field " << _number << "\n";
 }

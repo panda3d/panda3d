@@ -14,7 +14,7 @@ dclass Movable {
 dclass Attitude : Movable {
   // methods are inherited from parent class.
 
-  set_attitude(int8);
+  set_attitude(int8) required broadcast ram;
 
   // This molecular field uses some inherited atomic fields.
   set_xyzhprattitude : set_xyz, set_hpr, set_attitude;

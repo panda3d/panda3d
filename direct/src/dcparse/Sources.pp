@@ -6,7 +6,7 @@
 
   #define SOURCES \
     dcAtomicField.cxx dcAtomicField.h dcClass.cxx dcClass.h \
-    dcFile.cxx dcFile.h dcLexer.lxx dcLexerDefs.h \
+    dcField.cxx dcField.h dcFile.cxx dcFile.h dcLexer.lxx dcLexerDefs.h \
     dcMolecularField.cxx dcMolecularField.h dcParser.yxx \
     dcParserDefs.h dcSubatomicType.cxx dcSubatomicType.h dcbase.h \
     indent.cxx indent.h

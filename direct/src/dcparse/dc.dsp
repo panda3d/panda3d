@@ -93,6 +93,10 @@ SOURCE=.\dcClass.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=.\dcField.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=.\dcFile.cxx
 # End Source File
 # Begin Source File
@@ -138,6 +142,10 @@ SOURCE=.\dcClass.h
 # Begin Source File
 
 SOURCE=.\dcClassDescription.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\dcField.h
 # End Source File
 # Begin Source File
 

@@ -7,6 +7,7 @@
 #define DCATOMICFIELD_H
 
 #include "dcbase.h"
+#include "dcField.h"
 #include "dcSubatomicType.h"
 
 #include <vector>
@@ -18,10 +19,9 @@
 //               Distributed Class, and is always implemented as a
 //               remote procedure method.
 ////////////////////////////////////////////////////////////////////
-class DCAtomicField {
+class DCAtomicField : public DCField {
 PUBLISHED:
-  int get_number() const;
-  string get_name() const;
+  virtual DCAtomicField *as_atomic_field();
 
   int get_num_elements() const;
   DCSubatomicType get_element_type(int n) const;
@@ -39,14 +39,11 @@ PUBLISHED:
 
 public:
   DCAtomicField();
-  void write(ostream &out, int indent_level = 0) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
 public:
   // These members define the primary interface to the atomic field
   // definition as read from the file.
-  int _number;
-  string _name;
-
   class ElementType {
   public:
     DCSubatomicType _type;
