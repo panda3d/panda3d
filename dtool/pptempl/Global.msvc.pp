@@ -120,10 +120,15 @@
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
 
-#if $[TEST_INLINING]
-#define WARNING_LEVEL_FLAG /W4 /DTEST_INLINING
-#else
 #define WARNING_LEVEL_FLAG /W3
+
+#if $[FORCE_INLINING]
+#define WARNING_LEVEL_FLAG /W3 /DFORCE_INLINING
+#endif
+
+#if $[TEST_INLINING]
+// /W4 will make MSVC spit out if it inlined a fn or not
+#define WARNING_LEVEL_FLAG /W4 /DFORCE_INLINING
 #endif
 
 #defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
