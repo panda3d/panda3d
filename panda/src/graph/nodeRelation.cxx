@@ -1019,3 +1019,57 @@ force_init_type() {
   init_type();
   return get_class_type(); 
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::set_transition
+//       Access: Public
+//  Description: This flavor of set_transition() accepts a specific
+//               TypeHandle, indicating the type of transition that we
+//               are setting, and a NodeTransition pointer indicating
+//               the value of the transition.  The NodeTransition may
+//               be NULL indicating that the transition should be
+//               cleared.  If the NodeTransition is not NULL, it must
+//               match the type indicated by the TypeHandle.
+//
+//               The return value is a pointer to the *previous*
+//               transition in the set, if any, or NULL if there was
+//               none.
+////////////////////////////////////////////////////////////////////
+PT(NodeTransition) NodeRelation::
+set_transition(TypeHandle handle, NodeTransition *trans) {
+  PT(NodeTransition) old_trans =
+    _transitions.set_transition(handle, trans);
+
+  if (old_trans != (NodeTransition *)NULL) {
+    old_trans->removed_from_arc(this);
+  }
+  if (trans != (NodeTransition *)NULL) {
+    trans->added_to_arc(this);
+  }
+
+  changed_transition(handle);
+  return old_trans;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::clear_transition
+//       Access: Public
+//  Description: Removes any transition associated with the indicated
+//               handle from the arc.
+//
+//               The return value is a pointer to the previous
+//               transition in the set, if any, or NULL if there was
+//               none.
+////////////////////////////////////////////////////////////////////
+PT(NodeTransition) NodeRelation::
+clear_transition(TypeHandle handle) {
+  PT(NodeTransition) old_trans =
+    _transitions.clear_transition(handle);
+  if (old_trans != (NodeTransition *)NULL) {
+    old_trans->removed_from_arc(this);
+  }
+
+  changed_transition(handle);
+  return old_trans;
+}
+

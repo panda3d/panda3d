@@ -88,11 +88,11 @@ PUBLISHED:
   INLINE void set_sort(int sort);
   INLINE void set_graph_type(TypeHandle graph_type);
 
-  INLINE PT(NodeTransition) set_transition(TypeHandle handle, 
-					   NodeTransition *trans);
+  PT(NodeTransition) set_transition(TypeHandle handle, NodeTransition *trans);  /*DONT INLINE THIS*/
   INLINE PT(NodeTransition) set_transition(NodeTransition *trans);
   INLINE PT(NodeTransition) set_transition(NodeTransition *trans, int priority);
-  INLINE PT(NodeTransition) clear_transition(TypeHandle handle);
+  PT(NodeTransition) clear_transition(TypeHandle handle);  /*DONT INLINE THIS*/
+
   INLINE bool has_transition(TypeHandle handle) const;
   INLINE bool has_any_transition() const;
   INLINE NodeTransition *get_transition(TypeHandle handle) const;
