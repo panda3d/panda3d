@@ -43,14 +43,14 @@
 
 #define build_eggs $[sort $[build_models] $[build_chars] $[build_anims]]
 #define install_eggs $[sort $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)]]
-#define install_misc $[sort $[SOURCES(install_audio install_dna)]]
+#define install_other $[sort $[SOURCES(install_audio install_dna)]]
 
 #define install_egg_dirs $[sort $[forscopes install_egg,$[install_model_dir]]]
 #define installed_eggs $[sort $[forscopes install_egg,$[SOURCES:%=$[install_model_dir]/%] $[UNPAL_SOURCES:%=$[install_model_dir]/%]]]
 #define installed_bams $[sort $[forscopes install_egg,$[SOURCES:%.egg=$[install_model_dir]/%.bam] $[UNPAL_SOURCES:%.egg=$[install_model_dir]/%.bam]]]
 
-#define install_misc_dirs $[sort $[forscopes install_audio install_dna,$[install_model_dir]]]
-#define installed_misc $[sort $[forscopes install_audio install_dna,$[SOURCES:%=$[install_model_dir]/%]]]
+#define install_other_dirs $[sort $[forscopes install_audio install_dna,$[install_model_dir]]]
+#define installed_other $[sort $[forscopes install_audio install_dna,$[SOURCES:%=$[install_model_dir]/%]]]
 
 #define pal_egg_targets $[sort $[SOURCES(install_egg):%=$[pal_egg_dir]/%]]
 #define bam_targets $[install_eggs:%.egg=$[bam_dir]/%.bam]
@@ -92,12 +92,12 @@ install-egg : $[install_egg_targets]
     $[installed_bams]
 install-bam : $[install_bam_targets]
 
-#define install_misc_targets \
-    $[install_misc_dirs] \
-    $[installed_misc]
-install-misc : $[install_misc_targets]
+#define install_other_targets \
+    $[install_other_dirs] \
+    $[installed_other]
+install-other : $[install_other_targets]
 
-install : install-misc install-bam
+install : install-other install-bam
 
 clean-bam :
 #if $[bam_targets]
@@ -130,7 +130,7 @@ clean : clean-pal
     $[if $[POLY_MODEL(soft_char_egg)] $[NURBS_MODEL(soft_char_egg)],$[soft_maps_dir]] \
     $[texattrib_dir] \
     $[install_egg_dirs] \
-    $[install_misc_dirs] \
+    $[install_other_dirs] \
     ]
 $[directory] :
 	@test -d $[directory] || echo mkdir -p $[directory]
@@ -354,7 +354,7 @@ clean : $[subdirs:%=clean-%]
 cleanall : $[subdirs:%=cleanall-%]
 install-egg : egg pal repal $[subdirs:%=install-egg-%]
 install-bam : egg pal repal $[subdirs:%=install-bam-%]
-install-misc : $[subdirs:%=install-misc-%]
+install-other : $[subdirs:%=install-other-%]
 install : egg pal repal $[subdirs:%=install-%]
 uninstall : $[subdirs:%=uninstall-%]
 
@@ -456,8 +456,8 @@ install-bam-$[dirname] :
 #end dirname
 
 #formap dirname subdirs
-install-misc-$[dirname] :
-	cd ./$[PATH] && $(MAKE) install-misc
+install-other-$[dirname] :
+	cd ./$[PATH] && $(MAKE) install-other
 #end dirname
 
 #formap dirname subdirs
