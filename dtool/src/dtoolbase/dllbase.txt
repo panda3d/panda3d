@@ -6,19 +6,19 @@
 
 ; release dlls
 
-libpanda         0x60000000 0x00720000
+libpanda         0x60000000 0x00730000
 libpandadx       0x62000000 0x00060000
 libpandagl       0x63000000 0x00050000
-libpandaexpress  0x607d0000 0x000d0000
-libpandaphysics  0x608a0000 0x00080000
-libshader        0x60920000 0x00030000
-libdtool         0x60950000 0x00020000
-libdtoolconfig   0x60970000 0x00060000
-libpystub        0x609d0000 0x00010000
-libdirect        0x609e0000 0x00040000
-libtoontown      0x60a20000 0x000d0000
-libmiles_audio   0x60af0000 0x00020000
-libpandaegg      0x60b10000 0x00190000
+libpandaexpress  0x64000000 0x000d0000
+libpandaphysics  0x608b0000 0x00080000
+libshader        0x60930000 0x00030000
+libdtool         0x60960000 0x00020000
+libdtoolconfig   0x60980000 0x00060000
+libpystub        0x609e0000 0x00010000
+libdirect        0x609f0000 0x00040000
+libtoontown      0x60a30000 0x000e0000
+libmiles_audio   0x60b10000 0x00020000
+libpandaegg      0x60b30000 0x00190000
 
 ; debug dlls
 
@@ -32,6 +32,6 @@ libdtool_d       0x609b0000 0x00020000
 libdtoolconfig_d 0x609d0000 0x00060000
 libpystub_d      0x60a30000 0x00010000
 libdirect_d      0x60a40000 0x00040000
-libtoontown_d    0x60a80000 0x000e0000
-libmiles_audio_d 0x60b60000 0x00020000
-libpandaegg_d    0x60b80000 0x001b0000
+libtoontown_d    0x60a80000 0x000f0000
+libmiles_audio_d 0x60b70000 0x00020000
+libpandaegg_d    0x60b90000 0x001b0000
