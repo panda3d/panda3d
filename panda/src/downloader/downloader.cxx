@@ -779,8 +779,10 @@ parse_http_response(const string &resp) {
         downloader_cat.debug()
           << "Downloader::parse_http_response() - got a 302 redirect"
           << endl;
-      return EU_http_redirect;
+      return EU_error_abort;
       break;
+    case 407:
+      return EU_error_http_proxy_authentication;
     case 408:
       return EU_error_http_server_timeout;
     case 503:
@@ -821,6 +823,7 @@ parse_header(DownloadStatus *status) {
   string bufstr((char *)status->_start, status->_bytes_in_buffer);
   size_t p  = 0;
   bool redirect = false;
+  bool authenticate = false;
   while (p < bufstr.length()) {
     // Server sends out CR LF (\r\n) as newline delimiter
     size_t nl = bufstr.find("\015\012", p);
@@ -848,6 +851,9 @@ parse_header(DownloadStatus *status) {
           downloader_cat.spam()
             << "Downloader::parse_header() - Header is valid: "
             << component << endl;
+        status->_header_is_valid = true;
+      } else if (parse_ret == EU_error_http_proxy_authentication) {
+        authenticate = true;
         status->_header_is_valid = true;
       } else if (parse_ret == EU_http_redirect) {
         redirect = true;
@@ -896,6 +902,12 @@ parse_header(DownloadStatus *status) {
         return EU_error_abort;
       }
 
+    } else if (authenticate && tline == "Proxy-Authenticate") {
+      // We don't presently support authentication-demanding proxies.
+      downloader_cat.warning()
+        << tline << "\n";
+      return EU_error_http_proxy_authentication;
+
     } else if (redirect == true && tline == "Location") {
       tline = component.substr(cpos + 1, string::npos);
       downloader_cat.error()
@@ -911,6 +923,9 @@ parse_header(DownloadStatus *status) {
           << "Downloader::parse_header() - Got a 302 redirect but no "
           << "Location directive" << endl;
         return EU_error_abort;
+      }
+      if (authenticate) {
+        return EU_error_http_proxy_authentication;
       }
       if (downloader_cat.is_spam())
         downloader_cat.spam()

@@ -73,6 +73,7 @@ enum ErrorUtilCode {
   EU_error_http_server_timeout = -70,
   EU_error_http_gateway_timeout = -71,
   EU_error_http_service_unavailable = -72,
+  EU_error_http_proxy_authentication = -73,
 
   // Zlib errors
   EU_error_zlib = -80,
