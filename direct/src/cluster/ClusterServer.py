@@ -1,18 +1,11 @@
 """ServerRepository module: contains the ServerRepository class"""
 
-from ShowBaseGlobal import *
-from ClusterMsgs import *
-import DirectObject
-import Datagram
-#import DatagramIterator
-#import NetDatagram
-import __builtin__
-import time
 from PandaModules import *
-from TaskManagerGlobal import *
+from ClusterMsgs import *
 from MsgTypes import *
-import Task
 import DirectNotifyGlobal
+import DirectObject
+import Task
 
 # Cam offset handling is a little sloppy.  The problem is that there is a
 # single arc used for both movement of the camera, and the offset of the
@@ -76,32 +69,32 @@ class ClusterServer(DirectObject.DirectObject):
         # Run this task just after the listener poll task and dataloop
         taskMgr.add(self.readerPollTask, "serverReaderPollTask", -39)
 
-    def readerPollTask(self):
-        while self.qcr.dataAvailable():
-            datagram = NetDatagram()
-            readRetVal = self.qcr.getData(datagram)
-            if readRetVal:
-                self.handleDatagram(datagram)
+    def readerPollTask(self, state):
+        # Process all available datagrams
+        while 1:
+            (datagram, dgi,type) = self.msgHandler.nonBlockingRead(self.qcr)
+            if type is CLUSTER_NONE:
+                break
             else:
-                self.notify.warning("getData returned false")
+                handleDatagram(dgi, type)
         return Task.cont
 
-    def handleDatagram(self, datagram):
-        (type, dgi) = self.msgHandler.nonBlockingRead(self.qcr)
-        if type==CLUSTER_CAM_OFFSET:
+    def handleDatagram(self, dgi, type):
+        if type == CLUSTER_NONE:
+            pass
+        elif type == CLUSTER_EXIT:
+            import sys
+            sys.exit()
+        elif type == CLUSTER_CAM_OFFSET:
             self.handleCamOffset(dgi)
-        elif type==CLUSTER_CAM_FRUSTUM:
+        elif type == CLUSTER_CAM_FRUSTUM:
             self.handleCamFrustum(dgi)
-        elif type==CLUSTER_POS_UPDATE:
+        elif type == CLUSTER_CAM_MOVEMENT:
             self.handleCamMovement(dgi)
-        elif type==CLUSTER_SWAP_READY:
-            pass
-        elif type==CLUSTER_SWAP_NOW:
-            pass
-        elif type==CLUSTER_COMMAND_STRING:
+        elif type == CLUSTER_COMMAND_STRING:
             self.handleCommandString(dgi)
         else:
-            self.notify.warning("recieved unknown packet")
+            self.notify.warning("Recieved unknown packet type:" % type)
         return type
     
     def handleCamOffset(self,dgi):
@@ -147,7 +140,7 @@ class ClusterServer(DirectObject.DirectObject):
 
     def handleCommandString(self, dgi):
         command = dgi.getString()
-        exec( command, globals() )
+        exec( command, globals())
         
 class ClusterServerSync(ClusterServer):
 
@@ -163,11 +156,10 @@ class ClusterServerSync(ClusterServer):
             pass
         elif self.qcr.isConnectionOk(self.lastConnection):
             # Process datagrams till you get a postion update
-            type = CLUSTER_NOTHING
-            while type != CLUSTER_POS_UPDATE:
-                datagram = self.msgHandler.blockingRead(self.qcr)
-                (type,dgi) = self.msgHandler.readHeader(datagram)
-                if type == CLUSTER_POS_UPDATE:
+            type = CLUSTER_NONE
+            while type != CLUSTER_CAM_MOVEMENT:
+                (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
+                if type == CLUSTER_CAM_MOVEMENT:
                     # Move camera
                     self.handleCamMovement(dgi)
                     # Set flag for swap coordinator
@@ -194,13 +186,14 @@ class ClusterServerSync(ClusterServer):
         if self.posRecieved:
             self.posRecieved = 0
             self.sendSwapReady()
-            datagram = self.msgHandler.blockingRead(self.qcr)
-            (type,dgi) = self.msgHandler.readHeader(datagram)
-            if type == CLUSTER_SWAP_NOW:
-                self.notify.debug('swapping')
-                base.win.swap()
-            else:
-                self.notify.warning("did not get expected swap now")
+            while 1:
+                (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
+                if type == CLUSTER_SWAP_NOW:
+                    self.notify.debug('swapping')
+                    base.win.swap()
+                    break
+                else:
+                    self.handleDatagram(dgi,type)
         return Task.cont
 
 

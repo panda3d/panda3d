@@ -374,6 +374,8 @@ class SliderWidget(Pmw.MegaWidget):
         if fInside:
             self._fPressInside = 1
             self._fUpdate = 1
+            if self['preCallback']:
+                apply(self['preCallback'], self['callbackData'])
             self._updateValue(event)
         else:
             self._fPressInside = 0
@@ -385,11 +387,16 @@ class SliderWidget(Pmw.MegaWidget):
                 event.y_root - self._widget.winfo_rooty())
             if canvasY > 0:
                 self._fUpdate = 1
+                if self['preCallback']:
+                    apply(self['preCallback'], self['callbackData'])
                 self._unpostOnNextRelease()
         elif self._fUpdate:
             self._updateValue(event)
 
     def _widgetBtnRelease(self, event):
+        # Do post callback if any
+        if self._fUpdate and self['postCallback']:
+            apply(self['postCallback'], self['callbackData'])
         if (self._fUnpost or
             (not (self._firstPress or self._fPressInside))):
             self._unpostSlider()

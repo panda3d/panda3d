@@ -96,12 +96,7 @@ class ShowBase:
         self.camList = []
         self.camNode = None
         self.camLens = None
-
-        # base.camera is a little different; rather than referring to
-        # base.cameraList[0], it is instead the parent node of all
-        # cameras in base.cameraList.  That way, multiple cameras can
-        # easily be dragged around by moving the one node.
-        self.camera = self.render.attachNewNode('camera')
+        self.camera = None
         self.cameraList = []
         self.groupList = []
         self.camera2d = self.render2d.attachNewNode('camera2d')
@@ -383,8 +378,8 @@ class ShowBase:
         
 
     def getCameras(self, chanConfig):
-        """getCameras(self, chanConfig)
-
+        """
+        getCameras(self, chanConfig)
         Extracts the camera(s) out of the ChanConfig record, parents
         them all to base.camera, and adds them to base.cameraList.
         """
@@ -393,7 +388,7 @@ class ShowBase:
         # be more than one display region/camera node beneath each
         # one.
         for i in range(chanConfig.getNumGroups()):
-            camera = self.camera.attachNewNode(chanConfig.getGroupNode(i))
+            camera = self.render.attachNewNode(chanConfig.getGroupNode(i))
             cam = camera.find('**/+Camera')
             lens = cam.node().getLens()
 
@@ -409,18 +404,17 @@ class ShowBase:
         for i in range(chanConfig.getNumDrs()):
             self.groupList.append(chanConfig.getGroupMembership(i))
 
-        # Set the default camera
+        # Set the default camera and cam
+        if self.camera == None:
+            self.camera = self.cameraList[0]
         if self.cam == None:
             self.cam = self.camList[0]
-
             # If you need to get a handle to the camera node itself,
             # use self.camNode.
             self.camNode = self.cam.node()
-
             # If you need to adjust camera parameters, like fov or
             # near/far clipping planes, use self.camLens.
             self.camLens = self.camNode.getLens()
-
 
     def getAlt(self):
         return base.mouseWatcherNode.getModifierButtons().isDown(
@@ -576,12 +570,13 @@ class ShowBase:
             self.backfaceCullingOn()
 
     def backfaceCullingOn(self):
-        self.render.setTwoSided(self.wireframeEnabled)
+        if not self.backfaceCullingEnabled:
+            self.render.setTwoSided(0)
         self.backfaceCullingEnabled = 1
 
     def backfaceCullingOff(self):
-        if not self.wireframeEnabled:
-            self.render.setTwoSided(0)
+        if self.backfaceCullingEnabled:
+            self.render.setTwoSided(1)
         self.backfaceCullingEnabled = 0
 
     def toggleTexture(self):

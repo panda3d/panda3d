@@ -7,70 +7,77 @@
 #    recieved are handled outside of here, after the header (message type
 #    and number) are read here.
 
+from PandaModules import *
+import Datagram
+import time
+
 #these are the types of messages that are currently supported.
-CLUSTER_NOTHING    = -1
+CLUSTER_NONE    = 0
 CLUSTER_CAM_OFFSET = 1
 CLUSTER_CAM_FRUSTUM = 2
-CLUSTER_POS_UPDATE = 3
+CLUSTER_CAM_MOVEMENT = 3
 CLUSTER_SWAP_READY = 4
 CLUSTER_SWAP_NOW   = 5
 CLUSTER_COMMAND_STRING = 6
+CLUSTER_EXIT = 100
 
 #Port number for cluster rendering
 CLUSTER_PORT = 1970
 
-from ShowBaseGlobal import *
-from PandaModules import *
-from TaskManagerGlobal import *
-import Task
-import DirectNotifyGlobal
-import Datagram
-import time
-
 class MsgHandler:
     """MsgHandler: wrapper for PC clusters/multi-piping networking"""
     def __init__(self,packetStart, notify):
-        #packetStart can be used to distinguish which MsgHandler sends a
-        #given packet.
+        # packetStart can be used to distinguish which MsgHandler sends a
+        # given packet.
         self.packetNumber = packetStart
         self.notify = notify
 
     def nonBlockingRead(self,qcr):
-        availGetVal = qcr.dataAvailable()
-        if availGetVal:
+        """
+        Return a datagram iterator and type if data is available on the
+        queued connection reader
+        """
+        if qcr.dataAvailable():
             datagram = NetDatagram()
-            readRetVal = qcr.getData(datagram)
-            if readRetVal:
-                dgi = DatagramIterator(datagram)
-                number = dgi.getUint32()
-                type = dgi.getUint8()
-                self.notify.debug( ("Packet %d type %d recieved" % (number,type)) )    
+            if qcr.getData(datagram):
+                (dgi, type) = self.readHeader(datagram)
             else:
+                dgi = None
+                type = CLUSTER_NONE
                 self.notify.warning("getData returned false")
         else:
-            type = CLUSTER_NOTHING
             dgi = None
-        return (type,dgi)
-
-    def readHeader(self,datagram):
-        dgi = DatagramIterator(datagram)
-        number = dgi.getUint32()
-        type = dgi.getUint8()
-        self.notify.debug( ("Packet %d type %d recieved" % (number,type)) )
-        return (type,dgi)        
+            type = CLUSTER_NONE
+        # Note, return datagram to keep a handle on the data
+        return (datagram, dgi,type)
 
     def blockingRead(self,qcr):
+        """
+        Block until data is available on the queued connection reader.
+        Returns a datagram iterator and type
+        """
         while not qcr.dataAvailable():
             # The following may not be necessary.
             # I just wanted some
             # time given to the operating system while
             # busy waiting.
             time.sleep(0.002)
+        # Data is available, create a datagram iterator
         datagram = NetDatagram()
-        readRetVal = qcr.getData(datagram)
-        if not readRetVal:
+        if qcr.getData(datagram):
+            (dgi, type) = self.readHeader(datagram)
+        else:
+            (dgi, type) = (None, CLUSTER_NONE)
             self.notify.warning("getData returned false")
-        return datagram
+        # Note, return datagram to keep a handle on the data
+        return (datagram, dgi, type)
+
+    def readHeader(self,datagram):
+        dgi = DatagramIterator(datagram)
+        number = dgi.getUint32()
+        type = dgi.getUint8()
+        self.notify.debug("Packet %d type %d recieved" % (number,type))
+        return (dgi,type)        
 
     def makeCamOffsetDatagram(self,xyz,hpr):
         datagram = Datagram.Datagram()
@@ -83,14 +90,6 @@ class MsgHandler:
         datagram.addFloat32(hpr[0])
         datagram.addFloat32(hpr[1])
         datagram.addFloat32(hpr[2])
-        return datagram
-
-    def makeCommandStringDatagram(self, commandString):
-        datagram = Datagram.Datagram()
-        datagram.addUint32(self.packetNumber)
-        self.packetNumber = self.packetNumber + 1
-        datagram.addUint8(CLUSTER_COMMAND_STRING)
-        datagram.addString(commandString)
         return datagram
 
     def makeCamFrustumDatagram(self,focalLength, filmSize, filmOffset):
@@ -109,13 +108,21 @@ class MsgHandler:
         datagram = Datagram.Datagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
-        datagram.addUint8(CLUSTER_POS_UPDATE)
+        datagram.addUint8(CLUSTER_CAM_MOVEMENT)
         datagram.addFloat32(xyz[0])
         datagram.addFloat32(xyz[1])
         datagram.addFloat32(xyz[2])
         datagram.addFloat32(hpr[0])
         datagram.addFloat32(hpr[1])
         datagram.addFloat32(hpr[2])
+        return datagram
+
+    def makeCommandStringDatagram(self, commandString):
+        datagram = Datagram.Datagram()
+        datagram.addUint32(self.packetNumber)
+        self.packetNumber = self.packetNumber + 1
+        datagram.addUint8(CLUSTER_COMMAND_STRING)
+        datagram.addString(commandString)
         return datagram
 
     def makeSwapNowDatagram(self):
@@ -130,6 +137,13 @@ class MsgHandler:
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_SWAP_READY)
+        return datagram
+
+    def makeExitDatagram(self):
+        datagram = Datagram.Datagram()
+        datagram.addUint32(self.packetNumber)
+        self.packetNumber = self.packetNumber + 1
+        datagram.addUint8(CLUSTER_EXIT)
         return datagram
         
 

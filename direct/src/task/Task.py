@@ -5,6 +5,7 @@ from MessengerGlobal import *
 import time
 import fnmatch
 import string
+import signal
 
 # MRM: Need to make internal task variables like time, name, index
 # more unique (less likely to have name clashes)
@@ -230,6 +231,8 @@ class TaskManager:
             TaskManager.notify = directNotify.newCategory("TaskManager")
         self.taskTimerVerbose = 0
         self.extendedExceptions = 0
+        self.fKeyboardInterrupt = 0
+        self.interruptCount = 0
         self.pStatsTasks = 0
         self.resumeFunc = None
         self.fVerbose = 0
@@ -240,6 +243,14 @@ class TaskManager:
     def setVerbose(self, value):
         self.fVerbose = value
         messenger.send('TaskManager-setVerbose', sentArgs = [value])
+
+    def keyboardInterruptHandler(self, signalNumber, stackFrame):
+        self.fKeyboardInterrupt = 1
+        self.interruptCount += 1
+        if self.interruptCount == 2:
+            # The user must really want to interrupt this process
+            # Next time around use the default interrupt handler
+            signal.signal(signal.SIGINT, signal.default_int_handler)
 
     def add(self, funcOrTask, name, priority = 0):
         """
@@ -370,6 +381,12 @@ class TaskManager:
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('step')
         self.currentTime, self.currentFrame = self.__getTimeFrame()
+        # Replace keyboard interrupt handler during task list processing
+        # so we catch the keyboard interrupt but don't handle it until
+        # after task list processing is complete.
+        self.fKeyboardInterrupt = 0
+        self.interruptCount = 0
+        signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
 
@@ -410,6 +427,10 @@ class TaskManager:
                 self.__removeTask(task)
             else:
                 raise StandardError, "Task named %s did not return cont, exit, or done" % task.name
+        # Restore default interrupt handler
+        signal.signal(signal.SIGINT, signal.default_int_handler)
+        if self.fKeyboardInterrupt:
+            raise KeyboardInterrupt
         return len(self.taskList)
 
     def run(self):

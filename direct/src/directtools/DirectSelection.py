@@ -22,7 +22,7 @@ class DirectNodePath(NodePath):
         # and its center of action (COA)
         self.mCoa2Dnp = Mat4()
         self.mCoa2Dnp.assign(Mat4.identMat())
-        # self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
+        self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
         # Transform from nodePath to widget
         self.mDnp2Widget = Mat4()
         self.mDnp2Widget.assign(Mat4.identMat())
@@ -127,18 +127,7 @@ class SelectedNodePaths(PandaObject):
         """
         dnp = self.selectedDict.get(id, None)
         if dnp:
-            # Found item in selected Dictionary, is it still valid?
-            if dnp.verifyConnectivity():
-                # Yes
-                return dnp
-            else:
-                # Not valid anymore, try to repair
-                if dnp.repairConnectivity(render):
-                    # Fixed, return node path
-                    return dnp
-                else:
-                    del(self.selectedDict[id])
-                    return None
+            return dnp
         else:
             # Not in selected dictionary
             return None
@@ -152,18 +141,8 @@ class SelectedNodePaths(PandaObject):
         """
         dnp = self.deselectedDict.get(id, None)
         if dnp:
-            # Found item in deselected Dictionary, is it still valid?
-            if dnp.verifyConnectivity():
-                # Yes
-                return dnp
-            else:
-                # Not valid anymore, try to repair
-                if dnp.repairConnectivity(render):
-                    # Fixed, return node path
-                    return dnp
-                else:
-                    del(self.deselectedDict[id])
-                    return None
+            # Yes
+            return dnp
         else:
             # Not in deselected dictionary
             return None
@@ -344,10 +323,11 @@ class DirectBoundingBox:
 
     def getBounds(self):
         # Get a node path's bounds
-        nodeBounds = self.nodePath.node().getBound()
+        nodeBounds = BoundingSphere()
+        nodeBounds.extendBy(self.nodePath.node().getInternalBound())
         for child in self.nodePath.getChildrenAsList():
-            nodeBounds.extendBy(child.arc().getBound())
-            return nodeBounds.makeCopy()
+            nodeBounds.extendBy(child.getBounds())
+        return nodeBounds.makeCopy()
 
     def show(self):
         self.lines.reparentTo(self.nodePath)
@@ -428,11 +408,11 @@ class SelectionRay:
         for i in range(0,self.numEntries):
             entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
-            nodePath = render.findPathDownTo(node)
+            nodePath = render.findAllPathsTo(node)[0]
             # Don't pick hidden nodes
-            if node.isHidden():
-                pass
-            elif fIgnoreCamera and (direct.camera in nodePath.getAncestry()):
+            #if node.isHidden():
+            #pass
+            if fIgnoreCamera and (direct.camera in nodePath.getAncestry()):
                 # This avoids things parented to a camera.  Good idea?
                 pass
             # Can pick unpickable, use the first visible node
@@ -520,10 +500,11 @@ class SelectionRay:
             entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
             # Don't pick hidden nodes
-            if node.isHidden():
-                pass
+            # MRM: Doesn't work in new panda for GeomNodes
+            #if node.isHidden():
+            #pass
             # Can pick unpickable, use the first visible node
-            elif fIntersectUnpickable:
+            if fIntersectUnpickable:
                 self.cqIndex = i
                 break
             # Is it a named node?, If so, see if it has a name

@@ -292,8 +292,7 @@ class MopathRecorder(AppShell, PandaObject):
             resolution = 0.01, command = self.playbackGoTo, side = TOP)
         widget.component('hull')['relief'] = RIDGE
         # Kill playback task if drag slider
-        widget.component('scale').bind(
-            '<ButtonPress-1>', lambda e = None, s = self: s.stopPlayback())
+        widget['preCallback'] = self.stopPlayback
         # Jam duration entry into entry scale
         self.createLabeledEntry(widget.labelFrame, 'Resample', 'Path Duration',
                                 'Set total curve duration',
@@ -371,7 +370,7 @@ class MopathRecorder(AppShell, PandaObject):
             'Number of samples in resampled curve',
             resolution = 1, min = 2, max = 1000, command = self.setNumSamples)
         widget.component('hull')['relief'] = RIDGE
-        widget['preCallback'] = widget['postCallback'] = self.sampleCurve
+        widget['postCallback'] = self.sampleCurve
 
         frame = Frame(resampleFrame)
         self.createButton(
@@ -785,7 +784,9 @@ class MopathRecorder(AppShell, PandaObject):
     def extractPointSetFromCurveCollection(self):
         # Use curve to compute new point set
         # Record maxT
+        print 'before', self.maxT
         self.maxT = self.curveCollection.getMaxT()
+        print 'after', self.maxT
         # Determine num samples
         # Limit point set to 1000 points and samples per second to 30
         samplesPerSegment = min(30.0, 1000.0/self.curveCollection.getMaxT())
@@ -1232,7 +1233,7 @@ class MopathRecorder(AppShell, PandaObject):
             dictName = name
         else:
             # Generate a unique name for the dict
-            dictName = name + '-' + `nodePath.id().this`
+            dictName = name + '-' + `nodePath.id()`
         if not dict.has_key(dictName):
             # Update combo box to include new item
             names.append(dictName)
@@ -1248,7 +1249,6 @@ class MopathRecorder(AppShell, PandaObject):
     def playbackGoTo(self, time):
         if self.curveCollection == None:
             return
-        print time
         self.playbackTime = CLAMP(time, 0.0, self.maxT)
         if self.curveCollection != None:
             pos = Point3(0)

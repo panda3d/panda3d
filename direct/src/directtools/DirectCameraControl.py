@@ -260,11 +260,23 @@ class DirectCameraControl(PandaObject):
         angle = getCrankAngle(state.coaCenter)
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
+        if deltaAngle != 0.0:
+            print deltaAngle
+        print 'cam Manip before'
+        print self.camManipRef.getMat()
         if base.config.GetBool('temp-hpr-fix',0):
             self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
         else:
             self.camManipRef.setHpr(self.camManipRef, 0, 0, -deltaAngle)
+        print 'cam Manip after'
+        print self.camManipRef.getMat()
+        print 'direct camera before'
+        print direct.camera.getMat()
         direct.camera.setMat(self.camManipRef, wrtMat)
+        print 'direct camera after'
+        print direct.camera.getMat()
+        print
+        print
         return Task.cont
 
     def lockCOA(self):
@@ -352,6 +364,8 @@ class DirectCameraControl(PandaObject):
             # ref = base.cam
             ref = direct.drList.getCurrentDr().cam
         self.coaMarker.setPos(ref, self.coa)
+        pos = self.coaMarker.getPos()
+        self.coaMarker.setPosHprScale(pos, Vec3(0), Vec3(1))
         # Resize it
         self.updateCoaMarkerSize(coaDist)
         # Record marker pos in render space

@@ -98,7 +98,7 @@ class DirectManipulationControl(PandaObject):
                 self.hitPt.assign(hitPt)
                 self.hitPtDist = hitPtDist
                 # Find the node path from the node found above
-                nodePath = render.findPathDownTo(node)
+                nodePath = render.findAllPathsTo(node)[0]
                 # Select it
                 direct.select(nodePath, direct.fShift)
             else:
@@ -223,7 +223,7 @@ class DirectManipulationControl(PandaObject):
                 self.objectHandles.transferObjectHandlesScale()
                 self.fScaling = 0
             # Alt key switches to a scaling mode
-            if direct.fAlt:
+            if direct.fControl:
                 self.fScaling = 1
                 self.scale3D(state)
             # Otherwise, manip mode depends on where you started

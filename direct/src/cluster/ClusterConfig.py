@@ -23,7 +23,7 @@ ClientConfigs = {
                              {'pos' : Vec3(0),
                               'hpr' : Vec3(60,0,0)}
                              ],
-    'cavetest'            : [{'pos' : Vec3(-0.105, -0.020, 5.000),
+    'cavetest-old'            : [{'pos' : Vec3(-0.105, -0.020, 5.000),
                               'hpr' : Vec3(51.213, 0.000, 0.000),
                               'focal length' : 0.809,
                               'film size' : (1.000, 0.831),
@@ -48,7 +48,7 @@ ClientConfigs = {
                               'film offset' : (0.000, 0.173),
                               },
                              ],
-    'cavetest-all'        : [{'pos' : Vec3(-0.105, -0.020, 5.000),
+    'cavetest'        : [{'pos' : Vec3(-0.105, -0.020, 5.000),
                               'hpr' : Vec3(51.213, 0.000, 0.000),
                               'focal length' : 0.809,
                               'film size' : (1.000, 0.831),
@@ -100,7 +100,7 @@ def createClusterManager():
     displayConfigs = []
     configList = ClientConfigs[clusterConfig]
     numConfigs = len(configList)
-    for i in range(numConfigs):
+    for i in range(1,numConfigs):
         configData = configList[i]
         serverConfigName = 'display%d' % i
         serverString = base.config.GetString(serverConfigName, '')

@@ -1,14 +1,10 @@
 """ClusterClient: Master for mutlipiping or PC clusters.  """
 
 from PandaModules import *
-from TaskManagerGlobal import *
-from ShowBaseGlobal import *
-import Task
-import DirectNotifyGlobal
-import Datagram
-import DirectObject
 from ClusterMsgs import *
-import time
+import DirectNotifyGlobal
+import DirectObject
+import Task
 
 class ClusterConfigItem:
     def __init__(self, serverFunction, serverName, port):
@@ -79,10 +75,12 @@ class DisplayConnection:
 
     # the following should only be called by a synchronized cluster manger
     def getSwapReady(self):
-        datagram = self.msgHandler.blockingRead(self.qcr)
-        (type,dgi) = self.msgHandler.readHeader(datagram)
-        if type != CLUSTER_SWAP_READY:
-            self.notify.warning( ('was expecting SWAP_READY, got %d' % type) )
+        while 1:
+            (datagram, dgi,type) = self.msgHandler.blockingRead(self.qcr)
+            if type == CLUSTER_SWAP_READY:
+                break
+            else:
+                self.notify.warning('was expecting SWAP_READY, got %d' % type)
 
     # the following should only be called by a synchronized cluster manger
     def sendSwapNow(self):
@@ -95,6 +93,13 @@ class DisplayConnection:
     def sendCommandString(self, commandString):
         ClusterManager.notify.debug("send command string: %s" % commandString)
         datagram = self.msgHandler.makeCommandStringDatagram(commandString)
+        self.cw.send(datagram, self.tcpConn)
+
+    def sendExit(self):
+        ClusterManager.notify.debug( 
+            "display connect send exit, packet %d" %
+            self.msgHandler.packetNumber)
+        datagram = self.msgHandler.makeExitDatagram()
         self.cw.send(datagram, self.tcpConn)
 
 class ClusterManager(DirectObject.DirectObject):
@@ -127,9 +132,7 @@ class ClusterManager(DirectObject.DirectObject):
             server.sendMoveCam(xyz,hpr)
 
     def startMoveCamTask(self):
-        task = Task.Task(self.moveCameraTask,49)
-        taskMgr.add(task, "moveCamTask")
-        return None        
+        taskMgr.add(self.moveCameraTask, "moveCamTask", 49)
 
     def moveCameraTask(self,task):
         self.moveCamera(
@@ -142,7 +145,15 @@ class ClusterManager(DirectObject.DirectObject):
         for server in self.serverList:
             server.sendCommandString(commandString)
         # Execute locally
-        exec( commandString, globals() )
+        exec( commandString, globals())
+
+    def exit(self):
+        # Execute remotely
+        for server in self.serverList:
+            server.sendExit()
+        # Execute locally
+        import sys
+        sys.exit()
 
 class ClusterManagerSync(ClusterManager):
 
@@ -154,8 +165,7 @@ class ClusterManagerSync(ClusterManager):
         self.startSwapCoordinatorTask()
 
     def startSwapCoordinatorTask(self):
-        task = Task.Task(self.swapCoordinator,51)
-        taskMgr.add(task, "clientSwapCoordinator")
+        taskMgr.add(self.swapCoordinator, "clientSwapCoordinator", 51)
         return None
 
     def swapCoordinator(self,task):
