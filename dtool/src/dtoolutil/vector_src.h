@@ -60,7 +60,10 @@ EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, VV_BASE)
 
 // Now we can export the vector class.
 #pragma warning (disable : 4231)
-EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, std::vector<TYPE>)
+#define STD_VECTOR std::vector<TYPE, pallocator<TYPE> >
+EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, STD_VECTOR)
+#undef STD_VECTOR
+EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, pvector<TYPE>)
 
 #endif
 
