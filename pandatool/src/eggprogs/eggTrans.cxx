@@ -70,7 +70,7 @@ run() {
 
   if (_triangulate_polygons) {
     nout << "Triangulating polygons.\n";
-    int num_produced = _data.triangulate_polygons();
+    int num_produced = _data.triangulate_polygons(true);
     nout << "  (" << num_produced << " triangles produced.)\n";
   }
 
