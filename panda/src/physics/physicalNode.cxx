@@ -81,6 +81,21 @@ add_physicals_from(const PhysicalNode &other) {
 //  Description : remove operation
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
+remove_physical(Physical *physical) {
+  vector< PT(Physical) >::iterator found;
+  PT(Physical) ptp = physical;
+  found = find(_physicals.begin(), _physicals.end(), ptp);
+  if (found == _physicals.end())
+    return;
+  _physicals.erase(found);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : remove_physical
+//       Access : public
+//  Description : remove operation
+////////////////////////////////////////////////////////////////////
+void PhysicalNode::
 remove_physical(int index) {
   nassertv(index >= 0 && index <= (int)_physicals.size());
 

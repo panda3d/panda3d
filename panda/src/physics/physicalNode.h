@@ -39,6 +39,7 @@ PUBLISHED:
   INLINE void add_physical(Physical *physical);
 
   void add_physicals_from(const PhysicalNode &other);
+  void remove_physical(Physical *physical);
   void remove_physical(int index);
 
 public:
