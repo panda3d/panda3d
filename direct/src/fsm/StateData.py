@@ -11,6 +11,7 @@ class StateData(DirectObject):
         """__init__(self, Event)
         """
 	self.doneEvent = doneEvent
+  	self.doneStatus = 0
 	self.isLoaded = 0
 	self.isEntered = 0
 	return None
@@ -61,6 +62,11 @@ class StateData(DirectObject):
 	self.exit()
 	print "Called StateData unload function"
 	return None
+
+    def getDoneStatus(self):
+	"""getDoneStatus(self)
+	"""
+	return self.doneStatus
 
 
             
