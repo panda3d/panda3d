@@ -26,12 +26,14 @@
 #include "chanwindow.h"
 #include "chanshare.h"
 
-#include "graphicsPipe.h"
 #include "graphicsWindow.h"
 #include "pandaNode.h"
 #include "nodePath.h"
 
 #include "pmap.h"
+
+class GraphicsEngine;
+class GraphicsPipe;
 
 class EXPCL_PANDA ChanCfgOverrides {
 public:
@@ -114,8 +116,9 @@ private:
          SVec& S, ChanViewport& V, int hw_offset, 
          int xsize, int ysize, const NodePath &render, bool want_cameras);
 PUBLISHED:
-  ChanConfig(GraphicsPipe*, std::string, const NodePath &render,
-    ChanCfgOverrides& = ChanOverrideNone);
+  ChanConfig(GraphicsEngine *engine, GraphicsPipe *pipe,
+             std::string cfg, const NodePath &render,
+             ChanCfgOverrides& = ChanOverrideNone);
   INLINE PandaNode *get_group_node(const int node_index) const;
   INLINE int get_group_membership(const int dr_index) const;
   INLINE int get_num_groups(void) const;

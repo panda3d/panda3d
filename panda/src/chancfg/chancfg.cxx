@@ -19,6 +19,8 @@
 #include "chancfg.h"
 #include "notify.h"
 #include "displayRegion.h"
+#include "graphicsPipe.h"
+#include "graphicsEngine.h"
 #include "graphicsChannel.h"
 #include "hardwareChannel.h"
 #include "camera.h"
@@ -335,7 +337,8 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
   return;
 }
 
-ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, const NodePath &render,
+ChanConfig::ChanConfig(GraphicsEngine *engine, GraphicsPipe* pipe, 
+                       std::string cfg, const NodePath &render,
                        ChanCfgOverrides& overrides) {
   ReadChanConfigData();
   // check to make sure we know everything we need to
@@ -400,9 +403,9 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, const NodePath &rend
   origY = overrides.defined(ChanCfgOverrides::OrigY) ?
             overrides.getInt(ChanCfgOverrides::OrigY) : origY;
 
-  bool border = !chanconfig.GetBool("no-border", !W.getBorder());
+  bool undecorated = chanconfig.GetBool("undecorated", !W.getBorder());
   bool fullscreen = chanconfig.GetBool("fullscreen", false);
-  bool use_cursor = chanconfig.GetBool("cursor-visible", W.getCursor());
+  bool use_cursor = !chanconfig.GetBool("cursor-hidden", !W.getCursor());
   int want_depth_bits = chanconfig.GetInt("want-depth-bits", 1);
   int want_color_bits = chanconfig.GetInt("want-color-bits", 1);
 
@@ -411,28 +414,27 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, const NodePath &rend
   float win_background_b = chanconfig.GetFloat("win-background-b", 0.41);
 
   // visual?  nope, that's handled with the mode.
-  uint mask = 0x0;  // ?!  this really should come from the win config
-  mask = overrides.defined(ChanCfgOverrides::Mask) ?
-           overrides.getUInt(ChanCfgOverrides::Mask) : mask;
+  int framebuffer_mode = 
+    WindowProperties::FM_rgba | 
+    WindowProperties::FM_double_buffer | 
+    WindowProperties::FM_depth;
+  framebuffer_mode = overrides.defined(ChanCfgOverrides::Mask) ?
+    overrides.getUInt(ChanCfgOverrides::Mask) : framebuffer_mode;
   std::string title = cfg;
   title = overrides.defined(ChanCfgOverrides::Title) ?
             overrides.getString(ChanCfgOverrides::Title) : title;
 
-  GraphicsWindow::Properties props;
-  props._xorg = origX;
-  props._yorg = origY;
-  props._xsize = sizeX;
-  props._ysize = sizeY;
-  props._title = title;
-  props._mask = mask;
-  props._border = border;
-  props._fullscreen = fullscreen;
-  props._want_depth_bits = want_depth_bits;
-  props._want_color_bits = want_color_bits;
-  props._bCursorIsVisible = use_cursor;
-
-  props.set_clear_color(Colorf(win_background_r, win_background_g, 
-                               win_background_b, 1.0f));
+  WindowProperties props;
+  props.set_open(true);
+  props.set_origin(origX, origY);
+  props.set_size(sizeX, sizeY);
+  props.set_title(title);
+  props.set_framebuffer_mode(framebuffer_mode);
+  props.set_undecorated(undecorated);
+  props.set_fullscreen(fullscreen);
+  props.set_depth_bits(want_depth_bits);
+  props.set_color_bits(want_color_bits);
+  props.set_cursor_hidden(!use_cursor);
 
 
   // stereo prep?
@@ -442,12 +444,16 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, const NodePath &rend
                         overrides.getBool(ChanCfgOverrides::Cameras) : true;
 
   // open that sucker
-  PT(GraphicsWindow) win = pipe->make_window(props);
+  PT(GraphicsWindow) win = engine->make_window(pipe);
   if(win == (GraphicsWindow *)NULL) {
     chancfg_cat.error() << "Could not create window" << endl;
     _graphics_window = (GraphicsWindow *)NULL;
     return;
   }
+
+  win->request_properties(props);
+  win->set_clear_color(Colorf(win_background_r, win_background_g, 
+                              win_background_b, 1.0f));
 
   // make channels and display regions
   ChanViewport V(0.0f, 1.0f, 0.0f, 1.0f);
@@ -459,9 +465,7 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, const NodePath &rend
   // sanity check
   if (config_sanity_check) {
     nout << "ChanConfig Sanity check:" << endl
-         << "window - " << (void*)win << endl
-         << "  width = " << win->get_width() << "  height = " << win->get_height() << endl
-         << "  xorig = " << win->get_xorg() << "  yorig = " << win->get_yorg()<< endl;
+         << "window - " << (void*)win << endl;
 
     int max_channel_index = win->get_max_channel_index();
     for (int c = 0; c < max_channel_index; c++) {

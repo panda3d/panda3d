@@ -19,64 +19,89 @@
 #include "glxGraphicsPipe.h"
 #include "glxGraphicsWindow.h"
 #include "config_glxdisplay.h"
+#include "mutexHolder.h"
 
 #include <GL/glx.h>
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
 TypeHandle glxGraphicsPipe::_type_handle;
 
-glxGraphicsPipe::glxGraphicsPipe(const PipeSpecifier& spec)
-  : InteractiveGraphicsPipe(spec),
-    glxDisplay(this, spec.get_X_specifier())
-{
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+glxGraphicsPipe::
+glxGraphicsPipe(const string &display) {
+  string display_spec = display;
+  if (display_spec.empty()) {
+    display_spec = display_cfg;
+  }
+  if (display_spec.empty()) {
+    display_spec = ExecutionEnvironment::get_environment_variable("DISPLAY");
+  }
+
+  _is_valid = false;
+  _display = NULL;
+  _screen = 0;
+  _root = (Window)NULL;
+  _display_width = 0;
+  _display_height = 0;
+
+  _display = XOpenDisplay(display_spec.c_str());
+  if (!_display) {
+    glxdisplay_cat.error()
+      << "Could not open display \"" << display_spec << "\".\n";
+    return;
+  }
+
+  int errorBase, eventBase;
+  if (!glXQueryExtension(_display, &errorBase, &eventBase)) {
+    glxdisplay_cat.error()
+      << "OpenGL GLX extension not supported on display \"" << display_spec
+      << "\".\n";
+    return;
+  }
+
+  _screen = DefaultScreen(_display);
+  _root = RootWindow(_display, _screen);
+  _display_width = DisplayWidth(_display, _screen);
+  _display_height = DisplayHeight(_display, _screen);
+  _is_valid = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::get_window_type
+//     Function: glxGraphicsPipe::Destructor
 //       Access: Public, Virtual
-//  Description: Returns the TypeHandle of the kind of window
-//               preferred by this kind of pipe.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-TypeHandle glxGraphicsPipe::
-get_window_type() const {
-  return glxGraphicsWindow::get_class_type();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::get_glx_display
-//       Access: Public, Virtual
-//  Description: Returns the glxDisplay information associated with
-//               this pipe.
-////////////////////////////////////////////////////////////////////
-glxDisplay *glxGraphicsPipe::
-get_glx_display() {
-  return this;
-}
-
-GraphicsPipe *glxGraphicsPipe::
-make_glxGraphicsPipe(const FactoryParams &params) {
-  GraphicsPipe::PipeSpec *pipe_param;
-  if (!get_param_into(pipe_param, params)) {
-    return new glxGraphicsPipe(PipeSpecifier());
-  } else {
-    return new glxGraphicsPipe(pipe_param->get_specifier());
+glxGraphicsPipe::
+~glxGraphicsPipe() {
+  if (_display) {
+    XCloseDisplay(_display);
   }
 }
 
-TypeHandle glxGraphicsPipe::get_class_type(void) {
-  return _type_handle;
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::pipe_constructor
+//       Access: Public, Static
+//  Description: This function is passed to the GraphicsPipeSelection
+//               object to allow the user to make a default
+//               glxGraphicsPipe.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsPipe) glxGraphicsPipe::
+pipe_constructor() {
+  return new glxGraphicsPipe;
 }
 
-void glxGraphicsPipe::init_type(void) {
-  InteractiveGraphicsPipe::init_type();
-  glxDisplay::init_type();
-  register_type(_type_handle, "glxGraphicsPipe",
-                InteractiveGraphicsPipe::get_class_type(),
-                glxDisplay::get_class_type());
-}
-
-TypeHandle glxGraphicsPipe::get_type(void) const {
-  return get_class_type();
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::make_window
+//       Access: Protected, Virtual
+//  Description: Creates a new window on the pipe, if possible.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsWindow) glxGraphicsPipe::
+make_window() {
+  if (!_is_valid) {
+    return NULL;
+  }
+  return new glxGraphicsWindow(this);
 }

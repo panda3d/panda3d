@@ -18,23 +18,26 @@
 
 #include "config_glgsg.h"
 
-#include <graphicsWindow.h>
+#include "graphicsWindow.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::activate
-//       Access: Public
-//  Description: Sets this context to be the active context for future
-//               GL commands.
+//     Function: GLGraphicsStateGuardian::report_errors
+//       Access: Public, Static
+//  Description: Checks for any outstanding error codes and outputs
+//               them, if found.  If NDEBUG is defined, this function
+//               does nothing.
+//
+//               This is a static method so it can be called when
+//               there's no gsg pointer around.
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
-activate() {
-  // This operation seems to be incredibly expensive on some
-  // platforms--particularly for the NVidia drivers under Linux.  It
-  // doesn't seem to check if we already had the context current
-  // before we switch contexts.  For now, we'll limit our use of this
-  // function.
-
-  _win->make_current();
+report_errors(int line, const char *source_file) {
+#ifndef NDEBUG
+  GLenum error_code = glGetError();
+  if (error_code != GL_NO_ERROR) {
+    report_errors_loop(line, source_file, error_code);
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1007,24 +1010,4 @@ issue_scene_graph_color() {
     issue_transformed_color(_scene_graph_color);
     _scene_graph_color_stale = false;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::report_errors
-//       Access: Public
-//  Description: Checks for any outstanding error codes and outputs
-//               them, if found.  If NDEBUG is defined, this function
-//               does nothing.
-////////////////////////////////////////////////////////////////////
-INLINE void 
-report_errors() {
-    // pulling this out of gsg since I'd like to call it when there's no gsg ptr around
-#ifndef NDEBUG
-  extern void report_errors_loop(GLenum error_code);
-
-  GLenum error_code = glGetError();
-  if (error_code != GL_NO_ERROR) {
-    report_errors_loop(error_code);
-  }
-#endif
 }

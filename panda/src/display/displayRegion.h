@@ -25,6 +25,7 @@
 #include "nodePath.h"
 #include "cullResult.h"
 #include "pointerTo.h"
+#include "mutex.h"
 
 #include "plist.h"
 
@@ -41,50 +42,51 @@ class Camera;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DisplayRegion : public ReferenceCount, public ClearableRegion {
 public:
-  DisplayRegion(GraphicsLayer *);
-  DisplayRegion(GraphicsLayer *,
+  DisplayRegion(GraphicsLayer *layer);
+  DisplayRegion(GraphicsLayer *layer,
                 const float l, const float r,
                 const float b, const float t);
   DisplayRegion(int xsize, int ysize);
 private:
-  DisplayRegion(const DisplayRegion &);
-  void operator = (const DisplayRegion &);
+  DisplayRegion(const DisplayRegion &copy);
+  void operator = (const DisplayRegion &copy);
 
 public:
   ~DisplayRegion();
 
 PUBLISHED:
-  INLINE void get_dimensions(float &l, float &r, float &b, float &t) const;
-  INLINE float get_left() const;
-  INLINE float get_right() const;
-  INLINE float get_bottom() const;
-  INLINE float get_top() const;
+  void get_dimensions(float &l, float &r, float &b, float &t) const;
+  float get_left() const;
+  float get_right() const;
+  float get_bottom() const;
+  float get_top() const;
   void set_dimensions(float l, float r, float b, float t);
 
-  INLINE GraphicsLayer *get_layer() const;
+  GraphicsLayer *get_layer() const;
   GraphicsChannel *get_channel() const;
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
 
   void set_camera(const NodePath &camera);
-  INLINE const NodePath &get_camera() const;
+  const NodePath &get_camera() const;
 
-  INLINE void set_active(bool active);
+  void set_active(bool active);
   INLINE bool is_active() const;
 
-  INLINE void compute_pixels(const int x, const int y);
-  INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
-  INLINE void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
+  void compute_pixels();
+  void compute_pixels(int x_size, int y_size);
+  void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
+  void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
 
-  INLINE int get_pixel_width() const;
-  INLINE int get_pixel_height() const;
+  int get_pixel_width() const;
+  int get_pixel_height() const;
 
   void output(ostream &out) const;
 
-public:
+private:
   void win_display_regions_changed();
-
-protected:
+  INLINE void do_compute_pixels(int x_size, int y_size);
+  Mutex _lock;
 
   float _l;
   float _r;

@@ -1,5 +1,5 @@
 // Filename: wglGraphicsPipe.h
-// Created by:  mike (09Jan97)
+// Created by:  drose (20Dec02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,49 +15,47 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef WGLGRAPHICSPIPE_H
 #define WGLGRAPHICSPIPE_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include <string>
-#include <interactiveGraphicsPipe.h>
-#include "wglGraphicsWindow.h"
-#define WINDOWS_LEAN_AND_MEAN
-#include <windows.h>
-#undef WINDOWS_LEAN_AND_MEAN
+#include "pandabase.h"
+#include "winGraphicsPipe.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : wglGraphicsPipe
-// Description :
+// Description : This graphics pipe represents the interface for
+//               creating OpenGL graphics windows on the various
+//               Windows OSes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAGL wglGraphicsPipe : public InteractiveGraphicsPipe {
+class EXPCL_PANDAGL wglGraphicsPipe : public WinGraphicsPipe {
 public:
-  wglGraphicsPipe(const PipeSpecifier&);
+  wglGraphicsPipe();
+  virtual ~wglGraphicsPipe();
 
-  virtual TypeHandle get_window_type() const;
+  static PT(GraphicsPipe) pipe_constructor();
+
+protected:
+  virtual PT(GraphicsWindow) make_window();
 
 public:
-
-  static GraphicsPipe* make_wglGraphicsPipe(const FactoryParams &params);
-
-  static TypeHandle get_class_type();
-  static void init_type();
-  virtual TypeHandle get_type() const;
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    WinGraphicsPipe::init_type();
+    register_type(_type_handle, "wglGraphicsPipe",
+                  WinGraphicsPipe::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
-
   static TypeHandle _type_handle;
-
-protected:
-
-  wglGraphicsPipe();
-  wglGraphicsPipe(const wglGraphicsPipe&);
-  wglGraphicsPipe& operator=(const wglGraphicsPipe&);
 };
+
+#include "wglGraphicsPipe.I"
 
 #endif

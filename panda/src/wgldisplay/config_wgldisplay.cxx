@@ -1,5 +1,5 @@
 // Filename: config_wgldisplay.cxx
-// Created by:  mike (07Oct99)
+// Created by:  drose (20Dec02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -19,47 +19,15 @@
 #include "config_wgldisplay.h"
 #include "wglGraphicsPipe.h"
 #include "wglGraphicsWindow.h"
-
-#include <dconfig.h>
+#include "graphicsPipeSelection.h"
+#include "dconfig.h"
 
 Configure(config_wgldisplay);
-NotifyCategoryDef(wgldisplay, "display");
+NotifyCategoryDef(wgldisplay, "windisplay");
 
 ConfigureFn(config_wgldisplay) {
   init_libwgldisplay();
 }
-
-//  Configure this true to force the rendering to sync to the video
-//  refresh, or false to let your frame rate go as high as it can,
-//  irrespective of the video refresh.  (if this capability is available in the ICD)
-bool gl_sync_video = config_wgldisplay.GetBool("sync-video", true);
-
-bool gl_show_fps_meter = config_wgldisplay.GetBool("show-fps-meter", false);
-float gl_fps_meter_update_interval = max(0.5,config_wgldisplay.GetFloat("fps-meter-update-interval", 1.7));
-int gl_forced_pixfmt=config_wgldisplay.GetInt("gl-force-pixfmt", 0);
-
-bool wgl_force_sw_renderer = config_wgldisplay.GetBool("gl-force-software-renderer", false);
-bool wgl_allow_sw_renderer = config_wgldisplay.GetBool("gl-allow-software-renderer", false);
-
-bool bResponsive_minimized_fullscreen_window = config_wgldisplay.GetBool("responsive-minimized-fullscreen-window",false);
-
-// Set this true to not attempt to use any of the function calls that
-// will crab out WireGL.
-bool support_wiregl = config_wgldisplay.GetBool("support-wiregl", false);
-
-// Set this true to enable HW swapbuffer frame-lock on 3dlabs cards
-bool gl_swapbuffer_framelock = config_wgldisplay.GetBool("gl-swapbuffer-framelock", false);
-
-// if true, use ddraw's GetAvailVidMem to fail if driver says it has too little video mem
-bool gl_do_vidmemsize_check = config_wgldisplay.GetBool("do-vidmemsize-check", true);
-
-// For now, set this true to use the IME correctly on Win2000, or
-// false on Win98.  This is temporary; once we have been able to
-// verify that this distinction is actually necessary, we can replace
-// this config variable with an actual OS detection.
-bool ime_composition_w = config_wgldisplay.GetBool("ime-composition-w", true);
-
-extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwgldisplay
@@ -78,31 +46,12 @@ init_libwgldisplay() {
   initialized = true;
 
   wglGraphicsPipe::init_type();
-  GraphicsPipe::get_factory().register_factory(
-            wglGraphicsPipe::get_class_type(),
-            wglGraphicsPipe::make_wglGraphicsPipe);
   wglGraphicsWindow::init_type();
-  GraphicsWindow::get_factory().register_factory(
-            wglGraphicsWindow::get_class_type(),
-                wglGraphicsWindow::make_wglGraphicsWindow);
 
-  atexit(AtExitFn);
-
-  set_global_parameters();
+  GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
+  selection->add_pipe_type(wglGraphicsPipe::get_class_type(),
+                           wglGraphicsPipe::pipe_constructor);
 }
 
-// cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var
-Filename get_icon_filename_2() {
-  string iconname = config_wgldisplay.GetString("win32-window-icon","");
-  return ExecutionEnvironment::expand_string(iconname);
-}
+int gl_force_pixfmt = config_wgldisplay.GetInt("gl-force-pixfmt", 0);
 
-Filename get_color_cursor_filename_2() {
-  string cursorname = config_wgldisplay.GetString("win32-color-cursor","");
-  return ExecutionEnvironment::expand_string(cursorname);
-}
-
-Filename get_mono_cursor_filename_2() {
-  string cursorname = config_wgldisplay.GetString("win32-mono-cursor","");
-  return ExecutionEnvironment::expand_string(cursorname);
-}

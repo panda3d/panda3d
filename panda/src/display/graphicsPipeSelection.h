@@ -1,0 +1,86 @@
+// Filename: graphicsPipeSelection.h
+// Created by:  drose (15Aug02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef GRAPHICSPIPESELECTION_H
+#define GRAPHICSPIPESELECTION_H
+
+#include "pandabase.h"
+
+#include "graphicsPipe.h"
+#include "pointerTo.h"
+#include "typeHandle.h"
+#include "mutex.h"
+
+class HardwareChannel;
+class GraphicsWindow;
+
+////////////////////////////////////////////////////////////////////
+//       Class : GraphicsPipeSelection
+// Description : This maintains a list of GraphicsPipes by type that
+//               are available for creation.  Normally there is one
+//               default interactive GraphicsPipe, and possibly other
+//               types available as well.
+//
+//               This is used to manage creation of a GraphicsPipe
+//               when you don't particularly care what kind of pipe
+//               you create; you just want to render to the screen.
+//               If your application does have a preference, you can
+//               of course invoke the appropriate GraphicsPipe
+//               constructor yourself.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA GraphicsPipeSelection {
+protected:
+  GraphicsPipeSelection();
+  ~GraphicsPipeSelection();
+
+PUBLISHED:
+  int get_num_pipe_types() const;
+  TypeHandle get_pipe_type(int n) const;
+
+  PT(GraphicsPipe) make_pipe(TypeHandle type);
+  PT(GraphicsPipe) make_default_pipe();
+
+  INLINE void resolve_modules() const;
+
+  INLINE static GraphicsPipeSelection *get_global_ptr();
+
+public:
+  typedef PT(GraphicsPipe) PipeConstructorFunc();
+  bool add_pipe_type(TypeHandle type, PipeConstructorFunc *func);
+
+private:
+  void do_resolve_modules();
+
+  class PipeType {
+  public:
+    INLINE PipeType(TypeHandle type, PipeConstructorFunc *constructor);
+    TypeHandle _type;
+    PipeConstructorFunc *_constructor;
+  };
+  typedef pvector<PipeType> PipeTypes;
+  PipeTypes _pipe_types;
+  bool _resolved_modules;
+  Mutex _lock;
+
+  static GraphicsPipeSelection *_global_ptr;
+};  
+
+#include "graphicsPipeSelection.I"
+
+#endif
+

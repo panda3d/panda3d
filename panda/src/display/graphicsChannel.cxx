@@ -18,18 +18,17 @@
 
 #include "graphicsChannel.h"
 #include "graphicsWindow.h"
+#include "graphicsLayer.h"
 #include "config_display.h"
+#include "mutexHolder.h"
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
 TypeHandle GraphicsChannel::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::Constructor
-//       Access: Public
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsChannel::
@@ -41,7 +40,9 @@ GraphicsChannel() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::Constructor
 //       Access: Public
-//  Description:
+//  Description: This is public just so derived window types can
+//               easily call it.  Don't call it directly; instead, use
+//               GraphicsWindow::get_channel() to get a channel.
 ////////////////////////////////////////////////////////////////////
 GraphicsChannel::
 GraphicsChannel(GraphicsWindow *window)
@@ -56,9 +57,8 @@ GraphicsChannel(GraphicsWindow *window)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsChannel::
-GraphicsChannel(const GraphicsChannel&) {
-  display_cat.error()
-    << "GraphicsChannels should never be copied" << endl;
+GraphicsChannel(const GraphicsChannel &) {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,16 +66,14 @@ GraphicsChannel(const GraphicsChannel&) {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GraphicsChannel &GraphicsChannel::
-operator=(const GraphicsChannel&) {
-  display_cat.error()
-  << "GraphicsChannels should never be assigned" << endl;
-  return *this;
+INLINE void GraphicsChannel::
+operator = (const GraphicsChannel &) {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsChannel::
@@ -88,7 +86,9 @@ GraphicsChannel::
   for (li = _layers.begin();
        li != _layers.end();
        ++li) {
-    (*li)->_channel = NULL;
+    GraphicsLayer *layer = (*li);
+    MutexHolder holder(layer->_lock);
+    layer->_channel = NULL;
   }
 
   // We don't need to remove ourself from the windows's list of
@@ -98,7 +98,7 @@ GraphicsChannel::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::make_layer
-//       Access: Public
+//       Access: Published
 //  Description: Creates a new GraphicsLayer, associated with the
 //               window, at the indicated index position.  If the
 //               index position negative or past the end of the array,
@@ -108,6 +108,7 @@ GraphicsChannel::
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer *GraphicsChannel::
 make_layer(int index) {
+  MutexHolder holder(_lock);
   PT(GraphicsLayer) layer = new GraphicsLayer(this);
   if (index < 0 || index >= (int)_layers.size()) {
     _layers.push_back(layer);
@@ -119,29 +120,33 @@ make_layer(int index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::get_num_layers
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of layers currently associated
 //               with the channel.
 ////////////////////////////////////////////////////////////////////
 int GraphicsChannel::
 get_num_layers() const {
+  MutexHolder holder(_lock);
   return _layers.size();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::get_layer
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth layer associated with the channel.
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer *GraphicsChannel::
 get_layer(int index) const {
-  nassertr(index >= 0 && index < (int)_layers.size(), NULL);
-  return _layers[index];
+  MutexHolder holder(_lock);
+  if (index >= 0 && index < (int)_layers.size()) {
+    return _layers[index];
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::move_layer
-//       Access: Public
+//       Access: Published
 //  Description: Changes the ordering of the layers so that the
 //               indicated layer will move to the indicated position.
 //               If to_index is negative or past the end of the array,
@@ -149,6 +154,7 @@ get_layer(int index) const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsChannel::
 move_layer(int from_index, int to_index) {
+  MutexHolder holder(_lock);
   nassertv(from_index >= 0 && from_index < (int)_layers.size());
   PT(GraphicsLayer) layer = _layers[from_index];
 
@@ -170,19 +176,20 @@ move_layer(int from_index, int to_index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::remove_layer
-//       Access: Public
+//       Access: Published
 //  Description: Removes the nth layer.  This changes the numbers of
 //               all subsequent layers.
 ////////////////////////////////////////////////////////////////////
 void GraphicsChannel::
 remove_layer(int index) {
+  MutexHolder holder(_lock);
   nassertv(index >= 0 && index < (int)_layers.size());
   _layers.erase(_layers.begin() + index);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::get_window
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsWindow that this channel is
 //               associated with.  It is possible that the
 //               GraphicsWindow might have been deleted while an
@@ -192,19 +199,36 @@ remove_layer(int index) {
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow *GraphicsChannel::
 get_window() const {
+  MutexHolder holder(_lock);
   return _window;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::get_pipe
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsPipe that this channel is
 //               ultimately associated with, or NULL if no pipe is
 //               associated.
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe *GraphicsChannel::
 get_pipe() const {
+  MutexHolder holder(_lock);
   return (_window != (GraphicsWindow *)NULL) ? _window->get_pipe() : NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsChannel::set_active
+//       Access: Published
+//  Description: Sets the active flag on the channel.  If the channel
+//               is marked as inactive, nothing will be rendered.
+////////////////////////////////////////////////////////////////////
+void GraphicsChannel::
+set_active(bool active) {
+  MutexHolder holder(_lock);
+  if (active != _is_active) {
+    _is_active = active;
+    win_display_regions_changed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,25 +239,27 @@ get_pipe() const {
 //               adjust the channel to account for it.
 ////////////////////////////////////////////////////////////////////
 void GraphicsChannel::
-window_resized(int x, int y) {
+window_resized(int x_size, int y_size) {
   // By default, a normal GraphicsChannel fills the whole window, and
   // so when the window resizes so does the channel, by the same
   // amount.
+  MutexHolder holder(_lock);
   GraphicsLayers::iterator li;
   for (li = _layers.begin();
        li != _layers.end();
        ++li) {
-    (*li)->channel_resized(x, y);
+    (*li)->channel_resized(x_size, y_size);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::win_display_regions_changed
-//       Access: Public
+//       Access: Private
 //  Description: Intended to be called when the active state on a
 //               nested channel or layer or display region changes,
 //               forcing the window to recompute its list of active
-//               display regions.
+//               display regions.  It is assumed the lock is already
+//               held.
 ////////////////////////////////////////////////////////////////////
 void GraphicsChannel::
 win_display_regions_changed() {

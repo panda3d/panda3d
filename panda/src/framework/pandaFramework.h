@@ -52,16 +52,17 @@ public:
   INLINE EventHandler &get_event_handler();
 
   INLINE void set_window_title(const string &title);
-  virtual void get_default_window_props(GraphicsWindow::Properties &props);
+  virtual void get_default_window_props(WindowProperties &props);
 
   WindowFramework *open_window(GraphicsPipe *pipe = NULL);
-  WindowFramework *open_window(const GraphicsWindow::Properties &props,
+  WindowFramework *open_window(const WindowProperties &props,
                                GraphicsPipe *pipe = NULL);
 
   INLINE int get_num_windows() const;
   INLINE WindowFramework *get_window(int n) const;
   void close_window(int n);
   void close_all_windows();
+  bool all_windows_closed() const;
 
   const NodePath &get_models();
 
@@ -72,11 +73,13 @@ public:
   void set_texture(bool enable);
   void set_two_sided(bool enable);
   void set_lighting(bool enable);
+  void set_background_type(WindowFramework::BackgroundType type);
 
   INLINE bool get_wireframe() const;
   INLINE bool get_texture() const;
   INLINE bool get_two_sided() const;
   INLINE bool get_lighting() const;
+  INLINE WindowFramework::BackgroundType get_background_type() const;
 
   static int hide_collision_solids(NodePath node);
   static int show_collision_solids(NodePath node);
@@ -114,6 +117,8 @@ protected:
   static void event_arrow_left(CPT_Event, void *data);
   static void event_arrow_right(CPT_Event, void *data);
   static void event_S(CPT_Event, void *data);
+  static void event_comma(CPT_Event, void *data);
+  static void event_window_event(CPT_Event, void *data);
 
 
 private:
@@ -141,6 +146,7 @@ private:
   bool _texture_enabled;
   bool _two_sided_enabled;
   bool _lighting_enabled;
+  WindowFramework::BackgroundType _background_type;
 
   NodePath _highlight;
 

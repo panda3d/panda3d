@@ -67,7 +67,7 @@ char *PandaFilterNameStrs[] = {"FT_nearest","FT_linear","FT_nearest_mipmap_neare
 };
 
 
-TypeHandle DXTextureContext::_type_handle;
+TypeHandle DXTextureContext8::_type_handle;
 
 #define SWAPDWORDS(X,Y)  { DWORD temp=X;  X=Y; Y=temp; }
 
@@ -152,7 +152,7 @@ enum Format {
 */
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext::get_bits_per_pixel
+//     Function: DXTextureContext8::get_bits_per_pixel
 //       Access: Protected
 //  Description: Maps from the PixelBuffer's Format symbols
 //               to bpp.  returns # of alpha bits
@@ -160,7 +160,7 @@ enum Format {
 //                     not the stored format, which is indicated by pixelbuffer type
 ////////////////////////////////////////////////////////////////////
 
-unsigned int DXTextureContext::
+unsigned int DXTextureContext8::
 get_bits_per_pixel(PixelBuffer::Format format, int *alphbits) {
     *alphbits = 0;      // assume no alpha bits
     switch(format) {
@@ -725,7 +725,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
     BYTE *pbuf=pixbuf->_image.p();
 
     if(IsBadWritePtr(pD3DSurf8,sizeof(DWORD))) {
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf failed: bad pD3DSurf ptr value (" << ((void*)pD3DSurf8) << ")\n";
+        dxgsg8_cat.error() << "ConvertDDSurftoPixBuf failed: bad pD3DSurf ptr value (" << ((void*)pD3DSurf8) << ")\n";
         exit(1);
     }
 
@@ -745,14 +745,14 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
    // or scanlines will be too long
 
     if(!((dwCopyWidth==pixbuf->get_xsize()) && (dwCopyHeight<=(DWORD)pixbuf->get_ysize()))) {
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf, PixBuf size too small to hold display surface!\n";
+        dxgsg8_cat.error() << "ConvertDDSurftoPixBuf, PixBuf size too small to hold display surface!\n";
         assert(0);
         return E_FAIL;
     }
 
     hr = pD3DSurf8->LockRect(&LockedRect,(CONST RECT*)NULL,(D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
     if(FAILED(hr)) {
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf LockRect() failed!" << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "ConvertDDSurftoPixBuf LockRect() failed!" << D3DERRORSTRING(hr);
         return hr;
     }
 
@@ -768,8 +768,8 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
 
     // writes out last line in DDSurf first in PixelBuf, so Y line order precedes inversely
 
-    if(dxgsg_cat.is_debug()) {
-        dxgsg_cat.debug() << "ConvertD3DSurftoPixBuf converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to "
+    if(dxgsg8_cat.is_debug()) {
+        dxgsg8_cat.debug() << "ConvertD3DSurftoPixBuf converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to "
                           <<  dwNumComponents << "-channel panda PixelBuffer\n";
     }
 
@@ -970,7 +970,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
         }
 
         default:
-            dxgsg_cat.error() << "ConvertD3DSurftoPixBuf: unsupported D3DFORMAT!\n";
+            dxgsg8_cat.error() << "ConvertD3DSurftoPixBuf: unsupported D3DFORMAT!\n";
     }
 
     pD3DSurf8->UnlockRect();
@@ -983,7 +983,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
 //       This code gets the attributes of the texture from the bitmap, creates the
 //       texture, and then copies the bitmap into the texture.
 //-----------------------------------------------------------------------------
-IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
+IDirect3DTexture8 *DXTextureContext8::CreateTexture(DXScreenData &scrn) {
     HRESULT hr;
     int cNumAlphaBits;     //  number of alpha bits in texture pixfmt
     D3DFORMAT TargetPixFmt=D3DFMT_UNKNOWN;
@@ -1001,7 +1001,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     assert(pixbuf_type==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
 
     if((pixbuf_type!=PixelBuffer::T_unsigned_byte) || (pbuf->get_component_width()!=1)) {
-        dxgsg_cat.error() << "CreateTexture failed, havent handled non 8-bit channel pixelbuffer types yet! \n";
+        dxgsg8_cat.error() << "CreateTexture failed, havent handled non 8-bit channel pixelbuffer types yet! \n";
         return NULL;
     }
 
@@ -1016,7 +1016,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
     if(cNumAlphaBits>0) {
         if(cNumColorChannels==3) {
-            dxgsg_cat.error() << "ERROR: texture " << _tex->get_name() << " has no inherent alpha channel, but alpha format is requested (that would be wasteful)!\n";
+            dxgsg8_cat.error() << "ERROR: texture " << _tex->get_name() << " has no inherent alpha channel, but alpha format is requested (that would be wasteful)!\n";
             exit(1);
         }
     }
@@ -1053,7 +1053,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     DWORD TargetHeight=dwOrigHeight;
 
     if(!ISPOW2(dwOrigWidth) || !ISPOW2(dwOrigHeight)) {
-        dxgsg_cat.error() << "ERROR: texture dimensions are not a power of 2 for " << _tex->get_name() << "! Please rescale them so it doesnt have to be done at runtime.\n";
+        dxgsg8_cat.error() << "ERROR: texture dimensions are not a power of 2 for " << _tex->get_name() << "! Please rescale them so it doesnt have to be done at runtime.\n";
         #ifndef NDEBUG
           exit(1);  // want to catch badtexsize errors
         #else
@@ -1066,7 +1066,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
     if((dwOrigWidth>scrn.d3dcaps.MaxTextureWidth)||(dwOrigHeight>scrn.d3dcaps.MaxTextureHeight)) {
         #ifdef _DEBUG
-           dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << scrn.d3dcaps.MaxTextureWidth << "," << scrn.d3dcaps.MaxTextureHeight << ") !!\n"
+           dxgsg8_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << scrn.d3dcaps.MaxTextureWidth << "," << scrn.d3dcaps.MaxTextureHeight << ") !!\n"
            << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  scrn.d3dcaps.MaxTextureWidth << "," << scrn.d3dcaps.MaxTextureHeight << ") !\n";
         #endif
 
@@ -1087,7 +1087,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
         bShrinkOriginal=true;
 
 #ifdef _DEBUG
-        dxgsg_cat.debug() << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< TargetWidth<<"," << TargetHeight << ") to meet HW square texture reqmt\n";
+        dxgsg8_cat.debug() << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< TargetWidth<<"," << TargetHeight << ") to meet HW square texture reqmt\n";
 #endif
     }
 /*
@@ -1109,10 +1109,10 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
     char *szErrorMsg;
 
-    szErrorMsg = "CreateTexture failed: couldn't find compatible device Texture Pixel Format for input texture: ";
+    szErrorMsg = "CreateTexture failed: couldn't find compatible device Texture Pixel Format for input texture";
 
-    if(dxgsg_cat.is_spam())
-        dxgsg_cat.spam() << "CreateTexture handling target bitdepth: " << target_bpp << " alphabits: " << cNumAlphaBits << endl;
+    if(dxgsg8_cat.is_spam())
+        dxgsg8_cat.spam() << "CreateTexture handling target bitdepth: " << target_bpp << " alphabits: " << cNumAlphaBits << endl;
 
     // I could possibly replace some of this logic with D3DXCheckTextureRequirements(), but
     // it wouldnt handle all my specialized low-memory cases perfectly
@@ -1298,7 +1298,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     }
 
     // if we've gotten here, haven't found a match
-    dxgsg_cat.error() << szErrorMsg << ": " << _tex->get_name() << endl
+    dxgsg8_cat.error() << szErrorMsg << ": " << _tex->get_name() << endl
                       << "NumColorChannels: " <<cNumColorChannels << "; NumAlphaBits: " << cNumAlphaBits
                       << "; targetbpp: " <<target_bpp << "; SupportedTexFmtsMask: 0x" << (void*)scrn.SupportedTexFmtsMask
                       << "; NeedLuminance: " << bNeedLuminance << endl;
@@ -1339,9 +1339,9 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
         if(dx_mipmap_everything) {  // debug toggle, ok to leave in since its just a creation cost
            _bHasMipMaps=TRUE;
-           if(dxgsg_cat.is_spam()) {
+           if(dxgsg8_cat.is_spam()) {
                if(ft != Texture::FT_linear_mipmap_linear)
-                   dxgsg_cat.spam() << "Forcing trilinear mipmapping on DX texture [" << _tex->get_name() << "]\n";
+                   dxgsg8_cat.spam() << "Forcing trilinear mipmapping on DX texture [" << _tex->get_name() << "]\n";
            }
            ft = Texture::FT_linear_mipmap_linear;
            _tex->set_minfilter(ft);
@@ -1397,7 +1397,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     _tex->set_anisotropic_degree(aniso_degree);
 
 #ifdef _DEBUG
-    dxgsg_cat.spam() << "CreateTexture: setting aniso degree for "<< _tex->get_name() << " to: " << aniso_degree << endl;
+    dxgsg8_cat.spam() << "CreateTexture: setting aniso degree for "<< _tex->get_name() << " to: " << aniso_degree << endl;
 #endif
 
     UINT cMipLevelCount;
@@ -1405,13 +1405,13 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     if(_bHasMipMaps) {
         cMipLevelCount=0;  // tell CreateTex to alloc space for all mip levels down to 1x1
 
-        if(dxgsg_cat.is_debug())
-            dxgsg_cat.debug() << "CreateTexture: generating mipmaps for "<< _tex->get_name() << endl;
+        if(dxgsg8_cat.is_debug())
+            dxgsg8_cat.debug() << "CreateTexture: generating mipmaps for "<< _tex->get_name() << endl;
     } else cMipLevelCount=1;
 
     if(FAILED( hr = scrn.pD3DDevice->CreateTexture(TargetWidth,TargetHeight,cMipLevelCount,0x0,
                                                    TargetPixFmt,D3DPOOL_MANAGED,&_pD3DTexture8) )) {
-        dxgsg_cat.error() << "pD3DDevice->CreateTexture() failed!" << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "pD3DDevice->CreateTexture() failed!" << D3DERRORSTRING(hr);
         goto error_exit;
     }
 
@@ -1421,9 +1421,9 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
 #ifdef _DEBUG
 #ifdef DO_CUSTOM_CONVERSIONS
-    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting " << ConvNameStrs[ConvNeeded] << " \n";
+    dxgsg8_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting " << ConvNameStrs[ConvNeeded] << " \n";
 #else
-    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting panda equivalent of " << D3DFormatStr(_PixBufD3DFmt) << " => " << D3DFormatStr(TargetPixFmt) << endl;
+    dxgsg8_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting panda equivalent of " << D3DFormatStr(_PixBufD3DFmt) << " => " << D3DFormatStr(TargetPixFmt) << endl;
 #endif
 #endif
 
@@ -1439,23 +1439,23 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
   error_exit:
 
-    RELEASE(_pD3DTexture8,dxgsg,"texture",RELEASE_ONCE);
+    RELEASE(_pD3DTexture8,dxgsg8,"texture",RELEASE_ONCE);
     return NULL;
 }
 
-HRESULT DXTextureContext::
+HRESULT DXTextureContext8::
 FillDDSurfTexturePixels(void) {
     HRESULT hr=E_FAIL;
     assert(IS_VALID_PTR(_texture));
 
     if(!_texture->has_ram_image()) {
-      dxgsg_cat.warning() << "CreateTexture: tried to fill surface that has no ram image!\n";
+      dxgsg8_cat.warning() << "CreateTexture: tried to fill surface that has no ram image!\n";
       return S_OK;
     }
 
     PixelBuffer *pbuf = _texture->get_ram_image();
     if (pbuf == (PixelBuffer *)NULL) {
-      dxgsg_cat.fatal() << "CreateTexture: get_ram_image() failed\n";
+      dxgsg8_cat.fatal() << "CreateTexture: get_ram_image() failed\n";
       // The texture doesn't have an image to load.
       return E_FAIL;
     }
@@ -1473,7 +1473,7 @@ FillDDSurfTexturePixels(void) {
     IDirect3DSurface8 *pMipLevel0;
     hr=_pD3DTexture8->GetSurfaceLevel(0,&pMipLevel0);
     if(FAILED(hr)) {
-       dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
+       dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
        return E_FAIL;
     }
 
@@ -1496,7 +1496,7 @@ FillDDSurfTexturePixels(void) {
         // alloc buffer for explicit D3DFMT_A8L8
         USHORT *pTempPixBuf=new USHORT[OrigWidth*OrigHeight];
         if(!IS_VALID_PTR(pTempPixBuf)) {
-            dxgsg_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
+            dxgsg8_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
             goto exit_FillDDSurf;
         }
         bUsingTempPixBuf=true;
@@ -1516,7 +1516,7 @@ FillDDSurfTexturePixels(void) {
     hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID)pPixels,SrcFormat,
                                  SrcPixBufRowByteLength,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
     if(FAILED(hr)) {
-       dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+       dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
        goto exit_FillDDSurf;
     }
 
@@ -1529,7 +1529,7 @@ FillDDSurfTexturePixels(void) {
 
         hr=D3DXFilterTexture(_pD3DTexture8,(PALETTEENTRY*)NULL,0,MipFilterFlags);
         if(FAILED(hr)) {
-            dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXFilterTex failed" << D3DERRORSTRING(hr);
+            dxgsg8_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXFilterTex failed" << D3DERRORSTRING(hr);
             goto exit_FillDDSurf;
         }
     }
@@ -1538,7 +1538,7 @@ FillDDSurfTexturePixels(void) {
     if(bUsingTempPixBuf) {
       SAFE_DELETE_ARRAY(pPixels);
     }
-    RELEASE(pMipLevel0,dxgsg,"texture",RELEASE_ONCE);
+    RELEASE(pMipLevel0,dxgsg8,"texture",RELEASE_ONCE);
     return hr;
 }
 
@@ -1548,13 +1548,13 @@ FillDDSurfTexturePixels(void) {
 // Name: DeleteTexture()
 // Desc: Release the surface used to store the texture
 //-----------------------------------------------------------------------------
-void DXTextureContext::
+void DXTextureContext8::
 DeleteTexture( ) {
-    if(dxgsg_cat.is_spam()) {
-        dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
+    if(dxgsg8_cat.is_spam()) {
+        dxgsg8_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
     }
 
-    RELEASE(_pD3DTexture8,dxgsg,"texture",RELEASE_ONCE);
+    RELEASE(_pD3DTexture8,dxgsg8,"texture",RELEASE_ONCE);
 /*
 #ifdef DEBUG_RELEASES
     if(_surface) {
@@ -1563,28 +1563,28 @@ DeleteTexture( ) {
         pDD->Release();
 
         PRINTREFCNT(pDD,"before DeleteTex, IDDraw7");
-        RELEASE(_surface,dxgsg,"texture",false);
+        RELEASE(_surface,dxgsg8,"texture",false);
         PRINTREFCNT(pDD,"after DeleteTex, IDDraw7");
     }
 #else
 
-    RELEASE(_pD3DSurf8,dxgsg,"texture",false);
+    RELEASE(_pD3DSurf8,dxgsg8,"texture",false);
  #endif
 */
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext::Constructor
+//     Function: DXTextureContext8::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXTextureContext::
-DXTextureContext(Texture *tex) :
+DXTextureContext8::
+DXTextureContext8(Texture *tex) :
 TextureContext(tex) {
 
-    if(dxgsg_cat.is_spam()) {
-       dxgsg_cat.spam() << "Creating DX texture [" << tex->get_name() << "], minfilter(" << PandaFilterNameStrs[tex->get_minfilter()] << "), magfilter("<<PandaFilterNameStrs[tex->get_magfilter()] << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
+    if(dxgsg8_cat.is_spam()) {
+       dxgsg8_cat.spam() << "Creating DX texture [" << tex->get_name() << "], minfilter(" << PandaFilterNameStrs[tex->get_minfilter()] << "), magfilter("<<PandaFilterNameStrs[tex->get_magfilter()] << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
     }
 
     _pD3DTexture8 = NULL;
@@ -1592,8 +1592,8 @@ TextureContext(tex) {
     _tex = tex;
 }
 
-DXTextureContext::
-~DXTextureContext() {
+DXTextureContext8::
+~DXTextureContext8() {
     DeleteTexture();
     TextureContext::~TextureContext();
     _tex = NULL;

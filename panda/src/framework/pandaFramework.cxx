@@ -21,9 +21,9 @@
 #include "pStatClient.h"
 #include "eventQueue.h"
 #include "dataGraphTraverser.h"
-#include "interactiveGraphicsPipe.h"
 #include "collisionNode.h"
 #include "config_framework.h"
+#include "graphicsPipeSelection.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::Constructor
@@ -44,6 +44,7 @@ PandaFramework() :
   _texture_enabled = true;
   _two_sided_enabled = false;
   _lighting_enabled = false;
+  _background_type = WindowFramework::BT_gray;
   _default_keys_enabled = false;
   _exit_flag = false;
 }
@@ -94,8 +95,8 @@ close_framework() {
   }
 
   close_all_windows();
-  // We should define this function on GraphicsEngine.
-  //  _engine.remove_all_windows();
+  // Also close down any other windows that might have been opened.
+  _engine.remove_all_windows();
   _event_handler.remove_all_hooks();
 
   _is_open = false;
@@ -144,16 +145,13 @@ get_default_pipe() {
 //               application.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-get_default_window_props(GraphicsWindow::Properties &props) {
-  props._xorg = 0;
-  props._yorg = 0;
-  props._xsize = win_width;
-  props._ysize = win_height;
-  props._fullscreen = fullscreen;
-  props._title = _window_title;
-
-  props.set_clear_color(Colorf(win_background_r, win_background_g, 
-                               win_background_b, 1.0f));
+get_default_window_props(WindowProperties &props) {
+  props.set_open(true);
+  props.set_size(win_width, win_height);
+  props.set_fullscreen(fullscreen);
+  props.set_undecorated(undecorated);
+  props.set_cursor_hidden(cursor_hidden);
+  props.set_title(_window_title);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,7 +165,7 @@ WindowFramework *PandaFramework::
 open_window(GraphicsPipe *pipe) {
   nassertr(_is_open, NULL);
 
-  GraphicsWindow::Properties props;
+  WindowProperties props;
   get_default_window_props(props);
 
   return open_window(props, pipe);
@@ -184,7 +182,7 @@ open_window(GraphicsPipe *pipe) {
 //               NULL if not.
 ////////////////////////////////////////////////////////////////////
 WindowFramework *PandaFramework::
-open_window(const GraphicsWindow::Properties &props, GraphicsPipe *pipe) {
+open_window(const WindowProperties &props, GraphicsPipe *pipe) {
   if (pipe == (GraphicsPipe *)NULL) {
     pipe = get_default_pipe();
     if (pipe == (GraphicsPipe *)NULL) {
@@ -195,12 +193,14 @@ open_window(const GraphicsWindow::Properties &props, GraphicsPipe *pipe) {
 
   nassertr(_is_open, NULL);
   WindowFramework *wf = make_window_framework();
+  wf->set_wireframe(get_wireframe());
+  wf->set_texture(get_texture());
+  wf->set_two_sided(get_two_sided());
+  wf->set_lighting(get_lighting());
+  wf->set_background_type(get_background_type());
   _windows.push_back(wf);
 
-  GraphicsWindow *win = wf->open_window(props, pipe);
-  if (win != (GraphicsWindow *)NULL) {
-    _engine.add_window(win);
-  }
+  wf->open_window(props, &_engine, pipe);
 
   return wf;
 }
@@ -219,7 +219,7 @@ close_window(int n) {
   if (win != (GraphicsWindow *)NULL) {
     _engine.remove_window(win);
   }
-
+  
   wf->close_window();
   delete wf;
   _windows.erase(_windows.begin() + n);
@@ -247,6 +247,25 @@ close_all_windows() {
   }
 
   _windows.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::all_windows_closed
+//       Access: Public
+//  Description: Returns true if all of the opened windows have been
+//               closed by the user, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PandaFramework::
+all_windows_closed() const {
+  Windows::const_iterator wi;
+  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+    WindowFramework *wf = (*wi);
+    if (wf->get_graphics_window()->get_properties().get_open()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -358,6 +377,22 @@ set_lighting(bool enable) {
   }
 
   _lighting_enabled = enable;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BackgroundFramework::set_background_type
+//       Access: Public
+//  Description: Sets the background type of all windows.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+set_background_type(WindowFramework::BackgroundType type) {
+  Windows::iterator wi;
+  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+    WindowFramework *wf = (*wi);
+    wf->set_background_type(type);
+  }
+
+  _background_type = type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -516,13 +551,16 @@ make_default_pipe() {
   // This depends on the shared library or libraries (DLL's to you
   // Windows folks) that have been loaded in at runtime from the
   // load-display Configrc variable.
-  GraphicsPipe::resolve_modules();
+  GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
+  selection->resolve_modules();
 
   nout << "Known pipe types:" << endl;
-  GraphicsPipe::get_factory().write_types(nout, 2);
+  int num_pipe_types = selection->get_num_pipe_types();
+  for (int i = 0; i < num_pipe_types; i++) {
+    nout << "  " << selection->get_pipe_type(i) << "\n";
+  }
 
-  _default_pipe = GraphicsPipe::get_factory().
-    make_instance(InteractiveGraphicsPipe::get_class_type());
+  _default_pipe = selection->make_default_pipe();
 
   if (_default_pipe == (GraphicsPipe*)NULL) {
     nout << "No interactive pipe is available!  Check your Configrc!\n";
@@ -553,6 +591,8 @@ do_enable_default_keys() {
   _event_handler.add_hook("arrow_left", event_arrow_left, this);
   _event_handler.add_hook("arrow_right", event_arrow_right, this);
   _event_handler.add_hook("shift-s", event_S, this);
+  _event_handler.add_hook(",", event_comma, this);
+  _event_handler.add_hook("window-event", event_window_event, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -822,4 +862,49 @@ event_S(CPT_Event, void *data) {
 #else
   nout << "Stats host not supported." << endl;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_comma
+//       Access: Protected, Static
+//  Description: Default handler for comma key: rotate background color.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_comma(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  switch (self->get_background_type()) {
+  case WindowFramework::BT_other:
+    break;
+
+  case WindowFramework::BT_none:
+    self->set_background_type(WindowFramework::BT_default);
+    break;
+
+  default:
+    self->set_background_type((WindowFramework::BackgroundType)(self->get_background_type() + 1));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_window_event
+//       Access: Protected, Static
+//  Description: Default handler for window events: window resized or
+//               closed, etc.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_window_event(CPT_Event event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    const GraphicsWindow *win;
+    DCAST_INTO_V(win, param.get_ptr());
+
+    if (!win->get_properties().get_open()) {
+      // If the last window was closed, exit the application.
+      if (self->all_windows_closed()) {
+        self->_exit_flag = true;
+      }
+    }
+  }
 }

@@ -21,42 +21,23 @@
 #include "pandabase.h"
 
 #include "graphicsWindowInputDevice.h"
+#include "windowProperties.h"
 #include "graphicsChannel.h"
+#include "graphicsPipe.h"
 #include "displayRegion.h"
 #include "graphicsStateGuardian.h"
 #include "clearableRegion.h"
 
-#include "typedef.h"
-#include "configurable.h"
-#include "referenceCount.h"
+#include "typedReferenceCount.h"
 #include "mouseData.h"
 #include "modifierButtons.h"
 #include "buttonEvent.h"
 #include "iterator_types.h"
-#include "factory.h"
-#include "pStatCollector.h"
+#include "notify.h"
+#include "mutex.h"
 
 #include "pvector.h"
 #include "pdeque.h"
-
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
-enum WindowModeType
-{
-    W_RGBA =                            0,
-    W_RGB =                             0,
-    W_INDEX =                           1,
-    W_SINGLE =                          0,
-    W_DOUBLE =                          2,
-    W_ACCUM =                           4,
-    W_ALPHA =                           8,
-    W_DEPTH =                           16,
-    W_STENCIL =                         32,
-    W_MULTISAMPLE =                     128,
-    W_STEREO =                          256,
-    W_LUMINANCE =                       512
-};
 
 class GraphicsPipe;
 class GraphicsWindow;
@@ -64,200 +45,129 @@ class CullHandler;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindow
-// Description :
+// Description : An output medium for receiving the results of
+//               rendering.  Typically this is a window on the
+//               computer desktop, but it may also be the entire
+//               desktop or console screen (i.e. a fullscreen window),
+//               or a window on another machine, or even a disk file.
+//
+//               The GraphicsWindow class handles all of the details
+//               about creating a window and its framebuffer, and
+//               managing the properties associated with the windowing
+//               system, such as position and size and keyboard/mouse
+//               input.  The actual rendering, and anything associated
+//               with the graphics context itself, is managed by the
+//               window's GraphicsStateGuardian.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsWindow : public Configurable, public ReferenceCount, public ClearableRegion {
+class EXPCL_PANDA GraphicsWindow : public TypedReferenceCount, public ClearableRegion {
+protected:
+  GraphicsWindow(GraphicsPipe *pipe);
+
+private:
+  GraphicsWindow(const GraphicsWindow &copy);
+  void operator = (const GraphicsWindow &copy);
+
 PUBLISHED:
-  class EXPCL_PANDA Properties : public ClearableRegion {
-  PUBLISHED:
-    Properties();
-    INLINE Properties(const Properties &copy);
-    INLINE void operator = (const Properties &copy);
-    INLINE ~Properties();
-
-    // all these methods essentially do nothing since they do not get passed down to the gsg
-    // and maybe should be removed or commented out until they do, since
-    // they modify parameters that usually require re-creation of the window
-    // except for set_size(), which is superseded by resize(), which actually works.
-
-    INLINE void set_origin(int xorg, int yorg);
-    INLINE void set_size(int xsize, int ysize);
-    INLINE void set_title(const string &title);
-    INLINE void set_border(bool border);
-    INLINE void set_mask(uint mask);
-    INLINE void set_bit_depth(int want_depth_bits, int want_color_bits);
-
-  public:
-    int _xorg;
-    int _yorg;
-    int _xsize;
-    int _ysize;
-    string _title;
-    bool _border;
-    bool _fullscreen;
-    bool _bCursorIsVisible;
-    uint _mask;
-    int _want_depth_bits;
-    int _want_color_bits;
-  };
-
-public:
-  class EXPCL_PANDA Callback {
-  public:
-    virtual void draw(bool);
-    virtual void idle();
-  };
-  typedef void (*vfn)();
-  typedef void (*vfnii)(int, int);
-
-public:
-
-  GraphicsWindow(GraphicsPipe *pipe, const Properties &props = Properties());
   virtual ~GraphicsWindow();
 
-  INLINE const Properties& get_properties() const;
-
-  virtual void get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format);
-
-PUBLISHED:
-  INLINE int get_width() const;
-  INLINE int get_height() const;
-  INLINE int get_xorg() const;
-  INLINE int get_yorg() const;
+  WindowProperties get_properties() const;
+  WindowProperties get_requested_properties() const;
+  void request_properties(const WindowProperties &requested_properties);
+  INLINE bool is_closed() const;
+  INLINE bool is_active() const;
   INLINE bool is_fullscreen() const;
 
-  // # of z bits/pixel.  purpose is to adjust camera near plane if have fewer z bits
-  virtual int get_depth_bitwidth(void);  
+  void set_window_event(const string &window_event);
+  string get_window_event() const;
 
   INLINE GraphicsStateGuardian *get_gsg() const;
   INLINE GraphicsPipe *get_pipe() const;
 
-  INLINE void close_window();
-  INLINE bool is_closed() const;
-
-  INLINE void set_frame_number(const int);
-  INLINE int get_frame_number() const;
-
-  INLINE void set_sync(const bool);
-  INLINE bool get_sync() const;
-
-  // since this requires gsg modification, dont worry about implementing it yet
-  // since init control is good enough
-  // virtual void set_cursor_visible(bool bIsVisible);  // should be overridden by gsg to implement
-
-  // resize the window to the given size
-  virtual bool resize(unsigned int xsize,unsigned int ysize);  
-
-  virtual void swap();
-
-public:
-  virtual void resized(const unsigned int, const unsigned int);
-
-  // see if window sizes are supported (i.e. in fullscrn mode)
-  // 
-  // note: it might be better to implement some sort of query
-  //       interface that returns an array of supported sizes,
-  //       but this way is somewhat simpler and will do the job 
-  //       on most cards, assuming they handle the std sizes the app
-  //       knows about.
-  virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
-
-  INLINE virtual void set_draw_callback(Callback *c);
-  INLINE virtual void set_idle_callback(Callback *c);
-
-  INLINE void call_draw_callback(bool force_redraw);
-  INLINE void call_idle_callback();
-
-  PT(DisplayRegion) make_scratch_display_region(int xsize,
-                                                int ysize) const;
-
-  virtual TypeHandle get_gsg_type() const=0;
-
-public:
-  // context setting
-  virtual void make_current();
-  virtual void unmake_current();
-
-PUBLISHED:
-  // Mouse and keyboard routines
-  INLINE int get_num_input_devices() const;
-  INLINE string get_input_device_name(int device) const;
-  INLINE bool has_pointer(int device) const;
-  INLINE bool has_keyboard(int device) const;
-
-public:
-  INLINE const MouseData &get_mouse_data(int device) const;
-  INLINE bool has_button_event(int device) const;
-  INLINE ButtonEvent get_button_event(int device);
-
-PUBLISHED:
-  // GUI glue methods
-  virtual void flag_redisplay();
-  virtual void register_draw_function(GraphicsWindow::vfn);
-  virtual void register_idle_function(GraphicsWindow::vfn);
-
-public:
-  virtual void begin_frame(bool bStartRendering = true);
-  void clear();
-  virtual void end_frame();
-
-  virtual void process_events();
-
-  INLINE bool get_window_active() const;
-  virtual void deactivate_window();
-  virtual void reactivate_window();
-
-  INLINE void win_display_regions_changed();
-
-  // Statistics
-  static PStatCollector _app_pcollector;
-  static PStatCollector _show_code_pcollector;
-  static PStatCollector _swap_pcollector;  // dxgsg needs access so this is public
-  static PStatCollector _clear_pcollector;
-  static PStatCollector _show_fps_pcollector;
-  static PStatCollector _make_current_pcollector;
-
-protected:
-  void make_gsg();
-  void release_gsg();
-  virtual void do_close_window();
-
-  typedef vector_GraphicsWindowInputDevice InputDevices;
-  InputDevices _input_devices;
-
-  PT(GraphicsStateGuardian) _gsg;
-  Properties _props;
-
-  GraphicsPipe *_pipe;
-  vfn _draw_function;
-  vfn _idle_function;
-  vfnii _resize_function;
-  int _frame_number;
-
-  bool _is_synced;
-  bool _window_active;
-
-protected:
-
-  Callback *_draw_callback;
-  Callback *_idle_callback;
-
-PUBLISHED:
-  virtual GraphicsChannel *get_channel(int index);
+  GraphicsChannel *get_channel(int index);
   void remove_channel(int index);
 
   int get_max_channel_index() const;
   bool is_channel_defined(int index) const;
 
-  INLINE int get_num_display_regions() const;
-  INLINE DisplayRegion *get_display_region(int n) const;
+  int get_num_display_regions() const;
+  DisplayRegion *get_display_region(int n) const;
+
+  // Mouse and keyboard routines
+  int get_num_input_devices() const;
+  string get_input_device_name(int device) const;
+  bool has_pointer(int device) const;
+  bool has_keyboard(int device) const;
+
+public:
+  // No need to publish these.
+  MouseData get_mouse_data(int device) const;
+  bool has_button_event(int device) const;
+  ButtonEvent get_button_event(int device);
+
+  virtual void get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format);
+
+public:
+  virtual int verify_window_sizes(int numsizes, int *dimen);
+  PT(DisplayRegion) make_scratch_display_region(int x_size, int y_size) const;
+
+  INLINE void win_display_regions_changed();
+
+public:
+  // It is an error to call any of the following methods from any
+  // thread other than the draw thread.  These methods are normally
+  // called by the GraphicsEngine.
+  virtual bool begin_frame();
+  void clear();
+  virtual void end_frame();
+
+  virtual void make_gsg();
+  virtual void release_gsg();
+
+  // This method is called in the draw thread prior to issuing any
+  // drawing commands for the window.
+  virtual void make_current();
+
+  // These methods will be called within the app (main) thread.
+  virtual void begin_flip();
+  virtual void end_flip();
+
+  // It is an error to call any of the following methods from any
+  // thread other than the window thread.  These methods are normally
+  // called by the GraphicsEngine.
+  virtual void process_events();
+  virtual void set_properties_now(WindowProperties &properties);
 
 protected:
+  virtual void close_window();
+  virtual bool open_window();
+  virtual bool do_reshape_request(int x_origin, int y_origin,
+                                  int x_size, int y_size);
+
   void declare_channel(int index, GraphicsChannel *chan);
+
+  // It is an error to call any of the following methods from any
+  // thread other than the window thread.
+  void system_changed_properties(const WindowProperties &properties);
+  void system_changed_size(int x_size, int y_size);
+  
+protected:
+  typedef vector_GraphicsWindowInputDevice InputDevices;
+  InputDevices _input_devices;
+  Mutex _input_lock;
+
+  PT(GraphicsStateGuardian) _gsg;
+  GraphicsPipe *_pipe;
 
 private:
   INLINE void determine_display_regions() const;
   void do_determine_display_regions();
+
+protected:
+  WindowProperties _properties;
+
+private:
+  Mutex _lock; 
+  // protects _channels, _display_regions, and _requested_properties.
 
   typedef pvector< PT(GraphicsChannel) > Channels;
   Channels _channels;
@@ -266,67 +176,17 @@ private:
   DisplayRegions _display_regions;
   bool _display_regions_stale;
 
-public:
-
-  // factory stuff
-  typedef Factory<GraphicsWindow> WindowFactory;
-  typedef FactoryParam WindowParam;
-
-  // make a factory parameter type for the window properties
-  class EXPCL_PANDA WindowProps : public FactoryParam {
-  public:
-    INLINE WindowProps(void) : WindowParam() {}
-    INLINE WindowProps(const Properties& p) : WindowParam(), _p(p) {}
-    virtual ~WindowProps(void);
-    INLINE Properties get_properties(void) { return _p; }
-  public:
-    static TypeHandle get_class_type(void);
-    static void init_type(void);
-    virtual TypeHandle get_type(void) const;
-    virtual TypeHandle force_init_type(void);
-  private:
-    Properties _p;
-    static TypeHandle _type_handle;
-  };
-  // make a factory parameter type for the GraphicsPipe*
-  class EXPCL_PANDA WindowPipe : public FactoryParam {
-  public:
-    INLINE WindowPipe(GraphicsPipe* p) : WindowParam(), _p(p) {}
-    virtual ~WindowPipe(void);
-    INLINE GraphicsPipe* get_pipe(void) { return _p; }
-  public:
-    static TypeHandle get_class_type(void);
-    static void init_type(void);
-    virtual TypeHandle get_type(void) const;
-    virtual TypeHandle force_init_type(void);
-  private:
-    GraphicsPipe* _p;
-    static TypeHandle _type_handle;
-
-    INLINE WindowPipe(void) : WindowParam() {}
-  };
-
-  static WindowFactory &get_factory();
-
-private:
-
-  static void read_priorities(void);
-
-  GraphicsWindow(const GraphicsWindow&);
-  GraphicsWindow &operator=(const GraphicsWindow&);
-
-  static WindowFactory *_factory;
-
+  WindowProperties _requested_properties;
+  string _window_event;
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    Configurable::init_type();
-    ReferenceCount::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "GraphicsWindow",
-                  Configurable::get_class_type(),
-                  ReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -337,6 +197,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class GraphicsPipe;
+  friend class GraphicsEngine;
 };
 
 #include "graphicsWindow.I"

@@ -18,20 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsChannel::set_active
-//       Access: Public
-//  Description: Sets the active flag on the channel.  If the channel
-//               is marked as inactive, nothing will be rendered.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsChannel::
-set_active(bool active) {
-  if (active != _is_active) {
-    _is_active = active;
-    win_display_regions_changed();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::is_active
 //       Access: Public
 //  Description: Returns the active flag on the channel.

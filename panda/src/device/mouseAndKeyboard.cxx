@@ -78,8 +78,9 @@ do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
       _pixel_xy->set_value(LPoint2f(mdata._xpos, mdata._ypos));
       output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
 
-      int w = _window->get_width();
-      int h = _window->get_height();
+      WindowProperties properties = _window->get_properties();
+      int w = properties.get_x_size();
+      int h = properties.get_y_size();
 
       // Normalize pixel motion to range [-1,1].
       float xf = (float)(2 * mdata._xpos) / (float)w - 1.0f;

@@ -31,6 +31,7 @@
 
 class Pipeline;
 class DisplayRegion;
+class GraphicsPipe;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsEngine
@@ -43,43 +44,39 @@ class DisplayRegion;
 //               required.
 //
 //               The GraphicsEngine is responsible for managing the
-//               cull and draw processes.  The application simply
-//               calls engine->render_frame() and considers it done.
+//               various cull and draw threads.  The application
+//               simply calls engine->render_frame() and considers it
+//               done.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsEngine : public Namable {
+class EXPCL_PANDA GraphicsEngine {
 PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
   ~GraphicsEngine();
 
-  void add_window(GraphicsWindow *window);
+  void set_threading_model(const string &threading_model);
+  string get_threading_model() const;
+
+  INLINE GraphicsWindow *make_window(GraphicsPipe *pipe);
+  GraphicsWindow *make_window(GraphicsPipe *pipe,
+                              const string &threading_model);
   bool remove_window(GraphicsWindow *window);
+  void remove_all_windows();
 
   void render_frame();
-  void render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr);
-
-  enum ThreadingModel {
-    TM_invalid,
-    TM_appculldraw,
-    TM_appcull_draw,
-    TM_app_culldraw,
-    TM_app_cull_draw,
-    TM_appcdraw,
-    TM_app_cdraw,
-  };
-
-  void set_threading_model(ThreadingModel threading_model);
-  INLINE ThreadingModel get_threading_model() const;
-
-public:
-  static ThreadingModel string_threading_model(const string &string);
+  void render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
+                       bool cull_sorting);
   
 private:
-  INLINE void start_cull();
-  void cull_and_draw_together();
+  typedef pset< PT(GraphicsWindow) > Windows;
+
+  void cull_and_draw_together(const Windows &wlist);
   void cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr);
 
-  void cull_bin_draw();
+  void cull_bin_draw(const Windows &wlist);
   void cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr);
+
+  void process_events(const GraphicsEngine::Windows &wlist);
+  void flip_windows(const GraphicsEngine::Windows &wlist);
 
   PT(SceneSetup) setup_scene(const NodePath &camera, 
                              GraphicsStateGuardian *gsg);
@@ -90,17 +87,42 @@ private:
 
   bool setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup);
 
+  void do_remove_window(GraphicsWindow *window);
   void terminate_threads();
+
+  // The WindowRenderer class records the stages of the pipeline that
+  // each thread (including the main thread, a.k.a. "app") should
+  // process, and the list of windows for each stage.
+  class WindowRenderer {
+  public:
+    void add_window(Windows &wlist, GraphicsWindow *window);
+    void remove_window(GraphicsWindow *window);
+    void do_frame(GraphicsEngine *engine);
+    void do_flip(GraphicsEngine *engine);
+    void do_release(GraphicsEngine *engine);
+    void do_close(GraphicsEngine *engine);
+    void do_pending(GraphicsEngine *engine);
+
+    Windows _cull;    // cull stage
+    Windows _cdraw;   // cull-and-draw-together stage
+    Windows _draw;    // draw stage
+    Windows _window;  // window stage, i.e. process windowing events 
+    Windows _pending_release; // moved from _draw, pending release_gsg.
+    Windows _pending_close;   // moved from _window, pending close.
+    Mutex _wl_lock;
+  };
 
   enum ThreadState {
     TS_wait,
     TS_do_frame,
+    TS_do_flip,
+    TS_do_release,
     TS_terminate
   };
 
-  class CullThread : public Thread {
+  class RenderThread : public Thread, public WindowRenderer {
   public:
-    CullThread(const string &name, GraphicsEngine *engine);
+    RenderThread(const string &name, GraphicsEngine *engine);
     virtual void thread_main();
 
     GraphicsEngine *_engine;
@@ -109,36 +131,22 @@ private:
     ThreadState _thread_state;
   };
 
-  class DrawThread : public Thread {
-  public:
-    DrawThread(const string &name, GraphicsEngine *engine);
-    virtual void thread_main();
-
-    GraphicsEngine *_engine;
-    Mutex _cv_mutex;
-    ConditionVar _cv;
-    ThreadState _thread_state;
-  };
+  WindowRenderer *get_window_renderer(const string &name);
 
   Pipeline *_pipeline;
-
-  typedef pset<PT(GraphicsWindow)> Windows;
   Windows _windows;
 
-  ThreadingModel _threading_model;
-  bool _cull_sorting;
+  WindowRenderer _app;
+  typedef pmap<string, PT(RenderThread) > Threads;
+  Threads _threads;
+  string _threading_model;
 
-  PT(CullThread) _cull_thread;
-  PT(DrawThread) _draw_thread;
+  Mutex _lock;
 
   static PStatCollector _cull_pcollector;
   static PStatCollector _draw_pcollector;
-
-  friend class CullThread;
+  friend class WindowRenderer;
 };
-
-ostream &
-operator << (ostream &out, GraphicsEngine::ThreadingModel threading_model);
 
 #include "graphicsEngine.I"
 

@@ -32,6 +32,8 @@
 class PandaFramework;
 class AmbientLight;
 class DirectionalLight;
+class GraphicsEngine;
+class GraphicsPipe;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowFramework
@@ -43,8 +45,8 @@ protected:
   WindowFramework(PandaFramework *panda_framework);
   virtual ~WindowFramework();
 
-  GraphicsWindow *open_window(const GraphicsWindow::Properties &props,
-                              GraphicsPipe *pipe);
+  GraphicsWindow *open_window(const WindowProperties &props,
+                              GraphicsEngine *engine, GraphicsPipe *pipe);
   void close_window();
 
 public:
@@ -71,15 +73,25 @@ public:
   NodePath load_default_model(const NodePath &parent);
   void loop_animations();
 
+  enum BackgroundType {
+    BT_other = 0,
+    BT_default,
+    BT_gray,
+    BT_black,
+    BT_none
+  };
+
   void set_wireframe(bool enable);
   void set_texture(bool enable);
   void set_two_sided(bool enable);
   void set_lighting(bool enable);
+  void set_background_type(BackgroundType type);
 
   INLINE bool get_wireframe() const;
   INLINE bool get_texture() const;
   INLINE bool get_two_sided() const;
   INLINE bool get_lighting() const;
+  INLINE BackgroundType get_background_type() const;
 
 protected:
   PT(Camera) make_camera();
@@ -111,6 +123,8 @@ private:
   bool _texture_enabled;
   bool _two_sided_enabled;
   bool _lighting_enabled;
+
+  BackgroundType _background_type;
 
   friend class PandaFramework;
 };

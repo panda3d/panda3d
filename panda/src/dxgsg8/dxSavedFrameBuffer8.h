@@ -1,4 +1,4 @@
-// Filename: dxSavedFrameBuffer.h
+// Filename: dxSavedFrameBuffer8.h
 // Created by:  drose (06Oct99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -28,14 +28,14 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//   Class : DXSavedFrameBuffer
+//   Class : DXSavedFrameBuffer8
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDADX DXSavedFrameBuffer : public SavedFrameBuffer {
+class EXPCL_PANDADX DXSavedFrameBuffer8 : public SavedFrameBuffer {
 public:
-  INLINE DXSavedFrameBuffer(const RenderBuffer &buffer,
+  INLINE DXSavedFrameBuffer8(const RenderBuffer &buffer,
                 CPT(DisplayRegion) dr);
-  INLINE ~DXSavedFrameBuffer();
+  INLINE ~DXSavedFrameBuffer8();
 
   PT(Texture) _back_rgba;
   PT(PixelBuffer) _depth;
@@ -46,7 +46,7 @@ public:
   }
   static void init_type() {
     SavedFrameBuffer::init_type();
-    register_type(_type_handle, "DXSavedFrameBuffer",
+    register_type(_type_handle, "DXSavedFrameBuffer8",
           SavedFrameBuffer::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -58,7 +58,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "dxSavedFrameBuffer8.I"
+#include "DXSavedFrameBuffer8.I"
 
 #endif
 

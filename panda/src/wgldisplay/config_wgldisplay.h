@@ -1,5 +1,5 @@
 // Filename: config_wgldisplay.h
-// Created by:  mike (07Oct99)
+// Created by:  drose (20Dec02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __CONFIG_WGLDISPLAY_H__
-#define __CONFIG_WGLDISPLAY_H__
+#ifndef CONFIG_WGLDISPLAY_H
+#define CONFIG_WGLDISPLAY_H
 
-#include <pandabase.h>
-#include <filename.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(wgldisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
-// for some reason there is a conflict with the pandadx versions of get_icon_filename during linking,
-// so appended '_2' to name
-extern Filename get_icon_filename_2();
-extern Filename get_color_cursor_filename_2();
-extern Filename get_mono_cursor_filename_2();
-
-extern bool gl_show_fps_meter;
-extern float gl_fps_meter_update_interval;
-extern bool gl_sync_video;
-extern bool gl_swapbuffer_framelock;
-extern int gl_forced_pixfmt;
-extern bool bResponsive_minimized_fullscreen_window;
-extern bool gl_do_vidmemsize_check;
-extern bool support_wiregl;
-extern bool ime_composition_w;
-extern bool wgl_force_sw_renderer;
-extern bool wgl_allow_sw_renderer;
-
 extern EXPCL_PANDAGL void init_libwgldisplay();
 
-#endif /* __CONFIG_WGLDISPLAY_H__ */
+extern int gl_force_pixfmt;
+
+#endif

@@ -19,6 +19,7 @@
 #ifndef RENDERBUFFER_H
 #define RENDERBUFFER_H
 
+#include "pandabase.h"
 
 class GraphicsStateGuardian;
 

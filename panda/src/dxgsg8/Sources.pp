@@ -7,7 +7,7 @@
 #begin lib_target
   #define TARGET dxgsg8
   #define LOCAL_LIBS \
-    gsgmisc gsgbase gobj display \
+    gsgmisc gsgbase gobj display windisplay \
     putil linmath mathutil pnmimage event
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
@@ -20,9 +20,16 @@
   // build dxGraphicsStateGuardian separately since its so big
   
   #define SOURCES \
-    dxGraphicsStateGuardian8.cxx dxSavedFrameBuffer8.I dxSavedFrameBuffer8.h $[INSTALL_HEADERS]
+    dxGraphicsStateGuardian8.cxx dxSavedFrameBuffer8.I dxSavedFrameBuffer8.h \
+    wdxGraphicsPipe8.I wdxGraphicsPipe8.h \
+    wdxGraphicsWindow8.I wdxGraphicsWindow8.h \
+    $[INSTALL_HEADERS]
     
   #define INCLUDED_SOURCES \
-    config_dxgsg8.cxx dxSavedFrameBuffer8.cxx dxTextureContext8.cxx dxGeomNodeContext8.cxx d3dfont8.cxx
+    config_dxgsg8.cxx \
+    dxSavedFrameBuffer8.cxx dxTextureContext8.cxx \
+    dxGeomNodeContext8.cxx \
+    d3dfont8.cxx \
+    wdxGraphicsPipe8.cxx wdxGraphicsWindow8.cxx
 
 #end lib_target

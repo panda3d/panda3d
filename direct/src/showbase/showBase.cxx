@@ -25,10 +25,12 @@
 #include "get_config_path.h"
 #include "camera.h"
 
-// Don't define this unless you have drose's new GraphicsWindow code,
-// which is currently a work in progress.  You probably won't have it
-// unless you are drose.
-//#define NEW_WINDOW_CODE 1
+// You should define this unless you don't have the new GraphicsWindow
+// code yet.  drose checked this in to Panda at around 12:30pm on
+// Thursday, Jan 9; if you haven't updated your Panda since then you
+// should either go update it (and prepare for a long build) or just
+// comment this out to run for the short term with the old code.
+#define NEW_WINDOW_CODE 1
 
 #ifdef NEW_WINDOW_CODE
 #include "graphicsPipeSelection.h"

@@ -64,11 +64,15 @@ operator = (const Mutex &copy) {
 //               return until the mutex is held; you should then call
 //               unlock().
 //
+//               This method is considered const so that you can lock
+//               and unlock const mutexes, mainly to allow thread-safe
+//               access to otherwise const data.
+//
 //               Also see MutexHolder.
 ////////////////////////////////////////////////////////////////////
 INLINE void Mutex::
-lock() {
-  _impl.lock();
+lock() const {
+  ((MutexImpl &)_impl).lock();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,8 +80,12 @@ lock() {
 //       Access: Public
 //  Description: Releases the mutex.  It is an error to call this if
 //               the mutex was not already locked.
+//
+//               This method is considered const so that you can lock
+//               and unlock const mutexes, mainly to allow thread-safe
+//               access to otherwise const data.
 ////////////////////////////////////////////////////////////////////
 INLINE void Mutex::
-release() {
-  _impl.release();
+release() const {
+  ((MutexImpl &)_impl).release();
 }

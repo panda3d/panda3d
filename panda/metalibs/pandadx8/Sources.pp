@@ -10,12 +10,12 @@
 #define BUILDING_DLL BUILDING_PANDADX
 
 #define COMPONENT_LIBS \
-    dxgsg8 wdxdisplay8
+    dxgsg8
 #define LOCAL_LIBS gsgbase display express gobj
 #define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
-  #define TARGET pandadx
+  #define TARGET pandadx8
   #define SOURCES pandadx8.cxx
   #define WIN_SYS_LIBS \
      ddraw.lib dxguid.lib winmm.lib \

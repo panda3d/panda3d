@@ -18,9 +18,9 @@
 
 #include "dxGeomNodeContext8.h"
 
-TypeHandle DXGeomNodeContext::_type_handle;
+TypeHandle DXGeomNodeContext8::_type_handle;
 
-DXGeomNodeContext::~DXGeomNodeContext()
+DXGeomNodeContext8::~DXGeomNodeContext8()
 {
 /*
    if(_pXformed_VB!=NULL)

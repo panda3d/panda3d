@@ -39,8 +39,8 @@ private:
   INLINE void operator = (const Mutex &copy);
 
 public:
-  INLINE void lock();
-  INLINE void release();
+  INLINE void lock() const;
+  INLINE void release() const;
 
 private:
   MutexImpl _impl;

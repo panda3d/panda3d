@@ -127,6 +127,16 @@ get_lighting() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_background_type
+//       Access: Public
+//  Description: Returns the current background type setting.
+////////////////////////////////////////////////////////////////////
+INLINE WindowFramework::BackgroundType PandaFramework::
+get_background_type() const {
+  return _background_type;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::has_highlight
 //       Access: Public
 //  Description: Returns true if any node is highlighted, false

@@ -132,6 +132,14 @@
   #define EXPTP_PANDARIB extern
 #endif
 
+#ifdef BUILDING_PANDAWIN
+  #define EXPCL_PANDAWIN __declspec(dllexport)
+  #define EXPTP_PANDAWIN
+#else
+  #define EXPCL_PANDAWIN __declspec(dllimport)
+  #define EXPTP_PANDAWIN extern
+#endif
+
 #ifdef BUILDING_SHADER
   #define EXPCL_SHADER __declspec(dllexport)
   #define EXPTP_SHADER
@@ -180,6 +188,9 @@
 
 #define EXPCL_PANDARIB
 #define EXPTP_PANDARIB
+
+#define EXPCL_PANDAWIN
+#define EXPTP_PANDAWIN
 
 #define EXPCL_SHADER
 #define EXPTP_SHADER

@@ -19,21 +19,14 @@
 #ifndef GRAPHICSLAYER_H
 #define GRAPHICSLAYER_H
 
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "displayRegion.h"
-
-#include <typedReferenceCount.h>
-#include <pointerTo.h>
-
+#include "typedReferenceCount.h"
+#include "pointerTo.h"
+#include "mutex.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
 class GraphicsChannel;
 class GraphicsWindow;
 class GraphicsPipe;
@@ -50,15 +43,17 @@ class CullHandler;
 //               without clearing the framebuffer between layers.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsLayer : public TypedReferenceCount {
-protected:
-
+private:
   GraphicsLayer();
-  GraphicsLayer(GraphicsChannel *);
+  GraphicsLayer(GraphicsChannel *channel);
 
-public:
-  virtual ~GraphicsLayer();
+private:
+  GraphicsLayer(const GraphicsLayer &copy);
+  void operator = (const GraphicsLayer &copy);
 
 PUBLISHED:
+  virtual ~GraphicsLayer();
+
   DisplayRegion *make_display_region();
   DisplayRegion *make_display_region(float l, float r,
                                      float b, float t);
@@ -68,30 +63,25 @@ PUBLISHED:
   void remove_dr(int index);
   bool remove_dr(DisplayRegion *display_region);
 
-  INLINE GraphicsChannel *get_channel() const;
+  GraphicsChannel *get_channel() const;
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
+
+  void set_active(bool active);
+  INLINE bool is_active() const;
 
 public:
   void channel_resized(int x, int y);
 
+private:
   void win_display_regions_changed();
 
-PUBLISHED:
-  INLINE void set_active(bool active);
-  INLINE bool is_active() const;
-
-private:
+  Mutex _lock;
   GraphicsChannel *_channel;
   bool _is_active;
 
   typedef pvector< PT(DisplayRegion) > DisplayRegions;
   DisplayRegions _display_regions;
-
-private:
-
-  GraphicsLayer(const GraphicsLayer&);
-  GraphicsLayer& operator=(const GraphicsLayer&);
 
 
 public:
@@ -113,6 +103,7 @@ private:
 
   friend class GraphicsChannel;
   friend class GraphicsWindow;
+  friend class DisplayRegion;
 };
 
 #include "graphicsLayer.I"

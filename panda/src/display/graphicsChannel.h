@@ -17,22 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef GRAPHICSCHANNEL_H
 #define GRAPHICSCHANNEL_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
+#include "pandabase.h"
 #include "graphicsLayer.h"
-
-#include <typedReferenceCount.h>
-#include <pointerTo.h>
-
+#include "typedReferenceCount.h"
+#include "pointerTo.h"
+#include "mutex.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
 class GraphicsChannel;
 class GraphicsPipe;
 class GraphicsWindow;
@@ -48,14 +40,17 @@ class CullHandler;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsChannel : public TypedReferenceCount {
 protected:
-
   GraphicsChannel();
 
 public:
-  GraphicsChannel(GraphicsWindow *);
-  virtual ~GraphicsChannel();
+  GraphicsChannel(GraphicsWindow *window);
+
+private:
+  GraphicsChannel(const GraphicsChannel &copy);
+  void operator = (const GraphicsChannel &copy);
 
 PUBLISHED:
+  virtual ~GraphicsChannel();
   GraphicsLayer *make_layer(int index = -1);
   int get_num_layers() const;
   GraphicsLayer *get_layer(int index) const;
@@ -65,27 +60,22 @@ PUBLISHED:
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
 
-public:
-  virtual void window_resized(int x, int y);
-
-  void win_display_regions_changed();
-
-PUBLISHED:
-  INLINE void set_active(bool active);
+  void set_active(bool active);
   INLINE bool is_active() const;
 
+public:
+  virtual void window_resized(int x_size, int y_size);
+
 private:
+  void win_display_regions_changed();
+
+protected:
+  Mutex _lock;
   GraphicsWindow *_window;
   bool _is_active;
 
   typedef pvector< PT(GraphicsLayer) > GraphicsLayers;
   GraphicsLayers _layers;
-
-private:
-
-  GraphicsChannel(const GraphicsChannel&);
-  GraphicsChannel& operator=(const GraphicsChannel&);
-
 
 public:
   static TypeHandle get_class_type() {
@@ -105,6 +95,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class GraphicsWindow;
+  friend class GraphicsLayer;
 };
 
 #include "graphicsChannel.I"

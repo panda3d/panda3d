@@ -19,7 +19,7 @@
 #ifndef DXGRAPHICSSTATEGUARDIAN_H
 #define DXGRAPHICSSTATEGUARDIAN_H
 
-//#define GSG_VERBOSE
+//#define GSG_VERBOSE 1
 
 #include "dxgsg8base.h"
 #include "dxGeomNodeContext8.h"
@@ -58,20 +58,20 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//   Class : DXGraphicsStateGuardian
+//   Class : DXGraphicsStateGuardian8
 // Description : A GraphicsStateGuardian specialized for rendering
 //               into DX.  There should be no DX calls
 //               outside of this object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDADX DXGraphicsStateGuardian : public GraphicsStateGuardian {
-  friend class wdxGraphicsWindow;
-  friend class wdxGraphicsPipe;
-  friend class wdxGraphicsWindowGroup;
-  friend class DXTextureContext;
+class EXPCL_PANDADX DXGraphicsStateGuardian8 : public GraphicsStateGuardian {
+  friend class wdxGraphicsWindow8;
+  friend class wdxGraphicsPipe8;
+  friend class wdxGraphicsWindowGroup8;
+  friend class DXTextureContext8;
 
 public:
-  DXGraphicsStateGuardian(GraphicsWindow *win);
-  ~DXGraphicsStateGuardian();
+  DXGraphicsStateGuardian8(GraphicsWindow *win);
+  ~DXGraphicsStateGuardian8();
 
   virtual void reset();
 
@@ -134,11 +134,10 @@ public:
   virtual void bind_light(DirectionalLight *light, int light_id);
   virtual void bind_light(Spotlight *light, int light_id);
 
-  // default gsg begin_frame() used
+  virtual bool begin_frame();
+  virtual bool begin_scene();
+  virtual void end_scene();
   virtual void end_frame();
-
-  virtual void start_rendering();
-  virtual void finish_rendering();
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
@@ -179,8 +178,7 @@ protected:
 
   bool                  _bDXisReady;
   HRESULT               _last_testcooplevel_result;
-  bool                  _bShowFPSMeter;
-  DXTextureContext  *_pCurTexContext;
+  DXTextureContext8  *_pCurTexContext;
 
   bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
   D3DMATRIX         _SavedTransform;
@@ -246,7 +244,7 @@ protected:
   bool _bGouraudShadingOn;
   UINT _color_writemask;
   bool _bDrawPrimDoSetupVertexBuffer;       // if true, draw methods just copy vertex data into pCurrentGeomContext
-  DXGeomNodeContext *_pCurrentGeomContext;  // used in vertex buffer setup
+  DXGeomNodeContext8 *_pCurrentGeomContext;  // used in vertex buffer setup
 
   // iterators for primitives
   Geom::VertexIterator vi;
@@ -322,16 +320,9 @@ protected:
 
   bool _overlay_windows_supported;
 
-  // vars for frames/sec meter
-  DWORD _start_time;
-  DWORD _start_frame_count;
-  DWORD _cur_frame_count;
-  float _current_fps,_fpsmeter_x_offset,_fpsmeter_y_offset;
-  ::CD3DFont *_pStatMeterFont;
-
 public:
   static GraphicsStateGuardian*
-  make_DXGraphicsStateGuardian(const FactoryParams &params);
+  make_DXGraphicsStateGuardian8(const FactoryParams &params);
 
   static TypeHandle get_class_type(void);
   static void init_type(void);
@@ -339,7 +330,7 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
   INLINE void SetDXReady(bool status)  { _bDXisReady = status; }
   INLINE bool GetDXReady(void)  { return _bDXisReady;}
-  void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bJustEnable);
+  void DXGraphicsStateGuardian8::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bJustEnable);
 
   // Shader Stuff
   DXShaderHandle read_vertex_shader(string &filename);
@@ -364,7 +355,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "dxGraphicsStateGuardian8.I"
+#include "DXGraphicsStateGuardian8.I"
 
 #endif
 

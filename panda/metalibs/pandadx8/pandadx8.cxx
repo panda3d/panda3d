@@ -5,8 +5,7 @@
 
 #include "pandadx8.h"
 
-#include <config_dxgsg8.h>
-#include <config_wdxdisplay8.h>
+#include "config_dxgsg8.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpandadx
@@ -19,5 +18,4 @@
 void
 init_libpandadx8() {
   init_libdxgsg8();
-  init_libwdxdisplay8();
 }

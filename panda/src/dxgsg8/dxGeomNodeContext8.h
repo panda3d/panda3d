@@ -1,4 +1,4 @@
-// Filename: dxGeomNodeContext.h
+// Filename: dxGeomNodeContext8.h
 // Created by:  drose (12Jun01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DXGEOMNODECONTEXT_H
-#define DXGEOMNODECONTEXT_H
+#ifndef DXGEOMNODECONTEXT8_H
+#define DXGEOMNODECONTEXT8_H
 
 #include "dxgsg8base.h"
 
@@ -33,13 +33,13 @@ typedef struct {
 // empty shell unimplemented for DX8 right now
 
 ////////////////////////////////////////////////////////////////////
-//       Class : DXGeomNodeContext
+//       Class : DXGeomNodeContext8
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDADX DXGeomNodeContext : public GeomNodeContext {
+class EXPCL_PANDADX DXGeomNodeContext8 : public GeomNodeContext {
 public:
-  INLINE DXGeomNodeContext(GeomNode *node);
-  ~DXGeomNodeContext();
+  INLINE DXGeomNodeContext8(GeomNode *node);
+  ~DXGeomNodeContext8();
 
   // A list of the dynamic Geoms within the GeomNode; these aren't
   // part of the above display list and must be drawn separately
@@ -71,7 +71,7 @@ public:
   }
   static void init_type() {
     GeomNodeContext::init_type();
-    register_type(_type_handle, "DXGeomNodeContext",
+    register_type(_type_handle, "DXGeomNodeContext8",
                   GeomNodeContext::get_class_type());
   }
   virtual TypeHandle get_type() const {

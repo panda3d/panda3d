@@ -417,8 +417,14 @@ prepare_lens() {
 //  Description: Called before each frame is rendered, to allow the
 //               GSG a chance to do any internal cleanup before
 //               beginning the frame.
+//
+//               The return value is true if successful (in which case
+//               the frame will be drawn and end_frame() will be
+//               called later), or false if unsuccessful (in which
+//               case nothing will be drawn and end_frame() will not
+//               be called).
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
+bool GraphicsStateGuardian::
 begin_frame() {
   // Undo any lighting we had enabled last frame, to force the lights
   // to be reissued, in case their parameters or positions have
@@ -466,6 +472,40 @@ begin_frame() {
   // measurably expensive.
   modify_state(get_untextured_state());
 #endif
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_scene
+//       Access: Public, Virtual
+//  Description: Called between begin_frame() and end_frame() to mark
+//               the beginning of drawing commands for a "scene"
+//               (usually a particular DisplayRegion) within a frame.
+//               All 3-D drawing commands, except the clear operation,
+//               must be enclosed within begin_scene() .. end_scene().
+//
+//               The return value is true if successful (in which case
+//               the scene will be drawn and end_scene() will be
+//               called later), or false if unsuccessful (in which
+//               case nothing will be drawn and end_scene() will not
+//               be called).
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+begin_scene() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::end_scene
+//       Access: Public, Virtual
+//  Description: Called between begin_frame() and end_frame() to mark
+//               the end of drawing commands for a "scene" (usually a
+//               particular DisplayRegion) within a frame.  All 3-D
+//               drawing commands, except the clear operation, must be
+//               enclosed within begin_scene() .. end_scene().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+end_scene() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1339,6 +1379,16 @@ unmark_prepared_geom_node(GeomNodeContext *gnc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::free_pointers
+//       Access: Protected, Virtual
+//  Description: Frees some memory that was explicitly allocated
+//               within the glgsg.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+free_pointers() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::close_gsg
 //       Access: Protected, Virtual
 //  Description: This is called by the associated GraphicsWindow when
@@ -1348,6 +1398,10 @@ unmark_prepared_geom_node(GeomNodeContext *gnc) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 close_gsg() {
+  free_pointers();
+  release_all_textures();
+  release_all_geoms();
+
   _win = (GraphicsWindow *)NULL;
 }
 
@@ -1535,31 +1589,3 @@ get_factory() {
   }
   return (*_factory);
 }
-
-void GraphicsStateGuardian::
-read_priorities(void) {
-  GsgFactory &factory = get_factory();
-  if (factory.get_num_preferred() == 0) {
-    Config::ConfigTable::Symbol::iterator i;
-    for (i = preferred_gsg_begin(); i != preferred_gsg_end(); ++i) {
-      ConfigString type_name = (*i).Val();
-      TypeHandle type = TypeRegistry::ptr()->find_type(type_name);
-      if (type == TypeHandle::none()) {
-        gsg_cat.warning()
-          << "Unknown type requested for GSG preference: " << type_name
-          << "\n";
-      } else {
-        gsg_cat.debug()
-          << "Specifying type " << type << " for GSG preference.\n";
-        factory.add_preferred(type);
-      }
-    }
-  }
-}
-
-void GraphicsStateGuardian::start_rendering(void) {
-}
-
-void GraphicsStateGuardian::finish_rendering(void) {
-}
-

@@ -15,129 +15,446 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #include "glxGraphicsWindow.h"
-#include "glxDisplay.h"
 #include "config_glxdisplay.h"
+#include "glxGraphicsPipe.h"
 
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
 #include "glGraphicsStateGuardian.h"
-#include "pStatTimer.h"
 #include "clockObject.h"
 
 #include <errno.h>
 #include <sys/time.h>
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
-#include <stdio.h>   // for sprintf()
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
 TypeHandle glxGraphicsWindow::_type_handle;
 
-const char* glxGraphicsWindow::_glx_extensions = NULL;
-
-#define MOUSE_ENTERED 0
-#define MOUSE_EXITED 1
-
-#define FONT_BITMAP_OGLDISPLAYLISTNUM 1000  // some arbitrary #
-
 ////////////////////////////////////////////////////////////////////
-//     Function: Constructor
-//       Access:
+//     Function: glxGraphicsWindow::Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe ) :
-        GraphicsWindow( pipe )
+glxGraphicsWindow::
+glxGraphicsWindow(GraphicsPipe *pipe) :
+  GraphicsWindow(pipe) 
 {
-  config();
+  glxGraphicsPipe *glx_pipe;
+  DCAST_INTO_V(glx_pipe, _pipe);
+  _display = glx_pipe->get_display();
+  _screen = glx_pipe->get_screen();
+  _xwindow = (Window)0;
+  _context = (GLXContext)0;
+  _visual = (XVisualInfo *)NULL;
+
+  GraphicsWindowInputDevice device =
+    GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
+  _input_devices.push_back(device);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Constructor
-//       Access:
+//     Function: glxGraphicsWindow::Destructor
+//       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe, const
-        GraphicsWindow::Properties& props ) : GraphicsWindow( pipe, props )
-{
-  config();
+glxGraphicsWindow::
+~glxGraphicsWindow() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Destructor
-//       Access:
-//  Description:
+//     Function: glxGraphicsWindow::make_gsg
+//       Access: Public, Virtual
+//  Description: Creates a new GSG for the window and stores it in the
+//               _gsg pointer.  This should only be called from within
+//               the draw thread.
 ////////////////////////////////////////////////////////////////////
-glxGraphicsWindow::~glxGraphicsWindow(void)
-{
-  // The GL context is already gone.  Don't try to destroy it again;
-  // that will cause a seg fault on exit.
-  //  unmake_current();
-  //  glXDestroyContext(_display, _context);
+void glxGraphicsWindow::
+make_gsg() {
+  nassertv(_gsg == (GraphicsStateGuardian *)NULL);
 
-  if (gl_show_fps_meter)
-    glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
+  // First, we need to create the rendering context.
+  _context = glXCreateContext(_display, _visual, None, GL_TRUE);
+  if (!_context) {
+    glxdisplay_cat.error()
+      << "Could not create GLX context.\n";
+    return;
+  }
 
-  XDestroyWindow(_display, _xwindow);
-  if (_colormap)
-    XFreeColormap(_display, _colormap);
-  XFree(_visual);
+  // And make sure the new context is current.
+  glXMakeCurrent(_display, _xwindow, _context);
+
+  // Now we can make a GSG.
+  _gsg = new GLGraphicsStateGuardian(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glx_supports
-//       Access:
-//  Description:
+//     Function: glxGraphicsWindow::release_gsg
+//       Access: Public, Virtual
+//  Description: Releases the current GSG pointer, if it is currently
+//               held, and resets the GSG to NULL.  This should only
+//               be called from within the draw thread.
 ////////////////////////////////////////////////////////////////////
-bool glxGraphicsWindow::glx_supports(const char* extension)
-{
-#if defined(GLX_VERSION_1_1)
-  const char* start;
-  char* where, *terminator;
-  int major, minor;
+void glxGraphicsWindow::
+release_gsg() {
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    GraphicsWindow::release_gsg();
+    glXDestroyContext(_display, _context);
+    _context = (GLXContext)0;
+  }
+}
 
-  glxDisplay *glx = _pipe->get_glx_display();
-  nassertr(glx != (glxDisplay *)NULL, false);
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::make_current
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               during begin_frame() to ensure the graphics context
+//               is ready for drawing.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+make_current() {
+  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  glXMakeCurrent(_display, _xwindow, _context);
+}
 
-  glXQueryVersion(_display, &major, &minor);
-  if ((major == 1 && minor >= 1) || (major > 1)) {
-    if (!_glx_extensions) {
-      _glx_extensions =
-        glXQueryExtensionsString(_display, glx->get_screen());
-    }
-    start = _glx_extensions;
-    for (;;) {
-      where = strstr(start, extension);
-      if (!where)
-        return false;
-      terminator = where + strlen(extension);
-      if (where == start || *(where - 1) == ' ') {
-        if (*terminator == ' ' || *terminator == '\0') {
-          return true;
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::begin_flip
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after end_frame() has been called on all windows, to
+//               initiate the exchange of the front and back buffers.
+//
+//               This should instruct the window to prepare for the
+//               flip at the next video sync, but it should not wait.
+//
+//               We have the two separate functions, begin_flip() and
+//               end_flip(), to make it easier to flip all of the
+//               windows at the same time.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+begin_flip() {
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    glXMakeCurrent(_display, _xwindow, _context);
+    glXSwapBuffers(_display, _xwindow);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::process_events
+//       Access: Public, Virtual
+//  Description: Do whatever processing is necessary to ensure that
+//               the window responds to user events.  Also, honor any
+//               requests recently made via request_properties()
+//
+//               This function is called only within the window
+//               thread.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+process_events() {
+  GraphicsWindow::process_events();
+
+  XEvent event;
+  while (XCheckWindowEvent(_display, _xwindow, _event_mask, &event)) {
+    WindowProperties properties;
+    ButtonHandle button;
+
+    switch (event.type) {
+    case ReparentNotify:
+      break;
+
+    case ConfigureNotify:
+      properties.set_size(event.xconfigure.width, event.xconfigure.height);
+      system_changed_properties(properties);
+      break;
+
+    case ButtonPress:
+      // This refers to the mouse buttons.
+      button = MouseButton::button(event.xbutton.button - 1);
+      _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      _input_devices[0].button_down(button);
+      break;
+      
+    case ButtonRelease:
+      button = MouseButton::button(event.xbutton.button - 1);
+      _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      _input_devices[0].button_up(button);
+      break;
+
+    case MotionNotify:
+      _input_devices[0].set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+      break;
+
+    case KeyPress:
+      {
+        _input_devices[0].set_pointer_in_window(event.xkey.x, event.xkey.y);
+        int index = ((event.xkey.state & ShiftMask) != 0) ? 1 : 0;
+
+        // First, get the keystroke, as modified by the shift key.
+        KeySym key = XLookupKeysym(&event.xkey, index);
+        if (key > 0 && key < 128) {
+          // If it's an ASCII key, press it.
+          _input_devices[0].keystroke(key);
+        }
+
+        // Now get the raw unshifted button.
+        ButtonHandle button = get_button(&event.xkey);
+        if (button != ButtonHandle::none()) {
+          _input_devices[0].button_down(button);
         }
       }
-      start = terminator;
+      break;
+
+    case KeyRelease:
+      button = get_button(&event.xkey);
+      if (button != ButtonHandle::none()) {
+        _input_devices[0].button_up(button);
+      }
+      break;
+
+    case EnterNotify:
+      _input_devices[0].set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
+      break;
+
+    case LeaveNotify:
+      _input_devices[0].set_pointer_out_of_window();
+      break;
+
+    case FocusIn:
+      properties.set_foreground(true);
+      system_changed_properties(properties);
+      break;
+
+    case FocusOut:
+      properties.set_foreground(false);
+      system_changed_properties(properties);
+      break;
+
+    case UnmapNotify:
+      properties.set_minimized(true);
+      system_changed_properties(properties);
+      break;
+
+    case MapNotify:
+      properties.set_minimized(false);
+      system_changed_properties(properties);
+      break;
+
+    case DestroyNotify:
+      cerr << "destroy\n";
+      break;
+
+    default:
+      cerr << "unhandled X event type " << event.type << "\n";
     }
   }
-  return false;
-#else
-  return false;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: try_for_visual
-//  Description: This is a static function that attempts to get the
-//               requested visual, if it is available.  It's just a
-//               wrapper around glXChooseVisual().  It returns the
-//               visual information if possible, or NULL if it is not.
+//     Function: glxGraphicsWindow::set_properties_now
+//       Access: Public, Virtual
+//  Description: Applies the requested set of properties to the
+//               window, if possible, for instance to request a change
+//               in size or minimization status.
+//
+//               The window properties are applied immediately, rather
+//               than waiting until the next frame.  This implies that
+//               this method may *only* be called from within the
+//               window thread.
+//
+//               The return value is true if the properties are set,
+//               false if they are ignored.  This is mainly useful for
+//               derived classes to implement extensions to this
+//               function.
 ////////////////////////////////////////////////////////////////////
-static XVisualInfo *
-try_for_visual(glxDisplay *glx, int mask,
-               int want_depth_bits = 1, int want_color_bits = 1) {
+void glxGraphicsWindow::
+set_properties_now(WindowProperties &properties) {
+  GraphicsWindow::set_properties_now(properties);
+  if (!properties.is_any_specified()) {
+    return;
+  }
+
+  // The window is already open; we are limited to what we can change
+  // on the fly.  This appears to be just the window title.
+  if (properties.has_title()) {
+    WindowProperties wm_properties;
+    wm_properties.set_title(properties.get_title());
+    _properties.set_title(properties.get_title());
+    set_wm_properties(wm_properties);
+    properties.clear_title();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::close_window
+//       Access: Protected, Virtual
+//  Description: Closes the window right now.  Called from the window
+//               thread.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+close_window() {
+  if (_xwindow != (Window)0) {
+    XDestroyWindow(_display, _xwindow);
+    _xwindow = (Window)0;
+
+    // This may be necessary if we just closed the last X window in an
+    // application, so the server hears the close request.
+    XFlush(_display);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::open_window
+//       Access: Protected, Virtual
+//  Description: Opens the window right now.  Called from the window
+//               thread.  Returns true if the window is successfully
+//               opened, or false if there was a problem.
+////////////////////////////////////////////////////////////////////
+bool glxGraphicsWindow::
+open_window() {
+  if (!_properties.has_origin()) {
+    _properties.set_origin(0, 0);
+  }
+  if (!_properties.has_size()) {
+    _properties.set_size(100, 100);
+  }
+
+  glxGraphicsPipe *glx_pipe;
+  DCAST_INTO_R(glx_pipe, _pipe, false);
+  Window root_window = glx_pipe->get_root();
+
+  if (!choose_visual()) {
+    return false;
+  }
+  setup_colormap();
+
+  _event_mask = 
+    ButtonPressMask | ButtonReleaseMask |
+    KeyPressMask | KeyReleaseMask |
+    EnterWindowMask | LeaveWindowMask |
+    PointerMotionMask |
+    FocusChangeMask |
+    StructureNotifyMask;
+
+  // Initialize window attributes
+  XSetWindowAttributes wa;
+  wa.background_pixel = XBlackPixel(_display, _screen);
+  wa.border_pixel = 0;
+  wa.colormap = _colormap;
+  wa.event_mask = _event_mask;
+  wa.do_not_propagate_mask = 0;
+
+  unsigned long attrib_mask = 
+    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
+  _xwindow = XCreateWindow
+    (_display, root_window,
+     _properties.get_x_origin(), _properties.get_y_origin(),
+     _properties.get_x_size(), _properties.get_y_size(),
+     0,
+     _visual->depth, InputOutput, _visual->visual, 
+     attrib_mask, &wa);
+
+  if (_xwindow == (Window)0) {
+    glxdisplay_cat.error()
+      << "failed to create X window.\n";
+    return false;
+  }
+  set_wm_properties(_properties);
+
+  XMapWindow(_display, _xwindow);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::set_wm_properties
+//       Access: Private
+//  Description: Asks the window manager to set the appropriate
+//               properties.  In X, these properties cannot be
+//               specified directly by the application; they must be
+//               requested via the window manager, which may or may
+//               not choose to honor the request.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+set_wm_properties(const WindowProperties &properties) {
+  // Name the window if there is a name
+  XTextProperty window_name;
+  XTextProperty *window_name_p = (XTextProperty *)NULL;
+  if (properties.has_title()) {
+    char *name = (char *)properties.get_title().c_str();
+    if (XStringListToTextProperty(&name, 1, &window_name) != 0) {
+      window_name_p = &window_name;
+    }
+  }
+
+  // Setup size hints
+  XSizeHints *size_hints_p = NULL;
+  if (properties.has_origin() || properties.has_size()) {
+    size_hints_p = XAllocSizeHints();
+    if (size_hints_p != (XSizeHints *)NULL) {
+      if (properties.has_origin()) {
+        size_hints_p->x = properties.get_x_origin();
+        size_hints_p->y = properties.get_y_origin();
+        size_hints_p->flags |= USPosition;
+      }
+      if (properties.has_size()) {
+        size_hints_p->width = properties.get_x_size();
+        size_hints_p->height = properties.get_y_size();
+        size_hints_p->flags |= USSize;
+      }
+    }
+  }
+
+  // Setup window manager hints
+  XWMHints *wm_hints_p = NULL;
+  wm_hints_p = XAllocWMHints();
+  if (wm_hints_p != (XWMHints *)NULL) {
+    if (properties.has_minimized() && properties.get_minimized()) {
+      wm_hints_p->initial_state = IconicState;
+    } else {
+      wm_hints_p->initial_state = NormalState;
+    }
+    wm_hints_p->flags = StateHint;
+  }
+
+  // If we asked for a window without a border, there's no good way to
+  // arrange that.  It completely depends on the user's window manager
+  // of choice.  Instead, we'll totally punt and just set the window's
+  // Class to "Undecorated", and let the user configure his/her window
+  // manager not to put a border around windows of this class.
+  XClassHint *class_hints_p = NULL;
+  if (properties.has_undecorated() && properties.get_undecorated()) {
+    class_hints_p = XAllocClassHint();
+    class_hints_p->res_class = "Undecorated";
+  }
+
+  XSetWMProperties(_display, _xwindow, window_name_p, window_name_p,
+                   NULL, 0, size_hints_p, wm_hints_p, class_hints_p);
+
+  if (size_hints_p != (XSizeHints *)NULL) {
+    XFree(size_hints_p);
+  }
+  if (wm_hints_p != (XWMHints *)NULL) {
+    XFree(wm_hints_p);
+  }
+  if (class_hints_p != (XClassHint *)NULL) {
+    XFree(class_hints_p);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::try_for_visual
+//       Access: Private
+//  Description: Attempt to get the requested visual, if it is
+//               available.  It's just a wrapper around
+//               glXChooseVisual().  It returns the visual information
+//               if possible, or NULL if it is not.
+////////////////////////////////////////////////////////////////////
+XVisualInfo *glxGraphicsWindow::
+try_for_visual(int framebuffer_mode,
+               int want_depth_bits, int want_color_bits) const {
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
   int n=0;
@@ -146,12 +463,11 @@ try_for_visual(glxDisplay *glx, int mask,
     << "Trying for visual with: RGB(" << want_color_bits << ")";
 
   int want_color_component_bits;
-  if (mask & W_ALPHA) {
+  if (framebuffer_mode & WindowProperties::FM_alpha) {
     want_color_component_bits = max(want_color_bits / 4, 1);
   } else {
     want_color_component_bits = max(want_color_bits / 3, 1);
   }
-
 
   attrib_list[n++] = GLX_RGBA;
   attrib_list[n++] = GLX_RED_SIZE;
@@ -161,30 +477,30 @@ try_for_visual(glxDisplay *glx, int mask,
   attrib_list[n++] = GLX_BLUE_SIZE;
   attrib_list[n++] = want_color_component_bits;
 
-  if (mask & W_ALPHA) {
+  if (framebuffer_mode & WindowProperties::FM_alpha) {
     glxdisplay_cat.debug(false) << " ALPHA";
     attrib_list[n++] = GLX_ALPHA_SIZE;
     attrib_list[n++] = want_color_component_bits;
   }
-  if (mask & W_DOUBLE) {
+  if (framebuffer_mode & WindowProperties::FM_double_buffer) {
     glxdisplay_cat.debug(false) << " DOUBLEBUFFER";
     attrib_list[n++] = GLX_DOUBLEBUFFER;
   }
-  if (mask & W_STEREO) {
+  if (framebuffer_mode & WindowProperties::FM_stereo) {
     glxdisplay_cat.debug(false) << " STEREO";
     attrib_list[n++] = GLX_STEREO;
   }
-  if (mask & W_DEPTH) {
+  if (framebuffer_mode & WindowProperties::FM_depth) {
     glxdisplay_cat.debug(false) << " DEPTH(" << want_depth_bits << ")";
     attrib_list[n++] = GLX_DEPTH_SIZE;
     attrib_list[n++] = want_depth_bits;
   }
-  if (mask & W_STENCIL) {
+  if (framebuffer_mode & WindowProperties::FM_stencil) {
     glxdisplay_cat.debug(false) << " STENCIL";
     attrib_list[n++] = GLX_STENCIL_SIZE;
     attrib_list[n++] = 1;
   }
-  if (mask & W_ACCUM) {
+  if (framebuffer_mode & WindowProperties::FM_accum) {
     glxdisplay_cat.debug(false) << " ACCUM";
     attrib_list[n++] = GLX_ACCUM_RED_SIZE;
     attrib_list[n++] = want_color_component_bits;
@@ -192,13 +508,13 @@ try_for_visual(glxDisplay *glx, int mask,
     attrib_list[n++] = want_color_component_bits;
     attrib_list[n++] = GLX_ACCUM_BLUE_SIZE;
     attrib_list[n++] = want_color_component_bits;
-    if (mask & W_ALPHA) {
+    if (framebuffer_mode & WindowProperties::FM_alpha) {
       attrib_list[n++] = GLX_ACCUM_ALPHA_SIZE;
       attrib_list[n++] = want_color_component_bits;
     }
   }
 #if defined(GLX_VERSION_1_1) && defined(GLX_SGIS_multisample)
-  if (mask & W_MULTISAMPLE) {
+  if (framebuffer_mode & WindowProperties::FM_multisample) {
     glxdisplay_cat.debug(false) << " MULTISAMPLE";
     attrib_list[n++] = GLX_SAMPLES_SGIS;
     // We decide 4 is minimum number of samples
@@ -210,8 +526,7 @@ try_for_visual(glxDisplay *glx, int mask,
   nassertr(n < max_attrib_list, NULL);
   attrib_list[n] = (int)None;
 
-  XVisualInfo *vinfo =
-    glXChooseVisual(glx->get_display(), glx->get_screen(), attrib_list);
+  XVisualInfo *vinfo = glXChooseVisual(_display, _screen, attrib_list);
 
   if (glxdisplay_cat.is_debug()) {
     if (vinfo != NULL) {
@@ -225,31 +540,44 @@ try_for_visual(glxDisplay *glx, int mask,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: choose visual
-//       Access:
-//  Description:
+//     Function: glxGraphicsWindow::choose visual
+//       Access: Private
+//  Description: Selects an appropriate X visual for the window based
+//               on the window properties.  Returns true if
+//               successful, false otherwise.
+//
+//               Initializes _visual, and modifies _properties
+//               according to the actual visual chosen.
 ////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::choose_visual(void)
-{
-  glxDisplay *glx = _pipe->get_glx_display();
-  nassertv(glx != (glxDisplay *)NULL);
+bool glxGraphicsWindow::
+choose_visual() {
+  int framebuffer_mode = 0;
+  int want_depth_bits = 0;
+  int want_color_bits = 0;
 
-  int mask = _props._mask;
-  int want_depth_bits = _props._want_depth_bits;
-  int want_color_bits = _props._want_color_bits;
+  if (_properties.has_framebuffer_mode()) {
+    framebuffer_mode = _properties.get_framebuffer_mode();
+  }
 
-#if defined(GLX_VERSION_1_1) && defined(GLX_SGIS_multisample)
-  if (mask & W_MULTISAMPLE) {
+  if (_properties.has_depth_bits()) {
+    want_depth_bits = _properties.get_depth_bits();
+  }
+
+  if (_properties.has_color_bits()) {
+    want_color_bits = _properties.get_color_bits();
+  }
+
+  /*
+  if (framebuffer_mode & WindowProperties::FM_multisample) {
     if (!glx_supports("GLX_SGIS_multisample")) {
       glxdisplay_cat.info()
-        << "glxGraphicsWindow::config() - multisample not supported"
-        << endl;
-      mask &= ~W_MULTISAMPLE;
+        << "multisample not supported by this glx implementation.\n";
+      framebuffer_mode &= ~WindowProperties::FM_multisample;
     }
   }
-#endif
+  */
 
-  _visual = try_for_visual(glx, mask, want_depth_bits, want_color_bits);
+  _visual = try_for_visual(framebuffer_mode, want_depth_bits, want_color_bits);
 
   // This is the severity level at which we'll report the details of
   // the visual we actually do find.  Normally, it's debug-level
@@ -279,7 +607,7 @@ void glxGraphicsWindow::choose_visual(void)
       // Actually, first we'll eliminate all of the minimum sizes, to
       // try to open a window with all of the requested options, but
       // maybe not as many bits in some options as we'd like.
-      _visual = try_for_visual(glx, mask);
+      _visual = try_for_visual(framebuffer_mode, 1, 1);
     }
 
     if (_visual == NULL) {
@@ -287,60 +615,60 @@ void glxGraphicsWindow::choose_visual(void)
       // as many bits as we asked for.
 
       // This array keeps the bitmasks of options that we pull out of
-      // the requested mask, in order.
+      // the requested framebuffer_mode, in order.
 
       static const int strip_properties[] = {
         // One esoteric option removed.
-        W_MULTISAMPLE,
-        W_STENCIL,
-        W_ACCUM,
-        W_ALPHA,
-        W_STEREO,
+        WindowProperties::FM_multisample,
+        WindowProperties::FM_stencil,
+        WindowProperties::FM_accum,
+        WindowProperties::FM_alpha,
+        WindowProperties::FM_stereo,
 
         // Two esoteric options removed.
-        W_STENCIL | W_MULTISAMPLE,
-        W_ACCUM | W_MULTISAMPLE,
-        W_ALPHA | W_MULTISAMPLE,
-        W_STEREO | W_MULTISAMPLE,
-        W_STENCIL | W_ACCUM,
-        W_ALPHA | W_STEREO,
-        W_STENCIL | W_ACCUM | W_MULTISAMPLE,
-        W_ALPHA | W_STEREO | W_MULTISAMPLE,
+        WindowProperties::FM_stencil | WindowProperties::FM_multisample,
+        WindowProperties::FM_accum | WindowProperties::FM_multisample,
+        WindowProperties::FM_alpha | WindowProperties::FM_multisample,
+        WindowProperties::FM_stereo | WindowProperties::FM_multisample,
+        WindowProperties::FM_stencil | WindowProperties::FM_accum,
+        WindowProperties::FM_alpha | WindowProperties::FM_stereo,
+        WindowProperties::FM_stencil | WindowProperties::FM_accum | WindowProperties::FM_multisample,
+        WindowProperties::FM_alpha | WindowProperties::FM_stereo | WindowProperties::FM_multisample,
 
         // All esoteric options removed.
-        W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE,
+        WindowProperties::FM_stencil | WindowProperties::FM_accum | WindowProperties::FM_alpha | WindowProperties::FM_stereo | WindowProperties::FM_multisample,
 
         // All esoteric options, plus some we'd really really prefer,
         // removed.
-        W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE | W_DOUBLE,
+        WindowProperties::FM_stencil | WindowProperties::FM_accum | WindowProperties::FM_alpha | WindowProperties::FM_stereo | WindowProperties::FM_multisample | WindowProperties::FM_double_buffer,
 
         // A zero marks the end of the array.
         0
       };
 
       pset<int> tried_masks;
-      tried_masks.insert(mask);
+      tried_masks.insert(framebuffer_mode);
 
       int i;
       for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
-        int new_mask = mask & ~strip_properties[i];
-        if (tried_masks.insert(new_mask).second) {
-          _visual = try_for_visual(glx, new_mask, want_depth_bits,
+        int new_framebuffer_mode = framebuffer_mode & ~strip_properties[i];
+        if (tried_masks.insert(new_framebuffer_mode).second) {
+          _visual = try_for_visual(new_framebuffer_mode, want_depth_bits,
                                    want_color_bits);
         }
       }
 
       if (special_size_request) {
         tried_masks.clear();
-        tried_masks.insert(mask);
+        tried_masks.insert(framebuffer_mode);
 
         if (_visual == NULL) {
           // Try once more, this time eliminating all of the size
           // requests.
           for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
-            int new_mask = mask & ~strip_properties[i];
-            if (tried_masks.insert(new_mask).second) {
-              _visual = try_for_visual(glx, new_mask);
+            int new_framebuffer_mode = framebuffer_mode & ~strip_properties[i];
+            if (tried_masks.insert(new_framebuffer_mode).second) {
+              _visual = try_for_visual(new_framebuffer_mode, 1, 1);
             }
           }
         }
@@ -349,14 +677,13 @@ void glxGraphicsWindow::choose_visual(void)
       if (_visual == NULL) {
         // Here's our last-ditch desparation attempt: give us any GLX
         // visual at all!
-        _visual = try_for_visual(glx, 0);
+        _visual = try_for_visual(0, 1, 1);
       }
 
       if (_visual == NULL) {
-        glxdisplay_cat.fatal()
-          << "glxGraphicsWindow::choose_visual() - could not get any "
-          "GLX visual." << endl;
-        exit(1);
+        glxdisplay_cat.error()
+          << "Could not get any GLX visual.\n";
+        return false;
       }
     }
   }
@@ -364,25 +691,53 @@ void glxGraphicsWindow::choose_visual(void)
   glxdisplay_cat.info()
     << "Got visual 0x" << hex << (int)_visual->visualid << dec << ".\n";
 
+  // Now update our frambuffer_mode and bit depth appropriately.
+  int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
+    alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
+    depth_size, stencil_size;
+  
+  glXGetConfig(_display, _visual, GLX_RGBA, &render_mode);
+  glXGetConfig(_display, _visual, GLX_DOUBLEBUFFER, &double_buffer);
+  glXGetConfig(_display, _visual, GLX_STEREO, &stereo);
+  glXGetConfig(_display, _visual, GLX_RED_SIZE, &red_size);
+  glXGetConfig(_display, _visual, GLX_GREEN_SIZE, &green_size);
+  glXGetConfig(_display, _visual, GLX_BLUE_SIZE, &blue_size);
+  glXGetConfig(_display, _visual, GLX_ALPHA_SIZE, &alpha_size);
+  glXGetConfig(_display, _visual, GLX_ACCUM_RED_SIZE, &ared_size);
+  glXGetConfig(_display, _visual, GLX_ACCUM_GREEN_SIZE, &agreen_size);
+  glXGetConfig(_display, _visual, GLX_ACCUM_BLUE_SIZE, &ablue_size);
+  glXGetConfig(_display, _visual, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
+  glXGetConfig(_display, _visual, GLX_DEPTH_SIZE, &depth_size);
+  glXGetConfig(_display, _visual, GLX_STENCIL_SIZE, &stencil_size);
+
+  framebuffer_mode = 0;
+  if (double_buffer) {
+    framebuffer_mode |= WindowProperties::FM_double_buffer;
+  }
+  if (stereo) {
+    framebuffer_mode |= WindowProperties::FM_stereo;
+  }
+  if (!render_mode) {
+    framebuffer_mode |= WindowProperties::FM_index;
+  }
+  if (stencil_size != 0) {
+    framebuffer_mode |= WindowProperties::FM_stencil;
+  }
+  if (depth_size != 0) {
+    framebuffer_mode |= WindowProperties::FM_depth;
+  }
+  if (alpha_size != 0) {
+    framebuffer_mode |= WindowProperties::FM_alpha;
+  }
+  if (ared_size + agreen_size + ablue_size != 0) {
+    framebuffer_mode |= WindowProperties::FM_accum;
+  }
+
+  _properties.set_framebuffer_mode(framebuffer_mode);
+  _properties.set_color_bits(red_size + green_size + blue_size + alpha_size);
+  _properties.set_depth_bits(depth_size);
+
   if (glxdisplay_cat.is_on(show_visual_severity)) {
-    int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
-      alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
-      depth_size, stencil_size;
-
-    glXGetConfig(_display, _visual, GLX_RGBA, &render_mode);
-    glXGetConfig(_display, _visual, GLX_DOUBLEBUFFER, &double_buffer);
-    glXGetConfig(_display, _visual, GLX_STEREO, &stereo);
-    glXGetConfig(_display, _visual, GLX_RED_SIZE, &red_size);
-    glXGetConfig(_display, _visual, GLX_GREEN_SIZE, &green_size);
-    glXGetConfig(_display, _visual, GLX_BLUE_SIZE, &blue_size);
-    glXGetConfig(_display, _visual, GLX_ALPHA_SIZE, &alpha_size);
-    glXGetConfig(_display, _visual, GLX_ACCUM_RED_SIZE, &ared_size);
-    glXGetConfig(_display, _visual, GLX_ACCUM_GREEN_SIZE, &agreen_size);
-    glXGetConfig(_display, _visual, GLX_ACCUM_BLUE_SIZE, &ablue_size);
-    glXGetConfig(_display, _visual, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
-    glXGetConfig(_display, _visual, GLX_DEPTH_SIZE, &depth_size);
-    glXGetConfig(_display, _visual, GLX_STENCIL_SIZE, &stencil_size);
-
     glxdisplay_cat.out(show_visual_severity)
       << "GLX Visual Info (# bits of each):" << endl
       << " RGBA: " << red_size << " " << green_size << " " << blue_size
@@ -394,398 +749,69 @@ void glxGraphicsWindow::choose_visual(void)
       << " DoubleBuffer? " << double_buffer << endl
       << " Stereo? " << stereo << endl;
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: config
-//       Access:
-//  Description:
+//     Function: glxGraphicsWindow::setup_colormap
+//       Access: Private
+//  Description: Allocates a colormap appropriate to the visual and
+//               stores in in the _colormap method.
 ////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::config( void )
-{
-  GraphicsWindow::config();
+void glxGraphicsWindow::
+setup_colormap() {
+  glxGraphicsPipe *glx_pipe;
+  DCAST_INTO_V(glx_pipe, _pipe);
+  Window root_window = glx_pipe->get_root();
 
-  glxDisplay *glx = _pipe->get_glx_display();
-  nassertv(glx != (glxDisplay *)NULL);
-
-  _display = glx->get_display();
-
-  // Configure the framebuffer according to parameters specified in _props
-  // Initializes _visual
-  choose_visual();
-
-  // Initializes _colormap
-  setup_colormap();
-
-  uint attrib_mask = CWBackPixmap | CWBorderPixel | CWColormap | CWEventMask;
-
-  // Do we even need structure notify?
-  _event_mask = StructureNotifyMask;
-
-  // Initialize window attributes
-  XSetWindowAttributes wa;
-  wa.background_pixmap = None;
-  wa.border_pixel = 0;
-  wa.colormap = _colormap;
-  wa.event_mask = _event_mask;
-  wa.do_not_propagate_mask = 0;
-
-  _xwindow = XCreateWindow(_display, glx->get_root(),
-        _props._xorg, _props._yorg, _props._xsize, _props._ysize, 0,
-        _visual->depth, InputOutput, _visual->visual, attrib_mask, &wa);
-  if (!_xwindow) {
-    glxdisplay_cat.fatal()
-      << "glxGraphicsWindow::config() - failed to create Xwindow" << endl;
-    exit(0);
-  }
-
-  setup_properties();
-
-  _context = glXCreateContext(_display, _visual, None, GL_TRUE);
-  if (!_context) {
-    glxdisplay_cat.fatal()
-      << "glxGraphicsWindow::config() - failed to create OpenGL rendering "
-      << "context" << endl;
-    exit(0);
-  }
-
-  if (!(glXIsDirect(_display, _context))) {
-    glxdisplay_cat.info()
-      << "Graphics context is not direct (it does not bypass X)."
-      << endl;
-  }
-
-  _change_mask = 0;
-  _configure_mask = 0;
-
-  _mouse_input_enabled = false;
-  _mouse_motion_enabled = false;
-  _mouse_passive_motion_enabled = false;
-  _mouse_entry_enabled = false;
-  _entry_state = -1;
-
-  XSelectInput(_display, _xwindow, _event_mask);
-  XMapWindow(_display, _xwindow);
-
-  _connection_fd = ConnectionNumber(_display);
-
-  // Enable detection of mouse input
-  enable_mouse_input(true);
-  enable_mouse_motion(true);
-  enable_mouse_passive_motion(true);
-  enable_mouse_entry(true);
-
-  // Enable detection of keyboard input
-  add_event_mask(KeyPressMask | KeyReleaseMask);
-
-  // Now indicate that we have our keyboard/mouse device ready.
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
-  _input_devices.push_back(device);
-
-  // Create a GSG to manage the graphics
-  // First make the new context and window the current one so GL knows how
-  // to configure itself in the gsg
-  make_current();
-  make_gsg();
-
-  if (gl_show_fps_meter) {
-    // 128 handles all the ascii chars
-    // this creates a display list for each char.  displist numbering starts
-    // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
-    // mem by just allocating bitmaps for chars we need (0-9,f,p,s,SPC)
-    XFontStruct* foo;
-    // I /know/ there has to be a way to get a useful handle to the default
-    // font, but I have to date been unable to find one
-    foo = XLoadQueryFont(_display, "-*-*-*-*-*--12-*-*-*-*-*-*-*");
-    if (foo == (XFontStruct *)NULL) {
-      glxdisplay_cat.warning()
-        << "Unable to load X display font for FPS meter\n";
-      gl_show_fps_meter = false;
-    } else {
-      glxdisplay_cat.info()
-        << "Loaded X display font for FPS meter\n";
-      glXUseXFont(foo->fid, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
-      _start_time = ClockObject::get_global_clock()->get_real_time();
-      _start_frame_count = 0;
-      _cur_frame_count = 0;
-      _current_fps = 0.;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: setup_colormap
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::setup_colormap(void)
-{
-  int visual_class, rc, is_rgb;
-#if defined(__cplusplus) || defined(c_plusplus)
-  visual_class = _visual->c_class;
-#else
-  visual_class = _visual->class;
-#endif
-  glxDisplay *glx = _pipe->get_glx_display();
-  nassertv(glx != (glxDisplay *)NULL);
+  int visual_class = _visual->c_class;
+  int rc, is_rgb;
 
   switch (visual_class) {
     case PseudoColor:
       rc = glXGetConfig(_display, _visual, GLX_RGBA, &is_rgb);
       if (rc == 0 && is_rgb) {
-        glxdisplay_cat.info()
-          << "glxGraphicsWindow::setup_colormap() - mesa pseudocolor "
-          << "not supported" << endl;
-        // this is a terrible terrible hack, that seems to work
+        glxdisplay_cat.warning()
+          << "mesa pseudocolor not supported.\n";
+        // this is a terrible terrible hack, but it seems to work
         _colormap = (Colormap)0;
+
       } else {
-        _colormap = XCreateColormap(_display, glx->get_root(),
-          _visual->visual, AllocAll);
+        _colormap = XCreateColormap(_display, root_window,
+                                    _visual->visual, AllocAll);
       }
       break;
     case TrueColor:
     case DirectColor:
-      _colormap = XCreateColormap(_display, glx->get_root(),
-        _visual->visual, AllocNone);
+      _colormap = XCreateColormap(_display, root_window,
+                                  _visual->visual, AllocNone);
       break;
     case StaticColor:
     case StaticGray:
     case GrayScale:
-      _colormap = XCreateColormap(_display, glx->get_root(),
-        _visual->visual, AllocNone);
+      _colormap = XCreateColormap(_display, root_window,
+                                  _visual->visual, AllocNone);
       break;
     default:
       glxdisplay_cat.error()
-        << "glxGraphicsWindow::setup_colormap() - could not allocate a "
-        << "colormap for visual type: " << visual_class << endl;
+        << "Could not allocate a colormap for visual class "
+        << visual_class << ".\n";
       break;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: setup_properties
-//       Access:
-//  Description:
+//     Function: glxGraphicsWindow::get_button
+//       Access: Private
+//  Description: Returns the Panda ButtonHandle corresponding to the
+//               keyboard button indicated by the given key event.
 ////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::setup_properties(void)
-{
-  // Name the window if there is a name
-  XTextProperty window_name;
-  if (!_props._title.empty()) {
-    char *name = (char *)_props._title.c_str();
-    if (XStringListToTextProperty(&name, 1, &window_name) == 0) {
-      glxdisplay_cat.error()
-        << "glxGraphicsWindow::config() - failed to allocate window name "
-        << "structure" << endl;
-    }
-  }
-
-  // Setup size hints
-  XSizeHints size_hints = {0};
-  if (_props._xorg >= 0 && _props._yorg >= 0) {
-    size_hints.x = _props._xorg;
-    size_hints.y = _props._yorg;
-    size_hints.flags |= USPosition;
-  }
-  else
-    size_hints.flags &= ~USPosition;
-  if (_props._xsize >= 0 && _props._ysize >= 0) {
-    size_hints.width = _props._xsize;
-    size_hints.height = _props._ysize;
-    size_hints.flags |= USSize;
-  }
-  else
-    size_hints.flags &= ~USSize;
-
-  // Setup window manager hints
-  XWMHints* wm_hints;
-  if (!(wm_hints = XAllocWMHints())) {
-    glxdisplay_cat.fatal()
-      << "failed to allocate wm hints" << endl;
-    exit(-1);
-  }
-  wm_hints->initial_state = NormalState;
-  wm_hints->flags = StateHint;
-
-  XSetWMProperties(_display, _xwindow, &window_name, &window_name,
-    NULL, 0, &size_hints, wm_hints, NULL);
-  XFree(wm_hints);
-
-  // If we asked for a window without a border, there's no sure-fire
-  // way to arrange that.  It really depends on the user's window
-  // manager of choice.  Instead, we'll totally punt and just set the
-  // window's Class to "Undecorated", and let the user configure
-  // his/her window manager not to put a border around windows of this
-  // class.
-  if (!_props._border) {
-    XClassHint *class_hint = XAllocClassHint();
-    class_hint->res_class = "Undecorated";
-    XSetClassHint(_display, _xwindow, class_hint);
-    XFree(class_hint);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: end_frame
-//       Access:
-//  Description: Swaps the front and back buffers.
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::end_frame( void )
-{
-  if (gl_show_fps_meter) {
-    PStatTimer timer(_show_fps_pcollector);
-    ClockObject* co = ClockObject::get_global_clock();
-    double now = co->get_real_time();
-    double time_delta = now - _start_time;
-    if (time_delta > gl_fps_meter_update_interval) {
-      double num_frames = _cur_frame_count - _start_frame_count;
-      _current_fps = num_frames / time_delta;
-      _start_time = now;
-      _start_frame_count = _cur_frame_count;
-    }
-    char fps_msg[20];
-    sprintf(fps_msg, "%7.02f fps", _current_fps);
-    glColor3f(0., 1., 1.);
-    GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
-    if (tex_was_on)
-      glDisable(GL_TEXTURE_2D);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrixf(LMatrix4f::ident_mat().get_data());
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadMatrixf(LMatrix4f::ident_mat().get_data());
-
-    glOrtho(_props._xorg,_props._xorg+_props._xsize,
-            _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
-
-    // these seem to be good for default font
-    glRasterPos2f(_props._xsize-75,_props._ysize-20);
-
-    // set up for a string-drawing display list call
-    glListBase(FONT_BITMAP_OGLDISPLAYLISTNUM);
-
-    // draw a string using font display lists.  chars index their
-    // corresponding displist name
-    glCallLists(strlen(fps_msg), GL_UNSIGNED_BYTE, fps_msg);
-
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-
-    if(tex_was_on)
-      glEnable(GL_TEXTURE_2D);
-
-    _cur_frame_count++;  // only used by fps meter right now
-  }
-
-  {
-    PStatTimer timer(_swap_pcollector);
-    if(_is_synced)glFinish();
-    else glXSwapBuffers(_display, _xwindow);
-  }
-
-  GraphicsWindow::end_frame();
-}
-
-void glxGraphicsWindow::swap()
-{
-    if(_is_synced) glXSwapBuffers(_display, _xwindow);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: handle_reshape
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::handle_reshape(int w, int h)
-{
-  resized(w, h);
-  // Do we want to reshape the glViewport here as well?
-  //glViewport(0, 0, (GLsizei)_props._xsize, (GLsizei)_props._ysize);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: handle_mouse_motion
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::handle_mouse_motion(int x, int y) {
-  _input_devices[0].set_pointer_in_window(x, y);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: handle_mouse_entry
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::handle_mouse_entry(int state) {
-  if (state == MOUSE_EXITED) {
-    _input_devices[0].set_pointer_out_of_window();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: handle_keypress
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::
-handle_keypress(ButtonHandle key, int x, int y) {
-  _input_devices[0].set_pointer_in_window(x, y);
-  if (key != ButtonHandle::none()) {
-    if (key.has_ascii_equivalent()) {
-      int ch = key.get_ascii_equivalent();
-      _input_devices[0].keystroke(ch);
-
-      // For buttons (as opposed to keystrokes), we need to make
-      // uppercase keynames into lowercase keynames, by Panda
-      // convention.
-      _input_devices[0].button_down(KeyboardButton::ascii_key(tolower(ch)));
-    } else {
-      _input_devices[0].button_down(key);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: handle_keyrelease
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::
-handle_keyrelease(ButtonHandle key, int, int) {
-  if (key != ButtonHandle::none()) {
-    if (key.has_ascii_equivalent()) {
-      int ch = key.get_ascii_equivalent();
-
-      // For buttons (as opposed to keystrokes), we need to make
-      // uppercase keynames into lowercase keynames, by Panda
-      // convention.
-      _input_devices[0].button_up(KeyboardButton::ascii_key(tolower(ch)));
-    } else {
-      _input_devices[0].button_up(key);
-    }
-  }
-}
-
 ButtonHandle glxGraphicsWindow::
-lookup_key(XEvent event) {
-  // First, get the string key name.  If it fits in one character, it
-  // must be the ASCII equivalent for the key.
-  char tmp[1];
-  if (XLookupString(&event.xkey, tmp, 1, NULL, NULL)) {
-    ButtonHandle button = KeyboardButton::ascii_key(tmp[0]);
-    if (button != ButtonHandle::none()) {
-      return button;
-    }
-  }
+get_button(XKeyEvent *key_event) {
+  KeySym key = XLookupKeysym(key_event, 0);
 
-  // Otherwise, look it up the hard way.
-  KeySym ks = XLookupKeysym((XKeyEvent *)&event, 0);
-
-  switch (ks) {
+  switch (key) {
   case XK_BackSpace:
     return KeyboardButton::backspace();
   case XK_Tab:
@@ -1057,433 +1083,4 @@ lookup_key(XEvent event) {
   }
 
   return ButtonHandle::none();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: interruptible_xnextevent
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-int glxGraphicsWindow::interruptible_xnextevent(Display* display, XEvent* event)
-{
-  XFlush(display);
-  if (XPending(display)) {
-    XNextEvent(display, event);
-    return 1;
-  } else
-    return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: handle_changes
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::handle_changes(void)
-{
-  // As an optimization, check to see if change is anything other than a
-  // redisplay
-  if (_change_mask & (GLXWIN_CONFIGURE | GLXWIN_EVENT)) {
-    if (_change_mask & GLXWIN_CONFIGURE) {
-      XWindowChanges changes;
-      changes.x = _props._xorg;
-      changes.y = _props._yorg;
-      if (_configure_mask & (CWWidth | CWHeight)) {
-        changes.width = _props._xsize;
-        changes.height = _props._ysize;
-      }
-      XConfigureWindow(_display, _xwindow, _configure_mask, &changes);
-      _configure_mask = 0;
-    }
-    if (_change_mask & GLXWIN_EVENT) {
-      XSelectInput(_display, _xwindow, _event_mask);
-    }
-  }
-
-  _change_mask = 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: process_event
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::process_event(XEvent event)
-{
-  switch (event.type) {
-  case MappingNotify:
-    break;
-  case ConfigureNotify:
-    if (_props._xsize != event.xconfigure.width ||
-        _props._ysize != event.xconfigure.height) {
-      _props._xsize = event.xconfigure.width;
-      _props._ysize = event.xconfigure.height;
-      make_current();
-      // Do not execute OpenGL out of sequence with respect to the
-      // XResizeWindow request
-      glXWaitX();
-      handle_reshape(event.xconfigure.width, event.xconfigure.height);
-      _change_mask |= GLXWIN_CONFIGURE;
-    }
-    break;
-  case Expose:
-    break;
-
-  case ButtonPress:
-    make_current();
-    handle_keypress(MouseButton::button(event.xbutton.button - 1),
-                    event.xkey.x, event.xkey.y);
-    break;
-
-  case ButtonRelease:
-    make_current();
-    handle_keyrelease(MouseButton::button(event.xbutton.button - 1),
-                      event.xkey.x, event.xkey.y);
-    break;
-
-  case MotionNotify:
-    if (_mouse_motion_enabled && event.xmotion.state &
-        (Button1Mask | Button2Mask | Button3Mask)) {
-      make_current();
-      handle_mouse_motion(event.xmotion.x, event.xmotion.y);
-    } else if (_mouse_passive_motion_enabled &&
-               ((event.xmotion.state &
-                 (Button1Mask | Button2Mask | Button3Mask)) == 0)) {
-      make_current();
-      handle_mouse_motion(event.xmotion.x, event.xmotion.y);
-    }
-    break;
-
-  case KeyPress:
-    make_current();
-    handle_keypress(lookup_key(event), event.xkey.x, event.xkey.y);
-    break;
-
-  case KeyRelease:
-    make_current();
-    handle_keyrelease(lookup_key(event), event.xkey.x, event.xkey.y);
-    break;
-
-  case EnterNotify:
-  case LeaveNotify:
-    if (_mouse_entry_enabled) {
-      if (event.type == EnterNotify) {
-        // Overlays can generate multiple enter events
-        if (_entry_state != EnterNotify) {
-          _entry_state = EnterNotify;
-          make_current();
-          handle_mouse_entry(MOUSE_ENTERED);
-          if (_mouse_passive_motion_enabled) {
-            handle_mouse_motion(event.xcrossing.x, event.xcrossing.y);
-          }
-        }
-      } else { // event.type == LeaveNotify
-        if (_entry_state != LeaveNotify) {
-          _entry_state = LeaveNotify;
-          make_current();
-          handle_mouse_entry(MOUSE_EXITED);
-        }
-      }
-    } else if (_mouse_passive_motion_enabled) {
-      make_current();
-      handle_mouse_motion(event.xcrossing.x, event.xcrossing.y);
-    }
-    break;
-
-  case DestroyNotify:
-    close_window();
-    break;
-
-  case UnmapNotify:
-  case VisibilityNotify:
-  case ClientMessage:
-  case CirculateNotify:
-  case CreateNotify:
-  case GravityNotify:
-  case ReparentNotify:
-    break;
-  default:
-    break;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: process_events
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::process_events(void)
-{
-  XEvent event;
-  int got_event;
-  glxGraphicsWindow* window;
-
-  if (_change_mask)
-    handle_changes();
-
-  glxDisplay *glx = _pipe->get_glx_display();
-  nassertv(glx != (glxDisplay *)NULL);
-
-  do {
-    got_event = interruptible_xnextevent(_display, &event);
-    if (got_event) {
-      switch (event.type) {
-        case MappingNotify:
-          XRefreshKeyboardMapping((XMappingEvent *) &event);
-          break;
-        case ConfigureNotify:
-          if ((window = glx->find_window(event.xconfigure.window)) != NULL)
-            window->process_event(event);
-          break;
-        case Expose:
-          XEvent ahead;
-          while (XEventsQueued(_display, QueuedAfterReading) > 0) {
-            XPeekEvent(_display, &ahead);
-            if (ahead.type != Expose ||
-                ahead.xexpose.window != event.xexpose.window) {
-              break;
-            }
-            XNextEvent(_display, &event);
-          }
-          break;
-        case ButtonPress:
-        case ButtonRelease:
-          if ((window = glx->find_window(event.xbutton.window)) != NULL)
-            window->process_event(event);
-          break;
-        case MotionNotify:
-          if ((window = glx->find_window(event.xmotion.window)) != NULL)
-            window->process_event(event);
-          break;
-        case KeyPress:
-        case KeyRelease:
-          if ((window = glx->find_window(event.xmotion.window)) != NULL)
-            window->process_event(event);
-          break;
-        case EnterNotify:
-        case LeaveNotify:
-          if (event.xcrossing.mode != NotifyNormal ||
-              event.xcrossing.mode == NotifyNonlinearVirtual ||
-              event.xcrossing.mode == NotifyVirtual) {
-            // Ignore "virtual" window enter/leave events
-            break;
-          }
-          if ((window = glx->find_window(event.xcrossing.window)) != NULL)
-            window->process_event(event);
-          break;
-        case UnmapNotify:
-        case VisibilityNotify:
-          break;
-        case ClientMessage:
-          break;
-        case DestroyNotify:
-        case CirculateNotify:
-        case CreateNotify:
-        case GravityNotify:
-        case ReparentNotify:
-          break;
-        default:
-          break;
-      }
-    }
-  }
-  while (XPending(_display));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: idle_wait
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::idle_wait(void)
-{
-  if (XPending(_display))
-    process_events();
-
-  call_idle_callback();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::supports_update
-//       Access: Public, Virtual
-//  Description: Returns true if this particular kind of
-//               GraphicsWindow supports use of the update() function
-//               to update the graphics one frame at a time, so that
-//               the window does not need to be the program's main
-//               loop.  Returns false if the only way to update the
-//               window is to call main_loop().
-////////////////////////////////////////////////////////////////////
-bool glxGraphicsWindow::
-supports_update() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: update
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::update(void)
-{
-  _show_code_pcollector.stop();
-
-  PStatClient::main_tick();
-
-  if (_change_mask)
-    handle_changes();
-
-  make_current();
-
-  // Always ask for a redisplay for now
-  call_draw_callback(true);
-
-  if (_idle_callback)
-    idle_wait();
-  else
-    process_events();
-
-  _show_code_pcollector.start();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_input
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::enable_mouse_input(bool val)
-{
-  long emask = ButtonPressMask | ButtonReleaseMask;
-
-  // See if we need to enable or disable mouse events
-  if (_mouse_input_enabled == false && val == true)
-    add_event_mask(emask);
-  else if (_mouse_input_enabled == true && val == false)
-    remove_event_mask(emask);
-  _mouse_input_enabled = val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_motion
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::enable_mouse_motion(bool val)
-{
-  // Some window managers (4Dwm by default) will mask motion events unless
-  // button presses are selected as well
-  long input_mask = ButtonPressMask | ButtonReleaseMask;
-  long motion_mask = Button1MotionMask | Button2MotionMask | Button3MotionMask;
-  if (_mouse_motion_enabled == false && val == true) {
-    add_event_mask(input_mask);
-    add_event_mask(motion_mask);
-  }
-  else if (_mouse_motion_enabled == true && val == false) {
-    remove_event_mask(motion_mask);
-    if (_mouse_input_enabled == false)
-      remove_event_mask(input_mask);
-  }
-  _mouse_motion_enabled = val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_passive_motion
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::enable_mouse_passive_motion(bool val)
-{
-  long entry_mask = EnterWindowMask | LeaveWindowMask;
-  if (_mouse_passive_motion_enabled == false && val == true) {
-    add_event_mask(PointerMotionMask);
-    // Passive motion requires watching enters and leaves so a fake passive
-    // motion event can be generated on an enter
-    if (_mouse_entry_enabled == false)
-      add_event_mask(entry_mask);
-  }
-  else if (_mouse_passive_motion_enabled == true && val == false) {
-    remove_event_mask(PointerMotionMask);
-    if (_mouse_entry_enabled == false)
-      remove_event_mask(entry_mask);
-  }
-  _mouse_passive_motion_enabled = val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_entry
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::enable_mouse_entry(bool val)
-{
-  if (_mouse_entry_enabled == false && val == true) {
-    add_event_mask(EnterWindowMask | LeaveWindowMask);
-  }
-  else if (_mouse_entry_enabled == true && val == false) {
-    remove_event_mask(EnterWindowMask | LeaveWindowMask);
-  }
-  _mouse_entry_enabled = val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: make_current
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::make_current(void) {
-  PStatTimer timer(_make_current_pcollector);
-  glXMakeCurrent(_display, _xwindow, _context);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: unmake_current
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void glxGraphicsWindow::unmake_current(void) {
-  glXMakeCurrent(_display, None, NULL);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::get_gsg_type
-//       Access: Public, Virtual
-//  Description: Returns the TypeHandle of the kind of GSG preferred
-//               by this kind of window.
-////////////////////////////////////////////////////////////////////
-TypeHandle glxGraphicsWindow::
-get_gsg_type() const {
-  return GLGraphicsStateGuardian::get_class_type();
-}
-
-GraphicsWindow *glxGraphicsWindow::
-make_GlxGraphicsWindow(const FactoryParams &params) {
-  GraphicsWindow::WindowPipe *pipe_param;
-  if (!get_param_into(pipe_param, params)) {
-    glxdisplay_cat.error()
-      << "No pipe specified for window creation!" << endl;
-    return NULL;
-  }
-
-  GraphicsPipe *pipe = pipe_param->get_pipe();
-
-  GraphicsWindow::WindowProps *props_param;
-  if (!get_param_into(props_param, params)) {
-    return new glxGraphicsWindow(pipe);
-  } else {
-    return new glxGraphicsWindow(pipe, props_param->get_properties());
-  }
-}
-
-TypeHandle glxGraphicsWindow::get_class_type(void) {
-  return _type_handle;
-}
-
-void glxGraphicsWindow::init_type(void) {
-  GraphicsWindow::init_type();
-  register_type(_type_handle, "glxGraphicsWindow",
-                GraphicsWindow::get_class_type());
-}
-
-TypeHandle glxGraphicsWindow::get_type(void) const {
-  return get_class_type();
 }

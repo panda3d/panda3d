@@ -20,20 +20,19 @@
 #include "graphicsChannel.h"
 #include "graphicsWindow.h"
 #include "config_display.h"
+#include "notify.h"
+#include "mutexHolder.h"
 
 #include <algorithm>
 
-#include <notify.h>
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
 TypeHandle GraphicsLayer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::Constructor
-//       Access: Public
-//  Description:
+//       Access: Private
+//  Description: Use GraphicsChannel::make_layer() to make a new
+//               layer.
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer::
 GraphicsLayer() {
@@ -44,7 +43,8 @@ GraphicsLayer() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::Constructor
 //       Access: Public
-//  Description:
+//  Description: Use GraphicsChannel::make_layer() to make a new
+//               layer.
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer::
 GraphicsLayer(GraphicsChannel *channel)
@@ -58,10 +58,9 @@ GraphicsLayer(GraphicsChannel *channel)
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GraphicsLayer::
-GraphicsLayer(const GraphicsLayer&) {
-  display_cat.error()
-    << "GraphicsLayers should never be copied" << endl;
+GraphicsLayer::
+GraphicsLayer(const GraphicsLayer &) {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,16 +68,14 @@ GraphicsLayer(const GraphicsLayer&) {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GraphicsLayer &GraphicsLayer::
-operator=(const GraphicsLayer&) {
-  display_cat.error()
-  << "GraphicsLayers should never be assigned" << endl;
-  return *this;
+void GraphicsLayer::
+operator = (const GraphicsLayer &) {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer::
@@ -91,7 +88,9 @@ GraphicsLayer::
   for (dri = _display_regions.begin();
        dri != _display_regions.end();
        ++dri) {
-    (*dri)->_layer = NULL;
+    DisplayRegion *dr = (*dri);
+    MutexHolder holder(dr->_lock);
+    dr->_layer = NULL;
   }
   win_display_regions_changed();
 
@@ -102,17 +101,15 @@ GraphicsLayer::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::make_display_region
-//       Access: Public
+//       Access: Published
 //  Description: Creates a new DisplayRegion that covers the entire
 //               layer.
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsLayer::
 make_display_region() {
   PT(DisplayRegion) dr = new DisplayRegion(this);
-  const GraphicsWindow *win = get_window();
-  if (win != (GraphicsWindow *)NULL) {
-    dr->compute_pixels(win->get_width(), win->get_height());
-  }
+
+  MutexHolder holder(_lock);
   _display_regions.push_back(dr);
   win_display_regions_changed();
   return dr;
@@ -120,7 +117,7 @@ make_display_region() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::make_display_region
-//       Access: Public
+//       Access: Published
 //  Description: Creates a new DisplayRegion that covers the indicated
 //               sub-rectangle within the layer.
 ////////////////////////////////////////////////////////////////////
@@ -128,10 +125,8 @@ DisplayRegion *GraphicsLayer::
 make_display_region(float l, float r, float b, float t) {
   nassertr(this != (GraphicsLayer *)NULL, NULL);
   PT(DisplayRegion) dr = new DisplayRegion(this, l, r, b, t);
-  const GraphicsWindow *win = get_window();
-  if (win != (GraphicsWindow *)NULL) {
-    dr->compute_pixels(win->get_width(), win->get_height());
-  }
+
+  MutexHolder holder(_lock);
   _display_regions.push_back(dr);
   win_display_regions_changed();
   return dr;
@@ -139,36 +134,43 @@ make_display_region(float l, float r, float b, float t) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::get_num_drs
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of DisplayRegions associated with
 //               the layer.
 ////////////////////////////////////////////////////////////////////
 int GraphicsLayer::
 get_num_drs() const {
+  MutexHolder holder(_lock);
   return _display_regions.size();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::get_dr
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth DisplayRegion associated with the
-//               layer.
+//               layer.  This might return NULL if another thread has
+//               recently removed a DisplayRegion.
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsLayer::
 get_dr(int index) const {
-  nassertr(index >= 0 && index < (int)_display_regions.size(), NULL);
-  return _display_regions[index];
+  MutexHolder holder(_lock);
+  if (index >= 0 && index < (int)_display_regions.size()) {
+    return _display_regions[index];
+  } else {
+    return NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::remove_dr
-//       Access: Public
+//       Access: Published
 //  Description: Removes (and possibly deletes) the nth DisplayRegion
 //               associated with the layer.  All subsequent index
 //               numbers will shift down one.
 ////////////////////////////////////////////////////////////////////
 void GraphicsLayer::
 remove_dr(int index) {
+  MutexHolder holder(_lock);
   nassertv(index >= 0 && index < (int)_display_regions.size());
   _display_regions[index]->_layer = NULL;
   _display_regions.erase(_display_regions.begin() + index);
@@ -177,7 +179,7 @@ remove_dr(int index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::remove_dr
-//       Access: Public
+//       Access: Published
 //  Description: Removes (and possibly deletes) the indicated
 //               DisplayRegion associated with the layer.  All
 //               subsequent index numbers will shift down one.
@@ -186,8 +188,7 @@ remove_dr(int index) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsLayer::
 remove_dr(DisplayRegion *display_region) {
-  // For whatever reason, VC++ considers == ambiguous unless we
-  // compare it to a PT(DisplayRegion) instead of a DisplayRegion*.
+  MutexHolder holder(_lock);
   PT(DisplayRegion) ptdr = display_region;
   DisplayRegions::iterator dri =
     find(_display_regions.begin(), _display_regions.end(), ptdr);
@@ -201,39 +202,72 @@ remove_dr(DisplayRegion *display_region) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsLayer::get_channel
+//       Access: Published
+//  Description: Returns the GraphicsChannel that this layer is
+//               associated with.  It is possible that the
+//               GraphicsChannel might have been deleted while an
+//               outstanding PT(GraphicsLayer) prevented all of its
+//               children layers from also being deleted; in this
+//               unlikely case, get_channel() may return NULL.
+////////////////////////////////////////////////////////////////////
+GraphicsChannel *GraphicsLayer::
+get_channel() const {
+  MutexHolder holder(_lock);
+  return _channel;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::get_window
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsWindow that this layer is
 //               ultimately associated with, or NULL if no window is
 //               associated.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow *GraphicsLayer::
 get_window() const {
-  nassertr(this != (GraphicsLayer *)NULL, NULL);
+  MutexHolder holder(_lock);
   return (_channel != (GraphicsChannel *)NULL) ? _channel->get_window() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::get_pipe
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsPipe that this layer is
 //               ultimately associated with, or NULL if no pipe is
 //               associated.
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe *GraphicsLayer::
 get_pipe() const {
+  MutexHolder holder(_lock);
   return (_channel != (GraphicsChannel *)NULL) ? _channel->get_pipe() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsLayer::set_active
+//       Access: Published
+//  Description: Sets the active flag on the layer.  If the layer
+//               is marked as inactive, nothing will be rendered.
+////////////////////////////////////////////////////////////////////
+void GraphicsLayer::
+set_active(bool active) {
+  MutexHolder holder(_lock);
+  if (active != _is_active) {
+    _is_active = active;
+    win_display_regions_changed();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::channel_resized
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: This is called whenever the parent channel has been
 //               resized; it should do whatever needs to be done to
 //               adjust the layer to account for it.
 ////////////////////////////////////////////////////////////////////
 void GraphicsLayer::
 channel_resized(int x, int y) {
+  MutexHolder holder(_lock);
   // Since a layer always fills the whole channel, when the channel
   // resizes so does the layer, by the same amount.
   DisplayRegions::iterator dri;
@@ -246,11 +280,12 @@ channel_resized(int x, int y) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::win_display_regions_changed
-//       Access: Public
+//       Access: Private
 //  Description: Intended to be called when the active state on a
 //               nested channel or layer or display region changes,
 //               forcing the window to recompute its list of active
-//               display regions.
+//               display regions.  It is assumed the lock is already
+//               held.
 ////////////////////////////////////////////////////////////////////
 void GraphicsLayer::
 win_display_regions_changed() {

@@ -186,7 +186,6 @@ typedef struct {
       LPDIRECT3D8       pD3D8;
       HWND              hWnd;
       HMONITOR          hMon;
-      GraphicsWindow::Properties *pProps;  // can get window rect here (or from GetWindowRect(hWnd), can also get window size in PresParams
       DWORD             MaxAvailVidMem;
       ushort            CardIDNum;  // adapter ID
       ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly

@@ -80,8 +80,6 @@ read32(istream& is) {
 
 void
 md5_a_file(const Filename &name, HashVal &ret) {
-  nassertv(name.exists());
-
   ostringstream os;
   MD5 md5;
 
@@ -93,6 +91,13 @@ md5_a_file(const Filename &name, HashVal &ret) {
   } catch (...) {
     express_cat.warning()
       << "Unable to read " << name << " to compute md5 hash.\n";
+    if (!name.exists()) {
+      express_cat.warning()
+        << "(file does not exist.)\n";
+    } else {
+      express_cat.warning()
+        << "(file exists but cannot be read.)\n";
+    }
     ret.hv[0] = 0;
     ret.hv[1] = 0;
     ret.hv[2] = 0;

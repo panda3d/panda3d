@@ -1,4 +1,4 @@
-// Filename: dxSavedFrameBuffer.cxx
+// Filename: dxSavedFrameBuffer8.cxx
 // Created by:  drose (06Oct99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,4 +18,4 @@
 
 #include "dxSavedFrameBuffer8.h"
 
-TypeHandle DXSavedFrameBuffer::_type_handle;
+TypeHandle DXSavedFrameBuffer8::_type_handle;

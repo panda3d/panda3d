@@ -1,5 +1,5 @@
 // Filename: wglGraphicsPipe.cxx
-// Created by:  mike (09Jan97)
+// Created by:  drose (20Dec02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,68 +15,48 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #include "wglGraphicsPipe.h"
 #include "config_wgldisplay.h"
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
 TypeHandle wglGraphicsPipe::_type_handle;
 
-wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
-  : InteractiveGraphicsPipe(spec)
-{}
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+wglGraphicsPipe::
+wglGraphicsPipe() {
+}
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::get_window_type
+//     Function: wglGraphicsPipe::Destructor
 //       Access: Public, Virtual
-//  Description: Returns the TypeHandle of the kind of window
-//               preferred by this kind of pipe.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-TypeHandle wglGraphicsPipe::
-get_window_type() const {
-  return wglGraphicsWindow::get_class_type();
+wglGraphicsPipe::
+~wglGraphicsPipe() {
 }
 
-GraphicsPipe *wglGraphicsPipe::
-make_wglGraphicsPipe(const FactoryParams &params) {
-  GraphicsPipe::PipeSpec *pipe_param;
-  if (!get_param_into(pipe_param, params)) {
-    return new wglGraphicsPipe(PipeSpecifier());
-  } else {
-    return new wglGraphicsPipe(pipe_param->get_specifier());
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::pipe_constructor
+//       Access: Public, Static
+//  Description: This function is passed to the GraphicsPipeSelection
+//               object to allow the user to make a default
+//               wglGraphicsPipe.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsPipe) wglGraphicsPipe::
+pipe_constructor() {
+  return new wglGraphicsPipe;
 }
 
-
-TypeHandle wglGraphicsPipe::get_class_type(void) {
-  return _type_handle;
-}
-
-const char *pipe_type_name="wglGraphicsPipe";
-
-void wglGraphicsPipe::init_type(void) {
-  InteractiveGraphicsPipe::init_type();
-  register_type(_type_handle, pipe_type_name,
-        InteractiveGraphicsPipe::get_class_type());
-}
-
-TypeHandle wglGraphicsPipe::get_type(void) const {
-  return get_class_type();
-}
-
-wglGraphicsPipe::wglGraphicsPipe(void) {
-  wgldisplay_cat.error()
-    << pipe_type_name <<"s should not be created with the default constructor" << endl;
-}
-
-wglGraphicsPipe::wglGraphicsPipe(const wglGraphicsPipe&) {
-  wgldisplay_cat.error()
-    << pipe_type_name << "s should not be copied" << endl;
-}
-
-wglGraphicsPipe& wglGraphicsPipe::operator=(const wglGraphicsPipe&) {
-  wgldisplay_cat.error() 
-  << pipe_type_name << "s should not be assigned" << endl;
-  return *this;
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::make_window
+//       Access: Protected, Virtual
+//  Description: Creates a new window on the pipe, if possible.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsWindow) wglGraphicsPipe::
+make_window() {
+  return new wglGraphicsWindow(this);
 }

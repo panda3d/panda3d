@@ -19,7 +19,7 @@
 #ifndef GLGRAPHICSSTATEGUARDIAN_H
 #define GLGRAPHICSSTATEGUARDIAN_H
 
-//#define GSG_VERBOSE
+//#define GSG_VERBOSE 1
 
 #include "pandabase.h"
 
@@ -72,6 +72,9 @@ public:
 
   virtual void prepare_display_region();
   virtual bool prepare_lens();
+
+  virtual bool begin_frame();
+  virtual void end_frame();
 
   virtual void draw_point(GeomPoint *geom, GeomContext *gc);
   virtual void draw_line(GeomLine *geom, GeomContext *gc);
@@ -144,7 +147,11 @@ public:
 
   void issue_transformed_color(const Colorf &color) const;
 
+  INLINE static void report_errors(int line, const char *source_file);
+
 protected:
+  static void report_errors_loop(int line, const char *source_file, 
+                                 GLenum error_code);
   virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
@@ -162,12 +169,10 @@ protected:
                               ColorBlendAttrib::Mode color_blend_mode,
                               TransparencyAttrib::Mode transparency_mode);
 
-  void free_pointers();
+  virtual void free_pointers();
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                                                  CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
-
-  INLINE void activate();
 
   INLINE void call_glClearColor(GLclampf red, GLclampf green, GLclampf blue,
                                 GLclampf alpha);
@@ -342,6 +347,13 @@ private:
 #endif
 
 #define ISPOW2(X) (((X) & ((X)-1))==0)
+
+#ifndef NDEBUG
+#define report_gl_errors() \
+  GLGraphicsStateGuardian::report_errors(__LINE__, __FILE__)
+#else
+#define report_gl_errors()
+#endif
 
 #include "glGraphicsStateGuardian.I"
 

@@ -59,6 +59,7 @@ WindowFramework(PandaFramework *panda_framework) :
   _texture_enabled = true;
   _two_sided_enabled = false;
   _lighting_enabled = false;
+  _background_type = BT_default;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,10 +79,15 @@ WindowFramework::
 //               only from PandaFramework::open_window().
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow *WindowFramework::
-open_window(const GraphicsWindow::Properties &props, GraphicsPipe *pipe) {
+open_window(const WindowProperties &props, GraphicsEngine *engine,
+            GraphicsPipe *pipe) {
   nassertr(_window == (GraphicsWindow *)NULL, _window);
 
-  _window = pipe->make_window(props);
+  _window = engine->make_window(pipe);
+  if (_window != (GraphicsWindow *)NULL) {
+    _window->request_properties(props);
+    set_background_type(_background_type);
+  }
 
   // Set up a 3-d camera for the window by default.
   make_camera();
@@ -167,6 +173,7 @@ get_render_2d() {
 const NodePath &WindowFramework::
 get_mouse() {
   if (_mouse.is_empty()) {
+    nassertr(_window->get_num_input_devices() > 0, _mouse);
     NodePath data_root = _panda_framework->get_data_root();
     MouseAndKeyboard *mouse_node = 
       new MouseAndKeyboard(_window, 0, "mouse");
@@ -187,15 +194,17 @@ enable_keyboard() {
     return;
   }
 
-  NodePath mouse = get_mouse();
+  if (_window->get_num_input_devices() > 0) {
+    NodePath mouse = get_mouse();
 
-  PT(ButtonThrower) bt = new ButtonThrower("kb-events");
-  ModifierButtons mods;
-  mods.add_button(KeyboardButton::shift());
-  mods.add_button(KeyboardButton::control());
-  mods.add_button(KeyboardButton::alt());
-  bt->set_modifier_buttons(mods);
-  mouse.attach_new_node(bt);
+    PT(ButtonThrower) bt = new ButtonThrower("kb-events");
+    ModifierButtons mods;
+    mods.add_button(KeyboardButton::shift());
+    mods.add_button(KeyboardButton::control());
+    mods.add_button(KeyboardButton::alt());
+    bt->set_modifier_buttons(mods);
+    mouse.attach_new_node(bt);
+  }
 
   _got_keyboard = true;
 }
@@ -211,16 +220,18 @@ setup_trackball() {
     return;
   }
 
-  NodePath mouse = get_mouse();
-  NodePath camera = get_camera_group();
+  if (_window->get_num_input_devices() > 0) {
+    NodePath mouse = get_mouse();
+    NodePath camera = get_camera_group();
 
-  _trackball = new Trackball("trackball");
-  _trackball->set_pos(LVector3f::forward() * 50.0);
-  mouse.attach_new_node(_trackball);
-
-  PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
-  tball2cam->set_node(camera.node());
-  _trackball->add_child(tball2cam);
+    _trackball = new Trackball("trackball");
+    _trackball->set_pos(LVector3f::forward() * 50.0);
+    mouse.attach_new_node(_trackball);
+    
+    PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
+    tball2cam->set_node(camera.node());
+    _trackball->add_child(tball2cam);
+  }
 
   _got_trackball = true;
 }
@@ -233,6 +244,10 @@ setup_trackball() {
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
 center_trackball(const NodePath &object) {
+  if (_trackball == (Trackball *)NULL) {
+    return;
+  }
+
   PT(BoundingVolume) volume = object.get_bounds();
   // We expect at least a geometric bounding volume around the world.
   nassertv(volume != (BoundingVolume *)NULL);
@@ -542,6 +557,53 @@ set_lighting(bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::set_background_type
+//       Access: Public
+//  Description: Sets the background of the window to one of the
+//               pre-canned background types (or to BT_other, which
+//               indicates the user intends to set up his own special
+//               background mode).
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+set_background_type(WindowFramework::BackgroundType type) {
+  _background_type = type;
+
+  if (_window != (GraphicsWindow *)NULL) {
+    switch (_background_type) {
+    case BT_other:
+      break;
+      
+    case BT_default:
+      _window->set_clear_color_active(true);
+      _window->set_clear_depth_active(true);
+      _window->set_clear_color(Colorf(win_background_r, win_background_g, 
+                                      win_background_b, 1.0f));
+      _window->set_clear_depth(1.0f);
+      break;
+      
+    case BT_gray:
+      _window->set_clear_color_active(true);
+      _window->set_clear_depth_active(true);
+      _window->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 1.0f));
+      _window->set_clear_depth(1.0f);
+      break;
+      
+    case BT_black:
+      _window->set_clear_color_active(true);
+      _window->set_clear_depth_active(true);
+      _window->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+      _window->set_clear_depth(1.0f);
+      break;
+
+    case BT_none:
+      _window->set_clear_color_active(false);
+      _window->set_clear_depth_active(false);
+      break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::make_camera
 //       Access: Protected
 //  Description: Makes a new 3-d camera for the window.
@@ -564,7 +626,13 @@ make_camera() {
   _cameras.push_back(camera);
 
   PT(Lens) lens = new PerspectiveLens;
-  lens->set_film_size(_window->get_width(), _window->get_height());
+  WindowProperties properties = _window->get_properties();
+  if (!properties.has_size()) {
+    properties = _window->get_requested_properties();
+  }
+  if (properties.has_size()) {
+    lens->set_film_size(properties.get_x_size(), properties.get_y_size());
+  }
   camera->set_lens(lens);
   camera->set_scene(get_render());
   dr->set_camera(camera_np);

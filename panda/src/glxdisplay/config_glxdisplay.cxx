@@ -19,22 +19,40 @@
 #include "config_glxdisplay.h"
 #include "glxGraphicsPipe.h"
 #include "glxGraphicsWindow.h"
-#include "glxDisplay.h"
-
-#include <dconfig.h>
+#include "graphicsPipeSelection.h"
+#include "dconfig.h"
 
 Configure(config_glxdisplay);
 NotifyCategoryDef(glxdisplay, "display");
 
 ConfigureFn(config_glxdisplay) {
+  init_libglxdisplay();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libglxdisplay
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libglxdisplay() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   glxGraphicsPipe::init_type();
-  GraphicsPipe::get_factory().register_factory(glxGraphicsPipe::get_class_type(),
-                                          glxGraphicsPipe::make_glxGraphicsPipe);
   glxGraphicsWindow::init_type();
-  GraphicsWindow::get_factory().register_factory(glxGraphicsWindow::get_class_type(),
-                                            glxGraphicsWindow::make_GlxGraphicsWindow);
-  glxDisplay::init_type();
+
+  GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
+  selection->add_pipe_type(glxGraphicsPipe::get_class_type(),
+                           glxGraphicsPipe::pipe_constructor);
 }
 
 bool gl_show_fps_meter = config_glxdisplay.GetBool("show-fps-meter", false);
 float gl_fps_meter_update_interval = max((float)0.5,config_glxdisplay.GetFloat("fps-meter-update-interval", 1.7));
+const string display_cfg = config_glxdisplay.GetString("display", "");

@@ -18,6 +18,43 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseData::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE MouseData::
+MouseData() {
+  _in_window = false;
+  _xpos = 0;
+  _ypos = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseData::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE MouseData::
+MouseData(const MouseData &copy) :
+  _in_window(copy._in_window),
+  _xpos(copy._xpos),
+  _ypos(copy._ypos)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseData::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void MouseData::
+operator = (const MouseData &copy) {
+  _in_window = copy._in_window;
+  _xpos = copy._xpos;
+  _ypos = copy._ypos;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseData::get_x
 //       Access: Published
 //  Description:

@@ -18,12 +18,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: dxGeomNodeContext::Constructor
+//     Function: DXGeomNodeContext8::Constructor
 //       Access: Public                                 
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE DXGeomNodeContext::
-DXGeomNodeContext(GeomNode *node) : GeomNodeContext(node)
+INLINE DXGeomNodeContext8::
+DXGeomNodeContext8(GeomNode *node) : GeomNodeContext(node)
 {
   _num_verts = 0;
 /*

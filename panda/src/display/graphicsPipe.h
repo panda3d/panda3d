@@ -15,114 +15,64 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef GRAPHICSPIPE_H
 #define GRAPHICSPIPE_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include "graphicsWindow.h"
-#include "hardwareChannel.h"
-#include "pipeSpec.h"
+#include "pandabase.h"
 
-#include <typedReferenceCount.h>
-#include <namable.h>
-#include <factory.h>
-#include <factoryParam.h>
-
-#include <string>
+#include "typedReferenceCount.h"
+#include "pointerTo.h"
+#include "mutex.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
-class GraphicsPipe;
-class glxDisplay;
+class HardwareChannel;
+class GraphicsWindow;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsPipe
-// Description :
+// Description : An object to create GraphicsWindows that share a
+//               particular 3-D API.  Normally, there will only be one
+//               GraphicsPipe in an application, although it is
+//               possible to have multiple of these at once if there
+//               are multiple different API's available in the same
+//               machine.
+//
+//               Often, the GraphicsPipe corresponds to a physical
+//               output device, hence the term "pipe", but this is not
+//               necessarily the case.
+//
+//               The GraphicsPipe is used by the GraphicsEngine object
+//               to create and destroy windows; it keeps ownership of
+//               the windows it creates.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsPipe : public TypedReferenceCount, public Namable {
+class EXPCL_PANDA GraphicsPipe : public TypedReferenceCount {
+protected:
+  GraphicsPipe();
+private:
+  GraphicsPipe(const GraphicsPipe &copy);
+  void operator = (const GraphicsPipe &copy);
+
 PUBLISHED:
-  GraphicsPipe(const PipeSpecifier &spec);
   virtual ~GraphicsPipe();
 
-  GraphicsWindow *make_window();
-  GraphicsWindow *make_window(const GraphicsWindow::Properties&);
-
-  void remove_window(GraphicsWindow *window);
-
-  virtual TypeHandle get_window_type() const=0;
-
-  // Functions for obtaining the set of windows associated with this
-  // pipe, and the set of all GraphicsPipes in the world.
-
   int get_num_windows() const;
-  GraphicsWindow *get_window(int n) const;
-
-  static int get_num_pipes();
-  static GraphicsPipe *get_pipe(int n);
+  PT(GraphicsWindow) get_window(int n) const;
 
 public:
-  // This function's interface must be defined here even though we
-  // know nothing about glx displays at this point.
-  virtual glxDisplay *get_glx_display();
-
-protected:
   virtual int get_num_hw_channels();
-  virtual HardwareChannel *get_hw_channel(GraphicsWindow *, int);
-
-  void add_window(GraphicsWindow *win);
-
-public:
-  // Factory stuff
-  typedef Factory<GraphicsPipe> PipeFactory;
-  typedef FactoryParam PipeParam;
-
-  // Make a factory parameter type for the pipe specifier
-  class EXPCL_PANDA PipeSpec : public PipeParam {
-  public:
-    INLINE PipeSpec(void) : PipeParam() {}
-    INLINE PipeSpec(PipeSpecifier& p) : PipeParam(), _p(p) {}
-    virtual ~PipeSpec(void);
-    INLINE const PipeSpecifier &get_specifier(void) { return _p; }
-  public:
-    static TypeHandle get_class_type(void);
-    static void init_type(void);
-    virtual TypeHandle get_type(void) const;
-    virtual TypeHandle force_init_type(void);
-  private:
-    PipeSpecifier _p;
-
-    static TypeHandle _type_handle;
-  };
-
-  static PipeFactory &get_factory();
-  static void resolve_modules(void);
-
-private:
-  static void read_priorities(void);
+  virtual HardwareChannel *get_hw_channel(GraphicsWindow *window, int index);
 
 protected:
+  virtual PT(GraphicsWindow) make_window()=0;
 
-  GraphicsPipe();
-  GraphicsPipe(const GraphicsPipe &copy);
-  GraphicsPipe &operator = (const GraphicsPipe &copy);
+  void add_window(GraphicsWindow *window);
+  bool remove_window(GraphicsWindow *window);
 
-private:
-  // Some private type declarations.  These must be declared here so
-  // we can declare the public iterator types, below.
   typedef pvector< PT(GraphicsWindow) > Windows;
-  typedef pvector<GraphicsPipe *> Pipes;
-
   Windows _windows;
+  Mutex _lock;
 
-  static PipeFactory *_factory;
-  static Pipes *_all_pipes;
-  INLINE static Pipes &get_all_pipes();
 
 public:
   static TypeHandle get_class_type() {
@@ -130,10 +80,8 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    Namable::init_type();
     register_type(_type_handle, "GraphicsPipe",
-                  TypedReferenceCount::get_class_type(),
-                  Namable::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -142,9 +90,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  // this is so it can call get_hw_channel
-  friend class GraphicsWindow;
+  friend class GraphicsEngine;
 };
 
 #include "graphicsPipe.I"

@@ -19,11 +19,12 @@
 #ifndef CONFIG_DXGSG8_H
 #define CONFIG_DXGSG8_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 #include <d3d8.h>
 
-NotifyCategoryDecl(dxgsg, EXPCL_PANDADX, EXPTP_PANDADX);
+NotifyCategoryDecl(dxgsg8, EXPCL_PANDADX, EXPTP_PANDADX);
+NotifyCategoryDecl(wdxdisplay8, EXPCL_PANDADX, EXPTP_PANDADX);
 
 extern bool dx_full_screen;
 extern bool dx_sync_video;
@@ -48,6 +49,11 @@ extern bool dx_show_transforms;
 extern bool dx_force_16bpptextures;
 extern bool dx_no_dithering;
 extern bool dx_force_anisotropic_filtering;
+extern bool dx_force_16bpp_zbuffer;
+extern bool dx_do_vidmemsize_check;
+extern bool dx_preserve_fpu_state;
+extern bool dx_pick_best_screenres;
+extern int dx_preferred_device_id;
 
 extern string *pdx_vertexshader_filename;
 extern string *pdx_pixelshader_filename;

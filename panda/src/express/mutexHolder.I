@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MutexHolder::
-MutexHolder(Mutex &mutex) {
+MutexHolder(const Mutex &mutex) {
 #ifdef HAVE_THREADS
   _mutex = &mutex;
   _mutex->lock();

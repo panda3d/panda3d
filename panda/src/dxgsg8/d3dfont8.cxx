@@ -123,7 +123,7 @@ HRESULT CD3DFont::InitDeviceObjects( LPDIRECT3DDEVICE8 pd3dDevice ) {
                                  CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
                                  VARIABLE_PITCH, m_strFontName );
     if(NULL==hFont) {
-        dxgsg_cat.error() << "CD3DFont InitDeviceObjects(): initial CreateFont failed!  GetLastError=" << GetLastError() << endl;
+        dxgsg8_cat.error() << "CD3DFont InitDeviceObjects(): initial CreateFont failed!  GetLastError=" << GetLastError() << endl;
         return E_FAIL;
     }
 
@@ -194,7 +194,7 @@ HRESULT CD3DFont::InitDeviceObjects( LPDIRECT3DDEVICE8 pd3dDevice ) {
 
     // moved here to allow deletion of GDI objects 
     if(dwTexSize == 0) {
-        dxgsg_cat.error() << "CD3DFont InitDeviceObjects() error: Texture didnt fit, creation failed!\n";
+        dxgsg8_cat.error() << "CD3DFont InitDeviceObjects() error: Texture didnt fit, creation failed!\n";
         return E_FAIL;
     }
 
@@ -228,7 +228,7 @@ HRESULT CD3DFont::InitDeviceObjects( LPDIRECT3DDEVICE8 pd3dDevice ) {
                            VARIABLE_PITCH, m_strFontName );
 
     if(NULL==hFont) {
-        dxgsg_cat.error() << "CD3DFont InitDeviceObjects(): optimal CreateFont failed!  GetLastError=" << GetLastError() << endl;
+        dxgsg8_cat.error() << "CD3DFont InitDeviceObjects(): optimal CreateFont failed!  GetLastError=" << GetLastError() << endl;
         return E_FAIL;
     }
 
@@ -263,7 +263,7 @@ HRESULT CD3DFont::InitDeviceObjects( LPDIRECT3DDEVICE8 pd3dDevice ) {
         DeleteObject( hFont );
         DeleteDC( hDC );
 
-        dxgsg_cat.error() << "CD3DFont InitDeviceObjs CreateTexture failed!" << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "CD3DFont InitDeviceObjs CreateTexture failed!" << D3DERRORSTRING(hr);
         return hr;
     }; 
 
@@ -341,11 +341,11 @@ HRESULT CD3DFont::RestoreDeviceObjects() {
                                                     D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0,
                                                     D3DPOOL_DEFAULT,  // D3DUSAGE_DYNAMIC makes D3DPOOL_MANAGED impossible
                                                     &m_pVB ) )) {
-        dxgsg_cat.error() << "CD3DFont CreateVB failed!" << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "CD3DFont CreateVB failed!" << D3DERRORSTRING(hr);
         return hr;
     }
 
-    PRINT_REFCNT(dxgsg,m_pd3dDevice);
+    PRINT_REFCNT(dxgsg8,m_pd3dDevice);
 
     // Create the state blocks for rendering text
     for(UINT which=0; which<2; which++) {
@@ -403,7 +403,7 @@ HRESULT CD3DFont::RestoreDeviceObjects() {
 HRESULT CD3DFont::InvalidateDeviceObjects() {
     HRESULT hr;
 
-    PRINT_REFCNT(dxgsg,m_pd3dDevice);
+    PRINT_REFCNT(dxgsg8,m_pd3dDevice);
 
     if(IS_VALID_PTR(m_pd3dDevice)) {
         // undo SetStreamSource before releasing VB
@@ -416,11 +416,11 @@ HRESULT CD3DFont::InvalidateDeviceObjects() {
             hr = m_pd3dDevice->SetStreamSource(0,NULL,0);
     }
 
-    PRINT_REFCNT(dxgsg,m_pVB);
+    PRINT_REFCNT(dxgsg8,m_pVB);
 
-    RELEASE(m_pVB,dxgsg,"d3dfont VB",RELEASE_ONCE);
+    RELEASE(m_pVB,dxgsg8,"d3dfont VB",RELEASE_ONCE);
 
-    PRINT_REFCNT(dxgsg,m_pd3dDevice);
+    PRINT_REFCNT(dxgsg8,m_pd3dDevice);
 
     // Delete the state blocks
     if(m_pd3dDevice) {
@@ -431,7 +431,7 @@ HRESULT CD3DFont::InvalidateDeviceObjects() {
             m_pd3dDevice->DeleteStateBlock( m_dwDrawTextStateBlock );
     }
 
-    PRINT_REFCNT(dxgsg,m_pd3dDevice);
+    PRINT_REFCNT(dxgsg8,m_pd3dDevice);
 
     m_dwSavedStateBlock    = NULL;
     m_dwDrawTextStateBlock = NULL;
@@ -445,13 +445,13 @@ HRESULT CD3DFont::InvalidateDeviceObjects() {
 // Desc: Destroys all device-dependent objects
 //-----------------------------------------------------------------------------
 HRESULT CD3DFont::DeleteDeviceObjects() {
-    PRINT_REFCNT(dxgsg,m_pd3dDevice);
+    PRINT_REFCNT(dxgsg8,m_pd3dDevice);
 
     InvalidateDeviceObjects();
 
     SAFE_RELEASE( m_pTexture );
 
-    PRINT_REFCNT(dxgsg,m_pd3dDevice);
+    PRINT_REFCNT(dxgsg8,m_pd3dDevice);
 
     m_pd3dDevice = NULL;
 
@@ -581,7 +581,7 @@ HRESULT CD3DFont::DeferedDraw
   FLOAT fXScale, FLOAT fYScale, DWORD dwColor, 
   TCHAR* strText, DWORD dwFlags ) {
     if(m_nDeferedCalls >= MaxCalls) {
-        dxgsg_cat.error() << "CD3DFont DeferedDraw() error, MaxCalls exceeded!\n";
+        dxgsg8_cat.error() << "CD3DFont DeferedDraw() error, MaxCalls exceeded!\n";
         return E_FAIL ;
     }
 
@@ -591,7 +591,7 @@ HRESULT CD3DFont::DeferedDraw
     int nStrLen = strlen ( strText ) + 1 ; 
     int nUsed = m_pTextBuffer - & m_pTextBuffer [ 0 ] ; 
     if(nUsed + nStrLen > TextBufferLength) {
-        dxgsg_cat.error() << "CD3DFont DeferedDraw() error, TextBufferLength exceeded!\n";
+        dxgsg8_cat.error() << "CD3DFont DeferedDraw() error, TextBufferLength exceeded!\n";
         return E_FAIL ;
     }
 
@@ -637,7 +637,7 @@ HRESULT CD3DFont::EndText ( void ) {
 
     hr = m_pd3dDevice->GetStreamSource(0,&pSavedStreamData,&SavedStreamStride);
     if(FAILED(hr)) {
-        dxgsg_cat.error() << "CD3DFont EndText GetStreamSource() failed!" << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "CD3DFont EndText GetStreamSource() failed!" << D3DERRORSTRING(hr);
         return E_FAIL;
     }
 
@@ -647,7 +647,7 @@ HRESULT CD3DFont::EndText ( void ) {
     if((pSavedStreamData!=m_pVB)||(SavedStreamStride!=sizeof(FONT2DVERTEX))) {
         hr = m_pd3dDevice->SetStreamSource(0,m_pVB,sizeof(FONT2DVERTEX));
         if(FAILED(hr)) {
-            dxgsg_cat.error() << "CD3DFont EndText initial SetStreamSource() failed!" << D3DERRORSTRING(hr);
+            dxgsg8_cat.error() << "CD3DFont EndText initial SetStreamSource() failed!" << D3DERRORSTRING(hr);
             return E_FAIL;
         }
     }
@@ -821,7 +821,7 @@ HRESULT CD3DFont::EndText ( void ) {
     if(IS_VALID_PTR(pSavedStreamData) && ((pSavedStreamData!=m_pVB)||(SavedStreamStride!=sizeof(FONT2DVERTEX)))) {
         hr = m_pd3dDevice->SetStreamSource(0,pSavedStreamData,SavedStreamStride);
         if(FAILED(hr)) {
-            dxgsg_cat.error() << "CD3DFont EndText restore SetStreamSource() failed!" << D3DERRORSTRING(hr);
+            dxgsg8_cat.error() << "CD3DFont EndText restore SetStreamSource() failed!" << D3DERRORSTRING(hr);
             return E_FAIL;
         }
         pSavedStreamData->Release();

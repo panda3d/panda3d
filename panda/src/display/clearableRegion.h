@@ -53,6 +53,7 @@ PUBLISHED:
   INLINE bool is_any_clear_active() const;
 
 private:
+  // This data needs to be cycled.
   enum Flags {
     F_clear_color_active = 0x0001,
     F_clear_depth_active = 0x0002,

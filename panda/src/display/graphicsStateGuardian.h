@@ -101,11 +101,10 @@ public:
 
   INLINE void enable_normals(bool val) { _normals_enabled = val; }
 
-  virtual void begin_frame();
+  virtual bool begin_frame();
+  virtual bool begin_scene();
+  virtual void end_scene();
   virtual void end_frame();
-
-  virtual void start_rendering(void);
-  virtual void finish_rendering(void);
 
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
@@ -190,6 +189,7 @@ protected:
   bool mark_prepared_geom_node(GeomNodeContext *gnc);
   bool unmark_prepared_geom_node(GeomNodeContext *gnc);
 
+  virtual void free_pointers();
   virtual void close_gsg();
 
 #ifdef DO_PSTATS
@@ -353,7 +353,6 @@ public:
   static GsgFactory &get_factory();
 
 private:
-  static void read_priorities(void);
   static GsgFactory *_factory;
 
 public:

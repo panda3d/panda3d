@@ -1,4 +1,4 @@
-// Filename: dxTextureContext.h
+// Filename: dxTextureContext8.h
 // Created by:  drose (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,26 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DXTEXTURECONTEXT_H
-#define DXTEXTURECONTEXT_H
+#ifndef DXTEXTURECONTEXT8_H
+#define DXTEXTURECONTEXT8_H
 
 #include "dxgsg8base.h"
-#include <texture.h>
-#include <textureContext.h>
+#include "texture.h"
+#include "textureContext.h"
 
 //#define DO_CUSTOM_CONVERSIONS
 
 ////////////////////////////////////////////////////////////////////
-//   Class : DXTextureContext
+//   Class : DXTextureContext8
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDADX DXTextureContext : public TextureContext {
+class EXPCL_PANDADX DXTextureContext8 : public TextureContext {
   friend class DXGraphicsStateGuardian;
   friend class wdxGraphicsWindow;
 
 public:
-  DXTextureContext(Texture *tex);
-  ~DXTextureContext();
+  DXTextureContext8(Texture *tex);
+  ~DXTextureContext8();
 
   IDirect3DTexture8  *_pD3DTexture8;
   Texture *_tex;            // ptr to parent, primarily for access to namestr
@@ -62,7 +62,7 @@ public:
   }
   static void init_type() {
     TextureContext::init_type();
-    register_type(_type_handle, "DXTextureContext",
+    register_type(_type_handle, "DXTextureContext8",
           TextureContext::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -24,6 +24,7 @@
 #include "displayRegion.h"
 #include "camera.h"
 #include "dcast.h"
+#include "mutexHolder.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -38,6 +39,7 @@ DisplayRegion(GraphicsLayer *layer) :
   _camera_node((Camera *)NULL),
   _active(true)
 {
+  compute_pixels();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,6 +55,7 @@ DisplayRegion(GraphicsLayer *layer, const float l,
   _camera_node((Camera *)NULL),
   _active(true)
 {
+  compute_pixels();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,8 +106,76 @@ DisplayRegion::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_dimensions
+//       Access: Published
+//  Description: Retrieves the coordinates of the DisplayRegion's
+//               rectangle within its GraphicsLayer.  These numbers
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+get_dimensions(float &l, float &r, float &b, float &t) const {
+  MutexHolder holder(_lock);
+  l = _l;
+  r = _r;
+  b = _b;
+  t = _t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_left
+//       Access: Published
+//  Description: Retrieves the x coordinate of the left edge of the
+//               rectangle within its GraphicsLayer.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+float DisplayRegion::
+get_left() const {
+  MutexHolder holder(_lock);
+  return _l;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_right
+//       Access: Published
+//  Description: Retrieves the x coordinate of the right edge of the
+//               rectangle within its GraphicsLayer.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+float DisplayRegion::
+get_right() const {
+  MutexHolder holder(_lock);
+  return _r;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_bottom
+//       Access: Published
+//  Description: Retrieves the y coordinate of the bottom edge of 
+//               the rectangle within its GraphicsLayer.  This 
+//               number will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+float DisplayRegion::
+get_bottom() const {
+  MutexHolder holder(_lock);
+  return _b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_top
+//       Access: Published
+//  Description: Retrieves the y coordinate of the top edge of the
+//               rectangle within its GraphicsLayer.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+float DisplayRegion::
+get_top() const {
+  MutexHolder holder(_lock);
+  return _t;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_dimensions
-//       Access: Public
+//       Access: Published
 //  Description: Changes the portion of the framebuffer this
 //               DisplayRegion corresponds to.  The parameters range
 //               from 0 to 1, where 0,0 is the lower left corner and
@@ -113,6 +184,7 @@ DisplayRegion::
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_dimensions(float l, float r, float b, float t) {
+  MutexHolder holder(_lock);
   _l = l;
   _r = r;
   _b = b;
@@ -120,49 +192,68 @@ set_dimensions(float l, float r, float b, float t) {
 
   const GraphicsWindow *win = get_window();
   if (win != (GraphicsWindow *)NULL) {
-    compute_pixels(win->get_width(), win->get_height());
+    WindowProperties properties = win->get_properties();
+    if (properties.has_size()) {
+      do_compute_pixels(properties.get_x_size(), properties.get_y_size());
+    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_layer
+//       Access: Published
+//  Description: Returns the layer associated with this particular
+//               DisplayRegion, or NULL if no layer is associated
+//               (or if the layer was deleted).
+////////////////////////////////////////////////////////////////////
+GraphicsLayer *DisplayRegion::
+get_layer() const {
+  MutexHolder holder(_lock);
+  return _layer;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_channel
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsChannel that this DisplayRegion is
 //               ultimately associated with, or NULL if no channel is
 //               associated.
 ////////////////////////////////////////////////////////////////////
 GraphicsChannel *DisplayRegion::
 get_channel() const {
+  MutexHolder holder(_lock);
   return (_layer != (GraphicsLayer *)NULL) ? _layer->get_channel() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_window
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsWindow that this DisplayRegion is
 //               ultimately associated with, or NULL if no window is
 //               associated.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow *DisplayRegion::
 get_window() const {
+  MutexHolder holder(_lock);
   return (_layer != (GraphicsLayer *)NULL) ? _layer->get_window() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_pipe
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsPipe that this DisplayRegion is
 //               ultimately associated with, or NULL if no pipe is
 //               associated.
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe *DisplayRegion::
 get_pipe() const {
+  MutexHolder holder(_lock);
   return (_layer != (GraphicsLayer *)NULL) ? _layer->get_pipe() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_camera
-//       Access: Public
+//       Access: Published
 //  Description: Sets the camera that is associated with this
 //               DisplayRegion.  There is a one-to-one association
 //               between cameras and DisplayRegions; if this camera
@@ -175,6 +266,7 @@ get_pipe() const {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_camera(const NodePath &camera) {
+  MutexHolder holder(_lock);
   Camera *camera_node = (Camera *)NULL;
   if (!camera.is_empty()) {
     DCAST_INTO_V(camera_node, camera.node());
@@ -196,12 +288,134 @@ set_camera(const NodePath &camera) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_camera
+//       Access: Published
+//  Description: Returns the camera associated with this
+//               DisplayRegion, or NULL if no camera is associated.
+////////////////////////////////////////////////////////////////////
+const NodePath &DisplayRegion::
+get_camera() const {
+  MutexHolder holder(_lock);
+  return _camera;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_active
+//       Access: Published
+//  Description: Sets the active flag associated with the
+//               DisplayRegion.  If the DisplayRegion is marked
+//               inactive, nothing is rendered.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_active(bool active) {
+  MutexHolder holder(_lock);
+  if (active != _active) {
+    _active = active;
+    win_display_regions_changed();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::compute_pixels
+//       Access: Published
+//  Description: Computes the pixel locations of the DisplayRegion
+//               within its layer.  The DisplayRegion will request the
+//               size from the window.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+compute_pixels() {
+  const GraphicsWindow *win = get_window();
+  if (win != (GraphicsWindow *)NULL) {
+    MutexHolder holder(_lock);
+    WindowProperties properties = win->get_properties();
+    if (!properties.has_size()) {
+      // If the window doesn't know its size yet, maybe it will
+      // eventually be given the size it's requesting.
+      properties = win->get_requested_properties();
+    }
+
+    if (properties.has_size()) {
+      do_compute_pixels(properties.get_x_size(), properties.get_y_size());
+    } else {
+      do_compute_pixels(0, 0);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::compute_pixels
+//       Access: Published
+//  Description: Computes the pixel locations of the DisplayRegion
+//               within its layer, given the size of the layer in
+//               pixels.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+compute_pixels(int x_size, int y_size) {
+  MutexHolder holder(_lock);
+  do_compute_pixels(x_size, y_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixels
+//       Access: Published
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its layer, in pixels.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+get_pixels(int &pl, int &pr, int &pb, int &pt) const {
+  MutexHolder holder(_lock);
+  pl = _pl;
+  pr = _pr;
+  pb = _pb;
+  pt = _pt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_region_pixels
+//       Access: Published
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its layer, as the pixel location of its bottom-left
+//               corner, along with a pixel width and height.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+get_region_pixels(int &xo, int &yo, int &w, int &h) const {
+  MutexHolder holder(_lock);
+  xo = _pl;
+  yo = _pb;
+  w = _pr - _pl;
+  h = _pt - _pb;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixel_width
+//       Access: Published
+//  Description: Returns the width of the DisplayRegion in pixels.
+////////////////////////////////////////////////////////////////////
+int DisplayRegion::
+get_pixel_width() const {
+  MutexHolder holder(_lock);
+  return _pr - _pl;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixel_height
+//       Access: Published
+//  Description: Returns the height of the DisplayRegion in pixels.
+////////////////////////////////////////////////////////////////////
+int DisplayRegion::
+get_pixel_height() const {
+  MutexHolder holder(_lock);
+  return _pt - _pb;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 output(ostream &out) const {
+  MutexHolder holder(_lock);
   out << "DisplayRegion(" << _l << " " << _r << " " << _b << " " << _t
       << ")=pixels(" << _pl << " " << _pr << " " << _pb << " " << _pt
       << ")";
@@ -209,11 +423,12 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::win_display_regions_changed
-//       Access: Public
+//       Access: Private
 //  Description: Intended to be called when the active state on a
 //               nested channel or layer or display region changes,
 //               forcing the window to recompute its list of active
-//               display regions.
+//               display regions.  It is assumed the lock is already
+//               held.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 win_display_regions_changed() {

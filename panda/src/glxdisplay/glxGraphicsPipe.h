@@ -20,32 +20,67 @@
 #define GLXGRAPHICSPIPE_H
 
 #include "pandabase.h"
-#include "glxDisplay.h"
-#include "interactiveGraphicsPipe.h"
+#include "graphicsPipe.h"
+
+#include <X11/Xlib.h>
+
+class glxGraphicsWindow;
+
+#ifdef CPPPARSER
+// A simple hack so interrogate can parse this file.
+typedef int Display;
+typedef int Window;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsPipe
-// Description :
+// Description : This graphics pipe represents the interface for
+//               creating OpenGL graphics windows on an X-based
+//               (e.g. Unix) client.
 ////////////////////////////////////////////////////////////////////
-class glxGraphicsPipe : public InteractiveGraphicsPipe, public glxDisplay {
-PUBLISHED:
-  glxGraphicsPipe( const PipeSpecifier& );
+class glxGraphicsPipe : public GraphicsPipe {
+public:
+  glxGraphicsPipe(const string &display = string());
+  virtual ~glxGraphicsPipe();
 
-  virtual TypeHandle get_window_type() const;
+  static PT(GraphicsPipe) pipe_constructor();
 
-public:  
-  virtual glxDisplay *get_glx_display();
+  INLINE Display *get_display() const;
+  INLINE int get_screen() const;
+  INLINE Window get_root() const;
+  INLINE int get_display_width() const;
+  INLINE int get_display_height() const;
+
+protected:
+  virtual PT(GraphicsWindow) make_window();
+
+private:
+  bool _is_valid;
+  Display *_display;
+  int _screen;
+  Window _root;
+  int _display_width;
+  int _display_height;
+
 
 public:
-  static GraphicsPipe *make_glxGraphicsPipe(const FactoryParams &params);
-  
-  static TypeHandle get_class_type(void);
-  static void init_type(void);
-  virtual TypeHandle get_type(void) const;
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    GraphicsPipe::init_type();
+    register_type(_type_handle, "glxGraphicsPipe",
+                  GraphicsPipe::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
   static TypeHandle _type_handle;
 };
+
+#include "glxGraphicsPipe.I"
 
 #endif

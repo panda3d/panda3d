@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MutexHolder {
 public:
-  INLINE MutexHolder(Mutex &mutex);
+  INLINE MutexHolder(const Mutex &mutex);
   INLINE MutexHolder(Mutex *&mutex);
   INLINE ~MutexHolder();
 private:
@@ -41,7 +41,7 @@ private:
 
 private:
 #ifdef HAVE_THREADS
-  Mutex *_mutex;
+  const Mutex *_mutex;
 #endif
 };
 

@@ -18,9 +18,21 @@
 
 #include "pandaFramework.h"
 
+PandaFramework framework;
+
+void
+event_W(CPT_Event, void *) {
+  // shift-W: open a new window on the same scene.
+  WindowFramework *window = framework.open_window();
+  if (window != (WindowFramework *)NULL) {
+    window->enable_keyboard();
+    window->setup_trackball();
+    framework.get_models().instance_to(window->get_render());
+  }
+}
+
 int
 main(int argc, char *argv[]) {
-  PandaFramework framework;
   framework.open_framework(argc, argv);
   framework.set_window_title("Panda Viewer");
 
@@ -40,9 +52,10 @@ main(int argc, char *argv[]) {
     window->loop_animations();
 
     framework.enable_default_keys();
+    framework.get_event_handler().add_hook("shift-w", event_W, NULL);
     framework.main_loop();
+    framework.report_frame_rate(nout);
   }
 
-  framework.report_frame_rate(nout);
   return (0);
 }

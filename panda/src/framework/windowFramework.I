@@ -102,3 +102,13 @@ INLINE bool WindowFramework::
 get_lighting() const {
   return _lighting_enabled;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_background_type
+//       Access: Public
+//  Description: Returns the current background type setting.
+////////////////////////////////////////////////////////////////////
+INLINE WindowFramework::BackgroundType WindowFramework::
+get_background_type() const {
+  return _background_type;
+}

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsEngine.h"
+#include "graphicsPipe.h"
 #include "config_display.h"
 #include "pipeline.h"
 #include "drawCullHandler.h"
@@ -49,19 +50,10 @@ GraphicsEngine(Pipeline *pipeline) :
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
   }
-
-  ThreadingModel tm = string_threading_model(threading_model);
-  if (tm == TM_invalid) {
-    display_cat.warning()
-      << "Invalid threading model: " << threading_model << "\n";
-    set_threading_model(TM_appculldraw);
-  } else {
-    set_threading_model(tm);
-  }
-
-  if (tm != TM_appculldraw) {
+  set_threading_model(threading_model);
+  if (!_threading_model.empty()) {
     display_cat.info()
-      << "Using threading model " << get_threading_model() << "\n";
+      << "Using threading model " << _threading_model << "\n";
   }
 }
 
@@ -69,24 +61,144 @@ GraphicsEngine(Pipeline *pipeline) :
 //     Function: GraphicsEngine::Destructor
 //       Access: Published
 //  Description: Gracefully cleans up the graphics engine and its
-//               related threads.  Does not delete the associated
-//               windows.
+//               related threads and windows.
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::
 ~GraphicsEngine() {
-  terminate_threads();
+  remove_all_windows();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::add_window
+//     Function: GraphicsEngine::set_threading_model
 //       Access: Published
-//  Description: Adds a new window to the set of windows that will be
-//               processed when render_frame() is called.  This also
-//               increments the reference count to the window.
+//  Description: Specifies how windows created using future calls to
+//               the one-parameter version of make_window() will be
+//               threaded.  (The two-parameter flavor of make_window()
+//               allows this to be specified on a per-window basis.)
+//
+//               The threading model is a string representing the
+//               names of the two threads that will process cull and
+//               draw for the given window, separated by a slash.  The
+//               names are completely arbitrary and are used only to
+//               differentiate threads.  The two names may be the
+//               same, meaning the same thread, or each may be the
+//               empty string, which represents the previous thread.
+//
+//               Thus, for example, "cull/draw" indicates that the
+//               window will be culled in a thread called "cull", and
+//               drawn in a separate thread called "draw".
+//               "draw/draw" or simply "draw/" indicates the window
+//               will be culled and drawn in the same thread, "draw".
+//               On the other hand, "/draw" indicates the thread will
+//               be culled in the main, or app thread, and drawn in a
+//               separate thread named "draw".  The empty string, ""
+//               or "/", indicates the thread will be culled and drawn
+//               in the main thread; that is to say, a single-process
+//               model.
+//
+//               Finally, if the threading model begins with a "-"
+//               character, then cull and draw are run simultaneously,
+//               in the same thread, with no binning or state sorting.
+//               It simplifies the cull process but it forces the
+//               scene to render in scene graph order; state sorting
+//               and alpha sorting is lost.
+//
+//               You can create as many different threads as you like;
+//               each thread is uniquified based on its name, so
+//               multiple windows may easily be handled by the same or
+//               different threads.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-add_window(GraphicsWindow *window) {
-  _windows.insert(window);
+set_threading_model(const string &threading_model) {
+  if (!threading_model.empty() && !Thread::is_threading_supported()) {
+    display_cat.warning()
+      << "Threading model " << threading_model
+      << " requested but threading not supported.\n";
+    return;
+  }
+  MutexHolder holder(_lock);
+  _threading_model = threading_model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_threading_model
+//       Access: Published
+//  Description: Returns the current default threading model.  See
+//               set_threading_model().
+////////////////////////////////////////////////////////////////////
+string GraphicsEngine::
+get_threading_model() const {
+  string result;
+  {
+    MutexHolder holder(_lock);
+    result = _threading_model;
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_window
+//       Access: Published
+//  Description: Creates a new window using the indicated GraphicsPipe
+//               and returns it.  The GraphicsEngine becomes the owner
+//               of the window; it will persist at least until
+//               remove_window() is called later.
+////////////////////////////////////////////////////////////////////
+GraphicsWindow *GraphicsEngine::
+make_window(GraphicsPipe *pipe, const string &threading_model) {
+  PT(GraphicsWindow) window = pipe->make_window();
+  if (window != (GraphicsWindow *)NULL) {
+    MutexHolder holder(_lock);
+    _windows.insert(window);
+
+    // Now figure out the threading model.
+    string cull_name;
+    string draw_name;
+    bool cull_sorting = true;
+    size_t start = 0;
+    if (!threading_model.empty() && threading_model[0] == '-') {
+      start = 1;
+      cull_sorting = false;
+    }
+
+    size_t slash = threading_model.find('/', start);
+    if (slash == string::npos) {
+      cull_name = threading_model;
+    } else {
+      cull_name = threading_model.substr(start, slash - start);
+      draw_name = threading_model.substr(slash + 1);
+    }
+    if (!cull_sorting || draw_name.empty()) {
+      draw_name = cull_name;
+    }
+
+    /*
+    cerr << "cull_name = " << cull_name << " draw_name = " << draw_name
+         << " cull_sorting = " << cull_sorting << "\n";
+    */
+
+    WindowRenderer *cull = get_window_renderer(cull_name);
+    WindowRenderer *draw = get_window_renderer(draw_name);
+
+    if (cull_sorting) {
+      cull->add_window(cull->_cull, window);
+      draw->add_window(draw->_draw, window);
+    } else {
+      cull->add_window(cull->_cdraw, window);
+    }
+
+    // We should ask the pipe which thread it prefers to run its
+    // windowing commands in (the "window thread").  This is the
+    // thread that handles the commands to open, resize, etc. the
+    // window.  X requires this to be done in the app thread, but some
+    // pipes might prefer this to be done in draw, for instance.  For
+    // now, we assume this is the app thread.
+    _app.add_window(_app._window, window);
+
+    display_cat.info()
+      << "Created " << window->get_type() << "\n";
+  }
+  return window;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,17 +206,63 @@ add_window(GraphicsWindow *window) {
 //       Access: Published
 //  Description: Removes the indicated window from the set of windows
 //               that will be processed when render_frame() is called.
-//               This also decrements the reference count to the
-//               window, allowing the window to be destructed if there
-//               are no other references to it.
+//               This also closes the window if it is open, and
+//               removes the window from its GraphicsPipe, allowing
+//               the window to be destructed if there are no other
+//               references to it.  (However, the window may not be
+//               actually closed until next frame, if it is controlled
+//               by a sub-thread.)
 //
 //               The return value is true if the window was removed,
 //               false if it was not found.
+//
+//               Unlike remove_all_windows(), this function does not
+//               terminate any of the threads that may have been
+//               started to service this window; they are left running
+//               (since you might open a new window later on these
+//               threads).  If your intention is to clean up before
+//               shutting down, it is better to call
+//               remove_all_windows() then to call remove_window() one
+//               at a time.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
 remove_window(GraphicsWindow *window) {
-  size_t count = _windows.erase(window);
-  return (count != 0);
+  // First, make sure we know what this window is.
+  PT(GraphicsWindow) ptwin = window;
+  size_t count;
+  {
+    MutexHolder holder(_lock);
+    count = _windows.erase(ptwin);
+  }
+  if (count == 0) {
+    // Never heard of this window.  Do nothing.
+    return false;
+  }
+
+  do_remove_window(window);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::remove_all_windows
+//       Access: Published
+//  Description: Removes and closes all windows from the engine.  This
+//               also cleans up and terminates any threads that have
+//               been started to service those windows.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+remove_all_windows() {
+  Windows::iterator wi;
+  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+    GraphicsWindow *win = (*wi);
+    do_remove_window(win);
+  }
+
+  _windows.clear();
+
+  _app.do_release(this);
+  _app.do_close(this);
+  terminate_threads();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,27 +273,52 @@ remove_window(GraphicsWindow *window) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 render_frame() {
-  if (_cull_thread == (Thread *)NULL) {
-    // Nonthreaded cull: perform cull within the app thread.  This
-    // corresponds to either TM_appculldraw, TM_appcull_draw, or
-    // TM_appcdraw.
-    start_cull();
-
-  } else {
-    // Threaded cull: perform cull within its own thread.  Here we
-    // simply signal the thread and then let it go about its business
-    // while we return.
-    MutexHolder holder(_cull_thread->_cv_mutex);
-    if (_cull_thread->_thread_state == TS_wait) {
-      _cull_thread->_thread_state = TS_do_frame;
-      _cull_thread->_cv.signal();
-    }
+  // We hold the GraphicsEngine mutex while we wait for all of the
+  // threads.  Doing this puts us at risk for deadlock if any of the
+  // threads tries to call any methods on the GraphicsEngine.  So
+  // don't do that.
+  MutexHolder holder(_lock);
+  
+  // First, wait for all the threads to finish their current frame.
+  // Grabbing the mutex should achieve that.
+  Threads::const_iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.lock();
   }
-
-  // **** This doesn't belong here; it really belongs in the Pipeline,
-  // but here it is for now.
+  
+  // Now signal all of our threads to flip the windows.
+  _app.do_flip(this);
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    if (thread->_thread_state == TS_wait) {
+      thread->_thread_state = TS_do_flip;
+      thread->_cv.signal();
+    }
+    thread->_cv_mutex.release();
+  }
+  
+  // Grab the mutex again after all windows have flipped.
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.lock();
+  }
+  
+  // Now cycle the pipeline and officially begin the next frame.
+  _pipeline->cycle();
   ClockObject::get_global_clock()->tick();
   PStatClient::main_tick();
+  
+  // Now signal all of our threads to begin their next frame.
+  _app.do_frame(this);
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    if (thread->_thread_state == TS_wait) {
+      thread->_thread_state = TS_do_frame;
+      thread->_cv.signal();
+    }
+    thread->_cv_mutex.release();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,15 +332,13 @@ render_frame() {
 //
 //               This always executes completely within the calling
 //               thread, regardless of the threading model in use.
-//               Thus, it may be an error to call this from the app
-//               thread if the threading model is not TM_appculldraw;
-//               similarly, it is an error to call it from cull if the
-//               threading model is TM_appcull_draw or
-//               TM_app_cull_draw.
+//               Thus, it must always be called from the draw thread,
+//               whichever thread that may be.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
-  if (_cull_sorting) {
+render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
+                bool cull_sorting) {
+  if (cull_sorting) {
     cull_bin_draw(gsg, dr);
   } else {
     cull_and_draw_together(gsg, dr);
@@ -165,205 +346,39 @@ render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::set_threading_model
-//       Access: Published
-//  Description: Changes the way the app, cull, and draw steps are
-//               divided among threads.  The allowable settings are:
-//
-//                TM_appculldraw: single-threaded.  All steps are
-//                  performed by the calling thread; render_frame()
-//                  does not return until the frame has been fully
-//                  rendered.
-//
-//                TM_appcull_draw: app and cull are performed
-//                  together, while draw is performed in a separate
-//                  thread.  render_frame() will return after cull has
-//                  been completed; draw will have started in the
-//                  sub-thread.
-//
-//                TM_app_culldraw: app is separate, while cull and
-//                  draw are performed in sequence within a separate
-//                  thread.  render_frame() will return almost
-//                  immediately (after waiting for cull to start in
-//                  the sub-thread).
-//
-//                TM_app_cull_draw: all stages of the pipeline are in
-//                  separate threads.  render_frame() returns almost
-//                  immediately, after waiting for cull to start in
-//                  its sub-thread; when cull finishes, it passes the
-//                  frame off to a separate thread for draw and then
-//                  begins working on culling the next frame.
-//
-//                TM_appcdraw: single-threaded, like TM_appculldraw,
-//                  but cull and draw are performed simultaneously,
-//                  rather than sequentially.  This means that the
-//                  scene will always be rendered in scene graph
-//                  order; binning, state-sorting and back-to-front
-//                  sorting cannot be achieved.
-//
-//                TM_app_cdraw: similar to TM_appcdraw, but the
-//                  cull&draw step is performed in a separate thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsEngine::
-set_threading_model(ThreadingModel threading_model) {
-  bool spawn_cull_thread;
-  bool spawn_draw_thread;
-  bool cull_sorting;
-
-  switch (threading_model) {
-  case TM_appculldraw:
-    spawn_cull_thread = false;
-    spawn_draw_thread = false;
-    cull_sorting = true;
-    break;
-
-  case TM_appcull_draw:
-    spawn_cull_thread = false;
-    spawn_draw_thread = true;
-    cull_sorting = true;
-    break;
-
-  case TM_app_culldraw:
-    spawn_cull_thread = true;
-    spawn_draw_thread = false;
-    cull_sorting = true;
-    break;
-
-  case TM_app_cull_draw:
-    spawn_cull_thread = true;
-    spawn_draw_thread = true;
-    cull_sorting = true;
-    break;
-
-  case TM_appcdraw:
-    spawn_cull_thread = false;
-    spawn_draw_thread = false;
-    cull_sorting = false;
-    break;
-
-  case TM_app_cdraw:
-    spawn_cull_thread = true;
-    spawn_draw_thread = false;
-    cull_sorting = false;
-    break;
-
-  default:
-    display_cat.error()
-      << "Invalid threading model: " << (int)threading_model << "\n";
-    return;
-  }
-
-  if ((spawn_cull_thread || spawn_draw_thread) && 
-      !Thread::is_threading_supported()) {
-    display_cat.warning()
-      << "Threading model " << threading_model
-      << " requested but threading not supported.\n";
-    threading_model = (cull_sorting) ? TM_appculldraw : TM_appcdraw;
-    spawn_cull_thread = false;
-    spawn_draw_thread = false;
-  }
-
-  if (_threading_model != threading_model || _cull_sorting != cull_sorting) {
-    terminate_threads();
-
-    _threading_model = threading_model;
-    _cull_sorting = cull_sorting;
-
-    if (spawn_cull_thread) {
-      const char *thread_name;
-      if (spawn_draw_thread) {
-        thread_name = "cull";
-      } else if (cull_sorting) {
-        thread_name = "culldraw";
-      } else {
-        thread_name = "cdraw";
-      }
-      _cull_thread = new CullThread(thread_name, this);
-      MutexHolder holder(_cull_thread->_cv_mutex);
-      if (!_cull_thread->start(TP_normal, false, true)) {
-        display_cat.error()
-          << "Unable to start cull thread.\n";
-        _cull_thread = (CullThread *)NULL;
-      }
-    }
-
-    if (spawn_draw_thread) {
-      _draw_thread = new DrawThread("draw", this);
-      MutexHolder holder(_draw_thread->_cv_mutex);
-      if (!_draw_thread->start(TP_normal, true, true)) {
-        display_cat.error()
-          << "Unable to start draw thread.\n";
-        _draw_thread = (DrawThread *)NULL;
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::string_threading_model
-//       Access: Public, Static
-//  Description: Returns the ThreadingModel value corresponding to the
-//               indicated string, or TM_invalid if the threading
-//               model is invalid.
-////////////////////////////////////////////////////////////////////
-GraphicsEngine::ThreadingModel GraphicsEngine::
-string_threading_model(const string &string) {
-  if (cmp_nocase_uh(string, "appculldraw") == 0) {
-    return TM_appculldraw;
-
-  } else if (cmp_nocase_uh(string, "appcull_draw") == 0) {
-    return TM_appcull_draw;
-
-  } else if (cmp_nocase_uh(string, "app_culldraw") == 0) {
-    return TM_app_culldraw;
-
-  } else if (cmp_nocase_uh(string, "app_cull_draw") == 0) {
-    return TM_app_cull_draw;
-
-  } else if (cmp_nocase_uh(string, "appcdraw") == 0) {
-    return TM_appcdraw;
-
-  } else if (cmp_nocase_uh(string, "app_cdraw") == 0) {
-    return TM_app_cdraw;
-
-  } else {
-    return TM_invalid;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::cull_and_draw_together
 //       Access: Private
-//  Description: An implementation of render_frame() that renders the
-//               frame with a DrawCullHandler, to cull and draw all
-//               windows in the same pass.
+//  Description: This is called in the cull+draw thread by individual
+//               RenderThread objects during the frame rendering.  It
+//               culls the geometry and immediately draws it, without
+//               first collecting it into bins.  This is used when the
+//               threading model begins with the "-" character.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_and_draw_together() {
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
+  Windows::const_iterator wi;
+  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsWindow *win = (*wi);
-    if (win->get_window_active()) {
-      win->begin_frame();
-      win->clear();
+    if (win->is_active()) {
+      if (win->begin_frame()) {
+        win->clear();
       
-      int num_display_regions = win->get_num_display_regions();
-      for (int i = 0; i < num_display_regions; i++) {
-        DisplayRegion *dr = win->get_display_region(i);
-        cull_and_draw_together(win->get_gsg(), dr);
+        int num_display_regions = win->get_num_display_regions();
+        for (int i = 0; i < num_display_regions; i++) {
+          DisplayRegion *dr = win->get_display_region(i);
+          cull_and_draw_together(win->get_gsg(), dr);
+        }
+        win->end_frame();
       }
-      win->end_frame();
     }
-    win->process_events();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::cull_and_draw_together
 //       Access: Private
-//  Description: An implementation of render_frame() that renders the
-//               frame with a DrawCullHandler, to cull and draw all
-//               windows in the same pass.
+//  Description: This variant of cull_and_draw_together() is called
+//               only by render_subframe().
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
@@ -376,9 +391,12 @@ cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     if (dr->is_any_clear_active()) {
       gsg->clear(dr);
     }
-    
+
     DrawCullHandler cull_handler(gsg);
-    do_cull(&cull_handler, scene_setup, gsg);
+    if (gsg->begin_scene()) {
+      do_cull(&cull_handler, scene_setup, gsg);
+      gsg->end_scene();
+    }
     
     gsg->pop_display_region(old_dr);
   }
@@ -387,44 +405,48 @@ cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::cull_bin_draw
 //       Access: Private
-//  Description: An implementation of render_frame() that renders the
-//               frame with a BinCullHandler, to cull into bins and
-//               then draw the bins.  This is the normal method.
+//  Description: This is called in the cull thread by individual
+//               RenderThread objects during the frame rendering.  It
+//               collects the geometry into bins in preparation for
+//               drawing.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_bin_draw() {
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+cull_bin_draw(const GraphicsEngine::Windows &wlist) {
+  Windows::const_iterator wi;
+  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsWindow *win = (*wi);
-    if (win->get_window_active()) {
-      win->begin_frame();
-      win->clear();
+    if (win->is_active()) {
+      // This should be done in the draw thread, not here.
+      if (win->begin_frame()) {
+        win->clear();
       
-      int num_display_regions = win->get_num_display_regions();
-      for (int i = 0; i < num_display_regions; i++) {
-        DisplayRegion *dr = win->get_display_region(i);
-        cull_bin_draw(win->get_gsg(), dr);
-      }
+        int num_display_regions = win->get_num_display_regions();
+        for (int i = 0; i < num_display_regions; i++) {
+          DisplayRegion *dr = win->get_display_region(i);
+          cull_bin_draw(win->get_gsg(), dr);
+        }
 
-      win->end_frame();
+        win->end_frame();
+      }
     }
-    win->process_events();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::cull_bin_draw
 //       Access: Private
-//  Description: An implementation of render_frame() that renders the
-//               frame with a BinCullHandler, to cull into bins and
-//               then draw the bins.  This is the normal method.
+//  Description: This variant of cull_bin_draw() is called
+//               by render_subframe(), as well as within the
+//               implementation of cull_bin_draw(), above.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
   PT(CullResult) cull_result = dr->_cull_result;
-  if (cull_result == (CullResult *)NULL) {
+  if (cull_result != (CullResult *)NULL) {
+    cull_result = cull_result->make_next();
+  } else {
     cull_result = new CullResult(gsg);
   }
 
@@ -436,10 +458,47 @@ cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     cull_result->finish_cull();
     
     // Save the results for next frame.
-    dr->_cull_result = cull_result->make_next();
+    dr->_cull_result = cull_result;
     
     // Now draw.
+    // This should get deferred into the next pipeline stage.
     do_draw(cull_result, scene_setup, gsg, dr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::process_events
+//       Access: Private
+//  Description: This is called by the RenderThread object to process
+//               all the windows events (resize, etc.) for the given
+//               list of windows.  This is run in the window thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+process_events(const GraphicsEngine::Windows &wlist) {
+  Windows::const_iterator wi;
+  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
+    GraphicsWindow *win = (*wi);
+    win->process_events();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::flip_windows
+//       Access: Private
+//  Description: This is called by the RenderThread object to flip the
+//               buffers (resize, etc.) for the given list of windows.
+//               This is run in the draw thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+flip_windows(const GraphicsEngine::Windows &wlist) {
+  Windows::const_iterator wi;
+  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
+    GraphicsWindow *win = (*wi);
+    win->begin_flip();
+  }
+  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
+    GraphicsWindow *win = (*wi);
+    win->end_flip();
   }
 }
 
@@ -565,7 +624,10 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
     if (dr->is_any_clear_active()) {
       gsg->clear(dr);
     }
-    cull_result->draw();
+    if (gsg->begin_scene()) {
+      cull_result->draw();
+      gsg->end_scene();
+    }
     gsg->pop_display_region(old_dr);
   }
 }
@@ -604,6 +666,35 @@ setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_remove_window
+//       Access: Private
+//  Description: An internal function called by remove_window() and
+//               remove_all_windows() to actually remove the indicated
+//               window from all relevant structures, except the
+//               _windows list itself.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_remove_window(GraphicsWindow *window) {
+  PT(GraphicsPipe) pipe = window->get_pipe();
+  if (pipe != (GraphicsPipe *)NULL) {
+    pipe->remove_window(window);
+    window->_pipe = (GraphicsPipe *)NULL;
+  }
+
+  // Now remove the window from all threads that know about it.
+  _app.remove_window(window);
+  Threads::const_iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->remove_window(window);
+  }
+
+  // If the window happened to be controlled by the app thread, we
+  // might as well close it now rather than waiting for next frame.
+  _app.do_pending(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::terminate_threads
 //       Access: Private
 //  Description: Signals our child threads to terminate and waits for
@@ -611,115 +702,307 @@ setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 terminate_threads() {
-  if (_cull_thread != (Thread *)NULL) {
-    MutexHolder holder(_cull_thread->_cv_mutex);
-    _cull_thread->_thread_state = TS_terminate;
-    _cull_thread->_cv.signal();
-  }
-  if (_draw_thread != (Thread *)NULL) {
-    MutexHolder holder(_draw_thread->_cv_mutex);
-    _draw_thread->_thread_state = TS_terminate;
-    _draw_thread->_cv.signal();
-  }
-
-  if (_cull_thread != (Thread *)NULL) {
-    _cull_thread->join();
-    _cull_thread = (CullThread *)NULL;
-  }
-  if (_draw_thread != (Thread *)NULL) {
-    _draw_thread->join();
-    _draw_thread = (DrawThread *)NULL;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::CullThread::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-GraphicsEngine::CullThread::
-CullThread(const string &name, GraphicsEngine *engine) : 
-  Thread(name),
-  _engine(engine),
-  _cv(_cv_mutex)
-{
-  _thread_state = TS_wait;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::CullThread::thread_main
-//       Access: Public, Virtual
-//  Description: Runs the cull thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsEngine::CullThread::
-thread_main() {
-  MutexHolder holder(_cv_mutex);
-  while (_thread_state != TS_terminate) {
-    _cv.wait();
-    if (_thread_state == TS_do_frame) {
-      _engine->start_cull();
-      _thread_state = TS_wait;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::DrawThread::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-GraphicsEngine::DrawThread::
-DrawThread(const string &name, GraphicsEngine *engine) : 
-  Thread(name),
-  _engine(engine),
-  _cv(_cv_mutex)
-{
-  _thread_state = TS_wait;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::DrawThread::thread_main
-//       Access: Public, Virtual
-//  Description: Runs the draw thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsEngine::DrawThread::
-thread_main() {
-  MutexHolder holder(_cv_mutex);
-  while (_thread_state != TS_terminate) {
-    _cv.wait();
-    if (_thread_state == TS_do_frame) {
-      //      _engine->start_draw();
-      _thread_state = TS_wait;
-    }
-  }
-}
-
-ostream &
-operator << (ostream &out, GraphicsEngine::ThreadingModel threading_model) {
-  switch (threading_model) {
-  case GraphicsEngine::TM_invalid:
-    return out << "invalid";
-    
-  case GraphicsEngine::TM_appculldraw:
-    return out << "appculldraw";
-
-  case GraphicsEngine::TM_appcull_draw:
-    return out << "appcull_draw";
-
-  case GraphicsEngine::TM_app_culldraw:
-    return out << "app_culldraw";
-
-  case GraphicsEngine::TM_app_cull_draw:
-    return out << "app_cull_draw";
-
-  case GraphicsEngine::TM_appcdraw:
-    return out << "appcdraw";
-
-  case GraphicsEngine::TM_app_cdraw:
-    return out << "app_cdraw";
+  MutexHolder holder(_lock);
   
-  default:
-    return out << "**invalid threading model (" << (int)threading_model
-               << ")**";
+  // First, wait for all the threads to finish their current frame.
+  // Grabbing the mutex should achieve that.
+  Threads::const_iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.lock();
+  }
+
+  // Now tell them to release their windows' graphics contexts.
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    if (thread->_thread_state == TS_wait) {
+      thread->_thread_state = TS_do_release;
+      thread->_cv.signal();
+    }
+    thread->_cv_mutex.release();
+  }
+
+  // Grab the mutex again to wait for the above to complete.
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.lock();
+  }
+
+  // Now tell them to close their windows and terminate.
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    MutexHolder cv_holder(thread->_cv_mutex);
+    thread->_thread_state = TS_terminate;
+    thread->_cv.signal();
+    thread->_cv_mutex.release();
+  }
+
+  // Finally, wait for them all to finish cleaning up.
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->join();
+  }
+  
+  _threads.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_window_renderer
+//       Access: Private
+//  Description: Returns the WindowRenderer with the given name.
+//               Creates a new RenderThread if there is no such thread
+//               already.
+////////////////////////////////////////////////////////////////////
+GraphicsEngine::WindowRenderer *GraphicsEngine::
+get_window_renderer(const string &name) {
+  if (name.empty()) {
+    return &_app;
+  }
+
+  MutexHolder holder(_lock);
+  Threads::iterator ti = _threads.find(name);
+  if (ti != _threads.end()) {
+    return (*ti).second.p();
+  }
+
+  PT(RenderThread) thread = new RenderThread(name, this);
+  thread->start(TP_normal, true, true);
+  _threads[name] = thread;
+
+  return thread.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::add_window
+//       Access: Public
+//  Description: Adds a new window to the indicated list, which should
+//               be a member of the WindowRenderer.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+add_window(Windows &wlist, GraphicsWindow *window) {
+  MutexHolder holder(_wl_lock);
+  wlist.insert(window);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::remove_window_now
+//       Access: Public
+//  Description: Immediately removes the indicated window from all
+//               lists.  If the window is currently open and is
+//               already on the _window list, moves it to the _pending_close
+//               list for later closure.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+remove_window(GraphicsWindow *window) {
+  MutexHolder holder(_wl_lock);
+  PT(GraphicsWindow) ptwin = window;
+
+  _cull.erase(ptwin);
+
+  Windows::iterator wi;
+
+  wi = _cdraw.find(ptwin);
+  if (wi != _cdraw.end()) {
+    // The window is on our _cdraw list, meaning its GSG operations are
+    // serviced by this thread (cull and draw in the same operation).
+    
+    // Move it to the pending release thread so we can release the GSG
+    // when the thread next runs.  We can't do this immediately,
+    // because we might not have been called from the subthread.
+    _pending_release.insert(ptwin);
+    _cdraw.erase(wi);
+  }
+
+  wi = _draw.find(ptwin);
+  if (wi != _draw.end()) {
+    // The window is on our _draw list, meaning its GSG operations are
+    // serviced by this thread (draw performed on this thread).
+    
+    // Move it to the pending release thread so we can release the GSG
+    // when the thread next runs.  We can't do this immediately,
+    // because we might not have been called from the subthread.
+    _pending_release.insert(ptwin);
+    _draw.erase(wi);
+  }
+
+  wi = _window.find(ptwin);
+  if (wi != _window.end()) {
+    // The window is on our _window list, meaning its open/close
+    // operations (among other window ops) are serviced by this
+    // thread.
+
+    // Make sure the window isn't about to request itself open.
+    WindowProperties close_properties;
+    close_properties.set_open(false);
+    ptwin->request_properties(close_properties);
+
+    // If the window is already open, move it to the _pending_close list so
+    // it can be closed later.  We can't close it immediately, because
+    // we might not have been called from the subthread.
+    if (!ptwin->is_closed()) {
+      _pending_close.insert(ptwin);
+    }
+
+    _window.erase(wi);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::do_frame
+//       Access: Public
+//  Description: Executes one stage of the pipeline for the current
+//               thread: calls cull on all windows that are on the
+//               cull list for this thread, draw on all the windows on
+//               the draw list, etc.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+do_frame(GraphicsEngine *engine) {
+  MutexHolder holder(_wl_lock);
+  engine->cull_bin_draw(_cull);
+  engine->cull_and_draw_together(_cdraw);
+  engine->process_events(_window);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::do_flip
+//       Access: Public
+//  Description: Flips the windows as appropriate for the current
+//               thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+do_flip(GraphicsEngine *engine) {
+  MutexHolder holder(_wl_lock);
+  engine->flip_windows(_cdraw);
+  engine->flip_windows(_draw);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::do_release
+//       Access: Public
+//  Description: Releases the rendering contexts for all windows on
+//               the _draw list.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+do_release(GraphicsEngine *) {
+  MutexHolder holder(_wl_lock);
+  Windows::iterator wi;
+  for (wi = _draw.begin(); wi != _draw.end(); ++wi) {
+    GraphicsWindow *win = (*wi);
+    win->release_gsg();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::do_close
+//       Access: Public
+//  Description: Closes all the windows on the _window list.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+do_close(GraphicsEngine *) {
+  WindowProperties close_properties;
+  close_properties.set_open(false);
+
+  MutexHolder holder(_wl_lock);
+  Windows::iterator wi;
+  for (wi = _window.begin(); wi != _window.end(); ++wi) {
+    GraphicsWindow *win = (*wi);
+    win->set_properties_now(close_properties);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::do_pending
+//       Access: Public
+//  Description: Actually closes any windows that were recently
+//               removed from the WindowRenderer.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+do_pending(GraphicsEngine *engine) {
+  MutexHolder holder(_wl_lock);
+
+  if (!_pending_release.empty()) {
+    // Release any GSG's that were waiting.
+    Windows::iterator wi;
+    for (wi = _pending_release.begin(); wi != _pending_release.end(); ++wi) {
+      GraphicsWindow *win = (*wi);
+      win->release_gsg();
+    }
+    _pending_release.clear();
+  }
+
+  if (!_pending_close.empty()) {
+    WindowProperties close_properties;
+    close_properties.set_open(false);
+
+    // Close any windows that were pending closure, but only if their
+    // associated GSG has already been released.
+    Windows new_pending_close;
+    Windows::iterator wi;
+    for (wi = _pending_close.begin(); wi != _pending_close.end(); ++wi) {
+      GraphicsWindow *win = (*wi);
+      if (win->get_gsg() == (GraphicsStateGuardian *)NULL) {
+        win->set_properties_now(close_properties);
+      } else {
+        // If the GSG hasn't been released yet, we have to save the
+        // close operation for next frame.
+        new_pending_close.insert(win);
+      }
+    }
+    _pending_close.swap(new_pending_close);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::RenderThread::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GraphicsEngine::RenderThread::
+RenderThread(const string &name, GraphicsEngine *engine) : 
+  Thread(name),
+  _engine(engine),
+  _cv(_cv_mutex)
+{
+  _thread_state = TS_wait;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::RenderThread::thread_main
+//       Access: Public, Virtual
+//  Description: The main loop for a particular render thread.  The
+//               thread will process whatever cull or draw windows it
+//               has assigned to it.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::RenderThread::
+thread_main() {
+  MutexHolder holder(_cv_mutex);
+  while (true) {
+    _cv.wait();
+    switch (_thread_state) {
+    case TS_wait:
+      break;
+
+    case TS_do_frame:
+      do_pending(_engine);
+      do_frame(_engine);
+      _thread_state = TS_wait;
+      break;
+
+    case TS_do_flip:
+      do_flip(_engine);
+      _thread_state = TS_wait;
+      break;
+
+    case TS_do_release:
+      do_pending(_engine);
+      do_release(_engine);
+      _thread_state = TS_wait;
+      break;
+
+    case TS_terminate:
+      do_pending(_engine);
+      do_close(_engine);
+      return;
+    }
   }
 }

@@ -153,7 +153,6 @@ GLGraphicsStateGuardian::
 void GLGraphicsStateGuardian::
 reset() {
   free_pointers();
-  activate();
   GraphicsStateGuardian::reset();
 
   _buffer_mask = 0;
@@ -165,6 +164,10 @@ reset() {
                   RenderBuffer::T_accum);
 
   // Check to see if we have double-buffering.
+
+  // This isn't completely right.  Instead of just clearing this bit
+  // and disallowing writes to T_back, we need to set T_front on
+  // operations that might have had T_back set otherwise.
   GLboolean has_back;
   glGetBooleanv(GL_DOUBLEBUFFER, &has_back);
   if (!has_back) {
@@ -296,6 +299,7 @@ reset() {
     if(glgsg_cat.is_debug())
         glgsg_cat.debug() << "frame buffer depth < 8bits channel, enabling dithering\n";
   }
+  report_gl_errors();
 }
 
 
@@ -307,9 +311,7 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 do_clear(const RenderBuffer &buffer) {
-  DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector);)
-  //  activate();
-
+  //  DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector);)
   nassertv(buffer._gsg == this);
   int buffer_type = buffer._buffer_type;
   GLbitfield mask = 0;
@@ -368,7 +370,9 @@ do_clear(const RenderBuffer &buffer) {
 #endif
 
   modify_state(state);
+
   glClear(mask);
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -398,6 +402,7 @@ prepare_display_region() {
     call_glScissor( x, y, width, height );
     call_glViewport( x, y, width, height );
   }
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -442,8 +447,45 @@ prepare_lens() {
 #endif
   glMatrixMode(GL_PROJECTION);
   glLoadMatrixf(new_projection_mat.get_data());
+  report_gl_errors();
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_frame
+//       Access: Public, Virtual
+//  Description: Called before each frame is rendered, to allow the
+//               GSG a chance to do any internal cleanup before
+//               beginning the frame.
+//
+//               The return value is true if successful (in which case
+//               the frame will be drawn and end_frame() will be
+//               called later), or false if unsuccessful (in which
+//               case nothing will be drawn and end_frame() will not
+//               be called).
+////////////////////////////////////////////////////////////////////
+bool GLGraphicsStateGuardian::
+begin_frame() {
+  if (!GraphicsStateGuardian::begin_frame()) {
+    return false;
+  }
+
+  report_gl_errors();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::end_frame
+//       Access: Public, Virtual
+//  Description: Called after each frame is rendered, to allow the
+//               GSG a chance to do any internal cleanup after
+//               rendering the frame, and before the window flips.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+end_frame() {
+  GraphicsStateGuardian::end_frame();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -453,8 +495,6 @@ prepare_lens() {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_point(GeomPoint *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_point()" << endl;
 #endif
@@ -505,7 +545,7 @@ draw_point(GeomPoint *geom, GeomContext *) {
   }
 
   glEnd();
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -515,8 +555,6 @@ draw_point(GeomPoint *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_line(GeomLine *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_line()" << endl;
 #endif
@@ -578,7 +616,7 @@ draw_line(GeomLine *geom, GeomContext *) {
   }
 
   glEnd();
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -588,8 +626,6 @@ draw_line(GeomLine *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_linestrip(GeomLinestrip *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_linestrip()" << endl;
 #endif
@@ -676,7 +712,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
     }
     glEnd();
   }
-  report_errors();
+  report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
@@ -949,7 +985,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   if(alpha && _dithering_enabled)
      glEnable(GL_DITHER);
 
-  report_errors();
+  report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
@@ -961,8 +997,6 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_polygon(GeomPolygon *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
@@ -1031,7 +1065,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
     }
     glEnd();
   }
-  report_errors();
+  report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
@@ -1042,8 +1076,6 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_tri(GeomTri *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tri()" << endl;
 #endif
@@ -1107,7 +1139,7 @@ draw_tri(GeomTri *geom, GeomContext *) {
   }
 
   glEnd();
-  report_errors();
+  report_gl_errors();
 #ifdef DO_PSTATS
   _draw_primitive_pcollector.stop();
 #endif
@@ -1120,8 +1152,6 @@ draw_tri(GeomTri *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_quad(GeomQuad *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_quad()" << endl;
 #endif
@@ -1185,7 +1215,7 @@ draw_quad(GeomQuad *geom, GeomContext *) {
   }
 
   glEnd();
-  report_errors();
+  report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
@@ -1196,8 +1226,6 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_tristrip(GeomTristrip *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
@@ -1283,7 +1311,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
     }
     glEnd();
   }
-  report_errors();
+  report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
@@ -1294,8 +1322,6 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_trifan(GeomTrifan *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
@@ -1381,7 +1407,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
     }
     glEnd();
   }
-  report_errors();
+  report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
@@ -1393,8 +1419,6 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_sphere(GeomSphere *geom, GeomContext *) {
-  //  activate();
-
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
@@ -1470,7 +1494,7 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
   }
 
   gluDeleteQuadric(sph);
-  report_errors();
+  report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
@@ -1486,8 +1510,6 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 TextureContext *GLGraphicsStateGuardian::
 prepare_texture(Texture *tex) {
-  //  activate();
-
   GLint max_tex_size; 
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size); 
 
@@ -1524,7 +1546,7 @@ prepare_texture(Texture *tex) {
   // detect this.
   nassertr(inserted, NULL);
 
-  report_errors();
+  report_gl_errors();
   return gtc;
 }
 
@@ -1536,7 +1558,6 @@ prepare_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 apply_texture(TextureContext *tc) {
-  //  activate();
   add_to_texture_record(tc);
   bind_texture(tc);
 
@@ -1552,7 +1573,7 @@ apply_texture(TextureContext *tc) {
 
   tc->clear_dirty_flags();
 
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1563,7 +1584,6 @@ apply_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
-  //  activate();
   GLTextureContext *gtc = DCAST(GLTextureContext, tc);
   Texture *tex = tc->_texture;
 
@@ -1581,7 +1601,7 @@ release_texture(TextureContext *tc) {
   tex->clear_gsg(this);
 
   delete gtc;
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1772,8 +1792,6 @@ static int binary_log_cap(const int x) {
 void GLGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
   nassertv(tc != NULL && dr != NULL);
-  //  activate();
-
   Texture *tex = tc->_texture;
 
   int xo, yo, w, h;
@@ -1819,7 +1837,6 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
-  //  activate();
   set_read_buffer(rb);
   copy_texture(tc, dr);
 }
@@ -1832,8 +1849,6 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb
 void GLGraphicsStateGuardian::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
   nassertv(tc != NULL && pb != NULL);
-  //  activate();
-
   Texture *tex = tc->_texture;
 
   int w = tex->_pbuffer->get_xsize();
@@ -1848,7 +1863,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
   texture_to_pixel_buffer(tc, pb, dr);
 
   pop_frame_buffer(old_fb);
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1860,8 +1875,6 @@ void GLGraphicsStateGuardian::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
                         const DisplayRegion *dr) {
   nassertv(tc != NULL && pb != NULL && dr != NULL);
-  //  activate();
-
   Texture *tex = tc->_texture;
 
   // Do a deep copy to initialize the pixel buffer
@@ -1876,7 +1889,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
     pb->_image = PTA_uchar::empty_array(w * h * pb->get_num_components());
     copy_pixel_buffer(pb, dr);
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1887,7 +1900,6 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 void GLGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   nassertv(pb != NULL && dr != NULL);
-  //  activate();
   set_pack_alignment(1);
 
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
@@ -1950,7 +1962,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
                get_image_type(pb->get_image_type()),
                pb->_image.p());
 
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1961,7 +1973,6 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 void GLGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
-  //  activate();
   set_read_buffer(rb);
   copy_pixel_buffer(pb, dr);
 }
@@ -2008,7 +2019,7 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
 
   call_glLightModelLocal(material->get_local());
   call_glLightModelTwoSide(material->get_twoside());
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2033,7 +2044,7 @@ apply_fog(Fog *fog) {
   }
 
   call_glFogColor(fog->get_color());
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2051,7 +2062,7 @@ issue_transform(const TransformState *transform) {
   glMatrixMode(GL_MODELVIEW);
   glLoadMatrixf(transform->get_mat().get_data());
 
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2063,7 +2074,7 @@ void GLGraphicsStateGuardian::
 issue_tex_matrix(const TexMatrixAttrib *attrib) {
   glMatrixMode(GL_TEXTURE);
   glLoadMatrixf(attrib->get_mat().get_data());
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2081,7 +2092,7 @@ issue_texture(const TextureAttrib *attrib) {
     nassertv(tex != (Texture *)NULL);
     tex->apply(this);
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2099,7 +2110,7 @@ issue_material(const MaterialAttrib *attrib) {
     Material empty;
     apply_material(&empty);
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2125,7 +2136,7 @@ issue_render_mode(const RenderModeAttrib *attrib) {
     glgsg_cat.error()
       << "Unknown render mode " << (int)mode << endl;
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2137,7 +2148,7 @@ void GLGraphicsStateGuardian::
 issue_texture_apply(const TextureApplyAttrib *attrib) {
   GLint glmode = get_texture_apply_mode_type(attrib->get_mode());
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2159,7 +2170,7 @@ issue_color_write(const ColorWriteAttrib *attrib) {
     } else {
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
-    report_errors();
+    report_gl_errors();
 
   } else {
     // Some implementations don't seem to handle glColorMask() very
@@ -2185,7 +2196,7 @@ issue_depth_test(const DepthTestAttrib *attrib) {
     enable_depth_test(true);
     glDepthFunc(PANDA_TO_GL_COMPAREFUNC(mode));
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2218,7 +2229,7 @@ issue_depth_write(const DepthWriteAttrib *attrib) {
   } else {
     glDepthMask(GL_TRUE);
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2247,7 +2258,7 @@ issue_cull_face(const CullFaceAttrib *attrib) {
       << "invalid cull face mode " << (int)mode << endl;
     break;
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2265,7 +2276,7 @@ issue_fog(const FogAttrib *attrib) {
   } else {
     enable_fog(false);
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2287,7 +2298,7 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
     enable_polygon_offset(false);
   }
 
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2328,7 +2339,7 @@ bind_light(PointLight *light, int light_id) {
   glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
   glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2370,7 +2381,7 @@ bind_light(DirectionalLight *light, int light_id) {
   glLightf(id, GL_LINEAR_ATTENUATION, 0.0f);
   glLightf(id, GL_QUADRATIC_ATTENUATION, 0.0f);
 
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2411,7 +2422,7 @@ bind_light(Spotlight *light, int light_id) {
   glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
   glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2485,26 +2496,29 @@ compute_distance_to(const LPoint3f &point) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: report_errors_loop
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: The internal implementation of report_errors().
 //               Don't call this function; use report_errors()
 //               instead.
 ////////////////////////////////////////////////////////////////////
-
-void report_errors_loop(GLenum error_code) {
+void GLGraphicsStateGuardian::
+report_errors_loop(int line, const char *source_file, GLenum error_code) {
 #ifndef NDEBUG
-#define MAXGLERRORSREPORTED 20
-  int cnt=0;
-  while ((cnt<MAXGLERRORSREPORTED) && (error_code != GL_NO_ERROR)) {
+  static const int max_gl_errors_reported = 20;
+  int count = 0;
+  while ((count < max_gl_errors_reported) && (error_code != GL_NO_ERROR)) {
     const GLubyte *error_string = gluErrorString(error_code);
     if (error_string != (const GLubyte *)NULL) {
-      glgsg_cat.error() << error_string << "\n";
+      glgsg_cat.error()
+        << "at " << line << " of " << source_file << ": " 
+        << error_string << "\n";
     } else {
       glgsg_cat.error()
-        << "Error number " << (int)error_code << "; no string available.\n";
+        << "at " << line << " of " << source_file << ": " 
+        << "GL error " << (int)error_code << "\n";
     }
     error_code = glGetError();
-    cnt++;
+    count++;
   }
 #endif
 }
@@ -2555,7 +2569,7 @@ set_draw_buffer(const RenderBuffer &rb) {
   default:
     call_glDrawBuffer(GL_FRONT_AND_BACK);
   }
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2604,7 +2618,7 @@ set_read_buffer(const RenderBuffer &rb) {
   default:
     call_glReadBuffer(GL_FRONT_AND_BACK);
   }
-  report_errors();
+  report_gl_errors();
 }
 
 
@@ -2615,7 +2629,6 @@ set_read_buffer(const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 bind_texture(TextureContext *tc) {
-  //  activate();
   GLTextureContext *gtc = DCAST(GLTextureContext, tc);
 
 #ifdef GSG_VERBOSE
@@ -2625,7 +2638,7 @@ bind_texture(TextureContext *tc) {
     << ")" << endl;
 #endif
   glBindTexture(GL_TEXTURE_2D, gtc->_index);
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2651,7 +2664,7 @@ specify_texture(Texture *tex) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                     get_texture_filter_type(tex->get_magfilter()));
   }
-  report_errors();
+  report_gl_errors();
 }
 
 #ifndef NDEBUG
@@ -2833,7 +2846,7 @@ apply_texture_immediate(Texture *tex) {
           }
 #endif
         }
-      report_errors();
+      report_gl_errors();
 
       if (locally_allocated_image != (uchar *)NULL) {
         delete[] locally_allocated_image;
@@ -2847,7 +2860,7 @@ apply_texture_immediate(Texture *tex) {
                xsize, ysize, pb->get_border(),
                external_format, type, image);
 
-  //report_errors();
+  //report_gl_errors();
   // want to give explict error for texture creation failure
   GLenum error_code = glGetError();
   if(error_code != GL_NO_ERROR) {
@@ -2871,8 +2884,6 @@ apply_texture_immediate(Texture *tex) {
 void GLGraphicsStateGuardian::
 draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   nassertv(tc != NULL && dr != NULL);
-  //  activate();
-
   Texture *tex = tc->_texture;
 
   DisplayRegionStack old_dr = push_display_region(dr);
@@ -2947,7 +2958,6 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
 void GLGraphicsStateGuardian::
 draw_texture(TextureContext *tc, const DisplayRegion *dr, 
              const RenderBuffer &rb) {
-  //  activate();
   set_draw_buffer(rb);
   draw_texture(tc, dr);
 }
@@ -2962,8 +2972,6 @@ void GLGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   nassertv(pb != NULL && dr != NULL);
   nassertv(!pb->_image.empty());
-  //  activate();
-
   DisplayRegionStack old_dr = push_display_region(dr);
   prepare_display_region();
 
@@ -3011,11 +3019,13 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
   set_unpack_alignment(1);
 
+  WindowProperties props = _win->get_properties();
+
   glMatrixMode( GL_PROJECTION );
   glPushMatrix();
   glLoadIdentity();
-  gluOrtho2D(0, _win->get_width(),
-             0, _win->get_height());
+  gluOrtho2D(0, props.get_x_size(),
+             0, props.get_y_size());
 
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
@@ -3068,7 +3078,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   glPopMatrix();
 
   pop_display_region(old_dr);
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3079,7 +3089,6 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 void GLGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
-  //  activate();
   set_draw_buffer(rb);
   draw_pixel_buffer(pb, dr);
 }
@@ -3340,8 +3349,6 @@ void GLGraphicsStateGuardian::
 print_gfx_visual() {
   GLint i;
   GLboolean j;
-  //  activate();
-
   cout << "Graphics Visual Info (# bits of each):" << endl;
 
   cout << "RGBA: ";
@@ -3588,7 +3595,7 @@ bind_clip_plane(PlaneNode *plane, int plane_id) {
                       xformed_plane._c, xformed_plane._d);
   glClipPlane(id, double_plane.get_data());
 
-  report_errors();
+  report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3710,7 +3717,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::free_pointers
-//       Access: Protected
+//       Access: Protected, Virtual
 //  Description: Frees some memory that was explicitly allocated
 //               within the glgsg.
 ////////////////////////////////////////////////////////////////////
@@ -3994,7 +4001,6 @@ dump_state(void)
 {
   if (glgsg_cat.is_debug())
     {
-      int i;
       ostream &dump = glgsg_cat.debug(false);
       glgsg_cat.debug() << "Dumping GL State" << endl;
 

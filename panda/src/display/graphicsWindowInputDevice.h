@@ -19,10 +19,10 @@
 #ifndef GRAPHICSWINDOWINPUTDEVICE_H
 #define GRAPHICSWINDOWINPUTDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <buttonEvent.h>
-#include <mouseData.h>
+#include "buttonEvent.h"
+#include "mouseData.h"
 
 #include "pdeque.h"
 #include "pvector.h"

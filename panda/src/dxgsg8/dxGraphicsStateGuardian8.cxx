@@ -77,7 +77,7 @@ const int VERT_BUFFER_SIZE = (32*6*1024L);
 // note multiple region code doesnt work now (see prepare_display_region,set_clipper)
 #define NO_MULTIPLE_DISPLAY_REGIONS
 
-TypeHandle DXGraphicsStateGuardian::_type_handle;
+TypeHandle DXGraphicsStateGuardian8::_type_handle;
 
 // bit masks used for drawing primitives
 // bitmask type: normal=0x1,color=0x2,texcoord=0x4
@@ -176,7 +176,7 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
         pop ebx
     }
 
-   //   dxgsg_cat.debug() << (void*)d3dcolor << endl;
+   //   dxgsg8_cat.debug() << (void*)d3dcolor << endl;
    return d3dcolor;
 #else //!_X86_
    return MY_D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
@@ -225,13 +225,13 @@ void make_D3DFORMAT_map(void) {
     INSERT_ELEM(DXT5);
 }
 
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 set_color_clear_value(const Colorf& value) {
   _color_clear_value = value;
   _d3dcolor_clear_value =  Colorf_to_D3DCOLOR(value);
 }
 
-DXShaderHandle DXGraphicsStateGuardian::
+DXShaderHandle DXGraphicsStateGuardian8::
 read_pixel_shader(string &filename) {
     HRESULT hr;
     DXShaderHandle hShader=NULL;
@@ -246,7 +246,7 @@ read_pixel_shader(string &filename) {
     if(bIsCompiledShader) {
         hFile = CreateFile(filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
         if(hFile == INVALID_HANDLE_VALUE) {
-            dxgsg_cat.error() << "Could not find shader file '"<< filename << "'\n";
+            dxgsg8_cat.error() << "Could not find shader file '"<< filename << "'\n";
             return NULL;
         }
 
@@ -254,7 +254,7 @@ read_pixel_shader(string &filename) {
 
         pShaderBytes = new BYTE[FileSize];
         if (pShaderBytes==NULL) {
-            dxgsg_cat.error() << "MemAlloc failed for shader file '"<< filename << "'\n";
+            dxgsg8_cat.error() << "MemAlloc failed for shader file '"<< filename << "'\n";
             goto exit_create_pshader;
         }
 
@@ -263,23 +263,23 @@ read_pixel_shader(string &filename) {
     } else {
         #if defined(NDEBUG) && !defined(COMPILE_TEXT_SHADERFILES)
             // want to keep bulky d3dx shader assembler stuff out of publish build
-            dxgsg_cat.error() << "publish build only reads .vso compiled shaders!\n";
+            dxgsg8_cat.error() << "publish build only reads .vso compiled shaders!\n";
             exit(1);
         #else
            // check for file existence
            WIN32_FIND_DATA Junk;
            HANDLE FindFileHandle = FindFirstFile(filename.c_str(),&Junk);
            if ( FindFileHandle == INVALID_HANDLE_VALUE ) {
-                dxgsg_cat.error() << "Could not find shader file '"<< filename << "'\n";
+                dxgsg8_cat.error() << "Could not find shader file '"<< filename << "'\n";
                 return NULL;
            }
            FindClose(FindFileHandle);
 
            hr = D3DXAssembleShaderFromFile(filename.c_str(),D3DXASM_DEBUG,NULL,&pD3DXBuf_CompiledShader,&pD3DXBuf_CompilationErrors);
            if(FAILED(hr)) {
-               dxgsg_cat.error() << "D3DXAssembleShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
+               dxgsg8_cat.error() << "D3DXAssembleShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
                if(pD3DXBuf_CompilationErrors!=NULL) {
-                   dxgsg_cat.error() << "Compilation Errors: " << (char*) pD3DXBuf_CompilationErrors->GetBufferPointer() << endl;
+                   dxgsg8_cat.error() << "Compilation Errors: " << (char*) pD3DXBuf_CompilationErrors->GetBufferPointer() << endl;
                }
                exit(1);
            }
@@ -290,14 +290,14 @@ read_pixel_shader(string &filename) {
    hr = scrn.pD3DDevice->CreatePixelShader((DWORD*) ((pD3DXBuf_CompiledShader!=NULL) ? pD3DXBuf_CompiledShader->GetBufferPointer() : pShaderBytes),
                                      &hShader);
    if (FAILED(hr)) {
-        dxgsg_cat.error() << "CreatePixelShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "CreatePixelShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
         hShader=NULL;
    }
 
    assert(hShader!=NULL);   // NULL is invalid I hope
 
    #ifdef _DEBUG
-      dxgsg_cat.debug() <<  "CreatePixelShader succeeded for "<< filename << endl;
+      dxgsg8_cat.debug() <<  "CreatePixelShader succeeded for "<< filename << endl;
    #endif
 
  exit_create_pshader:
@@ -309,7 +309,7 @@ read_pixel_shader(string &filename) {
 }
 
 
-DXShaderHandle DXGraphicsStateGuardian::
+DXShaderHandle DXGraphicsStateGuardian8::
 read_vertex_shader(string &filename) {
 #ifndef USE_VERTEX_SHADERS
     return NULL;
@@ -342,7 +342,7 @@ read_vertex_shader(string &filename) {
     if(bIsCompiledShader) {
         hFile = CreateFile(filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
         if(hFile == INVALID_HANDLE_VALUE) {
-            dxgsg_cat.error() << "Could not find shader file '"<< filename << "'\n";
+            dxgsg8_cat.error() << "Could not find shader file '"<< filename << "'\n";
             return NULL;
         }
 
@@ -350,7 +350,7 @@ read_vertex_shader(string &filename) {
 
         pShaderBytes = new BYTE[FileSize];
         if (pShaderBytes==NULL) {
-            dxgsg_cat.error() << "MemAlloc failed for shader file '"<< filename << "'\n";
+            dxgsg8_cat.error() << "MemAlloc failed for shader file '"<< filename << "'\n";
             goto exit_create_vshader;
         }
 
@@ -359,23 +359,23 @@ read_vertex_shader(string &filename) {
     } else {
         #if defined(NDEBUG) && !defined(COMPILE_TEXT_SHADERFILES)
             // want to keep bulky d3dx shader assembler stuff out of publish build
-            dxgsg_cat.error() << "publish build only reads .vso compiled shaders!\n";
+            dxgsg8_cat.error() << "publish build only reads .vso compiled shaders!\n";
             exit(1);
         #else
            // check for file existence
            WIN32_FIND_DATA Junk;
            HANDLE FindFileHandle = FindFirstFile(filename.c_str(),&Junk);
            if ( FindFileHandle == INVALID_HANDLE_VALUE ) {
-                dxgsg_cat.error() << "Could not find shader file '"<< filename << "'\n";
+                dxgsg8_cat.error() << "Could not find shader file '"<< filename << "'\n";
                 return NULL;
            }
            FindClose(FindFileHandle);
 
            hr = D3DXAssembleShaderFromFile(filename.c_str(),D3DXASM_DEBUG,&pD3DXBuf_Constants,&pD3DXBuf_CompiledShader,&pD3DXBuf_CompilationErrors);
            if(FAILED(hr)) {
-               dxgsg_cat.error() << "D3DXAssembleShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
+               dxgsg8_cat.error() << "D3DXAssembleShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
                if(pD3DXBuf_CompilationErrors!=NULL) {
-                   dxgsg_cat.error() << "Compilation Errors: " << (char*) pD3DXBuf_CompilationErrors->GetBufferPointer() << endl;
+                   dxgsg8_cat.error() << "Compilation Errors: " << (char*) pD3DXBuf_CompilationErrors->GetBufferPointer() << endl;
                }
                exit(1);
            }
@@ -398,14 +398,14 @@ read_vertex_shader(string &filename) {
                                      (DWORD*) ((pD3DXBuf_CompiledShader!=NULL) ? pD3DXBuf_CompiledShader->GetBufferPointer() : pShaderBytes),
                                      &hShader, UsageFlags);
    if(FAILED(hr)) {
-        dxgsg_cat.error() << "CreateVertexShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "CreateVertexShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
         hShader=NULL;
    }
 
    assert(hShader!=NULL);   // NULL is invalid I hope
 
    #ifdef _DEBUG
-      dxgsg_cat.debug() <<  "CreateVertexShader succeeded for "<< filename << endl;
+      dxgsg8_cat.debug() <<  "CreateVertexShader succeeded for "<< filename << endl;
    #endif
 
  exit_create_vshader:
@@ -417,7 +417,7 @@ read_vertex_shader(string &filename) {
 #endif
 }
 
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 reset_panda_gsg(void) {
     GraphicsStateGuardian::reset();
 
@@ -437,12 +437,12 @@ reset_panda_gsg(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::Constructor
+//     Function: DXGraphicsStateGuardian8::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXGraphicsStateGuardian::
-DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
+DXGraphicsStateGuardian8::
+DXGraphicsStateGuardian8(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     reset_panda_gsg();
 
     // allocate local buffers used during rendering
@@ -453,9 +453,6 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 
     _pFvfBufBasePtr = NULL;
     _index_buf=NULL;
-
-    _pStatMeterFont=NULL;
-    _bShowFPSMeter = false;
 
     // may persist across dx_init's?  (for dx8.1 but not dx8.0?)
     _CurVertexShader = _CurPixelShader = NULL;
@@ -477,12 +474,12 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::Destructor
+//     Function: DXGraphicsStateGuardian8::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXGraphicsStateGuardian::
-~DXGraphicsStateGuardian() {
+DXGraphicsStateGuardian8::
+~DXGraphicsStateGuardian8() {
     if (scrn.pD3DDevice != NULL)
         scrn.pD3DDevice->SetTexture(0, NULL);  // this frees reference to the old texture
     _pCurTexContext = NULL;
@@ -491,15 +488,15 @@ DXGraphicsStateGuardian::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::reset
+//     Function: DXGraphicsStateGuardian8::reset
 //       Access: Public, Virtual
 //  Description: Resets all internal state as if the gsg were newly
 //               created.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 reset(void) {
     reset_panda_gsg();
-    dxgsg_cat.error() << "DXGSG reset() not implemented properly yet!\n";
+    dxgsg8_cat.error() << "DXGSG reset() not implemented properly yet!\n";
     // what else do we need to do?
     // delete all the objs too, right?
     // need to do a
@@ -507,7 +504,7 @@ reset(void) {
 }
 
 // setup up for re-calling dx_init(), this is not the final exit cleanup routine (see dx_cleanup)
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 free_d3d_device(void) {
     // dont want a full reset of gsg, just a state clear
     set_state(RenderState::make_empty());
@@ -522,7 +519,7 @@ free_d3d_device(void) {
     DeleteAllDeviceObjects();
 
     if (scrn.pD3DDevice!=NULL)
-        RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
+        RELEASE(scrn.pD3DDevice,dxgsg8,"d3dDevice",RELEASE_DOWN_TO_ZERO);
 
     free_nondx_resources();
 
@@ -530,12 +527,12 @@ free_d3d_device(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::free_nondx_resources
+//     Function: DXGraphicsStateGuardian8::free_nondx_resources
 //       Access: Public
 //  Description: Frees some memory that was explicitly allocated
 //               within the dxgsg.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 free_nondx_resources() {
     // this must not release any objects associated with D3D/DX!
     // those should be released in free_dxgsg_objects instead
@@ -544,12 +541,12 @@ free_nondx_resources() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::reset
+//     Function: DXGraphicsStateGuardian8::reset
 //       Access: Public, Virtual
 //  Description: Handles initialization which assumes that DX has already been
 //               set up.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 dx_init(HCURSOR hMouseCursor) {
     HRESULT hr;
 
@@ -656,35 +653,35 @@ dx_init(HCURSOR hMouseCursor) {
 
     if ((dx_decal_type==GDT_offset) && !(scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBIAS)) {
        if(scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) {
-         if(dxgsg_cat.is_debug())
-            dxgsg_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to mask-type decals\n";
+         if(dxgsg8_cat.is_debug())
+            dxgsg8_cat.debug() << "dx-decal-type 'offset' not supported by hardware, switching to mask-type decals\n";
          dx_decal_type = GDT_mask;
        } else {
-         if(dxgsg_cat.is_debug())
-            dxgsg_cat.debug() << "dx-decal-type 'offset' and color-writemasking not supported by hardware, switching to decal double-draw blend-based masking\n";
+         if(dxgsg8_cat.is_debug())
+            dxgsg8_cat.debug() << "dx-decal-type 'offset' and color-writemasking not supported by hardware, switching to decal double-draw blend-based masking\n";
          dx_decal_type = GDT_blend;
        }
     }
 
 #ifdef DISABLE_POLYGON_OFFSET_DECALING
     if(dx_decal_type==GDT_offset) {
-        if(dxgsg_cat.is_spam())
-           dxgsg_cat.spam() << "polygon-offset decaling disabled in dxgsg, switching to double-draw decaling\n";
+        if(dxgsg8_cat.is_spam())
+           dxgsg8_cat.spam() << "polygon-offset decaling disabled in dxgsg, switching to double-draw decaling\n";
 
         if(scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) {
-         if(dxgsg_cat.is_debug())
-            dxgsg_cat.debug() << "using dx-decal-type 'GDT_mask'\n";
+         if(dxgsg8_cat.is_debug())
+            dxgsg8_cat.debug() << "using dx-decal-type 'GDT_mask'\n";
          dx_decal_type = GDT_mask;
         } else {
-         if(dxgsg_cat.is_debug())
-            dxgsg_cat.debug() << "dx-decal-type 'mask' not supported by hardware, switching to GDT_blend\n";
+         if(dxgsg8_cat.is_debug())
+            dxgsg8_cat.debug() << "dx-decal-type 'mask' not supported by hardware, switching to GDT_blend\n";
          dx_decal_type = GDT_blend;
         }
     }
 #endif
 
     if (((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_MASKZ)) {
-        dxgsg_cat.error() << "dx-decal-types mask&blend impossible to implement, no hardware support for Z-masking, decals will not appear correctly!\n";
+        dxgsg8_cat.error() << "dx-decal-types mask&blend impossible to implement, no hardware support for Z-masking, decals will not appear correctly!\n";
     }
 
 #define REQUIRED_DESTBLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE| D3DPBLENDCAPS_SRCALPHA)
@@ -692,26 +689,26 @@ dx_init(HCURSOR hMouseCursor) {
 
     if (((scrn.d3dcaps.SrcBlendCaps & REQUIRED_SRCBLENDCAPS)!=REQUIRED_SRCBLENDCAPS) ||
         ((scrn.d3dcaps.DestBlendCaps & REQUIRED_DESTBLENDCAPS)!=REQUIRED_DESTBLENDCAPS)) {
-        dxgsg_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly: SrcBlendCaps: 0x"<< (void*) scrn.d3dcaps.SrcBlendCaps << "  DestBlendCaps: "<< (void*) scrn.d3dcaps.DestBlendCaps << endl;
+        dxgsg8_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly: SrcBlendCaps: 0x"<< (void*) scrn.d3dcaps.SrcBlendCaps << "  DestBlendCaps: "<< (void*) scrn.d3dcaps.DestBlendCaps << endl;
     }
 
 // just 'require' bilinear with mip nearest.
 #define REQUIRED_TEXFILTERCAPS (D3DPTFILTERCAPS_MAGFLINEAR | D3DPTFILTERCAPS_MIPFPOINT | D3DPTFILTERCAPS_MINFLINEAR)
 
     if ((scrn.d3dcaps.TextureFilterCaps & REQUIRED_TEXFILTERCAPS)!=REQUIRED_TEXFILTERCAPS) {
-        dxgsg_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!  TextureFilterCaps: 0x"<< (void*) scrn.d3dcaps.TextureFilterCaps << endl;
+        dxgsg8_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!  TextureFilterCaps: 0x"<< (void*) scrn.d3dcaps.TextureFilterCaps << endl;
     }
 
 #define TRILINEAR_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_MINFLINEAR)
 
     // give a warning if we dont at least have bilinear + nearest mip filtering
     if (!(scrn.d3dcaps.TextureCaps & D3DPTEXTURECAPS_MIPMAP)) {
-        if(dxgsg_cat.is_debug())
-           dxgsg_cat.debug() << "device does not have mipmap texturing filtering capability! TextureFilterCaps: 0x"<< (void*) scrn.d3dcaps.TextureFilterCaps << endl;
+        if(dxgsg8_cat.is_debug())
+           dxgsg8_cat.debug() << "device does not have mipmap texturing filtering capability! TextureFilterCaps: 0x"<< (void*) scrn.d3dcaps.TextureFilterCaps << endl;
         dx_ignore_mipmaps = TRUE;
     } else if ((scrn.d3dcaps.TextureFilterCaps & TRILINEAR_MIPMAP_TEXFILTERCAPS)!=TRILINEAR_MIPMAP_TEXFILTERCAPS) {
-        if(dxgsg_cat.is_debug())
-           dxgsg_cat.debug() << "device is missing tri-linear mipmap filtering capability, textures may look crappy\n";
+        if(dxgsg8_cat.is_debug())
+           dxgsg8_cat.debug() << "device is missing tri-linear mipmap filtering capability, textures may look crappy\n";
     } else if(scrn.d3dcaps.DevCaps & D3DDEVCAPS_SEPARATETEXTUREMEMORIES) {
         // this cap is pretty much voodoo2-specific
         // turn off trilinear filtering on voodoo2 since it doubles the reqd texture memory, degrade to mip point filtering
@@ -720,7 +717,7 @@ dx_init(HCURSOR hMouseCursor) {
 
 #define REQUIRED_TEXBLENDCAPS (D3DTEXOPCAPS_MODULATE | D3DTEXOPCAPS_SELECTARG1 | D3DTEXOPCAPS_SELECTARG2)
     if ((scrn.d3dcaps.TextureOpCaps & REQUIRED_TEXBLENDCAPS)!=REQUIRED_TEXBLENDCAPS) {
-        dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly! TextureOpCaps: 0x"<< (void*) scrn.d3dcaps.TextureOpCaps << endl;
+        dxgsg8_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly! TextureOpCaps: 0x"<< (void*) scrn.d3dcaps.TextureOpCaps << endl;
     }
 
     if(scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGTABLE) {
@@ -825,8 +822,8 @@ dx_init(HCURSOR hMouseCursor) {
              scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, dx_force_backface_culling);
       } else {
           dx_force_backface_culling=0;
-          if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "error, invalid value for dx-force-backface-culling\n";
+          if(dxgsg8_cat.is_debug())
+              dxgsg8_cat.debug() << "error, invalid value for dx-force-backface-culling\n";
       }
     }
     scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, dx_force_backface_culling);
@@ -845,65 +842,10 @@ dx_init(HCURSOR hMouseCursor) {
     // must check (scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon8500, no on TNT)
     scrn.pD3DDevice->SetRenderState(D3DRS_BLENDOP,D3DBLENDOP_ADD);
 
-    if((scrn.pProps->_fullscreen) && dx_use_dx_cursor) {
+    if((_win->is_fullscreen()) && dx_use_dx_cursor) {
         hr = CreateDX8Cursor(scrn.pD3DDevice,hMouseCursor,dx_show_cursor_watermark);
         if(FAILED(hr))
-            dxgsg_cat.error() << "CreateDX8Cursor failed!\n";
-    }
-
-    // need to release this better, so dx_init can be called multiple times
-    if(_bShowFPSMeter) {
-        // statmeter uses d3dpool default, so it must be destroyed and recreated every time
-        assert(_pStatMeterFont == NULL);
-        hr=S_OK;
-        SIZE TextRectSize;
-
-        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
-        _pStatMeterFont = new CD3DFont(_T("Arial"),12,D3DFONT_BOLD);
-        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
-        if(IS_VALID_PTR(_pStatMeterFont))
-            hr=_pStatMeterFont->InitDeviceObjects(scrn.pD3DDevice);
-
-        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
-
-        if(IS_VALID_PTR(_pStatMeterFont) && SUCCEEDED(hr)) {
-            // instead of computing offset every frame (could change based on font chars,
-            // do it once here.  if we wanted top left corner instead of top right,
-            // could get rid of this alignment stuff
-
-            UINT xsize = scrn.pProps->_xsize;
-            UINT ysize = scrn.pProps->_ysize;
-
-            #define FPS_MSG_FORMAT_STR " %dx%dx%d\n%6.02f fps"
-
-            char fps_msg[50];
-            sprintf(fps_msg,FPS_MSG_FORMAT_STR,xsize,ysize,32,800.00f); // 6 == NUM_FPSMETER_LETTERS
-
-            hr = _pStatMeterFont->GetTextExtent(fps_msg,&TextRectSize);
-
-            PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
-            if(SUCCEEDED(hr)) {
-                UINT xsize = scrn.pProps->_xsize;
-
-                _fpsmeter_x_offset=xsize-TextRectSize.cx-20;
-                _fpsmeter_y_offset=20;
-
-                // make sure its onscreen for any wnd size
-                if((_fpsmeter_x_offset<0.0f) || (_fpsmeter_x_offset+TextRectSize.cx)>=scrn.pProps->_xsize)
-                  _fpsmeter_x_offset=0.0f;
-
-                if((_fpsmeter_y_offset<0.0f) || (_fpsmeter_y_offset+TextRectSize.cy)>=scrn.pProps->_ysize)
-                  _fpsmeter_y_offset=0.0f;
-            }
-        }
-
-        if(FAILED(hr)) {
-            _bShowFPSMeter=false;
-        }
-
-        _start_time = timeGetTime();
-        _current_fps = 0.0f;
-        _start_frame_count = _cur_frame_count = 0;
+            dxgsg8_cat.error() << "CreateDX8Cursor failed!\n";
     }
     PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
@@ -924,13 +866,13 @@ dx_init(HCURSOR hMouseCursor) {
         // bypasses panda tex mechanism
         hr = D3DXCreateTextureFromFile(scrn.pD3DDevice,pdx_globaltexture_filename->c_str(),&_pGlobalTexture);
         if(FAILED(hr)) {
-            dxgsg_cat.fatal() << "CreateTexFromFile failed" << D3DERRORSTRING(hr);
+            dxgsg8_cat.fatal() << "CreateTexFromFile failed" << D3DERRORSTRING(hr);
             exit(1);
         }
 
         hr=scrn.pD3DDevice->SetTexture(dx_globaltexture_stagenum,_pGlobalTexture);
         if(FAILED(hr)) {
-               dxgsg_cat.fatal() << "SetTexture failed" << D3DERRORSTRING(hr);
+               dxgsg8_cat.fatal() << "SetTexture failed" << D3DERRORSTRING(hr);
                exit(1);
         }
     }
@@ -938,7 +880,7 @@ dx_init(HCURSOR hMouseCursor) {
     PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 }
 
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 init_shader(ShaderType stype,DXShaderHandle &hShader,string *pFname) {
 
     if((pFname==NULL) || pFname->empty()) {
@@ -954,7 +896,7 @@ init_shader(ShaderType stype,DXShaderHandle &hShader,string *pFname) {
     else sh_typename="Pixel";
 
     if((stype==PixelShader) && (!scrn.bCanUsePixelShaders)) {
-            dxgsg_cat.error() << "HW doesnt support pixel shaders!\n";
+            dxgsg8_cat.error() << "HW doesnt support pixel shaders!\n";
             exit(1);
     }
 
@@ -964,7 +906,7 @@ init_shader(ShaderType stype,DXShaderHandle &hShader,string *pFname) {
             hr = scrn.pD3DDevice->DeleteVertexShader(hShader);
           else hr = scrn.pD3DDevice->DeletePixelShader(hShader);
         if(FAILED(hr))
-            dxgsg_cat.error() << "Delete"<< sh_typename<<"Shader failed!" << D3DERRORSTRING(hr);
+            dxgsg8_cat.error() << "Delete"<< sh_typename<<"Shader failed!" << D3DERRORSTRING(hr);
         hShader=NULL;
     }
 
@@ -981,12 +923,12 @@ init_shader(ShaderType stype,DXShaderHandle &hShader,string *pFname) {
       }
 
       if(FAILED(hr))
-         dxgsg_cat.error() << "Set"<<sh_typename<<"Shader failed!" << D3DERRORSTRING(hr);
+         dxgsg8_cat.error() << "Set"<<sh_typename<<"Shader failed!" << D3DERRORSTRING(hr);
     }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: dxGraphicsStateGuardian::support_overlay_window
+//     Function: DXGraphicsStateGuardian8::support_overlay_window
 //       Access: Public
 //  Description: Specifies whether dialog windows placed on top of the
 //               dx rendering window should be supported.  This
@@ -1000,7 +942,7 @@ init_shader(ShaderType stype,DXShaderHandle &hShader,string *pFname) {
 //               This is not necessary when running in windowed mode,
 //               but it does no harm.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 support_overlay_window(bool flag) {
   // How is this supposed to be done in DX8?
 
@@ -1033,14 +975,14 @@ support_overlay_window(bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::do_clear
+//     Function: DXGraphicsStateGuardian8::do_clear
 //       Access: Public, Virtual
 //  Description: Clears all of the indicated buffers to their assigned
 //               colors.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 do_clear(const RenderBuffer &buffer) {
-    DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector));
+  //    DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector));
 
     nassertv(buffer._gsg == this);
     int buffer_type = buffer._buffer_type;
@@ -1063,7 +1005,7 @@ do_clear(const RenderBuffer &buffer) {
     HRESULT hr = scrn.pD3DDevice->Clear(0, NULL, flags, _d3dcolor_clear_value,
                                          _depth_clear_value, (DWORD)_stencil_clear_value);
     if(FAILED(hr))
-        dxgsg_cat.error() << "clear_buffer failed:  Clear returned " << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "clear_buffer failed:  Clear returned " << D3DERRORSTRING(hr);
     /* The following line will cause the background to always clear to a medium red
     _color_clear_value[0] = .5;
     /* The following lines will cause the background color to cycle from black to red.
@@ -1073,36 +1015,36 @@ do_clear(const RenderBuffer &buffer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::prepare_display_region
+//     Function: DXGraphicsStateGuardian8::prepare_display_region
 //       Access: Public, Virtual
 //  Description: Prepare a display region for rendering (set up
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 prepare_display_region() {
-    if (_current_display_region == (DisplayRegion*)0L) {
-        dxgsg_cat.error()
-        << "Invalid NULL display region in prepare_display_region()\n";
-    } else if (_current_display_region != _actual_display_region) {
-        _actual_display_region = _current_display_region;
-
-        int l, b, w, h;
-        _actual_display_region->get_region_pixels(l, b, w, h);
-
-        // Create the viewport
-        D3DVIEWPORT8 vp = {l,b,w,h,0.0f,1.0f};
-        HRESULT hr = scrn.pD3DDevice->SetViewport( &vp );
-        if(FAILED(hr)) {
-            dxgsg_cat.fatal() << "SetViewport failed for device #" << scrn.CardIDNum << D3DERRORSTRING(hr);
-            exit(1);
-        }
-
-        // Note: for DX9, also change scissor clipping state here
+  if (_current_display_region == (DisplayRegion*)0L) {
+    dxgsg8_cat.error()
+      << "Invalid NULL display region in prepare_display_region()\n";
+  } else if (_current_display_region != _actual_display_region) {
+    _actual_display_region = _current_display_region;
+    
+    int l, b, w, h;
+    _actual_display_region->get_region_pixels(l, b, w, h);
+    
+    // Create the viewport
+    D3DVIEWPORT8 vp = {l,b,w,h,0.0f,1.0f};
+    HRESULT hr = scrn.pD3DDevice->SetViewport( &vp );
+    if (FAILED(hr)) {
+      dxgsg8_cat.error()
+        << "SetViewport(" << l << ", " << b << ", " << w << ", " << h
+        << ") failed" << D3DERRORSTRING(hr);
     }
+    // Note: for DX9, also change scissor clipping state here
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::prepare_lens
+//     Function: DXGraphicsStateGuardian8::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most
 //               recently specified with push_lens()) active, so that
@@ -1114,7 +1056,7 @@ prepare_display_region() {
 //               The return value is true if the lens is acceptable,
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian::
+bool DXGraphicsStateGuardian8::
 prepare_lens() {
   if (_current_lens == (Lens *)NULL) {
     return false;
@@ -1144,7 +1086,7 @@ prepare_lens() {
 //       Access:
 //  Description: Useless in DX at the present time
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::set_clipper(RECT cliprect) {
+void DXGraphicsStateGuardian8::set_clipper(RECT cliprect) {
 
     LPDIRECTDRAWCLIPPER Clipper;
     HRESULT result;
@@ -1195,7 +1137,7 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3D
             // loss of exclusive mode is not a real DrawPrim problem, ignore it
             HRESULT testcooplvl_hr = pD3DDevice->TestCooperativeLevel();
             if((testcooplvl_hr != D3DERR_DEVICELOST)||(testcooplvl_hr != D3DERR_DEVICENOTRESET)) {
-                dxgsg_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << D3DERRORSTRING(hr);
+                dxgsg8_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << D3DERRORSTRING(hr);
                 exit(1);
             }
         }
@@ -1207,11 +1149,11 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3D
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::report_texmgr_stats
+//     Function: DXGraphicsStateGuardian8::report_texmgr_stats
 //       Access: Protected
 //  Description: Reports the DX texture manager's activity to PStats.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 report_texmgr_stats() {
 
 #if defined(DO_PSTATS)||defined(PRINT_RESOURCESTATS)
@@ -1230,13 +1172,13 @@ report_texmgr_stats() {
 
       ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_PRIMARYSURFACE | DDSCAPS_3DDEVICE;
       if(FAILED(  hr = scrn.pD3DDevice->GetAvailableVidMem(&ddsCaps,&dwVidTotal,&dwVidFree))) {
-            dxgsg_cat.debug() << "report_texmgr GetAvailableVidMem for VIDMEM failed : result = " << D3DERRORSTRING(hr);
+            dxgsg8_cat.fatal() << "report_texmgr GetAvailableVidMem for VIDMEM failed : result = " << D3DERRORSTRING(hr);
             exit(1);
       }
 
       ddsCaps.dwCaps = DDSCAPS_TEXTURE;
       if(FAILED(  hr = scrn.pD3DDevice->GetAvailableVidMem(&ddsCaps,&dwTexTotal,&dwTexFree))) {
-            dxgsg_cat.debug() << "report_texmgr GetAvailableVidMem for TEXTURE failed : result = " << D3DERRORSTRING(hr);
+            dxgsg8_cat.fatal() << "report_texmgr GetAvailableVidMem for TEXTURE failed : result = " << D3DERRORSTRING(hr);
             exit(1);
       }
   }
@@ -1251,13 +1193,13 @@ report_texmgr_stats() {
           if (hr==S_FALSE) {
               static int PrintedMsg=2;
               if(PrintedMsg>0) {
-                  if(dxgsg_cat.is_debug())
-                    dxgsg_cat.debug() << "Error: texstats GetInfo() requires debug DX DLLs to be installed!!  ***********\n";
+                  if(dxgsg8_cat.is_debug())
+                    dxgsg8_cat.debug() << "Error: texstats GetInfo() requires debug DX DLLs to be installed!!  ***********\n";
                   ZeroMemory(&all_resource_stats,sizeof(D3DDEVINFO_RESOURCEMANAGER));
                   bTexStatsRetrievalImpossible=true;
               }
           } else {
-              dxgsg_cat.error() << "GetInfo(RESOURCEMANAGER) failed to get tex stats: result = " << D3DERRORSTRING(hr);
+              dxgsg8_cat.error() << "GetInfo(RESOURCEMANAGER) failed to get tex stats: result = " << D3DERRORSTRING(hr);
               return;
           }
       }
@@ -1270,7 +1212,7 @@ report_texmgr_stats() {
     sprintf(tmpstr2,"%.4g",dwVidFree/1000000.0);
     sprintf(tmpstr3,"%.4g",dwTexTotal/1000000.0);
     sprintf(tmpstr4,"%.4g",dwTexFree/1000000.0);
-    dxgsg_cat.debug() << "\nAvailableVidMem for RenderSurfs: (megs) total: " << tmpstr1 << "  free: " << tmpstr2
+    dxgsg8_cat.debug() << "\nAvailableVidMem for RenderSurfs: (megs) total: " << tmpstr1 << "  free: " << tmpstr2
                       << "\nAvailableVidMem for Textures:    (megs) total: " << tmpstr3 << "  free: " << tmpstr4 << endl;
 #endif
 
@@ -1289,7 +1231,7 @@ report_texmgr_stats() {
                 float fHitRate = (pRStats->NumUsedInVidMem * 100.0f) / pRStats->NumUsed;
                 sprintf(hitrate_str,"%.1f",fHitRate);
 
-                dxgsg_cat.spam()
+                dxgsg8_cat.spam()
                     << "\n***** Stats for " << ResourceNameStrs[r] << " ********"
                     << "\n HitRate:\t" << hitrate_str << "%"
                     << "\n bThrashing:\t" << pRStats->bThrashing
@@ -1304,7 +1246,7 @@ report_texmgr_stats() {
                     << "\n TotalBytes:\t" << pRStats->TotalBytes
                     << "\n LastPri:\t" << pRStats->LastPri << endl;
             } else {
-                dxgsg_cat.spam()
+                dxgsg8_cat.spam()
                     << "\n***** Stats for " << ResourceNameStrs[r] << " ********"
                     << "\n NumUsed: 0\n";
             }
@@ -1314,10 +1256,10 @@ report_texmgr_stats() {
         ZeroMemory(&vtxstats,sizeof(D3DDEVINFO_D3DVERTEXSTATS));
         hr = scrn.pD3DDevice->GetInfo(D3DDEVINFOID_VERTEXSTATS,&vtxstats,sizeof(D3DDEVINFO_D3DVERTEXSTATS));
         if (hr!=D3D_OK) {
-            dxgsg_cat.error() << "GetInfo(D3DVERTEXSTATS) failed : result = " << D3DERRORSTRING(hr);
+            dxgsg8_cat.error() << "GetInfo(D3DVERTEXSTATS) failed : result = " << D3DERRORSTRING(hr);
             return;
         } else {
-            dxgsg_cat.spam()
+            dxgsg8_cat.spam()
             << "\n***** Triangle Stats ********"
             << "\n NumRenderedTriangles:\t" << vtxstats.NumRenderedTriangles
             << "\n NumExtraClippingTriangles:\t" << vtxstats.NumExtraClippingTriangles << endl;
@@ -1344,11 +1286,11 @@ report_texmgr_stats() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::add_to_FVFBuf
+//     Function: DXGraphicsStateGuardian8::add_to_FVFBuf
 //       Access: Private
 //  Description: This adds data to the flexible vertex format
 ////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
+INLINE void DXGraphicsStateGuardian8::
 add_to_FVFBuf(void *data,  size_t bytes) {
     memcpy(_pCurFvfBufPtr, data, bytes);
     _pCurFvfBufPtr += bytes;
@@ -1372,7 +1314,7 @@ typedef enum {
             _pCurrentGeomContext->_pEndofVertData+=numVertBytes; }
 
 
-INLINE void DXGraphicsStateGuardian::
+INLINE void DXGraphicsStateGuardian8::
 transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
   Colorf transformed
     ((InColor[0] * _current_color_scale[0]) + _current_color_offset[0],
@@ -1383,11 +1325,11 @@ transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_prim_setup
+//     Function: DXGraphicsStateGuardian8::draw_prim_setup
 //       Access: Private
 //  Description: This adds data to the flexible vertex format
 ////////////////////////////////////////////////////////////////////
-size_t DXGraphicsStateGuardian::
+size_t DXGraphicsStateGuardian8::
 draw_prim_setup(const Geom *geom) {
     //  Set the flags for the flexible vertex format and compute the bytes
     //  required to store a single vertex.
@@ -1513,12 +1455,12 @@ draw_prim_setup(const Geom *geom) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_prim_inner_loop
+//     Function: DXGraphicsStateGuardian8::draw_prim_inner_loop
 //       Access: Private
 //  Description: This adds data to the flexible vertex format with a check
 //               for component normals and color
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags) {
     Vertexf NextVert;
 
@@ -1563,11 +1505,11 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_prim_inner_loop_coordtexonly
+//     Function: DXGraphicsStateGuardian8::draw_prim_inner_loop_coordtexonly
 //       Access: Private
 //  Description: FastPath loop used by animated character data
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
     // assumes coord and texcoord data is per-vertex,
     // color is not per-vert/component (which would require fetching new vals in the vertex loop),
@@ -1626,15 +1568,15 @@ draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_point
+//     Function: DXGraphicsStateGuardian8::draw_point
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_point(GeomPoint *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_point()" << endl;
+    dxgsg8_cat.debug() << "draw_point()" << endl;
 #endif
 
     DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
@@ -1645,7 +1587,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
     int nPrims = geom->get_num_prims();
 
     if (nPrims==0) {
-        dxgsg_cat.warning() << "draw_point() called with ZERO vertices!!" << endl;
+        dxgsg8_cat.warning() << "draw_point() called with ZERO vertices!!" << endl;
         return;
     }
 
@@ -1654,7 +1596,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
 
     if (!bPrintedMsg && (geom->get_size()!=1.0f)) {
         bPrintedMsg=true;
-        dxgsg_cat.warning() << "D3D does not support drawing points of non-unit size, setting point size to 1.0f!\n";
+        dxgsg8_cat.warning() << "D3D does not support drawing points of non-unit size, setting point size to 1.0f!\n";
     }
 #endif
 
@@ -1703,15 +1645,15 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_line
+//     Function: DXGraphicsStateGuardian8::draw_line
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_line(GeomLine* geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_line()" << endl;
+    dxgsg8_cat.debug() << "draw_line()" << endl;
 #endif
     DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
     DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
@@ -1723,16 +1665,16 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 
     if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
         bPrintedMsg=true;
-        if(dxgsg_cat.is_debug())
-            dxgsg_cat.debug() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
+        if(dxgsg8_cat.is_debug())
+            dxgsg8_cat.debug() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
     }
 #endif
 
     int nPrims = geom->get_num_prims();
 
     if (nPrims==0) {
-        if(dxgsg_cat.is_debug())
-           dxgsg_cat.debug() << "draw_line() called with ZERO vertices!!" << endl;
+        if(dxgsg8_cat.is_debug())
+           dxgsg8_cat.debug() << "draw_line() called with ZERO vertices!!" << endl;
         return;
     }
 
@@ -1803,7 +1745,7 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     _pCurFvfBufPtr = NULL;
 }
 
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
 
 #ifdef _DEBUG
@@ -1811,7 +1753,7 @@ draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
 
     if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
         bPrintedMsg=true;
-        dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
+        dxgsg8_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
     }
 #endif
 
@@ -1819,16 +1761,16 @@ draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_linestrip
+//     Function: DXGraphicsStateGuardian8::draw_linestrip
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
 // Note draw_linestrip_base() may be called from non-line draw_fns to support wireframe mode
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_linestrip()" << endl;
+    dxgsg8_cat.debug() << "draw_linestrip()" << endl;
 #endif
 
     DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
@@ -1838,8 +1780,8 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
     const int *pLengthArr = geom->get_lengths();
 
     if(nPrims==0) {
-        if(dxgsg_cat.is_debug())
-            dxgsg_cat.debug() << "draw_linestrip() called with ZERO vertices!!" << endl;
+        if(dxgsg8_cat.is_debug())
+            dxgsg8_cat.debug() << "draw_linestrip() called with ZERO vertices!!" << endl;
         return;
     }
 
@@ -1947,11 +1889,11 @@ struct draw_sprite_vertex_less {
 };
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_sprite
+//     Function: DXGraphicsStateGuardian8::draw_sprite
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     // this is a little bit of a mess, but it's ok.  Here's the deal:
@@ -1971,7 +1913,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     // Note: for DX8, try to use the PointSprite primitive instead of doing all the stuff below
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_sprite()" << endl;
+    dxgsg8_cat.debug() << "draw_sprite()" << endl;
 #endif
     // get the array traversal set up.
     int nPrims = geom->get_num_prims();
@@ -2103,7 +2045,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     // alternately, alloc once when retained mode becomes available
 
     if (SpriteArray==NULL) {
-        dxgsg_cat.fatal() << "draw_sprite() out of memory!!" << endl;
+        dxgsg8_cat.fatal() << "draw_sprite() out of memory!!" << endl;
         return;
     }
 
@@ -2315,15 +2257,15 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_polygon
+//     Function: DXGraphicsStateGuardian8::draw_polygon
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
-   dxgsg_cat.debug() << "draw_polygon()" << endl;
+   dxgsg8_cat.debug() << "draw_polygon()" << endl;
 #endif
    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
@@ -2339,15 +2281,15 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_quad
+//     Function: DXGraphicsStateGuardian8::draw_quad
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_quad(GeomQuad *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_quad()" << endl;
+    dxgsg8_cat.debug() << "draw_quad()" << endl;
 #endif
    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
@@ -2364,22 +2306,21 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_tri
+//     Function: DXGraphicsStateGuardian8::draw_tri
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_tri(GeomTri *geom, GeomContext *gc) {
-
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_tri()" << endl;
+    dxgsg8_cat.debug() << "draw_tri()" << endl;
 #endif
     DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
     DO_PSTATS_STUFF(_vertices_tri_pcollector.add_level(geom->get_num_vertices()));
 
 #if 0
     if (_pCurTexContext!=NULL) {
-        dxgsg_cat.spam() << "Cur active DX texture: " << _pCurTexContext->_tex->get_name() << "\n";
+        dxgsg8_cat.spam() << "Cur active DX texture: " << _pCurTexContext->_tex->get_name() << "\n";
     }
 #endif
 
@@ -2514,15 +2455,15 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_tristrip
+//     Function: DXGraphicsStateGuardian8::draw_tristrip
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
-  dxgsg_cat.debug() << "draw_tristrip()" << endl;
+  dxgsg8_cat.debug() << "draw_tristrip()" << endl;
 #endif
   DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
   DO_PSTATS_STUFF(_vertices_tristrip_pcollector.add_level(geom->get_num_vertices()));
@@ -2531,15 +2472,15 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_trifan
+//     Function: DXGraphicsStateGuardian8::draw_trifan
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_trifan()" << endl;
+    dxgsg8_cat.debug() << "draw_trifan()" << endl;
 #endif
   DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
   DO_PSTATS_STUFF(_vertices_trifan_pcollector.add_level(geom->get_num_vertices()));
@@ -2548,11 +2489,11 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_multitri
+//     Function: DXGraphicsStateGuardian8::draw_multitri
 //       Access: Public, Virtual
 //  Description: handles trifans and tristrips
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
     DWORD nPrims = geom->get_num_prims();
@@ -2561,7 +2502,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
     if(nPrims==0) {
         #ifdef _DEBUG
-          dxgsg_cat.warning() << "draw_multitri() called with ZERO vertices!!" << endl;
+          dxgsg8_cat.warning() << "draw_multitri() called with ZERO vertices!!" << endl;
         #endif
         return;
     }
@@ -2740,7 +2681,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
 // probably want to replace this with D3DX8 call
 
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
                void *pIndexSpace,DWORD dwIndexSpaceByteSize,
                D3DXVECTOR3 *pCenter, float fRadius,
@@ -2981,18 +2922,18 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_sphere
+//     Function: DXGraphicsStateGuardian8::draw_sphere
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_sphere(GeomSphere *geom, GeomContext *gc) {
 
 #define SPHERE_NUMSLICES 16
 #define SPHERE_NUMSTACKS 10
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_sphere()" << endl;
+    dxgsg8_cat.debug() << "draw_sphere()" << endl;
 #endif
     DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
     DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
@@ -3000,7 +2941,7 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
     int nprims = geom->get_num_prims();
 
     if (nprims==0) {
-        dxgsg_cat.warning() << "draw_sphere() called with ZERO vertices!!" << endl;
+        dxgsg8_cat.warning() << "draw_sphere() called with ZERO vertices!!" << endl;
         return;
     }
 
@@ -3045,7 +2986,7 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::prepare_texture
+//     Function: DXGraphicsStateGuardian8::prepare_texture
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
 //               given texture, and returns a newly-allocated
@@ -3054,10 +2995,10 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 //               call release_texture() with this same pointer (which
 //               will also delete the pointer).
 ////////////////////////////////////////////////////////////////////
-TextureContext *DXGraphicsStateGuardian::
+TextureContext *DXGraphicsStateGuardian8::
 prepare_texture(Texture *tex) {
 
-    DXTextureContext *dtc = new DXTextureContext(tex);
+    DXTextureContext8 *dtc = new DXTextureContext8(tex);
 #ifdef WBD_GL_MODE
     glGenTextures(1, &gtc->_index);
 
@@ -3084,12 +3025,12 @@ prepare_texture(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::apply_texture
+//     Function: DXGraphicsStateGuardian8::apply_texture
 //       Access: Public, Virtual
 //  Description: Makes the texture the currently available texture for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 apply_texture(TextureContext *tc) {
     if (tc==NULL) {
         return;  // use enable_texturing to disable/enable
@@ -3104,7 +3045,7 @@ apply_texture(TextureContext *tc) {
     // Note: if this code changes, make sure to change initialization SetTSS code in dx_init as well
     // so DX TSS renderstate matches dxgsg state
 
-    DXTextureContext *dtc = DCAST(DXTextureContext, tc);
+    DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
     int dirty = dtc->get_dirty_flags();
 
@@ -3118,7 +3059,7 @@ apply_texture(TextureContext *tc) {
           // warning--it is likely that this change is the result of an
           // error or oversight.
           if ((dirty & Texture::DF_image) == 0) {
-            dxgsg_cat.warning()
+            dxgsg8_cat.warning()
               << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
           }
 
@@ -3126,7 +3067,7 @@ apply_texture(TextureContext *tc) {
           if (dtc->CreateTexture(scrn) == NULL) {
 
             // Oops, we can't re-create the texture for some reason.
-            dxgsg_cat.error() << "Unable to re-create texture " << *dtc->_texture << endl;
+            dxgsg8_cat.error() << "Unable to re-create texture " << *dtc->_texture << endl;
 
             release_texture(dtc);
             enable_texturing(false);
@@ -3168,7 +3109,7 @@ apply_texture(TextureContext *tc) {
 
         #ifdef _DEBUG
         if((ft!=Texture::FT_linear)&&(ft!=Texture::FT_nearest)) {
-             dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";
+             dxgsg8_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";
         }
         #endif
     } else {
@@ -3198,7 +3139,7 @@ apply_texture(TextureContext *tc) {
 
 #ifdef _DEBUG
     if(ft > Texture::FT_linear_mipmap_linear) {
-                dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
+                dxgsg8_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
                 return;
     }
 #endif
@@ -3209,7 +3150,7 @@ apply_texture(TextureContext *tc) {
       // sanity check
     extern char *PandaFilterNameStrs[];
     if((!(dtc->_bHasMipMaps))&&(newMipFilter!=D3DTEXF_NONE)) {
-        dxgsg_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname[" << tex->get_name() << "], filter("<<PandaFilterNameStrs[ft]<<")\n";
+        dxgsg8_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname[" << tex->get_name() << "], filter("<<PandaFilterNameStrs[ft]<<")\n";
         newMipFilter=D3DTEXF_NONE;
     }
     #endif
@@ -3237,7 +3178,7 @@ apply_texture(TextureContext *tc) {
 
 #if 0
     if (dtc!=NULL) {
-        dxgsg_cat.spam() << "Setting active DX texture: " << dtc->_tex->get_name() << "\n";
+        dxgsg8_cat.spam() << "Setting active DX texture: " << dtc->_tex->get_name() << "\n";
     }
 #endif
 
@@ -3245,14 +3186,14 @@ apply_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::release_texture
+//     Function: DXGraphicsStateGuardian8::release_texture
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
 //               texture.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 release_texture(TextureContext *tc) {
-    DXTextureContext *gtc = DCAST(DXTextureContext, tc);
+    DXTextureContext8 *gtc = DCAST(DXTextureContext8, tc);
     Texture *tex = tc->_texture;
 
     gtc->DeleteTexture();
@@ -3269,27 +3210,27 @@ release_texture(TextureContext *tc) {
 
 // copies current display region in framebuffer to the texture
 // usually its more efficient to do SetRenderTgt
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
   HRESULT hr;
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
-  DXTextureContext *dtc = DCAST(DXTextureContext, tc);
+  DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
   PixelBuffer *pb = dtc->_tex->_pbuffer;
   pb->set_size(0,0,w-xo,h-yo);
 
   IDirect3DSurface8 *pTexSurfaceLev0,*pCurRenderTarget;
   hr = dtc->_pD3DTexture8->GetSurfaceLevel(0,&pTexSurfaceLev0);
   if(FAILED(hr)) {
-    dxgsg_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
+    dxgsg8_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
     exit(1);
   }
 
   hr = scrn.pD3DDevice->GetRenderTarget(&pCurRenderTarget);
   if(FAILED(hr)) {
-    dxgsg_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);
+    dxgsg8_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);
     exit(1);
   }
 
@@ -3304,7 +3245,7 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
   // now copy from fb to tex
   hr = scrn.pD3DDevice->CopyRects(pCurRenderTarget,&SrcRect,1,pTexSurfaceLev0,NULL);
   if(FAILED(hr)) {
-    dxgsg_cat.error() << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
+    dxgsg8_cat.error() << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
     exit(1);
   }
 
@@ -3314,22 +3255,22 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::copy_texture
+//     Function: DXGraphicsStateGuardian8::copy_texture
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
     set_read_buffer(rb);
     copy_texture(tc, dr);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::texture_to_pixel_buffer
+//     Function: DXGraphicsStateGuardian8::texture_to_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
     nassertv(tc != NULL && pb != NULL);
 
@@ -3350,23 +3291,23 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::texture_to_pixel_buffer
+//     Function: DXGraphicsStateGuardian8::texture_to_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
                         const DisplayRegion *dr) {
-    dxgsg_cat.error()
+    dxgsg8_cat.error()
       << "texture_to_pixel_buffer unimplemented!\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::copy_pixel_buffer
+//     Function: DXGraphicsStateGuardian8::copy_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
     RECT SrcCopyRect;
@@ -3392,7 +3333,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
        hr=scrn.pD3DDevice->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pD3DSurf);
 
        if(FAILED(hr)) {
-           dxgsg_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
+           dxgsg8_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
            exit(1);
        }
 
@@ -3436,7 +3377,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
         hr=scrn.pD3DDevice->CreateImageSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,&pD3DSurf);
         if(FAILED(hr)) {
-           dxgsg_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
+           dxgsg8_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
            exit(1);
         }
 
@@ -3445,31 +3386,31 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
         if(hr==D3DERR_DEVICELOST) {
            // dont necessary want to exit in this case
            pD3DSurf->Release();
-           dxgsg_cat.error() << "copy_pixel_buffer failed: device lost\n";
+           dxgsg8_cat.error() << "copy_pixel_buffer failed: device lost\n";
            return;
         }
     } else {
-        dxgsg_cat.error() << "copy_pixel_buffer: unhandled current_read_pixel_buffer type\n";
+        dxgsg8_cat.error() << "copy_pixel_buffer: unhandled current_read_pixel_buffer type\n";
     }
 
     if((RECT_XSIZE(SrcCopyRect)>w) || (RECT_YSIZE(SrcCopyRect)>h)) {
-     dxgsg_cat.error() << "copy_pixel_buffer: pixel buffer size does not match selected screen RenderBuffer size!\n";
+     dxgsg8_cat.error() << "copy_pixel_buffer: pixel buffer size does not match selected screen RenderBuffer size!\n";
      exit(1);
     }
 
     (void) ConvertD3DSurftoPixBuf(SrcCopyRect,pD3DSurf,pb);
 
-    RELEASE(pD3DSurf,dxgsg,"pD3DSurf",RELEASE_ONCE);
+    RELEASE(pD3DSurf,dxgsg8,"pD3DSurf",RELEASE_ONCE);
 
     nassertv(!pb->_image.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::copy_pixel_buffer
+//     Function: DXGraphicsStateGuardian8::copy_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
     set_read_buffer(rb);
@@ -3477,11 +3418,11 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::apply_material
+//     Function: DXGraphicsStateGuardian8::apply_material
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::apply_material( const Material* material ) {
+void DXGraphicsStateGuardian8::apply_material( const Material* material ) {
     D3DMATERIAL8 cur_material;
     cur_material.Diffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
     cur_material.Ambient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
@@ -3492,11 +3433,11 @@ void DXGraphicsStateGuardian::apply_material( const Material* material ) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::apply_fog
+//     Function: DXGraphicsStateGuardian8::apply_fog
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 apply_fog(Fog *fog) {
 
     if(_doFogType==None)
@@ -3540,7 +3481,7 @@ apply_fog(Fog *fog) {
     }
 }
 
-void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bCanJustEnable) {
+void DXGraphicsStateGuardian8::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bCanJustEnable) {
 
 /*class TextureApplyAttrib {
   enum Mode {
@@ -3596,7 +3537,7 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyAttrib::Mode TexBl
 
             break;
         case TextureApplyAttrib::M_blend:
-            dxgsg_cat.error()
+            dxgsg8_cat.error()
             << "Impossible to emulate GL_BLEND in DX exactly " << (int) TexBlendMode << endl;
 /*
            // emulate GL_BLEND glTexEnv
@@ -3624,18 +3565,18 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyAttrib::Mode TexBl
 
             break;
         default:
-            dxgsg_cat.error() << "Unknown texture blend mode " << (int) TexBlendMode << endl;
+            dxgsg8_cat.error() << "Unknown texture blend mode " << (int) TexBlendMode << endl;
             break;
     }
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_texturing
+//     Function: DXGraphicsStateGuardian8::enable_texturing
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
+INLINE void DXGraphicsStateGuardian8::
 enable_texturing(bool val) {
 //  if (_texturing_enabled == val) {  // this check is mostly for internal gsg calls, panda already screens out redundant state changes
 //        return;
@@ -3654,12 +3595,12 @@ enable_texturing(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_transform
+//     Function: DXGraphicsStateGuardian8::issue_transform
 //       Access: Public, Virtual
 //  Description: Sends the indicated transform matrix to the graphics
 //               API to be applied to future vertices.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_transform(const TransformState *transform) {
   // if we're using ONLY vertex shaders, could get avoid calling SetTrans
   D3DMATRIX *pMat = (D3DMATRIX*)transform->get_mat().get_data();
@@ -3672,7 +3613,7 @@ issue_transform(const TransformState *transform) {
       HRESULT hr =  scrn.pD3DDevice->SetVertexShaderConstant(VSHADER_XFORMMATRIX_CONSTANTREGNUMSTART, pMat, 4);
       #ifdef _DEBUG
       if(FAILED(hr)) {
-        dxgsg_cat.error() << "SetVertexShader failed" << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "SetVertexShader failed" << D3DERRORSTRING(hr);
         exit(1);
       }
       #endif
@@ -3681,21 +3622,21 @@ issue_transform(const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_tex_matrix
+//     Function: DXGraphicsStateGuardian8::issue_tex_matrix
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_tex_matrix(const TexMatrixAttrib *attrib) {
   // Not implemented yet.
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_texture
+//     Function: DXGraphicsStateGuardian8::issue_texture
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_texture(const TextureAttrib *attrib) {
   if (attrib->is_off()) {
     enable_texturing(false);
@@ -3708,11 +3649,11 @@ issue_texture(const TextureAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_material
+//     Function: DXGraphicsStateGuardian8::issue_material
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_material(const MaterialAttrib *attrib) {
   const Material *material = attrib->get_material();
   if (material != (const Material *)NULL) {
@@ -3725,11 +3666,11 @@ issue_material(const MaterialAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_render_mode
+//     Function: DXGraphicsStateGuardian8::issue_render_mode
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_render_mode(const RenderModeAttrib *attrib) {
   RenderModeAttrib::Mode mode = attrib->get_mode();
 
@@ -3743,7 +3684,7 @@ issue_render_mode(const RenderModeAttrib *attrib) {
     break;
 
   default:
-    dxgsg_cat.error()
+    dxgsg8_cat.error()
       << "Unknown render mode " << (int)mode << endl;
   }
 
@@ -3751,20 +3692,20 @@ issue_render_mode(const RenderModeAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_texture_apply
+//     Function: DXGraphicsStateGuardian8::issue_texture_apply
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_texture_apply(const TextureApplyAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_depth_test
+//     Function: DXGraphicsStateGuardian8::issue_depth_test
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_depth_test(const DepthTestAttrib *attrib) {
   DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == DepthTestAttrib::M_none) {
@@ -3778,11 +3719,11 @@ issue_depth_test(const DepthTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_alpha_test
+//     Function: DXGraphicsStateGuardian8::issue_alpha_test
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_alpha_test(const AlphaTestAttrib *attrib) {
   AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == AlphaTestAttrib::M_none) {
@@ -3795,21 +3736,21 @@ issue_alpha_test(const AlphaTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_depth_write
+//     Function: DXGraphicsStateGuardian8::issue_depth_write
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_depth_write(const DepthWriteAttrib *attrib) {
   enable_zwritemask(attrib->get_mode() == DepthWriteAttrib::M_on);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_cull_face
+//     Function: DXGraphicsStateGuardian8::issue_cull_face
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_cull_face(const CullFaceAttrib *attrib) {
   CullFaceAttrib::Mode mode = attrib->get_mode();
 
@@ -3824,18 +3765,18 @@ issue_cull_face(const CullFaceAttrib *attrib) {
     scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
     break;
   default:
-    dxgsg_cat.error()
+    dxgsg8_cat.error()
       << "invalid cull face mode " << (int)mode << endl;
     break;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_fog
+//     Function: DXGraphicsStateGuardian8::issue_fog
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_fog(const FogAttrib *attrib) {
   if (!attrib->is_off()) {
     enable_fog(true);
@@ -3848,25 +3789,25 @@ issue_fog(const FogAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_depth_offset
+//     Function: DXGraphicsStateGuardian8::issue_depth_offset
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_depth_offset(const DepthOffsetAttrib *attrib) {
   int offset = attrib->get_offset();
   scrn.pD3DDevice->SetRenderState(D3DRS_ZBIAS, offset);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::bind_light
+//     Function: DXGraphicsStateGuardian8::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
 //               up the associated hardware light with the light's
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 bind_light(PointLight *light, int light_id) {
   // Get the light in "world coordinates".  This means the light in
   // the coordinate space of the camera, converted to DX's coordinate
@@ -3900,14 +3841,14 @@ bind_light(PointLight *light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::bind_light
+//     Function: DXGraphicsStateGuardian8::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
 //               up the associated hardware light with the light's
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 bind_light(DirectionalLight *light, int light_id) {
   // Get the light in "world coordinates".  This means the light in
   // the coordinate space of the camera, converted to DX's coordinate
@@ -3941,14 +3882,14 @@ bind_light(DirectionalLight *light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::bind_light
+//     Function: DXGraphicsStateGuardian8::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
 //               up the associated hardware light with the light's
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 bind_light(Spotlight *light, int light_id) {
   Lens *lens = light->get_lens();
   nassertv(lens != (Lens *)NULL);
@@ -3990,40 +3931,97 @@ bind_light(Spotlight *light, int light_id) {
   HRESULT res = scrn.pD3DDevice->SetLight(light_id, &alight);
 }
 
-// Note: default gsg begin_frame() now calls start_rendering()
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::begin_frame
+//       Access: Public, Virtual
+//  Description: Called before each frame is rendered, to allow the
+//               GSG a chance to do any internal cleanup before
+//               beginning the frame.
+//
+//               The return value is true if successful (in which case
+//               the frame will be drawn and end_frame() will be
+//               called later), or false if unsuccessful (in which
+//               case nothing will be drawn and end_frame() will not
+//               be called).
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian8::
+begin_frame() {
+  return GraphicsStateGuardian::begin_frame();
+}
 
-void DXGraphicsStateGuardian::
-start_rendering(void) {
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::begin_scene
+//       Access: Public, Virtual
+//  Description: Called between begin_frame() and end_frame() to mark
+//               the beginning of drawing commands for a "scene"
+//               (usually a particular DisplayRegion) within a frame.
+//               All 3-D drawing commands, except the clear operation,
+//               must be enclosed within begin_scene() .. end_scene().
+//
+//               The return value is true if successful (in which case
+//               the scene will be drawn and end_scene() will be
+//               called later), or false if unsuccessful (in which
+//               case nothing will be drawn and end_scene() will not
+//               be called).
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian8::
+begin_scene() {
+  if (!GraphicsStateGuardian::begin_scene()) {
+    return false;
+  }
+
   HRESULT hr = scrn.pD3DDevice->BeginScene();
 
-  if(FAILED(hr)) {
-    if(hr==D3DERR_DEVICELOST) {
-          if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "BeginScene returns DeviceLost\n";
-          CheckCooperativeLevel();
+  if (FAILED(hr)) {
+    if (hr == D3DERR_DEVICELOST) {
+      if (dxgsg8_cat.is_debug()) {
+        dxgsg8_cat.debug()
+          << "BeginScene returns D3DERR_DEVICELOST" << endl;
+      }
+      
+      CheckCooperativeLevel();
+
     } else {
-        dxgsg_cat.error() << "BeginScene failed, unhandled error" << D3DERRORSTRING(hr);
-        exit(1);
+      dxgsg8_cat.error()
+        << "BeginScene failed, unhandled error hr == "
+        << D3DERRORSTRING(hr) << endl;
+      exit(1);
+    }
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::end_scene
+//       Access: Public, Virtual
+//  Description: Called between begin_frame() and end_frame() to mark
+//               the end of drawing commands for a "scene" (usually a
+//               particular DisplayRegion) within a frame.  All 3-D
+//               drawing commands, except the clear operation, must be
+//               enclosed within begin_scene() .. end_scene().
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+end_scene() {
+  HRESULT hr = scrn.pD3DDevice->EndScene();
+  
+  if (FAILED(hr)) {
+
+    if (hr == D3DERR_DEVICELOST) {
+      if(dxgsg8_cat.is_debug()) {
+        dxgsg8_cat.debug()
+          << "EndScene returns DeviceLost\n";
+      }
+      CheckCooperativeLevel();
+
+    } else {
+      dxgsg8_cat.error()
+        << "EndScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
+      exit(1);
     }
     return;
   }
-}
-
-void DXGraphicsStateGuardian::
-finish_rendering(void) {
- HRESULT hr = scrn.pD3DDevice->EndScene();
-
- if(FAILED(hr)) {
-    if(hr==D3DERR_DEVICELOST) {
-          if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "EndScene returns DeviceLost\n";
-          CheckCooperativeLevel();
-    } else {
-        dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-    return;
- }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4033,62 +4031,8 @@ finish_rendering(void) {
 //               GSG a chance to do any internal cleanup after
 //               rendering the frame, and before the window flips.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 end_frame() {
-  HRESULT hr;
-
-  // draw fps meter stuff before calling EndScene
-  if(_bShowFPSMeter) {
-    DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
-
-    assert(IS_VALID_PTR(_pStatMeterFont));
-
-    D3DCOLOR fontColor = D3DCOLOR_ARGB(255,255,255,0);  // yellow
-
-    char fps_msg[50];
-    sprintf(fps_msg,FPS_MSG_FORMAT_STR,scrn.pProps->_xsize,scrn.pProps->_ysize,
-            (IS_16BPP_DISPLAY_FORMAT(scrn.PresParams.BackBufferFormat) ? 16 : 32),_current_fps);
-
-    // usually only want to call BeginText() & EndText() once/frame
-    // to bracket all the text for a given cd3dfont obj
-    hr=_pStatMeterFont->BeginText();
-    if(SUCCEEDED(hr))
-        hr=_pStatMeterFont->DrawText(_fpsmeter_x_offset, _fpsmeter_y_offset, fontColor, fps_msg);
-    if(SUCCEEDED(hr))
-        hr=_pStatMeterFont->EndText();
-    if(FAILED(hr))
-        _bShowFPSMeter=false;
-  }
-
-  DXGraphicsStateGuardian::finish_rendering();
-
-  // any GDI operations MUST occur after EndScene
-
-  if(_bShowFPSMeter) {
-        // update frame stats
-
-         DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
-
-         DWORD now = timeGetTime();  // this is win32 fn
-
-         float time_delta = (now - _start_time) * 0.001f;
-
-         if(time_delta > dx_fps_meter_update_interval) {
-             // didnt use global clock object, it wasnt working properly when I tried,
-             // its probably slower due to cache faults, and I can easily track all the
-             // info I need in dxgsg
-             DWORD num_frames = _cur_frame_count - _start_frame_count;
-
-             _current_fps = num_frames / time_delta;
-             _start_time = now;
-             _start_frame_count = _cur_frame_count;
-         }
-
-         _cur_frame_count++;  // only used by fps meter right now
-  }
-
-  show_frame();
-
 #ifdef COUNT_DRAWPRIMS
     {
         #define FRAMES_PER_DPINFO 90
@@ -4112,7 +4056,7 @@ end_frame() {
             float DrawPrims_per_Geom = cDPcount/(float)cGeomcount;
             float verts_per_Geom = cVertcount/(float)cGeomcount;
 
-            dxgsg_cat.debug() << "==================================="
+            dxgsg8_cat.debug() << "==================================="
                 << "\n Avg Verts/sec:\t\t" << verts_per_sec
                 << "\n Avg Tris/sec:\t\t" << tris_per_sec
                 << "\n Avg Verts/frame:\t" << verts_per_frame
@@ -4155,42 +4099,42 @@ end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::wants_normals
+//     Function: DXGraphicsStateGuardian8::wants_normals
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool DXGraphicsStateGuardian::
+INLINE bool DXGraphicsStateGuardian8::
 wants_normals() const {
     return (_lighting_enabled || _normals_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::wants_texcoords
+//     Function: DXGraphicsStateGuardian8::wants_texcoords
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool DXGraphicsStateGuardian::
+INLINE bool DXGraphicsStateGuardian8::
 wants_texcoords() const {
     return _texturing_enabled;
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::depth_offset_decals
+//     Function: DXGraphicsStateGuardian8::depth_offset_decals
 //       Access: Public, Virtual
 //  Description: Returns true if this GSG can implement decals using a
 //               DepthOffsetAttrib, or false if that is unreliable
 //               and the three-step rendering process should be used
 //               instead.
 ////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian::
+bool DXGraphicsStateGuardian8::
 depth_offset_decals() {
   // False for now.
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_internal_coordinate_system
+//     Function: DXGraphicsStateGuardian8::get_internal_coordinate_system
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return the
 //               coordinate system used internally by the GSG, if any
@@ -4202,22 +4146,22 @@ depth_offset_decals() {
 //               GraphicsEngine will automatically convert all
 //               transforms into the indicated coordinate system.
 ////////////////////////////////////////////////////////////////////
-CoordinateSystem DXGraphicsStateGuardian::
+CoordinateSystem DXGraphicsStateGuardian8::
 get_internal_coordinate_system() const {
   return CS_yup_left;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::compute_distance_to
+//     Function: DXGraphicsStateGuardian8::compute_distance_to
 //       Access: Public, Virtual
 //  Description: This function may only be called during a render
 //               traversal; it will compute the distance to the
 //               indicated point, assumed to be in modelview
 //               coordinates, from the camera plane.
 ////////////////////////////////////////////////////////////////////
-INLINE float DXGraphicsStateGuardian::
+INLINE float DXGraphicsStateGuardian8::
 compute_distance_to(const LPoint3f &point) const {
-    // In the case of a DXGraphicsStateGuardian, we know that the
+    // In the case of a DXGraphicsStateGuardian8, we know that the
     // modelview matrix already includes the relative transform from the
     // camera, as well as a to-y-up conversion.  Thus, the distance to
     // the camera plane is simply the +z distance.  (negative of gl compute_distance_to,
@@ -4227,16 +4171,16 @@ compute_distance_to(const LPoint3f &point) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::set_draw_buffer
+//     Function: DXGraphicsStateGuardian8::set_draw_buffer
 //       Access: Protected
 //  Description: Sets up the glDrawBuffer to render into the buffer
 //               indicated by the RenderBuffer object.  This only sets
 //               up the color bits; it does not affect the depth,
 //               stencil, accum layers.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 set_draw_buffer(const RenderBuffer &rb) {
-    dxgsg_cat.fatal() << "DX set_draw_buffer unimplemented!!!";
+    dxgsg8_cat.fatal() << "DX set_draw_buffer unimplemented!!!";
     return;
 
 #ifdef WBD_GL_MODE
@@ -4280,11 +4224,11 @@ set_draw_buffer(const RenderBuffer &rb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::set_read_buffer
+//     Function: DXGraphicsStateGuardian8::set_read_buffer
 //       Access: Protected
 //  Description: Vestigial analog of glReadBuffer
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 set_read_buffer(const RenderBuffer &rb) {
 
     if(rb._buffer_type & RenderBuffer::T_front) {
@@ -4292,18 +4236,18 @@ set_read_buffer(const RenderBuffer &rb) {
     } else  if(rb._buffer_type & RenderBuffer::T_back) {
             _cur_read_pixel_buffer=RenderBuffer::T_back;
     } else {
-            dxgsg_cat.error() << "Invalid or unimplemented Argument to set_read_buffer!\n";
+            dxgsg8_cat.error() << "Invalid or unimplemented Argument to set_read_buffer!\n";
     }
     return;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_texture_wrap_mode
+//     Function: DXGraphicsStateGuardian8::get_texture_wrap_mode
 //       Access: Protected
 //  Description: Maps from the Texture's internal wrap mode symbols to
 //               GL's.
 ////////////////////////////////////////////////////////////////////
-INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian::
+INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian8::
 get_texture_wrap_mode(Texture::WrapMode wm) const {
   static D3DTEXTUREADDRESS PandaTexWrapMode_to_D3DTexWrapMode[Texture::WM_invalid] = {
     D3DTADDRESS_CLAMP,D3DTADDRESS_WRAP,D3DTADDRESS_MIRROR,D3DTADDRESS_MIRRORONCE,D3DTADDRESS_BORDER};
@@ -4312,11 +4256,11 @@ get_texture_wrap_mode(Texture::WrapMode wm) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_fog_mode_type
+//     Function: DXGraphicsStateGuardian8::get_fog_mode_type
 //       Access: Protected
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
-INLINE D3DFOGMODE DXGraphicsStateGuardian::
+INLINE D3DFOGMODE DXGraphicsStateGuardian8::
 get_fog_mode_type(Fog::Mode m) const {
   switch (m) {
   case Fog::M_linear:
@@ -4326,56 +4270,56 @@ get_fog_mode_type(Fog::Mode m) const {
   case Fog::M_exponential_squared:
     return D3DFOG_EXP2;
   }
-  dxgsg_cat.error() << "Invalid Fog::Mode value" << endl;
+  dxgsg8_cat.error() << "Invalid Fog::Mode value" << endl;
   return D3DFOG_EXP;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_lighting
+//     Function: DXGraphicsStateGuardian8::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable or disable the use of lighting overall.  This
 //               is called by issue_light() according to whether any
 //               lights are in use or not.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 enable_lighting(bool enable) {
   scrn.pD3DDevice->SetRenderState(D3DRS_LIGHTING, (DWORD)enable);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::set_ambient_light
+//     Function: DXGraphicsStateGuardian8::set_ambient_light
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               indicate the color of the ambient light that should
 //               be in effect.  This is called by issue_light() after
 //               all other lights have been enabled or disabled.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 set_ambient_light(const Colorf &color) {
   scrn.pD3DDevice->SetRenderState(D3DRS_AMBIENT,
                                   Colorf_to_D3DCOLOR(color));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_light
+//     Function: DXGraphicsStateGuardian8::enable_light
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable the indicated light id.  A specific Light will
 //               already have been bound to this id via bind_light().
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 enable_light(int light_id, bool enable) {
   HRESULT res = scrn.pD3DDevice->LightEnable(light_id, enable);
 
 #ifdef GSG_VERBOSE
-  dxgsg_cat.debug()
-    << "LightEnable(" << light << "=" << val << ")" << endl;
+  dxgsg8_cat.debug()
+    << "LightEnable(" << light_id << "=" << enable << ")" << endl;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::slot_new_clip_plane
+//     Function: DXGraphicsStateGuardian8::slot_new_clip_plane
 //       Access: Protected, Virtual
 //  Description: This will be called by the base class before a
 //               particular clip plane id will be used for the first
@@ -4388,20 +4332,20 @@ enable_light(int light_id, bool enable) {
 //               The return value should be true if the additional
 //               plane is supported, or false if it is not.
 ////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian::
+bool DXGraphicsStateGuardian8::
 slot_new_clip_plane(int plane_id) {
   return (plane_id < D3DMAXUSERCLIPPLANES);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_clip_plane
+//     Function: DXGraphicsStateGuardian8::enable_clip_plane
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable the indicated clip_plane id.  A specific
 //               PlaneNode will already have been bound to this id via
 //               bind_clip_plane().
 ////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
+INLINE void DXGraphicsStateGuardian8::
 enable_clip_plane(int plane_id, bool enable) {
   assert(plane_id < D3DMAXUSERCLIPPLANES);
 
@@ -4416,14 +4360,14 @@ enable_clip_plane(int plane_id, bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::bind_clip_plane
+//     Function: DXGraphicsStateGuardian8::bind_clip_plane
 //       Access: Protected, Virtual
 //  Description: Called the first time a particular clip_plane has been
 //               bound to a given id within a frame, this should set
 //               up the associated hardware clip_plane with the clip_plane's
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 bind_clip_plane(PlaneNode *plane, int plane_id) {
   // Get the plane in "world coordinates".  This means the plane in
   // the coordinate space of the camera, converted to DX's coordinate
@@ -4436,21 +4380,21 @@ bind_clip_plane(PlaneNode *plane, int plane_id) {
   scrn.pD3DDevice->SetClipPlane(plane_id, world_plane.get_data());
 }
 
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 issue_color_write(const ColorWriteAttrib *attrib) {
   _color_write_mode = attrib->get_mode();
   set_color_writemask((_color_write_mode ==ColorWriteAttrib::M_on) ? 0xFFFFFFFF : 0x0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::set_blend_mode
+//     Function: DXGraphicsStateGuardian8::set_blend_mode
 //       Access: Protected, Virtual
 //  Description: Called after any of these three blending states have
 //               changed; this function is responsible for setting the
 //               appropriate color blending mode based on the given
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                ColorBlendAttrib::Mode color_blend_mode,
                TransparencyAttrib::Mode transparency_mode) {
@@ -4485,7 +4429,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     return;
 
   default:
-    dxgsg_cat.error()
+    dxgsg8_cat.error()
       << "Unknown color blend mode " << (int)color_blend_mode << endl;
     break;
   }
@@ -4506,7 +4450,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     return;
 
   default:
-    dxgsg_cat.error()
+    dxgsg8_cat.error()
       << "invalid transparency mode " << (int)transparency_mode << endl;
     break;
   }
@@ -4516,7 +4460,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::save_frame_buffer
+//     Function: DXGraphicsStateGuardian8::save_frame_buffer
 //       Access: Public
 //  Description: Saves the indicated planes of the frame buffer
 //               (within the indicated display region) and returns it
@@ -4525,11 +4469,11 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 //               function for push_frame_buffer() and
 //               pop_frame_buffer().
 ////////////////////////////////////////////////////////////////////
-PT(SavedFrameBuffer) DXGraphicsStateGuardian::
+PT(SavedFrameBuffer) DXGraphicsStateGuardian8::
 save_frame_buffer(const RenderBuffer &buffer,
                   CPT(DisplayRegion) dr) {
 
-    dxgsg_cat.error() << "save_frame_buffer unimplemented!!\n";
+    dxgsg8_cat.error() << "save_frame_buffer unimplemented!!\n";
     return NULL;
 
 #if 0
@@ -4554,39 +4498,39 @@ save_frame_buffer(const RenderBuffer &buffer,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::restore_frame_buffer
+//     Function: DXGraphicsStateGuardian8::restore_frame_buffer
 //       Access: Public
 //  Description: Restores the frame buffer that was previously saved.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
-    dxgsg_cat.error() << "restore_frame_buffer unimplemented!!\n";
+    dxgsg8_cat.error() << "restore_frame_buffer unimplemented!!\n";
     return;
 }
 
 // factory and type stuff
 
-GraphicsStateGuardian *DXGraphicsStateGuardian::
-make_DXGraphicsStateGuardian(const FactoryParams &params) {
+GraphicsStateGuardian *DXGraphicsStateGuardian8::
+make_DXGraphicsStateGuardian8(const FactoryParams &params) {
     GraphicsStateGuardian::GsgWindow *win_param;
     if (!get_param_into(win_param, params)) {
-        dxgsg_cat.error() << "No window specified for gsg creation!" << endl;
+        dxgsg8_cat.error() << "No window specified for gsg creation!" << endl;
         return NULL;
     }
 
     GraphicsWindow *win = win_param->get_window();
-    return new DXGraphicsStateGuardian(win);
+    return new DXGraphicsStateGuardian8(win);
 }
 
-TypeHandle DXGraphicsStateGuardian::get_type(void) const {
+TypeHandle DXGraphicsStateGuardian8::get_type(void) const {
     return get_class_type();
 }
 
-TypeHandle DXGraphicsStateGuardian::get_class_type(void) {
+TypeHandle DXGraphicsStateGuardian8::get_class_type(void) {
     return _type_handle;
 }
 
-void DXGraphicsStateGuardian::init_type(void) {
+void DXGraphicsStateGuardian8::init_type(void) {
     GraphicsStateGuardian::init_type();
     register_type(_type_handle, "DXGraphicsStateGuardian8",
                   GraphicsStateGuardian::get_class_type());
@@ -4596,12 +4540,12 @@ void DXGraphicsStateGuardian::init_type(void) {
 //     Function: dx_cleanup
 //  Description: Clean up the DirectX environment, accounting for exit()
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
   static bool bAtExitFnEverCalled=false;
 
-    if(dxgsg_cat.is_spam()) {
-        dxgsg_cat.spam() << "dx_cleanup called, bAtExitFnCalled=" << bAtExitFnCalled << ", bAtExitFnEverCalled=" << bAtExitFnEverCalled << endl;
+    if(dxgsg8_cat.is_spam()) {
+        dxgsg8_cat.spam() << "dx_cleanup called, bAtExitFnCalled=" << bAtExitFnCalled << ", bAtExitFnEverCalled=" << bAtExitFnEverCalled << endl;
     }
 
     bAtExitFnEverCalled = (bAtExitFnEverCalled || bAtExitFnCalled);
@@ -4626,7 +4570,6 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
     // delete non-panda-texture/geom DX objects (VBs/textures/shaders)
-    SAFE_DELETE(_pStatMeterFont);
     SAFE_DELSHADER(Vertex,_CurVertexShader,scrn.pD3DDevice);
     SAFE_DELSHADER(Pixel,_CurPixelShader,scrn.pD3DDevice);
     SAFE_RELEASE(_pGlobalTexture);
@@ -4638,15 +4581,15 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     if (scrn.pD3DDevice!=NULL) {
         for(int i=0;i<D3D_MAXTEXTURESTAGES;i++)
            scrn.pD3DDevice->SetTexture(i,NULL);  // d3d should release this stuff internally anyway, but whatever
-        RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
+        RELEASE(scrn.pD3DDevice,dxgsg8,"d3dDevice",RELEASE_DOWN_TO_ZERO);
     }
 
-    RELEASE(scrn.pD3D8,dxgsg,"ID3D8",RELEASE_DOWN_TO_ZERO);
+    RELEASE(scrn.pD3D8,dxgsg8,"ID3D8",RELEASE_DOWN_TO_ZERO);
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
-     DXTextureContext *dtc = DCAST(DXTextureContext, tc);
-//   DXGraphicsStateGuardian *dxgsg = (DXGraphicsStateGuardian *)void_dxgsg_ptr; not needed?
+     DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
+//   DXGraphicsStateGuardian8 *dxgsg = (DXGraphicsStateGuardian8 *)void_dxgsg_ptr; not needed?
 
      // Re-fill the contents of textures and vertex buffers
      // which just got restored now.
@@ -4655,7 +4598,7 @@ bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
 }
 
 bool delete_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
-     DXTextureContext *dtc = DCAST(DXTextureContext, tc);
+     DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
 
      // release DDSurf (but not the texture context)
      dtc->DeleteTexture();
@@ -4663,8 +4606,8 @@ bool delete_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
 }
 
 bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
-     DXTextureContext *dtc = DCAST(DXTextureContext, tc);
-     DXGraphicsStateGuardian *dxgsg = (DXGraphicsStateGuardian *)void_dxgsg_ptr;
+     DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
+     DXGraphicsStateGuardian8 *dxgsg = (DXGraphicsStateGuardian8 *)void_dxgsg_ptr;
 
      // Re-fill the contents of textures and vertex buffers
      // which just got restored now.
@@ -4674,7 +4617,7 @@ bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
 }
 
 // release all textures and vertex/index buffers
-HRESULT DXGraphicsStateGuardian::DeleteAllDeviceObjects(void) {
+HRESULT DXGraphicsStateGuardian8::DeleteAllDeviceObjects(void) {
   // BUGBUG: need to release any vertexbuffers here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
@@ -4684,11 +4627,10 @@ HRESULT DXGraphicsStateGuardian::DeleteAllDeviceObjects(void) {
   // bugbug:  do I still need to delete all the textures since they are all D3DPOOL_MANAGED now?
   traverse_prepared_textures(delete_tex_callback,this);
 
-  if(dxgsg_cat.is_debug())
-      dxgsg_cat.debug() << "release of all textures complete\n";
+  if(dxgsg8_cat.is_debug())
+      dxgsg8_cat.debug() << "release of all textures complete\n";
 
   // delete non-panda-texture/geom DX objects (VBs/textures/shaders)
-  SAFE_DELETE(_pStatMeterFont);
   SAFE_DELSHADER(Vertex,_CurVertexShader,scrn.pD3DDevice);
   SAFE_DELSHADER(Pixel,_CurPixelShader,scrn.pD3DDevice);
   SAFE_RELEASE(_pGlobalTexture);
@@ -4703,26 +4645,19 @@ HRESULT DXGraphicsStateGuardian::DeleteAllDeviceObjects(void) {
 }
 
 // recreate all textures and vertex/index buffers
-HRESULT DXGraphicsStateGuardian::RecreateAllDeviceObjects(void) {
+HRESULT DXGraphicsStateGuardian8::RecreateAllDeviceObjects(void) {
   // BUGBUG: need to handle vertexbuffer handling here
-
-    if(IS_VALID_PTR(_pStatMeterFont)) {
-       _pStatMeterFont->RestoreDeviceObjects();
-    }
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
   traverse_prepared_textures(recreate_tex_callback,this);
 
-  if(dxgsg_cat.is_debug())
-      dxgsg_cat.debug() << "recreation of all textures complete\n";
+  if(dxgsg8_cat.is_debug())
+      dxgsg8_cat.debug() << "recreation of all textures complete\n";
   return S_OK;
 }
 
-HRESULT DXGraphicsStateGuardian::ReleaseAllDeviceObjects(void) {
+HRESULT DXGraphicsStateGuardian8::ReleaseAllDeviceObjects(void) {
     // release any D3DPOOL_DEFAULT objects here (currently none)
-
-    // StatMeter uses dynamic D3DPOOL_DEFAULT VertBuf, must destroy it now
-    SAFE_DELETE(_pStatMeterFont);
     return S_OK;
 }
 
@@ -4731,11 +4666,11 @@ HRESULT DXGraphicsStateGuardian::ReleaseAllDeviceObjects(void) {
 //       Access:
 //       Description:   redraw primary buffer
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::show_frame(bool bNoNewFrameDrawn) {
+void DXGraphicsStateGuardian8::show_frame(bool bNoNewFrameDrawn) {
   if(scrn.pD3DDevice==NULL)
     return;
 
-  DO_PSTATS_STUFF(PStatTimer timer(_win->_swap_pcollector));  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
+  //  DO_PSTATS_STUFF(PStatTimer timer(_win->_swap_pcollector));  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
   HRESULT hr;
 
   if(bNoNewFrameDrawn) {
@@ -4764,13 +4699,13 @@ void DXGraphicsStateGuardian::show_frame(bool bNoNewFrameDrawn) {
     if(hr == D3DERR_DEVICELOST) {
         CheckCooperativeLevel();
     } else {
-      dxgsg_cat.error() << "show_frame() - Present() failed" << D3DERRORSTRING(hr);
+      dxgsg8_cat.error() << "show_frame() - Present() failed" << D3DERRORSTRING(hr);
       exit(1);
     }
   }
 }
 
-HRESULT DXGraphicsStateGuardian::reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams) {
+HRESULT DXGraphicsStateGuardian8::reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams) {
   HRESULT hr;
 
   assert(IS_VALID_PTR(pPresParams));
@@ -4795,113 +4730,53 @@ HRESULT DXGraphicsStateGuardian::reset_d3d_device(D3DPRESENT_PARAMETERS *pPresPa
   return hr;
 }
 
-bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
+bool DXGraphicsStateGuardian8::
+CheckCooperativeLevel(bool bDoReactivateWindow) {
+  HRESULT hr = scrn.pD3DDevice->TestCooperativeLevel();
 
-    HRESULT hr = scrn.pD3DDevice->TestCooperativeLevel();
-    if(SUCCEEDED(hr)) {
-        assert(SUCCEEDED(_last_testcooplevel_result));
-        return true;
+  if(SUCCEEDED(hr)) {
+    assert(SUCCEEDED(_last_testcooplevel_result));
+    return true;
+  }
+
+  switch(hr) {
+  case D3DERR_DEVICENOTRESET:
+    _bDXisReady = false;
+    hr=reset_d3d_device(&scrn.PresParams);
+    if (FAILED(hr)) {
+      // I think this shouldnt fail unless I've screwed up the PresParams from the original working ones somehow
+      dxgsg8_cat.error()
+        << "CheckCooperativeLevel Reset() failed, hr = " << D3DERRORSTRING(hr);
+      exit(1);
     }
 
-    switch(hr) {
-        case D3DERR_DEVICENOTRESET:
-             _bDXisReady = false;
-             hr=reset_d3d_device(&scrn.PresParams);
-             if(FAILED(hr)) {
-                // I think this shouldnt fail unless I've screwed up the PresParams from the original working ones somehow
-                dxgsg_cat.error() << "CheckCooperativeLevel Reset() failed, hr = " << D3DERRORSTRING(hr);
-                exit(1);
-             }
-
-             if(bDoReactivateWindow)
-                 _win->reactivate_window();  //must reactivate window before you can restore surfaces (otherwise you are in WRONGVIDEOMODE, and DDraw RestoreAllSurfaces fails)
-             hr = scrn.pD3DDevice->TestCooperativeLevel();
-             if(FAILED(hr)) {
-                // internal chk, shouldnt fail
-                dxgsg_cat.error() << "TestCooperativeLevel following Reset() failed, hr = " << D3DERRORSTRING(hr);
-                exit(1);
-             }
-
-             _bDXisReady = TRUE;
-
-            break;
-
-        case D3DERR_DEVICELOST:
-            if(SUCCEEDED(_last_testcooplevel_result)) {
-                if(_bDXisReady) {
-                   _win->deactivate_window();
-                   _bDXisReady = false;
-                   if(dxgsg_cat.is_debug())
-                       dxgsg_cat.debug() << "D3D Device was Lost, waiting...\n";
-                }
-            }
+    if(bDoReactivateWindow) {
+      //                 _win->reactivate_window();  //must reactivate window before you can restore surfaces (otherwise you are in WRONGVIDEOMODE, and DDraw RestoreAllSurfaces fails)
+    }
+    hr = scrn.pD3DDevice->TestCooperativeLevel();
+    if(FAILED(hr)) {
+      // internal chk, shouldnt fail
+      dxgsg8_cat.error()
+        << "TestCooperativeLevel following Reset() failed, hr = " << D3DERRORSTRING(hr);
+      exit(1);
     }
 
-/*
-        if(SUCCEEDED(hr))  // this means this was just a safety check, dont need to restore surfs
-            return true;
+    _bDXisReady = TRUE;
+    break;
 
-        // otherwise something just went wrong
-
-        if(hr==D3DERR_DEVICELOST) {
-          // This means that mode changes had taken place, surfaces
-          // were lost but still we are in the original mode, so we
-          // simply restore all surfaces and keep going.
-
-          if(dxgsg_cat.is_debug()) {
-             if(dx_full_screen)
-                dxgsg_cat.debug() << "Lost access to DDRAW exclusive mode, waiting to regain it...\n";
-              else dxgsg_cat.debug() << "Another app has DDRAW exclusive mode, waiting...\n";
-          }
-
-        } else if(hr==D3DERR_DEVICENOTRESET) {
-            // need to call Reset()
-
-            // do I want to do it here, or do
-            HRESULT hr=scrn.pD3DDevice->Reset(&scrn.PresParams);
-            if(FAILED(hr)) {
-                dxgsg_cat.error() << "CheckCooperativeLevel Reset() failed, hr = " << D3DERRORSTRING(hr);
-                exit(1);
-            }
-
-        } else {
-            dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << D3DERRORSTRING(hr);
-            exit(1);
-        }
-    } else {
-        // testcooplvl was failing, handle case where it now succeeds
-
-        if(SUCCEEDED(hr)) {
-          if(_last_testcooplevel_result == DDERR_EXCLUSIVEMODEALREADYSET) {
-              if(dxgsg_cat.is_debug())
-                  dxgsg_cat.debug() << "other app relinquished exclusive mode, refilling surfs...\n";
-          } else if(_last_testcooplevel_result == DDERR_NOEXCLUSIVEMODE) {
-                      if(dxgsg_cat.is_debug())
-                          dxgsg_cat.debug() << "regained exclusive mode, refilling surfs...\n";
-          }
-
-          if(bDoReactivateWindow)
-              _win->reactivate_window();  //must reactivate window before you can restore surfaces (otherwise you are in WRONGVIDEOMODE, and DDraw RestoreAllSurfaces fails)
-
-          RestoreAllVideoSurfaces();
-
-          _bDXisReady = TRUE;
-
-        } else if(hr==DDERR_WRONGMODE) {
-            // This means that the desktop mode has changed
-            // need to destroy all of dx stuff and recreate everything
-            // back again, which is a big hit
-            dxgsg_cat.error() << "detected desktop display mode change in TestCoopLevel, must recreate all DDraw surfaces & D3D devices, this is not handled yet.  " << D3DERRORSTRING(hr);
-            _win->close_window();
-            exit(1);
-          } else if((hr!=DDERR_NOEXCLUSIVEMODE) && (hr!=DDERR_EXCLUSIVEMODEALREADYSET)) {
-                      dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << D3DERRORSTRING(hr);
-                      exit(1);
-                  }
+  case D3DERR_DEVICELOST:
+    if(SUCCEEDED(_last_testcooplevel_result)) {
+      if(_bDXisReady) {
+        //                   _win->deactivate_window();
+        _bDXisReady = false;
+        if(dxgsg8_cat.is_debug())
+          dxgsg8_cat.debug() << "D3D Device was Lost, waiting...\n";
+      }
     }
-*/
-    _last_testcooplevel_result = hr;
-    return SUCCEEDED(hr);
+  }
+
+  _last_testcooplevel_result = hr;
+  return SUCCEEDED(hr);
 }
 
 /*
@@ -4910,7 +4785,7 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
 //       Access:
 //  Description: we receive the new x and y position of the client
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::adjust_view_rect(int x, int y) {
+void DXGraphicsStateGuardian8::adjust_view_rect(int x, int y) {
     if (scrn.view_rect.left != x || scrn.view_rect.top != y) {
 
         scrn.view_rect.right = x + RECT_XSIZE(scrn.view_rect);
@@ -4932,7 +4807,7 @@ void DXGraphicsStateGuardian::adjust_view_rect(int x, int y) {
 //               (which must also be the currently active texture in
 //               the GL state) as a separate image file to disk.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::read_mipmap_images(Texture *tex) {
+void DXGraphicsStateGuardian8::read_mipmap_images(Texture *tex) {
    Filename filename = tex->get_name();
    string name;
    if (filename.empty()) {
@@ -5045,7 +4920,7 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DXVECTOR3& vFrom, D3DXVECTOR3& vAt,
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::prepare_geom_node
+//     Function: DXGraphicsStateGuardian8::prepare_geom_node
 //       Access: Public, Virtual
 //  Description: Prepares the indicated GeomNode for retained-mode
 //               rendering.  If this function returns non-NULL, the
@@ -5053,32 +4928,32 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DXVECTOR3& vFrom, D3DXVECTOR3& vAt,
 //               to draw_geom_node(), which is expected to draw the
 //               contents of the node.
 ////////////////////////////////////////////////////////////////////
-GeomNodeContext *DXGraphicsStateGuardian::
+GeomNodeContext *DXGraphicsStateGuardian8::
 prepare_geom_node(GeomNode *node) {
-  dxgsg_cat.error() << "prepare_geom_node unimplemented for DX8!\n";
+  dxgsg8_cat.error() << "prepare_geom_node unimplemented for DX8!\n";
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_geom_node
+//     Function: DXGraphicsStateGuardian8::draw_geom_node
 //       Access: Public, Virtual
 //  Description: Draws a GeomNode previously indicated by a call to
 //               prepare_geom_node().
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 draw_geom_node(GeomNode *node, const RenderState *state,
                GeomNodeContext *gnc) {
   return;  // unimplemented
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::release_geom_node
+//     Function: DXGraphicsStateGuardian8::release_geom_node
 //       Access: Public, Virtual
 //  Description: Frees the resources previously allocated via a call
 //               to prepare_geom_node(), including deleting the
 //               GeomNodeContext itself, if necessary.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
+void DXGraphicsStateGuardian8::
 release_geom_node(GeomNodeContext *gnc) {
 }
 
@@ -5230,7 +5105,7 @@ End:
 
     SAFE_DELETE_ARRAY( pcrArrayColor );
     SAFE_DELETE_ARRAY( pcrArrayMask );
-    RELEASE(pCursorBitmap,dxgsg,"pCursorBitmap",RELEASE_ONCE);
+    RELEASE(pCursorBitmap,dxgsg8,"pCursorBitmap",RELEASE_ONCE);
     return hr;
 }
 

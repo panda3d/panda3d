@@ -15,115 +15,74 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef GLXGRAPHICSWINDOW_H
 #define GLXGRAPHICSWINDOW_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include <graphicsWindow.h>
-#include <pStatCollector.h>
+#include "pandabase.h"
+
+#include "graphicsWindow.h"
+#include "buttonHandle.h"
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
 class glxGraphicsPipe;
-
-const int GLXWIN_PROCESSING =   1;
-const int GLXWIN_REDISPLAY =    2;
-const int GLXWIN_CONFIGURE =    4;
-const int GLXWIN_EVENT =        8;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsWindow
-// Description :
+// Description : An interface to the glx system for managing GL
+//               windows under X.
 ////////////////////////////////////////////////////////////////////
-class glxGraphicsWindow : public GraphicsWindow
-{
+class glxGraphicsWindow : public GraphicsWindow {
 public:
-  glxGraphicsWindow( GraphicsPipe* pipe );
-  glxGraphicsWindow( GraphicsPipe* pipe,
-                     const GraphicsWindow::Properties& props );
-  virtual ~glxGraphicsWindow( void );
+  glxGraphicsWindow(GraphicsPipe *pipe);
+  virtual ~glxGraphicsWindow();
 
-  virtual bool supports_update() const;
-  virtual void update(void);
-  virtual void end_frame( void );
+  virtual void make_gsg();
+  virtual void release_gsg();
+  virtual void make_current();
 
-  virtual void swap(void);
+  virtual void begin_flip();
 
-  INLINE Window get_xwindow(void) { return _xwindow; }
-
-  virtual TypeHandle get_gsg_type() const;
-  static GraphicsWindow* make_GlxGraphicsWindow(const FactoryParams &params);
-
-public:
-  virtual void make_current(void);
-  virtual void unmake_current(void);
+  virtual void process_events();
+  virtual void set_properties_now(WindowProperties &properties);
 
 protected:
-  void choose_visual(void);
-  virtual void config( void );
-  void setup_colormap(void);
-  void setup_properties(void);
-
-  void enable_mouse_input(bool val);
-  void enable_mouse_motion(bool val);
-  void enable_mouse_passive_motion(bool val);
-  void enable_mouse_entry(bool val);
-
-  void handle_reshape( int w, int h );
-  void handle_mouse_motion( int x, int y );
-  void handle_mouse_entry( int state );
-  void handle_keypress( ButtonHandle key, int x, int y );
-  void handle_keyrelease( ButtonHandle key, int x, int y );
-  ButtonHandle lookup_key(XEvent event);
-
-  int interruptible_xnextevent(Display* display, XEvent* event);
-  bool glx_supports(const char* extension);
-
-  void handle_changes(void);
-  void process_event(XEvent);
-  void process_events(void);
-  void idle_wait(void);
-
-  INLINE void add_event_mask(long event_mask);
-  INLINE void remove_event_mask(long event_mask);
+  virtual void close_window();
+  virtual bool open_window();
 
 private:
-  Display*                      _display;
-  Window                                _xwindow;
-  GLXContext                    _context;
-  XVisualInfo*                  _visual;
-  Colormap                      _colormap;
-  int                           _connection_fd;
-  uint                          _change_mask;
-  int                           _configure_mask;
-  long                          _event_mask;
+  void set_wm_properties(const WindowProperties &properties);
 
-  static const char*            _glx_extensions;
-  bool                          _mouse_input_enabled;
-  bool                          _mouse_motion_enabled;
-  bool                          _mouse_passive_motion_enabled;
-  bool                          _mouse_entry_enabled;
-  int                           _entry_state;
-  bool                          _ignore_key_repeat;
+  XVisualInfo *try_for_visual(int framebuffer_mode,
+                              int want_depth_bits, int want_color_bits) const;
+  bool choose_visual();
+  void setup_colormap();
+  ButtonHandle get_button(XKeyEvent *key_event);
 
-  // fps meter stuff
-  double _start_time;
-  long _start_frame_count;
-  long _cur_frame_count;
-  float _current_fps;
+private:
+  Display *_display;
+  int _screen;
+  Window _xwindow;
+  GLXContext _context;
+  XVisualInfo *_visual;
+  Colormap _colormap;
+  long _event_mask;
+
 
 public:
-  static TypeHandle get_class_type(void);
-  static void init_type(void);
-  virtual TypeHandle get_type(void) const;
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    GraphicsWindow::init_type();
+    register_type(_type_handle, "glxGraphicsWindow",
+                  GraphicsWindow::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:

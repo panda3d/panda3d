@@ -1,4 +1,4 @@
-// Filename: dxSavedFrameBuffer.I
+// Filename: dxSavedFrameBuffer8.I
 // Created by:  drose (06Oct99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,22 +18,22 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXSavedFrameBuffer::Constructor
+//     Function: DXSavedFrameBuffer8::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE DXSavedFrameBuffer::
-DXSavedFrameBuffer(const RenderBuffer &buffer, CPT(DisplayRegion) dr) :
+INLINE DXSavedFrameBuffer8::
+DXSavedFrameBuffer8(const RenderBuffer &buffer, CPT(DisplayRegion) dr) :
   SavedFrameBuffer(buffer, dr)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXSavedFrameBuffer::Destructor
+//     Function: DXSavedFrameBuffer8::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE DXSavedFrameBuffer::
-~DXSavedFrameBuffer() {
+INLINE DXSavedFrameBuffer8::
+~DXSavedFrameBuffer8() {
 }
 

@@ -31,7 +31,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseData {
 PUBLISHED:
-  MouseData();
+  INLINE MouseData();
+  INLINE MouseData(const MouseData &copy);
+  INLINE void operator = (const MouseData &copy);
 
   INLINE int get_x() const;
   INLINE int get_y() const;
