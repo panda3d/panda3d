@@ -55,7 +55,7 @@ IMGHeaderType img_header_type;
 const int img_xsize = config_pnmimagetypes.GetInt("img-xsize", 0);
 const int img_ysize = config_pnmimagetypes.GetInt("img-ysize", 0);
 
-const int jpeg_quality = config_pnmimagetypes.GetInt("jpeg-quality", 75);
+const int jpeg_quality = config_pnmimagetypes.GetInt("jpeg-quality", 95);
 
 ConfigureFn(config_pnmimagetypes) {
   PNMFileTypePNM::init_type();
