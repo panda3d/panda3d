@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "wglExtensions.h"
 #include "glGraphicsStateGuardian.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -34,10 +35,15 @@ public:
   virtual ~wglGraphicsStateGuardian();
 
   INLINE int get_pfnum() const;
+  INLINE bool made_context() const;
   INLINE HGLRC get_context(HDC hdc);
+
+  virtual void reset();
 
 private:
   void make_context(HDC hdc);
+  void show_gl_string(const string &name, GLenum id);
+  void save_extensions(const char *extensions);
 
   // All windows that share a particular GL context must also share
   // the same pixel format; therefore, we store the pixel format
@@ -46,6 +52,23 @@ private:
 
   bool _made_context;
   HGLRC _context;
+
+  pset<string> _extensions;
+
+public:
+  bool _supports_pbuffer;
+
+  wglCreatePbufferARB_proc _wglCreatePbufferARB;
+  wglGetPbufferDCARB_proc _wglGetPbufferDCARB;
+  wglReleasePbufferDCARB_proc _wglReleasePbufferDCARB;
+  wglDestroyPbufferARB_proc _wglDestroyPbufferARB;
+  wglQueryPbufferARB_proc _wglQueryPbufferARB;
+
+  bool _supports_pixel_format;
+
+  wglGetPixelFormatAttribivARB_proc _wglGetPixelFormatAttribivARB;
+  wglGetPixelFormatAttribfvARB_proc _wglGetPixelFormatAttribfvARB;
+  wglChoosePixelFormatARB_proc _wglChoosePixelFormatARB;
 
 public:
   static TypeHandle get_class_type() {

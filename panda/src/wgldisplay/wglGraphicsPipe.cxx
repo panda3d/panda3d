@@ -26,6 +26,7 @@ typedef enum {Software, MCD, ICD} OGLDriverType;
 static const char * const OGLDrvStrings[] = { "Software", "MCD", "ICD" };
 
 TypeHandle wglGraphicsPipe::_type_handle;
+  
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsPipe::Constructor

@@ -17,7 +17,8 @@
     wglGraphicsBuffer.I wglGraphicsBuffer.h \
     wglGraphicsPipe.I wglGraphicsPipe.h \
     wglGraphicsStateGuardian.I wglGraphicsStateGuardian.h \
-    wglGraphicsWindow.I wglGraphicsWindow.h
+    wglGraphicsWindow.I wglGraphicsWindow.h \
+    wglExtensions.h
     
   #define INCLUDED_SOURCES \
     config_wgldisplay.cxx \

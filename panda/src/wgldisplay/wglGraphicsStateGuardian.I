@@ -33,6 +33,19 @@ get_pfnum() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::made_context
+//       Access: Public
+//  Description: Returns true if the GSG has had a context made for it
+//               already, false otherwise.  If this returns false, the
+//               next call to get_context() will quietly make a new
+//               context.
+////////////////////////////////////////////////////////////////////
+INLINE bool wglGraphicsStateGuardian::
+made_context() const {
+  return _made_context;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::get_context
 //       Access: Public
 //  Description: Returns the GL context associated with the GSG.  If

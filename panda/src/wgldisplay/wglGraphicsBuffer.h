@@ -50,19 +50,13 @@ protected:
   virtual bool open_buffer();
 
 private:
-  void setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat);
-
-#ifdef _DEBUG
-  static void print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg);
-#endif
+  bool make_window();
 
   static void register_window_class();
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-  static void show_error_message(DWORD message_id = 0);
 
-  HWND _hWnd;
-  HDC _hdc;
-  HPALETTE _colormap;
+  HWND _window;
+  HDC _window_dc;
 
   static const char * const _window_class_name;
   static bool _window_class_registered;
