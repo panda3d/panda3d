@@ -787,7 +787,7 @@ class TaskManager:
         import new
         for taskPriList in self.taskList:
             for task in taskPriList:
-                if task is None:
+                if (task is None) or (task.isRemoved()):
                     break
                 method = task.__call__
                 if (type(method) == types.MethodType):
