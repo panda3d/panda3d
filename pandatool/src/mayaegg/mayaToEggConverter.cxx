@@ -808,10 +808,6 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
       p3d = p3d * egg_group->get_parent()->get_vertex_frame_inv();
     }
 
-    cerr << egg_group->get_name() 
-         << "\n  " << p3d
-         << "\n";
-
     egg_group->clear_transform();
     egg_group->add_translate(p3d);
     return;
