@@ -2477,6 +2477,86 @@ get_two_sided() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::do_billboard_axis
+//       Access: Public
+//  Description: Performs a billboard-type rotate to the indicated
+//               camera node, one time only, and leaves the object
+//               rotated.  This is similar in principle to heads_up().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+do_billboard_axis(const NodePath &camera) {
+  nassertv(has_arcs());
+
+  LPoint3f pos = get_pos();
+
+  NodePath parent(*this);
+  parent.shorten(1);
+  LMatrix4f rel_mat = camera.get_mat(parent);
+
+  LVector3f up = LVector3f::up();
+  LVector3f rel_pos = -rel_mat.get_row3(3);
+
+  LMatrix4f mat;
+  ::heads_up(mat, rel_pos, up);
+  mat.set_row(3, pos);
+  set_mat(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::do_billboard_point_eye
+//       Access: Public
+//  Description: Performs a billboard-type rotate to the indicated
+//               camera node, one time only, and leaves the object
+//               rotated.  This is similar in principle to look_at(),
+//               although the point_eye billboard effect cannot be
+//               achieved using the ordinary look_at() call.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+do_billboard_point_eye(const NodePath &camera) {
+  nassertv(has_arcs());
+
+  LPoint3f pos = get_pos();
+
+  NodePath parent(*this);
+  parent.shorten(1);
+  LMatrix4f rel_mat = camera.get_mat(parent);
+
+  LVector3f up = LVector3f::up() * rel_mat;
+  LVector3f rel_pos = LVector3f::forward() * rel_mat;
+
+  LMatrix4f mat;
+  ::look_at(mat, rel_pos, up);
+  mat.set_row(3, pos);
+  set_mat(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::do_billboard_point_world
+//       Access: Public
+//  Description: Performs a billboard-type rotate to the indicated
+//               camera node, one time only, and leaves the object
+//               rotated.  This is similar in principle to look_at().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+do_billboard_point_world(const NodePath &camera) {
+  nassertv(has_arcs());
+
+  LPoint3f pos = get_pos();
+
+  NodePath parent(*this);
+  parent.shorten(1);
+  LMatrix4f rel_mat = camera.get_mat(parent);
+
+  LVector3f up = LVector3f::up();
+  LVector3f rel_pos = -rel_mat.get_row3(3);
+
+  LMatrix4f mat;
+  ::look_at(mat, rel_pos, up);
+  mat.set_row(3, pos);
+  set_mat(mat);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_transparency
 //       Access: Public
 //  Description: Specifically sets or disables transparent rendering

@@ -448,6 +448,9 @@ PUBLISHED:
   INLINE bool has_two_sided() const;
   bool get_two_sided() const;
 
+  void do_billboard_axis(const NodePath &camera);
+  void do_billboard_point_eye(const NodePath &camera);
+  void do_billboard_point_world(const NodePath &camera);
   INLINE void set_billboard_axis();
   INLINE void set_billboard_point_eye();
   INLINE void set_billboard_point_world();
