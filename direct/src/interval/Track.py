@@ -1,6 +1,6 @@
 """Track module: contains the Track class"""
 
-from Interval import *
+import Interval
 import types
 
 PREVIOUS_END = 1
@@ -15,7 +15,7 @@ IDATA_END = 4
 
 
 
-class Track(Interval):
+class Track(Interval.Interval):
     # Name counter
     trackNum = 1
     # Class methods
@@ -37,7 +37,7 @@ class Track(Interval):
         # Compute duration
         duration = self.__computeDuration()
         # Initialize superclass
-        Interval.__init__(self, name, duration)
+        Interval.Interval.__init__(self, name, duration)
         # Update stopEventList
         for i in self.ilist:
             self.stopEventList = self.stopEventList + i[0].stopEventList
@@ -51,7 +51,7 @@ class Track(Interval):
     def __buildIlist(self, intervalList):
         self.ilist = []
         for i in intervalList:
-            if isinstance(i, Interval):
+            if isinstance(i, Interval.Interval):
                 self.ilist.append([i, 0.0, PREVIOUS_END, 0.0, 0.0])
             elif (isinstance(i, types.ListType) or
                   isinstance(i, types.TupleType)):
@@ -88,11 +88,11 @@ class Track(Interval):
             elif (type == TRACK_START):
                 fillTime = itime - duration
             else:
-                Interval.notify.error(
+                self.notify.error(
                         'Track.__computeDuration(): unknown type: %d' % type)
             # Check for overlap
             if (fillTime < 0.0):
-                Interval.notify.error(
+                self.notify.error(
                         'Track.__computeDuration(): overlap detected')
             # Compute start time of interval
             idata[IDATA_START] = duration + fillTime
@@ -119,7 +119,7 @@ class Track(Interval):
             # And recompute duration
             self.duration = self.__computeDuration()    
         else:
-            Interval.notify.warning(
+            self.notify.warning(
                 'Track.setIntervalStartTime(): no Interval named: %s' % name)
 
     def getIntervalStartTime(self, name):
@@ -129,7 +129,7 @@ class Track(Interval):
         for idata in self.ilist:
             if (idata[IDATA_IVAL].getName() == name):
                 return idata[IDATA_START]
-        Interval.notify.warning(
+        self.notify.warning(
                 'Track.getIntervalStartTime(): no Interval named: %s' % name)
         return None
 
@@ -140,7 +140,7 @@ class Track(Interval):
         for idata in self.ilist:
             if (idata[IDATA_IVAL] == interval):
                 return idata[IDATA_START]
-        Interval.notify.warning(
+        self.notify.warning(
                 'Track.getIntervalStartTime(): Interval not found')
         return None
 
@@ -151,28 +151,42 @@ class Track(Interval):
         for idata in self.ilist:
             if (idata[IDATA_IVAL].getName() == name):   
                 return idata[IDATA_END]
-        Interval.notify.warning(
+        self.notify.warning(
                 'Track.getIntervalEndTime(): no Interval named: %s' % name)
         return None
 
-    def updateFunc(self, t, event = IVAL_NONE):
+    def updateFunc(self, t, event = Interval.IVAL_NONE):
         """ updateFunc(t, event)
             Go to time t
         """
-        # Make sure track actually contains some intervals
-        if not self.ilist:
-            Interval.notify.warning(
-                'Track.updateFunc(): track has no intervals')
-            return
         # Deterimine which interval, if any to evaluate
-        if (t < 0):
+        if (self.currentInterval != None and
+            event == Interval.IVAL_NONE and
+            t > self.currentStart and t < self.currentEnd):
+            # If nothing interesting happened--we're still somewhere
+            # within the same interval we were within last time--just
+            # run that one.  Trivial case.
+            self.currentInterval.setT(t - self.currentStart, event)
+            
+        elif (t < 0):
             # Before start of track, do nothing
             pass
+        
         else:
+            # The more sophisticated, look-for-the-proper-interval case.
+            
+            # Make sure track actually contains some intervals
+            if not self.ilist:
+                self.notify.warning(
+                    'Track.updateFunc(): track has no intervals')
+                return
+
             # Initialize local variables
             currentInterval = None
+            currentStart = 0.0
+            currentEnd = 0.0
             # First entry, re-init instance variables
-            if (event == IVAL_INIT):
+            if (event == Interval.IVAL_INIT):
                 # Initialize prev_t to 0.0
                 self.prev_t = 0.0
                 # Clear record of currentInterval
@@ -188,7 +202,7 @@ class Track(Interval):
             for ival, itime, itype, tStart, tEnd in self.ilist:
                 # Compare time with each ival's start/end times
                 if (t < tStart):
-                    if (event == IVAL_DONE):
+                    if (event == Interval.IVAL_DONE):
                         # This should only happen in cases of floating
                         # point instability where t is very close to
                         # but less than tStart
@@ -202,39 +216,43 @@ class Track(Interval):
                     break
                 elif (t >= tStart) and (t <= tEnd):
                     # Between start/end, record current interval
-                    # Make sure event == IVAL_INIT if entering new interval
-                    if ((event == IVAL_NONE) and
+                    # Make sure event == Interval.IVAL_INIT if entering new interval
+                    if ((event == Interval.IVAL_NONE) and
                         ((self.prev_t < tStart) or
                           (ival != self.currentInterval))):
-                        event = IVAL_INIT
+                        event = Interval.IVAL_INIT
                     # Evaluate interval at interval relative time
-                    if (event == IVAL_DONE):
+                    if (event == Interval.IVAL_DONE):
                         ival.setT(ival.getDuration(), event)
                     else:
                         ival.setT(t - tStart, event)
                     currentInterval = ival
+                    currentStart = tStart
+                    currentEnd = tEnd
                 elif (t > tEnd):
                     # Crossing over interval end 
-                    if (((event == IVAL_NONE) or (event == IVAL_DONE)) and
+                    if (((event == Interval.IVAL_NONE) or (event == Interval.IVAL_DONE)) and
                         (self.prev_t < tEnd)):
                         # We've just crossed the end of this interval,
                         # execute the interval at its end time
-                        # and flag event as IVAL_DONE
-                        ival.setT(ival.getDuration(), IVAL_DONE)
-                    elif ((event == IVAL_INIT) and ival.getfOpenEnded()):
+                        # and flag event as Interval.IVAL_DONE
+                        ival.setT(ival.getDuration(), Interval.IVAL_DONE)
+                    elif ((event == Interval.IVAL_INIT) and ival.getfOpenEnded()):
                         # or its an INIT event after the interval's end
                         # and the interval is openended,
                         # then execute the interval at its end time
-                        ival.setT(ival.getDuration(), IVAL_INIT)
+                        ival.setT(ival.getDuration(), Interval.IVAL_INIT)
                     # May not be the last, keep checking other intervals
             # Record current interval (may be None)
             self.currentInterval = currentInterval
+            self.currentStart = currentStart
+            self.currentEnd = currentEnd
 
     # Create a printable representation of the track
     def __repr__(self, indent=0):
         """ __repr__(indent)
         """
-        str = Interval.__repr__(self, indent) + '\n'
+        str = Interval.Interval.__repr__(self, indent) + '\n'
         for idata in self.ilist:
             # Tack on start and end time for this interval
             str = (str + idata[IDATA_IVAL].__repr__(indent+1) +

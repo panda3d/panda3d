@@ -1,11 +1,9 @@
 """MultiTrack module: contains the MultiTrack class"""
 
-from Interval import *
-from Track import *
+import Interval
 
 
-
-class MultiTrack(Interval):
+class MultiTrack(Interval.Interval):
     # Name counter
     multiTrackNum = 1
     # Class methods
@@ -21,7 +19,7 @@ class MultiTrack(Interval):
         # Duration is max of all track durations
         duration = self.__computeDuration()
         # Initialize superclass
-        Interval.__init__(self, name, duration)
+        Interval.Interval.__init__(self, name, duration)
         # Update stopEventList after initialization
         # It is the union of the stopEventLists of all tracks in the MultiTrack
         for t in self.tlist:
@@ -42,27 +40,23 @@ class MultiTrack(Interval):
                 duration = dur
         return duration
 
-    def updateFunc(self, t, event = IVAL_NONE):
+    def updateFunc(self, t, event = Interval.IVAL_NONE):
         """ updateFunc(t, event)
             Go to time t
         """
+        
         for track in self.tlist:
-            # Compare time with track's end times
-            if (event == IVAL_INIT) or (event == IVAL_DONE):
-                # always call setT if INIT or DONE event
-                track.setT(t, event)
-            elif (t >= track.duration) and (self.prev_t < track.duration):
-                # If t > track.duration, only call if just crossing over
-                track.setT(t, event)
-            else:
-                # t within track, update track
-                track.setT(t, event)
+            # We used to try to be smart about calling this only in
+            # certain cases, but in fact we just called it in every
+            # case anyway, so might as well eliminate all of the
+            # comparisons.
+            track.setT(t, event)
 
     # Print out representation of MultiTrack
     def __repr__(self, indent=0):
         """ __repr__(indent)
         """
-        str = Interval.__repr__(self, indent) + '\n'
+        str = Interval.Interval.__repr__(self, indent) + '\n'
         for t in self.tlist:
             str = str + t.__repr__(indent+1)
         return str
