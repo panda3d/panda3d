@@ -262,6 +262,7 @@ process_node(const MDagPath &dag_path, EggData &data) {
       get_transform(dag_path, egg_group);
 
       MFnMesh mesh(dag_path, &status);
+
       if (!status) {
         if (verbose >= 2) {
           nout << "Error in node " << dag_path.fullPathName() << ":\n"
@@ -337,7 +338,8 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
 }
 
 void MayaFile::
-make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
+make_nurbs_surface(const MDagPath &dag_path, 
+                   MFnNurbsSurface &surface,
                    EggGroup *egg_group) {
   MStatus status;
   string name = surface.name().asChar();
@@ -535,7 +537,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
 }
 
 EggNurbsCurve *MayaFile::
-make_trim_curve(MFnNurbsCurve curve, const string &nurbs_name,
+make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
                 EggGroupNode *egg_group, int trim_curve_index) {
   if (verbose >= 3) {
     nout << "Trim curve:\n";
@@ -609,7 +611,7 @@ make_trim_curve(MFnNurbsCurve curve, const string &nurbs_name,
 }
 
 void MayaFile::
-make_nurbs_curve(const MDagPath &, MFnNurbsCurve curve,
+make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
                  EggGroup *egg_group) {
   MStatus status;
   string name = curve.name().asChar();
@@ -682,7 +684,7 @@ make_nurbs_curve(const MDagPath &, MFnNurbsCurve curve,
 }
 
 void MayaFile::
-make_polyset(const MDagPath &dag_path, MFnMesh mesh,
+make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
              EggGroup *egg_group, MayaShader *default_shader) {
   MStatus status;
   string name = mesh.name().asChar();
