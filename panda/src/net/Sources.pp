@@ -8,7 +8,7 @@
 #begin lib_target
   #define TARGET net
   #define LOCAL_LIBS \
-    putil
+    express pandabase
 
   #define SOURCES \
     config_net.cxx config_net.h connection.cxx connection.h \
