@@ -158,7 +158,7 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
         push ecx
         mov ecx, cColorf
         fild tempcolorval
-        fld [ecx]
+        fld DWORD PTR [ecx]
         fmul ST(0),ST(1)
         fistp tempcolorval  ; no way to store directly to int register
         mov eax, tempcolorval
