@@ -397,10 +397,23 @@ r_scan(const string &prefix) {
     return false;
   }
 
+  // Collect all the filenames in the directory in this vector first,
+  // so we can sort them.
+  vector<string> filenames;
+
   struct dirent *d;
   d = readdir(root);
   while (d != (struct dirent *)NULL) {
-    string filename = d->d_name;
+    filenames.push_back(d->d_name);
+    d = readdir(root);
+  }
+  closedir(root);
+
+  sort(filenames.begin(), filenames.end());
+
+  vector<string>::const_iterator fi;
+  for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
+    string filename = (*fi);
 
     if (!filename.empty() && filename[0] != '.') {
       // Is this possibly a subdirectory with its own Sources.pp
@@ -408,19 +421,16 @@ r_scan(const string &prefix) {
       string next_prefix = prefix + filename + "/";
       string source_filename = next_prefix + SOURCE_FILENAME;
       if (access(source_filename.c_str(), F_OK) == 0) {
+
 	PPDirectory *subtree = new PPDirectory(filename, this);
 
 	if (!subtree->r_scan(next_prefix)) {
-	  closedir(root);
 	  return false;
 	}
       }
     }
-
-    d = readdir(root);
   }
 
-  closedir(root);
   return true;
 }
 
@@ -451,8 +461,7 @@ read_source_file(const string &prefix, PPNamedScopes *named_scopes) {
     
     _source = new PPCommandFile(_scope);
     
-    if (!_source->read_stream(in)) {
-      cerr << "Error when reading " << source_filename << "\n";
+    if (!_source->read_stream(in, source_filename)) {
       return false;
     }
   }

@@ -10,6 +10,7 @@
 #include "ppSubroutine.h"
 #include "ppCommandFile.h"
 #include "ppDependableFile.h"
+#include "ppMain.h"
 #include "tokenize.h"
 #include "find_searchpath.h"
 #include "filename.h"
@@ -59,7 +60,7 @@ PPScope(PPNamedScopes *named_scopes) :
 //               NULL.
 ////////////////////////////////////////////////////////////////////
 PPNamedScopes *PPScope::
-get_named_scopes() const {
+get_named_scopes() {
   return _named_scopes;
 }
 
@@ -84,7 +85,7 @@ set_parent(PPScope *parent) {
 //               See set_parent().
 ////////////////////////////////////////////////////////////////////
 PPScope *PPScope::
-get_parent() const {
+get_parent() {
   return _parent_scope;
 }
 
@@ -300,7 +301,7 @@ define_formals(const string &subroutine_name,
 //               indicated variable name.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-get_variable(const string &varname) const {
+get_variable(const string &varname) {
   // Is it a user-defined function?
   const PPSubroutine *sub = PPSubroutine::get_func(varname);
   if (sub != (const PPSubroutine *)NULL) {
@@ -337,7 +338,7 @@ get_variable(const string &varname) const {
 //               definition is in turn expanded.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_variable(const string &varname) const {
+expand_variable(const string &varname) {
   return expand_string(get_variable(varname));
 }
 
@@ -350,7 +351,7 @@ expand_variable(const string &varname) const {
 //               not.
 ////////////////////////////////////////////////////////////////////
 PPScope::MapVariableDefinition &PPScope::
-find_map_variable(const string &varname) const {
+find_map_variable(const string &varname) {
   MapVariableDefinition &def = p_find_map_variable(varname);
   if (&def != &_null_map_def) {
     return def;
@@ -377,7 +378,7 @@ find_map_variable(const string &varname) const {
 //               scope.
 ////////////////////////////////////////////////////////////////////
 PPDirectory *PPScope::
-get_directory() const {
+get_directory() {
   if (_directory != (PPDirectory *)NULL) {
     return _directory;
   }
@@ -417,7 +418,7 @@ set_directory(PPDirectory *directory) {
 //               expanded.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_string(const string &str) const {
+expand_string(const string &str) {
   return r_expand_string(str, (ExpandedVariable *)NULL);
 }
 
@@ -431,7 +432,7 @@ expand_string(const string &str) const {
 //               definition.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_self_reference(const string &str, const string &varname) const {
+expand_self_reference(const string &str, const string &varname) {
   // Look for a simple reference to the named variable.  A more
   // complex reference, like a computed variable name or something
   // equally loopy, won't work with this simple test.  Too bad.
@@ -512,7 +513,7 @@ get_bottom_scope() {
 ////////////////////////////////////////////////////////////////////
 void PPScope::
 tokenize_params(const string &str, vector<string> &tokens,
-		bool expand) const {
+		bool expand) {
   size_t p = 0;
   while (p < str.length()) {
     // Skip initial whitespace.
@@ -564,7 +565,7 @@ tokenize_params(const string &str, vector<string> &tokens,
 //               error.
 ////////////////////////////////////////////////////////////////////
 bool PPScope::
-tokenize_numeric_pair(const string &str, double &a, double &b) const {
+tokenize_numeric_pair(const string &str, double &a, double &b) {
   vector<string> words;
   tokenize_params(str, words, true);
   if (words.size() != 2) {
@@ -623,7 +624,7 @@ p_set_variable(const string &varname, const string &definition) {
 //               false otherwise..
 ////////////////////////////////////////////////////////////////////
 bool PPScope::
-p_get_variable(const string &varname, string &result) const {
+p_get_variable(const string &varname, string &result) {
   Variables::const_iterator vi;
   vi = _variables.find(varname);
   if (vi != _variables.end()) {
@@ -669,7 +670,7 @@ p_get_variable(const string &varname, string &result) const {
 //               have thus far been expanded in the linked list.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-r_expand_string(const string &str, PPScope::ExpandedVariable *expanded) const {
+r_expand_string(const string &str, PPScope::ExpandedVariable *expanded) {
   string result;
 
   // Search for a variable reference.
@@ -704,7 +705,7 @@ r_expand_string(const string &str, PPScope::ExpandedVariable *expanded) const {
 //               itself is returned.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-r_scan_variable(const string &str, size_t &vp) const {
+r_scan_variable(const string &str, size_t &vp) {
 
   // Search for the end of the variable name: an unmatched square
   // bracket.
@@ -749,7 +750,7 @@ r_scan_variable(const string &str, size_t &vp) const {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 r_expand_variable(const string &str, size_t &vp,
-		  PPScope::ExpandedVariable *expanded) const {
+		  PPScope::ExpandedVariable *expanded) {
   string varname;
 
   size_t whitespace_at = 0;
@@ -869,6 +870,8 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_sort(params);
     } else if (funcname == "unique") {
       return expand_unique(params);
+    } else if (funcname == "matrix") {
+      return expand_matrix(params);
     } else if (funcname == "if") {
       return expand_if(params);
     } else if (funcname == "eq") {
@@ -905,6 +908,10 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_unmapped(params);
     } else if (funcname == "dependencies") {
       return expand_dependencies(params);
+    } else if (funcname == "foreach") {
+      return expand_foreach(params);
+    } else if (funcname == "forscopes") {
+      return expand_forscopes(params);
     }
 
     // It must be a map variable.
@@ -1003,7 +1010,7 @@ r_expand_variable(const string &str, size_t &vp,
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_variable_nested(const string &varname, 
-		       const string &scope_names) const {
+		       const string &scope_names) {
   if (_named_scopes == (PPNamedScopes *)NULL) {
     return string();
   }
@@ -1051,7 +1058,7 @@ expand_variable_nested(const string &varname,
 //               drive leterr, for windows_platform.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_isfullpath(const string &params) const {
+expand_isfullpath(const string &params) {
   string filename = trim_blanks(expand_string(params));
 
   string result;
@@ -1078,7 +1085,7 @@ expand_isfullpath(const string &params) const {
 //               reverse slashes.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_osfilename(const string &params) const {
+expand_osfilename(const string &params) {
   // Split the parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -1109,7 +1116,7 @@ expand_osfilename(const string &params) const {
 //               reverse slashes.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_unixfilename(const string &params) const {
+expand_unixfilename(const string &params) {
   // Split the parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -1132,7 +1139,7 @@ expand_unixfilename(const string &params) const {
 //               not running under Cygwin.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_cygpath_w(const string &params) const {
+expand_cygpath_w(const string &params) {
   string filename = trim_blanks(expand_string(params));
 
 #ifdef __CYGWIN__
@@ -1154,7 +1161,7 @@ expand_cygpath_w(const string &params) const {
 //               not running under Cygwin.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_cygpath_p(const string &params) const {
+expand_cygpath_p(const string &params) {
   string filename = trim_blanks(expand_string(params));
 
 #ifdef __CYGWIN__
@@ -1175,7 +1182,7 @@ expand_cygpath_p(const string &params) const {
 //               with shell matching characters.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_wildcard(const string &params) const {
+expand_wildcard(const string &params) {
   vector<string> results;
   glob_string(expand_string(params), results);
 
@@ -1194,7 +1201,7 @@ expand_wildcard(const string &params) const {
 //               the first expansion.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_isdir(const string &params) const {
+expand_isdir(const string &params) {
   vector<string> results;
   glob_string(expand_string(params), results);
 
@@ -1227,7 +1234,7 @@ expand_isdir(const string &params) const {
 //               looks only at the first expansion.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_isfile(const string &params) const {
+expand_isfile(const string &params) {
   vector<string> results;
   glob_string(expand_string(params), results);
 
@@ -1258,7 +1265,7 @@ expand_isfile(const string &params) const {
 //               indicated search path, or on the system search path.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_libtest(const string &params) const {
+expand_libtest(const string &params) {
   // Get the parameters out based on commas.  The first parameter is a
   // space-separated set of directories to search, the second
   // parameter is a space-separated set of library names.
@@ -1347,7 +1354,7 @@ expand_libtest(const string &params) const {
 //               path.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_bintest(const string &params) const {
+expand_bintest(const string &params) {
   // We only have one parameter: the filename of the executable.  We
   // always search for it on the path.
   string binname = expand_string(params);
@@ -1418,7 +1425,12 @@ expand_bintest(const string &params) const {
 //               standard output.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_shell(const string &params) const {
+expand_shell(const string &params) {
+  // We run $[shell] commands within the directory indicated by
+  // $[THISDIRPREFIX].  This way, local filenames will be expanded the
+  // way we expect.
+  string dirname = trim_blanks(expand_variable("THISDIRPREFIX"));
+
   string command = expand_string(params);
   int pid, status;
 
@@ -1438,6 +1450,16 @@ expand_shell(const string &params) const {
     
   if (pid == 0) {
     // Child.
+
+    if (!dirname.empty()) {
+      // We don't have to restore the directory after we're done,
+      // because we're doing the chdir() call only within the child
+      // process.
+      if (chdir(dirname.c_str()) < 0) {
+	perror("chdir");
+      }
+    }
+
     close(pd[0]);
     dup2(pd[1], STDOUT_FILENO);
     char *argv[4];
@@ -1502,7 +1524,7 @@ expand_shell(const string &params) const {
 //               where possible.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_standardize(const string &params) const {
+expand_standardize(const string &params) {
   string filename = trim_blanks(expand_string(params));
   if (filename.empty()) {
     return string();
@@ -1558,7 +1580,7 @@ expand_standardize(const string &params) const {
 //               the length of the argument in characters.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_length(const string &params) const {
+expand_length(const string &params) {
   string word = trim_blanks(expand_string(params));
 
   char buffer[32];
@@ -1576,7 +1598,7 @@ expand_length(const string &params) const {
 //               character E, inclusive.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_substr(const string &params) const {
+expand_substr(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -1618,7 +1640,7 @@ expand_substr(const string &params) const {
 //               if the words contain no slash.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_dir(const string &params) const {
+expand_dir(const string &params) {
   // Split the parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -1647,7 +1669,7 @@ expand_dir(const string &params) const {
 //               string itself if there is no slash.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_notdir(const string &params) const {
+expand_notdir(const string &params) {
   // Split the parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -1673,7 +1695,7 @@ expand_notdir(const string &params) const {
 //               the filename extension, including a dot, if any.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_suffix(const string &params) const {
+expand_suffix(const string &params) {
   // Split the parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -1707,7 +1729,7 @@ expand_suffix(const string &params) const {
 //               directory, if any).
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_basename(const string &params) const {
+expand_basename(const string &params) {
   // Split the parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -1737,7 +1759,7 @@ expand_basename(const string &params) const {
 //               words in the second parameter.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_word(const string &params) const {
+expand_word(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -1768,7 +1790,7 @@ expand_word(const string &params) const {
 //               space-separated list of words in the third parameter.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_wordlist(const string &params) const {
+expand_wordlist(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -1817,7 +1839,7 @@ expand_wordlist(const string &params) const {
 //               list.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_words(const string &params) const {
+expand_words(const string &params) {
   // Split the parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -1836,7 +1858,7 @@ expand_words(const string &params) const {
 //               whitespace.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_firstword(const string &params) const {
+expand_firstword(const string &params) {
   // Split the parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -1853,7 +1875,7 @@ expand_firstword(const string &params) const {
 //  Description: Expands the "patsubst" function variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_patsubst(const string &params, bool separate_words) const {
+expand_patsubst(const string &params, bool separate_words) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -1931,7 +1953,7 @@ expand_patsubst(const string &params, bool separate_words) const {
 //  Description: Expands the "filter" function variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_filter(const string &params) const {
+expand_filter(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -1987,7 +2009,7 @@ expand_filter(const string &params) const {
 //  Description: Expands the "filter_out" function variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_filter_out(const string &params) const {
+expand_filter_out(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2043,7 +2065,7 @@ expand_filter_out(const string &params) const {
 //  Description: Expands the "subst" function variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_subst(const string &params) const {
+expand_subst(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2084,7 +2106,7 @@ expand_subst(const string &params) const {
 //               like "subst" except it only replaces whole words.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_wordsubst(const string &params) const {
+expand_wordsubst(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2125,7 +2147,7 @@ expand_wordsubst(const string &params) const {
 //               into alphabetical order, and also remove duplicates.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_sort(const string &params) const {
+expand_sort(const string &params) {
   // Split the string up into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -2146,7 +2168,7 @@ expand_sort(const string &params) const {
 //               remains.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_unique(const string &params) const {
+expand_unique(const string &params) {
   // Split the string up into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(expand_string(params), words);
@@ -2170,6 +2192,36 @@ expand_unique(const string &params) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_matrix
+//       Access: Private
+//  Description: Expands the "matrix" function variable.  This
+//               combines the different words of the n parameters in
+//               all possible ways, like the shell {a,b,c} expansion
+//               characters.  For example, $[matrix a b,c,10 20 30]
+//               expands to ac10 ac20 ac30 bc10 bc20 bc30.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_matrix(const string &params) {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, true);
+
+  // Each token gets split up into words based on the spaces.
+  vector<vector<string> > words;
+  for (int i = 0; i < (int)tokens.size(); i++) {
+    words.push_back(vector<string>());
+    tokenize_whitespace(tokens[i], words.back());
+  }
+
+  // Now synthesize the results recursively.
+  vector<string> results;
+  r_expand_matrix(results, words, 0, "");
+
+  string result = repaste(results, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_if
 //       Access: Private
 //  Description: Expands the "if" function variable.  This evaluates
@@ -2179,7 +2231,7 @@ expand_unique(const string &params) const {
 //               (i.e. empty).
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_if(const string &params) const {
+expand_if(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2209,7 +2261,7 @@ expand_if(const string &params) const {
 //               string equivalence.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_eq(const string &params) const {
+expand_eq(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2234,7 +2286,7 @@ expand_eq(const string &params) const {
 //               string equivalence.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_ne(const string &params) const {
+expand_ne(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2259,7 +2311,7 @@ expand_ne(const string &params) const {
 //               numeric equivalence.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_eqn(const string &params) const {
+expand_eqn(const string &params) {
   double a, b;
   if (!tokenize_numeric_pair(params, a, b)) {
     return string();
@@ -2279,7 +2331,7 @@ expand_eqn(const string &params) const {
 //               numeric equivalence.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_nen(const string &params) const {
+expand_nen(const string &params) {
   double a, b;
   if (!tokenize_numeric_pair(params, a, b)) {
     return string();
@@ -2299,7 +2351,7 @@ expand_nen(const string &params) const {
 //               numeric relationships.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_ltn(const string &params) const {
+expand_ltn(const string &params) {
   double a, b;
   if (!tokenize_numeric_pair(params, a, b)) {
     return string();
@@ -2319,7 +2371,7 @@ expand_ltn(const string &params) const {
 //               numeric relationships.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_len(const string &params) const {
+expand_len(const string &params) {
   double a, b;
   if (!tokenize_numeric_pair(params, a, b)) {
     return string();
@@ -2339,7 +2391,7 @@ expand_len(const string &params) const {
 //               numeric relationships.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_gtn(const string &params) const {
+expand_gtn(const string &params) {
   double a, b;
   if (!tokenize_numeric_pair(params, a, b)) {
     return string();
@@ -2359,7 +2411,7 @@ expand_gtn(const string &params) const {
 //               numeric relationships.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_gen(const string &params) const {
+expand_gen(const string &params) {
   double a, b;
   if (!tokenize_numeric_pair(params, a, b)) {
     return string();
@@ -2380,7 +2432,7 @@ expand_gen(const string &params) const {
 //               argument is nonempty.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_not(const string &params) const {
+expand_not(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2406,7 +2458,7 @@ expand_not(const string &params) const {
 //               Specifically, it returns the first nonempty argument.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_or(const string &params) const {
+expand_or(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2428,7 +2480,7 @@ expand_or(const string &params) const {
 //               Specifically, it returns the last argument.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_and(const string &params) const {
+expand_and(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -2454,7 +2506,7 @@ expand_and(const string &params) const {
 //  Description: Expands the "upcase" function variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_upcase(const string &params) const {
+expand_upcase(const string &params) {
   string result = expand_string(params);
   string::iterator si;
   for (si = result.begin(); si != result.end(); ++si) {
@@ -2469,7 +2521,7 @@ expand_upcase(const string &params) const {
 //  Description: Expands the "downcase" function variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_downcase(const string &params) const {
+expand_downcase(const string &params) {
   string result = expand_string(params);
   string::iterator si;
   for (si = result.begin(); si != result.end(); ++si) {
@@ -2491,7 +2543,7 @@ expand_downcase(const string &params) const {
 //               config.h file.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_cdefine(const string &params) const {
+expand_cdefine(const string &params) {
   string varname = trim_blanks(params);
   string expansion = trim_blanks(expand_variable(varname));
 
@@ -2514,7 +2566,7 @@ expand_cdefine(const string &params) const {
 //               definitions have been encountered.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_closure(const string &params) const {
+expand_closure(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, false);
@@ -2600,7 +2652,7 @@ expand_closure(const string &params) const {
 //               the keys in the map.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_unmapped(const string &params) const {
+expand_unmapped(const string &params) {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, false);
@@ -2646,7 +2698,7 @@ expand_unmapped(const string &params) const {
 //               #include directives appearing within the files.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_dependencies(const string &params) const {
+expand_dependencies(const string &params) {
   // Split the string up into filenames based on whitespace.
   vector<string> filenames;
   tokenize_whitespace(expand_string(params), filenames);
@@ -2675,6 +2727,90 @@ expand_dependencies(const string &params) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_foreach
+//       Access: Private
+//  Description: Expands the "foreach" function variable.  This
+//               evaluates an expression once for each word of a list.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_foreach(const string &params) {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, false);
+
+  if (tokens.size() != 3) {
+    cerr << "foreach requires three parameters.\n";
+    return string();
+  }
+
+  // The first parameter is the temporary variable name that holds
+  // each word as it is expanded; the second parameter is the
+  // space-separated list of words.  The third parameter is the
+  // expression to evaluate.
+  string varname = trim_blanks(expand_string(tokens[0]));
+  vector<string> words;
+  tokenize_whitespace(expand_string(tokens[1]), words);
+
+  vector<string> results;
+  vector<string>::const_iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    define_variable(varname, *wi);
+    results.push_back(expand_string(tokens[2]));
+  }
+
+  string result = repaste(results, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_forscopes
+//       Access: Private
+//  Description: Expands the "forscopes" function variable.  This
+//               evaluates an expression once within each of a number
+//               of named nested scopes.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_forscopes(const string &params) {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, false);
+
+  if (tokens.size() != 2) {
+    cerr << "forscopes requires two parameters.\n";
+    return string();
+  }
+
+  // The first parameter is the space-separated list of nested scope
+  // names.  The second parameter is the expression to evaluate.
+  vector<string> scope_names;
+  tokenize_whitespace(expand_string(tokens[0]), scope_names);
+
+  if (_named_scopes == (PPNamedScopes *)NULL) {
+    return string();
+  }
+
+  // Now build up the list of scopes with these names.
+  PPNamedScopes::Scopes scopes;
+  vector<string>::const_iterator wi;
+  for (wi = scope_names.begin(); wi != scope_names.end(); ++wi) {
+    _named_scopes->get_scopes(*wi, scopes);
+  }
+  PPNamedScopes::sort_by_dependency(scopes);
+
+  // Now evaluate the expression within each scope.
+
+  vector<string> results;
+  PPNamedScopes::Scopes::const_iterator si;
+  for (si = scopes.begin(); si != scopes.end(); ++si) {
+    PPScope *scope = *si;
+    results.push_back(scope->expand_string(tokens[1]));
+  }
+
+  string result = repaste(results, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_function
 //       Access: Private
 //  Description: Expands the user-defined function reference.  This
@@ -2684,7 +2820,7 @@ expand_dependencies(const string &params) const {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_function(const string &funcname, 
-		const PPSubroutine *sub, const string &params) const {
+		const PPSubroutine *sub, const string &params) {
   PPScope::push_scope((PPScope *)this);
   PPScope nested_scope(_named_scopes);
   nested_scope.define_formals(funcname, sub->_formals, params);
@@ -2731,7 +2867,7 @@ expand_function(const string &funcname,
 //               first parameter for each corresponding scope.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_map_variable(const string &varname, const string &params) const {
+expand_map_variable(const string &varname, const string &params) {
   // Split the string up into tokens based on the commas, but don't
   // expand the variables yet.
   vector<string> tokens;
@@ -2760,7 +2896,7 @@ expand_map_variable(const string &varname, const string &params) const {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_map_variable(const string &varname, const string &expression,
-		    const vector<string> &keys) const {
+		    const vector<string> &keys) {
   const MapVariableDefinition &def = find_map_variable(varname);
   if (&def == &_null_map_def) {
     cerr << "Warning:  undefined map variable: " << varname << "\n";
@@ -2789,13 +2925,38 @@ expand_map_variable(const string &varname, const string &expression,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::r_expand_matrix
+//       Access: Private
+//  Description: The recursive implementation of expand_matrix().
+//               This generates all of the combinations from the
+//               indicated index into the words array, with the given
+//               prefix.
+////////////////////////////////////////////////////////////////////
+void PPScope::
+r_expand_matrix(vector<string> &results, const vector<vector<string> > &words,
+		int index, const string &prefix) {
+  if (index >= (int)words.size()) {
+    // This is the terminal condition.
+    results.push_back(prefix);
+
+  } else {
+    // Otherwise, tack on the next set of words, and recurse.
+    const vector<string> &w = words[index];
+    vector<string>::const_iterator wi;
+    for (wi = w.begin(); wi != w.end(); ++wi) {
+      r_expand_matrix(results, words, index + 1, prefix + (*wi));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::p_find_map_variable
 //       Access: Private
 //  Description: The implementation of find_map_variable() for a
 //               particular static scope, without checking the stack.
 ////////////////////////////////////////////////////////////////////
 PPScope::MapVariableDefinition &PPScope::
-p_find_map_variable(const string &varname) const {
+p_find_map_variable(const string &varname) {
   MapVariables::const_iterator mvi;
   mvi = _map_variables.find(varname);
   if (mvi != _map_variables.end()) {
@@ -2819,7 +2980,20 @@ p_find_map_variable(const string &varname) const {
 //               files that actually match the globbing characters.
 ////////////////////////////////////////////////////////////////////
 void PPScope::
-glob_string(const string &str, vector<string> &results) const {
+glob_string(const string &str, vector<string> &results) {
+  // We run glob_string() within the directory indicated by
+  // $[THISDIRPREFIX].  This way, local filenames will be expanded the
+  // way we expect.
+  string dirname = trim_blanks(expand_variable("THISDIRPREFIX"));
+  bool changed_dir = false;
+  if (!dirname.empty()) {
+    if (chdir(dirname.c_str()) < 0) {
+      perror("chdir");
+    } else {
+      changed_dir = true;
+    }
+  }
+
   vector<string> words;
   tokenize_whitespace(str, words);
 
@@ -2839,4 +3013,12 @@ glob_string(const string &str, vector<string> &results) const {
   }
 
   globfree(&pglob);
+
+  // Sort the results into alphabetical order.
+  sort(results.begin(), results.end());
+
+  if (changed_dir) {
+    // Now restore the current directory back to where it should be.
+    PPMain::chdir_root();
+  }
 }

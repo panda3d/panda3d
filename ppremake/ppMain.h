@@ -32,6 +32,9 @@ public:
   void report_depends(const string &dirname) const;
   void report_needs(const string &dirname) const;
 
+  static string get_root();
+  static void chdir_root();
+
 private:
   bool r_process_all(PPDirectory *dir);
   bool p_process(PPDirectory *dir);
@@ -46,6 +49,8 @@ private:
   PPDirectoryTree _tree;
   PPNamedScopes _named_scopes;
   PPScope *_parent_scope;
+
+  static string _root;
 };
 
 #endif

@@ -28,10 +28,10 @@ public:
 
   PPScope(PPNamedScopes *named_scopes);
 
-  PPNamedScopes *get_named_scopes() const;
+  PPNamedScopes *get_named_scopes();
 
   void set_parent(PPScope *parent);
-  PPScope *get_parent() const;
+  PPScope *get_parent();
 
   void define_variable(const string &varname, const string &definition);
   bool set_variable(const string &varname, const string &definition);
@@ -43,23 +43,23 @@ public:
   void define_formals(const string &subroutine_name,
 		      const vector<string> &formals, const string &actuals);
 
-  string get_variable(const string &varname) const;
-  string expand_variable(const string &varname) const;
-  MapVariableDefinition &find_map_variable(const string &varname) const;
+  string get_variable(const string &varname);
+  string expand_variable(const string &varname);
+  MapVariableDefinition &find_map_variable(const string &varname);
 
-  PPDirectory *get_directory() const;
+  PPDirectory *get_directory();
   void set_directory(PPDirectory *directory);
 
-  string expand_string(const string &str) const;
-  string expand_self_reference(const string &str, const string &varname) const;
+  string expand_string(const string &str);
+  string expand_self_reference(const string &str, const string &varname);
 
   static void push_scope(PPScope *scope);
   static PPScope *pop_scope();
   static PPScope *get_bottom_scope();
 
   void tokenize_params(const string &str, vector<string> &tokens,
-		       bool expand) const;
-  bool tokenize_numeric_pair(const string &str, double &a, double &b) const;
+		       bool expand);
+  bool tokenize_numeric_pair(const string &str, double &a, double &b);
 
   static MapVariableDefinition _null_map_def;
 
@@ -71,72 +71,80 @@ private:
   };
 
   bool p_set_variable(const string &varname, const string &definition);
-  bool p_get_variable(const string &varname, string &result) const;
+  bool p_get_variable(const string &varname, string &result);
 
-  string r_expand_string(const string &str, ExpandedVariable *expanded) const;
-  string r_scan_variable(const string &str, size_t &vp) const;
+  string r_expand_string(const string &str, ExpandedVariable *expanded);
+  string r_scan_variable(const string &str, size_t &vp);
   string r_expand_variable(const string &str, size_t &vp,
-			   PPScope::ExpandedVariable *expanded) const;
+			   PPScope::ExpandedVariable *expanded);
   string expand_variable_nested(const string &varname, 
-				const string &scope_names) const;
+				const string &scope_names);
 
-  string expand_isfullpath(const string &params) const;
-  string expand_osfilename(const string &params) const;
-  string expand_unixfilename(const string &params) const;
-  string expand_cygpath_w(const string &params) const;
-  string expand_cygpath_p(const string &params) const;
-  string expand_wildcard(const string &params) const;
-  string expand_isdir(const string &params) const;
-  string expand_isfile(const string &params) const;
-  string expand_libtest(const string &params) const;
-  string expand_bintest(const string &params) const;
-  string expand_shell(const string &params) const;
-  string expand_standardize(const string &params) const;
-  string expand_length(const string &params) const;
-  string expand_substr(const string &params) const;
-  string expand_dir(const string &params) const;
-  string expand_notdir(const string &params) const;
-  string expand_suffix(const string &params) const;
-  string expand_basename(const string &params) const;
-  string expand_word(const string &params) const;
-  string expand_wordlist(const string &params) const;
-  string expand_words(const string &params) const;
-  string expand_firstword(const string &params) const;
-  string expand_patsubst(const string &params, bool separate_words) const;
-  string expand_filter(const string &params) const;
-  string expand_filter_out(const string &params) const;
-  string expand_wordsubst(const string &params) const;
-  string expand_subst(const string &params) const;
-  string expand_sort(const string &params) const;
-  string expand_unique(const string &params) const;
-  string expand_if(const string &params) const;
-  string expand_eq(const string &params) const;
-  string expand_ne(const string &params) const;
-  string expand_eqn(const string &params) const;
-  string expand_nen(const string &params) const;
-  string expand_ltn(const string &params) const;
-  string expand_len(const string &params) const;
-  string expand_gtn(const string &params) const;
-  string expand_gen(const string &params) const;
-  string expand_not(const string &params) const;
-  string expand_or(const string &params) const;
-  string expand_and(const string &params) const;
-  string expand_upcase(const string &params) const;
-  string expand_downcase(const string &params) const;
-  string expand_cdefine(const string &params) const;
-  string expand_closure(const string &params) const;
-  string expand_unmapped(const string &params) const;
-  string expand_dependencies(const string &params) const;
+  string expand_isfullpath(const string &params);
+  string expand_osfilename(const string &params);
+  string expand_unixfilename(const string &params);
+  string expand_cygpath_w(const string &params);
+  string expand_cygpath_p(const string &params);
+  string expand_wildcard(const string &params);
+  string expand_isdir(const string &params);
+  string expand_isfile(const string &params);
+  string expand_libtest(const string &params);
+  string expand_bintest(const string &params);
+  string expand_shell(const string &params);
+  string expand_standardize(const string &params);
+  string expand_length(const string &params);
+  string expand_substr(const string &params);
+  string expand_dir(const string &params);
+  string expand_notdir(const string &params);
+  string expand_suffix(const string &params);
+  string expand_basename(const string &params);
+  string expand_word(const string &params);
+  string expand_wordlist(const string &params);
+  string expand_words(const string &params);
+  string expand_firstword(const string &params);
+  string expand_patsubst(const string &params, bool separate_words);
+  string expand_filter(const string &params);
+  string expand_filter_out(const string &params);
+  string expand_wordsubst(const string &params);
+  string expand_subst(const string &params);
+  string expand_sort(const string &params);
+  string expand_unique(const string &params);
+  string expand_matrix(const string &params);
+  string expand_if(const string &params);
+  string expand_eq(const string &params);
+  string expand_ne(const string &params);
+  string expand_eqn(const string &params);
+  string expand_nen(const string &params);
+  string expand_ltn(const string &params);
+  string expand_len(const string &params);
+  string expand_gtn(const string &params);
+  string expand_gen(const string &params);
+  string expand_not(const string &params);
+  string expand_or(const string &params);
+  string expand_and(const string &params);
+  string expand_upcase(const string &params);
+  string expand_downcase(const string &params);
+  string expand_cdefine(const string &params);
+  string expand_closure(const string &params);
+  string expand_unmapped(const string &params);
+  string expand_dependencies(const string &params);
+  string expand_foreach(const string &params);
+  string expand_forscopes(const string &params);
   string expand_function(const string &funcname, const PPSubroutine *sub,
-			 const string &params) const;
-  string expand_map_variable(const string &varname, const string &params) const;
+			 const string &params);
+  string expand_map_variable(const string &varname, const string &params);
   string expand_map_variable(const string &varname, const string &expression,
-			     const vector<string> &keys) const;
+			     const vector<string> &keys);
+
+  void
+  r_expand_matrix(vector<string> &results,
+		  const vector<vector<string> > &words,
+		  int index, const string &prefix);
 
   MapVariableDefinition &
-  p_find_map_variable(const string &varname) const;
+  p_find_map_variable(const string &varname);
 
-  void glob_string(const string &str, vector<string> &results) const;
+  void glob_string(const string &str, vector<string> &results);
 
   PPNamedScopes *_named_scopes;
 

@@ -14,7 +14,7 @@
 // by directory name, used in sort_by_dependency().
 class SortScopesByDependencyAndName {
 public:
-  bool operator () (const PPScope *a, const PPScope *b) const {
+  bool operator () (PPScope *a, PPScope *b) const {
     PPDirectory *da = a->get_directory();
     PPDirectory *db = b->get_directory();
 

@@ -30,6 +30,7 @@ public:
   PPScope *get_scope() const;
 
   bool read_file(const string &filename);
+  bool read_stream(istream &in, const string &filename);
   bool read_stream(istream &in);
   void begin_read();
   bool read_line(string line);

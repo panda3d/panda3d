@@ -299,6 +299,26 @@ read_file(const string &filename) {
     return false;
   }
 
+  return read_stream(in, filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::read_stream
+//       Access: Public
+//  Description: Reads input from the given stream.  Each line is
+//               read, commands are processed, variables are expanded,
+//               and the resulting output is sent to write_line()
+//               one line at a time.  The return value is true if the
+//               entire file is read with no errors, false if there is
+//               some problem.
+//
+//               The filename is just informational; it is used to
+//               update the variables like THISFILENAME and
+//               THISDIRPREFIX as appropriate, and to report errors to
+//               the user.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+read_stream(istream &in, const string &filename) {
   PushFilename pushed(_scope, filename);
 
   if (!read_stream(in)) {
@@ -307,7 +327,6 @@ read_file(const string &filename) {
     }
     return false;
   }
-
   return true;
 }
 
@@ -320,6 +339,10 @@ read_file(const string &filename) {
 //               one line at a time.  The return value is true if the
 //               entire file is read with no errors, false if there is
 //               some problem.
+//
+//               This flavor of read_stream() does not take a
+//               filename.  It does not, therefore, adjust
+//               THISFILENAME and THISDIRPREFIX.
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 read_stream(istream &in) {
@@ -1746,13 +1769,18 @@ PushFilename(PPScope *scope, const string &filename) {
   _old_thisdirprefix = _scope->get_variable("THISDIRPREFIX");
   _old_thisfilename = _scope->get_variable("THISFILENAME");
 
-  _scope->define_variable("THISFILENAME", filename);
+  string thisfilename = filename;
+  string thisdirprefix;
+
   size_t slash = filename.rfind('/');
   if (slash == string::npos) {
-    _scope->define_variable("THISDIRPREFIX", string());
+    thisdirprefix = string();
   } else {
-    _scope->define_variable("THISDIRPREFIX", filename.substr(0, slash + 1));
+    thisdirprefix = filename.substr(0, slash + 1);
   }
+
+  _scope->define_variable("THISFILENAME", thisfilename);
+  _scope->define_variable("THISDIRPREFIX", thisdirprefix);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1762,6 +1790,6 @@ PushFilename(PPScope *scope, const string &filename) {
 ////////////////////////////////////////////////////////////////////
 PPCommandFile::PushFilename::
 ~PushFilename() {
-  _scope->define_variable("THISDIRPREFIX", _old_thisdirprefix);
   _scope->define_variable("THISFILENAME", _old_thisfilename);
+  _scope->define_variable("THISDIRPREFIX", _old_thisdirprefix);
 }

@@ -14,6 +14,8 @@
 #include <errno.h>
 #include <stdio.h> // for perror
 
+string PPMain::_root;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PPMain::Constructor
 //       Access: Public
@@ -81,12 +83,12 @@ read_source(const string &root) {
     return false;
   }
 
-  string cwd = get_cwd();
-  cerr << "Root is " << cwd << "\n";
+  _root = get_cwd();
+  cerr << "Root is " << _root << "\n";
 
   _def_scope = new PPScope(&_named_scopes);
   _def_scope->define_variable("PACKAGEFILE", package_file);
-  _def_scope->define_variable("TOPDIR", cwd);
+  _def_scope->define_variable("TOPDIR", _root);
   _defs = new PPCommandFile(_def_scope);
 
   if (!_defs->read_file(PACKAGE_FILENAME)) {
@@ -216,6 +218,37 @@ report_needs(const string &dirname) const {
   }
 
   dir->report_needs();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPMain::get_root
+//       Access: Public, Static
+//  Description: Returns the full path to the root directory of the
+//               source hierarchy; this is the directory in which the
+//               runs most of the time.
+////////////////////////////////////////////////////////////////////
+string PPMain::
+get_root() {
+  return _root;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPMain::chdir_root
+//       Access: Public, Static
+//  Description: Changes the current directory to the root directory
+//               of the source hierarchy.  This should be executed
+//               after a temporary change to another directory, to
+//               restore the current directory to a known state.
+////////////////////////////////////////////////////////////////////
+void PPMain::
+chdir_root() {
+  if (chdir(_root.c_str()) < 0) {
+    perror("chdir");
+    // This is a real error!  We can't get back to our starting
+    // directory!
+    cerr << "Error!  Source directory is invalid!\n";
+    exit(1);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
