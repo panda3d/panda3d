@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+const string standard_delimiters = ": \n\t";
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Results::Constructor
 //       Access: Public

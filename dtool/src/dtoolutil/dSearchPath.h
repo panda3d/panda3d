@@ -25,6 +25,8 @@
 
 #include <vector>
 
+extern EXPCL_DTOOL const string standard_delimiters;
+
 ///////////////////////////////////////////////////////////////////
 //       Class : DSearchPath
 // Description : This class stores a list of directories that can be
@@ -55,7 +57,7 @@ public:
 
 PUBLISHED:
   DSearchPath();
-  DSearchPath(const string &path, const string &delimiters = ": \t\n");
+  DSearchPath(const string &path, const string &delimiters = standard_delimiters);
   DSearchPath(const DSearchPath &copy);
   void operator = (const DSearchPath &copy);
   ~DSearchPath();
@@ -64,7 +66,7 @@ PUBLISHED:
   void append_directory(const Filename &directory);
   void prepend_directory(const Filename &directory);
   void append_path(const string &path,
-                   const string &delimiters = ": \t\n");
+                   const string &delimiters = standard_delimiters);
   void append_path(const DSearchPath &path);
   void prepend_path(const DSearchPath &path);
 
@@ -77,7 +79,7 @@ PUBLISHED:
 
   INLINE static Filename
   search_path(const Filename &filename, const string &path,
-              const string &delimiters = ": \t\n");
+              const string &delimiters = standard_delimiters);
 
   void output(ostream &out, const string &separator = ":") const;
   void write(ostream &out, int indent_level = 0) const;
