@@ -257,6 +257,11 @@ value is either the empty string (false) or a nonempty string (true).
     argument: everything except for the extension and its dot, but
     including the directory, if any.
 
+  $[makeguid <name>] - returns a GUID (global unique identifier) based
+    on an MD5 digest computation of <name>.  The resulting GUID, which
+    looks like 398F2CC4-C683-26EB-3251-6FC996738F7F, is suitable for
+    identifying Visual Studio .NET projects.
+
   $[word <n>,<words>] - returns the nth word, 1-based, of the
     space-separated list of words in the second parameter.
 
@@ -361,6 +366,9 @@ value is either the empty string (false) or a nonempty string (true).
     changing their respective order.  Since this is slightly slower
     than $[sort], it should only be used when the order of the
     original words on the list is important.
+
+  $[join <sep,<words>] - joins the space-separated list of <words>
+    into a single string using the separator <sep>.
 
   $[matrix <param1>,<param2>,<param3>,...,<paramN>] - splits each
     parameter up into a space-separated set of words, and then returns
