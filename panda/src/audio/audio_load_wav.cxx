@@ -5,6 +5,7 @@
 
 #include <dconfig.h>
 #include "audio_pool.h"
+#include "config_audio.h"
 
 Configure(audio_load_wav);
 
