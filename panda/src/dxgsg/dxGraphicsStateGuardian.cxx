@@ -567,7 +567,7 @@ init_dx(  LPDIRECTDRAW7     context,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 clear(const RenderBuffer &buffer) {
-  //    PStatTimer timer(_win->_clear_pcollector);
+    PStatTimer timer(_win->_clear_pcollector);
 
     nassertv(buffer._gsg == this);
     int buffer_type = buffer._buffer_type;
@@ -1396,6 +1396,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
     dxgsg_cat.debug() << "draw_point()" << endl;
 #endif
   
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
     DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
   
     // The DX Way
@@ -1539,7 +1540,8 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_line()" << endl;
 #endif
-   DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
+    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
 #ifdef _DEBUG
     static BOOL bPrintedMsg=FALSE;
@@ -1644,7 +1646,8 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
     dxgsg_cat.debug() << "draw_linestrip()" << endl;
 #endif
 
-  DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
+    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
     int nPrims = geom->get_num_prims();
     const int *plen = geom->get_lengths();
@@ -1771,7 +1774,8 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
-  DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
+    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
     Texture *tex = geom->get_texture();
     nassertv(tex != (Texture *) NULL);
@@ -2104,8 +2108,9 @@ void DXGraphicsStateGuardian::
 draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_polygon()" << endl;
+   dxgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
+   DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
    // wireframe polygon will be drawn as linestrip, otherwise draw as multi-tri trifan
@@ -2129,6 +2134,7 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_quad()" << endl;
 #endif
+   DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
    // wireframe quad will be drawn as linestrip, otherwise draw as multi-tri trifan
@@ -2152,7 +2158,8 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_tri()" << endl;
 #endif
-  DO_PSTATS_STUFF(_vertices_tri_pcollector.add_level(geom->get_num_vertices()));
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
+    DO_PSTATS_STUFF(_vertices_tri_pcollector.add_level(geom->get_num_vertices()));
 
 #ifdef _DEBUG
     if (_pCurTexContext!=NULL) {
@@ -2453,8 +2460,9 @@ void DXGraphicsStateGuardian::
 draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_tristrip()" << endl;
+  dxgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
+  DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
   DO_PSTATS_STUFF(_vertices_tristrip_pcollector.add_level(geom->get_num_vertices()));
 
   draw_multitri(geom, D3DPT_TRIANGLESTRIP);
@@ -2471,6 +2479,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
+  DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
   DO_PSTATS_STUFF(_vertices_trifan_pcollector.add_level(geom->get_num_vertices()));
 
   draw_multitri(geom, D3DPT_TRIANGLEFAN);
@@ -3129,7 +3138,8 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
-  DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
+    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
     int nprims = geom->get_num_prims();
 
@@ -6106,6 +6116,7 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
     DXCallList(ggnc->_index);
 
 #ifdef DO_PSTATS
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
     _vertices_display_list_pcollector.add_level(ggnc->_num_verts);
 #endif
 

@@ -348,7 +348,7 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 clear(const RenderBuffer &buffer) {
-  // PStatTimer timer(_win->_clear_pcollector);
+  PStatTimer timer(_win->_clear_pcollector);
   activate();
 
   nassertv(buffer._gsg == this);
@@ -720,6 +720,7 @@ draw_point(GeomPoint *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_point()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glPointSize(geom->get_size());
@@ -780,6 +781,7 @@ draw_line(GeomLine *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_line()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glLineWidth(geom->get_width());
@@ -842,6 +844,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_linestrip()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glLineWidth(geom->get_width());
@@ -954,6 +957,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   Texture *tex = geom->get_texture();
@@ -1233,6 +1237,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1308,6 +1313,7 @@ draw_tri(GeomTri *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tri()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_tri_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1378,6 +1384,7 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_quad()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1448,6 +1455,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1540,6 +1548,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_trifan_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1633,6 +1642,7 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
+  PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   issue_scene_graph_color();
@@ -1903,7 +1913,8 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
     GLGeomNodeContext *ggnc = DCAST(GLGeomNodeContext, gnc);
     glCallList(ggnc->_index);
 
-#ifdef DO_PSTATS
+#ifdef DO_PSTATS 
+    PStatTimer timer(_draw_primitive_pcollector);
     _vertices_display_list_pcollector.add_level(ggnc->_num_verts);
 #endif
 

@@ -238,6 +238,8 @@ public:
   static PStatCollector _geom_nodes_pcollector;
   static PStatCollector _frustum_cull_volumes_pcollector;
   static PStatCollector _frustum_cull_transforms_pcollector;
+  static PStatCollector _set_state_pcollector;
+  static PStatCollector _draw_primitive_pcollector;
 
 private:
   // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access

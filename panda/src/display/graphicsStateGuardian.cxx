@@ -52,7 +52,8 @@ PStatCollector GraphicsStateGuardian::_geom_nodes_pcollector("Nodes:GeomNodes");
 PStatCollector GraphicsStateGuardian::_frustum_cull_volumes_pcollector("Cull volumes");
 PStatCollector GraphicsStateGuardian::_frustum_cull_transforms_pcollector("Cull volumes:Transforms");
 
-static PStatCollector _set_state_pcollector("Draw:Set state");
+PStatCollector GraphicsStateGuardian::_set_state_pcollector("Draw:Set state");
+PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive");
 
 #endif
 
