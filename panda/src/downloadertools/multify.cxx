@@ -43,20 +43,101 @@ bool got_chdir_to = false;
 size_t scale_factor = 0;  // -F
 pset<string> dont_compress; // -Z
 
+// Default extensions not to compress.  May be overridden with -Z.
+string dont_compress_str = "jpg,mp3";
+
 void 
 usage() {
-  cerr << "Usage: multify -[c|r|t|x] -f <multifile_name> [options] <subfile_name> ...\n";
+  cerr <<
+    "Usage: multify -[c|r|t|x] -f <multifile_name> [options] <subfile_name> ...\n";
 }
 
 void 
 help() {
-  cerr << "multify is used to store and extract files from a Panda Multifile.\n"
-       << "This is similar to a tar or zip file in that it is an archive file that\n"
-       << "contains a number of subfiles that may later be extracted.\n\n"
-
-       << "The command-line options for multify are designed to be similar to those\n"
-       << "for tar, the traditional Unix archiver utility.\n\n";
   usage();
+  cerr << "\n"
+    "multify is used to store and extract files from a Panda Multifile.\n"
+    "This is similar to a tar or zip file in that it is an archive file that\n"
+    "contains a number of subfiles that may later be extracted.\n\n"
+
+    "Panda's VirtualFileSystem is capable of mounting Multifiles for direct\n"
+    "access to the subfiles contained within without having to extract them\n"
+    "out to independent files first.\n\n"
+
+    "The command-line options for multify are designed to be similar to those\n"
+    "for tar, the traditional Unix archiver utility.\n\n"
+
+    "Options:\n\n"
+    
+    "  You must specify exactly one of the following command switches:\n\n"
+
+    "  -c\n"
+    "      Create a new Multifile archive.  Subfiles named on the command line\n"
+    "      will be added to the new Multifile.  If the Multifile already exists,\n"
+    "      it is first removed.\n\n"
+
+    "  -r\n"
+    "      Rewrite an existing Multifile archive.  Subfiles named on the command\n"
+    "      line will be added to the Multifile or will replace subfiles within\n"
+    "      the Multifile with the same name.  The Multifile will be repacked\n"
+    "      after completion, even if no Subfiles were added.\n\n"
+
+    "  -t\n"
+    "      List the contents of an existing Multifile.  With -v, this shows\n"
+    "      the size of each Subfile and its compression ratio, if compressed.\n\n"
+
+    "  -x\n"
+    "      Extract the contents of an existing Multifile.  The Subfiles named on\n"
+    "      the command line, or all Subfiles if nothing is named, are extracted\n"
+    "      into the current directory or into whichever directory is specified\n"
+    "      with -C.\n\n\n"
+
+    
+    "  You must always specify the following switch:\n\n"
+
+    "  -f <multifile_name>\n"
+    "      Names the Multifile that will be operated on.\n\n\n"
+
+    "  The remaining switches are optional:\n\n"
+
+    "  -v\n"
+    "      Run verbosely.  In -c, -r, or -x mode, list each file as it is\n"
+    "      written or extracted.  In -t mode, list more information about each\n"
+    "      file.\n\n"
+
+    "  -z\n"
+    "      Compress subfiles as they are written to the Multifile.  Unlike tar\n"
+    "      (but like zip), subfiles are compressed individually, instead of the\n"
+    "      entire archive being compressed as one stream.  It is not necessary\n"
+    "      to specify -z when extracting compressed subfiles; they will always be\n"
+    "      decompressed automatically.  Also see -Z, which restricts which\n"
+    "      subfiles will be compressed based on the filename extension.\n\n"
+
+    "  -F <scale_factor>\n"
+    "      Specify a Multifile scale factor.  This is only necessary to support\n"
+    "      Multifiles that will exceed 4GB in size.  The default scale factor is\n"
+    "      1, which should be sufficient for almost any application, but the total\n"
+    "      size of the Multifile will be limited to 4GB * scale_factor.  The size\n"
+    "      of individual subfiles may not exceed 4GB in any case.\n\n"
+
+    "  -C <extract_dir>\n"
+
+    "      With -x, change to the named directory before extracting files;\n"
+    "      that is, extract subfiles into the named directory.\n\n"
+
+    "  -O\n"
+    "      With -x, extract subfiles to standard output instead of to disk.\n\n"
+
+    "  -Z <extension_list>\n"
+    "      Specify a comma-separated list of filename extensions that represent\n"
+    "      files that are not to be compressed.  The default if this is omitted is\n"
+    "      \"" << dont_compress_str << "\".  Specify -Z \"\" (be sure to include the space) to allow\n"
+    "      all files to be compressed.\n\n"
+
+    "  -1 .. -9\n"
+    "      Specify the compression level when -z is in effect.  Larger numbers\n"
+    "      generate slightly smaller files, but compression takes longer.  The\n"
+    "      default is -" << default_compression_level << ".\n\n";
 }
 
 bool
@@ -319,9 +400,6 @@ main(int argc, char *argv[]) {
       argv[1] = new_arg;
     }
   }
-
-  // Default extensions not to compress.  May be overridden with -Z.
-  string dont_compress_str = "jpg,mp3";
 
   extern char *optarg;
   extern int optind;
