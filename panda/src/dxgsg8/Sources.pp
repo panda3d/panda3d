@@ -1,7 +1,12 @@
 #define BUILD_DIRECTORY $[HAVE_DX]
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m
+#define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolconfig:m \
+   dtoolutil:c dtoolbase:c dtool:m
+
+#define WIN_SYS_LIBS \
+   d3d8.lib d3dx8.lib dxerr8.lib
+   
 #define USE_PACKAGES dx
 
 #begin lib_target

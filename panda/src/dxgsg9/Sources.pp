@@ -4,6 +4,9 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define USE_PACKAGES dx
 
+#define WIN_SYS_LIBS \
+   d3d9.lib d3dx9.lib dxerr9.lib
+
 #begin lib_target
   #define TARGET dxgsg9
   #define LOCAL_LIBS \

@@ -4,6 +4,11 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define USE_PACKAGES dx
 
+// We link with the DX8 libraries, because they're a superset of DX7
+// anyway, and it means we don't need to have the DX7 SDK available.
+#define WIN_SYS_LIBS \
+   d3d8.lib d3dx8.lib dxerr8.lib
+
 #begin lib_target
 
   #define TARGET dxgsg7
