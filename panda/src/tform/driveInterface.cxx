@@ -79,9 +79,11 @@ get_effect(float ramp_up_time, float ramp_down_time) {
 
 void DriveInterface::KeyHeld::
 set_key(bool down) {
-  _down = down;
-  _changed_time = ClockObject::get_global_clock()->get_frame_time();
-  _effect_at_change = _effect;
+  if (_down != down) {
+    _down = down;
+    _changed_time = ClockObject::get_global_clock()->get_frame_time();
+    _effect_at_change = _effect;
+  }
 }
 
 void DriveInterface::KeyHeld::
