@@ -72,12 +72,15 @@ class ClientDistUpdate:
         for i in range(0, numElems):
             datagram.putArg(args[i], self.types[i], self.divisors[i])
     
-    def sendUpdate(self, cr, do, args):
+    def sendUpdate(self, cr, do, args, sendToId = None):
         datagram = Datagram.Datagram()
         # Add message type
         datagram.addUint16(CLIENT_OBJECT_UPDATE_FIELD)
         # Add the DO id
-        datagram.addUint32(do.doId)
+        if sendToId == None:
+            datagram.addUint32(do.doId)
+        else:
+            datagram.addUint32(sendToId)
         # Add the field id
         datagram.addUint16(self.number)
         # Add the arguments

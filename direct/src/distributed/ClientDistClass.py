@@ -72,12 +72,12 @@ class ClientDistClass:
         cdu.updateField(self, do, di)
         return None
 
-    def sendUpdate(self, cr, do, fieldName, args):
+    def sendUpdate(self, cr, do, fieldName, args, sendToId = None):
         # Look up the cdu
         assert(self.name2CDU.has_key(fieldName))
         cdu = self.name2CDU[fieldName]
         # Let the cdu finish the job
-        cdu.sendUpdate(cr, do, args)
+        cdu.sendUpdate(cr, do, args, sendToId)
         
 
     

@@ -117,8 +117,8 @@ class DistributedObject(PandaObject):
             cdc.updateField(self, di)
         return None
 
-    def sendUpdate(self, fieldName, args):
-        self.cr.sendUpdate(self, fieldName, args)
+    def sendUpdate(self, fieldName, args, sendToId = None):
+        self.cr.sendUpdate(self, fieldName, args, sendToId)
 
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId()))

@@ -291,14 +291,14 @@ class ClientRepository(DirectObject.DirectObject):
         self.send(datagram)
         return None
         
-    def sendUpdate(self, do, fieldName, args):
+    def sendUpdate(self, do, fieldName, args, sendToId = None):
         # Get the DO id
         doId = do.doId
         # Get the cdc
         assert(self.doId2cdc.has_key(doId))
         cdc = self.doId2cdc[doId]
         # Let the cdc finish the job
-        cdc.sendUpdate(self, do, fieldName, args)
+        cdc.sendUpdate(self, do, fieldName, args, sendToId)
 
     def send(self, datagram):
         #if self.notify.getDebug():
