@@ -1,6 +1,10 @@
 
 from Tkinter import *
+import sys
 import Pmw
+# This is required by the ihooks.py module used by Squeeze (used by
+# pandaSqueezer.py) so that Pmw initializes properly
+sys.modules['_Pmw'].__name__ = '_Pmw'
 
 __builtins__["tkroot"] = Pmw.initialise()
 
