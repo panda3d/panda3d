@@ -11,21 +11,32 @@ class VisibilityBlocker:
     blocker might show what's behind it before all of the distributed objects
     behind it have been generated."""
     def __init__(self):
-        # this may do something in the future; please call down to it
-        pass
+        self.__nextSetZoneDoneEvent=None
 
     def destroy(self):
-        self.ignoreAll()
+        self.cancelUnblockVis()
 
     def requestUnblockVis(self):
         """derived class should call this before the end of the frame in which
         they cause the visibility to be extended. okToUnblockVis (see below)
         will be called when it's safe to show the new zones."""
-        self.accept(self.level.cr.getNextSetZoneDoneEvent(),
-                    self.okToUnblockVis)
+        if self.__nextSetZoneDoneEvent is None:
+            self.__nextSetZoneDoneEvent = self.level.cr.getNextSetZoneDoneEvent()
+            self.accept(self.__nextSetZoneDoneEvent, self.okToUnblockVis)
+
+    def cancelUnblockVis(self):
+        """derived class should call this if they have called requestUnblockVis,
+        but no longer need that service.  For example the user could have canceled
+        the request that started the visibility change."""
+        if self.__nextSetZoneDoneEvent is not None:
+            self.ignore(self.__nextSetZoneDoneEvent)
+            self.__nextSetZoneDoneEvent = None
+
+    def isWaitingForUnblockVis(self):
+        """returns a boolean for whether there is a requestUnblockVis() pending."""
+        return self.__nextSetZoneDoneEvent is not None
 
     def okToUnblockVis(self):
         """derived class should override this func and do the vis unblock
         (i.e. open the door, etc.)"""
-        # this may do something in the future; please call down to it
-        pass
+        self.cancelUnblockVis()
