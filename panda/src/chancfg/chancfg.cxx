@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "chancfg_headers.h"
 #endif
 
 #pragma hdrstop
 
-#ifndef WIN32_VC
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "chancfg.h"
 #include <notify.h>
 #endif

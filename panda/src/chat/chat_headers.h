@@ -16,15 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <buttonEvent.h>
-#include <buttonEventDataAttribute.h>
-#include <buttonEventDataTransition.h>
-#include <dconfig.h>
-#include <keyboardButton.h>
-#include <throw_event.h>
-#include "chatHelpers.h"
-#include "chatInput.h"
-#include "config_chat.h"
+#include <pandabase.h>
 
 #pragma hdrstop
 

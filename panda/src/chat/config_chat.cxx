@@ -16,8 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chat_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "chatInput.h"
+#endif
+
+#include "config_chat.h"
+#include <dconfig.h>
 
 Configure(config_chat);
 NotifyCategoryDef(chat, "");

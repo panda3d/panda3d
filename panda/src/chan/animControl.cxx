@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "chan_headers.h"
 #endif
 
 #pragma hdrstop
 
-#ifndef WIN32_VC
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "animControl.h"
 #include "animChannelBase.h"
 #include "partBundle.h"
@@ -548,7 +548,7 @@ bool AnimControl::
 do_actions_backward(int from, int to) {
 #ifndef WIN32_VC
   if (from >= to) {
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(NO_PCH)
     typedef reverse_iterator<Actions::const_iterator, Actions::value_type> Action_reverse_iterator;
 #else
     typedef reverse_iterator<Actions::const_iterator> Action_reverse_iterator;
