@@ -216,8 +216,10 @@ class DirectDials(DialNode, DirectObject):
         self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
+        """
         if (index < 0) or (index >= self.getNumDials()):
             raise IndexError
+        """
         return self.readDial(index)
     
     def __len__(self):
@@ -237,8 +239,8 @@ class DirectDials(DialNode, DirectObject):
     
     def __repr__(self):
         str = self.name + ': '
-        for val in self:
-            str = str + '%.3f' % val + ' '
+        for i in range(self.getNumDials()):
+            str = str + '%.3f' % self[i] + ' '
         return str
 
 class DirectTimecodeReader(AnalogNode, DirectObject):
