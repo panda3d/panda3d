@@ -234,3 +234,24 @@ INLINE CullHandler *CullTraverser::
 get_cull_handler() const {
   return _cull_handler;
 }
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::set_portal_clipper
+//       Access: Public
+//  Description: Specifies _portal_clipper object pointer that 
+//               subsequent traverse() or traverse_below may use.
+////////////////////////////////////////////////////////////////////
+INLINE void CullTraverser::
+set_portal_clipper(PortalClipper *portal_clipper) {
+  _portal_clipper = portal_clipper;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::get_portal_clipper
+//       Access: Public
+//  Description: Returns the _portal_clipper pointer
+////////////////////////////////////////////////////////////////////
+
+INLINE PortalClipper *CullTraverser::
+get_portal_clipper() const {
+  return _portal_clipper;
+}

@@ -52,7 +52,6 @@ public:
                            const TransformState *net_transform,
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
-                           GeometricBoundingVolume *reduced_frustum,
                            GeometricBoundingVolume *guard_band);
   INLINE CullTraverserData(const CullTraverserData &copy);
   INLINE void operator = (const CullTraverserData &copy); 
@@ -74,7 +73,6 @@ public:
   CPT(TransformState) _net_transform;
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
-  PT(GeometricBoundingVolume) _reduced_frustum;
   PT(GeometricBoundingVolume) _guard_band;
 
 private:

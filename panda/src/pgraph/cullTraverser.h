@@ -75,9 +75,12 @@ public:
   INLINE void set_cull_handler(CullHandler *cull_handler);
   INLINE CullHandler *get_cull_handler() const;
 
+  INLINE void set_portal_clipper(PortalClipper *portal_clipper);
+  INLINE PortalClipper *get_portal_clipper() const;
+
   void traverse(const NodePath &root, bool python_cull_control=false);
-  void traverse(CullTraverserData &data, PortalClipper *portal_viewer=NULL);
-  void traverse_below(CullTraverserData &data, PortalClipper *portal_viewer=NULL);
+  void traverse(CullTraverserData &data);
+  void traverse_below(CullTraverserData &data);
 
 public:
   // Statistics
@@ -101,6 +104,7 @@ private:
   PT(GeometricBoundingVolume) _view_frustum;
   PT(GeometricBoundingVolume) _guard_band;
   CullHandler *_cull_handler;
+  PortalClipper *_portal_clipper;
   
 public:
   static TypeHandle get_class_type() {

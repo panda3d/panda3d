@@ -68,11 +68,11 @@ PUBLISHED:
   INLINE int get_num_vertices() const;
   INLINE const LPoint3f &get_vertex(int n) const;
 
-  INLINE void set_zone_in(PandaNode *zone);
-  INLINE PandaNode *get_zone_in() const;
+  INLINE void set_zone_in(const NodePath &zone);
+  INLINE NodePath get_zone_in() const;
 
-  INLINE void set_zone_out(PandaNode *zone);
-  INLINE PandaNode *get_zone_out() const;
+  INLINE void set_zone_out(const NodePath &zone);
+  INLINE NodePath get_zone_out() const;
 
   INLINE void set_visible(bool value);
   INLINE bool is_visible();
@@ -99,8 +99,8 @@ private:
   typedef pvector<LPoint3f> Vertices;
   Vertices _vertices;
 
-  PT(PandaNode) _zone_in;  // This is the zone it resides in
-  PT(PandaNode) _zone_out;  // This is the zone it leads out to
+  NodePath _zone_in;  // This is the zone it resides in
+  NodePath _zone_out;  // This is the zone it leads out to
 
   bool _visible;
 

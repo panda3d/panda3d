@@ -133,3 +133,24 @@ is_facing_camera()
   pgraph_cat.debug() << "Found direction of " << direction << endl;
   return (direction < _FACING_THRESHOLD);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::get_plane_depth
+//       Access: Public
+//  Description: Given the x and z, solve for y: from the plane
+////////////////////////////////////////////////////////////////////
+INLINE float PortalClipper::
+get_plane_depth(float x, float z, Planef *portal_plane) {
+  float y = 0.0;
+  // Plane equation: Ax + By + Cz + D = 0
+  // y = (Ax + Cz + D) / -B
+  pgraph_cat.debug() << *portal_plane << endl;
+  pgraph_cat.debug() << portal_plane->_v.v._0 << " " << portal_plane->_v.v._1 << " "
+                     << portal_plane->_v.v._2 << " " << portal_plane->_v.v._3 << endl;
+
+  if (portal_plane->_v.v._1 != 0.0) {
+    y = (((portal_plane->_v.v._0*x)+(portal_plane->_v.v._2*z)+portal_plane->_v.v._3)
+         / -(portal_plane->_v.v._1));
+  }
+  return y;    
+}

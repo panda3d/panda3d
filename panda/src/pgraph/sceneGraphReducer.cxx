@@ -91,22 +91,22 @@ flatten(PandaNode *root, bool combine_siblings) {
 void SceneGraphReducer::
 r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                 int attrib_types, GeomTransformer &transformer) {
-  if (pgraph_cat.is_debug()) {
-    pgraph_cat.debug()
+  if (pgraph_cat.is_spam()) {
+    pgraph_cat.spam()
       << "r_apply_attribs(" << *node << "), node's attribs are:\n";
-    node->get_transform()->write(pgraph_cat.debug(false), 2);
-    node->get_state()->write(pgraph_cat.debug(false), 2);
-    node->get_effects()->write(pgraph_cat.debug(false), 2);
+    node->get_transform()->write(pgraph_cat.spam(false), 2);
+    node->get_state()->write(pgraph_cat.spam(false), 2);
+    node->get_effects()->write(pgraph_cat.spam(false), 2);
   }
 
   AccumulatedAttribs next_attribs(attribs);
   next_attribs.collect(node, attrib_types);
 
-  if (pgraph_cat.is_debug()) {
-    pgraph_cat.debug()
+  if (pgraph_cat.is_spam()) {
+    pgraph_cat.spam()
       << "Got attribs from " << *node << "\n"
       << "Accumulated attribs are:\n";
-    next_attribs.write(pgraph_cat.debug(false), attrib_types, 2);
+    next_attribs.write(pgraph_cat.spam(false), attrib_types, 2);
   }
 
   // Check to see if we can't propagate any of these attribs past
@@ -115,16 +115,16 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 
   const RenderEffects *effects = node->get_effects();
   if (!effects->safe_to_transform()) {
-    if (pgraph_cat.is_debug()) {
-      pgraph_cat.debug()
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
         << "Node " << *node
         << " contains a non-transformable effect; leaving transform here.\n";
     }
     apply_types |= TT_transform;
   }
   if (!node->safe_to_transform()) {
-    if (pgraph_cat.is_debug()) {
-      pgraph_cat.debug()
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
         << "Cannot safely transform nodes of type " << node->get_type()
         << "; leaving a transform here but carrying on otherwise.\n";
     }
@@ -145,8 +145,8 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
     }
 
     if (!children_transform_friendly) {
-      if (pgraph_cat.is_debug()) {
-        pgraph_cat.debug()
+      if (pgraph_cat.is_spam()) {
+        pgraph_cat.spam()
           << "Node " << *node
           << " has a child that cannot modify its transform; leaving transform here.\n";
       }
@@ -167,8 +167,8 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 
     if (child_node->get_num_parents() > 1) {
       if (!child_node->safe_to_flatten()) {
-        if (pgraph_cat.is_debug()) {
-          pgraph_cat.debug()
+        if (pgraph_cat.is_spam()) {
+          pgraph_cat.spam()
             << "Cannot duplicate nodes of type " << child_node->get_type()
             << ".\n";
           resist_copy = true;
@@ -183,8 +183,8 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
           resist_copy = true;
 
         } else {
-          if (pgraph_cat.is_debug()) {
-            pgraph_cat.debug()
+          if (pgraph_cat.is_spam()) {
+            pgraph_cat.spam()
               << "Duplicated " << *child_node << "\n";
           }
           
@@ -421,15 +421,15 @@ consider_siblings(PandaNode *parent_node, PandaNode *child1,
 bool SceneGraphReducer::
 do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node, 
                  PandaNode *child_node) {
-  if (pgraph_cat.is_debug()) {
-    pgraph_cat.debug()
+  if (pgraph_cat.is_spam()) {
+    pgraph_cat.spam()
       << "Collapsing " << *parent_node << " and " << *child_node << "\n";
   }
 
   PT(PandaNode) new_parent = collapse_nodes(parent_node, child_node, false);
   if (new_parent == (PandaNode *)NULL) {
-    if (pgraph_cat.is_debug()) {
-      pgraph_cat.debug()
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
         << "Decided not to collapse " << *parent_node 
         << " and " << *child_node << "\n";
     }
@@ -466,15 +466,15 @@ do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node,
 PandaNode *SceneGraphReducer::
 do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
                     PandaNode *child2) {
-  if (pgraph_cat.is_debug()) {
-    pgraph_cat.debug()
+  if (pgraph_cat.is_spam()) {
+    pgraph_cat.spam()
       << "Collapsing " << *child1 << " and " << *child2 << "\n";
   }
 
   PT(PandaNode) new_child = collapse_nodes(child2, child1, true);
   if (new_child == (PandaNode *)NULL) {
-    if (pgraph_cat.is_debug()) {
-      pgraph_cat.debug()
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
         << "Decided not to collapse " << *child1 << " and " << *child2 << "\n";
     }
     return NULL;

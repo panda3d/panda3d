@@ -48,6 +48,7 @@ CullTraverser() {
   _initial_state = RenderState::make_empty();
   _depth_offset_decals = false;
   _cull_handler = (CullHandler *)NULL;
+  _portal_clipper = (PortalClipper *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +64,8 @@ CullTraverser(const CullTraverser &copy) :
   _depth_offset_decals(copy._depth_offset_decals),
   _view_frustum(copy._view_frustum),
   _guard_band(copy._guard_band),
-  _cull_handler(copy._cull_handler)
+  _cull_handler(copy._cull_handler),
+  _portal_clipper(copy._portal_clipper)
 {
 }
 
@@ -94,32 +96,16 @@ traverse(const NodePath &root, bool python_cull_control) {
     // This local_frustum is in camera space
     PortalClipper portal_viewer(local_frustum, _scene_setup);
     portal_viewer.draw_camera_frustum();
-
-#if 0
-    PT(BoundingVolume) reduced_frustum;
-
-    // right now it is returning only one reduced frustum
-    portal_viewer.prepare_portal();
-    //portal_viewer.clip_portal(portal_idx);
-    if ((reduced_frustum = portal_viewer.get_reduced_frustum())) {
-      // This reduced frustum is in camera space
-      pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
-      vf = DCAST(GeometricBoundingVolume, reduced_frustum);
-        
-      // trasform it to cull_center space
-      CPT(TransformState) cull_center_transform = 
-        _scene_setup->get_cull_center().get_transform(_scene_setup->get_scene_root());
-      vf->xform(cull_center_transform->get_mat());
-    }
-    pgraph_cat.debug() << "vf is " << *vf << "\n";
-#endif
     
+    // store this pointer in this
+    set_portal_clipper(&portal_viewer);
+
     CullTraverserData data(root, get_render_transform(),
                            TransformState::make_identity(),
                            _initial_state, _view_frustum, 
-                           vf, _guard_band);
+                           _guard_band);
     
-    traverse(data, &portal_viewer);
+    traverse(data);
     
     // finally add the lines to be drawn
     portal_viewer.draw_lines();
@@ -131,14 +117,13 @@ traverse(const NodePath &root, bool python_cull_control) {
     CullTraverserData my_data(data, portal_viewer._previous);
     my_data._render_transform = my_data._render_transform->compose(transform);
     traverse(my_data);
-    pgraph_cat.debug() << "finished portal culling\n";
-    pgraph_cat.debug() << "**********end*********\n";
+    pgraph_cat.debug() << "******finished portal culling*********\n";
 
   } else {
     CullTraverserData data(root, get_render_transform(),
                            TransformState::make_identity(),
                            _initial_state, _view_frustum, 
-                           NULL, _guard_band);
+                           _guard_band);
     
     traverse(data);
   }
@@ -152,7 +137,7 @@ traverse(const NodePath &root, bool python_cull_control) {
 //               has not yet been converted into the node's space.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-traverse(CullTraverserData &data, PortalClipper *portal_viewer) {
+traverse(CullTraverserData &data) {
   // Most nodes will have no transform or state, and will not
   // contain decals or require a special cull callback.  As an
   // optimization, we should tag nodes with these properties as
@@ -162,50 +147,6 @@ traverse(CullTraverserData &data, PortalClipper *portal_viewer) {
     PandaNode *node = data.node();
     pgraph_cat.spam() << "\n" << data._node_path << "\n";
 
-#if 0
-    // let me see the names, curious
-    unsigned int loc = node->get_name().find("pTypeArchway");
-    if (loc != string::npos) {
-      node->output(pgraph_cat.spam());
-      pgraph_cat.spam() << endl;
-      if (data._reduced_frustum) {
-        pgraph_cat.debug() << "setting reduced frustum to this node\n";
-
-        if (data._view_frustum) {
-          pgraph_cat.spam() << *data._view_frustum << endl;
-        }
-        pgraph_cat.spam() << *data._reduced_frustum << endl;
-
-        data._view_frustum = data._reduced_frustum;
-        data._reduced_frustum = NULL;
-      }
-    }
-#else
-    if (node->is_of_type(PortalNode::get_class_type())) {
-      PortalNode *portal_node = DCAST(PortalNode, node);
-      if (portal_node->is_visible()) {
-        pgraph_cat.debug() << "portal node visible " << *portal_node << endl;
-        PT(GeometricBoundingVolume) vf = _view_frustum;
-        PT(BoundingVolume) reduced_frustum;
-        
-        // right now it is returning only one reduced frustum
-        portal_viewer->prepare_portal(data._node_path.get_node_path());
-        //portal_viewer->clip_portal(data._node_path.get_node_path());
-        if ((reduced_frustum = portal_viewer->get_reduced_frustum(data._node_path.get_node_path()))) {
-          // This reduced frustum is in camera space
-          pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
-          vf = DCAST(GeometricBoundingVolume, reduced_frustum);
-          
-          // trasform it to cull_center space
-          CPT(TransformState) cull_center_transform = 
-            _scene_setup->get_cull_center().get_transform(_scene_setup->get_scene_root());
-          vf->xform(cull_center_transform->get_mat());
-        }
-        pgraph_cat.debug() << "vf is " << *vf << "\n";
-      }
-    }
-#endif
-  
     const RenderEffects *node_effects = node->get_effects();
     if (node_effects->has_show_bounds()) {
       // If we should show the bounding volume for this node, make it
@@ -231,7 +172,7 @@ traverse(CullTraverserData &data, PortalClipper *portal_viewer) {
       }
     }
 
-    traverse_below(data, portal_viewer);
+    traverse_below(data);
   }
 }
 
@@ -243,7 +184,7 @@ traverse(CullTraverserData &data, PortalClipper *portal_viewer) {
 //               node's space.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-traverse_below(CullTraverserData &data, PortalClipper *portal_viewer) {
+traverse_below(CullTraverserData &data) {
   _nodes_pcollector.add_level(1);
   PandaNode *node = data.node();
 
@@ -290,14 +231,14 @@ traverse_below(CullTraverserData &data, PortalClipper *portal_viewer) {
       int i = node->get_first_visible_child();
       while (i < num_children) {
         CullTraverserData next_data(data, node->get_child(i));
-        traverse(next_data, portal_viewer);
+        traverse(next_data);
         i = node->get_next_visible_child(i);
       }
       
     } else {
       for (int i = 0; i < num_children; i++) {
         CullTraverserData next_data(data, node->get_child(i));
-        traverse(next_data, portal_viewer);
+        traverse(next_data);
       }
     }
   }

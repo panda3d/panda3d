@@ -173,7 +173,7 @@ get_vertex(int n) const {
 //       Access: Published
 //  Description: Sets the zone that this portal belongs to
 ////////////////////////////////////////////////////////////////////
-INLINE void PortalNode::set_zone_in(PandaNode *zone) {
+INLINE void PortalNode::set_zone_in(const NodePath &zone) {
   _zone_in = zone;
 }
 
@@ -182,7 +182,7 @@ INLINE void PortalNode::set_zone_in(PandaNode *zone) {
 //       Access: Published
 //  Description: Sets the zone that this portal belongs to
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *PortalNode::get_zone_in() const {
+INLINE NodePath PortalNode::get_zone_in() const {
   return _zone_in;
 }
 ////////////////////////////////////////////////////////////////////
@@ -190,7 +190,7 @@ INLINE PandaNode *PortalNode::get_zone_in() const {
 //       Access: Published
 //  Description: Sets the zone that this portal leads out to
 ////////////////////////////////////////////////////////////////////
-INLINE void PortalNode::set_zone_out(PandaNode *zone) {
+INLINE void PortalNode::set_zone_out(const NodePath &zone) {
   _zone_out = zone;
 }
 
@@ -199,7 +199,7 @@ INLINE void PortalNode::set_zone_out(PandaNode *zone) {
 //       Access: Published
 //  Description: Sets the zone that this portal leads out to
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *PortalNode::get_zone_out() const {
+INLINE NodePath PortalNode::get_zone_out() const {
   return _zone_out;
 }
 

@@ -22,6 +22,7 @@
 #include "cullTraverserData.h"
 #include "cullTraverser.h"
 #include "renderState.h"
+#include "portalClipper.h"
 #include "transformState.h"
 #include "colorScaleAttrib.h"
 #include "transparencyAttrib.h"
@@ -158,7 +159,7 @@ combine_with(PandaNode *other) {
 ////////////////////////////////////////////////////////////////////
 bool PortalNode::
 has_cull_callback() const {
-  return false;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,16 +177,43 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool PortalNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  
-  // Calculate the reduced frustum for this portal
+  PortalClipper *portal_viewer = trav->get_portal_clipper();
+  if (!_zone_out.is_empty() && portal_viewer) {
+    //CullTraverserData next_data(data, _zone_out);
+    if (is_visible()) {
+      pgraph_cat.debug() << "portal node visible " << *this << endl;
+      PT(GeometricBoundingVolume) vf = trav->get_view_frustum();
+      PT(BoundingVolume) reduced_frustum;
+      
+      portal_viewer->prepare_portal(data._node_path.get_node_path());
+      //portal_viewer->clip_portal(data._node_path.get_node_path());
+      if ((reduced_frustum = portal_viewer->get_reduced_frustum(data._node_path.get_node_path()))) {
+        // This reduced frustum is in camera space
+        pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
+        vf = DCAST(GeometricBoundingVolume, reduced_frustum);
+        
+        // trasform it to cull_center space
+        CPT(TransformState) cull_center_transform = 
+          portal_viewer->_scene_setup->get_cull_center().get_transform(_zone_out);
+        vf->xform(cull_center_transform->get_mat());
+      }
+      pgraph_cat.debug() << "vf is " << *vf << "\n";
 
-  CullTraverserData next_data(data, _zone_out);
+      // Get the net trasform of the _zone_out
+      CPT(TransformState) zone_transform = _zone_out.get_net_transform();
 
-  // We don't want to inherit the render state from above for these
-  // guys.
-  next_data._state = RenderState::make_empty();
-  trav->traverse(next_data);
-
+      CullTraverserData next_data(_zone_out, trav->get_render_transform()->compose(zone_transform),
+                                  zone_transform,
+                                  trav->get_initial_state(), vf, 
+                                  trav->get_guard_band());
+      pgraph_cat.debug() << "cull_callback: traversing " << _zone_out.get_name() << endl;
+      // Make this zone show with the reduced frustum
+      _zone_out.show();
+      trav->traverse(next_data);
+      // make sure traverser is not drawing this node again
+      _zone_out.hide();
+    }
+  }
   // Now carry on to render our child nodes.
   return true;
 }

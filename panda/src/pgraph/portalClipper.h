@@ -78,6 +78,7 @@ public:
   INLINE void draw_to(float x, float y, float z);
   void draw_to(const LVecBase3f &v);
 
+  INLINE float get_plane_depth(float x, float z, Planef *portal_plane);
 
 public:
   static TypeHandle get_class_type() {
@@ -123,13 +124,13 @@ private:
   PT(GeomLinestrip) _geom_linestrip;
 
   BoundingHexahedron *_hex_frustum;
-  SceneSetup *_scene_setup;
 
   int _num_vert;
   Vertexf _coords[4];
 
 public:
   PT(GeomNode) _previous;
+  SceneSetup *_scene_setup;
 };
 
 #include "portalClipper.I"
