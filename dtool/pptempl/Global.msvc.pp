@@ -153,10 +153,13 @@
 #define ver_resource
 #endif
 
+// if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
+#if $[ne $[DTOOL_INSTALL],]
 // use predefined bases to speed dll loading and simplify debugging
 #defer DLLNAMEBASE lib$[TARGET]$[dllext]
 #defer DLLBASEADDRFILENAME dllbase.txt
 #defer DLLBASEARG "/BASE:@$[dtool_ver_dir]\$[DLLBASEADDRFILENAME],$[DLLNAMEBASE]"
+#endif
 
 #defer SHARED_LIB_C $[LINKER] /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] $[sources] $[ver_resource] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]

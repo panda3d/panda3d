@@ -33,8 +33,10 @@
   #end file
 #end decygwin
 
+#if $[ne $[DTOOL_INSTALL],]
 #define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
 #define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
+#endif
 
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]

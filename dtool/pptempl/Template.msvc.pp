@@ -38,8 +38,11 @@
 // should overwrite read-only files
 #define NT_COPYCMD xcopy /Y /Q /R 
 
+#if $[ne $[DTOOL_INSTALL],]
 #define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
 #define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
+#endif
+
 #define win_temp_output_dir $[decygwin %,%,$[TEMP]]
 
 //////////////////////////////////////////////////////////////////////

@@ -172,10 +172,13 @@
 #defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
+// if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
+#if $[ne $[DTOOL_INSTALL],]
 // use predefined bases to speed dll loading and simplify debugging
 #defer DLLNAMEBASE lib$[TARGET]$[dllext]
 #defer DLLBASEADDRFILENAME dllbase.txt
 #defer DLLBASEARG "/BASE:@$[dtool_ver_dir]\$[DLLBASEADDRFILENAME],$[DLLNAMEBASE]"
+#endif
 
 //#defer ver_resource $[directory]\ver.res
 //#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
