@@ -36,10 +36,7 @@ INLINE void GuiLabel::set_width(float f) {
     _width = 0.;
   } else {
     _have_width = true;
-    if (_type == MODEL)
-      _width = f / _model_width;
-    else
-      _width = f;
+    _width = f;
   }
   this->set_properties();
 }
@@ -50,10 +47,7 @@ INLINE void GuiLabel::set_height(float f) {
     _height = 0.;
   } else {
     _have_height = true;
-    if (_type == MODEL)
-      _height = f / _model_height;
-    else
-      _height = f;
+    _height = f;
   }
   this->set_properties();
 }
