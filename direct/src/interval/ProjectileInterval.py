@@ -65,10 +65,11 @@ class ProjectileInterval(Interval):
             # position; delay until the interval is actually started
             self.trajectoryArgs = args
             self.needToCalcTraj = 1
+            self.duration = duration
         else:
             self.__calcTrajectory(*args)
 
-        Interval.__init__(self, name, duration)
+        Interval.__init__(self, name, self.duration)
 
     def __calcTrajectory(self, startPos = None,
                          endPos = None, duration = None,
