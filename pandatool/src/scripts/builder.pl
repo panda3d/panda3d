@@ -9,14 +9,16 @@ $WIN_INSTALLDIR="\\\\nufat\\mass\\pandabuilds\\win";
 
 # $DEBUG_TREECOPY = 1;
 
-$DEBUG_GENERATE_PYTHON_CODE_ONLY = 0;
-$DONT_ARCHIVE_OLD_BUILDS = 0;
+# $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;  $ENV{'PANDA_OPTIMIZE'} ='3';
 
+$DONT_ARCHIVE_OLD_BUILDS = 0;
 
 $BLD_DTOOL_ONLY=0;
 $DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
 
-$ENV{'PANDA_OPTIMIZE'}='1';  # var has meaning to my special Config.pp
+if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+    $ENV{'PANDA_OPTIMIZE'}='1';  # var has meaning to my special Config.pp
+}
 $ENV{'PPREMAKE_CONFIG'} = '/usr/local/etc/Config.pp';
 $ENV{'TCSH_NO_CSHRC_CHDIR'}='1';
 
@@ -206,22 +208,19 @@ sub gen_python_code() {
 
     &mychdir($CYGBLDROOT."/direct/bin");
 
-    my $genpyth_str;
-
-    if(($ENV{'PANDA_OPTIMIZE'} eq '1') || ($ENV{'PANDA_OPTIMIZE'} eq '2')) {
-       $genpyth_str="python_d ";
-    } else {
-       $genpyth_str="python ";
-    }
-
     $outputdir = $WINBLDROOT."\\direct\\lib\\py";
     &mymkdir($outputdir);
     $outputdir.= "\\Opt".$ENV{'PANDA_OPTIMIZE'}."-Win32";
     &mymkdir($outputdir);
 
+    my $genpyth_str;
     my $genargstr="-v -d";
-    if($ENV{'PANDA_OPTIMIZE'} > 2) {
-        $genargstr="-O ".$genargstr;
+
+    if(($ENV{'PANDA_OPTIMIZE'} eq '1') || ($ENV{'PANDA_OPTIMIZE'} eq '2')) {
+       $genpyth_str="python_d ";
+    } else {
+       $genpyth_str="python -O ";
+       $genargstr="-O ".$genargstr;
     }
 
     $genpyth_str.="generatePythonCode ".$genargstr." '".$outputdir."' -e '".$WINBLDROOT."\\direct\\src\\extensions' -i libdtool libpandaexpress libpanda libdirect libtoontown";
@@ -410,7 +409,9 @@ SKIP_REMOVE:
 # sometimes hangs, so I wont do this
 
 $ENV{'USE_BROWSEINFO'}='1';   # make .sbr files
-$ENV{'PANDA_OPTIMIZE'}='1';
+if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+    $ENV{'PANDA_OPTIMIZE'}='1';
+}
 
 # remove old stored debug build
 if(-e $CYGBLDROOT."/debug") {
