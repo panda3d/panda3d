@@ -23,7 +23,6 @@ import math
 
 
 class GravityWalker(DirectObject.DirectObject):
-
     notify = DirectNotifyGlobal.directNotify.newCategory("GravityWalker")
     wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantFloorSphere = base.config.GetBool('want-floor-sphere', 0)
@@ -31,8 +30,7 @@ class GravityWalker(DirectObject.DirectObject):
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
-        assert(self.debugPrint("GravityWalker(gravity=%s, standableGround=%s)"%(
-                gravity, standableGround)))
+        assert self.notify.debugStateCall(self)
         DirectObject.DirectObject.__init__(self)
         self.__gravity=gravity
         self.__standableGround=standableGround
@@ -69,6 +67,7 @@ class GravityWalker(DirectObject.DirectObject):
         self.highMark = 0
 
     def delete(self):
+        assert self.notify.debugStateCall(self)
         if self.doLaterTask is not None:
             self.doLaterTask.remove()
             del self.doLaterTask
@@ -76,7 +75,7 @@ class GravityWalker(DirectObject.DirectObject):
     
     """
     def spawnTest(self):
-        assert(self.debugPrint("\n\nspawnTest()\n"))
+        assert self.notify.debugStateCall(self)
         if not self.wantDebugIndicator:
             return
         from PandaModules import *
@@ -160,7 +159,7 @@ class GravityWalker(DirectObject.DirectObject):
     """
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
-        assert(self.debugPrint("setWalkSpeed()"))
+        assert self.notify.debugStateCall(self)
         self.avatarControlForwardSpeed=forward
         self.avatarControlJumpForce=jump
         self.avatarControlReverseSpeed=reverse
@@ -171,6 +170,7 @@ class GravityWalker(DirectObject.DirectObject):
         return (self.speed, self.rotationSpeed)
 
     def setupRay(self, bitmask, floorOffset, reach):
+        assert self.notify.debugStateCall(self)
         # This is a ray cast from your head down to detect floor polygons.
         # This ray start is arbitrarily high in the air.  Feel free to use
         # a higher or lower value depending on whether you want an avatar
@@ -203,6 +203,7 @@ class GravityWalker(DirectObject.DirectObject):
         """
         Set up the collision sphere
         """
+        assert self.notify.debugStateCall(self)
         # This is a sphere on the ground to detect collisions with
         # walls, but not the floor.
         self.avatarRadius = avatarRadius
@@ -227,6 +228,7 @@ class GravityWalker(DirectObject.DirectObject):
         """
         Set up the collision sphere
         """
+        assert self.notify.debugStateCall(self)
         # This is a sphere a little larger than the wall sphere to
         # trigger events.
         self.avatarRadius = avatarRadius
@@ -252,6 +254,7 @@ class GravityWalker(DirectObject.DirectObject):
         """
         Set up the collision sphere
         """
+        assert self.notify.debugStateCall(self)
         # This is a tiny sphere concentric with the wallSphere to keep
         # us from slipping through floors.
         self.avatarRadius = avatarRadius
@@ -272,8 +275,8 @@ class GravityWalker(DirectObject.DirectObject):
         self.pusherFloor = handler
         self.cFloorSphereNodePath = cSphereNodePath
 
-    def initializeCollisions(self, collisionTraverser, avatarNodePath, 
-            wallBitmask, floorBitmask, 
+    def initializeCollisions(self, collisionTraverser, avatarNodePath,
+            wallBitmask, floorBitmask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
         floorOffset is how high the avatar can reach.  I.e. if the avatar
@@ -283,7 +286,7 @@ class GravityWalker(DirectObject.DirectObject):
         
         Set up the avatar collisions
         """
-        assert(self.debugPrint("initializeCollisions()"))
+        assert self.notify.debugStateCall(self)
         
         assert not avatarNodePath.isEmpty()
         self.avatarNodePath = avatarNodePath
@@ -299,20 +302,22 @@ class GravityWalker(DirectObject.DirectObject):
         self.setCollisionsActive(1)
 
     def setAirborneHeightFunc(self, unused_parameter):
+        assert self.notify.debugStateCall(self)
         self.getAirborneHeight = self.lifter.getAirborneHeight
 
     def getAirborneHeight(self):
+        assert self.notify.debugStateCall(self)
         self.lifter.getAirborneHeight()
 
     def setAvatarPhysicsIndicator(self, indicator):
         """
         indicator is a NodePath
         """
-        assert(self.debugPrint("setAvatarPhysicsIndicator()"))
+        assert self.notify.debugStateCall(self)
         self.cWallSphereNodePath.show()
 
     def deleteCollisions(self):
-        assert(self.debugPrint("deleteCollisions()"))
+        assert self.notify.debugStateCall(self)
         del self.cTrav
 
         self.cWallSphereNodePath.removeNode()
@@ -329,13 +334,15 @@ class GravityWalker(DirectObject.DirectObject):
         del self.getAirborneHeight
 
     def setCollisionsActive(self, active = 1):
-        assert(self.debugPrint("collisionsActive(active=%s)"%(active,)))
+        assert self.notify.debugStateCall(self)
         if self.collisionsActive != active:
             self.collisionsActive = active
             # Each time we change the collision geometry, make one 
             # more pass to ensure we aren't standing in a wall.
             self.oneTimeCollide()
             if active:
+                assert self.avatarNodePath.getP() == 0.0 # maybe we should just setP(0.0)
+                assert self.avatarNodePath.getR() == 0.0 # maybe we should just setR(0.0)
                 self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
                 if self.wantFloorSphere:
                     self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
@@ -379,6 +386,7 @@ class GravityWalker(DirectObject.DirectObject):
         For example, this is useful when switching away from the 
         current walker.
         """
+        assert self.notify.debugStateCall(self)
         self.oneTimeCollide()
         self.avatarNodePath.setZ(self.avatarNodePath.getZ()-self.lifter.getAirborneHeight())
 
@@ -388,7 +396,7 @@ class GravityWalker(DirectObject.DirectObject):
         a one-time straighten-things-up operation after collisions
         have been disabled.
         """
-        assert(self.debugPrint("oneTimeCollide()"))
+        assert self.notify.debugStateCall(self)
         self.isAirborne = 0
         self.mayJump = 1
         tempCTrav = CollisionTraverser("oneTimeCollide")
@@ -404,11 +412,12 @@ class GravityWalker(DirectObject.DirectObject):
         the __ someday).  Anyway, if you want to enable or disable
         jumping in a general way see the ControlManager (don't use this).
         """
+        assert self.notify.debugStateCall(self)
         self.mayJump = 1
         return Task.done
 
     def startJumpDelay(self, delay):
-        assert(self.debugPrint("startJumpDelay(delay=%s)"%(delay,)))
+        assert self.notify.debugStateCall(self)
         if self.jumpDelayTask:
             self.jumpDelayTask.remove()
         self.mayJump = 0
@@ -421,11 +430,14 @@ class GravityWalker(DirectObject.DirectObject):
         """
         For debug use.
         """
+        onScreenDebug.add("controls", "GravityWalker")
+        
         onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight())
         onScreenDebug.add("falling", self.falling)
         onScreenDebug.add("isOnGround", self.lifter.isOnGround())
-        onScreenDebug.add("gravity", self.lifter.getGravity())
-        onScreenDebug.add("jumpForce", self.avatarControlJumpForce)
+        #onScreenDebug.add("gravity", self.lifter.getGravity())
+        #onScreenDebug.add("jumpForce", self.avatarControlJumpForce)
+        onScreenDebug.add("contact normal", self.lifter.getContactNormal())
         onScreenDebug.add("mayJump", self.mayJump)
         onScreenDebug.add("impact", self.lifter.getImpactVelocity())
         onScreenDebug.add("velocity", self.lifter.getVelocity())
@@ -502,12 +514,28 @@ class GravityWalker(DirectObject.DirectObject):
             self.vel=Vec3(Vec3.forward() * distance + 
                           Vec3.right() * slideDistance)
             if self.vel != Vec3.zero() or self.priorParent != Vec3.zero():
-                # rotMat is the rotation matrix corresponding to
-                # our previous heading.
-                rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                step=rotMat.xform(self.vel) + (self.priorParent * dt)
-                self.avatarNodePath.setFluidPos(Point3(
-                        self.avatarNodePath.getPos()+step))
+                if 1:
+                    # rotMat is the rotation matrix corresponding to
+                    # our previous heading.
+                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+                    step=rotMat.xform(self.vel) + (self.priorParent * dt)
+                    self.avatarNodePath.setFluidPos(Point3(
+                            self.avatarNodePath.getPos()+step))
+                if 0:
+                    # rotMat is the rotation matrix corresponding to
+                    # our previous heading.
+                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), self.lifter.getContactNormal())
+                    step=rotMat.xform(self.vel) + (self.priorParent * dt)
+                    self.avatarNodePath.setFluidPos(Point3(
+                            self.avatarNodePath.getPos()+step))
+                if 0:
+                    # rotMat is the rotation matrix corresponding to
+                    # our previous heading.
+                    rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+                    rotMat2=Mat3.rotateMatNormaxis(0.0, self.lifter.getContactNormal())
+                    step=rotMat.xform(rotMat2.xform(self.vel)) + (self.priorParent * dt)
+                    self.avatarNodePath.setFluidPos(Point3(
+                            self.avatarNodePath.getPos()+step))
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
         else:
             self.vel.set(0.0, 0.0, 0.0)
@@ -516,11 +544,11 @@ class GravityWalker(DirectObject.DirectObject):
         return Task.cont
     
     def doDeltaPos(self):
-        assert(self.debugPrint("doDeltaPos()"))
+        assert self.notify.debugStateCall(self)
         self.needToDeltaPos = 1
     
     def setPriorParentVector(self):
-        assert(self.debugPrint("setPriorParentVector()"))
+        assert self.notify.debugStateCall(self)
         if __debug__:
             onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
             onScreenDebug.add("self.__oldPosDelta",
@@ -532,7 +560,7 @@ class GravityWalker(DirectObject.DirectObject):
                 onScreenDebug.add("priorParent", self.priorParent.pPrintValues())
     
     def reset(self):
-        assert(self.debugPrint("reset()"))
+        assert self.notify.debugStateCall(self)
         self.lifter.setVelocity(0.0)
         self.priorParent=Vec3.zero()
 
@@ -540,7 +568,7 @@ class GravityWalker(DirectObject.DirectObject):
         """
         Activate the arrow keys, etc.
         """
-        assert(self.debugPrint("enableAvatarControls()"))
+        assert self.notify.debugStateCall(self)
         assert self.collisionsActive
 
         #*#if __debug__:
@@ -550,14 +578,14 @@ class GravityWalker(DirectObject.DirectObject):
         if self.controlsTask:
             self.controlsTask.remove()
         # spawn the new task
-        taskName = "AvatarControls%s"%(id(self),)
+        taskName = "AvatarControls-%s"%(id(self),)
         self.controlsTask = taskMgr.add(self.handleAvatarControls, taskName, 25)
 
         # remove any old
         if self.fixCliffTask:
             self.fixCliffTask.remove()
         # spawn the new task
-        #*#taskName = "AvatarControls-FixCliff%s"%(id(self),)
+        #*#taskName = "AvatarControls-FixCliff-%s"%(id(self),)
         #*#self.fixCliffTask = taskMgr.add(self.FixCliff, taskName, 31)
 
         self.isAirborne = 0
@@ -568,13 +596,13 @@ class GravityWalker(DirectObject.DirectObject):
                 self.indicatorTask.remove()
             self.indicatorTask = taskMgr.add(
                 self.avatarPhysicsIndicator,
-                "AvatarControlsIndicator%s"%(id(self),), 35)
+                "AvatarControlsIndicator-%s"%(id(self),), 35)
 
     def disableAvatarControls(self):
         """
         Ignore the arrow keys, etc.
         """
-        assert(self.debugPrint("disableAvatarControls()"))
+        assert self.notify.debugStateCall(self)
         if self.controlsTask:
             self.controlsTask.remove()
             self.controlsTask = None
