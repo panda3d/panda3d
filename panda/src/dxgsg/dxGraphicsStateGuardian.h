@@ -203,6 +203,7 @@ protected:
   WORD *_index_buf;  // base of malloced array
 
   bool                  _dx_ready;
+  HRESULT               _last_testcooplevel_result;
   bool                  _bIsTNLDevice;
   LPDIRECTDRAWSURFACE7  _back;
   LPDIRECTDRAWSURFACE7  _zbuf;
@@ -226,7 +227,6 @@ protected:
 
   D3DDEVICEDESC7    _D3DDevDesc;
 
-  void set_clipper(RECT cliprect);
   void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
                     void *pIndexSpace,DWORD dwIndexSpaceByteSize,
                     D3DVECTOR *pCenter, float fRadius,
@@ -413,6 +413,9 @@ public:
   void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
+
+  #define DO_REACTIVATE_WINDOW true
+  bool  CheckCooperativeLevel(bool bDoReactivateWindow = false);
 
   void  dx_setup_after_resize(RECT viewrect,HWND mwindow) ;
   void  show_frame();

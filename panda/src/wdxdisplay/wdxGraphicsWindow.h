@@ -91,6 +91,7 @@ protected:
 public:
   HWND              _mwindow;
   HWND              _hOldForegroundWindow;  
+  UINT_PTR          _PandaPausedTimer;
 
 private:
   HDC               _hdc;
@@ -107,6 +108,7 @@ private:
   bool              _ignore_key_repeat;
   bool              _exiting_window;
   bool              _window_inactive;
+  bool              _return_control_to_app;
 
 public:
   static TypeHandle get_class_type(void);
@@ -116,6 +118,9 @@ public:
 
   void DestroyMe(bool bAtExitFnCalled);
   virtual void do_close_window();
+  void deactivate_window(void);
+  void reactivate_window(void);
+  void handle_reshape(bool bDoDXReset);
 
 private:
   static TypeHandle _type_handle;

@@ -306,6 +306,9 @@ init_dx(  LPDIRECTDRAW7     context,
     _d3d = pD3D;
     _d3dDevice = pDevice;
     _view_rect = viewrect;
+
+    _last_testcooplevel_result = S_OK;
+
     HRESULT hr;
 
     if(dx_show_fps_meter) {
@@ -500,8 +503,8 @@ init_dx(  LPDIRECTDRAW7     context,
     _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFP_POINT);
     _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
     _d3dDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,_CurTexAnisoDegree);
-    _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,get_texture_wrap_mode(_CurTexWrapModeU));
-    _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,get_texture_wrap_mode(_CurTexWrapModeV));
+    _d3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSU,get_texture_wrap_mode(_CurTexWrapModeU));
+    _d3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSV,get_texture_wrap_mode(_CurTexWrapModeV));
 
     ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
 
@@ -567,8 +570,7 @@ clear(const RenderBuffer &buffer) {
     HRESULT  hr = _d3dDevice->Clear(0, NULL, flags, clear_colr,
                                     (D3DVALUE) _depth_clear_value, (DWORD)_stencil_clear_value);
     if (hr != DD_OK)
-        dxgsg_cat.error()
-        << "dxGSG::clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.error() << "clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr) << endl;
     /*  The following line will cause the background to always clear to a medium red
     _color_clear_value[0] = .5;
     /*  The following lines will cause the background color to cycle from black to red.
@@ -653,15 +655,14 @@ prepare_display_region() {
     }
 }
 
-
-
+#if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: set_clipper
 //       Access:
 //  Description: Useless in DX at the present time
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::set_clipper(RECT cliprect) {
-#if 0
+
     LPDIRECTDRAWCLIPPER Clipper;
     HRESULT result;
 
@@ -699,8 +700,8 @@ void DXGraphicsStateGuardian::set_clipper(RECT cliprect) {
     }
     free(rgn_data);
     DeleteObject(hrgn);
-#endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::render_frame
@@ -711,9 +712,10 @@ void DXGraphicsStateGuardian::set_clipper(RECT cliprect) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_frame(const AllAttributesWrapper &initial_state) {
-    if (!_dx_ready) return;
+  if (!_dx_ready) 
+    return;
 
-    _win->begin_frame();
+  _win->begin_frame();
   _lighting_enabled_this_frame = false;
 
 #ifdef DO_PSTATS
@@ -730,7 +732,20 @@ render_frame(const AllAttributesWrapper &initial_state) {
   set_state(state, false);
 #endif
 
-    _d3dDevice->BeginScene();
+  HRESULT hr = _d3dDevice->BeginScene();
+
+  if(FAILED(hr)) {
+    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
+          if(dxgsg_cat.is_debug())
+              dxgsg_cat.debug() << "BeginScene returns " << ConvD3DErrorToString(hr) << endl;
+
+          CheckCooperativeLevel();
+    } else {
+        dxgsg_cat.error() << "BeginScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
+        exit(1);
+    }
+    return;
+  }
 
 /* _d3dDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, &matIdentity); */
 
@@ -780,9 +795,9 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
     // Now we're done with the frame processing.  Clean up.
 
-    _d3dDevice->EndScene();  // FPS meter drawing MUST occur after EndScene, since it uses GDI
+  hr = _d3dDevice->EndScene();  // FPS meter drawing MUST occur after EndScene, since it uses GDI
 
-    if (_lighting_enabled_this_frame) {
+  if (_lighting_enabled_this_frame) {
         // Let's turn off all the lights we had on, and clear the light
         // cache--to force the lights to be reissued next frame, in case
         // their parameters or positions have changed between frames.
@@ -803,9 +818,22 @@ render_frame(const AllAttributesWrapper &initial_state) {
         // ideal--there may be a better way.  Maybe if the lights were just
         // more aware of whether their parameters or positions have changed
         // at all?
-    }
+   }
 
-    if(dx_show_fps_meter) {
+  if(FAILED(hr)) {
+    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
+          if(dxgsg_cat.is_debug())
+              dxgsg_cat.debug() << "EndScene returns " << ConvD3DErrorToString(hr) << endl;
+
+          CheckCooperativeLevel();
+    } else {
+       dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
+       exit(1);
+    }
+    return;
+  }
+
+   if(dx_show_fps_meter) {
          DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
 
          DWORD now = timeGetTime();  // this is win32 fn
@@ -1056,7 +1084,7 @@ render_subgraph(RenderTraverser *traverser,
     // We infer the modelview matrix by doing a wrt on the projection
     // node.
     LMatrix4f modelview_mat;
-    get_rel_mat(subgraph, _current_projection_node, modelview_mat);  // reversed from GL
+    get_rel_mat(subgraph, _current_projection_node, modelview_mat);  //needs reversal from glgsg, probably due D3D LH coordsys
 //  get_rel_mat(_current_projection_node, subgraph, modelview_mat);
 
     if (_coordinate_system != CS_yup_left) {
@@ -1142,7 +1170,7 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD,DWOR
             // loss of exclusive mode is not a real DrawPrim problem
             HRESULT testcooplvl_hr = pDD->TestCooperativeLevel();
             if((testcooplvl_hr != DDERR_NOEXCLUSIVEMODE)||(testcooplvl_hr != DDERR_EXCLUSIVEMODEALREADYSET)) {
-                dxgsg_cat.fatal() << ((dptype==DrawPrimStrided) ? "DrawPrimStrided" : "DrawPrim") << "failed: result = " << ConvD3DErrorToString(hr) << endl;
+                dxgsg_cat.fatal() << ((dptype==DrawPrimStrided) ? "DrawPrimStrided" : "DrawPrim") << " failed: result = " << ConvD3DErrorToString(hr) << endl;
             }
             exit(1);
         }
@@ -5488,25 +5516,27 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
     HRESULT hr;
 
     if (FAILED(hr = _pDD->CreateSurface( &ddsd, &_pri, NULL ))) {
-        dxgsg_cat.fatal() << "DXGraphicsStateGuardian::resize() - CreateSurface failed for primary : result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "resize() - CreateSurface failed for primary : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
-    // Create a clipper object which handles all our clipping for cases when
-    // our window is partially obscured by other windows.
-    LPDIRECTDRAWCLIPPER Clipper;
-
-    if (FAILED(hr = _pDD->CreateClipper( 0, &Clipper, NULL ))) {
-        dxgsg_cat.fatal()
-        << "dxgsg - CreateClipper after resize failed : result = " << ConvD3DErrorToString(hr) << endl;
-        exit(1);
+    if(!dx_full_screen) {
+        // Create a clipper object which handles all our clipping for cases when
+        // our window is partially obscured by other windows.
+        LPDIRECTDRAWCLIPPER Clipper;
+    
+        if (FAILED(hr = _pDD->CreateClipper( 0, &Clipper, NULL ))) {
+            dxgsg_cat.fatal()
+            << "CreateClipper after resize failed : result = " << ConvD3DErrorToString(hr) << endl;
+            exit(1);
+        }
+        // Associate the clipper with our window. Note that, afterwards, the
+        // clipper is internally referenced by the primary surface, so it is safe
+        // to release our local reference to it.
+        Clipper->SetHWnd( 0, mwindow );
+        _pri->SetClipper( Clipper );
+        Clipper->Release();
     }
-    // Associate the clipper with our window. Note that, afterwards, the
-    // clipper is internally referenced by the primary surface, so it is safe
-    // to release our local reference to it.
-    Clipper->SetHWnd( 0, mwindow );
-    _pri->SetClipper( Clipper );
-    Clipper->Release();
 
     // Recreate the backbuffer. (might want to handle failure due to running out of video memory)
 
@@ -5516,7 +5546,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
     PRINTVIDMEM(_pDD,&ddsd_back.ddsCaps,"resize backbuffer surf");
 
     if (FAILED(hr = _pDD->CreateSurface( &ddsd_back, &_back, NULL ))) {
-        dxgsg_cat.fatal() << "DXGraphicsStateGuardian::resize() - CreateSurface failed for backbuffer : result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "resize() - CreateSurface failed for backbuffer : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
@@ -5524,20 +5554,20 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
 
     // Recreate and attach a z-buffer.
     if (FAILED(hr = _pDD->CreateSurface( &ddsd_zbuf, &_zbuf, NULL ))) {
-        dxgsg_cat.fatal() << "DXGraphicsStateGuardian::resize() - CreateSurface failed for Z buffer: result = " << ConvD3DErrorToString(hr) << endl;
+        dxgsg_cat.fatal() << "resize() - CreateSurface failed for Z buffer: result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
     // Attach the z-buffer to the back buffer.
     if ((hr = _back->AddAttachedSurface( _zbuf ) ) != DD_OK) {
         dxgsg_cat.fatal()
-        << "DXGraphicsStateGuardian::resize() - AddAttachedSurface failed : result = " << ConvD3DErrorToString(hr) << endl;
+        << "resize() - AddAttachedSurface failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
     if ((hr = _d3dDevice->SetRenderTarget(_back,0x0) ) != DD_OK) {
         dxgsg_cat.fatal()
-        << "DXGraphicsStateGuardian::resize() - SetRenderTarget failed : result = " << ConvD3DErrorToString(hr) << endl;
+        << "resize() - SetRenderTarget failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
@@ -5546,7 +5576,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
     hr = _d3dDevice->SetViewport( &vp );
     if (hr != DD_OK) {
         dxgsg_cat.fatal()
-        << "DXGraphicsStateGuardian:: SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
+        << "SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 }
@@ -5571,13 +5601,15 @@ HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
   // note: could go through and just restore surfs that return IsLost() true
   // apparently that isnt as reliable w/some drivers tho
   if (FAILED(hr = _pDD->RestoreAllSurfaces() )) {
-        dxgsg_cat.fatal()
-        << "DXGraphicsStateGuardian:: RestoreAllSurfs failed : result = " << ConvD3DErrorToString(hr) << endl;
-    return hr;
+        dxgsg_cat.fatal() << "RestoreAllSurfs failed : result = " << ConvD3DErrorToString(hr) << endl;
+    exit(1);
   }
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
   traverse_prepared_textures(refill_tex_callback,this);
+
+  if(dxgsg_cat.is_debug())
+      dxgsg_cat.debug() << "restore and refill of video surfaces complete...\n";
   return S_OK;
 }
 
@@ -5627,56 +5659,15 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
   // waiting for vsync?
   hr = _pri->Flip( NULL, dwFlipFlags);
 
-  if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
-    //full screen app has been switched away
-    HRESULT hr;
-
-    // TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
-    // The following error is returned only for exclusivemode apps.
-    // DDERR_NOEXCLUSIVEMODE: Some other app took exclusive mode.
-    hr = _pDD->TestCooperativeLevel();
-
-    while(hr == DDERR_NOEXCLUSIVEMODE) {
-      // This means that mode changes had taken place, surfaces
-      // were lost but still we are in the original mode, so we
-      // simply restore all surfaces and keep going.
-
-#ifdef _DEBUG
-      if(dxgsg_cat.is_spam() && _dx_ready) {
-          dxgsg_cat.spam() << "DXGraphicsStateGuardian:: no exclusive mode, waiting...\n";
-      }
-#endif
-
-      _dx_ready = FALSE;
-      _win->update();  // sleep in here, and check for window events
-
-      hr = _pDD->TestCooperativeLevel();
+  if(FAILED(hr)) {
+    if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
+      CheckCooperativeLevel();
+    } else {
+      dxgsg_cat.error() << "show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
+      exit(1);
     }
-
-    if(FAILED(hr)) {
-      dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
-      return;
-    }
-
-#ifdef _DEBUG
-    dxgsg_cat.debug() << "DXGraphicsStateGuardian:: regained exclusive mode, refilling surfs...\n";
-#endif
-
-    RestoreAllVideoSurfaces();
-
-#ifdef _DEBUG
-    dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";
-#endif
-
-    _dx_ready = TRUE;
-
-    return;  // need to re-render scene before we can display it
   }
 
-  if(hr != DD_OK) {
-    dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
-    exit(1);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5687,6 +5678,8 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_windowed_frame(void) {
   HRESULT hr;
+
+  DX_DECLARE_CLEAN(DDBLTFX, bltfx);
 
   if (dx_sync_video) {
     // Wait for the video refresh *before* we blt the rendered image
@@ -5704,77 +5697,109 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
     // this behavior; thus, we allow the user to avoid this wait,
     // based on the Config settings.
 
-    hr = _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-    if(hr != DD_OK) {
-      dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
-      exit(1);
-    }
+    bltfx.dwDDFX |= DDBLTFX_NOTEARING;  // hmm, does any driver actually recognize this flag?
   }
 
-  DX_DECLARE_CLEAN(DDBLTFX, bltfx);
-  
-  bltfx.dwDDFX |= DDBLTFX_NOTEARING;
   hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
 
-  if(FAILED(hr)) {
-    if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
-
-      HRESULT hr;
-
-      // TestCooperativeLevel returns DD_OK: If the current mode is
-      // same as the one which the App set.  The following two errors
-      // are returned to NORMALMODE (windowed)apps only.
-      //
-      // DDERR_WRONGMODE: If the App is a windowed app and the current mode is
-      //                  not the same as the one in which the app was created.
-      // DDERR_EXCLUSIVEMODEALREADYSET: If another app took exclusivemode access
-      hr = _pDD->TestCooperativeLevel();
-      while(hr == DDERR_EXCLUSIVEMODEALREADYSET) {
-        // This means that mode changes had taken place, surfaces
-        // were lost but still we are in the original mode, so we
-        // simply restore all surfaces and keep going.
-        
-        _dx_ready = FALSE;
-        
-#ifdef _DEBUG
-        dxgsg_cat.spam() << "DXGraphicsStateGuardian:: another app has exclusive mode, waiting...\n";
-#endif
-
-        Sleep( 500 );   // Dont consume CPU.
-        throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-        
-        hr = _pDD->TestCooperativeLevel();
-      }
-      
-      if(hr==DDERR_WRONGMODE) {
-        // This means that the desktop mode has changed
-        // need to destroy all of dx stuff and recreate everything
-        // back again, which is a big hit
-        dxgsg_cat.error() << "DXGraphicsStateGuardian:: detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;
-        exit(1);
-        return;
-      }
-      
-      if(FAILED(hr)) {
-        dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
-        return;
-      }
-
-#ifdef _DEBUG
-      dxgsg_cat.debug() << "DXGraphicsStateGuardian:: other app relinquished exclusive mode, refilling surfs...\n";
-#endif
-      RestoreAllVideoSurfaces();
-#ifdef _DEBUG
-      dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";
-#endif
-
-      _dx_ready = TRUE;
-      return;    // need to re-render scene before we can display it
-    } else {
-      dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
+  if (dx_sync_video) {
+    HRESULT hr = _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+    if(hr != DD_OK) {
+      dxgsg_cat.error() << "WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
       exit(1);
     }
   }
+
+  if(FAILED(hr)) {
+    if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
+      CheckCooperativeLevel();
+    } else {
+      dxgsg_cat.error() << "show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
+      exit(1);
+    }
+  }
+
+}
+
+bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
+
+    HRESULT hr = _pDD->TestCooperativeLevel();
+
+    if(SUCCEEDED(_last_testcooplevel_result)) {
+        if(SUCCEEDED(hr))  // this means this was just a safety check, dont need to restore surfs
+            return true;
+
+        // otherwise something just went wrong
+
+        HRESULT hr;
+    
+        // TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
+        // The following error is returned only for exclusivemode apps.
+        // DDERR_NOEXCLUSIVEMODE: Some other app took exclusive mode.
+
+        hr = _pDD->TestCooperativeLevel();
+    
+        HRESULT expected_error = (dx_full_screen ? DDERR_NOEXCLUSIVEMODE : DDERR_EXCLUSIVEMODEALREADYSET);
+
+        if(hr == expected_error) {
+          // This means that mode changes had taken place, surfaces
+          // were lost but still we are in the original mode, so we
+          // simply restore all surfaces and keep going.
+    
+          if(dxgsg_cat.is_debug()) {
+             if(dx_full_screen)
+                dxgsg_cat.debug() << "Lost access to DDRAW exclusive mode, waiting to regain it...\n";
+              else dxgsg_cat.debug() << "Another app has DDRAW exclusive mode, waiting...\n";
+          }
+
+          if(_dx_ready) {
+             _win->deactivate_window();
+             _dx_ready = FALSE;
+          }
+        } else if(hr==DDERR_WRONGMODE) {
+            // This means that the desktop mode has changed
+            // need to destroy all of dx stuff and recreate everything
+            // back again, which is a big hit
+            dxgsg_cat.error() << "detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet. hr == " << ConvD3DErrorToString(hr) << endl;
+            exit(1);
+        } else if(FAILED(hr)) {
+            dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
+            exit(1);
+        }
+    } else {
+        // testcooplvl was failing, handle case where it now succeeds
+
+        if(SUCCEEDED(hr)) {
+          if(_last_testcooplevel_result == DDERR_EXCLUSIVEMODEALREADYSET) {
+              if(dxgsg_cat.is_debug())
+                  dxgsg_cat.debug() << "other app relinquished exclusive mode, refilling surfs...\n";
+          } else if(_last_testcooplevel_result == DDERR_NOEXCLUSIVEMODE) {
+                      if(dxgsg_cat.is_debug())
+                          dxgsg_cat.debug() << "regained exclusive mode, refilling surfs...\n";
+          }
+              
+          if(bDoReactivateWindow)
+              _win->reactivate_window();  //must reactivate window before you can restore surfaces (otherwise you are in WRONGVIDEOMODE, and DDraw RestoreAllSurfaces fails)
+
+          RestoreAllVideoSurfaces();  
+
+          _dx_ready = TRUE;
+
+        } else if(hr==DDERR_WRONGMODE) {
+            // This means that the desktop mode has changed
+            // need to destroy all of dx stuff and recreate everything
+            // back again, which is a big hit
+            dxgsg_cat.error() << "detected desktop display mode change in TestCoopLevel, must recreate all DDraw surfaces & D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;
+            _win->close_window();
+            exit(1);
+          } else if((hr!=DDERR_NOEXCLUSIVEMODE) && (hr!=DDERR_EXCLUSIVEMODEALREADYSET)) {
+                      dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
+                      exit(1);
+                  }
+    }
+
+    _last_testcooplevel_result = hr;
+    return SUCCEEDED(hr);
 }
 
 ////////////////////////////////////////////////////////////////////

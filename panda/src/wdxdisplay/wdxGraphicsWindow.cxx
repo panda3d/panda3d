@@ -27,7 +27,6 @@
 
 #include <keyboardButton.h>
 #include <mouseButton.h>
-#include <throw_event.h>
 
 #ifdef DO_PSTATS
 #include <pStatTimer.h>
@@ -57,7 +56,7 @@ extern bool dx_full_screen_antialiasing;  // defined in dxgsg_config.cxx
 
 #define MOUSE_ENTERED 0
 #define MOUSE_EXITED 1
-
+#define PAUSED_TIMER_ID  7   // completely arbitrary choice
 #define DXREADY ((_dxgsg!=NULL)&&(_dxgsg->GetDXReady()))
 
 LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam);
@@ -277,33 +276,16 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
           return 0;
 
-        case WM_ACTIVATE: {
-           if (_props._fullscreen && (!_exiting_window)) {
-               // handle switching out of fullscreen mode differently than windowed mode.
-               // here we want to suspend all gfx and execution, switch display modes and minimize ourself
-               // until we are switched back to
-    
-               if(LOWORD(wparam)==WA_INACTIVE) {
-                   if(wdxdisplay_cat.is_spam())
-                       wdxdisplay_cat.spam() << "WDX window deactivated...\n";
-                   _window_inactive = true;
-
-                   if(HIWORD(wparam)==0x0)  // otherwise window already minimized
-                       ShowWindow(_mwindow, SW_MINIMIZE);
-               } else {
-                   if(_window_inactive) {
-                       if(wdxdisplay_cat.is_spam())
-                          wdxdisplay_cat.spam() << "WDX window re-activated...\n";
-                       _window_inactive = false;
-                       
-                       // move window to top of zorder,
-                       SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
-                       if(HIWORD(wparam)!=0x0)  // window minimized, need to unminimize
-                           ShowWindow(_mwindow, SW_RESTORE);
-                   }
-               }
+        case WM_ACTIVATEAPP: {
+            #ifdef _DEBUG
+              wdxdisplay_cat.spam()  << "WM_ACTIVATEAPP(" << (bool)(wparam!=0) <<") received\n";
+            #endif
+            
+           if((!wparam) && _props._fullscreen) {
+               deactivate_window();
                return 0;
-           } else break;
+           }         // dont want to reactivate until window is actually un-minimized (see WM_SIZE)
+           break;
         }
 
         case WM_PAINT: {
@@ -401,95 +383,86 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             handle_window_move(LOWORD(lparam), HIWORD(lparam) );
             return 0;
 
-
         case WM_EXITSIZEMOVE:
-#ifdef _DEBUG
-            wdxdisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
-#endif
-            if(_dxgsg==NULL)
-              break;
-
+            #ifdef _DEBUG
+              wdxdisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
+            #endif
+            
             if(_WindowAdjustingType==Resizing) {
-                _dxgsg->SetDXReady(false);  // disable rendering whilst we mess with surfs
 
                 GdiFlush();
 
-          // Want to change rendertarget size without destroying d3d device.  To save vid memory
-          // (and make resizing work on memory-starved 4MB cards), we need to construct
-          // a temporary mini-sized render target for the d3d device (it cannot point to a
-          // NULL rendertarget) before creating the fully resized buffers.  The old
-          // rendertargets will be freed when these temp targets are set, and that will give
-          // us the memory to create the resized target
-
-                LPDIRECTDRAWSURFACE7 pddsDummy = NULL,pddsDummyZ = NULL;
-                HRESULT hr;
-
-                DX_DECLARE_CLEAN( DDSURFACEDESC2, ddsd );
-
-                if(_dxgsg->GetBackBuffer()==NULL)  // bugbug why is this ever true??
-                    return DefWindowProc(hwnd, msg, wparam, lparam);
-
-                _dxgsg->GetBackBuffer()->GetSurfaceDesc(&ddsd);
-                LPDIRECTDRAW7 pDD = _dxgsg->GetDDInterface();
-
-                ddsd.dwFlags &= ~DDSD_PITCH;
-                ddsd.dwWidth  = 1; ddsd.dwHeight = 1;
-                ddsd.ddsCaps.dwCaps &= ~(DDSCAPS_COMPLEX | DDSCAPS_FLIP | DDSCAPS_FRONTBUFFER | DDSCAPS_BACKBUFFER);
-
-                PRINTVIDMEM(pDD,&ddsd.ddsCaps,"dummy backbuf");
-
-                if(FAILED( hr = pDD->CreateSurface( &ddsd, &pddsDummy, NULL ) )) {
-                    wdxdisplay_cat.fatal()
-                    << "Resize CreateSurface for temp backbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
-                    exit(1);
+                if(_dxgsg!=NULL) {
+                    _dxgsg->SetDXReady(false);  // disable rendering whilst we mess with surfs
+    
+                    // Want to change rendertarget size without destroying d3d device.  To save vid memory
+                    // (and make resizing work on memory-starved 4MB cards), we need to construct
+                    // a temporary mini-sized render target for the d3d device (it cannot point to a
+                    // NULL rendertarget) before creating the fully resized buffers.  The old
+                    // rendertargets will be freed when these temp targets are set, and that will give
+                    // us the memory to create the resized target
+    
+                    LPDIRECTDRAWSURFACE7 pddsDummy = NULL, pddsDummyZ = NULL;
+                    HRESULT hr;
+    
+                    DX_DECLARE_CLEAN( DDSURFACEDESC2, ddsd );
+    
+                    if(_dxgsg->GetBackBuffer()==NULL)  // bugbug why is this ever true??
+                        return DefWindowProc(hwnd, msg, wparam, lparam);
+    
+                    _dxgsg->GetBackBuffer()->GetSurfaceDesc(&ddsd);
+                    LPDIRECTDRAW7 pDD = _dxgsg->GetDDInterface();
+    
+                    ddsd.dwFlags &= ~DDSD_PITCH;
+                    ddsd.dwWidth  = 1; ddsd.dwHeight = 1;
+                    ddsd.ddsCaps.dwCaps &= ~(DDSCAPS_COMPLEX | DDSCAPS_FLIP | DDSCAPS_FRONTBUFFER | DDSCAPS_BACKBUFFER);
+    
+                    PRINTVIDMEM(pDD,&ddsd.ddsCaps,"dummy backbuf");
+    
+                    if(FAILED( hr = pDD->CreateSurface( &ddsd, &pddsDummy, NULL ) )) {
+                        wdxdisplay_cat.fatal() << "Resize CreateSurface for temp backbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
+                        exit(1);
+                    }
+    
+                    DX_DECLARE_CLEAN( DDSURFACEDESC2, ddsdZ );
+                    _dxgsg->GetZBuffer()->GetSurfaceDesc(&ddsdZ);
+                    ddsdZ.dwFlags &= ~DDSD_PITCH;
+                    ddsdZ.dwWidth  = 1;   ddsdZ.dwHeight = 1;
+    
+                    PRINTVIDMEM(pDD,&ddsdZ.ddsCaps,"dummy zbuf");
+    
+                    if(FAILED( hr = pDD->CreateSurface( &ddsdZ, &pddsDummyZ, NULL ) )) {
+                        wdxdisplay_cat.fatal() << "Resize CreateSurface for temp zbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
+                        exit(1);
+                    }
+    
+                    if(FAILED( hr = pddsDummy->AddAttachedSurface( pddsDummyZ ) )) {
+                        wdxdisplay_cat.fatal() << "Resize AddAttachedSurf for temp zbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
+                        exit(1);
+                    }
+    
+                    if(FAILED( hr = _dxgsg->GetD3DDevice()->SetRenderTarget( pddsDummy, 0x0 ))) {
+                        wdxdisplay_cat.fatal()
+                        << "Resize failed to set render target to temporary surface, result = " << ConvD3DErrorToString(hr) << endl;
+                        exit(1);
+                    }
+                    RELEASE(pddsDummyZ);
+                    RELEASE(pddsDummy);
                 }
 
-                DX_DECLARE_CLEAN( DDSURFACEDESC2, ddsdZ );
-                _dxgsg->GetZBuffer()->GetSurfaceDesc(&ddsdZ);
-                ddsdZ.dwFlags &= ~DDSD_PITCH;
-                ddsdZ.dwWidth  = 1;   ddsdZ.dwHeight = 1;
+                handle_reshape(true);
 
-                PRINTVIDMEM(pDD,&ddsdZ.ddsCaps,"dummy zbuf");
-
-                if(FAILED( hr = pDD->CreateSurface( &ddsdZ, &pddsDummyZ, NULL ) )) {
-                    wdxdisplay_cat.fatal() << "Resize CreateSurface for temp zbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
-                    exit(1);
+                if(_dxgsg!=NULL) {
+                   _dxgsg->SetDXReady(true);
                 }
-
-                if(FAILED( hr = pddsDummy->AddAttachedSurface( pddsDummyZ ) )) {
-                    wdxdisplay_cat.fatal() << "Resize AddAttachedSurf for temp zbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
-                    exit(1);
-                }
-
-                if(FAILED( hr = _dxgsg->GetD3DDevice()->SetRenderTarget( pddsDummy, 0x0 ))) {
-                    wdxdisplay_cat.fatal()
-                    << "Resize failed to set render target to temporary surface, result = " << ConvD3DErrorToString(hr) << endl;
-                    exit(1);
-                }
-                RELEASE(pddsDummyZ);
-                RELEASE(pddsDummy);
-
-                RECT view_rect;
-                GetClientRect( _mwindow, &view_rect );
-                ClientToScreen( _mwindow, (POINT*)&view_rect.left );
-                ClientToScreen( _mwindow, (POINT*)&view_rect.right );
-
-                _dxgsg->dx_setup_after_resize(view_rect,_mwindow);  // create the new resized rendertargets
-
-                // change _props xsize,ysize
-                resized((view_rect.right - view_rect.left),(view_rect.bottom - view_rect.top));
-                _props._xorg = view_rect.left;  // _props origin should reflect view rectangle
-                _props._yorg = view_rect.top;
-
-                _dxgsg->SetDXReady(true);
             }
-            _WindowAdjustingType = NotAdjusting;
+
+             _WindowAdjustingType = NotAdjusting;
             return 0;
 
         case WM_ENTERSIZEMOVE: {
                 if(_dxgsg==NULL)
-                   break;
-                _dxgsg->SetDXReady(true);   // dont disable here because I want to see pic as I resize
+                    _dxgsg->SetDXReady(true);   // dont disable here because I want to see pic as I resize
                 _WindowAdjustingType = MovingOrResizing;
             }
             break;
@@ -500,9 +473,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             DWORD newbitdepth=wparam;
             wdxdisplay_cat.spam() <<"WM_DISPLAYCHANGE received with width:" << width << "  height: " << height << " bpp: " << wparam<< endl;
 #endif
-          // Note: TestCoopLevel in dxgsg will return WRONGMODE if there is a problem after a displaymode change
-          //       so we dont need to abort here
 
+            //    unfortunately this doesnt seem to work because RestoreAllSurfaces doesn't
+            //    seem to think we're back in the original displaymode even after I've received
+            //    the WM_DISPLAYCHANGE msg, and returns WRONGMODE error.  So the only way I can
+            //    think of to make this work is to have the timer periodically check for restored
+            //    coop level
+
+            //    if(_props._fullscreen && _window_inactive) {
+            //          if(_dxgsg!=NULL)
+            //              _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
+            //           else reactivate_window();
+            //    }
           }
           break;
 
@@ -523,7 +505,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
                 width = LOWORD(lparam);  height = HIWORD(lparam);
 
-                if(_props._xsize != width || _props._ysize != height) {
+                if((_props._xsize != width) || (_props._ysize != height)) {
                     _WindowAdjustingType = Resizing;
 
                  // for maximized,unmaximize, need to call resize code artificially
@@ -531,8 +513,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                  if(wparam==SIZE_MAXIMIZED) {
                        _bSizeIsMaximized=TRUE;
                        window_proc(hwnd, WM_EXITSIZEMOVE, 0x0,0x0);
-                 } else if((wparam==SIZE_RESTORED)&& _bSizeIsMaximized) {
-                       _bSizeIsMaximized=FALSE;
+                 } else if((wparam==SIZE_RESTORED) && _bSizeIsMaximized) {
+                       _bSizeIsMaximized=FALSE;  // only want to reinit dx if restoring from maximized state
                        window_proc(hwnd, WM_EXITSIZEMOVE, 0x0,0x0);
                  }
                 }
@@ -570,12 +552,129 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(_WindowAdjustingType)
                 break;
             return 0;  // dont let GDI waste time redrawing the deflt background
+
+        case WM_TIMER:
+            // 2 cases of app deactivation:
+            //
+            // 1) user has switched out of fullscreen mode
+            //    this is first signalled when ACTIVATEAPP returns false
+            //    for this case, we dont wake up until WM_SIZE returns restore or maximize
+            //    and WM_TIMER just periodically reawakens app for idle processing
+
+            //    unfortunately this doesnt seem to work because RestoreAllSurfaces doesn't
+            //    seem to think we're back in the original displaymode even after I've received
+            //    the WM_DISPLAYCHANGE msg, and returns WRONGMODE error.  So the only way I can
+            //    think of to make this work is to have the timer periodically check for restored
+            //    coop level, as it does in case 2)
+
+            //
+            // 2) windowed app has lost access to dx because another app has taken dx exclusive mode
+            //    here we rely on WM_TIMER to periodically check if it is ok to reawaken app.
+            //    windowed apps currently run regardless of if its window is in the foreground
+            //    so we cannot rely on window messages to reawaken app
+
+
+            if((wparam==_PandaPausedTimer) && _window_inactive) {
+                assert(_dxgsg!=NULL);
+                _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
+
+                // wdxdisplay_cat.spam() << "periodic return of control to app\n";
+                _return_control_to_app = true;
+                // throw_event("PandaPaused");   
+                // do we still need to do this since I return control to app periodically using timer msgs?
+                // does app need to know to avoid major computation?
+            }
+            return 0;
     }
 
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+  
+////////////////////////////////////////////////////////////////////
+//     Function: handle_reshape
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow::handle_reshape(bool bDoDxReset) {
+      RECT view_rect;
+      GetClientRect( _mwindow, &view_rect );
+      ClientToScreen( _mwindow, (POINT*)&view_rect.left );   // translates top,left pnt
+      ClientToScreen( _mwindow, (POINT*)&view_rect.right );  // translates right,bottom pnt
 
+      // change _props xsize,ysize
+      resized((view_rect.right - view_rect.left),(view_rect.bottom - view_rect.top));
+
+      _props._xorg = view_rect.left;  // _props origin should reflect upper left of view rectangle
+      _props._yorg = view_rect.top;
+
+      if(wdxdisplay_cat.is_spam()) {
+          wdxdisplay_cat.spam() << "reshape to origin: (" << _props._xorg << "," << _props._yorg << "), size: (" << _props._xsize << "," << _props._ysize << ")\n";
+      }
+
+      if((_dxgsg!=NULL) && bDoDxReset) {
+          _dxgsg->dx_setup_after_resize(view_rect,_mwindow);  // create the new resized rendertargets
+      }
+}
+
+void wdxGraphicsWindow::deactivate_window(void) {
+    // current policy is to suspend minimized or deactivated fullscreen windows, but leave
+    // regular windows running normally
+
+   if(_window_inactive || _exiting_window)
+     return;
+
+   if(wdxdisplay_cat.is_spam())
+       wdxdisplay_cat.spam() << "WDX window deactivated, waiting...\n";
+   _window_inactive = true;
+
+   if(_props._fullscreen) {
+       // make sure window is minimized
+    
+       WINDOWPLACEMENT wndpl;
+       wndpl.length=sizeof(WINDOWPLACEMENT);
+       
+       if(!GetWindowPlacement(_mwindow,&wndpl)) {
+           wdxdisplay_cat.error() << "GetWindowPlacement failed!\n";
+           return;
+       }
+       if((wndpl.showCmd!=SW_MINIMIZE)&&(wndpl.showCmd!=SW_SHOWMINIMIZED)) {
+           ShowWindow(_mwindow, SW_MINIMIZE);
+       }
+   }
+
+   _PandaPausedTimer = SetTimer(_mwindow,PAUSED_TIMER_ID,500,NULL);
+   if(_PandaPausedTimer!=PAUSED_TIMER_ID) {
+       wdxdisplay_cat.error() << "Error in SetTimer!\n";
+   }
+}
+
+void wdxGraphicsWindow::reactivate_window(void) {
+    if(!_window_inactive)
+        return;
+
+    // first see if dx cooperative level is OK for reactivation
+//    if(!_dxgsg->CheckCooperativeLevel())
+//        return;
+
+    if(wdxdisplay_cat.is_spam())
+        wdxdisplay_cat.spam() << "WDX window re-activated...\n";
+
+    _window_inactive = false;
+
+    if(_PandaPausedTimer!=NULL) {
+        KillTimer(_mwindow,_PandaPausedTimer);
+        _PandaPausedTimer = NULL;
+    }
+
+    // move window to top of zorder
+//  if(_props._fullscreen)
+//      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
+
+    GdiFlush();
+
+
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Constructor
@@ -613,6 +712,7 @@ void wdxGraphicsWindow::config(void) {
     _gsg = _dxgsg = NULL;
     _exiting_window = false;
     _window_inactive = false;
+    _return_control_to_app = false;
 
     _hOldForegroundWindow=GetForegroundWindow();
 
@@ -662,24 +762,23 @@ void wdxGraphicsWindow::config(void) {
         exit(1);
     }
 
+    DWORD window_style = WS_POPUP | WS_SYSMENU;  // for CreateWindow
+
     // rect now contains the coords for the entire window, not the client
     if(dx_full_screen) {
 
         _mwindow = CreateWindow(WDX_WINDOWCLASSNAME, _props._title.c_str(),
-                                WS_POPUP, 0, 0, _props._xsize,_props._ysize,
+                                window_style, 0, 0, _props._xsize,_props._ysize,
                                 NULL, NULL, hinstance, 0);
     } else {
-        int style;
         RECT win_rect;
         SetRect(&win_rect, _props._xorg,  _props._yorg, _props._xorg + _props._xsize,
                 _props._yorg + _props._ysize);
 
         if(_props._border)
-            style = WS_OVERLAPPEDWINDOW;
-        else
-            style = WS_POPUP | WS_MAXIMIZE;
+            window_style |= WS_OVERLAPPEDWINDOW;  // should we just use WS_THICKFRAME instead?
 
-        AdjustWindowRect(&win_rect, style, FALSE);  //compute window size based on desired client area size
+        AdjustWindowRect(&win_rect, window_style, FALSE);  //compute window size based on desired client area size
 
         // make sure origin is on screen
         if(win_rect.left < 0) {
@@ -690,13 +789,13 @@ void wdxGraphicsWindow::config(void) {
         }
 
         _mwindow = CreateWindow(WDX_WINDOWCLASSNAME, _props._title.c_str(),
-                                style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
+                                window_style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
                                 win_rect.bottom-win_rect.top,
                                 NULL, NULL, hinstance, 0);
     }
 
     if(!_mwindow) {
-        wdxdisplay_cat.fatal() << "config() - failed to create Mwindow" << endl;
+        wdxdisplay_cat.fatal() << "config() - failed to create window" << endl;
         exit(1);
     }
 
@@ -1063,7 +1162,6 @@ dx_setup() {
         }
 
         SetRect(&view_rect, 0, 0, dwRenderWidth, dwRenderHeight);
-
     }   // end create full screen buffers
 
     else {          // CREATE WINDOWED BUFFERS
@@ -1480,20 +1578,38 @@ supports_update() const {
     return true;
 }
 
-void INLINE wdxGraphicsWindow::process_events(void) {
+void INLINE process_1_event(void) {
   MSG msg;
 
-  while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-      if(!GetMessage(&msg, NULL, 0, 0)) {
-          // WM_QUIT received
-          DestroyAllWindows(false);
-          exit(msg.wParam);  // this will invoke AtExitFn
-      }
+  if(!GetMessage(&msg, NULL, 0, 0)) {
+      // WM_QUIT received
+      DestroyAllWindows(false);
+      exit(msg.wParam);  // this will invoke AtExitFn
+  }
 
-      // Translate virtual key messages
-      TranslateMessage(&msg);
-      // Call window_proc
-      DispatchMessage(&msg);
+  // Translate virtual key messages
+  TranslateMessage(&msg);
+  // Call window_proc
+  DispatchMessage(&msg);
+}
+
+void INLINE wdxGraphicsWindow::process_events(void) {
+  if(_window_inactive) {
+      // Get 1 msg at a time until no more are left and we block and sleep,
+      // or message changes _return_control_to_app or _window_inactive status
+
+      while(_window_inactive && (!_return_control_to_app)) {
+          process_1_event();
+      }
+      _return_control_to_app = false;
+
+  } else {
+      MSG msg;
+
+      // handle all msgs on queue in a row
+      while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+          process_1_event();
+      }
   }
 }
 
@@ -1504,27 +1620,29 @@ void INLINE wdxGraphicsWindow::process_events(void) {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::update(void) {
 #ifdef DO_PSTATS
-    if(!_window_inactive) {
-        _show_code_pcollector.stop();
-        PStatClient::main_tick();
-    }
+  _show_code_pcollector.stop();
+
+  if(!_window_inactive) {
+      PStatClient::main_tick();
+  }
 #endif
 
-    process_events();
+  process_events();
 
-    if(_window_inactive) {
-      Sleep( 500 );   // Dont consume CPU.
-      throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+  if(_window_inactive) {
+      // note _window_inactive must be checked after process_events is called, to avoid draw_callback being called
+      if(_idle_callback)
+          call_idle_callback();
       return;
-    }
+  }
 
-    call_draw_callback(true);
+  call_draw_callback(true);
 
-   if (_idle_callback)
+  if(_idle_callback)
     call_idle_callback();
 
 #ifdef DO_PSTATS
-    _show_code_pcollector.start();
+  _show_code_pcollector.start();
 #endif
 }
 
