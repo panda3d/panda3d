@@ -5043,6 +5043,12 @@ begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
             _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (DWORD *)&_depth_write_enabled);  //save cur val
             _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
+            // It is also important to update the current state to
+            // indicate the depth buffer write is off, so that future
+            // geometry will render correctly.
+            DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
+            attrib.set_transition(dwa);
+
             // Now render the base geometry.
             base_geom->draw(this);
 
