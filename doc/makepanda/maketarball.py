@@ -113,28 +113,30 @@ mkdir -p $RPM_BUILD_ROOT/usr/bin
 sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > $RPM_BUILD_ROOT/etc/Config.prc
 
 cp built/etc/Confauto.prc    $RPM_BUILD_ROOT/etc/Confauto.prc
-cp --recursive built/lib     $RPM_BUILD_ROOT/usr/lib/panda3d
 cp --recursive built/include $RPM_BUILD_ROOT/usr/include/panda3d
-cp --recursive direct        $RPM_BUILD_ROOT/usr/lib/$PYTHONV/direct
-cp --recursive built/pandac  $RPM_BUILD_ROOT/usr/lib/$PYTHONV/pandac
-cp built/direct/__init__.py  $RPM_BUILD_ROOT/usr/lib/$PYTHONV/direct/__init__.py
+cp --recursive direct        $RPM_BUILD_ROOT/usr/share/panda3d/direct
+cp --recursive built/pandac  $RPM_BUILD_ROOT/usr/share/panda3d/pandac
+cp --recursive built/pmw     $RPM_BUILD_ROOT/usr/share/panda3d/pmw
+cp built/direct/__init__.py  $RPM_BUILD_ROOT/usr/share/panda3d/direct/__init__.py
+cp --recursive SceneEditor   $RPM_BUILD_ROOT/usr/share/panda3d/SceneEditor
 cp --recursive built/models  $RPM_BUILD_ROOT/usr/share/panda3d/models
 cp --recursive built/icons   $RPM_BUILD_ROOT/usr/share/panda3d/icons
 cp --recursive built/audio   $RPM_BUILD_ROOT/usr/share/panda3d/audio
 cp --recursive built/maps    $RPM_BUILD_ROOT/usr/share/panda3d/maps
 cp --recursive samples       $RPM_BUILD_ROOT/usr/share/panda3d/samples
-cp --recursive SceneEditor   $RPM_BUILD_ROOT/usr/lib/$PYTHONV/SceneEditor
+cp --recursive built/lib     $RPM_BUILD_ROOT/usr/lib/panda3d
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/lib/panda3d/LICENSE
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/share/panda3d/LICENSE
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/include/panda3d/LICENSE
 echo "/usr/lib/panda3d" >    $RPM_BUILD_ROOT/etc/ld.so.conf.d/panda3d.conf
+echo "/usr/share/panda3d" >  $RPM_BUILD_ROOT/usr/lib/$PYTHONV/site-packages/panda3d.pth
 cp built/bin/*               $RPM_BUILD_ROOT/usr/bin/
 
 for x in built/lib/* ; do
   base=`basename $x`
   ln -sf /usr/lib/panda3d/$base $RPM_BUILD_ROOT/usr/lib/$PYTHONV/lib-dynload/$base
 done
-for x in $RPM_BUILD_ROOT/usr/lib/$PYTHONV/direct/src/* ; do
+for x in $RPM_BUILD_ROOT/usr/share/panda3d/direct/src/* ; do
   if [ `basename $x` != extensions ] ; then
     python -c "import compileall; compileall.compile_dir('$x')"
   fi
