@@ -62,7 +62,20 @@ operator = (const RenderEffect &) {
 RenderEffect::
 ~RenderEffect() {
   if (_saved_entry != _effects.end()) {
-    nassertv(_effects.find(this) == _saved_entry);
+    // We cannot make this assertion, because the RenderEffect has
+    // already partially destructed--this means we cannot look up the
+    // object in the map.  In fact, the map is temporarily invalid
+    // until we finish destructing, since we screwed up the ordering
+    // when we changed the return value of get_type().
+    //    nassertv(_effects.find(this) == _saved_entry);
+
+    // Note: this isn't thread-safe, because once the derived class
+    // destructor exits and before this destructor completes, the map
+    // is invalid, and other threads may inadvertently attempt to read
+    // the invalid map.  To make it thread-safe, we need to move this
+    // functionality to a separate method, that is to be called from
+    // *each* derived class's destructor (and then we can put the
+    // above assert back in).
     _effects.erase(_saved_entry);
     _saved_entry = _effects.end();
   }
