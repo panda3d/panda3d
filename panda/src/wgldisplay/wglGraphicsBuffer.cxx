@@ -40,6 +40,8 @@ wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 {
   _window = (HWND)0;
   _window_dc = (HDC)0;
+  _pbuffer = (HPBUFFERARB)0;
+  _pbuffer_dc = (HDC)0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,13 +64,14 @@ void wglGraphicsBuffer::
 make_current() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
-  wglMakeCurrent(_window_dc, wglgsg->get_context(_window_dc));
 
-  // Now that we have made the context current to a window, we can
-  // reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
-  wglgsg->reset_if_new();
+  // Use the pbuffer if we got it, otherwise fall back to the window.
+  if (_pbuffer_dc) {
+    wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
+
+  } else {
+    wglMakeCurrent(_window_dc, wglgsg->get_context(_window_dc));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +117,11 @@ begin_flip() {
       get_texture()->copy(_gsg, dr, _gsg->get_render_buffer(RenderBuffer::T_back));
     }
 
-    SwapBuffers(_window_dc);
+    if (_pbuffer_dc) {
+      SwapBuffers(_pbuffer_dc);
+    } else {
+      SwapBuffers(_window_dc);
+    }
   }
 }
 
@@ -159,6 +166,20 @@ close_buffer() {
     _window = 0;
   }
 
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    wglGraphicsStateGuardian *wglgsg;
+    DCAST_INTO_V(wglgsg, _gsg);
+
+    if (_pbuffer_dc) {
+      wglgsg->_wglReleasePbufferDCARB(_pbuffer, _pbuffer_dc);
+    }
+    if (_pbuffer) {
+      wglgsg->_wglDestroyPbufferARB(_pbuffer);
+    }
+  }
+  _pbuffer_dc = 0;
+  _pbuffer = 0;
+
   _is_valid = false;
 }
 
@@ -171,17 +192,60 @@ close_buffer() {
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsBuffer::
 open_buffer() {
-  // I made a good solid effort to use the wglPbuffer extension.  Not
-  // only are wgl extensions incredibly convoluted to get to, but the
-  // pbuffer extension turned out not be supported on the Intel card I
-  // tried it on, and crashed the driver for the nVidia card I tried
-  // it on.  And it's not even supported on the Microsoft software
-  // reference implementation.  Not a good record.
+  if (!make_window()) {
+    // If we couldn't make a window, we can't get a GL context.
+    return false;
+  }
 
-  // In lieu of the pbuffer extension, it appears that rendering to a
-  // window that is hidden works fine on some drivers (although it
-  // doesn't work on other drivers).
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
 
+  wglMakeCurrent(_window_dc, wglgsg->get_context(_window_dc));
+  wglgsg->reset_if_new();
+
+  // Now that we have fully made a window and used that window to
+  // create a rendering context, we can attempt to create a pbuffer.
+  // This might fail if the pbuffer extensions are not supported; in
+  // that case, we'll just keep the window and hope it works even if
+  // it is not shown.
+
+  if (make_pbuffer()) {
+    _pbuffer_dc = wglgsg->_wglGetPbufferDCARB(_pbuffer);
+    wgldisplay_cat.info()
+      << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
+
+    wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
+    wglgsg->report_gl_errors();
+
+    // Now that the pbuffer is created, we don't need the window any
+    // more.
+    if (_window_dc) {
+      ReleaseDC(_window, _window_dc);
+      _window_dc = 0;
+    }
+    if (_window) {
+      DestroyWindow(_window);
+      _window = 0;
+    }
+  }
+
+  _is_valid = true;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::make_window
+//       Access: Private
+//  Description: Creates an invisible window to associate with the GL
+//               context, even if we are not going to use it.  This is
+//               necessary because in the Windows OpenGL API, we have
+//               to create window before we can create a GL
+//               context--even before we can ask about what GL
+//               extensions are available!
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsBuffer::
+make_window() {
   DWORD window_style = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
 
   RECT win_rect;
@@ -225,7 +289,110 @@ open_buffer() {
     return false;
   }
 
-  _is_valid = true;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::make_pbuffer
+//       Access: Private
+//  Description: Once the GL context has been fully realized, attempts
+//               to create an offscreen pbuffer if the graphics API
+//               supports it.  Returns true if successful, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsBuffer::
+make_pbuffer() {
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
+
+  if (!wglgsg->_supports_pbuffer) {
+    return false;
+  }
+
+  int pbformat = wglgsg->get_pfnum();
+
+  if (wglgsg->_supports_pixel_format) {
+    // Select a suitable pixel format that matches the GSG's existing
+    // format, and also is appropriate for a pixel buffer.
+    PIXELFORMATDESCRIPTOR pfd;
+    ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
+    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+    pfd.nVersion = 1;
+
+    DescribePixelFormat(_window_dc, wglgsg->get_pfnum(), 
+                        sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+
+    static const int max_attrib_list = 32;
+    int iattrib_list[max_attrib_list];
+    float fattrib_list[max_attrib_list];
+    int ni = 0;
+    int nf = 0;
+
+    // Since we are trying to create a pbuffer, the pixel format we
+    // request (and subsequently use) must be "pbuffer capable".
+    iattrib_list[ni++] = WGL_DRAW_TO_PBUFFER_ARB;
+    iattrib_list[ni++] = true;
+
+    // Match up the framebuffer bits.
+    iattrib_list[ni++] = WGL_RED_BITS_ARB;
+    iattrib_list[ni++] = pfd.cRedBits;
+    iattrib_list[ni++] = WGL_GREEN_BITS_ARB;
+    iattrib_list[ni++] = pfd.cGreenBits;
+    iattrib_list[ni++] = WGL_BLUE_BITS_ARB;
+    iattrib_list[ni++] = pfd.cBlueBits;
+    iattrib_list[ni++] = WGL_ALPHA_BITS_ARB;
+    iattrib_list[ni++] = pfd.cAlphaBits;
+
+    iattrib_list[ni++] = WGL_DEPTH_BITS_ARB;
+    iattrib_list[ni++] = pfd.cDepthBits;
+
+    iattrib_list[ni++] = WGL_STENCIL_BITS_ARB;
+    iattrib_list[ni++] = pfd.cStencilBits;
+
+    // Terminate the lists.
+    nassertr(ni < max_attrib_list && nf < max_attrib_list, NULL);
+    iattrib_list[ni] = 0;
+    fattrib_list[nf] = 0;
+
+    // Now obtain a list of pixel formats that meet these minimum
+    // requirements.
+    static const int max_pformats = 32;
+    int pformat[max_pformats];
+    memset(pformat, 0, sizeof(pformat));
+    unsigned int nformats = 0;
+    if (!wglgsg->_wglChoosePixelFormatARB(_window_dc, iattrib_list, fattrib_list,
+                                          max_pformats, pformat, &nformats)) {
+      wgldisplay_cat.info()
+        << "Couldn't find a suitable pixel format for creating a pbuffer.\n";
+      return false;
+    }
+
+    if (wgldisplay_cat.is_debug()) {
+      wgldisplay_cat.debug()
+        << "Found " << nformats << " pbuffer formats: [";
+      for (unsigned int i = 0; i < nformats; i++) {
+        wgldisplay_cat.debug(false)
+          << " " << pformat[i];
+      }
+      wgldisplay_cat.debug(false)
+        << " ]\n";
+    }
+
+    pbformat = pformat[0];
+  }
+  
+  int attrib_list[] = {
+    0,
+  };
+  
+  _pbuffer = wglgsg->_wglCreatePbufferARB(_window_dc, pbformat, 
+                                          _x_size, _y_size, attrib_list);
+  
+  if (_pbuffer == 0) {
+    wgldisplay_cat.info()
+      << "Attempt to create pbuffer failed.\n";
+    return false;
+  }
 
   return true;
 }
@@ -295,80 +462,3 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 
 
-
-
-
-/*
-    if (wglgsg->_supports_pixel_format) {
-      // Get ready to query for a suitable pixel format that meets our
-      // minimum requirements.
-      static const int MAX_ATTRIBS = 128;
-      static const int MAX_PFORMATS = 128;
-      int iattributes[2*MAX_ATTRIBS];
-      float fattributes[2*MAX_ATTRIBS];
-      int nfattribs = 0;
-      int niattribs = 0;
-      // Attribute arrays must be "0" terminated--for simplicity, first
-    // just zero-out the array then fill from left to right.
-      for ( int a = 0; a < 2*MAX_ATTRIBS; a++ )
-        {
-          iattributes[a] = 0;
-          fattributes[a] = 0;
-        }
-      // Since we are trying to create a pbuffer, the pixel format we
-      // request (and subsequently use) must be "pbuffer capable".
-      iattributes[2*niattribs ] = WGL_DRAW_TO_PBUFFER_ARB;
-      iattributes[2*niattribs+1] = true;
-      niattribs++;
-      // We require a minimum of 24-bit depth.
-      iattributes[2*niattribs ] = WGL_DEPTH_BITS_ARB;
-      iattributes[2*niattribs+1] = 24;
-      niattribs++;
-      // We require a minimum of 8-bits for each R, G, B, and A.
-      iattributes[2*niattribs ] = WGL_RED_BITS_ARB;
-      iattributes[2*niattribs+1] = 8;
-      niattribs++;
-      iattributes[2*niattribs ] = WGL_GREEN_BITS_ARB;
-      iattributes[2*niattribs+1] = 8;
-      niattribs++;
-      iattributes[2*niattribs ] = WGL_BLUE_BITS_ARB;
-      iattributes[2*niattribs+1] = 8;
-      niattribs++;
-      iattributes[2*niattribs ] = WGL_ALPHA_BITS_ARB;
-      iattributes[2*niattribs+1] = 8;
-      niattribs++;
-      // Now obtain a list of pixel formats that meet these minimum
-      // requirements.
-      int pformat[MAX_PFORMATS];
-      memset(pformat, 0, sizeof(pformat));
-      unsigned int nformats = 0;
-      if (!wglgsg->_wglChoosePixelFormatARB(_window_dc, iattributes, fattributes,
-                                            MAX_PFORMATS, pformat, &nformats)) {
-        cerr << "pbuffer creation error: Couldn't find a suitable pixel format.\n";
-      } else {
-        cerr << "Found " << nformats << " formats, selecting " << pformat[0] << "\n";
-        pbformat = pformat[0];
-      }
-    }
-
-    HPBUFFERARB _pbuffer;
-    wglMakeCurrent(_window_dc, wglgsg->get_context(_window_dc));
-    wglgsg->reset_if_new();
-
-    cerr << "Creating pbuffer(" << _window_dc << ", " << wglgsg->get_pfnum()
-         << ", " << _x_size << ", " << _y_size << ", ...)\n";
-    int attrib_list[] = {
-      0,
-    };
-
-    HDC hdc = wglGetCurrentDC();
-    cerr << "current dc = " << hdc << " window dc = " << _window_dc << "\n";
-    _pbuffer = wglgsg->_wglCreatePbufferARB(hdc, pbformat, 
-                                            _x_size, _y_size, attrib_list);
-    cerr << "pbuffer = " << (void *)_pbuffer << "\n";
-
-    if (_pbuffer == NULL) {
-      wgldisplay_cat.error()
-        << "Attempt to create pbuffer failed.\n";
-    }
-*/

@@ -57,6 +57,8 @@ protected:
 
 private:
   bool make_window();
+  bool make_pbuffer();
+
   static void process_1_event();
 
   static void register_window_class();
@@ -64,6 +66,8 @@ private:
 
   HWND _window;
   HDC _window_dc;
+  HPBUFFERARB _pbuffer;
+  HDC _pbuffer_dc;
 
   static const char * const _window_class_name;
   static bool _window_class_registered;
