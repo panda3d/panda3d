@@ -96,7 +96,11 @@ EggOptchar() {
      "Assign the indicated name to the geometry within the given nodes.  "
      "This will make the geometry visible as a node in the resulting "
      "character model when it is loaded in the scene graph (normally, "
-     "the node hierarchy is suppressed when loading characters.",
+     "the node hierarchy is suppressed when loading characters).  This "
+     "is different from -expose in that it reveals geometry rather than "
+     "joints; the revealed node can be hidden or its attributes changed "
+     "at runtime, but it will be animated by its vertices, not the node, so "
+     "objects parented to this node will not inherit its animation.",
      &EggOptchar::dispatch_flag_groups, NULL, &_flag_groups);
 
   add_option
