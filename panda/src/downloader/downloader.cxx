@@ -588,7 +588,8 @@ parse_header(DownloadStatus &status) {
       if ((status._partial_content == false &&
           component == "HTTP/1.1 200 OK") ||
 	  (status._partial_content == true &&
-	  component == "HTTP/1.1 206 Partial Content")) {
+	  (component == "HTTP/1.1 206 Partial Content" ||
+	   component == "HTTP/1.1 206 Partial content"))) {
         downloader_cat.debug()
 	  << "Downloader::parse_header() - Header is valid: " 
 	  << component << endl;
