@@ -19,13 +19,13 @@
 #ifndef EGGMATRIXTABLEPOINTER_H
 #define EGGMATRIXTABLEPOINTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggJointPointer.h"
 
-#include <eggTable.h>
-#include <eggXfmSAnim.h>
-#include <pointerTo.h>
+#include "eggTable.h"
+#include "eggXfmSAnim.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggMatrixTablePointer

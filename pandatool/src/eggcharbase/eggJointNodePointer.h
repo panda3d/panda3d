@@ -19,12 +19,12 @@
 #ifndef EGGJOINTNODEPOINTER_H
 #define EGGJOINTNODEPOINTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggJointPointer.h"
 
-#include <eggGroup.h>
-#include <pointerTo.h>
+#include "eggGroup.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggJointNodePointer

@@ -19,13 +19,13 @@
 #ifndef EGGCHARACTERDATA_H
 #define EGGCHARACTERDATA_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggJointData.h"
 
-#include <eggNode.h>
-#include <pointerTo.h>
-#include <namable.h>
+#include "eggNode.h"
+#include "pointerTo.h"
+#include "namable.h"
 
 #include "pmap.h"
 

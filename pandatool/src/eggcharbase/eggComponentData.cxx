@@ -19,7 +19,7 @@
 #include "eggComponentData.h"
 #include "eggBackPointer.h"
 
-#include <indent.h>
+#include "indent.h"
 
 
 ////////////////////////////////////////////////////////////////////

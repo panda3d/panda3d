@@ -19,11 +19,11 @@
 #ifndef EGGJOINTDATA_H
 #define EGGJOINTDATA_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggComponentData.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggJointData

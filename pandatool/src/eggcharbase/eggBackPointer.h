@@ -26,11 +26,11 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : EggBackPointer
 // Description : This stores a pointer from an EggJointData or
-//               EggSlider object back to the referencing data in an
-//               egg file.  One of these objects corresponds to each
-//               model appearing in an egg file, and may reference
-//               either a single node, or a table, or a slew of
-//               vertices and primitives, depending on the type of
+//               EggSliderData object back to the referencing data in
+//               an egg file.  One of these objects corresponds to
+//               each model appearing in an egg file, and may
+//               reference either a single node, or a table, or a slew
+//               of vertices and primitives, depending on the type of
 //               data stored.
 //
 //               This is just an abstract base class.  The actual

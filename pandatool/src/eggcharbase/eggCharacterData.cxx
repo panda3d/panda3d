@@ -21,7 +21,7 @@
 #include "eggJointData.h"
 #include "eggSliderData.h"
 
-#include <indent.h>
+#include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::Constructor

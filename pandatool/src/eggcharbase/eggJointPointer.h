@@ -19,11 +19,11 @@
 #ifndef EGGJOINTPOINTER_H
 #define EGGJOINTPOINTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggBackPointer.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggJointPointer

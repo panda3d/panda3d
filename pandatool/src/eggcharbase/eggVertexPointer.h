@@ -19,12 +19,12 @@
 #ifndef EGGVERTEXPOINTER_H
 #define EGGVERTEXPOINTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggBackPointer.h"
 
-#include <eggGroup.h>
-#include <pointerTo.h>
+#include "eggGroup.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggVertexPointer

@@ -19,9 +19,9 @@
 #ifndef EGGCOMPONENTDATA_H
 #define EGGCOMPONENTDATA_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <namable.h>
+#include "namable.h"
 
 class EggCharacterCollection;
 class EggCharacterData;
