@@ -265,14 +265,6 @@ class MethodSpecification(FunctionSpecification):
         self.outputInheritedMethodBody(methodClass, parentList, file, nesting, needsDowncast)
         self.outputInheritedMethodFooter(methodClass, parentList, file, nesting, needsDowncast)
         
-    def generateDowncastMethodCode(self, methodClass, file, nesting):
-        # The downcast method code is just like regular code, but the
-        # return value wrapper does not have downcasting instructions in
-        # it to prevent an infinite loop of downcasting
-        self.outputMethodHeader(methodClass, file, nesting)
-        self.outputMethodBody(methodClass, file, nesting, 0) # no downcast
-        self.outputMethodFooter(methodClass, file, nesting)
-
     def generateUpcastMethodCode(self, methodClass, file, nesting):
         # The upcast method code is just like regular code, but the
         # return value wrapper does not have downcasting instructions

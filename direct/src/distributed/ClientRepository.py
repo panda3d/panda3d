@@ -173,12 +173,15 @@ class ClientRepository(DirectObject.DirectObject):
             distObj = cdc.constructor(self)
             # Assign it an Id
             distObj.doId = doId
+            # Put the new do in both dictionaries
+            self.doId2do[doId] = distObj
+            self.doId2cdc[doId] = cdc
             # Update the required fields
 	    distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
             # Put the new do in both dictionaries
-            self.doId2do[doId] = distObj
-            self.doId2cdc[doId] = cdc
+            # self.doId2do[doId] = distObj
+            # self.doId2cdc[doId] = cdc
             
         return distObj
 

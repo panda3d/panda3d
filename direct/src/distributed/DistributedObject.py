@@ -1,7 +1,6 @@
 """DistributedObject module: contains the DistributedObject class"""
 
 from PandaObject import *
-#from ToonBaseGlobal import *
 
 class DistributedObject(PandaObject):
     """Distributed Object class:"""

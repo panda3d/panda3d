@@ -7,7 +7,7 @@ class FSM(DirectObject):
 
     # create FSM DirectNotify category
     notify = directNotify.newCategory("FSM")
-    #notify.setDebug(1)
+    notify.setDebug(1)
 
     # special methods
     
@@ -152,8 +152,10 @@ class FSM(DirectObject):
                               exitArgList)
             return 1
         else:
-            FSM.notify.debug("[%s]: no transition exists to %s" %
-                             (self.__name, aStateName))
+            FSM.notify.warning("[%s]: no transition exists from %s to %s" %
+                               (self.__name,
+                                self.__currentState.getName(),
+                                aStateName))
             return 0
 
 
