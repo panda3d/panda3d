@@ -80,12 +80,13 @@ public:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  void get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap);
+  bool get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap);
   void update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap);
 
   bool get_geom_uvs(EggPrimitive *geom,
                     TexCoordd &geom_min_uv, TexCoordd &geom_max_uv);
   void translate_geom_uvs(EggPrimitive *geom, const TexCoordd &trans) const;
+  void collect_nominal_uv_range();
   static void collect_uv(bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv,
                          const TexCoordd &got_min_uv,
                          const TexCoordd &got_max_uv);

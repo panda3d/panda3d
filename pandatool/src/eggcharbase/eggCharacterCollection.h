@@ -92,6 +92,8 @@ private:
 
   void add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
                                int model_index, EggCharacterData *char_data);
+  void add_morph_back_pointers_vertex(EggVertex *vertex, EggObject *egg_object,
+                                      int model_index, EggCharacterData *char_data);
 
   // The _top_egg_nodes member is only used temporarily, when adding
   // each pre-existing egg file to the structure for the first time.

@@ -26,6 +26,7 @@
 #include "eggTable.h"
 #include "eggPrimitive.h"
 #include "eggVertex.h"
+#include "eggVertexUV.h"
 #include "eggMorphList.h"
 #include "eggSAnimData.h"
 #include "indirectCompareNames.h"
@@ -347,6 +348,7 @@ scan_for_morphs(EggNode *egg_node, int model_index,
       EggVertex *vertex = (*vi);
 
       add_morph_back_pointers(vertex, vertex, model_index, char_data);
+      add_morph_back_pointers_vertex(vertex, vertex, model_index, char_data);
 
       EggMorphVertexList::const_iterator mvi;
       for (mvi = vertex->_dxyzs.begin();
@@ -424,20 +426,34 @@ add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
     char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
   }
 
-  EggMorphTexCoordList::const_iterator mti;
-  for (mti = attrib->_duvs.begin();
-       mti != attrib->_duvs.end();
-       ++mti) {
-    const EggMorphTexCoord &morph = (*mti);
-    char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
-  }
-
   EggMorphColorList::const_iterator mci;
   for (mci = attrib->_drgbas.begin();
        mci != attrib->_drgbas.end();
        ++mci) {
     const EggMorphColor &morph = (*mci);
     char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::add_morph_back_pointers_vertex
+//       Access: Private
+//  Description: Adds the back pointers for the kinds of morphs we
+//               might find in an EggVertex object.
+////////////////////////////////////////////////////////////////////
+void EggCharacterCollection::
+add_morph_back_pointers_vertex(EggVertex *vertex, EggObject *egg_object,
+                               int model_index, EggCharacterData *char_data) {
+  EggVertex::const_uv_iterator ui;
+  for (ui = vertex->uv_begin(); ui != vertex->uv_end(); ++ui) {
+    EggVertexUV *vert_uv = (*ui);
+    EggMorphTexCoordList::const_iterator mti;
+    for (mti = vert_uv->_duvs.begin();
+         mti != vert_uv->_duvs.end();
+         ++mti) {
+      const EggMorphTexCoord &morph = (*mti);
+      char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
+    }
   }
 }
 
