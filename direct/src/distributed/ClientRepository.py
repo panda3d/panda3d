@@ -6,6 +6,7 @@ from MsgTypes import *
 import Task
 import DirectNotifyGlobal
 import ClientDistClass
+import CRCache
 # The repository must import all known types of Distributed Objects
 import DistributedObject
 import DistributedToon
@@ -21,6 +22,7 @@ class ClientRepository(DirectObject.DirectObject):
         self.doId2do={}
         self.doId2cdc={}
         self.parseDcFile(dcFileName)
+        self.cache=CRCache.CRCache()
         return None
 
     def parseDcFile(self, dcFileName):
@@ -61,7 +63,7 @@ class ClientRepository(DirectObject.DirectObject):
     def readerPollOnce(self):
         availGetVal = self.qcr.dataAvailable()
         if availGetVal:
-            print "Client: Incoming message!"
+            #print "Client: Incoming message!"
             datagram = NetDatagram()
             readRetVal = self.qcr.getData(datagram)
             if readRetVal:
@@ -98,12 +100,24 @@ class ClientRepository(DirectObject.DirectObject):
         # if it is there. The right thing to do would be to update
         # all the required fields, but that will come later, too.
 
+        # Is it in our dictionary? 
         if self.doId2do.has_key(doId):
-            ClientRepository.notify.warning("doId: " +
-                                            str(doId) +
-                                            " was generated again")
+            # If so, just update it.
             distObj = self.doId2do[doId]
             distObj.updateRequiredFields(cdc, di)
+
+        # Is it in the cache? If so, pull it out, put it in the dictionaries,
+        # and update it.
+        elif self.cache.contains(doId):
+            # If so, pull it out of the cache...
+            distObj = self.cache.retrieve(doId)
+            # put it in both dictionaries...
+            self.doId2do[doId] = distObj
+            self.doId2cdc[doId] = cdc
+            # and update it.
+            distObj.updateRequiredFields(cdc, di)
+
+        # If it is not in the dictionary or the cache, then...
         else:
             # Construct a new one
             distObj = constructor(self)
@@ -117,10 +131,46 @@ class ClientRepository(DirectObject.DirectObject):
             
         return distObj
 
+    def handleDisable(self, di):
+        # Get the DO Id
+        doId = di.getArg(STUint32)
+        # Make sure the object exists
+        if self.doId2do.has_key(doId):
+            # Look up the object
+            distObj = self.doId2do[doId]
+            # remove the object from both dictionaries
+            del(self.doId2do[doId])
+            del(self.doId2cdc[doId])
+            assert(len(self.doId2do) == len(self.doId2cdc))
+            # cache the object
+            self.cache.cache(distObj)
+        else:
+            ClientRepository.notify.warning("Disable failed. DistObj " +
+                                            str(doId) +
+                                            " is not in dictionary")
+        return None
+
+    def handleDelete(self, di):
+        # Get the DO Id
+        doId = di.getArg(STUint32)
+        # If it is in the dictionaries, remove it.
+        if self.doId2do.has_key(doId):
+            del(self.doId2do[doId])
+            del(self.doId2cdc[doId])
+            assert(len(self.doId2do) == len(self.doId2cdc))
+        # If it is in the cache, remove it.
+        elif self.cache.contains(doId):
+            self.cache.delete(doId)
+        # Otherwise, ignore it
+        else:
+            ClientRepository.notify.warning(
+                "Asked to delete non-existent DistObj " + str(doId))
+        return None
+
     def handleUpdateField(self, di):
         # Get the DO Id
         doId = di.getArg(STUint32)
-        print("Updating " + str(doId))
+        #print("Updating " + str(doId))
         # Find the DO
         assert(self.doId2do.has_key(doId))
         do = self.doId2do[doId]

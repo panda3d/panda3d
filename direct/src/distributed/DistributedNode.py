@@ -1,5 +1,6 @@
 """DistributedNode module: contains the DistributedNode class"""
 
+from ShowBaseGlobal import *
 import NodePath
 import DistributedObject
 
@@ -14,8 +15,9 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
             DistributedObject.DistributedObject.__init__(self, cr)
         return None
 
-    def generateInit(self, di):
-        DistributedObject.DistributedObject.generateInit(self, di)
+    def disable(self):
+        self.reparent(hidden)
+        DistributedObject.DistributedObject.disable(self)
 
     def d_setPos(self, x, y, z):
         self.sendUpdate("setPos", [x, y, z])
