@@ -6,13 +6,19 @@ import GuiFrame
 import Button
 import GuiLabel
 import Sign
+import Label
 
 
 
 class ScrollingLabel(PandaObject.PandaObject):
 
     # special methods
-    def __init__(self, name, itemList, font=getDefaultFont()):
+    def __init__(self, name, itemList,
+                 label = None,
+                 scale = 0.1,
+                 width = None,
+                 drawOrder = getDefaultDrawOrder(),
+                 font = getDefaultFont()):
 
         self.name = name
         self.eventName = self.name
@@ -22,24 +28,22 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.items = itemList
         self.keyFocus = 1
 
-        # create the new title
-        label = GuiLabel.GuiLabel.makeSimpleTextLabel(self.name, font)
-        label.setForegroundColor(1., 0., 0., 1.)
-        label.setBackgroundColor(1., 1., 1., 0.)
-        label.thaw()
-        self.title = Sign.Sign(self.name, label)
-        self.frame.addItem(self.title)
+        if width == None:
+            # Compute the maximum width of the all the items.
+            width = 0
+            text = TextNode()
+            text.setFont(font)
+            for item in itemList:
+                w = text.calcWidth(item) + 0.2
+                width = max(width, w)
 
-        longest = self.items[0]
-        for item in self.items:
-            if len(item) > len(longest):
-                longest = item
+        # create the new title
+        self.title = Sign.Sign(self.name, self.name, Label.ScrollTitle,
+                               scale, width, drawOrder, font)
+        self.frame.addItem(self.title)
                 
-        label = GuiLabel.GuiLabel.makeSimpleTextLabel(longest, font)
-        label.setForegroundColor(0., 0., 0., 1.)
-        label.setBackgroundColor(1., 1., 1., 1.)
-        label.thaw()
-        self.itemSign = Sign.Sign(longest, label)
+        self.itemSign = Sign.Sign('item', '', Label.ScrollItem,
+                                  scale, width, drawOrder, font)
         self.frame.addItem(self.itemSign)
             
         # pack the first label under the name 
@@ -47,12 +51,10 @@ class ScrollingLabel(PandaObject.PandaObject):
                             self.title)
         self.frame.packItem(self.itemSign, GuiFrame.GuiFrame.ALIGNLEFT,
                             self.title)
-
-        # make the title and label the same length
-        self.frame.makeWideAsWidest()
         
         # create the scroll buttons
-        self.leftButton = Button.Button(self.eventName + "-left", " < ")
+        self.leftButton = Button.Button(self.eventName + "-left", " < ",
+                                        scale, None, drawOrder, font)
         self.leftButton.getGuiItem().setDownRolloverEvent(self.eventName + "-left")
         self.leftButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
         self.frame.addItem(self.leftButton)
@@ -60,7 +62,8 @@ class ScrollingLabel(PandaObject.PandaObject):
                             self.title)
         self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.LEFT,
                             self.title)        
-        self.rightButton = Button.Button(self.eventName + "-right", " > ")
+        self.rightButton = Button.Button(self.eventName + "-right", " > ",
+                                         scale, None, drawOrder, font)
         self.rightButton.getGuiItem().setDownRolloverEvent(self.eventName +
                                                            "-right")    
         self.rightButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")

@@ -3,26 +3,31 @@ from DirectObject import *
 from GuiGlobals import *
 import GuiSign
 import GuiLabel
+import Label
 
 class Sign(DirectObject):
 
-    def __init__(self, name, label=None, font=getDefaultFont()):
+    def __init__(self, name,
+                 label = None,
+                 style = Label.Sign,
+                 scale = 0.1,
+                 width = None,
+                 drawOrder = getDefaultDrawOrder(),
+                 font = getDefaultFont()):
         self.name = name
-        # label in this case means GuiLabel
+        self.labelText = None
+        
         if not label:
-            self.label = GuiLabel.GuiLabel.makeSimpleTextLabel(self.name, font)
-            self.label.setForegroundColor(1., 0., 0., 1.)
-            self.label.setBackgroundColor(1., 1., 1., 0.)
-            self.label.thaw()
-        elif (type(label) == type('')):
-            self.label = GuiLabel.GuiLabel.makeSimpleTextLabel(label, font)
-            self.label.setForegroundColor(1., 0., 0., 1.)
-            self.label.setBackgroundColor(1., 1., 1., 0.)
-            self.label.thaw()
+            label = self.name
+                
+        if (type(label) == type('')):
+            (self.label, self.labelText) = \
+                         Label.textLabelAndText(label, style,
+                                                scale, width, drawOrder, font)
         else:
             self.label = label
+
         self.sign = GuiSign.GuiSign(self.name, self.label)
-        self.setScale(0.1)
         self.managed = 0
 	return None
 
@@ -35,14 +40,14 @@ class Sign(DirectObject):
 	return None
 
     def __str__(self):
-        return "sign: %s contains label: %s" % (self.name, self.label.name)
+        return "sign: %s contains label: %s" % (self.name, self.label)
     
     # accessing
     def getName(self):
         return self.name
 
     def setText(self, text):
-        self.label.setText(text)
+        self.labelText.setText(text)
         
     def getLabel(self):
         return self.label
@@ -51,19 +56,13 @@ class Sign(DirectObject):
         return self.sign
 
     def getPos(self):
-        self.label.getPos()
+        self.sign.getPos()
         
     def setPos(self, x, y):
-        self.label.setPos(x, 0, y)
-        
-    def setScale(self, scale):
-        self.sign.setScale(scale)
+        self.sign.setPos(Vec3(x, 0, y))
 
     def getWidth(self):
         return self.label.getWidth()
-
-    def setWidth(self, width):
-        self.label.setWidth(width)
         
     # actions
     def manage(self, nodepath = aspect2d):

@@ -1,13 +1,18 @@
 from ShowBaseGlobal import *
 from DirectObject import *
 from GuiGlobals import *
-import GuiLabel
 import GuiButton
+import Label
 
 
 class Button(DirectObject):
 
-    def __init__(self, name, label=None, font=getDefaultFont()):
+    def __init__(self, name,
+                 label = None,
+                 scale = 0.1,
+                 width = None,
+                 drawOrder = getDefaultDrawOrder(),
+                 font = getDefaultFont()):
         self.name = name
         # if no label given, use the button name
         if (label == None):
@@ -17,31 +22,27 @@ class Button(DirectObject):
         if (type(label) == type('')):
             # text label, make text button
             self.label = label
-            # up
-            self.l1 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label,
-                                                            font)
-            self.l1.setForegroundColor(0., 0., 0., 1.)
-            self.l1.thaw()
-            # roll-over up
-            self.l2 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label,
-                                                            font)
-            self.l2.setForegroundColor(0., 0., 0., 1.)
-            self.l2.setBackgroundColor(1., 1., 0., 1.)         
-            self.l2.thaw()
-            # roll-over down
-            self.l3 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label,
-                                                            font)
-            self.l3.setForegroundColor(1., 1., 1., 1.)
-            self.l3.setBackgroundColor(0., 0., 0., 1.)
-            self.l3.thaw()
+
+            self.l1 = Label.textLabel(self.label, Label.ButtonUp,
+                                      scale, width, drawOrder, font)
+            self.l2 = Label.textLabel(self.label, Label.ButtonLit,
+                                      scale, width, drawOrder, font)
+            self.l3 = Label.textLabel(self.label, Label.ButtonDown,
+                                      scale, width, drawOrder, font)
+
+        elif (isinstance(label, NodePath)):
+            # If it's a NodePath, assume it's a little texture card.
+            self.l1 = Label.modelLabel(label, 1, 1, scale, drawOrder)
+            self.l2 = self.l1
+            self.l3 = self.l1
+            
         else:
             # label provided, use it for all labels
             self.l1 = self.l2 = self.l3 = label
 
         self.button = GuiButton.GuiButton(self.name, self.l1, self.l2,
                                           self.l3, self.l3, self.l1)
-
-        self.setScale(0.1)
+        self.button.setDrawOrder(drawOrder)
         self.managed = 0
 
 	return None
@@ -111,9 +112,3 @@ class Button(DirectObject):
             v3 = Vec3(mat.xformPoint(Point3(x, 0., y)))
             
         self.button.setPos(v3)
-
-    def setScale(self, scale):
-        self.button.setScale(scale)
-
-    def setDrawOrder(self, drawOrder):
-        self.button.setDrawOrder(drawOrder)

@@ -1,5 +1,6 @@
 """PickList module: contains the PickList class"""
 from ShowBaseGlobal import *
+from GuiGlobals import *
 import PandaObject
 import Frame
 import Button
@@ -11,7 +12,11 @@ class PickList(PandaObject.PandaObject):
     """
 
     # special methods
-    def __init__(self, name, choiceList):
+    def __init__(self, name, choiceList,
+                 scale = 0.1,
+                 width = None,
+                 drawOrder = getDefaultDrawOrder(),
+                 font = getDefaultFont()):
 
         #print "In pick list init: t = %.3f" % clock.getRealTime()
         
@@ -25,7 +30,7 @@ class PickList(PandaObject.PandaObject):
         self.frame.setOffset(0.015)
         
         # display the menu
-        self.__displayChoices(choiceList)
+        self.__displayChoices(choiceList, scale, width, drawOrder, font)
 	self.isClean = 0
 	return None
 
@@ -62,13 +67,28 @@ class PickList(PandaObject.PandaObject):
         self.eventName = eventName
 
     # actions
-    def __displayChoices(self, choiceList):
+    def __displayChoices(self, choiceList,
+                         scale, width, drawOrder, font):
         """__displayChoices(self, string[])
         Display the list of choices
         """
+
+        if width == None:
+            # First, compute the maximum width of the buttons.  We do this
+            # ahead of time so the Gui code doesn't have to do it and take
+            # forever about it.
+            width = 0
+            text = TextNode()
+            text.setFont(font)
+            for choice in choiceList:
+                w = text.calcWidth(choice) + 0.2
+                width = max(width, w)
+
+        # Now create all the buttons.
         for choice in choiceList:
             # create a button for each choice
-            button = Button.Button(choice)
+            button = Button.Button(choice, scale = scale, width = width,
+                                   drawOrder = drawOrder, font = font)
             #print "done with button cons: t = %.3f" % clock.getRealTime()
             choiceIndex = choiceList.index(choice)
             # set the rollover-up event
@@ -88,7 +108,6 @@ class PickList(PandaObject.PandaObject):
             self.choiceList.append(button)
         
         # set up the frame
-        self.frame.makeWideAsWidest()
         self.frame.makeVertical()
 
 	return None
