@@ -168,6 +168,7 @@ scan_textures() {
         // It hasn't changed substantially, so keep the original
         // (which still has the placement references from a previous
         // pass).
+        aref->from_egg_quick(*bref);
         combined_textures.push_back(aref);
         delete bref;
 

@@ -136,6 +136,25 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::from_egg_quick
+//       Access: Public
+//  Description: Sets up the pointers within the TextureReference
+//               to the same egg file pointers indicated by the other
+//               TextureReference object, without changing any of the
+//               other internal data stored here regarding the egg
+//               structures.  This is intended for use when we have
+//               already shown that the two TextureReferences describe
+//               equivalent data.
+////////////////////////////////////////////////////////////////////
+void TextureReference::
+from_egg_quick(const TextureReference &other) {
+  nassertv(_tref_name == other._tref_name);
+  _egg_file = other._egg_file;
+  _egg_tex = other._egg_tex;
+  _egg_data = other._egg_data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::get_egg_file
 //       Access: Public
 //  Description: Returns the EggFile that references this texture.

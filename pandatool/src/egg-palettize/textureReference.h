@@ -50,6 +50,7 @@ public:
   ~TextureReference();
 
   void from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex);
+  void from_egg_quick(const TextureReference &other);
 
   EggFile *get_egg_file() const;
   SourceTextureImage *get_source() const;
