@@ -4333,164 +4333,159 @@ CompileLink(dll='libglstuff.dll', opts=['ADVAPI', 'GLUT', 'NSPR', 'NVIDIACG', 'C
 #
 
 if (sys.platform == "win32"):
-
-  IPATH=['panda/src/windisplay']
-  OPTS=['BUILDING_PANDAWIN', 'NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='winGraphicsWindow.cxx', obj='windisplay_winGraphicsWindow.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='config_windisplay.cxx', obj='windisplay_config_windisplay.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winGraphicsPipe.cxx', obj='windisplay_winGraphicsPipe.obj')
-  CompileLink(opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR'],
-              dll='libwindisplay.dll', obj=[
-    'windisplay_winGraphicsWindow.obj',
-    'windisplay_config_windisplay.obj',
-    'windisplay_winGraphicsPipe.obj',
-    'libpanda.dll',
-    'libpandaexpress.dll',
-    'libdtoolconfig.dll',
-    'libdtool.dll',
-    ])
+    IPATH=['panda/src/windisplay']
+    OPTS=['BUILDING_PANDAWIN', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='winGraphicsWindow.cxx', obj='windisplay_winGraphicsWindow.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='config_windisplay.cxx', obj='windisplay_config_windisplay.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='winGraphicsPipe.cxx', obj='windisplay_winGraphicsPipe.obj')
+    CompileLink(opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR'],
+                dll='libwindisplay.dll', obj=[
+      'windisplay_winGraphicsWindow.obj',
+      'windisplay_config_windisplay.obj',
+      'windisplay_winGraphicsPipe.obj',
+      'libpanda.dll',
+      'libpandaexpress.dll',
+      'libdtoolconfig.dll',
+      'libdtool.dll',
+      ])
 
 #
 # DIRECTORY: panda/src/glxdisplay/
 #
 
 if (sys.platform != "win32"):
+    IPATH=['panda/src/glxdisplay', 'panda/src/gobj']
+    OPTS=['BUILDING_PANDAGLUT', 'NSPR', 'GLUT', 'NVIDIACG', 'CGGL']
+    CompileC(ipath=IPATH, opts=OPTS, src='config_glxdisplay.cxx',        obj='glxdisplay_config_glxdisplay.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsBuffer.cxx',        obj='glxdisplay_glxGraphicsBuffer.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsPipe.cxx',          obj='glxdisplay_glxGraphicsPipe.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsStateGuardian.cxx', obj='glxdisplay_glxGraphicsStateGuardian.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsWindow.cxx',        obj='glxdisplay_glxGraphicsWindow.obj')
+    Interrogate(ipath=IPATH, opts=OPTS, outd='libglxdisplay.in', outc='libglxdisplay_igate.cxx',
+                src='panda/src/glxdisplay',  module='pandagl', library='libglxdisplay', files=['glxGraphicsPipe.h'])
+    CompileC(ipath=IPATH, opts=OPTS, src='libglxdisplay_igate.cxx',      obj='libglxdisplay_igate.obj')
 
-  IPATH=['panda/src/glxdisplay', 'panda/src/gobj']
-  OPTS=['BUILDING_PANDAGLUT', 'NSPR', 'GLUT', 'NVIDIACG', 'CGGL']
-  CompileC(ipath=IPATH, opts=OPTS, src='config_glxdisplay.cxx',        obj='glxdisplay_config_glxdisplay.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsBuffer.cxx',        obj='glxdisplay_glxGraphicsBuffer.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsPipe.cxx',          obj='glxdisplay_glxGraphicsPipe.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsStateGuardian.cxx', obj='glxdisplay_glxGraphicsStateGuardian.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsWindow.cxx',        obj='glxdisplay_glxGraphicsWindow.obj')
-  Interrogate(ipath=IPATH, opts=OPTS, outd='libglxdisplay.in', outc='libglxdisplay_igate.cxx',
-              src='panda/src/glxdisplay',  module='pandagl', library='libglxdisplay', files=['glxGraphicsPipe.h'])
-  CompileC(ipath=IPATH, opts=OPTS, src='libglxdisplay_igate.cxx',      obj='libglxdisplay_igate.obj')
-
-  IPATH=['panda/metalibs/pandagl']
-  OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
-  CompileC(ipath=IPATH, opts=OPTS, src='pandagl.cxx', obj='pandagl_pandagl.obj')
-  CompileLink(opts=['GLUT', 'NVIDIACG', 'CGGL', 'NSPR'], dll='libpandagl.dll', obj=[
-    'pandagl_pandagl.obj',
-    'glgsg_config_glgsg.obj',
-    'glgsg_glgsg.obj',
-    'glxdisplay_config_glxdisplay.obj',
-    'glxdisplay_glxGraphicsBuffer.obj',
-    'glxdisplay_glxGraphicsPipe.obj',
-    'glxdisplay_glxGraphicsStateGuardian.obj',
-    'glxdisplay_glxGraphicsWindow.obj',
-    'libglxdisplay_igate.obj',
-    'libpanda.dll',
-    'libpandaexpress.dll',
-    'libglstuff.dll',
-    'libpandafx.dll',
-    'libdtoolconfig.dll',
-    'libdtool.dll',
-    ])
+    IPATH=['panda/metalibs/pandagl']
+    OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
+    CompileC(ipath=IPATH, opts=OPTS, src='pandagl.cxx', obj='pandagl_pandagl.obj')
+    CompileLink(opts=['GLUT', 'NVIDIACG', 'CGGL', 'NSPR'], dll='libpandagl.dll', obj=[
+      'pandagl_pandagl.obj',
+      'glgsg_config_glgsg.obj',
+      'glgsg_glgsg.obj',
+      'glxdisplay_config_glxdisplay.obj',
+      'glxdisplay_glxGraphicsBuffer.obj',
+      'glxdisplay_glxGraphicsPipe.obj',
+      'glxdisplay_glxGraphicsStateGuardian.obj',
+      'glxdisplay_glxGraphicsWindow.obj',
+      'libglxdisplay_igate.obj',
+      'libpanda.dll',
+      'libpandaexpress.dll',
+      'libglstuff.dll',
+      'libpandafx.dll',
+      'libdtoolconfig.dll',
+      'libdtool.dll',
+      ])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
 #
 
 if (sys.platform == "win32"):
+    IPATH=['panda/src/wgldisplay', 'panda/src/glstuff', 'panda/src/gobj']
+    OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
+    CompileC(ipath=IPATH, opts=OPTS, src='wgldisplay_composite1.cxx', obj='wgldisplay_composite1.obj')
 
-  IPATH=['panda/src/wgldisplay', 'panda/src/glstuff', 'panda/src/gobj']
-  OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
-  CompileC(ipath=IPATH, opts=OPTS, src='wgldisplay_composite1.cxx', obj='wgldisplay_composite1.obj')
-
-  IPATH=['panda/metalibs/pandagl']
-  OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
-  CompileC(ipath=IPATH, opts=OPTS, src='pandagl.cxx', obj='pandagl_pandagl.obj')
-  CompileLink(opts=['WINGDI', 'GLUT', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR', 'NVIDIACG', 'CGGL'],
-              dll='libpandagl.dll', obj=[
-    'pandagl_pandagl.obj',
-    'glgsg_config_glgsg.obj',
-    'glgsg_glgsg.obj',
-    'wgldisplay_composite1.obj',
-    'libwindisplay.dll',
-    'libpanda.dll',
-    'libpandaexpress.dll',
-    'libglstuff.dll',
-    'libpandafx.dll',
-    'libdtoolconfig.dll',
-    'libdtool.dll',
-    ])
+    IPATH=['panda/metalibs/pandagl']
+    OPTS=['BUILDING_PANDAGL', 'NSPR', 'NVIDIACG', 'CGGL']
+    CompileC(ipath=IPATH, opts=OPTS, src='pandagl.cxx', obj='pandagl_pandagl.obj')
+    CompileLink(opts=['WINGDI', 'GLUT', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR', 'NVIDIACG', 'CGGL'],
+                dll='libpandagl.dll', obj=[
+      'pandagl_pandagl.obj',
+      'glgsg_config_glgsg.obj',
+      'glgsg_glgsg.obj',
+      'wgldisplay_composite1.obj',
+      'libwindisplay.dll',
+      'libpanda.dll',
+      'libpandaexpress.dll',
+      'libglstuff.dll',
+      'libpandafx.dll',
+      'libdtoolconfig.dll',
+      'libdtool.dll',
+      ])
 
 #
 # DIRECTORY: panda/metalibs/pandadx7/
 #
 
 if (sys.platform == "win32"):
+    IPATH=['panda/src/dxgsg7']
+    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian7.cxx', obj='dxgsg7_dxGraphicsStateGuardian7.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='dxgsg7_composite1.cxx', obj='dxgsg7_composite1.obj')
 
-  IPATH=['panda/src/dxgsg7']
-  OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian7.cxx', obj='dxgsg7_dxGraphicsStateGuardian7.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='dxgsg7_composite1.cxx', obj='dxgsg7_composite1.obj')
-
-  IPATH=['panda/metalibs/pandadx7']
-  OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='pandadx7.cxx', obj='pandadx7_pandadx7.obj')
-  CompileLink(dll='libpandadx7.dll', opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
-    'pandadx7_pandadx7.obj',
-    'dxgsg7_dxGraphicsStateGuardian7.obj',
-    'dxgsg7_composite1.obj',
-    'libpanda.dll',
-    'libpandaexpress.dll',
-    'libwindisplay.dll',
-    'libdtoolconfig.dll',
-    'libdtool.dll',
-    ])
+    IPATH=['panda/metalibs/pandadx7']
+    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='pandadx7.cxx', obj='pandadx7_pandadx7.obj')
+    CompileLink(dll='libpandadx7.dll', opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
+      'pandadx7_pandadx7.obj',
+      'dxgsg7_dxGraphicsStateGuardian7.obj',
+      'dxgsg7_composite1.obj',
+      'libpanda.dll',
+      'libpandaexpress.dll',
+      'libwindisplay.dll',
+      'libdtoolconfig.dll',
+      'libdtool.dll',
+      ])
 
 #
 # DIRECTORY: panda/metalibs/pandadx8/
 #
 
 if (sys.platform == "win32"):
-  IPATH=['panda/src/dxgsg8']
-  OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian8.cxx', obj='dxgsg8_dxGraphicsStateGuardian8.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='dxgsg8_composite1.cxx', obj='dxgsg8_composite1.obj')
+    IPATH=['panda/src/dxgsg8']
+    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian8.cxx', obj='dxgsg8_dxGraphicsStateGuardian8.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='dxgsg8_composite1.cxx', obj='dxgsg8_composite1.obj')
 
-  IPATH=['panda/metalibs/pandadx8']
-  OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='pandadx8.cxx', obj='pandadx8_pandadx8.obj')
-  CompileLink(dll='libpandadx8.dll',
-    opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
-    'pandadx8_pandadx8.obj',
-    'dxgsg8_dxGraphicsStateGuardian8.obj',
-    'dxgsg8_composite1.obj',
-    'libpanda.dll',
-    'libpandaexpress.dll',
-    'libwindisplay.dll',
-    'libdtoolconfig.dll',
-    'libdtool.dll',
-    ])
+    IPATH=['panda/metalibs/pandadx8']
+    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='pandadx8.cxx', obj='pandadx8_pandadx8.obj')
+    CompileLink(dll='libpandadx8.dll',
+      opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8', 'NSPR'], obj=[
+      'pandadx8_pandadx8.obj',
+      'dxgsg8_dxGraphicsStateGuardian8.obj',
+      'dxgsg8_composite1.obj',
+      'libpanda.dll',
+      'libpandaexpress.dll',
+      'libwindisplay.dll',
+      'libdtoolconfig.dll',
+      'libdtool.dll',
+      ])
 
 #
 # DIRECTORY: panda/metalibs/pandadx9/
 #
 
 if (sys.platform == "win32"):
+    IPATH=['panda/src/dxgsg9']
+    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian9.cxx', obj='dxgsg9_dxGraphicsStateGuardian9.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='dxgsg9_composite1.cxx', obj='dxgsg9_composite1.obj')
 
-  IPATH=['panda/src/dxgsg9']
-  OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian9.cxx', obj='dxgsg9_dxGraphicsStateGuardian9.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='dxgsg9_composite1.cxx', obj='dxgsg9_composite1.obj')
-
-  IPATH=['panda/metalibs/pandadx9']
-  OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='pandadx9.cxx', obj='pandadx9_pandadx9.obj')
-  CompileLink(dll='libpandadx9.dll',
-    opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D9', 'NSPR'], obj=[
-    'pandadx9_pandadx9.obj',
-    'dxgsg9_dxGraphicsStateGuardian9.obj',
-    'dxgsg9_composite1.obj',
-    'libpanda.dll',
-    'libpandaexpress.dll',
-    'libwindisplay.dll',
-    'libdtoolconfig.dll',
-    'libdtool.dll',
-    ])
+    IPATH=['panda/metalibs/pandadx9']
+    OPTS=['BUILDING_PANDADX', 'DXSDK', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='pandadx9.cxx', obj='pandadx9_pandadx9.obj')
+    CompileLink(dll='libpandadx9.dll',
+      opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D9', 'NSPR'], obj=[
+      'pandadx9_pandadx9.obj',
+      'dxgsg9_dxGraphicsStateGuardian9.obj',
+      'dxgsg9_composite1.obj',
+      'libpanda.dll',
+      'libpandaexpress.dll',
+      'libwindisplay.dll',
+      'libdtoolconfig.dll',
+      'libdtool.dll',
+      ])
 
 #
 # DIRECTORY: panda/src/egg/
@@ -4671,7 +4666,13 @@ CompileC(ipath=IPATH, opts=OPTS, src='dcParser.cxx', obj='dcparser_dcParser.obj'
 CompileC(ipath=IPATH, opts=OPTS, src='dcLexer.cxx', obj='dcparser_dcLexer.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libdcparser.in', outc='libdcparser_igate.cxx',
             src='direct/src/dcparser',  module='direct', library='libdcparser',
-            files=['dcAtomicField.h', 'dcClass.h', 'dcDeclaration.h', 'dcField.h', 'dcFile.h', 'dcLexerDefs.h', 'dcMolecularField.h', 'dcParserDefs.h', 'dcSubatomicType.h', 'dcPackData.h', 'dcPacker.h', 'dcPackerCatalog.h', 'dcPackerInterface.h', 'dcParameter.h', 'dcClassParameter.h', 'dcArrayParameter.h', 'dcSimpleParameter.h', 'dcSwitchParameter.h', 'dcNumericRange.h', 'dcSwitch.h', 'dcTypedef.h', 'dcPython.h', 'dcbase.h', 'dcindent.h', 'hashGenerator.h', 'primeNumberGenerator.h', 'dcparser_composite1.cxx', 'dcparser_composite2.cxx'])
+            files=['dcAtomicField.h', 'dcClass.h', 'dcDeclaration.h', 'dcField.h', 'dcFile.h',
+            'dcLexerDefs.h', 'dcMolecularField.h', 'dcParserDefs.h', 'dcSubatomicType.h',
+            'dcPackData.h', 'dcPacker.h', 'dcPackerCatalog.h', 'dcPackerInterface.h',
+            'dcParameter.h', 'dcClassParameter.h', 'dcArrayParameter.h', 'dcSimpleParameter.h',
+            'dcSwitchParameter.h', 'dcNumericRange.h', 'dcSwitch.h', 'dcTypedef.h', 'dcPython.h',
+            'dcbase.h', 'dcindent.h', 'hashGenerator.h', 'primeNumberGenerator.h',
+            'dcparser_composite1.cxx', 'dcparser_composite2.cxx'])
 CompileC(ipath=IPATH, opts=OPTS, src='libdcparser_igate.cxx', obj='libdcparser_igate.obj')
 
 #
@@ -4697,7 +4698,8 @@ CompileC(ipath=IPATH, opts=OPTS, src='cConnectionRepository.cxx', obj='distribut
 CompileC(ipath=IPATH, opts=OPTS, src='cDistributedSmoothNodeBase.cxx', obj='distributed_cDistributedSmoothNodeBase.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libdistributed.in', outc='libdistributed_igate.cxx',
             src='direct/src/distributed',  module='direct', library='libdistributed',
-            files=['config_distributed.cxx', 'config_distributed.h', 'cConnectionRepository.cxx', 'cConnectionRepository.h', 'cDistributedSmoothNodeBase.cxx', 'cDistributedSmoothNodeBase.h'])
+            files=['config_distributed.cxx', 'config_distributed.h', 'cConnectionRepository.cxx',
+            'cConnectionRepository.h', 'cDistributedSmoothNodeBase.cxx', 'cDistributedSmoothNodeBase.h'])
 CompileC(ipath=IPATH, opts=OPTS, src='libdistributed_igate.cxx', obj='libdistributed_igate.obj')
 
 #
@@ -4718,7 +4720,12 @@ CompileC(ipath=IPATH, opts=OPTS, src='showInterval.cxx', obj='interval_showInter
 CompileC(ipath=IPATH, opts=OPTS, src='waitInterval.cxx', obj='interval_waitInterval.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libinterval.in', outc='libinterval_igate.cxx',
             src='direct/src/interval',  module='direct', library='libinterval',
-            files=['config_interval.cxx', 'config_interval.h', 'cInterval.cxx', 'cInterval.h', 'cIntervalManager.cxx', 'cIntervalManager.h', 'cLerpInterval.cxx', 'cLerpInterval.h', 'cLerpNodePathInterval.cxx', 'cLerpNodePathInterval.h', 'cLerpAnimEffectInterval.cxx', 'cLerpAnimEffectInterval.h', 'cMetaInterval.cxx', 'cMetaInterval.h', 'hideInterval.cxx', 'hideInterval.h', 'showInterval.cxx', 'showInterval.h', 'waitInterval.cxx', 'waitInterval.h', 'lerp_helpers.h'])
+            files=['config_interval.cxx', 'config_interval.h', 'cInterval.cxx', 'cInterval.h',
+            'cIntervalManager.cxx', 'cIntervalManager.h', 'cLerpInterval.cxx', 'cLerpInterval.h',
+            'cLerpNodePathInterval.cxx', 'cLerpNodePathInterval.h', 'cLerpAnimEffectInterval.cxx',
+            'cLerpAnimEffectInterval.h', 'cMetaInterval.cxx', 'cMetaInterval.h', 'hideInterval.cxx',
+            'hideInterval.h', 'showInterval.cxx', 'showInterval.h', 'waitInterval.cxx', 'waitInterval.h',
+            'lerp_helpers.h'])
 CompileC(ipath=IPATH, opts=OPTS, src='libinterval_igate.cxx', obj='libinterval_igate.obj')
 
 #
