@@ -44,6 +44,12 @@ class Interval(DirectObject):
     def getOpenEnded(self):
         return self.openEnded
 
+    def setLoop(self, loop=1):
+        self.__doLoop = loop
+
+    def getLoop(self):
+        return self.__doLoop
+
     def getState(self):
         return self.state
 
