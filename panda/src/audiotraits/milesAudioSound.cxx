@@ -26,6 +26,8 @@
 #define NEED_MILES_LENGTH_WORKAROUND
 #endif
 
+//#define NEED_MILES_LENGTH_WORKAROUND
+
 #ifndef NDEBUG //[
   namespace {
     char
@@ -251,6 +253,8 @@ length() const {
         }
    #endif
   }
+  
+  //audio_cat->info() << "MilesAudioSound::length() returning " << _length << endl;
   audio_debug("MilesAudioSound::length() returning "<<_length);
   return _length;
 }

@@ -52,6 +52,10 @@ public:
   void set_active(bool active);
   bool get_active();
 
+  // Optional Downloadable Sound field for software midi:
+  // made public so C atexit fn can access it
+  static HDLSFILEID _dls_field;
+
 private:
   // The sound cache:
   typedef pmap<string, HAUDIO > SoundMap;
@@ -68,8 +72,6 @@ private:
   int _cache_limit;
   // keep a count for startup and shutdown:
   static int _active_managers;
-  // Optional Downloadable Sound field for software midi:
-  static HDLSFILEID _dls_field;
   
   bool _is_valid;
   

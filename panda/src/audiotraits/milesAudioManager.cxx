@@ -28,12 +28,58 @@
 #include "virtualFileSystem.h"
 #include <algorithm>
 
-int MilesAudioManager::_active_managers;
-HDLSFILEID MilesAudioManager::_dls_field;
+int MilesAudioManager::_active_managers = 0;
+HDLSFILEID MilesAudioManager::_dls_field = NULL;
+bool bMilesShutdownCalled = false;
+bool bMilesShutdownAtExitRegistered = false;
 
 PT(AudioManager) Create_AudioManager() {
   audio_debug("Create_AudioManager() Miles.");
   return new MilesAudioManager();
+}
+
+void fMilesShutdown(void) {
+    if(bMilesShutdownCalled)
+      return;
+
+    bMilesShutdownCalled = true;
+
+    if (MilesAudioManager::_dls_field!=NULL) {
+      HDLSDEVICE dls= NULL;
+      audio_cat->info() << "xxxx m1\n";
+      AIL_quick_handles(0, 0, &dls);
+      audio_cat->info() << "dls == 0x" << (void*)dls << endl;
+      if(dls!=NULL) {
+          AIL_DLS_unload(dls,MilesAudioManager::_dls_field);
+      }
+
+      #ifndef NDEBUG //[
+        // Clear _dls_field in debug version (for assert in ctor):
+        MilesAudioManager::_dls_field = NULL;  
+      #endif //]
+    }
+
+
+   #define SHUTDOWN_HACK
+   
+   // if python crashes, the midi notes are left on,
+   // so we need to turn them off.  Unfortunately
+   // in Miles 6.5, AIL_quick_shutdown() crashes
+   // when it's called from atexit after a python crash.
+   // workaround: use these internal values in the miles struct
+   //             to reset the win32 midi ourselves
+   
+   #ifdef SHUTDOWN_HACK
+    HMDIDRIVER hMid=NULL;
+    AIL_quick_handles(0, &hMid, 0);
+    if ((hMid!=NULL) && (hMid->deviceid != MIDI_NULL_DRIVER) && (hMid->hMidiOut != NULL)) {
+      midiOutReset(hMid->hMidiOut);
+      midiOutClose(hMid->hMidiOut);
+    }
+   #else
+    audio_debug("  AIL_quick_shutdown()");
+    AIL_quick_shutdown();
+   #endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +131,7 @@ MilesAudioManager() {
         if (!_dls_field) {
           audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error()
               <<"\" Switching to hardware midi");
+
           AIL_quick_shutdown();
           if (!AIL_quick_startup(use_digital, 1, audio_output_rate,
               audio_output_bits, audio_output_channels)) {
@@ -112,7 +159,15 @@ MilesAudioManager() {
   // either way.
   ++_active_managers;
   audio_debug("  _active_managers="<<_active_managers);
-  if (_is_valid) { assert(is_valid()); }
+
+  if (_is_valid)  {
+    assert(is_valid());
+
+    if(!bMilesShutdownAtExitRegistered) {
+       bMilesShutdownAtExitRegistered = true;
+       atexit(fMilesShutdown);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,8 +193,9 @@ MilesAudioManager::
         _dls_field=0;
       #endif //]
     }
-    AIL_quick_shutdown();
     audio_debug("  AIL_quick_shutdown()");
+    AIL_quick_shutdown();
+    bMilesShutdownCalled = true;
   }
 }
 

@@ -7,7 +7,7 @@
   #define USE_PACKAGES rad_mss
   #define BUILDING_DLL BUILDING_MILES_AUDIO
   #define LOCAL_LIBS audio
-  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib
+  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  
 
