@@ -1,5 +1,7 @@
 #define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase
 
+#define BUILDING_DLL BUILDING_SHADER
+
 #begin lib_target
   #define TARGET shader
   #define LOCAL_LIBS \
