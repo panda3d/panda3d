@@ -22,7 +22,6 @@
 
 ////#include <initReg.h>
 #include <math.h>
-#include <fstream>
 ////#include <alloca.h>
 ////#include <Performer/pf/pfBuffer.h>
 ////#include <DConfig.h>
