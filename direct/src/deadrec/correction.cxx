@@ -66,6 +66,8 @@ void LerpCorrection::step(void) {
 }
 
 void LerpCorrection::new_target(LPoint3f& target, LVector3f&) {
+  if (target == save_p)
+    return;
   if (have_both) {
     time = 0.;
     prev_p = _curr_p;
@@ -101,6 +103,8 @@ void SplineCorrection::step(void) {
 }
 
 void SplineCorrection::new_target(LPoint3f& target, LVector3f& v_target) {
+  if (target == save_p)
+    return;
   if (have_both) {
     time = 0.;
     prev_p = _curr_p;
