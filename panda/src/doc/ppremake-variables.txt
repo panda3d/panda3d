@@ -231,6 +231,21 @@ value is either the empty string (false) or a nonempty string (true).
     standard form by removing consecutive repeated slashes and
     collapsing /../ where possible.
 
+  $[canonical <filename>] - convert the indicated filename to
+    canonical form by replacing the directory part with the
+    fully-qualified directory part.  This is done by changing to that
+    directory and calling getcwd().  The result is similar to that of
+    $[standardize], above, but it is more likely to be consistent
+    across different filenames.
+
+    This has the effect of (a) converting relative paths to absolute
+    paths, (b) always resolving a given directory name to the same
+    string, even if different symbolic links are traversed, and (c)
+    changing nice symbolic-link paths like /fit/people/drose to ugly
+    NFS automounter names like /hosts/dimbo/usr2/fit/people/drose.
+    This can be troubling, but sometimes this is exactly what you
+    want.
+
   $[length <argument>] - returns the length of the indicated argument
     in characters, not counting leading or trailing spaces.
 
