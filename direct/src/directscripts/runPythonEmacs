@@ -111,6 +111,13 @@ if [ "$PMOCKUP" ]; then
     export PMOCKUP
 fi
 
+# Gateway models
+if [ "$GWMODELS" ]; then
+    if [ "$debug" ]; then echo "GWMODELS  $GWMODELS"; fi
+    GWMODELS=`cygpath -w $GWMODELS`
+    export GWMODELS
+fi
+
 # Export the proper home environment variable
 HOME=`cygpath -w $HOME`
 export HOME
