@@ -49,9 +49,11 @@ Step 1: Install Visual C++ (v6.0)
   - On WinNT, you will be prompted to register environment variables for
     running the compiler from the command line - do it.
   - Install MSVC Service Pack 5 by running V:\msvc-sp5\setupsp5.exe, or from CD
-    You may need to run v:\msvc-sp5\mdac_typ.exe first (setup will tell you)
+    You may need to run v:\msvc-sp5\mdac_typ.exe first (setup will tell you if so)
   - Install the MSDN Library documentation if this is a primary dev machine.
-    Install from CD, or by running V:\msdn-apr01\setup.exe
+    Install from CD, or by running V:\msdn-apr01\setup.exe.  To save time and
+    disk space, choose custom install and uncheck everything but Text-Search 
+    Index, VC++, Platform SDK, Knowledge Base, and All Other Files.
   
 Step 2: Install MS Platform SDK to get updated VC libs and headers
   - Install MS Platform SDK MSDN CD in default location. 
