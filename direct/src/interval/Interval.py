@@ -313,15 +313,15 @@ class Interval(DirectObject):
     # for the CInterval class via the file CInterval-extensions.py.
 
     def play(self, *args, **kw):
-        self.notify.warning("using deprecated Interval.play() interface")
+        self.notify.error("using deprecated Interval.play() interface")
         self.start(*args, **kw)
 
     def stop(self):
-        self.notify.warning("using deprecated Interval.stop() interface")
+        self.notify.error("using deprecated Interval.stop() interface")
         self.finish()
 
     def setFinalT(self):
-        self.notify.warning("using deprecated Interval.setFinalT() interface")
+        self.notify.error("using deprecated Interval.setFinalT() interface")
         self.finish()
 
     def privPostEvent(self):

@@ -15,18 +15,18 @@
         self.privPostEvent()
 
     def play(self, t0 = 0.0, duration = None, scale = 1.0):
-        self.notify.warning("using deprecated CInterval.play() interface")
+        self.notify.error("using deprecated CInterval.play() interface")
         if duration:  # None or 0 implies full length
             self.start(t0, t0 + duration, scale)
         else:
             self.start(t0, -1, scale)
 
     def stop(self):
-        self.notify.warning("using deprecated CInterval.stop() interface")
+        self.notify.error("using deprecated CInterval.stop() interface")
         self.finish()
 
     def setFinalT(self):
-        self.notify.warning("using deprecated CInterval.setFinalT() interface")
+        self.notify.error("using deprecated CInterval.setFinalT() interface")
         self.finish()
 
     def privPostEvent(self):
