@@ -14,6 +14,13 @@
 #include <geometricBoundingVolume.h>
 #include <graphicsStateGuardian.h>
 #include <arcChain.h>
+#include <nodeTransitionWrapper.h>
+#include <transformTransition.h>
+#include <billboardTransition.h>
+#include <wrt.h>
+
+#include "config_sgraphutil.h"
+
 
 
 ///////////////////////////////////////////////////////////////////

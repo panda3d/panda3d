@@ -10,8 +10,9 @@
   #define SOURCES \
     appTraverser.I appTraverser.cxx appTraverser.h \
     config_sgraphutil.cxx config_sgraphutil.h directRenderTraverser.I \
-    directRenderTraverser.cxx directRenderTraverser.h get_rel_pos.I \
-    get_rel_pos.cxx get_rel_pos.h sceneGraphAnalyzer.cxx \
+    directRenderTraverser.cxx directRenderTraverser.h \
+    frustumCullTraverser.I frustumCullTraverser.h \
+    get_rel_pos.I get_rel_pos.cxx get_rel_pos.h sceneGraphAnalyzer.cxx \
     sceneGraphAnalyzer.h sceneGraphReducer.I sceneGraphReducer.cxx \
     sceneGraphReducer.h
 

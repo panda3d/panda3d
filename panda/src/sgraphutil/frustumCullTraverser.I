@@ -3,13 +3,6 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "frustumCullTraverser.h"
-#include "config_sgraphutil.h"
-
-#include <notify.h>
-#include <nodeTransitionWrapper.h>
-#include <transformTransition.h>
-#include <wrt.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrustumCullTraverser::Constructor
@@ -148,32 +141,42 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
 	}
       }
 
-      if (carry_on &&
-	  arc->has_transition(TransformTransition::get_class_type())) {
-	// Now apply the transform associated with this arc.  We do
-	// this after the bounding volume test, because the bounding
-	// volume has already been transformed.
+      if (carry_on) {
+	if (arc->has_transition(BillboardTransition::get_class_type())) {
+	  // We can't reliably cull within a billboard, because the
+	  // geometry might get rotated out of its bounding volume.
+	  // So once we get within a billboard, we consider it all
+	  // visible.
+	  all_in = true;
+	}
 
-	local_frustum =
-	  DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
+	if (!all_in && 
+	    arc->has_transition(TransformTransition::get_class_type())) {
+	  // Now apply the transform associated with this arc.  We do
+	  // this after the bounding volume test, because the bounding
+	  // volume has already been transformed.
 
-	NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-	wrt(_gsg->get_current_projection_node(),
-	    arc->get_child(), _arc_chain.begin(), _arc_chain.end(),
-	    ntw, _graph_type);
-	
-	const TransformTransition *tt;
-	if (get_transition_into(tt, ntw)) {
-	  // This frustum is transformed from the camera.  Most will
-	  // be.
-	  nassertv(local_frustum != (GeometricBoundingVolume *)NULL);
-	  local_frustum->xform(tt->get_matrix());
+	  local_frustum =
+	    DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
 
-	  if (sgraphutil_cat.is_spam()) {
-	    sgraphutil_cat.spam()
-	      << "Transforming frustum into local space of " << *arc << ": " << *local_frustum << "\n"
-	      << "Transform is:\n";
-	    tt->get_matrix().write(sgraphutil_cat.spam(false), 2);
+	  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+	  wrt(_gsg->get_current_projection_node(),
+	      arc->get_child(), _arc_chain.begin(), _arc_chain.end(),
+	      ntw, _graph_type);
+	  
+	  const TransformTransition *tt;
+	  if (get_transition_into(tt, ntw)) {
+	    // This frustum is transformed from the camera.  Most will
+	    // be.
+	    nassertv(local_frustum != (GeometricBoundingVolume *)NULL);
+	    local_frustum->xform(tt->get_matrix());
+	    
+	    if (sgraphutil_cat.is_spam()) {
+	      sgraphutil_cat.spam()
+		<< "Transforming frustum into local space of " << *arc << ": " << *local_frustum << "\n"
+		<< "Transform is:\n";
+	      tt->get_matrix().write(sgraphutil_cat.spam(false), 2);
+	    }
 	  }
 	}
       }
