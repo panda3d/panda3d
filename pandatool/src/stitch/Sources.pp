@@ -17,7 +17,8 @@
   #define LOCAL_LIBS \
     stitchbase progbase
   #define OTHER_LIBS \
-    linmath:c putil:c express:c panda:m pandaexpress:m pystub dtool
+    pnmimagetypes:c pnmimage:c linmath:c putil:c express:c panda:m \
+    pandaexpress:m pystub dtool
 
   #define SOURCES \
     stitchImageProgram.cxx stitchImageProgram.h
@@ -30,7 +31,8 @@
     stitchviewer stitchbase progbase
   #define OTHER_LIBS \
     device:c tform:c graph:c dgraph:c sgraph:c gobj:c sgattrib:c \
-    event:c chancfg:c display:c sgraphutil:c light:c putil:c express:c \
+    event:c chancfg:c display:c sgraphutil:c light:c \
+    pnmimagetypes:c pnmimage:c putil:c express:c \
     panda:m pandaexpress:m \
     dtoolutil:c dconfig:c dtool:m pystub
 
