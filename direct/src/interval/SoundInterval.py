@@ -19,24 +19,42 @@ class SoundInterval(Interval):
     def __init__(self, sound, loop = 0, duration = 0.0, name = None):
         """__init__(sound, loop, name)
         """
+        # Generate unique name
+        id = 'Sound-%d' % SoundInterval.soundNum
+        SoundInterval.soundNum += 1
         # Record instance variables
 	self.sound = sound
 	self.loop = loop
+        self.wantSound = base.config.GetBool('want-sound', 0)
         # If no duration given use sound's duration as interval's duration
         if duration == 0.0:
-            duration = self.sound.length()
+            if self.wantSound:
+                duration = self.sound.length()
+            else:
+                # This will screw up any intervals that base their
+                # time on the duration of this sound interval
+                print ('SoundInterval: Warning, want-sound #f,'+
+                       ' zero sound duration assumed')
+                duration = 0.0
         # Generate unique name if necessary
 	if (name == None):
-	    name = 'Sound-%d' % SoundInterval.soundNum
-	    SoundInterval.soundNum += 1
+            name = id
         # Initialize superclass
 	Interval.__init__(self, name, duration)
+        # Update stopEvent
+        if self.wantSound:
+            stopEvent = id + '_stopEvent'
+            self.stopEventList = [stopEvent]
+            self.accept(stopEvent, lambda s = self: AudioManager.stop(s.sound))
+        
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
         Go to time t
 	"""
+        if not self.wantSound:
+            return
         # Update sound based on current time
-        if (t >= self.getDuration()) or (event == IVAL_STOP):
+        if (t >= self.getDuration()):
             # If end of sound reached or stop event received, stop sound
             AudioManager.stop(self.sound)
         elif (event == IVAL_INIT):

@@ -10,8 +10,8 @@ class ActorInterval(Interval):
     # Interval used to play an animation.  If loop = 0, animation is
     # played only once and the pose of the anim depends on t passed
     # into the setT method every frame.  If loop = 1, the animation is
-    # started and plays on its own and stopped when t > duration or
-    # IVAL_STOP event occurs.  If no duration is specified, interval
+    # started and plays on its own and stopped when t >= duration or
+    # playback stop event occurs.  If no duration is specified, interval
     # duration defaults to be equal to the length of the animation.
     # Note: if loop == 0 and duration > anim duration then the animation
     # will play once and then nothing will happen for the remainder of the
@@ -19,20 +19,27 @@ class ActorInterval(Interval):
     def __init__(self, actor, animName, loop=0, duration=0.0, name=None):
         """__init__(name)
         """
+        # Generate unique id
+        id = 'Actor-%d' % ActorInterval.animNum
+        ActorInterval.animNum += 1
         # Record class specific variables
 	self.actor = actor
 	self.animName = animName
         self.loop = loop
-        # Generate unique name if necessary
-	if (name == None):
-	    name = 'Actor-%d' % ActorInterval.animNum
-	    ActorInterval.animNum += 1
 	self.numFrames = self.actor.getNumFrames(self.animName)
+        # If no name specified, use id as name
+	if (name == None):
+	    name = id
+        # Compute duration if no duration specified
         if duration == 0.0:
 	    duration = self.actor.getDuration(self.animName)
-	self.numFrames
         # Initialize superclass
 	Interval.__init__(self, name, duration)
+        # Update stopEvent
+        if self.loop:
+            stopEvent = id + '_stopEvent'
+            self.stopEventList = [stopEvent]
+            self.accept(stopEvent, self.actor.stop)
 
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
@@ -40,7 +47,7 @@ class ActorInterval(Interval):
 	"""
         # Update animation based upon current time
         # Pose or stop anim
-        if (t >= self.getDuration()) or (event == IVAL_STOP):
+        if (t >= self.getDuration()):
             self.actor.stop()
         elif self.loop == 1:
             if event == IVAL_INIT:
@@ -49,7 +56,7 @@ class ActorInterval(Interval):
                          self.numFrames)
                 # Pose anim
                 self.actor.pose(self.animName, frame)
-                # And start loop
+                # And start loop, restart flag says continue from current frame
                 self.actor.loop(self.animName, restart=0)
         else:
             # Determine the current frame

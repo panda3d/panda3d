@@ -12,6 +12,7 @@ class MultiTrack(Interval):
         """
         # Record track list
 	self.tlist = trackList
+        # Generate name if necessary
 	if (name == None):
 	    name = 'MultiTrack-%d' % MultiTrack.multiTrackNum
 	    MultiTrack.multiTrackNum = MultiTrack.multiTrackNum + 1
@@ -19,6 +20,10 @@ class MultiTrack(Interval):
 	duration = self.__computeDuration()
         # Initialize superclass
 	Interval.__init__(self, name, duration)
+        # Update stopEventList after initialization
+        # It is the union of the stopEventLists of all tracks in the MultiTrack
+        for t in self.tlist:
+            self.stopEventList = self.stopEventList + t.stopEventList
 
     # Access track at given index
     def __getitem__(self, item):

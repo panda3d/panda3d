@@ -20,7 +20,7 @@ class LerpInterval(Interval):
 	""" updateFunc(t, event)
 	"""
         # Check to see if we need to create the lerp
-	if (event == IVAL_INIT):
+        if (event == IVAL_INIT):
 	    self.lerp = Lerp.Lerp(self.functorFunc(), self.duration, 
                                   self.blendType)
         # Make sure lerp exists

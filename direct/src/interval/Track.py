@@ -21,8 +21,9 @@ class Track(Interval):
         """__init__(intervalList, name)
         """
         # Record instance variables
-	self.__buildIlist(intervalList)
 	self.currentInterval = None
+        # Build ilist (need to do this before computing duration)
+	self.__buildIlist(intervalList)
         # Generate unique name if necessary
 	if (name == None):
 	    name = 'Track-%d' % Track.trackNum
@@ -31,6 +32,9 @@ class Track(Interval):
 	duration = self.__computeDuration()
         # Initialize superclass
 	Interval.__init__(self, name, duration)
+        # Update stopEventList
+        for i in self.ilist:
+            self.stopEventList = self.stopEventList + i[0].stopEventList
 
     # Access interval at given index
     def __getitem__(self, item):
@@ -178,7 +182,7 @@ class Track(Interval):
 	    for ival, itime, itype, tStart, tEnd in self.ilist:
                 # Compare time with each ival's start/end times
                 if (t < tStart):
-                    if (self.prev_t > tStart) and (event != IVAL_STOP):
+                    if (self.prev_t > tStart):
                         # We just crossed the start of this interval
                         # going backwards (e.g. via the slider)
                         # Execute this interval at its start time

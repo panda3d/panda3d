@@ -4,6 +4,12 @@ from PandaModules import *
 from Interval import *
 from MessengerGlobal import *
 
+#############################################################
+###                                                       ###
+### See examples of function intervals in IntervalTest.py ###
+###                                                       ###
+#############################################################
+
 class FunctionInterval(Interval):
     # Name counter
     functionIntervalNum = 1
@@ -30,9 +36,8 @@ class FunctionInterval(Interval):
 	""" updateFunc(t, event)
 	    Go to time t
 	"""
-        if event != IVAL_STOP:
-            # Evaluate the function
-            apply(self.function, self.extraArgs)
+        # Evaluate the function
+        apply(self.function, self.extraArgs)
 
 ### FunctionInterval subclass for throwing events ###
 class EventInterval(FunctionInterval):

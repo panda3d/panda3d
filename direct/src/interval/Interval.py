@@ -1,13 +1,13 @@
 """Interval module: contains the Interval class"""
 
 from DirectObject import *
+from IntervalGlobal import *
 import ClockObject
 import Task
 
 # Interval events
 IVAL_NONE = 0
 IVAL_INIT = 1
-IVAL_STOP = 2
 
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
@@ -15,6 +15,8 @@ class Interval(DirectObject):
     # create Interval DirectNotify category
     notify = directNotify.newCategory("Interval")
     #notify.setDebug(1)
+
+    playbackCounter = 0
 
     # Class methods
     def __init__(self, name, duration, openEnded = 1):
@@ -25,6 +27,7 @@ class Interval(DirectObject):
 	self.clock = ClockObject.ClockObject.getGlobalClock()
 	self.curr_t = 0.0
 	self.prev_t = 0.0
+        self.stopEventList = []
         self.setTHooks = []
         # Set true if interval responds to setT(t): t>duration
         self.fOpenEnded = openEnded
@@ -102,10 +105,11 @@ class Interval(DirectObject):
     def stop(self):
         """ stop()
         """
+        # First send event to stop freerunning (e.g. sound and anim) intervals
+        for stopEvent in self.stopEventList:
+            messenger.send(stopEvent)
         # Kill task
         taskMgr.removeTasksNamed(self.name + '-play')
-        # And stop freerunning (e.g. sound and anim) intervals
-        self.setT(self.curr_t, event = IVAL_STOP)
 	return self.curr_t
 
     def isPlaying(self):
@@ -164,17 +168,19 @@ class Interval(DirectObject):
         # To make sure you stop free running intervals
         es.onRelease = lambda s=self: s.stop()
         # To update scale and execute intervals with IVAL_INIT
-        es.onReturnRelease = lambda s=self, es = es: s.setT(es.get(),
-                                                            event = IVAL_INIT)
+        def onReturn(s = self, es = es):
+            s.setT(es.get(), event = IVAL_INIT)
+            s.stop()
+        es.onReturnRelease = onReturn
         es.pack(expand = 1, fill = X)
         bf = Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
-            s.stop()
             s.setT(0.0, event = IVAL_INIT)
-        def toEnd(s=self):
             s.stop()
+        def toEnd(s=self):
             s.setT(s.getDuration(), event = IVAL_INIT)
+            s.stop()
         jumpToStart = Button(bf, text = '<<', command = toStart)
         # Stop/play buttons
         stop = Button(bf, text = 'Stop',
