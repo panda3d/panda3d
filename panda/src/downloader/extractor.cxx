@@ -167,7 +167,7 @@ step() {
                                  _multifile.get_subfile_name(_subfile_index));
     _subfile_filename.set_binary();
     _subfile_filename.make_dir();
-    if (!_subfile_filename.open_write(_write)) {
+    if (!_subfile_filename.open_write(_write, true)) {
       downloader_cat.error()
         << "Unable to write to " << _subfile_filename << ".\n";
       reset();
