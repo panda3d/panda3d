@@ -76,43 +76,66 @@ void PrintErrorMessage(DWORD msgID) {
 }
 
 // fn exists so AtExitFn can call it without refcntr blowing up since its !=0
-void wglGraphicsWindow::DestroyMe(bool bAtExit) {
+void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
 
   _exiting_window = true;  // needed before DestroyWindow call
 
-  if(_visual!=NULL)
+  if(_visual!=NULL) {
       free(_visual);
+      _visual = NULL;
+  }
 
   // several GL drivers (voodoo,ATI, not nvidia) crash if we call these wgl deletion routines from
-  // an atexit() fn.  So we just wont call them for now.  We're exiting the app anyway.
-  if(!bAtExit) {
+  // an atexit() fn.  Possible that GL has already unloaded itself.  So we just wont call them for now
+  // for that case, we're exiting the app anyway.
+  if(!bAtExitFnCalled) {
 
       if(gl_show_fps_meter)
         glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
+
+      report_errors();
+
+      // implicitly calls gsg destructors which release GL objects (textures, display lists, etc)
+      _gsg = NULL;
     
       HGLRC curcxt=wglGetCurrentContext();
       if(curcxt!=NULL) 
         unmake_current();
-    
-      if(_context!=NULL)
+
+      if(_context!=NULL) {
           wglDeleteContext(_context);
+          _context = NULL; 
+      }
   }
 
-  if(_hdc!=NULL) 
+  if(_hdc!=NULL) {
     ReleaseDC(_mwindow,_hdc);
+    _hdc = NULL;
+  }
+
+  if((_hOldForegroundWindow!=NULL) && (_mwindow==GetForegroundWindow())) {
+      SetForegroundWindow(_hOldForegroundWindow);
+  }
 
   if(_mwindow!=NULL) {
     DestroyWindow(_mwindow);
     hwnd_pandawin_map.erase(_mwindow);
+    _mwindow = NULL;
   }
 
-  if(_pCurrent_display_settings!=NULL)
+  if(_pCurrent_display_settings!=NULL) {
       delete _pCurrent_display_settings;
+      _pCurrent_display_settings = NULL;
+  }
 
   if (_props._fullscreen) {
       // revert to default display mode
       ChangeDisplaySettings(NULL,0x0);
   }
+}
+
+void wglGraphicsWindow::close_window(int exit_status) {
+   DestroyMe(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,13 +147,13 @@ wglGraphicsWindow::~wglGraphicsWindow(void) {
    DestroyMe(false);
 }
 
-void DestroyAllWindows(bool bAtExit) {
+void DestroyAllWindows(bool bAtExitFnCalled) {
    // need to go through all windows in map var and delete them
    while(!hwnd_pandawin_map.empty()) {
      // cant use a for loop cause DestroyMe erases things out from under us, so iterator is invalid
      HWND_PANDAWIN_MAP::iterator pwin = hwnd_pandawin_map.begin();
      if((*pwin).second != NULL) 
-         (*pwin).second->DestroyMe(bAtExit);
+         (*pwin).second->DestroyMe(bAtExitFnCalled);
    }
 }
 
@@ -249,6 +272,8 @@ void wglGraphicsWindow::config(void) {
 
   _mwindow = NULL;
   _gsg = NULL;
+
+  _hOldForegroundWindow=GetForegroundWindow();
 
 #if 0
 // bugbug need to add wdx handling routines
@@ -436,11 +461,11 @@ void wglGraphicsWindow::config(void) {
 
   //  int pfnum=ChoosePixelFormat(_hdc, _visual);
   if(wgldisplay_cat.is_debug())
-     wgldisplay_cat.debug() << "wglGraphicsWindow::config() - picking pixfmt #"<< pfnum <<endl;
+     wgldisplay_cat.debug() << "config() - picking pixfmt #"<< pfnum <<endl;
 
   if (!SetPixelFormat(_hdc, pfnum, _visual)) {
     wgldisplay_cat.fatal()
-      << "wglGraphicsWindow::config() - SetPixelFormat failed after window create" << endl;
+      << "config() - SetPixelFormat failed after window create" << endl;
     exit(1);
   }
 
@@ -450,7 +475,7 @@ void wglGraphicsWindow::config(void) {
   _context = wglCreateContext(_hdc);
   if (!_context) {
     wgldisplay_cat.fatal()
-      << "wglGraphicsWindow::config() - failed to create Win32 rendering context" << endl;
+      << "config() - failed to create Win32 rendering context" << endl;
     exit(1);
   }
 
@@ -473,6 +498,8 @@ void wglGraphicsWindow::config(void) {
   // to configure itself in the gsg
   make_current();
   make_gsg();
+
+//  _glgsg = DCAST(GLGraphicsStateGuardian, _gsg);   dont need this now
 
   string tmpstr((char*)glGetString(GL_EXTENSIONS));
 
@@ -530,12 +557,12 @@ void wglGraphicsWindow::config(void) {
       const GLubyte *vendorname=glGetString(GL_VENDOR);
       if(vendorname!=NULL) {
           if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
-              wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
+              wgldisplay_cat.debug() << " GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
           } else {
-              wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
+              wgldisplay_cat.debug() << " GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
           }
       } else {
-         wgldisplay_cat.info() << "wglGraphicsWindow:: glGetString(GL_VENDOR) returns NULL!!!\n";
+         wgldisplay_cat.info() << " glGetString(GL_VENDOR) returns NULL!!!\n";
       }
   }
 }
@@ -714,7 +741,7 @@ try_for_visual(wglGraphicsPipe *pipe, int mask,
     if (stereo) {
       if (!(match->dwFlags & PFD_STEREO)) {
     wgldisplay_cat.info()
-      << "wglGraphicsWindow::try_for_visual() - request for stereo failed" << endl;
+      << "try_for_visual() - request for stereo failed" << endl;
       }
     }
   }
@@ -754,11 +781,11 @@ int wglGraphicsWindow::choose_visual(void) {
 
   if (mask & W_MULTISAMPLE) {
     wgldisplay_cat.info()
-      << "wglGraphicsWindow::config() - multisample not supported"<< endl;
+      << "config() - multisample not supported"<< endl;
     mask &= ~W_MULTISAMPLE;
   }
     wgldisplay_cat.info()
-      << "wglGraphicsWindow::mask =0x" << (void*) mask
+      << "mask =0x" << (void*) mask
     << endl;
 
   PIXELFORMATDESCRIPTOR pfd;
@@ -846,16 +873,16 @@ int wglGraphicsWindow::choose_visual(void) {
   }
 
   if(i>MaxPixFmtNum) {
-      wgldisplay_cat.error() << "wglGraphicsWindow:: ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
+      wgldisplay_cat.error() << "ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
+      wgldisplay_cat.error() << "make sure OpenGL driver is installed, and try reducing the screen size\n";
       if(cur_bpp>16)
-        wgldisplay_cat.error() << "wglGraphicsWindow:: try reducing the screen resolution or reducing the screen pixeldepth\n";
-       else wgldisplay_cat.error() << "wglGraphicsWindow:: try reducing the screen resolution\n";
+        wgldisplay_cat.error() << "or reducing the screen pixeldepth\n";
       exit(1);
   }
 
   _visual = (PIXELFORMATDESCRIPTOR*)malloc(sizeof(PIXELFORMATDESCRIPTOR));
   if(_visual==NULL) {
-      wgldisplay_cat.error() << "wglGraphicsWindow:: couldnt alloc mem for PIXELFORMATDESCRIPTOR\n";
+      wgldisplay_cat.error() << "couldnt alloc mem for PIXELFORMATDESCRIPTOR\n";
       exit(1);
   }
 
@@ -1131,36 +1158,33 @@ supports_update() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::update(void) {
-
-  if(_window_inactive) {
-      if (_change_mask)
-          handle_changes();
-
-      process_events();
-
-      Sleep( 500 );   // Dont consume CPU.
-      throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-      return;
-  }
-
 #ifdef DO_PSTATS
-    _show_code_pcollector.stop();
-    PStatClient::main_tick();
+    if(!_window_inactive) {
+        _show_code_pcollector.stop();
+        PStatClient::main_tick();
+    }
 #endif
 
-  if (_change_mask)
+  if(_change_mask)
     handle_changes();
 
   process_events();
 
-  call_draw_callback(true);
+  if(_window_inactive) {
+      Sleep( 500 );   // Dont consume CPU.
+      throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+      return;
+  } else {
 
-  if(_idle_callback)
-      call_idle_callback();
+      call_draw_callback(true);
 
-#ifdef DO_PSTATS
-    _show_code_pcollector.start();
-#endif
+      if(_idle_callback)
+          call_idle_callback();
+
+    #ifdef DO_PSTATS
+        _show_code_pcollector.start();
+    #endif
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1196,13 +1220,21 @@ void wglGraphicsWindow::enable_mouse_passive_motion(bool val) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::make_current(void) {
+  if((_hdc==NULL)||(_window_inactive)) {
+      return;  // we're only allow unmake_current() to set this to NULL
+  }
+
   PStatTimer timer(_make_current_pcollector);
-  
   HGLRC current_context = wglGetCurrentContext();
   HDC current_dc = wglGetCurrentDC();
+
   if ((current_context != _context) || (current_dc != _hdc)) {
-    wglMakeCurrent(_hdc, _context);
+    if(!wglMakeCurrent(_hdc, _context)) {
+        PrintErrorMessage(LAST_ERROR);
+    }
   }
+
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1211,7 +1243,11 @@ void wglGraphicsWindow::make_current(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::unmake_current(void) {
-  wglMakeCurrent(NULL, NULL);
+  report_errors();
+
+  if(!wglMakeCurrent(NULL, NULL)) {
+      PrintErrorMessage(LAST_ERROR);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1294,8 +1330,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       break;
 
     case WM_CLOSE:
-      PostQuitMessage(0);  // send WM_QUIT message
-      return 0;
+          DestroyMe(false);
+
+          // BUGBUG:  right now there is no way to tell the panda app the graphics window is invalid or
+          //          has been closed by the user, to prevent further methods from being called on the window.
+          //          this needs to be added to panda for multiple windows to work.  in the meantime, just
+          //          trigger an exit here if numwindows==0, since that is the expected behavior when all 
+          //          windows are closed (should be done by the app though, and it assumes you only make this
+          //          type of panda gfx window)
+    
+          if(hwnd_pandawin_map.size()==0) {
+              exit(0);
+          }
+          return 0;
 
     case WM_ACTIVATE: {
        if (_props._fullscreen && (!_exiting_window)) {
@@ -1303,7 +1350,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
            // here we want to suspend all gfx and execution, switch display modes and minimize ourself
            // until we are switched back to
 
-           if(wparam==WA_INACTIVE) {
+           if(LOWORD(wparam)==WA_INACTIVE) {
                if(wgldisplay_cat.is_spam())
                    wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
                _window_inactive = true;
@@ -1315,7 +1362,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                // revert to default display mode
                ChangeDisplaySettings(NULL,0x0);
 #endif
-               ShowWindow(_mwindow, SW_MINIMIZE);
+
+               if(HIWORD(wparam)==0x0)  // otherwise window already minimized
+                   ShowWindow(_mwindow, SW_MINIMIZE);
            } else {
                if(_window_inactive) {
                    if(wgldisplay_cat.is_spam())
@@ -1324,13 +1373,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                    
                    // move window to top of zorder,
                    SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+
+                   make_current();
+
                    ShowWindow(_mwindow, SW_SHOWNORMAL);
 
 #ifdef ENABLE_ALTTAB_DISPLAYCHANGE
                    ChangeDisplaySettings(_pCurrent_display_settings,CDS_FULLSCREEN);
 #endif
-
-                   make_current();
                }
            }
            return 0;
@@ -1351,7 +1401,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN: {
         POINT point;
-        make_current();
+      // make_current();  what does OGL have to do with input?
         GetCursorPos(&point);
         ScreenToClient(hwnd, &point);
         handle_keypress(lookup_key(wparam), point.x, point.y);

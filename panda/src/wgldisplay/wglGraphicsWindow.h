@@ -111,6 +111,7 @@ private:
   PIXELFORMATDESCRIPTOR*    _visual;
   HPALETTE          _colormap;
   HCURSOR           _hMouseCursor;
+  HWND              _hOldForegroundWindow;
 
   DEVMODE           *_pCurrent_display_settings;
 
@@ -141,7 +142,8 @@ public:
 
   LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   ButtonHandle lookup_key(WPARAM wparam) const;
-  void DestroyMe(bool bAtExit);
+  void DestroyMe(bool bAtExitFnCalled);
+  virtual void close_window(int exit_status);
 
 private:
   static TypeHandle _type_handle;
