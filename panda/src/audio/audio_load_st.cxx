@@ -3,7 +3,7 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include <config.h>
+#include <dconfig.h>
 #include "audio_pool.h"
 #include "config_audio.h"
 #include "audio_trait.h"
