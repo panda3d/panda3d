@@ -229,7 +229,17 @@ recompute_internal_bound() {
   BoundingVolume *bound = PandaNode::recompute_internal_bound();
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
+  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
+
   // Now actually compute the bounding volume by putting it around all
+  // of our vertices.
+
+  const LPoint3f *vertices_begin = &_vertices[0];
+  const LPoint3f *vertices_end = vertices_begin + _vertices.size();
+
+  // Now actually compute the bounding volume by putting it around all
+  gbv->around(vertices_begin, vertices_end);
+
   return bound;
 }
 

@@ -96,11 +96,11 @@ traverse(const NodePath &root, bool python_cull_control) {
     portal_viewer.draw_camera_frustum();
 
     // for each portal draw its frustum
-    for (int portal_idx=1; portal_idx<2; ++portal_idx) {
+    for (int portal_idx=2; portal_idx<3; ++portal_idx) {
       PT(BoundingVolume) reduced_frustum;
       
       portal_viewer.prepare_portal(portal_idx);
-      portal_viewer.clip_portal(portal_idx);
+      //portal_viewer.clip_portal(portal_idx);
       if ((reduced_frustum = portal_viewer.get_reduced_frustum(portal_idx))) {
         // This reduced frustum is in camera space
         pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;

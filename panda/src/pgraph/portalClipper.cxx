@@ -363,45 +363,61 @@ get_reduced_frustum(int idx)
   // than bounding planes (which I might have to implement soon)
   
   if (!_num_vert)
-    return false;
+    return NULL;
   
   float t;
+  bool visible = true;
   // find intersection of 7->0 with far
   LPoint3f from_origin = _hex_frustum->get_point(7);
   LVector3f from_direction = _coords[0] - from_origin;
   bool is_intersect = _hex_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
-  if (is_intersect) {
+  if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
     pgraph_cat.debug() << "far plane intersected 7->0 at t=" << t << endl;
     intersect_points[0] = from_origin + t*from_direction;
     pgraph_cat.debug() << intersect_points[0] << endl;
   }
-  
+  else
+    visible = false;
+
   // find intersection of 4->1 with far
   from_origin = _hex_frustum->get_point(4);
   from_direction = _coords[1] - from_origin;
   is_intersect = _hex_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
-  if (is_intersect) {
+  if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
     pgraph_cat.debug() << "far plane intersected 4->1 at t=" << t << endl;
     intersect_points[1] = from_origin + t*from_direction;
     pgraph_cat.debug() << intersect_points[1] << endl;
   }
+  else
+    visible = false;
+
   // find intersection of 5->2 with far
   from_origin = _hex_frustum->get_point(5);
   from_direction = _coords[2] - from_origin;
   is_intersect = _hex_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
-  if (is_intersect) {
+  if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
     pgraph_cat.debug() << "far plane intersected 5->2 at t=" << t << endl;
     intersect_points[2] = from_origin + t*from_direction;
     pgraph_cat.debug() << intersect_points[2] << endl;
   }
+  else
+    visible = false;
+
   // find intersection of 6->3 with far
   from_origin = _hex_frustum->get_point(6);
   from_direction = _coords[3] - from_origin;
   is_intersect = _hex_frustum->get_plane(0).intersects_line(t, from_origin, from_direction);
-  if (is_intersect) {
+  if (is_intersect && t >= 0.0) { // has to be positive, else camera is not looking at the portal
     pgraph_cat.debug() << "far plane intersected 6->3 at t=" << t << endl;
     intersect_points[3] = from_origin + t*from_direction;
     pgraph_cat.debug() << intersect_points[3] << endl;
+  }
+  else
+    visible = false;
+
+  if (!visible) {
+    pgraph_cat.debug() << "portal" << idx << " is not visible from current camera look at" << endl;
+    return NULL;
   }
   
   // With these intersect_points, construct the new reduced frustum
