@@ -55,7 +55,7 @@ handle_socket_error(void) {
     case 10093:
       return "WSAStartup() was not called";
     case 0:
-      return sterror(errno);
+      return strerror(errno);
     default:
       if (express_cat.is_debug())
         express_cat.debug()
