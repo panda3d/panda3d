@@ -83,9 +83,10 @@ add_entry(CollisionEntry *entry) {
 ////////////////////////////////////////////////////////////////////
 bool CollisionHandlerPhysical::
 end_group() {
+  bool result = handle_entries();
   CollisionHandlerEvent::end_group();
 
-  return handle_entries();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -60,6 +60,11 @@ bool CollisionHandlerFloor::
 handle_entries() {
   bool okflag = true;
 
+  // Reset the set of things our parent class CollisionHandlerEvent
+  // recorded a collision with.  We'll only consider ourselves
+  // collided with the topmost object for each from_entry.
+  _current_colliding.clear();
+
   FromEntries::const_iterator fi;
   for (fi = _from_entries.begin(); fi != _from_entries.end(); ++fi) {
     const NodePath &from_node_path = (*fi).first;
@@ -81,6 +86,7 @@ handle_entries() {
         // Get the maximum height for all collisions with this node.
         bool got_max = false;
         float max_height = 0.0f;
+        CollisionEntry *max_entry = NULL;
         
         Entries::const_iterator ei;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
@@ -99,10 +105,15 @@ handle_entries() {
             if (!got_max || height > max_height) {
               got_max = true;
               max_height = height;
+              max_entry = entry;
             }
           }
         }
-        
+
+        // Record a collision with the topmost element for the
+        // CollisionHandlerEvent base class.
+        _current_colliding.insert(max_entry);
+
         // Now set our height accordingly.
         float adjust = max_height + _offset;
         if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {

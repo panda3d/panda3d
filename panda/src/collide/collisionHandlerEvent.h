@@ -67,7 +67,7 @@ PUBLISHED:
 
   void clear();
 
-private:
+protected:
   void throw_event_for(const vector_string &patterns, CollisionEntry *entry);
   void throw_event_pattern(const string &pattern, CollisionEntry *entry);
 
