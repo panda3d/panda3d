@@ -640,7 +640,7 @@ file, you should see something like this:
 
 If you get instead an error about some shared library or libraries not
 being found, check that your LD_LIBRARY_PATH setting (on Unix) or your
-PATH (on Windows) include the directory in which all of the Panda
+PATH (on Windows) includes the directory in which all of the Panda
 libraries have been installed.  (This is normally $INSTALL_DIR/lib, or
 whatever you set INSTALL_DIR to followed by "lib".  On Unix, this
 defaults to /usr/local/panda/lib.  If you have defined INSTALL_LIB_DIR
