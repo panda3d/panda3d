@@ -25,14 +25,15 @@
 #include "palettizer.h"
 #include "filenameUnifier.h"
 
-#include <eggData.h>
-#include <eggTextureCollection.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <executionEnvironment.h>
-#include <dSearchPath.h>
+#include "eggData.h"
+#include "eggGroup.h"
+#include "eggTextureCollection.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "executionEnvironment.h"
+#include "dSearchPath.h"
 
 TypeHandle EggFile::_type_handle;
 
@@ -449,6 +450,8 @@ read_egg() {
   }
 
   _data = data;
+  remove_backstage(_data);
+
   return true;
 }
 
@@ -512,6 +515,41 @@ write_texture_refs(ostream &out, int indent_level) const {
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureReference *reference = (*ti);
     reference->write(out, indent_level);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::remove_backstage
+//       Access: Private
+//  Description: Recursively walks the egg hierarchy and removes any
+//               "backstage" nodes found from the scene graph
+//               completely.  These aren't part of the egg scene
+//               anyway, and removing them early helps reduce
+//               confusion.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+remove_backstage(EggGroupNode *node) {
+  EggGroupNode::iterator ci;
+  ci = node->begin();
+  while (ci != node->end()) {
+    EggNode *child = (*ci);
+    bool remove_child = false;
+
+    if (child->is_of_type(EggGroup::get_class_type())) {
+      EggGroup *egg_group;
+      DCAST_INTO_V(egg_group, child);
+      remove_child = egg_group->has_object_type("backstage");
+    }
+
+    if (remove_child) {
+      ci = node->erase(ci);
+    } else {
+      if (child->is_of_type(EggGroupNode::get_class_type())) {
+        // Recurse on children.
+        remove_backstage(DCAST(EggGroupNode, child));
+      }
+      ++ci;
+    }
   }
 }
 

@@ -80,6 +80,9 @@ public:
   void write_texture_refs(ostream &out, int indent_level = 0) const;
 
 private:
+  void remove_backstage(EggGroupNode *node);
+
+private:
   EggData *_data;
   Filename _current_directory;
   Filename _source_filename;

@@ -445,13 +445,6 @@ get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
   if (group->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group;
     DCAST_INTO_V(egg_group, group);
-    for (int i = 0; i < egg_group->get_num_object_types(); i++) {
-      if (cmp_nocase_uh(egg_group->get_object_type(i), "backstage") == 0) {
-        // If we reach a <Group> node with the "backstage" flag set,
-        // ignore it and everything under it.
-        return;
-      }
-    }
 
     if (egg_group->get_dart_type() != EggGroup::DT_none) {
       // If it's a character, we might change the kind of remapping we
@@ -541,13 +534,6 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
   if (group->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group;
     DCAST_INTO_V(egg_group, group);
-    for (int i = 0; i < egg_group->get_num_object_types(); i++) {
-      if (cmp_nocase_uh(egg_group->get_object_type(i), "backstage") == 0) {
-        // If we reach a <Group> node with the "backstage" flag set,
-        // ignore it and everything under it.
-        return;
-      }
-    }
 
     if (egg_group->get_dart_type() != EggGroup::DT_none) {
       // If it's a character, we might change the kind of remapping we
