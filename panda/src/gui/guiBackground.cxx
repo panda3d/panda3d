@@ -21,12 +21,20 @@ void GuiBackground::set_priority(GuiLabel* l, const GuiItem::Priority p) {
 GuiBackground::GuiBackground(const string& name, GuiItem* item)
   : GuiItem(name), _item(item) {
   _bg = GuiLabel::make_simple_card_label();
+  _bg->set_width(_item->get_width());
+  _bg->set_height(_item->get_height());
+  _bg->set_pos(LVector3f::rfu((_item->get_left() + _item->get_right())*0.5, 0.,
+			      (_item->get_bottom() + _item->get_top())*0.5));
   item->set_priority(_bg, P_High);
 }
 
 GuiBackground::GuiBackground(const string& name, GuiItem* item, Texture* tex)
   : GuiItem(name), _item(item) {
   _bg = GuiLabel::make_simple_texture_label(tex);
+  _bg->set_width(_item->get_width());
+  _bg->set_height(_item->get_height());
+  _bg->set_pos(LVector3f::rfu((_item->get_left() + _item->get_right())*0.5, 0.,
+			      (_item->get_bottom() + _item->get_top())*0.5));
   item->set_priority(_bg, P_High);
 }
 
@@ -38,10 +46,6 @@ void GuiBackground::manage(GuiManager* mgr, EventHandler& eh) {
   if (!_added_hooks)
     _added_hooks = true;
   if (_mgr == (GuiManager*)0L) {
-    _bg->freeze();
-    _bg->set_width(_item->get_width());
-    _bg->set_height(_item->get_height());
-    _bg->thaw();
     mgr->add_label(_bg);
     _item->manage(mgr, eh);
     GuiItem::manage(mgr, eh);

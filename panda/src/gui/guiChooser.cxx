@@ -23,9 +23,50 @@ void GuiChooser::ChooseFunctor::doit(GuiBehavior* b) {
 }
 
 void GuiChooser::recompute_frame(void) {
+  float r, l, t, b;
+
+  r = t = -1.;
+  l = b = 1.;
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i) {
+    if (r < (*i)->get_right())
+      r = (*i)->get_right();
+    if (l > (*i)->get_left())
+      l = (*i)->get_left();
+    if (b > (*i)->get_bottom())
+      b = (*i)->get_bottom();
+    if (t < (*i)->get_top())
+      t = (*i)->get_top();
+  }
+  if (r < _prev_button->get_right())
+    r = _prev_button->get_right();
+  if (l > _prev_button->get_left())
+    l = _prev_button->get_left();
+  if (b > _prev_button->get_bottom())
+    b = _prev_button->get_bottom();
+  if (t < _prev_button->get_top())
+    t = _prev_button->get_top();
+  if (r < _next_button->get_right())
+    r = _next_button->get_right();
+  if (l > _next_button->get_left())
+    l = _next_button->get_left();
+  if (b > _next_button->get_bottom())
+    b = _next_button->get_bottom();
+  if (t < _next_button->get_top())
+    t = _next_button->get_top();
+
+  _left = l;
+  _right = r;
+  _bottom = b;
+  _top = t;
+
+  GuiBehavior::recompute_frame();
 }
 
-void GuiChooser::set_priority(GuiLabel*, GuiItem::Priority) {
+void GuiChooser::set_priority(GuiLabel* l, GuiItem::Priority p) {
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->set_priority(l, p);
+  _prev_button->set_priority(l, p);
+  _next_button->set_priority(l, p);
 }
 
 GuiChooser::GuiChooser(const string& name, GuiButton* prev, GuiButton* next)
@@ -72,6 +113,8 @@ void GuiChooser::move_prev(void) {
     }
   }
   _curr = tmp;
+  if (_mgr != (GuiManager*)0L)
+    _mgr->recompute_priorities();
 }
 
 void GuiChooser::move_next(void) {
@@ -109,12 +152,15 @@ void GuiChooser::move_next(void) {
     }
   }
   _curr = tmp;
+  if (_mgr != (GuiManager*)0L)
+    _mgr->recompute_priorities();
 }
 
 void GuiChooser::add_item(GuiItem* item) {
   _items.push_back(item);
   if (_curr == -1)
     _curr = 0;
+  this->recompute_frame();
 }
 
 int GuiChooser::freeze(void) {

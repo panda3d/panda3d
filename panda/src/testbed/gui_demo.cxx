@@ -953,6 +953,7 @@ static void test16(GuiManager* mgr, Node* font) {
   bg->set_color(1., 0., 1., 1.);
   bg->thaw();
   bg->manage(mgr, event_handler);
+  mgr->recompute_priorities();
   ch1->start_behavior();
 }
 

@@ -210,7 +210,13 @@ void GuiFrame::recompute_frame(void) {
   thaw();
 }
 
-void GuiFrame::set_priority(GuiLabel*, const GuiItem::Priority) {
+void GuiFrame::set_priority(GuiLabel* l, const GuiItem::Priority p) {
+  Boxes::iterator i;
+
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    GuiItem* here = (*i).get_item();
+    here->set_priority(l, p);
+  }
 }
 
 GuiFrame::GuiFrame(const string& name) : GuiItem(name), _align_to_left(false),

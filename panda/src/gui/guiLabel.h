@@ -101,6 +101,7 @@ PUBLISHED:
   // used for the priority system
   bool operator<(const GuiLabel&) const;
   INLINE void set_priority(GuiLabel*, const PriorityType);
+  int set_draw_order(int);
 
 public:
   // type interface

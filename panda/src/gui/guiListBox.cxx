@@ -126,6 +126,32 @@ void GuiListBox::visible_patching(void) {
 }
 
 void GuiListBox::set_priority(GuiLabel* l, const GuiItem::Priority p) {
+  ItemVector::iterator i;
+  ItemDeque::iterator j;
+
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
+    (*i)->set_priority(l, p);
+  }
+  for (i=_visible.begin(); i!=_visible.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
+    (*i)->set_priority(l, p);
+  }
+  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
+    if (*j == _up_arrow)
+      continue;
+    if (*j == _down_arrow)
+      continue;
+    (*j)->set_priority(l, p);
+  }
+  _up_arrow->set_priority(l, p);
+  _down_arrow->set_priority(l, p);
 }
 
 GuiListBox::GuiListBox(const string& name, int N, GuiItem* up, GuiItem* down)
@@ -170,6 +196,8 @@ void GuiListBox::scroll_down(void) {
   visible_patching();
   // finally recompute all the possitions
   this->recompute_frame();
+  if (_mgr != (GuiManager*)0L)
+    _mgr->recompute_priorities();
 }
 
 void GuiListBox::scroll_up(void) {
@@ -198,6 +226,8 @@ void GuiListBox::scroll_up(void) {
   visible_patching();
   // finally recompute all the possitions
   this->recompute_frame();
+  if (_mgr != (GuiManager*)0L)
+    _mgr->recompute_priorities();
 }
 
 void GuiListBox::add_item(GuiItem* item) {

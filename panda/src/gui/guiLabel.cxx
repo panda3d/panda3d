@@ -376,6 +376,8 @@ void GuiLabel::set_text(const string& val) {
 bool GuiLabel::operator<(const GuiLabel& c) const {
   if (_highest_pri)
     return false;
+  if (c._highest_pri)
+    return true;
   PriorityMap::const_iterator pi;
   pi = _priorities.find((GuiLabel*)(&c));
   if (pi != _priorities.end()) {
@@ -384,5 +386,41 @@ bool GuiLabel::operator<(const GuiLabel& c) const {
     else
       return false;
   }
+  pi = c._priorities.find((GuiLabel*)this);
+  if (pi != c._priorities.end()) {
+    if ((*pi).second == P_LOWER)
+      return false;
+    else
+      return true;
+  }
   return ((void*)this) < ((void*)&c);
+}
+
+#include <geomBinTransition.h>
+
+int GuiLabel::set_draw_order(int order) {
+  int ret = order+1;
+  this->freeze();
+  _hard_pri = order;
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      n->set_bin("fixed");
+      n->set_draw_order(order);
+      ret += 2;
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    _arc->set_transition(new GeomBinTransition("fixed", order));
+    break;
+  case SIMPLE_CARD:
+    _arc->set_transition(new GeomBinTransition("fixed", order));
+    break;
+  default:
+    gui_cat->warning() << "trying to set draw order on an unknown label type ("
+		       << (int)_type << ")" << endl;
+  }
+  this->thaw();
+  return ret;
 }
