@@ -120,6 +120,8 @@ INLINE void operator delete[](void *ptr) throw() {
   (*global_operator_delete)(ptr);
 }
 #else   // GLOBAL_OPERATOR_NEW_EXCEPTIONS
+
+/* at O4 should these even be here?
 INLINE void *operator new(size_t size) {
   return (*global_operator_new)(size);
 }
@@ -133,6 +135,7 @@ INLINE void operator delete(void *ptr) {
 INLINE void operator delete[](void *ptr) {
   (*global_operator_delete)(ptr);
 }
+*/
 #endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
 #endif  // NDEBUG
 
