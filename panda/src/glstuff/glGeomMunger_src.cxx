@@ -48,5 +48,20 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
     format = qpGeomVertexFormat::register_format(new_format);
   }
 
+  /*
+  if (true) {
+    // Split out the interleaved array into n parallel arrays.
+    PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat;
+    for (int i = 0; i < format->get_num_data_types(); i++) {
+      const qpGeomVertexDataType *data_type = format->get_data_type(i);
+      PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
+      new_array_format->add_data_type(data_type->get_name(), data_type->get_num_components(),
+                                      data_type->get_numeric_type());
+      new_format->add_array(new_array_format);
+    }
+    format = qpGeomVertexFormat::register_format(new_format);
+  }
+  */
+
   return format;
 }

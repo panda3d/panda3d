@@ -148,7 +148,6 @@ do_munge_format(const qpGeomVertexFormat *format) {
 CPT(qpGeomVertexData) qpGeomMunger::
 do_munge_data(const qpGeomVertexData *data) {
   nassertr(_is_registered, NULL);
-  PStatTimer timer(_munge_pcollector);
 
   CPT(qpGeomVertexFormat) orig_format = data->get_format();
   CPT(qpGeomVertexFormat) new_format = munge_format(orig_format);

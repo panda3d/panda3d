@@ -160,6 +160,7 @@ build_graph() {
   // Clean up the vertices.
   _data->clear_connected_shading();
   _data->remove_unused_vertices(true);
+  _data->get_connected_shading();
   _data->unify_attributes(true, true);
 
   // Then bin up the polysets and LOD nodes.
@@ -1462,7 +1463,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
 
   // Now that we've meshed, apply the per-prim attributes onto the
   // vertices, so we can copy them to the GeomVertexData.
-  egg_bin->apply_first_attribute(false);
+  egg_bin->apply_last_attribute(false);
   egg_bin->post_apply_flat_attribute(false);
   vertex_pool->remove_unused_vertices();
 
@@ -1482,7 +1483,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
     // Now convert the vertex pool to a GeomVertexData.
     nassertr(vertex_pool != (EggVertexPool *)NULL, NULL);
     PT(qpGeomVertexData) vertex_data = 
-      make_vertex_data(vertex_pool, first_prim->get_vertex_to_node());
+      make_vertex_data(vertex_pool, egg_bin->get_vertex_to_node());
     nassertr(vertex_data != (qpGeomVertexData *)NULL, NULL);
 
     // And create a Geom to hold the primitives.
@@ -1934,11 +1935,11 @@ make_vertex_data(EggVertexPool *vertex_pool, const LMatrix4d &transform) {
     gvi.set_vertex(vertex->get_index());
 
     gvi.set_data_type(InternalName::get_vertex());
-    gvi.set_data4(LCAST(float, vertex->get_pos4()));
+    gvi.set_data4(LCAST(float, vertex->get_pos4() * transform));
 
     if (vertex->has_normal()) {
       gvi.set_data_type(InternalName::get_normal());
-      gvi.set_data3(LCAST(float, vertex->get_normal()));
+      gvi.set_data3(LCAST(float, vertex->get_normal() * transform));
     }
 
     if (vertex->has_color()) {
@@ -1986,12 +1987,12 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
   if (primitive == (qpGeomPrimitive *)NULL) {
     // Don't know how to make this kind of primitive.
     egg2pg_cat.warning()
-      << "Ignoring " << egg_prim->get_class_type() << "\n";
+      << "Ignoring " << egg_prim->get_type() << "\n";
     return;
   }
 
   if (render_state->_flat_shaded) {
-    primitive->set_shade_model(qpGeomPrimitive::SM_flat_first_vertex);
+    primitive->set_shade_model(qpGeomPrimitive::SM_flat_last_vertex);
 
   } else if (egg_prim->get_shading() == EggPrimitive::S_overall) {
     primitive->set_shade_model(qpGeomPrimitive::SM_uniform);

@@ -89,7 +89,7 @@ PUBLISHED:
 
   virtual Shading get_shading() const;
   INLINE void clear_connected_shading();
-  INLINE Shading get_connected_shading();
+  INLINE Shading get_connected_shading() const;
 
   INLINE void set_texture(EggTexture *texture);
   INLINE bool has_texture() const;
@@ -163,6 +163,7 @@ public:
   INLINE iterator erase(iterator position);
   iterator erase(iterator first, iterator last);
   INLINE void replace(iterator position, EggVertex *vertex);
+  iterator find(EggVertex *vertex);
 
 PUBLISHED:
   INLINE void clear();
@@ -177,6 +178,8 @@ PUBLISHED:
   INLINE EggVertex *get_vertex(int index) const;
 
   INLINE EggVertexPool *get_pool() const;
+
+  virtual void write(ostream &out, int indent_level) const=0;
 
 #ifndef NDEBUG
   void test_vref_integrity() const;

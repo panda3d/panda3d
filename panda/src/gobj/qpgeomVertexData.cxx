@@ -24,6 +24,9 @@
 
 TypeHandle qpGeomVertexData::_type_handle;
 
+// Temporarily not a member of the class.
+static PStatCollector _munge_pcollector("Cull:Munge:Data");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::Default Constructor
 //       Access: Private
@@ -301,6 +304,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
     gobj_cat.debug()
       << "Converting " << num_vertices << " vertices.\n";
   }
+  PStatTimer timer(_munge_pcollector);
 
   PT(qpGeomVertexData) new_data = new qpGeomVertexData(new_format);
 

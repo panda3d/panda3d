@@ -771,9 +771,11 @@ mesh_triangles(int flags) {
 //       Access: Published
 //  Description: Removes all vertices from VertexPools within this
 //               group or below that are not referenced by at least
-//               one primitive.  Also renumbers all vertices after the
+//               one primitive.  Also collapses together equivalent
+//               vertices, and renumbers all vertices after the
 //               operation so their indices are consecutive, beginning
-//               at zero.  Returns the total number of vertices removed.
+//               at zero.  Returns the total number of vertices
+//               removed.
 //
 //               Note that this operates on the VertexPools within
 //               this group level, without respect to primitives that

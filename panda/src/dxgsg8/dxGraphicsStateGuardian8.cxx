@@ -2677,7 +2677,7 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_triangles(const qpGeomTriangles *primitive) {
-  HRESULT hr = _pD3DDevice->DrawIndexedPrimitiveUP
+  _pD3DDevice->DrawIndexedPrimitiveUP
     (D3DPT_TRIANGLELIST, 
      primitive->get_min_vertex(),
      primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
@@ -2686,8 +2686,37 @@ draw_triangles(const qpGeomTriangles *primitive) {
      D3DFMT_INDEX16,
      _vertex_data->get_array_data(0), 
      _vertex_data->get_format()->get_array(0)->get_stride());
+}
 
-  TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nPrims,0);
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::draw_tristrips
+//       Access: Public, Virtual
+//  Description: Draws a series of triangle strips.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+draw_tristrips(const qpGeomTristrips *primitive) {
+  int min_vertex = primitive->get_min_vertex();
+  int max_vertex = primitive->get_max_vertex();
+  CPTA_ushort vertices = primitive->get_flat_first_vertices();
+  CPTA_int ends = primitive->get_ends();
+
+  CPTA_uchar array_data = _vertex_data->get_array_data(0);
+  int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+
+  int num_primitives = primitive->get_num_primitives();
+  int start = 0;
+  for (CPTA_int::const_iterator pi = ends.begin(); pi != ends.end(); ++pi) {
+    int end = (*pi);
+
+    _pD3DDevice->DrawIndexedPrimitiveUP
+      (D3DPT_TRIANGLESTRIP, 
+       min_vertex, max_vertex - min_vertex + 1, 
+       end - start - 2,
+       vertices + start, D3DFMT_INDEX16,
+       array_data, stride);
+
+    start = end;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

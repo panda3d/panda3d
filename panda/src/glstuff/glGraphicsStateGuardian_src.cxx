@@ -2071,6 +2071,34 @@ draw_triangles(const qpGeomTriangles *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::draw_tristrips
+//       Access: Public, Virtual
+//  Description: Draws a series of triangle strips.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+draw_tristrips(const qpGeomTristrips *primitive) {
+  setup_antialias_polygon();
+
+  int min_vertex = primitive->get_min_vertex();
+  int max_vertex = primitive->get_max_vertex();
+  CPTA_ushort vertices = primitive->get_flat_last_vertices();
+  CPTA_int ends = primitive->get_ends();
+
+  int num_primitives = primitive->get_num_primitives();
+  int start = 0;
+  for (CPTA_int::const_iterator pi = ends.begin(); pi != ends.end(); ++pi) {
+    int end = (*pi);
+
+    _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+                         min_vertex, max_vertex, end - start,
+                         GL_UNSIGNED_SHORT, vertices + start);
+    start = end;
+  }
+
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::end_draw_primitives()
 //       Access: Public, Virtual
 //  Description: Called after a sequence of draw_primitive()

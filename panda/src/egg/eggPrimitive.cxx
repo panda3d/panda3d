@@ -352,6 +352,11 @@ unify_attributes(EggPrimitive::Shading shading) {
     shading = get_shading();
   }
 
+  // Not having a color is implicitly white.
+  if (!has_color()) {
+    set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  }
+
   switch (shading) {
   case S_per_vertex:
     // Propagate everything to the vertices.
@@ -659,6 +664,19 @@ erase(iterator first, iterator last) {
   return result;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::find
+//       Access: Public
+//  Description: Returns the iterator pointing to the indicated
+//               vertex, or end() if the vertex is not part of the
+//               primitive.
+////////////////////////////////////////////////////////////////////
+EggPrimitive::iterator EggPrimitive::
+find(EggVertex *vertex) {
+  PT_EggVertex vpt = vertex;
+  return ::find(begin(), end(), vpt);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::add_vertex
@@ -688,7 +706,7 @@ add_vertex(EggVertex *vertex) {
 EggVertex *EggPrimitive::
 remove_vertex(EggVertex *vertex) {
   PT_EggVertex vpt = vertex;
-  iterator i = find(begin(), end(), vpt);
+  iterator i = ::find(begin(), end(), vpt);
   if (i == end()) {
     return PT_EggVertex();
   } else {
@@ -1129,10 +1147,24 @@ set_connected_shading(EggPrimitive::Shading shading,
     // If both neighbors are overall shaded, check if the two
     // neighbors have different properties.  If they do, elevate to
     // per_face.
-    if (!matches_normal(*neighbor) || !matches_color(*neighbor)) {
+    bool matches_normal = this->matches_normal(*neighbor);
+    bool matches_color = this->matches_color(*neighbor);
+
+    if (!matches_color) {
+      // Make a special case for not having an overall color: that's
+      // implicitly white.
+      if (!neighbor->has_color() && has_color() && _drgbas.empty() &&
+          get_color() == Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
+        matches_color = true;
+      } else if (!has_color() && neighbor->has_color() && neighbor->_drgbas.empty() &&
+          neighbor->get_color() == Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
+        matches_color = true;
+      }
+    }
+    if (!matches_normal || !matches_color) {
       _connected_shading = S_per_face;
       propagate = true;
-    }
+    }      
   }
 
   if (propagate) {

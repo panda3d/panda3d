@@ -475,8 +475,9 @@ remove_vertex(EggVertex *vertex) {
 //     Function: EggVertexPool::remove_unused_vertices
 //       Access: Public
 //  Description: Removes all vertices from the pool that are not
-//               referenced by at least one primitive.  Also renumbers
-//               all vertices after the operation so their indices are
+//               referenced by at least one primitive.  Also collapses
+//               together equivalent vertices, and renumbers all
+//               vertices after the operation so their indices are
 //               consecutive, beginning at zero.  Returns the number
 //               of vertices removed.
 ////////////////////////////////////////////////////////////////////
@@ -497,11 +498,38 @@ remove_unused_vertices() {
       num_removed++;
 
     } else {
-      // The vertex *is* used somewhere.  Renumber it and add it to
-      // the new lists.
-      vertex->_index = new_index_vertices.size();
-      new_index_vertices.insert(IndexVertices::value_type(vertex->_index, vertex));
-      new_unique_vertices.insert(vertex);
+      // The vertex *is* used somewhere.  Is it identical to an
+      // existing vertex?
+      UniqueVertices::iterator uvi;
+      uvi = new_unique_vertices.find(vertex);
+      if (uvi != new_unique_vertices.end()) {
+        // Yes, there's already another vertex just like this one.
+        // Redirect all the primitives currently referencing this
+        // vertex to reference the other one instead.
+        EggVertex *orig_vertex = (*uvi);
+
+        EggVertex::PrimitiveRef pref = vertex->_pref;
+        EggVertex::PrimitiveRef::iterator pi;
+        for (pi = pref.begin(); pi != pref.end(); ++pi) {
+          EggPrimitive *prim = (*pi);
+          EggPrimitive::iterator pvi = prim->find(vertex);
+          nassertr(pvi != prim->end(), 0);
+          prim->replace(pvi, orig_vertex);
+        }
+        vertex->test_pref_integrity();
+        orig_vertex->test_pref_integrity();
+        nassertr(vertex->pref_size() == 0, 0);
+        vertex->clear_grefs();
+        vertex->_pool = NULL;
+        num_removed++;
+
+      } else {
+        // It's a unique vertex.  Renumber it and add it to the new
+        // lists.
+        vertex->_index = new_index_vertices.size();
+        new_index_vertices.insert(IndexVertices::value_type(vertex->_index, vertex));
+        new_unique_vertices.insert(vertex);
+      }
     }
   }
 

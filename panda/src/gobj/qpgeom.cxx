@@ -217,8 +217,7 @@ get_num_bytes() const {
 void qpGeom::
 munge_geom(const qpGeomMunger *munger,
            CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const {
-  // Look up the format in our cache--maybe we've recently applied the
-  // indicated munger.
+  // Look up the munger in our cache--maybe we've recently applied it.
   {
     // Use read() and release_read() instead of CDReader, because the
     // call to record_geom() might recursively call back into this
@@ -249,7 +248,7 @@ munge_geom(const qpGeomMunger *munger,
   data = munger->munge_data(get_vertex_data());
   ((qpGeomMunger *)munger)->munge_geom_impl(result, data);
 
-  if (result.p() != this) {
+  {
     // Record the new result in the cache.
     {
       CDWriter cdata(((qpGeom *)this)->_cycler);

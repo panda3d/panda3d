@@ -102,9 +102,9 @@ clear_connected_shading() {
 //               EggGroupNode).
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::Shading EggPrimitive::
-get_connected_shading() {
+get_connected_shading() const {
   if (_connected_shading == S_unknown) {
-    set_connected_shading(S_unknown, this);
+    ((EggPrimitive *)this)->set_connected_shading(S_unknown, this);
   }
 
   return _connected_shading;
@@ -150,7 +150,7 @@ has_texture() const {
 INLINE bool EggPrimitive::
 has_texture(EggTexture *texture) const {
   PT_EggTexture t = texture;
-  return (find(_textures.begin(), _textures.end(), t) != _textures.end());
+  return (::find(_textures.begin(), _textures.end(), t) != _textures.end());
 }
 
 ////////////////////////////////////////////////////////////////////

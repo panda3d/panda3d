@@ -91,6 +91,7 @@ public:
 
   virtual bool begin_draw_primitives(const qpGeomVertexData *vertex_data);
   virtual void draw_triangles(const qpGeomTriangles *primitive);
+  virtual void draw_tristrips(const qpGeomTristrips *primitive);
   virtual void end_draw_primitives();
 
   INLINE bool draw_display_list(GeomContext *gc);

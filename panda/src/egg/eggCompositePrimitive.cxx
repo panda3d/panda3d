@@ -145,6 +145,11 @@ unify_attributes(EggPrimitive::Shading shading) {
     shading = get_shading();
   }
 
+  // Not having a color is implicitly white.
+  if (!has_color()) {
+    set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  }
+
   switch (shading) {
   case S_per_vertex:
     // Propagate everything to the vertices.
