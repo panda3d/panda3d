@@ -1365,6 +1365,10 @@ handle_include_directive(const string &args, int first_line,
       if (!push_file(CPPFile(filename, filename_as_referenced, source))) {
         warning("Unable to read " + filename.get_fullpath(),
                 first_line, first_col, first_file);
+      } else {
+        if (_verbose >= 2) {
+          cerr << "Reading " << filename << "\n";
+        }
       }
     }
   } else {
