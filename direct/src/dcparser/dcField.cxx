@@ -464,10 +464,18 @@ unpack_args(DCPacker &packer) const {
 ////////////////////////////////////////////////////////////////////
 void DCField::
 receive_update(DCPacker &packer, PyObject *distobj) const {
-  PyObject *args = unpack_args(packer);
+  if (!PyObject_HasAttrString(distobj, (char *)_name.c_str())) {
+    // If there's no Python method to receive this message, don't
+    // bother unpacking it to a Python tuple--just skip past the
+    // message.
+    packer.unpack_skip();
 
-  if (args != (PyObject *)NULL) {
-    if (PyObject_HasAttrString(distobj, (char *)_name.c_str())) {
+  } else {
+    // Otherwise, get a Python tuple from the args and call the Python
+    // method.
+    PyObject *args = unpack_args(packer);
+
+    if (args != (PyObject *)NULL) {
       PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
       nassertv(func != (PyObject *)NULL);
       
