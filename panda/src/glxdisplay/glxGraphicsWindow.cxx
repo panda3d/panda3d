@@ -497,11 +497,19 @@ void glxGraphicsWindow::config( void )
     // I /know/ there has to be a way to get a useful handle to the default
     // font, but I have to date been unable to find one
     foo = XLoadQueryFont(_display, "-*-*-*-*-*--12-*-*-*-*-*-*-*");
-    glXUseXFont(foo->fid, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
-    _start_time = ClockObject::get_global_clock()->get_real_time();
-    _start_frame_count = 0;
-    _cur_frame_count = 0;
-    _current_fps = 0.;
+    if (foo == (XFontStruct *)NULL) {
+      glxdisplay_cat.warning()
+        << "Unable to load X display font for FPS meter\n";
+      gl_show_fps_meter = false;
+    } else {
+      glxdisplay_cat.info()
+        << "Loaded X display font for FPS meter\n";
+      glXUseXFont(foo->fid, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
+      _start_time = ClockObject::get_global_clock()->get_real_time();
+      _start_frame_count = 0;
+      _cur_frame_count = 0;
+      _current_fps = 0.;
+    }
   }
 }
 
