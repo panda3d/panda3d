@@ -30,6 +30,8 @@
 #include "fogAttrib.h"
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
+#include "depthTestAttrib.h"
+#include "depthWriteAttrib.h"
 #include "billboardEffect.h"
 #include "transparencyAttrib.h"
 #include "materialPool.h"
@@ -1811,6 +1813,146 @@ get_two_sided() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::set_depth_test
+//       Access: Published
+//  Description: Specifically sets or disables the testing of the
+//               depth buffer on this particular node.  This is
+//               normally on in the 3-d scene graph and off in the 2-d
+//               scene graph; it should be on for rendering most 3-d
+//               objects properly.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+set_depth_test(bool depth_test, int priority) {
+  nassertv_always(!is_empty());
+
+  DepthTestAttrib::Mode mode =
+    depth_test ?
+    DepthTestAttrib::M_less :
+    DepthTestAttrib::M_none;
+
+  node()->set_attrib(DepthTestAttrib::make(mode), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::clear_depth_test
+//       Access: Published
+//  Description: Completely removes any depth-test adjustment that
+//               may have been set on this node via set_depth_test().
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+clear_depth_test() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(DepthTestAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::has_depth_test
+//       Access: Published
+//  Description: Returns true if a depth-test adjustment has been
+//               explicitly set on this particular node via
+//               set_depth_test().  If this returns true, then
+//               get_depth_test() may be called to determine which has
+//               been set.
+////////////////////////////////////////////////////////////////////
+bool qpNodePath::
+has_depth_test() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(DepthTestAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::get_depth_test
+//       Access: Published
+//  Description: Returns true if depth-test rendering has been
+//               specifically set on this node via set_depth_test(), or
+//               false if depth-test rendering has been specifically
+//               disabled, or if nothing has been specifically set.  See
+//               also has_depth_test().
+////////////////////////////////////////////////////////////////////
+bool qpNodePath::
+get_depth_test() const {
+  nassertr_always(!is_empty(), false);
+  const RenderAttrib *attrib =
+    node()->get_attrib(DepthTestAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const DepthTestAttrib *dta = DCAST(DepthTestAttrib, attrib);
+    return (dta->get_mode() != DepthTestAttrib::M_none);
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::set_depth_write
+//       Access: Published
+//  Description: Specifically sets or disables the writing to the
+//               depth buffer on this particular node.  This is
+//               normally on in the 3-d scene graph and off in the 2-d
+//               scene graph; it should be on for rendering most 3-d
+//               objects properly.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+set_depth_write(bool depth_write, int priority) {
+  nassertv_always(!is_empty());
+
+  DepthWriteAttrib::Mode mode =
+    depth_write ?
+    DepthWriteAttrib::M_on :
+    DepthWriteAttrib::M_off;
+
+  node()->set_attrib(DepthWriteAttrib::make(mode), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::clear_depth_write
+//       Access: Published
+//  Description: Completely removes any depth-write adjustment that
+//               may have been set on this node via set_depth_write().
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+clear_depth_write() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(DepthWriteAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::has_depth_write
+//       Access: Published
+//  Description: Returns true if a depth-write adjustment has been
+//               explicitly set on this particular node via
+//               set_depth_write().  If this returns true, then
+//               get_depth_write() may be called to determine which has
+//               been set.
+////////////////////////////////////////////////////////////////////
+bool qpNodePath::
+has_depth_write() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(DepthWriteAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::get_depth_write
+//       Access: Published
+//  Description: Returns true if depth-write rendering has been
+//               specifically set on this node via set_depth_write(), or
+//               false if depth-write rendering has been specifically
+//               disabled, or if nothing has been specifically set.  See
+//               also has_depth_write().
+////////////////////////////////////////////////////////////////////
+bool qpNodePath::
+get_depth_write() const {
+  nassertr_always(!is_empty(), false);
+  const RenderAttrib *attrib =
+    node()->get_attrib(DepthWriteAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const DepthWriteAttrib *dta = DCAST(DepthWriteAttrib, attrib);
+    return (dta->get_mode() != DepthWriteAttrib::M_off);
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::do_billboard_axis
 //       Access: Published
 //  Description: Performs a billboard-type rotate to the indicated
@@ -2050,8 +2192,8 @@ get_transparency() const {
   const RenderAttrib *attrib =
     node()->get_attrib(TransparencyAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
-    const TransparencyAttrib *cfa = DCAST(TransparencyAttrib, attrib);
-    return (cfa->get_mode() != TransparencyAttrib::M_none);
+    const TransparencyAttrib *ta = DCAST(TransparencyAttrib, attrib);
+    return (ta->get_mode() != TransparencyAttrib::M_none);
   }
 
   return false;

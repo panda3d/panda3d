@@ -428,6 +428,16 @@ PUBLISHED:
   bool has_two_sided() const;
   bool get_two_sided() const;
 
+  void set_depth_test(bool depth_test, int priority = 0);
+  void clear_depth_test();
+  bool has_depth_test() const;
+  bool get_depth_test() const;
+
+  void set_depth_write(bool depth_write, int priority = 0);
+  void clear_depth_write();
+  bool has_depth_write() const;
+  bool get_depth_write() const;
+
   void do_billboard_axis(const qpNodePath &camera, float offset);
   void do_billboard_point_eye(const qpNodePath &camera, float offset);
   void do_billboard_point_world(const qpNodePath &camera, float offset);
