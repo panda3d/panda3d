@@ -323,7 +323,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                  wordwrap = None,
                  drawOrder = None,
                  font = None,
-                 parent = None):
+                 parent = None,
+                 mayChange = 0):
         """makeText(self, ...)
 
         Creates some text on the panel.  The return value is an
@@ -356,7 +357,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                                          wordwrap = wordwrap,
                                          drawOrder = drawOrder,
                                          font = font,
-                                         parent = parent)
+                                         parent = parent,
+                                         mayChange = mayChange)
         
         self.panelText.append(text)
         return text

@@ -28,7 +28,8 @@ class OnscreenText(PandaObject, NodePath):
                  wordwrap = None,
                  drawOrder = GuiGlobals.getDefaultDrawOrder(),
                  font = GuiGlobals.getDefaultFont(),
-                 parent = aspect2d):
+                 parent = aspect2d,
+                 mayChange = 0):
         """__init__(self, ...)
 
         Make a text node from string, put it into the 2d sg and set it
@@ -81,6 +82,10 @@ class OnscreenText(PandaObject, NodePath):
           font: the font to use for the text.
 
           parent: the NodePath to parent the text to initially.
+
+          mayChange: pass true if the text or its properties may need
+              to be changed at runtime, false if it is static once
+              created (which leads to better memory optimization).
         
         """
 
@@ -88,8 +93,8 @@ class OnscreenText(PandaObject, NodePath):
         textNode = TextNode()
         self.textNode = textNode
 
-        # We ARE the node path that references this text node.
-        NodePath.__init__(self, parent.attachNewNode(textNode))
+        # We ARE a node path.  Initially, we're an empty node path.
+        NodePath.__init__(self)
 
         # Choose the default parameters according to the selected
         # style.
@@ -181,9 +186,28 @@ class OnscreenText(PandaObject, NodePath):
 
         textNode.setText(text)
 
-        # Ok, now update the node
-        textNode.thaw()
+        if not text:
+            # If we don't have any text, assume we'll be changing it later.
+            mayChange = 1
+
+        # Ok, now update the node.
+        if mayChange:
+            # If we might change the text later, we have to keep the
+            # TextNode around.
+            textNode.thaw()
+        else:
+            # Otherwise, we can throw it away.
+            self.textNode = textNode.generate()
+
+            #*** Temporary for old Pandas.
+            if self.textNode == None:
+                self.textNode = NamedNode()
+        
+        
 	self.isClean = 0
+
+        # Set ourselves up as the NodePath that points to this node.
+        self.assign(parent.attachNewNode(self.textNode))
 
     def __del__(self):
         # Make sure the node is removed when we delete the

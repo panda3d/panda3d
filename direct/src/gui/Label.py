@@ -20,7 +20,8 @@ def textLabel(string, style,
               scale = 0.1,
               width = None,
               drawOrder = getDefaultDrawOrder(),
-              font = getDefaultFont()):
+              font = getDefaultFont(),
+              mayChange = 0):
     """textLabel(string, int style, float scale, float width,
                  int drawOrder, Node font)
 
@@ -30,14 +31,16 @@ def textLabel(string, style,
     """
     
     (label, text) = \
-            textLabelAndText(string, style, scale, width, drawOrder, font)
+            textLabelAndText(string, style, scale, width, drawOrder,
+                             font, mayChange)
     return label
     
 def textLabelAndText(string, style,
                      scale = 0.1,
                      width = None,
                      drawOrder = getDefaultDrawOrder(),
-                     font = getDefaultFont()):
+                     font = getDefaultFont(),
+                     mayChange = 0):
     """textLabelAndText(string, int style, float scale, float width,
                         int drawOrder, Node font)
 
@@ -129,7 +132,19 @@ def textLabelAndText(string, style,
 
     # Now we're completely done setting up the text, and we can safely
     # thaw it.
-    text.thaw()
+    if mayChange:
+        # If we might change the text later, we have to keep the
+        # TextNode around.
+        text.thaw()
+    else:
+        # Otherwise, we can throw it away.
+        node = text.generate()
+
+        #*** Temporary for old Pandas
+        if node == None:
+            node = NamedNode()
+            
+        text = node
 
     # Now create a GuiLabel containing this text.
     label = GuiLabel.makeModelLabel(text, v[0] * scale, v[1] * scale,
