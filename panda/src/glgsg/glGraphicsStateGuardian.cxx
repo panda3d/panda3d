@@ -8,6 +8,7 @@
 #include "glTextureContext.h"
 #include "config_glgsg.h"
 
+#include <config_util.h>
 #include <directRenderTraverser.h>
 #include <cullTraverser.h>
 #include <displayRegion.h>
@@ -3425,6 +3426,12 @@ apply_texture_immediate(Texture *tex) {
       break;
     }
     if (use_mipmaps) {
+#ifndef NDEBUG
+      if (gl_show_mipmaps) {
+	build_phony_mipmaps(tex);
+	return;
+      }
+#endif
       gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
 			pb->get_xsize(), pb->get_ysize(),
 			external_format, type, pb->_image);
@@ -3436,7 +3443,6 @@ apply_texture_immediate(Texture *tex) {
 		pb->get_xsize(), pb->get_ysize(), pb->get_border(),
 		external_format, type, pb->_image );
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_texture_wrap_mode
@@ -3867,6 +3873,121 @@ restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
     draw_pixel_buffer(sfb->_depth, sfb->_display_region, sfb->_buffer);
   }
 }
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::build_phony_mipmaps
+//       Access: Protected
+//  Description: Generates a series of colored mipmap levels to aid in
+//               visualizing the mipmap levels as the hardware applies
+//               them.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+build_phony_mipmaps(Texture *tex) {
+  PixelBuffer *pb = tex->_pbuffer;
+  int xsize = pb->get_xsize();
+  int ysize = pb->get_ysize();
+
+  glgsg_cat.info() 
+    << "Building phony mipmap levels for " << tex->get_name() << "\n";
+  int level = 0;
+  while (xsize > 0 && ysize > 0) {
+    glgsg_cat.info(false)
+      << "  level " << level << " is " << xsize << " by " << ysize << "\n";
+    build_phony_mipmap_level(level, xsize, ysize);
+
+    xsize >>= 1;
+    ysize >>= 1;
+    level++;
+  }
+
+  while (xsize > 0) {
+    glgsg_cat.info(false)
+      << "  level " << level << " is " << xsize << " by 1\n";
+    build_phony_mipmap_level(level, xsize, 1);
+
+    xsize >>= 1;
+    level++;
+  }
+
+  while (ysize > 0) {
+    glgsg_cat.info(false)
+      << "  level " << level << " is 1 by " << ysize << "\n";
+    build_phony_mipmap_level(level, 1, ysize);
+
+    ysize >>= 1;
+    level++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::build_phony_mipmap_level
+//       Access: Protected
+//  Description: Generates a single colored mipmap level.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+build_phony_mipmap_level(int level, int xsize, int ysize) {
+  static const int num_levels = 10;
+  static const char *level_filenames[num_levels] = {
+    "mipmap_level_0.rgb",
+    "mipmap_level_1.rgb",
+    "mipmap_level_2.rgb",
+    "mipmap_level_3.rgb",
+    "mipmap_level_4.rgb",
+    "mipmap_level_5.rgb",
+    "mipmap_level_6.rgb",
+    "mipmap_level_7.rgb",
+    "mipmap_level_8.rgb",
+    "mipmap_level_9.rgb"
+  };
+  static const RGBColorf level_colors[num_levels] = {
+    RGBColorf(1.0, 1.0, 1.0),
+    RGBColorf(1.0, 0.0, 0.0),
+    RGBColorf(0.0, 1.0, 0.0),
+    RGBColorf(0.0, 0.0, 1.0),
+    RGBColorf(1.0, 1.0, 0.0),
+    RGBColorf(0.0, 1.0, 1.0),
+    RGBColorf(1.0, 0.0, 1.0),
+    RGBColorf(1.0, 0.5, 0.0),
+    RGBColorf(0.0, 1.0, 0.5),
+    RGBColorf(0.83, 0.71, 1.0)
+  };
+
+  level = level % num_levels;
+  Filename filename(level_filenames[level]);
+
+  PNMImage image_sized(xsize, ysize);
+  PNMImage image_source;
+  if (filename.resolve_filename(get_texture_path()) ||
+      filename.resolve_filename(get_model_path())) {
+    image_source.read(filename);
+  }
+
+  if (image_source.is_valid()) {
+    image_sized.quick_filter_from(image_source);
+
+  } else {
+    glgsg_cat.info(false)
+      << "    " << filename << " cannot be read, making solid color mipmap.\n";
+    image_sized.fill(level_colors[level][0],
+		     level_colors[level][1], 
+		     level_colors[level][2]);
+  }
+
+  PixelBuffer *pb = new PixelBuffer;
+  pb->load(image_sized);
+
+  GLenum internal_format = get_internal_image_format(pb->get_format());
+  GLenum external_format = get_external_image_format(pb->get_format());
+  GLenum type = get_image_type(pb->get_image_type());
+
+  glTexImage2D(GL_TEXTURE_2D, level, internal_format,
+	       pb->get_xsize(), pb->get_ysize(), pb->get_border(),
+	       external_format, type, pb->_image );
+
+  delete pb;
+}
+#endif
 
 // factory and type stuff
 

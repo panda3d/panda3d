@@ -31,6 +31,10 @@ bool gl_cull_traversal = config_glgsg.GetBool("gl-cull-traversal", true);
 // renderer.
 bool gl_ignore_mipmaps = config_glgsg.GetBool("gl-ignore-mipmaps", false);
 
+// Configure this true to cause mipmaps to be rendered with phony
+// colors, using mipmap_level_*.rgb if they are available.
+bool gl_show_mipmaps = config_glgsg.GetBool("gl-show-mipmaps", false);
+
 GLDecalType gl_decal_type = GDT_offset;
 
 static GLDecalType

@@ -15,6 +15,7 @@ extern bool gl_show_transforms;
 extern bool gl_cheap_textures;
 extern bool gl_cull_traversal;
 extern bool gl_ignore_mipmaps;
+extern bool gl_show_mipmaps;
 
 // Ways to implement decals.
 enum GLDecalType {
