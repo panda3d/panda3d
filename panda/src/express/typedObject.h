@@ -34,6 +34,66 @@
 //               return the specific type of the derived class.
 //               Inheriting from this automatically provides support
 //               for is_of_type() and is_exact_type().
+//               
+//               Defining get_type() and force_init_type() are not
+//               necessary if your class does not define any virtual
+//               functions.
+//               
+//               There is a specific layout for defining the
+//               overrides from this class.  Keeping the definitions
+//               formatted just like these examples will allow
+//               someone in the future to use a sed (or similar)
+//               script to make global changes, if necessary.  Avoid
+//               rearranging the braces or the order of the functions
+//               unless you're ready to change them in every file all
+//               at once.
+//               
+//               What follows are some examples that can be used in
+//               new classes that you create.
+//               
+//               ---------------------------------------------------
+//               In the class definition (.h file)
+//               ---------------------------------------------------
+//               
+//               public:
+//                 static TypeHandle get_class_type() {
+//                   return _type_handle;
+//                 }
+//                 static void init_type() {
+//                   <<<BaseClassOne>>>::init_type();
+//                   <<<BaseClassTwo>>>::init_type();
+//                   <<<BaseClassN>>>::init_type();
+//                   register_type(_type_handle, "<<<ThisClassStringName>>>",
+//                                 <<<BaseClassOne>>>::get_class_type(),
+//                                 <<<BaseClassTwo>>>::get_class_type(),
+//                                 <<<BaseClassN>>>::get_class_type());
+//                 }
+//                 virtual TypeHandle get_type() const {
+//                   return get_class_type();
+//                 }
+//                 virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+//               
+//               private:
+//                 static TypeHandle _type_handle;
+//               
+//               
+//               ----------------------
+//               In the class .cxx file
+//               ----------------------
+//               
+//               TypeHandle <<<ThisClassStringName>>>::_type_handle;
+//               
+//               
+//               ----------------------------------------------
+//               In the class config_<<<PackageName>>>.cxx file
+//               ----------------------------------------------
+//               
+//               ConfigureFn(config_<<<PackageName>>>) {
+//                 <<<ClassOne>>>::init_type();
+//                 <<<ClassTwo>>>::init_type();
+//                 <<<ClassN>>>::init_type();
+//               }
+//               
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS TypedObject {
 public:
