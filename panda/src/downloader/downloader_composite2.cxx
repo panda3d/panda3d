@@ -2,6 +2,7 @@
 #include "httpBasicAuthorization.cxx"
 #include "httpChannel.cxx"
 #include "httpClient.cxx"
+#include "httpCookie.cxx"
 #include "httpDate.cxx"
 #include "httpDigestAuthorization.cxx"
 #include "httpEntityTag.cxx"

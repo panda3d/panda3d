@@ -18,6 +18,7 @@
 
 #include "httpChannel.h"
 #include "httpClient.h"
+#include "httpCookie.h"
 #include "bioStream.h"
 #include "ssl_utils.h"
 #include "chunkedStream.h"
@@ -791,7 +792,11 @@ reached_done_state() {
           << "Unable to download body.\n";
       }
       return false;
+
     } else {
+      if (_state != S_reading_body) {
+        _body_stream = NULL;
+      }
       _started_download = true;
       _last_run_time = ClockObject::get_global_clock()->get_real_time();
       return true;
@@ -1831,7 +1836,12 @@ run_begin_body() {
     reset_to_new();
 
   } else {
-    nassertr(_body_stream == NULL, false);
+    // We shouldn't already be in the middle of reading some other
+    // body when we come here.
+    nassertd(_body_stream == NULL) {
+      reset_to_new();
+      return false;
+    }
     _body_stream = read_body();
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
@@ -1841,7 +1851,9 @@ run_begin_body() {
       reset_to_new();
       
     } else {
-      _state = S_reading_body;
+      if (_state != S_reading_body) {
+        _body_stream = NULL;
+      }
     }
   }
 
@@ -3115,6 +3127,8 @@ make_header() {
     break;
   }
 
+  _client->send_cookies(stream, _request.get_url());
+
   if (!_body.empty()) {
     stream
       << "Content-Type: application/x-www-form-urlencoded\r\n"
@@ -3219,6 +3233,10 @@ store_header_field(const string &field_name, const string &field_value) {
     Headers::iterator hi = insert_result.first;
     (*hi).second += ", ";
     (*hi).second += field_value;
+  }
+
+  if (field_name == "set-cookie") {
+    _client->set_cookie(HTTPCookie(field_value, _request.get_url()));
   }
 }
 

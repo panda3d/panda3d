@@ -610,6 +610,140 @@ get_username(const string &server, const string &realm) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_cookie
+//       Access: Published
+//  Description: Stores the indicated cookie in the client's list of
+//               cookies, as if it had been received from a server.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+set_cookie(const HTTPCookie &cookie) {
+  if (cookie.is_expired()) {
+    clear_cookie(cookie);
+
+  } else {
+    pair<Cookies::iterator, bool> result = _cookies.insert(cookie);
+    if (!result.second) {
+      // We already had a cookie matching the supplied domain/path/name,
+      // so replace it.
+      const HTTPCookie &orig_cookie = *result.first;
+      ((HTTPCookie &)orig_cookie).update_from(cookie);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::clear_cookie
+//       Access: Published
+//  Description: Removes the cookie with the matching domain/path/name
+//               from the client's list of cookies.  Returns true if
+//               it was removed, false if the cookie was not matched.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+clear_cookie(const HTTPCookie &cookie) {
+  Cookies::iterator ci = _cookies.find(cookie);
+  if (ci != _cookies.end()) {
+    _cookies.erase(ci);
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::clear_all_cookies
+//       Access: Published
+//  Description: Removes the all stored cookies from the client.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+clear_all_cookies() {
+  _cookies.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::has_cookie
+//       Access: Published
+//  Description: Returns true if there is a cookie in the client
+//               matching the given cookie's domain/path/name, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+has_cookie(const HTTPCookie &cookie) const {
+  Cookies::const_iterator ci = _cookies.find(cookie);
+  return (ci != _cookies.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_cookie
+//       Access: Published
+//  Description: Looks up and returns the cookie in the client
+//               matching the given cookie's domain/path/name.  If
+//               there is no matching cookie, returns an empty cookie.
+////////////////////////////////////////////////////////////////////
+HTTPCookie HTTPClient::
+get_cookie(const HTTPCookie &cookie) const {
+  Cookies::const_iterator ci = _cookies.find(cookie);
+  if (ci != _cookies.end()) {
+    return (*ci);
+  }
+
+  return HTTPCookie();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::write_cookies
+//       Access: Published
+//  Description: Outputs the complete list of cookies stored on the
+//               client, for all domains, including the expired
+//               cookies (which will normally not be sent back to a
+//               host).
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+write_cookies(ostream &out) const {
+  Cookies::const_iterator ci;
+  for (ci = _cookies.begin(); ci != _cookies.end(); ++ci) {
+    out << *ci << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::send_cookies
+//       Access: Published
+//  Description: Writes to the indicated ostream a set of Cookie:
+//               lines for sending the cookies appropriate to the
+//               indicated URL along with an HTTP request.  This also
+//               removes expired cookies.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+send_cookies(ostream &out, const URLSpec &url) {
+  HTTPDate now = HTTPDate::now();
+  bool any_expired = false;
+
+  Cookies::const_iterator ci;
+  for (ci = _cookies.begin(); ci != _cookies.end(); ++ci) {
+    const HTTPCookie &cookie = (*ci);
+    if (cookie.is_expired(now)) {
+      any_expired = true;
+
+    } else if (cookie.matches_url(url)) {
+      out << "Cookie: " << cookie.get_name() << "=" 
+          << cookie.get_value() << "\r\n";
+    }
+  }
+
+  if (any_expired) {
+    Cookies new_cookies;
+    Cookies::const_iterator ci;
+    for (ci = _cookies.begin(); ci != _cookies.end(); ++ci) {
+      const HTTPCookie &cookie = (*ci);
+      if (!cookie.is_expired(now)) {
+        new_cookies.insert(new_cookies.end(), cookie);
+      }
+    }
+    _cookies.swap(new_cookies);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::load_client_certificate
 //       Access: Published
 //  Description: Attempts to load the certificate named by

@@ -22,8 +22,9 @@
     extractor.h \
     httpAuthorization.I httpAuthorization.h \
     httpBasicAuthorization.I httpBasicAuthorization.h \
-    httpClient.I httpClient.h \
     httpChannel.I httpChannel.h \
+    httpClient.I httpClient.h \
+    httpCookie.I httpCookie.h \
     httpDate.I httpDate.h \
     httpDigestAuthorization.I httpDigestAuthorization.h \
     httpEntityTag.I httpEntityTag.h \
@@ -50,8 +51,9 @@
     extractor.cxx \
     httpAuthorization.cxx \
     httpBasicAuthorization.cxx \
-    httpClient.cxx \
     httpChannel.cxx \
+    httpClient.cxx \
+    httpCookie.cxx \
     httpDate.cxx \
     httpDigestAuthorization.cxx \
     httpEntityTag.cxx \
@@ -76,8 +78,9 @@
     extractor.h \
     httpAuthorization.I httpAuthorization.h \
     httpBasicAuthorization.I httpBasicAuthorization.h \
-    httpClient.I httpClient.h \
     httpChannel.I httpChannel.h \
+    httpClient.I httpClient.h \
+    httpCookie.I httpCookie.h \
     httpDate.I httpDate.h \
     httpDigestAuthorization.I httpDigestAuthorization.h \
     httpEntityTag.I httpEntityTag.h \

@@ -31,10 +31,12 @@
 #include "urlSpec.h"
 #include "httpAuthorization.h"
 #include "httpEnum.h"
+#include "httpCookie.h"
 #include "globPattern.h"
 #include "pointerTo.h"
 #include "pvector.h"
 #include "pmap.h"
+#include "pset.h"
 
 #include <openssl/ssl.h>
 
@@ -82,6 +84,15 @@ PUBLISHED:
   void set_username(const string &server, const string &realm, const string &username);
   string get_username(const string &server, const string &realm) const;
 
+  void set_cookie(const HTTPCookie &cookie);
+  bool clear_cookie(const HTTPCookie &cookie);
+  void clear_all_cookies();
+  bool has_cookie(const HTTPCookie &cookie) const;
+  HTTPCookie get_cookie(const HTTPCookie &cookie) const;
+
+  void write_cookies(ostream &out) const;
+  void send_cookies(ostream &out, const URLSpec &url);
+  
   INLINE void set_client_certificate_filename(const Filename &filename);
   INLINE void set_client_certificate_pem(const string &pem);
   INLINE void set_client_certificate_passphrase(const string &passphrase);
@@ -157,13 +168,16 @@ private:
   typedef pmap<string, string> Usernames;
   Usernames _usernames;
 
-  typedef map<string, PT(HTTPAuthorization) > Realms;
+  typedef pmap<string, PT(HTTPAuthorization) > Realms;
   class Domain {
   public:
     Realms _realms;
   };
   typedef pmap<string, Domain> Domains;
   Domains _proxy_domains, _www_domains;
+
+  typedef pset<HTTPCookie> Cookies;
+  Cookies _cookies;
 
   Filename _client_certificate_filename;
   string _client_certificate_pem;
