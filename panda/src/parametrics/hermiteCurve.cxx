@@ -21,6 +21,12 @@
 #include "config_parametrics.h"
 #include "luse.h"
 
+#include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamWriter.h>
+#include <bamReader.h>
+
 #include <math.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -34,27 +40,14 @@ static const LVecBase3f zero = LVecBase3f(0.0, 0.0, 0.0);
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Indent
-//  Description: This function duplicates a similar function declared
-//               in eggBasics.C.  It prints a specified number of
-//               spaces to indent each line of output.
-////////////////////////////////////////////////////////////////////
-static ostream &
-Indent(ostream &out, int indent) {
-  for (int i=0; i<indent; i++) {
-    out << ' ';
-  }
-  return out;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: show_vec3
 //  Description: This function writes a LVecBase3f, with a specified
 //               number of significant dimensions.
 ////////////////////////////////////////////////////////////////////
 static ostream &
-show_vec3(ostream &out, int indent, const LVecBase3f &v, int num_dimensions) {
-  Indent(out, indent) << v[0];
+show_vec3(ostream &out, int indent_level, const LVecBase3f &v, 
+	  int num_dimensions) {
+  indent(out, indent_level) << v[0];
   for (int i = 1; i<num_dimensions; i++) {
     out << " " << v[i];
   }
@@ -68,7 +61,6 @@ show_vec3(ostream &out, int indent, const LVecBase3f &v, int num_dimensions) {
 ////////////////////////////////////////////////////////////////////
 HermiteCurveCV::
 HermiteCurveCV() {
-  _name = NULL;
 }
 
 
@@ -80,13 +72,8 @@ HermiteCurveCV() {
 HermiteCurveCV::
 HermiteCurveCV(const HermiteCurveCV &c) :
   _p(c._p), _in(c._in), _out(c._out), 
-  _type(c._type) {
-    if (c._name==NULL) {
-      _name = NULL;
-    } else {
-      _name = new char[strlen(c._name)+1];
-      strcpy(_name, c._name);
-    }
+  _type(c._type), _name(c._name) 
+{
 }
 
 
@@ -97,9 +84,6 @@ HermiteCurveCV(const HermiteCurveCV &c) :
 ////////////////////////////////////////////////////////////////////
 HermiteCurveCV::
 ~HermiteCurveCV() {
-  if (_name != NULL) {
-    delete [] _name;
-  }
 }
 
 
@@ -192,39 +176,31 @@ set_type(int type) {
 //  Description: Sets the name associated with the CV.
 ////////////////////////////////////////////////////////////////////
 void HermiteCurveCV::
-set_name(const char *name) {
-  if (_name != NULL) {
-    delete [] _name;
-    _name = NULL;
-  }
-
-  if (name != NULL) {
-    _name = new char[strlen(name)+1];
-    strcpy(_name, name);
-  }
+set_name(const string &name) {
+  _name = name;
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::Output
+//     Function: HermiteCurveCV::format_egg
 //       Access: Public
 //  Description: Formats the CV for output to an egg file.
 ////////////////////////////////////////////////////////////////////
 void HermiteCurveCV::
-Output(ostream &out, int indent, int num_dimensions,
+format_egg(ostream &out, int indent_level, int num_dimensions,
        bool show_in, bool show_out,
        double scale_in, double scale_out) const {
   if (show_in) {
-    Indent(out, indent) << "<Vertex> {\n";
-    show_vec3(out, indent+2, _p - scale_in * _in / 3.0, 
+    indent(out, indent_level) << "<Vertex> {\n";
+    show_vec3(out, indent_level + 2, _p - scale_in * _in / 3.0, 
 	      num_dimensions) << "\n";
-    Indent(out, indent) << "}\n";
+    indent(out, indent_level) << "}\n";
   }
 
-  Indent(out, indent) << "<Vertex> {\n";
-  show_vec3(out, indent+2, _p, num_dimensions) << "\n";
+  indent(out, indent_level) << "<Vertex> {\n";
+  show_vec3(out, indent_level + 2, _p, num_dimensions) << "\n";
 
-  Indent(out, indent+2) << "<Char*> continuity-type { ";
+  indent(out, indent_level+2) << "<Scalar> continuity-type { ";
   switch (_type) {
   case HC_CUT:
     out << "Cut";
@@ -244,14 +220,47 @@ Output(ostream &out, int indent, int num_dimensions,
   };
   out << " }\n";
 
-  Indent(out, indent) << "}\n";
+  indent(out, indent_level) << "}\n";
 
   if (show_out) {
-    Indent(out, indent) << "<Vertex> {\n";
-    show_vec3(out, indent+2, _p + scale_out * _out / 3.0, 
+    indent(out, indent_level) << "<Vertex> {\n";
+    show_vec3(out, indent_level + 2, _p + scale_out * _out / 3.0, 
 	      num_dimensions) << "\n";
-    Indent(out, indent) << "}\n";
+    indent(out, indent_level) << "}\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HermiteCurveCV::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void HermiteCurveCV::
+write_datagram(BamWriter *, Datagram &me) const {
+  _p.write_datagram(me);
+  _in.write_datagram(me);
+  _out.write_datagram(me);
+  me.add_int8(_type);
+  me.add_string(_name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HermiteCurveCV::fillin
+//       Access: Public
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void HermiteCurveCV::
+fillin(DatagramIterator &scan, BamReader *) {
+  _p.read_datagram(scan);
+  _in.read_datagram(scan);
+  _out.read_datagram(scan);
+
+  _type = scan.get_int8();
+  _name = scan.get_string();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -634,10 +643,10 @@ get_cv_tstart(int n) const {
 //       Access: Public, Scheme
 //  Description: Returns the name of the given CV, or NULL.
 ////////////////////////////////////////////////////////////////////
-const char *HermiteCurve::
+string HermiteCurve::
 get_cv_name(int n) const {
   if (n < 0 || n >= (int)_points.size()) {
-    return NULL;
+    return string();
   }
 
   return _points[n]._name;
@@ -645,47 +654,44 @@ get_cv_name(int n) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::Print
-//       Access: Public, Scheme
+//     Function: HermiteCurve::output
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
-Print() const {
-  ostream& out = parametrics_cat->info();
+output(ostream &out) const {
+  PiecewiseCurve::output(out);
 
+  out << " (";
   switch (get_curve_type()) {
   case PCT_T:
-    out << "Time-warping ";
+    out << "in T, ";
     break;
 
   case PCT_XYZ:
-    out << "XYZ ";
+    out << "in XYZ, ";
     break;
 
   case PCT_HPR:
-    out << "HPR ";
+    out << "in HPR, ";
     break;
 
   default:
     break;
   }
 
-  out
-    << "HermiteCurve, " << get_num_cvs() << " CV's.  t ranges from 0 to "
-    << get_max_t()
-    << endl;
+  out << get_num_cvs() << " CV's)";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::print_cv
+//     Function: HermiteCurve::write_cv
 //       Access: Public, Scheme
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
-print_cv(int n) const {
-  ostream& out = parametrics_cat->info();
+write_cv(ostream &out, int n) const {
   out << "CV";
-  if (get_cv_name(n)!=NULL) {
+  if (!get_cv_name(n).empty()) {
     out << " " << get_cv_name(n);
   }
 
@@ -715,7 +721,7 @@ print_cv(int n) const {
     break;
   }
 
-  out << "\n" << endl;
+  out << "\n";
 }
 
 
@@ -745,7 +751,7 @@ write_egg(const char *filename) {
 ////////////////////////////////////////////////////////////////////
 bool HermiteCurve::
 write_egg(ostream &out, const char *basename) {
-  if (get_name().empty()) {
+  if (!has_name()) {
     // If we don't have a name, come up with one.
     int len = strlen(basename);
     if (len>4 && strcmp(basename+len-4, ".egg")==0) {
@@ -774,7 +780,7 @@ write_egg(ostream &out, const char *basename) {
     set_name(name);
   }
 
-  Output(out);
+  format_egg(out);
 
   if (out) {
     return true;
@@ -802,30 +808,30 @@ rebuild_curveseg(int, double, const LVecBase4f &,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::Output
+//     Function: HermiteCurve::format_egg
 //       Access: Public
 //  Description: Formats the Hermite curve for output to an Egg file.
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
-Output(ostream &out, int indent) const {
-  Indent(out, indent)
+format_egg(ostream &out, int indent_level) const {
+  indent(out, indent_level)
     << "<VertexPool> " << get_name() << ".pool {\n";
 
   int i;
   for (i = 0; i < (int)_points.size(); i++) {
     bool show_in = (i != 0);
     bool show_out = (i != (int)_points.size()-1);
-    _points[i].Output(out, indent+2, _num_dimensions, 
-		      show_in, show_out,
-		      show_in ? get_tlength(i-1) : 0.0,
-		      show_out ? get_tlength(i) : 0.0);
+    _points[i].format_egg(out, indent_level + 2, _num_dimensions, 
+			  show_in, show_out,
+			  show_in ? get_tlength(i-1) : 0.0,
+			  show_out ? get_tlength(i) : 0.0);
   }
-  Indent(out, indent) << "}\n";
+  indent(out, indent_level) << "}\n";
     
-  Indent(out, indent) << "<BezierCurve> " << get_name() << " {\n";
+  indent(out, indent_level) << "<BezierCurve> " << get_name() << " {\n";
 
   if (_curve_type!=PCT_NONE) {
-    Indent(out, indent+2) << "<Char*> type { ";
+    indent(out, indent_level+2) << "<Scalar> type { ";
     switch (_curve_type) {
     case PCT_XYZ:
       out << "XYZ";
@@ -842,32 +848,32 @@ Output(ostream &out, int indent) const {
     out << " }\n";
   }
 
-  Indent(out, indent+2) << "<TLengths> {";
+  indent(out, indent_level+2) << "<TLengths> {";
   if (_points.size() > 1) {
     for (i = 0; i < (int)_segs.size(); i++) {
       if (i%10 == 1) {
 	out << "\n";
-	Indent(out, indent+3);
+	indent(out, indent_level+3);
       }
       out << " " << get_tlength(i);
     }
   }
   out << "\n";
-  Indent(out, indent+2) << "}\n";
+  indent(out, indent_level+2) << "}\n";
 
-  Indent(out, indent+2) << "<VertexRef> {";
+  indent(out, indent_level+2) << "<VertexRef> {";
   for (i = 1; i <= (int)_points.size() * 3 - 2; i++) {
     if (i%10 == 1) {
       out << "\n";
-      Indent(out, indent+3);
+      indent(out, indent_level+3);
     }
     out << " " << i;
   }
   out << "\n";
-  Indent(out, indent+4) << "<Ref> { " << get_name() << ".pool }\n";
-  Indent(out, indent+2) << "}\n";
+  indent(out, indent_level+4) << "<Ref> { " << get_name() << ".pool }\n";
+  indent(out, indent_level+2) << "}\n";
 
-  Indent(out, indent) << "}\n";
+  indent(out, indent_level) << "}\n";
 }
 
 
@@ -978,3 +984,71 @@ recompute_basis() {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: HermiteCurve::register_with_factory
+//       Access: Public, Static
+//  Description: Initializes the factory for reading these things from
+//               Bam files.
+////////////////////////////////////////////////////////////////////
+void HermiteCurve::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_HermiteCurve);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HermiteCurve::make_HermiteCurve
+//       Access: Protected
+//  Description: Factory method to generate an object of this type.
+////////////////////////////////////////////////////////////////////
+TypedWriteable *HermiteCurve::
+make_HermiteCurve(const FactoryParams &params) {
+  HermiteCurve *me = new HermiteCurve;
+  BamReader *manager;
+  Datagram packet;
+
+  parse_params(params, manager, packet);
+  DatagramIterator scan(packet);
+
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HermiteCurve::write_datagram
+//       Access: Protected, Virtual
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void HermiteCurve::
+write_datagram(BamWriter *manager, Datagram &me) {
+  PiecewiseCurve::write_datagram(manager, me);
+
+  me.add_uint32(_points.size());
+  size_t i;
+  for (i = 0; i < _points.size(); i++) {
+    _points[i].write_datagram(manager, me);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HermiteCurve::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void HermiteCurve::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  PiecewiseCurve::fillin(scan, manager);
+
+  size_t num_points = scan.get_uint32();
+  _points.reserve(num_points);
+  size_t i;
+  for (i = 0; i < num_points; i++) {
+    HermiteCurveCV cv;
+    cv.fillin(scan, manager);
+    _points.push_back(cv);
+  }
+}

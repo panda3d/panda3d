@@ -67,7 +67,7 @@ PUBLISHED:
     return append_cv(LVecBase4f(v[0], v[1], v[2], 1.0));
   }
   inline int append_cv(const LVecBase4f &v) {
-    _cvs.push_back(CV(v, GetKnot(_cvs.size())+1.0));
+    _cvs.push_back(CV(v, get_knot(_cvs.size())+1.0));
     return _cvs.size()-1;
   }
 
@@ -85,7 +85,15 @@ PUBLISHED:
   float get_cv_weight(int n) const;
 
   bool set_knot(int n, double t);
-  double get_knot(int n) const;
+  double get_knot(int n) const {
+    if (n < _order || _cvs.empty()) {
+      return 0.0;
+    } else if (n-1 >= (int)_cvs.size()) {
+      return _cvs.back()._t;
+    } else {
+      return _cvs[n-1]._t;
+    }
+  }
 
   virtual void write(ostream &out, int indent_level = 0) const;
   void write_cv(ostream &out, int n) const;
@@ -113,21 +121,10 @@ public:
     return (CubicCurveseg *)PiecewiseCurve::get_curveseg(ti);
   }
 
-  double
-  GetKnot(int n) const {
-    if (n < _order || _cvs.empty()) {
-      return 0.0;
-    } else if (n-1 >= (int)_cvs.size()) {
-      return _cvs.back()._t;
-    } else {
-      return _cvs[n-1]._t;
-    }
-  }
-
   void format_egg(ostream &out, CoordinateSystem cs, int indent_level) const;
 
 protected:
-  int FindCV(double t);
+  int find_cv(double t);
 
   int _order;
 
@@ -141,6 +138,15 @@ protected:
 
   vector<CV> _cvs;
 
+
+// TypedWriteable stuff
+public:
+  static void register_with_read_factory();
+
+protected:
+  static TypedWriteable *make_NurbsCurve(const FactoryParams &params);
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

@@ -16,6 +16,10 @@
 #include "config_parametrics.h"
 
 #include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamWriter.h>
+#include <bamReader.h>
 
 ////////////////////////////////////////////////////////////////////
 // Statics
@@ -154,7 +158,7 @@ insert_cv(double t) {
     t = 0.0;
   }
 
-  int k = FindCV(t);
+  int k = find_cv(t);
   if (k < 0) {
     return append_cv(_cvs.back()._p);
   }
@@ -169,8 +173,8 @@ insert_cv(double t) {
   int i;
   for (i = 0; i < _order-1; i++) {
     int nk = i + k - (_order-1);
-    double ti = GetKnot(nk);
-    double d = GetKnot(nk + _order-1) - ti;
+    double ti = get_knot(nk);
+    double d = get_knot(nk + _order-1) - ti;
     if (d == 0.0) {
       new_cvs[i] = _cvs[nk-1]._p;
     } else {
@@ -332,17 +336,6 @@ set_knot(int n, double t) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurve::get_knot
-//       Access: Public, Scheme
-//  Description: Returns the value of the indicated knot.  There are
-//               get_num_cvs()+_order-1 knot values.
-////////////////////////////////////////////////////////////////////
-double NurbsCurve::
-get_knot(int n) const {
-  return GetKnot(n);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurve::write
 //       Access: Public, Scheme
 //  Description: 
@@ -383,7 +376,7 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Knots: ";
   for (i = 0; i < (int)_cvs.size()+_order; i++) {
-    out << " " << GetKnot(i);
+    out << " " << get_knot(i);
   }
   out << "\n";
 }
@@ -424,7 +417,7 @@ recompute() {
 
   if ((int)_cvs.size() > _order-1) {
     for (int cv = 0; cv < (int)_cvs.size()-(_order-1); cv++) {
-      if (GetKnot(cv+_order-1) < GetKnot(cv+_order)) {
+      if (get_knot(cv+_order-1) < get_knot(cv+_order)) {
 	// There are _order consecutive CV's that define each segment,
 	// beginning at cv.  Collect the CV's and knot values that define
 	// this segment.
@@ -433,7 +426,7 @@ recompute() {
 	  cvs[c] = _cvs[c+cv]._p;
 	}
 	for (c = 0; c < _order+_order; c++) {
-	  knots[c] = GetKnot(c+cv);
+	  knots[c] = get_knot(c+cv);
 	}
 	
 	insert_curveseg(_segs.size(), new CubicCurveseg(_order, knots, cvs),
@@ -511,7 +504,7 @@ adjust_pt(double t,
 
   int cv = 0;
   for (cv = 0; cv < _cvs.size()-(_order-1); cv++) {
-    if (GetKnot(cv+_order-1) < GetKnot(cv+_order)) {
+    if (get_knot(cv+_order-1) < get_knot(cv+_order)) {
       if (seg == _last_ti) {
 	break;
       }
@@ -528,7 +521,7 @@ adjust_pt(double t,
     cvs[c] = (c < _order) ? _cvs[c+cv]._p : LVecBase4f(0.0, 0.0, 0.0, 0.0);
   }
   for (c = 0; c < _order+_order; c++) {
-    knots[c] = GetKnot(c+cv);
+    knots[c] = get_knot(c+cv);
   }
 
   dnassert(_order>=1 && _order<=4);
@@ -620,7 +613,7 @@ rebuild_curveseg(int rtype0, double t0, const LVecBase4f &v0,
 
   int cv = 0;
   for (cv = 0; cv < (int)_cvs.size()-(_order-1); cv++) {
-    if (GetKnot(cv+_order-1) < GetKnot(cv+_order)) {
+    if (get_knot(cv+_order-1) < get_knot(cv+_order)) {
       if (seg == _last_ti) {
 	break;
       }
@@ -647,7 +640,7 @@ rebuild_curveseg(int rtype0, double t0, const LVecBase4f &v0,
 
   // But we always need the knot vector to determine the basis matrix.
   for (c = 0; c < _order+_order; c++) {
-    knots[c] = GetKnot(c+cv);
+    knots[c] = get_knot(c+cv);
   }
 
   LMatrix4f B;
@@ -876,7 +869,7 @@ format_egg(ostream &out, CoordinateSystem cs, int indent_level) const {
       out << "\n";
       indent(out, indent_level+4);
     }
-    out << GetKnot(k) << " ";
+    out << get_knot(k) << " ";
   }
   out << "\n";
   indent(out, indent_level+2) << "}\n";
@@ -898,13 +891,13 @@ format_egg(ostream &out, CoordinateSystem cs, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurve::FindCV
+//     Function: NurbsCurve::find_cv
 //       Access: Protected
 //  Description: Finds the first knot whose value is >= t, or -1 if t
 //               is beyond the end of the curve.
 ////////////////////////////////////////////////////////////////////
 int NurbsCurve::
-FindCV(double t) {
+find_cv(double t) {
   int i;
   for (i = _order-1; i < (int)_cvs.size(); i++) {
     if (_cvs[i]._t >= t) {
@@ -913,4 +906,80 @@ FindCV(double t) {
   }
 
   return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurve::register_with_factory
+//       Access: Public, Static
+//  Description: Initializes the factory for reading these things from
+//               Bam files.
+////////////////////////////////////////////////////////////////////
+void NurbsCurve::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_NurbsCurve);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurve::make_NurbsCurve
+//       Access: Protected
+//  Description: Factory method to generate an object of this type.
+////////////////////////////////////////////////////////////////////
+TypedWriteable *NurbsCurve::
+make_NurbsCurve(const FactoryParams &params) {
+  NurbsCurve *me = new NurbsCurve;
+  BamReader *manager;
+  Datagram packet;
+
+  parse_params(params, manager, packet);
+  DatagramIterator scan(packet);
+
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurve::write_datagram
+//       Access: Protected, Virtual
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void NurbsCurve::
+write_datagram(BamWriter *manager, Datagram &me) {
+  PiecewiseCurve::write_datagram(manager, me);
+
+  me.add_int8(_order);
+
+  me.add_uint32(_cvs.size());
+  size_t i;
+  for (i = 0; i < _cvs.size(); i++) {
+    const CV &cv = _cvs[i];
+    cv._p.write_datagram(me);
+    me.add_float64(cv._t);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurve::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void NurbsCurve::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  PiecewiseCurve::fillin(scan, manager);
+
+  _order = scan.get_int8();
+
+  size_t num_cvs = scan.get_uint32();
+
+  _cvs.reserve(num_cvs);
+  size_t i;
+  for (i = 0; i < num_cvs; i++) {
+    CV cv;
+    cv._p.read_datagram(scan);
+    cv._t = scan.get_float64();
+    _cvs.push_back(cv);
+  }
 }

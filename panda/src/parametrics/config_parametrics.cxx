@@ -25,6 +25,10 @@ ConfigureFn(config_parametrics) {
   HermiteCurve::init_type();
   NurbsCurve::init_type();
   NurbsCurveDrawer::init_type();
+
+  CubicCurveseg::register_with_read_factory();
+  HermiteCurve::register_with_read_factory();
+  NurbsCurve::register_with_read_factory();
 }
 
 const DSearchPath &

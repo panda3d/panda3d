@@ -22,6 +22,10 @@
 #include "nurbsCurve.h"
 #include "curveDrawer.h"
 
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamWriter.h>
+#include <bamReader.h>
 
 ////////////////////////////////////////////////////////////////////
 // Statics
@@ -595,13 +599,32 @@ r_calc_length(double t1, double t2, const LPoint3f &p1, const LPoint3f &p2,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurve::write_datagram
-//       Access: Public
+//       Access: Protected, Virtual
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void ParametricCurve::
-write_datagram(BamWriter *, Datagram &) {
-  // TODO: write the write_datagram.
+write_datagram(BamWriter *manager, Datagram &me) {
+  NamedNode::write_datagram(manager, me);
+
+  me.add_int8(_curve_type);
+  me.add_int8(_num_dimensions);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  NamedNode::fillin(scan, manager);
+
+  _curve_type = scan.get_int8();
+  _num_dimensions = scan.get_int8();
 }
 
 
@@ -1151,6 +1174,72 @@ current_seg_range(double t) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PiecewiseCurve::write_datagram
+//       Access: Protected, Virtual
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void PiecewiseCurve::
+write_datagram(BamWriter *manager, Datagram &me) {
+  ParametricCurve::write_datagram(manager, me);
+
+  me.add_uint32(_segs.size());
+  size_t i;
+  for (i = 0; i < _segs.size(); i++) {
+    const Curveseg &seg = _segs[i];
+    manager->write_pointer(me, seg._curve);
+    me.add_float64(seg._tend);
+  }
+
+  _last_ti = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PiecewiseCurve::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void PiecewiseCurve::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  ParametricCurve::fillin(scan, manager);
+
+  size_t num_segs = scan.get_uint32();
+  _segs.reserve(num_segs);
+  size_t i;
+  for (i = 0; i < num_segs; i++) {
+    Curveseg seg;
+    manager->read_pointer(scan, this);
+    seg._curve = (ParametricCurve *)NULL;
+    seg._tend = scan.get_float64();
+    _segs.push_back(seg);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PiecewiseCurve::complete_pointers
+//       Access: Protected, Virtual
+//  Description: Takes in a vector of pointes to TypedWriteable
+//               objects that correspond to all the requests for 
+//               pointers that this object made to BamReader.
+////////////////////////////////////////////////////////////////////
+int PiecewiseCurve::
+complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+  int used = ParametricCurve::complete_pointers(plist, manager);
+
+  nassertr(used + _segs.size() <= plist.size(), used);
+
+  size_t i;
+  for (i = 0; i < _segs.size(); i++) {
+    DCAST_INTO_R(_segs[i]._curve, plist[used + i], used);
+  }
+  
+  return used + _segs.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CubicCurveseg::Constructor
 //       Access: Public
 //  Description:
@@ -1677,4 +1766,69 @@ compute_seg(int rtype0, double t0, const LVecBase4f &v0,
   G = P * Ti * Bi;
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CubicCurveseg::register_with_factory
+//       Access: Public, Static
+//  Description: Initializes the factory for reading these things from
+//               Bam files.
+////////////////////////////////////////////////////////////////////
+void CubicCurveseg::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_CubicCurveseg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CubicCurveseg::make_CubicCurveseg
+//       Access: Protected
+//  Description: Factory method to generate an object of this type.
+////////////////////////////////////////////////////////////////////
+TypedWriteable *CubicCurveseg::
+make_CubicCurveseg(const FactoryParams &params) {
+  CubicCurveseg *me = new CubicCurveseg;
+  BamReader *manager;
+  Datagram packet;
+
+  parse_params(params, manager, packet);
+  DatagramIterator scan(packet);
+
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CubicCurveseg::write_datagram
+//       Access: Protected, Virtual
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void CubicCurveseg::
+write_datagram(BamWriter *manager, Datagram &me) {
+  ParametricCurve::write_datagram(manager, me);
+
+  Bx.write_datagram(me);
+  By.write_datagram(me);
+  Bz.write_datagram(me);
+  Bw.write_datagram(me);
+  me.add_bool(rational);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CubicCurveseg::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void CubicCurveseg::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  ParametricCurve::fillin(scan, manager);
+
+  Bx.read_datagram(scan);
+  By.read_datagram(scan);
+  Bz.read_datagram(scan);
+  Bw.read_datagram(scan);
+  rational = scan.get_bool();
 }

@@ -119,8 +119,6 @@ public:
   };
   typedef vector<BezierSeg> BezierSegs;
 
-  virtual void write_datagram(BamWriter *, Datagram &);
-
   virtual bool GetBezierSegs(BezierSegs &) const {
     return false;
   }
@@ -145,6 +143,10 @@ protected:
   int _curve_type;
   int _num_dimensions;
 
+// TypedWriteable stuff
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {
@@ -227,10 +229,6 @@ protected:
     Curveseg() {}
     Curveseg(ParametricCurve *c, double t) : _curve(c), _tend(t) {}
 
-    int descend_pfb(void *handle);
-    int store_pfb(void *handle);
-    int load_pfb(void *handle);
-
     ParametricCurve *_curve;
     double _tend;
   };
@@ -238,6 +236,13 @@ protected:
   vector<Curveseg> _segs;
   int _last_ti;
 
+
+// TypedWriteable stuff
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  void fillin(DatagramIterator &scan, BamReader *manager);
+  virtual int complete_pointers(vector_typedWriteable &plist, 
+				BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {
@@ -341,6 +346,16 @@ public:
 
   LVecBase4f Bx, By, Bz, Bw;
   bool rational;
+
+
+// TypedWriteable stuff
+public:
+  static void register_with_read_factory();
+
+protected:
+  static TypedWriteable *make_CubicCurveseg(const FactoryParams &params);
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

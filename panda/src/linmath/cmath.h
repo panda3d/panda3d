@@ -6,6 +6,8 @@
 #ifndef CMATH_H
 #define CMATH_H
 
+#include <pandabase.h>
+
 #include <math.h>
 
 // This file declares a number of C++-style overloading wrappers

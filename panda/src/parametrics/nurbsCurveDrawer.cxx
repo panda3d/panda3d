@@ -125,11 +125,11 @@ draw() {
     double lt = -1.0;
     int ki = -1;
     for (i = 0; i < _num_cvs; i++) {
-      double t = nurbs->GetKnot(i);
+      double t = nurbs->get_knot(i);
       if (t != lt) {
 	lt = t;
 	LVecBase3f knot_pos, knot_tan;
-	nurbs->get_pt(nurbs->GetKnot(i), knot_pos, knot_tan);
+	nurbs->get_pt(nurbs->get_knot(i), knot_pos, knot_tan);
 	_knots.move_to(_mapper(knot_pos, knot_tan, t));
 	ki++;
       }
@@ -143,7 +143,7 @@ draw() {
     _num_cvs = nurbs->get_num_cvs();
     for (i = 0; i < _num_cvs; i++) {
       _cvs.move_to(_mapper(nurbs->get_cv_point(i), LVecBase3f(0.0, 0.0, 0.0),
-			   nurbs->GetKnot(i+1)));
+			   nurbs->get_knot(i+1)));
     }
 
     _cvs.create(_geom_node, _frame_accurate);
@@ -153,7 +153,7 @@ draw() {
     _num_cvs = nurbs->get_num_cvs();
     for (i = 0; i < _num_cvs; i++) {
       _hull.draw_to(_mapper(nurbs->get_cv_point(i), LVecBase3f(0.0, 0.0, 0.0),
-			    nurbs->GetKnot(i+1)));
+			    nurbs->get_knot(i+1)));
     }
 
     _hull.create(_geom_node, _frame_accurate);

@@ -7,7 +7,7 @@
     putil
 
   #define SOURCES \
-    compose_matrix.I compose_matrix.cxx compose_matrix.h \
+    cmath.I cmath.h compose_matrix.I compose_matrix.cxx compose_matrix.h \
     config_linmath.cxx config_linmath.h coordinateSystem.cxx \
     coordinateSystem.h deg_2_rad.h \
     ioPtaDatagramLinMath.I ioPtaDatagramLinMath.cxx \

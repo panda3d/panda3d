@@ -68,15 +68,18 @@ public:
   void set_in(const LVecBase3f &in);
   void set_out(const LVecBase3f &out);
   void set_type(int type);
-  void set_name(const char *name);
+  void set_name(const string &name);
 
-  void Output(ostream &out, int indent, int num_dimensions,
+  void format_egg(ostream &out, int indent, int num_dimensions,
 	      bool show_in, bool show_out,
 	      double scale_in, double scale_out) const;
+
+  void write_datagram(BamWriter *manager, Datagram &me) const;
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
   LVecBase3f _p, _in, _out;
   int _type;
-  char *_name;
+  string _name;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -133,10 +136,10 @@ PUBLISHED:
   const LVecBase3f &get_cv_out(int n) const;
   void get_cv_out(int n, LVecBase3f &v) const;
   double get_cv_tstart(int n) const;
-  const char *get_cv_name(int n) const;
+  string get_cv_name(int n) const;
 
-  void Print() const;
-  void print_cv(int n) const;
+  virtual void output(ostream &out) const;
+  void write_cv(ostream &out, int n) const;
 
   bool write_egg(const char *filename);
   bool write_egg(ostream &out, const char *basename);
@@ -153,7 +156,7 @@ public:
 		   int rtype2, double t2, const LVecBase4f &v2,
 		   int rtype3, double t3, const LVecBase4f &v3);
 
-  void Output(ostream &out, int indent=0) const;
+  void format_egg(ostream &out, int indent=0) const;
 
 protected:
 
@@ -162,6 +165,15 @@ protected:
   void recompute_basis();
 
   vector<HermiteCurveCV> _points;
+
+// TypedWriteable stuff
+public:
+  static void register_with_read_factory();
+
+protected:
+  static TypedWriteable *make_HermiteCurve(const FactoryParams &params);
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {
