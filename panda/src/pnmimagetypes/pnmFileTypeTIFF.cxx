@@ -208,6 +208,10 @@ TypeHandle PNMFileTypeTIFF::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::
 PNMFileTypeTIFF() {
+  if (pnmimage_tiff_cat.is_debug()) {
+    pnmimage_tiff_cat.debug()
+      << TIFFGetVersion() << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
