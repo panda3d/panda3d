@@ -1,7 +1,6 @@
 """ParentMgr module: contains the ParentMgr class"""
 
 from ShowBaseGlobal import *
-from ToontownGlobals import *
 import DirectNotifyGlobal
 
 class ParentMgr:

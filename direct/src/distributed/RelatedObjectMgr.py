@@ -1,7 +1,6 @@
 """RelatedObjectMgr module: contains the RelatedObjectMgr class"""
 
 from ShowBaseGlobal import *
-from ToontownGlobals import *
 import DirectObject
 import DirectNotifyGlobal
 
