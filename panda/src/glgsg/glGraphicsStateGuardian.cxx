@@ -925,6 +925,7 @@ draw_sprite(const GeomSprite *geom) {
 
   // get the array traversal set up.
   int nprims = geom->get_num_prims();
+
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
@@ -944,27 +945,35 @@ draw_sprite(const GeomSprite *geom) {
   hfov = _actual_display_region->get_camera()->get_hfov();
   aspect_ratio = _actual_display_region->get_camera()->get_aspect();
 
-  // to assure that the scale between the two frustra stays the same
-  // (if they are different, sprites move at different speeds than the world),
-  // we have to apply the frustum inverse to the point, then render it in our
-  // own frustum.  Since the z values are identical and 1:1, we only need
-  // concern ourselves with the x and y mappings, which are conveniently linear.
-
-  float x_frustum_scale, y_frustum_scale;
-  float recip_x_frustum_scale, recip_y_frustum_scale;
-
-  // extract the left and top bounds of the current camera
-  x_frustum_scale = tanf(hfov * 0.5f * (3.1415926f / 180.0f)) * tnear;
-  recip_x_frustum_scale = 1.0f / x_frustum_scale;
-  y_frustum_scale = x_frustum_scale / aspect_ratio;
-  recip_y_frustum_scale = 1.0f / y_frustum_scale;
-
   // load up our own matrices
+
+  // Note on DO_CHARLES_PROJECTION_MAT
+  // apparently adjusting the projection as done below is incorrect
+  // as long as the camera points forward at the view plane, no distortion/warping
+  // will be apparent, which is what this special projection was supposed to correct
+
+  #ifdef DO_CHARLES_PROJECTION_MAT
+	  // to assure that the scale between the two frustra stays the same
+	  // (if they are different, sprites move at different speeds than the world),
+	  // we have to apply the frustum inverse to the point, then render it in our
+	  // own frustum.  Since the z values are identical and 1:1, we only need
+	  // concern ourselves with the x and y mappings, which are conveniently linear.
+	
+	  float x_frustum_scale, y_frustum_scale;
+	  float recip_x_frustum_scale, recip_y_frustum_scale;
+	
+	  // extract the left and top bounds of the current camera
+	  x_frustum_scale = tanf(hfov * 0.5f * (3.1415926f / 180.0f)) * tnear;
+	  recip_x_frustum_scale = 1.0f / x_frustum_scale;
+	  y_frustum_scale = x_frustum_scale / aspect_ratio;
+	  recip_y_frustum_scale = 1.0f / y_frustum_scale;
+	  glMatrixMode(GL_PROJECTION);
+	  glLoadIdentity();
+	  glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
+  #endif
+  
   glMatrixMode(GL_MODELVIEW);
-  glLoadMatrixf(LMatrix4f::ident_mat().get_data());
-  glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
 
   // precomputation stuff
   float half_width = 0.5f * (float) tex->_pbuffer->get_xsize();
@@ -1001,7 +1010,7 @@ draw_sprite(const GeomSprite *geom) {
   // inner loop vars
   int i;
   Vertexf source_vert, cameraspace_vert;
-  float x, y, z, *x_walk, *y_walk, *theta_walk;
+  float *x_walk, *y_walk, *theta_walk;
   float theta;
 
   nassertv(geom->get_x_bind_type() != G_PER_VERTEX);
@@ -1049,19 +1058,27 @@ draw_sprite(const GeomSprite *geom) {
 
   // the state is set, start running the prims
   for (i = 0; i < nprims; i++) {
+    WrappedSprite ws;
+
     source_vert = geom->get_next_vertex(vi);
 
     // this mult converts to y-up cameraspace.
     cameraspace_vert = modelview_mat * source_vert;
-    z = cameraspace_vert[2];
+
+  #ifdef DO_CHARLES_PROJECTION_MAT
+    float x,y,z;
 
     // do the inverse transform on the cameraspace point.
-    x = cameraspace_vert[0] * recip_x_frustum_scale;
-    y = cameraspace_vert[1] * recip_y_frustum_scale;
+    x = cameraspace_vert[0] ;//* recip_x_frustum_scale;
+    y = cameraspace_vert[1] ;//* recip_y_frustum_scale;
+    z = cameraspace_vert[2];
 
     // build the final object that will go into the vector.
-    WrappedSprite ws;
     ws._v.set(x, y, z);
+  #else
+    // build the final object that will go into the vector.
+    ws._v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
+  #endif
 
     if (color_overall == false)
       ws._c = geom->get_next_color(ci);
@@ -1088,9 +1105,6 @@ draw_sprite(const GeomSprite *geom) {
 
   int tex_bottom = 0, tex_top = 1, tex_right = 1, tex_left = 0;
   Vertexf ul, ur, ll, lr;
-//  float top, bottom, left, right;
-//  float sin_theta, cos_theta, radians;
-//  float final_left, final_right, final_top, final_bottom;
 
   if (color_overall == true)
     glColor4fv(geom->get_next_color(ci).get_data());
@@ -1155,11 +1169,12 @@ draw_sprite(const GeomSprite *geom) {
   }
 
   // restore the matrices
-  glMatrixMode(GL_MODELVIEW);
   glLoadMatrixf(modelview_mat.get_data());
 
-  glMatrixMode(GL_PROJECTION);
-  glLoadMatrixf(_current_projection_mat.get_data());
+  #ifdef DO_CHARLES_PROJECTION_MAT
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(_current_projection_mat.get_data());
+  #endif
 }
 
 ////////////////////////////////////////////////////////////////////
