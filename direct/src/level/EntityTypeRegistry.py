@@ -11,6 +11,7 @@ class EntityTypeRegistry:
 
     def __init__(self, entityTypeModule):
         """pass in a module that contains EntityTypeDesc classes"""
+        self.entTypeModule = entityTypeModule
         # get a list of the EntityTypeDesc classes in the type module
         classes = []
         for key, value in entityTypeModule.__dict__.items():
