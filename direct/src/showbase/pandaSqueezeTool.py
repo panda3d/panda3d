@@ -330,17 +330,28 @@ exec "import %(start)s"
 		# create bootstrap code
 
 		fp = open(bootstrap, "w")
-		# Note: Jesse Schell changed the following line to be very
-		# panda specific
+		# Note: David Rose adjusted the following to be more general.
 		fp.write("""\
 #%(localMagic)s %(archiveid)s
-import ihooks,zlib,marshal,os
-try:
-  directroot = os.environ["DIRECT"]
-except KeyError:
-  print "Warning: environment variable DIRECT is not set."
-  directroot = ""
-archivePath = directroot + "\\lib\\py\\%(archive)s"
+import ihooks,zlib,marshal,os,sys
+
+def searchPath(filename):
+  # Look along the python load path for the indicated filename.
+  # Returns the located pathname, or None if the filename is not
+  # found.
+  for dir in sys.path:
+    pathname = os.path.join(dir, filename)
+    if os.path.exists(pathname):
+      return pathname
+
+  return None
+
+# Look for %(archive)s along the sys.path.
+archiveName = "%(archive)s"
+archivePath = searchPath(archiveName)
+if archivePath == None:
+  raise ImportError, "Could not locate %%s on PYTHONPATH." %% (archiveName)
+
 f=open(archivePath,"rb")
 exec marshal.loads(%(zbegin)sf.read(%(loaderlen)d)%(zend)s)
 boot("%(app)s",f,%(size)d)

@@ -694,6 +694,12 @@ class FFIInterrogateDatabase:
 
 
     def generateCode(self, codeDir, extensionsDir):
+        # Empty out the codeDir of unnecessary crud from previous runs
+        # before we begin.
+        for file in os.listdir(codeDir):
+            pathname = os.path.join(codeDir, file)
+            os.unlink(pathname)
+        
         # Import all the C++ modules
         for CModuleName in FFIConstants.CodeModuleNameList:
             self.generateCodeLib(codeDir, extensionsDir, CModuleName)
