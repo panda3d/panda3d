@@ -283,6 +283,12 @@ class DirectJoybox(PandaObject):
         self.modifier = [1,1,-1,-1,-1,1]
         self.setMode(self.joyboxFly, 'HprXyz Mode')
 
+    def mopathMode(self):
+        self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, R_TWIST,
+                        L_LEFT_RIGHT, L_FWD_BACK, L_LEFT_RIGHT]
+        self.modifier = [1,1,-1,-1,1,0]
+        self.setMode(self.joyboxFly, 'Mopath Mode')
+
     def walkthruMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_TWIST,
                         R_TWIST, L_FWD_BACK, L_LEFT_RIGHT]
