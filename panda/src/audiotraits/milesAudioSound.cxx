@@ -22,11 +22,7 @@
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
 
-#if (MSS_MAJOR_VERSION <= 6) && (MSS_MINOR_VERSION < 5)
 #define NEED_MILES_LENGTH_WORKAROUND
-#endif
-
-//#define NEED_MILES_LENGTH_WORKAROUND
 
 #ifndef NDEBUG //[
   namespace {
@@ -238,12 +234,19 @@ length() const {
   if (_length == 0.0f) {
    #ifndef NEED_MILES_LENGTH_WORKAROUND
         _length=((float)AIL_quick_ms_length(_audio))*0.001f;
+        if (_length == 0.0f) {
+            audio_error("ERROR: Miles returned length 0 for "<<_file_name << "!");
+        }
    #else
         // hack:
         // For now, the sound needs to be playing, in order to
         // get the right length.  I'm in contact with RAD about the problem.  I've
         // sent them example code.  They've told me they're looking into it.
         // Until then, we'll play the sound to get the length.
+
+        // Miles 6.5c note:  seems to be fixed for .mid (but not 100% positive,
+        // we have noticed problems with midi not playing).
+        // definitely still not fixed for .mp3 files
 
         if (AIL_quick_status(_audio)==QSTAT_PLAYING) {
           _length=((float)AIL_quick_ms_length(_audio))*0.001f;
