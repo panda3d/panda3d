@@ -107,6 +107,8 @@ DriveInterface(const string &name) : DataNode(name) {
   _rotate_speed = drive_rotate_speed;
   _vertical_dead_zone = drive_vertical_dead_zone;
   _horizontal_dead_zone = drive_horizontal_dead_zone;
+  _vertical_center = drive_vertical_center;
+  _horizontal_center = drive_horizontal_center;
 
   _vertical_ramp_up_time = drive_vertical_ramp_up_time;
   _vertical_ramp_down_time = drive_vertical_ramp_down_time;
@@ -627,40 +629,46 @@ apply(double x, double y, bool any_button) {
     
     // First, how fast are we moving?  This is based on the mouse's
     // vertical position.
-    
-    if (y >= _vertical_dead_zone) {
+
+    float dead_zone_top = _vertical_center + _vertical_dead_zone;
+    float dead_zone_bottom = _vertical_center - _vertical_dead_zone;
+
+    if (y >= dead_zone_top) {
       // Motion is forward.  Compute the throttle value: the ratio of
       // the mouse pointer within the range of vertical movement.
       float throttle = 
-	(min(y, 1.0) - _vertical_dead_zone) / 
-	(1.0 - _vertical_dead_zone);
+	(min(y, 1.0) - dead_zone_top) / 
+	(1.0 - dead_zone_top);
       _speed = throttle * _forward_speed;
       
-    } else if (y <= -_vertical_dead_zone) {
+    } else if (y <= dead_zone_bottom) {
       // Motion is backward.
       float throttle = 
-	(max(y, -1.0) + _vertical_dead_zone) / 
-	(-1.0 + _vertical_dead_zone);
+	(max(y, -1.0) - dead_zone_bottom) / 
+	(-1.0 - dead_zone_bottom);
       _speed = -throttle * _reverse_speed;
     }
     
     // Now, what's our rotational velocity?  This is based on the
     // mouse's horizontal position.
-    
-    if (x >= _horizontal_dead_zone) {
+
+    float dead_zone_right = _horizontal_center + _horizontal_dead_zone;
+    float dead_zone_left = _horizontal_center - _horizontal_dead_zone;
+
+    if (x >= dead_zone_right) {
       // Rotation is to the right.  Compute the throttle value: the
       // ratio of the mouse pointer within the range of horizontal
       // movement.
       float throttle = 
-	(min(x, 1.0) - _horizontal_dead_zone) / 
-	(1.0 - _horizontal_dead_zone);
+	(min(x, 1.0) - dead_zone_right) / 
+	(1.0 - dead_zone_right);
       _rot_speed = throttle * _rotate_speed;
       
-    } else if (x <= -_horizontal_dead_zone) {
+    } else if (x <= dead_zone_left) {
       // Rotation is to the left.
       float throttle = 
-	(max(x, -1.0) + _horizontal_dead_zone) / 
-	(-1.0 + _horizontal_dead_zone);
+	(max(x, -1.0) - dead_zone_left) / 
+	(-1.0 - dead_zone_left);
       _rot_speed = -throttle * _rotate_speed;
     }
 

@@ -98,6 +98,8 @@ private:
   float _rotate_speed;   // degrees / sec, mouse all the way over
   float _vertical_dead_zone;    // fraction of window size
   float _horizontal_dead_zone;  // fraction of window size
+  float _vertical_center;    // window units, 0 = center, -1 = bottom, 1 = top
+  float _horizontal_center;  // window units, 0 = center, -1 = left, 1 = right
 
   // The time it takes to ramp up to full speed from a stop (or return
   // to a stop from full speed) when using the keyboard.
