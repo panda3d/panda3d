@@ -589,22 +589,29 @@ output(ostream &out) const {
     out << "(identity)";
 
   } else if (has_components()) {
+    bool output_hpr = !get_hpr().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f));
+
     if (!components_given()) {
+      // A leading "m" indicates the transform was described as a full
+      // matrix, and we are decomposing it for the benefit of the
+      // user.
       out << "m";
+
+    } else if (output_hpr && quat_given()) {
+      // A leading "q" indicates that the pos and scale are exactly as
+      // specified, but the rotation was described as a quaternion,
+      // and we are decomposing that to hpr for the benefit of the
+      // user.
+      out << "q";
     }
+
     char lead = '(';
     if (!get_pos().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
       out << lead << "pos " << get_pos();
       lead = ' ';
     }
-    if (!get_hpr().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
-      if (quat_given()) {
-        // Output hpr even if we were given a quat, since that's
-        // friendlier to show programmers.
-        out << lead << "(q)hpr " << get_hpr();
-      } else {
-        out << lead << "hpr " << get_hpr();
-      }
+    if (output_hpr) {
+      out << lead << "hpr " << get_hpr();
       lead = ' ';
     }
     if (!get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
