@@ -66,6 +66,7 @@
     virtualFileMountMultifile.I virtualFileMountSystem.h \
     virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
+    windowsRegistry.h \
     zStream.I zStream.h zStreamBuf.h \
     $[if $[HAVE_CRYPTO], \
        crypto_utils.cxx crypto_utils.h patchfile.I \
@@ -103,6 +104,7 @@
     virtualFileMount.cxx \
     virtualFileMountMultifile.cxx virtualFileMountSystem.cxx \
     virtualFileSimple.cxx virtualFileSystem.cxx \
+    windowsRegistry.cxx \
     zStream.cxx zStreamBuf.cxx
 
   #define INSTALL_HEADERS  \
@@ -158,6 +160,7 @@
     virtualFileMountMultifile.I virtualFileMountSystem.h \
     virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
+    windowsRegistry.h \
     zStream.I zStream.h zStreamBuf.h
 
   #define IGATESCAN all

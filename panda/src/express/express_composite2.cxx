@@ -25,6 +25,7 @@
 #include "virtualFileMountSystem.cxx"
 #include "virtualFileSimple.cxx"
 #include "virtualFileSystem.cxx"
+#include "windowsRegistry.cxx"
 #include "zStream.cxx"
 #include "zStreamBuf.cxx"
 
