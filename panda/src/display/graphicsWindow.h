@@ -119,6 +119,8 @@ PUBLISHED:
   INLINE void set_frame_number(const int);
   INLINE int get_frame_number() const;
 
+  virtual void close_window(int exit_status) {return;};  //release windowing system resources
+
 public:
   virtual void resized(const int, const int);
 
