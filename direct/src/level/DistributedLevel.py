@@ -274,7 +274,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     floorNode = collisionEntry.getIntoNode()
                     if floorNode.hasTag('ouch'):
                         ouchLevel = int(floorNode.getTag('ouch'))
-                        self.startOuch(ouchLevel*2)
+                        self.startOuch(ouchLevel)
                 self.accept('enter%s' % floorCollName, handleZoneEnter)
 
                 # also listen for zone exit events for the sake of the
