@@ -1425,9 +1425,11 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 #endif
 #endif
 
-    hr = FillDDSurfTexturePixels();
-    if(FAILED(hr)) {
-        goto error_exit;
+    if(_texture->has_ram_image()) {
+        hr = FillDDSurfTexturePixels();
+        if(FAILED(hr)) {
+           goto error_exit;
+        }
     }
 
     // Return the newly created texture
@@ -1443,6 +1445,12 @@ HRESULT DXTextureContext::
 FillDDSurfTexturePixels(void) {
     HRESULT hr=E_FAIL;
     assert(IS_VALID_PTR(_texture));
+
+    if(!_texture->has_ram_image()) {
+      dxgsg_cat.warning() << "CreateTexture: tried to fill surface that has no ram image!\n";
+      return S_OK;
+    }
+
     PixelBuffer *pbuf = _texture->get_ram_image();
     if (pbuf == (PixelBuffer *)NULL) {
       dxgsg_cat.fatal() << "CreateTexture: get_ram_image() failed\n";
