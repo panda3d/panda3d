@@ -12,7 +12,9 @@ The egg format is Panda's working file format for storing general
 models and animation files.  Typically, the build process for a given
 model involves the following steps:
 
-1. Convert from the source format (MultiGen or SoftImage) into egg.
+1. Convert from the source format (e.g. MultiGen or Maya, or any one
+   of the other formats supported by command-line egg converters) into
+   egg.
 
 2. If the model represents an animated character or animation, run
    egg-optchar on the egg model file and its associated animation
@@ -32,7 +34,11 @@ model involves the following steps:
 
 
 The ppremake system is set up to generate makefiles that automatically
-perform these steps.  To use it, you must create a Sources.pp file in
+perform these steps, although it currently generates only a Unix-like
+makefile, so the at the moment a model tree can only be built on a
+Linux or Unix machine, or on a PC with Cygwin installed.
+
+To set up a ppremake model tree, you must create a Sources.pp file in
 the directory with the models (or in the directory above the SoftImage
 tree in the case of SoftImage models).
 
@@ -49,16 +55,16 @@ the Sources.pp file contains blocks of the form:
   ...
 #end <build-type>
 
-where <source-filenames> is a list of input filenames for this rule,
+where <source-filenames> is a list of input filenames for this block,
 and <build-type> defines the type of build rule and may be one of
-flt_egg, soft_char_egg, install_egg, or a few others (the complete
-list appears below).  Some kinds of build rules require other
+flt_egg, maya_egg, maya_char_egg, install_egg, or a few others (the
+complete list appears below).  Some kinds of build rules require other
 parameters in addition to the list of source filenames.
 
 
 The available build rules are:
 
-flt_egg - Runs flt2egg to convert files from MultiGen (.flt) format to
+flt_egg - Runs flt2egg to convert models from MultiGen (.flt) format to
   egg.
 
   SOURCES - a list of MultiGen files to convert.  These will have the
@@ -69,11 +75,46 @@ flt_egg - Runs flt2egg to convert files from MultiGen (.flt) format to
     list of filenames to automatically pick up all the files with a
     .flt extension in the directory.
 
+  FLT2EGG_OPTS - Specifies some additional command-line options that
+    should be passed to flt2egg.  Common settings, for instance, might
+    be -no to strip normals, or -uo ft to convert models to a standard
+    scale in feet.  See flt2egg -h for a complete list of available
+    options.  If you define this variable, it is usually better to
+    extend it rather than replace its previous value, which allows
+    global settings to be defined in the root Package.pp for the model
+    tree.
+
   Example:
     #begin flt_egg
       #define SOURCES $[wildcard *.flt]
+      #define FLT2EGG_OPTS $[FLT2EGG_OPTS] -no
     #end flt_egg
 
+maya_egg - Runs maya2egg to convert models from Maya (.mb) format to
+  egg.  This form of the block should be used to convert nonanimated
+  models only; see maya_char_egg, below, to convert animated
+  (character) models along with their animations.
+
+  SOURCES - a list of Maya files to convert.  These will have the
+    extension .mb or .ma.  Each Maya file will be converted to an egg
+    file of the same name, with the extension .egg replacing .mb or
+    .ma.
+
+    As in flt_egg, above, you may use the syntax $[wildcard *.mb] in
+    place of an explicit list of filenames to automatically pick up
+    all the files with a .mb extension in the directory.
+
+  MAYA2EGG_OPTS - As above, this specifies some additional
+    command-line options that should be passed to maya2egg.  See
+    maya2egg -h for a complete list of available options.
+
+  Example:
+    #begin maya_egg
+      #define SOURCES $[wildcard *.mb]
+      #define MAYA2EGG_OPTS $[MAYA2EGG_OPTS] -suppress-vcolor
+    #end maya_egg
+
+lwo_egg - As above, for Lightwave Object files (.lwo).
 
 install_egg - Runs egg-palettize on the named egg files, then runs
   egg2bam to convert to bam file format, and then copies them into the
@@ -83,16 +124,21 @@ install_egg - Runs egg-palettize on the named egg files, then runs
     generated from a previous step (for instance, a previous flt_egg
     rule), but they may be ordinary egg files that are checked into
     the tree as source files.  Generally, you cannot use the wildcard
-    syntax here (unlike in the flt_egg rule), because the egg files
-    may not exist at the time ppremake is run; you must name each egg
-    file explicitly.
+    syntax here (unlike in the flt_egg and maya_egg rules), because
+    the egg files may not exist at the time ppremake is run; you must
+    name each egg file explicitly (although it is possible to use the
+    $[patsubst] function in ppremake to derive the egg files
+    automatically from the names of the source files if you really
+    want this).
 
   UNPAL_SOURCES - a list of egg files to install, omitting the
     egg-palettize step.  This is normally done for animation files
     that do not contain any geometry; there is no point in attempting
     to palettize these files since they contain to textures, and
     omitting the palettize step saves a bit of time building the model
-    tree.
+    tree.  You should not name any egg files that include geometry or
+    textures on the UNPAL_SOURCES line, it should only name animation
+    files.
 
   SOURCE_DIR - if all of the source egg files can be found in some
     other directory than the current directory, this can optionally be
@@ -134,8 +180,91 @@ install_egg - Runs egg-palettize on the named egg files, then runs
     #end install_egg
 
 
+maya_char_egg - Runs maya2egg to convert an animated model and its
+  associated animation tables from a Maya file to a number of egg
+  files.  Use this form of the block to convert animated files from
+  Maya; use maya_egg (above) if you just have an unanimated model.
+
+  To set up Maya animations, you should create multiple Maya files,
+  one for each animation, and one more for the model itself.  Each
+  Maya file should include the identical joint hierarchy; it is
+  usually easiest to create the model file first and then duplicate it
+  to create the animation files.  If you have multiple levels of
+  detail for your character, you should create a separate Maya file
+  for each LOD.
+
+  The assumption is that your Maya files will follow the following
+  naming convention: all Maya files that animate a particular
+  character will begin with the same prefix, and end with the name of
+  the animation, or with a name like "model" for the model file (or
+  with the name of the particular level of detail, e.g. "1000" or
+  "low", in the case of a multiple-LOD model).
+
+  MAYA_PREFIX - Specifies the prefix that all of the Maya files have
+    in common.
+
+  EGG_PREFIX - Specifies an optional prefix to be given to any egg
+    filenames generated by this rule.  We usually set this to the same
+    as MAYA_PREFIX, to help associate the egg files with the Maya
+    files they originated from.
+
+  POLY_MODEL - Specifies the suffix that identifies the model file,
+    e.g. "model" or "1000".  This is the form you will use if you
+    intend to extract your model directly into polygons (whether it is
+    modeled in NURBS or polygons).  The name of the Maya file that
+    contains the model is $[MAYA_PREFIX]$[POLY_MODEL].mb (but see
+    MODEL, below); it will be written to the egg file
+    $[EGG_PREFIX]$[POLY_MODEL].egg.  If you have multiple levels of
+    detail, you can only name one of them here; define a separate
+    maya_char_egg block to get each of the other LOD's.
+
+  NURBS_MODEL - Similar to the above; use this form if your character
+    is modeled in NURBS, and you want to use an egg tool such as
+    egg-qtess to convert NURBS to polygon models in a later step (for
+    instance, to generate multiple levels of detail from one source
+    file).
+
+  MODEL - Optional.  If this is specified, it names the actual Maya
+    file to use to extract the model.  That is, instead of
+    $[MAYA_PREFIX]$[POLY_MODEL].mb, the model will be extracted from
+    the Maya file $[MAYA_PREFIX]$[MODEL].mb.  It will still be written
+    to the file $[EGG_PREFIX]$[POLY_MODEL].egg.  This can be used if
+    you don't have a particular Maya file set aside to hold the model;
+    in this case, you can name any one of the animation files, and the
+    model will be pulled from that animation file.
+
+  ANIMS - Specifies a list of animations to extract from Maya.  Each
+    word in ANIMS represents a different animation; the name of the
+    Maya file that contains the animation is derived from MAYA_PREFIX,
+    e.g. $[MAYA_PREFIX]$[anim].mb.  Each anim is written to an egg
+    file whose filename is derived from EGG_PREFIX,
+    e.g. $[EGG_PREFIX]$[anim].egg.
+
+  CHAR_NAME - Specifies the name of the character that is to be
+    assigned to the models and animations generated in this rule.
+    This name is written within each generated egg file, and should be
+    different for each different character; it allows Panda to ensure
+    at runtime that a given animation file is being played on the
+    correct model file.
+ 
+  MAYA2EGG_OPTS - Specifies some additional command-line options that
+    are passed to maya2egg.  As in the maya_egg rule, above, you
+    should extend rather than completely redefine this variable.
+
+  Example:
+
+    #begin maya_char_egg
+      #define MAYA_PREFIX boss-
+      #define EGG_PREFIX boss-torso-
+      #define POLY_MODEL zero
+      #define CHAR_NAME boss-torso
+      #define ANIMS $[anims]
+      #define MAYA2EGG_OPTS $[MAYA2EGG_OPTS] -subset body
+    #end maya_char_egg
+
+
 soft_char_egg - Runs soft2egg to convert a model or animation tables
-  from a SoftImage database to one or more egg files.
+  from a SoftImage 4.3 database to one or more egg files.
 
   DATABASE - Specifies the root directory of the SoftImage database.
     Often, this will be the same for all soft2egg rules in a
@@ -147,45 +276,7 @@ soft_char_egg - Runs soft2egg to convert a model or animation tables
     the prefix that SoftImage applies to each model and animation
     filename in the scene.
 
-  MODEL - Specifies the name of the SoftImage model within the scene
-    to extract.  The actual filename of the model will be generated
-    from the concatenation of SCENE_PREFIX with MODEL;
-    e.g. $[SCENE_PREFIX]$[MODEL].1-0.dsc.
-
-  EGG_PREFIX - Specifies an optional prefix to be given to any egg
-    filenames generated by this rule.  We usually set this to the same
-    as SCENE_PREFIX, especially when we are converting from several
-    different scenes in a SoftImage database, to help associate the
-    egg files from the SoftImage scene they originated from.
-
-  POLY_MODEL - Specifies that a polygonal model should be extracted
-    from SoftImage.  This is the name of the egg file that will be
-    generated from the SoftImage scene and model (the actual filename
-    is prefixed with EGG_PREFIX, e.g. $[EGG_PREFIX]$[POLY_MODEL].egg).
-
-  NURBS_MODEL - As above, but specifies that a NURBS model instead of
-    a polygonal model should be extracted.  In this case, it will
-    likely be necessary to tesselate the generated egg model, for
-    instance with qtess, before using it in the player.
-
-  ANIMS - Specifies a list of animations to extract from SoftImage.
-    Each word in ANIMS defines a different animation; the name of the
-    SoftImage file that contains the anim is derived from
-    SCENE_PREFIX, e.g. $[SCENE_PREFIX]$[anim].1-0.dsc.  Each anim is
-    written to an egg file whose filename is derived from EGG_PREFIX,
-    e.g. $[EGG_PREFIX]$[anim].egg.
-
-  CHAR_NAME - Specifies the name of the character that is to be
-    assigned to the models and animations generated in this rule.
-    This name is written within each generated egg file, and should be
-    different for each different character; it allows Panda to ensure
-    at runtime that a given animation file is being played on the
-    correct model file.
- 
-  SOFT2EGG_OPTS - Specifies some additional command-line options that
-    are passed to soft2egg.  One common option is -F, which generates
-    a flat joint hierarchy and sometimes fixes animation problems (at
-    the cost of some runtime performance).
+  The remaining options are similar to those in maya_char_egg, above.
 
   Example:
     
@@ -198,12 +289,14 @@ soft_char_egg - Runs soft2egg to convert a model or animation tables
       #define CHAR_NAME suitA-lose
     #end soft_char_egg
 
+
     
-optchar_egg - Runs egg-optchar on a character model and all of its
-  associated animations.  This step removes unnecessary joints for
-  optimal runtime performance, exposes joints that are needed for show
-  code operations, and can also perform other operations like scaling
-  and rotating a character and its animation files together.
+optchar_egg - Runs egg-optchar on a character model (and/or multiple
+  levels of detail of a single model) and all of the associated
+  animations.  This step removes unnecessary joints for optimal
+  runtime performance, exposes joints that are needed for show code
+  operations, and can also perform other operations like scaling and
+  rotating a character and its animation files together.
 
   It is important to run egg-optchar on the model together with all of
   its animation files at the same time; since egg-optchar operates the
@@ -223,12 +316,14 @@ optchar_egg - Runs egg-optchar on a character model and all of its
 
   OPTCHAR_OPTS - Specifies additional command-line arguments to pass
     to egg-optchar.  This normally includes rules to expose joints
-    and/or transform models.  Common options to egg-optchar are:
+    and/or transform models.  As with any of the OPTS variables, it is
+    good practice to extend rather than completely redefine this
+    variable.  Common options to egg-optchar are:
 
-       -no             - strip surface normals from the model.
-       -Dp joint-name  - expose joint-name to the show code.
-       -TR x,y,z       - rotate about x, y, and z axes.
-       -TS scale       - scale model by the indicated factor.
+       -no                 - strip surface normals from the model.
+       -expose joint-name  - expose joint-name to the show code.
+       -TR x,y,z           - rotate about x, y, and z axes.
+       -TS scale           - scale model by the indicated factor.
 
   Example:
 
@@ -238,6 +333,7 @@ optchar_egg - Runs egg-optchar on a character model and all of its
         regexp/suitA-lose-mod.egg \
         suitA-lose.egg
       #define OPTCHAR_OPTS \
+         $[OPTCHAR_OPTS] \
          -no -TR 0,180,0 -TS 0.25 \
          -Dp joint-Rhold \
          -Dp joint-Lhold -Dp joint-head \
@@ -248,18 +344,18 @@ optchar_egg - Runs egg-optchar on a character model and all of its
 
 filter_egg - Runs an arbitrary egg command on one or more named egg
   files, one at a time.  This is usually done when an egg file
-  generated by one of the above steps (particularly soft2egg) needs
-  additional processing.  The modified egg files are written into a
-  specified directory to differentiate them from the source egg files;
-  a later rule (for instance, optchar_egg or install_egg) should then
-  specify to take its source egg files from this directory.
+  generated by one of the above steps needs additional processing.
+  The modified egg files are written into a specified directory to
+  differentiate them from the source egg files; a later rule (for
+  instance, optchar_egg or install_egg) should then specify to take
+  its source egg files from this directory.
 
   SOURCES - The list of egg files to process.
 
   SOURCE_DIR - As above, the source directory in which to read the egg
     files, if it is not the current directory.
 
-  TARGET_DIR - The subdirectory in which to write the generated egg
+  TARGET_DIR - The subdirectory into which to write the generated egg
     files.
 
   COMMAND - The egg command to run.  This should include the string
@@ -270,19 +366,49 @@ filter_egg - Runs an arbitrary egg command on one or more named egg
     evaluation of $[target] and $[source].
 
   Example:
-
-    #begin filter_egg
-      #define TARGET_DIR regexp
-      #define SOURCES suitA-mod.egg suitA-lose-mod.egg
     
+    #begin filter_egg
+      #define TARGET_DIR scaled
+      #define SOURCES \
+        button.egg bluebox.egg
       #defer COMMAND \
-        egg-regexp \
-            -n 'TheHandL'=hands \
-            -n 'TheHandR'=hands \
-    	-n 'TheArmL'=arms \
-            -n 'TheArmR'=arms \
-    	-n 'TheTorso'=torso \
-            -n 'TheLegL'=legs \
-    	-n 'TheLegR'=legs \
-            -o $[target] $[source]
+        egg-trans -no -TR 0,180,0 -TS 0.25 \ 
+        -o $[target] $[source]
     #end filter_egg
+
+
+filter_char_egg - Similar to filter_egg, above, except that one
+  command is run on all of the files named in SOURCES at the same
+  time, instead of one at a time.  This is particularly useful for
+  processing a character's model file and its animations all at the
+  same time, hence the name of the rule.  This rule is most often used
+  to invoke egg-topstrip, which is at the time of this writing the
+  only egg tool other than egg-optchar that works on a model file and
+  all animations at the same time.
+
+  SOURCES - The list of egg files to process.
+
+  SOURCE_DIR - As above, the source directory in which to read the egg
+    files, if it is not the current directory.
+
+  TARGET_DIR - The subdirectory into which to write the generated egg
+    files.
+
+  COMMAND - The egg command to run.  This should include the string
+    $[sources], which will be replaced with the list of the source egg
+    files, and it should probably include -d $[TARGET_DIR], to specify
+    the output directory.  Note that this variable should be defined
+    with the #defer command instead of the #define command, to prevent
+    the premature evaluation of $[sources] and $[TARGET_DIR].
+
+  Example:
+
+    #begin filter_char_egg
+      #define TARGET_DIR topstrip
+      #define SOURCES \
+        boss-torso-zero.egg \
+        $[matrix boss-torso-,$[anims],.egg]
+      #defer COMMAND \
+        egg-topstrip -i -t joint_pelvis -d $[TARGET_DIR] $[sources]
+    #end filter_char_egg
+    
