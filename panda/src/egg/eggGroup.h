@@ -198,6 +198,7 @@ public:
   void unref_vertex(EggVertex *vert);
   void unref_all_vertices();
   double get_vertex_membership(const EggVertex *vert) const;
+  void set_vertex_membership(EggVertex *vert, double membership);
   void steal_vrefs(EggGroup *other);
 
   INLINE VertexRef::const_iterator vref_begin() const;

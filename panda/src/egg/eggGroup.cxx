@@ -506,6 +506,38 @@ get_vertex_membership(const EggVertex *vert) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::set_vertex_membership
+//       Access: Public
+//  Description: Explicitly sets the net membership of the indicated
+//               vertex in this group to the given value.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+set_vertex_membership(EggVertex *vert, double membership) {
+  if (membership == 0.0) {
+    unref_vertex(vert);
+    return;
+  }
+
+  VertexRef::iterator vri = _vref.find(vert);
+
+  if (vri != _vref.end()) {
+    // The vertex was already being reffed; just change its membership
+    // amount.
+    (*vri).second = membership;
+
+  } else {
+    // The vertex was not already reffed; ref it.
+    _vref[vert] = membership;
+
+    bool inserted = vert->_gref.insert(this).second;
+    // Did the group not exist previously in the vertex's gref list?
+    // If it was there already, we must be out of sync between
+    // vertices and groups.
+    nassertv(inserted);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::steal_vrefs
 //       Access: Public
 //  Description: Moves all of the vertex references from the indicated
