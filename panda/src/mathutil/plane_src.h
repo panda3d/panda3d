@@ -21,7 +21,7 @@
 // Description : An abstract mathematical description of a plane.  A
 //               plane is defined by the equation Ax + By + Cz + D = 0.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FLOATNAME(Plane) {
+class EXPCL_PANDA FLOATNAME(Plane) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(Plane)(void);
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(Plane) &copy);
@@ -33,10 +33,9 @@ PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(Plane)(FLOATTYPE a, FLOATTYPE b,
                                    FLOATTYPE c, FLOATTYPE d);
 
-  INLINE_MATHUTIL FLOATNAME(Plane)& operator = (const FLOATNAME(Plane)& copy);
-
   INLINE_MATHUTIL FLOATNAME(Plane) operator * (const FLOATNAME(LMatrix3) &mat) const;
   INLINE_MATHUTIL FLOATNAME(Plane) operator * (const FLOATNAME(LMatrix4) &mat) const;
+  INLINE_MATHUTIL FLOATNAME(Plane) operator - () const;
 
   FLOATNAME(LMatrix4) get_reflection_mat(void) const;
 
@@ -55,23 +54,11 @@ PUBLISHED:
                         FLOATNAME(LVector3) &delta,
                         const FLOATNAME(Plane) &other) const;
 
-  INLINE_MATHUTIL const FLOATTYPE *get_data() const;
-  INLINE_MATHUTIL int get_num_components() const;
-
-  INLINE_MATHUTIL void output(ostream &out) const;
-  INLINE_MATHUTIL void write(ostream &out, int indent_level = 0) const;
-
-public:
-  INLINE_MATHUTIL void write_datagram(Datagram &dest) const;
-  INLINE_MATHUTIL void read_datagram(DatagramIterator &source);
-
-public:
-  FLOATTYPE _a, _b, _c, _d;
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
 };
 
-INLINE_MATHUTIL ostream &operator << (ostream &out, const FLOATNAME(Plane) &p) {
-  p.output(out);
-  return out;
-}
+INLINE_MATHUTIL ostream &
+operator << (ostream &out, const FLOATNAME(Plane) &p);
 
 #include "plane_src.I"

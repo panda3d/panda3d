@@ -26,10 +26,15 @@
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LMatrix4) FLOATNAME(Plane)::
 get_reflection_mat(void) const {
-  FLOATTYPE aa = _a * _a; FLOATTYPE ab = _a * _b; FLOATTYPE ac = _a * _c;
-  FLOATTYPE ad = _a * _d;
-  FLOATTYPE bb = _b * _b; FLOATTYPE bc = _b * _c; FLOATTYPE bd = _b * _d;
-  FLOATTYPE cc = _c * _c; FLOATTYPE cd = _c * _d;
+  FLOATTYPE aa = _v.v._0 * _v.v._0; 
+  FLOATTYPE ab = _v.v._0 * _v.v._1;
+  FLOATTYPE ac = _v.v._0 * _v.v._2;
+  FLOATTYPE ad = _v.v._0 * _v.v._3;
+  FLOATTYPE bb = _v.v._1 * _v.v._1;
+  FLOATTYPE bc = _v.v._1 * _v.v._2;
+  FLOATTYPE bd = _v.v._1 * _v.v._3;
+  FLOATTYPE cc = _v.v._2 * _v.v._2;
+  FLOATTYPE cd = _v.v._2 * _v.v._3;
 
   return FLOATNAME(LMatrix4)(  1-2*aa,  -2*ab,  -2*ac,     0,
                               -2*ab, 1-2*bb,  -2*bc,     0,
@@ -47,15 +52,15 @@ get_reflection_mat(void) const {
 FLOATNAME(LPoint3) FLOATNAME(Plane)::
 get_point() const {
   // Choose the denominator based on the largest axis in the normal.
-  if (cabs(_a) >= cabs(_b) && cabs(_a) >= cabs(_c)) {
-    nassertr(_a != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
-    return FLOATNAME(LPoint3)(-_d / _a, 0.0f, 0.0f);
-  } else if (cabs(_b) >= cabs(_c)) {
-    nassertr(_b != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
-    return FLOATNAME(LPoint3)(0.0f, -_d / _b, 0.0f);
+  if (cabs(_v.v._0) >= cabs(_v.v._1) && cabs(_v.v._0) >= cabs(_v.v._2)) {
+    nassertr(_v.v._0 != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
+    return FLOATNAME(LPoint3)(-_v.v._3 / _v.v._0, 0.0f, 0.0f);
+  } else if (cabs(_v.v._1) >= cabs(_v.v._2)) {
+    nassertr(_v.v._1 != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
+    return FLOATNAME(LPoint3)(0.0f, -_v.v._3 / _v.v._1, 0.0f);
   } else {
-    nassertr(_c != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
-    return FLOATNAME(LPoint3)(0.0f, 0.0f, -_d / _c);
+    nassertr(_v.v._2 != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
+    return FLOATNAME(LPoint3)(0.0f, 0.0f, -_v.v._3 / _v.v._2);
   }
 }
 
@@ -86,14 +91,36 @@ intersects_plane(FLOATNAME(LPoint3) &from,
     return false;
   }
 
-  FLOATTYPE n1n1 = dot(n1, n1);
-  FLOATTYPE n2n2 = dot(n2, n2);
-  FLOATTYPE n1n2 = dot(n1, n2);
+  FLOATTYPE n1n1 = ::dot(n1, n1);
+  FLOATTYPE n2n2 = ::dot(n2, n2);
+  FLOATTYPE n1n2 = ::dot(n1, n2);
  
   FLOATTYPE determinant_inv = 1.0f / (n1n1 * n2n2 - n1n2 * n1n2);
-  FLOATTYPE c1 = (other._d * n1n2 - _d * n2n2) * determinant_inv;
-  FLOATTYPE c2 = (_d * n1n2 - other._d * n1n1) * determinant_inv;
+  FLOATTYPE c1 = (other._v.v._3 * n1n2 - _v.v._3 * n2n2) * determinant_inv;
+  FLOATTYPE c2 = (_v.v._3 * n1n2 - other._v.v._3 * n1n1) * determinant_inv;
   from = n1 * c1 + n2 * c2;
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Plane::output
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(Plane)::
+output(ostream &out) const {
+  out << "Plane(";
+  FLOATNAME(LVecBase4)::output(out);
+  out << ")";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Plane::write
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(Plane)::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << *this << "\n";
 }
