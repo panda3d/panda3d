@@ -74,7 +74,10 @@ class Loader:
         useful for special models like fonts that you don't care about
         where they're parented to, and you don't want a NodePath
         anyway--it prevents accumulation of instances of the font
-        model under hidden."""
+        model under hidden.
+
+        However, if you're loading a font, see loadFont(), below.
+        """
         
         Loader.notify.debug("Loading model once node: %s" % (modelPath))
         if phaseChecker:
@@ -86,7 +89,29 @@ class Loader:
 	"""
 	Loader.notify.debug("Unloading model: %s" % (modelPath))
 	ModelPool.releaseModel(modelPath)
-            
+
+    # font loading funcs
+    def loadFont(self, modelPath):
+        """loadFont(self, string)
+
+        This loads a special model that will be sent to a TextNode as
+        a "font"--this is a model generated with egg-mkfont (or
+        ttf2egg) that consists of a flat hierarchy, with one node per
+        each letter of the font.  The TextNode will assemble these
+        letters together, given a string.
+        """
+        Loader.notify.debug("Loading font: %s" % (modelPath))
+        if phaseChecker:
+            phaseChecker(modelPath)
+        node = ModelPool.loadModel(modelPath)
+
+        #*** Temporary try-except to support old pandas without TextFont.
+        try:
+            font = TextFont(node)
+        except:
+            font = node
+        return font
+
     # texture loading funcs
     def loadTexture(self, texturePath, alphaPath = None):
         """loadTexture(self, string)
