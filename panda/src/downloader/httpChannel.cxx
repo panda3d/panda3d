@@ -633,7 +633,7 @@ run_connecting() {
   }
 
   if (downloader_cat.is_debug()) {
-    downloader_cat.info()
+    downloader_cat.debug()
       << "Connected to " << _bio->get_server_name() << ":" 
       << _bio->get_port() << "\n";
   }
