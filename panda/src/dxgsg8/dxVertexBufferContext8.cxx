@@ -56,14 +56,14 @@ DXVertexBufferContext8(qpGeomVertexArrayData *data) :
       // We have hardware vertex animation.
       num_blend_values = array_format->get_column(n)->get_num_values();
       ++n;
+    }
       
-      if (n < num_columns &&
-          array_format->get_column(n)->get_name() == InternalName::get_transform_index()) {
-        // Furthermore, it's indexed vertex animation.
-        _fvf |= D3DFVF_LASTBETA_UBYTE4;
-        ++num_blend_values;
-        ++n;
-      }
+    if (n < num_columns &&
+        array_format->get_column(n)->get_name() == InternalName::get_transform_index()) {
+      // Furthermore, it's indexed vertex animation.
+      _fvf |= D3DFVF_LASTBETA_UBYTE4;
+      ++num_blend_values;
+      ++n;
     }
 
     switch (num_blend_values) {

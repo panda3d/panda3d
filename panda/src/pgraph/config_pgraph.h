@@ -44,6 +44,8 @@ extern ConfigVariableBool auto_break_cycles;
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;
 
+extern ConfigVariableBool show_cpu_animation;
+
 extern ConfigVariableBool m_dual;
 extern ConfigVariableBool m_dual_opaque;
 extern ConfigVariableBool m_dual_transparent;

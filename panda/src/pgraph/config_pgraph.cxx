@@ -164,6 +164,14 @@ ConfigVariableDouble lod_fade_time
  PRC_DESC("The default amount of time (in seconds) over which a FadeLODNode "
           "transitions between its different levels."));
 
+
+ConfigVariableBool show_cpu_animation
+("show-cpu-animation", false,
+ PRC_DESC("Set this true to flash any objects that are animated via Panda, "
+          "on the CPU, so you can visually see what's being animated on "
+          "the CPU and what's being animated by hardware.  This only "
+          "has effect when NDEBUG is defined."));
+
 ConfigVariableBool m_dual
 ("m-dual", true,
  PRC_DESC("Set this false to disable TransparencyAttrib::M_dual altogether "

@@ -67,12 +67,14 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 
   if (animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware &&
       animation.get_num_transforms() > 0) {
-    // If we want hardware animation, we need to reserve space for the
-    // blend weights.
-    new_array_format->add_column
-      (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
-       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_other);
-
+    if (animation.get_num_transforms() > 1) {
+      // If we want hardware animation, we need to reserve space for the
+      // blend weights.
+      new_array_format->add_column
+        (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
+         qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_other);
+    }
+      
     if (animation.get_indexed_transforms()) {
       // Also, if we'll be indexing into the transfom palette, reserve
       // space for the index.

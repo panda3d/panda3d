@@ -287,7 +287,7 @@ get_dual_transparent_state() {
 
 #ifndef NDEBUG
   if (m_dual_flash) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_real_time() * m_dual_flash_rate);
+    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * m_dual_flash_rate);
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
@@ -325,7 +325,7 @@ get_dual_transparent_state_decals() {
 
 #ifndef NDEBUG
   if (m_dual_flash) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_real_time() * m_dual_flash_rate);
+    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * m_dual_flash_rate);
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
@@ -356,7 +356,7 @@ get_dual_opaque_state() {
 
 #ifndef NDEBUG
   if (m_dual_flash) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_real_time() * m_dual_flash_rate);
+    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * m_dual_flash_rate);
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {

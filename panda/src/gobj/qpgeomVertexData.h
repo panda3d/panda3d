@@ -113,9 +113,13 @@ PUBLISHED:
   void copy_from(const qpGeomVertexData &source, bool keep_data_objects);
   CPT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
   CPT(qpGeomVertexData) 
+    scale_color(const LVecBase4f &color_scale) const;
+  CPT(qpGeomVertexData) 
     scale_color(const LVecBase4f &color_scale, int num_components,
                 qpGeomVertexColumn::NumericType numeric_type,
                 qpGeomVertexColumn::Contents contents) const;
+  CPT(qpGeomVertexData) 
+    set_color(const Colorf &color) const;
   CPT(qpGeomVertexData) 
     set_color(const Colorf &color, int num_components,
               qpGeomVertexColumn::NumericType numeric_type,

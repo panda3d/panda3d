@@ -514,7 +514,9 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
               indices[i] = add_transform(transform_palette, blend.get_transform(i),
                                          already_added);
             }
-            weight.set_data4f(weights);
+            if (weight.has_column()) {
+              weight.set_data4f(weights);
+            }
             index.set_data4i(indices);
           }
         } else {
@@ -533,7 +535,9 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
               nassertv(index <= 4);
               weights[index] = blend.get_weight(i);
             }
-            weight.set_data4f(weights);
+            if (weight.has_column()) {
+              weight.set_data4f(weights);
+            }
           }
         }
         
@@ -571,6 +575,34 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   new_data->set_slider_table(get_slider_table());
 
   new_data->copy_from(*this, false);
+  return new_data;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::scale_color
+//       Access: Published
+//  Description: Returns a new GeomVertexData object with the color
+//               table modified in-place to apply the indicated scale.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexData) qpGeomVertexData::
+scale_color(const LVecBase4f &color_scale) const {
+  const qpGeomVertexColumn *old_column = 
+    _format->get_column(InternalName::get_color());
+  if (old_column == (qpGeomVertexColumn *)NULL) {
+    return this;
+  }
+
+  PT(qpGeomVertexData) new_data = new qpGeomVertexData(*this);
+  qpGeomVertexRewriter data(new_data, InternalName::get_color());
+  while (!data.is_at_end()) {
+    Colorf color = data.get_data4f();
+    data.set_data4f(color[0] * color_scale[0],
+                    color[1] * color_scale[1],
+                    color[2] * color_scale[2],
+                    color[3] * color_scale[3]);
+  }
+
   return new_data;
 }
 
@@ -626,6 +658,29 @@ scale_color(const LVecBase4f &color_scale, int num_components,
 //     Function: qpGeomVertexData::set_color
 //       Access: Published
 //  Description: Returns a new GeomVertexData object with the color
+//               data modified in-place with the new value.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexData) qpGeomVertexData::
+set_color(const Colorf &color) const {
+  const qpGeomVertexColumn *old_column = 
+    _format->get_column(InternalName::get_color());
+  if (old_column == (qpGeomVertexColumn *)NULL) {
+    return this;
+  }
+
+  PT(qpGeomVertexData) new_data = new qpGeomVertexData(*this);
+  qpGeomVertexWriter to(new_data, InternalName::get_color());
+  while (!to.is_at_end()) {
+    to.set_data4f(color);
+  }
+
+  return new_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_color
+//       Access: Published
+//  Description: Returns a new GeomVertexData object with the color
 //               table replaced with a new color table for which each
 //               vertex has the indicated value.  The new color table
 //               will be added as a new array; if the old color table
@@ -636,11 +691,9 @@ CPT(qpGeomVertexData) qpGeomVertexData::
 set_color(const Colorf &color, int num_components,
           qpGeomVertexColumn::NumericType numeric_type,
           qpGeomVertexColumn::Contents contents) const {
-  int num_vertices = get_num_vertices();
-
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Setting color for " << num_vertices << " vertices to "
+      << "Setting color for " << get_num_vertices() << " vertices to "
       << color << ".\n";
   }
   PStatTimer timer(_set_color_pcollector);
@@ -651,8 +704,7 @@ set_color(const Colorf &color, int num_components,
 
   // Now go through and set the new color value.
   qpGeomVertexWriter to(new_data, InternalName::get_color());
-
-  for (int i = 0; i < num_vertices; i++) {
+  while (!to.is_at_end()) {
     to.set_data4f(color);
   }
 

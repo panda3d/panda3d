@@ -25,8 +25,8 @@
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexColumn::
 qpGeomVertexColumn(const InternalName *name, int num_components,
-                     NumericType numeric_type, Contents contents,
-                     int start) :
+                   NumericType numeric_type, Contents contents,
+                   int start) :
   _name(name),
   _num_components(num_components),
   _num_values(num_components),

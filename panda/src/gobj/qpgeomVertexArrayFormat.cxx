@@ -217,7 +217,7 @@ add_column(const InternalName *name, int num_components,
   }
 
   return add_column(qpGeomVertexColumn(name, num_components, 
-                                            numeric_type, contents, start));
+                                       numeric_type, contents, start));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullableObject.h"
+#include "textureAttrib.h"
+#include "renderState.h"
+#include "clockObject.h"
 
 
 CullableObject *CullableObject::_deleted_chain = (CullableObject *)NULL;
@@ -38,7 +41,23 @@ munge_geom(const qpGeomMunger *munger) {
       _munger = munger;
       CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
       qpgeom->munge_geom(munger, qpgeom, _munged_data);
-      _munged_data = _munged_data->animate_vertices_cull();
+      CPT(qpGeomVertexData) animated_vertices = 
+        _munged_data->animate_vertices_cull();
+#ifndef NDEBUG
+      if (show_cpu_animation && animated_vertices != _munged_data) {
+        // These vertices were CPU-animated, so flash them.
+        static const double flash_rate = 1.0;  // 1 state change per second
+        int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * flash_rate);
+        if ((cycle & 3) == 0) {
+          animated_vertices = animated_vertices->set_color(Colorf(0.8f, 0.2f, 0.2f, 1.0f));
+          _state = _state->remove_attrib(TextureAttrib::get_class_type());
+        } else if ((cycle & 3) == 2) {
+          animated_vertices = animated_vertices->set_color(Colorf(0.1f, 0.2f, 0.8f, 1.0f));
+          _state = _state->remove_attrib(TextureAttrib::get_class_type());
+        }
+      }
+#endif
+      _munged_data = animated_vertices;
       _geom = qpgeom;
     }
   }
