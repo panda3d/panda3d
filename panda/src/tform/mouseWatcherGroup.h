@@ -48,10 +48,12 @@ protected:
 
 public:
   static TypeHandle get_class_type() {
+    ReferenceCount::init_type();
     return _type_handle;
   }
   static void init_type() {
-    register_type(_type_handle, "MouseWatcherGroup");
+    register_type(_type_handle, "MouseWatcherGroup",
+                  ReferenceCount::get_class_type());
   }
 
 private:

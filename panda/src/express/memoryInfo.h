@@ -55,10 +55,10 @@ public:
 
   INLINE double get_time() const;
 
-public:
+private:
   // Members to set up the MemoryInfo structure.
   void determine_dynamic_type();
-  void update_type_handle(TypeHandle &destination, TypeHandle refined);
+  bool update_type_handle(TypeHandle &destination, TypeHandle refined);
 
 private:
   enum Flags {

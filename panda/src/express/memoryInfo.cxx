@@ -68,12 +68,20 @@ get_type() {
   TypeHandle type = _static_type;
   update_type_handle(type, _dynamic_type);
 
+  if (type != _static_type) {
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Pointer " << (void *)_ref_ptr << " has static type "
+        << _static_type << " and dynamic type " << _dynamic_type << "\n";
+    }
+  }
+
   return type;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryInfo::determine_dynamic_type
-//       Access: Public
+//       Access: Private
 //  Description: Tries to determine the actual type of the object to
 //               which this thing is pointed, if possible.
 ////////////////////////////////////////////////////////////////////
@@ -113,20 +121,36 @@ determine_dynamic_type() {
         return;
       }
 
-      update_type_handle(_dynamic_type, got_type);
-    }
+      TypeHandle orig_type = _dynamic_type;
+      if (update_type_handle(_dynamic_type, got_type)) {
+        if (orig_type != _dynamic_type) {
+          if (express_cat.is_spam()) {
+            express_cat.spam()
+              << "Updating " << (void *)_ref_ptr << " from type "
+              << orig_type << " to type " << _dynamic_type << "\n";
+          }
+        }
+
+      } else {
+        express_cat.error()
+          << "Pointer " << (void *)_ref_ptr << " previously indicated as type "
+          << orig_type << " is now type " << got_type << "!\n";
+      }
+    }    
   }
 }
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryInfo::update_type_handle
-//       Access: Public
+//       Access: Private
 //  Description: Updates the given destination TypeHandle with the
 //               refined TypeHandle, if it is in fact more specific
-//               than the original value for the destination.
+//               than the original value for the destination.  Returns
+//               true if the update was trouble-free, or false if the
+//               two types were not apparently related.
 ////////////////////////////////////////////////////////////////////
-void MemoryInfo::
+bool MemoryInfo::
 update_type_handle(TypeHandle &destination, TypeHandle refined) {
   if (refined == TypeHandle::none()) {
     express_cat.error()
@@ -142,19 +166,15 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
 
   } else if (refined.is_derived_from(destination)) {
     // Updating with a more-specific type, no problem.
-    if (express_cat.is_spam()) {
-      express_cat.spam()
-        << "Updating pointer " << (void *)_ref_ptr << " from type "
-        << destination << " to type " << refined << "\n";
-    }
     destination = refined;
 
   } else {
-    express_cat.error()
-      << "Pointer " << (void *)_ref_ptr << " previously indicated as type "
-      << destination << " is now type " << refined << "!\n";
+    // Unrelated types, which might or might not be a problem.
     destination = refined;
+    return false;
   }
+  
+  return true;
 }
 
 #endif  // DO_MEMORY_USAGE
