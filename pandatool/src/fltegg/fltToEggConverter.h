@@ -45,8 +45,16 @@ public:
   FltToEggConverter(EggData &egg_data);
   INLINE ~FltToEggConverter();
 
-  INLINE void set_input_units(DistanceUnit input_units);
-  INLINE void set_output_units(DistanceUnit output_units);
+  enum PathConvert {
+    PC_relative,
+    PC_absolute,
+    PC_rel_abs,
+    PC_unchanged
+  };
+  INLINE void set_texture_path_convert(PathConvert tpc,
+				       const Filename &tpc_directory = Filename());
+  INLINE void set_model_path_convert(PathConvert mpc,
+				     const Filename &mpc_directory = Filename());
 
   bool convert_flt(const FltHeader *flt_header);
 
@@ -71,14 +79,23 @@ private:
 
   void set_transform(const FltBead *flt_bead, EggGroup *egg_group);
   bool parse_comment(const FltBeadID *flt_bead, EggNode *egg_node);
-  bool parse_comment(const FltRecord *flt_record, const string &name,
+  bool parse_comment(const FltBead *flt_bead, EggNode *egg_node);
+  bool parse_comment(const FltTexture *flt_texture, EggNode *egg_node);
+  bool parse_comment(const string &comment, const string &name,
 		     EggNode *egg_node);
+
+  static Filename convert_path(const Filename &orig_filename,
+			       const Filename &as_found,
+			       const Filename &rel_dir,
+			       PathConvert path_convert);
 
   PT(EggVertex) make_egg_vertex(const FltVertex *flt_vertex);
   PT(EggTexture) make_egg_texture(const FltTexture *flt_texture);
 
-  DistanceUnit _input_units;
-  DistanceUnit _output_units;
+  PathConvert _tpc;
+  Filename _tpc_directory;
+  PathConvert _mpc;
+  Filename _mpc_directory;
 
   EggData &_egg_data;
   CPT(FltHeader) _flt_header;

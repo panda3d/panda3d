@@ -34,12 +34,49 @@ SomethingToEgg(const string &format_name,
   redescribe_option
     ("cs",
      "Specify the coordinate system of the input " + _format_name +
-     "file.  Normally, this can inferred from the file itself.");
+     " file.  Normally, this can inferred from the file itself.");
+
+  add_option
+    ("ui", "units", 40, 
+     "Specify the units of the input " + _format_name +
+     " file.  Normally, this can be inferred from the file itself.",
+     &SomethingToEgg::dispatch_units, NULL, &_input_units);
+
+  add_option
+    ("uo", "units", 40, 
+     "Specify the units of the resulting egg file.  If this is "
+     "specified, the vertices in the egg file will be scaled as "
+     "necessary to make the appropriate units conversion; otherwise, "
+     "the vertices in the input file will be converted exactly as they are.",
+     &SomethingToEgg::dispatch_units, NULL, &_output_units);
+
+  _input_units = DU_invalid;
+  _output_units = DU_invalid;
+
+  add_transform_options();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::apply_units_scale
+//       Access: Protected
+//  Description: Applies the scale indicated by the input and output
+//               units to the indicated egg file.  This is normally
+//               done automatically when the file is written out.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+apply_units_scale(EggData &data) {
+  if (_output_units != DU_invalid && _input_units != DU_invalid &&
+      _input_units != _output_units) {
+    nout << "Converting from " << format_long_unit(_input_units)
+	 << " to " << format_long_unit(_output_units) << "\n";
+    double scale = convert_units(_input_units, _output_units);
+    data.transform(LMatrix4d::scale_mat(scale));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEgg::handle_args
-//       Access: Public
+//       Access: Protected
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool SomethingToEgg::
@@ -84,4 +121,22 @@ handle_args(Args &args) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::post_process_egg_file
+//       Access: Protected, Virtual
+//  Description: Performs any processing of the egg file that is
+//               appropriate before writing it out.  This includes any
+//               normal adjustments the user requested via -np, etc.
+//
+//               Normally, you should not need to call this function
+//               directly; write_egg_file() calls it for you.  You
+//               should call this only if you do not use
+//               write_egg_file() to write out the resulting egg file.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+post_process_egg_file() {
+  apply_units_scale(_data);
+  EggConverter::post_process_egg_file();
 }

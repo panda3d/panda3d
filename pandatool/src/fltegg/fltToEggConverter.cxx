@@ -33,8 +33,8 @@
 ////////////////////////////////////////////////////////////////////
 FltToEggConverter::
 FltToEggConverter(EggData &egg_data) : _egg_data(egg_data) {
-  _input_units = DU_invalid;
-  _output_units = DU_invalid;
+  _tpc = PC_unchanged;
+  _mpc = PC_unchanged;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,30 +47,6 @@ bool FltToEggConverter::
 convert_flt(const FltHeader *flt_header) {
   _error = false;
   _flt_header = flt_header;
-  
-  if (_input_units == DU_invalid) {
-    switch (_flt_header->_vertex_units) {
-    case FltHeader::U_meters:
-      _input_units = DU_meters;
-      break;
-
-    case FltHeader::U_kilometers:
-      _input_units = DU_kilometers;
-      break;
-
-    case FltHeader::U_feet:
-      _input_units = DU_feet;
-      break;
-
-    case FltHeader::U_inches:
-      _input_units = DU_inches;
-      break;
-
-    case FltHeader::U_nautical_miles:
-      _input_units = DU_nautical_miles;
-      break;
-    }
-  }
 
   // Generate a default vertex pool.
   _main_egg_vpool = new EggVertexPool("vpool");
@@ -245,7 +221,7 @@ convert_bead(const FltBead *flt_bead, FltToEggLevelState &state) {
   state._egg_parent->add_child(egg_group);
 
   set_transform(flt_bead, egg_group);
-  parse_comment(flt_bead, "anonymous", egg_group);
+  parse_comment(flt_bead, egg_group);
 
   FltToEggLevelState next_state(state);
   next_state._egg_parent = egg_group;
@@ -312,7 +288,12 @@ convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) 
   EggGroupNode *egg_parent = 
     state.get_synthetic_group("", flt_ext->get_transform());
 
-  Filename filename = flt_ext->get_ref_filename();
+  Filename filename = 
+    convert_path(flt_ext->_filename,
+		 flt_ext->get_ref_filename(),
+		 _mpc_directory,
+		 _mpc);
+
   filename.set_extension("egg");
 
   EggExternalReference *egg_ref = new EggExternalReference("", filename);
@@ -335,7 +316,8 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
 
   // Determine what the appropriate parent will be.
   EggGroupNode *egg_parent = 
-    state.get_synthetic_group(flt_geom->get_id(), flt_geom->get_transform());
+    state.get_synthetic_group(flt_geom->get_id(), flt_geom->get_transform(),
+			      flt_geom->_billboard_type);
 
   // Create a new state to reflect the new parent.
   FltToEggLevelState next_state(state);
@@ -499,7 +481,7 @@ set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
 ////////////////////////////////////////////////////////////////////
 bool FltToEggConverter::
 parse_comment(const FltBeadID *flt_bead, EggNode *egg_node) {
-  return parse_comment(flt_bead, flt_bead->get_id(), egg_node);
+  return parse_comment(flt_bead->get_comment(), flt_bead->get_id(), egg_node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -512,13 +494,40 @@ parse_comment(const FltBeadID *flt_bead, EggNode *egg_node) {
 //               true).
 ////////////////////////////////////////////////////////////////////
 bool FltToEggConverter::
-parse_comment(const FltRecord *flt_record, const string &name,
+parse_comment(const FltBead *flt_bead, EggNode *egg_node) {
+  return parse_comment(flt_bead->get_comment(), "anonymous", egg_node);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::parse_comment
+//       Access: Private
+//  Description: Scans the comment on this record for "<egg> { ... }"
+//               and parses the enclosed string as if it appeared in
+//               the egg file.  Returns true on success, false on
+//               syntax error (in which case _error is also set to
+//               true).
+////////////////////////////////////////////////////////////////////
+bool FltToEggConverter::
+parse_comment(const FltTexture *flt_texture, EggNode *egg_node) {
+  return parse_comment(flt_texture->_comment, flt_texture->_filename, egg_node);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::parse_comment
+//       Access: Private
+//  Description: Scans the comment on this record for "<egg> { ... }"
+//               and parses the enclosed string as if it appeared in
+//               the egg file.  Returns true on success, false on
+//               syntax error (in which case _error is also set to
+//               true).
+////////////////////////////////////////////////////////////////////
+bool FltToEggConverter::
+parse_comment(const string &comment, const string &name,
 	      EggNode *egg_node) {
-  if (!flt_record->has_comment()) {
+  if (comment.empty()) {
     // No comment.
     return true;
   }
-  string comment = flt_record->get_comment();
 
   // Scan for <egg>.
   static const string egg_str = "<egg>";
@@ -575,6 +584,59 @@ parse_comment(const FltRecord *flt_record, const string &name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::convert_path
+//       Access: Private, Static
+//  Description: Converts the pathname reference by the flt file as
+//               requested.  This may either make it absolute,
+//               relative, or leave it alone.
+//
+//               orig_filename is the filename as it actually appeared
+//               in the flt file; as_found is the full pathname to the
+//               file as it actually exists on disk, assuming it was
+//               found on the search path.  rel_dir is the directory
+//               to make the pathname relative to in the case of
+//               PC_relative or PC_rel_abs.
+////////////////////////////////////////////////////////////////////
+Filename FltToEggConverter::
+convert_path(const Filename &orig_filename, const Filename &as_found,
+	     const Filename &rel_dir, PathConvert path_convert) {
+  Filename result;
+
+  switch (path_convert) {
+  case PC_relative:
+    result = as_found;
+    if (!result.make_relative_to(rel_dir)) {
+      nout << "Cannot make " << result << " relative to " << rel_dir << "\n";
+    }
+    return result;
+
+  case PC_absolute:
+    result = as_found;
+    if (as_found.is_local()) {
+      nout << "Warning: file " << as_found << " not found; cannot make absolute.\n";
+      return result;
+    }
+    result.make_absolute();
+    return result;
+
+  case PC_rel_abs:
+    result = as_found;
+    if (!result.make_relative_to(rel_dir)) {
+      nout << "Cannot make " << result << " relative to " << rel_dir << "\n";
+    }
+    result = Filename(rel_dir, result);
+    return result;
+
+  case PC_unchanged:
+    return orig_filename;
+  }
+
+  // Error case.
+  nout << "Invalid PathConvert type: " << (int)path_convert << "\n";
+  return orig_filename;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::make_egg_vertex
 //       Access: Private
 //  Description: Makes a new EggVertex for the indicated FltVertex.
@@ -619,12 +681,202 @@ make_egg_texture(const FltTexture *flt_texture) {
 
   // Create a new one.
   string tref_name = format_string(flt_texture->_pattern_index);
-  Filename filename = flt_texture->get_texture_filename();
+  Filename filename = 
+    convert_path(flt_texture->_filename,
+		 flt_texture->get_texture_filename(),
+		 _tpc_directory,
+		 _tpc);
+		 
   PT(EggTexture) egg_texture = new EggTexture(tref_name, filename);
 
   _textures.insert(Textures::value_type(flt_texture, egg_texture));
 
-  ////*** Texture properties.
+  // Set up the texture properties.
 
+  switch (flt_texture->_min_filter) {
+  case FltTexture::MN_point:
+    egg_texture->set_minfilter(EggTexture::FT_nearest);
+    break;
+
+  case FltTexture::MN_bilinear:
+    egg_texture->set_minfilter(EggTexture::FT_linear);
+    break;
+
+  case FltTexture::MN_mipmap_point:
+    egg_texture->set_minfilter(EggTexture::FT_nearest_mipmap_nearest);
+    break;
+
+  case FltTexture::MN_mipmap_linear:
+    egg_texture->set_minfilter(EggTexture::FT_nearest_mipmap_linear);
+    break;
+
+  case FltTexture::MN_mipmap_bilinear:
+    egg_texture->set_minfilter(EggTexture::FT_linear_mipmap_nearest);
+    break;
+
+  case FltTexture::MN_mipmap_trilinear:
+  case FltTexture::MN_OB_mipmap:
+    egg_texture->set_minfilter(EggTexture::FT_linear_mipmap_linear);
+    break;
+
+  case FltTexture::MN_bicubic:
+  case FltTexture::MN_bilinear_gequal:
+  case FltTexture::MN_bilinear_lequal:
+  case FltTexture::MN_bicubic_gequal:
+  case FltTexture::MN_bicubic_lequal:
+    // Not supported.
+    break;
+  }
+ 
+  switch (flt_texture->_mag_filter) {
+  case FltTexture::MG_point:
+    egg_texture->set_magfilter(EggTexture::FT_nearest);
+    break;
+
+  case FltTexture::MG_bilinear:
+    egg_texture->set_magfilter(EggTexture::FT_linear);
+    break;
+
+  case FltTexture::MG_bicubic:
+  case FltTexture::MG_sharpen:
+  case FltTexture::MG_add_detail:
+  case FltTexture::MG_modulate_detail:
+  case FltTexture::MG_bilinear_gequal:
+  case FltTexture::MG_bilinear_lequal:
+  case FltTexture::MG_bicubic_gequal:
+  case FltTexture::MG_bicubic_lequal:
+    // Not supported.
+    break;
+  }
+
+  switch (flt_texture->_repeat) {
+  case FltTexture::RT_repeat:
+    egg_texture->set_wrap_mode(EggTexture::WM_repeat);
+    break;
+
+  case FltTexture::RT_clamp:
+    egg_texture->set_wrap_mode(EggTexture::WM_clamp);
+    break;
+  }
+
+  switch (flt_texture->_repeat_u) {
+  case FltTexture::RT_repeat:
+    egg_texture->set_wrap_u(EggTexture::WM_repeat);
+    break;
+
+  case FltTexture::RT_clamp:
+    egg_texture->set_wrap_u(EggTexture::WM_clamp);
+    break;
+  }
+
+  switch (flt_texture->_repeat_v) {
+  case FltTexture::RT_repeat:
+    egg_texture->set_wrap_v(EggTexture::WM_repeat);
+    break;
+
+  case FltTexture::RT_clamp:
+    egg_texture->set_wrap_v(EggTexture::WM_clamp);
+    break;
+  }
+
+  switch (flt_texture->_env_type) {
+  case FltTexture::ET_modulate:
+    egg_texture->set_env_type(EggTexture::ET_modulate);
+    break;
+
+  case FltTexture::ET_decal:
+    egg_texture->set_env_type(EggTexture::ET_decal);
+    break;
+
+  case FltTexture::ET_blend:
+  case FltTexture::ET_color:
+    // Not supported.
+    break;
+  }
+
+  switch (flt_texture->_internal_format) {
+  case FltTexture::IF_default:
+    break;
+
+  case FltTexture::IF_i_12a_4:
+  case FltTexture::IF_ia_12:
+  case FltTexture::IF_ia_8:
+    egg_texture->set_format(EggTexture::F_luminance_alpha);
+    break;
+
+  case FltTexture::IF_rgb_5:
+    egg_texture->set_format(EggTexture::F_rgb5);
+    break;
+
+  case FltTexture::IF_rgba_4:
+    egg_texture->set_format(EggTexture::F_rgba4);
+    break;
+
+
+  case FltTexture::IF_rgba_8:
+    egg_texture->set_format(EggTexture::F_rgba8);
+    break;
+
+  case FltTexture::IF_rgba_12:
+    egg_texture->set_format(EggTexture::F_rgba12);
+    break;
+
+  case FltTexture::IF_i_16:
+    if (flt_texture->_intensity_is_alpha) {
+      egg_texture->set_format(EggTexture::F_alpha);
+    } else {
+      egg_texture->set_format(EggTexture::F_luminance);
+    }
+    break;
+
+  case FltTexture::IF_rgb_12:
+    egg_texture->set_format(EggTexture::F_rgb12);
+    break;
+  }
+ 
+  switch (flt_texture->_mag_filter_alpha) {
+  case FltTexture::MG_point:
+    egg_texture->set_magfilteralpha(EggTexture::FT_nearest);
+    break;
+
+  case FltTexture::MG_bilinear:
+    egg_texture->set_magfilteralpha(EggTexture::FT_linear);
+    break;
+
+  case FltTexture::MG_bicubic:
+  case FltTexture::MG_sharpen:
+  case FltTexture::MG_add_detail:
+  case FltTexture::MG_modulate_detail:
+  case FltTexture::MG_bilinear_gequal:
+  case FltTexture::MG_bilinear_lequal:
+  case FltTexture::MG_bicubic_gequal:
+  case FltTexture::MG_bicubic_lequal:
+    // Not supported.
+    break;
+  }
+ 
+  switch (flt_texture->_mag_filter_color) {
+  case FltTexture::MG_point:
+    egg_texture->set_magfiltercolor(EggTexture::FT_nearest);
+    break;
+
+  case FltTexture::MG_bilinear:
+    egg_texture->set_magfiltercolor(EggTexture::FT_linear);
+    break;
+
+  case FltTexture::MG_bicubic:
+  case FltTexture::MG_sharpen:
+  case FltTexture::MG_add_detail:
+  case FltTexture::MG_modulate_detail:
+  case FltTexture::MG_bilinear_gequal:
+  case FltTexture::MG_bilinear_lequal:
+  case FltTexture::MG_bicubic_gequal:
+  case FltTexture::MG_bicubic_lequal:
+    // Not supported.
+    break;
+  }
+
+
+  parse_comment(flt_texture, egg_texture);
   return egg_texture;
 }

@@ -27,6 +27,9 @@ enum DistanceUnit {
   DU_invalid
 };
 
+string format_abbrev_unit(DistanceUnit unit);
+string format_long_unit(DistanceUnit unit);
+
 ostream &operator << (ostream &out, DistanceUnit unit);
 DistanceUnit string_distance_unit(const string &str);
 

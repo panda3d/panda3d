@@ -19,6 +19,7 @@
 
 #include <filename.h>
 #include <dSearchPath.h>
+#include <distanceUnit.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : FltHeader
@@ -133,6 +134,7 @@ public:
   static double max_flt_version();
   bool check_version() const;
 
+  DistanceUnit get_units() const;
 
   // Accessors into the instance pool.
   bool has_instance(int instance_index) const;

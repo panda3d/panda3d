@@ -10,6 +10,9 @@
 
 #include "eggConverter.h"
 
+#include <distanceUnit.h>
+
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : SomethingToEgg
 // Description : This is the general base class for a file-converter
@@ -24,9 +27,15 @@ public:
 		 bool allow_stdout = true);
 
 protected:
+  void apply_units_scale(EggData &data);
+
   virtual bool handle_args(Args &args);
+  virtual void post_process_egg_file();
 
   Filename _input_filename;
+
+  DistanceUnit _input_units;
+  DistanceUnit _output_units;
 };
 
 #endif

@@ -307,6 +307,36 @@ check_version() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::get_units
+//       Access: Public
+//  Description: Returns the units indicated by the flt header, or
+//               DU_invalid if the units in the header are not
+//               understood.
+////////////////////////////////////////////////////////////////////
+DistanceUnit FltHeader::
+get_units() const {
+  switch (_vertex_units) {
+  case FltHeader::U_meters:
+    return DU_meters;
+    
+  case FltHeader::U_kilometers:
+    return DU_kilometers;
+    
+  case FltHeader::U_feet:
+    return DU_feet;
+    
+  case FltHeader::U_inches:
+    return DU_inches;
+    
+  case FltHeader::U_nautical_miles:
+    return DU_nautical_miles;
+  }
+
+  // Unknown units.
+  return DU_invalid;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltHeader::has_instance
 //       Access: Public
 //  Description: Returns true if a instance subtree with the given

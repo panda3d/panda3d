@@ -14,24 +14,37 @@ INLINE FltToEggConverter::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::set_input_units
+//     Function: FltToEggConverter::set_texture_path_convert
 //       Access: Public
-//  Description: Sets the units the input flt file is considered to
-//               represent.  If this is unset or DU_invalid, the units
-//               are taken from the flt header.
+//  Description: Sets the mode for converting texture paths extracted
+//               from the flt file.  If this is PC_relative, the
+//               texture paths are made relative to the indicated
+//               directory; if it is PC_absolute, they are made
+//               absolute to the indicated directory.  PC_unchanged
+//               leaves them alone (and the directory, if specified,
+//               is ignored).
 ////////////////////////////////////////////////////////////////////
 INLINE void FltToEggConverter::
-set_input_units(DistanceUnit input_units) {
-  _input_units = input_units;
+set_texture_path_convert(PathConvert tpc,
+			 const Filename &tpc_directory) {
+  _tpc = tpc;
+  _tpc_directory = tpc_directory;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::set_output_units
+//     Function: FltToEggConverter::set_model_path_convert
 //       Access: Public
-//  Description: Sets the units to generate in the resulting egg file.
-//               If this is unset, no units conversion is performed.
+//  Description: Sets the mode for converting model paths extracted
+//               from the flt file.  If this is PC_relative, the
+//               model paths are made relative to the indicated
+//               directory; if it is PC_absolute, they are made
+//               absolute to the indicated directory.  PC_unchanged
+//               leaves them alone (and the directory, if specified,
+//               is ignored).
 ////////////////////////////////////////////////////////////////////
 INLINE void FltToEggConverter::
-set_output_units(DistanceUnit output_units) {
-  _output_units = output_units;
+set_model_path_convert(PathConvert mpc,
+		       const Filename &mpc_directory) {
+  _mpc = mpc;
+  _mpc_directory = mpc_directory;
 }

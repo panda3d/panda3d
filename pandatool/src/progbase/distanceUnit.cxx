@@ -6,6 +6,91 @@
 #include "distanceUnit.h"
 
 #include <string_utils.h>
+#include <notify.h>
+
+////////////////////////////////////////////////////////////////////
+//     Function: format_abbrev_unit
+//  Description: Returns the string representing the common
+//               abbreviation for the given unit.
+////////////////////////////////////////////////////////////////////
+string
+format_abbrev_unit(DistanceUnit unit) {
+  switch (unit) {
+  case DU_millimeters:
+    return "mm";
+
+  case DU_centimeters:
+    return "cm";
+
+  case DU_meters:
+    return "m";
+
+  case DU_kilometers:
+    return "km";
+
+  case DU_yards:
+    return "yd";
+
+  case DU_feet:
+    return "ft";
+
+  case DU_inches:
+    return "in";
+
+  case DU_nautical_miles:
+    return "nmi";
+
+  case DU_statute_miles:
+    return "mi";
+
+  case DU_invalid:
+    return "invalid";
+  }
+  nout << "**unexpected DistanceUnit value: (" << (int)unit << ")**";
+  return "**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: format_long_unit
+//  Description: Returns the string representing the full name (plural)
+//               for the given unit.
+////////////////////////////////////////////////////////////////////
+string
+format_long_unit(DistanceUnit unit) {
+  switch (unit) {
+  case DU_millimeters:
+    return "millimeters";
+
+  case DU_centimeters:
+    return "centimeters";
+
+  case DU_meters:
+    return "meters";
+
+  case DU_kilometers:
+    return "kilometers";
+
+  case DU_yards:
+    return "yards";
+
+  case DU_feet:
+    return "feet";
+
+  case DU_inches:
+    return "inches";
+
+  case DU_nautical_miles:
+    return "nautical miles";
+
+  case DU_statute_miles:
+    return "miles";
+
+  case DU_invalid:
+    return "invalid";
+  }
+  nout << "**unexpected DistanceUnit value: (" << (int)unit << ")**";
+  return "**";
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DistanceUnit output operator
@@ -13,38 +98,7 @@
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, DistanceUnit unit) {
-  switch (unit) {
-  case DU_millimeters:
-    return out << "mm";
-
-  case DU_centimeters:
-    return out << "cm";
-
-  case DU_meters:
-    return out << "m";
-
-  case DU_kilometers:
-    return out << "km";
-
-  case DU_yards:
-    return out << "yd";
-
-  case DU_feet:
-    return out << "ft";
-
-  case DU_inches:
-    return out << "in";
-
-  case DU_nautical_miles:
-    return out << "nmi";
-
-  case DU_statute_miles:
-    return out << "mi";
-
-  case DU_invalid:
-    return out << "invalid";
-  }
-  return out << "**unexpected DistanceUnit value: (" << (int)unit << ")**";
+  return out << format_abbrev_unit(unit);
 }
 
 ////////////////////////////////////////////////////////////////////

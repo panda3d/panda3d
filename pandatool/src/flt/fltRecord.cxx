@@ -257,7 +257,8 @@ has_comment() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecord::get_comment
 //       Access: Public
-//  Description: Retrieves the comment for this record.
+//  Description: Retrieves the comment for this record, or empty
+//               string if the record has no comment.
 ////////////////////////////////////////////////////////////////////
 const string &FltRecord::
 get_comment() const {

@@ -104,24 +104,24 @@ add_normals_options() {
   static NormalsMode preserve = NM_preserve;
 
   add_option
-    ("no", "", 49, 
+    ("no", "", 48, 
      "Strip all normals.",
      &EggWriter::dispatch_normals, NULL, &strip);
 
   add_option
-    ("np", "", 49, 
+    ("np", "", 48, 
      "Strip existing normals and redefine polygon normals.",
      &EggWriter::dispatch_normals, NULL, &polygon);
 
   add_option
-    ("nv", "threshold", 49, 
+    ("nv", "threshold", 48, 
      "Strip existing normals and redefine vertex normals.  Consider an edge "
      "between adjacent polygons to be smooth if the angle between them "
      "is less than threshold degrees.",
      &EggWriter::dispatch_normals, NULL, &vertex);
 
   add_option
-    ("nn", "", 49, 
+    ("nn", "", 48, 
      "Preserve normals exactly as they are.  This is the default.",
      &EggWriter::dispatch_normals, NULL, &preserve);
 }
