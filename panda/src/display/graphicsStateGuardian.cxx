@@ -325,11 +325,11 @@ release_index_buffer(IndexBufferContext *) {
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state) {
-  // The default implementation returns a munger that does nothing,
-  // but presumably, every kind of GSG needs some special munging
-  // action, so real GSG's will override this to return something more
+  // The default implementation returns no munger at all, but
+  // presumably, every kind of GSG needs some special munging action,
+  // so real GSG's will override this to return something more
   // useful.
-  return qpGeomMunger::register_munger(new qpGeomMunger(this, state));
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
