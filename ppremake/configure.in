@@ -5,7 +5,7 @@ dnl ****************  UPDATE VERSION NUMBER HERE  ****************
 dnl **         Also be sure to change the version number        **
 dnl **                at the end of config_msvc.h.              **
 dnl ****************                              ****************
-AM_INIT_AUTOMAKE(ppremake, 1.13)
+AM_INIT_AUTOMAKE(ppremake, 1.14)
 dnl ****************  UPDATE VERSION NUMBER HERE  ****************
 
 AM_CONFIG_HEADER(config.h)
@@ -20,6 +20,7 @@ AC_CANONICAL_HOST
 if test "${CXXFLAGS+set}" != set -a "${CFLAGS+set}" = set; then
   CXXFLAGS=$CFLAGS
 fi
+CPPFLAGS="${CPPFLAGS} -DINSTALL_DIR="'$(prefix)'
 
 # Save these variables for later, so we can easily append to them or
 # change them.
@@ -83,6 +84,5 @@ fi
 AC_DEFINE_UNQUOTED(PLATFORM, "$PLATFORM", 
    [The platform ppremake is compiled for.  This primarily controls the
     initial setting of the PLATFORM ppremake variable.])
-
 
 AC_OUTPUT(Makefile)

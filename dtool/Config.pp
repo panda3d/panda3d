@@ -76,13 +76,19 @@
 #endif
 
 // What is the default install directory for all trees in the Panda
-// suite?  You may also override this for a particular tree by
-// defining a variable name like DTOOL_INSTALL or PANDA_INSTALL.  This
-// variable will have no effect when you are using the cttools to
-// control your attachment to the trees; in this case, the install
-// directory for each tree will by default be the root of the tree
-// itself (although this may be overridden).
-#define INSTALL_DIR /usr/local/panda
+// suite?  The default value for this variable is provided by
+// ppremake; on Unix machines it is the value of --prefix passed in to
+// the configure script, and on Windows machines the default is
+// hardcoded to C:\Panda3d.
+
+// You may also override this for a particular tree by defining a
+// variable name like DTOOL_INSTALL or PANDA_INSTALL.  This variable
+// will have no effect when you are using the cttools to control your
+// attachment to the trees; in this case, the install directory for
+// each tree will by default be the root of the tree itself (although
+// this may be overridden).
+
+// #define INSTALL_DIR /usr/local/panda
 
 // If you intend to use Panda only as a Python module, you may find
 // the following define useful (but you should put in the correct path

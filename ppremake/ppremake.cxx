@@ -28,6 +28,8 @@
 #include <sys/stat.h>
 #include <assert.h>
 
+#define STRINGIZE(x) #x
+
 bool unix_platform = false;
 bool windows_platform = false;
 bool dry_run = false;
@@ -71,6 +73,7 @@ usage() {
 
     "  -h           Display this page.\n"
     "  -V           Report the version of ppremake, and exit.\n"
+    "  -I           Report the compiled-in default for INSTALL_DIR, and exit.\n"
     "  -v           Turn on verbose output (may help in debugging .pp files).\n"
     "  -vv          Be very verbose (if you're getting desperate).\n"
     "  -P           Report the current platform name, and exit.\n\n"
@@ -101,6 +104,12 @@ report_version() {
   cerr << "This is " << PACKAGE << " version " << VERSION 
        << " built on " << __DATE__ << " at " << __TIME__
        << ".\n";
+}
+
+static void
+report_install_dir() {
+  cerr << "Default value for INSTALL_DIR is "
+       << STRINGIZE(INSTALL_DIR) << ".\n";
 }
 
 static void
@@ -223,7 +232,7 @@ main(int argc, char *argv[]) {
   string progname = argv[0];
   extern char *optarg;
   extern int optind;
-  const char *optstr = "hVvPD:drnNp:c:s:";
+  const char *optstr = "hVIvPD:drnNp:c:s:";
 
   bool any_d = false;
   bool dependencies_stale = false;
@@ -250,6 +259,11 @@ main(int argc, char *argv[]) {
 
     case 'V':
       report_version();
+      exit(0);
+      break;
+
+    case 'I':
+      report_install_dir();
       exit(0);
       break;
 
@@ -339,6 +353,7 @@ main(int argc, char *argv[]) {
   global_scope.define_variable("PLATFORM", platform);
   global_scope.define_variable("PACKAGE_FILENAME", PACKAGE_FILENAME);
   global_scope.define_variable("SOURCE_FILENAME", SOURCE_FILENAME);
+  global_scope.define_variable("INSTALL_DIR", STRINGIZE(INSTALL_DIR));
 
   if (got_ppremake_config) {
     // If this came in on the command line, define a variable as such.
@@ -349,8 +364,11 @@ main(int argc, char *argv[]) {
 
   // Also, it's convenient to have a way to represent the literal tab
   // character, without actually putting a literal tab character in
-  // the source file.
+  // the source file.  Similarly with some other special characters.
   global_scope.define_variable("TAB", "\t");
+  global_scope.define_variable("SPACE", " ");
+  global_scope.define_variable("DOLLAR", "$");
+  global_scope.define_variable("HASH", "#");
 
   PPMain ppmain(&global_scope);
   if (!ppmain.read_source(".")) {

@@ -79,9 +79,12 @@
 /* Name of package */
 #define PACKAGE "ppremake"
 
+/* The default value of INSTALL_DIR within ppremake. */
+#define INSTALL_DIR C:\\Panda3d
+
 /****************  UPDATE VERSION NUMBER HERE  ****************
  **         Also be sure to change the version number        **
  **             at the beginning of configure.in.            **
  ****************                              ****************/
-#define VERSION "1.13"
+#define VERSION "1.14"
 /****************  UPDATE VERSION NUMBER HERE  ****************/
