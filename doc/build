@@ -81,18 +81,21 @@ case "$mode" in
 	modules_install=$modules
 	;;
 ( ppremake )
+    wantGenPy=0
 	modules_ppremake=$modules
 	modules_clean=""
 	modules_uninstall=""
 	modules_install=""
 	;;
 ( clean )
+    wantGenPy=0
 	modules_ppremake=$modules
 	modules_clean=$modules
 	modules_uninstall=""
 	modules_install=""
 	;;
 ( uninstall )
+    wantGenPy=0
 	modules_ppremake=$modules
 	modules_clean=""
 	modules_uninstall=$modules
@@ -112,6 +115,7 @@ case "$mode" in
 	modules_install=$modules
 	;;
 ( genpy )
+    wantGenPy=1
 	modules_ppremake=""
 	modules_clean=""
 	modules_uninstall=""
@@ -131,8 +135,8 @@ echo "    modules_install   =$modules_install"
 
 for i in $modules_ppremake; do
 	echo -e "\nStarting Ppremake of $i\n"
-	cd "$base/$i" || exit
-	ppremake    || exit
+	cd "$base/$i"            || exit
+	ppremake $ppremake_args  || exit
 done
 for i in $modules_clean; do
 	echo -e "\nStarting Clean of $i\n"
