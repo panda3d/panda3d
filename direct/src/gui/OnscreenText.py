@@ -176,7 +176,9 @@ class OnscreenText(PandaObject, NodePath):
 
         if shadow[3] != 0:
             # If we have a shadow color, create a shadow.
-            textNode.setShadowColor(*shadow)
+            # Can't use the *shadow interface because it might be a VBase4.
+            #textNode.setShadowColor(*shadow)
+            textNode.setShadowColor(shadow[0], shadow[1], shadow[2], shadow[3])
             textNode.setShadow(*shadowOffset)
 
         if frame[3] != 0:
