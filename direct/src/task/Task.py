@@ -37,6 +37,7 @@ class Task:
         self.maxDt = 0.0
         self.avgDt = 0.0
         self.runningTotal = 0.0
+        self.pstats = None
 
     def getPriority(self):
         return self._priority
@@ -53,15 +54,16 @@ class Task:
         self.time = currentTime - self.starttime
         self.frame = currentFrame - self.startframe
 
+    def setupPStats(self, name):
+        if __debug__:
+            import PStatCollector
+            self.pstats = PStatCollector.PStatCollector("App:Show code:" + name)
+
 def doLater(delayTime, task, taskName):
     task.name = taskName
     # make a sequence out of the delay and the task
     seq = sequence(pause(delayTime), task)
     return seq
-
-def spawnMethodNamed(self, func, name):
-        task = Task(func)
-        self.spawnTaskNamed(task, name)
 
 def pause(delayTime):
     def func(self):
@@ -261,6 +263,7 @@ class TaskManager:
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
         self.taskTimerVerbose = 0
+        self.pStatsTasks = 0
 
     def stepping(value):
         self.stepping = value
@@ -284,6 +287,19 @@ class TaskManager:
             index = index - 1
         index = index + 1
         self.taskList.insert(index, task)
+
+        if __debug__:
+            if self.pStatsTasks and name != "igloop":
+                # Get the PStats name for the task.  By convention,
+                # this is everything until the first hyphen; the part
+                # of the task name following the hyphen is generally
+                # used to differentiate particular tasks that do the
+                # same thing to different objects.
+                hyphen = name.find('-')
+                if hyphen >= 0:
+                    name = name[0:hyphen]
+                task.setupPStats(name)
+                
         return task
 
     def doMethodLater(self, delayTime, func, taskName):
@@ -361,9 +377,13 @@ class TaskManager:
                 ret = task(task)
             else:
                 # Run the task and check the return value
+                if task.pstats:
+                    task.pstats.start()
                 startTime = time.clock()
                 ret = task(task)
                 endTime = time.clock()
+                if task.pstats:
+                    task.pstats.stop()
 
                 # Record the dt
                 dt = endTime - startTime

@@ -47,6 +47,7 @@ class ShowBase:
         self.wantStats = self.config.GetBool('want-stats', 0)
 
         taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
+        taskMgr.pStatsTasks = self.config.GetBool('pstats-tasks', 0)
 
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
