@@ -350,7 +350,7 @@ install-misc : $[subdirs:%=install-misc-%]
 install : egg $[subdirs:%=install-%]
 uninstall : $[subdirs:%=uninstall-%]
 
-optimize-palettes : regen-palettes install
+optimize-palettes : regen-palettes pal install
 
 regen-palettes :
 	egg-palettize-new $[PALETTIZE_OPTS] -C -fRt $[texattrib_file]
