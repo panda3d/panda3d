@@ -363,7 +363,7 @@ def reduceAngle(deg):
     """
     return (math.fmod((deg + 180.0), 360.0) - 180.0)
     
-def shortestDestAngle2(src, dest):
+def shortestDestAngle(src, dest):
     """
     Returns a version of dest that is numerically closest to src. It is
     assumed that src is between -180. and 180.
