@@ -845,16 +845,37 @@ void wdxGraphicsWindow::config(void) {
     wc.hInstance      = hinstance;
 
     string windows_icon_filename = get_icon_filename().to_os_specific();
+    string windows_cursor_filename = get_cursor_filename().to_os_specific();
 
     if(!windows_icon_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
+
+        // loads a .ico fmt file
         wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+
+        if(wc.hIcon==NULL) {
+            wdxdisplay_cat.warning() << "windows icon filename '" << windows_icon_filename << "' not found!!\n";
+        }
     } else {
         wc.hIcon = NULL; // use default app icon
     }
 
-    wc.hCursor        = _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
+    if(!windows_cursor_filename.empty()) {
+        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
+        // if icon is more than 8bpp
+
+        // loads a .cur fmt file
+        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+
+        if(_hMouseCursor==NULL) {
+            wdxdisplay_cat.warning() << "windows cursor filename '" << windows_cursor_filename << "' not found!!\n";
+        }
+    } else {
+        _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
+    }
+
+    wc.hCursor = _hMouseCursor;
     wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName   = NULL;
     wc.lpszClassName  = WDX_WINDOWCLASSNAME;

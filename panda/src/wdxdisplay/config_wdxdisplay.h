@@ -28,6 +28,7 @@ NotifyCategoryDecl(wdxdisplay, EXPCL_PANDADX, EXPTP_PANDADX);
 extern bool bResponsive_minimized_fullscreen_window;
 extern bool dx_force_16bpp_zbuffer;
 extern Filename get_icon_filename();
+extern Filename get_cursor_filename();
 
 extern EXPCL_PANDADX void init_libwdxdisplay();
 

@@ -62,8 +62,14 @@ init_libwdxdisplay() {
                 wdxGraphicsWindow::make_wdxGraphicsWindow);
 }
 
-// cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var
+// cant use global var cleanly because global var static init executed after init_libwdxdisplay(), incorrectly reiniting var
 Filename get_icon_filename() {
   string iconname = config_wdxdisplay.GetString("win32-window-icon","");
   return ExecutionEnvironment::expand_string(iconname);
+}
+
+// cant use global var cleanly because global var static init executed after init_libwdxdisplay(), incorrectly reiniting var
+Filename get_cursor_filename() {
+  string cursorname = config_wdxdisplay.GetString("win32-cursor","");
+  return ExecutionEnvironment::expand_string(cursorname);
 }

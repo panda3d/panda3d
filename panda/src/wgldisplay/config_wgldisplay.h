@@ -25,7 +25,11 @@
 
 NotifyCategoryDecl(wgldisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
-extern Filename get_icon_filename_();
+// for some reason there is a conflict with the pandadx versions of get_icon_filename during linking,
+// so appended '_2' to name
+extern Filename get_icon_filename_2();
+extern Filename get_cursor_filename_2();
+
 extern bool gl_show_fps_meter;
 extern float gl_fps_meter_update_interval;
 extern bool gl_sync_video;

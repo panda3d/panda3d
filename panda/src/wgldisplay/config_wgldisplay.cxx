@@ -71,8 +71,12 @@ init_libwgldisplay() {
 }
 
 // cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var
-Filename get_icon_filename_() {
+Filename get_icon_filename_2() {
   string iconname = config_wgldisplay.GetString("win32-window-icon","");
   return ExecutionEnvironment::expand_string(iconname);
 }
 
+Filename get_cursor_filename_2() {
+  string cursorname = config_wgldisplay.GetString("win32-cursor","");
+  return ExecutionEnvironment::expand_string(cursorname);
+}
