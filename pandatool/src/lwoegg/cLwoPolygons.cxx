@@ -12,6 +12,7 @@
 #include <lwoPolygonTags.h>
 #include <lwoTags.h>
 #include <eggPolygon.h>
+#include <eggPoint.h>
 #include <deg_2_rad.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -140,8 +141,6 @@ make_faces() {
   for (int i = 0; i < num_polygons; i++) {
     LwoPolygons::Polygon *poly = _polygons->get_polygon(i);
     
-    PT(EggPolygon) egg_poly = new EggPolygon;
-
     bool is_valid = true;
 
     // Set up the vertices.
@@ -154,6 +153,14 @@ make_faces() {
     // last vertex, so that the first convex angle is the first angle
     // in the EggPolygon (for determining correct normals).
     int num_vertices = poly->_vertices.size();
+    PT(EggPrimitive) egg_prim;
+
+    if (num_vertices == 1) {
+      egg_prim = new EggPoint;
+    } else {
+      egg_prim = new EggPolygon;
+    }
+
     for (int vi = num_vertices; vi > 0; vi--) {
       int vindex = poly->_vertices[vi % num_vertices];
       if (vindex < 0 || vindex >= num_points) {
@@ -164,17 +171,17 @@ make_faces() {
 	EggVertex egg_vert;
 	egg_vert.set_pos(LCAST(double, points->get_point(vindex)));
 	EggVertex *new_vert = egg_vpool->create_unique_vertex(egg_vert);
-	egg_poly->add_vertex(new_vert);
+	egg_prim->add_vertex(new_vert);
       }
     }
 
     if (is_valid) {
       CLwoSurface *surface = get_surface(i);
       if (surface != (CLwoSurface *)NULL) {
-	surface->apply_properties(egg_poly, smooth_angle);
+	surface->apply_properties(egg_prim, smooth_angle);
       }
 
-      _egg_group->add_child(egg_poly.p());
+      _egg_group->add_child(egg_prim.p());
     }
   }
 

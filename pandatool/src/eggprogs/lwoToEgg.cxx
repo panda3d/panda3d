@@ -25,7 +25,9 @@ LwoToEgg() :
     ("This program converts Lightwave Object (.lwo) files to egg.  Many "
      "rendering characteristics of Lightwave (like layered shaders, etc.) "
      "are not supported, but fundamental things like polygons and texture "
-     "maps are.");
+     "maps are.  This program is primarily designed to support files written "
+     "by Lightwave version 6.x (LWO2 files), but it also has some limited "
+     "support for version 5.x files (LWOB files).");
 
   redescribe_option
     ("cs",
