@@ -530,9 +530,12 @@ class SelectionRay(SelectionQueue):
         SelectionQueue.__init__(self, parentNP)
         self.addCollider(CollisionRay())
     
-    def pick(self, targetNodePath):
+    def pick(self, targetNodePath, xy = None):
         # Determine ray direction based upon the mouse coordinates
-        if direct:
+        if xy:
+            mx = xy[0]
+            my = xy[1]
+        elif direct:
             mx = direct.dr.mouseX
             my = direct.dr.mouseY
         else:
@@ -554,9 +557,10 @@ class SelectionRay(SelectionQueue):
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
-    def pickGeom(self, targetNodePath = render, skipFlags = SKIP_ALL ):
+    def pickGeom(self, targetNodePath = render, skipFlags = SKIP_ALL,
+                 xy = None):
         self.collideWithGeom()
-        self.pick(targetNodePath)
+        self.pick(targetNodePath, xy = xy)
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
