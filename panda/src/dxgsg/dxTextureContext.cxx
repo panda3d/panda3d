@@ -731,7 +731,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
     //make sure there's enough space in the pixbuf, its size must match (especially xsize)
    // or scanlines will be too long
 
-    if(!((dwCopyWidth==pixbuf->get_xsize()) && (dwCopyHeight<=pixbuf->get_ysize()))) {
+    if(!((dwCopyWidth==pixbuf->get_xsize()) && (dwCopyHeight<=(DWORD)pixbuf->get_ysize()))) {
         pDDSurf->Unlock(NULL);
         assert(0);
         dxgsg_cat.error() << "ConvertDDSurftoPixBuf, PixBuf incorrect size to hold display surface!\n";
@@ -1695,7 +1695,7 @@ FillDDSurfTexturePixels(void) {
                   // fetches, stores byte at a time.
                   // inefficient, but works for all channel sizes
 
-                    for(int c=0;c<cPixelSize;c++) {
+                    for(DWORD c=0;c<cPixelSize;c++) {
                         DWORD colr;
                         colr =  *(pSrcWord+c);
                         if(oldcurxsize>1)  // handle 1x[X], [X]x1 cases
