@@ -9,8 +9,8 @@
 
 #include <notify.h>
 
-#ifdef PENV_SGI
-// SGI compiler doesn't seem to define this yet.
+#ifndef HAVE_STREAMSIZE
+// Some compilers--notably SGI--don't define this for us.
 typedef int streamsize;
 #endif
 

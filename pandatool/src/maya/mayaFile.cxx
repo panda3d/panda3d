@@ -749,7 +749,7 @@ get_egg_group(const string &name, EggData &data) {
   } else {
     size_t bar = name.rfind("|");
     string parent_name, local_name;
-    if (bar != NPOS) {
+    if (bar != string::npos) {
       parent_name = name.substr(0, bar);
       local_name = name.substr(bar + 1);
     } else {
