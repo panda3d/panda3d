@@ -1,5 +1,5 @@
 from PandaObject import *
-from newPieMenu import *
+from PieMenu import *
 from OnscreenText import *
 from Tkinter import *
 from DirectGeometry import *

@@ -7,6 +7,12 @@ import Pmw
 import Dial
 import Floater
 
+"""
+TODO:
+Task to monitor pose
+wrt coa
+"""
+
 ZERO_VEC = Vec3(0)
 UNIT_VEC = Vec3(1)
 
@@ -37,12 +43,14 @@ class Placer(Pmw.MegaToplevel):
         self.refNodePathDict = {}
         self.refNodePathDict['render'] = render
         self.refNodePathDict['camera'] = camera
-        self.refNodePathNames = ['self', 'render', 'camera', 'selected']
+        self.refNodePathNames = ['self', 'render', 'camera', 'selected', 'coa']
 
         # Get initial state
         self.initPos = Vec3(0)
         self.initHpr = Vec3(0)
         self.initScale = Vec3(1)
+        self.coaPos = Vec3(0)
+        self.coaHpr = Vec3(0)
 
         # Init movement mode
         self.movementMode = 'Absolute'
@@ -62,10 +70,6 @@ class Placer(Pmw.MegaToplevel):
         menuBar.pack(side = LEFT, expand = 1, fill = X)
         menuBar.addmenu('Placer', 'Placer Panel Operations')
         menuBar.addmenuitem('Placer', 'command',
-                            'Exit Placer Panel',
-                            label = 'Exit',
-                            command = self.destroy)
-        menuBar.addmenuitem('Placer', 'command',
                             'Undo Pos/Hpr/Scale',
                             label = 'Undo',
                             command = self.undo)
@@ -81,6 +85,10 @@ class Placer(Pmw.MegaToplevel):
                             'Print Node Path Info',
                             label = 'Print Info',
                             command = self.printNodePathInfo)
+        menuBar.addmenuitem('Placer', 'command',
+                            'Exit Placer Panel',
+                            label = 'Exit',
+                            command = self.destroy)
 
         menuBar.addmenu('Help', 'Placer Panel Help Operations')
         self.toggleBalloonVar = IntVar()
@@ -117,6 +125,13 @@ class Placer(Pmw.MegaToplevel):
         self.refNodePathMenuEntry = (
             self.refNodePathMenu.component('entryfield_entry'))
         self.refNodePathMenu.pack(side = 'left', expand = 0)
+
+        self.undoButton = Button(menuFrame, text = 'Undo',
+                                 command = self.undo)
+        self.undoButton.pack(side = 'left', expand = 0)
+        self.redoButton = Button(menuFrame, text = 'Redo',
+                                 command = self.redo)
+        self.redoButton.pack(side = 'left', expand = 0)
 
         # The master frame for the dials
 	dialFrame = Frame(hull)
@@ -231,33 +246,33 @@ class Placer(Pmw.MegaToplevel):
         self.hprR.pack(expand=1,fill='x')
 
         # Create and pack the Scale Controls
+	# The available scaling modes
+	self.scalingMode = StringVar()
+	self.scalingMode.set('Scale Uniform')
+        # The scaling widgets
 	scaleGroup = Pmw.Group(dialFrame,
-                               tag_text = 'Scale',
+                               tag_text = 'Scale Uniform',
                                tag_pyclass = Menubutton,
                                tag_font=('MSSansSerif', 14, 'bold'),
                                tag_activebackground = '#909090',
                                ring_relief = 'raised')
-	scaleMenubutton = scaleGroup.component('tag')
-	scaleMenu = Menu(scaleMenubutton)
-	scaleModeMenu = Menu(scaleMenu)
-	# The available scaling modes
-	self.scalingMode = StringVar()
-	self.scalingMode.set('Free')
-	scaleModeMenu.add_radiobutton(label = 'Free',
-                                      variable = self.scalingMode)
-	scaleModeMenu.add_radiobutton(label = 'Uniform',
-                                      variable = self.scalingMode)
-	scaleModeMenu.add_radiobutton(label = 'Proportional',
-                                      variable = self.scalingMode)
+	self.scaleMenubutton = scaleGroup.component('tag')
+        self.scaleMenubutton['textvariable'] = self.scalingMode
 	
-	# First level scaling menu
+	# Scaling menu
+	scaleMenu = Menu(self.scaleMenubutton)
 	scaleMenu.add_command(label = 'Set to unity',
                               command = self.unitScale)
 	scaleMenu.add_command(label = 'Reset initial',
                               command = self.resetScale)
-        scaleMenu.add_cascade(label = 'Scaling mode...',
-                              menu = scaleModeMenu)
-	scaleMenubutton['menu'] = scaleMenu
+	scaleMenu.add_radiobutton(label = 'Scale Free',
+                                      variable = self.scalingMode)
+	scaleMenu.add_radiobutton(label = 'Scale Uniform',
+                                      variable = self.scalingMode)
+	scaleMenu.add_radiobutton(label = 'Scale Proportional',
+                                      variable = self.scalingMode)
+	self.scaleMenubutton['menu'] = scaleMenu
+        # Pack group widgets
 	scaleGroup.pack(side='left',fill = 'both', expand = 1)
         scaleInterior = scaleGroup.interior()
         
@@ -385,10 +400,21 @@ class Placer(Pmw.MegaToplevel):
         nodePath = None
         if name == 'self':
             nodePath = self.tempCS
+            self.coaPos.set(0,0,0)
+            self.coaHpr.set(0,0,0)
         elif name == 'selected':
             nodePath = direct.selected.last
             # Add Combo box entry for this selected object
             self.addRefNodePath(nodePath)
+        elif name == 'coa':
+            nodePath = self.tempCS
+            if direct.selected.last:
+                decomposeMatrix(direct.selected.last.mCoa2Dnp,
+                                VBase3(0), self.coaHpr, self.coaPos,
+                                CSDefault)
+            else:
+                self.coaPos.set(0,0,0)
+                self.coaHpr.set(0,0,0)
         else:
             nodePath = self.refNodePathDict.get(name, None)
             if (nodePath == None):
@@ -454,7 +480,7 @@ class Placer(Pmw.MegaToplevel):
         np = self['nodePath']
         if (np != None) & isinstance(np, NodePath):
             # Update temp CS
-            self.tempCS.setPosHpr(self['nodePath'], 0,0,0,0,0,0)
+            self.updateTempCS()
             # Update widgets
             if self.movementMode == 'Absolute':
                 pos.assign(np.getPos())
@@ -468,8 +494,14 @@ class Placer(Pmw.MegaToplevel):
         self.updateHprWidgets(hpr)
         self.updateScaleWidgets(scale)
 
+    def updateTempCS(self):
+        self.tempCS.setPosHpr(self['nodePath'], 0,0,0,0,0,0)
+        # MRM: How to handle COA here?
+
     def xform(self, value, axis):
-        if self.movementMode == 'Absolute':
+        if axis in ['sx', 'sy', 'sz']:
+            self.xformScale(value,axis)
+        elif self.movementMode == 'Absolute':
             self.xformAbsolute(value, axis)
         elif self.movementMode == 'Relative To:':
             self.xformRelative(value, axis)
@@ -517,6 +549,29 @@ class Placer(Pmw.MegaToplevel):
             elif axis == 'r':
                 nodePath.setR(self.refCS, value)
 
+    def xformScale(self, value, axis):
+        if self['nodePath']:
+            mode = self.scalingMode.get()
+            scale = self['nodePath'].getScale()
+            if mode == 'Scale Free':
+                if axis == 'sx':
+                    scale.setX(value)
+                elif axis == 'sy':
+                    scale.setY(value)
+                elif axis == 'sz':
+                    scale.setZ(value)
+            elif mode == 'Scale Uniform':
+                scale.set(value,value,value)
+            elif mode == 'Scale Proportional':
+                if axis == 'sx':
+                    sf = value/scale[0]
+                elif axis == 'sy':
+                    sf = value/scale[1]
+		elif axis == 'sz':
+                    sf = value/scale[2]
+                scale = scale * sf
+            self['nodePath'].setScale(scale)
+
     def updatePosWidgets(self, pos):
         self.posX.set(pos[0])
         self.posY.set(pos[1])
@@ -547,53 +602,86 @@ class Placer(Pmw.MegaToplevel):
         self.initScale.assign(nodePath.getScale())
 
     def resetAll(self):
-        self.resetPos()
-        self.resetHpr()
-        self.resetScale()
+        if self['nodePath']:
+            self['nodePath'].setPosHprScale(
+                self.initPos, self.initHpr, self.initScale)
+            self.updatePlacer()
 
     def resetPos(self):
-        self.updatePosWidgets(self.initPos)
+        self['nodePath'].setPos(self.initPos)
+        self.updatePlacer()
 
     def resetHpr(self):
-        self.updateHprWidgets(self.initHpr)
+        self['nodePath'].setHpr(self.initHpr)
+        self.updatePlacer()
 
     def resetScale(self):
-        self.updateScaleWidgets(self.initScale)
+        self['nodePath'].setScale(self.initScale)
+        self.updatePlacer()
 
     def pushUndo(self):
         nodePath = self['nodePath']
         if nodePath != None:
-            print 'here'
+            name = self.nodePathMenuEntry.get()
             pos = nodePath.getPos()
             hpr = nodePath.getHpr()
             scale = nodePath.getScale()
-            self.undoList.append([nodePath, pos,hpr,scale])
+            self.undoList.append([name, pos,hpr,scale])
 
+    def popUndo(self):
+        # Get last item
+        pose = self.undoList[-1]
+        # Strip last item off of undo list
+        self.undoList = self.undoList[:-1]
+        # Return last item
+        return pose
+        
+    def pushRedo(self):
+        nodePath = self['nodePath']
+        if nodePath != None:
+            name = self.nodePathMenuEntry.get()
+            pos = nodePath.getPos()
+            hpr = nodePath.getHpr()
+            scale = nodePath.getScale()
+            self.redoList.append([name, pos,hpr,scale])
+
+    def popRedo(self):
+        # Get last item
+        pose = self.redoList[-1]
+        # Strip last item off of redo list
+        self.redoList = self.redoList[:-1]
+        # Return last item
+        return pose
+        
     def undo(self):
         if self.undoList:
             # Get last item off of redo list
-            pose = self.undoList[-1]
-            # Tack it onto the end of the redo list
-            self.redoList.append(pose)
-            # Strip it off of the undo list
-            self.undoList = self.undoList[:-1]
-            self.selectNodePathNamed(pose[0].getName())
-            self.updatePosWidgets(pose[1])
-            self.updateHprWidgets(pose[2])
-            self.updateScaleWidgets(pose[3])
+            pose = self.popUndo()
+            # Make that node path active
+            self.selectNodePathNamed(pose[0])
+            # Make sure combo box is showing the right thing
+            self.nodePathMenu.selectitem(pose[0])
+            # Record active's current state on redo stack
+            self.pushRedo()
+            # Undo xform
+            self['nodePath'].setPosHprScale(pose[1], pose[2], pose[3])
+            # Reflect new changes
+            self.updatePlacer()
 
     def redo(self):
         if self.redoList:
-            # Pull off last redo list item
-            pose = self.redoList[-1]
-            # Tack it onto the start of undo list
-            self.undoList.append(pose)
-            # Strip it off of redo list
-            self.redoList = self.redoList[:-1]
-            self.selectNodePathNamed(pose[0].getName())
-            self.updatePosWidgets(pose[1])
-            self.updateHprWidgets(pose[2])
-            self.updateScaleWidgets(pose[3])
+            # Get last item off of redo list
+            pose = self.popRedo()
+            # Make that node path active
+            self.selectNodePathNamed(pose[0])
+            # Make sure combo box is showing the right thing
+            self.nodePathMenu.selectitem(pose[0])
+            # Record active's current state on redo stack
+            self.pushUndo()
+            # Redo xform
+            self['nodePath'].setPosHprScale(pose[1], pose[2], pose[3])
+            # Reflect new changes
+            self.updatePlacer()
 
     def printNodePathInfo(self):
         print 'Print Node Path info here'
