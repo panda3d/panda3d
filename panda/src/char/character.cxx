@@ -109,6 +109,18 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Character::safe_to_flatten_below
+//       Access: Public, Virtual
+//  Description: Returns true if a flatten operation may safely
+//               continue past this node, or false if nodes below this
+//               node may not be molested.
+////////////////////////////////////////////////////////////////////
+bool Character::
+safe_to_flatten_below() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Character::has_cull_callback
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return

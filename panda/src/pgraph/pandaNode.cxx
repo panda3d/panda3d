@@ -475,8 +475,8 @@ safe_to_combine() const {
 //     Function: PandaNode::safe_to_flatten_below
 //       Access: Public, Virtual
 //  Description: Returns true if a flatten operation may safely
-//               continue past this node, or false if it should drop
-//               all attributes here and stop.
+//               continue past this node, or false if nodes below this
+//               node may not be molested.
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 safe_to_flatten_below() const {

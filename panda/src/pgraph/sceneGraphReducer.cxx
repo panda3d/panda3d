@@ -220,56 +220,58 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
           int combine_siblings_bits) {
   int num_nodes = 0;
 
-  // First, recurse on each of the children.
-  {
-    PandaNode::ChildrenCopy cr = parent_node->get_children_copy();
-    int num_children = cr.get_num_children();
-    for (int i = 0; i < num_children; i++) {
-      PandaNode *child_node = cr.get_child(i);
-      num_nodes += r_flatten(parent_node, child_node, combine_siblings_bits);
-    }
-  }
-
-  // Now that the above loop has removed some children, the child list
-  // saved above is no longer accurate, so hereafter we must ask the
-  // node for its real child list.
-
-  // If we have CS_recurse set, then we flatten siblings before trying
-  // to flatten children.  Otherwise, we flatten children first, and
-  // then flatten siblings, which avoids overly enthusiastic
-  // flattening.
-  if ((combine_siblings_bits & CS_recurse) != 0 && 
-      parent_node->get_num_children() >= 2) {
-    if (parent_node->safe_to_combine()) {
-      num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
-    }
-  }
-
-  if (parent_node->get_num_children() == 1) {
-    // If we now have exactly one child, consider flattening the node
-    // out.
-    PT(PandaNode) child_node = parent_node->get_child(0);
-    int child_sort = parent_node->get_child_sort(0);
-
-    if (consider_child(grandparent_node, parent_node, child_node)) {
-      // Ok, do it.
-      parent_node->remove_child(0);
-
-      if (do_flatten_child(grandparent_node, parent_node, child_node)) {
-        // Done!
-        num_nodes++;
-      } else {
-        // Chicken out.
-        parent_node->add_child(child_node, child_sort);
+  if (parent_node->safe_to_flatten_below()) {
+    // First, recurse on each of the children.
+    {
+      PandaNode::ChildrenCopy cr = parent_node->get_children_copy();
+      int num_children = cr.get_num_children();
+      for (int i = 0; i < num_children; i++) {
+        PandaNode *child_node = cr.get_child(i);
+        num_nodes += r_flatten(parent_node, child_node, combine_siblings_bits);
       }
     }
-  }
+    
+    // Now that the above loop has removed some children, the child
+    // list saved above is no longer accurate, so hereafter we must
+    // ask the node for its real child list.
+    
+    // If we have CS_recurse set, then we flatten siblings before
+    // trying to flatten children.  Otherwise, we flatten children
+    // first, and then flatten siblings, which avoids overly
+    // enthusiastic flattening.
+    if ((combine_siblings_bits & CS_recurse) != 0 && 
+        parent_node->get_num_children() >= 2) {
+      if (parent_node->safe_to_combine()) {
+        num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
+      }
+    }
 
-  if ((combine_siblings_bits & CS_recurse) == 0 &&
-      (combine_siblings_bits & ~CS_recurse) != 0 && 
-      parent_node->get_num_children() >= 2) {
-    if (parent_node->safe_to_combine()) {
-      num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
+    if (parent_node->get_num_children() == 1) {
+      // If we now have exactly one child, consider flattening the node
+      // out.
+      PT(PandaNode) child_node = parent_node->get_child(0);
+      int child_sort = parent_node->get_child_sort(0);
+      
+      if (consider_child(grandparent_node, parent_node, child_node)) {
+        // Ok, do it.
+        parent_node->remove_child(0);
+        
+        if (do_flatten_child(grandparent_node, parent_node, child_node)) {
+          // Done!
+          num_nodes++;
+        } else {
+          // Chicken out.
+          parent_node->add_child(child_node, child_sort);
+        }
+      }
+    }
+
+    if ((combine_siblings_bits & CS_recurse) == 0 &&
+        (combine_siblings_bits & ~CS_recurse) != 0 && 
+        parent_node->get_num_children() >= 2) {
+      if (parent_node->safe_to_combine()) {
+        num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
+      }
     }
   }
 
