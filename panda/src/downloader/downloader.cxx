@@ -301,6 +301,7 @@ initiate(const string &file_name, Filename file_dest,
 
   // Attempt to open the destination file
   file_dest.set_binary();
+  _dest_stream.setf(ios::unitbuf, 0);
   bool result;
   if (partial_content == true && first_byte > 0)
     result = file_dest.open_append(_dest_stream);
