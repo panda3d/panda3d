@@ -1501,6 +1501,8 @@ class LevelEditor(NodePath, PandaObject):
             'street_street_' + self.neighborhoodCode + '_tex')
         newDNAStreet.setSidewalkTexture(
             'street_sidewalk_' + self.neighborhoodCode + '_tex')
+        newDNAStreet.setCurbTexture(
+            'street_curb_' + self.neighborhoodCode + '_tex')
         # Now place new street in the world
         self.initDNANode(newDNAStreet)
 
