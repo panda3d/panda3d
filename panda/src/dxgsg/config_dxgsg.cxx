@@ -35,6 +35,11 @@ bool dx_show_transforms = config_dxgsg.GetBool("dx-show-transforms", false);
 //  If false, it will just blit into a window.
 bool dx_full_screen = config_dxgsg.GetBool("dx-full-screen", false);
 
+//  Configure this true to force the rendering to sync to the video
+//  refresh, or false to let your frame rate go as high as it can,
+//  irrespective of the video refresh.
+bool dx_sync_video = config_dxgsg.GetBool("sync-video", true);
+
 // Configure this true to perform a cull traversal over the geometry
 // by default, false otherwise.  The cull traversal provides support
 // for state-sorting, z-sorting, and binning.

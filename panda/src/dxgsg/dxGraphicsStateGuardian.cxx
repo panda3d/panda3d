@@ -82,6 +82,7 @@
 #include <pStatTimer.h>
 #include <pStatCollector.h>
 
+
 #define DISABLE_POLYGON_OFFSET_DECALING
 // currently doesnt work well enough in toontown models for us to use
 // prob is when viewer gets close to decals, they disappear into wall poly, need to investigate
@@ -5560,12 +5561,12 @@ HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
 //       Description:   Repaint primary buffer from back buffer
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_frame(void) {
+  if(_pri==NULL)
+    return;
+
   PStatTimer timer(_win->_swap_pcollector);  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
 
-    if(_pri==NULL)
-        return;
-
-    if(dx_full_screen) {
+  if(dx_full_screen) {
     show_full_screen_frame();
   } else {
     show_windowed_frame();
@@ -5578,7 +5579,22 @@ void DXGraphicsStateGuardian::show_frame(void) {
 //       Description:   Repaint primary buffer from back buffer
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_full_screen_frame(void) {
-  HRESULT hr = _pri->Flip( NULL, DDFLIP_WAIT );  // bugbug:  dont we want triple buffering instead of wasting time waiting for vsync?
+  HRESULT hr;
+  
+  // Flip the front and back buffers, to make what we just rendered
+  // visible.
+  if (dx_sync_video) {
+    // bugbug: dont we want triple buffering instead of wasting time
+    // waiting for vsync?
+    hr = _pri->Flip( NULL, DDFLIP_WAIT );
+  } else {
+    // If the user indicated via Config that we shouldn't wait for
+    // video sync, then don't wait (if the hardware supports this).
+    // This will introduce visible artifacts like tearing, and may
+    // cause the frame rate to grow excessively (and pointlessly)
+    // high, starving out other processes.
+    hr = _pri->Flip( NULL, DDFLIP_WAIT | DDFLIP_NOVSYNC );
+  }
 
   if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
     //full screen app has been switched away
@@ -5634,52 +5650,80 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: show_windowed_frame
-//       Access:
-//       Description:   Repaint primary buffer from back buffer  (windowed mode only)
+//       Access: Public
+//  Description: Repaint primary buffer from back buffer (windowed
+//               mode only)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_windowed_frame(void) {
-  DX_DECLARE_CLEAN(DDBLTFX, bltfx);
+  HRESULT hr;
 
+  if (dx_sync_video) {
+    // Wait for the video refresh *before* we blt the rendered image
+    // onto the window.  This will (a) prevent the "tearing" of the
+    // image that would occur if only part of the image happened to be
+    // copied into the window before the video refresh occurred, and
+    // (b) prevent our frame rate from going excessively (and
+    // pointlessly) higher than our video refresh rate, starving out
+    // other processes.
+
+    // Unfortunately, when the system is even lightly loaded, this
+    // wait call sometimes appears to wait through multiple frames
+    // before returning, causing our frame rate to be unreasonably low
+    // and erratic.  There doesn't appear to be any way to prevent
+    // this behavior; thus, we allow the user to avoid this wait,
+    // based on the Config settings.
+
+    hr = _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+    if(hr != DD_OK) {
+      dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
+      exit(1);
+    }
+  }
+
+  DX_DECLARE_CLEAN(DDBLTFX, bltfx);
+  
   bltfx.dwDDFX |= DDBLTFX_NOTEARING;
-  HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
+  hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
 
   if(FAILED(hr)) {
     if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
 
       HRESULT hr;
 
-            // TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
-            // The following two errors are returned to NORMALMODE (windowed)apps only.
-            //
-            // DDERR_WRONGMODE: If the App is a windowed app and the current mode is
-            //                  not the same as the one in which the app was created.
-            // DDERR_EXCLUSIVEMODEALREADYSET: If another app took exclusivemode access
+      // TestCooperativeLevel returns DD_OK: If the current mode is
+      // same as the one which the App set.  The following two errors
+      // are returned to NORMALMODE (windowed)apps only.
+      //
+      // DDERR_WRONGMODE: If the App is a windowed app and the current mode is
+      //                  not the same as the one in which the app was created.
+      // DDERR_EXCLUSIVEMODEALREADYSET: If another app took exclusivemode access
       hr = _pDD->TestCooperativeLevel();
       while(hr == DDERR_EXCLUSIVEMODEALREADYSET) {
-                // This means that mode changes had taken place, surfaces
-                // were lost but still we are in the original mode, so we
-                // simply restore all surfaces and keep going.
-
+        // This means that mode changes had taken place, surfaces
+        // were lost but still we are in the original mode, so we
+        // simply restore all surfaces and keep going.
+        
         _dx_ready = FALSE;
-
+        
 #ifdef _DEBUG
         dxgsg_cat.spam() << "DXGraphicsStateGuardian:: another app has exclusive mode, waiting...\n";
 #endif
 
         Sleep( 500 );   // Dont consume CPU.
         throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-
+        
         hr = _pDD->TestCooperativeLevel();
       }
-
+      
       if(hr==DDERR_WRONGMODE) {
-                // This means that the desktop mode has changed
-                // need to destroy all of dx stuff and recreate everything back again, which is a big hit
+        // This means that the desktop mode has changed
+        // need to destroy all of dx stuff and recreate everything
+        // back again, which is a big hit
         dxgsg_cat.error() << "DXGraphicsStateGuardian:: detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;
         exit(1);
         return;
       }
-
+      
       if(FAILED(hr)) {
         dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
         return;
@@ -5699,16 +5743,6 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
       dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
       exit(1);
     }
-  }
-
-  // right now, we force sync to v-blank (time from now up to vblank
-  // is wasted) this keeps calling processes from trying to render
-  // more frames than the refresh rate since (as implemented right
-  // now) they expect this call to block
-  hr =  _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-  if(hr != DD_OK) {
-    dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
-    exit(1);
   }
 }
 
