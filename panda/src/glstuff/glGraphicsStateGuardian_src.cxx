@@ -4510,19 +4510,15 @@ set_blend_mode() {
     return;
   }
 
-  if (_polygon_smooth_enabled && 
-      (get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) != 0) {
-    // For polygon smoothing, we need this special kind of blending,
-    // but this only works if we have an alpha channel in the frame
-    // buffer.  We should also sort the polygons front-to-back, but
-    // that's the application's problem.
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    _glBlendEquation(GL_FUNC_ADD);
-    GLP(BlendFunc)(GL_SRC_ALPHA_SATURATE, GL_ONE);
-    return;
-  }
+  // For best polygon smoothing, we need:
+  // (1) a frame buffer that supports alpha
+  // (2) sort polygons front-to-back
+  // (3) glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
+  //
+  // Since these modes have other implications for the application, we
+  // don't attempt to do this by default.  If you really want good
+  // polygon smoothing (and you don't have multisample support), do
+  // all this yourself.
 
   // Nothing's set, so disable blending.
   enable_multisample_alpha_one(false);
