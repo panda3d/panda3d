@@ -415,6 +415,14 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.setVisibility(zoneNums)
 
     def toonEnterZone(self, zoneNum, ouchLevel=None):
+        """
+        zoneNum is an int.
+        ouchLevel is a ??.
+        
+        The avatar (and not necessarily the camera) has entered
+        a zone.
+        See camEnterZone()
+        """
         DistributedLevel.notify.debug('toonEnterZone%s' % zoneNum)
 
         if zoneNum != self.lastToonZone:
@@ -423,6 +431,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
             messenger.send("factoryZoneChanged", [zoneNum])
 
     def camEnterZone(self, zoneNum):
+        """
+        zoneNum is an int.
+        
+        The camera (and not necessarily the avatar) has entered
+        a zone.
+        See toonEnterZone()
+        """
         DistributedLevel.notify.debug('camEnterZone%s' % zoneNum)
         self.enterZone(zoneNum)
 

@@ -36,6 +36,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # The RelatedObjectMgr helps distributed objects find each
         # other.
         self.relatedObjectMgr = RelatedObjectMgr.RelatedObjectMgr(self)
+    
+    def delete(self):
+        self.relatedObjectMgr.destroy()
 
     def setServerDelta(self, delta):
         """
@@ -131,32 +134,28 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         if cdc.constructor.neverDisable:
             # Create a new distributed object, and put it in the dictionary
             distObj = self.generateWithRequiredOtherFields(cdc, doId, di)
-        return None
 
     def generateWithRequiredFields(self, cdc, doId, di):
-        # Is it in our dictionary? 
         if self.doId2do.has_key(doId):
-            # If so, just update it.
+            # ...it is in our dictionary.
+            # Just update it.
             distObj = self.doId2do[doId]
             distObj.generate()
             distObj.updateRequiredFields(cdc, di)
             # updateRequiredFields calls announceGenerate
-
-        # Is it in the cache? If so, pull it out, put it in the dictionaries,
-        # and update it.
         elif self.cache.contains(doId):
-            # If so, pull it out of the cache...
+            # ...it is in the cache.
+            # Pull it out of the cache:
             distObj = self.cache.retrieve(doId)
-            # put it in both dictionaries...
+            # put it in both dictionaries:
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
             # and update it.
             distObj.generate()
             distObj.updateRequiredFields(cdc, di)
             # updateRequiredFields calls announceGenerate
-
-        # If it is not in the dictionary or the cache, then...
         else:
+            # ...it is not in the dictionary or the cache.
             # Construct a new one
             distObj = cdc.constructor(self)
             # Assign it an Id
@@ -169,33 +168,29 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             distObj.generate()
             distObj.updateRequiredFields(cdc, di)
             # updateRequiredFields calls announceGenerate
-            
         return distObj
 
     def generateWithRequiredOtherFields(self, cdc, doId, di):
-        # Is it in our dictionary? 
         if self.doId2do.has_key(doId):
-            # If so, just update it.
+            # ...it is in our dictionary.
+            # Just update it.
             distObj = self.doId2do[doId]
             distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
             # updateRequiredOtherFields calls announceGenerate
-
-        # Is it in the cache? If so, pull it out, put it in the dictionaries,
-        # and update it.
         elif self.cache.contains(doId):
-            # If so, pull it out of the cache...
+            # ...it is in the cache.
+            # Pull it out of the cache:
             distObj = self.cache.retrieve(doId)
-            # put it in both dictionaries...
+            # put it in both dictionaries:
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
             # and update it.
             distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
             # updateRequiredOtherFields calls announceGenerate
-
-        # If it is not in the dictionary or the cache, then...
         else:
+            # ...it is not in the dictionary or the cache.
             # Construct a new one
             if cdc.constructor == None:
                 self.notify.error("Could not create an undefined %s object." % (cdc.name))
@@ -210,7 +205,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
             # updateRequiredOtherFields calls announceGenerate
-            
         return distObj
 
 
@@ -219,7 +213,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         doId = di.getArg(STUint32)
         # disable it.
         self.disableDoId(doId)
-        return None
 
     def disableDoId(self, doId):
          # Make sure the object exists
@@ -239,9 +232,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             else:
                 distObj.deleteOrDelay()
         else:
-            ClientRepository.notify.warning("Disable failed. DistObj " +
-                                            str(doId) +
-                                            " is not in dictionary")
+            ClientRepository.notify.warning(
+                "Disable failed. DistObj "
+                + str(doId) +
+                " is not in dictionary")
 
     def handleDelete(self, di):
         # Get the DO Id
@@ -249,8 +243,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.deleteObject(doId)
 
     def deleteObject(self, doId):
-        """deleteObject(self, doId)
-
+        """
         Removes the object from the client's view of the world.  This
         should normally not be called except in the case of error
         recovery, since the server will normally be responsible for

@@ -67,7 +67,15 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         The return value may be saved and passed to a future call to
         abortRequest(), in order to abort a pending request before the
         timeout expires.
-
+        
+        Actually, you should be careful to call abortRequest() if you
+        have made a call to requestObjects() that has not been resolved.
+        To find examples, do a search for abortRequest() to find out 
+        how other code is using it.  A common idiom is to store the 
+        result from requestObjects() and call abortRequest() if delete()
+        or destroy() is called on the requesting object.
+        
+        See Also: abortRequest()
         """
         assert(self.notify.debug("requestObjects(%s, timeout=%s)" % (doIdList, timeout)))
 
@@ -129,6 +137,8 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         Aborts a previous request.  The parameter is the return value
         from a previous call to requestObjects().  The pending request
         is removed from the queue and no further callbacks will be called.
+        
+        See Also: requestObjects()
         """
         if tuple:
             allCallback, eachCallback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple

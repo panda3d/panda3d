@@ -238,11 +238,12 @@ class Messenger:
         """
         Compact version of event, acceptor pairs
         """
-        str = "="*64 + "\n"
+        str = "The messenger is currently handling:\n" + "="*64 + "\n"
         keys = self.dict.keys()
         keys.sort()
         for event in keys:
             str += self.__eventRepr(event)
+        str += "="*64 + "\n" + "End of messenger info.\n"
         return str
 
     def detailedRepr(self):

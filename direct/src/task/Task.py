@@ -810,13 +810,14 @@ class TaskManager:
         priorityWidth = 10
         totalDt = 0
         totalAvgDt = 0
-        str = ('taskList'.ljust(taskNameWidth)
+        str = "The taskMgr is handling:\n"
+        str += ('taskList'.ljust(taskNameWidth)
                + 'dt(ms)'.rjust(dtWidth)
                + 'avg'.rjust(dtWidth)
                + 'max'.rjust(dtWidth)
                + 'priority'.rjust(priorityWidth)
                + '\n')
-        str = str + '---------------------------------------------------------------\n'
+        str += '---------------------------------------------------------------\n'
         for taskPriList in self.taskList:
             priority = `taskPriList.getPriority()`
             for task in taskPriList:
@@ -843,9 +844,9 @@ class TaskManager:
                                  + '----'.rjust(dtWidth)
                                  + priority.rjust(priorityWidth)
                                  + '\n')
-        str = str + '---------------------------------------------------------------\n'
-        str = str + ' pendingTasks\n'
-        str = str + '---------------------------------------------------------------\n'
+        str += '---------------------------------------------------------------\n'
+        str += ' pendingTasks\n'
+        str += '---------------------------------------------------------------\n'
         for pri, taskList in self.pendingTaskDict.items():
             for task in taskList:
                 remainingTime = ((task.starttime) - self.currentTime)
@@ -892,6 +893,7 @@ class TaskManager:
                          + '----'.rjust(dtWidth)
                          + '----'.rjust(dtWidth)
                          + '\n')
+        str += "End of taskMgr info\n"
         return str
 
     def resetStats(self):
