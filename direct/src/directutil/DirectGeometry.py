@@ -86,6 +86,45 @@ def ROUND_TO(value, divisor):
     return round(value/float(divisor)) * divisor
 def ROUND_INT(val):
     return int(round(val))
+def CLAMP(val, min, max):
+    if val < min:
+        return min
+    elif val > max:
+        return max
+    else:
+        return val
+
+def getNearProjectionPoint(nodePath):
+    # Find the position of the projection of the specified node path
+    # on the near plane
+    origin = nodePath.getPos(direct.camera)
+    # project this onto near plane
+    if origin[1] != 0.0:
+        return origin * (direct.dr.near / origin[1])
+    else:
+        # Object is coplaner with camera, just return something reasonable
+        return Point3(0, direct.dr.near, 0)
+
+def getScreenXY(nodePath):
+    # Where does the node path's projection fall on the near plane
+    nearVec = getNearProjectionPoint(nodePath)
+    # Clamp these coordinates to visible screen
+    nearX = CLAMP(nearVec[0], direct.dr.left, direct.dr.right)
+    nearY = CLAMP(nearVec[2], direct.dr.bottom, direct.dr.top)
+    # What percentage of the distance across the screen is this?
+    percentX = (nearX - direct.dr.left)/direct.dr.nearWidth
+    percentY = (nearY - direct.dr.bottom)/direct.dr.nearHeight
+    # Map this percentage to the same -1 to 1 space as the mouse
+    screenXY = Vec3((2 * percentX) - 1.0,nearVec[1],(2 * percentY) - 1.0)
+    # Return the resulting value
+    return screenXY
+
+def getCrankAngle(center):
+    # Used to compute current angle of mouse (relative to the coa's
+    # origin) in screen space
+    x = direct.dr.mouseX - center[0]
+    y = direct.dr.mouseY - center[2]
+    return (180 + rad2Deg(math.atan2(y,x)))
 
 # Set direct drawing style for an object
 # Never light object or draw in wireframe

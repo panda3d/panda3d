@@ -113,9 +113,43 @@ class Messenger:
         """
         self.dict.clear()
 
+    def listAllEvents(self):
+        str = 'Messenger\n'
+        str = str + '='*50 + '\n'
+        keys = self.dict.keys()
+        keys.sort()
+        for event in keys:
+            str = str + 'Event: ' + event + '\n'
+        str = str + '='*50 + '\n'
+        print str
+
     def __repr__(self):
         """__repr__(self)
         Print out the table in a readable format
+        """
+        str = 'Messenger\n'
+        str = str + '='*50 + '\n'
+        keys = self.dict.keys()
+        keys.sort()
+        for event in keys:
+            acceptorDict = self.dict[event]
+            str = str + 'Event: ' + event + '\n'
+            for object in acceptorDict.keys():
+                method, extraArgs, persistent = acceptorDict[object]
+                className = object.__class__.__name__
+                methodName = method.__name__
+                str = (str + '\t' +
+                       'Acceptor:   ' + className + ' instance' + '\n\t' +
+                       'Method:     ' + methodName + '\n\t' +
+                       'Extra Args: ' + `extraArgs` + '\n\t' +
+                       'Persistent: ' + `persistent` + '\n\n'
+                       )
+        str = str + '='*50 + '\n'
+        return str
+
+    def __reprehensible__(self):
+        """__repr__(self)
+        Old way to print out the table in a readable format
         """
         str = 'Messenger\n'
         str = str + '='*50 + '\n'
@@ -127,5 +161,9 @@ class Messenger:
                 str = str + '\t' + `object` + '\n\t' + `method` + '\n\t' + `extraArgs` + ' ' + `persistent` + '\n'
         str = str + '='*50 + '\n'
         return str
+
+
+
+
 
 

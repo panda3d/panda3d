@@ -82,7 +82,8 @@ class DirectSession(PandaObject):
                           'escape', 'space', 'delete',
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'control', 'control-up',
-                          'page_up', 'page_down',
+                          'page_up', 'page_down', 'tab',
+                          '[', '{', ']', '}',
                           'b', 'c', 'f', 'l', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
@@ -190,21 +191,27 @@ class DirectSession(PandaObject):
             self.downAncestry()
         elif input == 'escape':
             self.deselectAll()
+        elif input == 'delete':
+            self.removeAllSelected()
+        elif input == 'tab':
+            self.toggleWidgetVis()
+        elif input == 'b':
+            base.toggleBackface()
         elif input == 'l':
             self.lights.toggle()
         elif input == 's':
             if self.selected.last:
                 self.select(self.selected.last)
-        elif input == 'delete':
-            self.removeAllSelected()
-        elif input == 'v':
-            self.selected.toggleVisAll()
-        elif input == 'b':
-            base.toggleBackface()
         elif input == 't':
             base.toggleTexture()
+        elif input == 'v':
+            self.selected.toggleVisAll()
         elif input == 'w':
             base.toggleWireframe()
+        elif (input == '[') | (input == '{'):
+            self.undo()
+        elif (input == ']') | (input == '}'):
+            self.redo()
         
     def select(self, nodePath, fMultiselect = 0, fResetAncestry = 1):
         dnp = self.selected.select(nodePath, fMultiselect)
@@ -219,7 +226,7 @@ class DirectSession(PandaObject):
             self.readout.reparentTo(render2d)
             self.readout.setText(dnp.name)
             # Show the manipulation widget
-            self.widget.reparentTo(direct.group)
+            self.reparentWidgetTo('direct')
             # Update camera controls coa to this point
             # Coa2Camera = Coa2Dnp * Dnp2Camera
             mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(self.camera)
@@ -250,7 +257,7 @@ class DirectSession(PandaObject):
         dnp = self.selected.deselect(nodePath)
         if dnp:
             # Hide the manipulation widget
-            self.widget.reparentTo(hidden)
+            self.reparentWidgetTo('hidden')
             self.readout.reparentTo(hidden)
             self.readout.setText(' ')
             taskMgr.removeTasksNamed('followSelectedNodePath')
@@ -261,7 +268,7 @@ class DirectSession(PandaObject):
     def deselectAll(self):
         self.selected.deselectAll()
         # Hide the manipulation widget
-        self.widget.reparentTo(hidden)
+        self.reparentWidgetTo('hidden')
         self.readout.reparentTo(hidden)
         self.readout.setText(' ')
         taskMgr.removeTasksNamed('followSelectedNodePath')
@@ -384,7 +391,7 @@ class DirectSession(PandaObject):
         # Now record group
         self.undoList.append(undoGroup)
         # Truncate list
-        self.undoList = self.undoList[-5:]
+        self.undoList = self.undoList[-25:]
         # Alert anyone who cares
         messenger.send('pushUndo')
         if fResetRedo & (nodePathList != []):
@@ -413,7 +420,7 @@ class DirectSession(PandaObject):
         # Now record redo group
         self.redoList.append(redoGroup)
         # Truncate list
-        self.redoList = self.redoList[-5:]
+        self.redoList = self.redoList[-25:]
         # Alert anyone who cares
         messenger.send('pushRedo')
 
@@ -461,6 +468,20 @@ class DirectSession(PandaObject):
 
     def hideReadout(self):
 	self.readout.reparentTo(hidden)
+
+    def reparentWidgetTo(self, parent):
+        if parent == 'direct':
+            self.widget.reparentTo(direct.group)
+            self.widgetParent = 'direct'
+        else:
+            self.widget.reparentTo(hidden)
+            self.widgetParent = 'hidden'
+
+    def toggleWidgetVis(self):
+        if self.widgetParent == 'direct':
+            self.reparentWidgetTo('hidden')
+        else:
+            self.reparentWidgetTo('direct')
 
 class DisplayRegionList:
     def __init__(self):

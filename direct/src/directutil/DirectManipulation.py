@@ -28,6 +28,7 @@ class DirectManipulationControl(PandaObject):
         self.actionEvents = [
             ['handleMouse1', self.manipulationStart],
             ['handleMouse1Up', self.manipulationStop],
+            ['space', self.toggleObjectHandlesMode],
             ['.', self.objectHandles.multiplyScalingFactorBy, 2.0],
             ['>', self.objectHandles.multiplyScalingFactorBy, 2.0],
             [',', self.objectHandles.multiplyScalingFactorBy, 0.5],
@@ -137,8 +138,6 @@ class DirectManipulationControl(PandaObject):
             # We had been scaling, need to reset object handles
             self.objectHandles.transferObjectHandlesScale()
             self.fScaling = 0
-        if self.fSetCoa:
-            self.objectHandles.manipModeColor()
         direct.selected.highlightAll()
         self.objectHandles.showAllHandles()
         self.objectHandles.hideGuides()
@@ -188,6 +187,13 @@ class DirectManipulationControl(PandaObject):
         if item in self.unpickable:
             self.unpickable.remove(item)
 
+    def toggleObjectHandlesMode(self):
+        self.fSetCoa = 1 - self.fSetCoa
+        if self.fSetCoa:
+            self.objectHandles.coaModeColor()
+        else:
+            self.objectHandles.manipModeColor()
+
     def removeManipulateObjectTask(self):
         taskMgr.removeTasksNamed('manipulateObject')
 
@@ -206,20 +212,10 @@ class DirectManipulationControl(PandaObject):
             self.objectHandles.showGuides()
             self.objectHandles.hideAllHandles()
             self.objectHandles.showHandle(self.constraint)
-            if self.fSetCoa:
-                self.objectHandles.coaModeColor()
-
             # Record relationship between selected nodes and widget
             direct.selected.getWrtAll()
-
             # hide the bbox of the selected objects during interaction
             direct.selected.dehighlightAll()
-
-            """
-            # Push the undo dcs for the selected objects
-            direct.undo.push(
-                (direct.selected, 'dcs'))
-            """
             # Manipulate the real object with the constraint
             # The constraint is passed as the name of the node 
             self.spawnManipulateObjectTask()
@@ -350,13 +346,6 @@ class DirectManipulationControl(PandaObject):
             y + self.initY * dr.mouseDeltaY,
             z)
     
-    def getCrankAngle(self):
-        # Used to compute current angle of mouse (relative to the widget's
-        # origin) in screen space
-        x = direct.dr.mouseX - self.rotationCenter[0]
-        y = direct.dr.mouseY - self.rotationCenter[2]
-        return (180 + rad2Deg(math.atan2(y,x)))
-
     def widgetCheck(self,type):
         # Utility to see if we are looking at the top or bottom of
         # a 2D planar widget or if we are looking at a 2D planar widget
@@ -388,27 +377,6 @@ class DirectManipulationControl(PandaObject):
             # Check angle between two vectors
             return(abs(widgetDir.dot(widgetAxis)) < .2)
 
-    def getWidgetsNearProjectionPoint(self):
-        # Find the position of the projection of the specified node path
-        # on the near plane
-        widgetOrigin = direct.widget.getPos(direct.camera)
-        # project this onto near plane
-        return widgetOrigin * (direct.dr.near / widgetOrigin[1])
-
-    def getScreenXY(self):
-        # Where does the widget's projection fall on the near plane
-        nearVec = self.getWidgetsNearProjectionPoint()
-        # Clamp these coordinates to visible screen
-        nearX = self.clamp(nearVec[0], direct.dr.left, direct.dr.right)
-        nearY = self.clamp(nearVec[2], direct.dr.bottom, direct.dr.top)
-        # What percentage of the distance across the screen is this?
-        percentX = (nearX - direct.dr.left)/direct.dr.nearWidth
-        percentY = (nearY - direct.dr.bottom)/direct.dr.nearHeight
-        # Map this percentage to the same -1 to 1 space as the mouse
-        screenXY = Vec3((2 * percentX) - 1.0,nearVec[1],(2 * percentY) - 1.0)
-        # Return the resulting value
-        return screenXY
-
     def rotate1D(self):
         # Constrained 1D rotation about the widget's main axis (X,Y, or Z)
         # Rotation depends upon circular motion of the mouse about the
@@ -421,11 +389,11 @@ class DirectManipulationControl(PandaObject):
             self.fHitInit = 0
             self.rotateAxis = self.constraint[:1]
             self.fWidgetTop = self.widgetCheck('top?')
-            self.rotationCenter = self.getScreenXY()
-            self.lastCrankAngle = self.getCrankAngle()
+            self.rotationCenter = getScreenXY(direct.widget)
+            self.lastCrankAngle = getCrankAngle(self.rotationCenter)
             
         # Rotate widget based on how far cursor has swung around origin
-        newAngle = self.getCrankAngle()
+        newAngle = getCrankAngle(self.rotationCenter)
         deltaAngle = self.lastCrankAngle - newAngle
         if self.fWidgetTop:
             deltaAngle = -1 * deltaAngle
@@ -491,14 +459,6 @@ class DirectManipulationControl(PandaObject):
             )
         direct.widget.setScale(currScale)
         
-    def clamp(self, val, min, max):
-        if val < min:
-            return min
-        elif val > max:
-            return max
-        else:
-            return val
-
 
 class ObjectHandles(NodePath,PandaObject):
     def __init__(self):
