@@ -609,6 +609,13 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
     (fabs(new_mat(0, 1)) + fabs(new_mat(0, 2)) +
      fabs(new_mat(1, 0)) + fabs(new_mat(1, 2)) +
      fabs(new_mat(2, 0)) + fabs(new_mat(2, 1))) < 0.0001;
+
+  /*
+  if (!has_no_shear) {
+    linmath_cat.info() << "shear:\n";
+    new_mat.write(linmath_cat.info(false), 2);
+  }
+  */
   
   return has_no_shear;
 }

@@ -152,6 +152,11 @@ PUBLISHED:
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     scale_mat(FLOATTYPE scale);
 
+  static INLINE_LINMATH FLOATNAME(LMatrix4)
+    shear_mat(const FLOATNAME(LVecBase3) &shear);
+  static INLINE_LINMATH FLOATNAME(LMatrix4)
+    shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz);
+
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &y_to_z_up_mat();
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &z_to_y_up_mat();
 

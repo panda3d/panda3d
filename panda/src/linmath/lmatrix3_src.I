@@ -1077,7 +1077,7 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(const FLOATNAME(LVecBase3) &scale) {
-  return FLOATNAME(LMatrix3)(scale[0], 0.0f, 0.0f,
+  return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
                              0.0f, scale._v.v._1, 0.0f,
                              0.0f, 0.0f, scale._v.v._2);
 }
@@ -1093,6 +1093,32 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
   return FLOATNAME(LMatrix3)(sx, 0.0f, 0.0f,
                              0.0f, sy, 0.0f,
                              0.0f, 0.0f, sz);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::shear_mat
+//       Access: Public, Static
+//  Description: Returns a matrix that applies the indicated
+//               shear in each of the three planes.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+shear_mat(const FLOATNAME(LVecBase3) &shear) {
+  return FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
+                             shear._v.v._0, 1.0f, 0.0f,
+                             shear._v.v._1, shear._v.v._2, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::shear_mat
+//       Access: Public, Static
+//  Description: Returns a matrix that applies the indicated
+//               shear in each of the three planes.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz) {
+  return FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
+                             shxy, 1.0f, 0.0f,
+                             shxz, shyz, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -157,6 +157,11 @@ PUBLISHED:
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
 
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    shear_mat(const FLOATNAME(LVecBase3) &shear);
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz);
+
   static const FLOATNAME(LMatrix3) &convert_mat(CoordinateSystem from,
                                                 CoordinateSystem to);
 
