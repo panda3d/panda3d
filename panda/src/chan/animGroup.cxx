@@ -16,10 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chan_headers.h"
+#endif
+
 #pragma hdrstop
 
-// not precompiled because it causes xtra warnings
+#ifndef WIN32_VC
+#include "animGroup.h"
+#include "animBundle.h"
+#include "config_chan.h"
+
+#include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+
+#endif
+
 #include <algorithm>
 
 TypeHandle AnimGroup::_type_handle;

@@ -16,8 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chan_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "animChannel.h"
+
+#include <compose_matrix.h>
+#endif
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

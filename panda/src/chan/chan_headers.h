@@ -21,19 +21,10 @@
 #include <compose_matrix.h>
 #include <datagram.h>
 #include <datagramIterator.h>
-#include <dconfig.h>
-#include <dftraverser.h>
 #include <event.h>
 #include <fftCompressor.h>
 #include <indent.h>
-#include <luse.h>
-#include <nullAttributeWrapper.h>
-#include <nullLevelState.h>
-#include <nullTransitionWrapper.h>
-#include <renderRelation.h>
-#include <string_utils.h>
 #include <throw_event.h>
-#include <traverserVisitor.h>
 
 #include "animBundle.h"
 #include "animBundleNode.h"
@@ -44,7 +35,6 @@
 #include "animControl.h"
 #include "animControlCollection.h"
 #include "animGroup.h"
-#include "auto_bind.h"
 #include "config_chan.h"
 #include "movingPartBase.h"
 #include "movingPartMatrix.h"

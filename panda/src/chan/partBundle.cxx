@@ -16,8 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chan_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "partBundle.h"
+#include "animBundle.h"
+#include "animControl.h"
+#include "config_chan.h"
+
+#include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+#endif
 
 TypeHandle PartBundle::_type_handle;
 

@@ -16,10 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chan_headers.h"
+#endif
+
 #pragma hdrstop
 
+#ifndef WIN32_VC
+#include "animChannelMatrixXfmTable.h"
+#include "animBundle.h"
+#include "config_chan.h"
 
+#include <compose_matrix.h>
+#include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+#include <fftCompressor.h>
+#endif
 
 TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 

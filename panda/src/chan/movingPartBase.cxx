@@ -16,8 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chan_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "movingPartBase.h"
+#include "animControl.h"
+#include "animChannelBase.h"
+
+#include <indent.h>
+#endif
 
 TypeHandle MovingPartBase::_type_handle;
 

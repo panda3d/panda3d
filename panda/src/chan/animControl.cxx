@@ -16,8 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chan_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "animControl.h"
+#include "animChannelBase.h"
+#include "partBundle.h"
+#include "config_chan.h"
+
+#include <event.h>
+#include <throw_event.h>
+#endif
+
 
 TypeHandle AnimControl::_type_handle;
 

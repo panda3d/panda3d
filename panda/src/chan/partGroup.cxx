@@ -16,10 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chan_headers.h"
+#endif
+
 #pragma hdrstop
 
-// not precompiled because it causes xtra warnings
+#ifndef WIN32_VC
+#include "partGroup.h"
+#include "animGroup.h"
+#include "config_chan.h"
+
+#include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+#endif
+
 #include <algorithm>
 
 TypeHandle PartGroup::_type_handle;

@@ -16,14 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32_VC
 #include "chan_headers.h"
+#endif
+
 #pragma hdrstop
+
+#ifndef WIN32_VC
+#include "animBundleNode.h"
+#include "partBundleNode.h"
+#include "config_chan.h"
+#endif
+
+#include <renderRelation.h>
+#include <traverserVisitor.h>
+#include <dftraverser.h>
+#include <string_utils.h>
+#include <nullAttributeWrapper.h>
+#include <nullLevelState.h>
+#include <nullTransitionWrapper.h>
+#include "auto_bind.h"
 
 typedef set<AnimBundleNode *> AnimNodes;
 typedef map<string, AnimNodes> Anims;
 
 typedef set<PartBundleNode *> PartNodes;
 typedef map<string, PartNodes> Parts;
+
 
 
 ////////////////////////////////////////////////////////////////////
