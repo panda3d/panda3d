@@ -297,7 +297,7 @@ format_default_value(double num, string &formatted) const {
   case ST_float64:
     // This may not be fully portable.
     formatted = string((char *)&real_value, 8);
-#ifdef IS_BIG_ENDIAN
+#ifdef WORDS_BIGENDIAN
     {
       // Reverse the byte ordering for big-endian machines.
       string str;

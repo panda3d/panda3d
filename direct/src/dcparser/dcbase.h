@@ -93,12 +93,10 @@ using namespace std;
 // string instead.
 typedef string Filename;
 
-// Panda defines IS_BIG_ENDIAN or IS_LITTLE_ENDIAN as appropriate.
-// Outside of panda, you'll have to do it yourself.  If neither is
-// defined, we'll assume IS_LITTLE_ENDIAN.
-#if !defined(IS_BIG_ENDIAN) && !defined(IS_LITTLE_ENDIAN)
-#define IS_LITTLE_ENDIAN
-#endif
+// Panda defines WORDS_BIGENDIAN on a bigendian machine; otherwise,
+// the machine is assumed to be littleendian.  Outside of Panda,
+// you're responsible for defining this yourself if necessary.
+//#define WORDS_BIGENDIAN
 
 #include <vector>
 #include <map>
