@@ -23,7 +23,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
     notify = DirectNotifyGlobal.directNotify.newCategory('DistributedLevel')
 
     WantVisibility = config.GetBool('level-visibility', 1)
-    HideZones = config.GetBool('level-hidezones', 1)
     # set this to true to get all distrib objs when showing hidden zones
     ColorZonesAllDOs = 0
 
@@ -435,7 +434,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.curZoneNum = None
 
         self.visChangedThisFrame = 0
-        self.sentFirstSetZone = 0
+        self.fForceSetZoneThisFrame = 0
 
         # listen for camera-ray/floor collision events
         def handleCameraRayFloorCollision(collEntry, self=self):
@@ -457,6 +456,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if not DistributedLevel.WantVisibility:
             zoneNums = list(self.zoneNums)
             zoneNums.remove(LevelConstants.UberZoneEntId)
+            # make sure a setZone goes out on the first frame
+            self.forceSetZoneThisFrame()
             self.setVisibility(zoneNums)
 
         # send out any zone changes at the end of the frame, just before
@@ -579,45 +580,43 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # this flag will prevent a network msg from being sent if
         # the list of visible zones has not changed
         vizZonesChanged = 1
-        if DistributedLevel.HideZones:
-            # figure out which zones are new and which are going invisible
-            # use dicts because it's faster to use dict.has_key(x)
-            # than 'x in list'
-            addedZoneNums = []
-            removedZoneNums = []
-            allVZ = dict(visibleZoneNums)
-            allVZ.update(self.curVisibleZoneNums)
-            for vz,dummy in allVZ.items():
-                new = vz in visibleZoneNums
-                old = vz in self.curVisibleZoneNums
-                if new and old:
-                    continue
-                if new:
-                    addedZoneNums.append(vz)
-                else:
-                    removedZoneNums.append(vz)
-
-            if (not addedZoneNums) and (not removedZoneNums):
-                DistributedLevel.notify.info(
-                    'visible zone list has not changed')
-                vizZonesChanged = 0
+        # figure out which zones are new and which are going invisible
+        # use dicts because 'x in dict' is faster than 'x in list'
+        addedZoneNums = []
+        removedZoneNums = []
+        allVZ = dict(visibleZoneNums)
+        allVZ.update(self.curVisibleZoneNums)
+        for vz,dummy in allVZ.items():
+            new = vz in visibleZoneNums
+            old = vz in self.curVisibleZoneNums
+            if new and old:
+                continue
+            if new:
+                addedZoneNums.append(vz)
             else:
-                # show the new, hide the old
-                DistributedLevel.notify.info('showing zones %s' %
-                                             addedZoneNums)
-                for az in addedZoneNums:
-                    self.showZone(az)
-                DistributedLevel.notify.info('hiding zones %s' %
-                                             removedZoneNums)
-                for rz in removedZoneNums:
-                    self.hideZone(rz)
+                removedZoneNums.append(vz)
+
+        if (not addedZoneNums) and (not removedZoneNums):
+            DistributedLevel.notify.info(
+                'visible zone list has not changed')
+            vizZonesChanged = 0
+        else:
+            # show the new, hide the old
+            DistributedLevel.notify.info('showing zones %s' %
+                                         addedZoneNums)
+            for az in addedZoneNums:
+                self.showZone(az)
+            DistributedLevel.notify.info('hiding zones %s' %
+                                         removedZoneNums)
+            for rz in removedZoneNums:
+                self.hideZone(rz)
 
         # it's important for us to send a setZone request on the first
         # frame, whether or not the visibility is different from what
         # we already have
-        if vizZonesChanged or not self.sentFirstSetZone:
+        if vizZonesChanged or self.fForceSetZoneThisFrame:
             self.setVisibility(visibleZoneNums.keys())
-            self.sentFirstSetZone = 1
+            self.fForceSetZoneThisFrame = 0
 
         self.curZoneNum = zoneNum
         self.curVisibleZoneNums = visibleZoneNums
@@ -660,10 +659,14 @@ class DistributedLevel(DistributedObject.DistributedObject,
         Level.Level.handleVisChange(self)
         self.visChangedThisFrame = 1
 
+    def forceSetZoneThisFrame(self):
+        # call this to ensure that a setZone call will be generated this frame
+        self.fForceSetZoneThisFrame = 1
+
     def visChangeTask(self, task):
         # this runs just before igloop; if viz lists have changed
         # this frame, updates the visibility and sends out a setZoneMsg
-        if self.visChangedThisFrame:
+        if self.visChangedThisFrame or self.fForceSetZoneThisFrame:
             self.updateVisibility()
             self.visChangedThisFrame = 0
         return Task.cont

@@ -22,21 +22,31 @@ class VisibilityBlocker:
         will be called when it's safe to show the new zones."""
         if self.__nextSetZoneDoneEvent is None:
             self.__nextSetZoneDoneEvent = self.level.cr.getNextSetZoneDoneEvent()
-            self.accept(self.__nextSetZoneDoneEvent, self.okToUnblockVis)
+            self.acceptOnce(self.__nextSetZoneDoneEvent, self.okToUnblockVis)
+            # make sure that a setZone is sent this frame, even if the
+            # visibility list doesn't change
+            self.level.forceSetZoneThisFrame()
 
     def cancelUnblockVis(self):
-        """derived class should call this if they have called requestUnblockVis,
-        but no longer need that service.  For example the user could have canceled
-        the request that started the visibility change."""
+        """
+        derived class should call this if they have called
+        requestUnblockVis, but no longer need that service.  For example
+        the user could have canceled the request that started the
+        visibility change.
+        """
         if self.__nextSetZoneDoneEvent is not None:
             self.ignore(self.__nextSetZoneDoneEvent)
             self.__nextSetZoneDoneEvent = None
 
     def isWaitingForUnblockVis(self):
-        """returns a boolean for whether there is a requestUnblockVis() pending."""
+        """
+        returns a boolean for whether there is a requestUnblockVis() pending.
+        """
         return self.__nextSetZoneDoneEvent is not None
 
     def okToUnblockVis(self):
-        """derived class should override this func and do the vis unblock
-        (i.e. open the door, etc.)"""
+        """
+        derived class should override this func and do the vis unblock
+        (i.e. open the door, etc.)
+        """
         self.cancelUnblockVis()
