@@ -70,6 +70,11 @@ EggPalettize() : EggMultiFilter(true) {
      "palette group.",
      &EggPalettize::dispatch_string, &_got_map_dirname, &_map_dirname);
   add_option
+    ("dr", "dirname", 0, 
+     "The directory to make map filenames relative to when writing egg "
+     "files.  If specified, this should be an initial substring of -dm.",
+     &EggPalettize::dispatch_filename, &_got_rel_dirname, &_rel_dirname);
+  add_option
     ("g", "group", 0, 
      "The default palette group that egg files will be assigned to if they "
      "are not explicitly assigned to any other group.",
@@ -180,7 +185,6 @@ handle_args(ProgramBase::Args &args) {
     describe_input_file();
     exit(1);
   }
-
 
   Args egg_names;
   Args txa_names;

@@ -37,6 +37,10 @@ public:
   bool read(bool force_redo_all);
   bool write();
 
+  Filename write_pi_filename(Filename filename) const;
+  Filename read_pi_filename(Filename filename) const;
+  Filename write_egg_filename(Filename filename) const;
+
   void update_params(EggPalettize *prog);
 
   PaletteGroup *get_group(const string &group_name);
@@ -119,6 +123,8 @@ private:
   Filename _txa_filename;
   Filename _pi_filename;
 
+  Filename _pi_dir;
+
   PaletteGroup *_default_group;
 
 public:
@@ -128,6 +134,7 @@ public:
   // palettes, and thus should be stored in the .pi file for future
   // reference.
   string _map_dirname;
+  Filename _rel_dirname;
   int _pal_xsize, _pal_ysize;
   int _default_margin;
   bool _force_power_2;

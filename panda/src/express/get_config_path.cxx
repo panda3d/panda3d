@@ -25,7 +25,7 @@
 //               time when we can't be sure what has or hasn't been
 //               already initialized.
 ////////////////////////////////////////////////////////////////////
-const DSearchPath &
+DSearchPath &
 get_config_path(const string &config_var_name, DSearchPath *&static_ptr) {
   if (static_ptr == (DSearchPath *)NULL) {
     static_ptr = new DSearchPath;

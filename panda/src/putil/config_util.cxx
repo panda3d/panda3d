@@ -57,19 +57,19 @@ ConfigureFn(config_util) {
 
 //const bool track_memory_usage = config_util.GetBool("track-memory-usage", false);
 
-const DSearchPath &
+DSearchPath &
 get_model_path() {
   static DSearchPath *model_path = NULL;
   return get_config_path("model-path", model_path);
 }
 
-const DSearchPath &
+DSearchPath &
 get_texture_path() {
   static DSearchPath *texture_path = NULL;
   return get_config_path("texture-path", texture_path);
 }
 
-const DSearchPath &
+DSearchPath &
 get_sound_path() {
   static DSearchPath *sound_path = NULL;
   return get_config_path("sound-path", sound_path);

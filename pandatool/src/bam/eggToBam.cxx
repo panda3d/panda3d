@@ -5,6 +5,7 @@
 
 #include "eggToBam.h"
 
+#include <config_util.h>
 #include <bamFile.h>
 #include <load_egg_file.h>
 
@@ -20,6 +21,12 @@ EggToBam() :
   set_program_description
     ("This program reads Egg files and outputs Bam files, the binary format "
      "suitable for direct loading of animation and models into Panda.");
+
+  add_option
+    ("tp", "path", 0, 
+     "Add the indicated colon-delimited paths to the texture-path.  This "
+     "option may also be repeated to add multiple paths.",
+     &EggToBam::dispatch_search_path, NULL, &get_texture_path());
 
   redescribe_option
     ("cs",

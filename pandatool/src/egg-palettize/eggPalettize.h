@@ -40,6 +40,8 @@ public:
   // reference.
   string _map_dirname;
   bool _got_map_dirname;
+  Filename _rel_dirname;
+  bool _got_rel_dirname;
   string _default_groupname;
   bool _got_default_groupname;
   string _default_groupdir;

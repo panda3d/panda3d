@@ -135,7 +135,7 @@ import(const Filename &source, void *extra_data,
       return (CVSSourceDirectory *)NULL;
     }
     if (new_file) {
-      create_file(dest);
+      cvs_add(dest);
     }
   }
 
@@ -315,14 +315,14 @@ copy_binary_file(Filename source, Filename dest) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::create_file
+//     Function: CVSCopy::cvs_add
 //       Access: Protected
 //  Description: Invokes CVS to add the indicated filename to the
 //               repository, if the user so requested.  Returns true
 //               if successful, false if there is an error.
 ////////////////////////////////////////////////////////////////////
 bool CVSCopy::
-create_file(const Filename &filename) {
+cvs_add(const Filename &filename) {
   if (_no_cvs) {
     return true;
   }

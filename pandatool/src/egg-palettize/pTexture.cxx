@@ -358,7 +358,8 @@ write_pathname(ostream &out) const {
       nout << "Warning: texture " << _filename << " does not exist.\n";
     }
 
-    out << "  " << _name << " " << _filename << "\n";
+    out << "  " << _name << " " << _attrib_file->write_pi_filename(_filename)
+	<< "\n";
 
     // Also write out all the alternate filenames.
     Filenames::const_iterator fi;
@@ -368,7 +369,7 @@ write_pathname(ostream &out) const {
 	for (int i = 0; i < (int)_name.length() + 3; i++) {
 	  out << ' ';
 	}
-	out << (*fi) << "\n";
+	out << _attrib_file->write_pi_filename(*fi) << "\n";
       }
     }
   }

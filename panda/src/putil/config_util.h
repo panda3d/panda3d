@@ -26,8 +26,8 @@ NotifyCategoryDecl(util, EXPCL_PANDA, EXPTP_PANDA);
 // computed based on the concatenation of all appearances of the
 // corresponding variable in the config files.
 
-EXPCL_PANDA const DSearchPath &get_model_path();
-EXPCL_PANDA const DSearchPath &get_texture_path();
-EXPCL_PANDA const DSearchPath &get_sound_path();
+EXPCL_PANDA DSearchPath &get_model_path();
+EXPCL_PANDA DSearchPath &get_texture_path();
+EXPCL_PANDA DSearchPath &get_sound_path();
 
 #endif /* __CONFIG_UTIL_H__ */

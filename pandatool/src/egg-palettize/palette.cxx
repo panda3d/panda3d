@@ -357,7 +357,8 @@ finalize_palette() {
 
 void Palette::
 write(ostream &out) const {
-  out << "palette " << _filename << " in " << _group->get_name()
+  out << "palette " << _attrib_file->write_pi_filename(_filename)
+      << " in " << _group->get_name()
       << " size " << _xsize << " " << _ysize << " " << _components
       << "\n";
   TexPlace::const_iterator ti;

@@ -29,6 +29,11 @@ AttribFile(const Filename &filename) {
   _pi_filename.set_extension("pi");
   _txa_fd = -1;
 
+
+  _pi_dir = _pi_filename;
+  _pi_dir.set_basename("");
+  _pi_dir.make_canonical();
+
   _default_group = (PaletteGroup *)NULL;
 
   _optimal = false;
@@ -142,10 +147,55 @@ write() {
   return okflag;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::write_pi_filename
+//       Access: Public
+//  Description: Returns a new filename that's made relative to the
+//               .pi file itself, suitable for writing to the .pi file.
+////////////////////////////////////////////////////////////////////
+Filename AttribFile::
+write_pi_filename(Filename filename) const {
+  filename.make_canonical();
+  filename.make_relative_to(_pi_dir);
+  return filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::read_pi_filename
+//       Access: Public
+//  Description: Returns an absolute pathname based on the given
+//               relative pathname, presumably read from the .pi file
+//               and relative to the .pi file.
+////////////////////////////////////////////////////////////////////
+Filename AttribFile::
+read_pi_filename(Filename filename) const {
+  if (!filename.empty()) {
+    filename.make_absolute(_pi_dir);
+  }
+  return filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::write_egg_filename
+//       Access: Public
+//  Description: Returns a new filename that's made relative to the
+//               rel_directory, suitable for writing out within egg
+//               files.
+////////////////////////////////////////////////////////////////////
+Filename AttribFile::
+write_egg_filename(Filename filename) const {
+  filename.make_canonical();
+  filename.make_relative_to(_rel_dirname);
+  return filename;
+}
+
 void AttribFile::
 update_params(EggPalettize *prog) {
   if (prog->_got_map_dirname) {
     _map_dirname = prog->_map_dirname;
+  }
+  if (prog->_got_rel_dirname) {
+    _rel_dirname = prog->_rel_dirname;
   }
   if (prog->_got_palette_size) {
     _pal_xsize = prog->_pal_size[0];
@@ -159,6 +209,10 @@ update_params(EggPalettize *prog) {
   }
   if (prog->_got_aggressively_clean_mapdir) {
     _aggressively_clean_mapdir = prog->_aggressively_clean_mapdir;
+  }
+
+  if (!_rel_dirname.empty()) {
+    _rel_dirname.make_canonical();
   }
 }
 
@@ -508,8 +562,9 @@ get_eligible_textures(vector<TexturePacking *> &textures) {
 
 SourceEgg *AttribFile::
 get_egg(Filename name) {
+  string basename = name.get_basename();
   Eggs::iterator ei;
-  ei = _eggs.find(name);
+  ei = _eggs.find(basename);
   if (ei != _eggs.end()) {
     return (*ei).second;
   }
@@ -517,7 +572,7 @@ get_egg(Filename name) {
   SourceEgg *egg = new SourceEgg(this);
   egg->resolve_egg_filename(name);
   egg->set_egg_filename(name);
-  _eggs[name] = egg;
+  _eggs[basename] = egg;
   return egg;
 }
 
@@ -799,6 +854,7 @@ write_pi(ostream &out) const {
 
   out << "\nparams\n"
       << "  map_directory " << _map_dirname << "\n"
+      << "  rel_directory " << write_pi_filename(_rel_dirname) << "\n"
       << "  pal_xsize " << _pal_xsize << "\n"
       << "  pal_ysize " << _pal_ysize << "\n"
       << "  default_margin " << _default_margin << "\n"
@@ -902,6 +958,8 @@ parse_params(const vector<string> &words, istream &infile,
 
     if (param == "map_directory") {
       _map_dirname = value;
+    } else if (param == "rel_directory") {
+      _rel_dirname = read_pi_filename(value);
     } else if (param == "pal_xsize") {
       _pal_xsize = atoi(value.c_str());
     } else if (param == "pal_ysize") {
@@ -1013,12 +1071,12 @@ parse_pathname(const vector<string> &words, istream &infile,
 	nout << "Expected texture name and pathname.\n";
 	return false;
       }
-      texture->add_filename(twords[0]);
+      texture->add_filename(read_pi_filename(twords[0]));
 
     } else if (twords.size() == 2) {
       // Two words on the line means it's a texture name and filename.
       texture = get_texture(twords[0]);
-      texture->add_filename(twords[1]);
+      texture->add_filename(read_pi_filename(twords[1]));
 
     } else {
       // Anything else is a mistake.
@@ -1042,7 +1100,7 @@ parse_egg(const vector<string> &words, istream &infile,
     return false;
   }
   
-  SourceEgg *egg = get_egg(words[1]);
+  SourceEgg *egg = get_egg(read_pi_filename(words[1]));
 
   if (words.size() > 2 && words[2] == "in") {
     // Get the group names.
@@ -1143,7 +1201,7 @@ parse_palette(const vector<string> &words, istream &infile,
     return false;
   }
 
-  string filename = words[1];
+  string filename = read_pi_filename(words[1]);
   if (!(words[2] == "in")) {
     nout << "Expected keyword 'in'\n";
     return false;

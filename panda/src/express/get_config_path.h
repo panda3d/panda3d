@@ -28,7 +28,7 @@
 //               time when we can't be sure what has or hasn't been
 //               already initialized.
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDAEXPRESS const DSearchPath &
+EXPCL_PANDAEXPRESS DSearchPath &
 get_config_path(const string &config_var_name, DSearchPath *&static_ptr);
 
 #endif

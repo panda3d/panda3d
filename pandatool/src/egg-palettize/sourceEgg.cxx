@@ -289,14 +289,14 @@ update_trefs() {
 	  packing->get_omit() != OR_none) {
 	// This texture wasn't palettized, so just rename the
 	// reference to the new one.
-	eggtex->set_fullpath(packing->get_new_filename());
+	eggtex->set_fullpath(_attrib_file->write_egg_filename(packing->get_new_filename()));
 
       } else {
 	// This texture was palettized, so redirect the tref to point
 	// within the palette.
 	Palette *palette = packing->get_palette();
 	
-	eggtex->set_fullpath(palette->get_filename());
+	eggtex->set_fullpath(_attrib_file->write_egg_filename(palette->get_filename()));
 	
 	// Set the texture attributes to be uniform across all palettes.
 	eggtex->set_minfilter(EggTexture::FT_mipmap_trilinear);
@@ -402,9 +402,8 @@ set_matched_anything(bool matched_anything) {
 ////////////////////////////////////////////////////////////////////
 void SourceEgg::
 write_pi(ostream &out) const {
-  Filename absolute_filename = get_egg_filename();
-  absolute_filename.make_absolute();
-  out << "egg " << absolute_filename << " in";
+  Filename filename = _attrib_file->write_pi_filename(get_egg_filename());
+  out << "egg " << filename << " in";
   PaletteGroups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     out << " " << (*gi)->get_name();

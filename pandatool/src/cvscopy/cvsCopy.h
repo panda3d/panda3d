@@ -42,7 +42,7 @@ protected:
   bool verify_binary_file(Filename source, Filename dest);
   bool copy_binary_file(Filename source, Filename dest);
 
-  bool create_file(const Filename &filename);
+  bool cvs_add(const Filename &filename);
 
 private:
   bool scan_hierarchy(); 

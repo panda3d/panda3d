@@ -204,7 +204,7 @@ copy_texture(const Filename &source, const Filename &dest,
   tex->write_attr_data(attr_filename);
 
   if (new_file) {
-    create_file(attr_filename);
+    add_cvs(attr_filename);
   }
 
   return true;
