@@ -62,6 +62,7 @@ public:
   // The following interface is for the various kinds of
   // GraphicsWindows to record the data incoming on the device.
   void button_down(ButtonHandle button);
+  void button_resume_down(ButtonHandle button);
   void button_up(ButtonHandle button);
   void keystroke(int keycode);
   INLINE void set_pointer_in_window(int x, int y);

@@ -52,8 +52,21 @@
 class EXPCL_PANDA ButtonEvent {
 public:
   enum Type {
+    // T_down and T_up represent a button changing state
+    // correspondingly.  T_resume_down is a special event that is only
+    // thrown when focus is returned to a window and a button is
+    // detected as being held down at that point; it indicates that
+    // the button should be considered down now (if it wasn't
+    // already), but it didn't just get pressed down at this moment,
+    // it was depressed some time ago.  It's mainly used for correct
+    // tracking of modifier keys like shift and control, and can be
+    // ignored for other keys.
     T_down,
+    T_resume_down,
     T_up,
+
+    // T_keystroke is a special keystroke event, and is sent along
+    // with a Unicode keycode value, not a ButtonHandle.
     T_keystroke
   };
 
@@ -69,7 +82,8 @@ public:
 
   void output(ostream &out) const;
 
-  // _button will be filled in if type is T_down or T_up.
+  // _button will be filled in if type is T_down, T_resume_down, or
+  // T_up.
   ButtonHandle _button;
 
   // _keycode will be filled in if type is T_keystroke.  It will be

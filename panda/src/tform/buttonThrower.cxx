@@ -369,6 +369,13 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
           // generations.
           _button_events->add_event(be);
         }
+
+      } else if (be._type == ButtonEvent::T_resume_down) {
+        // Button resume down.  The button was pressed at some earlier
+        // time, and the event was only just now detected.  Don't
+        // throw an event now (since we already missed it), but do
+        // make sure our modifiers are up-to-date.
+        _mods.button_down(be._button);
           
       } else if (be._type == ButtonEvent::T_up) {
         // Button up.

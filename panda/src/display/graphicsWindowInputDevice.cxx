@@ -159,6 +159,19 @@ button_down(ButtonHandle button) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::button_resume_down
+//       Access: Public
+//  Description: Records that the indicated button was depressed
+//               earlier, and we only just detected the event after
+//               the fact.  This is mainly useful for tracking the
+//               state of modifier keys.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindowInputDevice::
+button_resume_down(ButtonHandle button) {
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_resume_down));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::button_up
 //       Access: Public
 //  Description: Records that the indicated button has been released.

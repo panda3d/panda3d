@@ -30,6 +30,10 @@ output(ostream &out) const {
     out << "button " << _button << " down";
     break;
 
+  case T_resume_down:
+    out << "button " << _button << " resume down";
+    break;
+
   case T_up:
     out << "button " << _button << " up";
     break;

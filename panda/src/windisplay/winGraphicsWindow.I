@@ -52,13 +52,29 @@ handle_keypress(ButtonHandle key, int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::handle_keyresume
+//       Access: Private
+//  Description: Indicates we detected a key was already down when the
+//               focus is restored to the window.  Mainly useful for
+//               tracking the state of modifier keys.
+////////////////////////////////////////////////////////////////////
+INLINE void WinGraphicsWindow::
+handle_keyresume(ButtonHandle key) {
+  if (key != ButtonHandle::none()) {
+    _input_devices[0].button_resume_down(key);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::handle_keyrelease
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void WinGraphicsWindow::
 handle_keyrelease(ButtonHandle key) {
-  _input_devices[0].button_up(key);
+  if (key != ButtonHandle::none()) {
+    _input_devices[0].button_up(key);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -137,8 +137,8 @@ wdxGraphicsWindow8::
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
 make_gsg() {
-  wdxGraphicsPipe8 *pipe8;
-  DCAST_INTO_V(pipe8, _pipe);
+  wdxGraphicsPipe8 *dxpipe;
+  DCAST_INTO_V(dxpipe, _pipe);
 
   nassertv(_gsg == (GraphicsStateGuardian *)NULL);
   _dxgsg = new DXGraphicsStateGuardian8(this);
@@ -164,10 +164,10 @@ make_gsg() {
   if (hFind != INVALID_HANDLE_VALUE) {
     FindClose(hFind);
     _dxgsg->scrn.bIsDX81 = true;
-    pD3D8 = (*pipe8->_Direct3DCreate8)(D3D_SDK_VERSION_8_1);
+    pD3D8 = (*dxpipe->_Direct3DCreate8)(D3D_SDK_VERSION_8_1);
   } else {
     _dxgsg->scrn.bIsDX81 = false;
-    pD3D8 = (*pipe8->_Direct3DCreate8)(D3D_SDK_VERSION_8_0);
+    pD3D8 = (*dxpipe->_Direct3DCreate8)(D3D_SDK_VERSION_8_0);
   }
 
   if (pD3D8 == NULL) {
@@ -703,8 +703,8 @@ choose_adapter(LPDIRECT3D8 pD3D8) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
 search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
-  wdxGraphicsPipe8 *pipe8;
-  DCAST_INTO_R(pipe8, _pipe, false);
+  wdxGraphicsPipe8 *dxpipe;
+  DCAST_INTO_R(dxpipe, _pipe, false);
 
   DWORD dwRenderWidth = get_properties().get_x_size();
   DWORD dwRenderHeight = get_properties().get_y_size();
@@ -763,20 +763,20 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
     UINT IDnum;
     
     // simple linear search to match DX7 card info w/DX8 card ID
-    for (IDnum=0; IDnum < pipe8->_card_ids.size(); IDnum++) {
+    for (IDnum=0; IDnum < dxpipe->_card_ids.size(); IDnum++) {
       //      wdxdisplay8_cat.info()
-      //        << "comparing '" << pipe8->_card_ids[IDnum].Driver
+      //        << "comparing '" << dxpipe->_card_ids[IDnum].Driver
       //        << "' to '" << _dxgsg->scrn.DXDeviceID.Driver << "'\n";
-      if (//(stricmp(pipe8->_card_ids[IDnum].szDriver,device_info->szDriver)==0) &&
-         (device_info->VendorID==pipe8->_card_ids[IDnum].VendorID) &&
-         (device_info->DeviceID==pipe8->_card_ids[IDnum].DeviceID) &&
-         (device_info->hMon==pipe8->_card_ids[IDnum].hMon))
+      if (//(stricmp(dxpipe->_card_ids[IDnum].szDriver,device_info->szDriver)==0) &&
+         (device_info->VendorID==dxpipe->_card_ids[IDnum].VendorID) &&
+         (device_info->DeviceID==dxpipe->_card_ids[IDnum].DeviceID) &&
+         (device_info->hMon==dxpipe->_card_ids[IDnum].hMon))
         break;
     }
     
-    if (IDnum < pipe8->_card_ids.size()) {
-      _dxgsg->scrn.MaxAvailVidMem = pipe8->_card_ids[IDnum].MaxAvailVidMem;
-      _dxgsg->scrn.bIsLowVidMemCard = pipe8->_card_ids[IDnum].bIsLowVidMemCard;
+    if (IDnum < dxpipe->_card_ids.size()) {
+      _dxgsg->scrn.MaxAvailVidMem = dxpipe->_card_ids[IDnum].MaxAvailVidMem;
+      _dxgsg->scrn.bIsLowVidMemCard = dxpipe->_card_ids[IDnum].bIsLowVidMemCard;
     } else {
       wdxdisplay8_cat.error()
         << "Error: couldnt find a CardID match in DX7 info, assuming card is not a lowmem card\n";

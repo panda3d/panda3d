@@ -953,10 +953,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_SETFOCUS: 
     {
-      POINT point;
-      GetCursorPos(&point);
-      ScreenToClient(hwnd, &point);
-
       // When we lose focus, the app may miss key-up events for keys
       // that were formerly held down (and vice-versa).  Therefore,
       // when focus is regained, compare the state of the keyboard to
@@ -976,7 +972,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             // This key has changed state.
             if ((new_keyboard_state[i] & 0x80) != 0) {
               // The key is now held down.
-              handle_keypress(lookup_key(i), point.x, point.y);
+              handle_keyresume(lookup_key(i));
             } else {
               // The key is now released.
               handle_keyrelease(lookup_key(i));

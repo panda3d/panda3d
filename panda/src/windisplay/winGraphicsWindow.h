@@ -83,6 +83,7 @@ private:
   INLINE void handle_mouse_motion(int x, int y);
   INLINE void handle_mouse_exit(void);
   INLINE void handle_keypress(ButtonHandle key, int x, int y);
+  INLINE void handle_keyresume(ButtonHandle key);
   INLINE void handle_keyrelease(ButtonHandle key);
   ButtonHandle lookup_key(WPARAM wparam) const;
   INLINE int translate_mouse(int pos) const;
