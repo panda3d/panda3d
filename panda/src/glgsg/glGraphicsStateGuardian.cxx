@@ -144,25 +144,9 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
                            const GraphicsStateGuardianBase *gsg) {
   const GLGraphicsStateGuardian *glgsg = DCAST(GLGraphicsStateGuardian, gsg);
   const Colorf &color = geom->get_next_color(citerator);
-
-  // To be truly general, we really need a 5x5 matrix to transform a
-  // 4-component color.  Rather than messing with that, we instead
-  // treat the color as a 3-component RGB, which can be transformed by
-  // the ordinary 4x4 matrix, and a separate alpha value, which can be
-  // scaled and offsetted.
-  LPoint3f temp(color[0], color[1], color[2]);
-  temp = temp * glgsg->get_current_color_mat();
-  float alpha = (color[3] * glgsg->get_current_alpha_scale()) +
-    glgsg->get_current_alpha_offset();
-
-  Colorf transformed(temp[0], temp[1], temp[2], alpha);
-
-  //   glgsg_cat.debug() << "Issuing color " << transformed << "\n";
-  //   glgsg_cat.debug() << "\tTransformed by " << glgsg->get_current_color_mat() << "\n";
-  //   glgsg_cat.debug() << "\tAlpha Transformed by " << glgsg->get_current_alpha_offset() << " "
-  //                     << glgsg->get_current_alpha_scale() << "\n";
-  glColor4fv(transformed.get_data());
+  glgsg->issue_transformed_color(color);
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::Constructor
 //       Access: Public
@@ -327,6 +311,10 @@ reset() {
   _current_color_mat = LMatrix4f::ident_mat();
   _current_alpha_offset = 0;
   _current_alpha_scale = 1;
+
+  _has_scene_graph_color = false;
+  _issued_color_stale = false;
+  _vertex_colors_enabled = true;
 
   // Make sure the GL state matches all of our initial attribute
   // states.
@@ -736,6 +724,7 @@ draw_point(GeomPoint *geom, GeomContext *) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glPointSize(geom->get_size());
+  issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
@@ -795,6 +784,7 @@ draw_line(GeomLine *geom, GeomContext *) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glLineWidth(geom->get_width());
+  issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
@@ -856,6 +846,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glLineWidth(geom->get_width());
+  issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
@@ -1245,6 +1236,8 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
 #endif
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
+  issue_scene_graph_color();
+
   int nprims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
@@ -1318,6 +1311,8 @@ draw_tri(GeomTri *geom, GeomContext *) {
 #endif
   _vertices_tri_pcollector.add_level(geom->get_num_vertices());
 
+  issue_scene_graph_color();
+
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::NormalIterator ni = geom->make_normal_iterator();
@@ -1386,6 +1381,8 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 #endif
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
+  issue_scene_graph_color();
+
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::NormalIterator ni = geom->make_normal_iterator();
@@ -1453,6 +1450,8 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
   glgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
   _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
+
+  issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
@@ -1544,6 +1543,8 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 #endif
   _vertices_trifan_pcollector.add_level(geom->get_num_vertices());
 
+  issue_scene_graph_color();
+
   int nprims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
@@ -1634,6 +1635,8 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
   glgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
+
+  issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
@@ -1821,8 +1824,10 @@ prepare_geom_node(GeomNode *node) {
   // list will have them built in.
   bool old_normals_enabled = _normals_enabled;
   bool old_texturing_enabled = _texturing_enabled;
+  bool old_vertex_colors_enabled = _vertex_colors_enabled;
   _normals_enabled = true;
   _texturing_enabled = true;
+  _vertex_colors_enabled = true;
 
 #ifdef DO_PSTATS
   // Count up the number of vertices we're about to render, by
@@ -1863,6 +1868,7 @@ prepare_geom_node(GeomNode *node) {
 
   _normals_enabled = old_normals_enabled;
   _texturing_enabled = old_texturing_enabled;
+  _vertex_colors_enabled = old_vertex_colors_enabled;
 
   bool inserted = mark_prepared_geom_node(ggnc);
 
@@ -2673,10 +2679,11 @@ issue_color_transform(const ColorMatrixAttribute *attrib) {
 
   if (_current_color_mat == LMatrix4f::ident_mat()) {
     _color_transform_enabled = false;
-  }
-  else {
+  } else {
     _color_transform_enabled = true;
   }
+
+  _issued_color_stale = _has_scene_graph_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2691,10 +2698,11 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 
   if (_current_alpha_offset == 0 && _current_alpha_scale == 1) {
     _alpha_transform_enabled = false;
-  }
-  else {
+  } else {
     _alpha_transform_enabled = true;
   }
+
+  _issued_color_stale = _has_scene_graph_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2721,12 +2729,30 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_color(const ColorAttribute *attrib) {
-  //  activate();
-  if (attrib->is_on() && attrib->is_real()) {
-    const Colorf c = attrib->get_color();
-    glColor4f(c[0], c[1], c[2], c[3]);
+  if (attrib->is_on()) {
+    if (attrib->is_real()) {
+      // The color attribute is "on" and "real": it specifies a scene
+      // graph color that overrides the vertex color.
+      _scene_graph_color = attrib->get_color();
+      _has_scene_graph_color = true;
+      _vertex_colors_enabled = false;
+      _issued_color_stale = true;
+
+    } else {
+      // The color attribute is "on" but not "real": it specifies that
+      // no scene graph color is in effect, but vertex color is not
+      // important either.
+      _has_scene_graph_color = false;
+      _issued_color_stale = false;
+      _vertex_colors_enabled = false;
+    }
+  } else {
+    // The color attribute is "off": it specifies that vertex color
+    // should be revealed.
+    _has_scene_graph_color = false;
+    _issued_color_stale = false;
+    _vertex_colors_enabled = true;
   }
-  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3351,18 +3377,7 @@ wants_texcoords() const {
 ////////////////////////////////////////////////////////////////////
 bool GLGraphicsStateGuardian::
 wants_colors() const {
-  // If we have scene graph color enabled, return false to indicate we
-  // shouldn't bother issuing geometry color commands.
-
-  const ColorAttribute *catt;
-  if (!get_attribute_into(catt, _state, ColorTransition::get_class_type())) {
-    // No scene graph color at all.
-    return true;
-  }
-
-  // We should issue geometry colors only if the scene graph color is
-  // off.
-  return catt->is_off();
+  return _vertex_colors_enabled;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4125,8 +4140,37 @@ print_gfx_visual() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::free_pointers
+//     Function: GLGraphicsStateGuardian::issue_transformed_color
 //       Access: Public
+//  Description: Transform the color by the current color matrix, and
+//               calls the appropriate glColor function.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_transformed_color(const Colorf &color) const {
+  // To be truly general, we really need a 5x5 matrix to transform a
+  // 4-component color.  Rather than messing with that, we instead
+  // treat the color as a 3-component RGB, which can be transformed by
+  // the ordinary 4x4 matrix, and a separate alpha value, which can be
+  // scaled and offsetted.
+  LPoint3f temp(color[0], color[1], color[2]);
+  temp = temp * get_current_color_mat();
+  float alpha = (color[3] * get_current_alpha_scale()) +
+    get_current_alpha_offset();
+
+  Colorf transformed(temp[0], temp[1], temp[2], alpha);
+
+  //   glgsg_cat.debug() << "Issuing color " << transformed << "\n";
+  //   glgsg_cat.debug() << "\tTransformed by " << get_current_color_mat() << "\n";
+  //   glgsg_cat.debug() << "\tAlpha Transformed by " << get_current_alpha_offset() << " "
+  //                     << get_current_alpha_scale() << "\n";
+  glColor4fv(transformed.get_data());
+
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::free_pointers
+//       Access: Protected
 //  Description: Frees some memory that was explicitly allocated
 //               within the glgsg.
 ////////////////////////////////////////////////////////////////////

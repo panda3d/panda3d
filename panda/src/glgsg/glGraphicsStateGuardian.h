@@ -178,6 +178,8 @@ public:
   INLINE const float &get_current_alpha_offset() const;
   INLINE const float &get_current_alpha_scale() const;
 
+  void issue_transformed_color(const Colorf &color) const;
+
 protected:
   void free_pointers();
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
@@ -239,6 +241,8 @@ protected:
 
   INLINE GLenum get_light_id(int index) const;
   INLINE GLenum get_clip_plane_id(int index) const;
+
+  INLINE void issue_scene_graph_color();
 
   INLINE void report_errors() const;
   void report_errors_loop(GLenum error_code) const;
@@ -356,6 +360,11 @@ protected:
   LMatrix4f _current_color_mat;
   float _current_alpha_offset;
   float _current_alpha_scale;
+
+  Colorf _scene_graph_color;
+  bool _has_scene_graph_color;
+  bool _issued_color_stale;
+  bool _vertex_colors_enabled;
 
   int _pass_number;
 

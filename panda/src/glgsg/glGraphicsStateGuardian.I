@@ -832,55 +832,6 @@ enable_stencil_test(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_light_id
-//       Access: Public
-//  Description: Convert index to gl light id
-////////////////////////////////////////////////////////////////////
-INLINE GLenum GLGraphicsStateGuardian::get_light_id(int index) const
-{
-    switch( index )
-    {
-        case 0: return GL_LIGHT0;
-        case 1: return GL_LIGHT1;
-        case 2: return GL_LIGHT2;
-        case 3: return GL_LIGHT3;
-        case 4: return GL_LIGHT4;
-        case 5: return GL_LIGHT5;
-        case 6: return GL_LIGHT6;
-        case 7: return GL_LIGHT7;
-        default:
-            glgsg_cat.error()
-              << "get_light_id() - we don't currently support ids "
-              << "> 8" << endl;
-            break;
-    }
-    return GL_LIGHT0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_clip_plane_id
-//       Access: Public
-//  Description: Convert index to gl clip plane id
-////////////////////////////////////////////////////////////////////
-INLINE GLenum GLGraphicsStateGuardian::
-get_clip_plane_id(int index) const {
-  switch(index) {
-    case 0: return GL_CLIP_PLANE0;
-    case 1: return GL_CLIP_PLANE1;
-    case 2: return GL_CLIP_PLANE2;
-    case 3: return GL_CLIP_PLANE3;
-    case 4: return GL_CLIP_PLANE4;
-    case 5: return GL_CLIP_PLANE5;
-    default:
-      glgsg_cat.error()
-        << "get_clip_plane_id() - we don't currently support ids "
-        << "> 5" << endl;
-      break;
-  }
-  return GL_CLIP_PLANE0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_light
 //       Access:
 //  Description:
@@ -1184,6 +1135,70 @@ get_current_alpha_offset() const {
 INLINE const float &GLGraphicsStateGuardian::
 get_current_alpha_scale() const {
   return _current_alpha_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_light_id
+//       Access: Public
+//  Description: Convert index to gl light id
+////////////////////////////////////////////////////////////////////
+INLINE GLenum GLGraphicsStateGuardian::get_light_id(int index) const
+{
+    switch( index )
+    {
+        case 0: return GL_LIGHT0;
+        case 1: return GL_LIGHT1;
+        case 2: return GL_LIGHT2;
+        case 3: return GL_LIGHT3;
+        case 4: return GL_LIGHT4;
+        case 5: return GL_LIGHT5;
+        case 6: return GL_LIGHT6;
+        case 7: return GL_LIGHT7;
+        default:
+            glgsg_cat.error()
+              << "get_light_id() - we don't currently support ids "
+              << "> 8" << endl;
+            break;
+    }
+    return GL_LIGHT0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_clip_plane_id
+//       Access: Public
+//  Description: Convert index to gl clip plane id
+////////////////////////////////////////////////////////////////////
+INLINE GLenum GLGraphicsStateGuardian::
+get_clip_plane_id(int index) const {
+  switch(index) {
+    case 0: return GL_CLIP_PLANE0;
+    case 1: return GL_CLIP_PLANE1;
+    case 2: return GL_CLIP_PLANE2;
+    case 3: return GL_CLIP_PLANE3;
+    case 4: return GL_CLIP_PLANE4;
+    case 5: return GL_CLIP_PLANE5;
+    default:
+      glgsg_cat.error()
+        << "get_clip_plane_id() - we don't currently support ids "
+        << "> 5" << endl;
+      break;
+  }
+  return GL_CLIP_PLANE0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_scene_graph_color
+//       Access: Public
+//  Description: Checks whether the scene graph color needs to be
+//               issued, and sends the appropriate glColor command if
+//               it does.
+////////////////////////////////////////////////////////////////////
+INLINE void GLGraphicsStateGuardian::
+issue_scene_graph_color() {
+  if (_issued_color_stale) {
+    issue_transformed_color(_scene_graph_color);
+    _issued_color_stale = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
