@@ -1,10 +1,5 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-				   
-#if $[eq $[USE_COMPILER], INTEL]
-#define USE_COMPILER MSVC
-#include $[DTOOL]/pptempl/compilerSettings.pp
-#endif
 
 #begin lib_target
   #define TARGET sgraph
