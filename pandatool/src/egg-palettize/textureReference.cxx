@@ -310,8 +310,16 @@ update_egg() {
   // We check for an OmitReason of OR_none, rather than asking
   // is_placed(), because in this case we don't want to consider an
   // OR_solitary texture as having been placed.
+  if (_placement->get_omit_reason() == OR_unknown) {
+    // The texture doesn't even exist.  We can't update the egg to
+    // point to any meaningful path; just leave it pointing to the
+    // source texture.  Maybe it will be found along the texture path
+    // later.
+    texture->update_egg_tex(_egg_tex);
+    return;
+  }
   if (_placement->get_omit_reason() != OR_none) {
-    // The texture does not appear on a palette.  This is the easy
+    // The texture exists but is not on a palette.  This is the easy
     // case; we simply have to update the texture reference to the new
     // texture location.
     DestTextureImage *dest = _placement->get_dest();

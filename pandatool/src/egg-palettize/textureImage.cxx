@@ -633,7 +633,8 @@ copy_unplaced(bool redo_all) {
   Placement::iterator pi;
   for (pi = _placement.begin(); pi != _placement.end(); ++pi) {
     TexturePlacement *placement = (*pi).second;
-    if (placement->get_omit_reason() != OR_none) {
+    if (placement->get_omit_reason() != OR_none &&
+        placement->get_omit_reason() != OR_unknown) {
       DestTextureImage *dest = new DestTextureImage(placement);
       Filename filename = dest->get_filename();
       filename.make_canonical();
@@ -858,6 +859,11 @@ write_scale_info(ostream &out, int indent_level) {
         << "placed on "
         << FilenameUnifier::make_user_filename(image->get_filename())
         << "\n";
+
+    } else if (placement->get_omit_reason() == OR_unknown) {
+      indent(out, indent_level + 2)
+        << "not placed because unknown.\n";
+
     } else {
       DestTextureImage *image = placement->get_dest();
       nassertv(image != (DestTextureImage *)NULL);

@@ -49,9 +49,11 @@ DestTextureImage::
 DestTextureImage(TexturePlacement *placement) {
   TextureImage *texture = placement->get_texture();
   _properties = texture->get_properties();
-  _size_known = true;
-  _x_size = texture->get_x_size();
-  _y_size = texture->get_y_size();
+  _size_known = texture->is_size_known();
+  if (_size_known) {
+    _x_size = texture->get_x_size();
+    _y_size = texture->get_y_size();
+  }
 
   if (pal->_force_power_2) {
     _x_size = to_power_2(_x_size);
