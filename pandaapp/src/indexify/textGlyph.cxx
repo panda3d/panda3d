@@ -49,6 +49,9 @@ TextGlyph::
 ////////////////////////////////////////////////////////////////////
 void TextGlyph::
 rescale(double scale_factor) {
+  if (scale_factor == 1.0) {
+    return;
+  }
   nassertv(scale_factor != 0.0);
   _advance /= scale_factor;
   _int_advance = (int)floor(_advance + 0.5);
@@ -64,8 +67,8 @@ rescale(double scale_factor) {
     int extra_pad = (int)ceil(scale_factor);
     orig_x_size += 2*extra_pad;
     orig_y_size += 2*extra_pad;
-    orig_left += extra_pad;
-    orig_top -= extra_pad;
+    orig_left -= extra_pad;
+    orig_top += extra_pad;
 
     // Now compute the reduced size.
     int new_x_size = (int)ceil(orig_x_size / scale_factor);
@@ -85,7 +88,7 @@ rescale(double scale_factor) {
     int pad_top = old_top - orig_top;
 
     // These shouldn't go negative.
-    nassertv(pad_left >= 0 && pad_top >= 0);
+    nassertv(extra_pad + pad_left >= 0 && extra_pad + pad_top >= 0);
 
     PNMImage enlarged(old_x_size, old_y_size, 1);
     enlarged.fill(1, 1, 1);

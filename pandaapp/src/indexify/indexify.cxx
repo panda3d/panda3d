@@ -23,6 +23,7 @@
 #include "default_font.h"
 #include "default_index_icons.h"
 #include "indexParameters.h"
+#include "string_utils.h"
 
 #include <math.h>
 
@@ -105,6 +106,17 @@ Indexify() {
      &Indexify::dispatch_none, &format_rose);
 
   add_option
+    ("d", "", 0,
+     "Run in \"dummy\" mode; don't load any images, but instead just "
+     "draw an empty box indicating where the thumbnails will be.",
+     &Indexify::dispatch_none, &dummy_mode);
+
+  add_option
+    ("fr", "", 0,
+     "Draw a frame, like a slide mount, around each thumbnail image.",
+     &Indexify::dispatch_none, &draw_frames);
+
+  add_option
     ("e", "extension", 0,
      "Specifies the filename extension (without a leading dot) to identify "
      "photo files within the roll directories.  This is normally jpg.",
@@ -119,9 +131,21 @@ Indexify() {
      &Indexify::dispatch_none, &_generate_icons);
 
   add_option
-    ("caption", "size", 0,
-     "Specifies the font size in pixels of the thumbnail captions.",
-     &Indexify::dispatch_int, NULL, &caption_font_size);
+    ("caption", "size[,spacing]", 0,
+     "Specifies the font size in pixels of the thumbnail captions.  If the "
+     "optional spacing parameter is included, it is the number of pixels "
+     "below each thumbnail that the caption should be placed.  Specify "
+     "-caption 0 to disable thumbnail captions.",
+     &Indexify::dispatch_caption, NULL);
+
+  add_option
+    ("fontaa", "factor", 0,
+     "Specifies a scale factor to apply to the fonts used for captioning "
+     "when generating text for the purpose of antialiasing the fonts a "
+     "little better than FreeType can do by itself.  The letters are "
+     "generated large and then scaled to their proper size.  Normally this "
+     "should be a number in the range 3 to 4 for best effect.",
+     &Indexify::dispatch_double, NULL, &_font_aa_factor);
 
   add_option
     ("font", "fontname", 0,
@@ -170,6 +194,7 @@ Indexify() {
 
   _photo_extension = "jpg";
   _text_maker = (TextMaker *)NULL;
+  _font_aa_factor = 4.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,26 +302,27 @@ post_command_line() {
     }
   }
     
-
-  if (!_font_filename.empty()) {
-    _text_maker = new TextMaker(_font_filename, 0);
-    if (!_text_maker->is_valid()) {
-      delete _text_maker;
-      _text_maker = (TextMaker *)NULL;
+  if (caption_font_size != 0) {
+    if (!_font_filename.empty()) {
+      _text_maker = new TextMaker(_font_filename, 0);
+      if (!_text_maker->is_valid()) {
+	delete _text_maker;
+	_text_maker = (TextMaker *)NULL;
+      }
     }
-  }
-
-  if (_text_maker == (TextMaker *)NULL) {
-    _text_maker = new TextMaker(default_font, default_font_size, 0);
-    if (!_text_maker->is_valid()) {
-      nout << "Unable to open default font.\n";
-      delete _text_maker;
-      _text_maker = (TextMaker *)NULL;
+    
+    if (_text_maker == (TextMaker *)NULL) {
+      _text_maker = new TextMaker(default_font, default_font_size, 0);
+      if (!_text_maker->is_valid()) {
+	nout << "Unable to open default font.\n";
+	delete _text_maker;
+	_text_maker = (TextMaker *)NULL;
+      }
     }
-  }
-  
-  if (_text_maker != (TextMaker *)NULL) {
-    _text_maker->set_pixel_size(caption_font_size, 4.0);
+    
+    if (_text_maker != (TextMaker *)NULL) {
+      _text_maker->set_pixel_size(caption_font_size, _font_aa_factor);
+    }
   }
 
   if (_generate_icons) {
@@ -351,13 +377,48 @@ post_command_line() {
     }
   }
 
-  // Provide a little bit of whitespace above the captions.
-  thumb_caption_height = (int)ceil(caption_font_size * 8.0 / 7.0);
-
   finalize_parameters();
 
 
   return ProgramBase::post_command_line();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Indexify::dispatch_caption
+//       Access: Protected, Static
+//  Description: Dispatch function for the -caption parameter, which
+//               takes either one or two numbers separated by a comma,
+//               representing the caption font size and the optional
+//               pixel spacing of the caption under the image.
+////////////////////////////////////////////////////////////////////
+bool Indexify::
+dispatch_caption(const string &opt, const string &arg, void *) {
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  int caption_spacing = 0;
+
+  bool okflag = false;
+  if (words.size() == 1) {
+    okflag =
+      string_to_int(words[0], caption_font_size);
+
+  } else if (words.size() == 2) {
+    okflag =
+      string_to_int(words[0], caption_font_size) &&
+      string_to_int(words[1], caption_spacing);
+  }
+
+  if (!okflag) {
+    nout << "-" << opt
+         << " requires one or two integers separated by a comma.\n";
+    return false;
+  }
+
+  thumb_caption_height = caption_font_size + caption_spacing;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

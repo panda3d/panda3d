@@ -105,7 +105,7 @@ generate_images(const Filename &archive_dir, TextMaker *text_maker) {
   // First, scan the image files to see if we can avoid regenerating
   // the index image.
   bool generate_index_image = true;
-  if (!force_regenerate && output_filename.exists()) {
+  if (!dummy_mode && !force_regenerate && output_filename.exists()) {
     // Maybe we don't need to renegerated the index.
     generate_index_image = false;
 
@@ -144,8 +144,9 @@ generate_images(const Filename &archive_dir, TextMaker *text_maker) {
     Filename reduced_filename(reduced_dir, photo->get_basename());
     PNMImage reduced_image;
 
-    if (force_regenerate || 
-	reduced_filename.compare_timestamps(photo_filename) < 0) {
+    if (!dummy_mode &&
+	(force_regenerate || 
+	 reduced_filename.compare_timestamps(photo_filename) < 0)) {
       // If the reduced filename does not exist or is older than the
       // source filename, we must read the complete source filename to
       // generate the reduced image.
@@ -187,7 +188,7 @@ generate_images(const Filename &archive_dir, TextMaker *text_maker) {
       photo->_full_x_size = photo_image.get_x_size();
       photo->_full_y_size = photo_image.get_y_size();
 
-      if (generate_index_image) {
+      if (!dummy_mode && generate_index_image) {
 	// Now read the reduced image from disk, so we can put it on
 	// the index image.
 	nout << "Reading " << reduced_filename << "\n";
@@ -203,7 +204,6 @@ generate_images(const Filename &archive_dir, TextMaker *text_maker) {
       } else {
 	// If we're not generating an index image, we don't even need
 	// the reduced image--just scan its header to get its size.
-	PNMImageHeader reduced_image;
 	if (!reduced_image.read_header(reduced_filename)) {
 	  nout << "Unable to read " << reduced_filename << "\n";
 	  return false;
@@ -216,12 +216,25 @@ generate_images(const Filename &archive_dir, TextMaker *text_maker) {
     if (generate_index_image) {
       // Generate a thumbnail image for the photo.
       PNMImage thumbnail_image;
-      compute_reduction(reduced_image, thumbnail_image, thumb_width, thumb_height);
-      
-      thumbnail_image.quick_filter_from(reduced_image);
+      compute_reduction(reduced_image, thumbnail_image, 
+			thumb_interior_width, thumb_interior_height);
+
+      if (dummy_mode) {
+	draw_box(thumbnail_image);
+      } else {
+	thumbnail_image.quick_filter_from(reduced_image);
+      }
       // Center the thumbnail image within its box.
       int x_center = (thumb_width - thumbnail_image.get_x_size()) / 2;
       int y_center = (thumb_height - thumbnail_image.get_y_size()) / 2;
+
+      if (draw_frames) {
+	draw_frame(index_image, 
+		   pinfo._x_place, pinfo._y_place,
+		   thumb_width, thumb_height,
+		   pinfo._x_place + x_center, pinfo._y_place + y_center,
+		   thumbnail_image.get_x_size(), thumbnail_image.get_y_size());
+      }
       
       index_image.copy_sub_image(thumbnail_image, 
 				 pinfo._x_place + x_center, 
@@ -590,6 +603,8 @@ compute_reduction(const PNMImage &source_image, PNMImage &dest_image,
   double y_scale = (double)y_size / (double)source_image.get_y_size();
   double scale = min(x_scale, y_scale);
 
+  // Don't ever enlarge an image to fit the rectangle; if the image is
+  // smaller than the rectangle, just leave it small.
   scale = min(scale, 1.0);
 
   int new_x_size = (int)(source_image.get_x_size() * scale + 0.5);
@@ -598,4 +613,99 @@ compute_reduction(const PNMImage &source_image, PNMImage &dest_image,
   dest_image.clear(new_x_size, new_y_size,
                    source_image.get_num_channels(),
                    source_image.get_maxval());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: IndexImage::draw_box
+//       Access: Private, Static
+//  Description: Called in dummy mode to draw a little box in black
+//               around the border of the empty thumbnail image.
+////////////////////////////////////////////////////////////////////
+void IndexImage::
+draw_box(PNMImage &image) {
+  // First, fill it in white.
+  image.fill(1, 1, 1);
+
+  if (!draw_frames) {
+    // Now make the border pixel black.  We only need to do this if we
+    // aren't drawing frames, since the frames will reveal the shape
+    // of the image too.
+    int x_size = image.get_x_size();
+    int y_size = image.get_y_size();
+    for (int xi = 0; xi < x_size; xi++) {
+      image.set_xel(xi, 0, 0, 0, 0);
+      image.set_xel(xi, y_size - 1, 0, 0, 0);
+    }
+    
+    for (int yi = 1; yi < y_size - 1; yi++) {
+      image.set_xel(0, yi, 0, 0, 0);
+      image.set_xel(x_size - 1, yi, 0, 0, 0);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: IndexImage::draw_frame
+//       Access: Private, Static
+//  Description: Called in draw_frames mode to draw a slide mount in
+//               gray on the index image before drawing the thumbnail
+//               image in the center.
+////////////////////////////////////////////////////////////////////
+void IndexImage::
+draw_frame(PNMImage &image,
+	   int frame_left, int frame_top, int frame_width, int frame_height,
+	   int hole_left, int hole_top, int hole_width, int hole_height) {
+  // Gray levels.
+  static const RGBColord mid(0.5, 0.5, 0.5);
+  static const RGBColord light(0.7, 0.7, 0.7);
+  static const RGBColord lighter(0.9, 0.9, 0.9);
+  static const RGBColord dark(0.3, 0.3, 0.3);
+  static const RGBColord darker(0.1, 0.1, 0.1);
+
+  // First, fill in the whole rectangle in gray.
+  int xi, yi;
+  for (yi = 0; yi < frame_height; yi++) {
+    for (xi = 0; xi < frame_width; xi++) {
+      image.set_xel(xi + frame_left, yi + frame_top, mid);
+    }
+  }
+
+  // Now draw the bevel.
+  for (xi = 0; xi < frame_outer_bevel; xi++) {
+    for (yi = xi; yi < frame_height - xi; yi++) { 
+      // Left edge.
+      image.set_xel(xi + frame_left, yi + frame_top, light);
+      // Right edge.
+      image.set_xel(frame_width - 1 - xi + frame_left, yi + frame_top, dark);
+    }
+  }
+  for (yi = 0; yi < frame_outer_bevel; yi++) {
+    for (xi = yi; xi < frame_width - yi; xi++) { 
+      // Top edge.
+      image.set_xel(xi + frame_left, yi + frame_top, lighter);
+      // Bottom edge.
+      image.set_xel(xi + frame_left, frame_height - 1 - yi + frame_top, darker);
+    }
+  }
+
+  // Interior bevel.
+  for (xi = -1; xi >= -frame_inner_bevel; xi--) {
+    for (yi = xi; yi < hole_height - xi; yi++) { 
+      // Left edge.
+      image.set_xel(xi + hole_left, yi + hole_top, dark);
+      // Right edge.
+      image.set_xel(hole_width - 1 - xi + hole_left, yi + hole_top, light);
+    }
+  }
+  for (yi = -1; yi >= -frame_inner_bevel; yi--) {
+    for (xi = yi; xi < hole_width - yi; xi++) { 
+      // Top edge.
+      image.set_xel(xi + hole_left, yi + hole_top, darker);
+      // Bottom edge.
+      image.set_xel(xi + hole_left, hole_height - 1 - yi + hole_top, lighter);
+    }
+  }
+
+  // We don't have to cut out the hole, since the thumbnail image will
+  // do that when it is placed.
 }

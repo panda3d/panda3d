@@ -61,6 +61,13 @@ private:
   static void compute_reduction(const PNMImage &source_image,
                                 PNMImage &dest_image,
                                 int x_size, int y_size);
+  static void draw_box(PNMImage &image);
+
+  static void draw_frame(PNMImage &image,
+			 int frame_left, int frame_top,
+			 int frame_width, int frame_height,
+			 int hole_left, int hole_top,
+			 int hole_width, int hole_height);
 
 private:
   RollDirectory *_dir;

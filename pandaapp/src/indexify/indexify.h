@@ -41,6 +41,8 @@ protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
+  static bool dispatch_caption(const string &opt, const string &arg, void *var);
+
 public:
   void run();
 
@@ -50,6 +52,7 @@ public:
   string _photo_extension;
   Filename _font_filename;
   bool _generate_icons;
+  double _font_aa_factor;
 
   typedef pvector<RollDirectory *> RollDirs;
   RollDirs _roll_dirs;

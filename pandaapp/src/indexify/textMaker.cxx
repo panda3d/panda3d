@@ -70,6 +70,9 @@ TextMaker(const Filename &font_filename, int face_index) {
       }
       set_name(name);
 
+      // Maybe we don't care about enforcing this.  It doesn't work
+      // with older versions of FreeType anyway.
+      /*
       error = FT_Select_Charmap(_face, ft_encoding_unicode);
       if (error) {
         error = FT_Select_Charmap(_face, ft_encoding_latin_2);
@@ -78,7 +81,8 @@ TextMaker(const Filename &font_filename, int face_index) {
         nout << "Unable to select ISO encoding for " << get_name() << ".\n";
         FT_Done_Face(_face);
 
-      } else {
+      } else */
+      {
         nout << "Loaded font " << get_name() << "\n";
         _is_valid = true;
         _scale_factor = 0.0;
