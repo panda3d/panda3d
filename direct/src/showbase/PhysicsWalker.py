@@ -358,7 +358,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                             self.avatarNodePath,
                             self.avatarNodePath.getPosDelta(render)).pPrintValues())
                 
-                if 1:
+                if 0:
                     onScreenDebug.add("gravity",
                         self.gravity.getLocalVector().pPrintValues())
                     onScreenDebug.add("priorParent",
@@ -407,14 +407,14 @@ class PhysicsWalker(DirectObject.DirectObject):
                 self.highMark,))
         #if airborneHeight < 0.1: #contact!=Vec3.zero():
         if 1:
-            onScreenDebug.add("isAirborne", "%d"%(
-                self.isAirborne,))
             if airborneHeight > 0.7:
                 # ...the avatar is airborne (maybe a lot or a tiny amount).
                 self.isAirborne = 1
             else:
-                # ...the avatar has touched something (but might not be on the ground).
+                # ...the avatar is very close to the ground (close enough to be
+                # considered on the ground).
                 if self.isAirborne:
+                    # ...the avatar has landed.
                     contactLength = contact.length()
                     if contactLength>self.__hardLandingForce:
                         #print "jumpHardLand"
@@ -422,8 +422,8 @@ class PhysicsWalker(DirectObject.DirectObject):
                     else:
                         #print "jumpLand"
                         messenger.send("jumpLand")
-                self.isAirborne = 0
-                if self.__jumpButton:
+                    self.isAirborne = 0
+                elif self.__jumpButton:
                     #print "jump"
                     self.__jumpButton=0
                     messenger.send("jumpStart")
@@ -432,9 +432,11 @@ class PhysicsWalker(DirectObject.DirectObject):
                     jump.normalize()
                     jump*=self.avatarControlJumpForce
                     physObject.addImpulse(Vec3(jump))
-        
+                    self.isAirborne = 1 # Avoid double impulse before fully airborne.
+            onScreenDebug.add("isAirborne", "%d"%(self.isAirborne,))
         else:
             if contact!=Vec3.zero():
+                # ...the avatar has touched something (but might not be on the ground).
                 contactLength = contact.length()
                 contact.normalize()
                 angle=contact.dot(Vec3.up())
