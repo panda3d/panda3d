@@ -4513,11 +4513,16 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     //    if(bAtExitFnEverCalled)
     //      return;
 
+    if (!_pD3DDevice)
+      return;
+
     // unsafe to do the D3D releases after exit() called, since DLL_PROCESS_DETACH
     // msg already delivered to d3d.dll and it's unloaded itself
 
+    wdxdisplay9_cat.debug() << "called dx_cleanup\n";
     free_nondx_resources();
 
+    wdxdisplay9_cat.debug() << "device : " << _pD3DDevice << endl;
     PRINT_REFCNT(dxgsg9,_pD3DDevice);
 
     // delete non-panda-texture/geom DX objects (VBs/textures/shaders)

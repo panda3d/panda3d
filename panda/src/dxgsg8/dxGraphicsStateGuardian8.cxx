@@ -4509,12 +4509,16 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     //    if(bAtExitFnEverCalled)
     //      return;
 
+    if (!_pD3DDevice)
+      return;
+
     // unsafe to do the D3D releases after exit() called, since DLL_PROCESS_DETACH
     // msg already delivered to d3d.dll and it's unloaded itself
 
     wdxdisplay8_cat.debug() << "called dx_cleanup\n";
     free_nondx_resources();
 
+    wdxdisplay8_cat.debug() << "device : " << _pD3DDevice << endl;
     PRINT_REFCNT(dxgsg8,_pD3DDevice);
 
     // delete non-panda-texture/geom DX objects (VBs/textures/shaders)
@@ -4526,13 +4530,11 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
 
     // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
     // if we're called from exit(), _pD3DDevice may already have been released
-    if (_pD3DDevice!=NULL) {
-        for(int i=0;i<D3D_MAXTEXTURESTAGES;i++)
-           _pD3DDevice->SetTexture(i,NULL);  // d3d should release this stuff internally anyway, but whatever
-        RELEASE(_pD3DDevice,dxgsg8,"d3dDevice",RELEASE_DOWN_TO_ZERO);
-        _pScrn->pD3DDevice = NULL;
-    }
-
+    for(int i=0;i<D3D_MAXTEXTURESTAGES;i++)
+      _pD3DDevice->SetTexture(i,NULL);  // d3d should release this stuff internally anyway, but whatever
+    RELEASE(_pD3DDevice,dxgsg8,"d3dDevice",RELEASE_DOWN_TO_ZERO);
+    _pScrn->pD3DDevice = NULL;
+    
     // Releasing pD3D is now the responsibility of the GraphicsPipe destructor
 }
 
