@@ -101,12 +101,12 @@ See the Python Mode home page for details:
   :group 'languages
   :prefix "py-")
 
-(defcustom py-python-command "python"
+(defcustom py-python-command "ppython"
   "*Shell command used to start Python interpreter."
   :type 'string
   :group 'python)
 
-(defcustom pyd-python-command "python_d"
+(defcustom pyd-python-command "ppython -d"
   "*Shell command used to start Python interpreter."
   :type 'string
   :group 'python)
