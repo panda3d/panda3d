@@ -34,6 +34,8 @@
   can define all of these stupid symbols to the empty string.
   */
 
+#define EXPCL_EMPTY
+
 #if defined(PENV_WIN32) && !defined(CPPPARSER)
 
 #ifdef BUILDING_DTOOL
