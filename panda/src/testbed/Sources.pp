@@ -27,15 +27,6 @@
 #end bin_target
 
 #begin test_bin_target
-  #define TARGET chat
-  #define LOCAL_LIBS $[LOCAL_LIBS] chat
-
-  #define SOURCES \
-    chat_test.cxx
-
-#end test_bin_target
-
-#begin test_bin_target
   #define TARGET downloader
 
   #define SOURCES \
