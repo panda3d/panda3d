@@ -151,3 +151,15 @@ void AudioPool::register_sound_loader(const string& ext,
   }
   (*_sound_loaders)[ext] = func;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioPool::ns_get_nth_sound_name
+//       Access: Public
+//  Description: return the name of the nth loaded  sound
+////////////////////////////////////////////////////////////////////
+string AudioPool::ns_get_nth_sound_name(int n) const {
+  SoundMap::const_iterator i;
+  int j;
+  for (i=_sounds.begin(), j=0; j<n; ++i, ++j);
+  return (*i).first;
+}

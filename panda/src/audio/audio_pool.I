@@ -78,3 +78,22 @@ INLINE void AudioPool::release_all_sounds(void) {
 //               in the universe and it constructs itself.
 ////////////////////////////////////////////////////////////////////
 INLINE AudioPool::AudioPool(void) {}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioPool::get_num_loaded_sounds
+//       Access: Public, static
+//  Description: return the number of sounds the audiopool thinks
+//               are loaded at the moment
+////////////////////////////////////////////////////////////////////
+INLINE int AudioPool::get_num_loaded_sounds(void) {
+  return get_ptr()->_sounds.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioPool::get_nth_sound_name
+//       Access: Public, static
+//  Description: return the name of the nth loaded  sound
+////////////////////////////////////////////////////////////////////
+INLINE string AudioPool::get_nth_sound_name(int n) {
+  return get_ptr()->ns_get_nth_sound_name(n);
+}
