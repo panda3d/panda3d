@@ -591,30 +591,31 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                     self.send(obj.dclass.clientFormatGenerate(obj, id, zone, []))
 
     def handleUnexpectedMsgType(self, msgType, di):        
-        if msgType == CLIENT_CREATE_OBJECT_REQUIRED:
-            self.handleGenerateWithRequired(di)
-        elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
-            self.handleGenerateWithRequiredOther(di)
-        elif msgType == CLIENT_OBJECT_UPDATE_FIELD:
-            self.handleUpdateField(di)
-        elif msgType == CLIENT_OBJECT_DISABLE_RESP:
-            self.handleDisable(di)
-        elif msgType == CLIENT_OBJECT_DELETE_RESP:
-            self.handleDelete(di)
-        elif msgType == CLIENT_GO_GET_LOST:
+        if msgType == CLIENT_GO_GET_LOST:
             self.handleGoGetLost(di)
         elif msgType == CLIENT_HEARTBEAT:
             self.handleServerHeartbeat(di)
-        elif msgType == CLIENT_SYSTEM_MESSAGE:
-            self.handleSystemMessage(di)
-        elif wantOtpServer and msgType == CLIENT_CREATE_OBJECT_REQUIRED:
-            self.handleGenerateWithRequired(di)
-        elif wantOtpServer and msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
-            self.handleGenerateWithRequiredOther(di)
-        elif wantOtpServer and msgType == CLIENT_DONE_SET_ZONE_RESP:
-            self.handleSetZoneDone()                    
-        elif  wantOtpServer and msgType == CLIENT_OBJECT_LOCATION:        
-            self.handleObjectLocation(di)
+        elif wantOtpServer:
+            if msgType == CLIENT_CREATE_OBJECT_REQUIRED:
+                self.handleGenerateWithRequired(di)
+            elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
+                self.handleGenerateWithRequiredOther(di)
+            elif msgType == CLIENT_OBJECT_UPDATE_FIELD:
+                self.handleUpdateField(di)
+            elif msgType == CLIENT_OBJECT_DISABLE_RESP:
+                self.handleDisable(di)
+            elif msgType == CLIENT_OBJECT_DELETE_RESP:
+                self.handleDelete(di)
+            elif msgType == CLIENT_SYSTEM_MESSAGE:
+                self.handleSystemMessage(di)
+            elif msgType == CLIENT_CREATE_OBJECT_REQUIRED:
+                self.handleGenerateWithRequired(di)
+            elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
+                self.handleGenerateWithRequiredOther(di)
+            elif msgType == CLIENT_DONE_SET_ZONE_RESP:
+                self.handleSetZoneDone()                    
+            elif msgType == CLIENT_OBJECT_LOCATION:
+                self.handleObjectLocation(di)
         else:
             currentLoginState = self.loginFSM.getCurrentState()
             if currentLoginState:
