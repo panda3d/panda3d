@@ -6138,6 +6138,7 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 #
 ##########################################################################################
 
+MakeDirectory(PREFIX+"/models")
 MakeDirectory(PREFIX+"/models/audio")
 MakeDirectory(PREFIX+"/models/audio/sfx")
 MakeDirectory(PREFIX+"/models/icons")
