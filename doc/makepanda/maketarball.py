@@ -142,9 +142,6 @@ cp --recursive built/Pmw     $RPM_BUILD_ROOT/usr/share/panda3d/Pmw
 cp built/direct/__init__.py  $RPM_BUILD_ROOT/usr/share/panda3d/direct/__init__.py
 cp --recursive SceneEditor   $RPM_BUILD_ROOT/usr/share/panda3d/SceneEditor
 cp --recursive built/models  $RPM_BUILD_ROOT/usr/share/panda3d/models
-cp --recursive built/icons   $RPM_BUILD_ROOT/usr/share/panda3d/icons
-cp --recursive built/audio   $RPM_BUILD_ROOT/usr/share/panda3d/audio
-cp --recursive built/maps    $RPM_BUILD_ROOT/usr/share/panda3d/maps
 cp --recursive samples       $RPM_BUILD_ROOT/usr/share/panda3d/samples
 cp --recursive built/lib     $RPM_BUILD_ROOT/usr/lib/panda3d
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/lib/panda3d/LICENSE

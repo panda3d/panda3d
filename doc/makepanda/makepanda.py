@@ -6138,29 +6138,28 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 #
 ##########################################################################################
 
-MakeDirectory(PREFIX+"/audio")
-MakeDirectory(PREFIX+"/audio/sfx")
-MakeDirectory(PREFIX+"/icons")
-MakeDirectory(PREFIX+"/maps")
-MakeDirectory(PREFIX+"/models")
+MakeDirectory(PREFIX+"/models/audio")
+MakeDirectory(PREFIX+"/models/audio/sfx")
+MakeDirectory(PREFIX+"/models/icons")
+MakeDirectory(PREFIX+"/models/maps")
 MakeDirectory(PREFIX+"/models/misc")
 MakeDirectory(PREFIX+"/models/gui")
 
-CopyAllFiles(PREFIX+"/audio/sfx/",   "dmodels/src/audio/sfx/", ".wav")
-CopyAllFiles(PREFIX+"/icons/",       "dmodels/src/icons/",     ".gif")
+CopyAllFiles(PREFIX+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
+CopyAllFiles(PREFIX+"/models/icons/",      "dmodels/src/icons/",     ".gif")
 
-CopyAllFiles(PREFIX+"/models/",     "models/",                ".egg")
-CopyAllFiles(PREFIX+"/models/",     "models/",                ".bam")
+CopyAllFiles(PREFIX+"/models/",            "models/",                ".egg")
+CopyAllFiles(PREFIX+"/models/",            "models/",                ".bam")
 
-CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".jpg")
-CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".png")
-CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".rgb")
-CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".rgba")
+CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".jpg")
+CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".png")
+CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".rgb")
+CopyAllFiles(PREFIX+"/models/maps/",       "models/maps/",           ".rgba")
 
-CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".jpg")
-CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".png")
-CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".rgb")
-CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".rgba")
+CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".jpg")
+CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".png")
+CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
+CopyAllFiles(PREFIX+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
 
 CompileBAM("../=", PREFIX+"/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
 
