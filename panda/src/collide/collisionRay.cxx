@@ -80,8 +80,8 @@ set_projection(ProjectionNode *camera, const LPoint2f &point) {
 
   bool success = true;
   if (!proj->extrude(point, _origin, _direction)) {
-    _origin.set(0.0, 0.0, 0.0);
-    _direction.set(0.0, 0.0, 0.0);
+    _origin = LPoint3f::origin();
+    _direction = LVector3f::forward();
     success = false;
   }
   mark_bound_stale();

@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 class EXPCL_PANDA MathNumbers {
-public:
+PUBLISHED:
   static const double pi;
   static const double ln2;
 };

@@ -12,6 +12,8 @@
 #include <geomNode.h>
 #include <geomLine.h>
 #include <geometricBoundingVolume.h>
+#include <projectionNode.h>
+#include <projection.h>
 
 TypeHandle CollisionSegment::_type_handle;
 
@@ -58,6 +60,40 @@ xform(const LMatrix4f &mat) {
 void CollisionSegment::
 output(ostream &out) const {
   out << "segment, a (" << _a << "), b (" << _b << ")";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::set_projection
+//       Access: Public
+//  Description: Accepts a ProjectionNode and a 2-d point in the range
+//               [-1,1].  Sets the CollisionSegment so that it begins at
+//               the ProjectionNode's near plane and extends to the
+//               far plane, making it suitable for picking objects
+//               from the screen given a camera and a mouse location.
+//
+//               Returns true if the point was acceptable, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool CollisionSegment::
+set_projection(ProjectionNode *camera, const LPoint2f &point) {
+  Projection *proj = camera->get_projection();
+
+  bool success = true;
+  LPoint3f origin;
+  LVector3f direction;
+  if (!proj->extrude(point, origin, direction)) {
+    origin = LPoint3f::origin();
+    direction = LVector3f::forward();
+    success = false;
+  }
+
+  _a = origin;
+  _b = origin + direction;
+
+  mark_bound_stale();
+  mark_viz_stale();
+
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////

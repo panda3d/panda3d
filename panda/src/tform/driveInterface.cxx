@@ -93,7 +93,7 @@ operator < (const DriveInterface::KeyHeld &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::Constructor
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DriveInterface::
@@ -121,6 +121,7 @@ DriveInterface(const string &name) : DataNode(name) {
   _is_force_roll = true;
 
   _cs = default_coordinate_system;
+  _ignore_mouse = false;
 
   _mods.add_button(MouseButton::one());
   _mods.add_button(MouseButton::two());
@@ -135,7 +136,7 @@ DriveInterface(const string &name) : DataNode(name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::Destructor
-//       Access: Public, Scheme
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DriveInterface::
@@ -143,257 +144,8 @@ DriveInterface::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_forward_speed
-//       Access: Public, Scheme
-//  Description: Sets the speed of full forward motion, when the mouse
-//               is at the very top of the window.  This is in units
-//               (e.g. feet) per second.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_forward_speed(float speed) {
-  _forward_speed = speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_forward_speed
-//       Access: Public, Scheme
-//  Description: Returns the speed of full forward motion, when the
-//               mouse is at the very top of the window.  This is in
-//               units (e.g. feet) per second.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_forward_speed() const {
-  return _forward_speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_reverse_speed
-//       Access: Public, Scheme
-//  Description: Sets the speed of full reverse motion, when the mouse
-//               is at the very bottom of the window.  This is in
-//               units (e.g. feet) per second.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_reverse_speed(float speed) {
-  _reverse_speed = speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_reverse_speed
-//       Access: Public, Scheme
-//  Description: Returns the speed of full reverse motion, when the
-//               mouse is at the very bottom of the window.  This is
-//               in units (e.g. feet) per second.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_reverse_speed() const {
-  return _reverse_speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_rotate_speed
-//       Access: Public, Scheme
-//  Description: Sets the maximum rate at which the user can rotate
-//               left or right, when the mouse is at the very edge of
-//               the window.  This is in degrees per second.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_rotate_speed(float speed) {
-  _rotate_speed = speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_rotate_speed
-//       Access: Public, Scheme
-//  Description: Returns the maximum rate at which the user can rotate
-//               left or right, when the mouse is at the very edge of
-//               the window.  This is in degrees per second.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_rotate_speed() const {
-  return _rotate_speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_vertical_dead_zone
-//       Access: Public, Scheme
-//  Description: Sets the size of the horizontal bar in the center of
-//               the screen that represents the "dead zone" of
-//               vertical motion: the region in which the mouse does
-//               not report vertical motion.  This is in a fraction of
-//               the window height, so 0.5 will set a dead zone as
-//               large as half the screen.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_vertical_dead_zone(float speed) {
-  _vertical_dead_zone = speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_vertical_dead_zone
-//       Access: Public, Scheme
-//  Description: Returns the size of the horizontal bar in the center
-//               of the screen that represents the "dead zone" of
-//               vertical motion: the region in which the mouse does
-//               not report vertical motion.  This is in a fraction of
-//               the window height, so 0.5 will set a dead zone as
-//               large as half the screen.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_vertical_dead_zone() const {
-  return _vertical_dead_zone;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_horizontal_dead_zone
-//       Access: Public, Scheme
-//  Description: Sets the size of the vertical bar in the center of
-//               the screen that represents the "dead zone" of
-//               horizontal motion: the region in which the mouse does
-//               not report horizontal motion.  This is in a fraction of
-//               the window width, so 0.5 will set a dead zone as
-//               large as half the screen.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_horizontal_dead_zone(float speed) {
-  _horizontal_dead_zone = speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_horizontal_dead_zone
-//       Access: Public, Scheme
-//  Description: Returns the size of the vertical bar in the center
-//               of the screen that represents the "dead zone" of
-//               horizontal motion: the region in which the mouse does
-//               not report horizontal motion.  This is in a fraction of
-//               the window width, so 0.5 will set a dead zone as
-//               large as half the screen.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_horizontal_dead_zone() const {
-  return _horizontal_dead_zone;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_vertical_ramp_up_time
-//       Access: Public, Scheme
-//  Description: Sets the amount of time, in seconds, it takes between
-//               the time an up or down arrow key is pressed and the
-//               time it registers full forward or backward motion.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_vertical_ramp_up_time(float ramp_up_time) {
-  _vertical_ramp_up_time = ramp_up_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_vertical_ramp_up_time
-//       Access: Public, Scheme
-//  Description: Returns the amount of time, in seconds, it takes
-//               between the time an up or down arrow key is pressed
-//               and the time it registers full forward or backward
-//               motion.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_vertical_ramp_up_time() const {
-  return _vertical_ramp_up_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_vertical_ramp_down_time
-//       Access: Public, Scheme
-//  Description: Sets the amount of time, in seconds, it takes between
-//               the time an up or down arrow key is released and the
-//               time it registers no motion.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_vertical_ramp_down_time(float ramp_down_time) {
-  _vertical_ramp_down_time = ramp_down_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_vertical_ramp_down_time
-//       Access: Public, Scheme
-//  Description: Returns the amount of time, in seconds, it takes
-//               between the time an up or down arrow key is released
-//               and the time it registers no motion.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_vertical_ramp_down_time() const {
-  return _vertical_ramp_down_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_horizontal_ramp_up_time
-//       Access: Public, Scheme
-//  Description: Sets the amount of time, in seconds, it takes between
-//               the time a left or right arrow key is pressed and the
-//               time it registers full rotation.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_horizontal_ramp_up_time(float ramp_up_time) {
-  _horizontal_ramp_up_time = ramp_up_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_horizontal_ramp_up_time
-//       Access: Public, Scheme
-//  Description: Returns the amount of time, in seconds, it takes
-//               between the time a left or right arrow key is pressed
-//               and the time it registers full rotation.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_horizontal_ramp_up_time() const {
-  return _horizontal_ramp_up_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_horizontal_ramp_down_time
-//       Access: Public, Scheme
-//  Description: Sets the amount of time, in seconds, it takes between
-//               the time a left or right arrow key is released and the
-//               time it registers no motion.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_horizontal_ramp_down_time(float ramp_down_time) {
-  _horizontal_ramp_down_time = ramp_down_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_horizontal_ramp_down_time
-//       Access: Public, Scheme
-//  Description: Returns the amount of time, in seconds, it takes
-//               between the time a left or right arrow key is released
-//               and the time it registers no motion.
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_horizontal_ramp_down_time() const {
-  return _horizontal_ramp_down_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_speed
-//       Access: Public, Scheme
-//  Description: Returns the speed of the previous update in units/sec
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_speed() const {
-  return _speed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_rot_speed
-//       Access: Public, Scheme
-//  Description: Returns the rot_speed of the previous update in units/sec
-////////////////////////////////////////////////////////////////////
-float DriveInterface::
-get_rot_speed() const {
-  return _rot_speed;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::reset
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Reinitializes the driver to the origin.
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
@@ -410,139 +162,8 @@ reset() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_pos
-//       Access: Public, Scheme
-//  Description: Returns the driver's position.
-////////////////////////////////////////////////////////////////////
-const LPoint3f &DriveInterface::
-get_pos() const {
-  return _xyz;
-}
-
-float DriveInterface::
-get_x() const {
-  return _xyz[0];
-}
-
-float DriveInterface::
-get_y() const {
-  return _xyz[1];
-}
-
-float DriveInterface::
-get_z() const {
-  return _xyz[2];
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_pos
-//       Access: Public, Scheme
-//  Description: Directly sets the driver's position.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_pos(const LVecBase3f &vec) {
-  _xyz = vec;
-  recompute();
-}
-
-void DriveInterface::
-set_pos(float x, float y, float z) {
-  _xyz.set(x, y, z);
-  recompute();
-}
-
-void DriveInterface::
-set_x(float x) {
-  _xyz[0] = x;
-  recompute();
-}
-
-void DriveInterface::
-set_y(float y) {
-  _xyz[1] = y;
-  recompute();
-}
-
-void DriveInterface::
-set_z(float z) {
-  _xyz[2] = z;
-  recompute();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_hpr
-//       Access: Public, Scheme
-//  Description: Returns the driver's orientation.
-////////////////////////////////////////////////////////////////////
-const LVecBase3f &DriveInterface::
-get_hpr() const {
-  return _hpr;
-}
-
-float DriveInterface::
-get_h() const {
-  return _hpr[0];
-}
-
-float DriveInterface::
-get_p() const {
-  return _hpr[1];
-}
-
-float DriveInterface::
-get_r() const {
-  return _hpr[2];
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_hpr
-//       Access: Public, Scheme
-//  Description: Directly sets the driver's orientation.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_hpr(const LVecBase3f &hpr) {
-  _hpr = hpr;
-  recompute();
-}
-
-void DriveInterface::
-set_hpr(float h, float p, float r) {
-  _hpr.set(h, p, r);
-  recompute();
-
-  if (_is_force_roll && r != _force_roll) {
-    reextract();
-  }
-}
-
-void DriveInterface::
-set_h(float h) {
-  _hpr[0] = h;
-  recompute();
-}
-
-void DriveInterface::
-set_p(float p) {
-  _hpr[1] = p;
-  recompute();
-}
-
-void DriveInterface::
-set_r(float r) {
-  _hpr[2] = r;
-  recompute();
-
-  if (_is_force_roll && r != _force_roll) {
-    reextract();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::set_force_roll
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the force_roll state.  In this state, roll is
 //               always fixed to a particular value (typically zero),
 //               regardless of what it is explicitly set to via
@@ -562,82 +183,6 @@ set_force_roll(float force_roll) {
     _force_roll = force_roll;
     _is_force_roll = true;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::is_force_roll
-//       Access: Public, Scheme
-//  Description: Returns true if the force_roll state is in effect,
-//               e.g. because of a previous call to set_force_roll().
-//               In this state, the roll cannot be set to any value
-//               other than what the force_roll value indicates.
-////////////////////////////////////////////////////////////////////
-bool DriveInterface::
-is_force_roll() const {
-  return _is_force_roll;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::clear_force_roll
-//       Access: Public, Scheme
-//  Description: Disables the force_roll state.  See set_force_roll().
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-clear_force_roll() {
-  _is_force_roll = false;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_coordinate_system
-//       Access: Public, Scheme
-//  Description: Sets the coordinate system of the DriveInterface.
-//               Normally, this is the default coordinate system.
-//               This changes the plane the user drives around in;
-//               it's normally the horizontal plane (e.g. the X-Y
-//               plane in a Z-up coordinate system, or the X-Z plane
-//               in a Y-up coordinate system).
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_coordinate_system(CoordinateSystem cs) {
-  _cs = cs;
-  recompute();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_coordinate_system
-//       Access: Public, Scheme
-//  Description: Returns the coordinate system of the DriveInterface.
-//               See set_coordinate_system().
-////////////////////////////////////////////////////////////////////
-CoordinateSystem DriveInterface::
-get_coordinate_system() const {
-  return _cs;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_mat
-//       Access: Public, Scheme
-//  Description: Stores the indicated transform in the driveInterface.
-//               This is a transform in global space, regardless of
-//               the rel_to node.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-set_mat(const LMatrix4f &mat) {
-  _mat = mat;
-  reextract();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_mat
-//       Access: Public, Scheme
-//  Description: Fills mat with the net transformation applied by the
-//               current state.
-////////////////////////////////////////////////////////////////////
-const LMatrix4f &DriveInterface::
-get_mat() const {
-  return _mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -854,7 +399,9 @@ transmit_data(NodeAttributes &data) {
     ButtonEventDataAttribute::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
-      _mods.add_event(be);
+      if (!(_ignore_mouse && be._down)) {
+	_mods.add_event(be);
+      }
 
       if (be._button == KeyboardButton::up()) {
 	_up_arrow.set_key(be._down);

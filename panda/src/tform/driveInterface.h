@@ -31,61 +31,64 @@ PUBLISHED:
   DriveInterface(const string &name = "");
   ~DriveInterface();
 
-  void set_forward_speed(float speed);
-  float get_forward_speed() const;
-  void set_reverse_speed(float speed);
-  float get_reverse_speed() const;
-  void set_rotate_speed(float speed);
-  float get_rotate_speed() const;
-  void set_vertical_dead_zone(float zone);
-  float get_vertical_dead_zone() const;
-  void set_horizontal_dead_zone(float zone);
-  float get_horizontal_dead_zone() const;
+  INLINE void set_forward_speed(float speed);
+  INLINE float get_forward_speed() const;
+  INLINE void set_reverse_speed(float speed);
+  INLINE float get_reverse_speed() const;
+  INLINE void set_rotate_speed(float speed);
+  INLINE float get_rotate_speed() const;
+  INLINE void set_vertical_dead_zone(float zone);
+  INLINE float get_vertical_dead_zone() const;
+  INLINE void set_horizontal_dead_zone(float zone);
+  INLINE float get_horizontal_dead_zone() const;
 
-  void set_vertical_ramp_up_time(float ramp_up_time);
-  float get_vertical_ramp_up_time() const;
-  void set_vertical_ramp_down_time(float ramp_down_time);
-  float get_vertical_ramp_down_time() const;
-  void set_horizontal_ramp_up_time(float ramp_up_time);
-  float get_horizontal_ramp_up_time() const;
-  void set_horizontal_ramp_down_time(float ramp_down_time);
-  float get_horizontal_ramp_down_time() const;
+  INLINE void set_vertical_ramp_up_time(float ramp_up_time);
+  INLINE float get_vertical_ramp_up_time() const;
+  INLINE void set_vertical_ramp_down_time(float ramp_down_time);
+  INLINE float get_vertical_ramp_down_time() const;
+  INLINE void set_horizontal_ramp_up_time(float ramp_up_time);
+  INLINE float get_horizontal_ramp_up_time() const;
+  INLINE void set_horizontal_ramp_down_time(float ramp_down_time);
+  INLINE float get_horizontal_ramp_down_time() const;
 
-  float get_speed() const;
-  float get_rot_speed() const;
+  INLINE float get_speed() const;
+  INLINE float get_rot_speed() const;
 
   void reset();
 
   /// **** Translation ****
 
-  const LPoint3f &get_pos() const;
-  float get_x() const;
-  float get_y() const;
-  float get_z() const;
-  void set_pos(const LVecBase3f &vec);
-  void set_pos(float x, float y, float z);
-  void set_x(float x);
-  void set_y(float y);
-  void set_z(float z);
+  INLINE const LPoint3f &get_pos() const;
+  INLINE float get_x() const;
+  INLINE float get_y() const;
+  INLINE float get_z() const;
+  INLINE void set_pos(const LVecBase3f &vec);
+  INLINE void set_pos(float x, float y, float z);
+  INLINE void set_x(float x);
+  INLINE void set_y(float y);
+  INLINE void set_z(float z);
  
   /// **** Rotation ****
  
-  const LVecBase3f &get_hpr() const;
-  float get_h() const;
-  float get_p() const;
-  float get_r() const;
-  void set_hpr(const LVecBase3f &hpr);
-  void set_hpr(float h, float p, float r);
-  void set_h(float h);
-  void set_p(float p);
-  void set_r(float r);
+  INLINE const LVecBase3f &get_hpr() const;
+  INLINE float get_h() const;
+  INLINE float get_p() const;
+  INLINE float get_r() const;
+  INLINE void set_hpr(const LVecBase3f &hpr);
+  INLINE void set_hpr(float h, float p, float r);
+  INLINE void set_h(float h);
+  INLINE void set_p(float p);
+  INLINE void set_r(float r);
 
   void set_force_roll(float force_roll);
-  bool is_force_roll() const;
-  void clear_force_roll();
+  INLINE bool is_force_roll() const;
+  INLINE void clear_force_roll();
 
-  void set_coordinate_system(CoordinateSystem cs);
-  CoordinateSystem get_coordinate_system() const;
+  INLINE void set_coordinate_system(CoordinateSystem cs);
+  INLINE CoordinateSystem get_coordinate_system() const;
+
+  INLINE void set_ignore_mouse(bool ignore_mouse);
+  INLINE bool get_ignore_mouse() const;
 
   void set_mat(const LMatrix4f &mat);
   const LMatrix4f &get_mat() const;
@@ -122,6 +125,7 @@ private:
   float _force_roll;
   bool _is_force_roll;
   CoordinateSystem _cs;
+  bool _ignore_mouse;
 
   // Remember which mouse buttons are being held down.
   ModifierButtons _mods;
@@ -176,5 +180,7 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "driveInterface.I"
 
 #endif

@@ -117,3 +117,17 @@ INLINE const LPoint3f &CollisionSegment::
 get_point_b() const {
   return _b;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::set_projection
+//       Access: Public
+//  Description: Accepts a ProjectionNode and a 2-d point in the range
+//               [-1,1].  Sets the CollisionSegment so that it begins at
+//               the ProjectionNode's near plane and extends to the
+//               far plane, making it suitable for picking objects
+//               from the screen given a camera and a mouse location.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionSegment::
+set_projection(ProjectionNode *camera, float px, float py) {
+  return set_projection(camera, LPoint2f(px, py));
+}

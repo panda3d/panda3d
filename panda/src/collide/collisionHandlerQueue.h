@@ -30,6 +30,7 @@ public:
 
 PUBLISHED:
   void sort_entries();
+  void clear_entries();
 
   int get_num_entries() const;
   CollisionEntry *get_entry(int n) const;

@@ -92,6 +92,16 @@ sort_entries() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerQueue::clear_entries
+//       Access: Public
+//  Description: Removes all the entries from the queue.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerQueue::
+clear_entries() {
+  _entries.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerQueue::get_num_entries
 //       Access: Public
 //  Description: Returns the number of CollisionEntries detected last

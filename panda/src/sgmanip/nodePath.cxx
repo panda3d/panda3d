@@ -363,7 +363,7 @@ find_all_matches(const string &path) const {
 //               transforms exist in the scene graph.
 //
 //               This is a handy function for tracking down mysterious
-//               "tried in invert a singular matrix" errors, which are
+//               "tried to invert a singular matrix" errors, which are
 //               almost always caused by zero-scale transform matrices
 //               in the scene graph.
 ////////////////////////////////////////////////////////////////////

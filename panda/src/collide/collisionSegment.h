@@ -52,6 +52,9 @@ PUBLISHED:
   INLINE void set_point_b(float x, float y, float z);
   INLINE const LPoint3f &get_point_b() const;
 
+  bool set_projection(ProjectionNode *camera, const LPoint2f &point);
+  INLINE bool set_projection(ProjectionNode *camera, float px, float py);
+
 protected:
   virtual void recompute_bound();
 
