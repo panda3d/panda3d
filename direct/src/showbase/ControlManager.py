@@ -58,7 +58,6 @@ class ControlManager:
         inputState.watch("jump", "shift-control", "shift-control-up")
         
         inputState.watch("slide", "slide-is-disabled", "slide-is-disabled")
-        inputState.watch("pie", "begin-pie", "end-pie")
         
         #inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
         #inputState.watch("slideLeft", "control-arrow_left", "control-arrow_left-up")

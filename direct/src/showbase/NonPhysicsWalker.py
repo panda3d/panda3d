@@ -153,7 +153,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         turnRight = inputState.isSet("turnRight")
         slide = inputState.isSet("slide")
         #jump = inputState.isSet("jump")
-        pie = inputState.isSet("pie")
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or 
                     reverse and -self.avatarControlReverseSpeed)
@@ -164,12 +163,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
-
-        # No moving allowed while throwing a pie.
-        if pie:
-            self.speed = 0
-            self.slideSpeed = 0
-            self.rotationSpeed = 0
             
         # How far did we move based on the amount of time elapsed?
         dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
