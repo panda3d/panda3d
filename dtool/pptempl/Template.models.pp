@@ -41,17 +41,17 @@
    $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
 
 #define build_eggs $[sort $[build_models] $[build_anims]]
-#define install_eggs $[sort $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)]]
+#define install_eggs $[sort $[notdir $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)]]]
 #define install_other $[sort $[SOURCES(install_audio install_dna install_icons install_misc)]]
 
 #define install_egg_dirs $[sort $[forscopes install_egg,$[install_model_dir]]]
-#define installed_eggs $[sort $[forscopes install_egg,$[SOURCES:%=$[install_model_dir]/%] $[UNPAL_SOURCES:%=$[install_model_dir]/%]]]
-#define installed_bams $[sort $[forscopes install_egg,$[SOURCES:%.egg=$[install_model_dir]/%.bam] $[UNPAL_SOURCES:%.egg=$[install_model_dir]/%.bam]]]
+#define installed_eggs $[sort $[forscopes install_egg,$[patsubst %,$[install_model_dir]/%,$[notdir $[SOURCES] $[UNPAL_SOURCES]]]]]
+#define installed_bams $[sort $[forscopes install_egg,$[patsubst %.egg,$[install_model_dir]/%.bam,$[notdir $[SOURCES] $[UNPAL_SOURCES]]]]]
 
 #define install_other_dirs $[sort $[forscopes install_audio install_dna install_icons install_misc,$[install_model_dir]]]
 #define installed_other $[sort $[forscopes install_audio install_dna install_icons install_misc,$[SOURCES:%=$[install_model_dir]/%]]]
 
-#define pal_egg_targets $[sort $[SOURCES(install_egg):%=$[pal_egg_dir]/%]]
+#define pal_egg_targets $[sort $[patsubst %,$[pal_egg_dir]/%,$[notdir $[SOURCES]]]]
 #define bam_targets $[install_eggs:%.egg=$[bam_dir]/%.bam]
 
 #output Makefile
@@ -74,7 +74,7 @@ egg : $[egg_targets]
 
 #define filter_targets \
     $[filter_dirs] \
-    $[forscopes install_egg,$[patsubst %,$[source_prefix]%,$[SOURCES] $[UNPAL_SOURCES]]]
+    $[forscopes install_egg,$[patsubst %,$[source_prefix]%,$[notdir $[SOURCES] $[UNPAL_SOURCES]]]]
 filter : egg $[filter_targets]
 
 pal : filter $[if $[pal_egg_targets],$[pal_egg_dir]] $[pal_egg_targets]
@@ -238,7 +238,7 @@ $[TAB]egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
   #foreach egg $[SOURCES]
     #define pt $[egg:%.egg=$[source_prefix]%.pt]
     #define source $[source_prefix]$[egg]
-    #define target $[pal_egg_dir]/$[egg]
+    #define target $[pal_egg_dir]/$[notdir $[egg]]
 $[target] : $[source] $[pt] $[pal_egg_dir]/stamp
     #if $[PHASE]
 $[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -g phase_$[PHASE] -gdir phase_$[PHASE] -o $[target] $[source]
@@ -256,15 +256,15 @@ $[TAB]touch $[pt]
 // Bam file creation.
 #forscopes install_egg
   #foreach egg $[SOURCES]
-    #define source $[pal_egg_dir]/$[egg]
-    #define target $[bam_dir]/$[egg:%.egg=%.bam]
+    #define source $[pal_egg_dir]/$[notdir $[egg]]
+    #define target $[bam_dir]/$[notdir $[egg:%.egg=%.bam]]
 $[target] : $[source] $[bam_dir]/stamp
 $[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
     #define source $[source_prefix]$[egg]
-    #define target $[bam_dir]/$[egg:%.egg=%.bam]
+    #define target $[bam_dir]/$[notdir $[egg:%.egg=%.bam]]
 $[target] : $[source] $[bam_dir]/stamp
 $[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
 
@@ -307,7 +307,7 @@ $[TAB]rm -f $[files]
 
 // Bam file installation.
 #forscopes install_egg
-  #foreach egg $[SOURCES] $[UNPAL_SOURCES]
+  #foreach egg $[notdir $[SOURCES] $[UNPAL_SOURCES]]
     #define local $[egg:%.egg=%.bam]
     #define sourcedir $[bam_dir]
     #define dest $[install_model_dir]
@@ -322,7 +322,7 @@ $[TAB]cp $[sourcedir]/$[local] $[dest]
 // Bam file uninstallation.
 uninstall-bam :
 #forscopes install_egg
-  #define files $[patsubst %.egg,$[install_model_dir]/%.bam,$[SOURCES] $[UNPAL_SOURCES]]
+  #define files $[patsubst %.egg,$[install_model_dir]/%.bam,$[notdir $[SOURCES] $[UNPAL_SOURCES]]]
   #if $[files]
 $[TAB]rm -f $[files]
   #endif
