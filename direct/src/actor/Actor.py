@@ -525,6 +525,59 @@ class Actor(PandaObject, NodePath):
                 (children.getPath(childNum)).show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
+
+    def exposeJoint(self, node, partName, jointName, lodName="lodRoot"):
+        """exposeJoint(self, NodePath, string, string, key="lodRoot")
+        Starts the joint animating the indicated node.  As the joint
+        animates, it will transform the node by the corresponding
+        amount.  This will replace whatever matrix is on the node each
+        frame."""
+        
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        if (partBundleDict.has_key(partName)):
+            bundle = partBundleDict[partName].node().getBundle()
+        else:
+            Actor.notify.warning("no part named %s!" % (partName))
+            return None
+
+        # Get a handle to the joint.
+        joint = bundle.findChild(jointName)
+
+        if (joint):
+            joint.addNetTransform(node.arc())
+        else:
+            Actor.notify.warning("no joint named %s!" % (jointName))
+
+    def stopJoint(self, partName, jointName, lodName="lodRoot"):
+        """stopJoint(self, string, string, key="lodRoot")
+        Stops the joint from animating external nodes.  If the joint
+        is animating a transform on a node, this will permanently stop
+        it.  However, this does not affect vertex animations."""
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        if (partBundleDict.has_key(partName)):
+            bundle = partBundleDict[partName].node().getBundle()
+        else:
+            Actor.notify.warning("no part named %s!" % (partName))
+            return None
+
+        # Get a handle to the joint.
+        joint = bundle.findChild(jointName)
+
+        if (joint):
+            joint.clearNetTransforms()
+            joint.clearLocalTransforms()
+        else:
+            Actor.notify.warning("no joint named %s!" % (jointName))
             
     def instance(self, path, part, jointName, lodName="lodRoot"):
         """instance(self, NodePath, string, string, key="lodRoot")
