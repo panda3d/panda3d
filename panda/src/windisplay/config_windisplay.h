@@ -32,6 +32,7 @@ extern Filename get_mono_cursor_filename();
 extern bool show_fps_meter;
 extern float fps_meter_update_interval;
 extern bool responsive_minimized_fullscreen_window;
+extern bool hold_keys_across_windows;
 extern bool do_vidmemsize_check;
 extern bool ime_composition_w;
 

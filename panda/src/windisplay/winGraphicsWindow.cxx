@@ -994,29 +994,42 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           windisplay_cat.debug()
             << "killfocus\n";
         }
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-
-        // Record the current state of the keyboard when the focus is
-        // lost, so we can check it for changes when we regain focus.
-        GetKeyboardState(_keyboard_state);
-        if (windisplay_cat.is_debug()) {
-          // Report the set of keys that are held down at the time of
-          // the killfocus event.
-          for (int i = 0; i < num_virtual_keys; i++) {
-            if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
-              if ((_keyboard_state[i] & 0x80) != 0) {
-                windisplay_cat.debug()
-                  << "on killfocus, key is down: " << i << " (" << lookup_key(i) << ")\n";
+        if (!_lost_keypresses) {
+          // Record the current state of the keyboard when the focus is
+          // lost, so we can check it for changes when we regain focus.
+          GetKeyboardState(_keyboard_state);
+          if (windisplay_cat.is_debug()) {
+            // Report the set of keys that are held down at the time of
+            // the killfocus event.
+            for (int i = 0; i < num_virtual_keys; i++) {
+              if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
+                if ((_keyboard_state[i] & 0x80) != 0) {
+                  windisplay_cat.debug()
+                    << "on killfocus, key is down: " << i
+                    << " (" << lookup_key(i) << ")\n";
+                }
               }
             }
           }
-        }
 
-        // Now set the flag indicating that some keypresses from now
-        // on may be lost.
-        _lost_keypresses = true;
+          if (!hold_keys_across_windows) {
+            // If we don't want to remember the keystate while the
+            // window focus is lost, then generate a keyup event
+            // right now for each key currently held.
+            for (int i = 0; i < num_virtual_keys; i++) {
+              if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
+                if ((_keyboard_state[i] & 0x80) != 0) {
+                  handle_keyrelease(lookup_key(i));
+                  _keyboard_state[i] &= ~0x80;
+                }
+              }
+            }
+          }
+          
+          // Now set the flag indicating that some keypresses from now
+          // on may be lost.
+          _lost_keypresses = true;
+        }
         break;
     
       case WM_SETFOCUS: 

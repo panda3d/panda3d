@@ -33,9 +33,12 @@ float fps_meter_update_interval = max(0.5,config_windisplay.GetFloat("fps-meter-
 
 bool responsive_minimized_fullscreen_window = config_windisplay.GetBool("responsive-minimized-fullscreen-window",false);
 
-// Set this true to not attempt to use any of the function calls that
-// will crab out WireGL.
-bool support_wiregl = config_windisplay.GetBool("support-wiregl", false);
+// Set this true to remember the current state of the keyboard while
+// the window focus is lost, or false to pretend the user is not
+// holding down any keys while the window focus is lost.  In either
+// case it should accurately restore the correct keyboard state when
+// the window focus is regained.
+bool hold_keys_across_windows = config_windisplay.GetBool("hold-keys-across-windows", false);
 
 // if true, use ddraw's GetAvailVidMem to fail if driver says it has too little video mem
 bool do_vidmemsize_check = config_windisplay.GetBool("do-vidmemsize-check", true);
