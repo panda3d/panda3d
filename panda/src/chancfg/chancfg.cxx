@@ -516,6 +516,24 @@ ChanConfig::ChanConfig(GraphicsEngine *engine, GraphicsPipe* pipe,
     }
   }
   _graphics_window = win;
+
+  // HACK ALERT!  This lets a frame go by to open the window
+  // immediately, to work around some of the issues we are having
+  // with the new window code, as a stopgap until we can address
+  // this properly without stepping on people's toes with unwanted
+  // code changes.  In the meantime, this could have unexpected
+  // consequences for non-Toontown clients that try to open multiple
+  // windows simultaneously.  Beware!
+  engine->render_frame();
+
+  // HACK ALERT!  If the window isn't open after the frame has gone
+  // by, assume it will not open, and clear it.
+  if (_graphics_window->is_closed()) {
+    chancfg_cat.error() << "Could not open window" << endl;
+    engine->remove_window(_graphics_window);
+    _graphics_window = (GraphicsWindow *)NULL;
+  }
+
   return;
 }
 
