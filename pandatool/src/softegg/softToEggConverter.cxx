@@ -577,13 +577,13 @@ convert_soft(bool from_selection) {
   _from_selection = from_selection;
   _textures.clear();
 
-  EggData egg_data;
-  set_egg_data(&egg_data, false);
-  softegg_cat.spam() << "eggData " << &get_egg_data() << "\n";
+  PT(EggData) egg_data = new EggData;
+  set_egg_data(egg_data);
+  softegg_cat.spam() << "eggData " << get_egg_data() << "\n";
   
   // append the command line 
   softegg_cat.info() << _commandLine << endl;
-  get_egg_data().insert(get_egg_data().begin(), new EggComment("", _commandLine));
+  get_egg_data()->insert(get_egg_data()->begin(), new EggComment("", _commandLine));
 
   if (_egg_data->get_coordinate_system() != CS_default) {
     softegg_cat.spam() << "coordinate system is not default\n";
@@ -625,7 +625,7 @@ convert_soft(bool from_selection) {
       all_ok = false;
     }
 
-    //  reparent_decals(&get_egg_data());
+    //  reparent_decals(get_egg_data());
     softegg_cat.info() << "Converted Softimage file\n";
 
     // write out the egg model file
@@ -637,7 +637,7 @@ convert_soft(bool from_selection) {
       all_ok = false;
     }
 
-    //  reparent_decals(&get_egg_data());
+    //  reparent_decals(get_egg_data());
     softegg_cat.info() << "Converted Softimage file\n";
     
     // write out the egg model file
@@ -739,7 +739,7 @@ bool SoftToEggConverter::
 convert_char_model() {
   softegg_cat.spam() << "character name " << _character_name << "\n";
   EggGroup *char_node = new EggGroup(eggGroupName);
-  get_egg_data().add_child(char_node);
+  get_egg_data()->add_child(char_node);
   char_node->set_dart_type(EggGroup::DT_default);
 
   return convert_hierarchy(char_node);
@@ -787,7 +787,7 @@ convert_char_chan() {
   float time;
 
   EggTable *root_table_node = new EggTable();
-  get_egg_data().add_child(root_table_node);
+  get_egg_data()->add_child(root_table_node);
   EggTable *bundle_node = new EggTable(eggGroupName);
   bundle_node->set_table_type(EggTable::TT_bundle);
   root_table_node->add_child(bundle_node);
@@ -808,8 +808,8 @@ convert_char_chan() {
   softegg_cat.info() << "animation frame inc: " << frame_inc << endl;
   
   _tree._fps = output_frame_rate / frame_inc;
-  //  _tree.clear_egg(&get_egg_data(), NULL, root_node);
-  _tree.clear_egg(&get_egg_data(), NULL, skeleton_node);
+  //  _tree.clear_egg(get_egg_data(), NULL, root_node);
+  _tree.clear_egg(get_egg_data(), NULL, skeleton_node);
 
   // Now we can get the animation data by walking through all of the
   // frames, one at a time, and getting the joint angles at each
@@ -904,7 +904,7 @@ bool SoftToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
 
-  _tree.clear_egg(&get_egg_data(), egg_root, NULL);
+  _tree.clear_egg(get_egg_data(), egg_root, NULL);
   softegg_cat.spam() << "num_nodes = " << num_nodes << endl;
   for (int i = 0; i < num_nodes; i++) {
     if (!process_model_node(_tree.get_node(i))) {
