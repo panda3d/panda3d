@@ -1627,7 +1627,7 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
            dwFullScreenBitDepth=16;              // do 16bpp
         } else {
            wdxdisplay_cat.fatal() << "No Supported FullScreen resolutions at " << dwRenderWidth << "x" << dwRenderHeight 
-               << " for device #" << devnum << " (" << _dxgsg->scrn.DXDeviceID.szDescription<<"), skipping device...";
+               << " for device #" << devnum << " (" << _dxgsg->scrn.DXDeviceID.szDescription<<"), skipping device...\n";
           goto error_exit;
         }
         
