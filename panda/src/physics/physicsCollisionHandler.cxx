@@ -61,49 +61,42 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
   ActorNode *actor=DCAST(ActorNode, def._node);
   float friction=0.9f;
   LVector3f vel=actor->get_physics_object()->get_velocity();
+  physics_debug("apply_linear_force() {");
+  physics_debug("  vel "<<vel<<" len "<<vel.length());
+  physics_debug("  force "<<force<<" len "<<force.length());
   LVector3f old_vel=vel;
   LVector3f adjustment=force;
   adjustment.normalize();
   adjustment*=adjustment.dot(vel);
-  #if 0 //[
-  float initialVelMag=vel.length();
-  float temp=((vel-c)*friction).length();
-  if ((vel-c)[2]) {
-    cerr<<"\n\napply_linear_force"
-        <<"\n  old_vel "<<old_vel<<" len "<<old_vel.length()
-        <<"\n  force "<<force<<" len "<<force.length()
-        <<"\n  adjustment "<<adjustment<<" len"<<adjustment.length()
-        <<"\n  vel "<<vel-c<<" len "<<(vel-c).length()
-        <<"\n  friction "<<friction
-        <<"\n  vel "<<((vel-c)*friction)<<" len "<<temp
-        <<"\n  initialVelLen > "<<(initialVelMag>temp)  
-        <<endl;
-    if (initialVelMag<temp) {
-      cerr<<"\n*************************************"<<endl;
-    }
-  }
-  #endif //]
+  physics_debug("  adjustment "<<adjustment<<" len "<<adjustment.length());
   float angle=adjustment.dot(vel);
   vel-=adjustment;
+  physics_debug("  vel "<<vel<<" len "<<vel.length());
+  physics_debug("  angle "<<angle);
   if (angle<=0.0f) {
     // ...avoid amplifying the velocity by checking to see
     // that the adjustment and the velocity are more than 
     // right-angles (i.e. obtuse angle).
-    float almostStationary=1.0f;
-    if (vel.dot(vel)>almostStationary) {
-      friction*=0.01f; cerr<<"not almostStationary"<<endl;
+    float almostStationary=0.1f;
+    if (vel.length()>almostStationary) {
+      physics_debug("  vel > almostStationary");
+      friction*=0.01f;
     }
     //vel*=1.0f-friction;
   }
 
-  LVector3f new_vel=vel;
+  #ifndef NDEBUG //[
   if (vel.length() > old_vel.length()) {
-    cerr<<"\nvel.length() > old_vel.length()  "<<vel.length()<<" > "<<old_vel.length()<<endl;
+    physics_debug("  vel.length() > old_vel.length()  "<<vel.length()<<" > "<<old_vel.length());
   }
   if (vel.length() > 10.0f) {
-    cerr<<"\nvel.length() > 10.0f  "<<vel.length()<<endl;
+    physics_debug("  vel.length() > 10.0f  "<<vel.length());
   }
+  #endif //]
 
+  physics_debug("  force "<<force<<" len "<<force.length());
+  physics_debug("  vel "<<vel<<" len "<<vel.length());
+  physics_debug("}");
   actor->set_contact_vector(force);
   actor->get_physics_object()->set_velocity(vel);
 }

@@ -31,9 +31,27 @@ extern EXPCL_PANDAPHYSICS void init_libphysics();
 #ifndef NDEBUG //[
   // Non-release build:
   #define PHYSICS_DEBUG
+
+  #define physics_debug(msg) \
+  if (physics_cat.is_debug()) { \
+    physics_cat->debug() << msg << endl; \
+  } else {}
+
+  #define physics_info(msg) \
+    physics_cat->info() << msg << endl
+
+  #define physics_warning(msg) \
+    physics_cat->warning() << msg << endl
 #else //][
   // Release build:
   #undef PHYSICS_DEBUG
+
+  #define physics_debug(msg) ((void)0)
+  #define physics_info(msg) ((void)0)
+  #define physics_warning(msg) ((void)0)
 #endif //]
+
+#define audio_error(msg) \
+  audio_cat->error() << msg << endl
 
 #endif // CONFIG_PHYSICS_H

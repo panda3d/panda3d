@@ -126,8 +126,9 @@ void ActorNode::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ActorNode:\n";
-  out.width(indent+2); out<<""; out<<"_mass_center "<<_mass_center<<"\n";
   out.width(indent+2); out<<""; out<<"_ok_to_callback "<<_ok_to_callback<<"\n";
+  out.width(indent+2); out<<""; out<<"_mass_center\n";
+  _mass_center->write(out, indent+4);
   PhysicalNode::write(out, indent+2);
   #endif //] NDEBUG
 }
