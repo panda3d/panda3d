@@ -5,10 +5,43 @@ from direct.showbase.DirectObject import DirectObject
 
 
 class AsyncRequest(DirectObject):
-    def __init__(self, manager, air, replyToChannelId=None, timeout=4.0):
+    """
+    This class is used to make asynchronos reads and creates to a database.
+
+    You can create a list of self.neededObjects and then ask for each to be
+    read or created, or if you only have one object that you need you can
+    skip the self.neededObjects because calling askForObject or createObject
+    will set the self.neededObjects value for you.
+
+    Once all the objects have been read or created, the self.finish() method
+    will be called.  You may override this function to run your code in a
+    derived class.
+
+    If you wish to queue up several items that you all need before the finish
+    method is called, you can put items in self.neededObjects and then call
+    askForObject or createObject afterwards.  That way the _checkCompletion
+    will not call finish until after all the requests have been done.
+
+    If you need to chain serveral object reads or creates, just add more
+    entries to the self.neededObjects dictionary in the self.finish function
+    and return without calling AsyncRequest.finish().  Your finish method
+    will be called again when the new self.neededObjects is complete.  You
+    may repeat this as necessary.
+    """
+
+    if __debug__:
+        notify = DirectNotifyGlobal.directNotify.newCategory('AsyncRequest')
+
+    def __init__(self, distObj, air, replyToChannelId=None, timeout=4.0):
+        """
+        distObj is any distributed object.
+        air is the AI Respository.
+        replyToChannelId may be an avatarId, an accountId, or a channelId.
+        timeout is how many seconds to wait before aborting the request.
+        """
         assert self.notify.debugCall()
         #DirectObject.DirectObject.__init__(self)
-        self.manager=manager
+        self.distObj=distObj
         self.air=air
         self.replyToChannelId=replyToChannelId
         self.neededObjects={}
@@ -30,7 +63,7 @@ class AsyncRequest(DirectObject):
                     self.air.removeDOFromTables(i)
                     i.delete()
         del self.neededObjects
-        del self.manager
+        del self.distObj
         del self.air
         del self.replyToChannelId
         #DirectObject.DirectObject.delete(self)
@@ -64,7 +97,9 @@ class AsyncRequest(DirectObject):
         Request an already created object, i.e. read from database.
         """
         assert self.notify.debugCall()
+        assert doId
         object = self.air.doId2do.get(doId)
+        self.neededObjects[doId]=object
         if object is not None:
             self._checkCompletion(None, context, object)
         else:
@@ -79,6 +114,9 @@ class AsyncRequest(DirectObject):
         your self.finish() function.
         """
         assert self.notify.debugCall()
+        assert name
+        assert className
+        self.neededObjects[name]=None
         if context is None:
             context=self.air.allocateContext()
         self.accept("doRequestResponse-%s"%(context,), self._checkCompletion, [name])
