@@ -64,6 +64,8 @@ class DistributedSmoothNodeBase:
 
     def stopPosHprBroadcast(self):
         taskMgr.remove(self.getPosHprBroadcastTaskName())
+        # Delete this callback because it maintains a reference to self
+        self.d_broadcastPosHpr = None
 
     def startPosHprBroadcast(self, period=.2, stagger=0, type=None):
         BT = DistributedSmoothNodeBase.BroadcastTypes
