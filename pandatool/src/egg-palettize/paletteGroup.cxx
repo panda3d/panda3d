@@ -27,6 +27,7 @@ PaletteGroup() {
   _egg_count = 0;
   _dependency_level = 0;
   _dependency_order = 0;
+  _dirname_order = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,6 +77,7 @@ clear_depends() {
   _dependent.clear();
   _dependency_level = 0;
   _dependency_order = 0;
+  _dirname_order = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,6 +158,7 @@ void PaletteGroup::
 reset_dependency_level() {
   _dependency_level = 0;
   _dependency_order = 0;
+  _dirname_order = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,6 +212,20 @@ set_dependency_order() {
       _dependency_order = group->get_dependency_order() + 1;
       any_changed = true;
     }
+
+    if (_dirname == group->get_dirname()) {
+      // The dirname orders should be equal.
+      if (_dirname_order < group->get_dirname_order()) {
+	_dirname_order = group->get_dirname_order();
+	any_changed = true;
+      }
+    } else {
+      // The dirname orders should be different.
+      if (_dirname_order <= group->get_dirname_order()) {
+	_dirname_order = group->get_dirname_order() + 1;
+	any_changed = true;
+      }
+    }
   }
 
   return any_changed;
@@ -258,6 +275,47 @@ get_dependency_level() const {
 int PaletteGroup::
 get_dependency_order() const {
   return _dependency_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_dirname_order
+//       Access: Public
+//  Description: Returns the dependency order of this group.  This is
+//               similar in principle to the dependency level, but it
+//               represents the inverse concept: if group a depends on
+//               group b, then a->get_dirname_order() >
+//               b->get_dirname_order().
+//
+//               This is not exactly the same thing as n -
+//               get_dependency_level().  In particular, this can be
+//               used to sort the groups into an ordering such that
+//               all the groups that group a depends on appear before
+//               group a in the list.
+////////////////////////////////////////////////////////////////////
+int PaletteGroup::
+get_dirname_order() const {
+  return _dirname_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::is_preferred_over
+//       Access: Public
+//  Description: Returns true if this group should be preferred for
+//               adding textures over the other group, if both are
+//               available.  In other words, this is a more specific
+//               group than the other one.
+////////////////////////////////////////////////////////////////////
+bool PaletteGroup::
+is_preferred_over(const PaletteGroup &other) const {
+  if (get_dirname_order() != other.get_dirname_order()) { 
+    return (get_dirname_order() > other.get_dirname_order());
+    
+  } else if (get_dependency_order() != other.get_dependency_order()) { 
+    return (get_dependency_order() > other.get_dependency_order());
+    
+  } else {
+    return (get_egg_count() < other.get_egg_count());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -503,6 +561,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 
   datagram.add_int32(_dependency_level);
   datagram.add_int32(_dependency_order);
+  datagram.add_int32(_dirname_order);
 
   datagram.add_uint32(_placements.size());
   Placements::const_iterator pli;
@@ -616,6 +675,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   if (Palettizer::_read_pi_version >= 3) {
     _dependency_level = scan.get_int32();
     _dependency_order = scan.get_int32();
+    if (Palettizer::_read_pi_version >= 4) {
+      _dirname_order = scan.get_int32();
+    }
   }
 
   _num_placements = scan.get_uint32();

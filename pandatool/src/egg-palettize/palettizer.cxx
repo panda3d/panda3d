@@ -28,10 +28,11 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 3;
+int Palettizer::_pi_version = 4;
 // Updated to version 1 on 12/11/00 to add _remap_char_uv.
 // Updated to version 2 on 12/19/00 to add TexturePlacement::_dest.
 // Updated to version 3 on 12/19/00 to add PaletteGroup::_dependency_order.
+// Updated to version 4 on 5/3/01 to add PaletteGroup::_dirname_order.
 
 int Palettizer::_read_pi_version = 0;
 
@@ -64,6 +65,14 @@ public:
       return a->get_dependency_order() < b->get_dependency_order();
     }
     return a->get_name() < b->get_name();
+  }
+};
+
+// And this one is used in report_pi().
+class SortGroupsByPreference {
+public:
+  bool operator ()(PaletteGroup *a, PaletteGroup *b) {
+    return !a->is_preferred_over(*b);
   }
 };
 
@@ -149,7 +158,7 @@ report_pi() const {
     cout << "\n";
   }
 
-  cout << "\ntexture source pathnames and sizes\n";
+  cout << "\ntexture source pathnames and assignments\n";
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
@@ -165,14 +174,26 @@ report_pi() const {
     egg_file->write_texture_refs(cout, 4);
   }
 
-  cout << "\npalette groups\n";
+  // Sort the palette groups into order of preference, so that the
+  // more specific ones appear at the bottom.
+  vector<PaletteGroup *> sorted_groups;
   Groups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    PaletteGroup *group = (*gi).second;
-    if (gi != _groups.begin()) {
+    sorted_groups.push_back((*gi).second);
+  }
+  sort(sorted_groups.begin(), sorted_groups.end(),
+       SortGroupsByPreference());
+       
+  cout << "\npalette groups\n";
+  vector<PaletteGroup *>::iterator si;
+  for (si = sorted_groups.begin(); si != sorted_groups.end(); ++si) {
+    PaletteGroup *group = (*si);
+    if (si != sorted_groups.begin()) {
       cout << "\n";
     }
-    cout << "  " << group->get_name() << ": "
+    cout << "  " << group->get_name() << " (" 
+	 << group->get_dirname_order() << ","
+	 << group->get_dependency_order() << "): "
 	 << group->get_groups() << "\n";
     group->write_image_info(cout, 4);
   }

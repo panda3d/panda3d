@@ -119,8 +119,9 @@ assign_groups() {
     
     // Now, find the group that will satisfy the most egg files.  If
     // two groups satisfy the same number of egg files, choose (a) the
-    // most specific one, i.e. with the lowest dependency_level value,
-    // and (b) the one that has the fewest egg files sharing it.
+    // most specific one, i.e. with the lowest dirname_level, or the
+    // lowest dependency_level if the dirname_levels are equal, and
+    // (b) the one that has the fewest egg files sharing it.
     nassertv(!total.empty());
     PaletteGroups::iterator gi = total.begin();
     PaletteGroup *best = (*gi);
@@ -135,12 +136,8 @@ assign_groups() {
       if (group_egg_count != best_egg_count) {
 	prefer_group = (group_egg_count > best_egg_count);
 
-      } else if (group->get_dependency_level() != best->get_dependency_level()){ 
-	prefer_group = 
-	  (group->get_dependency_level() < best->get_dependency_level());
-
       } else {
-	prefer_group = (group->get_egg_count() < best->get_egg_count());
+	prefer_group = group->is_preferred_over(*best);
       }
 
       if (prefer_group) {
@@ -173,8 +170,8 @@ assign_groups() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::get_groups
 //       Access: Public
-//  Description: Once get_groups() has been called, this returns the
-//               actual set of groups the TextureImage has been
+//  Description: Once assign_groups() has been called, this returns
+//               the actual set of groups the TextureImage has been
 //               assigned to.
 ////////////////////////////////////////////////////////////////////
 const PaletteGroups &TextureImage::
@@ -632,6 +629,25 @@ write_source_pathnames(ostream &out, int indent_level) const {
       out << "\n";
     }
   }
+
+  // Now write out the group assignments.
+  if (!_egg_files.empty()) {
+    indent(out, indent_level)
+      << "Used by:\n";
+    EggFiles::const_iterator ei;
+    for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
+      EggFile *egg = (*ei);
+      indent(out, indent_level + 2)
+	<< egg->get_name() << " (" 
+	<< egg->get_explicit_groups() << ")\n";
+    }
+  }
+  if (!_explicitly_assigned_groups.empty()) {
+    indent(out, indent_level)
+      << "Explicitly assigned to " << _explicitly_assigned_groups << " in .txa\n";
+  }
+  indent(out, indent_level)
+    << "Assigned to " << _actual_assigned_groups << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -53,6 +53,9 @@ public:
   bool set_dependency_order();
   int get_dependency_level() const;
   int get_dependency_order() const;
+  int get_dirname_order() const;
+
+  bool is_preferred_over(const PaletteGroup &other) const;
 
   void increment_egg_count();
   int get_egg_count() const;
@@ -77,6 +80,7 @@ private:
   PaletteGroups _dependent;
   int _dependency_level;
   int _dependency_order;
+  int _dirname_order;
 
   typedef set<TexturePlacement *> Placements;
   Placements _placements;
