@@ -43,6 +43,7 @@ public:
     DM_right_margin,
     DM_guide_bar,
     DM_new_guide_bar,
+    DM_sizing,
   };
 
 public:
@@ -78,6 +79,10 @@ protected:
   virtual void additional_graph_window_paint(HDC hdc);
   virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
                                        int width, int height);
+  virtual void set_drag_mode(DragMode drag_mode);
+
+  virtual void move_graph_window(int graph_left, int graph_top,
+                                 int graph_xsize, int graph_ysize);
 
 protected:
   // Table of brushes for our various collectors.
@@ -119,8 +124,6 @@ protected:
 private:
   void setup_bitmap(int xsize, int ysize);
   void release_bitmap();
-  void move_graph_window(int graph_left, int graph_top,
-                         int graph_xsize, int graph_ysize);
   void create_graph_window();
   static void register_graph_window_class(HINSTANCE application);
 

@@ -451,6 +451,8 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
     now_i++;
   }
 
+  then = max(then, thread_data->get_frame(then_i).get_start());
+
   // Sum up a weighted average of all of the individual frames we
   // pass.
 

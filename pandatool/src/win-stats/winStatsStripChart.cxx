@@ -24,6 +24,12 @@
 static const int default_strip_chart_width = 400;
 static const int default_strip_chart_height = 100;
 
+// Surely we aren't expected to hardcode the size of a normal
+// checkbox.  But Windows seems to require this data to be passed to
+// CreateWindow(), so what else can I do?
+size_t WinStatsStripChart::_check_box_height = 13;
+size_t WinStatsStripChart::_check_box_width = 13;
+
 bool WinStatsStripChart::_window_class_registered = false;
 const char * const WinStatsStripChart::_window_class_name = "strip";
 
@@ -53,6 +59,8 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
     // Let's show the units on the guide bar labels.  There's room.
     set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
   }
+
+  _smooth_check_box = 0;
 
   create_window();
   clear_region();
@@ -369,9 +377,21 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
     if (_potential_drag_mode == DM_new_guide_bar) {
-      _drag_mode = DM_new_guide_bar;
+      set_drag_mode(DM_new_guide_bar);
       SetCapture(_graph_window);
       return 0;
+    }
+    break;
+
+  case WM_COMMAND:
+    switch (LOWORD(wparam)) {
+    case BN_CLICKED:
+      if ((HWND)lparam == _smooth_check_box) {
+        int result = SendMessage(_smooth_check_box, BM_GETCHECK, 0, 0);
+        set_average_mode(result == BST_CHECKED);
+        return 0;
+      }
+      break;
     }
     break;
 
@@ -392,14 +412,14 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
     if (_potential_drag_mode == DM_none) {
-      _drag_mode = DM_scale;
+      set_drag_mode(DM_scale);
       PN_int16 y = HIWORD(lparam);
       _drag_scale_start = pixel_to_height(y);
       SetCapture(_graph_window);
       return 0;
 
     } else if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
-      _drag_mode = DM_guide_bar;
+      set_drag_mode(DM_guide_bar);
       PN_int16 y = HIWORD(lparam);
       _drag_start_y = y;
       SetCapture(_graph_window);
@@ -442,7 +462,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // mouse comes within the graph's region.
       PN_int16 y = HIWORD(lparam);
       if (y >= 0 && y < get_ysize()) {
-        _drag_mode = DM_guide_bar;
+        set_drag_mode(DM_guide_bar);
         _drag_guide_bar = add_user_guide_bar(pixel_to_height(y));
         return 0;
       }
@@ -461,7 +481,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_LBUTTONUP:
     if (_drag_mode == DM_scale) {
-      _drag_mode = DM_none;
+      set_drag_mode(DM_none);
       ReleaseCapture();
       return 0;
 
@@ -472,7 +492,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       } else {
         move_user_guide_bar(_drag_guide_bar, pixel_to_height(y));
       }
-      _drag_mode = DM_none;
+      set_drag_mode(DM_none);
       ReleaseCapture();
       return 0;
     }
@@ -538,6 +558,12 @@ additional_window_paint(HDC hdc) {
   TextOut(hdc, rect.right - _right_margin, _top_margin,
           _net_value_text.data(), _net_value_text.length()); 
 
+  // Also draw the "Smooth" label on the check box.  This isn't part
+  // of the check box itself, because doing that doesn't use the right
+  // font!  Surely this isn't the correct Windows(tm) way to do this
+  // sort of thing, but I don't know any better for now.
+  SetTextAlign(hdc, TA_LEFT | TA_BOTTOM);
+  TextOut(hdc, _left_margin + _check_box_width + 2, _top_margin, "Smooth", 6);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -585,6 +611,52 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
   }
 
   return WinStatsGraph::consider_drag_start(mouse_x, mouse_y, width, height);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::set_drag_mode
+//       Access: Protected, Virtual
+//  Description: This should be called whenever the drag mode needs to
+//               change state.  It provides hooks for a derived class
+//               to do something special.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+set_drag_mode(WinStatsGraph::DragMode drag_mode) {
+  WinStatsGraph::set_drag_mode(drag_mode);
+
+  switch (_drag_mode) {
+  case DM_scale:
+  case DM_left_margin:
+  case DM_right_margin:
+  case DM_sizing:
+    // Disable smoothing for these expensive operations.
+    set_average_mode(false);
+    break;
+
+  default:
+    // Restore smoothing according to the current setting of the check
+    // box.
+    int result = SendMessage(_smooth_check_box, BM_GETCHECK, 0, 0);
+    set_average_mode(result == BST_CHECKED);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::move_graph_window
+//       Access: Protected, Virtual
+//  Description: Repositions the graph child window within the parent
+//               window according to the _margin variables.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysize) {
+  WinStatsGraph::move_graph_window(graph_left, graph_top, graph_xsize, graph_ysize);
+  if (_smooth_check_box != 0) {
+    SetWindowPos(_smooth_check_box, 0, 
+                 _left_margin, _top_margin - _check_box_height - 1,
+                 0, 0,
+                 SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW);
+    InvalidateRect(_smooth_check_box, NULL, TRUE);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -706,6 +778,12 @@ create_window() {
 
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
   setup_label_stack();
+
+  _smooth_check_box = 
+    CreateWindow("BUTTON", "",
+                 WS_CHILD | BS_AUTOCHECKBOX,
+                 0, 0, _check_box_width, _check_box_height,
+                 _window, NULL, application, 0);
 
   // Ensure that the window is on top of the stack.
   SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0, 

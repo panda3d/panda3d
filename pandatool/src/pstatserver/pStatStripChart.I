@@ -137,7 +137,7 @@ INLINE void PStatStripChart::
 set_average_mode(bool average_mode) {
   if (_average_mode != average_mode) {
     _average_mode = average_mode;
-    force_reset();
+    force_redraw();
   }
 }
 

@@ -289,6 +289,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     InvalidateRect(hwnd, NULL, TRUE);
     break;
 
+  case WM_SIZING:
+    set_drag_mode(DM_sizing);
+    break;
+
+  case WM_EXITSIZEMOVE:
+    set_drag_mode(DM_none);
+    break;
+
   case WM_SETCURSOR:
     {
       // Why is it so hard to ask for the cursor position within the
@@ -324,7 +332,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_LBUTTONDOWN:
     if (_potential_drag_mode != DM_none) {
-      _drag_mode = _potential_drag_mode;
+      set_drag_mode(_potential_drag_mode);
       _drag_start_x = (PN_int16)LOWORD(lparam);
       _drag_start_y = (PN_int16)HIWORD(lparam);
       SetCapture(_window);
@@ -350,7 +358,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_LBUTTONUP:
-    _drag_mode = DM_none;
+    set_drag_mode(DM_none);
     ReleaseCapture();
     break;
 
@@ -420,7 +428,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_LBUTTONUP:
-    _drag_mode = DM_none;
+    set_drag_mode(DM_none);
     ReleaseCapture();
     break;
 
@@ -491,6 +499,43 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::set_drag_mode
+//       Access: Protected, Virtual
+//  Description: This should be called whenever the drag mode needs to
+//               change state.  It provides hooks for a derived class
+//               to do something special.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+set_drag_mode(WinStatsGraph::DragMode drag_mode) {
+  _drag_mode = drag_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::move_graph_window
+//       Access: Protected, Virtual
+//  Description: Repositions the graph child window within the parent
+//               window according to the _margin variables.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysize) {
+  if (_graph_window == 0) {
+    create_graph_window();
+  }
+
+  _graph_left = graph_left;
+  _graph_top = graph_top;
+
+  SetWindowPos(_graph_window, 0, 
+               _graph_left, _graph_top,
+               graph_xsize, graph_ysize,
+               SWP_NOZORDER | SWP_SHOWWINDOW);
+
+  if (graph_xsize != _bitmap_xsize || graph_ysize != _bitmap_ysize) {
+    setup_bitmap(graph_xsize, graph_ysize);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::setup_bitmap
 //       Access: Private
 //  Description: Sets up a backing-store bitmap of the indicated size.
@@ -527,31 +572,6 @@ release_bitmap() {
   if (_bitmap_dc) {
     DeleteDC(_bitmap_dc);
     _bitmap_dc = 0;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::move_graph_window
-//       Access: Private
-//  Description: Repositions the graph child window within the parent
-//               window according to the _margin variables.
-////////////////////////////////////////////////////////////////////
-void WinStatsGraph::
-move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysize) {
-  if (_graph_window == 0) {
-    create_graph_window();
-  }
-
-  _graph_left = graph_left;
-  _graph_top = graph_top;
-
-  SetWindowPos(_graph_window, 0, 
-               _graph_left, _graph_top,
-               graph_xsize, graph_ysize,
-               SWP_NOZORDER | SWP_SHOWWINDOW);
-
-  if (graph_xsize != _bitmap_xsize || graph_ysize != _bitmap_ysize) {
-    setup_bitmap(graph_xsize, graph_ysize);
   }
 }
 

@@ -229,7 +229,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
     if (_potential_drag_mode == DM_new_guide_bar) {
-      _drag_mode = DM_new_guide_bar;
+      set_drag_mode(DM_new_guide_bar);
       SetCapture(_graph_window);
       return 0;
     }
@@ -252,14 +252,14 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
     if (_potential_drag_mode == DM_none) {
-      _drag_mode = DM_scale;
+      set_drag_mode(DM_scale);
       PN_int16 x = LOWORD(lparam);
       _drag_scale_start = pixel_to_height(x);
       SetCapture(_graph_window);
       return 0;
 
     } else if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
-      _drag_mode = DM_guide_bar;
+      set_drag_mode(DM_guide_bar);
       PN_int16 x = LOWORD(lparam);
       _drag_start_x = x;
       SetCapture(_graph_window);
@@ -302,7 +302,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // mouse comes within the graph's region.
       PN_int16 x = LOWORD(lparam);
       if (x >= 0 && x < get_xsize()) {
-        _drag_mode = DM_guide_bar;
+        set_drag_mode(DM_guide_bar);
         _drag_guide_bar = add_user_guide_bar(pixel_to_height(x));
         return 0;
       }
@@ -321,7 +321,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_LBUTTONUP:
     if (_drag_mode == DM_scale) {
-      _drag_mode = DM_none;
+      set_drag_mode(DM_none);
       ReleaseCapture();
       return 0;
 
@@ -332,7 +332,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       } else {
         move_user_guide_bar(_drag_guide_bar, pixel_to_height(x));
       }
-      _drag_mode = DM_none;
+      set_drag_mode(DM_none);
       ReleaseCapture();
       return 0;
     }

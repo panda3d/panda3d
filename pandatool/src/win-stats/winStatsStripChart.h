@@ -66,6 +66,9 @@ protected:
   virtual void additional_graph_window_paint(HDC hdc);
   virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
                                        int width, int height);
+  virtual void set_drag_mode(DragMode drag_mode);
+  virtual void move_graph_window(int graph_left, int graph_top,
+                                 int graph_xsize, int graph_ysize);
 
 private:
   void draw_guide_bar(HDC hdc, int from_x, int to_x, const GuideBar &bar);
@@ -77,6 +80,9 @@ private:
 
   int _brush_origin;
   string _net_value_text;
+
+  HWND _smooth_check_box;
+  static size_t _check_box_height, _check_box_width;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;
