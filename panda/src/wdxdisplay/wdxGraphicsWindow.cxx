@@ -890,7 +890,7 @@ dx_setup() {
 
         if(memleft < RESERVEDTEXVIDMEM) {
             dwFullScreenBitDepth=16;
-            wdxdisplay_cat.debug() << "wdxGraphicsWindow:: using 16bpp rendertargets to save tex vidmem\n";
+            wdxdisplay_cat.debug() << "using 16bpp rendertargets to save tex vidmem\n";
             assert((dwSupportedBitDepthMask & DDBD_16) && (d3ddevs[0].dwDeviceRenderBitDepth & DDBD_16));   // probably a safe assumption
             rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
             memleft = dwFree-rendertargetmem*2;
@@ -912,7 +912,7 @@ dx_setup() {
 
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
             wdxdisplay_cat.fatal()
-            << "wdxGraphicsWindow::config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+            << "config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
@@ -920,15 +920,15 @@ dx_setup() {
         // so we do it, it really shouldnt be necessary if drivers werent buggy
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
             wdxdisplay_cat.fatal()
-            << "wdxGraphicsWindow::config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+            << "config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
         if(FAILED(hr = pDD->TestCooperativeLevel())) {
             wdxdisplay_cat.fatal()
-            << "wdxGraphicsWindow::config() - TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+            << "config() - TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
             wdxdisplay_cat.fatal()
-            << "wdxGraphicsWindow::config() - Full screen app failed to get exclusive mode on init, exiting..\n";
+            << "config() - Full screen app failed to get exclusive mode on init, exiting..\n";
             exit(1);
         }
 
@@ -938,10 +938,15 @@ dx_setup() {
             exit(1);
         }
 
+       if(wdxdisplay_cat.is_debug()) {
+           DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd34); 
+           pDD->GetDisplayMode(&ddsd34);
+           wdxdisplay_cat.debug() << "set displaymode to " << ddsd34.dwWidth << "x" << ddsd34.dwHeight << " at "<< ddsd34.ddpfPixelFormat.dwRGBBitCount << "bpp, " << ddsd34.dwRefreshRate<< "Hz\n";
+       }
+
 #ifdef _DEBUG
-        wdxdisplay_cat.debug() << "wdxGraphicsWindow::setting displaymode to " << dwRenderWidth << "x" << dwRenderHeight << " at "<< dwFullScreenBitDepth  << "bpp" <<endl;
         if(FAILED(  hr = pDD->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
-            wdxdisplay_cat.debug() << "wdxGraphicsWindow::GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
         wdxdisplay_cat.debug() << "after FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
