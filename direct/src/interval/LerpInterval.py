@@ -65,6 +65,9 @@ class LerpPosInterval(LerpInterval):
             if callable(pos):
                 # This may be a thunk that returns a point.
                 pos = pos()
+            # Make a our own copy of the parameters:
+            if (pos != None): pos=Point3(pos)
+            if (startPos != None): startPos=Point3(startPos)
             if (other != None):
                 # lerp wrt other
                 if (startPos == None):
@@ -97,6 +100,9 @@ class LerpHprInterval(LerpInterval):
             if callable(hpr):
                 # This may be a thunk that returns a point.
                 hpr = hpr()
+            # Make a our own copy of the parameters:
+            if (hpr != None): hpr=VBase3(hpr)
+            if (startHpr != None): startHpr=VBase3(startHpr)
             if (other != None):
                 # lerp wrt other
                 if (startHpr == None):
@@ -130,6 +136,9 @@ class LerpScaleInterval(LerpInterval):
             if callable(scale):
                 # This may be a thunk that returns a point.
                 scale = scale()
+            # Make a our own copy of the parameters:
+            if (scale != None): scale=VBase3(scale)
+            if (startScale != None): startScale=VBase3(startScale)
             if (other != None):
                 # lerp wrt other
                 if (startScale == None):
@@ -167,6 +176,11 @@ class LerpPosHprInterval(LerpInterval):
             if callable(hpr):
                 # This may be a thunk that returns a point.
                 hpr = hpr()
+            # Make a our own copy of the parameters:
+            if (pos != None): pos=Point3(pos)
+            if (hpr != None): hpr=VBase3(hpr)
+            if (startPos != None): startPos=Point3(startPos)
+            if (startHpr != None): startHpr=VBase3(startHpr)
             if (other != None):
                 # lerp wrt other
                 if (startPos == None):
@@ -214,6 +228,11 @@ class LerpHprScaleInterval(LerpInterval):
             if callable(scale):
                 # This may be a thunk that returns a point.
                 scale = scale()
+            # Make a our own copy of the parameters:
+            if (hpr != None): hpr=VBase3(hpr)
+            if (scale != None): scale=VBase3(scale)
+            if (startHpr != None): startHpr=VBase3(startHpr)
+            if (startScale != None): startScale=VBase3(startScale)
             if (other != None):
                 # lerp wrt other
                 if (startHpr == None):
@@ -264,6 +283,13 @@ class LerpPosHprScaleInterval(LerpInterval):
             if callable(scale):
                 # This may be a thunk that returns a point.
                 scale = scale()
+            # Make a our own copy of the parameters:
+            if (pos != None): pos=Point3(pos)
+            if (hpr != None): hpr=VBase3(hpr)
+            if (scale != None): scale=VBase3(scale)
+            if (startPos != None): startPos=Point3(startPos)
+            if (startHpr != None): startHpr=VBase3(startHpr)
+            if (startScale != None): startScale=VBase3(startScale)
             if (other != None):
                 # lerp wrt other
                 if (startPos == None):
@@ -310,6 +336,9 @@ class LerpColorScaleInterval(LerpInterval):
             if callable(startColor):
                 # This may be a thunk that returns a point.
                 startColor = startColor()
+            # Make a our own copy of the parameters:
+            if (startColor != None): startColor=VBase4(startColor)
+            if (endColor != None): endColor=VBase4(endColor)
             if (other != None):
                 functor = ColorScaleLerpFunctor(node, startColor, endColor, other)
             else:
@@ -341,6 +370,9 @@ class LerpColorInterval(LerpInterval):
             if callable(startColor):
                 # This may be a thunk that returns a point.
                 startColor = startColor()
+            # Make a our own copy of the parameters:
+            if (startColor != None): startColor=VBase4(startColor)
+            if (endColor != None): endColor=VBase4(endColor)
             if (other != None):
                 functor = ColorLerpFunctor(node, startColor, endColor, other)
             else:
