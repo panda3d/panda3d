@@ -39,6 +39,7 @@ protected:
 private:
   bool _has_egg_flatten;
   int _egg_flatten;
+  bool _egg_suppress_hidden;
   bool _ls;
   bool _has_compression_quality;
   int _compression_quality;

@@ -50,9 +50,6 @@ get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
 
   MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
   if (!status) {
-    maya_cat.debug()
-      << "Object " << node_fn.name() << " does not support attribute "
-      << attribute_name << "\n";
     return false;
   }
 
