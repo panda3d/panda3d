@@ -547,6 +547,7 @@ void GraphicsWindow::
 close_window() {
   display_cat.info()
     << "Closing " << get_type() << "\n";
+  _is_valid = false;
 }
 
 ////////////////////////////////////////////////////////////////////
