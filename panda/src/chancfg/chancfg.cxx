@@ -130,7 +130,7 @@ INLINE bool ConfigDefined(std::string sym) {
     (WindowDB->find(sym) != WindowDB->end());
 }
 
-typedef std::pvector<SetupItem> SVec;
+typedef pvector<SetupItem> SVec;
 
 bool ChanCheckLayouts(SetupSyms& S) {
   if (S.empty())

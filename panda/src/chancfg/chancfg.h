@@ -72,7 +72,7 @@ private:
     INLINE void setString(const std::string& v) { _str = v; }
     INLINE std::string getString(void) const { return _str; }
   };
-  typedef std::pmap<Field, Types> Fields;
+  typedef pmap<Field, Types> Fields;
   Fields _fields;
 public:
   ChanCfgOverrides(void);

@@ -88,7 +88,7 @@ public:
   INLINE Orientation getOrientation(void) const;
 };
 
-typedef std::pmap<std::string, SetupItem> SetupType;
+typedef pmap<std::string, SetupItem> SetupType;
 
 extern SetupType* SetupDB;
 

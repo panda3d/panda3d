@@ -28,7 +28,7 @@
 #include "chanviewport.h"
 
 
-typedef std::pvector<ChanViewport> LayoutRegionVec;
+typedef pvector<ChanViewport> LayoutRegionVec;
 
 class LayoutItem {
 private:
@@ -46,7 +46,7 @@ public:
   INLINE const ChanViewport& operator[](int);
 };
 
-typedef std::pmap<std::string, LayoutItem> LayoutType;
+typedef pmap<std::string, LayoutItem> LayoutType;
 
 extern LayoutType* LayoutDB;
 

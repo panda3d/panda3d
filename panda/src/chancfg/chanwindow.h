@@ -53,7 +53,7 @@ public:
   INLINE SetupSyms getSetups(void) const;
 };
 
-typedef std::pmap<std::string, WindowItem> WindowType;
+typedef pmap<std::string, WindowItem> WindowType;
 
 extern WindowType* WindowDB;
 

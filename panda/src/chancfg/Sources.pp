@@ -6,12 +6,17 @@
   #define LOCAL_LIBS \
     putil display sgattrib linmath graph sgraph gobj display gsgbase \
     mathutil
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-    chancfg.I chancfg.N chancfg.cxx chancfg.h chanlayout.I \
-    chanlayout.cxx chanlayout.h chanparse.I chanparse.cxx chanparse.h \
-    chansetup.I chansetup.cxx chansetup.h chanwindow.I chanwindow.cxx \
-    chanwindow.h
+    chancfg.I chancfg.N chancfg.h chanlayout.I \
+    chanlayout.h chanparse.I chanparse.h \
+    chansetup.I chansetup.h chanwindow.I chanwindow.h
+    
+  #define INCLUDED_SOURCES \
+    chancfg.cxx chanlayout.cxx chanparse.cxx  \
+     chansetup.cxx chanwindow.cxx
 
   #define INSTALL_HEADERS \
     chancfg.I chancfg.h chanlayout.I chanlayout.h chansetup.I \
@@ -21,7 +26,7 @@
   #define INSTALL_CONFIG \
     layout_db setup_db window_db
 
-  #define PRECOMPILED_HEADER chancfg_headers.h 
+//  #define PRECOMPILED_HEADER chancfg_headers.h 
 
   #define IGATESCAN chancfg.h
 
