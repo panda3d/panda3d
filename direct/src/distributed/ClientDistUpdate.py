@@ -36,23 +36,17 @@ class ClientDistUpdate:
         return None
 
     def updateField(self, cdc, do, di):
-        # Look up the class
-        #aClass = eval(cdc.name + "." + cdc.name)
-        # Look up the function
-        #assert(aClass.__dict__.has_key(self.name))
-        #func = aClass.__dict__[self.name]
 
-        # HACK HACK HACK HACK!!!!!
-        try:
-            do.LocalToon_initialized
-        except:
-            func = eval(cdc.name + "." + cdc.name + "." + self.name)
-            print("Calling: " + cdc.name + "." + cdc.name + "." + self.name +
-                  " for do " + str(do.getDoId()))
-            # Get the arguments into a list
-            args = self.extractArgs(di)
-            # Apply the function to the object with the arguments
-            apply(func, [do] + args)
+        func = eval(cdc.name + "." + cdc.name + "." + self.name)
+        #print("Calling: " + cdc.name + "." + cdc.name + "." + self.name +
+        #      " for do " + str(do.getDoId()))
+
+        # Get the arguments into a list
+        args = self.extractArgs(di)
+
+        # Apply the function to the object with the arguments
+        apply(func, [do] + args)
+
         return None
 
     def extractArgs(self, di):

@@ -16,8 +16,12 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         return None
 
     def disable(self):
-        self.reparent(hidden)
+        self.reparentTo(hidden)
         DistributedObject.DistributedObject.disable(self)
+
+    def delete(self):
+        self.reparentTo(hidden)
+        DistributedObject.DistributedObject.delete(self)
 
     def d_setPos(self, x, y, z):
         self.sendUpdate("setPos", [x, y, z])

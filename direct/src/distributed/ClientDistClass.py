@@ -45,7 +45,7 @@ class ClientDistClass:
         for i in allCDU:
             atom = i.field.asAtomicField()
             if atom:
-                if atom.isRequired():
+                if (atom.isRequired() and atom.isBroadcast()):
                     requiredCDU.append(i)
         return requiredCDU
 

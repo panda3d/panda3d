@@ -45,10 +45,15 @@ class ClientRepository(DirectObject.DirectObject):
         self.qcm=QueuedConnectionManager()
         self.tcpConn = self.qcm.openTCPClientConnection(
             serverName, serverPort, 1000)
-        self.qcr=QueuedConnectionReader(self.qcm, 0)
-        self.qcr.addConnection(self.tcpConn)
-        self.cw=ConnectionWriter(self.qcm, 0)
-        self.startReaderPollTask()
+        # Test for bad connection
+        if self.tcpConn == None:
+            return None
+        else:
+            self.qcr=QueuedConnectionReader(self.qcm, 0)
+            self.qcr.addConnection(self.tcpConn)
+            self.cw=ConnectionWriter(self.qcm, 0)
+            self.startReaderPollTask()
+            return self.tcpConn
 
     def startReaderPollTask(self):
         task = Task.Task(self.readerPollUntilEmpty)
@@ -92,14 +97,22 @@ class ClientRepository(DirectObject.DirectObject):
                                                   doId, di)
         return None
 
-    def generateWithRequiredFields(self, cdc, constructor, doId, di):
-        # Someday, this function will look in a cache of old distributed
-        # objects to see if this object is in there, and pull it
-        # out if necessary. For now, we'll just check to see if
-        # it is in the standard dictionary, and ignore this update
-        # if it is there. The right thing to do would be to update
-        # all the required fields, but that will come later, too.
+    def handleGenerateWithRequiredOther(self, di):
+        # Get the class Id
+        classId = di.getArg(STUint16);
+        # Get the DO Id
+        doId = di.getArg(STUint32)
+        # Look up the cdc
+        cdc = self.number2cdc[classId]
+        # Create a new distributed object, and put it in the dictionary
+        distObj = self.generateWithRequiredOtherFields(cdc,
+                                                       eval(cdc.name + \
+                                                            "." + \
+                                                            cdc.name),
+                                                       doId, di)
+        return None
 
+    def generateWithRequiredFields(self, cdc, constructor, doId, di):
         # Is it in our dictionary? 
         if self.doId2do.has_key(doId):
             # If so, just update it.
@@ -130,6 +143,39 @@ class ClientRepository(DirectObject.DirectObject):
             self.doId2cdc[doId] = cdc
             
         return distObj
+
+    def generateWithRequiredOtherFields(self, cdc, constructor, doId, di):
+        # Is it in our dictionary? 
+        if self.doId2do.has_key(doId):
+            # If so, just update it.
+            distObj = self.doId2do[doId]
+            distObj.updateRequiredOtherFields(cdc, di)
+
+        # Is it in the cache? If so, pull it out, put it in the dictionaries,
+        # and update it.
+        elif self.cache.contains(doId):
+            # If so, pull it out of the cache...
+            distObj = self.cache.retrieve(doId)
+            # put it in both dictionaries...
+            self.doId2do[doId] = distObj
+            self.doId2cdc[doId] = cdc
+            # and update it.
+            distObj.updateRequiredOtherFields(cdc, di)
+
+        # If it is not in the dictionary or the cache, then...
+        else:
+            # Construct a new one
+            distObj = constructor(self)
+            # Assign it an Id
+            distObj.doId = doId
+            # Update the required fields
+            distObj.updateRequiredOtherFields(cdc, di)
+            # Put the new do in both dictionaries
+            self.doId2do[doId] = distObj
+            self.doId2cdc[doId] = cdc
+            
+        return distObj
+
 
     def handleDisable(self, di):
         # Get the DO Id
