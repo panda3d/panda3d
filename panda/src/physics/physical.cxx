@@ -199,12 +199,13 @@ write_angular_forces(ostream &out, unsigned int indent) const {
 void Physical::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
-  out.width(indent); out<<""<<"Physical:\n";
+  out.width(indent); out<<""<<"Physical\n";
   write_physics_objects(out, indent+2);
   write_linear_forces(out, indent+2);
   write_angular_forces(out, indent+2);
   if (_phys_body) {
-    _phys_body->write(out, indent+2);
+    out.width(indent+2); out<<""<<"_phys_body\n";
+    _phys_body->write(out, indent+4);
   } else {
     out.width(indent+2); out<<""<<"_phys_body is null\n";
   }
