@@ -76,6 +76,7 @@ public:
 
   void set_time_units(int unit_mask);
   void set_scroll_speed(float scroll_speed);
+  void set_pause(bool pause);
   
 private:
   void add_graph(WinStatsGraph *graph);
@@ -109,6 +110,7 @@ private:
   string _window_title;
   int _time_units;
   float _scroll_speed;
+  bool _pause;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

@@ -58,6 +58,8 @@ WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
   _drag_mode = DM_none;
   _potential_drag_mode = DM_none;
   _drag_scale_start = 0.0f;
+
+  _pause = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,6 +163,18 @@ set_time_units(int unit_mask) {
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
 set_scroll_speed(float scroll_speed) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::set_pause
+//       Access: Public
+//  Description: Changes the pause flag for the graph.  When this flag
+//               is true, the graph does not update in response to new
+//               data.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+set_pause(bool pause) {
+  _pause = pause;
 }
 
 ////////////////////////////////////////////////////////////////////

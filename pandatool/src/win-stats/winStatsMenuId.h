@@ -36,6 +36,7 @@ enum WinStatsMenuId {
   MI_speed_3,
   MI_speed_6,
   MI_speed_12,
+  MI_pause,
 
   // This one is last and represents the beginning of the range for
   // the various "new chart" menu options.

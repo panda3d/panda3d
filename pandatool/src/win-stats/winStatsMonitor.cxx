@@ -40,9 +40,10 @@ WinStatsMonitor(WinStatsServer *server) : PStatMonitor(server) {
   _menu_bar = 0;
   _options_menu = 0;
 
-  // This is filled in later when the menu is created.
+  // These will be filled in later when the menu is created.
   _time_units = 0;
   _scroll_speed = 0.0;
+  _pause = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -295,6 +296,7 @@ open_strip_chart(int thread_index, int collector_index) {
 
   graph->set_time_units(_time_units);
   graph->set_scroll_speed(_scroll_speed);
+  graph->set_pause(_pause);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -309,6 +311,7 @@ open_piano_roll(int thread_index) {
 
   graph->set_time_units(_time_units);
   graph->set_scroll_speed(_scroll_speed);
+  graph->set_pause(_pause);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,6 +431,33 @@ set_scroll_speed(float scroll_speed) {
   mii.fState = IS_THRESHOLD_EQUAL(_scroll_speed, 12.0, 0.1) ?
     MFS_CHECKED : MFS_UNCHECKED;
   SetMenuItemInfo(_speed_menu, MI_speed_12, FALSE, &mii);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::set_pause
+//       Access: Public
+//  Description: Called when the user selects a pause on or pause off
+//               option from the menu.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+set_pause(bool pause) {
+  _pause = pause;
+
+  // First, change all of the open graphs appropriately.
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    WinStatsGraph *graph = (*gi);
+    graph->set_pause(_pause);
+  }
+
+  // Now change the checkmark on the pulldown menu.
+  MENUITEMINFO mii;
+  memset(&mii, 0, sizeof(mii));
+  mii.cbSize = sizeof(mii);
+  mii.fMask = MIIM_STATE;
+
+  mii.fState = _pause ? MFS_CHECKED : MFS_UNCHECKED;
+  SetMenuItemInfo(_speed_menu, MI_pause, FALSE, &mii);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -587,7 +617,18 @@ setup_speed_menu() {
   mii.dwTypeData = "12";
   InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
 
+  mii.fMask = MIIM_FTYPE; 
+  mii.fType = MFT_SEPARATOR; 
+  InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
+
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_CHECKMARKS | MIIM_STATE;
+  mii.fType = MFT_STRING; 
+  mii.wID = MI_pause;
+  mii.dwTypeData = "pause";
+  InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
+
   set_scroll_speed(3);
+  set_pause(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -725,6 +766,10 @@ handle_menu_command(int menu_id) {
 
   case MI_speed_12:
     set_scroll_speed(12);
+    break;
+
+  case MI_pause:
+    set_pause(!_pause);
     break;
 
   default:
