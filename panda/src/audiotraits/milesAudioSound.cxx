@@ -314,6 +314,16 @@ get_loop_count() const {
 void MilesAudioSound::
 set_time(float time) {
   miles_audio_debug("set_time(time="<<time<<")");
+
+  // Ensure we don't inadvertently run off the end of the sound.
+  float max_time = length();
+  if (time > max_time) {
+    milesAudio_cat.warning()
+      << "set_time(" << time << ") requested for sound of length " 
+      << max_time << "\n";
+    time = max_time;
+  }
+
   S32 milisecond_time=S32(1000*time);
   AIL_quick_set_ms_position(_audio, milisecond_time);
 }

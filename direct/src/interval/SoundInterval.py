@@ -28,13 +28,17 @@ class SoundInterval(Interval.Interval):
         SoundInterval.soundNum += 1
         # Record instance variables
         self.sound = sound
+        if sound:
+            self.soundDuration = sound.length()
+        else:
+            self.soundDuration = 0
         self.fLoop = loop
         self.volume = volume
         self.startTime = startTime
         self.node = node
         # If no duration given use sound's duration as interval's duration
         if float(duration) == 0.0 and self.sound != None:
-            duration = max(self.sound.length() - self.startTime, 0)
+            duration = max(self.soundDuration - self.startTime, 0)
             #if (duration == 0):
             #    self.notify.warning('zero length duration!')
             # MPG - hack for Miles bug
@@ -54,14 +58,17 @@ class SoundInterval(Interval.Interval):
         t1 = t + self.startTime
         if (t1 < 0.1):
             t1 = 0.0
-        base.sfxPlayer.playSfx(self.sound, self.fLoop, 1, self.volume, t1, self.node)
+        if t1 < self.soundDuration:
+            base.sfxPlayer.playSfx(self.sound, self.fLoop, 1, self.volume, t1, self.node)
         self.state = CInterval.SStarted
-        self.currT = t1
+        self.currT = t
 
     def privStep(self, t):
         if self.state == CInterval.SPaused:
             # Restarting from a pause.
-            base.sfxPlayer.playSfx(self.sound, self.fLoop, 1, self.volume, t, self.node)
+            t1 = t + self.startTime
+            if t1 < self.soundDuration:
+                base.sfxPlayer.playSfx(self.sound, self.fLoop, 1, self.volume, t1, self.node)
         self.state = CInterval.SStarted
         self.currT = t
 
