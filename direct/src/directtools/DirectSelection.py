@@ -379,13 +379,16 @@ class DirectBoundingBox:
 
 
 class SelectionQueue(CollisionHandlerQueue):
-    def __init__(self, parent):
+    def __init__(self, fromNP = render):
         # Initialize the superclass
         CollisionHandlerQueue.__init__(self)
-        # Current entry in collision queue
+        # Current index and entry in collision queue
         self.index = -1
-        # Create a collision node path attached to the given parent
-        self.collisionNodePath = parent.attachNewNode( CollisionNode("ray") )
+        self.entry = None
+        self.skipFlags = SKIP_NONE
+        # Create a collision node path attached to the given NP
+        self.collisionNodePath = NodePath(CollisionNode("collisionNP"))
+        self.setFromNP(fromNP)
         # Don't pay the penalty of drawing this collision ray
         self.collisionNodePath.hide()
         self.collisionNode = self.collisionNodePath.node()
@@ -398,6 +401,10 @@ class SelectionQueue(CollisionHandlerQueue):
         # List of objects that can't be selected
         self.unpickable = UNPICKABLE
         # Derived class must add Collider to complete initialization
+
+    def setFromNP(self, fromNP):
+        # Update fromNP
+        self.collisionNodePath.reparentTo(fromNP)
 
     def addCollider(self, collider):
         # Inherited class must call this function to specify collider object
@@ -426,12 +433,18 @@ class SelectionQueue(CollisionHandlerQueue):
         if item in self.unpickable:
             self.unpickable.remove(item)
 
-    def getCurrentEntry(self):
-        if self.index < 0:
-            return None
+    def setCurrentIndex(self, index):
+        if (index < 0) or (index >= self.getNumEntries()):
+            self.index = -1
         else:
-            return self.getEntry(self.index)
-        
+            self.index = index
+
+    def setCurrentEntry(self, entry):
+        self.entry = entry
+
+    def getCurrentEntry(self):
+        return self.entry
+
     def isEntryBackfacing(self, entry):
         # If dot product of collision point surface normal and
         # ray from camera to collision point is positive, we are
@@ -440,10 +453,39 @@ class SelectionQueue(CollisionHandlerQueue):
         v.normalize()
         return v.dot(entry.getFromSurfaceNormal()) >= 0
 
-class NewSelectionRay(SelectionQueue):
-    def __init__(self,parent):
+    def findCollisionEntry(self, skipFlags = SKIP_NONE, startIndex = 0 ):
+        # Init self.index and self.entry
+        self.setCurrentIndex(-1)
+        self.setCurrentEntry(None)
+        # Pick out the closest object that isn't a widget
+        for i in range(startIndex,self.getNumEntries()):
+            entry = self.getEntry(i)
+            nodePath = entry.getIntoNodePath()
+            if (skipFlags & SKIP_HIDDEN) and nodePath.isHidden():
+                # Skip if hidden node
+                pass
+            elif (skipFlags & SKIP_BACKFACE) and self.isEntryBackfacing(entry):
+                # Skip, if backfacing poly
+                pass
+            elif ((skipFlags & SKIP_CAMERA) and
+                  (camera in nodePath.getAncestry())):
+                # Skip if parented to a camera.
+                pass
+            # Can pick unpickable, use the first visible node
+            elif ((skipFlags & SKIP_UNPICKABLE) and
+                  (nodePath.getName() in self.unpickable)):
+                # Skip if in unpickable list
+                pass
+            else:
+                self.setCurrentIndex(i)
+                self.setCurrentEntry(entry)
+                break
+        return self.getCurrentEntry()
+
+class SelectionRay(SelectionQueue):
+    def __init__(self, fromNP = render):
         # Initialize the superclass
-        SelectionQueue.__init__(self, parent)
+        SelectionQueue.__init__(self, fromNP)
         self.addCollider(CollisionRay())
     
     def pick(self, targetNodePath):
@@ -485,37 +527,35 @@ class NewSelectionRay(SelectionQueue):
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
-    def findCollisionEntry(self, skipFlags = SKIP_NONE ):
-        # Init self.index
-        self.index = -1
-        # Pick out the closest object that isn't a widget
-        for i in range(0,self.getNumEntries()):
-            entry = self.getEntry(i)
-            nodePath = entry.getIntoNodePath()
-            if (skipFlags & SKIP_HIDDEN) and nodePath.isHidden():
-                # Skip if hidden node
-                pass
-            elif (skipFlags & SKIP_BACKFACE) and self.isEntryBackfacing(entry):
-                # Skip, if backfacing poly
-                pass
-            elif ((skipFlags & SKIP_CAMERA) and
-                  (camera in nodePath.getAncestry())):
-                # Skip if parented to a camera.
-                pass
-            # Can pick unpickable, use the first visible node
-            elif ((skipFlags & SKIP_UNPICKABLE) and
-                  (nodePath.getName() in self.unpickable)):
-                # Skip if in unpickable list
-                pass
-            else:
-                self.index = i
-                break
-        # Did we hit an object?
-        if(self.index >= 0):
-            # Yes! Find hit point in parent's space
-            hitPt = entry.getFromIntersectionPoint()
-            hitPtDist = Vec3(hitPt).length()
-            return (nodePath, hitPt, hitPtDist)
-        else:
-            return (None, ZERO_POINT, 0)
+
+class SelectionSegment(SelectionQueue):
+    # Like a selection ray but with two endpoints instead of an endpoint
+    # and a direction
+    def __init__(self, fromNP = render, numSegments = 1):
+        # Initialize the superclass
+        SelectionQueue.__init__(self, fromNP)
+        self.colliders = []
+        self.numColliders = 0
+        for i in range(numSegments):
+            self.addCollider(CollisionSegment())
+    
+    def addCollider(self, collider):
+        # Record new collision object
+        self.colliders.append(collider)
+        # Add the collider to the collision Node
+        self.collisionNode.addSolid( collider )
+        self.numColliders += 1
+
+    def pickGeom(self, targetNodePath = render, endPointList = [],
+                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+        self.collideWithGeom()
+        for i in range(min(len(endPointList), self.numColliders)):
+            pointA, pointB = endPointList[i]
+            collider = self.colliders[i]
+            collider.setPointA( pointA )
+            collider.setPointB( pointB )
+        self.ct.traverse( targetNodePath )
+        # self.sortEntries()
+        # Determine collision entry
+        return self.findCollisionEntry(skipFlags)
 

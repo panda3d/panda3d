@@ -101,9 +101,7 @@ class DirectCameraControl(PandaObject):
             skipFlags = SKIP_HIDDEN | SKIP_BACKFACE
             # Skip camera (and its children), unless control key is pressed
             skipFlags |= SKIP_CAMERA * (1 - base.getControl())
-            nodePath, hitPt, hitPtDist = direct.iRay.pickGeom(
-                skipFlags = skipFlags)
-            self.computeCOA(nodePath, hitPt, hitPtDist)
+            self.computeCOA(direct.iRay.pickGeom(skipFlags = skipFlags))
             # Record reference point
             self.coaMarkerRef.iPosHprScale(base.cam)
             # Record entries
@@ -307,7 +305,7 @@ class DirectCameraControl(PandaObject):
                 self.cqEntries = self.cqEntries[:-1]
                 self.pickNextCOA()
 
-    def computeCOA(self, nodePath, hitPt, hitPtDist):
+    def computeCOA(self, entry):
         coa = Point3(0)
         dr = direct.drList.getCurrentDr()
         if self.fLockCOA:
@@ -316,9 +314,11 @@ class DirectCameraControl(PandaObject):
             coa.assign(self.coaMarker.getPos(direct.camera))
             # Reset hit point count
             self.nullHitPointCount = 0
-        elif nodePath:
+        elif entry:
             # Got a hit point (hit point is in camera coordinates)
             # Set center of action
+            hitPt = entry.getFromIntersectionPoint()
+            hitPtDist = Vec3(hitPt).length()
             coa.assign(hitPt)
             # Handle case of bad coa point (too close or too far)
             if ((hitPtDist < (1.1 * dr.near)) or

@@ -40,14 +40,14 @@ class DirectManipulationControl(PandaObject):
         # Start out in select mode
         self.mode = 'select'
         # Check for a widget hit point
-        nodePath, hitPt, hitPtDist = direct.iRay.pickWidget()
+        entry = direct.iRay.pickWidget()
         # Did we hit a widget?
-        if nodePath:
+        if entry:
             # Yes!
-            self.hitPt.assign(hitPt)
-            self.hitPtDist = hitPtDist
+            self.hitPt.assign(entry.getFromIntersectionPoint())
+            self.hitPtDist = Vec3(self.hitPt).length()
             # Constraint determined by nodes name
-            self.constraint = nodePath.getName()
+            self.constraint = entry.getIntoNodePath().getName()
         else:
             # Nope, off the widget, no constraint
             self.constraint = None
@@ -90,14 +90,13 @@ class DirectManipulationControl(PandaObject):
             skipFlags = SKIP_HIDDEN | SKIP_BACKFACE
             # Skip camera (and its children), unless control key is pressed
             skipFlags |= SKIP_CAMERA * (1 - base.getControl())
-            nodePath, hitPt, hitPtDist = direct.iRay.pickGeom(
-                skipFlags = skipFlags)
-            if nodePath:
+            entry = direct.iRay.pickGeom(skipFlags = skipFlags)
+            if entry:
                 # Record hit point information
-                self.hitPt.assign(hitPt)
-                self.hitPtDist = hitPtDist
+                self.hitPt.assign(entry.getFromIntersectionPoint())
+                self.hitPtDist = Vec3(self.hitPt).length()
                 # Select it
-                direct.select(nodePath, direct.fShift)
+                direct.select(entry.getIntoNodePath(), direct.fShift)
             else:
                 direct.deselectAll()
         else:
@@ -484,16 +483,17 @@ class DirectManipulationControl(PandaObject):
     def plantSelectedNodePath(self):
         """ Move selected object to intersection point of cursor on scene """
         # Check for intersection
-        nodePath, hitPt, hitPtDist = direct.iRay.pickGeom(
+        entry = direct.iRay.pickGeom(
             skipFlags = SKIP_HIDDEN | SKIP_BACKFACE | SKIP_CAMERA)
         # MRM: Need to handle moving COA
-        if (nodePath != None) and (direct.selected.last != None):
+        if (entry != None) and (direct.selected.last != None):
             # Record undo point
             direct.pushUndo(direct.selected)
             # Record wrt matrix
             direct.selected.getWrtAll()
             # Move selected
-            direct.widget.setPos(direct.camera, hitPt)
+            direct.widget.setPos(
+                direct.camera,entry.getFromIntersectionPoint())
             # Move all the selected objects with widget
             # Move the objects with the widget
             direct.selected.moveWrtWidgetAll()

@@ -784,7 +784,7 @@ class DisplayRegionContext(PandaObject):
         DisplayRegionContext.regionCount += 1
         self.camLens.setChangeEvent(changeEvent)
         self.accept(changeEvent, self.camUpdate)
-        self.iRay = NewSelectionRay(self.cam)
+        self.iRay = SelectionRay(self.cam)
         self.nearVec = Vec3(0)
         self.mouseX = 0.0
         self.mouseY = 0.0
