@@ -327,8 +327,8 @@ $[varname] = $[osfilename $[sources]]
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]  
 $[target] : $[sources] "$[dtool_ver_dir]\version.rc"
     //  first generate builddate for rc compiler
-	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[dtool_ver_dir]\verdate.h"
-	rc /n /fo"$[ver_resource]" $[filter /D%, $[flags]] "$[dtool_ver_dir]\version.rc"
+	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[TEMP]\verdate.h"
+	rc /n /I$[TEMP] /fo"$[ver_resource]" $[filter /D%, $[flags]] "$[dtool_ver_dir]\version.rc"
 	rm -f "$[dtool_ver_dir]\verdate.h"
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
