@@ -6,15 +6,22 @@ import Mopath
 
 class MopathInterval(Interval):
 
+    mopathNum = 1
+
     # special methods
     
-    def __init__(self, name, mopath, node):
-        """__init__(name, mopath, node)
+    def __init__(self, mopath, node, name=None):
+        """__init__(mopath, node, name)
         """
 	self.node = node	
 	self.mopath = mopath 
 	duration = self.mopath.getMaxT()
-	Interval.__init__(self, name, duration)
+	if (name == None):
+	    n = 'Mopath-%d' % self.mopathNum
+	    self.mopathNum = self.mopathNum + 1
+	else:
+	    n = name
+	Interval.__init__(self, n, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t)

@@ -5,15 +5,22 @@ from Interval import *
 
 class PosHprInterval(Interval):
 
+    posHprNum = 1
+
     # special methods
     
-    def __init__(self, name, node, pos, hpr, duration):
-        """__init__(name, node, pos, hpr, duration)
+    def __init__(self, node, pos, hpr, duration, name=None):
+        """__init__(node, pos, hpr, duration, name)
         """
 	self.node = node
 	self.pos = pos
 	self.hpr = hpr
-	Interval.__init__(self, name, duration)
+	if (name == None):
+	    n = 'PosHpr-%d' % self.posHprNum
+	    self.posHprNum = self.posHprNum + 1
+	else:
+	    n = name
+	Interval.__init__(self, n, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t)
@@ -24,14 +31,21 @@ class PosHprInterval(Interval):
 
 class PosInterval(Interval):
 
+    posNum = 1
+
     # special methods
     
-    def __init__(self, name, node, pos, duration):
-        """__init__(name, node, pos, duration)
+    def __init__(self, node, pos, duration, name=None):
+        """__init__(node, pos, duration, name)
         """
 	self.node = node
 	self.pos = pos
-	Interval.__init__(name, duration)
+	if (name == None):
+	    n = 'Pos-%d' % self.posNum
+	    self.posNum = self.posNum + 1
+	else:
+	    n = name
+	Interval.__init__(n, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t)
@@ -42,14 +56,21 @@ class PosInterval(Interval):
 
 class HprInterval(Interval):
 
+    hprNum = 1
+
     # special methods
     
-    def __init__(self, name, node, hpr, duration):
-        """__init__(name, node, hpr, duration)
+    def __init__(self, node, hpr, duration, name=None):
+        """__init__(node, hpr, duration, name)
         """
 	self.node = node
 	self.hpr = hpr 
-	Interval.__init__(name, duration)
+	if (name == None):
+	    n = 'Hpr-%d' % self.hprNum
+	    self.hprNum = self.hprNum + 1
+	else:
+	    n = name
+	Interval.__init__(n, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t)

@@ -14,7 +14,7 @@ class Track(Interval):
 
     # special methods
     
-    def __init__(self, intervalList, name = None):
+    def __init__(self, intervalList, name=None):
         """__init__(intervalList, name)
         """
 	if (name == None):

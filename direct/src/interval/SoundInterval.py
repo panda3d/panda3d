@@ -5,12 +5,13 @@ from Interval import *
 
 class SoundInterval(Interval):
 
+    soundNum = 1
+
     # special methods
     
-    def __init__(self, name, sound, loop=0):
-        """__init__(name, sound, loop)
+    def __init__(self, sound, loop=0, name=None):
+        """__init__(sound, loop, name)
         """
-	self.name = name
 	self.sound = sound
 	duration = self.sound.length() 
 	if (duration == 0.0):
@@ -19,7 +20,12 @@ class SoundInterval(Interval):
 	    duration = 1.0
 	self.loop = loop
 	self.isPlaying = 0
-	Interval.__init__(self, name, duration)
+	if (name == None):
+	    n = 'Sound-%d' % self.soundNum
+	    self.soundNum = self.soundNum + 1
+	else:
+	    n = name
+	Interval.__init__(self, n, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t)

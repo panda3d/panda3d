@@ -43,9 +43,12 @@ class LerpInterval(Interval):
 
 class LerpPosHprInterval(LerpInterval):
 
-    def __init__(self, name, node, pos, hpr, duration, startPos=None,
-		startHpr=None, other=None, blendType='noBlend'): 
-	""" __init__(name, node, pos, hpr, duration, other, blendType)
+    lerpPosHprNum = 1
+
+    def __init__(self, node, duration, pos, hpr, startPos=None,
+		startHpr=None, other=None, blendType='noBlend', name=None): 
+	""" __init__(node, duration, pos, hpr, startPos, startHpr,
+						other, blendType, name)
 	"""
         import PosHprLerpFunctor
 
@@ -68,14 +71,22 @@ class LerpPosHprInterval(LerpInterval):
                     node, startPos, pos,
                     startHpr, hpr)
 
-	LerpInterval.__init__(self, name, duration, functor, blendType)
+	if (name == None):
+	    n = 'LerpPosHpr-%d' % self.lerpPosHprNum
+	    self.lerpPosHprNum = self.lerpPosHprNum + 1
+	else:
+	    n = name
+
+	LerpInterval.__init__(self, n, duration, functor, blendType)
 
 
 class LerpPosInterval(LerpInterval):
 
-    def __init__(self, name, node, pos, duration, startPos=None,
-					other=None, blendType='noBlend'):
-	""" __init__(name, node, pos, duration, other, blendType)
+    lerpPosNum = 1
+
+    def __init__(self, node, duration, pos, startPos=None,
+				other=None, blendType='noBlend', name=None):
+	""" __init__(node, duration, pos, startPos, other, blendType, name)
 	"""
         import PosLerpFunctor
 
@@ -92,13 +103,21 @@ class LerpPosInterval(LerpInterval):
             functor = PosLerpFunctor.PosLerpFunctor(
                     node, startPos, pos)
 
-	LerpInterval.__init__(self, name, duration, functor, blendType) 
+	if (name == None):
+	    n = 'LerpPos-%d' % self.lerpPosNum
+	    self.lerpPosNum = self.lerpPosNum + 1
+	else:
+	    n = name
+
+	LerpInterval.__init__(self, n, duration, functor, blendType) 
 
 class LerpHprInterval(LerpInterval):
 
-    def __init__(self, name, node, hpr, duration, startHpr=None,
-					other=None, blendType='noBlend'):
-	""" __init__(name, node, hpr, duration, other, blendType)
+    lerpHprNum = 1
+
+    def __init__(self, node, duration, hpr, startHpr=None,
+				other=None, blendType='noBlend', name=None):
+	""" __init__(node, duration, hpr, startHpr, other, blendType, name)
 	"""
         import HprLerpFunctor
 
@@ -117,4 +136,10 @@ class LerpHprInterval(LerpInterval):
             functor = HprLerpFunctor.HprLerpFunctor(
                     node, startHpr, hpr)
 
-	LerpInterval.__init__(self, name, duration, functor, blendType) 
+	if (name == None):
+	    n = 'LerpHpr-%d' % self.lerpHprNum
+	    self.lerpHprNum = self.lerpHprNum + 1
+	else:
+	    n = name
+
+	LerpInterval.__init__(self, n, duration, functor, blendType) 
