@@ -29,7 +29,6 @@ class ForceAcknowledge(StateData.StateData):
 	    self.okButton.manage()
 	    self.accept("ForceAcknowledge-rollover", self.__handleRollover)
 	    self.accept("ForceAcknowledge-ok", self.__handleOk)
-	
 	return None
 
     def exit(self):
@@ -79,7 +78,10 @@ class ForceAcknowledge(StateData.StateData):
 
 	# GUI
 	self.text.removeNode()
-	del(self.okButton)
+	self.text.cleanup()
+	self.text = None
+	self.okButton.cleanup()
+	self.okButton = None
 	self.isLoaded = 0
 	return None
 

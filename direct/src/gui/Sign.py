@@ -1,10 +1,11 @@
 from ShowBaseGlobal import *
+from DirectObject import *
 import GuiSign
 import GuiManager
 
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node())
 
-class Sign:
+class Sign(DirectObject):
 
     def __init__(self, name, label):
         self.name = name
@@ -12,11 +13,15 @@ class Sign:
         self.sign = GuiSign.GuiSign(name, label)
         self.setScale(0.1)
         self.managed = 0
+	return None
 
-    def __del__(self):
+    def cleanup(self):
+	"""cleanup(self)
+	"""
         if (self.managed):
             self.unmanage()
-        del(self.sign)
+        self.sign = None
+	return None
 
     def __str__(self):
         return "sign: %s contains label: %s" % (self.name, self.label.name)

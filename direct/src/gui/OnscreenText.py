@@ -36,12 +36,16 @@ class OnscreenText(PandaObject, NodePath):
 
         # assume 4:3 aspect ratio
         self.setScale( 0.069, 1.0, 0.069)
+	self.isClean = 0
+	return None
 
-    def __del__(self):
-	"""__del__(self)
+    def cleanup(self):
+	"""cleanup(self)
 	"""
-	del(self.textNode)
-       	NodePath.__del__(self) 
+	self.textNode = None
+	if self.isClean == 0:
+	    self.isClean = 1
+       	    NodePath.__del__(self) 
 	return None
  
     def setText(self, string):

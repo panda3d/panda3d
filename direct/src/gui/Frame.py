@@ -1,4 +1,5 @@
 from ShowBaseGlobal import *
+from DirectObject import *
 import GuiManager
 import GuiFrame
 import Vec3
@@ -6,7 +7,7 @@ import Vec3
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node())
 font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
 
-class Frame:
+class Frame(DirectObject):
 
     # special methods
     def __init__(self, name):
@@ -15,11 +16,15 @@ class Frame:
         self.offset = 0
         self.frame = GuiFrame.GuiFrame(name)
         self.items = []
+	return None
 
-    def __del__(self):
+    def cleanup(self):
+	"""cleanup(self)
+	"""
         if (self.managed):
             self.frame.unmanage()
-        del(self.frame)
+        self.frame = None
+	return None
         
     def __str__(self):
         return "Frame: %s = %s" % (self.name, self.items)

@@ -32,9 +32,10 @@ class PickList(PandaObject.PandaObject):
         
         # display the menu
         self.__displayChoices(choiceList)
+	return None
 
-    def __del__(self):
-	"""__del__(self)
+    def cleanup(self):
+	"""cleanup(self)
 	"""
         # remove keyboard events
         self.ignore("up-up")
@@ -49,7 +50,7 @@ class PickList(PandaObject.PandaObject):
 
         # reset the display
         self.frame.unmanage()
-        del(self.frame)
+	self.frame = None
 	return None
         
     # accessing

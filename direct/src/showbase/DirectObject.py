@@ -6,6 +6,14 @@ class DirectObject:
     """
     This is the class that all Direct/SAL classes should inherit from
     """
+    def __del__(self):
+	"""__del__(self)
+	"""
+	try: 
+	    self.cleanup()
+	except:
+	    directNotify.notify.warning('No cleanup() method defined!')
+
     # Event Handling
 
     # object.accept('mouse', object.handleMouse)

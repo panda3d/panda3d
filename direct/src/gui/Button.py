@@ -1,4 +1,5 @@
 from ShowBaseGlobal import *
+from DirectObject import *
 import GuiManager
 import GuiLabel
 import GuiButton
@@ -7,7 +8,7 @@ import Vec3
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node())
 font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
 
-class Button:
+class Button(DirectObject):
 
     def __init__(self, name, label=None):
         self.name = name
@@ -31,14 +32,15 @@ class Button:
                                           self.l3, self.l3, self.l1)
         self.setScale(0.1)
         self.managed = 0
+	return None
 
-
-    def __del__(self):
+    def cleanup(self):
         if (self.managed):
             self.button.unmanage()
-        del(self.l1)
-        del(self.l2)
-        del(self.button)
+        self.l1 = None
+        self.l2 = None
+        self.button = None
+	return None
         
     def __str__(self):
         return "Button: %s" % self.name

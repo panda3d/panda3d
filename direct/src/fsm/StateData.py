@@ -14,11 +14,9 @@ class StateData(DirectObject):
 	self.isLoaded = 0
 	self.isEntered = 0
 	return None
-
-    def __del__(self):
-	"""__del__(self)
-	Only define this if you construct any classes in your __init__()
-	so you can del them explicitly
+    
+    def cleanup(self):
+	"""cleanup(self)
 	"""
 	self.unload()
 	return None
