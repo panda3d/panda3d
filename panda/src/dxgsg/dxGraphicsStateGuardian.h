@@ -169,7 +169,7 @@ public:
   virtual void begin_decal(GeomNode *base_geom);
   virtual void end_decal(GeomNode *base_geom);
 
-  virtual float compute_distance_to(const LPoint3f &point) const;
+  INLINE float compute_distance_to(const LPoint3f &point) const;
   
   void reset_ambient();
 
@@ -206,6 +206,8 @@ protected:
   int               _cNumTexPixFmts;
   LPDDPIXELFORMAT   _pTexPixFmts;
   DXTextureContext  *_pCurTexContext;
+
+  RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation 
 
   bool _color_transform_enabled;
   bool _alpha_transform_enabled;
@@ -307,8 +309,8 @@ protected:
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
 
-  int _pack_alignment;
-  int _unpack_alignment;
+//  int _pack_alignment;
+//  int _unpack_alignment;
 
   bool  _issued_color_enabled;		// WBD ADDED
   D3DCOLOR _issued_color;			// WBD ADDED
