@@ -2320,11 +2320,14 @@ class LevelEditor(NodePath, PandaObject):
                            15, # arrow angle
                            1) # arrow length
         edgeLine.create()
+        # Adjust color of highlighted lines
+        if edge in self.visitedEdges:
+            NodePath.setColor(edgeLine,1,0,0,1)
         # Clean up:
         tempNode.removeNode()
         return edgeLine
 
-    def drawSuitPoint(self, pos, type, parent):
+    def drawSuitPoint(self, suitPoint, pos, type, parent):
         marker = self.suitPointMarker.copyTo(parent)
         marker.setName("suitPointMarker")
         marker.setPos(pos)
@@ -2337,7 +2340,9 @@ class LevelEditor(NodePath, PandaObject):
         elif (type == DNASuitPoint.SIDEDOORPOINT):
             marker.setColor(0,0.2,0.4)
             marker.setScale(0.5)
-        # v is relative to the grid
+        # Highlight if necessary
+        if suitPoint in self.visitedPoints:
+            marker.setColor(1,0,0,1)
         return marker
 
     def placeSuitPoint(self):
@@ -2351,7 +2356,7 @@ class LevelEditor(NodePath, PandaObject):
         # it returns the existing point
         suitPoint = DNASTORE.storeSuitPoint(self.currentSuitPointType, absPos)
         if not self.pointDict.has_key(suitPoint):
-            marker = self.drawSuitPoint(
+            marker = self.drawSuitPoint(suitPoint,
                 absPos, self.currentSuitPointType,
                 self.suitPointToplevel)
             self.pointDict[suitPoint] = marker
@@ -2422,7 +2427,9 @@ class LevelEditor(NodePath, PandaObject):
                             self.highlightConnectedRec(startPoint,
                                                        fReversePath)
                     endPoint = edge.getEndPoint()
-                    if endPoint not in self.visitedPoints:
+                    type = endPoint.getPointType()
+                    if ((endPoint not in self.visitedPoints) and
+                        (type == DNASuitPoint.STREETPOINT)):
                         self.highlightConnectedRec(endPoint,
                                                    fReversePath)
 
@@ -2484,7 +2491,7 @@ class LevelEditor(NodePath, PandaObject):
         numPoints = DNASTORE.getNumSuitPoints()
         for i in range(numPoints):
             point = DNASTORE.getSuitPointAtIndex(i)
-            marker = self.drawSuitPoint(
+            marker = self.drawSuitPoint(point,
                 point.getPos(), point.getPointType(),
                 self.suitPointToplevel)
             self.pointDict[point] = marker
