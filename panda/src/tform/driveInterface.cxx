@@ -146,7 +146,8 @@ DriveInterface::
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::reset
 //       Access: Published
-//  Description: Reinitializes the driver to the origin.
+//  Description: Reinitializes the driver to the origin and resets any
+//               knowledge about buttons being held down.
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 reset() {
@@ -158,6 +159,8 @@ reset() {
   _down_arrow.clear();
   _left_arrow.clear();
   _right_arrow.clear();
+
+  _mods.all_buttons_up();
 }
 
 
