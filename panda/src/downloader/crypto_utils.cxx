@@ -37,10 +37,10 @@ md5_a_file(const Filename &name, HashVal &ret) {
 
   istringstream is(os.str());
 
-  ret[0] = read32(is);
-  ret[1] = read32(is);
-  ret[2] = read32(is);
-  ret[3] = read32(is);
+  ret.hv[0] = read32(is);
+  ret.hv[1] = read32(is);
+  ret.hv[2] = read32(is);
+  ret.hv[3] = read32(is);
 }
 
 void 
@@ -55,10 +55,10 @@ md5_a_buffer(unsigned char* buf, unsigned long len, HashVal& ret) {
   unsigned long outl = hash.MaxRetrieveable();
   outb = new uchar[outl];
   hash.Get((byte*)outb, outl);
-  ret[0] = (outb[0] << 24) | (outb[1] << 16) | (outb[2] << 8) | outb[3];
-  ret[1] = (outb[4] << 24) | (outb[5] << 16) | (outb[6] << 8) | outb[7];
-  ret[2] = (outb[8] << 24) | (outb[9] << 16) | (outb[10] << 8) | outb[11];
-  ret[3] = (outb[12] << 24) | (outb[13] << 16) | (outb[14] << 8) | outb[15];
+  ret.hv[0] = (outb[0] << 24) | (outb[1] << 16) | (outb[2] << 8) | outb[3];
+  ret.hv[1] = (outb[4] << 24) | (outb[5] << 16) | (outb[6] << 8) | outb[7];
+  ret.hv[2] = (outb[8] << 24) | (outb[9] << 16) | (outb[10] << 8) | outb[11];
+  ret.hv[3] = (outb[12] << 24) | (outb[13] << 16) | (outb[14] << 8) | outb[15];
   delete[] outb;
 }
 

@@ -10,7 +10,10 @@
 #include <filename.h>
 #include <typedef.h>
 
-typedef uint HashVal[4];
+class EXPCL_PANDAEXPRESS HashVal {
+public:
+  uint hv[4];
+};
 
 EXPCL_PANDAEXPRESS void md5_a_file(const Filename &fname, HashVal &ret);
 EXPCL_PANDAEXPRESS void md5_a_buffer(uchar *buf, ulong len, HashVal &ret);
