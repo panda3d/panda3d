@@ -596,6 +596,8 @@ render_screen(GraphicsEngine *engine, NonlinearImager::Screen &screen) {
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
+  screen._screen->recompute_if_stale();
+
   // Make a display region of the proper size and clear it to prepare for
   // rendering the scene.
   PT(DisplayRegion) scratch_region =

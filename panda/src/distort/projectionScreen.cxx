@@ -34,6 +34,7 @@ TypeHandle ProjectionScreen::_type_handle;
 ProjectionScreen::
 ProjectionScreen(const string &name) : PandaNode(name)
 {
+  _invert_uvs = project_invert_uvs;
   _vignette_on = false;
   _vignette_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _frame_color.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -335,7 +336,7 @@ recompute() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::recompute_if_stale
-//       Access: Private
+//       Access: Public
 //  Description: Calls recompute() only if the relative transform
 //               between the ProjectionScreen and the projector has
 //               changed, or if any other relevant property has
@@ -478,15 +479,22 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
 recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
-  static const LMatrix3f LensToUv
+  static const LMatrix3f lens_to_uv
     (0.5f, 0.0f, 0.0f,
      0.0f, 0.5f, 0.0f,
+     0.5f, 0.5f, 1.0f);
+
+  static const LMatrix3f lens_to_uv_inverted
+    (0.5f, 0.0f, 0.0f,
+     0.0f,-0.5f, 0.0f,
      0.5f, 0.5f, 1.0f);
 
   PTA_TexCoordf uvs;
   PTA_ushort color_index;
   Lens *lens = _projector_node->get_lens();
   nassertv(lens != (Lens *)NULL);
+
+  const LMatrix3f &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
 
   // Iterate through all the vertices in the Geom.
   int num_vertices = geom->get_num_vertices();
@@ -501,7 +509,7 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
 
     // Now the lens gives us coordinates in the range [-1, 1].
     // Rescale these to [0, 1].
-    uvs.push_back(film * LensToUv);
+    uvs.push_back(film * to_uv);
 
     // If we have vignette color in effect, color the vertex according
     // to whether it fell in front of the lens or not.

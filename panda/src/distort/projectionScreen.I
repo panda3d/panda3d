@@ -31,6 +31,39 @@ get_projector() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::set_invert_uvs
+//       Access: Published
+//  Description: Some OpenGL graphics drivers are known to invert the
+//               framebuffer image when they copy it to texture.
+//               (This is arguably a problem with the OpenGL spec,
+//               which seems to be unclear about the proper ordering
+//               of pixels in this operation.)
+//
+//               In any case, set this true to compensate for this
+//               effect by inverting the UV's of the projection
+//               screen.  The default is taken from the Configrc
+//               variable project-invert-uvs.
+////////////////////////////////////////////////////////////////////
+INLINE void ProjectionScreen::
+set_invert_uvs(bool invert_uvs) {
+  _invert_uvs = invert_uvs;
+  _stale = true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::get_invert_uvs
+//       Access: Published
+//  Description: Returns whether this screen is compensating for a
+//               graphics driver inverting the framebuffer image.  See
+//               set_invert_uvs().
+////////////////////////////////////////////////////////////////////
+INLINE bool ProjectionScreen::
+get_invert_uvs() const {
+  return _invert_uvs;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::set_vignette_on
 //       Access: Published
 //  Description: Specifies whether vertex-based vignetting should be

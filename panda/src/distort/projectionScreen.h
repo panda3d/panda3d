@@ -72,6 +72,9 @@ PUBLISHED:
                          int num_x_verts, int num_y_verts, float distance);
   PT(PandaNode) make_flat_mesh(const NodePath &camera);
 
+  INLINE void set_invert_uvs(bool invert_uvs);
+  INLINE bool get_invert_uvs() const;
+
   INLINE void set_vignette_on(bool vignette_on);
   INLINE bool get_vignette_on() const;
 
@@ -84,9 +87,9 @@ PUBLISHED:
 
 public:
   INLINE const UpdateSeq &get_last_screen() const;
+  void recompute_if_stale();
 
 private:
-  void recompute_if_stale();
   void do_recompute(const NodePath &this_np);
   void recompute_node(const WorkingNodePath &np, LMatrix4f &rel_mat, bool &computed_rel_mat);
   void recompute_child(const WorkingNodePath &np, LMatrix4f &rel_mat, bool &computed_rel_mat);
@@ -109,6 +112,7 @@ private:
 
   NodePath _projector;
   PT(LensNode) _projector_node;
+  bool _invert_uvs;
   bool _vignette_on;
   Colorf _vignette_color;
   Colorf _frame_color;

@@ -31,6 +31,13 @@ ConfigureFn(config_distort) {
   init_libdistort();
 }
 
+// Set this true to compensate for a graphics driver bug in which the
+// driver inverts the image when it copies framebuffer-to-texture.
+// (This bug is arguably a problem with the OpenGL spec, which seems
+// to be unclear about the proper ordering of pixels in this
+// operation.)
+const bool project_invert_uvs = config_distort.GetBool("project-invert-uvs", false);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdistort
 //  Description: Initializes the library.  This must be called at
