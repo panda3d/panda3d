@@ -134,8 +134,8 @@ is_planar() const {
         // Nope, too far away--the polygon is nonplanar.
         return false;
       }
-      ++vi;
     }
+    ++vi;
   }
 
   // All vertices are close enough to pass.
