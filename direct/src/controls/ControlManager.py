@@ -107,6 +107,7 @@ class ControlManager:
         """
         assert self.notify.debugCall(id(self))
         controls = self.controls.get(name)
+
         if controls is not None:
             if controls is not self.currentControls:
                 if self.currentControls is not None:

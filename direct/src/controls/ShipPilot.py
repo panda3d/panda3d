@@ -186,10 +186,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             return
         assert not avatarNodePath.isEmpty()
 
-        if not hasattr(self,'actorNode'):
-            
+        if 0:
             # Connect to Physics Manager:
-            self.actorNode=ActorNode("ship physicsActor")
+            self.actorNode=ActorNode("ship-physicsActor")
             self.actorNode.getPhysicsObject().setOriented(1)
             self.actorNode.getPhysical(0).setViscosity(0.1)
             physicsActor=render.attachNewNode(self.actorNode)
@@ -199,6 +198,14 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             avatarNodePath.setPos(Vec3(0))
             avatarNodePath.setHpr(Vec3(0))
             avatarNodePath.assign(physicsActor)
+        else:
+            print "doing getPhysicsObject"
+            physicsActor = avatarNodePath
+            self.actorNode = physicsActor.node()
+            self.actorNode.getPhysicsObject().setOriented(1)
+            self.actorNode.getPhysical(0).setViscosity(0.1)
+
+        if not hasattr(self, "phys"):
             self.phys=PhysicsManager.PhysicsManager()
             
             fn=ForceNode("ship gravity")
@@ -209,7 +216,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             fn.addForce(gravity)
             self.phys.addLinearForce(gravity)
             self.gravity = gravity
-            
+
             fn=ForceNode("ship keel")
             fnp=NodePath(fn)
             #fnp.reparentTo(physicsActor)
