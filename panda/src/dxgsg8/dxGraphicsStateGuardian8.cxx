@@ -797,7 +797,7 @@ dx_init(HCURSOR hMouseCursor) {
     scrn.pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
 
     // Init more Texture State
-    _CurTexMagFilter=_CurTexMinFilter=D3DTEXF_NONE;
+    _CurTexMagFilter=_CurTexMinFilter=_CurTexMipFilter=D3DTEXF_NONE;
     _CurTexWrapModeU=_CurTexWrapModeV=Texture::WM_clamp;
     _CurTexAnisoDegree=1;
 
