@@ -1,10 +1,11 @@
 """
 EntryScale Class: Scale with a label, and a linked and validated entry
 """
-
+from PandaObject import *
 from Tkinter import *
 import Pmw
 import string
+import tkColorChooser
 from tkSimpleDialog import askfloat
 
 class EntryScale(Pmw.MegaWidget):
@@ -235,6 +236,8 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             ('command',         None,                   None),
             # A tuple of labels, one for each entryScale
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
+            # Destroy or withdraw
+            ('fDestroy',        0,                      INITOPT)
             )
         self.defineoptions(kw, optiondefs)
 
@@ -259,9 +262,13 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             'EntryScale Group', 'command', 'Reset the EntryScale Group panel',
             label = 'Reset',
             command = lambda s = self: s.reset())
+        if self['fDestroy']:
+            dismissCommand = self.destroy
+        else:
+            dismissCommand = self.withdraw
         menubar.addmenuitem(
             'EntryScale Group', 'command', 'Dismiss EntryScale Group panel',
-            label = 'Dismiss', command = self.withdraw)
+            label = 'Dismiss', command = dismissCommand)
         
         menubar.addmenu('Help', 'EntryScale Group Help Operations')
         self.toggleBalloonVar = IntVar()
@@ -331,6 +338,42 @@ class EntryScaleGroup(Pmw.MegaToplevel):
         self.set(self['initialValue'])
 
 
+def setColor(nodePath, callback = None):
+    def setNodePathColor(color, np = nodePath, cb = callback):
+        np.setColor(color[0]/255.0, color[1]/255.0,
+                    color[2]/255.0, color[3]/255.0)
+        # Execute callback to pass along color info
+        if cb:
+            cb(color)
+    def popupColorPicker():
+        # Can pass in current color with: color = (255, 0, 0)
+        color = tkColorChooser.askcolor(
+            parent = esg.interior(),
+            # Initialize it to current color
+            initialcolor = tuple(esg.get()[:3]))[0]
+        if color:
+            esg.set((color[0], color[1], color[2], esg.getAt(3)))
+    if isinstance(nodePath, NodePath):
+        if nodePath.hasColor():
+            initColor = nodePath.getColor() * 255.0
+        else:
+            initColor = Vec4(255)
+        esg = EntryScaleGroup(title = 'RGBA Panel',
+                              dim = 4,
+                              labels = ['R','G','B','A'],
+                              initialValue = [int(initColor[0]),
+                                              int(initColor[1]),
+                                              int(initColor[2]),
+                                              int(initColor[3])],
+                              Valuator_max = 255,
+                              Valuator_resolution = 1,
+                              # Destroy not withdraw panel on dismiss
+                              fDestroy = 1,
+                              command = setNodePathColor)
+        menu = esg.component('menubar').component('EntryScale Group-menu')
+        menu.insert_command(index = 1, label = 'Popup Color Picker',
+                            command = popupColorPicker)
+    return esg
 
 ## SAMPLE CODE
 if __name__ == '__main__':

@@ -9,8 +9,8 @@ import Floater
 
 """
 TODO:
+Orbital mode
 Task to monitor pose
-wrt coa
 """
 
 ZERO_VEC = Vec3(0)
@@ -31,6 +31,8 @@ class Placer(Pmw.MegaToplevel):
 
         # Initialize state
         self.tempCS = render.attachNewNode(NamedNode('placerTempCS'))
+        self.orbitFromCS = render.attachNewNode(NamedNode('placerOrbitFromCS'))
+        self.orbitToCS = render.attachNewNode(NamedNode('placerOrbitToCS'))
         self.refCS = self.tempCS
         self.undoList = []
         self.redoList = []
@@ -45,15 +47,16 @@ class Placer(Pmw.MegaToplevel):
         self.refNodePathDict['camera'] = camera
         self.refNodePathNames = ['self', 'render', 'camera', 'selected', 'coa']
 
-        # Get initial state
+        # Initial state
         self.initPos = Vec3(0)
         self.initHpr = Vec3(0)
         self.initScale = Vec3(1)
-        self.coaPos = Vec3(0)
-        self.coaHpr = Vec3(0)
+
+        # Offset for orbital mode
+        self.posOffset = Vec3(0)
 
         # Init movement mode
-        self.movementMode = 'Absolute'
+        self.movementMode = 'Relative To:'
 
         # Create panel
         # Handle to the toplevels hull
@@ -70,14 +73,6 @@ class Placer(Pmw.MegaToplevel):
         menuBar.pack(side = LEFT, expand = 1, fill = X)
         menuBar.addmenu('Placer', 'Placer Panel Operations')
         menuBar.addmenuitem('Placer', 'command',
-                            'Undo Pos/Hpr/Scale',
-                            label = 'Undo',
-                            command = self.undo)
-        menuBar.addmenuitem('Placer', 'command',
-                            'Redo Pos/Hpr/Scale',
-                            label = 'Redo',
-                            command = self.redo)
-        menuBar.addmenuitem('Placer', 'command',
                             'Reset Node Path',
                             label = 'Reset All',
                             command = self.resetAll)
@@ -88,7 +83,7 @@ class Placer(Pmw.MegaToplevel):
         menuBar.addmenuitem('Placer', 'command',
                             'Exit Placer Panel',
                             label = 'Exit',
-                            command = self.destroy)
+                            command = self.preDestroy)
 
         menuBar.addmenu('Help', 'Placer Panel Help Operations')
         self.toggleBalloonVar = IntVar()
@@ -112,7 +107,9 @@ class Placer(Pmw.MegaToplevel):
         self.nodePathMenu.pack(side = 'left', expand = 0)
 
         modeMenu = Pmw.OptionMenu(menuFrame,
-                                  items = ('Absolute', 'Relative To:'),
+                                  items = ('Absolute', 'Relative To:',
+                                           'Orbit:'),
+                                  initialitem = 'Relative To:',
                                   command = self.setMovementMode,
                                   menubutton_width = 8)
         modeMenu.pack(side = 'left', expand = 0)
@@ -127,9 +124,11 @@ class Placer(Pmw.MegaToplevel):
         self.refNodePathMenu.pack(side = 'left', expand = 0)
 
         self.undoButton = Button(menuFrame, text = 'Undo',
+                                 state = 'disabled',
                                  command = self.undo)
         self.undoButton.pack(side = 'left', expand = 0)
         self.redoButton = Button(menuFrame, text = 'Redo',
+                                 state = 'disabled',
                                  command = self.redo)
         self.redoButton.pack(side = 'left', expand = 0)
 
@@ -162,6 +161,8 @@ class Placer(Pmw.MegaToplevel):
         self.posX['command'] = self.xform
         self.posX['commandData'] = ['x']
         self.posX['callbackData'] = ['x']
+        self.posX.onReturn = self.pushUndo
+        self.posX.onReturnRelease = self.xformStop
         self.posX.onPress = self.xformStart
         self.posX.onRelease = self.xformStop
         self.posX.pack(expand=1,fill='x')
@@ -174,6 +175,8 @@ class Placer(Pmw.MegaToplevel):
         self.posY['command'] = self.xform
         self.posY['commandData'] = ['y']
         self.posY['callbackData'] = ['y']
+        self.posY.onReturn = self.pushUndo
+        self.posY.onReturnRelease = self.xformStop
         self.posY.onPress = self.xformStart
         self.posY.onRelease = self.xformStop
         self.posY.pack(expand=1,fill='x')
@@ -186,6 +189,8 @@ class Placer(Pmw.MegaToplevel):
         self.posZ['command'] = self.xform
         self.posZ['commandData'] = ['z']
         self.posZ['callbackData'] = ['z']
+        self.posZ.onReturn = self.pushUndo
+        self.posZ.onReturnRelease = self.xformStop
         self.posZ.onPress = self.xformStart
         self.posZ.onRelease = self.xformStop
         self.posZ.pack(expand=1,fill='x')
@@ -215,6 +220,8 @@ class Placer(Pmw.MegaToplevel):
         self.hprH['command'] = self.xform
         self.hprH['commandData'] = ['h']
         self.hprH['callbackData'] = ['h']
+        self.hprH.onReturn = self.pushUndo
+        self.hprH.onReturnRelease = self.xformStop
         self.hprH.onPress = self.xformStart
         self.hprH.onRelease = self.xformStop
         self.hprH.pack(expand=1,fill='x')
@@ -228,6 +235,8 @@ class Placer(Pmw.MegaToplevel):
         self.hprP['command'] = self.xform
         self.hprP['commandData'] = ['p']
         self.hprP['callbackData'] = ['p']
+        self.hprP.onReturn = self.pushUndo
+        self.hprP.onReturnRelease = self.xformStop
         self.hprP.onPress = self.xformStart
         self.hprP.onRelease = self.xformStop
         self.hprP.pack(expand=1,fill='x')
@@ -241,6 +250,8 @@ class Placer(Pmw.MegaToplevel):
         self.hprR['command'] = self.xform
         self.hprR['commandData'] = ['r']
         self.hprR['callbackData'] = ['r']
+        self.hprR.onReturn = self.pushUndo
+        self.hprR.onReturnRelease = self.xformStop
         self.hprR.onPress = self.xformStart
         self.hprR.onRelease = self.xformStop
         self.hprR.pack(expand=1,fill='x')
@@ -285,6 +296,8 @@ class Placer(Pmw.MegaToplevel):
         self.scaleX['command'] = self.xform
         self.scaleX['commandData'] = ['sx']
         self.scaleX['callbackData'] = ['sx']
+        self.scaleX.onReturn = self.pushUndo
+        self.scaleX.onReturnRelease = self.xformStop
         self.scaleX.onPress = self.xformStart
         self.scaleX.onRelease = self.xformStop
         self.scaleX.pack(expand=1,fill='x')
@@ -297,6 +310,8 @@ class Placer(Pmw.MegaToplevel):
         self.scaleY['command'] = self.xform
         self.scaleY['commandData'] = ['sy']
         self.scaleY['callbackData'] = ['sy']
+        self.scaleY.onReturn = self.pushUndo
+        self.scaleY.onReturnRelease = self.xformStop
         self.scaleY.onPress = self.xformStart
         self.scaleY.onRelease = self.xformStop
         self.scaleY.pack(expand=1,fill='x')
@@ -309,12 +324,14 @@ class Placer(Pmw.MegaToplevel):
         self.scaleZ['command'] = self.xform
         self.scaleZ['commandData'] = ['sz']
         self.scaleZ['callbackData'] = ['sz']
+        self.scaleZ.onReturn = self.pushUndo
+        self.scaleZ.onReturnRelease = self.xformStop
         self.scaleZ.onPress = self.xformStart
         self.scaleZ.onRelease = self.xformStop
         self.scaleZ.pack(expand=1,fill='x')
 
         # Make sure appropriate labels are showing
-        self.setMovementMode('Absolute')
+        self.setMovementMode('Relative To:')
         # Set up placer for inital node path
         self.selectNodePathNamed('init')
 
@@ -325,21 +342,19 @@ class Placer(Pmw.MegaToplevel):
         # Set prefix
         namePrefix = ''
         self.movementMode = movementMode
-        if (movementMode == 'Drive'):
-            namePrefix = 'Drive delta '
-        elif (movementMode == 'Orbit'):
-            namePrefix = 'Orbit '
-        elif (movementMode == 'Absolute'):
+        if (movementMode == 'Absolute'):
             namePrefix = 'Absolute '
         elif (movementMode == 'Relative To:'):
             namePrefix = 'Relative '
+        elif (movementMode == 'Orbit'):
+            namePrefix = 'Orbit'
         # Enable/disable wrt menu
-        if(movementMode == 'Relative To:'):
-            self.refNodePathMenu.configure(entry_foreground = 'Black')
-            self.refNodePathMenu.configure(entry_background = 'SystemWindow')
-        else:
+        if (movementMode == 'Absolute'):
             self.refNodePathMenu.configure(entry_foreground = 'gray50')
             self.refNodePathMenu.configure(entry_background = '#E0E0E0')
+        else:
+            self.refNodePathMenu.configure(entry_foreground = 'Black')
+            self.refNodePathMenu.configure(entry_background = 'SystemWindow')
         # Update pos widgets
         self.posX['text'] = namePrefix + 'X'
         self.posY['text'] = namePrefix + 'Y'
@@ -400,21 +415,15 @@ class Placer(Pmw.MegaToplevel):
         nodePath = None
         if name == 'self':
             nodePath = self.tempCS
-            self.coaPos.set(0,0,0)
-            self.coaHpr.set(0,0,0)
         elif name == 'selected':
             nodePath = direct.selected.last
             # Add Combo box entry for this selected object
             self.addRefNodePath(nodePath)
         elif name == 'coa':
-            nodePath = self.tempCS
             if direct.selected.last:
-                decomposeMatrix(direct.selected.last.mCoa2Dnp,
-                                VBase3(0), self.coaHpr, self.coaPos,
-                                CSDefault)
+                nodePath = self.tempCS
             else:
-                self.coaPos.set(0,0,0)
-                self.coaHpr.set(0,0,0)
+                nodePath = None
         else:
             nodePath = self.refNodePathDict.get(name, None)
             if (nodePath == None):
@@ -480,11 +489,15 @@ class Placer(Pmw.MegaToplevel):
         np = self['nodePath']
         if (np != None) & isinstance(np, NodePath):
             # Update temp CS
-            self.updateTempCS()
+            self.updateAuxiliaryCoordinateSystems()
             # Update widgets
             if self.movementMode == 'Absolute':
                 pos.assign(np.getPos())
                 hpr.assign(np.getHpr())
+                scale.assign(np.getScale())
+            elif self.movementMode == 'Orbit:':
+                pos.assign(self.posOffset)
+                hpr.assign(ZERO_VEC)
                 scale.assign(np.getScale())
             elif self.refCS:
                 pos.assign(np.getPos(self.refCS))
@@ -494,9 +507,26 @@ class Placer(Pmw.MegaToplevel):
         self.updateHprWidgets(hpr)
         self.updateScaleWidgets(scale)
 
-    def updateTempCS(self):
-        self.tempCS.setPosHpr(self['nodePath'], 0,0,0,0,0,0)
-        # MRM: How to handle COA here?
+    def updateAuxiliaryCoordinateSystems(self):
+        # Temp CS
+        if ((self.refNodePathMenuEntry.get() == 'coa') &
+            (direct.selected.last != None)):
+            pos = Vec3(0)
+            hpr = Vec3(0)
+            decomposeMatrix(direct.selected.last.mCoa2Dnp,
+                            VBase3(0), hpr, pos, CSDefault)
+            self.tempCS.setPosHpr(direct.selected.last, pos, hpr)
+        else:
+            self.tempCS.setPosHpr(self['nodePath'], 0,0,0,0,0,0)
+        # Orbit CS
+        # At reference
+        self.orbitFromCS.setPos(self.refCS, 0,0,0)
+        # But aligned with target
+        self.orbitFromCS.setHpr(self['nodePath'], 0,0,0)
+        # Also update to CS
+        self.orbitToCS.setPosHpr(self.orbitFromCS, 0,0,0,0,0,0)
+        # Get offset from origin
+        self.posOffset.assign(self['nodePath'].getPos(self.orbitFromCS))
 
     def xform(self, value, axis):
         if axis in ['sx', 'sy', 'sz']:
@@ -505,6 +535,8 @@ class Placer(Pmw.MegaToplevel):
             self.xformAbsolute(value, axis)
         elif self.movementMode == 'Relative To:':
             self.xformRelative(value, axis)
+        elif self.movementMode == 'Orbit:':
+            self.xformOrbit(value, axis)
     
     def xformStart(self, data):
         # Record undo point
@@ -514,8 +546,11 @@ class Placer(Pmw.MegaToplevel):
         self.updatePlacer()
         
     def xformStop(self, data):
+        # Throw event to signal manipulation done
+        messenger.send('manipulateObjectCleanup')
         # Update placer to reflect new state
         self.updatePlacer()
+        
 
     def xformAbsolute(self, value, axis):
         nodePath = self['nodePath']
@@ -548,6 +583,24 @@ class Placer(Pmw.MegaToplevel):
                 nodePath.setP(self.refCS, value)
             elif axis == 'r':
                 nodePath.setR(self.refCS, value)
+
+    def xformOrbit(self, value, axis):
+        nodePath = self['nodePath']
+        if ((nodePath != None) & (self.refCS != None) &
+            (self.orbitFromCS != None) & (self.orbitToCS != None)):
+            if axis == 'x':
+                self.posOffset.setX(value)
+            elif axis == 'y':
+                self.posOffset.setY(value)
+            elif axis == 'z':
+                self.posOffset.setZ(value)
+            elif axis == 'h':
+                self.orbitToCS.setH(self.orbitFromCS, value)
+            elif axis == 'p':
+                self.orbitToCS.setP(self.orbitFromCS, value)
+            elif axis == 'r':
+                self.orbitToCS.setR(self.orbitFromCS, value)
+            nodePath.setPosHpr(self.orbitToCS, self.posOffset, ZERO_VEC)
 
     def xformScale(self, value, axis):
         if self['nodePath']:
@@ -619,7 +672,7 @@ class Placer(Pmw.MegaToplevel):
         self['nodePath'].setScale(self.initScale)
         self.updatePlacer()
 
-    def pushUndo(self):
+    def pushUndo(self, fResetRedo = 1):
         nodePath = self['nodePath']
         if nodePath != None:
             name = self.nodePathMenuEntry.get()
@@ -627,12 +680,20 @@ class Placer(Pmw.MegaToplevel):
             hpr = nodePath.getHpr()
             scale = nodePath.getScale()
             self.undoList.append([name, pos,hpr,scale])
+            # Make sure button is reactivated
+            self.undoButton.configure(state = 'normal')
+            if fResetRedo:
+                self.redoList = []
+                self.redoButton.configure(state = 'disabled')
 
     def popUndo(self):
         # Get last item
         pose = self.undoList[-1]
         # Strip last item off of undo list
         self.undoList = self.undoList[:-1]
+        # Update state of undo button
+        if not self.undoList:
+            self.undoButton.configure(state = 'disabled')
         # Return last item
         return pose
         
@@ -644,12 +705,17 @@ class Placer(Pmw.MegaToplevel):
             hpr = nodePath.getHpr()
             scale = nodePath.getScale()
             self.redoList.append([name, pos,hpr,scale])
+            # Make sure button is reactivated
+            self.redoButton.configure(state = 'normal')
 
     def popRedo(self):
         # Get last item
         pose = self.redoList[-1]
         # Strip last item off of redo list
         self.redoList = self.redoList[:-1]
+        # Update state of redo button
+        if not self.redoList:
+            self.redoButton.configure(state = 'disabled')
         # Return last item
         return pose
         
@@ -677,15 +743,35 @@ class Placer(Pmw.MegaToplevel):
             # Make sure combo box is showing the right thing
             self.nodePathMenu.selectitem(pose[0])
             # Record active's current state on redo stack
-            self.pushUndo()
+            self.pushUndo(fResetRedo = 0)
             # Redo xform
             self['nodePath'].setPosHprScale(pose[1], pose[2], pose[3])
             # Reflect new changes
             self.updatePlacer()
 
     def printNodePathInfo(self):
-        print 'Print Node Path info here'
+        np = self['nodePath']
+        if np:
+            name = np.getName()
+            pos = np.getPos()
+            hpr = np.getHpr()
+            scale = np.getScale()
+            posString = '%.2f, %.2f, %.2f' % (pos[0], pos[1], pos[2])
+            hprString = '%.2f, %.2f, %.2f' % (hpr[0], hpr[1], hpr[2])
+            scaleString = '%.2f, %.2f, %.2f' % (scale[0], scale[1], scale[2])
+            print 'NodePath: %s' % name
+            print 'Pos: %s' % posString
+            print 'Hpr: %s' % hprString
+            print 'Scale: %s' % scaleString
+            print ('%s.setPosHprScale(%s, %s, %s)' %
+                   (name, posString, hprString, scaleString))
 
+    def preDestroy(self):
+        self.tempCS.removeNode()
+        self.orbitFromCS.removeNode()
+        self.orbitToCS.removeNode()
+        self.destroy()
+        
     def toggleBalloon(self):
         if self.toggleBalloonVar.get():
             self.balloon.configure(state = 'balloon')

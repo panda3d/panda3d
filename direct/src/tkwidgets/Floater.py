@@ -149,7 +149,9 @@ class Floater(Pmw.MegaWidget):
     def _entryCommand(self, event = None):
         try:
             val = string.atof( self.entryValue.get() )
+            apply(self.onReturn,self['callbackData'])
             self.set( val )
+            apply(self.onReturnRelease,self['callbackData'])
         except ValueError:
             pass
 
@@ -186,6 +188,14 @@ class Floater(Pmw.MegaWidget):
 
     def reset(self):
         self.set(self['initialValue'])
+
+    def onReturn(self, *args):
+        """ User redefinable callback executed on <Return> in entry """
+        pass
+
+    def onReturnRelease(self, *args):
+        """ User redefinable callback executed on <Return> release in entry """
+        pass
 
     def onPress(self, *args):
         """ User redefinable callback executed on button press """

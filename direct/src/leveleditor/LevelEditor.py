@@ -262,6 +262,7 @@ class LevelEditor(NodePath, PandaObject):
             ('SGENodePath_Toggle Viz', self.toggleViz),
             ('SGENodePath_Add Group', self.addGroup),
             ('SGENodePath_Add Vis Group', self.addVisGroup),
+            ('SGENodePath_Set Color', self.setNPColor),
             # Actions in response to Pie Menu interaction
             ('select_building_style', self.setBuildingStyle),
             ('select_building_type', self.setBuildingType),
@@ -1085,14 +1086,16 @@ class LevelEditor(NodePath, PandaObject):
             self.replaceSelected()
             
     def setWindowCount(self, count):
-        if self.DNATarget:
-            if count == 0:
-                # Remove windows and clear out DNATarget
-                self.removeWindows(self.DNATarget, self.DNATargetParent)
-                self.DNATarget = None
-            else:
-                self.DNATarget.setWindowCount(count)
-            self.replaceSelected()
+        if (self.DNATarget != None) & (count != 0):
+            self.DNATarget.setWindowCount(count)
+        elif (self.DNATarget != None) & (count == 0):
+            # Remove windows and clear out DNATarget
+            self.removeWindows(self.DNATarget, self.DNATargetParent)
+            self.DNATarget = None
+        elif (self.DNATarget == None) & (count != 0):
+            self.DNATarget = self.createWindows()
+            self.DNATargetParent.add(self.DNATarget)
+        self.replaceSelected()
             
     def setWallStyle(self, style):
         if (self.DNATarget != None) & (style != None):
@@ -1100,6 +1103,14 @@ class LevelEditor(NodePath, PandaObject):
                 self.DNATarget, style,
                 self.DNATarget.getHeight())
             self.replaceSelected()
+
+    def setNPColor(self, nodePath):
+        """ This is used to set color of dnaNode subparts """
+        def updateDNANodeColor(color, s = self, np = nodePath):
+            # Update node color in DNASTORE here
+            # dnaNode = s.findDNANode(np)
+            pass
+        esg = EntryScale.setColor(nodePath, updateDNANodeColor)
     
     # SELECTION FUNCTIONS
     def select(self, nodePath):
@@ -2935,7 +2946,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             buttonFrame2,
             text = 'New Vis Group',
             command = self.createNewVisGroup)
-        self.groupButton.pack(side = 'left', expand = 1, fill = 'x')
+        self.visGroupButton.pack(side = 'left', expand = 1, fill = 'x')
         
         self.setParentButton = Button(
             buttonFrame2,
@@ -2949,44 +2960,48 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             command = self.levelEditor.reparentSelected)
         self.reparentButton.pack(side = 'left', expand = 1, fill = 'x')
 
+        buttonFrame2.pack(fill = 'x')
+
+        buttonFrame3 = Frame(hull)
         self.isolateButton = Button(
-            buttonFrame2,
+            buttonFrame3,
             text = 'Isolate Selected',
             command = self.levelEditor.isolate)
         self.isolateButton.pack(side = 'left', expand = 1, fill = 'x')
 
         self.showAllButton = Button(
-            buttonFrame2,
+            buttonFrame3,
             text = 'Show All',
             command = self.levelEditor.showAll)
         self.showAllButton.pack(side = 'left', expand = 1, fill = 'x')
 
-        buttonFrame2.pack(fill = 'x')
+        buttonFrame3.pack(fill = 'x')
 
-        buttonFrame3 = Frame(hull)
+        buttonFrame4 = Frame(hull)
         self.driveMode = IntVar()
         self.driveMode.set(1)
         self.driveModeButton = Radiobutton(
-            buttonFrame3,
+            buttonFrame4,
             text = 'Drive Mode',
             value = 0,
             variable = self.driveMode,
             command = self.levelEditor.useDriveMode)
         self.driveModeButton.pack(side = 'left', expand = 1, fill = 'x')
         directModeButton = Radiobutton(
-            buttonFrame3,
+            buttonFrame4,
             text = 'DIRECT Fly',
             value = 1,
             variable = self.driveMode,
             command = self.levelEditor.useDirectFly)
         directModeButton.pack(side = 'left', expand = 1, fill = 'x')
-        buttonFrame3.pack(fill = 'x')
+        buttonFrame4.pack(fill = 'x')
 
         self.sceneGraphExplorer = SceneGraphExplorer(
             parent = sceneGraphPage,
             root = self.levelEditor,
             menuItems = ['Select', 'Isolate', 'Flash', 'Toggle Viz',
                          'Set Parent', 'Reparent', 'Add Group',
+                         'Add Vis Group', 'Set Color',
                          'Set Name'])
         self.sceneGraphExplorer.pack(expand = 1, fill = 'both')
         

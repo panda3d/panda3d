@@ -281,8 +281,10 @@ class Dial(Pmw.MegaWidget):
         input = self._entryVal.get()
         try:
             newValue = string.atof(input)
+            apply(self.onReturn, self['callbackData'])
             self.set(newValue)
             self._entry.configure(background = self._entryBackground)
+            apply(self.onReturnRelease, self['callbackData'])
         except ValueError:
             self._entry.configure(background = 'Pink')
 
@@ -439,6 +441,14 @@ class Dial(Pmw.MegaWidget):
         self.set(self['initialValue'])
         # Should we do this?
         self.setScaleFactorExp(0, showText = 0)
+
+    def onReturn(self, *args):
+        """ User redefinable callback executed on <Return> in entry """
+        pass
+
+    def onReturnRelease(self, *args):
+        """ User redefinable callback executed on <Return> release in entry """
+        pass
 
     def onPress(self, *args):
         """ User redefinable callback executed on button press """
