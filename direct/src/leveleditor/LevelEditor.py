@@ -155,6 +155,11 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['windowOrienation'] = '_ur'
 	self.attributeDictionary['numWindows'] = 0
 
+	# Streets
+	attributeList = self.getCatalogCodes('street')
+	self.attributeDictionary['streetTypes'] = attributeList
+	self.attributeDictionary['streetType'] = attributeList[1]
+
     def getActiveColor(self):
 	return self.attributeDictionary['activeColor']
 
@@ -288,6 +293,15 @@ class LevelEditor(NodePath, PandaObject):
 
     def getPropTypes(self):
 	return self.attributeDictionary['propTypes']
+
+    def getStreetType(self):
+	return self.attributeDictionary['streetType']
+
+    def setStreetType(self,dnaString):
+	self.attributeDictionary['streetType'] = dnaString
+
+    def getStreetTypes(self):
+	return self.attributeDictionary['streetTypes']
 
     def getSelectedLevelObject(self):
 	return self.selectedLevelObject
@@ -434,8 +448,8 @@ class LevelEditor(NodePath, PandaObject):
             self.attributeDictionary['toontownCentralStyleDictionary'])
         self.pieMenuDictionary['styleMenu'] = (
             self.pieMenuDictionary['toontownCentralStyleMenu'])
-	self.attributeDictionary['streetTexture'] = 'street_street_tex'
-	self.attributeDictionary['sidewalkTexture'] = 'street_sidewalk_tex'
+	self.attributeDictionary['streetTexture'] = 'street_street_TT_tex'
+	self.attributeDictionary['sidewalkTexture'] = 'street_sidewalk_TT_tex'
         self.dnaOutputDir = 'ToontownCentral'
         self.dnaOutputFile = 'toontown_central_working.dna'
         self.panel.editMenu.selectitem('Toontown Central')
@@ -449,9 +463,9 @@ class LevelEditor(NodePath, PandaObject):
             self.attributeDictionary['donaldsDockStyleDictionary'])
 	self.pieMenuDictionary['styleMenu'] = (
             self.pieMenuDictionary['donaldsDockStyleMenu'])
-	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
+	self.attributeDictionary['streetTexture'] = 'street_street_DD_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
-            'street_sidewalk_dock_tex')
+            'street_sidewalk_DD_tex')
         self.dnaOutputDir = 'DonaldsDock'
         self.dnaOutputFile = 'donalds_dock_working.dna'
         self.panel.editMenu.selectitem('Donalds Dock')
@@ -465,9 +479,9 @@ class LevelEditor(NodePath, PandaObject):
             self.attributeDictionary['minniesMelodyLandStyleDictionary'])
 	self.pieMenuDictionary['styleMenu'] = (
             self.pieMenuDictionary['minniesMelodyLandStyleMenu'])
-	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
+	self.attributeDictionary['streetTexture'] = 'street_street_MM_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
-            'street_sidewalk_dock_tex')
+            'street_sidewalk_MM_tex')
         self.dnaOutputDir = 'MinniesMelodyLand'
         self.dnaOutputFile = 'minnies_melody_land_working.dna'
         self.panel.editMenu.selectitem('Minnies Melody Land')
@@ -481,9 +495,9 @@ class LevelEditor(NodePath, PandaObject):
             self.attributeDictionary['theBurrrghStyleDictionary'])
 	self.pieMenuDictionary['styleMenu'] = (
             self.pieMenuDictionary['theBurrrghStyleMenu'])
-	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
+	self.attributeDictionary['streetTexture'] = 'street_street_BR_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
-            'street_sidewalk_dock_tex')
+            'street_sidewalk_BR_tex')
         self.dnaOutputDir = 'TheBurrrgh'
         self.dnaOutputFile = 'the_burrrgh_working.dna'
         self.panel.editMenu.selectitem('The Burrrgh')
@@ -839,6 +853,9 @@ class LevelEditor(NodePath, PandaObject):
                 target = selectedObjectDNA
                 if self.direct.fControl:
                     menuType = 'propColor'
+            elif objClass.eq(DNAStreet.getClassType()):
+                menuType = 'streetType'
+                target = selectedObjectDNA
             # Now spawn apropriate menu task
             if ((target != None) | (menuType == 'cornice')):
                 self.spawnMenuTask(menuType, target)
@@ -961,6 +978,9 @@ class LevelEditor(NodePath, PandaObject):
             state = aDNAObject.getColor()
         elif menu == 'propType':
             self.activeMenu = self.pieMenuDictionary['propTypesMenu']
+            state = self.getDNAString(aDNAObject)
+        elif menu == 'streetType':
+            self.activeMenu = self.pieMenuDictionary['streetTypesMenu']
             state = self.getDNAString(aDNAObject)
         elif menu == 'style':
             self.activeMenu = self.pieMenuDictionary['styleMenu']
@@ -1319,6 +1339,38 @@ class LevelEditor(NodePath, PandaObject):
 
 	return newPropTypeMenu
 
+    def createStreetTypesMenu(self):
+	numItems = len(self.getStreetTypes())
+
+	streetNodes = []
+        for i in range (numItems):
+            node = OnscreenText(self.getStreetTypes()[i],0,0)
+            streetNodes.append(node)
+
+	newStreetTypeMenu = hidden.attachNewNode(NamedNode('streetTypeMenu'))
+
+	radius = 0.7
+	angle = deg2Rad(360.0/numItems)
+        for i in range (numItems):
+            # Get the node
+            node = streetNodes[i]
+            node.setScale(node.getScale())
+	
+            # Reposition it
+            node.setXY(radius * math.cos(i * angle),
+                       (radius *
+                        (self.direct.chan.width/
+                         float(self.direct.chan.height)) *
+                        math.sin(i * angle)))
+
+            # Add it to the streetTypeMenu
+            node.reparentTo(newStreetTypeMenu)
+
+	# Scale the whole shebang down by 0.5
+	newStreetTypeMenu.setScale(0.5)
+
+	return newStreetTypeMenu
+
     def createStyleSample(self, style, num):
         # Create a wall
         wall = DNAWall('wall')
@@ -1584,6 +1636,9 @@ class LevelEditor(NodePath, PandaObject):
 	self.pieMenuDictionary['propTypesMenu'] = (
             PieMenu(self.direct,self.createPropTypesMenu(),
                     self.updatePropNum))
+	self.pieMenuDictionary['streetTypesMenu'] = (
+            PieMenu(self.direct,self.createStreetTypesMenu(),
+                    self.updateStreetNum))
         # Create several different style menus
         self.createStyleMenus()
 	# Create several differnt color palette menus
@@ -2103,9 +2158,12 @@ class LevelEditor(NodePath, PandaObject):
 
     def initNewDNAGroupWithParent(self, dnaGroup, rootNode):
 	# Reflect currently selected prop type
-        if dnaGroup.__class__.getClassType().eq(DNAProp.getClassType()):
-            self.updatePropType(dnaGroup,self.getPropType())
-
+        groupClass = dnaGroup.__class__.getClassType()
+        if groupClass.eq(DNAProp.getClassType()):
+            self.updatePropDNA(dnaGroup,self.getPropType())
+        elif groupClass.eq(DNAStreet.getClassType()):
+            self.updateStreetDNA(dnaGroup,self.getStreetType())
+            
         # Create a new copy of dnaGroup's class
         # Extract group's class using __class__
         # Call that class's constructor passing in dnaGroup to make a copy
@@ -2124,7 +2182,7 @@ class LevelEditor(NodePath, PandaObject):
         # Create a new dna Group of the same type a dnaGroup
 	newDNAGroup = dnaGroup.__class__(dnaGroup)
         if dnaGroup.__class__.getClassType().eq(DNAProp.getClassType()):
-            self.updatePropType(newDNAGroup,self.getPropType())
+            self.updatePropDNA(newDNAGroup,self.getPropType())
 
         self.initDNAGroupWithParentType(newDNAGroup, self.groupParent, type)
 
@@ -2567,9 +2625,38 @@ class LevelEditor(NodePath, PandaObject):
 
     def updatePropDNA(self, aDNAProp, dnaString):
 	aDNAProp.setCode(self.dnaStore.findCode(dnaString))
+        aDNAProp.setName(dnaString + '_DNARoot')
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
 	self.setPropType(dnaString)
+
+    def updateStreetNum(self,streetNumber):
+	self.updateStreetType(self.targetDNAObject, streetNumber)
+
+    def updateStreetType(self, aDNAStreet, streetNumber):
+	# Which streetType was picked by the user?
+        if (streetNumber < 0):
+            dnaString = self.activeMenu.getInitialState()
+        else:
+            dnaString = self.getStreetTypes()[streetNumber]
+
+	# Now update the texture on the wall with that texture
+	self.updateStreetDNA(aDNAStreet,dnaString)
+
+    def updateStreetDNA(self, aDNAStreet, dnaString):
+	aDNAStreet.setCode(self.dnaStore.findCode(dnaString))
+        aDNAStreet.setName(dnaString + '_DNARoot')
+        aDNAStreet.setStreetTexture(
+            self.getDNACode(self.attributeDictionary['streetTexture']))
+        if (string.find(dnaString, 'keyboard') >= 0):
+            aDNAStreet.setSidewalkTexture(
+                self.getDNACode('street_sidewalk_MM_keyboard_tex'))
+        else:
+            aDNAStreet.setSidewalkTexture(
+                self.getDNACode(self.attributeDictionary['sidewalkTexture']))
+	# Replace object in levelObjects dictionary and scene graph
+	self.replaceLevelObjectNodePath(self.selectedLevelObject)
+	self.setStreetType(dnaString)
 
     def updateRandomNumWindows(self, aDNAFlatBuilding):
         for i in range(aDNAFlatBuilding.getNumChildren()):
