@@ -61,6 +61,9 @@ PUBLISHED:
   INLINE Light *get_light(int n) const;
   bool has_light(Light *light) const;
 
+  INLINE CPT(RenderAttrib) add_light(Light *light) const;
+  INLINE CPT(RenderAttrib) remove_light(Light *light) const;
+
   INLINE bool is_identity() const;
   INLINE bool is_all_off() const;
 

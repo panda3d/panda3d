@@ -66,6 +66,37 @@ get_light(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::add_light
+//       Access: Published
+//  Description: Returns a new LightAttrib, just like this one, but
+//               with the indicated light added to the list of lights.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderAttrib) LightAttrib::
+add_light(Light *light) const {
+  if (_operation == O_remove) {  
+    return compose(make(O_remove, light));
+  } else {
+    return compose(make(O_add, light));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::remove_light
+//       Access: Published
+//  Description: Returns a new LightAttrib, just like this one, but
+//               with the indicated light removed from the list of
+//               lights.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderAttrib) LightAttrib::
+remove_light(Light *light) const {
+  if (_operation == O_remove) {  
+    return compose(make(O_add, light));
+  } else {
+    return compose(make(O_remove, light));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::is_identity
 //       Access: Published
 //  Description: Returns true if this is an identity attrib: it does
