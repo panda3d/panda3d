@@ -1653,16 +1653,27 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         static const int max_ime_result = 128;
         static char ime_result[max_ime_result];
 
+        // There's a rumor that ImmGetCompositionStringW() doesn't
+        // work for Win95 or Win98; for these OS's we must use
+        // ImmGetCompositionStringA().  How does this affect the
+        // returning of multibyte characters?
         DWORD result_size =
           ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
                                    ime_result, max_ime_result);
         ImmReleaseContext(hwnd, hIMC);
 
         // Add this string into the text buffer of the application.
-        wchar_t *ime_wchar_result = (wchar_t *)ime_result;
-        for (DWORD i = 0; i < result_size / 2; i++) {
-          _input_devices[0].keystroke(ime_wchar_result[i]);
+
+        // ImmGetCompositionStringW() returns a string, but it's
+        // filled in with wstring data: every two characters defines a
+        // 16-bit unicode char.  The docs aren't clear on the
+        // endianness of this.  I guess it's safe to assume all Win32
+        // machines are little-endian.
+        for (DWORD i = 0; i < result_size; i += 2) {
+          int result = (int)ime_result[i + 1] << 8 | ime_result[i];
+          _input_devices[0].keystroke(result);
         }
+        return 0;
       }
       break;
 
