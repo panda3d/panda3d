@@ -2,21 +2,23 @@
 
 setenv OS `uname`
 
+# careful, security exploit here
 setenv LD_LIBRARY_PATH "."
+
 setenv CTEMACS_FOREHIGHLIGHT white
 setenv CTEMACS_BACKHIGHLIGHT blue
 
 # Setup the initial path
 if ( $OS == "Linux" ) then
-  set path = ( /var/local/bin ~/bin . /usr/sbin /sbin /usr/bin /bin \
-             /usr/bin/X11 /usr/etc /usr/local/bin )
+  set path = ( /bin /bin /usr/bin /sbin /usr/sbin /usr/bin/X11 \
+             /usr/etc /usr/local/bin /var/local/bin ~/bin )
 else if ( $OS == "IRIX64" ) then
   set path = ( /var/local/bin ~/bin /usr/local/prman/bin \
-             . /usr/sbin /usr/bsd /sbin /usr/bin /bin /usr/bin/X11 /usr/etc  \
+             /usr/sbin /usr/bsd /sbin /usr/bin /bin /usr/bin/X11 /usr/etc  \
              /usr/demos/bin /usr/local/bin )
-  setenv LD_LIBRARY_PATH ".:/usr/local/lib"
+  setenv LD_LIBRARY_PATH "/usr/local/lib:."
 else if (($OS == "CYGWIN_NT-5.1") || ($OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWIN_NT-4.0" ) || ( $OS == "WINNT" )) then
-  set path = ( /usr/local/bin /contrib/bin . /usr/lib /bin $path )
+  set path = ( /bin /usr/bin /usr/lib /usr/local/bin /contrib/bin $path )
   if ( $?LIB ) then
     setenv LIB "$LIB;"`cygpath -w /usr/lib`
   else 
@@ -24,12 +26,12 @@ else if (($OS == "CYGWIN_NT-5.1") || ($OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWI
   endif
 else if (( $OS == "CYGWIN_98-4.10" ) || ( $OS == "WIN95" )) then
   set path = ( /bin /usr/local/bin /contrib/bin /msvc98/Bin \
-        /mscommon/MSDev98/Bin /mscommon/Tools . /usr/lib $path )
+        /mscommon/MSDev98/Bin /mscommon/Tools /usr/lib $path )
   setenv LIB `cygpath -w /msvc98/mfc/lib`\;`cygpath -w /msvc98/lib`\;`cygpath -w /usr/lib`
   setenv INCLUDE `cygpath -w /msvc98/Include`
 else
   set path = ( /var/local/bin ~/bin /usr/local/prman/bin \
-             . /usr/sbin /usr/bsd /sbin /usr/bin /bin /usr/bin/X11 /usr/etc  \
+             /usr/sbin /usr/bsd /sbin /usr/bin /bin /usr/bin/X11 /usr/etc \
              /usr/demos/bin /usr/local/bin )
 endif
 
