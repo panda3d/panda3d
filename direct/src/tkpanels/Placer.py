@@ -598,7 +598,7 @@ class Placer(AppShell):
         self.pushUndo()
         # If moving widget kill follow task and update wrts
         if self.nodePathMenu.get() == 'widget':
-            taskMgr.removeTasksNamed('followSelectedNodePath')
+            taskMgr.remove('followSelectedNodePath')
             # Record relationship between selected nodes and widget
             direct.selected.getWrtAll()
         # Record initial state

@@ -185,7 +185,7 @@ class TaskManagerWidget(PandaObject):
                                  parent = self.parent,
                                  default = 'cancel')
             if ok:
-                self.taskMgr.removeTask(self.currentTask)
+                self.taskMgr.remove(self.currentTask)
                 self.updateTaskListBox()
 
     def removeMatchingTasks(self):
@@ -201,7 +201,7 @@ class TaskManagerWidget(PandaObject):
                              parent = self.parent,
                              default = 'cancel')
         if ok:
-            self.taskMgr.removeTasksNamed(name)
+            self.taskMgr.remove(name)
             self.updateTaskListBox()
 
     def onDestroy(self):

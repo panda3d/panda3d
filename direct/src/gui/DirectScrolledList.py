@@ -61,7 +61,7 @@ class DirectScrolledList(DirectFrame):
         self.numItemsVisible = self["numItemsVisible"]
 
     def destroy(self):
-        taskMgr.removeTasksNamed(self.taskName("scroll"))
+        taskMgr.remove(self.taskName("scroll"))
         DirectFrame.destroy(self)
 
     def scrollBy(self, delta):
@@ -122,7 +122,7 @@ class DirectScrolledList(DirectFrame):
         task.prevTime = 0.0
         task.delta = 1
         self.scrollBy(task.delta)
-        taskMgr.spawnTaskNamed(task, self.taskName("scroll"))
+        taskMgr.add(task, self.taskName("scroll"))
 
     def __decButtonDown(self, event):
         task = Task.Task(self.__scrollByTask)
@@ -130,10 +130,10 @@ class DirectScrolledList(DirectFrame):
         task.prevTime = 0.0
         task.delta = -1
         self.scrollBy(task.delta)
-        taskMgr.spawnTaskNamed(task, self.taskName("scroll"))
+        taskMgr.add(task, self.taskName("scroll"))
 
     def __buttonUp(self, event):
-        taskMgr.removeTasksNamed(self.taskName("scroll"))
+        taskMgr.remove(self.taskName("scroll"))
 
     def addItem(self, item):
         """

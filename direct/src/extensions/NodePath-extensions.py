@@ -319,7 +319,7 @@
             return lerpTask
         else:
             # spawn the lerp task
-            taskMgr.spawnTaskNamed(lerpTask, taskName)
+            taskMgr.add(lerpTask, taskName)
             return lerpTask
 
     def __autoLerp(self, functorFunc, time, blendType, taskName):

@@ -122,9 +122,9 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
 
         elif not self.smoothStarted:
             taskName = self.taskName("smooth")
-            taskMgr.removeTasksNamed(taskName)
+            taskMgr.remove(taskName)
             self.reloadPosition()
-            taskMgr.spawnMethodNamed(self.doSmoothTask, taskName)
+            taskMgr.add(self.doSmoothTask, taskName)
             self.smoothStarted = 1
             
         return
@@ -137,7 +137,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         """
         if self.smoothStarted:
             taskName = self.taskName("smooth")
-            taskMgr.removeTasksNamed(taskName)
+            taskMgr.remove(taskName)
             self.forceToTruePosition()
             self.smoothStarted = 0
         return

@@ -106,12 +106,12 @@ class Mopath(PandaObject):
         self.node = node
         self.loop = loop
         self.stop()
-        t = taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
+        t = taskMgr.add(self.__playTask, self.name + '-play')
         t.currentTime = time
         t.lastTime = globalClock.getFrameTime()
 
     def stop(self):
-        taskMgr.removeTasksNamed(self.name + '-play')
+        taskMgr.remove(self.name + '-play')
 
     def __playTask(self, state):
         time = globalClock.getFrameTime()

@@ -45,10 +45,10 @@ class DirectFastrak(PandaObject):
         # Initialize tracker
         self.tracker = direct.deviceManager.createTracker(self.device)
         # Update task
-        taskMgr.spawnMethodNamed(self.updateTask, self.name + '-updateTask')
+        taskMgr.add(self.updateTask, self.name + '-updateTask')
     
     def disable(self):
-        taskMgr.removeTasksNamed(self.name + '-updateTask')
+        taskMgr.remove(self.name + '-updateTask')
 
     def destroy(self):
         self.disable()

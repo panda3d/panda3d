@@ -5,8 +5,6 @@ import Pmw
 import __builtin__
 __builtin__.tkroot = Pmw.initialise()
 
-import Task
-
 def tkloop(self):
     # Do all the tkinter events waiting on this frame
     # dooneevent will return 0 if there are no more events
@@ -21,6 +19,6 @@ def tkloop(self):
 from TaskManagerGlobal import *
 
 # Spawn this task
-taskMgr.spawnTaskNamed(Task.Task(tkloop), "tkloop")
+taskMgr.add(tkloop, "tkloop")
 
 

@@ -128,7 +128,7 @@ class Floater(Pmw.MegaWidget):
     def _startFloaterTask(self,event):
         self._fFloaterTask = 1
         apply(self.onPress,self['callbackData'])
-        taskMgr.spawnMethodNamed(self._floaterTask, 'floaterTask')
+        taskMgr.add(self._floaterTask, 'floaterTask')
 
     def _floaterTask(self, state):
         if self.velocity != 0.0:
@@ -136,7 +136,7 @@ class Floater(Pmw.MegaWidget):
         return Task.cont
 
     def _floaterReset(self, event):
-        taskMgr.removeTasksNamed('floaterTask')
+        taskMgr.remove('floaterTask')
         self.velocity = 0.0
         self.scale.set(0.0)
         apply(self.onRelease, self['callbackData'])

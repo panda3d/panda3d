@@ -35,13 +35,13 @@ class PieMenu(NodePath, PandaObject):
             self.action(value)
 
     def removePieMenuTask(self):
-        taskMgr.removeTasksNamed('pieMenuTask')
+        taskMgr.remove('pieMenuTask')
         self.reparentTo(hidden)
         self.lines.reset()
 
     def spawnPieMenuTask(self):
         # Make sure no errant tasks lying around
-        taskMgr.removeTasksNamed('pieMenuTask')
+        taskMgr.remove('pieMenuTask')
 
         # Where did the user press the button?
         self.originX = direct.dr.mouseX
@@ -61,8 +61,7 @@ class PieMenu(NodePath, PandaObject):
 
         # Spawn task to update line and select new texture
         self.currItem = -1
-        t = Task.Task(self.pieMenuTask)
-        taskMgr.spawnTaskNamed(t, 'pieMenuTask')
+        taskMgr.add(self.pieMenuTask, 'pieMenuTask')
 
     def pieMenuTask(self,state):
         mouseX = direct.dr.mouseX

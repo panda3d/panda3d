@@ -12,8 +12,8 @@ def dummyCmd(index):
 # Define some commands to bind to enter, exit and click events
 def shrink(db):
     db['text2_text'] = 'Hi!'
-    taskMgr.removeTasksNamed('shrink')
-    taskMgr.removeTasksNamed('expand')
+    taskMgr.remove('shrink')
+    taskMgr.remove('expand')
     # Get a handle on the geometry for the rollover state
     rolloverSmiley = db.component('geom2')
     rolloverSmiley.setScale(db.component('geom0').getScale()[0])
@@ -22,17 +22,17 @@ def shrink(db):
 
 def expand(db):
     db['text0_text'] = 'Bye!'
-    taskMgr.removeTasksNamed('shrink')
-    taskMgr.removeTasksNamed('expand')
+    taskMgr.remove('shrink')
+    taskMgr.remove('expand')
     db.component('geom0').setScale(db.component('geom2').getScale()[0])
     db.component('geom0').lerpScale(1,1,1, 1, blendType = 'easeInOut',
                              task = 'expand')
     db.component('geom2').clearColor()
 
 def ouch(db):
-    taskMgr.removeTasksNamed('shrink')
-    taskMgr.removeTasksNamed('expand')
-    taskMgr.removeTasksNamed('runAway')
+    taskMgr.remove('shrink')
+    taskMgr.remove('expand')
+    taskMgr.remove('runAway')
     db.component('geom0').setScale(db.component('geom2').getScale()[0])
     db.component('geom1').setScale(db.component('geom2').getScale()[0])
     db['text2_text'] = 'Ouch!'

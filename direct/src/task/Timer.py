@@ -28,7 +28,7 @@ class Timer:
         self.name = name
         self.startT = self.clock.getFrameTime()
         self.currT = 0.0
-        taskMgr.spawnMethodNamed(self.__timerTask, self.name + '-run')
+        taskMgr.add(self.__timerTask, self.name + '-run')
         self.started = 1
 
     def startCallback(self, t, callback):
@@ -40,7 +40,7 @@ class Timer:
         self.finalT = t
         self.startT = self.clock.getFrameTime()
         self.currT = 0.0
-        taskMgr.spawnMethodNamed(self.__timerTask, self.name + '-run')
+        taskMgr.add(self.__timerTask, self.name + '-run')
         self.started = 1
 
     def stop(self):
@@ -48,7 +48,7 @@ class Timer:
         """
         if (not self.started):
             return 0.0
-        taskMgr.removeTasksNamed(self.name + '-run')
+        taskMgr.remove(self.name + '-run')
         self.started = 0
         return self.currT
 

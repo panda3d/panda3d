@@ -606,7 +606,7 @@ class DialWidget(Pmw.MegaWidget):
     def knobMouseDown(self,event):
         self._onButtonPress()
         self.knobSF = 0.0
-        t = taskMgr.spawnMethodNamed(self.knobComputeVelocity, 'cv')
+        t = taskMgr.add(self.knobComputeVelocity, 'cv')
         t.lastTime = globalClock.getFrameTime()
 
     def knobComputeVelocity(self, state):
@@ -633,7 +633,7 @@ class DialWidget(Pmw.MegaWidget):
             return -sf
 
     def knobMouseUp(self, event):
-        taskMgr.removeTasksNamed('cv')
+        taskMgr.remove('cv')
         self.knobSF = 0.0
         self._onButtonRelease()
 

@@ -84,7 +84,7 @@ class DirectCameraControl(PandaObject):
                 self.spawnMouseRotateTask()
 
     def mouseFlyStop(self):
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         stopT = globalClock.getFrameTime()
         deltaT = stopT - self.startT
         stopF = globalClock.getFrameCount()
@@ -111,39 +111,39 @@ class DirectCameraControl(PandaObject):
 
     def spawnXZTranslateOrHPanYZoom(self):
         # Kill any existing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Spawn the new task
         t = Task.Task(self.XZTranslateOrHPanYZoomTask)
         # For HPanYZoom
         t.zoomSF = Vec3(self.coaMarker.getPos(direct.camera)).length()
-        taskMgr.spawnTaskNamed(t, 'manipulateCamera')
+        taskMgr.add(t, 'manipulateCamera')
 
     def spawnXZTranslateOrHPPan(self):
         # Kill any existing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Spawn new task
-        taskMgr.spawnMethodNamed(self.XZTranslateOrHPPanTask,
-                                 'manipulateCamera')
+        taskMgr.add(self.XZTranslateOrHPPanTask,
+                    'manipulateCamera')
 
     def spawnXZTranslate(self):
         # Kill any existing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Spawn new task
-        taskMgr.spawnMethodNamed(self.XZTranslateTask, 'manipulateCamera')
+        taskMgr.add(self.XZTranslateTask, 'manipulateCamera')
 
     def spawnHPanYZoom(self):
         # Kill any existing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Spawn new task
         t = Task.Task(self.HPanYZoomTask)
         t.zoomSF = Vec3(self.coaMarker.getPos(direct.camera)).length()
-        taskMgr.spawnTaskNamed(t, 'manipulateCamera')
+        taskMgr.add(t, 'manipulateCamera')
 
     def spawnHPPan(self):
         # Kill any existing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Spawn new task
-        taskMgr.spawnMethodNamed(self.HPPanTask, 'manipulateCamera')
+        taskMgr.add(self.HPPanTask, 'manipulateCamera')
 
     def XZTranslateOrHPanYZoomTask(self, state):
         if direct.fShift:
@@ -205,7 +205,7 @@ class DirectCameraControl(PandaObject):
 
     def spawnMouseRotateTask(self):
         # Kill any existing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Set at markers position in render coordinates
         self.camManipRef.setPos(self.coaMarkerPos)
         self.camManipRef.setHpr(direct.camera, ZERO_POINT)
@@ -214,7 +214,7 @@ class DirectCameraControl(PandaObject):
             t.constrainedDir = 'y'
         else:
             t.constrainedDir = 'x'
-        taskMgr.spawnTaskNamed(t, 'manipulateCamera')
+        taskMgr.add(t, 'manipulateCamera')
 
     def mouseRotateTask(self, state):
         # If moving outside of center, ignore motion perpendicular to edge
@@ -245,7 +245,7 @@ class DirectCameraControl(PandaObject):
 
     def spawnMouseRollTask(self):
         # Kill any existing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Set at markers position in render coordinates
         self.camManipRef.setPos(self.coaMarkerPos)
         self.camManipRef.setHpr(direct.camera, ZERO_POINT)
@@ -253,7 +253,7 @@ class DirectCameraControl(PandaObject):
         t.coaCenter = getScreenXY(self.coaMarker)
         t.lastAngle = getCrankAngle(t.coaCenter)
         t.wrtMat = direct.camera.getMat( self.camManipRef )
-        taskMgr.spawnTaskNamed(t, 'manipulateCamera')
+        taskMgr.add(t, 'manipulateCamera')
 
     def mouseRollTask(self, state):
         wrtMat = state.wrtMat
@@ -383,7 +383,7 @@ class DirectCameraControl(PandaObject):
         self.updateCoaMarkerSize()
 
     def uprightCam(self):
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Record undo point
         direct.pushUndo([direct.camera])
         # Pitch camera till upright
@@ -395,7 +395,7 @@ class DirectCameraControl(PandaObject):
                               task = 'manipulateCamera')
 
     def orbitUprightCam(self):
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Record undo point
         direct.pushUndo([direct.camera])
         # Transform camera z axis to render space
@@ -439,7 +439,7 @@ class DirectCameraControl(PandaObject):
         self.centerCamIn(0.)
 
     def centerCamIn(self, t):
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Record undo point
         direct.pushUndo([direct.camera])
         # Determine marker location
@@ -456,7 +456,7 @@ class DirectCameraControl(PandaObject):
         t.uponDeath = self.updateCoaMarkerSizeOnDeath
 
     def zoomCam(self, zoomFactor, t):
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Record undo point
         direct.pushUndo([direct.camera])
         # Find a point zoom factor times the current separation
@@ -474,7 +474,7 @@ class DirectCameraControl(PandaObject):
         
     def spawnMoveToView(self, view):
         # Kill any existing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # Record undo point
         direct.pushUndo([direct.camera])
         # Calc hprOffset
@@ -525,7 +525,7 @@ class DirectCameraControl(PandaObject):
         
     def swingCamAboutWidget(self, degrees, t):
         # Remove existing camera manipulation task
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
 
         # Record undo point
         direct.pushUndo([direct.camera])
@@ -553,7 +553,7 @@ class DirectCameraControl(PandaObject):
     def fitOnWidget(self, nodePath = 'None Given'):
         # Fit the node on the screen
         # stop any ongoing tasks
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
         # How big is the node?
         nodeScale = direct.widget.scalingNode.getScale(render)
         maxScale = max(nodeScale[0],nodeScale[1],nodeScale[2])
@@ -601,16 +601,16 @@ class DirectCameraControl(PandaObject):
         # Push state onto undo stack
         direct.pushUndo(direct.selected)
         # Remove the task to keep the widget attached to the object
-        taskMgr.removeTasksNamed('followSelectedNodePath')
+        taskMgr.remove('followSelectedNodePath')
         # Spawn a task to keep the selected objects with the widget
-        taskMgr.spawnMethodNamed(self.stickToWidgetTask, 'stickToWidget')
+        taskMgr.add(self.stickToWidgetTask, 'stickToWidget')
         # Spawn a task to move the widget
         t = direct.widget.lerpPos(Point3(centerVec),
                                   CAM_MOVE_DURATION,
                                   other = direct.camera, 
                                   blendType = 'easeInOut',
                                   task = 'moveToFitTask')
-        t.uponDeath = lambda state: taskMgr.removeTasksNamed('stickToWidget')
+        t.uponDeath = lambda state: taskMgr.remove('stickToWidget')
 
     def stickToWidgetTask(self, state):
         # Move the objects with the widget
@@ -636,5 +636,5 @@ class DirectCameraControl(PandaObject):
         base.enableMouse()
 
     def removeManipulateCameraTask(self):
-        taskMgr.removeTasksNamed('manipulateCamera')
+        taskMgr.remove('manipulateCamera')
 

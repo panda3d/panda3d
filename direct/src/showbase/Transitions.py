@@ -48,7 +48,7 @@ class Transitions:
                 Task.Task(self.__fadeInLerpDone))
             # Spawn the sequence
             if not block:
-                taskMgr.spawnTaskNamed(task, self.fadeTaskName)
+                taskMgr.add(task, self.fadeTaskName)
             else:
                 return task
             
@@ -57,7 +57,7 @@ class Transitions:
         As a sequence: Fade in, execute the given task
         """
         seq = Task.sequence(self.fadeIn(time, block=1), task)
-        taskMgr.spawnTaskNamed(seq, 'fadeInTaskSeq')
+        taskMgr.add(seq, 'fadeInTaskSeq')
 
     def fadeOut(self, t=0.5, block=0):
         """
@@ -125,13 +125,13 @@ class Transitions:
             seq = Task.sequence(self.fadeOut(time, block=1), task)
             
         # do it
-        taskMgr.spawnTaskNamed(seq, 'fadeOutTaskSeq')
+        taskMgr.add(seq, 'fadeOutTaskSeq')
 
     def noFade(self):
         """
         Removes any current fade tasks and parents the fade polygon away
         """
-        taskMgr.removeTasksNamed(self.fadeTaskName)
+        taskMgr.remove(self.fadeTaskName)
         if self.fade != None:
             self.fade.reparentTo(hidden)
         
@@ -164,7 +164,7 @@ class Transitions:
                 Task.Task(self.__irisInLerpDone))
             # Spawn the sequence
             if not block:
-                taskMgr.spawnTaskNamed(task, self.irisTaskName)
+                taskMgr.add(task, self.irisTaskName)
             else:
                 return task
             
@@ -173,7 +173,7 @@ class Transitions:
         As a sequence: iris in, execute the given task
         """
         seq = Task.sequence(self.irisIn(time, block=1), task)
-        taskMgr.spawnTaskNamed(seq, 'irisInTaskSeq')
+        taskMgr.add(seq, 'irisInTaskSeq')
 
     def irisOutLerpDone(self, task):
         # This is a helper function to the fadeIn sequence
@@ -207,7 +207,7 @@ class Transitions:
                 Task.Task(self.irisOutLerpDone))
             # Spawn the sequence
             if not block:
-                taskMgr.spawnTaskNamed(task, self.irisTaskName)
+                taskMgr.add(task, self.irisTaskName)
             else:
                 return task
 
@@ -227,13 +227,13 @@ class Transitions:
             seq = Task.sequence(self.irisOut(time, block=1), task)
             
         # do it
-        taskMgr.spawnTaskNamed(seq, 'irisOutTaskSeq')
+        taskMgr.add(seq, 'irisOutTaskSeq')
 
     def noIris(self):
         """
         Removes any current iris tasks and parents the iris polygon away
         """
-        taskMgr.removeTasksNamed(self.irisTaskName)
+        taskMgr.remove(self.irisTaskName)
         if self.iris != None:
             self.iris.reparentTo(hidden)
 

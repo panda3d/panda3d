@@ -52,7 +52,7 @@ class DirectManipulationControl(PandaObject):
             self.constraint = None
         # Check to see if we are moving the object
         # We are moving the object if we either wait long enough
-        taskMgr.spawnTaskNamed(
+        taskMgr.add(
             Task.doLater(MANIPULATION_MOVE_DELAY,
                          Task.Task(self.switchToMoveMode),
                          'manip-move-wait'),
@@ -62,10 +62,10 @@ class DirectManipulationControl(PandaObject):
         watchMouseTask = Task.Task(self.watchMouseTask)
         watchMouseTask.initX = direct.dr.mouseX
         watchMouseTask.initY = direct.dr.mouseY
-        taskMgr.spawnTaskNamed(watchMouseTask, 'manip-watch-mouse')
+        taskMgr.add(watchMouseTask, 'manip-watch-mouse')
 
     def switchToMoveMode(self, state):
-        taskMgr.removeTasksNamed('manip-watch-mouse')
+        taskMgr.remove('manip-watch-mouse')
         self.mode = 'move'
         self.manipulateObject()
         return Task.done
@@ -73,7 +73,7 @@ class DirectManipulationControl(PandaObject):
     def watchMouseTask(self, state):
         if (((abs (state.initX - direct.dr.mouseX)) > 0.01) or
             ((abs (state.initY - direct.dr.mouseY)) > 0.01)):
-            taskMgr.removeTasksNamed('manip-move-wait')
+            taskMgr.remove('manip-move-wait')
             self.mode = 'move'
             self.manipulateObject()
             return Task.done
@@ -81,9 +81,9 @@ class DirectManipulationControl(PandaObject):
             return Task.cont
 
     def manipulationStop(self):
-        taskMgr.removeTasksNamed('manipulateObject')
-        taskMgr.removeTasksNamed('manip-move-wait')
-        taskMgr.removeTasksNamed('manip-watch-mouse')
+        taskMgr.remove('manipulateObject')
+        taskMgr.remove('manip-move-wait')
+        taskMgr.remove('manip-watch-mouse')
         # depending on flag.....
         if self.mode == 'select':
             # Check for object under mouse
@@ -123,7 +123,7 @@ class DirectManipulationControl(PandaObject):
         if not direct.selected.last:
             return
         # Clear out old task to make sure
-        taskMgr.removeTasksNamed('followSelectedNodePath')
+        taskMgr.remove('followSelectedNodePath')
         # Where are the object handles relative to the selected object
         pos = VBase3(0)
         hpr = VBase3(0)
@@ -136,7 +136,7 @@ class DirectManipulationControl(PandaObject):
         t.hpr = hpr
         t.base = direct.selected.last
         # Spawn the task
-        taskMgr.spawnTaskNamed(t, 'followSelectedNodePath')
+        taskMgr.add(t, 'followSelectedNodePath')
 
     def followSelectedNodePathTask(self, state):
         direct.widget.setPosHpr(state.base, state.pos, state.hpr)
@@ -160,15 +160,15 @@ class DirectManipulationControl(PandaObject):
             self.objectHandles.manipModeColor()
 
     def removeManipulateObjectTask(self):
-        taskMgr.removeTasksNamed('manipulateObject')
+        taskMgr.remove('manipulateObject')
 
     def manipulateObject(self):
         # Only do this if something is selected
         if direct.selected:
             # Remove the task to keep the widget attached to the object
-            taskMgr.removeTasksNamed('followSelectedNodePath')
+            taskMgr.remove('followSelectedNodePath')
             # and the task to highlight the widget
-            taskMgr.removeTasksNamed('highlightWidgetTask')
+            taskMgr.remove('highlightWidgetTask')
             # Set manipulation flag
             self.fManip = 1
             # Record undo point
@@ -204,7 +204,7 @@ class DirectManipulationControl(PandaObject):
         # These are used to rotate about view vector
         if t.fMouseX and t.fMouseY:
             t.lastAngle = getCrankAngle(t.coaCenter)
-        taskMgr.spawnTaskNamed(t, 'manipulateObject')
+        taskMgr.add(t, 'manipulateObject')
 
     def manipulateObjectTask(self, state):
         # Widget takes precedence
@@ -732,14 +732,14 @@ class ObjectHandles(NodePath,PandaObject):
         self.setScale(1)
 
     def multiplyScalingFactorBy(self, factor):
-        taskMgr.removeTasksNamed('resizeObjectHandles')
+        taskMgr.remove('resizeObjectHandles')
         sf = self.ohScalingFactor = self.ohScalingFactor * factor
         self.scalingNode.lerpScale(sf,sf,sf, 0.5,
                                    blendType = 'easeInOut',
                                    task = 'resizeObjectHandles')
 
     def growToFit(self):
-        taskMgr.removeTasksNamed('resizeObjectHandles')
+        taskMgr.remove('resizeObjectHandles')
         # Increase handles scale until they cover 30% of the min dimension
         pos = direct.widget.getPos(direct.camera)
         minDim = min(direct.dr.nearWidth, direct.dr.nearHeight)

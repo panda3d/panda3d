@@ -80,10 +80,10 @@ class DirectJoybox(PandaObject):
         self.acceptSwitchModeEvent()
         self.acceptUprightCameraEvent()
         # Update task
-        taskMgr.spawnMethodNamed(self.updateTask, self.name + '-updateTask')
+        taskMgr.add(self.updateTask, self.name + '-updateTask')
     
     def disable(self):
-        taskMgr.removeTasksNamed(self.name + '-updateTask')
+        taskMgr.remove(self.name + '-updateTask')
         # Ignore button events
         self.ignoreSwitchModeEvent()
         self.ignoreUprightCameraEvent()
@@ -189,7 +189,7 @@ class DirectJoybox(PandaObject):
         def hideText(state, s = self):
             s.readout.setText('')
             return Task.done
-        taskMgr.removeTasksNamed(self.name + '-showMode')
+        taskMgr.remove(self.name + '-showMode')
         # Update display
         self.readout.setText(modeText)
         t = taskMgr.doMethodLater(3.0, hideText, self.name + '-showMode')

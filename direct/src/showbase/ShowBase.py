@@ -437,15 +437,14 @@ class ShowBase:
         """enableParticles(self)"""
         self.particleMgrEnabled = 1
         self.physicsMgrEnabled = 1
-        self.taskMgr.removeTasksNamed('manager-update')
-        self.taskMgr.spawnTaskNamed(Task.Task(self.updateManagers),
-                                        'manager-update')
+        self.taskMgr.remove('manager-update')
+        self.taskMgr.add(self.updateManagers, 'manager-update')
 
     def disableParticles(self):
         """enableParticles(self)"""
         self.particleMgrEnabled = 0
         self.physicsMgrEnabled = 0
-        self.taskMgr.removeTasksNamed('manager-update')
+        self.taskMgr.remove('manager-update')
 
     def toggleParticles(self):
         if self.particleMgrEnabled == 0:
@@ -555,15 +554,15 @@ class ShowBase:
         self.shutdown()
         # give the igloop task a reasonably "late" priority,
         # so that it will get run after most tasks
-        self.taskMgr.spawnTaskNamed(Task.Task(self.igloop, 50), 'igloop')
+        self.taskMgr.add(self.igloop, 'igloop', priority = 50)
         # give the dataloop task a reasonably "early" priority,
         # so that it will get run before most tasks
-        self.taskMgr.spawnTaskNamed(Task.Task(self.dataloop, -50), 'dataloop')
+        self.taskMgr.add(self.dataloop, 'dataloop', priority = -50)
         self.eventMgr.restart()
 
     def shutdown(self):
-        self.taskMgr.removeTasksNamed('igloop')
-        self.taskMgr.removeTasksNamed('dataloop')
+        self.taskMgr.remove('igloop')
+        self.taskMgr.remove('dataloop')
         self.eventMgr.shutdown()
 
     def toggleBackface(self):
@@ -834,7 +833,7 @@ class ShowBase:
         """
         globalClock.setMode(ClockObject.MNonRealTime)
         globalClock.setDt(1.0/float(fps))
-        t = taskMgr.spawnMethodNamed(self._movieTask, namePrefix + '_task')
+        t = taskMgr.add(self._movieTask, namePrefix + '_task')
         t.endT = globalClock.getFrameTime() + duration
         t.frameIndex = 1
         t.outputString = namePrefix + '_%0' + `sd` + 'd.' + format

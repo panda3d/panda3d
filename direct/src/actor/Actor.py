@@ -301,12 +301,18 @@ class Actor(PandaObject, NodePath):
 
     def getPartBundleDict(self):
         return self.__partBundleDict
-    
+
+        
     def getLODNames(self):
         """getLODNames(self):
         Return list of Actor LOD names. If not an LOD actor,
-        returns 'lodRoot'"""
-        return self.__partBundleDict.keys()
+        returns 'lodRoot'
+        Sorts them from highest lod to lowest.
+        """
+        lodNames = self.__partBundleDict.keys()
+        # Reverse sort the doing a string->int
+        lodNames.sort(lambda x,y : cmp(int(y), int(x)))
+        return lodNames
     
     def getPartNames(self):
         """getPartNames(self):

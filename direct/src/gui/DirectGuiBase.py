@@ -789,18 +789,18 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         #base.mouseWatcherNode.setModifierButtons(mb)
         
     def editStart(self, event):
-        taskMgr.removeTasksNamed('guiEditTask')
+        taskMgr.remove('guiEditTask')
         vWidget2render2d = self.getPos(render2d)
         vMouse2render2d = Point3(event.getMouse()[0], 0, event.getMouse()[1])
         editVec = Vec3(vWidget2render2d - vMouse2render2d)
         if base.mouseWatcherNode.getModifierButtons().isDown(
             KeyboardButton.control()):
-            t = taskMgr.spawnMethodNamed(self.guiScaleTask, 'guiEditTask')
+            t = taskMgr.add(self.guiScaleTask, 'guiEditTask')
             t.refPos = vWidget2render2d
             t.editVecLen = editVec.length()
             t.initScale = self.getScale()
         else:
-            t = taskMgr.spawnMethodNamed(self.guiDragTask, 'guiEditTask')
+            t = taskMgr.add(self.guiDragTask, 'guiEditTask')
             t.editVec = editVec
 
     def guiScaleTask(self, state):
@@ -827,7 +827,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         return Task.cont
 
     def editStop(self, event):
-        taskMgr.removeTasksNamed('guiEditTask')
+        taskMgr.remove('guiEditTask')
 
     def setState(self):
         if type(self['state']) == type(0):

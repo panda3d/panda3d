@@ -655,18 +655,18 @@ class MopathRecorder(AppShell, PandaObject):
         Hook called upon selection of a node path used to select playback
         marker if subnode selected
         """
-        taskMgr.removeTasksNamed(self.name + '-curveEditTask')
+        taskMgr.remove(self.name + '-curveEditTask')
         if nodePath.id() == self.playbackMarker.getChild(0).id():
             direct.select(self.playbackMarker)
         elif nodePath.id() == self.tangentMarker.getChild(0).id():
             direct.select(self.tangentMarker)
         elif nodePath.id() == self.playbackMarker.id():
             self.tangentGroup.show()
-            taskMgr.spawnMethodNamed(self.curveEditTask,
+            taskMgr.add(self.curveEditTask,
                                      self.name + '-curveEditTask')
         elif nodePath.id() == self.tangentMarker.id():
             self.tangentGroup.show()
-            taskMgr.spawnMethodNamed(self.curveEditTask,
+            taskMgr.add(self.curveEditTask,
                                      self.name + '-curveEditTask')
         else:
             self.tangentGroup.hide()
@@ -755,9 +755,9 @@ class MopathRecorder(AppShell, PandaObject):
         direct.deselect(self.playbackMarker)
         direct.deselect(self.tangentMarker)
         # Remove tasks
-        taskMgr.removeTasksNamed(self.name + '-recordTask')
-        taskMgr.removeTasksNamed(self.name + '-playbackTask')
-        taskMgr.removeTasksNamed(self.name + '-curveEditTask')
+        taskMgr.remove(self.name + '-recordTask')
+        taskMgr.remove(self.name + '-playbackTask')
+        taskMgr.remove(self.name + '-curveEditTask')
 
     def createNewPointSet(self):
         self.pointSetName = self.name + '-ps-' + `self.pointSetCount`
@@ -924,8 +924,8 @@ class MopathRecorder(AppShell, PandaObject):
     def toggleRecord(self):
         if self.getVariable('Recording', 'Record').get():
             # Kill old tasks
-            taskMgr.removeTasksNamed(self.name + '-recordTask')
-            taskMgr.removeTasksNamed(self.name + '-curveEditTask')
+            taskMgr.remove(self.name + '-recordTask')
+            taskMgr.remove(self.name + '-curveEditTask')
             # Remove old curve
             self.nurbsCurveDrawer.hide()
             # Reset curve fitters
@@ -966,13 +966,13 @@ class MopathRecorder(AppShell, PandaObject):
                     # start flying nodePath along path
                     self.startPlayback()
                 # Start new task
-                t = taskMgr.spawnMethodNamed(
+                t = taskMgr.add(
                     self.recordTask, self.name + '-recordTask')
                 t.startTime = globalClock.getFrameTime()
         else:
             if self.samplingMode == 'Continuous':
                 # Kill old task
-                taskMgr.removeTasksNamed(self.name + '-recordTask')
+                taskMgr.remove(self.name + '-recordTask')
                 if ((self.recordingType.get() == 'Refine') or
                     (self.recordingType.get() == 'Extend')):
                     # Reparent node path back to parent
@@ -1263,7 +1263,7 @@ class MopathRecorder(AppShell, PandaObject):
         # Make sure checkbutton is set
         self.getVariable('Playback', 'Play').set(1)
         # Start new playback task
-        t = taskMgr.spawnMethodNamed(
+        t = taskMgr.add(
             self.playbackTask, self.name + '-playbackTask')
         t.currentTime = self.playbackTime
         t.lastTime = globalClock.getFrameTime()
@@ -1314,7 +1314,7 @@ class MopathRecorder(AppShell, PandaObject):
 
     def stopPlayback(self):
         self.getVariable('Playback', 'Play').set(0)
-        taskMgr.removeTasksNamed(self.name + '-playbackTask')
+        taskMgr.remove(self.name + '-playbackTask')
 
     def jumpToStartOfPlayback(self):
         self.stopPlayback()

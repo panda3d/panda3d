@@ -94,7 +94,7 @@ class Interval(DirectObject):
             t0 = self.duration
 
         # Kill ongoing play task
-        taskMgr.removeTasksNamed(self.name + '-play')
+        taskMgr.remove(self.name + '-play')
         # Start new one
         self.offset = t0
         self.startT = self.clock.getFrameTime()
@@ -110,7 +110,7 @@ class Interval(DirectObject):
         assert(t0 <= self.endTime)
 
         # Spawn task
-        taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
+        taskMgr.add(self.__playTask, self.name + '-play')
 
     def loop(self, t0=0.0, duration=0.0, scale=1.0):
         self.accept(self.name + '-loop', self.play,
@@ -125,7 +125,7 @@ class Interval(DirectObject):
         for stopEvent in self.stopEventList:
             messenger.send(stopEvent)
         # Kill task
-        taskMgr.removeTasksNamed(self.name + '-play')
+        taskMgr.remove(self.name + '-play')
         # No more looping.
         self.ignore(self.name + '-loop')
         return self.curr_t
@@ -188,7 +188,7 @@ class Interval(DirectObject):
         # So when you drag scale with mouse its like you started a playback
         def onPress(s=self,es=es):
             # Kill playback task
-            taskMgr.removeTasksNamed(s.name + '-play')
+            taskMgr.remove(s.name + '-play')
             # INIT interval
             s.setT(es.get(), event = IVAL_INIT)
         es.onPress = onPress

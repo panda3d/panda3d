@@ -92,7 +92,7 @@ class ClusterManager(DirectObject.DirectObject):
 
     def startMoveCamTask(self):
         task = Task.Task(self.moveCameraTask,49)
-        taskMgr.spawnTaskNamed(task, "moveCamTask")
+        taskMgr.add(task, "moveCamTask")
         return None        
 
     def moveCameraTask(self,task):
@@ -113,7 +113,7 @@ class ClusterManagerSync(ClusterManager):
 
     def startSwapCoordinatorTask(self):
         task = Task.Task(self.swapCoordinator,51)
-        taskMgr.spawnTaskNamed(task, "clientSwapCoordinator")
+        taskMgr.add(task, "clientSwapCoordinator")
         return None
 
     def swapCoordinator(self,task):

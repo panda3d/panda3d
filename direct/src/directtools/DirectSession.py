@@ -417,10 +417,10 @@ class DirectSession(PandaObject):
             # shrink the widget            
             self.widget.setScalingFactor(dnp.getRadius())
             # Spawn task to have object handles follow the selected object
-            taskMgr.removeTasksNamed('followSelectedNodePath')
+            taskMgr.remove('followSelectedNodePath')
             t = Task.Task(self.followSelectedNodePathTask)
             t.dnp = dnp
-            taskMgr.spawnTaskNamed(t, 'followSelectedNodePath')
+            taskMgr.add(t, 'followSelectedNodePath')
             # Send an message marking the event
             messenger.send('DIRECT_selectedNodePath', [dnp])
 
@@ -439,7 +439,7 @@ class DirectSession(PandaObject):
             self.widget.hideWidget()
             self.selectedNPReadout.reparentTo(hidden)
             self.selectedNPReadout.setText(' ')
-            taskMgr.removeTasksNamed('followSelectedNodePath')
+            taskMgr.remove('followSelectedNodePath')
             self.ancestry = []
             # Send an message marking the event
             messenger.send('DIRECT_deselectedNodePath', [dnp])
@@ -450,7 +450,7 @@ class DirectSession(PandaObject):
         self.widget.hideWidget()
         self.selectedNPReadout.reparentTo(hidden)
         self.selectedNPReadout.setText(' ')
-        taskMgr.removeTasksNamed('followSelectedNodePath')
+        taskMgr.remove('followSelectedNodePath')
 
     def setActiveParent(self, nodePath = None):
         # Record new parent
@@ -486,7 +486,7 @@ class DirectSession(PandaObject):
     def flash(self, nodePath = 'None Given'):
         """ Highlight an object by setting it red for a few seconds """
         # Clean up any existing task
-        taskMgr.removeTasksNamed('flashNodePath')
+        taskMgr.remove('flashNodePath')
         # Spawn new task if appropriate
         if nodePath == 'None Given':
             # If nothing specified, try selected node path
@@ -502,7 +502,7 @@ class DirectSession(PandaObject):
             # Temporarily set node path color
             nodePath.setColor(flashColor)
             # Clean up color in a few seconds
-            t = taskMgr.spawnTaskNamed(
+            t = taskMgr.add(
                 Task.doLater(DIRECT_FLASH_DURATION,
                              # This is just a dummy task
                              Task.Task(self.flashDummy),
@@ -537,7 +537,7 @@ class DirectSession(PandaObject):
     def isolate(self, nodePath = 'None Given'):
         """ Show a node path and hide its siblings """
         # First kill the flashing task to avoid complications
-        taskMgr.removeTasksNamed('flashNodePath')
+        taskMgr.remove('flashNodePath')
         # Use currently selected node path if node selected
         if nodePath == 'None Given':
             nodePath = self.selected.last
@@ -551,7 +551,7 @@ class DirectSession(PandaObject):
     def toggleVis(self, nodePath = 'None Given'):
         """ Toggle visibility of node path """
         # First kill the flashing task to avoid complications
-        taskMgr.removeTasksNamed('flashNodePath')
+        taskMgr.remove('flashNodePath')
         if nodePath == 'None Given':
             # If nothing specified, try selected node path
             nodePath = self.selected.last
@@ -691,8 +691,8 @@ class DirectSession(PandaObject):
 
     # UTILITY FUNCTIONS
     def message(self, text):
-        taskMgr.removeTasksNamed('hideDirectMessage')
-        taskMgr.removeTasksNamed('hideDirectMessageLater')
+        taskMgr.remove('hideDirectMessage')
+        taskMgr.remove('hideDirectMessageLater')
         self.directMessageReadout.reparentTo(aspect2d)
         self.directMessageReadout.setText(text)
         self.hideDirectMessageLater()
@@ -700,7 +700,7 @@ class DirectSession(PandaObject):
     def hideDirectMessageLater(self):
         seq = Task.doLater(3.0, Task.Task(self.hideDirectMessage),
                            'hideDirectMessage')
-        t = taskMgr.spawnTaskNamed(seq, 'hideDirectMessageLater')
+        t = taskMgr.add(seq, 'hideDirectMessageLater')
 
     def hideDirectMessage(self, state):
         self.directMessageReadout.reparentTo(hidden)
@@ -831,14 +831,13 @@ class DisplayRegionList(PandaObject):
 
     def stop(self):
         # Kill the existing context task
-        taskMgr.removeTasksNamed('DIRECTContextTask')
+        taskMgr.remove('DIRECTContextTask')
 
     def spawnContextTask(self):
-        taskMgr.spawnTaskNamed(Task.Task(self.contextTask),
-                               'DIRECTContextTask')
+        taskMgr.add(self.contextTask, 'DIRECTContextTask')
 
     def removeContextTask(self):
-        taskMgr.removeTasksNamed('DIRECTContextTask')
+        taskMgr.remove('DIRECTContextTask')
 
     def contextTask(self, state):
         # Window Data

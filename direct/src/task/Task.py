@@ -53,18 +53,6 @@ def print_exc_plus():
 # Store the global clock
 globalClock = ClockObject.getGlobalClock()
 
-def getTimeFrame():
-    # WARNING: If you are testing tasks without an igloop,
-    # you must manually tick the clock
-
-    # Ask for the time last frame
-    t = globalClock.getFrameTime()
-
-    # Get the new frame count
-    f = globalClock.getFrameCount()
-
-    return t, f
-
 
 class Task:
     count = 0
@@ -119,17 +107,6 @@ def pause(delayTime):
     task.name = 'pause'
     task.delayTime = delayTime
     return task
-
-
-def release():
-    def func(self):
-        # A release is immediately done
-        # TaskManager.notify.debug('release done: ' + self.name)
-        return done
-    task = Task(func)
-    task.name = 'release'
-    return task
-
 
 def sequence(*taskList):
     return make_sequence(taskList)
@@ -240,66 +217,6 @@ def make_loop(taskList):
     return task
 
 
-def makeSpawner(task, taskName, taskMgr):
-    def func(self):
-        self.taskMgr.spawnTaskNamed(self.task, self.taskName)
-        return done
-    newTask = Task(func)
-    newTask.name = taskName + "-spawner"
-    newTask.task = task
-    newTask.taskName = taskName
-    newTask.taskMgr = taskMgr
-    return newTask
-
-
-def makeSequenceFromTimeline(timelineList, taskMgr):
-    timeline = []
-    lastPause = 0
-    sortedList = list(timelineList)
-    sortedList.sort()
-    for triple in sortedList:
-        t = triple[0] - lastPause
-        lastPause = triple[0]
-        task = triple[1]
-        taskName = triple[2]
-        timeline.append(pause(t))
-        timeline.append(makeSpawner(task, taskName, taskMgr))
-    return make_sequence(timeline)
-
-
-def timeline(*timelineList):
-    def func(self):
-        # Step our sub task manager (returns the number of tasks remaining)
-        lenTaskList = self.taskMgr.step()
-
-        # The sequence start time is the same as our start time
-        self.sequence.time = self.time
-        self.sequence.frame = self.frame
-
-        if (not self.sequenceDone):
-            # Execute the sequence for this frame
-            seqRet = self.sequence(self.sequence)
-            # See if sequence is done
-            if (seqRet == done):
-                self.sequenceDone = 1
-                # See if the timeline is done
-                if (lenTaskList == 0):
-                    # TaskManager.notify.debug('timeline done: ' + self.name)
-                    return done
-                else:
-                    return cont
-            else:
-                return cont
-        else:
-            return cont
-    task = Task(func)
-    task.name = 'timeline'
-    task.taskMgr = TaskManager()
-    task.sequence = makeSequenceFromTimeline(timelineList, task.taskMgr)
-    task.sequenceDone = 0
-    return task
-
-
 class TaskManager:
 
     notify = None
@@ -308,7 +225,7 @@ class TaskManager:
         self.running = 0
         self.stepping = 0
         self.taskList = []
-        self.currentTime, self.currentFrame = getTimeFrame()
+        self.currentTime, self.currentFrame = self.__getTimeFrame()
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
         self.taskTimerVerbose = 0
@@ -324,11 +241,32 @@ class TaskManager:
         self.fVerbose = value
         messenger.send('TaskManager-setVerbose', sentArgs = [value])
 
-    def spawnMethodNamed(self, func, name):
-        task = Task(func)
-        return self.spawnTaskNamed(task, name)
+    def add(self, funcOrTask, name, priority = 0):
+        """
+        Add a new task to the taskMgr.
+        You can add a Task object or a method that takes one argument.
+        """
+        if isinstance(funcOrTask, Task):
+            funcOrTask.setPriority(priority)
+            return self.__spawnTaskNamed(funcOrTask, name)
+        elif callable(funcOrTask):
+            return self.__spawnMethodNamed(funcOrTask, name, priority)
+        else:
+            self.notify.error('Tried to add a task that was not a Task or a func')
 
-    def spawnTaskNamed(self, task, name):
+    def remove(self, taskOrName):
+        if type(taskOrName) == type(''):
+            return self.__removeTasksNamed(taskOrName)
+        elif isinstance(taskOrName, Task):
+            return self.__removeTask(taskOrName)
+        else:
+            self.notify.error('remove takes a string or a Task')
+
+    def __spawnMethodNamed(self, func, name, priority=0):
+        task = Task(func, priority)
+        return self.__spawnTaskNamed(task, name)
+
+    def __spawnTaskNamed(self, task, name):
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('spawning task named: ' + name)
         task.name = name
@@ -368,17 +306,11 @@ class TaskManager:
         task = Task(func)
         seq = doLater(delayTime, task, taskName)
         seq.laterTask = task
-        return self.spawnTaskNamed(seq, 'doLater-' + taskName)
+        return self.__spawnTaskNamed(seq, taskName)
 
-    def removeAllTasks(self):
-        # Make a shallow copy so we do not modify the list in place
-        taskListCopy = self.taskList[:]
-        for task in taskListCopy:
-            self.removeTask(task)
-
-    def removeTask(self, task):
-        # if TaskManager.notify.getDebug():
-        #     TaskManager.notify.debug('removing task: ' + `task`)
+    def __removeTask(self, task):
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('removing task: ' + `task`)
         if task in self.taskList:
             self.taskList.remove(task)
             if task.uponDeath:
@@ -388,7 +320,7 @@ class TaskManager:
                 messenger.send('TaskManager-removeTask',
                                sentArgs = [task, task.name])
 
-    def removeTasksNamed(self, taskName):
+    def __removeTasksNamed(self, taskName):
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('removing tasks named: ' + taskName)
 
@@ -400,7 +332,7 @@ class TaskManager:
 
         # Now iterate through the tasks we need to remove and remove them
         for task in removedTasks:
-            self.removeTask(task)
+            self.__removeTask(task)
 
         # Return the number of tasks removed
         return len(removedTasks)
@@ -429,7 +361,7 @@ class TaskManager:
 
         # Now iterate through the tasks we need to remove and remove them
         for task in removedTasks:
-           self.removeTask(task)
+           self.__removeTask(task)
 
         # Return the number of tasks removed
         return len(removedTasks)
@@ -437,7 +369,7 @@ class TaskManager:
     def step(self):
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('step')
-        self.currentTime, self.currentFrame = getTimeFrame()
+        self.currentTime, self.currentFrame = self.__getTimeFrame()
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
 
@@ -473,9 +405,9 @@ class TaskManager:
             if (ret == cont):
                 continue
             elif (ret == done):
-                self.removeTask(task)
+                self.__removeTask(task)
             elif (ret == exit):
-                self.removeTask(task)
+                self.__removeTask(task)
             else:
                 raise StandardError, "Task named %s did not return cont, exit, or done" % task.name
         return len(self.taskList)
@@ -589,90 +521,8 @@ class TaskManager:
         import TaskManagerPanel
         return TaskManagerPanel.TaskManagerPanel(self)
 
-
-"""
-import Task
-from ShowBaseGlobal import * # to get taskMgr, and run()
-
-# sequence
-
-def seq1(state):
-    print 'seq1'
-    return Task.done
-def seq2(state):
-    print 'seq2'
-    return Task.done
-
-t = Task.sequence(Task.pause(1.0), Task.Task(seq1), Task.release(),
-                  Task.pause(3.0), Task.Task(seq2))
-taskMgr.spawnTaskNamed(t, 'sequence')
-run()
-
-# If you want it to loop, make a loop
-t = Task.loop(Task.pause(1.0), Task.Task(seq1), Task.release(),
-              Task.pause(3.0), Task.Task(seq2))
-taskMgr.spawnTaskNamed(t, 'sequence')
-run()
-
-
-
-# timeline
-
-def keyframe1(state):
-    print 'keyframe1'
-    return Task.done
-def keyframe2(state):
-    print 'keyframe2'
-    return Task.done
-def keyframe3(state):
-    print 'keyframe3'
-    return Task.done
-
-testtl = Task.timeline(
-    (0.5, Task.Task(keyframe1), 'key1'),
-    (0.6, Task.Task(keyframe2), 'key2'),
-    (0.7, Task.Task(keyframe3), 'key3')
-    )
-
-t = taskMgr.spawnTaskNamed(testtl, 'timeline')
-run()
-
-# do later - returns a sequence
-
-def foo(state):
-    print 'later...'
-    return Task.done
-
-seq = Task.doLater(3.0, Task.Task(foo), 'fooLater')
-t = taskMgr.spawnTaskNamed(seq, 'doLater-fooLater')
-run()
-
-# tasks with state
-# Combined with uponDeath
-
-someValue = 1
-
-def func(state):
-    if (state.someValue > 10):
-        print 'true!'
-        return Task.done
-    else:
-        state.someValue = state.someValue + 1
-        return Task.cont
-
-def deathFunc(state):
-    print 'Value at death: ', state.someValue
-
-task = Task.Task(func)
-
-# set task state here
-task.someValue = someValue
-
-# Use instance variable uponDeath to specify function
-# to perform on task removal
-# Default value of uponDeath is None
-task.uponDeath = deathFunc
-
-t = taskMgr.spawnTaskNamed(task, 'funcTask')
-run()
-"""
+    def __getTimeFrame(self):
+        # WARNING: If you are testing tasks without an igloop,
+        # you must manually tick the clock        
+        # Ask for the time last frame
+        return globalClock.getFrameTime(), globalClock.getFrameCount()

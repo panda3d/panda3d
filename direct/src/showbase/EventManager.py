@@ -73,7 +73,7 @@ class EventManager:
 
 
     def restart(self):
-        taskMgr.spawnTaskNamed(Task.Task(self.eventLoop), 'eventManager')
+        taskMgr.add(self.eventLoop, 'eventManager')
 
     def shutdown(self):
-        taskMgr.removeTasksNamed('eventManager')
+        taskMgr.remove('eventManager')

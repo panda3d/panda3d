@@ -174,7 +174,7 @@ class AnimPanel(AppShell):
         self.stopActorControls()
         self.lastT = globalClock.getFrameTime()
         self.playList = self.actorControlList[:]
-        taskMgr.spawnMethodNamed(self.play, self.id + '_UpdateTask')
+        taskMgr.add(self.play, self.id + '_UpdateTask')
 
     def play(self, task):
         if not self.playList:
@@ -188,7 +188,7 @@ class AnimPanel(AppShell):
         return Task.cont
 
     def stopActorControls(self):
-        taskMgr.removeTasksNamed(self.id + '_UpdateTask')
+        taskMgr.remove(self.id + '_UpdateTask')
 
     def getActorControlAt(self, index):
         return self.actorControlList[index]

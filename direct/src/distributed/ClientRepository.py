@@ -71,11 +71,11 @@ class ClientRepository(DirectObject.DirectObject):
         task = Task.Task(self.rawReaderPollUntilEmpty)
         # Start with empty string
         task.currentRawString = ""
-        taskMgr.spawnTaskNamed(task, "rawReaderPollTask")
+        taskMgr.add(task, "rawReaderPollTask")
         return None
 
     def stopRawReaderPollTask(self):
-        taskMgr.removeTasksNamed("rawReaderPollTask")
+        taskMgr.remove("rawReaderPollTask")
         return None
 
     def rawReaderPollUntilEmpty(self, task):
@@ -107,12 +107,11 @@ class ClientRepository(DirectObject.DirectObject):
         # Stop any tasks we are running now
         self.stopRawReaderPollTask()
         self.stopReaderPollTask()
-        task = Task.Task(self.readerPollUntilEmpty)
-        taskMgr.spawnTaskNamed(task, "readerPollTask")
+        taskMgr.add(self.readerPollUntilEmpty, "readerPollTask")
         return None
 
     def stopReaderPollTask(self):
-        taskMgr.removeTasksNamed("readerPollTask")
+        taskMgr.remove("readerPollTask")
         return None
 
     def readerPollUntilEmpty(self, task):

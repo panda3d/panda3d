@@ -593,7 +593,7 @@ class LevelEditor(NodePath, PandaObject):
         # Disable Pie Menu mouse interaction
         self.disableMouse()
         # Remove insertion marker task
-        taskMgr.removeTasksNamed('insertionMarkerTask')
+        taskMgr.remove('insertionMarkerTask')
 
     def reset(self, fDeleteToplevel = 1, fCreateToplevel = 1,
               fUpdateExplorer = 1):
@@ -1369,7 +1369,7 @@ class LevelEditor(NodePath, PandaObject):
         # Position it
         # First kill autoposition task so grid can jump to its final
         # destination (part of cleanup
-        taskMgr.removeTasksNamed('autoPositionGrid')
+        taskMgr.remove('autoPositionGrid')
         # Now find where to put node path
         if (hotKey is not None) and nodeClass.eq(DNA_PROP):
             # If its a prop and a copy, place it based upon current
@@ -2190,8 +2190,7 @@ class LevelEditor(NodePath, PandaObject):
         self.insertionMarker.create()
 
     def spawnInsertionMarkerTask(self):
-        t = Task.Task(self.insertionMarkerTask)
-        taskMgr.spawnTaskNamed(t, 'insertionMarkerTask')
+        taskMgr.add(self.insertionMarkerTask, 'insertionMarkerTask')
 
     def insertionMarkerTask(self, state):
         self.insertionMarker.setPosHpr(direct.grid, 0,0,0, 0,0,0)
@@ -2227,7 +2226,7 @@ class LevelEditor(NodePath, PandaObject):
             return 1
 
     def autoPositionGrid(self):
-        taskMgr.removeTasksNamed('autoPositionGrid')
+        taskMgr.remove('autoPositionGrid')
         # Move grid to prepare for placement of next object
         selectedNode = direct.selected.last
         if selectedNode:
@@ -2266,12 +2265,12 @@ class LevelEditor(NodePath, PandaObject):
             t.uponDeath = self.autoPositionCleanup
             
         # Also move the camera
-        taskMgr.removeTasksNamed('autoMoveDelay')
+        taskMgr.remove('autoMoveDelay')
         handlesToCam = direct.widget.getPos(direct.camera)
         handlesToCam = handlesToCam * ( direct.dr.near/handlesToCam[1])
         if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) or
             (abs(handlesToCam[2]) > (direct.dr.nearHeight * 0.4))):
-            taskMgr.removeTasksNamed('manipulateCamera')
+            taskMgr.remove('manipulateCamera')
             direct.cameraControl.centerCamIn(0.5)
 
     def autoPositionCleanup(self,state):

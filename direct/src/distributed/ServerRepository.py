@@ -22,8 +22,7 @@ class ServerRepository:
         return None
 
     def startListenerPollTask(self):
-        task = Task.Task(self.listenerPoll)
-        taskMgr.spawnTaskNamed(task, "serverListenerPollTask")
+        taskMgr.add(self.listenerPoll, "serverListenerPollTask")
         return None
 
     def listenerPoll(self, task):
@@ -46,8 +45,7 @@ class ServerRepository:
         return Task.cont
 
     def startReaderPollTask(self):
-        task = Task.Task(self.readerPollUntilEmpty)
-        taskMgr.spawnTaskNamed(task, "serverReaderPollTask")
+        taskMgr.add(self.readerPollUntilEmpty, "serverReaderPollTask")
         return None
 
     def readerPollUntilEmpty(self, task):

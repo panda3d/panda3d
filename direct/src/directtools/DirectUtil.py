@@ -18,8 +18,8 @@ def lerpBackgroundColor(r,g,b,duration):
             b = sf * state.ec[2] + (1 - sf) * state.sc[2]
             setBackgroundColor(r,g,b)
             return Task.cont
-    taskMgr.removeTasksNamed('lerpBackgroundColor')
-    t = taskMgr.spawnMethodNamed(lerpColor, 'lerpBackgroundColor')
+    taskMgr.remove('lerpBackgroundColor')
+    t = taskMgr.add(lerpColor, 'lerpBackgroundColor')
     t.time = 0.0
     t.duration = duration
     t.sc = base.win.getGsg().getColorClearValue()

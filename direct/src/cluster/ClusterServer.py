@@ -45,7 +45,7 @@ class ClusterServer(DirectObject.DirectObject):
 
     def startListenerPollTask(self):
         task = Task.Task(self.listenerPoll)
-        taskMgr.spawnTaskNamed(task, "serverListenerPollTask")
+        taskMgr.add(task, "serverListenerPollTask")
         return None
 
     def listenerPoll(self, task):
@@ -69,7 +69,7 @@ class ClusterServer(DirectObject.DirectObject):
 
     def startReaderPollTask(self):
         task = Task.Task(self.readerPollUntilEmpty,-10)
-        taskMgr.spawnTaskNamed(task, "serverReaderPollTask")
+        taskMgr.add(task, "serverReaderPollTask")
         return None
 
     def readerPollUntilEmpty(self, task):
@@ -144,7 +144,7 @@ class ClusterServerSync(ClusterServer):
 
     def startListenerPollTask(self):
         task = Task.Task(self.listenerPoll,-2)
-        taskMgr.spawnTaskNamed(task, "serverListenerPollTask")
+        taskMgr.add(task, "serverListenerPollTask")
         return None
 
     def listenerPoll(self, task):
@@ -175,7 +175,7 @@ class ClusterServerSync(ClusterServer):
 
     def startReaderPollTask(self):
         task = Task.Task(self.readPos,-1)
-        taskMgr.spawnTaskNamed(task, "serverReadPosTask")
+        taskMgr.add(task, "serverReadPosTask")
         return None
 
     def readPos(self, task):
@@ -202,7 +202,7 @@ class ClusterServerSync(ClusterServer):
 
     def startSwapCoordinator(self):
         task = Task.Task(self.swapCoordinatorTask, 51)
-        taskMgr.spawnTaskNamed(task, "serverSwapCoordinator")
+        taskMgr.add(task, "serverSwapCoordinator")
         return None
 
     def swapCoordinatorTask(self, task):
