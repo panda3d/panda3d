@@ -292,7 +292,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.cTrav = collisionTraverser
         self.floorOffset = floorOffset = 7.0
         self.wallBitmask = wallBitmask
-        self.floorBitmask = BitMask32().allOff() #*#floorBitmask
+        self.floorBitmask = floorBitmask
         self.avatarRadius = avatarRadius
         self.floorOffset = floorOffset
         self.reach = reach
@@ -738,10 +738,11 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
             newVector.normalize()
             newVector *= maxLen
-            onScreenDebug.add("newVector",
-                newVector)
-            onScreenDebug.add("newVector length",
-                newVector.length())
+            if __debug__:
+                onScreenDebug.add("newVector",
+                                  newVector)
+                onScreenDebug.add("newVector length",
+                                  newVector.length())
             self.acForce.setVector(Vec3(newVector))
             
             
