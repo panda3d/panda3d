@@ -112,6 +112,7 @@ bool TextureProperties::
 uses_alpha() const {
   switch (_format) {
   case EggTexture::F_rgba:
+  case EggTexture::F_rgbm:
   case EggTexture::F_rgba12:
   case EggTexture::F_rgba8:
   case EggTexture::F_rgba4:
