@@ -374,6 +374,11 @@ set_url(const string &url, bool server_name_expected) {
   _url = url;
   _flags = 0;
 
+  if (url.empty()) {
+    // No server name on an empty string.
+    server_name_expected = false;
+  }
+
   // First, replace backslashes with forward slashes, since this is a
   // common mistake among Windows users.
   size_t p;
