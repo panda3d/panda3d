@@ -323,6 +323,7 @@ protected:
   bool _blend_enabled;
   bool _depth_test_enabled;
   bool _fog_enabled;
+  bool _dithering_enabled;
   bool _alpha_test_enabled;
   bool _polygon_offset_enabled;
   bool _color_transform_enabled;

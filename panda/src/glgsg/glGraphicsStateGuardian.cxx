@@ -321,6 +321,17 @@ reset() {
 
   // use per-vertex fog if per-pixel fog requires SW renderer
   glHint(GL_FOG_HINT,GL_DONT_CARE);
+
+  _dithering_enabled = false;
+
+  GLint iRedBits;
+  glGetIntegerv(GL_RED_BITS,&iRedBits);
+  if(iRedBits<24) {
+    glEnable(GL_DITHER);
+    _dithering_enabled = true;
+    if(glgsg_cat.is_debug())
+        glgsg_cat.debug() << "frame buffer depth < 8bits channel, enabling dithering\n";
+  }
 }
 
 
@@ -940,19 +951,43 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
+
+  // get the array traversal set up.
+  int nprims = geom->get_num_prims();
+  if (nprims==0) {
+      return;
+  }
+
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
-  Texture *tex = geom->get_texture();
-  nassertv(tex != (Texture *) NULL);
-
-  // get the array traversal set up.
-  int nprims = geom->get_num_prims();
-
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
+
+  // need some interface so user can set 2d dimensions if no texture specified
+  float tex_xsize = 1.0f;  
+  float tex_ysize = 1.0f;
+
+  Texture *tex = geom->get_texture();
+  if(tex != NULL) {
+      // set up the texture-rendering state
+      NodeTransitions state;
+
+      TextureTransition *ta = new TextureTransition;
+      ta->set_on(tex);
+      state.set_transition(ta);
+
+      TextureApplyTransition *taa = new TextureApplyTransition;
+      taa->set_mode(TextureApplyProperty::M_modulate);
+      state.set_transition(taa);
+
+      modify_state(state);
+
+      tex_xsize = tex->_pbuffer->get_xsize();
+      tex_ysize = tex->_pbuffer->get_ysize();
+  }
 
   // save the modelview matrix
   LMatrix4f modelview_mat;
@@ -1009,23 +1044,10 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   float tex_bottom = geom->get_ll_uv()[1];
   float tex_top = geom->get_ur_uv()[1];
 
-  float half_width = 0.5f * (float) tex->_pbuffer->get_xsize() * fabs(tex_right - tex_left);
-  float half_height = 0.5f * (float) tex->_pbuffer->get_ysize() * fabs(tex_top - tex_bottom);
+  float half_width =  0.5f * tex_xsize * fabs(tex_right - tex_left);
+  float half_height = 0.5f * tex_ysize * fabs(tex_top - tex_bottom);
   float scaled_width = 0.0f;
   float scaled_height = 0.0f;
-
-  // set up the texture-rendering state
-  NodeTransitions state;
-
-  TextureTransition *ta = new TextureTransition;
-  ta->set_on(tex);
-  state.set_transition(ta);
-
-  TextureApplyTransition *taa = new TextureApplyTransition;
-  taa->set_mode(TextureApplyProperty::M_modulate);
-  state.set_transition(taa);
-
-  modify_state(state);
 
   // the user can override alpha sorting if they want
   bool alpha = false;
@@ -1138,6 +1160,9 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   if (alpha) {
     sort(cameraspace_vector.begin(), cameraspace_vector.end(),
          draw_sprite_vertex_less());
+
+     if(_dithering_enabled)
+         glDisable(GL_DITHER);
   }
 
   Vertexf ul, ur, ll, lr;
@@ -1205,6 +1230,9 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   // restore the matrices
   glLoadMatrixf(modelview_mat.get_data());
+
+  if(alpha && _dithering_enabled)
+     glEnable(GL_DITHER);
 
 #ifdef DO_CHARLES_PROJECTION_MAT
   glMatrixMode(GL_PROJECTION);
