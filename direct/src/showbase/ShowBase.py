@@ -45,7 +45,6 @@ class ShowBase(DirectObject.DirectObject):
             vfs = None
 
         # Store dconfig variables
-        self.wantTk = self.config.GetBool('want-tk', 0)
         self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
         self.musicActive = self.config.GetBool('audio-music-active', 1)
         self.wantFog = self.config.GetBool('want-fog', 1)
@@ -56,7 +55,6 @@ class ShowBase(DirectObject.DirectObject):
         self.sfxManagerList = []
         self.sfxManagerIsValidList = []
 
-        self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
 
         # Fill this in with a function to invoke when the user "exits"
@@ -200,14 +198,9 @@ class ShowBase(DirectObject.DirectObject):
         import Transitions
         self.transitions = Transitions.Transitions(self.loader)
 
-        # Tk
-        if self.wantTk:
-            import TkGlobal
-        if self.wantDIRECT:
-            import DirectSession
-            direct.enable()
-        else:
-            __builtins__["direct"] = self.direct = None
+        # Start Tk and DIRECT if specified by Configrc
+        self.startTk(self.config.GetBool('want-tk', 0))
+        self.startDirect(self.config.GetBool('want-directtools', 0))
 
         self.restart()
 
@@ -1201,6 +1194,19 @@ class ShowBase(DirectObject.DirectObject):
             self.exitFunc()
         self.notify.info("Exiting ShowBase.")
         sys.exit()
+
+    def startTk(self, fWantTk = 1):
+        self.wantTk = fWantTk
+        if self.wantTk:
+            import TkGlobal
+
+    def startDirect(self, fWantDirect = 1):
+        self.wantDirect = fWantDirect
+        if self.wantDirect:
+            import DirectSession
+            direct.enable()
+        else:
+            __builtins__["direct"] = self.direct = None
 
     def run(self):
         self.taskMgr.run()

@@ -884,37 +884,31 @@
 
             
     def place(self):
-        base.wantTk = 1
-        base.wantDIRECT = 1
-        import DirectSession
-        direct.enable()
+        base.startTk()
+        #base.startDirect()
         import Placer
         return Placer.place(self)
 
     def explore(self):
-        base.wantTk = 1
-        base.wantDIRECT = 1
-        import TkGlobal
+        base.startTk()
+        #base.startDirect()
         import SceneGraphExplorer
         return SceneGraphExplorer.explore(self)
 
     def rgbPanel(self, cb = None):
-        base.wantTk = 1
-        base.wantDIRECT = 1
-        import TkGlobal
+        base.startTk()
+        #base.startDirect()
         import Slider
         return Slider.rgbPanel(self, cb)
 
     def select(self):
-        base.wantTk = 1
-        base.wantDIRECT = 1
-        import DirectSession
+        base.startTk()
+        base.startDirect()
         direct.select(self)
 
     def deselect(self):
-        base.wantTk = 1
-        base.wantDIRECT = 1
-        import DirectSession
+        base.startTk()
+        base.startDirect()
         direct.deselect(self)
 
     def setAlphaScale(self, alpha):
