@@ -665,7 +665,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.fForceSetZoneThisFrame = 1
 
     def visChangeTask(self, task):
-        # this runs just before igloop; if viz lists have changed
+        # this runs just before igLoop; if viz lists have changed
         # this frame, updates the visibility and sends out a setZoneMsg
         if self.visChangedThisFrame or self.fForceSetZoneThisFrame:
             self.updateVisibility()
