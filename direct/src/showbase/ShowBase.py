@@ -97,6 +97,24 @@ class ShowBase:
         # chat interface, should be parented to mak.
         self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(self.win, 0, 'mak'))
         self.mouseWatcher = self.mak.attachNewNode(MouseWatcher('mouseWatcher'))
+
+        # We also create a DataValve object above the trackball/drive
+        # interface, which will allow us to switch some of the mouse
+        # control, without switching all of it, to another object
+        # later (for instance, to enable OOBE mode--see oobe(),
+        # below.)
+        self.mouseValve = self.mouseWatcher.attachNewNode(DataValve('mouseValve'))
+        # This Control object can be used to turn on and off mouse &
+        # keyboard messages to the DriveInterface.
+        self.mouseControl = DataValve.Control()
+        self.mouseValve.node().setControl(0, self.mouseControl)
+
+        # This Control object is always kept on, handy to have.
+        self.onControl = DataValve.Control()
+
+        # Now we have the main trackball & drive interfaces.
+        # useTrackball() and useDrive() switch these in and out; only
+        # one is in use at a given time.
         self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
         self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
@@ -245,7 +263,7 @@ class ShowBase:
 
     def useDrive(self):
         """
-        Toggle mouse action to drive mode
+        Switch mouse action to drive mode
         """
         # Get rid of the trackball
         self.trackball.reparentTo(self.dataUnused)
@@ -253,24 +271,116 @@ class ShowBase:
         self.mouseInterface = self.drive
         self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
         self.drive.node().reset()
-        self.drive.reparentTo(self.mouseWatcher)
-        # Hookup the drive to the camera
+        # Hookup the drive to the camera.  Make sure it is first in
+        # the list of children of the mouseValve.
+        self.drive.reparentTo(self.mouseValve, 0)
         self.mouse2cam.reparentTo(self.drive)
         # Set the height to a good eyeheight
         self.drive.node().setZ(4.0)
 
     def useTrackball(self):
         """
-        Toggle mouse action to trackball mode
+        Switch mouse action to trackball mode
         """
         # Get rid of the drive
         self.drive.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the trackball
         self.mouseInterface = self.trackball
         self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
-        # Hookup the trackball to the camera
-        self.trackball.reparentTo(self.mouseWatcher)
+        # Hookup the trackball to the camera.  Make sure it is first
+        # in the list of children of the mouseValve.
+        self.trackball.reparentTo(self.mouseValve, 0)
         self.mouse2cam.reparentTo(self.trackball)
+
+    def oobe(self):
+        """
+        Enable a special "out-of-body experience" mouse-interface
+        mode.  This can be used when a "god" camera is needed; it
+        moves the camera node out from under its normal node and sets
+        the world up in trackball state.  Button events are still sent
+        to the normal mouse action node (e.g. the DriveInterface), and
+        mouse events, if needed, may be sent to the normal node by
+        holding down the Control key.
+
+        This is different than useTrackball(), which simply changes
+        the existing mouse action to a trackball interface.  In fact,
+        OOBE mode doesn't care whether useDrive() or useTrackball() is
+        in effect; it just temporarily layers a new trackball
+        interface on top of whatever the basic interface is.  You can
+        even switch between useDrive() and useTrackball() while OOBE
+        mode is in effect.
+
+        This is a toggle; the second time this function is called, it
+        disables the mode.
+        """
+
+        # If oobeMode was never set, set it to false and create the
+        # structures we need to implement OOBE.
+        
+        try:
+            self.oobeMode
+        except:
+            self.oobeMode = 0
+
+            self.oobeCamera = self.hidden.attachNewNode('oobeCamera')
+            self.oobeCameraTrackball = self.oobeCamera.attachNewNode('oobeCameraTrackball')
+            self.oobeControl = DataValve.Control()
+            self.mouseValve.node().setControl(1, self.oobeControl)
+            self.oobeTrackball = self.mouseValve.attachNewNode(Trackball('oobeTrackball'), 1)
+            self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
+            self.oobe2cam.node().setArc(self.oobeCameraTrackball.getBottomArc())
+
+            self.oobeButtonEventsType = TypeRegistry.ptr().findType('ButtonEvents_ButtonEventDataTransition')
+
+            self.oobeVis = loader.loadModelOnce('models/misc/camera')
+
+            # Make sure the MouseValve is monitoring the Control key.
+            mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
+            mods.addButton(KeyboardButton.control())
+            self.mouseValve.node().setModifierButtons(mods)
+
+        if self.oobeMode:
+            # Disable OOBE mode.
+            self.oobeControl.setOff()
+            self.mouseControl.setOn()
+            if not self.oobeVis.isEmpty():
+                self.oobeVis.reparentTo(self.hidden)
+            self.cam.reparentTo(self.camera)
+            self.oobeCamera.reparentTo(self.hidden)
+            self.oobeMode = 0
+        else:
+            # Enable OOBE mode.
+            mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
+
+            # We're in OOBE control mode without the control key.
+            mods.allButtonsUp()
+            self.oobeControl.setButtons(mods)
+
+            # We're in traditional control mode with the control key.
+            mods.buttonDown(KeyboardButton.control())
+            self.mouseControl.setButtons(mods)
+
+            # However, keyboard buttons always make it through to the
+            # traditional controller, regardless of the control key.
+            self.mouseValve.node().setFineControl(0, self.oobeButtonEventsType, self.onControl)
+
+            # Make oobeCamera be a sibling of wherever camera is now.
+            cameraParent = NodePath(self.camera)
+            cameraParent.shorten(1)
+            self.oobeCamera.reparentTo(cameraParent)
+            self.oobeCamera.clearMat()
+
+            # Set our initial OOB position to be just behind the camera.
+            mat = Mat4.translateMat(0, -10, 3) * base.camera.getMat(cameraParent)
+            mat.invertInPlace()
+            self.oobeTrackball.node().setMat(mat)
+            
+            self.cam.reparentTo(self.oobeCameraTrackball)
+            if not self.oobeVis.isEmpty():
+                self.oobeVis.reparentTo(self.camera)
+            self.oobeMode = 1
+            
+        
         
     def run(self):
         self.taskMgr.run()

@@ -55,6 +55,19 @@ class Loader:
         else:
             return None
 
+    def loadModelNode(self, modelPath):
+        """loadModelNode(self, string)
+        This is like loadModelOnce in that it loads a model from the
+        modelPool, but it does not then instance it to hidden and it
+        returns a Node instead of a NodePath.  This is particularly
+        useful for special models like fonts that you don't care about
+        where they're parented to, and you don't want a NodePath
+        anyway--it prevents accumulation of instances of the font
+        model under hidden."""
+        
+        Loader.notify.info("Loading model for node: %s" % (modelPath))
+        return ModelPool.loadModel(modelPath)
+
     def unloadModel(self, modelPath):
 	"""unloadModel(self, string)
 	"""
