@@ -161,12 +161,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         self.panelRegion.setRelative(self.panelGeom,
                                      geomRect[0], geomRect[1],
                                      geomRect[2], geomRect[3])
-
-        # *** Temporary try/except to support old Pandas.
-        try:
-            self.panelRegion.setSort(self.panelDrawOrder)
-        except:
-            pass
+        self.panelRegion.setSort(self.panelDrawOrder)
 
     def cleanup(self):
         """cleanup(self):
