@@ -92,8 +92,8 @@ sub CTUnattachCompute {
 	  &CTUnattachMod( "PATH", $item ) ;
       }
       &CTUnattachMod( "LD_LIBRARY_PATH", $item ) ;
-      $item = $root . "/src/all" ;
-      &CTUnattachMod( "CDPATH", $item ) ;
+      #$item = $root . "/src/all" ;
+      #&CTUnattachMod( "CDPATH", $item ) ;
       $item = $root . "/include" ;
       &CTUnattachMod( "CT_INCLUDE_PATH", $item ) ;
       $item = $root . "/etc" ;
@@ -178,11 +178,11 @@ sub CTUnattachWriteScript {
    open( OUTFILE, ">$_[0]" ) ;
    print OUTFILE "#!/bin/" . $shell_type . " -f\n" ;
    local( $item ) ;
-   local( $unsetcdpath ) = 0 ;
-   local( $modcdpath ) = 0 ;
+   #local( $unsetcdpath ) = 0 ;
+   #local( $modcdpath ) = 0 ;
 
    foreach $item ( @unset ) {
-       if ( $item eq "CDPATH" ) { $unsetcdpath = 1 ; }
+       #if ( $item eq "CDPATH" ) { $unsetcdpath = 1 ; }
 
        if ( $shell_type eq "sh" ) {
 	   print OUTFILE "$item=\n" ;
@@ -198,7 +198,7 @@ sub CTUnattachWriteScript {
        }
    }
    foreach $item ( keys %newenv ) {
-       if ( $item eq "CDPATH" ) { $modcdpath = 1 ; }
+       #if ( $item eq "CDPATH" ) { $modcdpath = 1 ; }
 
        local( $sep ) = " " ;
        if ( $envsep{$item} ne "" ) {
@@ -228,15 +228,15 @@ sub CTUnattachWriteScript {
 	   }
        }
    }
-   if ( $unsetcdpath ) {
-       if ( $shell_type ne "sh" ) {
-	   print OUTFILE "unset cdpath\n" ;
-       }
-   } elsif ( $modcdpath ) {
-       if ( $shell_type ne "sh" ) {
-	   print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
-       }
-   }
+   #if ( $unsetcdpath ) {
+   #    if ( $shell_type ne "sh" ) {
+   #	   print OUTFILE "unset cdpath\n" ;
+   #    }
+   #} elsif ( $modcdpath ) {
+   #    if ( $shell_type ne "sh" ) {
+   #	   print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
+   #    }
+   #}
 
    if (! $ctdebug) {
       print OUTFILE "rm -f $_[0]\n" ;

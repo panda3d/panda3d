@@ -565,7 +565,7 @@ sub CTAttachCompute {
 
       &CTAttachAddToMod( "PATH", $root . "/bin" ) ;
       &CTAttachAddToMod( "LD_LIBRARY_PATH", $root . "/lib" ) ;
-      &CTAttachAddToMod( "CDPATH", $root . "/src/all" ) ;
+      #&CTAttachAddToMod( "CDPATH", $root . "/src/all" ) ;
       &CTAttachAddToMod( "CT_INCLUDE_PATH", $root . "/include" ) ;
       &CTAttachAddToMod( "DC_PATH", $root . "/etc" ) ;
       &CTAttachAddToMod( "PFPATH", $root . "/etc/models" ) ;
@@ -933,9 +933,9 @@ sub CTAttachWriteScript {
 	 print OUTFILE $ENV{$item} . "\"\n" ;
       }
    }
-   if (( $envset{"CDPATH"} ne "" ) || ( $envmod{"CDPATH"} ne "" )) {
-      print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
-   }
+   #if (( $envset{"CDPATH"} ne "" ) || ( $envmod{"CDPATH"} ne "" )) {
+   #   print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
+   #}
    foreach $item ( keys %envdo ) {
       print OUTFILE $envdo{$item} . "\n" ;
    }

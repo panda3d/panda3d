@@ -30,9 +30,9 @@ LD_LIBRARY_PATH="."
 export LD_LIBRARY_PATH
 CT_INCLUDE_PATH="."
 export CT_INCLUDE_PATH
-cdpath=.
-CDPATH="."
-export CDPATH
+#cdpath=.
+#CDPATH="."
+#export CDPATH
 DC_PATH="."
 export DC_PATH
 SSPATH="."

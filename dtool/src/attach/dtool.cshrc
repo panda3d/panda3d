@@ -45,8 +45,8 @@ endif
 #endif
 
 setenv CT_INCLUDE_PATH "."
-set cdpath = ( . )
-setenv CDPATH "."
+#set cdpath = ( . )
+#setenv CDPATH "."
 setenv DC_PATH "."
 setenv SSPATH "."
 setenv STKPATH "."

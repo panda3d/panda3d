@@ -378,9 +378,9 @@ sub CTAttachCompute {
       &CTAttachMod( "LD_LIBRARY_PATH", $item, $root, $proj ) ;
           #}
 
-          $item = $root . "/src" ;
+          #$item = $root . "/src" ;
           #if ( -e $item ) {
-      &CTAttachMod( "CDPATH", $item, $root, $proj ) ;
+      #&CTAttachMod( "CDPATH", $item, $root, $proj ) ;
           #}
 
           $item = $root . "/include" ;
@@ -484,14 +484,14 @@ sub CTAttachWriteScript {
        }
    }
 
-   if ( $newenv{"CDPATH"} ne "" ) {
-       if ( $shell_type ne "sh" ) {
-       print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
-           if ( $ctdebug ) {
-               print OUTFILE "echo assigning cdpath\n" ;
-           }
-       }
-   }
+   #if ( $newenv{"CDPATH"} ne "" ) {
+   #    if ( $shell_type ne "sh" ) {
+   #    print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
+   #        if ( $ctdebug ) {
+   #            print OUTFILE "echo assigning cdpath\n" ;
+   #        }
+   #    }
+   #}
    for ($item = 0; $item < $docnt; $item++) {
       print OUTFILE $envdo{$item} . "\n" ;
       if ( $ctdebug ) {
