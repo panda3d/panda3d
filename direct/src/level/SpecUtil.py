@@ -19,7 +19,7 @@ def makeNewSpec(filename, modelPath, entTypeModule=EntityTypes):
 import SpecUtil
 import SellbotLegFactorySpec
 import FactoryEntityTypes
-SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes, 'phase_9/models/cogHQ/newModel')
+SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes, optional newModelPath)
 """
 
 def updateSpec(specModule, entTypeModule=EntityTypes, modelPath=None):

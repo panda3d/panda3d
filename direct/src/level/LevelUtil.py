@@ -25,7 +25,9 @@ def getZoneNum2Node(levelModel):
                 continue
             num = int(name[:numDigits])
             # do we already have a ZoneNode for this zone num?
-            assert not num in num2node
+            if num in num2node:
+                print 'warning: zone %s already assigned to %s. ignoring %s' % (
+                    num, num2node[num], potentialNode)
             num2node[num] = potentialNode
 
         return num2node
