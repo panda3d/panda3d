@@ -419,9 +419,9 @@ class Particles(ParticleSystem.ParticleSystem):
             file.write((targ + '.emitter.setLocation(Point3(%.4f, %.4f, %.4f))\n' % (point[0], point[1], point[2])))
         elif (self.emitterType == "RectangleEmitter"):
             file.write('# Rectangle parameters\n')
-            bound = self.emitter.getMinBound()
+            point = self.emitter.getMinBound()
             file.write((targ + '.emitter.setMinBound(Point2(%.4f, %.4f))\n' % (point[0], point[1])))
-            bound = self.emitter.getMaxBound()
+            point = self.emitter.getMaxBound()
             file.write((targ + '.emitter.setMaxBound(Point2(%.4f, %.4f))\n' % (point[0], point[1])))
         elif (self.emitterType == "RingEmitter"):
             file.write('# Ring parameters\n')
