@@ -204,8 +204,12 @@ ns_get_environment_variable(const string &var) const {
 void ExecutionEnvironment::
 ns_set_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
-  string put = var + "=" + value;
-  putenv(put.c_str());
+  string putstr = var + "=" + value;
+
+  // putenv() requires us to malloc a new C-style string.
+  char *put = (char *)malloc(putstr.length() + 1);
+  strcpy(put, putstr.c_str());
+  putenv(put);
 }
 
 ////////////////////////////////////////////////////////////////////
