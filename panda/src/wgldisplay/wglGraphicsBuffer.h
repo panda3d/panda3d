@@ -45,6 +45,8 @@ public:
                     int x_size, int y_size, bool want_texture);
   virtual ~wglGraphicsBuffer();
 
+  virtual bool begin_frame();
+
   virtual void make_current();
   virtual void release_gsg();
 

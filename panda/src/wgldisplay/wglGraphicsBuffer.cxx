@@ -52,6 +52,37 @@ wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 wglGraphicsBuffer::
 ~wglGraphicsBuffer() {
 }
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::begin_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               before beginning rendering for a given frame.  It
+//               should do whatever setup is required, and return true
+//               if the frame should be rendered, or false if it
+//               should be skipped.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsBuffer::
+begin_frame() {
+  if (_gsg == (GraphicsStateGuardian *)NULL) {
+    return false;
+  }
+
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
+
+  if (_pbuffer_dc) {
+    int flag = 0;
+    wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
+    if (flag != 0) {
+      wgldisplay_cat.info()
+        << "Pbuffer contents lost.\n";
+      return false;
+    }
+  }
+
+  return GraphicsBuffer::begin_frame();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsBuffer::make_current
@@ -107,6 +138,24 @@ begin_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     make_current();
     glFinish();
+
+    wglGraphicsStateGuardian *wglgsg;
+    DCAST_INTO_V(wglgsg, _gsg);
+
+    // If we've lost the pbuffer image (due to a mode-switch, for
+    // instance), don't attempt to flip the buffers, since the frame
+    // is invalid.  For excruciating correctness, we should force the
+    // frame to be re-rendered, but we'll just discard the frame
+    // instead.
+    if (_pbuffer_dc) {
+      int flag = 0;
+      wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
+      if (flag != 0) {
+        wgldisplay_cat.info()
+          << "Pbuffer contents lost.\n";
+        return;
+      }
+    }
 
     if (has_texture()) {
       // Use glCopyTexImage2D to copy the framebuffer to the texture.
@@ -331,6 +380,8 @@ make_pbuffer() {
     // Since we are trying to create a pbuffer, the pixel format we
     // request (and subsequently use) must be "pbuffer capable".
     iattrib_list[ni++] = WGL_DRAW_TO_PBUFFER_ARB;
+    iattrib_list[ni++] = true;
+    iattrib_list[ni++] = WGL_SUPPORT_OPENGL_ARB;
     iattrib_list[ni++] = true;
 
     // Match up the framebuffer bits.
