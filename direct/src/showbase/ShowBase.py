@@ -370,7 +370,7 @@ class ShowBase(DirectObject.DirectObject):
             win = self.graphicsEngine.makeWindow(pipe, gsg)
         elif type == 'offscreen':
             win = self.graphicsEngine.makeBuffer(
-                pipe, gsg, props.getXSize(), props.getYSize())
+                pipe, gsg, props.getXSize(), props.getYSize(), 0)
             
         if win == None:
             # Couldn't create a window!
@@ -514,7 +514,8 @@ class ShowBase(DirectObject.DirectObject):
             success = 0
         
         if self.win != None:
-            self.setupMouse(self.win)
+            if isinstance(self.win, GraphicsWindow):
+                self.setupMouse(self.win)
             self.makeCamera2d(self.win)
 
             if oldLens != None:
