@@ -104,6 +104,9 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.pusher.addCollider(self.cSphereNodePath, avatarNodePath)
         self.lifter.addCollider(self.cRayNodePath, avatarNodePath)
 
+    def setAirborneHeightFunc(self, getAirborneHeight):
+        self.getAirborneHeight = getAirborneHeight
+
     def deleteCollisions(self):
         del self.cTrav
 
