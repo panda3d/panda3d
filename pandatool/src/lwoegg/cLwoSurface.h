@@ -27,6 +27,8 @@
 #include <luse.h>
 #include <eggTexture.h>
 #include <eggMaterial.h>
+#include <pt_EggTexture.h>
+#include <pt_EggMaterial.h>
 #include <vector_PT_EggVertex.h>
 
 #include <map>
@@ -90,10 +92,10 @@ public:
   CPT(LwoSurface) _surface;
 
   bool _checked_material;
-  PT(EggMaterial) _egg_material;
+  PT_EggMaterial _egg_material;
 
   bool _checked_texture;
-  PT(EggTexture) _egg_texture;
+  PT_EggTexture _egg_texture;
 
   CLwoSurfaceBlock *_block;
 
