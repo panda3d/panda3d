@@ -1109,10 +1109,10 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
     char *szErrorMsg;
 
-    szErrorMsg = "CreateTexture failed: couldn't find compatible device Texture Pixel Format for input texture!\n";
+    szErrorMsg = "CreateTexture failed: couldn't find compatible device Texture Pixel Format for input texture: ";
 
     if(dxgsg_cat.is_spam())
-        dxgsg_cat.spam() << "CreateTexture handling target bitdepth: " << target_bpp << " alphabits: " << cNumAlphaBits << "\n";
+        dxgsg_cat.spam() << "CreateTexture handling target bitdepth: " << target_bpp << " alphabits: " << cNumAlphaBits << endl;
 
     // I could possibly replace some of this logic with D3DXCheckTextureRequirements(), but
     // it wouldnt handle all my specialized low-memory cases perfectly
@@ -1177,7 +1177,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
                 // at this point, bail.  dont worry about converting to non-alpha formats yet,
                 // I think this will be a very rare case
-                szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT! no available 16 or 32-bit alpha formats!\n";
+                szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT! no available 16 or 32-bit alpha formats!";
             } else {
                 // convert 3 or 4 channel to closest 16bpp color fmt
 
@@ -1298,8 +1298,10 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     }
 
     // if we've gotten here, haven't found a match
-
-    dxgsg_cat.error() << szErrorMsg << endl;
+    dxgsg_cat.error() << szErrorMsg << ": " << _tex->get_name() << endl
+                      << "NumColorChannels: " <<cNumColorChannels << "; NumAlphaBits: " << cNumAlphaBits
+                      << "; targetbpp: " <<target_bpp << "; SupportedTexFmtsMask: 0x" << (void*)scrn.SupportedTexFmtsMask
+                      << "; NeedLuminance: " << bNeedLuminance << endl;
     goto error_exit;
 
     ///////////////////////////////////////////////////////////
