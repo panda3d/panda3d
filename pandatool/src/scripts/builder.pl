@@ -21,7 +21,6 @@ if ($ENV{'DEBUG_GENERATE_PYTHON_CODE_ONLY'} ne '') {
 my $DONT_ARCHIVE_OLD_BUILDS = 0;
 my $BLD_DTOOL_ONLY=0;
 
-
 my $DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
 
 my @inst_dirnames=("archive","debug","install","release","publish");
@@ -102,7 +101,7 @@ sub myrename() {
       }
 
       $newconflicttargetname=$n2.".old.".$newnum;
-      &logmsg("avoiding rename conflict, renaming old ".$n2." to ".$newconflicttargetname);  
+      &logmsg("avoiding rename conflict, renaming old ".$n2." to ".$newconflicttargetname);
       $retval = rename($n2,$newconflicttargetname);
       if(! $retval) {
           &logmsg("rename failing, giving up (check if files or dirs are open in other apps)");
@@ -137,9 +136,9 @@ sub myexecstr() {
 
   if( $exec_cshrc_type eq "NO_CSHRC") {
      # change $HOME so .cshrc doesn't get sources by tcsh
-     $ENV{'HOME'}="/";  
+     $ENV{'HOME'}="/";
   } elsif( $exec_cshrc_type eq "NO_PANDA_ATTACH") {
-     $ENV{'TCSH_NO_PANDA_ATTACH'}="1";  
+     $ENV{'TCSH_NO_PANDA_ATTACH'}="1";
   }
 
   if($exec_cshrc_type eq "NT cmd") {
@@ -165,7 +164,7 @@ sub myexecstr() {
   if($exec_cshrc_type eq "NO_CSHRC") {
       $ENV{'HOME'}=$savedhome;
   } elsif( $exec_cshrc_type eq "NO_PANDA_ATTACH") {
-     delete $ENV{'TCSH_NO_PANDA_ATTACH'};  
+     delete $ENV{'TCSH_NO_PANDA_ATTACH'};
   }
 }
 
@@ -184,7 +183,7 @@ sub appendpath() {
 
 sub make_bsc_file() {
     &logmsg("*** Generating panda.bsc at ".&gettimestr()." ***");
-    
+
 #    &mychdir($CYGBLDROOT."/debug");
 #    $outputdir=$WINBLDROOT."\\debug";
 
@@ -194,38 +193,44 @@ sub make_bsc_file() {
     $outputname="panda.bsc";
     $outputfilepath=$outputdir."\\".$outputname;
     $cmdfilepath=$outputdir."\\makebsc.txt";
-    
+
     #open(FILES, "where -r . *.sbr |") || die "Couldn't run 'where'!\n";
     #requires unix/cygwin style find.exe
-    
+
     open(FILES, "find ".$dirstodostr." -name \"*.sbr\" -print |") || die "Couldn't run 'find'!\n";
-    
+
     open(OUTFILE, ">".$cmdfilepath) || die "Couldn't open ".$cmdfilepath."!\n";
-    
+
     $filename = <FILES>;  #skip initial line
     $filestr="";
-    
+
     $duline = <FILES>;
     chop $duline;
     $filestr=$duline;
-    
+
     while ($duline = <FILES>)
     {
             chop $duline;  # Remove the newline from the end of the filename
             $filestr=$filestr."\n".$duline;
     }
-    
+
     print OUTFILE "/n /o ".$outputfilepath." \n";
     print OUTFILE "$filestr","\n";
     close(OUTFILE);
     close(FILES);
 
-    # vc7 dirs are not in path env-var by default    
+    # vc7 dirs are not in path env-var by default
     $ENV{'PATH'}=$VC7_BINDIRS.$DIRPATH_SEPARATOR.$ENV{'PATH'};
     print $ENV{'PATH'}, "\n";
 
     $bscmake_str="bscmake /o ".$outputfilepath." @".$cmdfilepath."\n";
     &myexecstr($bscmake_str,"bscmake failed!!!","DO_LOG","NT cmd");
+
+    # edit binary so it looks for src on mountable Z drive, so src browsing
+    # works with Z:\ pointed to \\dragon
+
+    $binreplace_str="perl binreplace.pl -i C:\\cygwin Z:\\cygwin ".$outputfilepath."\n";
+    &myexecstr($binreplace_str,"binreplace failed!!!","DO_LOG","NT cmd");
 
     &myexecstr("copy ".$outputfilepath." ".$inst_dirs[$DEBUGNUM], "copy of ".$outputfilepath." failed!!", "DO_LOG","NT cmd");
     unlink($cmdfilepath);
@@ -283,14 +288,14 @@ sub gen_python_code() {
 #    $ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin:".$ENV{'WINTOOLS'}."/lib:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/scripts:/home/builder/player/pandatool/bin:/home/builder/player/pandatool/lib";
     $ENV{'PATH'}.=":/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/Tools:/home/builder/scripts:";
     $ENV{'PATH'}.=$ENV{'WINTOOLS'}."/sdk/python/Tcl/bin:".$ENV{'WINTOOLS'}."/sdk/python/Tcl/lib";
-    
+
     $ENV{'PYTHONPATH'}= $WINBLDROOT."\\direct\\src\\showbase;".$WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib;".$WINBLDROOT."\\wintools\\bin;".$WINBLDROOT."\\wintools\\lib;";
     $ENV{'PYTHONPATH'}.= $WINBLDROOT."\\wintools\\sdk\\python\\Python-2.2\\Lib;".$WINBLDROOT."\\wintools\\sdk\\python\\Python-2.2\\DLLs;";
     # direct/src/showbase/sitecustomize.py will add paths based on CTPROJS
     $ENV{'CTPROJS'}="TOONTOWN:personal DIRECT:personal PANDA:personal WINTOOLS:personal DTOOL:personal";
-    
+
 #    my $directsrcroot=$WINBLDROOT."\\direct\\src";
-    
+
 #   this should be unnecessary if sitecustomize.py sees CTPROJS
 #    # add stuff from etc/[dir].pth
 #    &addpathsfromfile("direct","PYTHONPATH");
@@ -325,7 +330,7 @@ sub gen_python_code() {
 
     $genpy_arg1 = "-t ".$genpy_args{$ENV{'PANDA_OPTIMIZE'}};
     &myexecstr("genPyCode ".$genpy_arg1,"genPyCode failed","DO_LOG","NO_PANDA_ATTACH");
-    
+
     $ENV{'PATH'}=$origpath;
     delete $ENV{'TCSH_NO_CHANGEPATH'};
     &mychdir($CYGBLDROOT);
@@ -345,7 +350,7 @@ sub archivetree() {
 
         ($devicenum,$inodenum,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks)
            = stat($inst_dirs[$treenum]."\\dtool\\Sources.pp");
-        ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) 
+        ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)
            = localtime($mtime);
         $mon++;
 
@@ -359,7 +364,7 @@ sub archivetree() {
 
     &myrename($inst_dirs[$treenum],$archdirname);
 
-    foreach my $dir1 (@dirstodolist) {    
+    foreach my $dir1 (@dirstodolist) {
         # copy DLL .pdb/.map up to lib dir so we can blow away metalibs subdir
         # could do this is the makefiles instead
         &myexecstr("( for /R ".$archdirname."\\".$dir1."\\metalibs %i in (lib*.pdb lib*.map) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
@@ -374,7 +379,7 @@ sub archivetree() {
         # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just dont check retval
         # delete old objs/pdbs/etc out of archived trees (just blow away the Opt[Win32] dir)
         # &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
-        
+
         # instead blow away src,CVS,include,metalibs dirs completely
         # doing every rd twice since windows-samba-RAID link seems to screw up and cause some files to not be deleted the 1st time
         &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\src","nomsg","DO_LOG","NT cmd");
@@ -414,12 +419,12 @@ sub checkoutfiles {
             $nonexisting_module_str.=$dir1." ";
         }
     }
-    
+
     if($existing_module_str ne "") {
         # flaw: will bomb if any CVS subdirs are missing
 
         &myexecstr("( for /D /R . %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
-    
+
         &logmsg("*** REMOVING ALL FILES IN OLD SRC TREES ***");
         # use cvs update to grab new copy
         # note: instead of blowing these away, may want to rename and save them
@@ -428,11 +433,11 @@ sub checkoutfiles {
         $rmcmd="find ".$existing_module_str." -path '*CVS*' -prune -or -not -name 'bldlog*' -and -not -type d -print | xargs --no-run-if-empty -n 40 rm";
         #&myexecstr($rmcmd,"Removal of old files failed!","DO_LOG","NO_CSHRC");
         &myexecstr($rmcmd,"Removal of old files failed!","DO_LOG","NO_PANDA_ATTACH");
-    
+
         &myexecstr("cvs update -d -R ".$existing_module_str." |& egrep -v 'Updating|^\\?'",
                    "cvs update failed!","DO_LOG","NO_PANDA_ATTACH");
     }
-    
+
     if($nonexisting_module_str ne "") {
         &myexecstr("cvs checkout -R ".$nonexisting_module_str." |& egrep -v 'Updating|^\\?'",
                    "cvs checkout failed!","DO_LOG","NO_PANDA_ATTACH");
@@ -443,29 +448,29 @@ sub buildall() {
     $treenum=shift;
 
     # DTOOL ppremake may have already run by DTOOL 'initialize make'
-        
+
         if($DO_ARCHIVE_AND_COPY_ONLY) {
                 goto 'ARCHIVE_AND_COPY';
         }
-    
+
     &logmsg("*** Starting ".uc($inst_dirnames[$treenum])." Build (Opt=".$ENV{'PANDA_OPTIMIZE'}.") at ".&gettimestr()." ***");
 
     &checkoutfiles();
 
     # cant do attachment, since that often hangs on NT
     # must use non-attachment build system  (BUILD_TYPE 'gmsvc', not 'stopgap', in $PPREMAKE_CONFIG)
-    
+
     # hacks to fix multiproc build issue (cp file to dir occurs before dir creation, need to adjust makefiles to fix this)
-    foreach my $dir1 (@dirstodolist) {    
-        &mymkdir($CYGBLDROOT."/".$dir1."/etc"); 
-        &mymkdir($CYGBLDROOT."/".$dir1."/bin"); 
-        &mymkdir($CYGBLDROOT."/".$dir1."/lib"); 
+    foreach my $dir1 (@dirstodolist) {
+        &mymkdir($CYGBLDROOT."/".$dir1."/etc");
+        &mymkdir($CYGBLDROOT."/".$dir1."/bin");
+        &mymkdir($CYGBLDROOT."/".$dir1."/lib");
         &mymkdir($CYGBLDROOT."/".$dir1."/include");
     }
     &mymkdir($CYGBLDROOT."/dtool/include/parser-inc");  # hack to fix makefile multiproc issue
     &mymkdir($CYGBLDROOT."/pandatool/shared");  # hack to fix makefile multiproc issue
 
-    foreach my $dir1 (@dirstodolist) {    
+    foreach my $dir1 (@dirstodolist) {
         my $dir1_upcase = uc($dir1);
 
         &logmsg("*** PPREMAKE ".$dir1_upcase." (BUILDTYPE=".$ENV{'PANDA_BUILD_TYPE'}.") ***");
@@ -485,7 +490,7 @@ sub buildall() {
        $shellarg="NT cmd";
     }
 
-    foreach my $dir1 (@dirstodolist) {    
+    foreach my $dir1 (@dirstodolist) {
         my $dir1_upcase = uc($dir1);
         &logmsg("*** BUILDING ".$dir1_upcase." at ".&gettimestr()." ***");
         &mychdir($CYGBLDROOT."/".$dir1);
@@ -495,7 +500,7 @@ sub buildall() {
     &mychdir($CYGBLDROOT);  # get out of src dirs to allow them to be moved/renamed
     unlink($CYGBLDROOT."/dtool/dtool_config.h");  # fix freakish NTFS bug, this file is regenerated by ppremake anyway
 
-    if($#dirstodolist>1) {    
+    if($#dirstodolist>1) {
        &gen_python_code();  # must run AFTER toontown bld
     }
 
@@ -532,14 +537,14 @@ sub buildall() {
     }
 
     # hopefully there are no extra dirs underneath
-        
-    # add wintools to dir copy list 
-    # dont want to add wintools to global dirstodo, treat it separately    
-    unshift(dirstodolist,"wintools");   
-    
-    foreach my $dir1 (@dirstodolist) {        
+
+    # add wintools to dir copy list
+    # dont want to add wintools to global dirstodo, treat it separately
+    unshift(dirstodolist,"wintools");
+
+    foreach my $dir1 (@dirstodolist) {
         &mymkdir($inst_dirs[$treenum]."\\".$dir1);
-        &myexecstr("\\WINNT\\system32\\xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\".$dir1."\\* ".$inst_dirs[$treenum]."\\".$dir1, 
+        &myexecstr("\\WINNT\\system32\\xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\".$dir1."\\* ".$inst_dirs[$treenum]."\\".$dir1,
                    "xcopy of ".$inst_dirnames[$treenum]." tree failed!!", "DO_LOG","NT cmd");
     }
     shift(dirstodolist);
@@ -633,7 +638,7 @@ foreach my $dir1 (@dirstodolist) {
 }
 
 # makes ppremake build headers, libs in module dirs (panda/lib,dtool/bin,etc), not /usr/local/panda/inc...
-foreach my $dir1 (@dirstodolist) {    
+foreach my $dir1 (@dirstodolist) {
   my $dir1_upcase = uc($dir1);
   $ENV{$dir1_upcase}=$CYGBLDROOT."/".$dir1;
 
@@ -668,7 +673,7 @@ if($DEBUG_TREECOPY) {
 SKIP_REMOVE:
 
 # this doesnt work unless you can completely remove the dirs, since cvs checkout
-# bombs if dirs exist but CVS dirs do not. 
+# bombs if dirs exist but CVS dirs do not.
 
 if($do_install_dir[$INSTALLNUM]) {
   if($dir_build_type[$INSTALLNUM]) {
@@ -723,7 +728,7 @@ if($do_install_dir[$DEBUGNUM]) {
 
     &buildall($DEBUGNUM);
     &make_bsc_file();
-    delete $ENV{'USE_BROWSEINFO'};  
+    delete $ENV{'USE_BROWSEINFO'};
 
     &myexecstr("del /s *.sbr","nomsg","DO_LOG","NT cmd");
 }
@@ -744,7 +749,7 @@ if($do_install_dir[$PUBLISHNUM]) {
 &logmsg("*** Panda Build Log Finished at ".&gettimestr()." ***");
 
 # store log in 'debug' dir
-&myexecstr("copy ".$fulllogfilename_win." ".$inst_dirs[$g_last_dirnum], "copy of ".$fulllogfilename_win." failed!!", "","NT cmd");  
+&myexecstr("copy ".$fulllogfilename_win." ".$inst_dirs[$g_last_dirnum], "copy of ".$fulllogfilename_win." failed!!", "","NT cmd");
 
 exit(0);
 
