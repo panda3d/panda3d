@@ -46,7 +46,7 @@
       }
     }
   }
-  
+
   #define miles_audio_debug(x) \
       audio_debug("MilesAudioSound "<<getStatusChar(_audio)<<" \""<<get_name() \
       <<"\" "<< x )
@@ -96,6 +96,7 @@ play() {
 void MilesAudioSound::
 stop() {
   miles_audio_debug("stop()");
+  _paused=false;
   AIL_quick_halt(_audio);
 }
 
@@ -236,14 +237,14 @@ float MilesAudioSound::
 length() const {
   if (_length == 0.0f) {
    #ifndef NEED_MILES_LENGTH_WORKAROUND
-        _length=((float)AIL_quick_ms_length(_audio))*0.001f;   
+        _length=((float)AIL_quick_ms_length(_audio))*0.001f;
    #else
         // hack:
         // For now, the sound needs to be playing, in order to
         // get the right length.  I'm in contact with RAD about the problem.  I've
         // sent them example code.  They've told me they're looking into it.
         // Until then, we'll play the sound to get the length.
-   
+
         if (AIL_quick_status(_audio)==QSTAT_PLAYING) {
           _length=((float)AIL_quick_ms_length(_audio))*0.001f;
         } else {
@@ -253,7 +254,7 @@ length() const {
         }
    #endif
   }
-  
+
   //audio_cat->info() << "MilesAudioSound::length() returning " << _length << endl;
   audio_debug("MilesAudioSound::length() returning "<<_length);
   return _length;
