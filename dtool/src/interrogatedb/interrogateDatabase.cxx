@@ -900,7 +900,8 @@ load_latest() {
               file_identifier != def->file_identifier) {
             interrogatedb_cat->warning()
               << "Interrogate data in " << pathname
-              << " is out of sync with the compiled-in data.\n";
+              << " is out of sync with the compiled-in data"
+              << " (" << file_identifier << " != " << def->file_identifier << ").\n";
           }
 
           if (_file_major_version != _current_major_version ||
