@@ -35,8 +35,8 @@ bool TexturePool::
 ns_has_texture(const Filename &orig_filename) {
   Filename filename(orig_filename);
 
-  if (!fake_texture_image.empty()) {
-    filename = fake_texture_image;
+  if (!_fake_texture_image.empty()) {
+    filename = _fake_texture_image;
   }
 
   if (use_vfs) {
@@ -68,8 +68,8 @@ Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
   Filename filename(orig_filename);
 
-  if (!fake_texture_image.empty()) {
-    filename = fake_texture_image;
+  if (!_fake_texture_image.empty()) {
+    filename = _fake_texture_image;
   }
 
   if (use_vfs) {
@@ -119,8 +119,8 @@ ns_load_texture(const Filename &orig_filename,
   Filename filename(orig_filename);
   Filename alpha_filename(orig_alpha_filename);
 
-  if (!fake_texture_image.empty()) {
-    return ns_load_texture(fake_texture_image, primary_file_num_channels);
+  if (!_fake_texture_image.empty()) {
+    return ns_load_texture(_fake_texture_image, primary_file_num_channels);
   }
 
   if (use_vfs) {

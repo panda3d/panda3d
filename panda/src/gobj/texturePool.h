@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "filename.h"
+#include "config_gobj.h"
 
 #include "pmap.h"
 
@@ -54,6 +55,11 @@ PUBLISHED:
 
   INLINE static void list_contents(ostream &out);
 
+  INLINE static void set_fake_texture_image(const string &filename);
+  INLINE static void clear_fake_texture_image();
+  INLINE static bool has_fake_texture_image();
+  INLINE static const string &get_fake_texture_image();
+
 private:
   INLINE TexturePool();
 
@@ -74,6 +80,7 @@ private:
   static TexturePool *_global_ptr;
   typedef pmap<string,  PT(Texture) > Textures;
   Textures _textures;
+  string _fake_texture_image;
 };
 
 #include "texturePool.I"

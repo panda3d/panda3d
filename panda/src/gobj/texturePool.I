@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::has_texture
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns true if the texture has ever been loaded,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -29,7 +30,7 @@ has_texture(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::verify_texture
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Loads the given filename up into a texture, if it has
 //               not already been loaded, and returns true to indicate
 //               success, or false to indicate failure.  If this
@@ -44,7 +45,7 @@ verify_texture(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::load_texture
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Loads the given filename up into a texture, if it has
 //               not already been loaded, and returns the new texture.
 //               If a texture with the same filename was previously
@@ -58,7 +59,7 @@ load_texture(const string &filename, int primary_file_num_channels) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::load_texture
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Loads the given filename up into a texture, if it has
 //               not already been loaded, and returns the new texture.
 //               If a texture with the same filename was previously
@@ -75,7 +76,7 @@ load_texture(const string &filename, const string &alpha_filename,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::add_texture
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Adds the indicated already-loaded texture to the
 //               pool.  The texture must have a filename set for its
 //               name.  The texture will always replace any
@@ -89,7 +90,7 @@ add_texture(Texture *texture) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::release_texture
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Removes the indicated texture from the pool,
 //               indicating it will never be loaded again; the texture
 //               may then be freed.  If this function is never called,
@@ -107,7 +108,7 @@ release_texture(Texture *texture) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::release_all_textures
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Releases all textures in the pool and restores the
 //               pool to the empty state.
 ////////////////////////////////////////////////////////////////////
@@ -118,7 +119,7 @@ release_all_textures() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::garbage_collect
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Releases only those textures in the pool that have a
 //               reference count of exactly 1; i.e. only those
 //               textures that are not being used outside of the pool.
@@ -131,13 +132,57 @@ garbage_collect() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::list_contents
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Lists the contents of the texture pool to the
 //               indicated output stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void TexturePool::
 list_contents(ostream &out) {
   get_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::set_fake_texture_image
+//       Access: Published, Static
+//  Description: Sets a bogus filename that will be loaded in lieu of
+//               any textures requested from this point on.
+////////////////////////////////////////////////////////////////////
+INLINE void TexturePool::
+set_fake_texture_image(const string &filename) {
+  get_ptr()->_fake_texture_image = filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::clear_fake_texture_image
+//       Access: Published, Static
+//  Description: Restores normal behavior of loading the textures
+//               actually requested.
+////////////////////////////////////////////////////////////////////
+INLINE void TexturePool::
+clear_fake_texture_image() {
+  set_fake_texture_image(string());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::has_fake_texture_image
+//       Access: Published, Static
+//  Description: Returns true if fake_texture_image mode has been
+//               enabled, false if we are in the normal mode.
+////////////////////////////////////////////////////////////////////
+INLINE bool TexturePool::
+has_fake_texture_image() {
+  return !get_fake_texture_image().empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::get_fake_texture_image
+//       Access: Published, Static
+//  Description: Returns the filename that was specified with a
+//               previous call to set_fake_texture_image().
+////////////////////////////////////////////////////////////////////
+INLINE const string &TexturePool::
+get_fake_texture_image() {
+  return get_ptr()->_fake_texture_image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,4 +194,5 @@ list_contents(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 INLINE TexturePool::
 TexturePool() {
+  _fake_texture_image = fake_texture_image;
 }
