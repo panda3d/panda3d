@@ -19,7 +19,7 @@ private:
 			       vector< PT(AngularForce) >& forces,
 			       float dt);
 
-public:
+PUBLISHED:
   AngularEulerIntegrator(void);
   virtual ~AngularEulerIntegrator(void);
 };
