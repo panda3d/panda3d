@@ -35,6 +35,9 @@ class FSM(DirectObject):
         # Enter the initial state.
         # It is assumed that the initial state takes no arguments.
         self.__currentState = self.__initialState
+        #self.__enter(self.__initialState)
+
+    def enterInitialState(self):
         self.__enter(self.__initialState)
         
     def __str__(self):
