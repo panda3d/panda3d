@@ -37,6 +37,8 @@
 // "dconfig"--whose variable $[TARGET] was defined to be "dconfig").
 #map all_libs TARGET(*/static_lib_target */ss_lib_target */lib_target */noinst_lib_target */metalib_target)
 
+// This map variable allows us to look up global variables that might
+// be defined in a particular Sources.pp, e.g. in the "toplevel" file.
 #map dir_type DIR_TYPE(*/)
 
 // These allow us to determine whether a particular local library is a
