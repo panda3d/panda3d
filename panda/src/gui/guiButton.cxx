@@ -324,8 +324,12 @@ void GuiButton::run_button_up(void) {
   gui_cat->debug() << "doing work" << endl;
   _eh->remove_hook(_up_event, GuiButton::behavior_up, (void*)this);
   _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
-  if (!_behavior_event.empty())
-    throw_event(_behavior_event);
+  if (!_behavior_event.empty()) {
+    if (_have_event_param)
+      throw_event(_behavior_event, EventParameter(_event_param));
+    else
+      throw_event(_behavior_event);
+  }
   if (_behavior_functor != (GuiBehavior::BehaviorFunctor*)0L)
     _behavior_functor->doit(this);
 }
@@ -348,7 +352,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
     _down_event(name +"-down"), _down_rollover_event(""),
     _inactive_event(""), _up_scale(up->get_scale()), _upr_scale(1.),
     _down_scale(down->get_scale()), _downr_scale(1.), _inactive_scale(1.),
-    _state(GuiButton::NONE),
+    _state(GuiButton::NONE), _have_event_param(false), _event_param(0),
     _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, _up_rollover, _down_rollover, _inactive, _left, _right,
 	     _bottom, _top);
@@ -372,6 +376,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
     _inactive_event(name + "-inactive"), _up_scale(up->get_scale()),
     _upr_scale(1.), _down_scale(down->get_scale()), _downr_scale(1.),
     _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE),
+    _have_event_param(false), _event_param(0),
     _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, _up_rollover, _down_rollover, inactive, _left, _right,
 	     _bottom, _top);
@@ -396,6 +401,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
     _upr_scale(up_roll->get_scale()), _down_scale(down->get_scale()),
     _downr_scale(down_roll->get_scale()),
     _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE),
+    _have_event_param(false), _event_param(0),
     _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, up_roll, down_roll, inactive, _left, _right, _bottom,
 	     _top);

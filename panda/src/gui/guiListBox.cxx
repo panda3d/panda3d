@@ -278,9 +278,12 @@ void GuiListBox::set_scale(float f) {
   for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
        ++j)
     (*j)->set_scale(f);
+  /*
   _up_arrow->set_scale(f);
   _down_arrow->set_scale(f);
+  */
   GuiBehavior::set_scale(f);
+  this->recompute_frame();
 }
 
 void GuiListBox::set_scale(float x, float y, float z) {
@@ -292,12 +295,16 @@ void GuiListBox::set_scale(float x, float y, float z) {
   for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
        ++j)
     (*j)->set_scale(x, y, z);
+  /*
   _up_arrow->set_scale(x, y, z);
   _down_arrow->set_scale(x, y, z);
+  */
   GuiBehavior::set_scale(x, y, z);
+  this->recompute_frame();
 }
 
 void GuiListBox::set_pos(const LVector3f& p) {
+  /*
   ItemVector::iterator i;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
     (*i)->set_pos(p);
@@ -306,9 +313,13 @@ void GuiListBox::set_pos(const LVector3f& p) {
   for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
        ++j)
     (*j)->set_pos(p);
+  */
+  /*
   _up_arrow->set_pos(p);
   _down_arrow->set_pos(p);
+  */
   GuiBehavior::set_pos(p);
+  this->recompute_frame();
 }
 
 void GuiListBox::start_behavior(void) {

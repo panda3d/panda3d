@@ -231,3 +231,12 @@ INLINE GuiBehavior::BehaviorFunctor*
 GuiButton::get_behavior_functor(void) const {
   return _behavior_functor;
 }
+
+INLINE void GuiButton::set_behavior_event_parameter(int p) {
+  this->_have_event_param = true;
+  this->_event_param = p;
+}
+
+INLINE int GuiButton::get_behavior_event_parameter(void) const {
+  return this->_event_param;
+}

@@ -33,6 +33,8 @@ private:
   States _state;
 
   string _behavior_event;
+  bool _have_event_param;
+  int _event_param;
   GuiBehavior::BehaviorFunctor* _behavior_functor;
 
   INLINE GuiButton(void);
@@ -90,6 +92,9 @@ PUBLISHED:
 
   INLINE void set_behavior_functor(GuiBehavior::BehaviorFunctor*);
   INLINE GuiBehavior::BehaviorFunctor* get_behavior_functor(void) const;
+
+  INLINE void set_behavior_event_parameter(int);
+  INLINE int get_behavior_event_parameter(void) const;
 
   virtual void set_scale(float);
   virtual void set_scale(float, float, float);
