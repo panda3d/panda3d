@@ -35,6 +35,8 @@ TypeHandle GeomNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 GeomNode::
 GeomNode(const string &name) : NamedNode(name), _num_geoms(0) {
+  _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+  _prepared_context = (GeomNodeContext *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,6 +50,8 @@ GeomNode(const GeomNode &copy) :
   _geoms(copy._geoms),
   _num_geoms(0)
 {
+  _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+  _prepared_context = (GeomNodeContext *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,6 +61,7 @@ GeomNode(const GeomNode &copy) :
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 operator = (const GeomNode &copy) {
+  unprepare();
   NamedNode::operator = (copy);
   _geoms = copy._geoms;
   _num_geoms = 0;
@@ -69,6 +74,7 @@ operator = (const GeomNode &copy) {
 ////////////////////////////////////////////////////////////////////
 GeomNode::
 ~GeomNode() {
+  unprepare();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,9 +152,87 @@ write_verbose(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 draw(GraphicsStateGuardianBase *gsg) {
-  Geoms::const_iterator gi;
-  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
-    (*gi)->draw(gsg);
+  if (_prepared_gsg == gsg) {
+    gsg->draw_geom_node(this, _prepared_context);
+  } else {
+    Geoms::const_iterator gi;
+    for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
+      (*gi)->draw(gsg);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::prepare
+//       Access: Public
+//  Description: Creates a context for the GeomNode on the particular
+//               GSG, if it does not already exist.  Returns the new
+//               (or old) GeomNodeContext.
+//
+//               If the given GeomNodeContext pointer is non-NULL, it will
+//               be passed to the GSG, which may or may not choose to
+//               extend the existing GeomNodeContext, or create a totally
+//               new one.
+////////////////////////////////////////////////////////////////////
+GeomNodeContext *GeomNode::
+prepare(GraphicsStateGuardianBase *gsg) {
+  if (gsg != _prepared_gsg) {
+    GeomNodeContext *gc = gsg->prepare_geom_node(this);
+    if (gc != (GeomNodeContext *)NULL) {
+      unprepare();
+      _prepared_context = gc;
+      _prepared_gsg = gsg;
+    }
+    return gc;
+  }
+
+  return _prepared_context;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::unprepare
+//       Access: Public
+//  Description: Frees the context allocated on all GSG's for which
+//               the geom has been declared.
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+unprepare() {
+  if (_prepared_gsg != (GraphicsStateGuardianBase *)NULL) {
+    _prepared_gsg->release_geom_node(_prepared_context);
+    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+    _prepared_context = (GeomNodeContext *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::unprepare
+//       Access: Public
+//  Description: Frees the geom context only on the indicated GSG,
+//               if it exists there.
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+unprepare(GraphicsStateGuardianBase *gsg) {
+  if (_prepared_gsg == gsg) {
+    _prepared_gsg->release_geom_node(_prepared_context);
+    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+    _prepared_context = (GeomNodeContext *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::clear_gsg
+//       Access: Public
+//  Description: Removes the indicated GSG from the Geom's known
+//               GSG's, without actually releasing the geom on that
+//               GSG.  This is intended to be called only from
+//               GSG::release_geom_node(); it should never be called by
+//               user code.
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+clear_gsg(GraphicsStateGuardianBase *gsg) {
+  if (_prepared_gsg == gsg) {
+    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+    _prepared_context = (GeomNodeContext *)NULL;
   }
 }
 
@@ -189,10 +273,10 @@ remove_geom(int n) {
 
   } else {
     // Copy-on-write.
-    size_t num_geoms = _geoms.size();
+    int num_geoms = _geoms.size();
     Geoms new_geoms;
     new_geoms.reserve(num_geoms - 1);
-    size_t i;
+    int i;
     for (i = 0; i < n; i++) {
       new_geoms.push_back(_geoms[i]);
     }
@@ -204,6 +288,7 @@ remove_geom(int n) {
     nassertv(_geoms.get_ref_count() == 1);
   }
 
+  unprepare();
   mark_bound_stale();
 }
 
@@ -215,6 +300,7 @@ remove_geom(int n) {
 void GeomNode::
 clear() {
   _geoms.clear();
+  unprepare();
   mark_bound_stale();
 }
 
@@ -239,6 +325,7 @@ add_geom(dDrawable *geom) {
     _geoms.push_back(geom);
   }
 
+  unprepare();
   mark_bound_stale();
   return _geoms.size() - 1;
 }
@@ -268,6 +355,7 @@ add_geoms_from(const GeomNode *other) {
     _geoms.v().insert(_geoms.end(), geoms_begin, geoms_end);
   }
 
+  unprepare();
   mark_bound_stale();
 }
 

@@ -1,5 +1,7 @@
 
 #include "displayRegion.cxx"
+#include "geomContext.cxx"
+#include "geomNodeContext.cxx"
 #include "graphicsChannel.cxx"
 #include "graphicsLayer.cxx"
 #include "graphicsPipe.cxx"

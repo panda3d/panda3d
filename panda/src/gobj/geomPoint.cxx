@@ -57,8 +57,8 @@ print_draw_immediate(void) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomPoint::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_point(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_point(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

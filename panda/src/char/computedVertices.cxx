@@ -213,8 +213,8 @@ update(Character *character) {
       DCAST_INTO_V(joint, character->get_part(vt._joint_index));
 
       mat =
-    joint->_initial_net_transform_inverse *
-    joint->_net_transform;
+        joint->_initial_net_transform_inverse *
+        joint->_net_transform;
     }
 
     Vertices::const_iterator vi;

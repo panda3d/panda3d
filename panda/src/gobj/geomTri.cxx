@@ -183,8 +183,8 @@ print_draw_immediate(void) const
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomTri::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_tri(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_tri(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -75,8 +75,8 @@ print_draw_immediate(void) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomSprite::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_sprite(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_sprite(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

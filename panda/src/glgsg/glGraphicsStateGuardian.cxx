@@ -190,6 +190,7 @@ GLGraphicsStateGuardian::
 ~GLGraphicsStateGuardian() {
   free_pointers();
   release_all_textures();
+  release_all_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -720,7 +721,7 @@ render_subgraph(RenderTraverser *traverser, Node *subgraph,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_point(const GeomPoint *geom) {
+draw_point(GeomPoint *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE
@@ -779,7 +780,7 @@ draw_point(const GeomPoint *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_line(const GeomLine* geom) {
+draw_line(GeomLine *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE
@@ -840,7 +841,7 @@ draw_line(const GeomLine* geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_linestrip(const GeomLinestrip* geom) {
+draw_linestrip(GeomLinestrip *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE
@@ -940,7 +941,7 @@ struct draw_sprite_vertex_less {
 };
 
 void GLGraphicsStateGuardian::
-draw_sprite(const GeomSprite *geom) {
+draw_sprite(GeomSprite *geom, GeomContext *) {
   // this is a little bit of a mess, but it's ok.  Here's the deal:
   // we want to draw, and draw quickly, an arbitrarily large number
   // of sprites all facing the screen.  Performing the billboard math
@@ -1226,7 +1227,7 @@ draw_sprite(const GeomSprite *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_polygon(const GeomPolygon *geom) {
+draw_polygon(GeomPolygon *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE
@@ -1299,7 +1300,7 @@ draw_polygon(const GeomPolygon *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_tri(const GeomTri *geom) {
+draw_tri(GeomTri *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE
@@ -1367,7 +1368,7 @@ draw_tri(const GeomTri *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_quad(const GeomQuad *geom) {
+draw_quad(GeomQuad *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE
@@ -1435,7 +1436,7 @@ draw_quad(const GeomQuad *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_tristrip(const GeomTristrip *geom) {
+draw_tristrip(GeomTristrip *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE
@@ -1525,7 +1526,7 @@ draw_tristrip(const GeomTristrip *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_trifan(const GeomTrifan *geom) {
+draw_trifan(GeomTrifan *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE
@@ -1616,7 +1617,7 @@ draw_trifan(const GeomTrifan *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_sphere(const GeomSphere *geom) {
+draw_sphere(GeomSphere *geom, GeomContext *) {
   //  activate();
 
 #ifdef GSG_VERBOSE

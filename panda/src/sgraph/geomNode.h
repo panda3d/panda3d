@@ -30,6 +30,7 @@
 
 class GraphicsStateGuardianBase;
 class AllAttributesWrapper;
+class GeomNodeContext;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomNode
@@ -56,6 +57,11 @@ PUBLISHED:
 public:
   void draw(GraphicsStateGuardianBase *gsg);
 
+  GeomNodeContext *prepare(GraphicsStateGuardianBase *gsg);
+  void unprepare();
+  void unprepare(GraphicsStateGuardianBase *gsg);
+  void clear_gsg(GraphicsStateGuardianBase *gsg);
+
 PUBLISHED:
   int get_num_geoms() const;
   dDrawable *get_geom(int n) const;
@@ -70,6 +76,12 @@ protected:
 private:
   typedef PTA(PT(dDrawable)) Geoms;
   Geoms _geoms;
+
+  // These are essentially similar to the same fields in Geom.  They
+  // are used only if the GSG supports a node-level Geom context, as
+  // opposed to strictly a Geom-level context.
+  GraphicsStateGuardianBase *_prepared_gsg;
+  GeomNodeContext *_prepared_context;
 
 public:
   static void register_with_read_factory(void);

@@ -30,6 +30,10 @@
 class RenderBuffer;
 class GraphicsWindow;
 
+class GeomContext;
+class GeomNodeContext;
+class GeomNode;
+class Geom;
 class GeomPoint;
 class GeomLine;
 class GeomLinestrip;
@@ -111,20 +115,27 @@ public:
   // inconvenient to declare each of those types to be friends of this
   // class.
 
-  virtual void draw_point(const GeomPoint *geom)=0;
-  virtual void draw_line(const GeomLine *geom)=0;
-  virtual void draw_linestrip(const GeomLinestrip *geom)=0;
-  virtual void draw_sprite(const GeomSprite *geom)=0;
-  virtual void draw_polygon(const GeomPolygon *geom)=0;
-  virtual void draw_quad(const GeomQuad *geom)=0;
-  virtual void draw_tri(const GeomTri *geom)=0;
-  virtual void draw_tristrip(const GeomTristrip *geom)=0;
-  virtual void draw_trifan(const GeomTrifan *geom)=0;
-  virtual void draw_sphere(const GeomSphere *geom)=0;
-
   virtual TextureContext *prepare_texture(Texture *tex)=0;
   virtual void apply_texture(TextureContext *tc)=0;
   virtual void release_texture(TextureContext *tc)=0;
+
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node)=0;
+  virtual void draw_geom_node(GeomNode *node, GeomNodeContext *gnc)=0;
+  virtual void release_geom_node(GeomNodeContext *gnc)=0;
+
+  virtual GeomContext *prepare_geom(Geom *geom)=0;
+  virtual void release_geom(GeomContext *gc)=0;
+
+  virtual void draw_point(GeomPoint *geom, GeomContext *gc)=0;
+  virtual void draw_line(GeomLine *geom, GeomContext *gc)=0;
+  virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc)=0;
+  virtual void draw_sprite(GeomSprite *geom, GeomContext *gc)=0;
+  virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc)=0;
+  virtual void draw_quad(GeomQuad *geom, GeomContext *gc)=0;
+  virtual void draw_tri(GeomTri *geom, GeomContext *gc)=0;
+  virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc)=0;
+  virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc)=0;
+  virtual void draw_sphere(GeomSphere *geom, GeomContext *gc)=0;
 
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr)=0;
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,

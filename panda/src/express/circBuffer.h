@@ -35,16 +35,32 @@ template<class Thing, int max_size>
 class CircBuffer {
 public:
   INLINE CircBuffer();
+  INLINE ~CircBuffer();
 
-  INLINE bool is_empty() const;
-  INLINE bool is_full() const;
+  // Methods that are safe to call without synchronization primitives
+  // from either thread.
+  INLINE int size() const;
 
-  INLINE const Thing &peek() const;
-  INLINE Thing extract();
+  // Methods that are safe to call without synchronization primitives
+  // only from the reader thread.
+  INLINE bool empty() const;
 
-  INLINE void insert(const Thing &t);
+  INLINE const Thing &front() const;
+  INLINE Thing &front();
+  INLINE void pop_front();
 
-protected:
+  INLINE const Thing &operator[] (int n) const;
+  INLINE Thing &operator[] (int n);
+
+  // Methods that are safe to call without synchronization primitives
+  // only from the writer thread.
+  INLINE bool full() const;
+
+  INLINE const Thing &back() const;
+  INLINE Thing &back();
+  INLINE void push_back(const Thing &t);
+
+private:
   Thing _array[max_size+1];
   int _in, _out;
 };

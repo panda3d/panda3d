@@ -148,6 +148,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
 
   if (any_changed) {
     node->_geoms = new_geoms;
+    node->unprepare();
     node->mark_bound_stale();
     return true;
   }

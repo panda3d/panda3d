@@ -79,10 +79,22 @@ PUBLISHED:
 
   void enable_frame_clear(bool clear_color, bool clear_depth);
   void release_all_textures();
+  void release_all_geoms();
 
   void clear_attribute(TypeHandle type);
 
 public:
+  virtual TextureContext *prepare_texture(Texture *tex);
+  virtual void apply_texture(TextureContext *tc);
+  virtual void release_texture(TextureContext *tc);
+
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
+  virtual void draw_geom_node(GeomNode *node, GeomNodeContext *gnc);
+  virtual void release_geom_node(GeomNodeContext *gnc);
+
+  virtual GeomContext *prepare_geom(Geom *geom);
+  virtual void release_geom(GeomContext *gc);
+
   virtual void clear(const RenderBuffer &buffer)=0;
   virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region)=0;
 
@@ -148,18 +160,28 @@ protected:
 
   bool mark_prepared_texture(TextureContext *tc);
   bool unmark_prepared_texture(TextureContext *tc);
+  bool mark_prepared_geom(GeomContext *gc);
+  bool unmark_prepared_geom(GeomContext *gc);
+  bool mark_prepared_geom_node(GeomNodeContext *gnc);
+  bool unmark_prepared_geom_node(GeomNodeContext *gnc);
 
 #ifdef DO_PSTATS
   // These functions are used to update the active texture memory
   // usage record (and other frame-based measurements) in Pstats.
   void init_frame_pstats();
   void add_to_texture_record(TextureContext *tc);
+  void add_to_geom_record(GeomContext *gc);
+  void add_to_geom_node_record(GeomNodeContext *gnc);
   void record_state_change(TypeHandle type);
   pset<TextureContext *> _current_textures;
+  pset<GeomContext *> _current_geoms;
+  pset<GeomNodeContext *> _current_geom_nodes;
 #else
   INLINE void init_frame_pstats() { }
   INLINE void add_to_texture_record(TextureContext *) { }
-  INLINE void record_state_change(TypeHandle type) { }
+  INLINE void add_to_geom_record(GeomContext *) { }
+  INLINE void add_to_geom_node_record(GeomNodeContext *) { }
+  INLINE void record_state_change(TypeHandle) { }
   INLINE void count_node(Node *) { }
 #endif
 
@@ -192,6 +214,10 @@ public:
   // Statistics
   static PStatCollector _total_texusage_pcollector;
   static PStatCollector _active_texusage_pcollector;
+  static PStatCollector _total_geom_pcollector;
+  static PStatCollector _active_geom_pcollector;
+  static PStatCollector _total_geom_node_pcollector;
+  static PStatCollector _active_geom_node_pcollector;
   static PStatCollector _total_texmem_pcollector;
   static PStatCollector _used_texmem_pcollector;
   static PStatCollector _texmgrmem_total_pcollector;
@@ -208,8 +234,14 @@ public:
   static PStatCollector _geom_nodes_pcollector;
 
 private:
+  // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access
+  // these sets directly due to exported template issue
   typedef pset<TextureContext *> Textures;
-  Textures _prepared_textures;  // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access set directly due to exported template issue
+  Textures _prepared_textures;  
+  typedef pset<GeomContext *> Geoms;
+  Geoms _prepared_geoms;  
+  typedef pset<GeomNodeContext *> GeomNodes;
+  GeomNodes _prepared_geom_nodes;  
 
 public:
   void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);

@@ -1,5 +1,5 @@
-// Filename: geomQuad.h
-// Created by:  charles (13Jul00)
+// Filename: savedContext.h
+// Created by:  drose (11Jun01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,51 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GEOMQUAD_H
-#define GEOMQUAD_H
+#ifndef SAVEDCONTEXT_H
+#define SAVEDCONTEXT_H
 
-#include "geom.h"
+#include <pandabase.h>
+
+#include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : GeomQuad
-// Description : Quadrilateral Primitive
+//       Class : SavedContext
+// Description : This is the base class for both a TextureContext and
+//               a GeomContext.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomQuad : public Geom {
+class EXPCL_PANDA SavedContext : public TypedObject {
 public:
-  GeomQuad() { }
-  virtual Geom *make_copy() const;
-  virtual void print_draw_immediate() const;
-  virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc);
-
-  virtual int get_num_vertices_per_prim() const {
-    return 4;
-  }
-  virtual int get_num_more_vertices_than_components() const {
-    return 0;
-  }
-  virtual bool uses_components() const {
-    return false;
-  }
-
-  virtual int get_length(int) const {
-    return 4;
-  }
-
-  virtual PTA_ushort get_tris() const;
+  INLINE SavedContext();
 
 public:
-  static void register_with_read_factory(void);
-  static TypedWritable *make_GeomQuad(const FactoryParams &params);
-
-PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-public:
   static void init_type() {
-    Geom::init_type();
-    register_type(_type_handle, "GeomQuad",
-                  Geom::get_class_type());
+    TypedObject::init_type();
+    register_type(_type_handle, "SavedContext",
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -71,4 +50,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#endif // GEOMQUAD_H
+#include "savedContext.I"
+
+#endif
+

@@ -21,7 +21,7 @@
 
 #include <pandabase.h>
 
-#include <typedObject.h>
+#include "savedContext.h"
 
 class Texture;
 
@@ -38,7 +38,7 @@ class Texture;
 //               internal handle for the texture and store it here.
 //               The texture stores all of these handles internally.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextureContext : public TypedObject {
+class EXPCL_PANDA TextureContext : public SavedContext {
 public:
   INLINE TextureContext(Texture *tex);
 
@@ -54,9 +54,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    SavedContext::init_type();
     register_type(_type_handle, "TextureContext",
-                  TypedObject::get_class_type());
+                  SavedContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

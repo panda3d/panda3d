@@ -57,8 +57,8 @@ print_draw_immediate(void) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomPolygon::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_polygon(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_polygon(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

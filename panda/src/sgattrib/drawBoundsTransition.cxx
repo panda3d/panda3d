@@ -124,9 +124,9 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
       geom.set_coords(verts, G_PER_VERTEX);
       geom.set_num_prims(1);
 
-      gsg->draw_sphere(&geom);
+      gsg->draw_sphere(&geom, NULL);
       gsg->set_state(_inside_attrib, false);
-      gsg->draw_sphere(&geom);
+      gsg->draw_sphere(&geom, NULL);
 
     } else {
       sgattrib_cat.warning()

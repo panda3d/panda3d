@@ -49,8 +49,8 @@ make_copy() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomLinestrip::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_linestrip(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_linestrip(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

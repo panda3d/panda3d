@@ -21,6 +21,38 @@
 TypeHandle dDrawable::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Drawable::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+dDrawable::
+dDrawable() : WritableConfigurable() {
+  MemoryUsage::update_type(this, this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Drawable::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+dDrawable::
+~dDrawable() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Drawable::draw
+//       Access: Public, Virtual
+//  Description: Actually draws the Drawable with the indicated GSG.
+//               At this level, this doesn't do very much.
+////////////////////////////////////////////////////////////////////
+void dDrawable::
+draw(GraphicsStateGuardianBase *) { 
+  if (is_dirty()) {
+    config(); 
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Drawable::propagate_stale_bound
 //       Access: Protected, Virtual
 //  Description: Called by BoundedObject::mark_bound_stale(), this

@@ -29,8 +29,9 @@ is_done_token(int id) {
   // to do this since we can only examine tokens on the head of the
   // done list, and the token we're looking for might not be at the
   // head.
-  while (!_done.is_empty()) {
-    _really_done.push_back(_done.extract());
+  while (!_done.empty()) {
+    _really_done.push_back(_done.front());
+    _done.pop_front();
   }
 
   // Now we can search really_done for our desired id.
@@ -57,8 +58,9 @@ get_done_token(int id) {
   // to do this since we can only examine tokens on the head of the
   // done list, and the token we're looking for might not be at the
   // head.
-  while (!_done.is_empty()) {
-    _really_done.push_back(_done.extract());
+  while (!_done.empty()) {
+    _really_done.push_back(_done.front());
+    _done.pop_front();
   }
 
   // Now we can search really_done for our desired id.

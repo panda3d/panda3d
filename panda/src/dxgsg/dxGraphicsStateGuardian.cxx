@@ -1170,7 +1170,7 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_point(const GeomPoint *geom) {
+draw_point(GeomPoint *geom, GeomContext *gc) {
     activate();
 
 #ifdef GSG_VERBOSE
@@ -1314,7 +1314,7 @@ draw_point(const GeomPoint *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_line(const GeomLine* geom) {
+draw_line(GeomLine* geom, GeomContext *gc) {
     activate();
 
 #ifdef GSG_VERBOSE
@@ -1425,7 +1425,7 @@ draw_line(const GeomLine* geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_linestrip(const GeomLinestrip* geom) {
+draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
     activate();
 
 #ifdef GSG_VERBOSE
@@ -1585,7 +1585,7 @@ struct draw_sprite_vertex_less {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_sprite(const GeomSprite *geom) {
+draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     // this is a little bit of a mess, but it's ok.  Here's the deal:
     // we want to draw, and draw quickly, an arbitrarily large number
@@ -1909,7 +1909,7 @@ draw_sprite(const GeomSprite *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_polygon(const GeomPolygon *geom) {
+draw_polygon(GeomPolygon *geom, GeomContext *gc) {
     activate();
 
 #ifdef GSG_VERBOSE
@@ -1990,7 +1990,7 @@ draw_polygon(const GeomPolygon *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_tri(const GeomTri *geom) {
+draw_tri(GeomTri *geom, GeomContext *gc) {
     // activate();
 
 #ifdef GSG_VERBOSE
@@ -2290,7 +2290,7 @@ draw_tri(const GeomTri *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_quad(const GeomQuad *geom) {
+draw_quad(GeomQuad *geom, GeomContext *gc) {
     activate();
 
 #if 1
@@ -2359,7 +2359,7 @@ draw_quad(const GeomQuad *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_tristrip(const GeomTristrip *geom) {
+draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_tristrip()" << endl;
@@ -2375,7 +2375,7 @@ draw_tristrip(const GeomTristrip *geom) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_trifan(const GeomTrifan *geom) {
+draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_trifan()" << endl;
@@ -2391,7 +2391,7 @@ draw_trifan(const GeomTrifan *geom) {
 //  Description: handles trifans and tristrips
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
+draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
     int nPrims = geom->get_num_prims();
     const int *pLengthArr = geom->get_lengths();
@@ -3000,7 +3000,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_sphere(const GeomSphere *geom) {
+draw_sphere(GeomSphere *geom, GeomContext *gc) {
 
 #define SPHERE_NUMSLICES 16
 #define SPHERE_NUMSTACKS 10
@@ -5340,6 +5340,7 @@ void DXGraphicsStateGuardian::
 dx_cleanup() {
 
     release_all_textures();
+    release_all_geoms();
 
     // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
     if (_d3dDevice!=NULL) {

@@ -87,16 +87,16 @@ public:
                                const AllAttributesWrapper &initial_state,
                                const AllTransitionsWrapper &net_trans);
 
-  virtual void draw_point(const GeomPoint *geom);
-  virtual void draw_line(const GeomLine *geom);
-  virtual void draw_linestrip(const GeomLinestrip *geom);
-  virtual void draw_sprite(const GeomSprite *geom);
-  virtual void draw_polygon(const GeomPolygon *geom);
-  virtual void draw_quad(const GeomQuad *geom);
-  virtual void draw_tri(const GeomTri *geom);
-  virtual void draw_tristrip(const GeomTristrip *geom);
-  virtual void draw_trifan(const GeomTrifan *geom);
-  virtual void draw_sphere(const GeomSphere *geom);
+  virtual void draw_point(GeomPoint *geom, GeomContext *gc);
+  virtual void draw_line(GeomLine *geom, GeomContext *gc);
+  virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc);
+  virtual void draw_sprite(GeomSprite *geom, GeomContext *gc);
+  virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc);
+  virtual void draw_quad(GeomQuad *geom, GeomContext *gc);
+  virtual void draw_tri(GeomTri *geom, GeomContext *gc);
+  virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc);
+  virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
+  virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void apply_texture(TextureContext *tc);
@@ -111,7 +111,7 @@ public:
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-                                const DisplayRegion *dr);
+                                       const DisplayRegion *dr);
 
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,

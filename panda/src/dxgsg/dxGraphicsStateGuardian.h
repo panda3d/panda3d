@@ -103,16 +103,16 @@ public:
                    const AllAttributesWrapper &initial_state,
                    const AllTransitionsWrapper &net_trans);
 
-  virtual void draw_point(const GeomPoint *geom);
-  virtual void draw_line(const GeomLine *geom);
-  virtual void draw_linestrip(const GeomLinestrip *geom);
-  virtual void draw_sprite(const GeomSprite *geom);
-  virtual void draw_polygon(const GeomPolygon *geom);
-  virtual void draw_quad(const GeomQuad *geom);
-  virtual void draw_tri(const GeomTri *geom);
-  virtual void draw_tristrip(const GeomTristrip *geom);
-  virtual void draw_trifan(const GeomTrifan *geom);
-  virtual void draw_sphere(const GeomSphere *geom);
+  virtual void draw_point(GeomPoint *geom, GeomContext *gc);
+  virtual void draw_line(GeomLine *geom, GeomContext *gc);
+  virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc);
+  virtual void draw_sprite(GeomSprite *geom, GeomContext *gc);
+  virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc);
+  virtual void draw_quad(GeomQuad *geom, GeomContext *gc);
+  virtual void draw_tri(GeomTri *geom, GeomContext *gc);
+  virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc);
+  virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
+  virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void apply_texture(TextureContext *tc);
@@ -264,7 +264,7 @@ protected:
 
   void draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags);
   size_t draw_prim_setup(const Geom *geom) ;
-  void draw_multitri(const Geom *geom, D3DPRIMITIVETYPE tri_id);
+  void draw_multitri(Geom *geom, D3DPRIMITIVETYPE tri_id);
 
 #ifdef DO_PSTATS
   void report_texmgr_stats();

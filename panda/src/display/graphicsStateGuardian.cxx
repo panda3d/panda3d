@@ -29,6 +29,10 @@
 #ifndef CPPPARSER
 PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage");
 PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
+PStatCollector GraphicsStateGuardian::_total_geom_pcollector("Prepared Geoms");
+PStatCollector GraphicsStateGuardian::_active_geom_pcollector("Prepared Geoms:Active");
+PStatCollector GraphicsStateGuardian::_total_geom_node_pcollector("Prepared GeomNodes");
+PStatCollector GraphicsStateGuardian::_active_geom_node_pcollector("Prepared GeomNodes:Active");
 PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory");
 PStatCollector GraphicsStateGuardian::_used_texmem_pcollector("Texture memory:In use");
 PStatCollector GraphicsStateGuardian::_texmgrmem_total_pcollector("Texture manager");
@@ -91,52 +95,6 @@ GraphicsStateGuardian(GraphicsWindow *win) {
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_all_textures
-//       Access: Public
-//  Description: Frees the resources for all textures associated with
-//               this GSG.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-release_all_textures() {
-  // We must get a copy of the _prepared_textures list first, because
-  // each call to release_texture() will remove that texture from the
-  // list, and we don't want to traverse a list while we're modifying
-  // it!
-
-  Textures temp = _prepared_textures;
-  for (Textures::const_iterator ti = temp.begin();
-       ti != temp.end();
-       ++ti) {
-    release_texture(*ti);
-  }
-
-  // Now that we've released all of the textures, the
-  // _prepared_textures list should have completely emptied itself.
-  nassertv(_prepared_textures.empty());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear_attribute
-//       Access: Public
-//  Description: Explicitly clear the indicated attribute, specified
-//               by the TypeHandle of its associated transition.  If
-//               the attribute is not set already, this does nothing;
-//               if it is set, it resets it to its default value.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-clear_attribute(TypeHandle type) {
-  NodeAttributes::iterator ai = _state.find(type);
-  if (ai != _state.end()) {
-    // The state is already set; get the initial value and reset it.
-    PT(NodeAttribute) initial = (*ai).second->make_initial();
-    initial->issue(this);
-
-    // Now remove the state entry from the set.
-    _state.erase(ai);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -422,6 +380,163 @@ enable_frame_clear(bool clear_color, bool clear_depth) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_all_textures
+//       Access: Public
+//  Description: Frees the resources for all textures associated with
+//               this GSG.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_all_textures() {
+  // We must get a copy of the _prepared_textures list first, because
+  // each call to release_texture() will remove that texture from the
+  // list, and we don't want to traverse a list while we're modifying
+  // it!
+
+  Textures temp = _prepared_textures;
+  for (Textures::const_iterator ti = temp.begin();
+       ti != temp.end();
+       ++ti) {
+    release_texture(*ti);
+  }
+
+  // Now that we've released all of the textures, the
+  // _prepared_textures list should have completely emptied itself.
+  nassertv(_prepared_textures.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_all_geoms
+//       Access: Public
+//  Description: Frees the resources for all Geoms and GeomNodes
+//               associated with this GSG.  Warning!  This may make
+//               the Geoms unrenderable, if the Panda-level
+//               information has been deleted.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_all_geoms() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear_attribute
+//       Access: Public
+//  Description: Explicitly clear the indicated attribute, specified
+//               by the TypeHandle of its associated transition.  If
+//               the attribute is not set already, this does nothing;
+//               if it is set, it resets it to its default value.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear_attribute(TypeHandle type) {
+  NodeAttributes::iterator ai = _state.find(type);
+  if (ai != _state.end()) {
+    // The state is already set; get the initial value and reset it.
+    PT(NodeAttribute) initial = (*ai).second->make_initial();
+    initial->issue(this);
+
+    // Now remove the state entry from the set.
+    _state.erase(ai);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_texture
+//       Access: Public, Virtual
+//  Description: Prepares the indicated texture for retained-mode
+//               rendering.  In the future, this texture may be
+//               applied simply by calling apply_texture() with the
+//               value returned by this function.
+////////////////////////////////////////////////////////////////////
+TextureContext *GraphicsStateGuardian::
+prepare_texture(Texture *) {
+  return (TextureContext *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::apply_texture
+//       Access: Public, Virtual
+//  Description: Applies the texture previously indicated via a call
+//               to prepare_texture() to the graphics state, so that
+//               geometry rendered in the future will be rendered with
+//               the given texture.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+apply_texture(TextureContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_texture
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_texture(), including deleting the
+//               TextureContext itself, if necessary.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_texture(TextureContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_geom_node
+//       Access: Public, Virtual
+//  Description: Prepares the indicated GeomNode for retained-mode
+//               rendering.  If this function returns non-NULL, the
+//               value returned will be passed back to a future call
+//               to draw_geom_node(), which is expected to draw the
+//               contents of the node.
+////////////////////////////////////////////////////////////////////
+GeomNodeContext *GraphicsStateGuardian::
+prepare_geom_node(GeomNode *) {
+  return (GeomNodeContext *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_geom_node
+//       Access: Public, Virtual
+//  Description: Draws a GeomNode previously indicated by a call to
+//               prepare_geom_node().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+draw_geom_node(GeomNode *node, GeomNodeContext *) {
+  int num_geoms = node->get_num_geoms();
+  for (int i = 0; i < num_geoms; i++) {
+    node->get_geom(i)->draw(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_geom_node
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_geom_node(), including deleting the
+//               GeomNodeContext itself, if necessary.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_geom_node(GeomNodeContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_geom
+//       Access: Public, Virtual
+//  Description: Prepares the indicated Geom for retained-mode
+//               rendering.  The value returned by this function will
+//               be passed back into future calls to draw_tristrip(),
+//               etc., along with the Geom pointer.
+////////////////////////////////////////////////////////////////////
+GeomContext *GraphicsStateGuardian::
+prepare_geom(Geom *) {
+  return (GeomContext *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_geom
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_geom(), including deleting the GeomContext
+//               itself, if necessary.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_geom(GeomContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
 //  Description:
@@ -517,6 +632,86 @@ unmark_prepared_texture(TextureContext *tc) {
   return removed;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::mark_prepared_geom
+//       Access: Protected
+//  Description: This is intended to be called from within
+//               prepare_geom().  It adds the indicated GeomContext
+//               pointer to the _prepared_geoms set, and returns true
+//               if it was successfully added (i.e. it was not already
+//               in the set).
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+mark_prepared_geom(GeomContext *gc) {
+  bool prepared = _prepared_geoms.insert(gc).second;
+#ifdef DO_PSTATS
+  if (prepared) {
+    _total_geom_pcollector.add_level(1);
+  }
+#endif
+  return prepared;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::unmark_prepared_geom
+//       Access: Protected
+//  Description: This is intended to be called from within
+//               release_geom().  It removes the indicated GeomContext
+//               pointer from the _prepared_geoms set, and returns
+//               true if it was successfully removed (i.e. it had been
+//               in the set).
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+unmark_prepared_geom(GeomContext *gc) {
+  bool removed = (_prepared_geoms.erase(gc) != 0);
+#ifdef DO_PSTATS
+  if (removed) {
+    _total_geom_pcollector.sub_level(1);
+  }
+#endif
+  return removed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::mark_prepared_geom_node
+//       Access: Protected
+//  Description: This is intended to be called from within
+//               prepare_geom_node().  It adds the indicated
+//               GeomNodeContext pointer to the _prepared_geom_nodes
+//               set, and returns true if it was successfully added
+//               (i.e. it was not already in the set).
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+mark_prepared_geom_node(GeomNodeContext *gnc) {
+  bool prepared = _prepared_geom_nodes.insert(gnc).second;
+#ifdef DO_PSTATS
+  if (prepared) {
+    _total_geom_node_pcollector.add_level(1);
+  }
+#endif
+  return prepared;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::unmark_prepared_geom_node
+//       Access: Protected
+//  Description: This is intended to be called from within
+//               release_geom_node().  It removes the indicated
+//               GeomNodeContext pointer from the _prepared_geom_nodes
+//               set, and returns true if it was successfully removed
+//               (i.e. it had been in the set).
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+unmark_prepared_geom_node(GeomNodeContext *gnc) {
+  bool removed = (_prepared_geom_nodes.erase(gnc) != 0);
+#ifdef DO_PSTATS
+  if (removed) {
+    _total_geom_node_pcollector.sub_level(1);
+  }
+#endif
+  return removed;
+}
+
 #ifdef DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////
@@ -529,6 +724,8 @@ void GraphicsStateGuardian::
 init_frame_pstats() {
   _current_textures.clear();
   _active_texusage_pcollector.clear_level();
+  _total_geom_pcollector.clear_level();
+  _total_geom_node_pcollector.clear_level();
 
   // Also clear out our other counters while we're here.
   _vertices_tristrip_pcollector.clear_level();
@@ -557,6 +754,37 @@ void GraphicsStateGuardian::
 add_to_texture_record(TextureContext *tc) {
   if (_current_textures.insert(tc).second) {
     _active_texusage_pcollector.add_level(tc->estimate_texture_memory());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::add_to_geom_record
+//       Access: Protected
+//  Description: Records that the indicated Geom has been drawn this
+//               frame.  This function is only used to update the
+//               PStats current_texmem collector; it gets compiled out
+//               if we aren't using PStats.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+add_to_geom_record(GeomContext *gc) {
+  if (gc != (GeomContext *)NULL && _current_geoms.insert(gc).second) {
+    _active_geom_pcollector.add_level(1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::add_to_geom_node_record
+//       Access: Protected
+//  Description: Records that the indicated GeomNode has been drawn
+//               this frame.  This function is only used to update the
+//               PStats current_texmem collector; it gets compiled out
+//               if we aren't using PStats.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+add_to_geom_node_record(GeomNodeContext *gnc) {
+  if (gnc != (GeomNodeContext *)NULL && 
+      _current_geom_nodes.insert(gnc).second) {
+    _active_geom_node_pcollector.add_level(1);
   }
 }
 

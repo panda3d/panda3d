@@ -42,7 +42,7 @@ public:
   GeomSphere() : Geom() { }
   virtual Geom *make_copy() const;
   virtual void print_draw_immediate() const { }
-  virtual void draw_immediate(GraphicsStateGuardianBase *gsg) const;
+  virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc);
 
   virtual int get_num_vertices_per_prim() const {
     return 2;

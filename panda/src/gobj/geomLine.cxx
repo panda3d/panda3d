@@ -48,8 +48,8 @@ make_copy() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomLine::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_line(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_line(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

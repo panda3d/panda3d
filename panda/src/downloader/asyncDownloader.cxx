@@ -324,7 +324,7 @@ request_download(const string &file_name, const Filename &file_dest,
     _lock.lock();
 #endif
 
-      if (_token_board->_waiting.is_full()) {
+      if (_token_board->_waiting.full()) {
         downloader_cat.error()
           << "Downloader::request_download() - Too many pending requests\n";
         return 0;
@@ -338,7 +338,7 @@ request_download(const string &file_name, const Filename &file_dest,
       tok = new DownloaderToken(_next_token++, file_name, file_dest,
                 event_name, first_byte, last_byte, total_bytes,
                                         partial_content, sync);
-      _token_board->_waiting.insert(tok);
+      _token_board->_waiting.push_back(tok);
 
 #ifdef HAVE_IPC
       _request_cond->signal();
@@ -348,7 +348,7 @@ request_download(const string &file_name, const Filename &file_dest,
   } else {
     // If we're not running asynchronously, process the load request
     // directly now.
-    if (_token_board->_waiting.is_full()) {
+    if (_token_board->_waiting.full()) {
       downloader_cat.error()
         << "Downloader::request_download() - Too many pending requests\n";
       return 0;
@@ -361,7 +361,7 @@ request_download(const string &file_name, const Filename &file_dest,
     tok = new DownloaderToken(_next_token++, file_name, file_dest,
                 event_name, first_byte, last_byte, total_bytes,
                                         partial_content, sync);
-    _token_board->_waiting.insert(tok);
+    _token_board->_waiting.push_back(tok);
     process_request();
   }
 
@@ -384,8 +384,9 @@ process_request() {
   }
 
   // If there is actually a request token - process it
-  while (!_token_board->_waiting.is_empty()) {
-    PT(DownloaderToken) tok = _token_board->_waiting.extract();
+  while (!_token_board->_waiting.empty()) {
+    PT(DownloaderToken) tok = _token_board->_waiting.front();
+    _token_board->_waiting.pop_front();
     int ret = download(tok->_file_name, tok->_file_dest, tok->_event_name,
                  tok->_first_byte, tok->_last_byte, tok->_total_bytes,
                  tok->_partial_content, tok->_sync, tok->_id);
@@ -393,7 +394,7 @@ process_request() {
     PT_Event return_event = new Event(tok->_event_name);
     return_event->add_parameter(EventParameter((int)tok->_id));
     if (ret == DS_success) {
-      _token_board->_done.insert(tok);
+      _token_board->_done.push_back(tok);
       return_event->add_parameter(EventParameter(DS_success));
 
       // Throw a "done" event now.

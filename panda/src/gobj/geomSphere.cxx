@@ -40,8 +40,8 @@ make_copy() const {
 }
 
 void GeomSphere::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_sphere(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_sphere(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

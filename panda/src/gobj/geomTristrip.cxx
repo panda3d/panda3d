@@ -272,8 +272,8 @@ void GeomTristrip::print_draw_immediate( void ) const
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GeomTristrip::draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_tristrip(this);
+void GeomTristrip::draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_tristrip(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -113,11 +113,11 @@ public:
   typedef const Colorf &GetNextColor(ColorIterator &);
 
 
-  Geom( void );
-  Geom( const Geom& copy );
-  ~Geom( void );
+  Geom();
+  Geom(const Geom &copy);
+  ~Geom();
 
-  void operator = ( const Geom &copy );
+  void operator = (const Geom &copy);
   virtual Geom *make_copy() const=0;
 
 PUBLISHED:
@@ -127,51 +127,49 @@ PUBLISHED:
 
 public:
   // From parent dDrawable
-  virtual void draw(GraphicsStateGuardianBase *gsg) {
-    dDrawable::draw(gsg); draw_immediate(gsg);
-  }
+  virtual void draw(GraphicsStateGuardianBase *gsg);
 
   // From parent Configurable
-  virtual void config( void );
+  virtual void config();
 
   // Immediate mode drawing functions - issue graphics commands
-  virtual void draw_immediate(GraphicsStateGuardianBase *) const = 0;
-  virtual void print_draw_immediate( void ) const = 0;
+  virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) = 0;
+  virtual void print_draw_immediate() const = 0;
 
 public:
 
-  void get_min_max( Vertexf& min, Vertexf& max ) const;
+  void get_min_max(Vertexf &min, Vertexf &max) const;
 
 
-  void set_coords( const PTA_Vertexf &coords,
+  void set_coords(const PTA_Vertexf &coords,
+                  GeomBindType bind,
+                  const PTA_ushort &vindex =
+                  PTA_ushort());
+  void set_normals(const PTA_Normalf &norms,
                    GeomBindType bind,
-                   const PTA_ushort &vindex =
-                   PTA_ushort() );
-  void set_normals( const PTA_Normalf &norms,
-                    GeomBindType bind,
-                    const PTA_ushort &nindex =
-                    PTA_ushort() );
-  void set_colors( const PTA_Colorf &colors,
-                   GeomBindType bind,
-                   const PTA_ushort &cindex =
-                   PTA_ushort() );
-  void set_texcoords( const PTA_TexCoordf &texcoords,
-                      GeomBindType bind,
-                      const PTA_ushort &tindex =
-                      PTA_ushort() );
+                   const PTA_ushort &nindex =
+                   PTA_ushort());
+  void set_colors(const PTA_Colorf &colors,
+                  GeomBindType bind,
+                  const PTA_ushort &cindex =
+                  PTA_ushort());
+  void set_texcoords(const PTA_TexCoordf &texcoords,
+                     GeomBindType bind,
+                     const PTA_ushort &tindex =
+                     PTA_ushort());
 
-  void get_coords( PTA_Vertexf &coords,
+  void get_coords(PTA_Vertexf &coords,
+                  GeomBindType &bind,
+                  PTA_ushort &vindex) const;
+  void get_normals(PTA_Normalf &norms,
                    GeomBindType &bind,
-                   PTA_ushort &vindex) const;
-  void get_normals( PTA_Normalf &norms,
-                    GeomBindType &bind,
-                    PTA_ushort &nindex) const;
-  void get_colors( PTA_Colorf &colors,
-                   GeomBindType &bind,
-                   PTA_ushort &cindex) const;
-  void get_texcoords( PTA_TexCoordf &texcoords,
-                      GeomBindType &bind,
-                      PTA_ushort &tindex) const;
+                   PTA_ushort &nindex) const;
+  void get_colors(PTA_Colorf &colors,
+                  GeomBindType &bind,
+                  PTA_ushort &cindex) const;
+  void get_texcoords(PTA_TexCoordf &texcoords,
+                     GeomBindType &bind,
+                     PTA_ushort &tindex) const;
 
 PUBLISHED:
   INLINE GeomBindType get_binding(int attr) const;
@@ -186,7 +184,7 @@ PUBLISHED:
 
 public:
   INLINE void set_num_prims(int num);
-  INLINE int get_num_prims(void) const;
+  INLINE int get_num_prims() const;
 
   INLINE void set_lengths(const PTA_int &lengths);
   INLINE PTA_int get_lengths() const;
@@ -219,9 +217,13 @@ public:
   INLINE ColorIterator make_color_iterator() const;
   INLINE const Colorf &get_next_color(ColorIterator &citerator) const;
 
-protected:
+  GeomContext *prepare(GraphicsStateGuardianBase *gsg);
+  void unprepare();
+  void unprepare(GraphicsStateGuardianBase *gsg);
+  void clear_gsg(GraphicsStateGuardianBase *gsg);
 
-  void init( void );
+protected:
+  void init();
   virtual void recompute_bound();
 
 protected:
@@ -246,6 +248,14 @@ protected:
   GetNextTexCoord *_get_texcoord;
   GetNextColor *_get_color;
 
+  // Unlike a Texture, a Geom only stores the pointer to one GSG that
+  // it has been prepared into.  If it is prepared into another GSG,
+  // it automatically unprepares itself from the first one.  This is
+  // intended to reduce memory overhead that would otherwise be
+  // required to support a little-used feature (having two
+  // simultaneous GSG's).
+  GraphicsStateGuardianBase *_prepared_gsg;
+  GeomContext *_prepared_context;
 
 public:
   //static void register_with_read_factory(void);

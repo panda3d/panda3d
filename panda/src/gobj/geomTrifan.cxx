@@ -199,8 +199,8 @@ print_draw_immediate( void ) const
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomTrifan::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_trifan(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_trifan(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

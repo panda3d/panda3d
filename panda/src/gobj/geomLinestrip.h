@@ -31,7 +31,7 @@ public:
   GeomLinestrip(void) : Geom() { _width = 1.0; }
   virtual Geom *make_copy() const;
   virtual void print_draw_immediate( void ) const { }
-  virtual void draw_immediate(GraphicsStateGuardianBase *gsg) const;
+  virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc);
 
   // Undefined for this type of primitive
   virtual int get_num_vertices_per_prim() const {

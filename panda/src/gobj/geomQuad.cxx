@@ -58,8 +58,8 @@ print_draw_immediate(void) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomQuad::
-draw_immediate(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_quad(this);
+draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
+  gsg->draw_quad(this, gc);
 }
 
 ////////////////////////////////////////////////////////////////////

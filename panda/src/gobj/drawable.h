@@ -46,15 +46,13 @@ class BamWriter;
 //               to their variable names
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA dDrawable : public ReferenceCount, public WritableConfigurable,
-                  public BoundedObject {
+                              public BoundedObject {
 public:
 
-  dDrawable() : WritableConfigurable() {
-    MemoryUsage::update_type(this, this);
-  }
-  virtual ~dDrawable() { }
+  dDrawable();
+  virtual ~dDrawable();
 
-  virtual void draw(GraphicsStateGuardianBase *) { if (is_dirty()) config(); }
+  virtual void draw(GraphicsStateGuardianBase *);
 
 protected:
   virtual void propagate_stale_bound();

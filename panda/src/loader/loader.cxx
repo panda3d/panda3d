@@ -149,7 +149,7 @@ request_load(const Filename &filename, const string &event_name) {
     _lock.lock();
 #endif
 
-      if (_token_board->_waiting.is_full()) {
+      if (_token_board->_waiting.full()) {
         loader_cat.error()
           << "Loader::request_load() - Too many pending requests\n";
         return 0;
@@ -161,7 +161,7 @@ request_load(const Filename &filename, const string &event_name) {
       }
 
       tok = new LoaderToken(_next_token++, filename, event_name);
-      _token_board->_waiting.insert(tok);
+      _token_board->_waiting.push_back(tok);
 
 #ifdef HAVE_IPC
       _request_cond->signal();
@@ -171,7 +171,7 @@ request_load(const Filename &filename, const string &event_name) {
   } else {
     // If we're not running asynchronously, process the load request
     // directly now.
-    if (_token_board->_waiting.is_full()) {
+    if (_token_board->_waiting.full()) {
       loader_cat.error()
         << "Loader::request_load() - Too many pending requests\n";
       return 0;
@@ -183,7 +183,7 @@ request_load(const Filename &filename, const string &event_name) {
     }
 
     tok = new LoaderToken(_next_token++, filename, event_name);
-    _token_board->_waiting.insert(tok);
+    _token_board->_waiting.push_back(tok);
     process_request();
   }
 
@@ -264,15 +264,16 @@ process_request() {
   }
 
   // If there is actually a request token - process it
-  while (!_token_board->_waiting.is_empty()) {
-    PT(LoaderToken) tok = _token_board->_waiting.extract();
+  while (!_token_board->_waiting.empty()) {
+    PT(LoaderToken) tok = _token_board->_waiting.front();
+    _token_board->_waiting.pop_front();
     tok->_node = load_file(tok->_path);
     if (tok->_node == NULL) {
       loader_cat.error()
         << "Loader::callback() - couldn't find file: "
         << tok->_path << "\n";
     } else {
-      _token_board->_done.insert(tok);
+      _token_board->_done.push_back(tok);
 
       // Throw a "done" event now.
       if (!tok->_event_name.empty()) {

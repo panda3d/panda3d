@@ -142,6 +142,8 @@ ostream &operator << (ostream &out, GeomAttrType t) {
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(void) : dDrawable() {
+  _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+  _prepared_context = (GeomContext *)NULL;
   init();
 }
 
@@ -152,6 +154,8 @@ Geom(void) : dDrawable() {
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(const Geom& copy) : dDrawable() {
+  _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+  _prepared_context = (GeomContext *)NULL;
   *this = copy;
 }
 
@@ -161,7 +165,8 @@ Geom(const Geom& copy) : dDrawable() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Geom::
-~Geom(void) {
+~Geom() {
+  unprepare();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,8 +197,8 @@ operator = (const Geom &copy) {
   _get_color = copy._get_color;
   _get_texcoord = copy._get_texcoord;
 
-  if (copy.is_dirty())
-    make_dirty();
+  mark_bound_stale();
+  make_dirty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -377,12 +382,29 @@ get_tris() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::draw
+//       Access: Public, Virtual
+//  Description: Actually draws the Geom with the indicated GSG.
+////////////////////////////////////////////////////////////////////
+void Geom::
+draw(GraphicsStateGuardianBase *gsg) {
+  if (is_dirty()) {
+    config(); 
+  }
+  if (_prepared_gsg == gsg) {
+    draw_immediate(gsg, _prepared_context);
+  } else {
+    draw_immediate(gsg, (GeomContext *)NULL);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::config
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Configure rendering based on current settings
 ////////////////////////////////////////////////////////////////////
 void Geom::
-config(void) {
+config() {
   WritableConfigurable::config();
 
   // Only per vertex binding makes any sense
@@ -417,6 +439,9 @@ config(void) {
   } else {
     _get_color = get_color_noop;
   }
+
+  // Mark the Geom as needing to be prepared again.
+  unprepare();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,12 +473,86 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::init
+//     Function: Geom::prepare
 //       Access: Public
+//  Description: Creates a context for the Geom on the particular
+//               GSG, if it does not already exist.  Returns the new
+//               (or old) GeomContext.
+//
+//               If the given GeomContext pointer is non-NULL, it will
+//               be passed to the GSG, which may or may not choose to
+//               extend the existing GeomContext, or create a totally
+//               new one.
+////////////////////////////////////////////////////////////////////
+GeomContext *Geom::
+prepare(GraphicsStateGuardianBase *gsg) {
+  if (gsg != _prepared_gsg) {
+    GeomContext *gc = gsg->prepare_geom(this);
+    if (gc != (GeomContext *)NULL) {
+      unprepare();
+      _prepared_context = gc;
+      _prepared_gsg = gsg;
+    }
+    return gc;
+  }
+
+  return _prepared_context;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::unprepare
+//       Access: Public
+//  Description: Frees the context allocated on all GSG's for which
+//               the geom has been declared.
+////////////////////////////////////////////////////////////////////
+void Geom::
+unprepare() {
+  if (_prepared_gsg != (GraphicsStateGuardianBase *)NULL) {
+    _prepared_gsg->release_geom(_prepared_context);
+    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+    _prepared_context = (GeomContext *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::unprepare
+//       Access: Public
+//  Description: Frees the geom context only on the indicated GSG,
+//               if it exists there.
+////////////////////////////////////////////////////////////////////
+void Geom::
+unprepare(GraphicsStateGuardianBase *gsg) {
+  if (_prepared_gsg == gsg) {
+    _prepared_gsg->release_geom(_prepared_context);
+    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+    _prepared_context = (GeomContext *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::clear_gsg
+//       Access: Public
+//  Description: Removes the indicated GSG from the Geom's known
+//               GSG's, without actually releasing the geom on that
+//               GSG.  This is intended to be called only from
+//               GSG::release_geom(); it should never be called by
+//               user code.
+////////////////////////////////////////////////////////////////////
+void Geom::
+clear_gsg(GraphicsStateGuardianBase *gsg) {
+  if (_prepared_gsg == gsg) {
+    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
+    _prepared_context = (GeomContext *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::init
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-init(void) {
+init() {
   int i;
 
   _coords.clear();
@@ -779,10 +878,12 @@ write_verbose(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_min_max
 //       Access: Public
-//  Description:
+//  Description: Expands min and max, if necessary, to include the
+//               complete bounding rectangle that encloses all the
+//               vertices.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-get_min_max(Vertexf& min, Vertexf& max) const {
+get_min_max(Vertexf &min, Vertexf &max) const {
   int numv = _coords.size();
 
   for (int i = 0; i < numv; i++) {

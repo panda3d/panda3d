@@ -33,54 +33,130 @@ CircBuffer() {
   _in = _out = 0;
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: CircBuffer::is_empty
+//     Function: CircBuffer::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
+INLINE CircBuffer<Thing, max_size>::
+~CircBuffer() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CircBuffer::size
+//       Access: Public
+//  Description: Returns the number of items currently in the buffer.
+//               This can safely be called without synchronization
+//               from either the reader or the writer thread, but the
+//               size may of course vary without warning after the
+//               call.
+////////////////////////////////////////////////////////////////////
+template<class Thing, int max_size>
+INLINE int CircBuffer<Thing, max_size>::
+size() const {
+  int diff = _in - _out;
+  return (diff >= 0) ? diff : max_size + 1 - diff;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CircBuffer::empty
+//       Access: Public
+//  Description: Returns true if the buffer is empty.  It is safe to
+//               call this without synchronization primitives from
+//               either the reader or the writer thread, but the
+//               result may vary without warning after the call.
+////////////////////////////////////////////////////////////////////
+template<class Thing, int max_size>
 INLINE bool CircBuffer<Thing, max_size>::
-is_empty() const {
+empty() const {
   return _in == _out;
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: CircBuffer::is_full
+//     Function: CircBuffer::full
 //       Access: Public
-//  Description:
+//  Description: Returns true if the buffer is full; if this is true,
+//               push_back() will fail.  It is safe to call this
+//               without synchronization primitives from either the
+//               reader or the writer thread, but the result may vary
+//               without warning after the call.
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE bool CircBuffer<Thing, max_size>::
-is_full() const {
-  return _in == _out-1 || (_in==max_size && _out==0);
+full() const {
+  //  return _in == _out-1 || (_in==max_size && _out==0);
+  return ((_in + 1) % (max_size + 1)) == _out;
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: CircBuffer::peek
+//     Function: CircBuffer::front
 //       Access: Public
-//  Description:
+//  Description: Returns a reference to the first item in the queue.
+//               It is invalid to call this if empty() is true.  It is
+//               safe to call this without synchronization only from
+//               the reading thread: the thread that calls pop_front().
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE const Thing &CircBuffer<Thing, max_size>::
-peek() const {
-  nassertr(!is_empty(), *(new Thing));
+front() const {
+  nassertr(!empty(), _array[0]);
   return _array[_out];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CircBuffer::front
+//       Access: Public
+//  Description: Returns a reference to the first item in the queue.
+//               It is invalid to call this if empty() is true.  It is
+//               safe to call this without synchronization only from
+//               the reading thread: the thread that calls pop_front().
+////////////////////////////////////////////////////////////////////
+template<class Thing, int max_size>
+INLINE Thing &CircBuffer<Thing, max_size>::
+front() {
+  nassertr(!empty(), _array[0]);
+  return _array[_out];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CircBuffer::operator []
+//       Access: Public
+//  Description: Returns the nth element in the buffer.  It is safe to
+//               call this without synchronization only from the
+//               reading thread: the thread that calls pop_front().
+////////////////////////////////////////////////////////////////////
+template<class Thing, int max_size>
+INLINE const Thing &CircBuffer<Thing, max_size>::
+operator[] (int n) const {
+  nassertr(!empty(), _array[0]);
+  return _array[(_out + n) % (max_size + 1)];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CircBuffer::operator []
+//       Access: Public
+//  Description: Returns the nth element in the buffer.  It is safe to
+//               call this without synchronization only from the
+//               reading thread: the thread that calls pop_front().
+////////////////////////////////////////////////////////////////////
+template<class Thing, int max_size>
+INLINE Thing &CircBuffer<Thing, max_size>::
+operator[] (int n) {
+  nassertr(!empty(), _array[0]);
+  return _array[(_out + n) % (max_size + 1)];
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CircBuffer::extract
+//     Function: CircBuffer::pop_front
 //       Access: Public
-//  Description:
+//  Description: Removes the first item from the buffer.
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
-INLINE Thing CircBuffer<Thing, max_size>::
-extract() {
-  nassertr(!is_empty(), Thing());
-  Thing temp = _array[_out];
+INLINE void CircBuffer<Thing, max_size>::
+pop_front() {
+  nassertv(!empty());
 
   // We need to clear out the old element to force its destructor to
   // be called; it might be important.  This will generate yet another
@@ -89,19 +165,53 @@ extract() {
   _array[_out] = Thing();
 
   _out = (_out+1)%(max_size+1);
-  return temp;
 }
 
 
+
+
 ////////////////////////////////////////////////////////////////////
-//     Function: CircBuffer::insert
+//     Function: CircBuffer::back
 //       Access: Public
-//  Description:
+//  Description: Returns a reference to the last item in the queue.
+//               It is invalid to call this if empty() is true.  It is
+//               safe to call this without synchronization primitives
+//               only from the writing thread: the thread that calls
+//               push_back().
+////////////////////////////////////////////////////////////////////
+template<class Thing, int max_size>
+INLINE const Thing &CircBuffer<Thing, max_size>::
+back() const {
+  nassertr(!empty(), _array[0]);
+  return _array[(_in + max_size) % (max_size + 1)];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CircBuffer::back
+//       Access: Public
+//  Description: Returns a reference to the last item in the queue.
+//               It is invalid to call this if empty() is true.  It is
+//               safe to call this without synchronization primitives
+//               only from the writing thread: the thread that calls
+//               push_back().
+////////////////////////////////////////////////////////////////////
+template<class Thing, int max_size>
+INLINE Thing &CircBuffer<Thing, max_size>::
+back() {
+  nassertr(!empty(), _array[0]);
+  return _array[(_in + max_size) % (max_size + 1)];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CircBuffer::push_back
+//       Access: Public
+//  Description: Adds an item to the end of the buffer.  This may fail
+//               if full() is true.
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE void CircBuffer<Thing, max_size>::
-insert(const Thing &t) {
-  if (is_full()) {
+push_back(const Thing &t) {
+  if (full()) {
     express_cat.error()
       << "Circular buffer is full; cannot add requests.\n";
   } else {
