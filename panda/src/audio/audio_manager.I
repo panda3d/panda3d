@@ -32,14 +32,17 @@ INLINE void AudioManager::play(AudioSound* sound, float start_time) {
 //  Description: make sure buffers are full
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::update() {
-  if (!audio_is_active)
+  if (!audio_is_active) {
     return;
+  }
+  // Copy the loopset under a mutex:
   {
     mutex_lock l(_manager_mutex);
     get_ptr()->copy_loopset();
   }
-  if (_update_func != (UpdateFunc*)0L)
+  if (_update_func) {
     (*_update_func)();
+  }
   get_ptr()->ns_update();
 }
 
@@ -49,8 +52,9 @@ INLINE void AudioManager::update() {
 //  Description: spawn a thread to call update
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::spawn_update() {
-  if (audio_is_active)
+  if (audio_is_active) {
     get_ptr()->ns_spawn_update();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,8 +72,9 @@ INLINE void AudioManager::shutdown() {
 //  Description: set the volume on a sound instance
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_volume(AudioSound* sound, float v) {
-  if (audio_is_active)
+  if (audio_is_active) {
     get_ptr()->ns_set_volume(sound, v);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,8 +83,9 @@ INLINE void AudioManager::set_volume(AudioSound* sound, float v) {
 //  Description: stop playing a given sound
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::stop(AudioSound* sound) {
-  if (audio_is_active)
+  if (audio_is_active) {
     get_ptr()->ns_stop(sound);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,8 +94,9 @@ INLINE void AudioManager::stop(AudioSound* sound) {
 //  Description: set the looping state of the given sound
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_loop(AudioSound* sound, bool state) {
-  if (audio_is_active)
+  if (audio_is_active) {
     get_ptr()->ns_set_loop(sound, state);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
