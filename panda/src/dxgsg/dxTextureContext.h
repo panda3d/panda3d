@@ -55,8 +55,8 @@ public:
   LPDIRECTDRAWSURFACE7  _surface;
   Texture *_tex;            // ptr to parent, primarily for access to namestr
 
-  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts);
-
+  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
+                                     LPDDPIXELFORMAT pTexPixFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
   bool _bHasMipMaps;
   DWORD _PixBufConversionType;  // enum ConversionType
 

@@ -588,6 +588,13 @@ dx_init(  LPDIRECTDRAW7     context,
         exit(1);
     }
 
+    // s3 virge drivers sometimes give crap values for these
+    if(_D3DDevDesc.dwMaxTextureWidth==0)
+       _D3DDevDesc.dwMaxTextureWidth=256;
+
+    if(_D3DDevDesc.dwMaxTextureHeight==0)
+       _D3DDevDesc.dwMaxTextureHeight=256;
+
     _bIsTNLDevice = (IsEqualGUID(_D3DDevDesc.deviceGUID,IID_IDirect3DTnLHalDevice)!=0);
 
     if ((dx_decal_type==GDT_offset) && !(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
@@ -3932,7 +3939,7 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 TextureContext *DXGraphicsStateGuardian::
 prepare_texture(Texture *tex) {
 
-    DXTextureContext *gtc = new DXTextureContext(tex);
+    DXTextureContext *dtc = new DXTextureContext(tex);
 #ifdef WBD_GL_MODE
     glGenTextures(1, &gtc->_index);
 
@@ -3941,20 +3948,20 @@ prepare_texture(Texture *tex) {
     specify_texture(tex);
     apply_texture_immediate(tex);
 #else
-    if (gtc->CreateTexture(_d3dDevice,_cNumTexPixFmts,_pTexPixFmts) == NULL) {
-        delete gtc;
+    if (dtc->CreateTexture(_d3dDevice,_cNumTexPixFmts,_pTexPixFmts,&_D3DDevDesc) == NULL) {
+        delete dtc;
         return NULL;
     }
 #endif              // WBD_GL_MODE
 
-    bool inserted = mark_prepared_texture(gtc);
+    bool inserted = mark_prepared_texture(dtc);
 
     // If this assertion fails, the same texture was prepared twice,
     // which shouldn't be possible, since the texture itself should
     // detect this.
     nassertr(inserted, NULL);
 
-    return gtc;
+    return dtc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3997,10 +4004,9 @@ apply_texture(TextureContext *tc) {
           }
     
           dtc->DeleteTexture();
-          if (dtc->CreateTexture(_d3dDevice,_cNumTexPixFmts,_pTexPixFmts) == NULL) {
+          if (dtc->CreateTexture(_d3dDevice,_cNumTexPixFmts,_pTexPixFmts,&_D3DDevDesc)==NULL) {
             // Oops, we can't re-create the texture for some reason.
-            dxgsg_cat.error()
-              << "Unable to re-create texture " << *dtc->_texture << endl;
+            dxgsg_cat.error() << "Unable to re-create texture " << *dtc->_texture << endl;
     
             release_texture(dtc);
             enable_texturing(false);
@@ -6320,8 +6326,8 @@ bool recreate_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
      // Re-fill the contents of textures and vertex buffers
      // which just got restored now.
 
-     LPDIRECTDRAWSURFACE7 ddtex = dtc->CreateTexture(dxgsg->_d3dDevice,
-                                                     dxgsg->_cNumTexPixFmts,dxgsg->_pTexPixFmts);
+     LPDIRECTDRAWSURFACE7 ddtex = dtc->CreateTexture(dxgsg->_d3dDevice,dxgsg->_cNumTexPixFmts,
+                                                     dxgsg->_pTexPixFmts,&dxgsg->_D3DDevDesc);
      return ddtex!=NULL;
 }
 

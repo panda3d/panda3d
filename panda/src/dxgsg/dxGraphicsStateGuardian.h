@@ -230,6 +230,7 @@ public:
   LPDIRECT3DDEVICE7 _d3dDevice;
   LPDDPIXELFORMAT   _pTexPixFmts;
   int               _cNumTexPixFmts;
+  D3DDEVICEDESC7    _D3DDevDesc;
 
 protected:
   void free_pointers();            // free local internal buffers
@@ -264,8 +265,6 @@ protected:
   D3DMATRIX         _SavedTransform;   
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
-
-  D3DDEVICEDESC7    _D3DDevDesc;
 
   void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
                     void *pIndexSpace,DWORD dwIndexSpaceByteSize,
