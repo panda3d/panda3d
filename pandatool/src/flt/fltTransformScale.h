@@ -34,6 +34,7 @@ public:
 
   void set(const LPoint3d &center, const LVecBase3f &scale);
 
+  bool has_center() const;
   const LPoint3d &get_center() const;
   const LVecBase3f &get_scale() const;
 

@@ -196,11 +196,13 @@ set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
           const FltTransformScale *scale;
           DCAST_INTO_V(scale, step);
           if (!scale->get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
-            if (!scale->get_center().almost_equal(LVector3d::zero())) {
+            if (scale->has_center() && 
+                !scale->get_center().almost_equal(LVector3d::zero())) {
               egg_group->add_translate(-scale->get_center());
             }
             egg_group->add_scale(LCAST(double, scale->get_scale()));
-            if (!scale->get_center().almost_equal(LVector3d::zero())) {
+            if (scale->has_center() && 
+                !scale->get_center().almost_equal(LVector3d::zero())) {
               egg_group->add_translate(scale->get_center());
             }
           }

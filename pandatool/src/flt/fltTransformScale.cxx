@@ -47,6 +47,23 @@ set(const LPoint3d &center, const LVecBase3f &scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltTransformScale::has_center
+//       Access: Public
+//  Description: Returns true if the center is specified, false if it
+//               is not.  For some reason, MultiGen stores large
+//               negative numbers in for the center if it is not
+//               specified.  It is unclear what the purpose of this
+//               is.
+////////////////////////////////////////////////////////////////////
+bool FltTransformScale::
+has_center() const {
+  return 
+    _center[0] > -1e+08 && 
+    _center[1] > -1e+08 && 
+    _center[2] > -1e+08;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltTransformScale::get_center
 //       Access: Public
 //  Description:
@@ -73,10 +90,15 @@ get_scale() const {
 ////////////////////////////////////////////////////////////////////
 void FltTransformScale::
 recompute_matrix() {
-  _matrix =
-    LMatrix4d::translate_mat(-_center) *
-    LMatrix4d::scale_mat(LCAST(double, _scale)) *
-    LMatrix4d::translate_mat(_center);
+  if (has_center()) {
+    _matrix =
+      LMatrix4d::translate_mat(-_center) *
+      LMatrix4d::scale_mat(LCAST(double, _scale)) *
+      LMatrix4d::translate_mat(_center);
+  } else {
+    _matrix =
+      LMatrix4d::scale_mat(LCAST(double, _scale));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,7 +118,7 @@ extract_record(FltRecordReader &reader) {
   nassertr(reader.get_opcode() == FO_scale, false);
   DatagramIterator &iterator = reader.get_iterator();
 
-  iterator.skip_bytes(4);   // Undocumented additional padding.
+  iterator.skip_bytes(4);
 
   _center[0] = iterator.get_be_float64();
   _center[1] = iterator.get_be_float64();
