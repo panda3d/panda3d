@@ -126,6 +126,7 @@ class TextPieMenu(PieMenu):
         angle = deg2Rad(360.0/numItems)
         aspectRatio = direct.dr.getWidth()/float(direct.dr.getHeight())
         # Add items
+        from DirectGuiGlobals import getDefaultFont
         for i in range (numItems):
             # Create text node for each item
             if (textList[i] != None):
@@ -149,7 +150,8 @@ class TextPieMenu(PieMenu):
                             ((radius * aspectRatio * math.sin(i * angle)) -
                             center[1]))
         # Create and return a pie menu
-        PieMenu.__init__(self, newMenu, textList)
+        PieMenu.__init__(self, newMenu, textList, action = action,
+                         fUpdateOnlyOnChange = fUpdateOnlyOnChange)
         self.accept('mouse3', self.spawnPieMenuTask)
         self.accept('mouse3-up', self.removePieMenuTask)
     def destroy(self):
