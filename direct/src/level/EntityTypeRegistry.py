@@ -77,6 +77,9 @@ class EntityTypeRegistry:
                "unknown entity type '%s'" % entTypeName
         return self.typeName2derivedTypeNames[entTypeName]
 
+    def isDerivedAndBase(self, entType, baseEntType):
+        return entType in self.getDerivedTypeNames(baseEntType)
+
     def __hash__(self):
         return hash(repr(self))
     def __repr__(self):
