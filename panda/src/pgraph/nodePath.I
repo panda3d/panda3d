@@ -796,6 +796,19 @@ set_pos(const NodePath &other, float x, float y, float z) {
   set_pos(other, LPoint3f(x, y, z));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_fluid_pos
+//       Access: Published
+//  Description: Sets the translation component, without changing the
+//               "previous" position, so that the collision system
+//               will see the node as moving fluidly from its previous
+//               position to its new position.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_fluid_pos(const NodePath &other, float x, float y, float z) {
+  set_fluid_pos(other, LPoint3f(x, y, z));
+}
+
 INLINE float NodePath::
 get_x(const NodePath &other) const {
   return get_pos(other)[0];

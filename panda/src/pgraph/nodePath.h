@@ -351,6 +351,11 @@ PUBLISHED:
   void set_x(const NodePath &other, float x);
   void set_y(const NodePath &other, float y);
   void set_z(const NodePath &other, float z);
+  INLINE void set_fluid_pos(const NodePath &other, float x, float y, float z);
+  void set_fluid_pos(const NodePath &other, const LVecBase3f &pos);
+  void set_fluid_x(const NodePath &other, float x);
+  void set_fluid_y(const NodePath &other, float y);
+  void set_fluid_z(const NodePath &other, float z);
   LPoint3f get_pos(const NodePath &other) const;
   INLINE float get_x(const NodePath &other) const;
   INLINE float get_y(const NodePath &other) const;

@@ -1204,8 +1204,8 @@ set_pos(const NodePath &other, const LVecBase3f &pos) {
     // If we didn't have a componentwise transform already, never
     // mind.
     set_transform(other, rel_transform->set_pos(pos));
-    node()->reset_prev_transform();
   }
+  node()->reset_prev_transform();
 }
 
 void NodePath::
@@ -1230,6 +1230,61 @@ set_z(const NodePath &other, float z) {
   LPoint3f pos = get_pos(other);
   pos[2] = z;
   set_pos(other, pos);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_fluid_pos
+//       Access: Published
+//  Description: Sets the translation component of the transform,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_fluid_pos(const NodePath &other, const LVecBase3f &pos) {
+  nassertv_always(!is_empty());
+  CPT(TransformState) rel_transform = get_transform(other);
+
+  CPT(TransformState) orig_transform = get_transform();
+  if (orig_transform->has_components()) {
+    // If we had a componentwise transform before we started, we
+    // should be careful to preserve the other three components.  We
+    // wouldn't need to do this, except for the possibility of
+    // numerical error or decompose ambiguity.
+    const LVecBase3f &orig_hpr = orig_transform->get_hpr();
+    const LVecBase3f &orig_scale = orig_transform->get_scale();
+    const LVecBase3f &orig_shear = orig_transform->get_shear();
+
+    set_transform(other, rel_transform->set_pos(pos));
+    set_pos_hpr_scale_shear(get_transform()->get_pos(), orig_hpr, orig_scale, orig_shear);
+
+  } else {
+    // If we didn't have a componentwise transform already, never
+    // mind.
+    set_transform(other, rel_transform->set_pos(pos));
+  }
+}
+
+void NodePath::
+set_fluid_x(const NodePath &other, float x) {
+  nassertv_always(!is_empty());
+  LPoint3f pos = get_pos(other);
+  pos[0] = x;
+  set_fluid_pos(other, pos);
+}
+
+void NodePath::
+set_fluid_y(const NodePath &other, float y) {
+  nassertv_always(!is_empty());
+  LPoint3f pos = get_pos(other);
+  pos[1] = y;
+  set_fluid_pos(other, pos);
+}
+
+void NodePath::
+set_fluid_z(const NodePath &other, float z) {
+  nassertv_always(!is_empty());
+  LPoint3f pos = get_pos(other);
+  pos[2] = z;
+  set_fluid_pos(other, pos);
 }
 
 ////////////////////////////////////////////////////////////////////
