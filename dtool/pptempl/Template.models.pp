@@ -38,7 +38,7 @@
    $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]]
 
 #define build_anims \
-   $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%.egg]]
+   $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
 
 #define build_eggs $[sort $[build_models] $[build_anims]]
 #define install_eggs $[sort $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)]]
@@ -190,7 +190,7 @@ $[target] : $[source]
 // Egg animation generation from Soft database.
 #forscopes soft_char_egg
   #foreach anim $[ANIMS]
-    #define target $[EGG_PREFIX]$[anim].egg
+    #define target $[EGG_PREFIX]$[anim]$[CHAN_SUFFIX].egg
     #define scene $[SCENE_PREFIX]$[anim].1-0.dsc
     #define source $[DATABASE]/SCENES/$[scene]
     #define begin 1
