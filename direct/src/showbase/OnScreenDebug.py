@@ -69,5 +69,14 @@ class OnScreenDebug:
     def remove(self, key):
         del self.data[key]
 
+    def removeAllWithPrefix(self, prefix):
+        toRemove = []
+        for key in self.data.keys():
+            if len(key) >= len(prefix):
+                if key[:len(prefix)] == prefix:
+                    toRemove.append(key)
+        for key in toRemove:
+            self.remove(key)
+
     def append(self, text):
         self.text += text
