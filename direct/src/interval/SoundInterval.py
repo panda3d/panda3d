@@ -51,7 +51,12 @@ class SoundInterval(Interval.Interval):
             # - hack Miles to fix its MP3 length calculation
             # - complain louder about this to RAD
             # - precompute MP3 durations and store them in a table
-            duration += min(duration * 2.4, 1.5)
+
+            # drose - ok, I've put in a lower-level workaround in the
+            # MilesAudioManager.  This is no longer necessary up here,
+            # where it pollutes SoundInterval for everyone.
+            #duration += min(duration * 2.4, 1.5)
+            
         # Generate unique name if necessary
         if (name == None):
             name = id
