@@ -22,10 +22,9 @@
     renderState.h renderState.I \
     textureAttrib.h textureAttrib.I \
     transformAttrib.h transformAttrib.I
-    
-//  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
-//  #define INCLUDED_SOURCES \
-  #define SOURCES $[SOURCES] \
+
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
+  #define INCLUDED_SOURCES \
     colorAttrib.cxx \
     config_pgraph.cxx \
     cullHandler.cxx \
@@ -42,6 +41,12 @@
     renderState.cxx \
     textureAttrib.cxx \
     transformAttrib.cxx
+
+  #if $[DONT_COMBINE_PGRAPH]    
+    #define SOURCES $[SOURCES] $[INCLUDED_SOURCES]
+    #define INCLUDED_SOURCES
+    #define COMBINED_SOURCES
+  #endif
 
   #define INSTALL_HEADERS \
     pandaNode.h pandaNode.I
