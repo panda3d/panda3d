@@ -32,7 +32,7 @@ class Node;
 // type of graph, hence the parameter.
 extern EXPCL_PANDA UpdateSeq &last_graph_update(TypeHandle graph_type);
 
-extern EXPCL_PANDA INLINE_GRAPH void remove_arc(NodeRelation *arc);
+EXPCL_PANDA INLINE_GRAPH void remove_arc(NodeRelation *arc);
 
 ///////////////////////////////////////////////////////////////////
 // 	 Class : NodeRelation
