@@ -18,7 +18,7 @@ class FSM(DirectObject):
     ERROR = 2    # print an error message and raise an exception
 
     def __init__(self, name, states=[], initialStateName=None,
-                 finalStateName=None, onUndefTransition=ALLOW):
+                 finalStateName=None, onUndefTransition=DISALLOW):
         """__init__(self, string, State[], string, string, int)
 
         FSM constructor: takes name, list of states, initial state and
