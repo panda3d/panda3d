@@ -55,7 +55,7 @@ Step 2: Install Cygwin (v1.0)
     # Connect and mount the network drives:
       > net use g: "\\nufat\bit" /persistent:yes
       > net use i: "\\nufat\big" /persistent:yes
-      > net use v: "\\dimbo\mass" /persistent:yes
+      > net use v: "\\dimbo\panda" /persistent:yes
       > mkdir /g /i /v
       > mount -s -b g:/ /g
       > mount -s -b i:/ /i
