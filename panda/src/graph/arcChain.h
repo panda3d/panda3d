@@ -120,7 +120,7 @@ protected:
 
   // This is a supporting class for iterating through all the arcs via
   // begin() .. end().
-  class ForwardIterator {
+  class EXPCL_PANDA ForwardIterator {
   public:
     INLINE_GRAPH ForwardIterator(ArcComponent *comp = NULL);
     INLINE_GRAPH NodeRelation *operator * () const;

@@ -118,7 +118,9 @@ set_from_node(const NodePath &node_path) {
   // Get the texture off the node.  We use wrt() to determine the net
   // texture that's applied, based on all the arcs from the root; not
   // just the bottom arc.
-  Texture *tex;
+  Texture *tex = (Texture *)NULL;
+
+  /*
   NodeTransitionWrapper ntw(TextureTransition::get_class_type());
   wrt(gnode, geom_node_path.begin(), geom_node_path.end(), 
       (Node *)NULL, ntw, RenderRelation::get_class_type());
@@ -126,6 +128,19 @@ set_from_node(const NodePath &node_path) {
   if (get_transition_into(tt, ntw)) {
     if (tt->is_on()) {
       tex = tt->get_texture();
+    }
+  }
+  */
+  // Shoot, wrt() doesn't work across DLL's.  Just walk through the
+  // arcs.
+  NodePath::iterator npi;
+  for (npi = geom_node_path.begin(); npi != geom_node_path.end(); ++npi) {
+    NodeRelation *arc = (*npi);
+    const TextureTransition *tt;
+    if (get_transition_into(tt, arc)) {
+      if (tt->is_on()) {
+        tex = tt->get_texture();
+      }
     }
   }
 
