@@ -37,7 +37,9 @@ class OnScreenDebug:
         if not self.onScreenText:
             self.load()
         self.onScreenText.clearText()
-        for k, v in self.data.items():
+        entries = self.data.items()
+        entries.sort()
+        for k, v in entries:
             if v[0] == self.frame:
                 # It was updated this frame (key equals value):
                 #isNew = " is"
