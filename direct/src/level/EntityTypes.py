@@ -16,6 +16,12 @@ class ActiveCell(Entity):
         ('col', 0),
         ('gridId', None)
         )
+
+class DirectionalCell(ActiveCell):
+    type = 'directionalCell'
+    attribs = (
+        ('dir', [0,0]),
+        )
     
 class LevelMgr(Entity):
     type = 'levelMgr'
@@ -109,6 +115,17 @@ class Button(Switch):
 class Trigger(Switch):
     type = 'trigger'
 
+class ConveyorBelt(Nodepath):
+    type = 'conveyorBelt'
+    attribs = (
+        ('speed', 1.0),
+        ('length', 1.0),
+        ('widthScale', 1.0),
+        ('treadLength', 1.0),
+        ('treadModelPath', 'phase_7/models/cogHQ/platform1'),
+        ('floorName', 'platformcollision'),
+        )        
+        
 class Crate(Nodepath):
     type = 'crate'
     delAttribs = (
