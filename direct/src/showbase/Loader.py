@@ -70,7 +70,7 @@ class Loader:
 
     # sound loading funcs
     def loadSound(self, soundPath):
-        """loadSample(self, string)
+        """loadSound(self, string)
         Attempt to load a sound from the given file path using
         Cary's sound class. Returns None if not found"""
         Loader.notify.info("Loading sound: %s" % (soundPath) )
