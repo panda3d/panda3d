@@ -23,6 +23,9 @@ class DirectDialog(DirectFrame):
             buttonHotKeyList     List of hotkeys to bind to each button.
                                  Typing hotkey is equivalent to pressing
                                  the corresponding button.
+            supressKeys          Set to true if you wish to supress keys
+                                 (i.e. Dialog eats key event), false if
+                                 you wish Dialog to pass along key event
             buttonSize           4-tuple used to specify custom size for
                                  each button (to make bigger then geom/text
                                  for example)
@@ -97,11 +100,10 @@ class DirectDialog(DirectFrame):
                 value = self['buttonValueList'][i]
             except IndexError:
                 value = i
+                self['buttonValueList'].append(i)
             try:
-                print 'HERE'
                 hotKey = self['buttonHotKeyList'][i]
             except IndexError:
-                print 'THERE'
                 hotKey = None
             button = self.createcomponent(
                 name, (), "button",
@@ -109,31 +111,34 @@ class DirectDialog(DirectFrame):
                 text = text,
                 geom = geom,
                 image = image,
+                suppressKeys = self['suppressKeys'],
                 frameSize = self['buttonSize'],
                 command = lambda s = self, v = value: s.buttonCommand(v)
                 )
-            # Add any hot key binding
-            print "HOTKEY", hotKey
-            if hotKey:
-                print 'DOING IT'
-                if ((type(hotKey) == types.ListType) or
-                    (type(hotKey) == types.TupleType)):
-                    print 'NOW'
-                    for key in hotKey:
-                        print 'REALLY'
-                        button.accept(key, self.buttonCommand,
-                                      extraArgs = [value])
-                else:
-                    print 'NOT'
-                    button.accept(hotKey, self.buttonCommand,
-                                extraArgs = [value])
             self.buttonList.append(button)
-        
+
         # Update dialog when everything has been initialised
         self.postInitialiseFuncList.append(self.configureDialog)
         self.initialiseoptions(DirectDialog)
 
     def configureDialog(self):
+        # Set up hot key bindings
+        bindList = zip(self.buttonList, self['buttonHotKeyList'],
+                       self['buttonValueList'])
+        for button, hotKey, value in bindList:
+            if ((type(hotKey) == types.ListType) or
+                (type(hotKey) == types.TupleType)):
+                for key in hotKey:
+                    button.bind('press-' + key + '-', self.buttonCommand,
+                                extraArgs = [value])
+                    self.bind('press-' + key + '-', self.buttonCommand,
+                              extraArgs = [value])
+                    
+            else:
+                button.bind('press-' + hotKey + '-',self.buttonCommand,
+                            extraArgs = [value])
+                self.bind('press-' + hotKey + '-', self.buttonCommand,
+                          extraArgs = [value])
         # Position buttons and text
         pad = self['pad']
         bpad = self['button_pad']
@@ -234,13 +239,12 @@ class DirectDialog(DirectFrame):
         self['image_pos'] = ((l+r)/2.0, 0.0,(b+t)/2.0)
         self.resetFrameSize()
 
-    def buttonCommand(self, value):
+    def buttonCommand(self, value, event = None):
         if self['command']:
             self['command'](value)
         
     def destroy(self):
         DirectFrame.destroy(self)
-
 
 class OKDialog(DirectDialog):
     def __init__(self, parent = guiTop, **kw):
