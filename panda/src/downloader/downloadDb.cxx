@@ -414,7 +414,7 @@ server_add_file(string mfname, string fname) {
 
   // Find the multifile with mfname
   pvector< PT(MultifileRecord) >::iterator i = _server_db._mfile_records.begin();
-  for(; i != _server_db._mfile_records.end(); ++i) {
+  for (; i != _server_db._mfile_records.end(); ++i) {
     if (mfname == (*i)->_name) {
       (*i)->add_file_record(fr);
       return;
