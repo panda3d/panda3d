@@ -623,6 +623,20 @@ class ShowBase:
         self.notify.info("Taking screenshot: " + imageName)
         takeSnapshot(self.win, imageName)
 
+    def DisableAudio(self):
+        if self.wantSfx:
+            self.sfxManager.setActive(0)
+        if self.wantMusic:
+            self.musicManager.setActive(0)
+        self.notify.debug("Disabling audio")
+
+    def EnableAudio(self):
+        if self.wantSfx:
+            self.sfxManager.setActive(1)
+        if self.wantMusic:
+            self.musicManager.setActive(1)
+        self.notify.debug("Enabling audio")
+
     def run(self):
         self.taskMgr.run()
 

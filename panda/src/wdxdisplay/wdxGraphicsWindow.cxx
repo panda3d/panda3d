@@ -28,6 +28,8 @@
 #include <keyboardButton.h>
 #include <mouseButton.h>
 
+#include <throw_event.h>
+
 #ifdef DO_PSTATS
 #include <pStatTimer.h>
 #endif
@@ -673,6 +675,8 @@ void wdxGraphicsWindow::deactivate_window(void) {
        if((wndpl.showCmd!=SW_MINIMIZE)&&(wndpl.showCmd!=SW_SHOWMINIMIZED)) {
            ShowWindow(_mwindow, SW_MINIMIZE);
        }
+
+       throw_event("PandaPaused"); // right now this is used to signal python event handler to disable audio
    }
 
 //   if(!bResponsive_minimized_fullscreen_window) {
@@ -721,6 +725,10 @@ void wdxGraphicsWindow::reactivate_window(void) {
     //  if(_props._fullscreen)
     //      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
         GdiFlush();
+    }
+
+    if(_props._fullscreen) {
+        throw_event("PandaRestarted");  // right now this is used to signal python event handler to re-enable audio
     }
 }
 
