@@ -24,7 +24,7 @@
 
 #define NEED_MILES_LENGTH_WORKAROUND
 
-#if (MSS_MAJOR_VERSION >= 6) && (MSS_MINOR_VERSION >= 5)
+#if (((MSS_MAJOR_VERSION == 6) && (MSS_MINOR_VERSION >= 5)) || (MSS_MAJOR_VERSION >= 7))
 #define MILES_6_5
 #endif
 
