@@ -206,7 +206,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("enableAvatarControls"))
         print id(self), "NPW.enableAvatarControls()"
-        self.setCollisionsActive(1)
+        assert self.collisionsActive
 
         taskName = "AvatarControls%s"%(id(self),)
         # remove any old
@@ -222,8 +222,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         print id(self), "NPW.disableAvatarControls()"
         taskName = "AvatarControls%s"%(id(self),)
         taskMgr.remove(taskName)
-        
-        self.setCollisionsActive(0)
     
     if __debug__:
         def debugPrint(self, message):

@@ -691,7 +691,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("enableAvatarControls()"))
         print id(self), "PW.enableAvatarControls()"
-        self.setCollisionsActive(1)
+        assert self.collisionsActive
 
         if __debug__:
             self.accept("control-f3", self.spawnTest) #*#
@@ -716,24 +716,10 @@ class PhysicsWalker(DirectObject.DirectObject):
 
         taskName = "AvatarControlsIndicator%s"%(id(self),)
         taskMgr.remove(taskName)
-        
-        self.setCollisionsActive(0)
 
         if __debug__:
             self.ignore("control-f3") #*#
             self.ignore("f3")
-
-    def enableAvatarJump(self):
-        """
-        Stop forcing the ctrl key to return 0's
-        """
-        inputState.unforce("jump")
-
-    def disableAvatarJump(self):
-        """
-        Force the ctrl key to return 0's
-        """
-        inputState.force("jump", 0)
 
     
     if __debug__:

@@ -40,7 +40,9 @@ class GravityWalker(DirectObject.DirectObject):
         self.__standableGround=standableGround
         self.__hardLandingForce=hardLandingForce
         
-        self.jumping = 0
+        self.mayJump = 1
+        self.jumpDelayTask = None
+        self.falling = 0
         self.needToDeltaPos = 0
         self.physVelocityIndicator=None
         self.avatarControlForwardSpeed=0
@@ -59,6 +61,12 @@ class GravityWalker(DirectObject.DirectObject):
         self.isAirborne = 0
         self.highMark = 0
 
+    def delete(self):
+        if self.doLaterTask is not None:
+            self.doLaterTask.remove()
+            del self.doLaterTask
+        #DirectObject.DirectObject.delete(self)
+    
     def spawnTest(self):
         assert(self.debugPrint("\n\nspawnTest()\n"))
         if not self.wantAvatarPhysicsIndicator:
@@ -238,6 +246,20 @@ class GravityWalker(DirectObject.DirectObject):
         tempCTrav.addCollider(self.cSphereNodePath, self.pusher)
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
+    
+    def setMayJump(self, task):
+        self.mayJump = 1
+        return Task.done
+
+    def startJumpDelay(self):
+        assert(self.debugPrint("startJumpDelay()"))
+        if self.jumpDelayTask:
+            self.jumpDelayTask.remove()
+        self.mayJump = 0
+        self.jumpDelayTask=taskMgr.doMethodLater(
+            0.1,
+            self.setMayJump,
+            "jumpDelay-%s"%id(self))
 
     def handleAvatarControls(self, task):
         """
@@ -269,24 +291,26 @@ class GravityWalker(DirectObject.DirectObject):
             self.rotationSpeed = 0
             jump = 0
 
-        if 0:
+        if 1:
             onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight()) #*#
-            onScreenDebug.add("jumping", self.jumping) #*#
+            onScreenDebug.add("falling", self.falling) #*#
             onScreenDebug.add("isOnGround", self.lifter.isOnGround()) #*#
             onScreenDebug.add("velocity", self.lifter.getVelocity()) #*#
             onScreenDebug.add("jump", jump) #*#
         if self.lifter.isOnGround():
-            if self.jumping:
-                self.jumping = 0
+            if self.falling:
+                self.falling = 0
                 #messenger.send("jumpHardLand")
                 messenger.send("jumpLand")
-            if jump:
+                self.startJumpDelay()
+            if jump and self.mayJump:
                 # ...the jump button is down and we're close
                 # enough to the ground to jump.
                 self.lifter.addVelocity(self.avatarControlJumpForce)
                 messenger.send("jumpStart")
-                self.jumping = 1
-        #else:
+                self.falling = 1
+        else:
+            self.falling = 1
         #    if self.lifter.getAirborneHeight() > 10000.0:
         #        assert(0)
 
@@ -341,7 +365,7 @@ class GravityWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("enableAvatarControls()"))
         print id(self), "GW.enableAvatarControls()"
-        self.setCollisionsActive(1)
+        assert self.collisionsActive
 
         if __debug__:
             self.accept("control-f3", self.spawnTest) #*#
@@ -365,8 +389,6 @@ class GravityWalker(DirectObject.DirectObject):
 
         taskName = "AvatarControlsIndicator%s"%(id(self),)
         taskMgr.remove(taskName)
-        
-        self.setCollisionsActive(0)
 
         if __debug__:
             self.ignore("control-f3") #*#

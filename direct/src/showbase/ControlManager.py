@@ -75,7 +75,9 @@ class ControlManager:
     def useSwimControls(self):
         assert(self.debugPrint("useSwimControls()"))
         self.currentControls.disableAvatarControls()
+        self.currentControls.collisionsOff()
         self.currentControls = self.swimControls
+        self.currentControls.collisionsOn()
         if self.isEnabled:
             self.currentControls.enableAvatarControls()
 
@@ -138,12 +140,10 @@ class ControlManager:
     def collisionsOn(self):
         assert(self.debugPrint("collisionsOn()"))
         self.currentControls.setCollisionsActive(1)
-        #self.swimControls.collisionsOn()
 
     def collisionsOff(self):
         assert(self.debugPrint("collisionsOff()"))
         self.currentControls.setCollisionsActive(0)
-        #self.swimControls.collisionsOff()
 
     def enable(self):
         assert(self.debugPrint("enable()"))
@@ -154,6 +154,18 @@ class ControlManager:
         assert(self.debugPrint("disable()"))
         self.isEnabled = 0
         self.currentControls.disableAvatarControls()
+
+    def enableAvatarJump(self):
+        """
+        Stop forcing the ctrl key to return 0's
+        """
+        inputState.unforce("jump")
+
+    def disableAvatarJump(self):
+        """
+        Force the ctrl key to return 0's
+        """
+        inputState.force("jump", 0)
     
     def monitor(self, foo):
         #assert(self.debugPrint("monitor()"))
