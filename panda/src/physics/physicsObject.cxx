@@ -1,4 +1,4 @@
-// Filename: physics_object.cxx
+// Filename: physics_object.C
 // Created by:  charles (13Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -17,6 +17,7 @@ PhysicsObject(void) :
   _process_me(false), _mass(1.0f), _oriented(true),
   _terminal_velocity(_default_terminal_velocity) {
   _position.set(0, 0, 0);
+  _last_position = _position;
   _velocity.set(0, 0, 0);
   _orientation.set(1, 0, 0, 0);
   _rotation.set(0, 0, 0);
@@ -51,6 +52,7 @@ operator =(const PhysicsObject &other) {
   _process_me = other._process_me;
   _mass = other._mass;
   _position = other._position;
+  _last_position = other._last_position;
   _velocity = other._velocity;
   _orientation = other._orientation;
   _rotation = other._rotation;

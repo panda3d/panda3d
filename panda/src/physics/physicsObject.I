@@ -34,6 +34,29 @@ set_position(float x, float y, float z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : set_position_HandOfGod
+//      Access : Public
+// Description : use this to place an object in a completely new
+//               position, that has nothing to do with its last
+//               position (moved by the Hand Of God, or "HOG")
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsObject::
+set_position_HandOfGod(const LPoint3f &pos) {
+  _position = pos;
+  _last_position = pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_last_position
+//      Access : Public
+// Description : Last position assignment
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsObject::
+set_last_position(const LPoint3f& pos) {
+  _last_position = pos;
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : set_velocity
 //      Access : Public
 // Description : Vector velocity assignment
@@ -91,6 +114,16 @@ get_mass(void) const {
 INLINE LPoint3f PhysicsObject::
 get_position(void) const {
   return _position;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_last_position
+//      Access : Public
+// Description : Last position Query
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f PhysicsObject::
+get_last_position(void) const {
+  return _last_position;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -6,7 +6,7 @@
 #ifndef PHYSICS_OBJECT_H
 #define PHYSICS_OBJECT_H
 
-#include <pandabase.h>
+#include <compiler.h>
 #include <typedReferenceCount.h>
 #include <luse.h>
 
@@ -20,6 +20,7 @@ class EXPCL_PANDAPHYSICS PhysicsObject : public TypedReferenceCount {
 private:
   // physical
   LPoint3f _position;
+  LPoint3f _last_position;
   LVector3f _velocity;
 
   // angular
@@ -46,6 +47,11 @@ public:
   INLINE void set_position(const LPoint3f &pos);
   INLINE void set_position(float x, float y, float z);
   INLINE LPoint3f get_position(void) const;
+
+  INLINE void set_position_HandOfGod(const LPoint3f &pos);
+
+  INLINE void set_last_position(const LPoint3f &pos);
+  INLINE LPoint3f get_last_position(void) const;
 
   INLINE void set_velocity(const LVector3f &vel);
   INLINE void set_velocity(float x, float y, float z);
