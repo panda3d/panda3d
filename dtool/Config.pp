@@ -505,7 +505,7 @@
   #define CXX g++
 
   // gcc might run into template limits on some parts of Panda.
-  #define C++FLAGS_GEN -ftemplate-depth-20
+  #define C++FLAGS_GEN -ftemplate-depth-25
 #else
   #define CC cc
   #define CXX CC
