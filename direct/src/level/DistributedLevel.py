@@ -40,7 +40,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # all our entities at that time.
         toonbase.tcr.timeManager.synchronize('DistributedLevel.generate')
 
-    # required fields (these ought to be required fields, but
+    # "required" fields (these ought to be required fields, but
     # the AI level obj doesn't know the data values until it has been
     # generated.)
     def setZoneIds(self, zoneIds):
@@ -92,8 +92,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # similar handlers in base classes
         if entType == 'levelMgr':
             self.__handleLevelMgrCreated()
-        elif entType == 'zone':
-            self.__handleAllZonesCreated()
 
     def __handleLevelMgrCreated(self):
         # as soon as the levelMgr has been created, load up the model
@@ -129,20 +127,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.zoneNums.sort()
         self.notify.debug('zones: %s' % self.zoneNums)
 
-        # hack in another doorway
-        dw = self.geom.attachNewNode('Doorway27')
-        dw.setPos(-49.4,86.7,19.26)
-        dw.setH(0)
-
-        # find the doorway nodes
-        self.doorwayNum2Node = findNumberedNodes('Doorway')
-
-    def __handleAllZonesCreated(self):
-        # fix up the floor collisions for walkable zones before
+        # fix up the floor collisions for walkable zones *before*
         # any entities get put under the model
-        for zoneNum in self.zoneNums:
-            zoneNode = self.zoneNum2node[zoneNum]
-
+        for zoneNum,zoneNode in self.zoneNum2node.items():
             # if this is a walkable zone, fix up the model
             allColls = zoneNode.findAllMatches('**/+CollisionNode').asList()
             # which of them, if any, are floors?
@@ -169,6 +156,14 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     # eat the collisionEntry
                     self.toonEnterZone(zoneNum)
                 self.accept('enter%s' % floorCollName, handleZoneEnter)
+
+        # hack in another doorway
+        dw = self.geom.attachNewNode('Doorway27')
+        dw.setPos(-49.4,86.7,19.26)
+        dw.setH(0)
+
+        # find the doorway nodes
+        self.doorwayNum2Node = findNumberedNodes('Doorway')
 
     def announceGenerate(self):
         self.notify.debug('announceGenerate')
@@ -270,7 +265,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # if no viz, listen to all the zones
         if not DistributedLevel.WantVisibility:
-            self.setVisibility(self.zoneNums)
+            zoneNums = list(self.zoneNums)
+            zoneNums.remove(Level.Level.uberZoneNum)
+            self.setVisibility(zoneNums)
 
     def toonEnterZone(self, zoneNum):
         self.notify.debug('toonEnterZone%s' % zoneNum)
@@ -328,7 +325,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # accepts list of visible zone numbers
         # convert the zone numbers into their actual zoneIds
         # always include Toontown and factory uberZones
-        factoryUberZone = self.getZoneId(zoneNum=0)
+        factoryUberZone = self.getZoneId(zoneNum=Level.Level.UberZoneNum)
         visibleZoneIds = [ToontownGlobals.UberZone, factoryUberZone]
         for vz in vizList:
             visibleZoneIds.append(self.getZoneId(zoneNum=vz))

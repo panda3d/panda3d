@@ -1,10 +1,11 @@
 """Entity.py: contains the Entity class"""
 
+from DirectObject import *
+from PythonUtil import lineInfo
 import string
 import DirectNotifyGlobal
-from PythonUtil import lineInfo
 
-class Entity:
+class Entity(DirectObject):
     """Entity is the base class for all objects that exist in a Level
     and can be edited with the LevelEditor."""
     notify = DirectNotifyGlobal.directNotify.newCategory('Entity')
@@ -32,6 +33,7 @@ class Entity:
         return 'ent%s(%s)' % (self.entId, self.level.getEntityType(self.entId))
     
     def destroy(self):
+        self.level.onEntityDestroy(self.entId)
         del self.level
         
     def privGetSetter(self, attrib):
@@ -39,6 +41,15 @@ class Entity:
         if hasattr(self, setFuncName):
             return getattr(self, setFuncName)
         return None
+
+    def callSetters(self, *attribs):
+        """call this with a list of attribs, and any that exist on the
+        entity and have setters will be passed to their setter"""
+        self.privCallSetters(0, *attribs)
+
+    def callSettersAndDelete(self, *attribs):
+        """same as callSetters, but also removes attribs from entity"""
+        self.privCallSetters(1, *attribs)
 
     def privCallSetters(self, doDelete, *attribs):
         """common implementation of callSetters and callSettersAndDelete"""
@@ -50,15 +61,6 @@ class Entity:
                     if doDelete:
                         delattr(self, attrib)
                     setter(value)
-
-    def callSetters(self, *attribs):
-        """call this with a list of attribs, and any that exist on the
-        entity and have setters will be passed to their setter"""
-        self.privCallSetters(0, *attribs)
-
-    def callSettersAndDelete(self, *attribs):
-        """same as callSetters, but also removes attribs from entity"""
-        self.privCallSetters(1, *attribs)
 
     # this will be called with each item of our spec data on initialization
     def setAttribInit(self, attrib, value):

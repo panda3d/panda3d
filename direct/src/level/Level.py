@@ -30,6 +30,7 @@ class Level:
     entities and their interrelations, and creates and destroys entities"""
     notify = DirectNotifyGlobal.directNotify.newCategory('Level')
 
+    UberZoneNum = 0
     UberZoneEntId = 0
 
     def __init__(self):
@@ -61,10 +62,13 @@ class Level:
 
         # there should be one and only one levelMgr
         assert len(self.entType2ids['levelMgr']) == 1
+        # make sure the uberzone is there
+        assert Level.UberZoneEntId in self.entType2ids['zone']
 
         # get an entity creator object
         self.entityCreator = self.createEntityCreator()
         # create all the entities
+        # TODO: we should leave this to a subclass or the level user
         self.createAllEntities(priorityTypes=['levelMgr','zone'])
 
     def destroyLevel(self):
@@ -132,6 +136,13 @@ class Level:
         # below.
         if entity is not None:
             self.createdEntities.append(entity)
+
+        # call the create handler
+        # we used to do this in initializeEntity, but that did not
+        # allow for additional initialization to be performed in
+        # derived entity __init__ funcs
+        self.onEntityCreate(entId)
+
         return entity
 
     def initializeEntity(self, entity):
@@ -150,11 +161,8 @@ class Level:
         # entity is initialized, add it to the list of entities
         self.entities[entity.entId] = entity
 
-        # call the create handler
-        self.onEntityCreate(entId)
-
     def getEntity(self, entId):
-        return self.entities[entId]
+        return self.entities.get(entId)
 
     def getEntityType(self, entId):
         return self.entId2spec[entId]['type']
@@ -213,8 +221,6 @@ class Level:
         messenger.send(self.getEntityTypePreCreateEvent(entType))
     def onEntityTypePostCreate(self, entType):
         """Level has just created these entities"""
-        if entType == 'zone':
-            self.__handleAllZonesCreated()
         messenger.send(self.getEntityTypePostCreateEvent(entType))
     # ENTITY
     def onEntityCreate(self, entId):
@@ -226,31 +232,12 @@ class Level:
             self.getEntityOfTypeCreateEvent(self.getEntityType(entId)),
             [entId])
 
-    def __handleAllZonesCreated(self):
-        """once all the zone entities have been created, and we've got a
-        list of zoneIds in self.zoneIds, init zone tables"""
-        # create a table mapping the model's zone numbers to the zone
-        # entIds; zone entities are tied to model zone nums in the level spec,
-        # this is just for convenient lookup
-        self.zoneNum2entId = {}
-        for entId in self.entType2ids['zone']:
-            zoneEnt = self.getEntity(entId)
-            # NOTE: modelZoneNum comes from the entity's spec data
-            self.zoneNum2entId[zoneEnt.modelZoneNum] = entId
-
-        # At this point, we need to have a 'self.zoneIds' table of network
-        # zoneIds, one for each zone including the UberZone. This is where
-        # we decide which zoneNum/entId gets mapped to which zoneId.
-        # We sort the zoneNums, and then pair the sorted zoneNums up with the
-        # zoneIds in the order that they appear in the self.zoneIds table.
-        modelZoneNums = self.zoneNum2entId.keys()
-        modelZoneNums.sort()
-        # maps of zoneNum/zoneEntId to network zoneId
-        self.zoneNum2zoneId = {}
-        self.zoneEntId2zoneId = {}
-        for i in range(len(modelZoneNums)):
-            modelZoneNum = modelZoneNums[i]
-            zoneEntId = self.zoneNum2entId[modelZoneNum]
-            zoneId = self.zoneIds[i]
-            self.zoneNum2zoneId[modelZoneNum] = zoneId
-            self.zoneEntId2zoneId[zoneEntId] = zoneId
+    # these are events and handlers that are invoked as entities are destroyed
+    def getEntityDestroyEvent(self, entId):
+        """This is the event that is thrown immediately before an
+        entity is destroyed"""
+        return 'entityDestroy-%s-%s' % (self.levelId, entId)
+    def onEntityDestroy(self, entId):
+        """Level is about to destroy this entity"""
+        # send the entity-destroy event
+        messenger.send(self.getEntityDestroyEvent(entId))
