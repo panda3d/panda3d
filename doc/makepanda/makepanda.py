@@ -662,7 +662,7 @@ for version,key1,key2,subdir in MAXVERSIONS:
                     WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
                     OMIT.append(version)
                 else:
-                    MAXSDK[version] = top + "maxsdk\\"
+                    MAXSDK[version] = top + "maxsdk"
                     MAXSDKCS[version] = top + subdir
         else:
             WARNINGS.append(version+" not yet supported under linux")
@@ -1188,7 +1188,7 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             if (opts.count("MAYA6")): cmd = cmd + ' /I"' + MAYASDK["MAYA6"] + '/include"'
             for max in ["MAX5","MAX6","MAX7"]:
                 if (PkgSelected(opts,max)):
-                    cmd = cmd + ' /I"' + MAXSDK[max] + 'include" /I"' + MAXSDKCS[max] + '" /D' + max
+                    cmd = cmd + ' /I"' + MAXSDK[max] + '/include" /I"' + MAXSDKCS[max] + '" /D' + max
             for pkg in PACKAGES:
                 if (pkg != "MAYA5") and (pkg != "MAYA6") and PkgSelected(opts,pkg):
                     cmd = cmd + " /I" + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
@@ -1477,10 +1477,10 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
                     cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMayaAnim.lib"'
             for max in ["MAX5","MAX6","MAX7"]:
                 if PkgSelected(opts,max):
-                    cmd = cmd + ' "' + MAXSDK[max] +  'lib/core.lib"'
-                    cmd = cmd + ' "' + MAXSDK[max] +  'lib/mesh.lib"'
-                    cmd = cmd + ' "' + MAXSDK[max] +  'lib/maxutil.lib"'
-                    cmd = cmd + ' "' + MAXSDK[max] +  'lib/paramblk2.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/core.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/mesh.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/maxutil.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  '/lib/paramblk2.lib"'
             oscmd(cmd)
             updatefiledate(dll)
             if ((OPTIMIZE == 1) and (dll[-4:]==".dll")):
