@@ -21,16 +21,16 @@
 ;; check the environment
 (setq ct-tool (getenv "DTOOL"))
 (setq have-atria (let ((h-a (getenv "HAVE_ATRIA")))
-		   (if (string= h-a "yes") t '())))
+                   (if (string= h-a "yes") t '())))
 ;; (setq have-neartool (let ((h-n (getenv "HAVE_NEARTOOL")))
 ;;                          (if (string= h-n "yes") t '())))
 (setq is-cygwin (string= (getenv "OS") "CYGWIN_NT-4.0"))
 
 ;; (setq ct-command (cond
-;; 		  (is-cygwin "bash /install/tool/bin/neartool")
-;; 		  (have-atria "cleartool")
-;; 		  (have-neartool "neartool")
-;; 		  t nil))
+;;                   (is-cygwin "bash /install/tool/bin/neartool")
+;;                   (have-atria "cleartool")
+;;                   (have-neartool "neartool")
+;;                   t nil))
 
 ;; Load the Hightlight coloring scheme
 (if is-cygwin
@@ -55,13 +55,13 @@
   (interactive)
   (if (y-or-n-p "Ok to un-checkout? ")
       (progn
-	(setq pname (file-name-nondirectory (buffer-file-name)))
-	(ct-shell-command-verbose (concat "ctunco " pname))
-	(ct-find-curr-file-again t)
-	)
+        (setq pname (file-name-nondirectory (buffer-file-name)))
+        (ct-shell-command-verbose (concat "ctunco " pname))
+        (ct-find-curr-file-again t)
+        )
       (progn
-	(message "Uncheckout canceled.")
-	)
+        (message "Uncheckout canceled.")
+        )
     )
 )
 
@@ -78,8 +78,8 @@
          (setq option "-nc"))
       ((equal choice "n")
          (setq comment (read-string "Comment: " last-ci-comment))
-	 (setq last-ci-comment comment)
-	 (setq option (concat "-c " (ct-quote-string comment))))
+         (setq last-ci-comment comment)
+         (setq option (concat "-c " (ct-quote-string comment))))
       ((equal choice "l")
        (ct-shell-command-verbose (concat "ctihave " pname)))
       (t
@@ -96,13 +96,13 @@
   (interactive)
   (if (y-or-n-p "Ok to delta? ")
       (progn
-	(setq pname (file-name-nondirectory (buffer-file-name)))
-	(ct-shell-command-verbose (concat "ctdelta " pname))
-	(ct-find-curr-file-again t)
-	)
+        (setq pname (file-name-nondirectory (buffer-file-name)))
+        (ct-shell-command-verbose (concat "ctdelta " pname))
+        (ct-find-curr-file-again t)
+        )
       (progn
-	(message "Delta canceled.")
-	)
+        (message "Delta canceled.")
+        )
       )
 )
 
@@ -129,7 +129,7 @@
   (if have-atria
       (compile-internal
         (concat "clearmake -C gnu " target
-	        " |& grep -v \"clearmake: Warning: Config\"")
+                " |& grep -v \"clearmake: Warning: Config\"")
         "No more errors.")
       (compile-internal
         (concat "make " target) "No more errors."))
@@ -145,7 +145,7 @@
    (have-atria
     (compile-internal
      (concat "cd `ctproj -r` ; clearmake -C gnu " target
-	     " |& grep -v \"clearmake: Warning: Config\"")
+             " |& grep -v \"clearmake: Warning: Config\"")
      "No more errors."))
    (is-cygwin
     (compile-internal
@@ -177,10 +177,10 @@
   (if (y-or-n-p (format "Make new element for %s? "
                         (file-name-nondirectory (buffer-name))))
       (progn
-	(write-file (buffer-file-name))
-	(ct-shell-command-verbose
-	 (concat "ctmkelem -eltype text_file -c '' "
-		 (file-name-nondirectory (buffer-name))))
+        (write-file (buffer-file-name))
+        (ct-shell-command-verbose
+         (concat "ctmkelem -eltype text_file -c '' "
+                 (file-name-nondirectory (buffer-name))))
         )
     (progn
       (message "Make element canceled.")
@@ -214,7 +214,7 @@
   (setq has-single (string-match "'" string))
   (cond
     ((or (and (not has-single) (not has-double))
-	 (and has-double (not has-single)))
+         (and has-double (not has-single)))
        (concat "'" string "'"))
     ((and has-single (not has-double))
        (concat "\"" string "\""))
