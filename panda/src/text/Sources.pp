@@ -8,10 +8,12 @@
     mathutil
 
   #define SOURCES \
-    config_text.cxx config_text.h textNode.I textNode.cxx textNode.h
+    config_text.cxx config_text.h \
+    textFont.I textFont.cxx textFont.h \
+    textNode.I textNode.cxx textNode.h
 
   #define INSTALL_HEADERS \
-    config_text.h textNode.I textNode.h
+    config_text.h textFont.I textFont.h textNode.I textNode.h
 
   #define IGATESCAN all
 

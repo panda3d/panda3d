@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_text.h"
+#include "textFont.h"
 #include "textNode.h"
 
 #include <dconfig.h>
@@ -12,6 +13,7 @@ Configure(config_text);
 NotifyCategoryDef(text, "");
 
 ConfigureFn(config_text) {
+  TextFont::init_type();
   TextNode::init_type();
 }
 

@@ -12,6 +12,7 @@
 #include <pandabase.h>
 
 #include "config_text.h"
+#include "textFont.h"
 
 #include <pt_Node.h>
 #include <namedNode.h>
@@ -22,8 +23,6 @@
 #include <textureTransition.h>
 #include <transparencyTransition.h>
 #include <allTransitionsWrapper.h>
-
-#include <map>
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -47,8 +46,9 @@ PUBLISHED:
   INLINE int get_freeze_level() const;
   INLINE int thaw();
 
-  INLINE void set_font(Node *font_def);
-  INLINE Node *get_font() const;
+  INLINE void set_font(Node *font);
+  INLINE void set_font(TextFont *font);
+  INLINE TextFont *get_font() const;
 
   INLINE float get_line_height() const;
 
@@ -145,9 +145,9 @@ PUBLISHED:
   INLINE bool has_text() const;
   INLINE string get_text() const;
 
-  float calc_width(char ch) const;
-  float calc_width(const string &line) const;
-  string wordwrap_to(const string &text, float wordwrap_width) const;
+  INLINE float calc_width(char ch) const;
+  INLINE float calc_width(const string &line) const;
+  INLINE string wordwrap_to(const string &text, float wordwrap_width) const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
 
@@ -167,14 +167,13 @@ PUBLISHED:
   INLINE LPoint3f get_lower_right_3d() const;
 
   INLINE int get_num_rows() const;
-  
+
+  PT_Node generate();
 
 private:
   void do_rebuild();
   void do_measure();
-  bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
-			    AllTransitionsWrapper &trans);
-  void find_characters(Node *root);
+
   float assemble_row(const char *&source, Node *dest);
   Node *assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
 		      int &num_rows);
@@ -186,27 +185,9 @@ private:
   Node *make_card();
   Node *make_card_with_border();
 
-  class EXPCL_PANDA CharDef {
-  public:
-    CharDef() { }
-    CharDef(Geom *geom, float width, const AllTransitionsWrapper &trans);
-    Geom *_geom;
-    float _width;
-    AllTransitionsWrapper _trans;
-  };
+  PT(TextFont) _font;
 
-  typedef map<int, CharDef> CharDefs;
-  CharDefs _defs;
-  float _font_height;
   float _slant;
-
-  PT(RenderRelation) _root_arc;
-
-  PT_Node _root;
-  PT_Node _text_root;
-  PT_Node _frame_root;
-  PT_Node _card_root;
-  PT_Node _font;
 
   PT(Texture) _card_texture;
   Colorf _text_color;

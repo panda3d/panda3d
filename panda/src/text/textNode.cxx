@@ -30,32 +30,12 @@
 TypeHandle TextNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: isblank
-//  Description: An internal function, similar to isspace(), except it
-//               does not consider newlines to be whitespace.
-////////////////////////////////////////////////////////////////////
-INLINE bool
-isblank(char ch) {
-  return (ch == ' ' || ch == '\t');
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::CharDef::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-TextNode::CharDef::
-CharDef(Geom *geom, float width, const AllTransitionsWrapper &trans) : 
-  _geom(geom), _width(width), _trans(trans) { }
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 TextNode::
 TextNode(const string &name) : NamedNode(name) {
-  _font_height = 1.0;
   _slant = 0.0;
 
   _flags = 0;
@@ -92,169 +72,35 @@ TextNode(const string &name) : NamedNode(name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Destructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 TextNode::
 ~TextNode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::calc_width
-//       Access: Public
-//  Description: Returns the width of a single character of the font,
-//               or 0.0 if the character is not known.
-////////////////////////////////////////////////////////////////////
-float TextNode::
-calc_width(char ch) const {
-  if (ch == ' ') {
-    // A space is a special case.
-    return 0.25;
-  }
-
-  CharDefs::const_iterator cdi = _defs.find(ch);
-  if (cdi == _defs.end()) {
-    // Unknown character.
-    return 0.0;
-  }
-
-  return (*cdi).second._width;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::calc_width
-//       Access: Public
-//  Description: Returns the width of a line of text of arbitrary
-//               characters.  The line should not include the newline
-//               character.
-////////////////////////////////////////////////////////////////////
-float TextNode::
-calc_width(const string &line) const {
-  float width = 0.0;
-
-  string::const_iterator si;
-  for (si = line.begin(); si != line.end(); ++si) {
-    width += calc_width(*si);
-  }
-
-  return width;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::wordwrap_to
-//       Access: Public
-//  Description: Inserts newlines into the given text at the
-//               appropriate places in order to make each line be the
-//               longest possible line that is not longer than
-//               wordwrap_width (and does not break any words, if
-//               possible).  Returns the new string.
-////////////////////////////////////////////////////////////////////
-string TextNode::
-wordwrap_to(const string &text, float wordwrap_width) const {
-  string output_text;
-
-  size_t p = 0;
-
-  // Preserve any initial whitespace and newlines.
-  while (p < text.length() && isspace(text[p])) {
-    output_text += text[p];
-    p++;
-  }
-  bool first_line = true;
-
-  while (p < text.length()) {
-    nassertr(!isspace(text[p]), "");
-
-    // Scan the next n characters, until the end of the string or an
-    // embedded newline character, or we exceed wordwrap_width.
-
-    size_t q = p;
-    bool any_spaces = false;
-
-    float width = 0.0;
-    while (q < text.length() && text[q] != '\n' && width <= wordwrap_width) {
-      if (isspace(text[q])) {
-	any_spaces = true;
-      }
-
-      width += calc_width(text[q]);
-      q++;
-    }
-
-    if (q < text.length() && any_spaces) {
-      // If we stopped because we exceeded the wordwrap width, then
-      // back up to the end of the last complete word.
-
-      while (q > p && !isspace(text[q])) {
-	q--;
-      }
-    }
-
-    // Skip additional whitespace between the lines.
-    size_t next_start = q;
-    while (next_start < text.length() && isblank(text[next_start])) {
-      next_start++;
-    }
-
-    // Trim off any more blanks on the end.
-    while (q > p && isspace(text[q - 1])) {
-      q--;
-    }
-
-    if (next_start == p) {
-      // No characters got in at all.  This could only happen if the
-      // wordwrap width is narrower than a single character.
-      q++;
-      next_start++;
-      while (next_start < text.length() && isblank(text[next_start])) {
-	next_start++;
-      }
-    }
-
-    if (!first_line) {
-      output_text += '\n';
-    }
-    first_line = false;
-    output_text += text.substr(p, q - p);
-
-    // Now prepare to wrap the next line.
-
-    if (next_start < text.length() && text[next_start] == '\n') {
-      // Skip a single embedded newline.
-      next_start++;
-    }
-    p = next_start;
-
-    // Preserve any initial whitespace and newlines.
-    while (p < text.length() && isspace(text[p])) {
-      output_text += text[p];
-      p++;
-    }
-  }
-
-  return output_text;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << "TextNode\n"
-    << _defs.size() << " characters available in font.\n"
-    << "line height is " << _font_height << " units.\n";
+    << "TextNode " << get_name() << "\n";
+  if (_font != (TextFont *)NULL) {
+    indent(out, indent_level + 2)
+      << "with font " << _font->get_name() << "\n";
+  }
   if (has_text_color()) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "text color is " << _text_color << "\n";
   } else {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "text color is unchanged from source\n";
   }
-  indent(out, indent_level)
+  indent(out, indent_level + 2)
     << "alignment is ";
   switch (_align) {
   case TM_ALIGN_LEFT:
@@ -271,82 +117,80 @@ write(ostream &out, int indent_level) const {
   }
 
   if (has_wordwrap()) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "Word-wrapping at " << _wordwrap_width << " units.\n";
   }
 
   if (has_frame()) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "frame of color " << _frame_color << " at " 
       << get_frame_as_set() << " line width " << _frame_width << "\n";
     if (get_frame_corners()) {
-      indent(out, indent_level)
+      indent(out, indent_level + 2)
 	<< "frame corners are enabled\n";
     }
     if (is_frame_as_margin()) {
-      indent(out, indent_level)
+      indent(out, indent_level + 2)
 	<< "frame coordinates are specified as margin; actual frame is:\n"
 	<< get_frame_actual() << "\n";
     } else {
-      indent(out, indent_level)
+      indent(out, indent_level + 2)
 	<< "frame coordinates are actual\n";
     }
   }
   if (has_card()) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "card of color " << _card_color << " at " 
       << get_card_as_set() << "\n";
     if (is_card_as_margin()) {
-      indent(out, indent_level)
+      indent(out, indent_level + 2)
 	<< "card coordinates are specified as margin; actual card is:\n"
 	<< get_card_actual() << "\n";
     } else {
-      indent(out, indent_level)
+      indent(out, indent_level + 2)
 	<< "card coordinates are actual\n";
     }
   }
   if (has_shadow()) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "shadow of color " << _shadow_color << " at " 
       << _shadow_offset << "\n";
   }
   if (has_bin()) {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "bin is " << _bin << "\n";
   }
-  indent(out, indent_level)
+  indent(out, indent_level + 2)
     << "draw order is " << _draw_order << ", "
     << _draw_order + 1 << ", " << _draw_order + 2 << "\n";
     
   LVecBase3f scale, hpr, trans;
   if (decompose_matrix(_transform, scale, hpr, trans, _coordinate_system)) {
-  indent(out, indent_level)
+  indent(out, indent_level + 2)
     << "transform is:\n"
     << "  scale: " << scale << "\n"
     << "    hpr: " << hpr << "\n"
     << "  trans: " << hpr << "\n";
   } else {
-    indent(out, indent_level)
+    indent(out, indent_level + 2)
       << "transform is:\n" << _transform;
   }
-  indent(out, indent_level)
+  indent(out, indent_level + 2)
     << "in coordinate system " << _coordinate_system << "\n";
 
-  indent(out, indent_level)
+  indent(out, indent_level + 2)
     << "\ntext is " << _text << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::do_rebuild
-//       Access: Private
-//  Description: Removes any geometry previously defined in the geode,
-//               and fills it with new geometry that represents the
-//               current text string and all its accoutrements.
+//     Function: TextNode::generate
+//       Access: Published
+//  Description: Generates the text, according to the parameters
+//               indicated within the TextNode, and returns a Node
+//               that may be parented within the tree to represent it.
 ////////////////////////////////////////////////////////////////////
-void TextNode::
-do_rebuild() {
-  _needs_rebuild = false;
-
+PT_Node TextNode::
+generate() {
   if (text_cat.is_debug()) {
     text_cat.debug()
       << "Rebuilding " << *this << " with '" << _text << "'\n";
@@ -362,33 +206,20 @@ do_rebuild() {
   // horizontally and vertically, and for each row, there is another
   // node for each character.
 
-  // First delete the arc below self (the TextNode).  This will eliminate
-  // the entire sub-tree result of a prior call to make_text (if one
-  // exists).
-
-  if (_root_arc != (RenderRelation *)NULL) {
-    remove_arc(_root_arc);
-    _root_arc.clear();
-  }
-
-  _root.clear();
-  _text_root.clear();
-  _frame_root.clear();
-  _card_root.clear();
-
   _ul2d.set(0.0, 0.0);
   _lr2d.set(0.0, 0.0);
   _ul3d.set(0.0, 0.0, 0.0);
   _lr3d.set(0.0, 0.0, 0.0);
   _num_rows = 0;
 
-  if (_text.empty() || _defs.empty()) {
-    return;
+  if (_text.empty() || _font.is_null()) {
+    return (Node *)NULL;
   }
 
   // Now build a new sub-tree for all the text components.
-  _root = new NamedNode(_text);
-  _root_arc = new RenderRelation(this, _root);
+  PT_Node root = new NamedNode(_text);
+  PT_Node sub_root = new NamedNode();
+  RenderRelation *root_arc = new RenderRelation(root, sub_root);
 
   // Compute the overall text transform matrix.  We build the text in
   // a Z-up coordinate system and then convert it to whatever the user
@@ -397,10 +228,10 @@ do_rebuild() {
     LMatrix4f::convert_mat(CS_zup_right, _coordinate_system) * 
     _transform;
 
-  _root_arc->set_transition(new TransformTransition(mat));
+  root_arc->set_transition(new TransformTransition(mat));
 
   if (get_billboard()) {
-    _root_arc->set_transition(new BillboardTransition(BillboardTransition::axis(_coordinate_system)));
+    root_arc->set_transition(new BillboardTransition(BillboardTransition::axis(_coordinate_system)));
   }
 
   string text = _text;
@@ -411,9 +242,9 @@ do_rebuild() {
   // Assemble the text.
   LVector2f ul, lr;
   int num_rows = 0;
-  _text_root = assemble_text(text.c_str(), ul, lr, num_rows);
+  PT_Node text_root = assemble_text(text.c_str(), ul, lr, num_rows);
   RenderRelation *text_arc = 
-    new RenderRelation(_root, _text_root, _draw_order + 2);
+    new RenderRelation(sub_root, text_root, _draw_order + 2);
 
   if (has_text_color()) {
     text_arc->set_transition(new ColorTransition(_text_color));
@@ -452,7 +283,7 @@ do_rebuild() {
     LMatrix4f offset =
       LMatrix4f::translate_mat(_shadow_offset[0], 0.0, -_shadow_offset[1]);
     RenderRelation *shadow_arc = 
-      new RenderRelation(_root, _text_root, _draw_order + 1);
+      new RenderRelation(sub_root, text_root, _draw_order + 1);
     shadow_arc->set_transition(new TransformTransition(offset));
     shadow_arc->set_transition(new ColorTransition(_shadow_color));
 
@@ -468,9 +299,9 @@ do_rebuild() {
   }
 
   if (has_frame()) {
-    _frame_root = make_frame();
+    PT_Node frame_root = make_frame();
     RenderRelation *frame_arc =
-      new RenderRelation(_root, _frame_root, _draw_order + 1);
+      new RenderRelation(sub_root, frame_root, _draw_order + 1);
     frame_arc->set_transition(new ColorTransition(_frame_color));
     if (_frame_color[3] != 1.0) {
       frame_arc->set_transition
@@ -484,12 +315,13 @@ do_rebuild() {
   }
 
   if (has_card()) {
+    PT_Node card_root;
     if (has_card_border())
-      _card_root = make_card_with_border();
+      card_root = make_card_with_border();
     else
-      _card_root = make_card();
+      card_root = make_card();
     RenderRelation *card_arc = 
-      new RenderRelation(_root, _card_root, _draw_order);
+      new RenderRelation(sub_root, card_root, _draw_order);
     card_arc->set_transition(new ColorTransition(_card_color));
     if (_card_color[3] != 1.0) {
       card_arc->set_transition
@@ -510,10 +342,43 @@ do_rebuild() {
 
   if (flatten_text) {
     SceneGraphReducer gr(RenderRelation::get_class_type());
-    gr.apply_transitions(_root_arc);
-    gr.flatten(_root, true);
+    gr.apply_transitions(root_arc);
+    gr.flatten(root, true);
+  }
+
+  return root;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::do_rebuild
+//       Access: Private
+//  Description: Removes any existing children of the TextNode, and
+//               adds the newly generated text instead.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+do_rebuild() {
+  _needs_rebuild = false;
+
+  int num_children = get_num_children(RenderRelation::get_class_type());
+  while (num_children > 0) {
+    NodeRelation *arc = get_child(RenderRelation::get_class_type(), 0);
+    remove_arc(arc);
+    num_children--;
+  }
+
+  PT_Node new_text = generate();
+  if (new_text != (Node *)NULL) {
+    new RenderRelation(this, new_text);
+
+    // And we flatten one more time, to remove the new node itself if
+    // possible (it might be an unneeded node above multiple
+    // children).  This flatten operation should be fairly
+    // lightweight; it's already pretty flat.
+    SceneGraphReducer gr(RenderRelation::get_class_type());
+    gr.flatten(this, false);
   }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::do_measure
@@ -530,7 +395,7 @@ do_measure() {
   _lr3d.set(0.0, 0.0, 0.0);
   _num_rows = 0;
 
-  if (_text.empty() || _defs.empty()) {
+  if (_text.empty() || _font.is_null()) {
     return;
   }
 
@@ -554,134 +419,6 @@ do_measure() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::find_character_gsets
-//       Access: Private
-//  Description: Given that 'root' is a Node containing at least a
-//               polygon and a point which define the character's
-//               appearance and kern position, respectively,
-//               recursively walk the hierarchy and root and locate
-//               those two Geoms.
-////////////////////////////////////////////////////////////////////
-bool TextNode::
-find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
-		     AllTransitionsWrapper &trans) {
-  if (root->is_of_type(GeomNode::get_class_type())) {
-    GeomNode *geode = (GeomNode *)root;
-    
-    bool found = false;
-    for (int i = 0; i < geode->get_num_geoms(); i++) {
-      dDrawable *geom = geode->get_geom(i);
-      if (geom->is_of_type(GeomPoint::get_class_type())) {
-	dot = DCAST(GeomPoint, geom);
-	
-      } else if (geom->is_of_type(Geom::get_class_type())) {
-	ch = DCAST(Geom, geom);
-	found = true;
-      }
-    }
-    return found;
-    
-  } else {
-    DownRelations::const_iterator dri;
-    dri = root->_children.find(RenderRelation::get_class_type());
-    if (dri != root->_children.end()) {
-      const DownRelationPointers &drp = (*dri).second;
-      DownRelationPointers::const_iterator drpi;
-      for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-        if (find_character_gsets((*drpi)->get_child(), ch, dot, trans)) {
-	  trans.extract_from(*drpi);
-	}
-      }
-    }
-    return false;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::find_characters
-//       Access: Private
-//  Description: Walk the hierarchy beginning at the indicated root
-//               and locate any nodes whose names are just integers.
-//               These are taken to be characters, and their
-//               definitions and kern informations are retrieved.
-////////////////////////////////////////////////////////////////////
-void TextNode::
-find_characters(Node *root) {
-  string name;
-  if (root->is_of_type(NamedNode::get_class_type())) {
-    name = DCAST(NamedNode, root)->get_name();
-  }
-
-  bool all_digits = !name.empty();
-  const char *p = name.c_str();
-  while (all_digits && *p != '\0') {
-    // VC++ complains if we treat an int as a bool, so we have to do
-    // this != 0 comparsion on the int isdigit() function to shut it
-    // up.
-    all_digits = (isdigit(*p) != 0);
-    p++;
-  }
-  
-  if (all_digits) {
-    int character = atoi(name.c_str());
-    Geom *ch = NULL;
-    GeomPoint *dot = NULL;
-    AllTransitionsWrapper trans;
-    find_character_gsets(root, ch, dot, trans);
-    if (dot != NULL) {
-      // Get the first vertex from the "dot" geoset.  This will be the
-      // origin of the next character.
-      PTA_Vertexf alist;
-      PTA_ushort ilist;
-      GeomBindType bind;
-      float width;
-      dot->get_coords(alist, bind, ilist);
-      if (ilist.empty()) {
-	width = alist[0][0];
-      } else {
-	width = alist[ilist[0]][0];
-      }
-
-      _defs[character] = CharDef(ch, width, trans);
-    }
-
-  } else if (name == "ds") {
-    // The group "ds" is a special node that indicate's the font's
-    // design size, or line height.
-
-    Geom *ch = NULL;
-    GeomPoint *dot = NULL;
-    AllTransitionsWrapper trans;
-    find_character_gsets(root, ch, dot, trans);
-    if (dot != NULL) {
-      // Get the first vertex from the "dot" geoset.  This will be the
-      // design size indicator.
-      PTA_Vertexf alist;
-      PTA_ushort ilist;
-      GeomBindType bind;
-      dot->get_coords(alist, bind, ilist);
-      if (ilist.empty()) {
-	_font_height = alist[0][2];
-      } else {
-	_font_height = alist[ilist[0]][2];
-      }
-    }
-
-  } else {
-    DownRelations::const_iterator dri;
-    dri = root->_children.find(RenderRelation::get_class_type());
-    if (dri != root->_children.end()) {
-      const DownRelationPointers &drp = (*dri).second;
-      DownRelationPointers::const_iterator drpi;
-      for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-	Node *node = (*drpi)->get_child();
-	find_characters(node);
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::assemble_row
 //       Access: Private
 //  Description: Assembles the letters in the source string, up until
@@ -692,6 +429,8 @@ find_characters(Node *root) {
 ////////////////////////////////////////////////////////////////////
 float TextNode::
 assemble_row(const char *&source, Node *dest) {
+  nassertr(_font != (TextFont *)NULL, 0.0);
+
   float xpos = 0.0;
   while (*source != '\0' && *source != '\n') {
     int character = (unsigned char)*source;
@@ -703,15 +442,15 @@ assemble_row(const char *&source, Node *dest) {
     } else {
       // A printable character.
 
-      CharDefs::const_iterator cdi = _defs.find(character);
-      if (cdi == _defs.end()) {
+      const TextFont::CharDef *def = _font->get_char(character);
+      if (def == (const TextFont::CharDef *)NULL) {
 	text_cat.warning()
 	  << "No definition for character " << character << endl;
   
       } else {
-	Geom *char_geom = (*cdi).second._geom;
-	float char_width = (*cdi).second._width;
-	const AllTransitionsWrapper &trans = (*cdi).second._trans;
+	Geom *char_geom = def->_geom;
+	float char_width = def->_width;
+	const AllTransitionsWrapper &trans = def->_trans;
 	
 	LMatrix4f mat = LMatrix4f::ident_mat();
         mat.set_row(3, LVector3f(xpos, 0, 0)); 
@@ -743,7 +482,10 @@ assemble_row(const char *&source, Node *dest) {
 Node *TextNode::
 assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
 	      int &num_rows) {
-  ul.set(0.0, 0.8 * _font_height);
+  nassertr(_font != (TextFont *)NULL, (Node *)NULL);
+  float line_height = get_line_height();
+
+  ul.set(0.0, 0.8 * line_height);
   lr.set(0.0, 0.0);
 
   // Make a group node to hold our formatted text geometry.
@@ -791,11 +533,11 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
     RenderRelation *arc = new RenderRelation(root_node, row);
     arc->set_transition(new TransformTransition(mat));
 
-    posy -= _font_height;
+    posy -= line_height;
     num_rows++;
   }
 
-  lr[1] = posy + 0.8 * _font_height;
+  lr[1] = posy + 0.8 * line_height;
 
   return root_node;
 }
@@ -820,13 +562,13 @@ measure_row(const char *&source) {
     } else {
       // A printable character.
 
-      CharDefs::const_iterator cdi = _defs.find(character);
-      if (cdi == _defs.end()) {
+      const TextFont::CharDef *def = _font->get_char(character);
+      if (def == (const TextFont::CharDef *)NULL) {
 	text_cat.warning()
 	  << "No definition for character " << character << endl;
   
       } else {
-	float char_width = (*cdi).second._width;
+	float char_width = def->_width;
 	xpos += char_width;
       }
     }
@@ -845,7 +587,10 @@ measure_row(const char *&source) {
 void TextNode::
 measure_text(const char *source, LVector2f &ul, LVector2f &lr,
 	     int &num_rows) {
-  ul.set(0.0, 0.8 * _font_height);
+  nassertv(_font != (TextFont *)NULL);
+  float line_height = get_line_height();
+
+  ul.set(0.0, 0.8 * line_height);
   lr.set(0.0, 0.0);
 
   float posy = 0.0;
@@ -867,11 +612,11 @@ measure_text(const char *source, LVector2f &ul, LVector2f &lr,
       ul[0] = min(ul[0], -row_width / 2);
     }
 
-    posy -= _font_height;
+    posy -= line_height;
     num_rows++;
   }
 
-  lr[1] = posy + 0.8 * _font_height;
+  lr[1] = posy + 0.8 * line_height;
 }
 
 ////////////////////////////////////////////////////////////////////
