@@ -57,7 +57,7 @@ class Zone(Nodepath):
         'hpr',
         )
     attribs = (
-        ('description', ''),
+        ('description', '', 'string'),
         ('modelZoneNum', None, 'int'),
         ('visibility', [], 'visZoneList'),
         )
