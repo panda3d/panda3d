@@ -97,6 +97,17 @@ class Transitions:
         self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
         self.fade.setColor(0,0,0,alpha)
 
+    def fadeScreenColor(self, color):
+        """
+        Put a semitransparent screen over the camera plane
+        to darken out the world. Useful for drawing attention to
+        a dialog box for instance
+        """
+        self.noTransitions()
+        self.loadFade()
+        self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
+        self.fade.setColor(color)
+
     def fadeOutTask(self, task, time=0.3, noFade=1):
         """
         As a sequence: Fade out, execute the given task, then do a noFade
