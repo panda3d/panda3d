@@ -178,6 +178,17 @@ append_path(const string &path, const string &delimiters) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::is_empty
+//       Access: Public
+//  Description: Returns true if the search list is empty, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool DSearchPath::
+is_empty() const {
+  return _directories.empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::get_num_directories
 //       Access: Public
 //  Description: Returns the number of directories on the search list.

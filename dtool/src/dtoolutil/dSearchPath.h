@@ -53,6 +53,7 @@ PUBLISHED:
   void append_path(const string &path,
 		   const string &delimiters = ": \t\n");
 
+  bool is_empty() const;
   int get_num_directories() const;
   Filename get_directory(int n) const;
 
