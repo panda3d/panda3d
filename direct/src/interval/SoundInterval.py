@@ -35,8 +35,8 @@ class SoundInterval(Interval.Interval):
         # If no duration given use sound's duration as interval's duration
         if float(duration) == 0.0 and self.sound != None:
             duration = max(self.sound.length() - self.startTime, 0)
-            if (duration == 0):
-                self.notify.warning('zero length duration!')
+            #if (duration == 0):
+            #    self.notify.warning('zero length duration!')
             # MPG - hack for Miles bug
             #duration += 1.5
             # DCR - hack for Miles bug - adding 1.5 seconds caused
