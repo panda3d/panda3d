@@ -71,6 +71,7 @@
 #include "sequenceNode.h"
 #include "showBoundsEffect.h"
 #include "spotlight.h"
+#include "switchNode.h"
 #include "texMatrixAttrib.h"
 #include "textureApplyAttrib.h"
 #include "textureAttrib.h"
@@ -211,6 +212,7 @@ init_libpgraph() {
   SequenceNode::init_type();
   ShowBoundsEffect::init_type();
   Spotlight::init_type();
+  SwitchNode::init_type();
   TexMatrixAttrib::init_type();
   TextureApplyAttrib::init_type();
   TextureAttrib::init_type();
@@ -262,6 +264,7 @@ init_libpgraph() {
   SequenceNode::register_with_read_factory();
   ShowBoundsEffect::register_with_read_factory();
   Spotlight::register_with_read_factory();
+  SwitchNode::register_with_read_factory();
   TexMatrixAttrib::register_with_read_factory();
   TextureApplyAttrib::register_with_read_factory();
   TextureAttrib::register_with_read_factory();

@@ -29,6 +29,7 @@
 #include "sequenceNode.cxx"
 #include "showBoundsEffect.cxx"
 #include "spotlight.cxx"
+#include "switchNode.cxx"
 #include "test_pgraph.cxx"
 #include "texMatrixAttrib.cxx"
 #include "textureApplyAttrib.cxx"

@@ -80,6 +80,7 @@
     sequenceNode.I sequenceNode.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
+    switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
@@ -162,6 +163,7 @@
     sequenceNode.cxx \
     showBoundsEffect.cxx \
     spotlight.cxx \
+    switchNode.cxx \
     texMatrixAttrib.cxx \
     textureApplyAttrib.cxx \
     textureAttrib.cxx \
@@ -240,6 +242,7 @@
     sequenceNode.I sequenceNode.h \
     showBoundsEffect.I showBoundsEffect.h \
     spotlight.I spotlight.h \
+    switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
