@@ -325,13 +325,15 @@ load_file_types() {
 
         if (words.size() == 1) {
           // Exactly one word: load the named library immediately.
-          Filename dlname = Filename::dso_filename("lib" + words[0] + ".so");
+          string name = words[0];
+          Filename dlname = Filename::dso_filename("lib" + name + ".so");
           loader_cat.info()
-            << "loading file type module: " << dlname.to_os_specific() << endl;
+            << "loading file type module: " << name << endl;
           void *tmp = load_dso(dlname);
           if (tmp == (void *)NULL) {
-            loader_cat.info()
-              << "Unable to load: " << load_dso_error() << endl;
+            loader_cat.warning()
+              << "Unable to load " << dlname.to_os_specific()
+              << ": " << load_dso_error() << endl;
           }
           
         } else if (words.size() > 1) {

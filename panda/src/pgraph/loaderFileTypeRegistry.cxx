@@ -103,11 +103,12 @@ get_type_from_extension(const string &extension) {
       // that this is a race condition if we support threaded loading;
       // this whole function needs to be protected from multiple
       // entry.
-      Filename dlname = Filename::dso_filename("lib" + (*di).second + ".so");
+      string name = (*di).second;
+      Filename dlname = Filename::dso_filename("lib" + name + ".so");
       _deferred_types.erase(di);
 
       loader_cat->info()
-        << "loading file type module: " << (*di).second << endl;
+        << "loading file type module: " << name << endl;
       void *tmp = load_dso(dlname);
       if (tmp == (void *)NULL) {
         loader_cat->warning()
