@@ -6,8 +6,8 @@
 // Template.msvc.pp.
 //
 
-#if $[< $[PPREMAKE_VERSION],0.51]
-  #error You need at least ppremake version 0.51 to use BUILD_TYPE msvc.
+#if $[< $[PPREMAKE_VERSION],0.55]
+  #error You need at least ppremake version 0.56 to use BUILD_TYPE msvc.
 #endif
 
 #defun get_metalibs target,complete_libs
@@ -34,12 +34,12 @@
   $[actual_libs]
 #end get_metalibs
 
-#defun decygwin frompat,topath,path
+#defun decygwin frompat,topat,path
   #foreach file $[path]
     #if $[isfullpath $[file]]
-      $[patsubst $[frompat],$[topath],$[cygpath_w $[file]]]
+      $[patsubstw $[frompat],$[topat],$[cygpath_w $[file]]]
     #else
-      $[patsubst $[frompat],$[topath],$[osfilename $[file]]]
+      $[patsubstw $[frompat],$[topat],$[osfilename $[file]]]
     #endif
   #end file
 #end decygwin
