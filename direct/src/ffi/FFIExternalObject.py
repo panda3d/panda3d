@@ -75,13 +75,13 @@ class FFIExternalObject:
 
         # Walk along the lineage looking for downcast functions from class to class+1
         for i in range((len(lineage) - 1)):
-            fromClass = lineage[i]
-            toClass = lineage[i+1]
+            toClass = lineage[i]
+            fromClass = lineage[i+1]
             downcastFuncName = ('downcastTo' + toClass.__name__
                                 + 'From' + fromClass.__name__)
             # Look over this classes global modules dictionaries
             # for the downcast function name
-            for globmod in fromClass.__CModuleDowncasts__:
+            for globmod in toClass.__CModuleDowncasts__:
                 if globmod.__dict__.has_key(downcastFuncName):
                     func = globmod.__dict__[downcastFuncName]
                     FFIConstants.notify.debug(
