@@ -75,6 +75,28 @@ get_num_frames() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::extend_to
+//       Access: Public, Virtual
+//  Description: Extends the table to the indicated number of frames.
+////////////////////////////////////////////////////////////////////
+void EggMatrixTablePointer::
+extend_to(int num_frames) {
+  nassertv(_xform != (EggXfmSAnim *)NULL);
+  _xform->normalize();
+  int num_rows = _xform->get_num_rows();
+  LMatrix4d last_mat;
+  if (num_rows == 0) {
+    last_mat = LMatrix4d::ident_mat();
+  } else {
+    _xform->get_value(num_rows - 1, last_mat);
+  }
+
+  while (num_rows < num_frames) {
+    _xform->add_data(last_mat);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggMatrixTablePointer::get_frame
 //       Access: Public, Virtual
 //  Description: Returns the transform matrix corresponding to this

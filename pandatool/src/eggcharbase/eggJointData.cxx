@@ -40,6 +40,8 @@ EggJointData(EggCharacterCollection *collection,
 {
   _parent = (EggJointData *)NULL;
   _new_parent = (EggJointData *)NULL;
+  _has_rest_frame = false;
+  _forced_rest_frames_equal = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,25 +65,6 @@ find_joint(const string &name) {
   }
 
   return (EggJointData *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointData::get_num_frames
-//       Access: Public, Virtual
-//  Description: Returns the number of frames of animation for this
-//               particular joint in the indicated model.
-////////////////////////////////////////////////////////////////////
-int EggJointData::
-get_num_frames(int model_index) const {
-  EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)NULL) {
-    return 0;
-  }
-
-  EggJointPointer *joint;
-  DCAST_INTO_R(joint, back, 0);
-
-  return joint->get_num_frames();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -262,6 +245,30 @@ add_back_pointer(int model_index, EggObject *egg_object) {
     // It must be a <Joint>.
     EggJointNodePointer *joint = new EggJointNodePointer(egg_object);
     set_model(model_index, joint);
+    if (!_has_rest_frame) {
+      _rest_frame = joint->get_frame(0);
+      _has_rest_frame = true;
+
+    } else {
+      // If this new node doesn't come within an acceptable tolerance
+      // of our first reading of this joint's rest frame, set a
+      // warning flag.
+      if (!_rest_frame.almost_equal(joint->get_frame(0), 0.001)) {
+        _forced_rest_frames_equal = true;
+      }
+
+      // In any case, ensure the rest frames are exactly equal.
+
+      // Actually, this may not be a good idea; it is, in fact, valid
+      // (although unusual) for different models to have different
+      // rest frames, provided their vertices appriopriately reflect
+      // the different rest frames.  But we do have at least one
+      // character, Mickey, for which some of the lower-level LOD's
+      // have different rest frames that are in fact completely wrong,
+      // so forcing them all to the same value is correct in that
+      // case.  Maybe this should be a command-line option.
+      joint->set_frame(0, _rest_frame);
+    }
 
   } else if (egg_object->is_of_type(EggTable::get_class_type())) {
     // It's a <Table> with an "xform" child beneath it.

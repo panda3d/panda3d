@@ -31,6 +31,17 @@ EggBackPointer() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggBackPointer::extend_to
+//       Access: Public, Virtual
+//  Description: Extends the table to the indicated number of frames.
+////////////////////////////////////////////////////////////////////
+void EggBackPointer::
+extend_to(int num_frames) {
+  // Whoops, can't extend this kind of table!
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggBackPointer::has_vertices
 //       Access: Public, Virtual
 //  Description: Returns true if there are any vertices referenced by

@@ -38,6 +38,7 @@ public:
   EggScalarTablePointer(EggObject *object);
 
   virtual int get_num_frames() const;
+  virtual void extend_to(int num_frames);
   virtual double get_frame(int n) const;
 
 private:

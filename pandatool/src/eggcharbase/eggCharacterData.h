@@ -24,6 +24,7 @@
 #include "eggJointData.h"
 
 #include "eggNode.h"
+#include "eggData.h"
 #include "pointerTo.h"
 #include "namable.h"
 
@@ -64,11 +65,13 @@ public:
   EggCharacterData(EggCharacterCollection *collection);
   virtual ~EggCharacterData();
 
-  void add_model(int model_index, EggNode *model_root);
+  void add_model(int model_index, EggNode *model_root, EggData *egg_data);
   INLINE int get_num_models() const;
   INLINE int get_model_index(int n) const;
   INLINE EggNode *get_model_root(int n) const;
+  INLINE EggData *get_egg_data(int n) const;
   int get_num_frames(int model_index) const;
+  bool check_num_frames(int model_index);
 
   INLINE EggJointData *get_root_joint() const;
   INLINE EggJointData *find_joint(const string &name) const;
@@ -91,6 +94,7 @@ protected:
   public:
     int _model_index;
     PT(EggNode) _model_root;
+    PT(EggData) _egg_data;
   };
   typedef pvector<Model> Models;
   Models _models;

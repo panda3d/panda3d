@@ -49,6 +49,32 @@ get_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::has_rest_frame
+//       Access: Public
+//  Description: Returns true if the joint knows its rest frame, false
+//               otherwise.  In general, this will be true as long as
+//               the joint is included in at least one model file, or
+//               false if it appears only in animation files.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggJointData::
+has_rest_frame() const {
+  return _has_rest_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::get_rest_frame
+//       Access: Public
+//  Description: Returns the rest frame of the joint.  This is the
+//               matrix value that appears for the joint in each model
+//               file; it should be the same transform in each model.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4d &EggJointData::
+get_rest_frame() const {
+  nassertr(has_rest_frame(), LMatrix4d::ident_mat());
+  return _rest_frame;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::reparent_to
 //       Access: Public
 //  Description: Indicates an intention to change the parent of this

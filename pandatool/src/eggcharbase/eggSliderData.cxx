@@ -41,25 +41,6 @@ EggSliderData(EggCharacterCollection *collection,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggSliderData::get_num_frames
-//       Access: Public, Virtual
-//  Description: Returns the number of frames of animation for this
-//               particular slider in the indicated model.
-////////////////////////////////////////////////////////////////////
-int EggSliderData::
-get_num_frames(int model_index) const {
-  EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)NULL) {
-    return 0;
-  }
-
-  EggSliderPointer *slider;
-  DCAST_INTO_R(slider, back, 0);
-
-  return slider->get_num_frames();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggSliderData::get_frame
 //       Access: Public
 //  Description: Returns the value corresponding to this slider

@@ -106,7 +106,7 @@ add_egg(EggData *egg) {
       }
       egg_info._models.push_back(model_root);
 
-      char_data->add_model(model_index, model_root);
+      char_data->add_model(model_index, model_root, egg);
       nassertr(model_index == (int)_characters_by_model_index.size(), -1);
       _characters_by_model_index.push_back(char_data);
       root_joint->add_back_pointer(model_index, desc._root_node);
@@ -661,5 +661,44 @@ write(ostream &out, int indent_level) const {
   for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
     EggCharacterData *char_data = (*ci);
     char_data->write(out, indent_level);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::check_errors
+//       Access: Public
+//  Description: Can be called after the collection has been
+//               completely filled up with egg files to output any
+//               messages from warning conditions that have been
+//               detected, such as inconsistent animation tables.
+//
+//               In addition to reporting this errors, calling this
+//               function will also ensure that they are all repaired
+//               (although certain kinds of errors will be repaired
+//               regardless).
+////////////////////////////////////////////////////////////////////
+void EggCharacterCollection::
+check_errors(ostream &out) {
+  Characters::const_iterator ci;
+  for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
+    EggCharacterData *char_data = (*ci);
+    int num_joints = char_data->get_num_joints();
+    for (int j = 0; j < num_joints; j++) {
+      EggJointData *joint_data = char_data->get_joint(j);
+      if (joint_data->_forced_rest_frames_equal) {
+        out << "Warning: rest frames for " << joint_data->get_name() 
+            << " were different.\n";
+      }
+    }
+
+    int num_models = char_data->get_num_models();
+    for (int mi = 0; mi < num_models; mi++) {
+      int model_index = char_data->get_model_index(mi);
+      if (!char_data->check_num_frames(model_index)) {
+        out << "Warning: animation from " 
+            << char_data->get_egg_data(model_index)->get_egg_filename().get_basename()
+            << " had an inconsistent number of frames.\n";
+      }
+    }
   }
 }

@@ -70,6 +70,8 @@ post_command_line() {
     }
   }
 
+  _collection->check_errors(nout);
+
   return true;
 }
 

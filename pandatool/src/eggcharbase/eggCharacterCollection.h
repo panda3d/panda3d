@@ -55,6 +55,7 @@ public:
   INLINE EggCharacterData *get_character_by_model_index(int model_index) const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
+  void check_errors(ostream &out);
 
   virtual EggCharacterData *make_character_data();
   virtual EggJointData *make_joint_data(EggCharacterData *char_data);

@@ -69,6 +69,19 @@ get_model_root(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_egg_data
+//       Access: Public
+//  Description: Returns the EggData representing the egg file that
+//               defined this particular model.  Note that one egg
+//               file might contain multiple models.
+////////////////////////////////////////////////////////////////////
+INLINE EggData *EggCharacterData::
+get_egg_data(int n) const {
+  nassertr(n >= 0 && n < (int)_models.size(), (EggData *)NULL);
+  return _models[n]._egg_data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::get_root_joint
 //       Access: Public
 //  Description: Returns the root joint of the character hierarchy.

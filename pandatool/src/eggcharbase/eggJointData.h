@@ -43,9 +43,11 @@ public:
   INLINE EggJointData *get_child(int n) const;
   EggJointData *find_joint(const string &name);
 
-  virtual int get_num_frames(int model_index) const;
   LMatrix4d get_frame(int model_index, int n) const;
   LMatrix4d get_net_frame(int model_index, int n) const;
+
+  INLINE bool has_rest_frame() const;
+  INLINE const LMatrix4d &get_rest_frame() const;
 
   INLINE void reparent_to(EggJointData *new_parent);
   void move_vertices_to(EggJointData *new_owner);
@@ -68,6 +70,10 @@ private:
   const LMatrix4d &get_new_net_frame(int model_index, int n);
   const LMatrix4d &get_new_net_frame_inv(int model_index, int n);
   LMatrix4d get_new_frame(int model_index, int n);
+
+  bool _has_rest_frame;
+  bool _forced_rest_frames_equal;
+  LMatrix4d _rest_frame;
 
   // These are used to cache the above results for optimizing
   // do_compute_reparent().

@@ -48,6 +48,27 @@ get_num_frames() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggScalarTablePointer::extend_to
+//       Access: Public, Virtual
+//  Description: Extends the table to the indicated number of frames.
+////////////////////////////////////////////////////////////////////
+void EggScalarTablePointer::
+extend_to(int num_frames) {
+  nassertv(_data != (EggSAnimData *)NULL);
+  int num_rows = _data->get_num_rows();
+  double last_value;
+  if (num_rows == 0) {
+    last_value = 0.0;
+  } else {
+    last_value = _data->get_value(num_rows - 1);
+  }
+
+  while (num_rows < num_frames) {
+    _data->add_data(last_value);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggScalarTablePointer::get_frame
 //       Access: Public, Virtual
 //  Description: Returns the value corresponding to this

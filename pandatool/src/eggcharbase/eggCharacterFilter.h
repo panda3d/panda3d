@@ -19,7 +19,7 @@
 #ifndef EGGCHARACTERFILTER_H
 #define EGGCHARACTERFILTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggMultiFilter.h"
 

@@ -83,6 +83,35 @@ matches_name(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggComponentData::get_num_frames
+//       Access: Public, Virtual
+//  Description: Returns the number of frames of animation for this
+//               particular component in the indicated model.
+////////////////////////////////////////////////////////////////////
+int EggComponentData::
+get_num_frames(int model_index) const {
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return 0;
+  }
+  return back->get_num_frames();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggComponentData::extend_to
+//       Access: Public, Virtual
+//  Description: Extends the number of frames in the indicated model
+//               (presumably an animation table model) to the given
+//               number.
+////////////////////////////////////////////////////////////////////
+void EggComponentData::
+extend_to(int model_index, int num_frames) const {
+  EggBackPointer *back = get_model(model_index);
+  nassertv(back != (EggBackPointer *)NULL);
+  return back->extend_to(num_frames);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggComponentData::set_model
 //       Access: Public
 //  Description: Sets the back_pointer associated with the given

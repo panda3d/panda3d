@@ -65,10 +65,11 @@ EggCharacterData::
 //               file: in either case, a hierarchy of joints.
 ////////////////////////////////////////////////////////////////////
 void EggCharacterData::
-add_model(int model_index, EggNode *model_root) {
+add_model(int model_index, EggNode *model_root, EggData *egg_data) {
   Model m;
   m._model_index = model_index;
   m._model_root = model_root;
+  m._egg_data = egg_data;
   _models.push_back(m);
 }
 
@@ -100,6 +101,49 @@ get_num_frames(int model_index) const {
   // Every component had either 1 frame or 0 frames.  Return the
   // maximum of these.
   return max_num_frames;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::check_num_frames
+//       Access: Public
+//  Description: Walks through each component and ensures that all
+//               have the same number of frames of animation (except
+//               for those that contain 0 or 1 frames, of course).
+//               Returns true if all are valid, false if there is a
+//               discreprency (in which case the shorter component are
+//               extended).
+////////////////////////////////////////////////////////////////////
+bool EggCharacterData::
+check_num_frames(int model_index) {
+  int max_num_frames = 0;
+  bool any_violations = false;
+  Components::const_iterator ci;
+  for (ci = _components.begin(); ci != _components.end(); ++ci) {
+    EggComponentData *component = (*ci);
+    int num_frames = component->get_num_frames(model_index);
+    if (num_frames > 1 && max_num_frames > 1 && 
+        max_num_frames != num_frames) {
+      // If we have two different opinions about the number of frames
+      // (other than 0 or 1), we have a discrepency.  This is an error
+      // condition.
+      any_violations = true;
+    }
+    max_num_frames = max(max_num_frames, num_frames);
+  }
+
+  if (any_violations) {
+    // Now go back through and force all components to the appropriate
+    // length.
+    for (ci = _components.begin(); ci != _components.end(); ++ci) {
+      EggComponentData *component = (*ci);
+      int num_frames = component->get_num_frames(model_index);
+      if (num_frames > 1 && max_num_frames != num_frames) {
+        component->extend_to(model_index, max_num_frames);
+      }
+    }
+  }
+
+  return !any_violations;
 }
 
 ////////////////////////////////////////////////////////////////////

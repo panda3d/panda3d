@@ -38,7 +38,8 @@ class EggMatrixTablePointer : public EggJointPointer {
 public:
   EggMatrixTablePointer(EggObject *object);
 
-  virtual int get_num_frames() const;
+  virtual int get_num_frames() const; 
+  virtual void extend_to(int num_frames);
   virtual LMatrix4d get_frame(int n) const;
   virtual void set_frame(int n, const LMatrix4d &mat);
   virtual bool add_frame(const LMatrix4d &mat);
