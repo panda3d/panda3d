@@ -52,15 +52,15 @@ class DoInterestManager(DirectObject.DirectObject):
         if  self._interests.has_key(contextId):
             if event is not None:
                 self._interestIdScopes  += 1
+                self._interests[contextId][3] = "PendingDel"
                 self._interests[contextId][2] = event
                 self._interests[contextId][1] = self._interestIdScopes
                 self._sendRemoveInterest(contextId)
-                del self._interests[contextId]
             else:
-                self._interests[contextId][3] = "PendingDel"
                 self._interests[contextId][2] = None
                 self._interests[contextId][1] = 0
                 self._sendRemoveInterest(contextId)
+                del self._interests[contextId]
             answer = 1
         else:
             self.notify.warning("removeInterest: contextId not found: %s" % (contextId))
