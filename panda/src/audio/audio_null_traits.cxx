@@ -76,7 +76,7 @@ NullPlayer::~NullPlayer() {
 }
 
 void NullPlayer::play_sound(AudioTraits::SoundClass*,
-                AudioTraits::PlayingClass*, float) {
+                AudioTraits::PlayingClass*, float, int) {
   if (audio_cat.is_debug())
     audio_cat->debug() << "in play sound in Null audio driver" << endl;
 }
