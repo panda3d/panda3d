@@ -879,7 +879,7 @@ class Actor(PandaObject, NodePath):
                                   AnimControl):
                         animControlDict[thisPart][thisAnim][1].stop()
         
-    def play(self, animName, partName=None):
+    def play(self, animName, partName=None, fromFrame=None, toFrame=None):
         """play(self, string, string=None)
         Play the given animation on the given part of the actor.
         If no part is specified, try to play on all parts. NOTE:
@@ -892,13 +892,19 @@ class Actor(PandaObject, NodePath):
                     animControl = self.getAnimControl(animName, thisPart,
                                                         thisLod)
                     if (animControl != None):
-                        animControl.play()
+			if (fromFrame == None):
+                            animControl.play()
+			else:
+			    animControl.play(fromFrame, toFrame)
 
             else:
                 animControl = self.getAnimControl(animName, partName,
                                                     thisLod)
                 if (animControl != None):
-                    animControl.play()
+		    if (fromFrame == None):
+                    	animControl.play()
+		    else:
+                    	animControl.play(fromFrame, toFrame)
 
 
     def loop(self, animName, restart=1, partName=None):
@@ -922,6 +928,28 @@ class Actor(PandaObject, NodePath):
                                                     thisLod)
                 if (animControl != None):
                     animControl.loop(restart)
+
+    def pingpong(self, animName, fromFrame, toFrame, restart=1, partName=None):
+        """pingpong(self, string, fromFrame, toFrame, int=1, string=None)
+        Loop the given animation on the given part of the actor,
+        restarting at zero frame if requested. If no part name
+        is given then try to loop on all parts. NOTE: loops on
+        all LOD's"""
+        for thisLod in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[thisLod]
+            if (partName == None):
+                # loop all parts
+                for thisPart in animControlDict.keys():
+                    animControl = self.getAnimControl(animName, thisPart,
+                                                        thisLod)
+                    if (animControl != None):
+		    	animControl.pingpong(restart, fromFrame, toFrame)
+            else:
+                # loop a specific part
+                animControl = self.getAnimControl(animName, partName,
+                                                    thisLod)
+                if (animControl != None):
+                    animControl.pingpong(restart, fromFrame, toFrame)
         
     def pose(self, animName, frame, partName=None):
         """pose(self, string, int, string=None)
