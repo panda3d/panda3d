@@ -1086,28 +1086,18 @@ prepare_display_region() {
     } else if (_current_display_region != _actual_display_region) {
         _actual_display_region = _current_display_region;
 
-#ifndef NO_MULTIPLE_DISPLAY_REGIONS
-    int l, b, w, h;
-    _actual_display_region->get_region_pixels(l, b, w, h);
-    GLint x = GLint(l);
-    GLint y = GLint(b);
-    GLsizei width = GLsizei(w);
-    GLsizei height = GLsizei(h);
-#ifdef WBD_GL_MODE
-//    call_glScissor( x, y, width, height );
-//    call_glViewport( x, y, width, height );
-#else
-    if ( _scissor_x != x || _scissor_y != y ||
-            _scissor_width != width || _scissor_height != height )
-        {
-        _scissor_x = x; _scissor_y = y;
-        _scissor_width = width; _scissor_height = height;
-        RECT cliprect;
-        SetRect(&cliprect, x, y, x+width, y+height );
-        set_clipper(cliprect);
+        int l, b, w, h;
+        _actual_display_region->get_region_pixels(l, b, w, h);
+
+        // Create the viewport
+        D3DVIEWPORT8 vp = {l,b,w,h,0.0f,1.0f};
+        HRESULT hr = scrn.pD3DDevice->SetViewport( &vp );
+        if(FAILED(hr)) {
+            dxgsg_cat.fatal() << "SetViewport failed for device #" << scrn.CardIDNum << D3DERRORSTRING(hr);
+            exit(1);
         }
-#endif   //WBD_GL_MODE
-#endif
+
+        // Note: for DX9, also change scissor clipping state here
     }
 }
 
