@@ -4,17 +4,18 @@
     progbase
   #define OTHER_LIBS \
     egg:c linmath:c panda:m
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 
   #define SOURCES \
-    eggBase.cxx eggBase.h \
-    eggConverter.cxx eggConverter.h \
-    eggFilter.cxx eggFilter.h \
-    eggMultiBase.cxx eggMultiBase.h \
-    eggMultiFilter.cxx eggMultiFilter.h \
-    eggReader.cxx eggReader.h \
-    eggToSomething.cxx eggToSomething.h \
-    eggWriter.cxx eggWriter.h \
-    somethingToEgg.cxx somethingToEgg.h
+     eggBase.h eggConverter.h eggFilter.h eggMultiBase.h \
+     eggMultiFilter.h eggReader.h eggToSomething.h eggWriter.h \
+     somethingToEgg.h 
+    
+  #define INCLUDED_SOURCES \
+     eggBase.cxx eggConverter.cxx eggFilter.cxx eggMultiBase.cxx \
+     eggMultiFilter.cxx eggReader.cxx eggToSomething.cxx \
+     eggWriter.cxx somethingToEgg.cxx 
 
   #define INSTALL_HEADERS \
     eggBase.h eggConverter.h eggFilter.h \
