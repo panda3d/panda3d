@@ -40,9 +40,16 @@ get_nearly_zero_value(float) {
   ((value) < (threshold) && (value) > -(threshold))
 
 // IS_THRESHOLD_EQUAL(value1, value2, threshold) returns true if the
-// two values are within threshold of each other.
+// two values are within threshold of each other.  The transitive
+// principle is guaranteed: IS_THRESHOLD_EQUAL(a, b, t) &&
+// IS_THRESHOLD_EQUAL(b, c, t) implies IS_THRESHOLD_EQUAL(a, c, t).
+
+// We could define this via IS_THRESHOLD_ZERO(a - b, t) that wouldn't
+// guarantee the transitive principle, stated above.  So we need a
+// more complex definition that rounds these to the nearest multiples
+// of threshold before comparing them.
 #define IS_THRESHOLD_EQUAL(value1, value2, threshold) \
-  (IS_THRESHOLD_ZERO((value1) - (value2), threshold))
+  (cfloor(value1 / threshold + 0.5f) == cfloor(value2 / threshold + 0.5f))
 
 
 // NEARLY_ZERO(float) returns a number that is considered to be so
@@ -58,13 +65,13 @@ get_nearly_zero_value(float) {
 // IS_NEARLY_EQUAL(value1, value2) returns true if the two values are
 // very close to each other.
 #define IS_NEARLY_EQUAL(value1, value2) \
-   IS_NEARLY_ZERO((value1) - (value2))
+   (IS_THRESHOLD_EQUAL(value1, value2, get_nearly_zero_value(value1)))
 
 
 // MAYBE_ZERO(value) returns 0 if the value is nearly zero, and the
 // value itself otherwise.
 #define MAYBE_ZERO(value) \
-  (IS_NEARLY_ZERO(value) ? 0.0 : value)
+  (IS_NEARLY_ZERO(value) ? 0.0 : (value))
 
 
 #endif
