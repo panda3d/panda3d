@@ -22,15 +22,16 @@ class MetaInterval(CMetaInterval):
     SequenceNum = 1
     def __init__(self, *ivals, **kw):
         name = None
-        if len(ivals) == 2 and isinstance(ivals[1], types.StringType):
-            # If the second parameter is a string, it's the name.
-            name = ivals[1]
-            ivals = ivals[0]
-        else:
-            # Otherwise, look for the name in the keyword params.
-            if kw.has_key('name'):
-                name = kw['name']
-                del kw['name']
+        #if len(ivals) == 2 and isinstance(ivals[1], types.StringType):
+        #    # If the second parameter is a string, it's the name.
+        #    name = ivals[1]
+        #    ivals = ivals[0]
+        #else:
+
+        # Look for the name in the keyword params.
+        if kw.has_key('name'):
+            name = kw['name']
+            del kw['name']
 
         # If the keyword "autoPause" or "autoFinish" is defined to
         # non-zero, it means the interval may be automatically paused
@@ -68,12 +69,13 @@ class MetaInterval(CMetaInterval):
         # this case, but for now I prefer just to document it as a
         # bug, since it will go away when we eventually remove support
         # for the old interface.
-        if len(ivals) == 1 and \
-           (isinstance(ivals[0], types.TupleType) or \
-            isinstance(ivals[0], types.ListType)):
-            self.ivals = ivals[0]
-        else:
-            self.ivals = ivals
+        #if len(ivals) == 1 and \
+        #   (isinstance(ivals[0], types.TupleType) or \
+        #    isinstance(ivals[0], types.ListType)):
+        #    self.ivals = ivals[0]
+        #else:
+
+        self.ivals = ivals
             
         self.__ivalsDirty = 1
 
@@ -560,25 +562,45 @@ class Track(MetaInterval):
         # this is the same as asking that the component is itself an
         # Interval.
 
-        if isinstance(tuple, CInterval) or \
-           isinstance(tuple, Interval.Interval):
-            # Actually, it's not a tuple, but just an interval.
-            # In this case we fall back on the old default of
-            # assuming a sequential list of intervals.  This is a
-            # temporary feature for backward compatibility.
-            return 1
+        #if isinstance(tuple, CInterval) or \
+        #   isinstance(tuple, Interval.Interval):
+        #    # Actually, it's not a tuple, but just an interval.
+        #    # In this case we fall back on the old default of
+        #    # assuming a sequential list of intervals.  This is a
+        #    # temporary feature for backward compatibility.
+        #    return 1
 
-        if isinstance(tuple, types.TupleType) or \
-           isinstance(tuple, types.ListType):
-            ival = tuple[1]
-            return MetaInterval.validateComponent(self, ival)
+        if not (isinstance(tuple, types.TupleType) or \
+                isinstance(tuple, types.ListType)):
+            # It's not a tuple.
+            return 0
+        
+        relTime = tuple[0]
+        ival = tuple[1]
+        if len(tuple) >= 3:
+            relTo = tuple[2]
+        else:
+            relTo = TRACK_START
 
-        # It's not a tuple or an interval.
-        return 0
+        if not (isinstance(relTime, types.FloatType) or \
+                isinstance(relTime, types.IntType)):
+            # First parameter is not a number.
+            return 0
+        if not MetaInterval.validateComponent(self, ival):
+            # Second parameter is not an interval.
+            return 0
+        if relTo != PREVIOUS_END and \
+           relTo != PREVIOUS_START and \
+           relTo != TRACK_START:
+            # Third parameter is an invalid value.
+            return 0
+
+        # Looks good.
+        return 1
         
 
 # Temporary for backward compatibility.
-class MultiTrack(MetaInterval):
-    def applyIvals(self, meta, relTime, relTo):
-        meta.addParallel(self.ivals, self.getName(),
-                         relTime, relTo, self.phonyDuration)
+#class MultiTrack(MetaInterval):
+#    def applyIvals(self, meta, relTime, relTo):
+#        meta.addParallel(self.ivals, self.getName(),
+#                         relTime, relTo, self.phonyDuration)
