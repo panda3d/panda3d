@@ -986,14 +986,21 @@ class Actor(PandaObject, NodePath):
                 else:
                     control.loop(restart, fromFrame, toFrame)
 
-    def pingpong(self, animName, fromFrame, toFrame, restart=1, partName=None):
-        """pingpong(self, string, fromFrame, toFrame, int=1, string=None)
+    def pingpong(self, animName, restart=1, partName=None,
+                 fromFrame=None, toFrame=None):
+        """pingpong(self, string, int=1, string=None)
         Loop the given animation on the given part of the actor,
         restarting at zero frame if requested. If no part name
         is given then try to loop on all parts. NOTE: loops on
         all LOD's"""
+        if fromFrame == None:
+            fromFrame = 0
+
         for control in self.getAnimControls(animName, partName):
-            control.pingpong(restart, fromFrame, toFrame)
+            if toFrame == None:
+                control.pingpong(restart, fromFrame, control.getNumFrames() - 1)
+            else:
+                control.pingpong(restart, fromFrame, toFrame)
         
     def pose(self, animName, frame, partName=None, lodName=None):
         """pose(self, string, int, string=None)
