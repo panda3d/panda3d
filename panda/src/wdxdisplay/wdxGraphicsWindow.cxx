@@ -245,7 +245,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 	switch(msg) {
 		case WM_CREATE:
-			_hMouseCrossIcon = LoadCursor(NULL, IDC_CROSS);
+			_hMouseCrossIcon = LoadCursor(NULL, IDC_ARROW);
 			SetCursor(_hMouseCrossIcon);
 //       atexit(AtExitFn);  _gsg ptr seems to be bogus in AtExitFn for esc-press if you do this
 //       to enable this, need to delete call to AtExitFn from under GetMessage loop
@@ -579,7 +579,7 @@ void wdxGraphicsWindow::config(void) {
 		wc.hIcon = NULL; // use default app icon
 	}
 
-	wc.hCursor        = LoadCursor(NULL, IDC_CROSS);
+	wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName   = NULL;
 	wc.lpszClassName  = "wdxDisplay";

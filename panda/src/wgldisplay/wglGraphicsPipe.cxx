@@ -33,7 +33,7 @@ wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
   wc.style		    = CS_OWNDC;
   wc.lpfnWndProc	= (WNDPROC)static_window_proc;
   wc.hInstance	    = hinstance;
-  wc.hCursor		= LoadCursor(NULL, IDC_CROSS);
+  wc.hCursor		= LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground	= NULL;
   wc.lpszMenuName	= NULL;
   wc.lpszClassName	= "wglStandard";
@@ -167,7 +167,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   switch (msg) {
     case WM_CREATE:
-      hMouseCrossIcon = LoadCursor(NULL, IDC_CROSS);
+      hMouseCrossIcon = LoadCursor(NULL, IDC_ARROW);
       SetCursor(hMouseCrossIcon);
       return 0;
     case WM_CLOSE:
@@ -280,7 +280,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           return DefWindowProc(hwnd, msg, wparam, lparam);
       window = find_window(hwnd);
       if (window) {
-          SetCursor(LoadCursor(NULL, IDC_CROSS));
+          SetCursor(LoadCursor(NULL, IDC_ARROW));
       }
       return 1;
 #endif
