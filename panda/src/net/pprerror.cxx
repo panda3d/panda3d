@@ -201,6 +201,22 @@ get_error_message(PRErrorCode code) {
     return "PR_GROUP_EMPTY_ERROR--The wait group is empty.";
   case PR_INVALID_STATE_ERROR:
     return "PR_INVALID_STATE_ERROR--The attempted operation is on an object that was in an improper state to perform the request.";
+
+    // These were added with NSPR 4.0.
+#ifdef PR_NETWORK_DOWN_ERROR
+  case PR_NETWORK_DOWN_ERROR:
+    return "PR_NETWORK_DOWN_ERROR--The network is down.";
+
+  case PR_SOCKET_SHUTDOWN_ERROR:
+    return "PR_SOCKET_SHUTDOWN_ERROR--The socket has been shut down.";
+   
+  case PR_CONNECT_ABORTED_ERROR:
+    return "PR_CONNECT_ABORTED_ERROR--The connection has been aborted.";
+
+  case PR_HOST_UNREACHABLE_ERROR:
+    return "PR_HOST_UNREACHABLE_ERROR--The host is unreachable.";
+#endif
+
   case PR_MAX_ERROR:
     return "PR_MAX_ERROR--Placeholder for the end of the list.";
   }
