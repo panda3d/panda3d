@@ -64,7 +64,8 @@ void fMilesShutdown(void) {
    // if python crashes, the midi notes are left on,
    // so we need to turn them off.  Unfortunately
    // in Miles 6.5, AIL_quick_shutdown() crashes
-   // when it's called from atexit after a python crash.
+   // when it's called from atexit after a python crash, probably
+   // because mss32.dll has already been unloaded
    // workaround: use these internal values in the miles struct
    //             to reset the win32 midi ourselves
    
