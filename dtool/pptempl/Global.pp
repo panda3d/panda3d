@@ -277,13 +277,7 @@
 // string if the target is not to be built, or the target name if it
 // is.
 #defer active_target $[if $[build_target],$[TARGET]]
-
-#if $[USE_SINGLE_COMPOSITE_SOURCEFILE]
- // for non-composite dirs, want to avoid returning the composite default name
-#defer get_combined_sources $[if $[ne $[COMBINED_SOURCES],], $[TARGET]_composite.cxx,]
-#else
 #defer get_combined_sources $[COMBINED_SOURCES]
-#endif
 
 // This subroutine will set up the sources variable to reflect the
 // complete set of sources for this target, and also set the
@@ -295,7 +289,6 @@
 
 #defer get_sources \
   $[SOURCES] \
-  $[PRECOMPILED_HEADER] \
   $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[get_combined_sources]]
 
 #defer included_sources $[INCLUDED_SOURCES]
@@ -321,15 +314,6 @@
 #defer get_igateoutput \
   $[if $[and $[run_interrogate],$[IGATESCAN]], \
     lib$[TARGET]_igate.cxx]
-
-#defer get_precompiled_header $[PRECOMPILED_HEADER]
-
-// This variable returns the name of the fake precompiled header cxx
-// that will be used to force linking of the generated pch .obj into libs
-
-#defer get_pch_outputcxx \
-  $[if $[and $[DO_PCH], $[PRECOMPILED_HEADER]], \
-  $[patsubst %.h,%.cxx, $[PRECOMPILED_HEADER]]]
 
 // This variable returns the name of the interrogate module, if the
 // current metalib target should include one, or empty string if it

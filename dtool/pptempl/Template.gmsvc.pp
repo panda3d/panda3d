@@ -57,7 +57,7 @@
       // This library is on a metalib, so we can't build it, but we
       // should build all the obj's that go into it.
       #set deferred_objs $[deferred_objs] \
-        $[patsubst %_src.cxx,,%.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]
+        $[patsubst %.c %.cxx,$[so_dir]/%.obj,%,,$[c_sources] $[cxx_sources] $[get_igateoutput]]
     #endif
   #end lib_target
   
@@ -84,53 +84,20 @@
   #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
   #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
   #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
-  
-  // $[so_sources] is the set of sources that belong on a shared object,
-  // and $[st_sources] is the set of sources that belong on a static
-  // object, like a static library or an executable.  In Windows, we
-  // don't need to make this distinction, but we do anyway in case we
-  // might in the future for some nutty reason.
-  #define so_sources $[get_sources(metalib_target lib_target noinst_lib_target)]
-  #define st_sources $[get_sources(static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
+
+  // Since we don't make a distinction in Windows between building for
+  // static or dynamic targets, let's eliminate so_sources and just
+  // use st_sources for simplicity.
+  #define st_sources $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
+  #define dep_sources_1 $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
   
   // These are the source files that our dependency cache file will
   // depend on.  If it's an empty list, we won't bother writing rules to
   // freshen the cache file.
-  #define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[so_sources] $[st_sources]]]
-  
-  #if $[eq $[so_dir],$[st_dir]]
-    // If the static and shared directories are the same, we have to use the
-    // same rules to build both shared and static targets.
-    #set st_sources $[so_sources] $[st_sources]
-    #set so_sources
-  #endif
+  #define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[dep_sources_1]]]
+
 #endif  // $[build_directory]
 
-// And these are the various source files, extracted out by type.
-#define cxx_so_sources $[filter_out %_src.cxx,$[filter %.cxx,$[so_sources]]]
-#define cxx_st_sources $[filter_out %_src.cxx,$[filter %.cxx,$[st_sources]]]
-#define c_so_sources $[filter %.c,$[so_sources]]
-#define c_st_sources $[filter %.c,$[st_sources]]
-#define yxx_so_sources $[filter %.yxx,$[so_sources]]
-#define yxx_st_sources $[filter %.yxx,$[st_sources]]
-#define lxx_so_sources $[filter %.lxx,$[so_sources]]
-#define lxx_st_sources $[filter %.lxx,$[st_sources]]
-
-#if $[DO_PCH]
-#define pch_header_source $[get_precompiled_header(metalib_target lib_target noinst_lib_target)]
-
-#define st_pch_files $[patsubst %.h,$[st_dir]/%.pch,$[pch_header_source]]
-#define st_pch_obj_files $[patsubst %.h,$[st_dir]/%.obj,$[pch_header_source]]
-
-#endif
-
-
-// This map variable gets us all the various source files from all the
-// targets in this directory.  We need it to look up the context in
-// which to build a particular source file, since some targets may
-// have different requirements (e.g. different local_libs, or
-// different USE_this or USE_that) than other targets.
-#map all_sources get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)
 
 // We define $[complete_local_libs] as the full set of libraries (from
 // within this tree) that we must link a particular target with.  It
@@ -151,18 +118,9 @@
 
 #defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%\include] $[get_ipath]
 
-// $[file_ipath] is the ipath from the context of a particular source
-// file, given in $[file].  It uses the all_sources map to look up
-// the target the source file belongs on, to get the proper context.
-#defer file_ipath $[all_sources $[target_ipath],$[file]]
-
-// These are the complete set of extra flags the compiler requires,
-// from the context of a particular file, given in $[file].
-#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] 
-#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] 
-
-// These are the same flags, sans the compiler optimizations.
-#defer noopt_c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
+// These are the complete set of extra flags the compiler requires.
+#defer cflags $[get_cflags] $[CFLAGS] $[CFLAGS_OPT$[OPTIMIZE]] 
+#defer c++flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] 
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
@@ -177,24 +135,28 @@
 
 // This is the set of files we might copy into *.prebuilt, if we have
 // bison and flex (or copy from *.prebuilt if we don't have them).
-#define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.yxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_so_sources] $[lxx_st_sources]]
+#define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_sources]] $[patsubst %.yxx,%.cxx,$[yxx_sources]] $[patsubst %.lxx,%.cxx,$[lxx_sources]]
 
-// for single-processor builds, write out *_composite.cxx files that include all composite
-// files into 1 in order to speed the build of our heavily templated source
-#forscopes lib_target bin_target static_lib_target ss_lib_target
-#if $[and $[<= $[NUMBER_OF_PROCESSORS],2], $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]
-#output $[TARGET]_composite.cxx notouch
+// Pre-compiled headers are one way to speed the compilation of many
+// C++ source files that include similar headers, but it turns out a
+// more effective (and more portable) way is simply to compile all the
+// similar source files in one pass.
+
+// We do this by generating a *_composite.cxx file that has an
+// #include line for each of several actual source files, and then we
+// compile the composite file instead of the original files.
+#foreach composite_file $[composite_list]
+#output $[composite_file] notouch
 #format collapse
 /* Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
 /* ################################# DO NOT EDIT ########################### */
 
-#foreach file $[COMBINED_SOURCES]
+#foreach file $[$[composite_file]_sources]
 ##include "$[file]"
 #end file
 
-#end $[TARGET]_composite.cxx
-#endif
-#end lib_target bin_target static_lib_target ss_lib_target
+#end $[composite_file]
+#end composite_file
 
 // Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
@@ -227,9 +189,6 @@ test : $[test_bin_targets]
 // generated output ends up in one or the other of these.  Effective.
 // It does assume that the odirs are not '.', however.
 clean :
-#if $[so_sources]
-$[TAB] rm -rf $[so_dir]
-#endif
 #if $[st_sources]
 $[TAB] rm -rf $[st_dir]
 #endif
@@ -239,14 +198,14 @@ $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
 // it also cleans up the bison and flex output, as well as the
 // dependency cache file.
 cleanall : clean
-#if $[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]
-$[TAB] rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
+#if $[yxx_sources] $[lxx_sources]
+$[TAB] rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_sources] $[lxx_sources]]
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
 $[TAB] rm -f $[DEPENDENCY_CACHE_FILENAME]
 #endif
-#if $[<= $[NUMBER_OF_PROCESSORS],2]
-$[TAB] rm -f *_composite.cxx  // eliminate generated *_composite.cxx files for uniprocessor builds
+#if $[composite_list]
+$[TAB] rm -f $[composite_list]
 #endif
 
 clean-igate :
@@ -336,7 +295,6 @@ $[TAB] @test -d $[directory] || mkdir -p $[directory]
 // directories directly or we get screwed up by the modification
 // times.  So we put this phony timestamp file in each directory.
 #foreach directory $[sort \
-    $[if $[so_sources],$[so_dir]] \
     $[if $[st_sources],$[st_dir]] \
     ]
 $[directory]/stamp :
@@ -399,8 +357,8 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]/%]
   // various .obj files.
 
   #define sources \
-   $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
-   $[components $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput] $[get_pch_outputcxx]]],$[active_component_libs]]
+   $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[compile_sources] $[igateoutput] $[igatemout]]] \
+   $[components $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[compile_sources] $[get_igateoutput]]],$[active_component_libs]]
    
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
@@ -554,7 +512,7 @@ $[TAB] $[COMPILE_C++]
 
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[compile_sources]]]
 #define target $[so_dir]/lib$[TARGET]$[dllext].$[dlllib]
 #define sources $($[varname])
 $[target] : $[sources] $[so_dir]/stamp
@@ -583,7 +541,7 @@ $[so_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].dll
 
 #forscopes static_lib_target ss_lib_target
 #define varname $[subst -,_,lib$[TARGET]_a]
-$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[compile_sources]]]
 #define target $[st_dir]/lib$[TARGET]$[dllext].lib
 #define sources $($[varname])
 $[target] : $[sources] $[st_dir]/stamp
@@ -659,7 +617,7 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
 $[TARGET] : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 
 #define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[compile_sources]]]
 #define target $[st_dir]/$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
@@ -720,7 +678,7 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
 $[TARGET] : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 
 #define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[compile_sources]]]
 #define target $[st_dir]/$[TARGET].exe
 #define sources $($[varname])
 $[target] : $[sources] $[st_dir]/stamp
@@ -740,8 +698,10 @@ $[TAB] $[LINK_BIN_C]
 // file.
 /////////////////////////////////////////////////////////////////////
 
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+
 // Rules to generate a C++ file from a Bison input file.
-#foreach file $[sort $[yxx_so_sources] $[yxx_st_sources]]
+#foreach file $[sort $[yxx_sources]]
 #define target $[patsubst %.yxx,%.cxx,$[file]]
 #define target_header $[patsubst %.yxx,%.h,$[file]]
 #if $[HAVE_BISON]
@@ -767,7 +727,7 @@ $[TAB] cp $[source] $[target_header]
 #end file
 
 // Rules to generate a C++ file from a Flex input file.
-#foreach file $[sort $[lxx_so_sources] $[lxx_st_sources]]
+#foreach file $[sort $[lxx_sources]]
 #define target $[patsubst %.lxx,%.cxx,$[file]]
 #if $[HAVE_BISON]
 #define source $[file]
@@ -787,123 +747,39 @@ $[TAB] cp $[source] $[target]
 
 #end file
 
-// Rules to compile ordinary C files that appear on a shared library.
-#foreach file $[sort $[c_so_sources]]
-#define target $[patsubst %.c,$[so_dir]/%.obj,$[file]]
-#define source $[file]
-#define ipath $[file_ipath]
-#define flags $[cflags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[source]] $[so_dir]/stamp
-$[TAB] $[COMPILE_C]
-
-#end file
-
-// Rules to compile ordinary C files that appear on a static library
-// or in an executable.
-#foreach file $[sort $[c_st_sources]]
+// Rules to compile ordinary C files.
+#foreach file $[sort $[c_sources]]
 #define target $[patsubst %.c,$[st_dir]/%.obj,$[file]]
 #define source $[file]
-#define ipath $[file_ipath]
-#define flags $[cflags] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[source]] $[st_pch_files] $[st_dir]/stamp
+#define ipath $[target_ipath]
+#define flags $[cflags] $[building_var:%=/D%]
+$[target] : $[source] $[dependencies $[source]] $[st_dir]/stamp
 $[TAB] $[COMPILE_C]
 
 #end file
 
-// Rules to compile C++ files that appear on a shared library.
-#foreach file $[sort $[cxx_so_sources]]
-#define target $[patsubst %.cxx,$[so_dir]/%.obj,$[file]]
-#define source $[file]
-#define ipath $[file_ipath]
-#define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
+// Rules to compile C++ files.
 
-// Yacc must run before some files can be compiled, so all files
-// depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.h] $[so_dir]/stamp
-$[TAB] $[COMPILE_C++]
-
-#end file
-
-// Rules to compile C++ files that appear on a static library or in an
-// executable.
-
-#foreach file $[sort $[cxx_st_sources]]
+#foreach file $[sort $[cxx_sources]]
 #define target $[patsubst %.cxx,$[st_dir]/%.obj,$[file]]
 #define source $[file]
-#define ipath $[file_ipath]
-
-#if $[DO_PCH]
-// best way to find out if file use pch (and needs /Yu) is to check dependencies
-// these must be defined before flags (or could defer them)
-#define target_pch $[subst /./,/,$[patsubst %.h,$[st_dir]/%.pch,$[filter %_headers.h, $[dependencies $[file]]]]]
-#endif
-
-#define flags $[c++flags] $[all_sources $[building_var:%=/D%],$[file]]
-
-#if $[target_pch]
- #if $[eq $[NUMBER_OF_PROCESSORS],1]
-   #define pdb_filename $[osfilename $[st_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
-   #define COMPILE_LINE $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_C_WITH_PCH]]
- #else
-   #define COMPILE_LINE $[COMPILE_C_WITH_PCH]
- #endif
+#define ipath $[target_ipath]
+#if $[$[source]_sources]
+#define depends $[dependencies $[$[source]_sources]]
 #else
-#define COMPILE_LINE $[COMPILE_C++]
+#define depends $[dependencies $[source]]
 #endif
 
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.h] $[target_pch] $[st_dir]/stamp
-$[TAB] $[COMPILE_LINE]
-
-#end file
-
-#if $[DO_PCH]
-// Rules to compile _headers.pch from _header.h in static lib
-#foreach file $[pch_header_source]
-#define target_pch $[patsubst %.h,$[st_dir]/%.pch,$[file]]
-#define target_obj $[patsubst %.h,$[st_dir]/%.obj,$[file]]
-
-#define target $[target_obj]
-#define source $[file]
-#define ipath $[file_ipath]
-#define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
-
-#define pdb_filename $[osfilename $[st_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
-#define COMPILE_CXXSTYLE_PCH $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_CXXSTYLE_PCH]]
+#define flags $[c++flags] $[building_var:%=/D%]
 
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
-$[target_obj] : $[source] $[dependencies $[file]] $[st_dir]/stamp
-$[TAB] $[COMPILE_CXXSTYLE_PCH]
-
-$[target_pch] : $[target_obj]
-
-#end file
-#endif
-
-// Rules to compile generated C++ files that appear on a shared library.
-#foreach file $[sort $[yxx_so_sources] $[lxx_so_sources]]
-#define target $[patsubst %.lxx %.yxx,$[so_dir]/%.obj,$[file]]
-#define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
-#define ipath $[file_ipath]
-#define flags $[noopt_c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
-// Yacc must run before some files can be compiled, so all files
-// depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.h] $[so_dir]/stamp
+$[target] : $[source] $[depends] $[yxx_sources:%.yxx=%.h] $[st_dir]/stamp
 $[TAB] $[COMPILE_C++]
 
 #end file
 
-// Rules to compile generated C++ files that appear on a static
-// library or in an executable.
-#foreach file $[sort $[yxx_st_sources] $[lxx_st_sources]]
-#define target $[patsubst %.lxx %.yxx,$[st_dir]/%.obj,$[file]]
-#define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
-#define ipath $[file_ipath]
-#define flags $[noopt_c++flags] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.h] $[st_dir]/stamp
-$[TAB] $[COMPILE_C++]
-
-#end file
+#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 
 // And now the rules to install the auxiliary files, like headers and
 // data files.

@@ -8,9 +8,36 @@
 
 #if $[or $[eq $[DIR_TYPE], src], $[eq $[DIR_TYPE], metalib]]
 #if $[eq $[DEPEND_DIRS],]
+
+  // DEPENDABLE_HEADERS is supposed to be the primary purpose of this
+  // file: here we generate the list of source files that might be
+  // included in some other source file, and hence is relevant to the
+  // automatically-generated dependency chain.
+
+  // We generate this variable by walking through all of the targets
+  // and building it up.
   #define DEPENDABLE_HEADERS
 
-  #forscopes metalib_target static_lib_target ss_lib_target lib_target noinst_lib_target bin_target noinst_bin_target
+  // We will also need to sort out the types files we will actually
+  // compile within each directory, as well as the lists of files that
+  // go into each composite.
+
+  // We define $[c_sources], $[cxx_sources], $[yxx_sources], and
+  // $[lxx_sources] within each target, which lists original files as
+  // well as synthetic composite files.  There's also
+  // $[compile_sources], which is the union of all the others: any
+  // source files that are actually compiled and result in a generated
+  // .o (or .obj) file.
+
+  // Finally, we build up $[composite_list] out here to list all of
+  // the composite files generated for all targets.
+
+  // This is done at this point, within Depends.pp, so that the
+  // various Template.*.pp files will be able to reliably access
+  // $[compile_sources] from the different directories.
+  #define composite_list
+
+  #forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
     // We can optimize quite a bit by evaluating now several of the key
     // deferred variables defined in Globals.pp.  This way they won't need
     // to get repeatedly reevaluated as each directory examines each
@@ -25,15 +52,43 @@
     // Report a warning for nonexisting dependencies.
     #define nonexisting $[unmapped all_libs,$[LOCAL_LIBS]]
     #if $[ne $[nonexisting],]
-Warning: Lib(s) $[nonexisting], referenced in $[DIRNAME]/$[TARGET], not found.
+      #print Warning: Lib(s) $[nonexisting], referenced in $[DIRNAME]/$[TARGET], not found.
     #endif
 
     #set DEPENDABLE_HEADERS $[DEPENDABLE_HEADERS] $[filter %.h %.I %.T %_src.cxx,$[get_sources]] $[included_sources]
-  #end metalib_target static_lib_target ss_lib_target lib_target noinst_lib_target bin_target noinst_bin_target
 
-  #forscopes test_bin_target
-    #set DEPENDABLE_HEADERS $[DEPENDABLE_HEADERS] $[filter %.h %.I %.T %_src.cxx,$[get_sources]] $[included_sources]
-  #end test_bin_target
+    // Now compute the source files.
+    #define c_sources $[filter %.c,$[get_sources]]
+    #define cxx_sources $[filter-out %_src.cxx,$[filter %.cxx,$[get_sources]]]
+    #define yxx_sources $[filter %.yxx,$[get_sources]]
+    #define lxx_sources $[filter %.lxx,$[get_sources]]
+    #if $[USE_SINGLE_COMPOSITE_SOURCEFILE]
+      #if $[> $[words $[cxx_sources]], 1]
+        // If we have multiple C++ files, put them together into one
+        // composite file.
+        #define composite_file $[TARGET]_composite.cxx
+        #set composite_list $[composite_list] $[composite_file]
+        #define $[composite_file]_sources $[cxx_sources]
+        #push 1 $[composite_file]_sources
+        #set cxx_sources $[composite_file]
+      #endif
+      #if $[> $[words $[c_sources]], 1]
+        // If we have multiple C files, put them together into one
+        // composite file also.
+        #define composite_file $[TARGET]_composite_c.c
+        #set composite_list $[composite_list] $[composite_file]
+        #define $[composite_file]_sources $[c_sources]
+        #push 1 $[composite_file]_sources
+        #set c_sources $[composite_file]
+      #endif
+    #endif
+
+    // Add the bison- and flex-generated .cxx files to the compile
+    // list, too.  These never get added to composite files, though,
+    // mainly because they tend to be very large files themselves.
+    #set cxx_sources $[cxx_sources] $[patsubst %.yxx,%.cxx,$[yxx_sources]] $[patsubst %.lxx,%.cxx,$[lxx_sources]]
+    #define compile_sources $[c_sources] $[cxx_sources] $[yxx_sources] $[lxx_sources]
+  #end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 
   // Allow the user to define additional EXTRA_DEPENDS targets in each
   // Sources.pp.
