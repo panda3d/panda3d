@@ -269,6 +269,7 @@ class DoLaterList(list):
         """
         Add task, keeping the list sorted.
         This does a binary search for the index to insert into.
+        Returns the index at which task was inserted.
         """
         lo = 0
         hi = len(self)
