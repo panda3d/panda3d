@@ -148,6 +148,33 @@ wglGraphicsWindow::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsWindow::make_context
+//       Access: Public, Virtual
+//  Description: If _needs_context is true, this will be called
+//               in the draw thread prior to rendering into the
+//               window.  It should attempt to create a graphics
+//               context, and return true if successful, false
+//               otherwise.  If it returns false the window will be
+//               considered failed.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsWindow::
+make_context() {
+  PStatTimer timer(_make_current_pcollector);
+
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
+
+  HGLRC context = wglgsg->get_context(_hdc);
+  if (context) {
+    wglMakeCurrent(_hdc, context);
+    wglgsg->reset_if_new();
+    _needs_context = false;
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsWindow::make_current
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
@@ -161,15 +188,8 @@ make_current() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
   HGLRC context = wglgsg->get_context(_hdc);
-  if (context) {
-    wglMakeCurrent(_hdc, context);
-
-    // Now that we have made the context current to a window, we can
-    // reset the GSG state if this is the first time it has been used.
-    // (We can't just call reset() when we construct the GSG, because
-    // reset() requires having a current context.)
-    wglgsg->reset_if_new();
-  }
+  nassertv(context);
+  wglMakeCurrent(_hdc, context);
 }
 
 ////////////////////////////////////////////////////////////////////

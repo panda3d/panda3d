@@ -380,6 +380,8 @@ reset() {
   _current_projection_mat = LMatrix4f::ident_mat();
   _projection_mat_stack_count = 0;
 
+  report_my_gl_errors();
+
   // Make sure the GL state matches all of our initial attribute
   // states.
   CPT(RenderAttrib) dta = DepthTestAttrib::make(DepthTestAttrib::M_less);
@@ -419,7 +421,7 @@ reset() {
   // Output the vendor and version strings.
   show_gl_string("GL_VENDOR", GL_VENDOR);
   show_gl_string("GL_RENDERER", GL_RENDERER);
-  show_gl_string("GL_VERSION", GL_VERSION);
+  get_gl_version();
 
   // Save the extensions tokens.
   save_extensions((const char *)glGetString(GL_EXTENSIONS));
@@ -427,6 +429,14 @@ reset() {
   report_extensions();
 
   _supports_bgr = has_extension("GL_EXT_bgra");
+  _supports_multisample = has_extension("GL_ARB_multisample");
+
+  _edge_clamp = GL_CLAMP;
+  if (has_extension("GL_SGIS_texture_edge_clamp") ||
+      is_at_least_version(1, 2)) {
+    _edge_clamp = GL_CLAMP_TO_EDGE;
+  }
+
   _error_count = 0;
 
   report_my_gl_errors();
@@ -2664,6 +2674,47 @@ show_gl_string(const string &name, GLenum id) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_gl_version
+//       Access: Protected
+//  Description: Queries the runtime version of OpenGL in use.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+get_gl_version() {
+  _gl_version_major = 0;
+  _gl_version_minor = 0;
+  _gl_version_release = 0;
+
+  const GLubyte *text = GLP(GetString)(GL_VERSION);
+  if (text == (const GLubyte *)NULL) {
+    GLCAT.debug()
+      << "Unable to query GL_VERSION\n";
+  } else {
+    string input((const char *)text);
+    size_t space = input.find(' ');
+    if (space != string::npos) {
+      input = input.substr(0, space);
+    }
+
+    vector_string components;
+    tokenize(input, components, ".");
+    if (components.size() >= 1) {
+      string_to_int(components[0], _gl_version_major);
+    }
+    if (components.size() >= 2) {
+      string_to_int(components[1], _gl_version_minor);
+    }
+    if (components.size() >= 3) {
+      string_to_int(components[2], _gl_version_release);
+    }
+
+    GLCAT.debug()
+      << "GL_VERSION = " << (const char *)text << ", decoded to "
+      << _gl_version_major << "." << _gl_version_minor 
+      << "." << _gl_version_release << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::save_extensions
 //       Access: Protected
 //  Description: Separates the string returned by GL_EXTENSIONS (or
@@ -2723,6 +2774,26 @@ report_extensions() const {
 bool CLP(GraphicsStateGuardian)::
 has_extension(const string &extension) const {
   return (_extensions.find(extension) != _extensions.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::is_at_least_version
+//       Access: Public
+//  Description: Returns true if the runtime GL version number is at
+//               least the indicated value, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+is_at_least_version(int major, int minor, int release) const {
+  if (_gl_version_major < major) {
+    return false;
+  }
+  if (_gl_version_minor < minor) {
+    return false;
+  }
+  if (_gl_version_release < release) {
+    return false;
+  }
+  return true;
 }
 
 
@@ -2918,12 +2989,10 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
     pixel_width = 2 * num_components;
     break;
 
-#ifdef GL_UNSIGNED_BYTE_3_3_2_EXT
-  case GL_UNSIGNED_BYTE_3_3_2_EXT:
+  case GL_UNSIGNED_BYTE_3_3_2:
     nassertr(num_components == 3, 0);
     pixel_width = 1;
     break;
-#endif
 
   case GL_FLOAT:
     pixel_width = 4 * num_components;
@@ -3255,7 +3324,7 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
   }
   switch (wm) {
   case Texture::WM_clamp:
-    return GL_CLAMP;
+    return _edge_clamp;
   case Texture::WM_repeat:
     return GL_REPEAT;
 
@@ -3269,7 +3338,7 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
     break;
   }
   GLCAT.error() << "Invalid Texture::WrapMode value!\n";
-  return GL_CLAMP;
+  return _edge_clamp;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3332,10 +3401,8 @@ get_image_type(PixelBuffer::Type type) {
     return GL_UNSIGNED_BYTE;
   case PixelBuffer::T_unsigned_short:
     return GL_UNSIGNED_SHORT;
-#ifdef GL_UNSIGNED_BYTE_3_3_2_EXT
   case PixelBuffer::T_unsigned_byte_332:
-    return GL_UNSIGNED_BYTE_3_3_2_EXT;
-#endif
+    return GL_UNSIGNED_BYTE_3_3_2;
   case PixelBuffer::T_float:
     return GL_FLOAT;
 
@@ -3480,9 +3547,7 @@ get_fog_mode_type(Fog::Mode m) const {
   case Fog::M_exponential: return GL_EXP;
   case Fog::M_exponential_squared: return GL_EXP2;
     /*
-      #ifdef GL_FOG_FUNC_SGIS
       case Fog::M_spline: return GL_FOG_FUNC_SGIS;
-      #endif
     */
 
   default:
@@ -3525,13 +3590,10 @@ print_gfx_visual() {
 
   GLP(GetBooleanv)( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
 
-#ifdef GL_MULTISAMPLE_SGIS
-  GLP(GetBooleanv)( GL_MULTISAMPLE_SGIS, &j ); cout << "Multisample? "
-                                                 << (int)j << endl;
-#endif
-#ifdef GL_SAMPLES_SGIS
-  GLP(GetIntegerv)( GL_SAMPLES_SGIS, &i ); cout << "Samples: " << i << endl;
-#endif
+  if (_supports_multisample) {
+    GLP(GetBooleanv)( GL_MULTISAMPLE, &j ); cout << "Multisample? " << (int)j << endl;
+    GLP(GetIntegerv)( GL_SAMPLES, &i ); cout << "Samples: " << i << endl;
+  }
 
   GLP(GetBooleanv)( GL_BLEND, &j ); cout << "Blend? " << (int)j << endl;
   GLP(GetBooleanv)( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? "

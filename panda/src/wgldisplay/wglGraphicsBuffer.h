@@ -49,6 +49,7 @@ public:
   virtual bool begin_frame();
   virtual void end_frame();
 
+  virtual bool make_context();
   virtual void make_current();
   virtual void release_gsg();
 

@@ -80,7 +80,6 @@ PUBLISHED:
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
   INLINE bool is_valid() const;
-  INLINE bool flip_ready() const;
 
   virtual bool is_active() const;
 
@@ -109,6 +108,8 @@ public:
 public:
   // These are not intended to be called directly by the user.
   INLINE void win_display_regions_changed();
+  INLINE bool needs_context() const;
+  INLINE bool flip_ready() const;
 
   INLINE bool operator < (const GraphicsOutput &other) const;
 
@@ -129,6 +130,7 @@ public:
 
   // This method is called in the draw thread prior to issuing any
   // drawing commands for the window.
+  virtual bool make_context();
   virtual void make_current();
   virtual void release_gsg();
 
@@ -151,6 +153,7 @@ protected:
   PT(Texture) _texture;
   bool _copy_texture;
   bool _flip_ready;
+  bool _needs_context;
 
 private:
   INLINE void determine_display_regions() const;

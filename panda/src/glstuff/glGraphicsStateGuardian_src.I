@@ -615,14 +615,14 @@ enable_multisample(bool val) {
   if (_multisample_enabled != val) {
     _multisample_enabled = val;
     if (val) {
-#ifdef GL_MULTISAMPLE_SGIS
-      GLP(Enable)(GL_MULTISAMPLE_SGIS);
-#endif
+      if (_supports_multisample) {
+        GLP(Enable)(GL_MULTISAMPLE);
+      }
       GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_NICEST);
     } else {
-#ifdef GL_MULTISAMPLE_SGIS
-      GLP(Disable)(GL_MULTISAMPLE_SGIS);
-#endif
+      if (_supports_multisample) {
+        GLP(Disable)(GL_MULTISAMPLE);
+      }
       GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_FASTEST);
     }
   }

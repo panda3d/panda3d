@@ -88,6 +88,7 @@ PUBLISHED:
   bool is_empty() const;
 
   void render_frame();
+  void open_windows();
   void sync_frame();
   void flip_frame();
   
@@ -100,6 +101,7 @@ public:
     TS_do_frame,
     TS_do_flip,
     TS_do_release,
+    TS_do_windows,
     TS_terminate
   };
 
@@ -139,6 +141,7 @@ private:
 
   void cull_bin_draw(const Windows &wlist);
   void cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr);
+  void make_contexts(const Windows &wlist);
 
   void process_events(const Windows &wlist);
   void flip_windows(const Windows &wlist);
@@ -171,6 +174,7 @@ private:
     void remove_window(GraphicsOutput *window);
     void resort_windows();
     void do_frame(GraphicsEngine *engine);
+    void do_windows(GraphicsEngine *engine);
     void do_flip(GraphicsEngine *engine);
     void do_release(GraphicsEngine *engine);
     void do_close(GraphicsEngine *engine);

@@ -86,7 +86,7 @@ const bool show_buffers = config_display.GetBool("show-buffers", false);
 // buffer.  This may be desired if you know your graphics API does not
 // support render-directly-to-texture and you want to minimize
 // framebuffer memory.
-const bool prefer_parasite_buffer = config_display.GetBool("prefer-parasite-buffer", false);
+const bool prefer_parasite_buffer = config_display.GetBool("prefer-parasite-buffer", true);
 
 // Set this true to make GraphicsOutput::make_render_texture() first
 // try to create a single-buffered offscreen buffer, before falling

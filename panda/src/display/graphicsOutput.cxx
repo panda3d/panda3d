@@ -52,6 +52,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _is_valid = false;
   _copy_texture = false;
   _flip_ready = false;
+  _needs_context = true;
   _sort = 0;
 
   int mode = gsg->get_properties().get_frame_buffer_mode();
@@ -365,7 +366,15 @@ make_texture_buffer(const string &name, int x_size, int y_size) {
       if (sb_gsg != (GraphicsStateGuardian *)NULL) {
         buffer = engine->make_buffer(sb_gsg, name, sort, x_size, y_size, true);
         if (buffer != (GraphicsOutput *)NULL) {
-          return buffer;
+          // Check the buffer for goodness.
+          engine->open_windows();
+          if (buffer->is_valid()) {
+            return buffer;
+          }
+
+          // No good; delete the buffer and keep trying.
+          engine->remove_window(buffer);
+          buffer = (GraphicsOutput *)NULL;
         }
       }
     }
@@ -376,7 +385,13 @@ make_texture_buffer(const string &name, int x_size, int y_size) {
   // source window is double-buffered.
   buffer = engine->make_buffer(gsg, name, sort, x_size, y_size, true);
   if (buffer != (GraphicsOutput *)NULL) {
-    return buffer;
+    engine->open_windows();
+    if (buffer->is_valid()) {
+      return buffer;
+    }
+    
+    engine->remove_window(buffer);
+    buffer = (GraphicsOutput *)NULL;
   }
 
   // Looks like we have to settle for a parasite buffer.
@@ -492,6 +507,12 @@ begin_frame() {
     return false;
   }
 
+  if (needs_context()) {
+    if (!make_context()) {
+      return false;
+    }
+  }
+
   // Okay, we already have a GSG, so activate it.
   make_current();
   return _gsg->begin_frame();
@@ -548,6 +569,22 @@ end_frame() {
   if (!_gsg->get_properties().is_single_buffered()) {
     _flip_ready = true;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_context
+//       Access: Public, Virtual
+//  Description: If _needs_context is true, this will be called
+//               in the draw thread prior to rendering into the
+//               window.  It should attempt to create a graphics
+//               context, and return true if successful, false
+//               otherwise.  If it returns false the window will be
+//               considered failed.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+make_context() {
+  _needs_context = false;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

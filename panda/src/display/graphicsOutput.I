@@ -161,17 +161,6 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::flip_ready
-//       Access: Published
-//  Description: Returns true if a frame has been rendered and needs
-//               to be flipped, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsOutput::
-flip_ready() const {
-  return _flip_ready;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_sort
 //       Access: Published
 //  Description: Returns the sorting order of this particular
@@ -241,6 +230,28 @@ get_screenshot(PNMImage &image) {
 INLINE void GraphicsOutput::
 win_display_regions_changed() {
   _display_regions_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::flip_ready
+//       Access: Public
+//  Description: Returns true if a frame has been rendered and needs
+//               to be flipped, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+flip_ready() const {
+  return _flip_ready;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::needs_context
+//       Access: Public
+//  Description: Returns true if make_context() still needs to be
+//               called, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+needs_context() const {
+  return _needs_context;
 }
 
 ////////////////////////////////////////////////////////////////////

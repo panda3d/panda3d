@@ -503,6 +503,50 @@ render_frame() {
   _app_pcollector.start();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::open_windows
+//       Access: Published
+//  Description: Fully opens (or closes) any windows that have
+//               recently been requested open or closed, without
+//               rendering any frames.  It is not necessary to call
+//               this explicitly, since windows will be automatically
+//               opened or closed when the next frame is rendered, but
+//               you may call this if you want your windows now
+//               without seeing a frame go by.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+open_windows() {
+  MutexHolder holder(_lock);
+
+  if (!_windows_sorted) {
+    do_resort_windows();
+  }
+
+  _app.do_windows(this);
+
+  Threads::const_iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    if (thread->_thread_state == TS_wait) {
+      thread->_thread_state = TS_do_windows;
+      thread->_cv.signal();
+    }
+    thread->_cv_mutex.release();
+  }
+
+  // We do it twice, to allow both cull and draw to process the
+  // window.
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    if (thread->_thread_state == TS_wait) {
+      thread->_thread_state = TS_do_windows;
+      thread->_cv.signal();
+    }
+    thread->_cv_mutex.release();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::sync_frame
 //       Access: Published
@@ -744,6 +788,24 @@ cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     // Now draw.
     // This should get deferred into the next pipeline stage.
     do_draw(cull_result, scene_setup, gsg, dr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_contexts
+//       Access: Private
+//  Description: Called in the draw thread, this calls make_context()
+//               on each window on the list to guarantee its graphics
+//               context gets created.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+make_contexts(const GraphicsEngine::Windows &wlist) {
+  Windows::const_iterator wi;
+  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
+    GraphicsOutput *win = (*wi);
+    if (win->needs_context()) {
+      win->make_context();
+    }
   }
 }
 
@@ -1322,6 +1384,25 @@ do_frame(GraphicsEngine *engine) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::do_windows
+//       Access: Public
+//  Description: Attempts to fully open or close any windows or
+//               buffers associated with this thread, but does not
+//               otherwise perform any rendering.  (Normally, this
+//               step is handled during do_frame(); call this method
+//               only if you want these things to open immediately.)
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+do_windows(GraphicsEngine *engine) {
+  MutexHolder holder(_wl_lock);
+
+  engine->process_events(_window);
+
+  engine->make_contexts(_cdraw);
+  engine->make_contexts(_draw);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::WindowRenderer::do_flip
 //       Access: Public
 //  Description: Flips the windows as appropriate for the current
@@ -1537,6 +1618,13 @@ thread_main() {
       break;
 
     case TS_do_release:
+      do_pending(_engine);
+      do_release(_engine);
+      _thread_state = TS_wait;
+      break;
+
+    case TS_do_windows:
+      do_windows(_engine);
       do_pending(_engine);
       do_release(_engine);
       _thread_state = TS_wait;

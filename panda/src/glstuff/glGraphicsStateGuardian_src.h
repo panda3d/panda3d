@@ -133,10 +133,12 @@ protected:
   static bool report_errors_loop(int line, const char *source_file, 
                                  GLenum error_code, int &error_count);
   void show_gl_string(const string &name, GLenum id);
+  void get_gl_version();
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
   bool has_extension(const string &extension) const;
+  bool is_at_least_version(int major, int minor, int release = 0) const;
 
   virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
@@ -299,8 +301,11 @@ protected:
 
   int _pass_number;
 
+  int _gl_version_major, _gl_version_minor, _gl_version_release;
   pset<string> _extensions;
   bool _supports_bgr;
+  bool _supports_multisample;
+  GLenum _edge_clamp;
 
   int _error_count;
 

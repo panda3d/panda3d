@@ -153,6 +153,45 @@ end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::make_context
+//       Access: Public, Virtual
+//  Description: If _needs_context is true, this will be called
+//               in the draw thread prior to rendering into the
+//               window.  It should attempt to create a graphics
+//               context, and return true if successful, false
+//               otherwise.  If it returns false the window will be
+//               considered failed.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsBuffer::
+make_context() {
+  PStatTimer timer(_make_current_pcollector);
+
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
+
+  if (_pbuffer_dc) {
+    HGLRC context = wglgsg->get_context(_pbuffer_dc);
+    if (context) {
+      wglMakeCurrent(_pbuffer_dc, context);
+      wglgsg->reset_if_new();
+      _needs_context = false;
+      return true;
+    }
+
+  } else {
+    HGLRC context = wglgsg->get_context(_window_dc);
+    if (context) {
+      wglMakeCurrent(_window_dc, context);
+      wglgsg->reset_if_new();
+      _needs_context = false;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsBuffer::make_current
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
