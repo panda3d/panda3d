@@ -181,20 +181,20 @@ class TreeNode:
         else:
             return self
 
-    def update(self):
+    def update(self, fUseCachedChildren = 1):
         if self.parent:
-            self.parent.update()
+            self.parent.update(fUseCachedChildren)
         else:
             oldcursor = self.canvas['cursor']
             self.canvas['cursor'] = "watch"
             self.canvas.update()
             self.canvas.delete(ALL)     # XXX could be more subtle
-            self.draw(7, 2)
+            self.draw(7, 2, fUseCachedChildren)
             x0, y0, x1, y1 = self.canvas.bbox(ALL)
             self.canvas.configure(scrollregion=(0, 0, x1, y1))
             self.canvas['cursor'] = oldcursor
 
-    def draw(self, x, y):
+    def draw(self, x, y, fUseCachedChildren = 1):
         # XXX This hard-codes too many geometry constants!
         self.x, self.y = x, y
         self.drawicon()
@@ -209,7 +209,7 @@ class TreeNode:
         self.kidKeys = []
         for item in sublist:
             key = item.GetKey()
-            if self.children.has_key(key):
+            if fUseCachedChildren and self.children.has_key(key):
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)
@@ -226,7 +226,7 @@ class TreeNode:
             child = self.children[key]
             cylast = cy
             self.canvas.create_line(x+9, cy+7, cx, cy+7, fill="gray50")
-            cy = child.draw(cx, cy)
+            cy = child.draw(cx, cy, fUseCachedChildren)
             if child.item.IsExpandable():
                 if child.state == 'expanded':
                     iconname = "minusnode"

@@ -85,9 +85,9 @@ class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
         # Check keywords and initialise options based on input values.
         self.initialiseoptions(SceneGraphExplorer)
 
-    def update(self):
+    def update(self, fUseCachedChildren = 1):
         """ Refresh scene graph explorer """
-        self._node.update()
+        self._node.update(fUseCachedChildren)
 
     def mouse2Down(self, event):
         self._width = 1.0 * self._canvas.winfo_width()
