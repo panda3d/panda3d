@@ -160,6 +160,50 @@ client_multifile_extracted(string mfname) const {
   return (client_status >= Status_extracted);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description: Return the hash value of the file we are working on
+////////////////////////////////////////////////////////////////////
+HashVal DownloadDb::
+get_client_multifile_hash(string mfname) const {
+  return _client_db.get_multifile_record_named(mfname)->_hash;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description: Return the hash value of the server file
+////////////////////////////////////////////////////////////////////
+HashVal DownloadDb::
+get_server_multifile_hash(string mfname) const {
+  return _server_db.get_multifile_record_named(mfname)->_hash;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description: Set the hash value of file we are working on
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+set_client_multifile_hash(string mfname, HashVal val) {
+  _client_db.get_multifile_record_named(mfname)->_hash = val;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description: Set the hash value of file we are working on
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+set_server_multifile_hash(string mfname, HashVal val) {
+  _server_db.get_multifile_record_named(mfname)->_hash = val;
+}
+
 // Operations on multifiles
 
 ////////////////////////////////////////////////////////////////////
@@ -386,7 +430,12 @@ output(ostream &out) const {
   out << "MultifileRecord: " << _name    << endl
       << "    phase: " << _phase   << endl
       << "     size: " << _size    << endl
-      << "   status: " << _status  << endl;
+      << "   status: " << _status  << endl
+      << "     hash: [" << _hash.get_value(0)
+      << " " << _hash.get_value(1)
+      << " " << _hash.get_value(2)
+      << " " << _hash.get_value(3)
+      << "]" << endl;
   out << "--------------------------------------------------" << endl;
   pvector< PT(FileRecord) >::const_iterator i = _file_records.begin();
   for(; i != _file_records.end(); ++i) {
@@ -652,6 +701,14 @@ parse_mfr(uchar *start, int size) {
   mfr->_size = di.get_int32();
   mfr->_status = di.get_int32();
   mfr->_num_files = di.get_int32();
+  
+  // Read the hash value
+  HashVal hash;
+  hash.set_value(0, di.get_uint32());
+  hash.set_value(1, di.get_uint32());
+  hash.set_value(2, di.get_uint32());
+  hash.set_value(3, di.get_uint32());
+  mfr->_hash = hash;
 
   downloader_cat.debug()
     << "Parsed multifile record: " << mfr->_name << " phase: " << mfr->_phase
@@ -802,6 +859,7 @@ write(ofstream &write_stream, bool want_server_info) {
   PN_int32 num_files;
   PN_int32 name_length;
   PN_int32 header_length;
+  HashVal hash;
 
   // Iterate over the multifiles writing them to the stream
   pvector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
@@ -821,7 +879,8 @@ write(ofstream &write_stream, bool want_server_info) {
       sizeof(name_length) +    // Size of the size of the name string
       (*i)->_name.length() +      // Size of the name string
       sizeof(phase) + sizeof(size) +
-      sizeof(status) + sizeof(num_files);
+      sizeof(status) + sizeof(num_files) +
+      sizeof(PN_uint32)*4; // Size of hash value
 
     // Add the length of this entire datagram
     _datagram.add_int32(header_length);
@@ -836,6 +895,13 @@ write(ofstream &write_stream, bool want_server_info) {
     _datagram.add_int32(size);
     _datagram.add_int32(status);
     _datagram.add_int32(num_files);
+    
+    hash = (*i)->_hash;
+    _datagram.add_uint32(hash.get_value(0));
+    _datagram.add_uint32(hash.get_value(1));
+    _datagram.add_uint32(hash.get_value(2));
+    _datagram.add_uint32(hash.get_value(3));
+
 
     // Now put this datagram on the write stream
     string msg = _datagram.get_message();

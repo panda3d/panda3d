@@ -114,6 +114,12 @@ PUBLISHED:
   bool client_multifile_decompressed(string mfname) const;
   bool client_multifile_extracted(string mfname) const;
 
+  // Ask what version (told with the hash) this multifile is
+  HashVal get_client_multifile_hash(string mfname) const;
+  void set_client_multifile_hash(string mfname, HashVal val);
+  HashVal get_server_multifile_hash(string mfname) const;
+  void set_server_multifile_hash(string mfname, HashVal val);
+
   // Operations on multifiles
   void delete_client_multifile(string mfname);
   void add_client_multifile(string server_mfname);
@@ -150,6 +156,7 @@ public:
     Phase _phase;
     int _size;
     int _status;
+    HashVal _hash;
     PN_int32 _num_files;
     FileRecords _file_records;
   };
