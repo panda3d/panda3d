@@ -1523,10 +1523,6 @@ draw_sprite(const GeomSprite *geom) {
       alpha = true;
   }
 
-  // sort container and iterator
-  vector< WrappedSprite > cameraspace_vector;
-  vector< WrappedSprite >::iterator vec_iter;
-
   // inner loop vars
   int i;
   Vertexf source_vert, cameraspace_vert;
@@ -1576,6 +1572,12 @@ draw_sprite(const GeomSprite *geom) {
   /////////////////////////////////////////////////////////////////////
 
   Colorf v_color;
+
+  // sort container and iterator
+  vector< WrappedSprite > cameraspace_vector;
+  vector< WrappedSprite >::iterator vec_iter;
+
+  cameraspace_vector.reserve(nprims);   //pre-alloc space for nprims
 
   // the state is set, start running the prims
 
@@ -1645,7 +1647,7 @@ draw_sprite(const GeomSprite *geom) {
   nassertv(nprims * 6 < D3DMAXNUMVERTICES );
 
   _fvf_buf = _sav_fvf;          // _fvf_buf changes,  sav_fvf doesn't
-  float TexCrdSets[4][2] = {{0.0,0.0},{1.0,0.0},{0.0,1.0},{1.0,1.0}};
+  const float TexCrdSets[4][2] = {{0.0,0.0},{1.0,0.0},{0.0,1.0},{1.0,1.0}};
 
 #define QUADVERTLISTLEN 6
 
@@ -1678,16 +1680,19 @@ draw_sprite(const GeomSprite *geom) {
       lr = (xform_mat * LVector3f(1, -1, 0)) + cur_image._v;
       ll = (xform_mat * LVector3f(-1, -1, 0)) + cur_image._v;
     } else {
-      // create the normal points
-      ur.set(scaled_width, scaled_height, 0);
-      ul.set(-scaled_width, scaled_height, 0);
-      lr.set(scaled_width, -scaled_height, 0);
-      ll.set(-scaled_width, -scaled_height, 0);
+      // create points for unrotated rect sprites
+	  float x,y,negx,negy,z;
 
-      ur += cur_image._v;
-      ul += cur_image._v;
-      lr += cur_image._v;
-      ll += cur_image._v;
+	  x = cur_image._v.get_x() + scaled_width;
+	  y = cur_image._v.get_y() + scaled_height;
+	  negx = cur_image._v.get_x() - scaled_width;
+	  negy = cur_image._v.get_y() - scaled_height;
+	  z = cur_image._v.get_z();
+
+      ur.set(x, y, z);
+      ul.set(negx, y, z);
+      lr.set(x, negy, z);
+      ll.set(negx, negy, z);
     }
 
     add_to_FVF((void *)ll.get_data(), sizeof(D3DVECTOR));
@@ -1700,12 +1705,12 @@ draw_sprite(const GeomSprite *geom) {
 
     add_to_FVF((void *)lr.get_data(), sizeof(D3DVECTOR));
 	if(bDoColor)
-		_fvf_buf += sizeof(D3DCOLOR);   // dont need to write color, just incr ptr
+		_fvf_buf += sizeof(D3DCOLOR);  // flat shading, dont need to write color, just incr ptr
 	add_to_FVF((void *)TexCrdSets[1], sizeof(float)*2);
 
     add_to_FVF((void *)ul.get_data(), sizeof(D3DVECTOR));
 	if(bDoColor)
-		_fvf_buf += sizeof(D3DCOLOR);
+		_fvf_buf += sizeof(D3DCOLOR);  // flat shading, dont need to write color, just incr ptr
 	add_to_FVF((void *)TexCrdSets[2], sizeof(float)*2);
 
     add_to_FVF((void *)ur.get_data(), sizeof(D3DVECTOR));
@@ -2482,6 +2487,130 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE tri_id)
 }
 
 
+#if 0
+//-----------------------------------------------------------------------------
+// Name: GenerateSphere()
+// Desc: Makes vertex and index data for ellipsoid w/scaling factors sx,sy,sz
+//-----------------------------------------------------------------------------
+  
+void GenerateSphere(void *pVertexSpace,WORD *pwIndices,D3DVECTOR& vCenter, float fRadius, 
+					WORD wNumRings, WORD wNumSections, float sx, float sy, float sz,
+					DWORD *pNumVertices,DWORD *pNumIndices)
+{
+    FLOAT x, y, z, v, rsintheta; // Temporary variables
+    WORD  i, j, n, m;            // counters
+    D3DVECTOR vPoint;
+
+#define M_PI 3.1415926f
+
+    //Generate space for the required triangles and vertices.
+    WORD       wNumTriangles = (wNumRings + 1) * wNumSections * 2;
+	DWORD dwNumVertices,dwNumIndices;
+    dwNumIndices = *pNumIndices = wNumTriangles*3;
+    dwNumVertices = *pNumVertices  = (wNumRings + 1) * wNumSections + 2;
+//    D3DVERTEX* pvVertices     = new D3DVERTEX[dwNumVertices];
+//    WORD*      pwIndices      = new WORD[3*wNumTriangles];
+//    D3DVERTEX* pvVertices     = (D3DVERTEX*) _sav_fvf;
+//    WORD*      pwIndices      = _index_buf;
+
+    D3DVERTEX* pvVertices = (D3DVERTEX*) pVertexSpace;
+
+    nassertv(dwNumVertices*sizeof(D3DVERTEX) < VERT_BUFFER_SIZE);
+    nassertv(dwNumIndices < D3DMAXNUMVERTICES );
+
+	// possible optimizations: turn off normal generation if lighting not enabled.  note if we ever store this geom
+	// persistently, we should not do this optimization
+
+    // Generate vertices at the top and bottom points.
+    D3DVECTOR vTopPoint  = vCenter + D3DVECTOR( 0.0f, +sy*fRadius, 0.0f);
+    D3DVECTOR vBotPoint  = vCenter + D3DVECTOR( 0.0f, -sy*fRadius, 0.0f);
+    D3DVECTOR vNormal = D3DVECTOR( 0.0f, 0.0f, 1.0f );
+    pvVertices[0]               = D3DVERTEX( vTopPoint,  vNormal, 0.0f, 0.0f );
+    pvVertices[dwNumVertices-1] = D3DVERTEX( vBotPoint, -vNormal, 0.0f, 0.0f );
+
+    // Generate vertex points for rings
+    FLOAT dtheta = (float)(M_PI / (wNumRings + 2));     //Angle between each ring
+    FLOAT dphi   = (float)(2*M_PI / wNumSections); 		//Angle between each section
+    FLOAT theta  = dtheta;
+    n = 1; //vertex being generated, begins at 1 to skip top point
+	float inv_radius = 1.0f/fRadius;
+
+	// could optimize all this sin/cos stuff w/tables
+
+    for( i = 0; i < (wNumRings+1); i++ )
+    {
+        y = fRadius * (float)cos(theta); // y is the same for each ring
+        v = theta / M_PI;     			 // v is the same for each ring
+        rsintheta = fRadius * (float)sin(theta);
+        FLOAT phi = 0.0f;
+
+        for( j = 0; j < wNumSections; j++ )
+        {
+            x = rsintheta * (float)sin(phi);
+            z = rsintheta * (float)cos(phi);
+        
+            FLOAT u = (FLOAT)(1.0 - phi / (2*M_PI) );
+            
+            vPoint        = vCenter + D3DVECTOR( sx*x, sy*y, sz*z );
+            vNormal       = D3DVECTOR( x*inv_radius, y*inv_radius, z*inv_radius );  // this is wrong for the non-spherical case (need 2 mul by sx, etc?)
+            pvVertices[n] = D3DVERTEX( vPoint, vNormal, u, v );
+
+            phi += dphi;
+            n++;
+        }
+        theta += dtheta;
+    }
+
+    // Generate triangles for top and bottom caps.
+    for( i = 0; i < wNumSections; i++ )
+    {
+		DWORD TopCapIndex=3*i;
+		DWORD BotCapIndex=3*(wNumTriangles - wNumSections + i);
+		DWORD i_incd = ((i + 1) % wNumSections);
+
+        pwIndices[TopCapIndex] = 0;
+        pwIndices[TopCapIndex+1] = i + 1;
+        pwIndices[TopCapIndex+2] = 1 + i_incd;
+
+        pwIndices[BotCapIndex] = (WORD)( dwNumVertices - 1 );
+        pwIndices[BotCapIndex+1] = (WORD)( dwNumVertices - 2 - i );
+        pwIndices[BotCapIndex+2] = (WORD)( dwNumVertices - 2 - i_incd);
+    }
+
+    // Generate triangles for the rings
+    m = 1;            // first vertex in current ring,begins at 1 to skip top point
+    n = wNumSections; // triangle being generated, skip the top cap 
+        
+    for( i = 0; i < wNumRings; i++ )
+    {
+        for( j = 0; j < wNumSections; j++ )
+        {
+			DWORD j_incd,three_n,base_index;
+
+			three_n=base_index=3*n;
+			j_incd=(j+1) % wNumSections;
+
+            pwIndices[base_index] = m + j;
+			base_index++;
+            pwIndices[base_index] = m + j+ wNumSections;
+			base_index++;
+            pwIndices[base_index] = m + j_incd + wNumSections;
+            
+			base_index++;
+            pwIndices[base_index] = pwIndices[three_n];
+			base_index++;
+            pwIndices[base_index] = pwIndices[three_n+2];
+			base_index++;
+            pwIndices[base_index] = m + j_incd;
+            
+            n += 2;
+        }
+        m += wNumSections;
+    }
+}
+
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_sphere
 //       Access: Public, Virtual
@@ -2493,18 +2622,20 @@ draw_sphere(const GeomSphere *geom) {
 
 #ifdef _DEBUG
   dxgsg_cat.debug() << "draw_sphere() unimplemented in DX!!\n";
+
 #endif
+
+  return;
 
   // we can implement this either using a box placeholder, or by generating the sphere on the fly (probably would not be fast)
  
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
- 
-#ifdef WBD_GL_MODE
+#if 0
   int nprims = geom->get_num_prims();
 
-  if(nPrims==0) {
+  if(nprims==0) {
 	  dxgsg_cat.warning() << "draw_sphere() called with ZERO vertices!!" << endl;
 	  return;
   }
@@ -2512,6 +2643,33 @@ draw_sphere(const GeomSphere *geom) {
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
+  for (int i = 0; i < nprims; i++) {
+
+    Vertexf center = geom->get_next_vertex(vi);
+    Vertexf edge = geom->get_next_vertex(vi);
+    LVector3f v = edge - center;
+    float r = sqrt(dot(v, v));
+// need to gen texcoords and colors for verts too
+  
+void GenerateSphere(void *pVertexSpace,WORD *pwIndices,D3DVECTOR& vCenter, float fRadius, 
+					WORD wNumRings, WORD wNumSections, float sx, float sy, float sz,
+					DWORD *pNumVertices,DWORD *pNumIndices)
+
+  }
+    // Since gluSphere doesn't have a center parameter, we have to use
+    // a matrix transform.
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glMultMatrixf(LMatrix4f::translate_mat(center).get_data());
+
+    // Now render the sphere using GLU calls.
+    gluSphere(sph, r, 16, 10);
+
+
+#endif
+
+#ifdef WBD_GL_MODE
   GeomIssuer issuer(geom, this,
                     issue_vertex_gl,
                     issue_normal_gl,
