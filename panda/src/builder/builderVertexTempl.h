@@ -52,6 +52,7 @@ public:
   INLINE BuilderVertexTempl &set_pixel_size(float s);
 
   bool operator == (const BuilderVertexTempl &other) const;
+  INLINE bool operator != (const BuilderVertexTempl &other) const;
   bool operator < (const BuilderVertexTempl &other) const;
 
   ostream &output(ostream &out) const;

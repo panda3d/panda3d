@@ -93,6 +93,7 @@ public:
 
   // ptr equality
   INLINE bool operator == (const MesherStrip &other) const;
+  INLINE bool operator != (const MesherStrip &other) const;
 
   bool pick_mate(const MesherStrip &a_strip, const MesherStrip &b_strip,
 		 const Edge &a_edge, const Edge &b_edge,

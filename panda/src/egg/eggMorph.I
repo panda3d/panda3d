@@ -64,6 +64,17 @@ operator == (const EggMorph<Parameter> &other) const {
   return get_name() == other.get_name();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorph::Inequality operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Parameter>
+INLINE bool EggMorph<Parameter>::
+operator != (const EggMorph<Parameter> &other) const {
+  return !operator == (other);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphVertex output operator

@@ -16,6 +16,11 @@ operator < (const MesherFanMaker &other) const {
   return _edges.front() < other._edges.front();
 }
 
+template <class PrimType>
+INLINE bool MesherFanMaker<PrimType>::
+operator != (const MesherFanMaker &other) const {
+  return !operator == (other);
+}
 
 template <class PrimType>
 INLINE bool MesherFanMaker<PrimType>::

@@ -41,6 +41,7 @@ public:
  
   INLINE bool operator < (const BuilderBucketNode &other) const;
   INLINE bool operator == (const BuilderBucketNode &other) const;
+  INLINE bool operator != (const BuilderBucketNode &other) const;
 
   int build(GeomNode *geom_node) const;
  

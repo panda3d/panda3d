@@ -39,6 +39,7 @@ public:
   MesherFanMaker(const Vertex *vertex, Strip *tri, Mesher *mesher);
 
   INLINE bool operator < (const MesherFanMaker &other) const;
+  INLINE bool operator != (const MesherFanMaker &other) const;
   INLINE bool operator == (const MesherFanMaker &other) const;
 
   INLINE bool is_empty() const;

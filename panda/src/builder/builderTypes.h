@@ -53,6 +53,9 @@ public:
   bool operator == (const BuilderTC &other) const {
     return _v.almost_equal(other._v, nearly_zero);
   }
+  bool operator != (const BuilderTC &other) const {
+    return !operator == (other);
+  }
 
   // The < operator is simply for ordering vectors in a sorted
   // container; it has no useful mathematical meaning.
@@ -88,6 +91,9 @@ public:
   bool operator == (const BuilderV &other) const {
     return _v.almost_equal(other._v, nearly_zero);
   }
+  bool operator != (const BuilderV &other) const {
+    return !operator == (other);
+  }
   bool operator < (const BuilderV &other) const {
     return (_v.compare_to(other._v) < 0);
   }
@@ -120,6 +126,9 @@ public:
   bool operator == (const BuilderN &other) const {
     return _v.almost_equal(other._v, nearly_zero);
   }
+  bool operator != (const BuilderN &other) const {
+    return !operator == (other);
+  }
   bool operator < (const BuilderN &other) const {
     return (_v.compare_to(other._v) < 0);
   }
@@ -149,11 +158,11 @@ public:
     _v = copy._v;
     return *this;
   }
-  bool operator != (const BuilderC &other) const {
-    return !(*this == other);
-  }
   bool operator == (const BuilderC &other) const {
     return _v.almost_equal(other._v, nearly_zero);
+  }
+  bool operator != (const BuilderC &other) const {
+    return !(*this == other);
   }
   bool operator < (const BuilderC &other) const {
     return (_v.compare_to(other._v) < 0);

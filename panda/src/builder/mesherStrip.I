@@ -150,6 +150,17 @@ operator == (const MesherStrip &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MesherStrip::operator !=
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template <class PrimType>
+INLINE bool MesherStrip<PrimType>::
+operator != (const MesherStrip &other) const {
+  return !operator == (other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::Constructor
 //       Access: Public
 //  Description: 

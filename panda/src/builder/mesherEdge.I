@@ -49,6 +49,12 @@ operator == (const MesherEdge &other) const {
   
 template <class PrimType>
 INLINE bool MesherEdge<PrimType>::
+operator != (const MesherEdge &other) const {
+  return !operator == (other);
+}
+  
+template <class PrimType>
+INLINE bool MesherEdge<PrimType>::
 operator < (const MesherEdge &other) const {
   return _a < other._a || (_a == other._a && _b < other._b);
 }

@@ -236,6 +236,21 @@ operator == (const BuilderVertexTempl<VT, NT, TT, CT> &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::operator !=
+//       Access: Public
+//  Description: Assigns an ordering to the vertices.  This is used by
+//               the Mesher to group identical vertices.  This assumes
+//               that all vertices in the locus of consideration will
+//               share the same state: with or without normals,
+//               texcoords, etc.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE bool BuilderVertexTempl<VT, NT, TT, CT>::
+operator != (const BuilderVertexTempl<VT, NT, TT, CT> &other) const {
+  return !operator == (other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BuilderVertexTempl::operator <
 //       Access: Public
 //  Description: Assigns an ordering to the vertices.  This is used by

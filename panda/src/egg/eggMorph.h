@@ -29,6 +29,7 @@ public:
 
   INLINE bool operator < (const EggMorph<Parameter> &other) const;
   INLINE bool operator == (const EggMorph<Parameter> &other) const;
+  INLINE bool operator != (const EggMorph<Parameter> &other) const;
 
 private:
   Parameter _offset;

@@ -90,3 +90,13 @@ operator == (const BuilderBucketNode &other) const {
   return !((*_bucket) < (*other._bucket) || 
 	   (*other._bucket) < (*_bucket));
 }	
+  
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderBucketNode::Nonequivalence operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool BuilderBucketNode::
+operator != (const BuilderBucketNode &other) const {
+  return !operator == (other);
+}	

@@ -47,6 +47,7 @@ public:
   INLINE BuilderAttribTempl &set_pixel_size(float s);
 
   INLINE bool operator == (const BuilderAttribTempl &other) const;
+  INLINE bool operator != (const BuilderAttribTempl &other) const;
   INLINE bool operator < (const BuilderAttribTempl &other) const;
 
   INLINE ostream &output(ostream &out) const;

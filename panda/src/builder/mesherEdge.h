@@ -37,6 +37,7 @@ public:
   INLINE MesherEdge *common_ptr();
 
   INLINE bool operator == (const MesherEdge &other) const;
+  INLINE bool operator != (const MesherEdge &other) const;
   INLINE bool operator < (const MesherEdge &other) const;
 
   INLINE float compute_length(const BuilderBucket &bucket) const;
