@@ -151,16 +151,6 @@ PT(Material) material;
 
 PT(Fog) fog;
 
-// Framerate vars
-
-PT_NamedNode framerate_top;
-RenderRelation *framerate_arc = (RenderRelation*)0L;
-PT_NamedNode framerate_node;
-
-PT(GraphicsLayer) framerate_layer;
-PT(TextFont) framerate_font;
-PT(TextNode) framerate_text;
-
 Loader loader;
 
 EventHandler event_handler(EventQueue::get_global_event_queue());
@@ -489,136 +479,7 @@ void event_A(CPT_Event) {
   framework_cat.error() << "Stats host not supported." << endl;
 #endif
 }
-/*
-void setup_framerate(void) {
-  if (framerate_top != (NamedNode*)0L)
-    return;
 
-  framerate_top = new NamedNode("framerate_top");
-  framerate_node = new NamedNode("framerate");
-  framerate_arc = new RenderRelation(framerate_top, framerate_node);
-
-  // Setup some overrides to turn off certain properties which we probably
-  // won't need for 2-d objects.
-  framerate_arc->set_transition(new DepthTestTransition(DepthTestProperty::M_none), 1);
-  framerate_arc->set_transition(new DepthWriteTransition(DepthWriteTransition::off()), 1);
-  framerate_arc->set_transition(new LightTransition(LightTransition::all_off()), 1);
-  framerate_arc->set_transition(new MaterialTransition(MaterialTransition::off()), 1);
-  framerate_arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_none), 1);
-
-  // create a 2-d camera.
-  PT(Camera) cam2d = new Camera("framerate_cam");
-  new RenderRelation(framerate_node, cam2d);
-  cam2d->set_scene(framerate_top);
-  PT(Lens) lens = new OrthographicLens;
-  lens->set_film_size(2.0);
-  cam2d->set_lens(lens);
-
-  // Now create a new layer
-  // eventually this should be done through chanconfig'
-  GraphicsChannel *chan = main_win->get_channel(0);
-  nassertv(chan != (GraphicsChannel*)0L);
-
-  framerate_layer = chan->make_layer();
-  nassertv(framerate_layer != (GraphicsLayer *)0L);
-  framerate_layer->set_active(true);
-
-  DisplayRegion *dr = framerate_layer->make_display_region();
-  nassertv(dr != (DisplayRegion *)0L);
-  dr->set_camera(cam2d);
-
-  // load the font
-  PT_Node font_model = loader.load_sync("cmtt12");
-
-  if (font_model != (NamedNode *)0L) {
-    framerate_font = new TextFont(font_model);
-    framerate_text = new TextNode("framerate_text");
-    new RenderRelation(framerate_node, framerate_text);
-
-    LMatrix4f mat = LMatrix4f::scale_mat(0.05) *
-      LMatrix4f::translate_mat(-0.95, 0.0, 0.95);
-
-    framerate_text->set_transform(mat);
-    framerate_text->set_font(framerate_font);
-    framerate_text->set_card_color(0.5, 0.5, 0.5, 0.5);
-    framerate_text->set_card_as_margin(0.5, 0.5, 0.2, 0.2);
-    framerate_text->set_frame_color(1., 0., 0., 1.);
-    framerate_text->set_frame_as_margin(0.5, 0.5, 0.2, 0.2);
-    framerate_text->set_align(TM_ALIGN_LEFT);
-    framerate_text->set_text_color(1., 1., 1., 1.);
-    framerate_text->set_text("blah");
-  }
-}
-*/
-void handle_framerate(void) {
-  static bool first_time = true;
-  static int buffer_count;
-  static int buffer_size = framework.GetInt("framerate-buffer", 60);
-  static double *prev_times = (double*)0L;
-  static double *deltas = (double*)0L;
-
-  if (framerate_layer == (GraphicsLayer*)0L)
-    return;
-
-  if (!framerate_layer->is_active()) {
-    first_time = true;
-    return;
-  }
-
-  double now = ClockObject::get_global_clock()->get_frame_time();
-
-  if (first_time) {
-    if (prev_times == (double*)0L) {
-      prev_times = new double[buffer_size];
-      deltas = new double[buffer_size];
-    }
-    buffer_count = 0;
-    prev_times[buffer_count++] = now;
-    first_time = false;
-  } else if (buffer_count < buffer_size) {
-    deltas[buffer_count-1] = now - prev_times[buffer_count-1];
-    prev_times[buffer_count++] = now;
-  } else {
-    deltas[buffer_size-1] = now - prev_times[buffer_size-1];
-    double delta = 0.;
-    for (int i=0; i<buffer_size; ++i)
-      delta += deltas[i];
-    delta = delta / (double)buffer_size;
-    double fps = 1. / delta;
-
-    delta *= 1000.;
-
-    ostringstream os;
-    // I've decided that one digit to the right of the decimal should be
-    // enough for now.  If we need more, it's easy to extend.
-    int ifps = (int)fps;
-    fps = fps - (double)ifps;
-    fps *= 10.;
-    int rfps = (int)fps;
-    int idelta = (int)delta;
-    delta = delta - (double)idelta;
-    delta *= 10.;
-    int rdelta = (int)delta;
-    os << ifps << "." << rfps << " fps (" << idelta << "." << rdelta
-       << " ms)";
-    framerate_text->set_text(os.str());
-
-    // now roll everything down one
-    for (int j=0; j<buffer_size-1; ++j) {
-      prev_times[j] = prev_times[j+1];
-      deltas[j] = deltas[j+1];
-    }
-    prev_times[buffer_size-1] = now;
-  }
-}
-/*
-void event_f_full(CPT_Event) {
-  static bool is_on = true;
-  setup_framerate();
-  framerate_layer->set_active(is_on);
-  is_on = !is_on;
-}
-*/
 void event_t(CPT_Event) {
   // The "t" key was pressed.  Toggle the showing of textures.
   static bool textures_enabled = true;
@@ -963,7 +824,6 @@ void draw_loop(void*) {
   for (;!quit_draw;) {
     mutex_lock m(run_render);
     main_win->update();
-    handle_framerate();
   }
   framework_cat.info() << "draw thread exiting" << endl;
 }
@@ -1654,7 +1514,6 @@ int framework_main(int argc, char *argv[]) {
   event_handler.add_hook("q", event_esc);
   event_handler.add_hook("3", event_3);
   event_handler.add_hook("f", event_f);
-//  event_handler.add_hook("shift-F", event_f_full);
   event_handler.add_hook("t", event_t);
   event_handler.add_hook("l", event_l);
   event_handler.add_hook("w", event_w);
@@ -1729,8 +1588,6 @@ int framework_main(int argc, char *argv[]) {
          }
          ClockObject::get_global_clock()->tick();
          throw_event("NewFrame");
-
-         handle_framerate();
 
          if((!gridded_files.empty()) && gridmotiontype) {
            move_gridded_stuff(gridmotiontype,InfoArr, pRRptrArr, gridded_files_size*gridrepeats);
