@@ -343,6 +343,10 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void CIntervalManager::
 write(ostream &out) const {
+  // We need to write this line so that it's clear what's going on
+  // when there are no intervals in the list.
+  out << (int)_name_index.size() << " intervals.\n";
+
   NameIndex::const_iterator ni;
   for (ni = _name_index.begin(); ni != _name_index.end(); ++ni) {
     int index = (*ni).second;
