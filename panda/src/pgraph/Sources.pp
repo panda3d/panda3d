@@ -41,6 +41,7 @@
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
+    fadeLodNode.I fadeLodNode.h \
     findApproxLevelEntry.I findApproxLevelEntry.h \
     findApproxPath.I findApproxPath.h \
     fog.I fog.h \
@@ -128,6 +129,7 @@
     depthWriteAttrib.cxx \
     directionalLight.cxx \
     drawCullHandler.cxx \
+    fadeLodNode.cxx \
     findApproxLevelEntry.cxx \
     findApproxPath.cxx \
     fog.cxx \
@@ -214,6 +216,7 @@
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
+    fadeLodNode.I fadeLodNode.h \
     fog.I fog.h \
     fogAttrib.I fogAttrib.h \
     geomNode.I geomNode.h \

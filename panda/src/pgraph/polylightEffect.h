@@ -33,16 +33,16 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : PolylightEffect
 // Description : A PolylightEffect can be used on a node to define a
-//               LightGroup  for that node. A LightGroup contains
-//               Polylights which are essentially nodes that add
-//               color to the polygons of a model based on distance.
-//               PolylightNode is a cheap way to get lighting effects
+//				 LightGroup  for that node. A LightGroup contains 
+//               Polylights which are essentially nodes that add 
+//			     color to the polygons of a model based on distance.
+//				 PolylightNode is a cheap way to get lighting effects
 //               specially for night scenes
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PolylightEffect : public RenderEffect {
 private:
   INLINE PolylightEffect();
-
+  
 
 PUBLISHED:
   enum Contrib_Type {
@@ -58,7 +58,7 @@ PUBLISHED:
   INLINE bool remove_all();
   INLINE bool set_weight(float w);
   INLINE float get_weight() const;
-  INLINE bool set_contrib(Contrib_Type type);
+  INLINE bool set_contrib(Contrib_Type type);  
   INLINE Contrib_Type get_contrib() const;
   INLINE bool is_enabled()const;
   INLINE void set_effect_center(LPoint3f effect_center);
@@ -77,7 +77,7 @@ private:
   typedef pmap<string, NodePath> LIGHTGROUP;
   LIGHTGROUP _lightgroup;
   LPoint3f _effect_center;
-
+  
 
 public:
   static TypeHandle get_class_type() {

@@ -126,13 +126,12 @@ remove_all() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::set_weight
 //       Access: Published
-//  Description: Set a weight between 0 and 1 for the light effect
-//               This affects how much original color and how much
-//               light color are applied to the node
+//  Description: weight is a constant you add (generally 1 and above)
+//               to make the colorscale brighten the existing color
 ////////////////////////////////////////////////////////////////////
 INLINE bool PolylightEffect::
 set_weight(float w) {
-  nassertr(w >= 0.0 && w <= 1.0 ,false);
+  // nassertr(w >= 0.0 && w <= 1.0 ,false);
   _weight = w;
   return true;
 }
@@ -156,7 +155,7 @@ get_weight() const {
 //               _contribution_type is a string that controls how
 //               this division occurs.
 //               "proximal" : A light only contributes if the node 
-//               is inside its volume
+//				 is inside its volume
 //               "all" : All lights added to the effect are used in
 //               division irrespective of their light volumes
 ////////////////////////////////////////////////////////////////////

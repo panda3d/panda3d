@@ -31,6 +31,7 @@
 #include "alphaTestAttrib.cxx"
 #include "directionalLight.cxx"
 #include "drawCullHandler.cxx"
+#include "fadeLodNode.cxx"
 #include "findApproxPath.cxx"
 #include "findApproxLevelEntry.cxx"
 #include "fog.cxx"

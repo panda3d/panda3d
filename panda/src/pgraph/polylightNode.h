@@ -38,14 +38,14 @@ class EXPCL_PANDA PolylightNode : public PandaNode{
 
 PUBLISHED:
   /*
-  // This was the old constructor... interrogate would generate a
-  // separate wrapper for each parameter... so its better to
+  // This was the old constructor... interrogate would generate a 
+  // separate wrapper for each parameter... so its better to 
   // have a simpler constructor and require the programmer
   // to use set_* methods.
   PolylightNode(const string &name, float x = 0.0, float y = 0.0, float z = 0.0,
-    float r = 1.0, float g = 1.0, float b = 1.0,
-    float radius=50.0, string attenuation_type= "linear",
-    bool flickering =false, string flicker_type="random");
+	float r = 1.0, float g = 1.0, float b = 1.0,
+	float radius=50.0, string attenuation_type= "linear",
+	bool flickering =false, string flicker_type="random");
   */
 
   enum Flicker_Type {
@@ -103,7 +103,7 @@ PUBLISHED:
 public:
   Colorf flicker() const;
 
-
+  
 private:
   bool _enabled;
   LVecBase3f _position;
@@ -121,7 +121,7 @@ private:
   float _sin_freq;
   //float _speed;
   //float fixed_points
-
+  
 
 public:
   static void register_with_read_factory();

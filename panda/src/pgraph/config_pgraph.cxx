@@ -42,6 +42,7 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "directionalLight.h"
+#include "fadeLodNode.h"
 #include "fog.h"
 #include "fogAttrib.h"
 #include "geomNode.h"
@@ -192,6 +193,7 @@ init_libpgraph() {
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
   DirectionalLight::init_type();
+  FadeLODNode::init_type();
   Fog::init_type();
   FogAttrib::init_type();
   GeomNode::init_type();
