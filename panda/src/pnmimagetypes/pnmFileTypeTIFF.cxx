@@ -44,11 +44,8 @@ static const int num_extensions_tiff = sizeof(extensions_tiff) / sizeof(const ch
 // of options.
 
 //unsigned short tiff_compression = COMPRESSION_LZW;  // lzw not supported anymore because of big bad Unisys
-#ifdef COMPRESSION_DEFLATE
-unsigned short tiff_compression = COMPRESSION_DEFLATE;
-#else
 unsigned short tiff_compression = COMPRESSION_NONE;
-#endif
+
 /* One of:
    COMPRESSION_NONE
    COMPRESSION_CCITTRLE
