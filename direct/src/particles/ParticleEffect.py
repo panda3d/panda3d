@@ -204,10 +204,13 @@ class ParticleEffect(NodePath):
 
     def loadConfig(self, filename):
         """loadConfig(filename)"""
-        if vfs:
-            exec vfs.readFile(filename)
-        else:
-            execfile(filename.toOsSpecific())
+        try:
+            if vfs:
+                exec vfs.readFile(filename)
+            else:
+                execfile(filename.toOsSpecific())
+        except:
+            self.notify.error('loadConfig: failed to load particle file: '+filename)
 
 
 
