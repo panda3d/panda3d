@@ -8,14 +8,14 @@ import DirectNotifyGlobal
 class ParticleEffect(NodePath):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
-    id = 1 
+    pid = 1 
 
     def __init__(self, name=None, particles=None):
 	"""__init__()"""
 	NodePath.__init__(self)
 	if (name == None):
-	    name = 'particle-effect-%d' % ParticleEffect.id
-	    ParticleEffect.id += 1
+	    name = 'particle-effect-%d' % ParticleEffect.pid
+	    ParticleEffect.pid += 1
         self.assign(hidden.attachNewNode(name))
         # Record particle effect name
 	self.name = name
