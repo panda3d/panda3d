@@ -296,8 +296,11 @@ find_all_paths_to(PandaNode *node) const {
 //     Function: NodePath::reparent_to
 //       Access: Published
 //  Description: Removes the referenced node of the NodePath from its
-//               current parent and attaches it to the referenced node of
-//               the indicated NodePath.
+//               current parent and attaches it to the referenced node
+//               of the indicated NodePath.  
+//
+//               If the destination NodePath is empty, this is the
+//               same thing as detach_node().
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 reparent_to(const NodePath &other, int sort) {
@@ -356,6 +359,13 @@ wrt_reparent_to(const NodePath &other, int sort) {
 //               This does not change the NodePath itself, but does
 //               return a new NodePath that reflects the new instance
 //               node.
+//
+//               If the destination NodePath is empty, this creates a
+//               new instance which is not yet parented to any node.
+//               A new instance of this sort cannot easily be
+//               differentiated from other similar instances, but it
+//               is nevertheless a different instance and it will
+//               return a different get_id() value.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
 instance_to(const NodePath &other, int sort) const {
