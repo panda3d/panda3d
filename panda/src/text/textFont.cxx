@@ -131,7 +131,7 @@ calc_width(const string &line) const {
 ////////////////////////////////////////////////////////////////////
 string TextFont::
 wordwrap_to(const string &text, float wordwrap_width, 
-            bool preserve_end_whitespace) const {
+            bool preserve_trailing_whitespace) const {
   string output_text;
 
   size_t p = 0;
@@ -141,7 +141,7 @@ wordwrap_to(const string &text, float wordwrap_width,
     output_text += text[p];
     p++;
   }
-  bool first_line = true;
+  bool needs_newline = false;
 
   while (p < text.length()) {
     nassertr(!isspace(text[p]), "");
@@ -151,6 +151,7 @@ wordwrap_to(const string &text, float wordwrap_width,
 
     size_t q = p;
     bool any_spaces = false;
+    bool overflow = false;
 
     float width = 0.0;
     while (q < text.length() && text[q] != '\n') {
@@ -164,11 +165,12 @@ wordwrap_to(const string &text, float wordwrap_width,
       if (width > wordwrap_width) {
         // Oops, too many.
         q--;
+        overflow = true;
         break;
       }
     }
 
-    if (q < text.length() && any_spaces) {
+    if (overflow && any_spaces) {
       // If we stopped because we exceeded the wordwrap width, then
       // back up to the end of the last complete word.
       while (q > p && !isspace(text[q])) {
@@ -196,13 +198,13 @@ wordwrap_to(const string &text, float wordwrap_width,
         next_start++;
       }
     }
-
-    if (!first_line) {
+    
+    if (needs_newline) {
       output_text += '\n';
     }
-    first_line = false;
+    needs_newline = true;
 
-    if (preserve_end_whitespace) {
+    if (preserve_trailing_whitespace) {
       q = next_start;
     }
     output_text += text.substr(p, q - p);
@@ -210,8 +212,10 @@ wordwrap_to(const string &text, float wordwrap_width,
     // Now prepare to wrap the next line.
 
     if (next_start < text.length() && text[next_start] == '\n') {
-      // Skip a single embedded newline.
+      // Preserve a single embedded newline.
+      output_text += '\n';
       next_start++;
+      needs_newline = false;
     }
     p = next_start;
 

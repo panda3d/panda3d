@@ -48,7 +48,7 @@ PUBLISHED:
   float calc_width(char ch) const;
   float calc_width(const string &line) const;
   string wordwrap_to(const string &text, float wordwrap_width,
-                     bool preserve_end_whitespace) const;
+                     bool preserve_trailing_whitespace) const;
 
   void write(ostream &out, int indent_level) const;
 
