@@ -101,8 +101,11 @@ get_live_catalog(const char *data, size_t length) const {
 
   LiveCatalog *live_catalog = new LiveCatalog;
   live_catalog->_live_entries.reserve(_entries.size());
+  LiveCatalogEntry zero_entry;
+  zero_entry._begin = 0;
+  zero_entry._end = 0;
   for (size_t i = 0; i < _entries.size(); i++) {
-    live_catalog->_live_entries.push_back(0);
+    live_catalog->_live_entries.push_back(zero_entry);
   }
   
   DCPacker packer;
@@ -175,7 +178,7 @@ r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer) const {
 
   int field_index = find_entry_by_field(current_field);
   if (field_index >= 0) {
-    live_catalog->_live_entries[field_index] = packer.get_num_unpacked_bytes();
+    live_catalog->_live_entries[field_index]._begin = packer.get_num_unpacked_bytes();
   }
 
   if (packer.has_nested_fields() && packer.get_pack_type() != PT_string) {
@@ -187,5 +190,9 @@ r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer) const {
 
   } else {
     packer.unpack_skip();
+  }
+
+  if (field_index >= 0) {
+    live_catalog->_live_entries[field_index]._end = packer.get_num_unpacked_bytes();
   }
 }

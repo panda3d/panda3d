@@ -43,6 +43,7 @@ PUBLISHED:
   INLINE size_t get_length() const;
 public:
   INLINE const char *get_data() const;
+  INLINE char *take_data();
 
 private:
   void set_used_length(size_t size);

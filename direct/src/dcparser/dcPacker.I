@@ -106,7 +106,7 @@ get_pack_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_double(double value) {
-  nassertv(_mode == M_pack);
+  nassertv(_mode == M_pack || _mode == M_repack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -125,7 +125,7 @@ pack_double(double value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_int(int value) {
-  nassertv(_mode == M_pack);
+  nassertv(_mode == M_pack || _mode == M_repack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -144,7 +144,7 @@ pack_int(int value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_uint(unsigned int value) {
-  nassertv(_mode == M_pack);
+  nassertv(_mode == M_pack || _mode == M_repack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -163,7 +163,7 @@ pack_uint(unsigned int value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_int64(PN_int64 value) {
-  nassertv(_mode == M_pack);
+  nassertv(_mode == M_pack || _mode == M_repack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -182,7 +182,7 @@ pack_int64(PN_int64 value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_uint64(PN_uint64 value) {
-  nassertv(_mode == M_pack);
+  nassertv(_mode == M_pack || _mode == M_repack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -201,7 +201,7 @@ pack_uint64(PN_uint64 value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_string(const string &value) {
-  nassertv(_mode == M_pack);
+  nassertv(_mode == M_pack || _mode == M_repack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -221,7 +221,7 @@ pack_string(const string &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_literal_value(const string &value) {
-  nassertv(_mode == M_pack);
+  nassertv(_mode == M_pack || _mode == M_repack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {

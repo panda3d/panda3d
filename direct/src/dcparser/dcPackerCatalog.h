@@ -52,12 +52,18 @@ public:
   // location of each field within the data record.  This might be
   // different for different data records (since some data fields have
   // a dynamic length).
+  class LiveCatalogEntry {
+  public:
+    size_t _begin;
+    size_t _end;
+  };
   class LiveCatalog {
   public:
-    INLINE size_t get_unpack_p(int n) const;
+    INLINE size_t get_begin(int n) const;
+    INLINE size_t get_end(int n) const;
 
   private:
-    typedef pvector<size_t> LiveEntries;
+    typedef pvector<LiveCatalogEntry> LiveEntries;
     LiveEntries _live_entries;
     friend class DCPackerCatalog;
   };

@@ -139,6 +139,8 @@ get_length() const {
 //       Access: Public
 //  Description: Returns the beginning of the data buffer.  The buffer
 //               is not null-terminated, but see also get_string().
+//               This may (or may not) return NULL if the buffer is
+//               empty.
 //
 //               This may be used in conjunction with get_length() to
 //               copy all of the bytes out of the buffer.
@@ -146,4 +148,27 @@ get_length() const {
 INLINE const char *DCPackData::
 get_data() const {
   return _buffer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackData::take_data
+//       Access: Public
+//  Description: Returns the pointer to the beginning of the data
+//               buffer, and transfers ownership of the buffer to the
+//               caller.  The caller is now responsible for ultimately
+//               freeing the returned pointer with delete[], if it is
+//               non-NULL.  This may (or may not) return NULL if the
+//               buffer is empty.
+//
+//               This also empties the DCPackData structure.
+////////////////////////////////////////////////////////////////////
+INLINE char *DCPackData::
+take_data() {
+  char *data = _buffer;
+
+  _buffer = NULL;
+  _allocated_size = 0;
+  _used_length = 0;
+
+  return data;
 }

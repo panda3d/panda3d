@@ -16,16 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerCatalog::LiveCatalog::get_unpack_p
+//     Function: DCPackerCatalog::LiveCatalog::get_begin
 //       Access: Public
 //  Description: Returns the beginning of the indicated field within
 //               the live data.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t DCPackerCatalog::LiveCatalog::
-get_unpack_p(int n) const {
+get_begin(int n) const {
   nassertr(n >= 0 && n < (int)_live_entries.size(), 0);
-  return _live_entries[n];
+  return _live_entries[n]._begin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerCatalog::LiveCatalog::get_end
+//       Access: Public
+//  Description: Returns the end of the indicated field (the byte
+//               position of the first following field) within the
+//               live data.
+////////////////////////////////////////////////////////////////////
+INLINE size_t DCPackerCatalog::LiveCatalog::
+get_end(int n) const {
+  nassertr(n >= 0 && n < (int)_live_entries.size(), 0);
+  return _live_entries[n]._end;
 }
 
 ////////////////////////////////////////////////////////////////////

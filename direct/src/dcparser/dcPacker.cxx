@@ -30,6 +30,7 @@ DCPacker() {
   _mode = M_idle;
   _unpack_data = NULL;
   _unpack_length = 0;
+  _owns_unpack_data = false;
   _unpack_p = 0;
   _root = NULL;
   _catalog = NULL;
@@ -127,8 +128,7 @@ begin_unpack(const char *data, size_t length,
   
   _mode = M_unpack;
   _pack_error = false;
-  _unpack_data = data;
-  _unpack_length = length;
+  set_unpack_data(data, length, false);
   _unpack_p = 0;
 
   _root = root;
@@ -174,6 +174,80 @@ end_unpack() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::begin_repack
+//       Access: Published
+//  Description: Begins an repacking session.  Unlike the other
+//               version of begin_repack(), this version makes a copy
+//               of the data string.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+begin_repack(const string &data, const DCPackerInterface *root) {
+  _unpack_str = data;
+  begin_repack(_unpack_str.data(), _unpack_str.length(), root);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::begin_repack
+//       Access: Public
+//  Description: Begins an repacking session.  The data pointer is
+//               used directly; the data buffer is not copied.
+//               Therefore, you must not delete or modify the data
+//               pointer until you call end_repack().
+//
+//               When repacking, unlike in packing or unpacking modes,
+//               you may not walk through the fields from beginning to
+//               end, or even pack two consecutive fields at once.
+//               Instead, you must call seek() for each field you wish
+//               to modify and pack only that one field; then call
+//               seek() again to modify another field.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+begin_repack(const char *data, size_t length,
+             const DCPackerInterface *root) {
+  nassertv(_mode == M_idle);
+  
+  _mode = M_repack;
+  _pack_error = false;
+  set_unpack_data(data, length, false);
+  _unpack_p = 0;
+
+  // In repack mode, we immediately get the catalog, since we know
+  // we'll need it.
+  _root = root;
+  _catalog = _root->get_catalog();
+  _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
+
+  // We don't begin at the first field in repack mode.  Instead, you
+  // must explicitly call seek().
+  _current_field = NULL;
+  _current_parent = NULL;
+  _current_field_index = 0;
+  _num_nested_fields = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::end_repack
+//       Access: Published
+//  Description: Finishes the repacking session.
+//
+//               The return value is true on success, or false if
+//               there has been some error during repacking (or if all
+//               fields have not been repacked).
+////////////////////////////////////////////////////////////////////
+bool DCPacker::
+end_repack() {
+  nassertr(_mode == M_repack, false);
+
+  // Put the rest of the data onto the pack stream.
+  _pack_data.append_data(_unpack_data + _unpack_p, _unpack_length - _unpack_p);
+  
+  _mode = M_idle;
+  clear();
+
+  return !_pack_error;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::seek
 //       Access: Published
 //  Description: Sets the current unpack (or repack) position to the
@@ -210,7 +284,57 @@ seek(const string &field_name) {
     _current_parent = entry._parent;
     _current_field_index = entry._field_index;
     _num_nested_fields = _current_parent->get_num_nested_fields();
-    _unpack_p = _live_catalog->get_unpack_p(entry_index);
+    _unpack_p = _live_catalog->get_begin(entry_index);
+
+    return true;
+
+  } else if (_mode == M_repack) {
+    nassertr(_catalog != (DCPackerCatalog *)NULL, false);
+
+    if (!_stack.empty() || _current_field != (DCPackerInterface *)NULL) {
+      // It is an error to reseek while the stack is nonempty--that
+      // means we haven't finished packing the current field.
+      _pack_error = true;
+      return false;
+    }
+
+    int entry_index = _catalog->find_entry_by_name(field_name);
+    if (entry_index < 0) {
+      // The field was not known.
+      _pack_error = true;
+      return false;
+    }
+
+    const DCPackerCatalog::Entry &entry = _catalog->get_entry(entry_index);
+
+    size_t begin = _live_catalog->get_begin(entry_index);
+    if (begin < _unpack_p) {
+      // Whoops, we are seeking fields out-of-order.  That means we
+      // need to write the entire record and start again. 
+      _pack_data.append_data(_unpack_data + _unpack_p, _unpack_length - _unpack_p);
+      size_t length = _pack_data.get_length();
+      char *buffer = _pack_data.take_data();
+      set_unpack_data(buffer, length, true);
+      _unpack_p = 0;
+
+      _catalog->release_live_catalog(_live_catalog);
+      _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
+
+      begin = _live_catalog->get_begin(entry_index);
+    }
+
+    // Now copy the bytes from _unpack_p to begin from the
+    // _unpack_data to the _pack_data.  These are the bytes we just
+    // skipped over with the call to seek().
+    _pack_data.append_data(_unpack_data + _unpack_p, begin - _unpack_p);
+
+    // And set the packer up to pack the indicated field (but no
+    // subsequent fields).
+    _current_field = entry._field;
+    _current_parent = entry._parent;
+    _current_field_index = entry._field_index;
+    _num_nested_fields = 0;  // this makes advance() stop after this field.
+    _unpack_p = _live_catalog->get_end(entry_index);
 
     return true;
   }
@@ -251,13 +375,13 @@ push() {
     int num_nested_fields = _current_parent->get_num_nested_fields();
     size_t length_bytes = _current_parent->get_num_length_bytes();
     
-    if (_mode == M_pack) {
+    if (_mode == M_pack || _mode == M_repack) {
       // Reserve length_bytes for when we figure out what the length
       // is.
       _push_marker = _pack_data.get_length();
       _pack_data.append_junk(length_bytes);
 
-    } else { // _mode == M_unpack
+    } else if (_mode == M_unpack) {
       // Read length_bytes to determine the end of this nested
       // sequence.
       _push_marker = 0;
@@ -289,6 +413,8 @@ push() {
           }
         }
       }
+    } else {
+      _pack_error = true;
     }
 
 
@@ -334,7 +460,7 @@ pop() {
     _pack_error = true;
 
   } else {
-    if (_mode == M_pack) {
+    if (_mode == M_pack || _mode == M_repack) {
       size_t length_bytes = _current_parent->get_num_length_bytes();
       if (length_bytes != 0) {
         // Now go back and fill in the length of the array.
@@ -405,7 +531,7 @@ unpack_skip() {
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
 pack_object(PyObject *object) {
-  nassertv(_mode == M_pack);
+  nassertv(_mode == M_pack || _mode == M_repack);
   PyObject *str = PyObject_Str(object);
   Py_DECREF(str);
 
@@ -685,4 +811,22 @@ clear() {
   }
   _catalog = NULL;
   _root = NULL;
+
+  set_unpack_data(NULL, 0, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::set_unpack_data
+//       Access: Private
+//  Description: Sets up the unpack_data pointer.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+set_unpack_data(const char *unpack_data, size_t unpack_length, 
+                bool owns_unpack_data) {
+  if (_owns_unpack_data) {
+    delete[] _unpack_data;
+  }
+  _unpack_data = unpack_data;
+  _unpack_length = unpack_length;
+  _owns_unpack_data = owns_unpack_data;
 }

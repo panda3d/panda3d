@@ -46,6 +46,13 @@ PUBLISHED:
   void begin_unpack(const string &data, const DCPackerInterface *root);
   bool end_unpack();
 
+public:
+  void begin_repack(const char *data, size_t length,
+                    const DCPackerInterface *root);
+PUBLISHED:
+  void begin_repack(const string &data, const DCPackerInterface *root);
+  bool end_repack();
+
   bool seek(const string &field_name);
 
   INLINE bool has_nested_fields() const;
@@ -96,12 +103,15 @@ public:
 private:
   INLINE void advance();
   void clear();
+  void set_unpack_data(const char *unpack_data, size_t unpack_length, 
+                       bool owns_unpack_data);
 
 private:
   enum Mode {
     M_idle,
     M_pack,
     M_unpack,
+    M_repack,
   };
   Mode _mode;
 
@@ -109,6 +119,7 @@ private:
   string _unpack_str;
   const char *_unpack_data;
   size_t _unpack_length;
+  bool _owns_unpack_data;
   size_t _unpack_p;
 
   const DCPackerInterface *_root;
