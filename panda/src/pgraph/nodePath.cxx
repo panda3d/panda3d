@@ -916,7 +916,11 @@ get_hpr() const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
   nassertr(transform->has_hpr(), LVecBase3f(0.0f, 0.0f, 0.0f));
-  return transform->get_hpr();
+  LVecBase3f hpr = transform->get_hpr();
+  hpr[0] = fmod(hpr[0], 360);
+  hpr[1] = fmod(hpr[1], 360);
+  hpr[2] = fmod(hpr[2], 360);
+  return hpr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1401,7 +1405,12 @@ get_hpr(const NodePath &other) const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
   nassertr(transform->has_hpr(), LVecBase3f(0.0f, 0.0f, 0.0f));
-  return transform->get_hpr();
+  // now that we are range checking fields we must clamp this
+  LVecBase3f hpr = transform->get_hpr();
+  hpr[0] = fmod(hpr[0], 360);
+  hpr[1] = fmod(hpr[1], 360);
+  hpr[2] = fmod(hpr[2], 360);
+  return hpr;
 }
 
 ////////////////////////////////////////////////////////////////////
