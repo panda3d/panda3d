@@ -180,8 +180,7 @@ void ConfigTable::ReadConfigFile(void) {
       microconfig_cat->spam() << "examining file '" << config_file << "'"
                                << endl;
     if (config_file.is_executable()) {
-      ConfigString line = config_file.to_os_specific() + " "
-        + ExecutionEnvironment::get_binary_name();
+      ConfigString line = config_file.to_os_specific() + " " + configargs;
       if (microconfig_cat->is_spam())
         microconfig_cat->spam() << "file is executable, running '"
                                  << line << "'" << endl;
@@ -342,6 +341,7 @@ void ConfigTable::MicroConfig(void)
    bool fsep = false;
    bool cname = false;
    bool csuff = false;
+   bool cargs = false;
    bool cpath = false;
    bool ccmt = false;
    bool asuff = false;
@@ -413,6 +413,15 @@ void ConfigTable::MicroConfig(void)
                         << "got a microconfig configsuffix directive, "
                         << "setting the config file suffix to '"
                         << configsuffix << "'"
+                        << endl;
+               } else if (tok == "configargs") {
+                  configargs = rest;
+                  cargs = true;
+                  if (microconfig_cat->is_spam())
+                     microconfig_cat->spam()
+                        << "got a microconfig configargs directive, "
+                        << "setting the config file args to '"
+                        << configargs << "'"
                         << endl;
                } else if (tok == "configpath") {
                   if (cpath) {
@@ -524,6 +533,13 @@ void ConfigTable::MicroConfig(void)
       if (microconfig_cat->is_spam())
         microconfig_cat->spam() << "no microconfig for configsuffix, "
                                 << "setting to default '" << configsuffix
+                                << "'" << endl;
+   }
+   if (!cargs) {
+      ConfigArgsDefault();
+      if (microconfig_cat->is_spam())
+        microconfig_cat->spam() << "no microconfig for configargs, "
+                                << "setting to default '" << configargs
                                 << "'" << endl;
    }
    if (!cpath) {

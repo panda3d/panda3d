@@ -49,6 +49,7 @@ class EXPCL_DTOOLCONFIG ConfigTable {
       ConfigString filesep;
       ConfigString configname;
       ConfigString configsuffix;
+      ConfigString configargs;
       ConfigString configpath;
       ConfigString configcmt;
       ConfigString argsuffix;
@@ -70,6 +71,7 @@ class EXPCL_DTOOLCONFIG ConfigTable {
       INLINE void FileSepDefault(void);
       INLINE void ConfigNameDefault(void);
       INLINE void ConfigSuffixDefault(void);
+      INLINE void ConfigArgsDefault(void);
       INLINE void ConfigPathDefault(void);
       INLINE void ConfigCmtDefault(void);
       INLINE void ArgSuffixDefault(void);

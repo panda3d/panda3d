@@ -48,6 +48,10 @@ INLINE void ConfigTable::ConfigSuffixDefault(void) {
   configsuffix = "";
 }
 
+INLINE void ConfigTable::ConfigArgsDefault(void) {
+  configargs = "";
+}
+
 INLINE void ConfigTable::ConfigPathDefault(void) {
   configpath = "CFG_PATH";
 }
