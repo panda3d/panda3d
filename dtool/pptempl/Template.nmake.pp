@@ -794,14 +794,14 @@ $[TAB] move /y y.tab.c $[target]
 $[TAB] move /y y.tab.h $[target_header]
 $[osfilename $[target_header]] : $[patsubst %,$[osfilename %],$[target]]
 $[osfilename $[target_prebuilt]] : $[patsubst %,$[osfilename %],$[target]]
-$[TAB] xcopy /I/Y $[osfilename $[target]] $[osfilename $[target_prebuilt]]
+$[TAB] copy /Y $[osfilename $[target]] $[osfilename $[target_prebuilt]]
 $[osfilename $[target_header_prebuilt]] : $[patsubst %,$[osfilename %],$[target_header]]
-$[TAB] xcopy /I/Y $[osfilename $[target_header]] $[osfilename $[target_header_prebuilt]]
+$[TAB] copy /Y $[osfilename $[target_header]] $[osfilename $[target_header_prebuilt]]
 #else // HAVE_BISON
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[target_prebuilt]]
-$[TAB] xcopy /I/Y $[osfilename $[target_prebuilt]] $[osfilename $[target]]
+$[TAB] copy /Y $[osfilename $[target_prebuilt]] $[osfilename $[target]]
 $[osfilename $[target_header]] : $[patsubst %,$[osfilename %],$[target_header_prebuilt]]
-$[TAB] xcopy /I/Y $[osfilename $[target_header_prebuilt]] $[osfilename $[target_header]]
+$[TAB] copy /Y $[osfilename $[target_header_prebuilt]] $[osfilename $[target_header]]
 #endif // HAVE_BISON
 
 #end file
@@ -819,10 +819,10 @@ $[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file
 $[TAB] $[subst ',",$[SED]]
 $[TAB] if exist lex.yy.c del /f lex.yy.c
 $[osfilename $[target_prebuilt]] : $[patsubst %,$[osfilename %],$[target]]
-$[TAB] xcopy /I/Y $[osfilename $[target]] $[osfilename $[target_prebuilt]]
+$[TAB] copy /Y $[osfilename $[target]] $[osfilename $[target_prebuilt]]
 #else // HAVE_BISON
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[target_prebuilt]]
-$[TAB] xcopy /I/Y $[osfilename $[target_prebuilt]] $[osfilename $[target]]
+$[TAB] copy /Y $[osfilename $[target_prebuilt]] $[osfilename $[target]]
 #endif // HAVE_BISON
 
 #end file
