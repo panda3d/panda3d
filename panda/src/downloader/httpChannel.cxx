@@ -1082,7 +1082,7 @@ run_reading_header() {
       _client->generate_auth(_proxy, true, authenticate_request);
     if (_proxy_auth != (HTTPAuthorization *)NULL) {
       _proxy_realm = _proxy_auth->get_realm();
-      _proxy_username = _client->select_username(_proxy, false, _proxy_realm);
+      _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
       if (!_proxy_username.empty()) {
         make_request_text();
 
