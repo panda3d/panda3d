@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "nurbsCurve.h"
+#include "config_parametrics.h"
 
 ////////////////////////////////////////////////////////////////////
 // Statics
@@ -60,9 +61,9 @@ NurbsCurve(const ParametricCurve &pc) {
   _order = 4;
   
   if (!pc.convert_to_nurbs(*this)) {
-    ///DWARNING(dnparametrics) 
-      ///<< "Cannot make a NURBS from the indicated curve."
-      ///<< dnend;
+    parametrics_cat->warning() 
+      << "Cannot make a NURBS from the indicated curve."
+      << endl;
   }
 }
 
@@ -101,13 +102,13 @@ NurbsCurve(int order, int num_cvs,
 void NurbsCurve::
 set_order(int order) {
   if (order < 1 || order > 4) {
-    ///DWARNING(dnparametrics) 
-      ///<< "Invalid NURBS curve order: " << order << dnend;
+    parametrics_cat->warning()
+      << "Invalid NURBS curve order: " << order << endl;
     return;
   }
   if (!_cvs.empty()) {
-    ///DWARNING(dnparametrics) 
-      ///<< "Cannot change NURBS curve order on a nonempty curve." << dnend;
+    parametrics_cat->warning()
+      << "Cannot change NURBS curve order on a nonempty curve." << endl;
     return;
   }
   _order = order;
@@ -614,7 +615,7 @@ rebuild_curveseg(int rtype0, double t0, const LVector4f &v0,
   // Figure out which CV's contributed to this segment.
   int seg = 0;
 
-  ///dnassert(_cvs.size() > _order-1);
+  nassertr(_cvs.size() > _order-1, false);
 
   int cv = 0;
   for (cv = 0; cv < _cvs.size()-(_order-1); cv++) {
@@ -752,16 +753,16 @@ write_egg(ostream &out, const char *basename) {
 void NurbsCurve::
 splice(double t, const NurbsCurve &other) {
   if (other._order != _order) {
-    ///DWARNING(dnparametrics)
-      ///<< "Cannot splice NURBS curves of different orders!" << dnend;
+    parametrics_cat->warning()
+      << "Cannot splice NURBS curves of different orders!" << endl;
     return;
   }
 
   double old_t = get_max_t();
 
   if (t < old_t) {
-    ///DWARNING(dnparametrics)
-      ///<< "Invalid splicing in the middle of a curve!" << dnend;
+    parametrics_cat->warning()
+      << "Invalid splicing in the middle of a curve!" << endl;
     t = old_t;
   }
 
