@@ -967,7 +967,7 @@ class MopathRecorder(AppShell, PandaObject):
                 # Start new task
                 t = taskMgr.spawnMethodNamed(
                     self.recordTask, self.name + '-recordTask')
-                t.startTime = globalClock.getTime()
+                t.startTime = globalClock.getFrameTime()
         else:
             if self.samplingMode == 'Continuous':
                 # Kill old task
@@ -1002,7 +1002,7 @@ class MopathRecorder(AppShell, PandaObject):
             
     def recordTask(self, state):
         # Record raw data point
-        time = self.recordStart + (globalClock.getTime() - state.startTime)
+        time = self.recordStart + (globalClock.getFrameTime() - state.startTime)
         self.recordPoint(time)
         return Task.cont
 
@@ -1311,7 +1311,7 @@ class MopathRecorder(AppShell, PandaObject):
         t = taskMgr.spawnMethodNamed(
             self.playbackTask, self.name + '-playbackTask')
         t.currentTime = self.playbackTime
-        t.lastTime = globalClock.getTime()
+        t.lastTime = globalClock.getFrameTime()
 
     def setSpeedScale(self, value):
         self.speedScale.set(value)
@@ -1320,7 +1320,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.playbackSF = pow(10.0, float(value))
         
     def playbackTask(self, state):
-        time = globalClock.getTime()
+        time = globalClock.getFrameTime()
         dTime = self.playbackSF * (time - state.lastTime)
         state.lastTime = time
         if self.loopPlayback:

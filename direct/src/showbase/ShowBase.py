@@ -118,7 +118,7 @@ class ShowBase:
         self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
         self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
-        self.mouse2cam.node().setArc(self.camera.getBottomArc())
+        self.mouse2cam.node().setArc(self.camera.arc())
         self.useDrive()
 
         self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower())
@@ -283,7 +283,7 @@ class ShowBase:
         self.trackball.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the drive
         self.mouseInterface = self.drive
-        self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
+        self.mouseInterfaceNode = self.mouseInterface.node()
         self.drive.node().reset()
         # Hookup the drive to the camera.  Make sure it is first in
         # the list of children of the mouseValve.
@@ -300,7 +300,7 @@ class ShowBase:
         self.drive.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the trackball
         self.mouseInterface = self.trackball
-        self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
+        self.mouseInterfaceNode = self.mouseInterface.node()
         # Hookup the trackball to the camera.  Make sure it is first
         # in the list of children of the mouseValve.
         self.trackball.reparentTo(self.mouseValve, 0)
@@ -342,7 +342,7 @@ class ShowBase:
             self.mouseValve.node().setControl(1, self.oobeControl)
             self.oobeTrackball = self.mouseValve.attachNewNode(Trackball('oobeTrackball'), 1)
             self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
-            self.oobe2cam.node().setArc(self.oobeCameraTrackball.getBottomArc())
+            self.oobe2cam.node().setArc(self.oobeCameraTrackball.arc())
 
             self.oobeButtonEventsType = TypeRegistry.ptr().findType('ButtonEvents_ButtonEventDataTransition')
 

@@ -315,7 +315,7 @@ get_num_children() const {
   nassertr(verify_connectivity(), 0);
   nassertr(!is_empty(), 0);
 
-  return get_bottom_node()->get_num_children(_graph_type);
+  return node()->get_num_children(_graph_type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -332,7 +332,7 @@ get_child(int n) const {
   nassertr(n >= 0 && n < get_num_children(), NodePath());
 
   NodePath result(*this);
-  result.extend_by(get_bottom_node()->get_child(_graph_type, n));
+  result.extend_by(node()->get_child(_graph_type, n));
   return result;
 }
 
@@ -371,9 +371,9 @@ get_parent() const {
 //               if there is no connection to the indicated node.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
-find_path_down_to(Node *node) const {
+find_path_down_to(Node *dnode) const {
   NodePath result(*this);
-  if (result.extend_down_to(node)) {
+  if (result.extend_down_to(dnode)) {
     return result;
   }
   return NodePath();
@@ -1449,24 +1449,4 @@ show_collision_solids() {
 INLINE void NodePath::
 hide_collision_solids() {
   find_all_matches("**/+CollisionNode").hide();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_bottom_node
-//       Access: Public
-//  Description: This function is deprecated.  Use node() instead.
-////////////////////////////////////////////////////////////////////
-INLINE Node *NodePath::
-get_bottom_node() const {
-  return node();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_bottom_arc
-//       Access: Public
-//  Description: This function is deprecated.  Use arc() instead.
-////////////////////////////////////////////////////////////////////
-INLINE NodeRelation *NodePath::
-get_bottom_arc() const {
-  return arc();
 }

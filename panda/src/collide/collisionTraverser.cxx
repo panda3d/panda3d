@@ -240,7 +240,7 @@ traverse(const NodePath &root) {
     (*hi).first->begin_group();
   }
 
-  df_traverse(root.get_bottom_node(), *this, NullAttributeWrapper(), 
+  df_traverse(root.node(), *this, NullAttributeWrapper(), 
 	      level_state, _graph_type);
 
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {

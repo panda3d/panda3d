@@ -63,23 +63,23 @@ public:
 //               unambiguous behavior is required.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
-extend_by(Node *node) {
+extend_by(Node *dnode) {
   nassertr(verify_connectivity(), false);
-  nassertr(node != (Node *)NULL, false);
+  nassertr(dnode != (Node *)NULL, false);
   
   if (is_empty()) {
     nassertr(_head == (ArcComponent *)NULL, false);
-    _top_node = node;
+    _top_node = dnode;
     return true;
   }
 
-  Node *bottom_node = get_bottom_node();
-  NodeRelation *arc = find_arc(bottom_node, node, _graph_type);
+  Node *bottom_node = node();
+  NodeRelation *arc = find_arc(bottom_node, dnode, _graph_type);
   if (arc == (NodeRelation *)NULL) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
 	<< "Cannot extend " << *this << " by "
-	<< *node << "; no connection.\n";
+	<< *dnode << "; no connection.\n";
     }
     return false;
   }
@@ -109,7 +109,7 @@ extend_by(NodeRelation *arc) {
     _top_node = arc->get_parent();
   }
 
-  if (arc->get_parent() != get_bottom_node()) {
+  if (arc->get_parent() != node()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
 	<< "Cannot extend " << *this << " by arc " << *arc << "\n";
@@ -182,8 +182,8 @@ extend_by(const string &path) {
 //               if the node was not below this NodePath.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
-extend_down_to(Node *node) {
-  if (!is_empty() && get_bottom_node() == node) {
+extend_down_to(Node *dnode) {
+  if (!is_empty() && node() == dnode) {
     // We're already there!
     return true;
   }
@@ -192,14 +192,14 @@ extend_down_to(Node *node) {
   NodePathCollection col;
   FindApproxPath approx_path;
   approx_path.add_match_many();
-  approx_path.add_match_pointer(node);
+  approx_path.add_match_pointer(dnode);
   find_matches(col, approx_path, -1);
 
   if (col.is_empty()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
 	<< "Could not extend " << *this << " down to "
-	<< *node << "; no connection found.\n";
+	<< *dnode << "; no connection found.\n";
     }
     return false;
   }
@@ -263,10 +263,10 @@ get_children() const {
   nassertr(verify_connectivity(), result);
   nassertr(!is_empty(), result);
 
-  Node *node = get_bottom_node();
+  Node *bottom_node = node();
   DownRelations::const_iterator dri;
-  dri = node->_children.find(_graph_type);
-  if (dri != node->_children.end()) {
+  dri = bottom_node->_children.find(_graph_type);
+  if (dri != bottom_node->_children.end()) {
     const DownRelationPointers &drp = (*dri).second;
     
     DownRelationPointers::const_iterator drpi;
@@ -298,10 +298,10 @@ get_siblings() const {
   NodePath parent = *this;
   parent.shorten(1);
 
-  Node *node = parent.get_bottom_node();
+  Node *parent_node = parent.node();
   DownRelations::const_iterator dri;
-  dri = node->_children.find(_graph_type);
-  if (dri != node->_children.end()) {
+  dri = parent_node->_children.find(_graph_type);
+  if (dri != parent_node->_children.end()) {
     const DownRelationPointers &drp = (*dri).second;
     
     DownRelationPointers::const_iterator drpi;
@@ -326,13 +326,13 @@ get_siblings() const {
 //               shortest paths will be listed first.
 ////////////////////////////////////////////////////////////////////
 NodePathCollection NodePath::
-find_all_paths_down_to(Node *node) const {
+find_all_paths_down_to(Node *dnode) const {
   NodePathCollection col;
   nassertr(verify_connectivity(), col);
-  nassertr(node != (Node *)NULL, col);
+  nassertr(dnode != (Node *)NULL, col);
   FindApproxPath approx_path;
   approx_path.add_match_many();
-  approx_path.add_match_pointer(node);
+  approx_path.add_match_pointer(dnode);
   find_matches(col, approx_path, -1);
   return col;
 }
@@ -740,7 +740,7 @@ reparent_to(const NodePath &other, int sort) {
 
   NodeRelation *arc = _head->_arc;
 
-  arc->change_parent(other.get_bottom_node(), sort);
+  arc->change_parent(other.node(), sort);
 
   // Move our head pointer to the bottom of the new chain.  This will
   // update our own path, as well as all paths that share the same
@@ -796,21 +796,21 @@ instance_to(const NodePath &other, int sort) const {
   nassertr(!is_empty(), NodePath());
   nassertr(!other.is_empty(), NodePath());
 
-  Node *node = get_bottom_node();
-  NodeRelation *arc = 
-    NodeRelation::create_typed_arc(_graph_type, other.get_bottom_node(), 
-				   node, sort);
-  nassertr(arc != (NodeRelation *)NULL, NodePath());
-  nassertr(arc->is_exact_type(_graph_type), NodePath());
+  Node *bottom_node = node();
+  NodeRelation *darc = 
+    NodeRelation::create_typed_arc(_graph_type, other.node(), 
+				   bottom_node, sort);
+  nassertr(darc != (NodeRelation *)NULL, NodePath());
+  nassertr(darc->is_exact_type(_graph_type), NodePath());
 
   if (has_arcs()) {
     // Copy the transitions from this one's bottom arc, so the
     // instance will inherit the same local state by default.
-    arc->copy_transitions_from(get_bottom_arc());
+    darc->copy_transitions_from(arc());
   }
 
   NodePath instance(*this);
-  instance._head = new ArcComponent(arc, other._head);
+  instance._head = new ArcComponent(darc, other._head);
   return instance;
 }
 
@@ -835,24 +835,24 @@ copy_to(const NodePath &other, int sort) const {
   nassertr(!is_empty(), NodePath());
   nassertr(!other.is_empty(), NodePath());
 
-  Node *source_node = get_bottom_node();
+  Node *source_node = node();
   PT_Node copy_node = source_node->copy_subgraph(_graph_type);
   nassertr(copy_node != (Node *)NULL, NodePath());
 
-  NodeRelation *arc = 
-    NodeRelation::create_typed_arc(_graph_type, other.get_bottom_node(), 
+  NodeRelation *darc = 
+    NodeRelation::create_typed_arc(_graph_type, other.node(), 
 				   copy_node, sort);
-  nassertr(arc != (NodeRelation *)NULL, NodePath());
-  nassertr(arc->is_exact_type(_graph_type), NodePath());
+  nassertr(darc != (NodeRelation *)NULL, NodePath());
+  nassertr(darc->is_exact_type(_graph_type), NodePath());
 
   if (has_arcs()) {
     // Copy the transitions from this one's bottom arc, so the
     // duplicate will inherit the same local state by default.
-    arc->copy_transitions_from(get_bottom_arc());
+    darc->copy_transitions_from(arc());
   }
 
   NodePath instance(*this);
-  instance._head = new ArcComponent(arc, other._head);
+  instance._head = new ArcComponent(darc, other._head);
   return instance;
 }
 
@@ -870,12 +870,12 @@ copy_to(const NodePath &other, int sort) const {
 //               returned.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-attach_new_node(Node *node, int sort) const {
+attach_new_node(Node *dnode, int sort) const {
   nassertr(verify_connectivity(), NodePath());
   nassertr(!is_empty(), NodePath(_graph_type));
-  nassertr(node != (Node *)NULL, NodePath(_graph_type));
+  nassertr(dnode != (Node *)NULL, NodePath(_graph_type));
 
-  NodePath path(node, _graph_type);
+  NodePath path(dnode, _graph_type);
   return path.instance_to(*this, sort);
 }
 
@@ -1003,7 +1003,7 @@ void NodePath::
 analyze() const {
   nassertv(!is_empty());
   SceneGraphAnalyzer sga(_graph_type);
-  sga.add_node(get_bottom_node());
+  sga.add_node(node());
   sga.write(nout);
 }
 
@@ -1028,7 +1028,7 @@ int NodePath::
 flatten_light() {
   nassertr(!is_empty(), 0);
   SceneGraphReducer gr(_graph_type);
-  int num_removed = gr.flatten(get_bottom_node(), false);
+  int num_removed = gr.flatten(node(), false);
 
   if (sgmanip_cat.is_debug()) {
     sgmanip_cat.debug()
@@ -1059,8 +1059,8 @@ int NodePath::
 flatten_medium() {
   nassertr(!is_empty(), 0);
   SceneGraphReducer gr(_graph_type);
-  gr.apply_transitions(get_bottom_node());
-  int num_removed = gr.flatten(get_bottom_node(), false);
+  gr.apply_transitions(node());
+  int num_removed = gr.flatten(node(), false);
 
   if (sgmanip_cat.is_debug()) {
     sgmanip_cat.debug()
@@ -1091,8 +1091,8 @@ int NodePath::
 flatten_strong() {
   nassertr(!is_empty(), 0);
   SceneGraphReducer gr(_graph_type);
-  gr.apply_transitions(get_bottom_node());
-  int num_removed = gr.flatten(get_bottom_node(), true);
+  gr.apply_transitions(node());
+  int num_removed = gr.flatten(node(), true);
 
   if (sgmanip_cat.is_debug()) {
     sgmanip_cat.debug()
@@ -1119,7 +1119,7 @@ write_bam_file(const string &filename) const {
   bool okflag = false;
 
   if (bam_file.open_write(filename)) {
-    if (bam_file.write_object(get_bottom_node())) {
+    if (bam_file.write_object(node())) {
       okflag = true;
     }
     bam_file.close();
@@ -1727,7 +1727,7 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
 	_head->_arc->get_parent(), ForwardIterator(_head->_next), ForwardIterator(),
 	ntw, _graph_type);
   } else {
-    wrt(other.get_bottom_node(), ForwardIterator(other._head), ForwardIterator(),
+    wrt(other.node(), ForwardIterator(other._head), ForwardIterator(),
 	_head->_arc->get_parent(), ForwardIterator(_head->_next), ForwardIterator(),
 	ntw, _graph_type);
   }
@@ -1755,11 +1755,11 @@ get_mat(const NodePath &other) const {
 
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
   if (other.is_empty()) {
-    wrt(get_bottom_node(), ForwardIterator(_head), ForwardIterator(),
+    wrt(node(), ForwardIterator(_head), ForwardIterator(),
 	(Node *)NULL, ntw, _graph_type);
   } else {
-    wrt(get_bottom_node(), ForwardIterator(_head), ForwardIterator(),
-	other.get_bottom_node(), ForwardIterator(other._head), ForwardIterator(),
+    wrt(node(), ForwardIterator(_head), ForwardIterator(),
+	other.node(), ForwardIterator(other._head), ForwardIterator(),
 	ntw, _graph_type);
   }
   const TransformTransition *tt;
@@ -2564,20 +2564,20 @@ r_get_net_transitions(const ArcComponent *comp,
 //               node, either unnamed as a type, or as a name.
 ////////////////////////////////////////////////////////////////////
 string NodePath::
-format_node_name(Node *node) const {
-  nassertr(node != (Node *)NULL, string());
+format_node_name(Node *dnode) const {
+  nassertr(dnode != (Node *)NULL, string());
   string name;
-  if (node->is_of_type(NamedNode::get_class_type())) {
-    name = DCAST(NamedNode, node)->get_name();
+  if (dnode->is_of_type(NamedNode::get_class_type())) {
+    name = DCAST(NamedNode, dnode)->get_name();
   }
 
   if (name.empty()) {
     // No name.  If the type isn't one of the trivial types (Node or
     // NamedNode), use the type name instead, since it's likely to be
     // more unique.
-    if (!node->is_of_type(Node::get_class_type()) &&
-	!node->is_of_type(NamedNode::get_class_type())) {
-      return "-" + node->get_type().get_name();
+    if (!dnode->is_of_type(Node::get_class_type()) &&
+	!dnode->is_of_type(NamedNode::get_class_type())) {
+      return "-" + dnode->get_type().get_name();
     }
   }
 
@@ -2663,12 +2663,12 @@ r_find_matches(NodePathCollection &result,
       }
 
     } else {
-      Node *node = entry._node_path.get_bottom_node();
-      nassertv(node != (Node *)NULL);
+      Node *bottom_node = entry._node_path.node();
+      nassertv(bottom_node != (Node *)NULL);
 
       DownRelations::const_iterator dri;
-      dri = node->_children.find(_graph_type);
-      if (dri != node->_children.end()) {
+      dri = bottom_node->_children.find(_graph_type);
+      if (dri != bottom_node->_children.end()) {
 	const DownRelationPointers &drp = (*dri).second;
 	
 	DownRelationPointers::const_iterator drpi;
@@ -2694,13 +2694,13 @@ r_find_matches(NodePathCollection &result,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_list_descendants(ostream &out, int indent_level) const {
-  Node *node = get_bottom_node();
-  nassertv(node != (Node *)NULL);
-  indent(out, indent_level) << *node << "\n";
+  Node *bottom_node = node();
+  nassertv(bottom_node != (Node *)NULL);
+  indent(out, indent_level) << *bottom_node << "\n";
   
   DownRelations::const_iterator dri;
-  dri = node->_children.find(_graph_type);
-  if (dri != node->_children.end()) {
+  dri = bottom_node->_children.find(_graph_type);
+  if (dri != bottom_node->_children.end()) {
     const DownRelationPointers &drp = (*dri).second;
     
     DownRelationPointers::const_iterator drpi;
@@ -2720,15 +2720,15 @@ r_list_descendants(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_list_transitions(ostream &out, int indent_level) const {
-  Node *node = get_bottom_node();
-  nassertv(node != (Node *)NULL);
+  Node *bottom_node = node();
+  nassertv(bottom_node != (Node *)NULL);
 
   out << "\n+";
-  indent(out, indent_level + 1) << *node << "\n\n";
+  indent(out, indent_level + 1) << *bottom_node << "\n\n";
   
   DownRelations::const_iterator dri;
-  dri = node->_children.find(_graph_type);
-  if (dri != node->_children.end()) {
+  dri = bottom_node->_children.find(_graph_type);
+  if (dri != bottom_node->_children.end()) {
     const DownRelationPointers &drp = (*dri).second;
     
     DownRelationPointers::const_iterator drpi;
@@ -2755,10 +2755,10 @@ void NodePath::
 r_adjust_all_priorities(NodeRelation *arc, int adjustment) {
   arc->adjust_all_priorities(adjustment);
 
-  Node *node = arc->get_child();
+  Node *dnode = arc->get_child();
   DownRelations::const_iterator dri;
-  dri = node->_children.find(_graph_type);
-  if (dri != node->_children.end()) {
+  dri = dnode->_children.find(_graph_type);
+  if (dri != dnode->_children.end()) {
     const DownRelationPointers &drp = (*dri).second;
     
     DownRelationPointers::const_iterator drpi;

@@ -48,7 +48,7 @@ class DirectJoybox(PandaObject):
                         R_TWIST, L_TWIST, NULL_AXIS]
         self.modifier = [1,1,1,-1,-1,0]
         # Initialize time
-        self.lastTime = globalClock.getTime()
+        self.lastTime = globalClock.getFrameTime()
         # Record node path
         self.nodePath = nodePath
         # Ref CS for orbit mode
@@ -121,7 +121,7 @@ class DirectJoybox(PandaObject):
     
     def updateVals(self):
         # Update delta time
-        cTime = globalClock.getTime()
+        cTime = globalClock.getFrameTime()
         self.deltaTime = cTime - self.lastTime
         self.lastTime = cTime
         # Update analogs

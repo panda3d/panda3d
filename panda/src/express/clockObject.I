@@ -211,30 +211,6 @@ get_global_clock() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::get_time
-//       Access: Public
-//  Description: Returns get_frame_time().  The use of this function
-//               is deprecated and the function will soon disappear;
-//               use get_frame_time() instead.
-////////////////////////////////////////////////////////////////////
-INLINE double ClockObject::
-get_time() const {
-  return get_frame_time();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::set_time
-//       Access: Public
-//  Description: Calls set_real_time().  The use of this function
-//               is deprecated and the function will soon disappear;
-//               use set_real_time() instead.
-////////////////////////////////////////////////////////////////////
-INLINE void ClockObject::
-set_time(double time) {
-  set_real_time(time);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TimeVal::contructor
 //       Access: Public
 //  Description:

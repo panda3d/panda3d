@@ -20,7 +20,7 @@ def getTimeFrame():
     # you must manually tick the clock
 
     # Ask for the time last frame
-    t = globalClock.getTime()
+    t = globalClock.getFrameTime()
 
     # Get the new frame count
     f = globalClock.getFrameCount()
@@ -381,8 +381,8 @@ class TaskManager:
     def run(self):
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
-        t = globalClock.getTime()
-        globalClock.setTime(t)
+        t = globalClock.getFrameTime()
+        globalClock.setRealTime(t)
         if self.stepping:
             self.step()
         else:

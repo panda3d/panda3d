@@ -345,7 +345,7 @@ class DirectBoundingBox:
         # Get a node path's bounds
         nodeBounds = self.nodePath.node().getBound()
         for child in self.nodePath.getChildrenAsList():
-            nodeBounds.extendBy(child.getBottomArc().getBound())
+            nodeBounds.extendBy(child.arc().getBound())
             return nodeBounds.makeCopy()
 
     def show(self):

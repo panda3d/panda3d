@@ -29,14 +29,15 @@ END_PUBLISH
 //       Class : ClockObject
 // Description : A ClockObject keeps track of elapsed real time and
 //               discrete time.  It can run in two modes: In normal
-//               mode, get_time() returns the time as of the last time
-//               tick() was called.  This is the "discrete" time, and
-//               is usually used to get the time as of, for instance,
-//               the beginning of the current frame.  In non-real-time
-//               mode, get_time() returns a constant increment since
-//               the last time tick() was called; this is useful when
-//               it is desirable to fake the clock out, for instance
-//               for non-real-time animation rendering.
+//               mode, get_frame_time() returns the time as of the
+//               last time tick() was called.  This is the "discrete"
+//               time, and is usually used to get the time as of, for
+//               instance, the beginning of the current frame.  In
+//               non-real-time mode, get_frame_time() returns a
+//               constant increment since the last time tick() was
+//               called; this is useful when it is desirable to fake
+//               the clock out, for instance for non-real-time
+//               animation rendering.
 //
 //               In both modes, get_real_time() always returns the
 //               elapsed real time in seconds since the ClockObject
@@ -46,8 +47,8 @@ END_PUBLISH
 //               to have your own local timer.  There is also a
 //               default, global ClockObject intended to represent
 //               global time for the application; this is normally set
-//               up to tick every frame so that its get_time() will
-//               return the time for the current frame.
+//               up to tick every frame so that its get_frame_time()
+//               will return the time for the current frame.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS ClockObject {
 PUBLISHED:
@@ -80,10 +81,6 @@ PUBLISHED:
   void tick();
 
   INLINE static ClockObject *get_global_clock();
-
-  // Deprecated functions.
-  INLINE double get_time() const;
-  INLINE void set_time(double time);
 
 private:
   TrueClock *_true_clock;

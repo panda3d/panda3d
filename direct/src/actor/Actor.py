@@ -684,7 +684,7 @@ class Actor(PandaObject, NodePath):
             dt = DirectRenderTransition()
 
         # make the back part have the proper transition
-        backPart.getBottomArc().setTransition(dt)
+        backPart.arc().setTransition(dt)
 
         #reparent all the front parts to the back part
         frontParts.reparentTo(backPart)

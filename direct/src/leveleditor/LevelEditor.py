@@ -491,10 +491,10 @@ class LevelEditor(NodePath, PandaObject):
         hpr = direct.camera.getHpr()
         hpr.set(hpr[0], 0.0, 0.0)
         # Fine tune the drive mode
-        base.mouseInterface.getBottomNode().setPos(pos)
-        base.mouseInterface.getBottomNode().setHpr(hpr)
-        base.mouseInterface.getBottomNode().setForwardSpeed(20.0)
-        base.mouseInterface.getBottomNode().setReverseSpeed(20.0)
+        base.mouseInterface.node().setPos(pos)
+        base.mouseInterface.node().setHpr(hpr)
+        base.mouseInterface.node().setForwardSpeed(20.0)
+        base.mouseInterface.node().setReverseSpeed(20.0)
 
     def enableMouse(self):
 	""" Enable Pie Menu interaction (and disable player camera control) """
@@ -1348,7 +1348,7 @@ class LevelEditor(NodePath, PandaObject):
     def createMap(self, neighborhood):
 	map = loader.loadModel('models/level_editor/' + neighborhood +
                                '_layout')
-	map.getBottomArc().setTransition(TransparencyTransition(1))
+	map.arc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
         self.mapDictionary[neighborhood] = map
         # Make sure this item isn't pickable

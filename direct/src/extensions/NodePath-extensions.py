@@ -6,7 +6,7 @@
 
     def id(self):
         """Returns the bottom node's this pointer as a unique id"""
-        return self.getBottomArc()
+        return self.arc()
 
     def getName(self):
         """Returns the name of the bottom node if it exists, or <noname>"""

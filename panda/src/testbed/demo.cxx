@@ -226,7 +226,7 @@ set_highlight() {
     nout << "Bounding volume of arc is " << *selected_node.get_bounds() << "\n";
     
     nout << "Transitions on arc:\n";
-    selected_node.get_bottom_arc()->write_transitions(nout, 2);
+    selected_node.arc()->write_transitions(nout, 2);
     selected_node.show_bounds();
   }
 
@@ -300,7 +300,7 @@ static void
 event_fkey(CPT_Event event) {
   if (selected_node.has_arcs()) {
     // Apply a color to the selected node.
-    NodeRelation *arc = selected_node.get_bottom_arc();
+    NodeRelation *arc = selected_node.arc();
     nassertv(arc != (NodeRelation *)NULL);
 
     if (event->get_name() == "f9") {
@@ -519,7 +519,7 @@ event_L(CPT_Event) {
 
     NodePath search(sky);
     NodePath sky_search = search.find("**/sun");
-    PT_Node light = sky_search.get_bottom_node();
+    PT_Node light = sky_search.node();
 
     flare->set_light_source(light);
     flare_arc = new RenderRelation(light, flare, 10);

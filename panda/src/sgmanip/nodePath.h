@@ -132,11 +132,11 @@ PUBLISHED:
 
   // Methods to extend or shorten a NodePath.
 
-  bool extend_by(Node *node);
+  bool extend_by(Node *dnode);
   bool extend_by(NodeRelation *arc);
   bool extend_by(const NodePath &other);
   bool extend_by(const string &path);
-  bool extend_down_to(Node *node);
+  bool extend_down_to(Node *dnode);
 
   void shorten(int num_nodes = 1);
   void clear();
@@ -179,11 +179,11 @@ PUBLISHED:
   INLINE bool has_parent() const;
   INLINE NodePath get_parent() const;
 
-  INLINE NodePath find_path_down_to(Node *node) const;
+  INLINE NodePath find_path_down_to(Node *dnode) const;
   INLINE NodePath find(const string &path) const;
 
   NodePathCollection
-  find_all_paths_down_to(Node *node) const;
+  find_all_paths_down_to(Node *dnode) const;
 
   NodePathCollection
   find_all_matches(const string &path) const;
@@ -200,7 +200,7 @@ PUBLISHED:
   void wrt_reparent_to(const NodePath &other, int sort = 0);
   NodePath instance_to(const NodePath &other, int sort = 0) const;
   NodePath copy_to(const NodePath &other, int sort = 0) const;
-  NodePath attach_new_node(Node *node, int sort = 0) const;
+  NodePath attach_new_node(Node *dnode, int sort = 0) const;
   INLINE NodePath attach_new_node(const string &name, int sort = 0) const;
   void remove_node();
 
@@ -451,10 +451,6 @@ PUBLISHED:
   PT(BoundingVolume) get_bounds() const;
   void write_bounds(ostream &out) const;
 
-  // Deprecated functions.  These will go away soon.
-  INLINE Node *get_bottom_node() const;
-  INLINE NodeRelation *get_bottom_arc() const;
-
 
 public:
   // This is a supporting class for passing the list of arcs to wrt().
@@ -477,7 +473,7 @@ private:
 			   ostream &out, int indent_level) const;
   void r_get_net_transitions(const ArcComponent *comp, 
 			     AllTransitionsWrapper &trans) const;
-  string format_node_name(Node *node) const;
+  string format_node_name(Node *dnode) const;
 
   void find_matches(NodePathCollection &result, 
 		    const string &approx_path_str,
