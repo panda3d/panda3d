@@ -102,6 +102,10 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             # might come in
             ##self.sendUpdate('setSpecOverride', [repr(self.spec)])
 
+        def getCurrentSpec(self):
+            """returns the complete, current spec, including any edits"""
+            return self.spec
+
         """
         def getSpecOverride(self):
             # This is the value we'll send until someone actually edits
