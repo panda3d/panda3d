@@ -24,13 +24,13 @@
 // generally one .h file per class, with the .h file named after the
 // class but the first letter lowercase.
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "localHeaderFile.h"
 #include "anotherLocalHeaderFile.h"
 
-#include <typedObject.h>
-#include <anotherPandaHeaderFile.h>
+#include "typedObject.h"
+#include "anotherPandaHeaderFile.h"
 
 #include <systemHeaderFile.h>
 

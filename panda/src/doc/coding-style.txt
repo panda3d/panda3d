@@ -1,0 +1,136 @@
+Almost any programming language gives a considerable amount of freedom
+to the programmer in style conventions.  Most programmers eventually
+develop a personal style and use it as they develop code.
+
+When multiple programmers are working together on one project, this
+can lead to multiple competing styles appearing throughout the code.
+This is not the end of the world, but it does tend to make the code
+more difficult to read and maintain if common style conventions are
+not followed throughout.
+
+It is much better if all programmers can agree to use the same style
+when working together on the same body of work.  It makes reading,
+understanding, and extending the existing code much easier and faster
+for everyone involved.  This is akin to all of the animators on a
+feature film training themselves to draw in one consistent style
+throughout the film.
+
+
+Often, there is no strong reason to prefer one style over another,
+except that at the end of the day just one must be chosen.
+
+
+The following lays out the conventions that we have agreed to use
+within Panda.  Most of these conventions originated from an
+amalgamation of the different styles of the first three programmers to
+do major development in Panda.  The decisions were often arbitrary,
+and some may object to the particular choices that were made.
+Although discussions about the ideal style for future work are still
+welcome, considerable code has already been written using these
+existing conventions, and the most important goal of this effort is
+consistency.  Thus, changing the style at this point would require
+changing all of the existing code as well.
+
+Note that not all existing Panda code follows these conventions.  This
+is unfortunate, but it in no way constitutes an argument in favor of
+abandoning the conventions.  Rather, it means we should make an effort
+to bring the older code into compliance as we have the opportunity.
+
+Naturally, these conventions only apply to C and C++ code; a
+completely different set of conventions has been established for
+Python code for the project, and those conventions will not be
+discussed here.
+
+
+SPACING:
+
+No tab characters should ever appear in a C++ file; we use only space
+characters to achieve the appropriate indentation.  Most editors can
+be configured to use spaces instead of tabs.
+
+We use two-character indentation.  That is, each nested level of
+indentation is two characters further to the right than the enclosing
+level.
+
+Spaces should generally surround operators, e.g. i + 1 instead of i+1.
+Spaces follow commas in a parameter list, and semicolons in a for
+statement.  Spaces are not placed immediately within parentheses;
+e.g. foo(a, b) rather than foo( a,b ).
+
+Resist writing lines of code that extend beyond 80 columns; instead,
+fold a long line when possible.  Occasionally a line cannot be easily
+folded and remain readable, so this should be taken as more of a
+suggestion than a fixed rule, but most lines can easily be made to fit
+within 80 columns.
+
+Comments should never extend beyond 80 columns, especially sentence or
+paragraph comments that appear on a line or lines by themselves.
+These should generally be wordwrapped within 72 columns.  Any smart
+editor can do this easily.
+
+
+CURLY BRACES:
+
+In general, the opening curly brace for a block of text trails the
+line that introduces it, and the matching curly brace is on a line by
+itself, lined up with the start of the introducing line, e.g.:
+
+  for (int i = 0; i < 10; i++) {
+    ...
+  }
+
+Commands like if, while, and for should always use curly braces, even
+if they only enclose one command.  That is, do this:
+
+  if (foo) {
+    bar();
+  }
+
+instead of this:
+
+  if (foo)
+    bar();
+
+
+NAMING:
+
+Class names are mixed case with an initial capital, e.g. MyNewClass.
+Each different class (except nested classes, of course) is defined in
+its own header file named the same as the class itself, but with the
+first letter lowercase, e.g. myNewClass.h.
+
+Typedef names and other type names follow the same convention as class
+names: mixed case with an initial capital.  These need not be defined
+in their own header file, but usually typedef names will be scoped
+within some enclosing class.
+
+Local variable names are lowercase with an underscore delimiting
+words: my_value.  Class data members, including static data members,
+are the same, but with a leading underscore: _my_data_member.  We do
+not use Hungarian notation.
+
+Class method names, as well as standalone function names, are
+lowercase with a delimiting underscore, just like local variable
+names: my_function().
+
+
+LANGUAGE CONSTRUCTS:
+
+Prefer C++ constructs over equivalent C constructs when writing C++
+code.  For instance, use:
+
+  static const int buffer_size = 1024;
+
+instead of:
+
+  #define BUFFER_SIZE 1024
+
+
+Resist using brand-new C++ features that are not broadly supported by
+compilers.  One of our goals in Panda is ease of distribution to a
+wide range of platform; this goal is thwarted if only a few compilers
+may be used.
+
+
+More examples of the agreed coding style may be found in
+panda/src/doc/sampleClass.* .
