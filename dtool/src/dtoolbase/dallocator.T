@@ -59,25 +59,20 @@ deallocate(void *p, size_t) {
 
 template<class Type>
 INLINE dallocator<Type>::
-dallocator() {
-}
-
-template<class Type>
-INLINE dallocator<Type>::
-dallocator(const allocator<Type> &copy) {
+dallocator() throw() {
 }
 
 template<class Type>
 INLINE dallocator<Type>::pointer dallocator<Type>::
 allocate(dallocator<Type>::size_type n, allocator<void>::const_pointer) {
-  return (dallocator<Type>::pointer)default_operator_new(n * sizeof(Type));
+  return (dallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
 }
 
 template<class Type>
 INLINE void dallocator<Type>::
 //deallocate(dallocator<Type>::pointer p, allocator<Type>::size_type) {
 deallocate(void *p, allocator<Type>::size_type) {
-  default_operator_delete(p);
+  (*global_operator_delete)(p);
 }
 
 #endif  // *_STYLE_ALLOCATOR

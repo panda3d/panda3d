@@ -78,10 +78,17 @@ public:
 template<class Type>
 class dallocator : public allocator<Type> {
 public:
-  INLINE dallocator();
-  INLINE dallocator(const allocator<Type> &copy);
+  INLINE dallocator() throw();
+
+  // template member functions in VC++ can only be defined in-class.
+  template<class U>
+  INLINE dallocator(const dallocator<U> &copy) throw() { }
+
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(void *p, size_type n);
+
+  template<class U>
+  struct rebind { typedef dallocator<U> other; };
 };
 
 #else
