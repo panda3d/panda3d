@@ -192,6 +192,7 @@ is_valid() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_num_channels(int num_channels) {
+  nassertv(num_channels >= 1 && num_channels <= 4);
   set_color_type((ColorType)num_channels);
 }
 

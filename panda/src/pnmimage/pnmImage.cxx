@@ -54,6 +54,7 @@ void PNMImage::
 clear(int x_size, int y_size, int num_channels,
       xelval maxval, PNMFileType *type) {
   clear();
+  nassertv(num_channels >= 1 && num_channels <= 4);
 
   _x_size = x_size;
   _y_size = y_size;
@@ -273,6 +274,7 @@ write(PNMWriter *writer) const {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 set_color_type(PNMImage::ColorType color_type) {
+  nassertv((int)color_type >= 1 && (int)color_type <= 4);
   if (color_type == get_color_type()) {
     return;
   }
