@@ -25,6 +25,8 @@
 #include "rotate_to.h"
 #include "executionEnvironment.h"
 
+#include <stdio.h>  // for sprintf()
+
 StitchImage::
 StitchImage(const string &name, const string &filename,
             StitchLens *lens, const LVecBase2d &size_pixels,

@@ -1,3 +1,7 @@
+// This directory is temporarily commented out until it can be brought
+// into the new scene graph.
+#define BUILD_DIRECTORY
+
 #begin ss_lib_target
   #define TARGET stitchviewer
   #define LOCAL_LIBS stitchbase

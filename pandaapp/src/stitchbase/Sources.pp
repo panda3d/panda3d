@@ -6,7 +6,7 @@
   #define LOCAL_LIBS pandaappbase
   #define OTHER_LIBS \
     progbase \
-    putil:c express:c mathutil:c linmath:c pnmimage:c pnm:c panda:m
+    putil:c express:c mathutil:c linmath:c pnmimage:c panda:m
   #define UNIX_SYS_LIBS \
     m
 

@@ -20,8 +20,9 @@
 #include "stitchImage.h"
 #include "stitchPoint.h"
 
-#include <rotate_to.h>
-#include <compose_matrix.h>
+#include "rotate_to.h"
+#include "compose_matrix.h"
+#include <algorithm>
 
 
 Stitcher::MatchingPoint::

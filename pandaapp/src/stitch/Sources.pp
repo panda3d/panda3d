@@ -33,6 +33,8 @@
 #end bin_target
 
 #begin bin_target
+  // Temporarily commented out until we can bring this to new scene graph.
+  #define BUILD_TARGET
   #define TARGET stitch-viewer
   #define LOCAL_LIBS \
     stitchviewer stitchbase
