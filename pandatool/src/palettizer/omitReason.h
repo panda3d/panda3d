@@ -49,6 +49,10 @@ enum OmitReason {
 
   OR_unknown,
   // The texture file cannot be read, so its size can't be determined.
+
+  OR_unused,
+  // The texture is no longer used by any of the egg files that
+  // formerly referenced it.
 };
 
 ostream &operator << (ostream &out, OmitReason omit);

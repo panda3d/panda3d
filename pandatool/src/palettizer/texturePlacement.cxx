@@ -282,7 +282,12 @@ determine_size() {
     }
   }
 
-  nassertr(_has_uvs, false);
+  if (!_has_uvs) {
+    force_replace();
+    _omit_reason = OR_unused;
+    return false;
+  }
+
   TexCoordd rounded_min_uv = min_uv;
   TexCoordd rounded_max_uv = max_uv;
 
