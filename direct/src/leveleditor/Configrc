@@ -1,4 +1,7 @@
 
+# This is a workaround to load Japanese fonts
+use-vfs 0
+
 want-tk 1
 want-directtools 1
 level-editor-hoods TT
