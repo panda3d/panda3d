@@ -743,7 +743,7 @@ process_model_node(MayaNodeDesc *node_desc) {
 
   if (mayaegg_cat.is_debug()) {
     mayaegg_cat.debug()
-      << path << ": " << dag_node.typeName();
+      << path << ": " << dag_node.typeName().asChar();
 
     if (MAnimUtil::isAnimated(dag_path)) {
       mayaegg_cat.debug(false)
