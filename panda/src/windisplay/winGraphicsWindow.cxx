@@ -874,6 +874,27 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         ReleaseCapture();
         handle_keyrelease(MouseButton::button(button), get_message_time());
         break;
+
+      case WM_MOUSEWHEEL:
+        {
+          int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+          int x = translate_mouse(LOWORD(lparam));
+          int y = translate_mouse(HIWORD(lparam));
+          double time = get_message_time();
+
+          if (delta >= 0) {
+            while (delta > 0) {
+              handle_keypress(MouseButton::wheel_up(), x, y, time);
+              delta -= WHEEL_DELTA;
+            }
+          } else {
+            while (delta < 0) {
+              handle_keypress(MouseButton::wheel_down(), x, y, time);
+              delta += WHEEL_DELTA;
+            }
+          }
+          return 0;
+        }
     
       case WM_IME_NOTIFY:
         if (wparam == IMN_SETOPENSTATUS) {

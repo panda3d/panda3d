@@ -35,11 +35,18 @@ PUBLISHED:
   static ButtonHandle one();
   static ButtonHandle two();
   static ButtonHandle three();
+  static ButtonHandle wheel_up();
+  static ButtonHandle wheel_down();
 
   static bool is_mouse_button(ButtonHandle button);
 
 public:
   static void init_mouse_buttons();
+
+  enum { num_mouse_buttons = 3 };
+  static ButtonHandle _buttons[num_mouse_buttons];
+  static ButtonHandle _wheel_up;
+  static ButtonHandle _wheel_down;
 };
 
 #endif

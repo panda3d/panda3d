@@ -18,13 +18,13 @@
 
 #include "mouseButton.h"
 #include "buttonRegistry.h"
-
-#include <stdio.h>
 #include "notify.h"
 
-static const int num_mouse_buttons = 3;
+#include <stdio.h>
 
-static ButtonHandle _buttons[num_mouse_buttons];
+ButtonHandle MouseButton::_buttons[num_mouse_buttons];
+ButtonHandle MouseButton::_wheel_up;
+ButtonHandle MouseButton::_wheel_down;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseButton::button
@@ -76,6 +76,28 @@ three() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::wheel_up
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle generated when the mouse
+//               wheel is rolled one notch upwards.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+wheel_up() {
+  return _wheel_up;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::wheel_down
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle generated when the mouse
+//               wheel is rolled one notch downwards.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+wheel_down() {
+  return _wheel_down;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseButton::is_mouse_button
 //       Access: Public, Static
 //  Description: Returns true if the indicated ButtonHandle is a mouse
@@ -108,4 +130,7 @@ init_mouse_buttons() {
 
     ButtonRegistry::ptr()->register_button(_buttons[i], numstr);
   }
+
+  ButtonRegistry::ptr()->register_button(_wheel_up, "wheel_up");
+  ButtonRegistry::ptr()->register_button(_wheel_down, "wheel_down");
 }
