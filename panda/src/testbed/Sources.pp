@@ -36,3 +36,9 @@
   #define TARGET test_texmem
   #define SOURCES test_texmem.cxx
 #end test_bin_target
+
+#begin test_bin_target
+  #define TARGET test_particles
+  
+  #define SOURCES test_particles.cxx
+#end test_bin_target
