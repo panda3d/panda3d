@@ -11,7 +11,7 @@
     dtoolconfig dtool pystub \
 
   #define WIN_SYS_LIBS \
-    d3dxof.lib
+    d3dxof.lib dxguid.lib
 
   #define SOURCES \
     config_xfile.cxx config_xfile.h \
