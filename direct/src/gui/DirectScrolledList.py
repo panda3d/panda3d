@@ -188,7 +188,7 @@ class DirectScrolledList(DirectFrame):
        
         if self['command']:
             # Pass any extra args to command
-            apply(self['command'], self['extraArgs'])    
+            apply(self['command'], self['extraArgs'])
         return ret
 
     def makeAllItems(self):
