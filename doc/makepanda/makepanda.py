@@ -1071,10 +1071,11 @@ def CopyFile(dstfile,srcfile):
 ########################################################################
 
 def CopyAllFiles(dstdir,srcdir,suffix=""):
+    suflen = len(suffix)
     files = os.listdir(srcdir)
     for x in files:
         if (os.path.isfile(srcdir+x)):
-            if x[-len(suffix):] == suffix:
+            if (suflen==0) or (x[-suflen:]==suffix):
                 CopyFile(dstdir+x, srcdir+x)
 
 ########################################################################
