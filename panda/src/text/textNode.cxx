@@ -23,6 +23,7 @@
 #include "fontPool.h"
 #include "default_font.h"
 #include "dynamicTextFont.h"
+#include "staticTextFont.h"
 #include "unicodeLatinMap.h"
 
 #include "compose_matrix.h"
@@ -47,6 +48,8 @@
 #include "renderState.h"
 #include "cullFaceAttrib.h"
 #include "dcast.h"
+#include "bamFile.h"
+#include "zStream.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -1715,17 +1718,35 @@ load_default_font() {
   }
 
   // Then, attempt to load the compiled-in font, if we have one.
-#if defined(HAVE_FREETYPE) && defined(COMPILE_IN_DEFAULT_FONT)
+#ifdef COMPILE_IN_DEFAULT_FONT
+#ifdef HAVE_FREETYPE
+  // Loading the compiled-in FreeType font is relatively easy.
   _default_font = new DynamicTextFont((const char *)default_font_data, 
                                       default_font_size, 0);
-  if (_default_font->is_valid()) {
-    return;
-  }
-#endif
 
-  // Finally, fall back to a hardcoded font file, which we hope is on
-  // the model path.  (Use text_default_font, above, if you don't want
-  // to use this file and would prefer to specify a different font
-  // file instead.)
-  _default_font = FontPool::load_font("cmss12");
+#else
+  // The compiled-in Bam font requires creating a BamFile object to
+  // decode it.
+  string data((const char *)default_font_data, default_font_size);
+
+#ifdef HAVE_ZLIB
+  // The font data is stored compressed; decompress it on-the-fly.
+  istringstream inz(data);
+  IDecompressStream in(&inz, false);
+
+#else
+  // The font data is stored uncompressed, so just load it.
+  istringstream in(data);
+#endif  // HAVE_ZLIB
+
+  BamFile bam_file;
+  if (bam_file.open_read(in, "default font stream")) {
+    PT(PandaNode) node = bam_file.read_node();
+    if (node != (PandaNode *)NULL) {
+      _default_font = new StaticTextFont(node);
+    }
+  }
+
+#endif  // HAVE_FREETYPE
+#endif  // COMPILE_IN_DEFAULT_FONT
 }
