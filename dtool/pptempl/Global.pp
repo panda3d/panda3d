@@ -395,6 +395,10 @@
 #defun get_libs
   #define alt_libs $[stl_libs] $[nspr_libs] $[python_libs] $[TARGET_LIBS]
 
+  #if $[WINDOWS_PLATFORM]
+    #set alt_libs $[alt_libs] $[WIN_SYS_LIBS] $[components $[WIN_SYS_LIBS],$[active_component_libs] $[transitive_link]]
+  #endif
+
   #foreach package $[use_packages]
     #set alt_libs $[alt_libs] $[$[package]_libs]
   #end package
