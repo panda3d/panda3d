@@ -138,6 +138,11 @@ protected:
   void global_keyboard_press(const MouseWatcherParameter &param);
   void global_keyboard_release(const MouseWatcherParameter &param);
 
+  INLINE void within_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
+  INLINE void without_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
+  void enter_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
+  void exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
+
   typedef pset< PT(MouseWatcherGroup) > Groups;
   Groups _groups;
 
@@ -151,6 +156,7 @@ protected:
   bool _button_down;
 
   bool _enter_multiple;
+  bool _implicit_click;
 
   string _button_down_pattern;
   string _button_up_pattern;

@@ -130,12 +130,11 @@ has_button() const {
 //     Function: MouseWatcherParameter::get_button
 //       Access: Published
 //  Description: Returns the mouse or keyboard button associated with
-//               this event.  It is valid to call this only if
-//               has_button(), above, returned true.
+//               this event.  If has_button(), above, returns false,
+//               this returns ButtonHandle::none().
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonHandle MouseWatcherParameter::
 get_button() const {
-  nassertr(has_button(), ButtonHandle::none());
   return _button;
 }
 

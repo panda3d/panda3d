@@ -56,6 +56,11 @@ MouseWatcher(const string &name) : DataNode(name) {
   // will only be "within" multiple regions, but "entered" into the
   // topmost of those.
   _enter_multiple = false;
+
+  // When this flag is true, moving the pointer into a region is
+  // enough to click it.  The click is simulated with mouse button
+  // one.
+  _implicit_click = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,12 +313,7 @@ set_current_regions(MouseWatcher::VRegions &regions) {
     } else if ((*old_ri) < (*new_ri)) {
       // Here's a region we don't have any more.
       MouseWatcherRegion *old_region = (*old_ri);
-      old_region->without(param);
-      throw_event_pattern(_without_pattern, old_region, ButtonHandle::none());
-      if (_enter_multiple) {
-        old_region->exit(param);
-        throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
-      }
+      without_region(old_region, param);
       any_changes = true;
       ++old_ri;
 
@@ -335,12 +335,7 @@ set_current_regions(MouseWatcher::VRegions &regions) {
   while (old_ri != _current_regions.end()) {
     // Here's a region we don't have any more.
     MouseWatcherRegion *old_region = (*old_ri);
-    old_region->without(param);
-    throw_event_pattern(_without_pattern, old_region, ButtonHandle::none());
-    if (_enter_multiple) {
-      old_region->exit(param);
-      throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
-    }
+    without_region(old_region, param);
     any_changes = true;
     ++old_ri;
   }
@@ -354,12 +349,7 @@ set_current_regions(MouseWatcher::VRegions &regions) {
     vector<MouseWatcherRegion *>::const_iterator ri;
     for (ri = new_regions.begin(); ri != new_regions.end(); ++ri) {
       MouseWatcherRegion *new_region = (*ri);
-      new_region->within(param);
-      throw_event_pattern(_within_pattern, new_region, ButtonHandle::none()); 
-      if (_enter_multiple) {
-        new_region->enter(param);
-        throw_event_pattern(_enter_pattern, new_region, ButtonHandle::none());
-      }
+      within_region(new_region, param);
     }
   }
 
@@ -378,13 +368,11 @@ set_current_regions(MouseWatcher::VRegions &regions) {
 
     if (new_preferred_region != _preferred_region) {
       if (_preferred_region != (MouseWatcherRegion *)NULL) {
-        _preferred_region->exit(param);
-        throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
+        exit_region(_preferred_region, param);
       }
       _preferred_region = new_preferred_region;
       if (_preferred_region != (MouseWatcherRegion *)NULL) {
-        _preferred_region->enter(param);
-        throw_event_pattern(_enter_pattern, _preferred_region, ButtonHandle::none());
+        enter_region(_preferred_region, param);
       }
     }
   }
@@ -731,6 +719,40 @@ global_keyboard_release(const MouseWatcherParameter &param) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::enter_region
+//       Access: Protected
+//  Description: Called internally to indicate the mouse pointer is no
+//               longer favoring the indicated region.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+enter_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
+  region->enter(param);
+  throw_event_pattern(_enter_pattern, region, ButtonHandle::none());
+  if (_implicit_click) {
+    MouseWatcherParameter param1(param);
+    param1.set_button(MouseButton::one());
+    region->press(param1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::exit_region
+//       Access: Protected
+//  Description: Called internally to indicate the mouse pointer is no
+//               longer favoring the indicated region.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
+  if (_implicit_click) {
+    MouseWatcherParameter param1(param);
+    param1.set_button(MouseButton::one());
+    region->release(param1);
+  }
+  region->exit(param);
+  throw_event_pattern(_leave_pattern, region, ButtonHandle::none());
 }
 
 ////////////////////////////////////////////////////////////////////

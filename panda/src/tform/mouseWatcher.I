@@ -405,3 +405,33 @@ INLINE ModifierButtons MouseWatcher::
 get_modifier_buttons() const {
   return _mods;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::within_region
+//       Access: Protected
+//  Description: Called internally to indicate the mouse pointer has
+//               moved within the indicated region's boundaries.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+within_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
+  region->within(param);
+  throw_event_pattern(_within_pattern, region, ButtonHandle::none());
+  if (_enter_multiple) {
+    enter_region(region, param);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::without_region
+//       Access: Protected
+//  Description: Called internally to indicate the mouse pointer has
+//               moved outside of the indicated region's boundaries.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+without_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
+  if (_enter_multiple) {
+    exit_region(region, param);
+  }
+  region->without(param);
+  throw_event_pattern(_without_pattern, region, ButtonHandle::none());
+}
