@@ -28,8 +28,8 @@ class ClientDistUpdate:
         # Only catch name and attribute errors
         # as all other errors are legit errors
         except (NameError, AttributeError), e:
-            ClientDistUpdate.notify.warning(cdc.name + "." + self.name +
-                                            " does not exist")
+            #ClientDistUpdate.notify.warning(cdc.name + "." + self.name +
+            #                                " does not exist")
             self.func = None
         return None
 
