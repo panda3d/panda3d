@@ -17,22 +17,20 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef DOWNLOADDB_H
 #define DOWNLOADDB_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
-#include <notify.h>
-#include <filename.h>
-#include <multifile.h>
+
+#include "pandabase.h"
+#include "notify.h"
+#include "filename.h"
+#include "multifile.h"
+#include "datagram.h"
+#include "datagramIterator.h"
 
 #include "pvector.h"
-#include <string>
-#include <pointerTo.h>
+#include "pointerTo.h"
 #include "pmap.h"
 
 #include "hashVal.h"
-#include <buffer.h>
+#include "buffer.h"
 
 /*
 //////////////////////////////////////////////////

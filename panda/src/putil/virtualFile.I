@@ -26,6 +26,18 @@ INLINE VirtualFile::
 VirtualFile() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::read_file
+//       Access: Public
+//  Description: Returns the entire contents of the file as a string.
+////////////////////////////////////////////////////////////////////
+INLINE string VirtualFile::
+read_file() const {
+  string result;
+  read_file(result);
+  return result;
+}
+
 
 INLINE ostream &
 operator << (ostream &out, const VirtualFile &file) {

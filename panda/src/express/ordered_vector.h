@@ -23,6 +23,7 @@
 
 #include "pvector.h"
 #include "pset.h"
+#include "notify.h"
 #include <algorithm>
 
 // There are some inheritance issues with template classes and typedef

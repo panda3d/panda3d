@@ -75,6 +75,19 @@ get_scale_factor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::read_subfile
+//       Access: Published
+//  Description: Returns a string that contains the entire contents of
+//               the indicated subfile.
+////////////////////////////////////////////////////////////////////
+INLINE string Multifile::
+read_subfile(int index) {
+  string result;
+  read_subfile(index, result);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::word_to_streampos
 //       Access: Private
 //  Description: Converts a size_t address read from the file to

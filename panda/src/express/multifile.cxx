@@ -21,6 +21,7 @@
 #include "config_express.h"
 #include "streamWriter.h"
 #include "streamReader.h"
+#include "datagram.h"
 #include "zStream.h"
 
 #include <algorithm>
@@ -715,29 +716,6 @@ get_subfile_compressed_length(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::read_subfile
-//       Access: Published
-//  Description: Fills the indicated Datagram with the data from the
-//               nth subfile.
-////////////////////////////////////////////////////////////////////
-void Multifile::
-read_subfile(int index, Datagram &data) {
-  nassertv(is_read_valid());
-  nassertv(index >= 0 && index < (int)_subfiles.size());
-  data.clear();
-
-  istream *in = open_read_subfile(index);
-  int byte = in->get();
-  while (!in->eof() && !in->fail()) {
-    data.add_int8(byte);
-    byte = in->get();
-  }
-  bool failed = in->fail();
-  delete in;
-  nassertv(!failed);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Multifile::extract_subfile
 //       Access: Published
 //  Description: Extracts the nth subfile into a file with the given
@@ -784,6 +762,30 @@ ls(ostream &out) const {
     string subfile_name = get_subfile_name(i);
     out << subfile_name << "\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::read_subfile
+//       Access: Public
+//  Description: Fills a string with the entire contents of
+//               the indicated subfile.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+read_subfile(int index, string &result) {
+  nassertr(is_read_valid(), false);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
+  result = string();
+
+  istream *in = open_read_subfile(index);
+  int byte = in->get();
+  while (!in->eof() && !in->fail()) {
+    result += (char)byte;
+    byte = in->get();
+  }
+  bool failed = in->fail();
+  delete in;
+  nassertr(!failed, false);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

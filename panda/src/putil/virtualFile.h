@@ -46,14 +46,18 @@ PUBLISHED:
   virtual bool is_directory() const;
   virtual bool is_regular_file() const;
 
-  bool read_file(Datagram &data) const;
-  virtual istream *open_read_file() const;
-
   PT(VirtualFileList) scan_directory() const;
 
   void output(ostream &out) const;
   void ls(ostream &out = cout) const;
   void ls_all(ostream &out = cout) const;
+
+  INLINE string read_file() const;
+
+public:
+  bool read_file(string &result) const;
+  virtual istream *open_read_file() const;
+
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list, 

@@ -53,40 +53,6 @@ is_regular_file(const Filename &filename) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileSystem::read_file
-//       Access: Published
-//  Description: Convenience function; fills the datagram up with the
-//               data from the indicated file, if it exists and can be
-//               read.  Returns true on success, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool VirtualFileSystem::
-read_file(const Filename &filename, Datagram &data) const {
-  PT(VirtualFile) file = get_file(filename);
-  return (file != (VirtualFile *)NULL && file->read_file(data));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileSystem::open_read_file
-//       Access: Published
-//  Description: Convenience function; returns a newly allocated
-//               istream if the file exists and can be read, or NULL
-//               otherwise.  Does not return an invalid istream.
-////////////////////////////////////////////////////////////////////
-INLINE istream *VirtualFileSystem::
-open_read_file(const Filename &filename) const {
-  PT(VirtualFile) file = get_file(filename);
-  if (file == (VirtualFile *)NULL) {
-    return NULL;
-  }
-  istream *str = file->open_read_file();
-  if (str != (istream *)NULL && str->fail()) {
-    delete str;
-    str = (istream *)NULL;
-  }
-  return str;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::ls
 //       Access: Published
 //  Description: Convenience function; lists the files within the
@@ -123,4 +89,52 @@ ls_all(const string &filename) const {
   } else {
     file->ls_all();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::read_file
+//       Access: Published
+//  Description: Convenience function; returns the entire contents of
+//               the indicated file as a string.
+////////////////////////////////////////////////////////////////////
+INLINE string VirtualFileSystem::
+read_file(const Filename &filename) const {
+  string result;
+  bool okflag = read_file(filename, result);
+  nassertr(okflag, string());
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::read_file
+//       Access: Public
+//  Description: Convenience function; fills the string up with the
+//               data from the indicated file, if it exists and can be
+//               read.  Returns true on success, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool VirtualFileSystem::
+read_file(const Filename &filename, string &result) const {
+  PT(VirtualFile) file = get_file(filename);
+  return (file != (VirtualFile *)NULL && file->read_file(result));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::open_read_file
+//       Access: Public
+//  Description: Convenience function; returns a newly allocated
+//               istream if the file exists and can be read, or NULL
+//               otherwise.  Does not return an invalid istream.
+////////////////////////////////////////////////////////////////////
+INLINE istream *VirtualFileSystem::
+open_read_file(const Filename &filename) const {
+  PT(VirtualFile) file = get_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    return NULL;
+  }
+  istream *str = file->open_read_file();
+  if (str != (istream *)NULL && str->fail()) {
+    delete str;
+    str = (istream *)NULL;
+  }
+  return str;
 }

@@ -73,9 +73,6 @@ PUBLISHED:
   INLINE bool is_directory(const Filename &filename) const;
   INLINE bool is_regular_file(const Filename &filename) const;
 
-  INLINE bool read_file(const Filename &filename, Datagram &data) const;
-  INLINE istream *open_read_file(const Filename &filename) const;
-
   INLINE void ls(const string &filename) const;
   INLINE void ls_all(const string &filename) const;
 
@@ -83,7 +80,12 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
+  INLINE string read_file(const Filename &filename) const;
+
 public:
+  INLINE bool read_file(const Filename &filename, string &result) const;
+  INLINE istream *open_read_file(const Filename &filename) const;
+
   void scan_mount_points(vector_string &names, const Filename &path) const;
 
 private:

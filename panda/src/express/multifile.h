@@ -21,8 +21,6 @@
 
 #include "pandabase.h"
 
-#include "datagram.h"
-#include "datagramIterator.h"
 #include "subStream.h"
 #include "filename.h"
 #include "ordered_vector.h"
@@ -73,13 +71,15 @@ PUBLISHED:
   bool is_subfile_compressed(int index) const;
   size_t get_subfile_compressed_length(int index) const;
 
-  void read_subfile(int index, Datagram &datagram);
+  INLINE string read_subfile(int index);
   bool extract_subfile(int index, const Filename &filename);
 
   void output(ostream &out) const;
   void ls(ostream &out = cout) const;
 
 public:
+  bool read_subfile(int index, string &result);
+
   // Special interfaces to work with iostreams, not necessarily files.
   bool open_read(istream *multifile_stream);
   bool open_write(ostream *multifile_stream);

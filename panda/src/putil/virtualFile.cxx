@@ -46,51 +46,6 @@ is_regular_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::read_file
-//       Access: Published
-//  Description: Fills up the indicated Datagram with the contents of
-//               the file, if it is a regular file.  Returns true on
-//               success, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool VirtualFile::
-read_file(Datagram &data) const {
-  data.clear();
-
-  istream *in = open_read_file();
-  if (in == (istream *)NULL) {
-    util_cat.info()
-      << "Unable to read " << get_filename() << "\n";
-    return false;
-  }
-  int byte = in->get();
-  while (!in->eof() && !in->fail()) {
-    data.add_int8(byte);
-    byte = in->get();
-  }
-  bool failed = in->fail() && !in->eof();
-  delete in;
-
-  if (failed) {
-    util_cat.info()
-      << "Error while reading " << get_filename() << "\n";
-  }
-  return !failed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::open_read_file
-//       Access: Published, Virtual
-//  Description: Opens the file for reading.  Returns a newly
-//               allocated istream on success (which you should
-//               eventually delete when you are done reading).
-//               Returns NULL on failure.
-////////////////////////////////////////////////////////////////////
-istream *VirtualFile::
-open_read_file() const {
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::scan_directory
 //       Access: Published
 //  Description: If the file represents a directory (that is,
@@ -192,6 +147,51 @@ ls_all(ostream &out) const {
   } else {
     r_ls_all(out, get_filename());
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::read_file
+//       Access: Public
+//  Description: Fills up the indicated string with the contents of
+//               the file, if it is a regular file.  Returns true on
+//               success, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+read_file(string &result) const {
+  result = string();
+
+  istream *in = open_read_file();
+  if (in == (istream *)NULL) {
+    util_cat.info()
+      << "Unable to read " << get_filename() << "\n";
+    return false;
+  }
+  int byte = in->get();
+  while (!in->eof() && !in->fail()) {
+    result += (char)byte;
+    byte = in->get();
+  }
+  bool failed = in->fail() && !in->eof();
+  delete in;
+
+  if (failed) {
+    util_cat.info()
+      << "Error while reading " << get_filename() << "\n";
+  }
+  return !failed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::open_read_file
+//       Access: Public, Virtual
+//  Description: Opens the file for reading.  Returns a newly
+//               allocated istream on success (which you should
+//               eventually delete when you are done reading).
+//               Returns NULL on failure.
+////////////////////////////////////////////////////////////////////
+istream *VirtualFile::
+open_read_file() const {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
