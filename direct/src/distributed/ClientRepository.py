@@ -18,7 +18,7 @@ from PyDatagramIterator import PyDatagramIterator
 class ClientRepository(ConnectionRepository.ConnectionRepository):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
-    def __init__(self, dcFileName):
+    def __init__(self):
         ConnectionRepository.ConnectionRepository.__init__(self, base.config)
 
         self.recorder = base.recorder
@@ -27,7 +27,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.name2cdc={}
         self.doId2do={}
         self.doId2cdc={}
-        self.parseDcFile(dcFileName)
+        self.parseDcFile()
         self.cache=CRCache.CRCache()
         self.serverDelta = 0
 
@@ -97,11 +97,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         """
         return time.time() + self.serverDelta
 
-    def parseDcFile(self, dcFileName):
+    def parseDcFile(self):
         self.dcFile = DCFile()
-        readResult = self.dcFile.read(dcFileName)
+        readResult = self.dcFile.readAll()
         if not readResult:
-            self.notify.error("Could not read dcfile: %s" % dcFileName.cStr())
+            self.notify.error("Could not read dc file.")
         self.hashVal = self.dcFile.getHash()
         return self.parseDcClasses(self.dcFile)
 

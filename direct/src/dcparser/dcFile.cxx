@@ -25,6 +25,7 @@
 #include "filename.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
+#include "executionEnvironment.h"
 #endif
 
 
@@ -49,6 +50,44 @@ DCFile::
     delete (*ci);
   }
 }
+
+#ifdef WITHIN_PANDA
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::read_all
+//       Access: Published
+//  Description: This special method reads all of the .dc files named
+//               by the "dc-file" Configrc variable, and loads them
+//               into the DCFile namespace.
+////////////////////////////////////////////////////////////////////
+bool DCFile::
+read_all() {
+  Config::ConfigTable::Symbol dc_files;
+  config_express.GetAll("dc-file", dc_files);
+
+  if (dc_files.empty()) {
+    cerr << "No files specified via dc-file Configrc variable!\n";
+    return false;
+  }
+
+  // When we use GetAll(), we might inadvertently read duplicate
+  // lines.  Filter them out with a set.
+  pset<string> already_read;
+  
+  Config::ConfigTable::Symbol::iterator si;
+  for (si = dc_files.begin(); si != dc_files.end(); ++si) {
+    string dc_file = ExecutionEnvironment::expand_string((*si).Val());
+    if (already_read.insert(dc_file).second) {
+      if (!read(dc_file)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+#endif  // WITHIN_PANDA
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::read

@@ -34,6 +34,10 @@ PUBLISHED:
   DCFile();
   ~DCFile();
 
+#ifdef WITHIN_PANDA
+  bool read_all();
+#endif
+
   bool read(Filename filename);
   bool read(istream &in, const string &filename = string());
 

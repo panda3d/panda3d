@@ -49,7 +49,7 @@ help() {
 
 int
 main(int argc, char *argv[]) {
-  extern char *optarg;
+  //  extern char *optarg;
   extern int optind;
   const char *optstr = "bvh";
 
