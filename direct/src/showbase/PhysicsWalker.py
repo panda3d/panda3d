@@ -276,8 +276,8 @@ class PhysicsWalker(DirectObject.DirectObject):
             rotation = dt * self.__rotationSpeed
 
             #debugTempH=self.avatarNodePath.getH()
-            assert self.avatarNodePath.getPos()==physObject.getPosition()
-            assert self.avatarNodePath.getHpr()==physObject.getOrientation().getHpr()
+            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+            assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
             # update pos:
             # Take a step in the direction of our previous heading.
@@ -297,8 +297,8 @@ class PhysicsWalker(DirectObject.DirectObject):
             # sync the change:
             self.actorNode.updateTransform()
 
-            assert self.avatarNodePath.getHpr()==physObject.getOrientation().getHpr()
-            assert self.avatarNodePath.getPos()==physObject.getPosition()
+            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+            assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
             #assert self.avatarNodePath.getH()==debugTempH-rotation
             messenger.send("avatarMoving")
         else:
