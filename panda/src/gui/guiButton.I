@@ -251,3 +251,43 @@ INLINE void GuiButton::set_behavior_event_parameter(int p) {
 INLINE int GuiButton::get_behavior_event_parameter(void) const {
   return this->_event_param;
 }
+
+INLINE void GuiButton::set_up_label(GuiLabel* l) {
+  _up = l;
+}
+
+INLINE void GuiButton::set_up_rollover_label(GuiLabel* l) {
+  _up_rollover = l;
+}
+
+INLINE void GuiButton::set_down_label(GuiLabel* l) {
+  _down = l;
+}
+
+INLINE void GuiButton::set_down_rollover_label(GuiLabel* l) {
+  _down_rollover = l;
+}
+
+INLINE void GuiButton::set_inactive_label(GuiLabel* l){
+  _inactive = l;
+}
+
+INLINE GuiLabel* GuiButton::get_up_label(void) const {
+  return _up;
+}
+
+INLINE GuiLabel* GuiButton::get_up_rollover_label(void) const {
+  return _up_rollover;
+}
+
+INLINE GuiLabel* GuiButton::get_down_label(void) const {
+  return _down;
+}
+
+INLINE GuiLabel* GuiButton::get_down_rollover_label(void) const {
+  return _down_rollover;
+}
+
+INLINE GuiLabel* GuiButton::get_inactive_label(void) const {
+  return _inactive;
+}
