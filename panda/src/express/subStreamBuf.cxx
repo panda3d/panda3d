@@ -291,6 +291,7 @@ underflow() {
         if (_end != (streampos)0) {
           _end = _cur;
         }
+        gbump(num_bytes);
         return EOF;
       }
 

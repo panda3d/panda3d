@@ -221,6 +221,7 @@ underflow() {
     if (read_count != num_bytes) {
       // Oops, we didn't read what we thought we would.
       if (read_count == 0) {
+        gbump(num_bytes);
         return EOF;
       }
 
