@@ -178,7 +178,7 @@ reload_implicit_pages() {
       // It's already from-os-specific by ppremake.
       Filename prc_dir_filename = default_prc_dir;
       if (scan_auto_prc_dir(prc_dir_filename)) {
-        _search_path.append_directory(default_prc_dir);
+        _search_path.append_directory(prc_dir_filename);
       }
     }
   }
