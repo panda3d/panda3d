@@ -43,17 +43,10 @@ class ClientDistUpdate:
         return None
 
     def updateField(self, cdc, do, di):
-
-        #func = eval(cdc.name + "." + cdc.name + "." + self.name)
-        #print("Calling: " + cdc.name + "." + cdc.name + "." + self.name +
-        #      " for do " + str(do.getDoId()))
-
         # Get the arguments into a list
         args = self.extractArgs(di)
-
         # Apply the function to the object with the arguments
         apply(self.func, [do] + args)
-
         return None
 
     def extractArgs(self, di):
