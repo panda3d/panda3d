@@ -1,4 +1,4 @@
-// Filename: audio_manager.cxx
+// Filename: audioManager.cxx
 // Created by:  skyler (June 6, 2001)
 // Prior system by: cary
 //
@@ -21,15 +21,11 @@
 #include "audioManager.h"
 
 #ifdef HAVE_SYS_SOUNDCARD_H
-  #include "LinuxAudioManager.h"
+  #include "linuxAudioManager.h"
 #elif defined(HAVE_RAD_MSS)
-  #include "MilesAudioManager.h"
-#elif defined(WIN32_VC)
-  #include "Win32AudioManager.h"
-#elif defined(HAVE_MIKMOD)
-  #include "MIKMODAudioManager.h"
+  #include "milesAudioManager.h"
 #else
-  #include "NullAudioManager.h"
+  #include "nullAudioManager.h"
 #endif
 
 
