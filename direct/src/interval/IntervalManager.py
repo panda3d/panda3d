@@ -53,7 +53,8 @@ class IntervalManager(CIntervalManager):
         # on the still-running intervals.
         index = self.getNextRemoval()
         while index >= 0:
-            self.ivals[index].privPostEvent()
+            if self.ivals[index]:
+                self.ivals[index].privPostEvent()
             self.ivals[index] = None
             index = self.getNextRemoval()
 
