@@ -42,6 +42,8 @@ PUBLISHED:
   INLINE bool operator != (const ModifierButtons &other) const;
   INLINE bool operator < (const ModifierButtons &other) const;
 
+  bool matches(const ModifierButtons &other) const;
+
   bool add_button(ButtonHandle button);
   bool has_button(ButtonHandle button) const;
   bool remove_button(ButtonHandle button);

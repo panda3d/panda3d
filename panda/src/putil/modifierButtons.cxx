@@ -54,6 +54,56 @@ ModifierButtons::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::matches
+//       Access: Published
+//  Description: Returns true if the set of buttons indicated as down
+//               by this ModifierButtons object is the same set of
+//               buttons indicated as down by the other
+//               ModifierButtons object.  The buttons indicated as up
+//               are not relevant.
+////////////////////////////////////////////////////////////////////
+bool ModifierButtons::
+matches(const ModifierButtons &other) const {
+  if (_button_list == other._button_list) {
+    // If the two objects share the same array, we only need to check
+    // the bitmask.  This is a simple optimization.
+    return (_state == other._state);
+  }
+
+  // The two objects do not share the same array; thus we have to do
+  // this one button at a time.  This is an n-squared operation, but
+  // presumably there will not be hundreds of buttons to compare.
+
+  // First, check that all the buttons indicated as down in our object
+  // are also indicated as down in the other object.
+  int num_down = 0;
+
+  int i;
+  for (i = 0; i < (int)_button_list.size(); i++) {
+    if (is_down(i)) {
+      if (!other.is_down(_button_list[i])) {
+        return false;
+      }
+      num_down++;
+    }
+  }
+
+  // Now make sure the total number of buttons indicated as down in
+  // our object matches the number indicated as down in the other
+  // object.  This ensures there aren't any additional buttons
+  // indicated down in the other object.
+  int num_other_buttons = other.get_num_buttons();
+  int num_other_down = 0;
+  for (i = 0; i < num_other_buttons; i++) {
+    if (other.is_down(i)) {
+      num_other_down++;
+    }
+  }
+
+  return (num_down == num_other_down);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::add_button
 //       Access: Published
 //  Description: Adds the indicated button to the set of buttons that

@@ -19,10 +19,12 @@
 #ifndef BUTTONTHROWER_H
 #define BUTTONTHROWER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <dataNode.h>
-#include <modifierButtons.h>
+#include "dataNode.h"
+#include "modifierButtons.h"
+#include "pvector.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ButtonThrower
@@ -40,6 +42,7 @@
 class EXPCL_PANDA ButtonThrower : public DataNode {
 PUBLISHED:
   ButtonThrower(const string &name = "");
+  ~ButtonThrower();
 
   void set_prefix(const string &prefix);
   bool has_prefix() const;
@@ -48,19 +51,31 @@ PUBLISHED:
   const ModifierButtons &get_modifier_buttons() const;
   void set_modifier_buttons(const ModifierButtons &mods);
 
-  const ModifierButtons &get_throw_buttons() const;
-  void set_throw_buttons(const ModifierButtons &throw_buttons);
+  void set_throw_buttons_active(bool flag);
+  bool get_throw_buttons_active() const;
 
-protected:
+  bool add_throw_button(const ModifierButtons &mods, const ButtonHandle &button);
+  bool remove_throw_button(const ModifierButtons &mods, const ButtonHandle &button);
+  bool has_throw_button(const ModifierButtons &mods, const ButtonHandle &button) const;
+  bool has_throw_button(const ButtonHandle &button) const;
+  void clear_throw_buttons();
+
+public:
+  virtual void write(ostream &out, int indent_level = 0) const;
+
+private:
   string _prefix;
   ModifierButtons _mods;
-  ModifierButtons _throw_buttons;
+
+  typedef pvector<ModifierButtons> ThrowButtonDef;
+  typedef pmap<ButtonHandle, ThrowButtonDef> ThrowButtons;
+  ThrowButtons _throw_buttons;
+  bool _throw_buttons_active;
 
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode
 ////////////////////////////////////////////////////////////////////
 public:
-
   virtual void
   transmit_data(AllTransitionsWrapper &data);
 

@@ -31,7 +31,11 @@ operator = (const ModifierButtons &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Equality Operator
 //       Access: Published
-//  Description:
+//  Description: The equality operator is an exact comparision: the
+//               two ModifierButtons are equal if they share the same
+//               button list--indeed, the same pointer--and they all
+//               the buttons have the same state.  Use matches() if a
+//               less exact equality test is needed.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModifierButtons::
 operator == (const ModifierButtons &other) const {
