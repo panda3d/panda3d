@@ -103,8 +103,8 @@ class Track(Interval.Interval):
 			prev.setT(t)
 			return
 		    else:
-			Interval.Interval.notify.warning(
-				'Track.setT(): state undefined at t: %f' % t)
+			#Interval.Interval.notify.warning(
+			#	'Track.setT(): state undefined at t: %f' % t)
 			return
 		elif (t0 <= t) and (t <= t0 + i.getDuration()):
 		    i.setT(t - t0)
