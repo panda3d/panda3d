@@ -74,7 +74,7 @@ bool dx_use_triangle_mipgen_filter = config_dxgsg8.GetBool("dx-use-triangle-mipg
 // expect lighting to work correctly.  Maybe one day there will be
 // another way to set this at runtime, instead of only as a configure
 // variable
-bool dx_auto_normalize_lighting = config_dxgsg8.GetBool("auto-normalize-lighting", false);
+bool dx_auto_normalize_lighting = config_dxgsg8.GetBool("auto-normalize-lighting", true);
 
 bool dx_show_fps_meter = config_dxgsg8.GetBool("show-fps-meter", false);
 float dx_fps_meter_update_interval = max(0.5,config_dxgsg8.GetFloat("fps-meter-update-interval", 1.7));

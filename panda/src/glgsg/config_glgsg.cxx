@@ -65,7 +65,7 @@ bool gl_save_mipmaps = config_glgsg.GetBool("gl-save-mipmaps", false);
 // expect lighting to work correctly.  Maybe one day there will be
 // another way to set this at runtime, instead of only as a configure
 // variable.
-bool gl_auto_normalize_lighting = config_glgsg.GetBool("auto-normalize-lighting", false);
+bool gl_auto_normalize_lighting = config_glgsg.GetBool("auto-normalize-lighting", true);
 
 // Configure this true to try to implement decals using a
 // DepthOffsetAttrib, false to do them with the more reliable 3-pass

@@ -62,7 +62,7 @@ bool dx_no_vertex_fog = config_dxgsg7.GetBool("dx-no-vertex-fog", false);
 // expect lighting to work correctly.  Maybe one day there will be
 // another way to set this at runtime, instead of only as a configure
 // variable
-bool dx_auto_normalize_lighting = config_dxgsg7.GetBool("auto-normalize-lighting", false);
+bool dx_auto_normalize_lighting = config_dxgsg7.GetBool("auto-normalize-lighting", true);
 
 bool dx_allow_software_renderer = config_dxgsg7.GetBool("dx-allow-software-renderer", false);
 bool dx_force_software_renderer = config_dxgsg7.GetBool("dx-force-software-renderer", false);
