@@ -1509,6 +1509,9 @@ class ShowBase(DirectObject.DirectObject):
         if self.exitFunc:
             self.exitFunc()
         self.notify.info("Exiting ShowBase.")
+        self.finalizeExit()
+
+    def finalizeExit(self):
         sys.exit()
 
     def startTk(self, fWantTk = 1):
