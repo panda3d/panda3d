@@ -57,6 +57,7 @@ public:
   virtual AudioTraits::PlayerClass* get_player(void) const;
   virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  static void destroy(AudioTraits::SoundClass*);
   // these are used by the loaders
   static WinMusic* load_midi(Filename);
   // these are used by the players
@@ -82,7 +83,7 @@ public:
 
 class EXPCL_PANDA WinMusicPlaying : public AudioTraits::PlayingClass {
 public:
-  WinMusicPlaying(AudioTraits::SourceClass*);
+  WinMusicPlaying(AudioTraits::SoundClass*);
   ~WinMusicPlaying(void);
 
   virtual AudioTraits::PlayingClass::PlayingStatus status(void);

@@ -646,8 +646,7 @@ void WinSamplePlaying::unlock(void) {
   CHECK_RESULT(result, "failed to unlock buffer");
 }
 
-WinMusicPlaying::WinMusicPlaying(AudioTraits::SoundClass* s)
-  : AudioTraits::PlayingClass(s) {
+WinMusicPlaying::WinMusicPlaying(AudioTraits::SoundClass* s) : AudioTraits::PlayingClass(s) {
   initialize();
 }
 
@@ -664,7 +663,7 @@ AudioTraits::PlayingClass::PlayingStatus WinMusicPlaying::status(void) {
   WinMusic* wm = (WinMusic*)_sound;
 
   if (wm->get_performance() && wm->get_music()) {
-    if (wm->get_performance()->IsPlaying(_music, NULL) == S_OK) {
+    if (wm->get_performance()->IsPlaying(wm->get_music(), NULL) == S_OK) {
       if (audio_cat->is_debug())
 	audio_cat->debug() << "returning PLAYING" << endl;
       return PLAYING;
@@ -694,44 +693,6 @@ void WinSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
     if (FAILED(result))
       audio_cat->error() << "sample play failed" << endl;
   }
-}
-
-void WinSamplePlayer::play_music(AudioTraits::MusicClass* music,
-			   AudioTraits::PlayingClass*) {
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "in WinSamplePlayer::play_music()" << endl;
-  initialize();
-  WinMusic* wmusic = (WinMusic*)music;
-  IDirectMusicPerformance* _perf = wmusic->get_performance();
-  IDirectMusicSegment* _msc = wmusic->get_music();
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "about to jump in: _perf = " << (void*)_perf
-                       << "  _msc = " << (void*)_msc << endl;
-  if (_perf && _msc) {
-    if (audio_cat->is_debug())
-      audio_cat->debug() << "made it inside" << endl;
-    // _msc->SetRepeats(0);
-    IDirectMusicSegmentState* segState;
-    // HRESULT result = _perf->PlaySegment(_msc, 0, 0, NULL);
-    HRESULT result = _perf->PlaySegment(_msc, 0, 0, &segState);
-    if (result != S_OK) {
-      audio_cat->error() << "music play failed" << endl;
-      switch (result) {
-      case E_OUTOFMEMORY: audio_cat->error() << "reports out of memory" << endl;
-        break;
-      case E_POINTER: audio_cat->error() << "reports invalid pointer" << endl;
-        break;
-      case DMUS_E_NO_MASTER_CLOCK: audio_cat->error() << "reports no master clock" << endl;
-        break;
-      case DMUS_E_SEGMENT_INIT_FAILED: audio_cat->error() << "reports segment init failed" << endl;
-        break;
-      case DMUS_E_TIME_PAST: audio_cat->error() << "reports time past" << endl;
-        break;
-      };
-    }
-  }
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "out of WinSamplePlayer::play_music()" << endl;
 }
 
 void WinSamplePlayer::set_volume(AudioTraits::PlayingClass*, int) {
