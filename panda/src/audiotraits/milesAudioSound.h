@@ -35,6 +35,9 @@ public:
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
   // specific whether you get the results.
+  // - Calling play() a second time on the same sound before it is
+  //   finished will start the sound again (creating a skipping or
+  //   stuttering effect).
   void play();
   void stop();
 
@@ -48,8 +51,17 @@ public:
   void set_loop_count(unsigned long loop_count=1);
   unsigned long get_loop_count() const;
   
-  // 0 = begining; length() = end.
+  // start_time in seconds: 0 = beginning; length() = end.
   // inits to 0.0.
+  // - Unlike the other get_* and set_* calls for a sound, the
+  //   current time position will change while the sound is playing.
+  //   To play the same sound from a time offset a second time,
+  //   explicitly set the time position again.  When looping, the
+  //   second and later loops will start from the beginning of the
+  //   sound.
+  // - If a sound is playing, calling get_time() repeatedly will
+  //   return different results over time.  e.g.:
+  //   float percent_complete = s.get_time() / s.length();
   void set_time(float start_time=0.0f);
   float get_time() const;
   
@@ -85,7 +97,6 @@ protected:
 private:
   HAUDIO _audio;
   PT(MilesAudioManager) _manager;
-  float _start_time; // 0..length()
   float _volume; // 0..1.0
   float _balance; // -1..1
   mutable float _length; // in seconds.

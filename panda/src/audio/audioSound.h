@@ -36,6 +36,9 @@ PUBLISHED:
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
   // specific whether you get the results.
+  // - Calling play() a second time on the same sound before it is
+  //   finished will start the sound again (creating a skipping or
+  //   stuttering effect).
   virtual void play() = 0;
   virtual void stop() = 0;
   
@@ -49,8 +52,17 @@ PUBLISHED:
   virtual void set_loop_count(unsigned long loop_count=1) = 0;
   virtual unsigned long get_loop_count() const = 0;
   
-  // start_time: 0 = begining; length() = end.
+  // start_time in seconds: 0 = beginning; length() = end.
   // inits to 0.0.
+  // - Unlike the other get_* and set_* calls for a sound, the
+  //   current time position will change while the sound is playing.
+  //   To play the same sound from a time offset a second time,
+  //   explicitly set the time position again.  When looping, the
+  //   second and later loops will start from the beginning of the
+  //   sound.
+  // - If a sound is playing, calling get_time() repeatedly will
+  //   return different results over time.  e.g.:
+  //   float percent_complete = s.get_time() / s.length();
   virtual void set_time(float start_time=0.0) = 0;
   virtual float get_time() const = 0;
   

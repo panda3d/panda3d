@@ -58,7 +58,7 @@ MilesAudioSound::
 MilesAudioSound(MilesAudioManager* manager,
     HAUDIO audio, string file_name, float length)
     : _manager(manager), _file_name(file_name),
-    _start_time(0), _volume(1.0f), _balance(0),
+    _volume(1.0f), _balance(0),
     _loop_count(1), _length(length),
     _active(true), _paused(false) {
   nassertv(audio);
@@ -90,7 +90,6 @@ play() {
         // stop any other sound that parent mgr is playing
         _manager->stop_all_sounds();
     }
-
     // Start playing:
     if (AIL_quick_play(_audio, _loop_count)) {
       audio_debug("  started sound " << _file_name );
@@ -170,15 +169,16 @@ get_loop_count() const {
 void MilesAudioSound::
 set_time(float start_time) {
   miles_audio_debug("set_time(start_time="<<start_time<<")");
-  _start_time=start_time;
-  S32 milisecond_start_time=S32(1000*_start_time);
+  S32 milisecond_start_time=S32(1000*start_time);
   AIL_quick_set_ms_position(_audio, milisecond_start_time);
 }
 
 float MilesAudioSound::
 get_time() const {
-  miles_audio_debug("get_time() returning "<<_start_time);
-  return _start_time;
+  S32 milisecond_start_time=AIL_quick_ms_position(_audio);
+  float start_time=float(milisecond_start_time*.001);
+  miles_audio_debug("get_time() returning "<<start_time);
+  return start_time;
 }
 
 void MilesAudioSound::
