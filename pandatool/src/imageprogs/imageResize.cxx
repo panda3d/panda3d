@@ -49,6 +49,12 @@ ImageResize() : ImageFilter(true) {
      "Use Gaussian filtering to resize the image, with the indicated radius.",
      &ImageResize::dispatch_double, &_use_gaussian_filter, &_filter_radius);
 
+  add_option
+    ("1", "", 0,
+     "This option is ignored.  It is provided only for backward compatibility "
+     "with a previous version of image-resize.",
+     &ImageResize::dispatch_none, NULL, NULL);
+
   _filter_radius = 1.0;
 }
 
