@@ -63,8 +63,10 @@ PUBLISHED:
   INLINE void set_collide_geom(bool flag);
   INLINE bool get_collide_geom() const;
 
+  INLINE void clear_solids();
   INLINE int get_num_solids() const;
   INLINE CollisionSolid *get_solid(int n) const;
+  INLINE void set_solid(int n, CollisionSolid *solid);
   INLINE void remove_solid(int n);
   INLINE int add_solid(CollisionSolid *solid);
 

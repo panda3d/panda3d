@@ -126,6 +126,17 @@ get_collide_geom() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::clear_solids
+//       Access: Published
+//  Description: Removes all solids from the node.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionNode::
+clear_solids() {
+  _solids.clear();
+  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::get_num_solids
 //       Access: Published
 //  Description:
@@ -144,6 +155,18 @@ INLINE CollisionSolid *CollisionNode::
 get_solid(int n) const {
   nassertr(n >= 0 && n < get_num_solids(), NULL);
   return _solids[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::set_solid
+//       Access: Published
+//  Description: Replaces the solid with the indicated index.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionNode::
+set_solid(int n, CollisionSolid *solid) {
+  nassertv(n >= 0 && n < get_num_solids());
+  _solids[n] = solid;
+  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
