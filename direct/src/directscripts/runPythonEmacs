@@ -39,15 +39,16 @@ if [ "$WINTOOLS" ]; then
     export WINTOOLS
 fi
 
-if [ "DMODELS" ]; then
-    DMODELS=`cygpath -w $DMODELS`
-    export DMODELS
-fi
+# Panda does not like the colon in the de-cygpath version of the model trees
+#if [ "DMODELS" ]; then
+#    DMODELS=`cygpath -w $DMODELS`
+#    export DMODELS
+#fi
 
-if [ "$TTMODELS" ]; then
-    TTMODELS=`cygpath -w $TTMODELS`
-    export TTMODELS
-fi
+#if [ "$TTMODELS" ]; then
+#    TTMODELS=`cygpath -w $TTMODELS`
+#    export TTMODELS
+#fi
 
 
 
