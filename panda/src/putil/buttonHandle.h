@@ -43,6 +43,7 @@ PUBLISHED:
   INLINE bool has_ascii_equivalent() const;
   INLINE char get_ascii_equivalent() const;
 
+  INLINE int get_index() const;
   INLINE static ButtonHandle none();
 
 private:

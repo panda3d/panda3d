@@ -82,9 +82,9 @@ exit() {
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-button_down(ButtonHandle button) {
+button_down(ButtonHandle button, float x, float y) {
   if (_item != (PGItem *)NULL) {
-    _item->button_down(button);
+    _item->button_down(button, x, y);
   }
 }
 
@@ -99,8 +99,8 @@ button_down(ButtonHandle button) {
 //               outside the region.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-button_up(ButtonHandle button, bool is_within) {
+button_up(ButtonHandle button, float x, float y, bool is_within) {
   if (_item != (PGItem *)NULL) {
-    _item->button_up(button, is_within);
+    _item->button_up(button, x, y, is_within);
   }
 }

@@ -193,8 +193,8 @@ get_exit_event() const {
 //               depressed while the mouse is within the frame.
 //
 //               This event will be thrown with one parameter, which
-//               will be the name of the button that generated the
-//               event.
+//               will be the PGButtonEvent for the button that
+//               generated the event.
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_button_down_event() const {
@@ -210,10 +210,11 @@ get_button_down_event() const {
 //               released.
 //
 //               This event will be thrown with two parameters, the
-//               first of which will be the name of the button that
-//               generated the event, and the second of which will be
-//               a boolean flag indicating true if the mouse was
-//               within the frame while the button was released.
+//               first of which will be the PGButtonEvent for the
+//               button that generated the event, and the second of
+//               which will be a boolean flag indicating true if the
+//               mouse was within the frame while the button was
+//               released.
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_button_up_event() const {

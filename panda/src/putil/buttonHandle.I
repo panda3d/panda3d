@@ -93,6 +93,22 @@ get_ascii_equivalent() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::get_index
+//       Access: Public
+//  Description: Returns the integer index associated with this
+//               ButtonHandle. Each different ButtonHandle will have a
+//               different index.  However, you probably shouldn't be
+//               using this method; you should just treat the
+//               ButtonHandles as opaque classes.  This is provided
+//               for the convenience of non-C++ scripting languages to
+//               build a hashtable of ButtonHandles.
+////////////////////////////////////////////////////////////////////
+INLINE int ButtonHandle::
+get_index() const {
+  return _index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::none
 //       Access: Public, Static
 //  Description: Returns a special zero-valued ButtonHandle that is

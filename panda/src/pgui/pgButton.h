@@ -44,8 +44,8 @@ public:
 
   virtual void enter();
   virtual void exit();
-  virtual void button_down(ButtonHandle button);
-  virtual void button_up(ButtonHandle button, bool is_within);
+  virtual void button_down(ButtonHandle button, float x, float y);
+  virtual void button_up(ButtonHandle button, float x, float y, bool is_within);
 
   virtual void click();
 

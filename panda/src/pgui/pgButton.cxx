@@ -20,6 +20,8 @@
 #include "throw_event.h"
 #include "renderRelation.h"
 #include "colorTransition.h"
+#include "transformTransition.h"
+#include "mouseButton.h"
 
 TypeHandle PGButton::_type_handle;
 
@@ -114,12 +116,16 @@ exit() {
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-button_down(ButtonHandle button) {
-  if (get_active()) {
-    _button_down = true;
-    set_state(S_depressed);
+button_down(ButtonHandle button, float x, float y) {
+  if (button == MouseButton::one() ||
+      button == MouseButton::two() ||
+      button == MouseButton::three()) {
+    if (get_active()) {
+      _button_down = true;
+      set_state(S_depressed);
+    }
   }
-  PGItem::button_down(button);
+  PGItem::button_down(button, x, y);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,17 +139,21 @@ button_down(ButtonHandle button) {
 //               outside the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-button_up(ButtonHandle button, bool is_within) {
-  _button_down = false;
-  if (get_active()) {
-    if (is_within) {
-      set_state(S_rollover);
-      click();
-    } else {
-      set_state(S_ready);
+button_up(ButtonHandle button, float x, float y, bool is_within) {
+  if (button == MouseButton::one() ||
+      button == MouseButton::two() ||
+      button == MouseButton::three()) {
+    _button_down = false;
+    if (get_active()) {
+      if (is_within) {
+        set_state(S_rollover);
+        click();
+      } else {
+        set_state(S_ready);
+      }
     }
   }
-  PGItem::button_up(button, is_within);
+  PGItem::button_up(button, x, y, is_within);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,6 +178,11 @@ click() {
 ////////////////////////////////////////////////////////////////////
 void PGButton::
 setup(const string &label) {
+  clear_state_def(S_ready);
+  clear_state_def(S_depressed);
+  clear_state_def(S_rollover);
+  clear_state_def(S_inactive);
+
   TextNode *text_node = get_text_node();
   text_node->set_text(label);
   PT_Node geom = text_node->generate();
@@ -176,7 +191,7 @@ setup(const string &label) {
   set_frame(frame[0] - 0.4, frame[1] + 0.4, frame[2] - 0.15, frame[3] + 0.15);
 
   new RenderRelation(get_state_def(S_ready), geom);
-  new RenderRelation(get_state_def(S_depressed), geom);
+  NodeRelation *down = new RenderRelation(get_state_def(S_depressed), geom);
   new RenderRelation(get_state_def(S_rollover), geom);
   NodeRelation *inact = new RenderRelation(get_state_def(S_inactive), geom);
 
@@ -197,8 +212,10 @@ setup(const string &label) {
 
   style.set_type(PGFrameStyle::T_bevel_in);
   style.set_color(0.8, 0.8, 0.8, 1.0);
-  style.set_width(0.05, 0.05);
   set_frame_style(S_depressed, style);
+  LMatrix4f translate = LMatrix4f::translate_mat(0.05, 0.0, -0.05);
+  TransformTransition *ttrans = new TransformTransition(translate);
+  down->set_transition(ttrans);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,6 +227,11 @@ setup(const string &label) {
 void PGButton::
 setup(const ArcChain &ready, const ArcChain &depressed, 
       const ArcChain &rollover, const ArcChain &inactive) {
+  clear_state_def(S_ready);
+  clear_state_def(S_depressed);
+  clear_state_def(S_rollover);
+  clear_state_def(S_inactive);
+
   instance_to_state_def(S_ready, ready);
   instance_to_state_def(S_depressed, depressed);
   instance_to_state_def(S_rollover, rollover);

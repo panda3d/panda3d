@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pgItem.h"
+#include "pgButtonEvent.h"
 
 #include "namedNode.h"
 #include "throw_event.h"
@@ -142,8 +143,10 @@ exit() {
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-button_down(ButtonHandle button) {
-  throw_event(get_button_down_event(), button.get_name());
+button_down(ButtonHandle button, float x, float y) {
+  PGButtonEvent *be = new PGButtonEvent(button, x, y);
+  throw_event(get_button_down_event(), 
+              EventParameter(be));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,9 +160,10 @@ button_down(ButtonHandle button) {
 //               outside the region.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-button_up(ButtonHandle button, bool is_within) {
+button_up(ButtonHandle button, float x, float y, bool is_within) {
+  PGButtonEvent *be = new PGButtonEvent(button, x, y);
   throw_event(get_button_up_event(), 
-              EventParameter(button.get_name()), 
+              EventParameter(be),
               EventParameter(is_within));
 }
 

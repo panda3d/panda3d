@@ -71,7 +71,7 @@ exit() {
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
-button_down(ButtonHandle) {
+button_down(ButtonHandle, float, float) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,5 +85,5 @@ button_down(ButtonHandle) {
 //               outside the region.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
-button_up(ButtonHandle, bool) {
+button_up(ButtonHandle, float, float, bool) {
 }

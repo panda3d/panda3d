@@ -359,7 +359,7 @@ transmit_data(NodeAttributes &data) {
         // both of the button-up events properly.
         if (_button_down_region != (MouseWatcherRegion *)NULL) {
           bool is_within = (_current_region == _button_down_region);
-          _button_down_region->button_up(be._button, is_within);
+          _button_down_region->button_up(be._button, get_mouse_x(), get_mouse_y(), is_within);
           throw_event_pattern(_button_up_pattern, _button_down_region,
                               be._button.get_name());
         }
@@ -373,7 +373,7 @@ transmit_data(NodeAttributes &data) {
         }
         _button_down = true;
         if (_button_down_region != (MouseWatcherRegion *)NULL) {
-          _button_down_region->button_down(be._button);
+          _button_down_region->button_down(be._button, get_mouse_x(), get_mouse_y());
           throw_event_pattern(_button_down_pattern, _button_down_region,
                               be._button.get_name());
         }
