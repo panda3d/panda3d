@@ -183,11 +183,8 @@ make_gsg(const FrameBufferProperties &properties) {
 
   // Now we can make a GSG.
   PT(glxGraphicsStateGuardian) gsg = 
-    new glxGraphicsStateGuardian(new_properties);
-  gsg->_context = context;
-  gsg->_fbconfig = fbconfig;
-  gsg->_display = _display;
-
+    new glxGraphicsStateGuardian(new_properties, context, fbconfig,
+                                 _display, _screen);
   return gsg.p();
 }
 

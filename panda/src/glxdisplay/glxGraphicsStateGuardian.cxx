@@ -27,11 +27,15 @@ TypeHandle glxGraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
-glxGraphicsStateGuardian(const FrameBufferProperties &properties) : 
-  GLGraphicsStateGuardian(properties)
+glxGraphicsStateGuardian(const FrameBufferProperties &properties,
+                         GLXContext context, GLXFBConfig fbconfig,
+                         Display *display, int screen) :
+  GLGraphicsStateGuardian(properties),
+  _context(context),
+  _fbconfig(fbconfig),
+  _display(display),
+  _screen(screen)
 {
-  _context = (GLXContext)NULL;
-  _display = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,4 +49,17 @@ glxGraphicsStateGuardian::
     glXDestroyContext(_display, _context);
     _context = (GLXContext)NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::get_extra_extensions
+//       Access: Protected, Virtual
+//  Description: This may be redefined by a derived class (e.g. glx or
+//               wgl) to get whatever further extensions strings may
+//               be appropriate to that interface, in addition to the
+//               GL extension strings return by glGetString().
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+get_extra_extensions() {
+  save_extensions(glXQueryExtensionsString(_display, _screen));
 }

@@ -31,12 +31,18 @@
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-  glxGraphicsStateGuardian(const FrameBufferProperties &properties);
+  glxGraphicsStateGuardian(const FrameBufferProperties &properties,
+                           GLXContext context, GLXFBConfig fbconfig,
+                           Display *display, int screen);
   virtual ~glxGraphicsStateGuardian();
 
   GLXContext _context;
   GLXFBConfig _fbconfig;
   Display *_display;
+  int _screen;
+
+protected:
+  virtual void get_extra_extensions();
 
 public:
   static TypeHandle get_class_type() {

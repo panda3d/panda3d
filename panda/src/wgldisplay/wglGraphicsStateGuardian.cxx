@@ -62,34 +62,8 @@ void wglGraphicsStateGuardian::
 reset() {
   GLGraphicsStateGuardian::reset();
 
-  // Output the vendor and version strings.
-  show_gl_string("GL_VENDOR", GL_VENDOR);
-  show_gl_string("GL_RENDERER", GL_RENDERER);
-  show_gl_string("GL_VERSION", GL_VERSION);
-
-  // Save the extensions tokens.
-  save_extensions((const char *)glGetString(GL_EXTENSIONS));
-
-  // Also save the tokens listed by wglGetExtensionsString.  This is a
-  // little trickier, since the query function is itself an extension.
-  typedef const GLubyte *(*wglGetExtensionsStringEXT_proc)(void);
-  wglGetExtensionsStringEXT_proc wglGetExtensionsStringEXT = 
-    (wglGetExtensionsStringEXT_proc)wglGetProcAddress("wglGetExtensionsStringEXT");
-  if (wglGetExtensionsStringEXT != NULL) {
-    save_extensions((const char *)wglGetExtensionsStringEXT());
-  }
-
-  if (wgldisplay_cat.is_debug()) {
-    wgldisplay_cat.debug()
-      << "GL Extensions:\n";
-    pset<string>::const_iterator ei;
-    for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
-      wgldisplay_cat.debug() << (*ei) << "\n";
-    }
-  }
-
-  _supports_pbuffer = (_extensions.count("WGL_ARB_pbuffer") != 0);
-  _supports_pixel_format = (_extensions.count("WGL_ARB_pixel_format") != 0);
+  _supports_pbuffer = has_extension("WGL_ARB_pbuffer");
+  _supports_pixel_format = has_extension("WGL_ARB_pixel_format");
 
   _wglCreatePbufferARB = 
     (wglCreatePbufferARB_proc)wglGetProcAddress("wglCreatePbufferARB");
@@ -132,6 +106,26 @@ reset() {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::get_extra_extensions
+//       Access: Protected, Virtual
+//  Description: This may be redefined by a derived class (e.g. glx or
+//               wgl) to get whatever further extensions strings may
+//               be appropriate to that interface, in addition to the
+//               GL extension strings return by glGetString().
+////////////////////////////////////////////////////////////////////
+void wglGraphicsStateGuardian::
+get_extra_extensions() {
+  // This is a little bit tricky, since the query function is itself
+  // an extension.
+  typedef const GLubyte *(*wglGetExtensionsStringEXT_proc)(void);
+  wglGetExtensionsStringEXT_proc wglGetExtensionsStringEXT = 
+    (wglGetExtensionsStringEXT_proc)wglGetProcAddress("wglGetExtensionsStringEXT");
+  if (wglGetExtensionsStringEXT != NULL) {
+    save_extensions((const char *)wglGetExtensionsStringEXT());
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::make_context
@@ -156,42 +150,3 @@ make_context(HDC hdc) {
     return;
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::show_gl_string
-//       Access: Private
-//  Description: Outputs the result of glGetString() on the indicated
-//               tag.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsStateGuardian::
-show_gl_string(const string &name, GLenum id) {
-  if (wgldisplay_cat.is_debug()) {
-    const GLubyte *text = glGetString(id);
-    if (text == (const GLubyte *)NULL) {
-      wgldisplay_cat.debug()
-        << "Unable to query " << name << "\n";
-    } else {
-      wgldisplay_cat.debug()
-        << name << " = " << (const char *)text << "\n";
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::save_extensions
-//       Access: Private
-//  Description: Separates the string returned by GL_EXTENSIONS or
-//               wglGetExtensionsStringEXT into its individual tokens
-//               and saves them in the _extensions member.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsStateGuardian::
-save_extensions(const char *extensions) {
-  vector_string tokens;
-  extract_words(extensions, tokens);
-
-  vector_string::iterator ti;
-  for (ti = tokens.begin(); ti != tokens.end(); ++ti) {
-    _extensions.insert(*ti);
-  }
-}
-

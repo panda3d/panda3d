@@ -29,6 +29,7 @@
 #include "pointerToArray.h"
 #include "fog.h"
 #include "graphicsWindow.h"
+#include "pset.h"
 
 class PlaneNode;
 class Light;
@@ -130,6 +131,12 @@ public:
 protected:
   static void report_errors_loop(int line, const char *source_file, 
                                  GLenum error_code);
+  void show_gl_string(const string &name, GLenum id);
+  void save_extensions(const char *extensions);
+  virtual void get_extra_extensions();
+  void report_extensions() const;
+  bool has_extension(const string &extension) const;
+
   virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
@@ -294,6 +301,8 @@ protected:
   CPT(DisplayRegion) _actual_display_region;
 
   int _pass_number;
+
+  pset<string> _extensions;
 
 public:
   static GraphicsStateGuardian *

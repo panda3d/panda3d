@@ -40,10 +40,11 @@ public:
 
   virtual void reset();
 
+protected:
+  virtual void get_extra_extensions();
+
 private:
   void make_context(HDC hdc);
-  void show_gl_string(const string &name, GLenum id);
-  void save_extensions(const char *extensions);
 
   // All windows that share a particular GL context must also share
   // the same pixel format; therefore, we store the pixel format
@@ -52,8 +53,6 @@ private:
 
   bool _made_context;
   HGLRC _context;
-
-  pset<string> _extensions;
 
 public:
   bool _supports_pbuffer;

@@ -48,6 +48,8 @@
 #include "nodePath.h"
 #include "dcast.h"
 #include "pvector.h"
+#include "vector_string.h"
+#include "string_utils.h"
 
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
@@ -417,6 +419,17 @@ reset() {
     if(GLCAT.is_debug())
         GLCAT.debug() << "frame buffer depth < 8bits channel, enabling dithering\n";
   }
+
+  // Output the vendor and version strings.
+  show_gl_string("GL_VENDOR", GL_VENDOR);
+  show_gl_string("GL_RENDERER", GL_RENDERER);
+  show_gl_string("GL_VERSION", GL_VERSION);
+
+  // Save the extensions tokens.
+  save_extensions((const char *)glGetString(GL_EXTENSIONS));
+  get_extra_extensions();
+  report_extensions();
+
   report_gl_errors();
 }
 
@@ -1577,12 +1590,12 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
 
-  GLUquadricObj *sph = gluNewQuadric();
-  gluQuadricNormals(sph, wants_normals() ? (GLenum)GLU_SMOOTH : (GLenum)GLU_NONE);
-  gluQuadricTexture(sph, wants_texcoords() ? (GLenum)GL_TRUE : (GLenum)GL_FALSE);
-  gluQuadricOrientation(sph, (GLenum)GLU_OUTSIDE);
-  gluQuadricDrawStyle(sph, (GLenum)GLU_FILL);
-  //gluQuadricDrawStyle(sph, (GLenum)GLU_LINE);
+  GLUquadricObj *sph = GLP(uNewQuadric)();
+  GLP(uQuadricNormals)(sph, wants_normals() ? (GLenum)GLU_SMOOTH : (GLenum)GLU_NONE);
+  GLP(uQuadricTexture)(sph, wants_texcoords() ? (GLenum)GL_TRUE : (GLenum)GL_FALSE);
+  GLP(uQuadricOrientation)(sph, (GLenum)GLU_OUTSIDE);
+  GLP(uQuadricDrawStyle)(sph, (GLenum)GLU_FILL);
+  //GLP(uQuadricDrawStyle)(sph, (GLenum)GLU_LINE);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
@@ -1597,7 +1610,7 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
     LVector3f v = edge - center;
     float r = sqrt(dot(v, v));
 
-    // Since gluSphere doesn't have a center parameter, we have to use
+    // Since GLP(uSphere) doesn't have a center parameter, we have to use
     // a matrix transform.
 
     GLP(MatrixMode)(GL_MODELVIEW);
@@ -1605,13 +1618,13 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
     GLP(MultMatrixf)(LMatrix4f::translate_mat(center).get_data());
 
     // Now render the sphere using GLU calls.
-    gluSphere(sph, r, 16, 10);
+    GLP(uSphere)(sph, r, 16, 10);
 
     GLP(MatrixMode)(GL_MODELVIEW);
     GLP(PopMatrix)();
   }
 
-  gluDeleteQuadric(sph);
+  GLP(uDeleteQuadric)(sph);
   report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
@@ -2621,7 +2634,7 @@ report_errors_loop(int line, const char *source_file, GLenum error_code) {
   static const int max_gl_errors_reported = 20;
   int count = 0;
   while ((count < max_gl_errors_reported) && (error_code != GL_NO_ERROR)) {
-    const GLubyte *error_string = gluErrorString(error_code);
+    const GLubyte *error_string = GLP(uErrorString)(error_code);
     if (error_string != (const GLubyte *)NULL) {
       GLCAT.error()
         << "at " << line << " of " << source_file << ": " 
@@ -2636,6 +2649,89 @@ report_errors_loop(int line, const char *source_file, GLenum error_code) {
   }
 #endif
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::show_gl_string
+//       Access: Protected
+//  Description: Outputs the result of glGetString() on the indicated
+//               tag.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+show_gl_string(const string &name, GLenum id) {
+  if (GLCAT.is_debug()) {
+    const GLubyte *text = GLP(GetString)(id);
+    if (text == (const GLubyte *)NULL) {
+      GLCAT.debug()
+        << "Unable to query " << name << "\n";
+    } else {
+      GLCAT.debug()
+        << name << " = " << (const char *)text << "\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::save_extensions
+//       Access: Protected
+//  Description: Separates the string returned by GL_EXTENSIONS (or
+//               glx or wgl extensions) into its individual tokens
+//               and saves them in the _extensions member.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+save_extensions(const char *extensions) {
+  if (extensions != (const char *)NULL) {
+    vector_string tokens;
+    extract_words(extensions, tokens);
+    
+    vector_string::iterator ti;
+    for (ti = tokens.begin(); ti != tokens.end(); ++ti) {
+      _extensions.insert(*ti);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_extra_extensions
+//       Access: Protected, Virtual
+//  Description: This may be redefined by a derived class (e.g. glx or
+//               wgl) to get whatever further extensions strings may
+//               be appropriate to that interface, in addition to the
+//               GL extension strings return by glGetString().
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+get_extra_extensions() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::report_extensions
+//       Access: Protected
+//  Description: Outputs the list of GL extensions to notify, if debug
+//               mode is enabled.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+report_extensions() const {
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "GL Extensions:\n";
+    pset<string>::const_iterator ei;
+    for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
+      GLCAT.debug() << (*ei) << "\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::has_extension
+//       Access: Protected
+//  Description: Returns true if the indicated extension is reported
+//               by the GL system, false otherwise.  The extension
+//               name is case-sensitive.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+has_extension(const string &extension) const {
+  return (_extensions.find(extension) != _extensions.end());
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::set_draw_buffer
@@ -2905,7 +3001,7 @@ apply_texture_immediate(Texture *tex) {
       } else 
 #endif
         {
-          gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
+          GLP(uBuild2DMipmaps)(GL_TEXTURE_2D, internal_format,
                             xsize, ysize,
                             external_format, type, image);
 #ifndef NDEBUG
@@ -2929,7 +3025,7 @@ apply_texture_immediate(Texture *tex) {
   // want to give explict error for texture creation failure
   GLenum error_code = GLP(GetError)();
   if(error_code != GL_NO_ERROR) {
-    const GLubyte *error_string = gluErrorString(error_code);
+    const GLubyte *error_string = GLP(uErrorString)(error_code);
     GLCAT.error() << "GL texture creation failed for " << tex->get_name() << 
                         ((error_string != (const GLubyte *)NULL) ? " : " : "") << endl;
   }
@@ -2981,7 +3077,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   GLP(MatrixMode)(GL_PROJECTION);
   GLP(PushMatrix)();
   GLP(LoadIdentity)();
-  gluOrtho2D(0, 1, 0, 1);
+  GLP(uOrtho2D)(0, 1, 0, 1);
 
   float txl, txr, tyt, tyb;
   txl = tyb = 0.0f;
@@ -3089,8 +3185,8 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   GLP(MatrixMode)( GL_PROJECTION );
   GLP(PushMatrix)();
   GLP(LoadIdentity)();
-  gluOrtho2D(0, props.get_x_size(),
-             0, props.get_y_size());
+  GLP(uOrtho2D)(0, props.get_x_size(),
+                0, props.get_y_size());
 
 #ifdef GSG_VERBOSE
   GLCAT.debug()

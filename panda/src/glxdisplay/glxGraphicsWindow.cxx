@@ -413,6 +413,7 @@ open_window() {
 
   XVisualInfo *visual_info = 
     glXGetVisualFromFBConfig(_display, glxgsg->_fbconfig);
+
   if (visual_info == NULL) {
     // No X visual for this fbconfig; how can we open the window?
     glxdisplay_cat.error()
