@@ -2,8 +2,6 @@
 
 from PandaObject import *
 
-
-
 class OnscreenText(PandaObject, NodePath):
 
     Font = loader.loadModelOnce("fonts/ttf-comic").node()

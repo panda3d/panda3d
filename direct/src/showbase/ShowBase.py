@@ -7,6 +7,7 @@ from EventManagerGlobal import *
 from PythonUtil import *
 import Task
 import EventManager
+import math
 import sys
 
 class ShowBase:

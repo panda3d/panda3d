@@ -6,6 +6,8 @@ class SelectionRay:
         self.camera = camera
         # Create a collision node
         self.rayCollisionNodePath = camera.attachNewNode( CollisionNode() )
+        # Don't pay the penalty of drawing this collision ray
+        self.rayCollisionNodePath.hide()
         rayCollisionNode = self.rayCollisionNodePath.node()
         # Specify if this ray collides with geometry
         rayCollisionNode.setCollideGeom(fGeom)

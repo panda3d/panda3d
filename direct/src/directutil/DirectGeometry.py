@@ -1,5 +1,4 @@
 from PandaObject import *
-import math
 
 class LineNodePath(NodePath):
     def __init__(self, parent = None, **kw):

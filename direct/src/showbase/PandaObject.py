@@ -1,4 +1,3 @@
-
 from DirectObject import *
 from PandaModules import *
 from ShowBaseGlobal import *
