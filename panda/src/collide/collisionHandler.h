@@ -27,10 +27,12 @@ public:
   virtual void end_group();
 
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+
+public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "CollisionHandler",

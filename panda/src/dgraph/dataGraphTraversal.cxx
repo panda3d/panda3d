@@ -92,8 +92,5 @@ reached_node(Node *node, AllAttributesWrapper &state, NullLevelState &) {
 void traverse_data_graph(Node *root) {
   DataGraphVisitor dgv;
   df_traverse(root, dgv, AllAttributesWrapper(), 
-	      NullLevelState(), RenderRelation::get_class_type());
-
-  df_traverse(root, dgv, AllAttributesWrapper(), 
 	      NullLevelState(), DataRelation::get_class_type());
 }

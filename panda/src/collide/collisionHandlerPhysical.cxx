@@ -50,6 +50,7 @@ set_mat(const LMatrix4f &mat) const {
 
   } else if (_drive_interface != (DriveInterface *)NULL) {
     _drive_interface->set_mat(mat);
+    _drive_interface->force_dgraph();
 
   } else {
     collide_cat.error()

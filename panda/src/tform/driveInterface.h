@@ -85,6 +85,7 @@ PUBLISHED:
   void set_mat(const LMatrix4f &mat);
   const LMatrix4f &get_mat() const;
 
+  void force_dgraph();
 
 private:
   void apply(double x, double y, bool any_button);

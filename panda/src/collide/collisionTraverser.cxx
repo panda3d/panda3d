@@ -57,6 +57,7 @@ CollisionTraverser::
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 add_collider(CollisionNode *node, CollisionHandler *handler) {
+  nassertv(_ordered_colliders.size() == _colliders.size());
   nassertv(node != (CollisionNode *)NULL);
   nassertv(handler != (CollisionHandler *)NULL);
 
@@ -88,6 +89,7 @@ add_collider(CollisionNode *node, CollisionHandler *handler) {
   } else {
     // We hadn't already known about this collider.
     _colliders.insert(Colliders::value_type(node, handler));
+    _ordered_colliders.push_back(node);
 
     Handlers::iterator hi = _handlers.find(handler);
     if (hi == _handlers.end()) {
@@ -96,6 +98,8 @@ add_collider(CollisionNode *node, CollisionHandler *handler) {
       (*hi).second++;
     }
   }
+
+  nassertv(_ordered_colliders.size() == _colliders.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +113,8 @@ add_collider(CollisionNode *node, CollisionHandler *handler) {
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
 remove_collider(CollisionNode *node) {
+  nassertr(_ordered_colliders.size() == _colliders.size(), false);
+
   Colliders::iterator ci = _colliders.find(node);
   if (ci == _colliders.end()) {
     // We didn't know about this node.
@@ -127,6 +133,13 @@ remove_collider(CollisionNode *node) {
   }
 
   _colliders.erase(ci);
+
+  OrderedColliders::iterator oci = 
+    find(_ordered_colliders.begin(), _ordered_colliders.end(), node);
+  nassertr(oci != _ordered_colliders.end(), false);
+  _ordered_colliders.erase(oci);
+
+  nassertr(_ordered_colliders.size() == _colliders.size(), false);
   return true;
 }
 
@@ -141,6 +154,31 @@ bool CollisionTraverser::
 has_collider(CollisionNode *node) const {
   Colliders::const_iterator ci = _colliders.find(node);
   return (ci != _colliders.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::get_num_colliders
+//       Access: Public
+//  Description: Returns the number of CollisionNodes that have been
+//               added to the traverser via add_collider().
+////////////////////////////////////////////////////////////////////
+int CollisionTraverser::
+get_num_colliders() const {
+  nassertr(_ordered_colliders.size() == _colliders.size(), 0);
+  return _ordered_colliders.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::get_collider
+//       Access: Public
+//  Description: Returns the nth CollisionNode that has been
+//               added to the traverser via add_collider().
+////////////////////////////////////////////////////////////////////
+CollisionNode *CollisionTraverser::
+get_collider(int n) const {
+  nassertr(_ordered_colliders.size() == _colliders.size(), NULL);
+  nassertr(n >= 0 && n < (int)_ordered_colliders.size(), NULL);
+  return _ordered_colliders[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,6 +206,7 @@ get_handler(CollisionNode *node) const {
 void CollisionTraverser::
 clear_colliders() {
   _colliders.clear();
+  _ordered_colliders.clear();
 }
 
 
@@ -245,10 +284,9 @@ prepare_colliders(CollisionLevelState &level_state) {
   level_state.clear();
   level_state.reserve(_colliders.size());
 
-  Colliders::iterator ci = _colliders.begin();
-  while (ci != _colliders.end()) {
-    CollisionNode *cnode = (*ci).first;
-    ++ci;
+  int i = 0;
+  while (i < (int)_ordered_colliders.size()) {
+    CollisionNode *cnode = _ordered_colliders[i];
 
     CollisionLevelState::ColliderDef def;
     def._node = cnode;
@@ -261,7 +299,7 @@ prepare_colliders(CollisionLevelState &level_state) {
 	<< "Collider " << *cnode
 	<< " has become NaN.  Dropping from traverser.\n";
       // This is safe to do while traversing the list of colliders,
-      // because we have already incremented ci, above.
+      // because we do not increment i in this case.
       remove_collider(cnode);
     } else
 #endif
@@ -272,6 +310,7 @@ prepare_colliders(CollisionLevelState &level_state) {
 	  def._collider = collider;
 	  level_state.prepare_collider(def);
 	}
+	i++;
       }
   }
 }

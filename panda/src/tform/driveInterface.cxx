@@ -17,6 +17,10 @@
 #include <modifierButtonDataAttribute.h>
 #include <keyboardButton.h>
 #include <mouseButton.h>
+#include <dataGraphTraversal.h>
+#include <allAttributesWrapper.h>
+#include <dftraverser.h>
+#include <dataRelation.h>
 
 TypeHandle DriveInterface::_type_handle;
 
@@ -575,6 +579,27 @@ set_mat(const LMatrix4f &mat) {
 const LMatrix4f &DriveInterface::
 get_mat() const {
   return _mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DriveInterface::force_dgraph
+//       Access: Public
+//  Description: This is a special kludge for DriveInterface to allow
+//               us to avoid the one-frame latency after a collision.
+//               It forces an immediate partial data flow for all data
+//               graph nodes below this node, causing all data nodes
+//               that depend on this matrix to be updated immediately.
+////////////////////////////////////////////////////////////////////
+void DriveInterface::
+force_dgraph() {
+  _transform->set_value(_mat);
+  int num_children = get_num_children(DataRelation::get_class_type());
+  for (int i = 0; i < num_children; i++) {
+    DataGraphVisitor dgv;
+    df_traverse(get_child(DataRelation::get_class_type(), i),
+		dgv, AllAttributesWrapper(_attrib), 
+		NullLevelState(), DataRelation::get_class_type());
+  }
 }
 
 

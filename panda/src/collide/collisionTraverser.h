@@ -37,6 +37,8 @@ PUBLISHED:
   void add_collider(CollisionNode *node, CollisionHandler *handler);
   bool remove_collider(CollisionNode *node);
   bool has_collider(CollisionNode *node) const;
+  int get_num_colliders() const;
+  CollisionNode *get_collider(int n) const;
   CollisionHandler *get_handler(CollisionNode *node) const;
   void clear_colliders();
 
@@ -79,6 +81,8 @@ private:
 
   typedef map<PT(CollisionNode), PT(CollisionHandler)> Colliders;
   Colliders _colliders;
+  typedef vector<CollisionNode *> OrderedColliders;
+  OrderedColliders _ordered_colliders;
 
   typedef map<PT(CollisionHandler), int> Handlers;
   Handlers _handlers;
