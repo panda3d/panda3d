@@ -361,7 +361,7 @@ WinSample* WinSample::load_wav(Filename filename) {
   UINT wavSize = 0;
   BYTE* wavData = NULL;
 
-  HRESULT result = wave_load(filename.c_str(), wavInfo, wavData, wavSize);
+  HRESULT result = wave_load(filename.to_os_specific().c_str(), wavInfo, wavData, wavSize);
   if (FAILED(result)) {
     if (wavData)
       delete [] wavData;
@@ -613,8 +613,8 @@ WinMusic* WinMusic::load_midi(Filename filename) {
   DMUS_OBJECTDESC fdesc;
   fdesc.guidClass = CLSID_DirectMusicSegment;
   fdesc.dwSize = sizeof(DMUS_OBJECTDESC);
-  // MULTI_TO_WIDE(filename.c_str(), fdesc.wszFileName);
-  MULTI_TO_WIDE(fdesc.wszFileName, filename.c_str());
+  // MULTI_TO_WIDE(filename.to_os_specific().c_str(), fdesc.wszFileName);
+  MULTI_TO_WIDE(fdesc.wszFileName, filename.to_os_specific().c_str());
   // fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME | DMUS_OBJ_FULLPATH;
   fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
   result = loader->GetObject(&fdesc, IID_IDirectMusicSegment2,
