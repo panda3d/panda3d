@@ -1,5 +1,13 @@
 """ClusterMsgs module: Message types for Cluster rendering"""
 
+# This module is intended to supply routines and dataformats common to
+# both ClusterClient and ClusterServer.  There is a bit of sloppiness
+# though.  For example:
+#    This is where datagrams are constructed for sending, but datagrams
+#    recieved are handled outside of here, after the header (message type
+#    and number) are read here.
+
+#these are the types of messages that are currently supported.
 CLUSTER_NOTHING    = -1
 CLUSTER_CAM_OFFSET = 1
 CLUSTER_POS_UPDATE = 2
@@ -20,8 +28,8 @@ import time
 class MsgHandler:
     """MsgHandler: wrapper for PC clusters/multi-piping networking"""
     def __init__(self,packetStart, notify):
-        """packetStart can be used to distinguish which MsgHandler sends a
-        given packet."""
+        #packetStart can be used to distinguish which MsgHandler sends a
+        #given packet.
         self.packetNumber = packetStart
         self.notify = notify
 
@@ -55,6 +63,10 @@ class MsgHandler:
         while not availGetVal:
             availGetVal = qcr.dataAvailable()
             if not availGetVal:
+                # The following may not be necessary.
+                # I just wanted some
+                # time given to the operating system while
+                # busy waiting.
                 time.sleep(0.002)
                 type = CLUSTER_NOTHING
         datagram = NetDatagram()
