@@ -7,6 +7,8 @@
 :coverage 3.0
 
 :group leveleditor dir leveleditor
+:group misc
+:group fonts
 
 # The following line flags all textures to use the most generic image
 # type (e.g. 'rgba' as opposed to 'rgba8') and also turns off
@@ -18,7 +20,25 @@
 
 * : rgba linear cont
 
+Comic.rgb : 256 256 alpha
+Humanist.rgb : 256 256 alpha
+  
+Comic.egg : fonts
+Humanist.egg : fonts
+
+lilsmiley.rgba : 32 32
+smiley.rgb : 512 256
+soft_iris.rgb : 128 128
+
+fade.egg : misc
+iris.egg : misc
+lilsmiley.egg : misc
+objectHandles.egg : misc
+smiley.egg : misc
+sphere.egg : misc
+
 4map.rgb : 256 256 omit
+
 donalds_dock_layout.egg : leveleditor
 minnies_melody_land_layout.egg : leveleditor
 toontown_central_layout.egg : leveleditor
