@@ -159,6 +159,36 @@ set_end_scale(float scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_start_shear
+//       Access: Published
+//  Description: Indicates the initial shear of the lerped node.
+//               This is meaningful only if set_end_shear() is also
+//               called.  This parameter is optional; if unspecified,
+//               the value will be taken from the node's actual
+//               shear at the time the lerp is performed.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_start_shear(const LVecBase3f &shear) {
+  _start_shear = shear;
+  _flags |= F_start_shear;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_end_shear
+//       Access: Published
+//  Description: Indicates that the shear of the node should be
+//               lerped, and specifies the final shear of the node.
+//               This should be called before priv_initialize().  If this
+//               is not called, the node's shear will not be
+//               affected by the lerp.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_end_shear(const LVecBase3f &shear) {
+  _end_shear = shear;
+  _flags |= F_end_shear;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLerpNodePathInterval::set_start_color
 //       Access: Published
 //  Description: Indicates the initial color of the lerped node.

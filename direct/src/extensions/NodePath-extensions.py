@@ -943,6 +943,10 @@
         import LerpInterval
         return LerpInterval.LerpScaleInterval(self, *args, **kw)
 
+    def shearInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpShearInterval(self, *args, **kw)
+
     def posHprInterval(self, *args, **kw):
         import LerpInterval
         return LerpInterval.LerpPosHprInterval(self, *args, **kw)
@@ -954,6 +958,10 @@
     def posHprScaleInterval(self, *args, **kw):
         import LerpInterval
         return LerpInterval.LerpPosHprScaleInterval(self, *args, **kw)
+
+    def posHprScaleShearInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpPosHprScaleShearInterval(self, *args, **kw)
 
     def colorInterval(self, *args, **kw):
         import LerpInterval

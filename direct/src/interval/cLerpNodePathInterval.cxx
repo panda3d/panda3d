@@ -119,7 +119,7 @@ priv_step(double t) {
   _state = S_started;
   double d = compute_delta(t);
 
-  if ((_flags & (F_end_pos | F_end_hpr | F_end_scale)) != 0) {
+  if ((_flags & (F_end_pos | F_end_hpr | F_end_scale | F_end_shear)) != 0) {
     // We have some transform lerp.
     CPT(TransformState) transform;
 
@@ -135,6 +135,7 @@ priv_step(double t) {
     LPoint3f pos;
     LVecBase3f hpr;
     LVecBase3f scale;
+    LVecBase3f shear;
 
     if ((_flags & F_end_pos) != 0) {
       if ((_flags & F_start_pos) != 0) {
@@ -177,6 +178,19 @@ priv_step(double t) {
         lerp_value_from_prev(scale, d, _prev_d, scale, _end_scale);
       }
     }
+    if ((_flags & F_end_shear) != 0) {
+      if ((_flags & F_start_shear) != 0) {
+        lerp_value(shear, d, _start_shear, _end_shear);
+
+      } else if ((_flags & F_bake_in_start) != 0) {
+        set_start_shear(transform->get_shear());
+        lerp_value(shear, d, _start_shear, _end_shear);
+
+      } else {
+        shear = transform->get_shear();
+        lerp_value_from_prev(shear, d, _prev_d, shear, _end_shear);
+      }
+    }
 
     // Now apply the modifications back to the transform.  We want to
     // be a little careful here, because we don't want to assume the
@@ -184,6 +198,9 @@ priv_step(double t) {
     // in any case, we only want to apply the components that we
     // computed, above.
     switch (_flags & (F_end_pos | F_end_hpr | F_end_scale)) {
+    case 0:
+      break;
+
     case F_end_pos:
       if (_other.is_empty()) {
         _node.set_pos(pos);
@@ -241,16 +258,42 @@ priv_step(double t) {
       break;
 
     case F_end_pos | F_end_hpr | F_end_scale:
-      if (_other.is_empty()) {
-        _node.set_pos_hpr_scale(pos, hpr, scale);
+      if ((_flags & F_end_shear) != 0) {
+        // Even better: we have all four components.
+        if (_other.is_empty()) {
+          _node.set_pos_hpr_scale_shear(pos, hpr, scale, shear);
+        } else {
+          _node.set_pos_hpr_scale_shear(_other, pos, hpr, scale, shear);
+        }
       } else {
-        _node.set_pos_hpr_scale(_other, pos, hpr, scale);
+        // We have only the primary three components.
+        if (_other.is_empty()) {
+          _node.set_pos_hpr_scale(pos, hpr, scale);
+        } else {
+          _node.set_pos_hpr_scale(_other, pos, hpr, scale);
+        }
       }
       break;
 
     default:
+      // Some unhandled combination.  We should handle this.
       interval_cat.error()
         << "Internal error in CLerpNodePathInterval::priv_step().\n";
+    }
+
+    if ((_flags & F_end_shear) != 0) {
+      // Also apply changes to shear.
+      if ((_flags & (F_end_pos | F_end_hpr | F_end_scale)) == 
+          (F_end_pos | F_end_hpr | F_end_scale)) {
+        // Actually, we already handled this case above.
+
+      } else {
+        if (_other.is_empty()) {
+          _node.set_shear(shear);
+        } else {
+          _node.set_shear(_other, shear);
+        }
+      }
     }
   }
 
@@ -398,6 +441,14 @@ output(ostream &out) const {
       out << " from " << _start_scale;
     }
     out << " to " << _end_scale;
+  }
+
+  if ((_flags & F_end_shear) != 0) {
+    out << " shear";
+    if ((_flags & F_start_shear) != 0) {
+      out << " from " << _start_shear;
+    }
+    out << " to " << _end_shear;
   }
 
   if ((_flags & F_end_color) != 0) {

@@ -45,6 +45,8 @@ PUBLISHED:
   INLINE void set_start_scale(float scale);
   INLINE void set_end_scale(const LVecBase3f &scale);
   INLINE void set_end_scale(float scale);
+  INLINE void set_start_shear(const LVecBase3f &shear);
+  INLINE void set_end_shear(const LVecBase3f &shear);
   INLINE void set_start_color(const LVecBase4f &color);
   INLINE void set_end_color(const LVecBase4f &color);
   INLINE void set_start_color_scale(const LVecBase4f &color_scale);
@@ -68,12 +70,14 @@ private:
     F_end_scale          = 0x0004,
     F_end_color          = 0x0008,
     F_end_color_scale    = 0x0010,
+    F_end_shear          = 0x0020,
 
     F_start_pos          = 0x0100,
     F_start_hpr          = 0x0200,
     F_start_scale        = 0x0400,
     F_start_color        = 0x0800,
     F_start_color_scale  = 0x1000,
+    F_start_shear        = 0x2000,
 
     F_bake_in_start      = 0x8000,
   };
@@ -82,6 +86,7 @@ private:
   LPoint3f _start_pos, _end_pos;
   LVecBase3f _start_hpr, _end_hpr;
   LVecBase3f _start_scale, _end_scale;
+  LVecBase3f _start_shear, _end_shear;
   Colorf _start_color, _end_color;
   LVecBase4f _start_color_scale, _end_color_scale;
 
