@@ -76,7 +76,11 @@ update_datagram() {
 ////////////////////////////////////////////////////////////////////
 FltError FltRecordWriter::
 advance() {
-  //  cerr << "Writing " << _opcode << " of length " << _datagram.get_length() << "\n";
+  if (flt_cat.is_debug()) {
+    flt_cat.debug()
+      << "Writing " << _opcode << " of length "
+      << _datagram.get_length() << "\n";
+  }
 
   // Build a mini-datagram to write the header.
   static const int header_size = 4;

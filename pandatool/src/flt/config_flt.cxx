@@ -33,6 +33,7 @@
 #include <dconfig.h>
 
 Configure(config_flt);
+NotifyCategoryDef(flt, "");
 
 // Set this true to trigger an assertion failure (and core dump)
 // immediately when an error is detected on reading or writing a flt

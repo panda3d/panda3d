@@ -509,10 +509,8 @@ read_record_and_children(FltRecordReader &reader) {
     }
 
     // Skip to the next record.  If that's the end, fine.
-    result = reader.advance();
-    if (result == FE_end_of_file) {
-      return FE_ok;
-    } else if (result != FE_ok) {
+    result = reader.advance(true);
+    if (reader.eof() || result != FE_ok) {
       return result;
     }
   }

@@ -32,7 +32,7 @@ public:
   const Datagram &get_datagram();
   int get_record_length() const;
 
-  FltError advance();
+  FltError advance(bool ok_eof = false);
 
   bool eof() const;
   bool error() const;

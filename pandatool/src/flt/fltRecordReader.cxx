@@ -96,7 +96,7 @@ get_record_length() const {
 //               file has been reached.
 ////////////////////////////////////////////////////////////////////
 FltError FltRecordReader::
-advance() {
+advance(bool ok_eof) {
   if (_state == S_eof) {
     assert(!flt_error_abort);
     return FE_end_of_file;
@@ -118,6 +118,9 @@ advance() {
 
   if (_in.eof()) {
     _state = S_eof;
+    if (ok_eof) {
+      return FE_ok;
+    }
     assert(!flt_error_abort);
     return FE_end_of_file;
 
@@ -133,7 +136,10 @@ advance() {
   _opcode = (FltOpcode)dgi.get_be_int16();
   _record_length = dgi.get_be_uint16();
 
-  //  cerr << "Reading " << _opcode << " of length " << _record_length << "\n";
+  if (flt_cat.is_debug()) {
+    flt_cat.debug()
+      << "Reading " << _opcode << " of length " << _record_length << "\n";
+  }
 
   // And now read the full record based on the length.
   int length = _record_length - header_size;
