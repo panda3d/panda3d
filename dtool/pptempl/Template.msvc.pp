@@ -177,10 +177,10 @@ test : $[test_bin_targets]
 // It does assume that the odirs are not '.', however.
 clean :
 #if $[so_sources]
-	rmdir /s /q $[so_dir]
+	-rmdir /s /q $[so_dir]
 #endif
 #if $[st_sources]
-	rmdir /s /q $[st_dir]
+	-rmdir /s /q $[st_dir]
 #endif
 
 // 'cleanall' is not much more thorough than 'clean': At the moment,
