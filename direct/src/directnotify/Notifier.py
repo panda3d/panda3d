@@ -196,7 +196,8 @@ class Notifier:
         """
         print string
         
-    def debugStateCall(self, obj=None, fsmMemberName='fsm'):
+    def debugStateCall(self, obj=None, fsmMemberName='fsm',
+            secondaryFsm='secondaryFSM'):
         """
         If this notify is in debug mode, print the time of the 
         call followed by the [fsm state] notifier category and
@@ -204,17 +205,33 @@ class Notifier:
         """
         if (self.__debug):
             state = ''
+            doId = ''
             if obj is not None:
-                if hasattr(obj, fsmMemberName) and obj.fsm.getCurrentState() is not None:
-                    #state = "%s=%s"%(obj.fsm.getName(), obj.fsm.getCurrentState().getName())
-                    state = obj.fsm.getCurrentState().getName()
+                
+                fsm=obj.__dict__.get(fsmMemberName)
+                if fsm is not None:
+                    stateObj = fsm.getCurrentState()
+                    if stateObj is not None:
+                        #state = "%s=%s"%(fsmMemberName, stateObj.getName())
+                        state = stateObj.getName()
+                
+                fsm=obj.__dict__.get(secondaryFsm)
+                if fsm is not None:
+                    stateObj = fsm.getCurrentState()
+                    if stateObj is not None:
+                        #state = "%s=%s"%(fsmMemberName, stateObj.getName())
+                        state = "%s, %s"%(state, stateObj.getName())
+
+                if hasattr(obj, 'doId'):
+                    doId = " doId:%s"%(obj.doId,)
             if 1 or type(obj) == types.ClassType:
                 name = "%s."%(obj.__class__.__name__,)
             else:
                 name = "%s "%(self.__name,)
-            string = ":%s [%-7s] %s %s%s"%(
+            string = ":%s [%-7s]%s %s %s%s"%(
                 self.getOnlyTime(),
                 state,
+                doId,
                 id(obj),
                 name,
                 PythonUtil.traceParentCall())
