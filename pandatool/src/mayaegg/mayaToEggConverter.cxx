@@ -215,11 +215,20 @@ convert_maya() {
   bool all_ok = true;
 
   switch (get_animation_convert()) {
+  case AC_pose:
+    // pose: set to a specific frame, then get out the static geometry.
+    nout << "frame " << start_frame << "\n";
+    MGlobal::viewFrame(MTime(start_frame, MTime::uiUnit()));
+    // fall through
+
   case AC_none:
+    // none: just get out a static model, no animation.
     all_ok = convert_hierarchy(&get_egg_data());
     break;
 
   case AC_flip:
+    // flip: get out a series of static models, one per frame, under a
+    // sequence node.
     all_ok = convert_flip(start_frame, end_frame, frame_inc,
                           output_frame_rate);
     break;

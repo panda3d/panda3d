@@ -30,6 +30,7 @@
 enum AnimationConvert {
   AC_invalid,
   AC_none,
+  AC_pose,
   AC_flip,
 };
 

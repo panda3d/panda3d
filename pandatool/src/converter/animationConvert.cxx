@@ -34,6 +34,9 @@ format_animation_convert(AnimationConvert convert) {
   case AC_none:
     return "none";
 
+  case AC_pose:
+    return "pose";
+
   case AC_flip:
     return "flip";
   }
@@ -60,6 +63,9 @@ AnimationConvert
 string_animation_convert(const string &str) {
   if (cmp_nocase(str, "none") == 0) {
     return AC_none;
+
+  } else if (cmp_nocase(str, "pose") == 0) {
+    return AC_pose;
 
   } else if (cmp_nocase(str, "flip") == 0) {
     return AC_flip;
