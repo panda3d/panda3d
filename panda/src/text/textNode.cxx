@@ -1316,7 +1316,8 @@ load_default_font() {
 
   // Then, attempt to load the compiled-in font, if we have one.
 #if defined(HAVE_FREETYPE) && defined(COMPILE_IN_DEFAULT_FONT)
-  _default_font = new DynamicTextFont(default_font_data, default_font_size, 0);
+  _default_font = new DynamicTextFont((const char *)default_font_data, 
+                                      default_font_size, 0);
   if (_default_font->is_valid()) {
     return;
   }

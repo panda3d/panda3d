@@ -21,12 +21,12 @@
 
 #include "pandabase.h"
 
-#if defined(HAVE_FREETYPE) && defined(COMPILE_IN_DEFAULT_FONT)
+#if defined(HAVE_FREETYPE) && defined(COMPILE_IN_DEFAULT_FONT) && !defined(CPPPARSER)
 
-extern const char default_font_data[];
+extern const unsigned char default_font_data[];
 extern const int default_font_size;
 
-#endif  // HAVE_FREETYPE && COMPILE_IN_DEFAULT_FONT
+#endif  // HAVE_FREETYPE && COMPILE_IN_DEFAULT_FONT && !CPPPARSER
 
 #endif
 
