@@ -448,7 +448,9 @@ read_source_file(const string &prefix, PPNamedScopes *named_scopes) {
 
   ifstream in(source_filename.c_str());
   if (in) {
-    //    cerr << "Reading " << source_filename << "\n";
+    if (verbose) {
+        cerr << "Reading (dir) \"" << source_filename << "\"\n";
+    }
 
     named_scopes->set_current(_dirname);
     _scope = named_scopes->make_scope("");
@@ -641,6 +643,9 @@ read_file_dependencies(const string &cache_filename) {
   if (!in) {
     // Can't read it.  Maybe it's not there.  No problem.
     return;
+  }
+  if (verbose) {
+    cerr << "Reading (dep) \"" << cache_pathname.c_str() << "\"\n";
   }
 
   string line;

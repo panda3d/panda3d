@@ -30,6 +30,7 @@ bool unix_platform = false;
 bool windows_platform = false;
 bool dry_run = false;
 bool verbose_dry_run = false;
+bool verbose = false;
 
 static void
 usage() {
@@ -68,6 +69,7 @@ usage() {
 
     "  -h           Display this page.\n"
     "  -V           Report the version of ppremake, and exit.\n"
+    "  -v           Turn on verbose output (may help in debugging .pp files).\n"
     "  -P           Report the current platform name, and exit.\n\n"
     "  -D pp.dep    Examine the given dependency file, and re-run ppremake\n"
     "               only if the dependency file is stale.\n\n"
@@ -93,7 +95,9 @@ usage() {
 
 static void
 report_version() {
-  cerr << "This is " << PACKAGE << " version " << VERSION << ".\n";
+  cerr << "This is " << PACKAGE << " version " << VERSION 
+       << " built on " << __DATE__ << " at " << __TIME__
+       << ".\n";
 }
 
 static void
@@ -147,6 +151,9 @@ check_one_file(const string &dir_prefix, const vector<string> &words) {
     // Can't read the file for some reason.
     return false;
   }
+  if (verbose) {
+    cerr << "Reading (one) \"" << pathname.c_str() << "\"\n";
+  }
 
   string line;
   getline(in, line);
@@ -184,6 +191,9 @@ check_dependencies(const string &dep_filename) {
     // stale.
     return false;
   }
+  if (verbose) {
+    cerr << "Reading (chk) \"" << dep_filename.c_str() << "\"\n";
+  }
 
   string line;
   getline(in, line);
@@ -210,7 +220,7 @@ main(int argc, char *argv[]) {
   string progname = argv[0];
   extern char *optarg;
   extern int optind;
-  const char *optstr = "hVPD:drnNp:c:s:";
+  const char *optstr = "hVvPD:drnNp:c:s:";
 
   bool any_d = false;
   bool dependencies_stale = false;
@@ -238,6 +248,10 @@ main(int argc, char *argv[]) {
     case 'V':
       report_version();
       exit(0);
+      break;
+
+    case 'v':
+      verbose=true;
       break;
 
     case 'P':

@@ -316,6 +316,9 @@ read_file(Filename filename) {
     cerr << "Unable to open " << filename << ".\n";
     return false;
   }
+  if (verbose) {
+    cerr << "Reading (cmd) \"" << filename << "\"\n";
+  }
 
   return read_stream(in, filename);
 }
@@ -1686,6 +1689,9 @@ include_file(Filename filename) {
     cerr << "Unable to open include file " << filename << ".\n";
     return false;
   }
+  if (verbose) {
+    cerr << "Reading (inc) \"" << filename << "\"\n";
+  }
 
   PushFilename pushed(_scope, filename);
 
@@ -1999,6 +2005,9 @@ compare_output(const string &new_contents, Filename filename,
       cerr << "Cannot read existing " << filename << ", regenerating.\n";
       differ = true;
     } else {
+      if (verbose) {
+        cerr << "Reading (cmp) \"" << filename << "\"\n";
+      }
       in.read(orig_contents, want_bytes);
 
       if (in.gcount() != len) {
