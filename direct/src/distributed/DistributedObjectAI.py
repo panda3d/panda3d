@@ -118,6 +118,9 @@ class DistributedObjectAI(DirectObject.DirectObject):
     def getParentMgr(self):
         return self.air.getParentMgr(self.zoneId)
 
+    def getCollTrav(self):
+        return self.air.getCollTrav(self.zoneId)
+
     def sendUpdate(self, fieldName, args = []):
         if self.air:
             self.air.sendUpdate(self, fieldName, args)
