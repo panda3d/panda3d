@@ -3189,7 +3189,8 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   SrcRect.bottom = yo+h;
 
   // now copy from fb to tex
-  hr = _pD3DDevice->UpdateSurface(pCurRenderTarget,&SrcRect,pTexSurfaceLev0,NULL);
+  //hr = _pD3DDevice->UpdateSurface(pCurRenderTarget,&SrcRect,pTexSurfaceLev0,NULL);
+  hr = D3DXLoadSurfaceFromSurface(pTexSurfaceLev0, NULL, NULL, pCurRenderTarget, NULL, &SrcRect, D3DX_DEFAULT, 0);
   
   if(FAILED(hr)) {
     dxgsg9_cat.error() << "UpdateSurface failed in copy_texture" << D3DERRORSTRING(hr);
@@ -3326,7 +3327,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
            SrcCopyRect.bottom=TmpSurfYsize;
         }
 
-        hr=_pD3DDevice->CreateOffscreenPlainSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,D3DPOOL_SCRATCH, &pD3DSurf, NULL);
+        hr=_pD3DDevice->CreateOffscreenPlainSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,D3DPOOL_SYSTEMMEM, &pD3DSurf, NULL);
         if(FAILED(hr)) {
            dxgsg9_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
            return false;
