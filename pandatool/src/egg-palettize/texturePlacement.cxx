@@ -1029,12 +1029,12 @@ void TexturePlacement::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
-  manager->read_pointer(scan, this);  // _texture
-  manager->read_pointer(scan, this);  // _group
-  manager->read_pointer(scan, this);  // _image
+  manager->read_pointer(scan);  // _texture
+  manager->read_pointer(scan);  // _group
+  manager->read_pointer(scan);  // _image
 
   if (Palettizer::_read_pi_version >= 2) {
-    manager->read_pointer(scan, this);  // _dest
+    manager->read_pointer(scan);  // _dest
   }
 
   _has_uvs = scan.get_bool();
@@ -1046,7 +1046,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _omit_reason = (OmitReason)scan.get_int32();
 
   _num_references = scan.get_int32();
-  manager->read_pointers(scan, this, _num_references);
+  manager->read_pointers(scan, _num_references);
 }
 
 

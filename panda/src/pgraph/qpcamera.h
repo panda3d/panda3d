@@ -36,9 +36,9 @@ class EXPCL_PANDA qpCamera : public qpLensNode {
 PUBLISHED:
   qpCamera(const string &name);
 
-public:
+protected:
   qpCamera(const qpCamera &copy);
-  void operator = (const qpCamera &copy);
+public:
   virtual ~qpCamera();
 
   virtual PandaNode *make_copy() const;

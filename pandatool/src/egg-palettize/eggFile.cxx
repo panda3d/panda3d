@@ -628,10 +628,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _dest_filename = FilenameUnifier::get_bam_filename(scan.get_string());
 
   _num_textures = scan.get_uint32();
-  manager->read_pointers(scan, this, _num_textures);
+  manager->read_pointers(scan, _num_textures);
 
   _explicitly_assigned_groups.fillin(scan, manager);
-  manager->read_pointer(scan, this);  // _default_group
+  manager->read_pointer(scan);  // _default_group
 
   _is_surprise = scan.get_bool();
   _is_stale = scan.get_bool();

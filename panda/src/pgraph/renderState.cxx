@@ -1080,7 +1080,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // the actual list of pointers later in complete_pointers().
   _attributes.reserve(num_attribs);
   for (int i = 0; i < num_attribs; i++) {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
     int override = scan.get_int32();
     _attributes.push_back(Attribute(override));
   }

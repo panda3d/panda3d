@@ -32,37 +32,46 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpSequenceNode::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void qpSequenceNode::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_float32(_cycle_rate);
+
+  float now = ClockObject::get_global_clock()->get_frame_time();
+  float frame = (now - _start_time) * _cycle_rate + _frame_offset;
+  dg.add_float32(frame);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpSequenceNode::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new qpSequenceNode.
+////////////////////////////////////////////////////////////////////
+void qpSequenceNode::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _cycle_rate = scan.get_float32();
+  _frame_offset = scan.get_float32();
+
+  float now = ClockObject::get_global_clock()->get_frame_time();
+  _start_time = now;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpSequenceNode::Copy Constructor
-//       Access: Public
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 qpSequenceNode::
 qpSequenceNode(const qpSequenceNode &copy) :
-  SelectiveChildNode(copy)
+  SelectiveChildNode(copy),
+  _cycler(copy._cycler)
 {
-  CDWriter cdata(_cycler);
-  CDReader cdata_copy(copy._cycler);
-
-  cdata->_cycle_rate = cdata_copy->_cycle_rate;
-  cdata->_start_time = cdata_copy->_start_time;
-  cdata->_frame_offset = cdata_copy->_frame_offset;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpSequenceNode::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void qpSequenceNode::
-operator = (const qpSequenceNode &copy) {
-  SelectiveChildNode::operator = (copy);
-
-  CDWriter cdata(_cycler);
-  CDReader cdata_copy(copy._cycler);
-
-  cdata->_cycle_rate = cdata_copy->_cycle_rate;
-  cdata->_start_time = cdata_copy->_start_time;
-  cdata->_frame_offset = cdata_copy->_frame_offset;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,10 +146,7 @@ register_with_read_factory() {
 void qpSequenceNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   SelectiveChildNode::write_datagram(manager, dg);
-
-  CDReader cdata(_cycler);
-  dg.add_float32(cdata->_cycle_rate);
-  dg.add_float32(calc_frame());
+  manager->write_cdata(dg, _cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,11 +179,5 @@ make_from_bam(const FactoryParams &params) {
 void qpSequenceNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   SelectiveChildNode::fillin(scan, manager);
-
-  CDWriter cdata(_cycler);
-  cdata->_cycle_rate = scan.get_float32();
-  cdata->_frame_offset = scan.get_float32();
-
-  float now = ClockObject::get_global_clock()->get_frame_time();
-  cdata->_start_time = now;
+  manager->read_cdata(scan, _cycler);
 }

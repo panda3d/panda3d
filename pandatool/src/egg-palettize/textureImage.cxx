@@ -1245,10 +1245,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _actual_assigned_groups.fillin(scan, manager);
 
   _num_placement = scan.get_uint32();
-  manager->read_pointers(scan, this, _num_placement * 2);
+  manager->read_pointers(scan, _num_placement * 2);
 
   _num_sources = scan.get_uint32();
-  manager->read_pointers(scan, this, _num_sources);
+  manager->read_pointers(scan, _num_sources);
   _num_dests = scan.get_uint32();
-  manager->read_pointers(scan, this, _num_dests);
+  manager->read_pointers(scan, _num_dests);
 }

@@ -339,13 +339,13 @@ fillin(DatagramIterator& scan, BamReader* manager)
   _num_net_arcs = scan.get_uint16();
   for(i = 0; i < _num_net_arcs; i++)
   {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
   }
 
   _num_local_arcs = scan.get_uint16();
   for(i = 0; i < _num_local_arcs; i++)
   {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
   }
 
   _initial_net_transform_inverse.read_datagram(scan);

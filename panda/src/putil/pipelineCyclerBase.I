@@ -22,18 +22,77 @@
 // sanity checks.
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Constructor (sanity-check)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerBase::
+PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline) :
+  _data(initial_data),
+  _pipeline(pipeline),
+  _read_count(0),
+  _write_count(0),
+  _stage_count(0)
+{
+  if (_pipeline == (Pipeline *)NULL) {
+    _pipeline = Pipeline::get_render_pipeline();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Copy Constructor (sanity-check)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerBase::
+PipelineCyclerBase(const PipelineCyclerBase &copy) :
+  _data(copy._data->make_copy()),
+  _pipeline(copy._pipeline),
+  _read_count(0),
+  _write_count(0),
+  _stage_count(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Copy Assignment (sanity-check)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerBase::
+operator = (const PipelineCyclerBase &copy) {
+  nassertv(_read_count == 0 && _write_count == 0 && _stage_count == 0);
+  _data = copy._data->make_copy();
+  _pipeline = copy._pipeline;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Destructor (sanity-check)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerBase::
+~PipelineCyclerBase() {
+  nassertv(_read_count == 0 && _write_count == 0 && _stage_count == 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerBase::read (sanity-check)
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
 //               data for the current stage of the pipeline as seen by
 //               this thread.  This pointer should eventually be
 //               released by calling release_read().
+//
+//               There should be no outstanding write pointers on the
+//               data when this function is called.
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerBase::
 read() const {
   // This function isn't truly const, but it doesn't change the data
   // in any meaningful way, so we pretend it is.
   ((PipelineCyclerBase *)this)->_read_count++;
+  nassertr(_write_count == 0, _data);
   return _data;
 }
 
@@ -78,25 +137,33 @@ release_read(const CycleData *pointer) const {
 //               the data will be propagate to all later stages of the
 //               pipeline.  This pointer should eventually be released
 //               by calling release_write().
+//
+//               There may only be one outstanding write pointer on a
+//               given stage at a time, and if there is a write
+//               pointer there may be no read pointers on the same
+//               stage (but see elevate_read).
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerBase::
 write() {
   _write_count++;
+  nassertr(_read_count == 0, _data);
+  nassertr(_write_count == 1, _data);
   return _data;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::increment_write (sanity-check)
+//     Function: PipelineCyclerBase::elevate_read (sanity-check)
 //       Access: Public
-//  Description: Increments the count on a pointer previously
-//               retrieved by write(); now the pointer will need to be
-//               released twice.
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer.  This may or may not change the value of the
+//               pointer.  It is only valid to do this if this is the
+//               only currently-outstanding read pointer on the
+//               current stage.
 ////////////////////////////////////////////////////////////////////
-INLINE void PipelineCyclerBase::
-increment_write(CycleData *pointer) {
-  nassertv(pointer == _data);
-  nassertv(_write_count > 0);
-  _write_count++;
+INLINE CycleData *PipelineCyclerBase::
+elevate_read(const CycleData *pointer) {
+  release_read(pointer);
+  return write();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,19 +233,86 @@ release_write_stage(int n, CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::Destructor (sanity-check)
+//     Function: PipelineCyclerBase::cheat (sanity-check)
 //       Access: Public
-//  Description: 
+//  Description: Returns a pointer without counting it.  This is only
+//               intended for use as the return value for certain
+//               nassertr() functions, so the application can recover
+//               after a failure to manage the read and write pointers
+//               correctly.  You should never call this function
+//               directly.
 ////////////////////////////////////////////////////////////////////
-INLINE PipelineCyclerBase::
-~PipelineCyclerBase() {
-  nassertv(_read_count == 0 && _write_count == 0 && _stage_count == 0);
+INLINE CycleData *PipelineCyclerBase::
+cheat() const {
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::get_read_count (sanity-check)
+//       Access: Public
+//  Description: Returns the number of handles currently outstanding
+//               to read the current stage of the data.  This should
+//               only be used for debugging purposes.
+////////////////////////////////////////////////////////////////////
+INLINE int PipelineCyclerBase::
+get_read_count() const {
+  return _read_count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::get_write_count (sanity-check)
+//       Access: Public
+//  Description: Returns the number of handles currently outstanding
+//               to read the current stage of the data.  This will
+//               normally only be either 0 or 1.  This should only be
+//               used for debugging purposes.
+////////////////////////////////////////////////////////////////////
+INLINE int PipelineCyclerBase::
+get_write_count() const {
+  return _write_count;
 }
 
 #else  // !DO_PIPELINING
 // The following implementations are provided for when pipelining is
 // not compiled in.  They are trivial functions that do as little as
 // possible.
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Constructor (trivial)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerBase::
+PipelineCyclerBase(CycleData *initial_data, Pipeline *) {
+  // In the trivial implementation, a derived class (the
+  // PipelineCycler template class) stores the CycleData object
+  // directly within itself, and since we have no data members or
+  // virtual functions, we get away with assuming the pointer is the
+  // same as the 'this' pointer.
+
+  // If this turns out not to be true on a particular platform, we
+  // will have to store the pointer in this class, for a little bit of
+  // extra overhead.
+  nassertv(initial_data == (CycleData *)this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Copy Constructor (trivial)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerBase::
+PipelineCyclerBase(const PipelineCyclerBase &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Copy Assignment (trivial)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerBase::
+operator = (const PipelineCyclerBase &) {
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerBase::Destructor (trivial)
@@ -233,6 +367,11 @@ release_read(const CycleData *) const {
 //               the data will be propagate to all later stages of the
 //               pipeline.  This pointer should eventually be released
 //               by calling release_write().
+//
+//               There may only be one outstanding write pointer on a
+//               given stage at a time, and if there is a write
+//               pointer there may be no read pointers on the same
+//               stage (but see elevate_read).
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerBase::
 write() {
@@ -240,14 +379,17 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::increment_write (trivial)
+//     Function: PipelineCyclerBase::elevate_read (trivial)
 //       Access: Public
-//  Description: Increments the count on a pointer previously
-//               retrieved by write(); now the pointer will need to be
-//               released twice.
+//  Description: Elevates a currently-held read pointer into a write
+//               pointer.  This may or may not change the value of the
+//               pointer.  It is only valid to do this if this is the
+//               only currently-outstanding read pointer on the
+//               current stage.
 ////////////////////////////////////////////////////////////////////
-INLINE void PipelineCyclerBase::
-increment_write(CycleData *) {
+INLINE CycleData *PipelineCyclerBase::
+elevate_read(const CycleData *) {
+  return (CycleData *)this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -305,6 +447,46 @@ write_stage(int) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerBase::
 release_write_stage(int, CycleData *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::cheat (trivial)
+//       Access: Public
+//  Description: Returns a pointer without counting it.  This is only
+//               intended for use as the return value for certain
+//               nassertr() functions, so the application can recover
+//               after a failure to manage the read and write pointers
+//               correctly.  You should never call this function
+//               directly.
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerBase::
+cheat() const {
+  return (CycleData *)this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::get_read_count (trivial)
+//       Access: Public
+//  Description: Returns the number of handles currently outstanding
+//               to read the current stage of the data.  This should
+//               only be used for debugging purposes.
+////////////////////////////////////////////////////////////////////
+INLINE int PipelineCyclerBase::
+get_read_count() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::get_write_count (trivial)
+//       Access: Public
+//  Description: Returns the number of handles currently outstanding
+//               to read the current stage of the data.  This will
+//               normally only be either 0 or 1.  This should only be
+//               used for debugging purposes.
+////////////////////////////////////////////////////////////////////
+INLINE int PipelineCyclerBase::
+get_write_count() const {
+  return 0;
 }
 
 

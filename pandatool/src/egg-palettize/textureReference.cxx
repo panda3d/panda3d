@@ -773,13 +773,13 @@ make_TextureReference(const FactoryParams &params) {
 void TextureReference::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
-  manager->read_pointer(scan, this);  // _egg_file
+  manager->read_pointer(scan);  // _egg_file
 
   _tex_mat.read_datagram(scan);
   _inv_tex_mat.read_datagram(scan);
 
-  manager->read_pointer(scan, this);  // _source_texture
-  manager->read_pointer(scan, this);  // _placement
+  manager->read_pointer(scan);  // _source_texture
+  manager->read_pointer(scan);  // _placement
 
   _uses_alpha = scan.get_bool();
   _any_uvs = scan.get_bool();

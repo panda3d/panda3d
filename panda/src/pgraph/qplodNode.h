@@ -36,10 +36,9 @@ class EXPCL_PANDA qpLODNode : public SelectiveChildNode {
 PUBLISHED:
   INLINE qpLODNode(const string &name);
 
-public:
+protected:
   INLINE qpLODNode(const qpLODNode &copy);
-  INLINE void operator = (const qpLODNode &copy);
-
+public:
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
   virtual bool has_cull_callback() const;
@@ -78,6 +77,8 @@ private:
     INLINE CData();
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     LOD _lod;
   };

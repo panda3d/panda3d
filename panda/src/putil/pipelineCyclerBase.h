@@ -32,7 +32,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PipelineCyclerBase {
 public:
-  PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline = NULL);
+  INLINE PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline = NULL);
+  INLINE PipelineCyclerBase(const PipelineCyclerBase &copy);
+  INLINE void operator = (const PipelineCyclerBase &copy);
   INLINE ~PipelineCyclerBase();
 
   INLINE const CycleData *read() const;
@@ -40,13 +42,17 @@ public:
   INLINE void release_read(const CycleData *pointer) const;
 
   INLINE CycleData *write();
-  INLINE void increment_write(CycleData *pointer);
+  INLINE CycleData *elevate_read(const CycleData *pointer);
   INLINE void release_write(CycleData *pointer);
 
   INLINE int get_num_stages();
   INLINE bool is_stage_unique(int n) const;
   INLINE CycleData *write_stage(int n);
   INLINE void release_write_stage(int n, CycleData *pointer);
+
+  INLINE CycleData *cheat() const;
+  INLINE int get_read_count() const;
+  INLINE int get_write_count() const;
 
 #ifdef DO_PIPELINING
   // This private data is only stored here if we have pipelining

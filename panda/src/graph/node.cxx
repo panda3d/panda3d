@@ -636,7 +636,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     while (num_types > 0) {
       int num_arcs = scan.get_uint16();
       while (num_arcs > 0) {
-        manager->read_pointer(scan, this);
+        manager->read_pointer(scan);
         num_arcs--;
       }
       num_types--;
@@ -666,7 +666,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         DownRelationPointers &drp = _connections[i].get_down();
         int num_arcs = scan.get_uint16();
         while (num_arcs > 0) {
-          manager->read_pointer(scan, this);
+          manager->read_pointer(scan);
           drp.push_back((NodeRelation *)NULL);
           num_arcs--;
         }

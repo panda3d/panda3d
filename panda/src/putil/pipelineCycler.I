@@ -34,6 +34,29 @@ PipelineCycler(Pipeline *pipeline) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::Copy Constructor (sanity-check)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE PipelineCycler<CycleDataType>::
+PipelineCycler(const PipelineCycler<CycleDataType> &copy) :
+  PipelineCyclerBase(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::Copy Assignment (sanity-check)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE void PipelineCycler<CycleDataType>::
+operator = (const PipelineCycler<CycleDataType> &copy) {
+  PipelineCyclerBase::operator = (copy);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCycler::read (sanity-check)
 //       Access: Public
 //  Description: See PipelineCyclerBase::read().
@@ -56,6 +79,17 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read (sanity-check)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read(const CycleDataType *pointer) {
+  return (CycleDataType *)PipelineCyclerBase::elevate_read(pointer);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCycler::write_stage (sanity-check)
 //       Access: Public
 //  Description: See PipelineCyclerBase::write_stage().
@@ -64,6 +98,22 @@ template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 write_stage(int n) {
   return (CycleDataType *)PipelineCyclerBase::write_stage(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::cheat (sanity-check)
+//       Access: Public
+//  Description: Returns a pointer without counting it.  This is only
+//               intended for use as the return value for certain
+//               nassertr() functions, so the application can recover
+//               after a failure to manage the read and write pointers
+//               correctly.  You should never call this function
+//               directly.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+cheat() const {
+  return (CycleDataType *)PipelineCyclerBase::cheat();
 }
 
 #else  // !DO_PIPELINING
@@ -81,6 +131,31 @@ INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(Pipeline *pipeline) :
   PipelineCyclerBase(&_data, pipeline)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::Copy Constructor (trivial)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE PipelineCycler<CycleDataType>::
+PipelineCycler(const PipelineCycler<CycleDataType> &copy) :
+  PipelineCyclerBase(copy),
+  _data(copy._data)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::Copy Assignment (trivial)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE void PipelineCycler<CycleDataType>::
+operator = (const PipelineCycler<CycleDataType> &copy) {
+  PipelineCyclerBase::operator = (copy);
+  _data = copy._data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,6 +181,17 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::elevate_read (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::elevate_read().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+elevate_read(const CycleDataType *) {
+  return &_data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipelineCycler::write_stage (trivial)
 //       Access: Public
 //  Description: See PipelineCyclerBase::write_stage().
@@ -113,6 +199,22 @@ write() {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 write_stage(int) {
+  return &_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::cheat (trivial)
+//       Access: Public
+//  Description: Returns a pointer without counting it.  This is only
+//               intended for use as the return value for certain
+//               nassertr() functions, so the application can recover
+//               after a failure to manage the read and write pointers
+//               correctly.  You should never call this function
+//               directly.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+cheat() const {
   return &_data;
 }
 

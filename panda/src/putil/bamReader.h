@@ -19,8 +19,8 @@
 #ifndef __BAM_READER_
 #define __BAM_READER_
 
-#include <pandabase.h>
-#include <notify.h>
+#include "pandabase.h"
+#include "notify.h"
 
 #include "typedWritable.h"
 #include "datagramGenerator.h"
@@ -32,6 +32,8 @@
 #include "dcast.h"
 
 #include <algorithm>
+
+class PipelineCyclerBase;
 
 
 // A handy macro for reading PointerToArrays.
@@ -108,9 +110,11 @@ public:
 public:
   // Functions to support classes that read themselves from the Bam.
 
-  void read_pointer(DatagramIterator &scan, TypedWritable *for_whom);
-  void read_pointers(DatagramIterator &scan, TypedWritable *for_whom, int count);
+  void read_pointer(DatagramIterator &scan);
+  void read_pointers(DatagramIterator &scan, int count);
   void skip_pointer(DatagramIterator &scan);
+
+  void read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler);
 
   void register_finalize(TypedWritable *whom);
 
@@ -132,6 +136,8 @@ private:
 
 private:
   int p_read_object();
+  bool resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids);
+  bool resolve_cycler_pointers(PipelineCyclerBase *cycler, const vector_int &pointer_ids);
   void finalize();
 
 private:
@@ -158,12 +164,20 @@ private:
   // during recursion.  We need this so we can associate
   // read_pointer() calls with the proper objects.
   CreatedObjs::iterator _now_creating;
+  // This is the pointer to the current PipelineCycler we are reading,
+  // if we are within a read_cdata() call.
+  PipelineCyclerBase *_reading_cycler;
 
   // This records all the objects that still need their pointers
   // completed, along with the object ID's of the pointers they need,
-  // in the order in which read_pointer() was called.
-  typedef pmap<int, vector_int> Requests;
-  Requests _deferred_pointers;
+  // in the order in which read_pointer() was called, so that we may
+  // call the appropriate complete_pointers() later.
+  typedef pmap<int, vector_int> ObjectPointers;
+  ObjectPointers _object_pointers;
+
+  // Ditto, for the PiplineCycler objects.
+  typedef pmap<PipelineCyclerBase *, vector_int> CyclerPointers;
+  CyclerPointers _cycler_pointers;
 
   // This is the number of extra objects that must still be read (and
   // saved in the _created_objs map) before returning from

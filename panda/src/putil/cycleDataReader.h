@@ -45,10 +45,15 @@ public:
   INLINE ~CycleDataReader();
 
   INLINE const CycleDataType *operator -> () const;
+  INLINE operator const CycleDataType * () const;
+
+  INLINE const CycleDataType *take_pointer();
+  INLINE CycleDataType *elevate_to_write(PipelineCycler<CycleDataType> &cycler);
 
 private:
   const PipelineCycler<CycleDataType> &_cycler;
   const CycleDataType *_pointer;
+  CycleDataType *_write_pointer;
 };
 
 #include "cycleDataReader.I"

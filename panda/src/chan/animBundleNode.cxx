@@ -64,7 +64,7 @@ void AnimBundleNode::
 fillin(DatagramIterator& scan, BamReader* manager)
 {
   NamedNode::fillin(scan, manager);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -31,17 +31,39 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CycleDataWriter::Copy Constructor
+//     Function: CycleDataWriter::Constructor
 //       Access: Public
-//  Description:
+//  Description: This is a lot like a copy constructor, in that the
+//               new CycleDataWriter object gets a handle to the same
+//               pointer held by the old CycleDataWriter object.
+//               However, since only one write pointer may be active
+//               at a time, this invalidates the old object.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
-  _cycler(copy._cycler),
-  _pointer(copy._pointer)
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler, 
+                CycleDataWriter<CycleDataType> &take_from) :
+  _cycler(cycler),
+  _pointer(take_from._pointer)
 {
-  _cycler.increment_write(_pointer);
+  take_from._pointer = (CycleDataType *)NULL;
+  nassertv(_pointer != (CycleDataType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Constructor
+//       Access: Public
+//  Description: This flavor of the constructor elevates the pointer
+//               from the CycleDataReader from a read to a write
+//               pointer (and invalidates the reader).
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
+                CycleDataReader<CycleDataType> &take_from) :
+  _cycler(cycler)
+{
+  _pointer = _cycler.elevate_read(take_from.take_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +74,9 @@ CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 ~CycleDataWriter() {
-  _cycler.release_write(_pointer);
+  if (_pointer != (CycleDataType *)NULL) {
+    _cycler.release_write(_pointer);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,6 +88,7 @@ INLINE CycleDataWriter<CycleDataType>::
 template<class CycleDataType>
 INLINE CycleDataType *CycleDataWriter<CycleDataType>::
 operator -> () {
+  nassertr(_pointer != (CycleDataType *)NULL, _cycler.cheat());
   return _pointer;
 }
 
@@ -76,5 +101,19 @@ operator -> () {
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataWriter<CycleDataType>::
 operator -> () const {
+  nassertr(_pointer != (CycleDataType *)NULL, _cycler.cheat());
+  return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Typecast pointer
+//       Access: Public
+//  Description: This allows the CycleDataWriter to be passed to any
+//               function that expects a CycleDataType pointer.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+operator CycleDataType * () {
+  nassertr(_pointer != (CycleDataType *)NULL, _cycler.cheat());
   return _pointer;
 }

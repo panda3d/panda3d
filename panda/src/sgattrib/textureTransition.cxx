@@ -190,5 +190,5 @@ make_TextureTransition(const FactoryParams &params) {
 void TextureTransition::
 fillin(DatagramIterator& scan, BamReader* manager) {
   OnOffTransition::fillin(scan, manager);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 }

@@ -449,14 +449,14 @@ fillin(DatagramIterator &scan, BamReader *manager)
   _num_flares = scan.get_uint16();
   for(i = 0; i < _num_flares; i++)
   {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
   }
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 
   _num_arcs = scan.get_uint16();
   for(i = 0; i < _num_arcs; i++)
   {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
   }
 
   size = scan.get_uint16();
@@ -496,7 +496,7 @@ fillin(DatagramIterator &scan, BamReader *manager)
   _blind_fall_off = scan.get_float32();
   _flare_fall_off = scan.get_float32();
 
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 }
 
 ////////////////////////////////////////////////////////////////////

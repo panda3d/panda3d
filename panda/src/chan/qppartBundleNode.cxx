@@ -76,5 +76,5 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
 void qpPartBundleNode::
 fillin(DatagramIterator &scan, BamReader* manager) {
   PandaNode::fillin(scan, manager);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 }

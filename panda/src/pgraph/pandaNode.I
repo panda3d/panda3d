@@ -353,8 +353,10 @@ clear_state() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 set_transform(const TransformState *transform) {
-  CDWriter cdata(_cycler);
-  cdata->_transform = transform;
+  {
+    CDWriter cdata(_cycler);
+    cdata->_transform = transform;
+  }
   mark_bound_stale();
 }
 

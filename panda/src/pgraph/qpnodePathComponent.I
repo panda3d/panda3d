@@ -136,8 +136,8 @@ is_collapsed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpNodePathComponent::
 get_length() const {
-  CDReader cdata(_cycler);
   nassertr(!is_collapsed(), 0);
+  CDReader cdata(_cycler);
   return cdata->_length;
 }
 
@@ -150,8 +150,8 @@ get_length() const {
 ////////////////////////////////////////////////////////////////////
 INLINE qpNodePathComponent *qpNodePathComponent::
 get_collapsed() const {
-  CDReader cdata(_cycler);
   nassertr(is_collapsed(), (qpNodePathComponent *)NULL);
+  CDReader cdata(_cycler);
   return cdata->_next;
 }
 
@@ -162,9 +162,9 @@ get_collapsed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePathComponent::
 set_next(qpNodePathComponent *next) {
-  CDWriter cdata(_cycler);
   nassertv(!is_collapsed());
   nassertv(next != (qpNodePathComponent *)NULL);
+  CDWriter cdata(_cycler);
   cdata->_next = next;
 }
 
@@ -176,8 +176,8 @@ set_next(qpNodePathComponent *next) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePathComponent::
 set_top_node() {
-  CDWriter cdata(_cycler);
   nassertv(!is_collapsed());
+  CDWriter cdata(_cycler);
   cdata->_next = (qpNodePathComponent *)NULL;
 }
 
@@ -192,9 +192,9 @@ set_top_node() {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePathComponent::
 collapse_with(qpNodePathComponent *next) {
-  CDWriter cdata(_cycler);
   nassertv(!is_collapsed());
   nassertv(next != (qpNodePathComponent *)NULL);
+  CDWriter cdata(_cycler);
   cdata->_next = next;
   cdata->_length = 0;
 

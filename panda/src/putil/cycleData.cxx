@@ -27,3 +27,38 @@
 CycleData::
 ~CycleData() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void CycleData::
+write_datagram(BamWriter *, Datagram &) const {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleData::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int CycleData::
+complete_pointers(TypedWritable **, BamReader *) {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is intended to be called by
+//               each class's make_from_bam() method to read in all of
+//               the relevant data from the BamFile for the new
+//               object.
+////////////////////////////////////////////////////////////////////
+void CycleData::
+fillin(DatagramIterator &, BamReader *) {
+}
+

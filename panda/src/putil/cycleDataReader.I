@@ -28,6 +28,7 @@ CycleDataReader(const PipelineCycler<CycleDataType> &cycler) :
   _cycler(cycler)
 {
   _pointer = _cycler.read();
+  _write_pointer = (CycleDataType *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,8 +40,13 @@ template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
   _cycler(copy._cycler),
-  _pointer(copy._pointer)
+  _pointer(copy._pointer),
+  _write_pointer(copy._write_pointer)
 {
+  nassertv(_pointer != (const CycleDataType *)NULL);
+  // We cannot copy-construct a CycleDataReader that has elevated
+  // itself to a write pointer.
+  nassertv(_write_pointer == (const CycleDataType *)NULL);
   _cycler.increment_read(_pointer);
 }
 
@@ -52,7 +58,14 @@ CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 ~CycleDataReader() {
-  _cycler.release_read(_pointer);
+  if (_write_pointer != (CycleDataType *)NULL) {
+    // If the _write_pointer is non-NULL, then someone called
+    // elevate_to_write() at some point, and we now actually hold a
+    // write pointer, not a read pointer.
+    ((PipelineCycler<CycleDataType> &)_cycler).release_write(_write_pointer);
+  } else if (_pointer != (CycleDataType *)NULL) {
+    _cycler.release_read(_pointer);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,5 +77,58 @@ INLINE CycleDataReader<CycleDataType>::
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataReader<CycleDataType>::
 operator -> () const {
+  nassertr(_pointer != (const CycleDataType *)NULL, _cycler.cheat());
   return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::Typecast pointer
+//       Access: Public
+//  Description: This allows the CycleDataReader to be passed to any
+//               function that expects a const CycleDataType pointer.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataReader<CycleDataType>::
+operator const CycleDataType * () const {
+  nassertr(_pointer != (const CycleDataType *)NULL, _cycler.cheat());
+  return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::take_pointer
+//       Access: Public
+//  Description: This is intended to be called only from
+//               CycleDataWriter when it elevates the pointer from
+//               read to write status.  This function returns the
+//               reader's pointer and relinquishes ownership of the
+//               pointer, rendering the reader invalid for future
+//               reads.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+take_pointer() {
+  const CycleDataType *pointer = _pointer;
+  _pointer = (CycleDataType *)NULL;
+  _write_pointer = (CycleDataType *)NULL;
+  nassertr(_pointer != (const CycleDataType *)NULL, _cycler.cheat());
+  return pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::elevate_to_write
+//       Access: Public
+//  Description: Call this to permanently elevate the readable pointer
+//               to a writable pointer.  This returns a writable
+//               pointer; subsequent calls to the same function will
+//               trivially return the same writable pointer.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *CycleDataReader<CycleDataType>::
+elevate_to_write(PipelineCycler<CycleDataType> &cycler) {
+  nassertr(&cycler = &_cycler, cycler.cheat());
+  if (_write_pointer == (CycleDataType *)NULL) {
+    _write_pointer = cycler.elevate_read(_pointer);
+    _pointer = _write_pointer;
+  }
+  return _write_pointer;
 }

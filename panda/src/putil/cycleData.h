@@ -23,6 +23,12 @@
 
 #include "referenceCount.h"
 
+class BamWriter;
+class BamReader;
+class TypedWritable;
+class Datagram;
+class DatagramIterator;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CycleData
 // Description : A single page of data maintained by a PipelineCycler.
@@ -51,6 +57,10 @@ public:
   virtual ~CycleData();
 
   virtual CycleData *make_copy() const=0;
+
+  virtual void write_datagram(BamWriter *, Datagram &) const;
+  virtual int complete_pointers(TypedWritable **p_list, BamReader *manager);
+  virtual void fillin(DatagramIterator &scan, BamReader *manager);
 };
 
 #include "cycleData.I"

@@ -35,7 +35,6 @@ PUBLISHED:
 
 public:
   qpSequenceNode(const qpSequenceNode &copy);
-  void operator = (const qpSequenceNode &copy);
 
   virtual PandaNode *make_copy() const;
 
@@ -57,6 +56,8 @@ private:
     INLINE CData();
     INLINE CData(const CData &copy);
     virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     float _cycle_rate;
     float _frame_offset;

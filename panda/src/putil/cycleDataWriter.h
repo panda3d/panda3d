@@ -40,12 +40,15 @@ template<class CycleDataType>
 class CycleDataWriter {
 public:
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler);
-  INLINE CycleDataWriter(const CycleDataWriter<CycleDataType> &copy);
+  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataWriter<CycleDataType> &take_from);
+  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataReader<CycleDataType> &take_from);
 
   INLINE ~CycleDataWriter();
 
   INLINE CycleDataType *operator -> ();
   INLINE const CycleDataType *operator -> () const;
+
+  INLINE operator CycleDataType * ();
 
 private:
   PipelineCycler<CycleDataType> &_cycler;

@@ -77,8 +77,8 @@ fillin(Person* me, DatagramIterator& scan, BamReader* manager)
 {
   _name = scan.get_string();
   myGender = scan.get_uint8();
-  manager->read_pointer(scan, this);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
+  manager->read_pointer(scan);
 }
 
 int Person::
@@ -122,8 +122,8 @@ void Parent::
 fillin(Parent* me, DatagramIterator& scan, BamReader* manager)
 {
   Person::fillin(me, scan, manager);
-  manager->read_pointer(scan, this);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
+  manager->read_pointer(scan);
 }
 
 int Parent::
@@ -182,8 +182,8 @@ void Child::
 fillin(Child* me, DatagramIterator& scan, BamReader* manager)
 {
   Person::fillin(me, scan, manager);
-  manager->read_pointer(scan, this);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
+  manager->read_pointer(scan);
 }
 
 int Child::

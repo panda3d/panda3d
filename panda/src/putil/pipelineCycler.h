@@ -53,10 +53,15 @@ template<class CycleDataType>
 class PipelineCycler : public PipelineCyclerBase {
 public:
   INLINE PipelineCycler(Pipeline *pipeline = NULL);
+  INLINE PipelineCycler(const PipelineCycler<CycleDataType> &copy);
+  INLINE void operator = (const PipelineCycler<CycleDataType> &copy);
 
   INLINE const CycleDataType *read() const;
   INLINE CycleDataType *write();
+  INLINE CycleDataType *elevate_read(const CycleDataType *pointer);
   INLINE CycleDataType *write_stage(int n);
+
+  INLINE CycleDataType *cheat() const;
 
 #ifndef DO_PIPELINING
 private:

@@ -16,13 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
-#include <notify.h>
+#include "pandabase.h"
+#include "notify.h"
 
 #include "bam.h"
 #include "bamReader.h"
-#include <datagramIterator.h>
+#include "datagramIterator.h"
 #include "config_util.h"
+#include "pipelineCyclerBase.h"
 
 WritableFactory *BamReader::_factory = (WritableFactory*)0L;
 BamReader *const BamReader::Null = (BamReader*)0L;
@@ -43,6 +44,7 @@ BamReader(DatagramGenerator *generator)
 {
   _num_extra_objects = 0;
   _now_creating = _created_objs.end();
+  _reading_cycler = (PipelineCyclerBase *)NULL;
   _pta_id = -1;
 }
 
@@ -225,71 +227,25 @@ resolve() {
     any_completed_this_pass = false;
 
     // Walk through all the objects that still have outstanding pointers.
-    Requests::iterator ri;
-    ri = _deferred_pointers.begin();
-    while (ri != _deferred_pointers.end()) {
-      int object_id = (*ri).first;
-      const vector_int &children = (*ri).second;
-      
+    ObjectPointers::iterator oi;
+    oi = _object_pointers.begin();
+    while (oi != _object_pointers.end()) {
+      int object_id = (*oi).first;
+      const vector_int &pointer_ids = (*oi).second;
+
       CreatedObjs::iterator ci = _created_objs.find(object_id);
       nassertr(ci != _created_objs.end(), false);
       CreatedObj &created_obj = (*ci).second;
       
       TypedWritable *object_ptr = created_obj._ptr;
-      
-      // Now make sure we have all of the pointers this object is
-      // waiting for.  If any of the pointers has not yet been read
-      // in, we can't resolve this object--we can't do anything for a
-      // given object until we have *all* outstanding pointers for
-      // that object.
 
-      bool is_complete = true;
-      vector_typedWritable references;
-      
-      vector_int::const_iterator pi;
-      for (pi = children.begin(); pi != children.end() && is_complete; ++pi) {
-        int child_id = (*pi);
-        
-        if (child_id == 0) {
-          // A NULL pointer is a NULL pointer.
-          references.push_back((TypedWritable *)NULL);
-          
-        } else {
-          // See if we have the pointer available now.
-          CreatedObjs::const_iterator oi = _created_objs.find(child_id);
-          if (oi == _created_objs.end()) {
-            // No, too bad.
-            is_complete = false;
-            
-          } else {
-            const CreatedObj &child_obj = (*oi).second;
-            if (child_obj._change_this != NULL) {
-              // It's been created, but the pointer might still change.
-              is_complete = false;
-              
-            } else {
-              // Yes, it's ready.
-              references.push_back(child_obj._ptr);
-            }
-          }
-        }
-      }
-      
-      if (is_complete) {
-        // Okay, here's the complete list of pointers for you!
-        int num_completed = object_ptr->complete_pointers(&references[0], this);
-        if (num_completed != (int)references.size()) {
-          bam_cat.warning()
-            << object_ptr->get_type() << " completed " << num_completed
-            << " of " << references.size() << " pointers.\n";
-        }
-        
+      if (resolve_object_pointers(object_ptr, pointer_ids)) {
         // Now remove this object from the list of things that need
         // completion.  We have to be a bit careful when deleting things
         // from the STL container while we are traversing it.
-        Requests::iterator old = ri;
-        ++ri;
-        _deferred_pointers.erase(old);
+        ObjectPointers::iterator old = oi;
+        ++oi;
+        _object_pointers.erase(old);
         
         // Does the pointer need to change?
         if (created_obj._change_this != NULL) {
@@ -300,11 +256,35 @@ resolve() {
         
       } else {
         // Couldn't complete this object yet; it'll wait for next time.
-        ++ri;
+        ++oi;
         all_completed = false;
       }
     }
   } while (!all_completed && any_completed_this_pass);
+
+  // Also do the PipelineCycler objects.  We only need to try these
+  // once, since they don't depend on each other.
+
+  CyclerPointers::iterator ci;
+  ci = _cycler_pointers.begin();
+  while (ci != _cycler_pointers.end()) {
+    PipelineCyclerBase *cycler = (*ci).first;
+    const vector_int &pointer_ids = (*ci).second;
+    
+    if (resolve_cycler_pointers(cycler, pointer_ids)) {
+      // Now remove this cycler from the list of things that need
+      // completion.  We have to be a bit careful when deleting things
+      // from the STL container while we are traversing it.
+      CyclerPointers::iterator old = ci;
+      ++ci;
+      _cycler_pointers.erase(old);
+      
+    } else {
+      // Couldn't complete this cycler yet; it'll wait for next time.
+      ++ci;
+      all_completed = false;
+    }
+  }
 
   if (all_completed) {
     finalize();
@@ -314,11 +294,11 @@ resolve() {
     // which some objects might legitimately be uncompleted after
     // calling resolve(), but for now we expect resolve() to always
     // succeed.
-    Requests::const_iterator ri;
-    for (ri = _deferred_pointers.begin(); 
-         ri != _deferred_pointers.end();
-         ++ri) {
-      int object_id = (*ri).first;
+    ObjectPointers::const_iterator oi;
+    for (oi = _object_pointers.begin(); 
+         oi != _object_pointers.end();
+         ++oi) {
+      int object_id = (*oi).first;
       CreatedObjs::iterator ci = _created_objs.find(object_id);
       nassertr(ci != _created_objs.end(), false);
       CreatedObj &created_obj = (*ci).second;
@@ -435,32 +415,20 @@ read_handle(DatagramIterator &scan) {
 //               object properly.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
-read_pointer(DatagramIterator &scan, TypedWritable *for_whom) {
+read_pointer(DatagramIterator &scan) {
   nassertv(_now_creating != _created_objs.end());
   int requestor_id = (*_now_creating).first;
 
-  /*
-    On reflection, we'll let this go undetected for now.  Maybe we
-    should remove the this pointer from read_pointer() altogether.
-
-#ifndef NDEBUG
-  // A bit of sanity checking here: we look up the object ID, and
-  // assign the "this" pointer into the record if it's not there
-  // already.  Then we can verify the "this" pointer later.
-  CreatedObj &created_obj = (*_now_creating).second;
-  if (created_obj._ptr == (TypedWritable *)NULL) {
-    created_obj._ptr = for_whom;
-  } else {
-    // We've previously assigned this pointer, and we should have
-    // assigned it to the same this pointer we have now.
-    nassertv(created_obj._ptr == for_whom);
-  }
-#endif  // NDEBUG
-  */
-
   // Read the object ID, and associate it with the requesting object.
   int object_id = scan.get_uint16();
-  _deferred_pointers[requestor_id].push_back(object_id);
+
+  if (_reading_cycler == (PipelineCyclerBase *)NULL) {
+    // This is not being read within a read_cdata() call.
+    _object_pointers[requestor_id].push_back(object_id);
+  } else {
+    // This *is* being read within a read_cdata() call.
+    _cycler_pointers[_reading_cycler].push_back(object_id);
+  }
 
   // If the object ID is zero (which indicates a NULL pointer), we
   // don't have to do anything else.
@@ -482,9 +450,9 @@ read_pointer(DatagramIterator &scan, TypedWritable *for_whom) {
 //               read_pointer() count times.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
-read_pointers(DatagramIterator &scan, TypedWritable *for_whom, int count) {
+read_pointers(DatagramIterator &scan, int count) {
   for (int i = 0; i < count; i++) {
-    read_pointer(scan, for_whom);
+    read_pointer(scan);
   }
 }
 
@@ -499,6 +467,25 @@ read_pointers(DatagramIterator &scan, TypedWritable *for_whom, int count) {
 void BamReader::
 skip_pointer(DatagramIterator &scan) {
   scan.get_uint16();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::read_cdata
+//       Access: Public
+//  Description: Reads in the indicated CycleData object.  This should
+//               be used by classes that store some or all of their
+//               data within a CycleData subclass, in support of
+//               pipelining.  This will call the virtual
+//               CycleData::fillin() method to do the actual reading.
+////////////////////////////////////////////////////////////////////
+void BamReader::
+read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler) {
+  PipelineCyclerBase *old_cycler = _reading_cycler;
+  _reading_cycler = &cycler;
+  CycleData *cdata = cycler.write();
+  cdata->fillin(scan, this);
+  cycler.release_write(cdata);
+  _reading_cycler = old_cycler;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -739,11 +726,11 @@ p_read_object() {
     if (created_obj._change_this != NULL) {
       // If the pointer is scheduled to change after
       // complete_pointers(), but we have no entry in
-      // _deferred_pointers for this object (and hence no plan to call
+      // _object_pointers for this object (and hence no plan to call
       // complete_pointers()), then just change the pointer
       // immediately.
-      Requests::const_iterator ri = _deferred_pointers.find(object_id);
-      if (ri == _deferred_pointers.end()) {
+      ObjectPointers::const_iterator ri = _object_pointers.find(object_id);
+      if (ri == _object_pointers.end()) {
         object = created_obj._change_this(object, this);
         created_obj._ptr = object;
         created_obj._change_this = NULL;
@@ -770,6 +757,133 @@ p_read_object() {
   }
 
   return object_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::resolve_object_pointers
+//       Access: Private
+//  Description: Checks whether all of the pointers a particular
+//               object is waiting for have been filled in yet.  If
+//               they have, calls complete_pointers() on the object
+//               and returns true; otherwise, returns false.
+////////////////////////////////////////////////////////////////////
+bool BamReader::
+resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
+  // Now make sure we have all of the pointers this object is
+  // waiting for.  If any of the pointers has not yet been read
+  // in, we can't resolve this object--we can't do anything for a
+  // given object until we have *all* outstanding pointers for
+  // that object.
+  
+  bool is_complete = true;
+  vector_typedWritable references;
+  
+  vector_int::const_iterator pi;
+  for (pi = pointer_ids.begin(); pi != pointer_ids.end() && is_complete; ++pi) {
+    int child_id = (*pi);
+    
+    if (child_id == 0) {
+      // A NULL pointer is a NULL pointer.
+      references.push_back((TypedWritable *)NULL);
+      
+    } else {
+      // See if we have the pointer available now.
+      CreatedObjs::const_iterator oi = _created_objs.find(child_id);
+      if (oi == _created_objs.end()) {
+	// No, too bad.
+	is_complete = false;
+	
+      } else {
+	const CreatedObj &child_obj = (*oi).second;
+	if (child_obj._change_this != NULL) {
+	  // It's been created, but the pointer might still change.
+	  is_complete = false;
+	  
+	} else {
+	  // Yes, it's ready.
+	  references.push_back(child_obj._ptr);
+	}
+      }
+    }
+  }
+      
+  if (is_complete) {
+    // Okay, here's the complete list of pointers for you!
+    int num_completed = object->complete_pointers(&references[0], this);
+    if (num_completed != (int)references.size()) {
+      bam_cat.warning()
+	<< object->get_type() << " completed " << num_completed
+	<< " of " << references.size() << " pointers.\n";
+    }
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::resolve_cycler_pointers
+//       Access: Private
+//  Description: Checks whether all of the pointers a particular
+//               PipelineCycler is waiting for have been filled in
+//               yet.  If they have, calls complete_pointers() on the
+//               cycler and returns true; otherwise, returns false.
+////////////////////////////////////////////////////////////////////
+bool BamReader::
+resolve_cycler_pointers(PipelineCyclerBase *cycler,
+			const vector_int &pointer_ids) {
+  // Now make sure we have all of the pointers this cycler is
+  // waiting for.  If any of the pointers has not yet been read
+  // in, we can't resolve this cycler--we can't do anything for a
+  // given cycler until we have *all* outstanding pointers for
+  // that cycler.
+  
+  bool is_complete = true;
+  vector_typedWritable references;
+  
+  vector_int::const_iterator pi;
+  for (pi = pointer_ids.begin(); pi != pointer_ids.end() && is_complete; ++pi) {
+    int child_id = (*pi);
+    
+    if (child_id == 0) {
+      // A NULL pointer is a NULL pointer.
+      references.push_back((TypedWritable *)NULL);
+      
+    } else {
+      // See if we have the pointer available now.
+      CreatedObjs::const_iterator oi = _created_objs.find(child_id);
+      if (oi == _created_objs.end()) {
+	// No, too bad.
+	is_complete = false;
+	
+      } else {
+	const CreatedObj &child_obj = (*oi).second;
+	if (child_obj._change_this != NULL) {
+	  // It's been created, but the pointer might still change.
+	  is_complete = false;
+	  
+	} else {
+	  // Yes, it's ready.
+	  references.push_back(child_obj._ptr);
+	}
+      }
+    }
+  }
+      
+  if (is_complete) {
+    // Okay, here's the complete list of pointers for you!
+    CycleData *cdata = cycler->write();
+    int num_completed = cdata->complete_pointers(&references[0], this);
+    cycler->release_write(cdata);
+    if (num_completed != (int)references.size()) {
+      bam_cat.warning()
+	<< "CycleData object completed " << num_completed
+	<< " of " << references.size() << " pointers.\n";
+    }
+    return true;
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -39,9 +39,9 @@ class EXPCL_PANDA qpGeomNode : public PandaNode {
 PUBLISHED:
   qpGeomNode(const string &name);
 
-public:
+protected:
   qpGeomNode(const qpGeomNode &copy);
-  void operator = (const qpGeomNode &copy);
+public:
   virtual ~qpGeomNode();
 
 PUBLISHED:
@@ -80,6 +80,9 @@ private:
     INLINE CData();
     CData(const CData &copy);
     virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Geoms _geoms;
   };
@@ -91,8 +94,6 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
-  virtual int complete_pointers(TypedWritable **plist,
-                                BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

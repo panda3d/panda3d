@@ -163,6 +163,19 @@ write_object(const TypedWritable *object) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::has_object
+//       Access: Public
+//  Description: Returns true if the object has previously been
+//               written (or at least requested to be written) to the
+//               bam file, or false if we've never heard of it before.
+////////////////////////////////////////////////////////////////////
+bool BamWriter::
+has_object(const TypedWritable *object) const {
+  StateMap::const_iterator si = _state_map.find(object);
+  return (si != _state_map.end());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::write_pointer
 //       Access: Public
 //  Description: The interface for writing a pointer to another object
@@ -197,6 +210,23 @@ write_pointer(Datagram &packet, const TypedWritable *object) {
       packet.add_uint16((*si).second._object_id);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::write_cdata
+//       Access: Public
+//  Description: Writes out the indicated CycleData object.  This
+//               should be used by classes that store some or all of
+//               their data within a CycleData subclass, in support of
+//               pipelining.  This will call the virtual
+//               CycleData::write_datagram() method to do the actual
+//               writing.
+////////////////////////////////////////////////////////////////////
+void BamWriter::
+write_cdata(Datagram &packet, const PipelineCyclerBase &cycler) {
+  const CycleData *cdata = cycler.read();
+  cdata->write_datagram(this, packet);
+  cycler.release_read(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////

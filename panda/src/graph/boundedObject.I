@@ -29,6 +29,31 @@ CData() {
   _flags = F_bound_stale;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::CData::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH BoundedObject::CData::
+CData(const BoundedObject::CData &copy) :
+  _flags(copy._flags),
+  _bound_type(copy._bound_type),
+  _bound(copy._bound)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::CData::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void BoundedObject::CData::
+operator = (const BoundedObject::CData &copy) {
+  _flags = copy._flags;
+  _bound_type = copy._bound_type;
+  _bound = copy._bound;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundedObject::Constructor
@@ -45,12 +70,9 @@ BoundedObject() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH BoundedObject::
-BoundedObject(const BoundedObject &copy) {
-  CDWriter cdata(_cycler);
-  CDReader copy_cdata(copy._cycler);
-  cdata->_flags = copy_cdata->_flags;
-  cdata->_bound_type = copy_cdata->_bound_type;
-  cdata->_bound = copy_cdata->_bound;
+BoundedObject(const BoundedObject &copy) :
+  _cycler(copy._cycler)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,11 +82,7 @@ BoundedObject(const BoundedObject &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void BoundedObject::
 operator = (const BoundedObject &copy) {
-  CDWriter cdata(_cycler);
-  CDReader copy_cdata(copy._cycler);
-  cdata->_flags = copy_cdata->_flags;
-  cdata->_bound_type = copy_cdata->_bound_type;
-  cdata->_bound = copy_cdata->_bound;
+  _cycler = copy._cycler;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,8 +95,8 @@ operator = (const BoundedObject &copy) {
 INLINE_GRAPH void BoundedObject::
 set_bound(BoundedObject::BoundingVolumeType type) {
   nassertv(type != BVT_static);
-  CDWriter cdata(_cycler);
   mark_bound_stale();
+  CDWriter cdata(_cycler);
   cdata->_bound_type = type;
 }
 
@@ -91,33 +109,11 @@ set_bound(BoundedObject::BoundingVolumeType type) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void BoundedObject::
 set_bound(const BoundingVolume &bound) {
-  CDWriter cdata(_cycler);
   mark_bound_stale();
+  CDWriter cdata(_cycler);
   cdata->_bound_type = BVT_static;
   cdata->_flags &= ~F_bound_stale;  
   cdata->_bound = bound.make_copy();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundedObject::get_bound
-//       Access: Published
-//  Description: Returns the current bounding volume on this node,
-//               possibly forcing a recompute.  A node's bounding
-//               volume encloses only the node itself, irrespective of
-//               the nodes above or below it in the graph.  This is
-//               different from the bounding volumes on the arcs,
-//               which enclose all geometry below them.
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH const BoundingVolume &BoundedObject::
-get_bound() const {
-  CDReader cdata(_cycler);
-  if (cdata->_bound_type == BVT_static) {
-    CDWriter cdata_w(((BoundedObject *)this)->_cycler);
-    cdata_w->_flags &= ~F_bound_stale;
-  } else if (is_bound_stale() || cdata->_bound == (BoundingVolume *)NULL) {
-    ((BoundedObject *)this)->recompute_bound();
-  }
-  return *cdata->_bound;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,8 +131,10 @@ mark_bound_stale() {
   if (is_bound_stale()) {
     return false;
   }
-  CDWriter cdata(_cycler);
-  cdata->_flags |= F_bound_stale;
+  {
+    CDWriter cdata(_cycler);
+    cdata->_flags |= F_bound_stale;
+  }
   propagate_stale_bound();
 
   return true;
@@ -151,8 +149,10 @@ mark_bound_stale() {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void BoundedObject::
 force_bound_stale() {
-  CDWriter cdata(_cycler);
-  cdata->_flags |= F_bound_stale;
+  {
+    CDWriter cdata(_cycler);
+    cdata->_flags |= F_bound_stale;
+  }
   propagate_stale_bound();
 }
 

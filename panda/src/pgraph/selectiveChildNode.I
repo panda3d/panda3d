@@ -31,7 +31,7 @@ SelectiveChildNode(const string &name) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SelectiveChildNode::Copy Constructor
-//       Access: Public
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE SelectiveChildNode::
@@ -39,17 +39,6 @@ SelectiveChildNode(const SelectiveChildNode &copy) :
   PandaNode(copy),
   _selected_child(copy._selected_child)
 {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SelectiveChildNode::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void SelectiveChildNode::
-operator = (const SelectiveChildNode &copy) {
-  PandaNode::operator = (copy);
-  _selected_child = copy._selected_child;
 }
 
 ////////////////////////////////////////////////////////////////////

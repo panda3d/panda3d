@@ -32,33 +32,26 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpLODNode::Copy Constructor
-//       Access: Public
-//  Description:
+//     Function: qpLODNode::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-qpLODNode::
-qpLODNode(const qpLODNode &copy) :
-  SelectiveChildNode(copy)
-{
-  CDWriter cdata(_cycler);
-  CDReader cdata_copy(copy._cycler);
-
-  cdata->_lod = cdata_copy->_lod;
+void qpLODNode::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  _lod.write_datagram(dg);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpLODNode::Copy Assignment Operator
-//       Access: Public
-//  Description:
+//     Function: qpLODNode::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new qpLODNode.
 ////////////////////////////////////////////////////////////////////
-void qpLODNode::
-operator = (const qpLODNode &copy) {
-  SelectiveChildNode::operator = (copy);
-
-  CDWriter cdata(_cycler);
-  CDReader cdata_copy(copy._cycler);
-
-  cdata->_lod = cdata_copy->_lod;
+void qpLODNode::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _lod.read_datagram(scan);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,9 +170,7 @@ register_with_read_factory() {
 void qpLODNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   SelectiveChildNode::write_datagram(manager, dg);
-
-  CDReader cdata(_cycler);
-  cdata->_lod.write_datagram(dg);
+  manager->write_cdata(dg, _cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,7 +203,5 @@ make_from_bam(const FactoryParams &params) {
 void qpLODNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   SelectiveChildNode::fillin(scan, manager);
-
-  CDWriter cdata(_cycler);
-  cdata->_lod.read_datagram(scan);
+  manager->read_cdata(scan, _cycler);
 }

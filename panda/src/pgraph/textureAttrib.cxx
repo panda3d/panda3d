@@ -192,5 +192,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   // Read the _texture pointer.
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 }

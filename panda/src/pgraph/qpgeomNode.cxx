@@ -47,6 +47,67 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void qpGeomNode::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  int num_geoms = _geoms.size();
+  nassertv(num_geoms == (int)(PN_uint16)num_geoms);
+  dg.add_uint16(num_geoms);
+  
+  Geoms::const_iterator gi;
+  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
+    const GeomEntry &entry = (*gi);
+    manager->write_pointer(dg, entry._geom);
+    manager->write_pointer(dg, entry._state);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::CData::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int qpGeomNode::CData::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = CycleData::complete_pointers(p_list, manager);
+
+  // Get the geom and state pointers.
+  Geoms::iterator gi;
+  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
+    GeomEntry &entry = (*gi);
+    entry._geom = DCAST(Geom, p_list[pi++]);
+    entry._state = DCAST(RenderState, p_list[pi++]);
+  }
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new qpGeomNode.
+////////////////////////////////////////////////////////////////////
+void qpGeomNode::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  int num_geoms = scan.get_uint16();
+  // Read the list of geoms and states.  Push back a NULL for each one.
+  _geoms.reserve(num_geoms);
+  for (int i = 0; i < num_geoms; i++) {
+    manager->read_pointer(scan);
+    manager->read_pointer(scan);
+    _geoms.push_back(GeomEntry(NULL, NULL));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomNode::Constructor
 //       Access: Published
 //  Description:
@@ -59,37 +120,19 @@ qpGeomNode(const string &name) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomNode::Copy Constructor
-//       Access: Published
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 qpGeomNode::
 qpGeomNode(const qpGeomNode &copy) :
-  PandaNode(copy)
+  PandaNode(copy),
+  _cycler(copy._cycler)
 {
-  // Copy the other node's _geoms.
-  CDReader copy_cdata(copy._cycler);
-  CDWriter cdata(_cycler);
-  cdata->_geoms = copy_cdata->_geoms;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomNode::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void qpGeomNode::
-operator = (const qpGeomNode &copy) {
-  PandaNode::operator = (copy);
-
-  // Copy the other node's _geoms.
-  CDReader copy_cdata(copy._cycler);
-  CDWriter cdata(_cycler);
-  cdata->_geoms = copy_cdata->_geoms;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomNode::Destructor
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 qpGeomNode::
@@ -212,42 +255,7 @@ register_with_read_factory() {
 void qpGeomNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
-
-  CDReader cdata(_cycler);
-
-  int num_geoms = cdata->_geoms.size();
-  nassertv(num_geoms == (int)(PN_uint16)num_geoms);
-  dg.add_uint16(num_geoms);
-  
-  Geoms::const_iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
-    const GeomEntry &entry = (*gi);
-    manager->write_pointer(dg, entry._geom);
-    manager->write_pointer(dg, entry._state);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomNode::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int qpGeomNode::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  CDWriter cdata(_cycler);
-  int pi = PandaNode::complete_pointers(p_list, manager);
-
-  // Get the geom and state pointers.
-  Geoms::iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
-    GeomEntry &entry = (*gi);
-    entry._geom = DCAST(Geom, p_list[pi++]);
-    entry._state = DCAST(RenderState, p_list[pi++]);
-  }
-
-  return pi;
+  manager->write_cdata(dg, _cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,16 +287,6 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  CDWriter cdata(_cycler);
-
   PandaNode::fillin(scan, manager);
-
-  int num_geoms = scan.get_uint16();
-  // Read the list of geoms and states.  Push back a NULL for each one.
-  cdata->_geoms.reserve(num_geoms);
-  for (int i = 0; i < num_geoms; i++) {
-    manager->read_pointer(scan, this);
-    manager->read_pointer(scan, this);
-    cdata->_geoms.push_back(GeomEntry(NULL, NULL));
-  }
+  manager->read_cdata(scan, _cycler);
 }

@@ -106,5 +106,5 @@ make_from_bam(const FactoryParams &params) {
 void qpAnimBundleNode::
 fillin(DatagramIterator &scan, BamReader* manager) {
   PandaNode::fillin(scan, manager);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 }

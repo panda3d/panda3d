@@ -52,7 +52,7 @@ PUBLISHED:
 
   INLINE_GRAPH void set_bound(BoundingVolumeType type);
   INLINE_GRAPH void set_bound(const BoundingVolume &volume);
-  INLINE_GRAPH const BoundingVolume &get_bound() const;
+  const BoundingVolume &get_bound() const;
 
   INLINE_GRAPH bool mark_bound_stale();
   INLINE_GRAPH void force_bound_stale();
@@ -78,7 +78,9 @@ private:
   class EXPCL_PANDA CData : public CycleData {
   public:
     INLINE_GRAPH CData();
-    CData(const CData &copy);
+    INLINE_GRAPH CData(const CData &copy);
+    INLINE_GRAPH void operator = (const CData &copy);
+
     virtual CycleData *make_copy() const;
 
     int _flags;

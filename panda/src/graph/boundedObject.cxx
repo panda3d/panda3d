@@ -24,25 +24,47 @@
 TypeHandle BoundedObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BoundedObject::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-BoundedObject::CData::
-CData(const BoundedObject::CData &copy) :
-  _flags(copy._flags),
-  _bound_type(copy._bound_type),
-  _bound(copy._bound)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BoundedObject::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BoundedObject::
 ~BoundedObject() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::get_bound
+//       Access: Published
+//  Description: Returns the current bounding volume on this node,
+//               possibly forcing a recompute.  A node's bounding
+//               volume encloses only the node itself, irrespective of
+//               the nodes above or below it in the graph.  This is
+//               different from the bounding volumes on the arcs,
+//               which enclose all geometry below them.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH const BoundingVolume &BoundedObject::
+get_bound() const {
+  {
+    CDReader cdata(_cycler);
+    if (cdata->_bound_type == BVT_static) {
+      CDWriter cdata_w(((BoundedObject *)this)->_cycler, cdata);
+      cdata_w->_flags &= ~F_bound_stale;
+      return *cdata_w->_bound;
+    }
+    
+    if (!is_bound_stale() && cdata->_bound != (BoundingVolume *)NULL) {
+      return *cdata->_bound;
+    }
+
+    // We need to recompute the bounding volume.  First, we need to
+    // release the old CDReader, so we can get a CDReader in
+    // recompute_bound().
+  }
+
+  // Now it's safe to recompute the bounds.
+  ((BoundedObject *)this)->recompute_bound();
+  CDReader cdata(_cycler);
+  return *cdata->_bound;
 }
 
 ////////////////////////////////////////////////////////////////////

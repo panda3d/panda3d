@@ -681,6 +681,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
   _minfilter = (EggTexture::FilterType)scan.get_int32();
   _magfilter = (EggTexture::FilterType)scan.get_int32();
-  manager->read_pointer(scan, this);  // _color_type
-  manager->read_pointer(scan, this);  // _alpha_type
+  manager->read_pointer(scan);  // _color_type
+  manager->read_pointer(scan);  // _alpha_type
 }

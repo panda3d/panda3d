@@ -497,7 +497,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
   _num_children = scan.get_uint16();
   for(i = 0; i < _num_children; i++)
   {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
   }
 }
 

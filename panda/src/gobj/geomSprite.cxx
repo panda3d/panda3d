@@ -133,7 +133,7 @@ fillin(DatagramIterator& scan, BamReader* manager) {
   _x_bind_type = (GeomBindType) scan.get_uint8();
   _y_bind_type = (GeomBindType) scan.get_uint8();
   _alpha_disable = (scan.get_uint8() !=0);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 }
 
 ////////////////////////////////////////////////////////////////////

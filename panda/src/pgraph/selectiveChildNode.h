@@ -32,10 +32,10 @@ class EXPCL_PANDA SelectiveChildNode : public PandaNode {
 PUBLISHED:
   INLINE SelectiveChildNode(const string &name);
 
-public:
+protected:
   INLINE SelectiveChildNode(const SelectiveChildNode &copy);
-  INLINE void operator = (const SelectiveChildNode &copy);
 
+public:
   virtual bool has_selective_visibility() const;
   virtual int get_first_visible_child() const;
   virtual int get_next_visible_child(int n) const;
@@ -44,6 +44,10 @@ protected:
   INLINE void select_child(int n);
 
 private:
+  // Not sure if this should be cycled or not.  It's not exactly
+  // thread-safe not to cycle it, but it doesn't really need the full
+  // pipeline control.  It's probably a problem in the non-thread-safe
+  // design; need to rethink the design a bit.
   int _selected_child;
 
 public:

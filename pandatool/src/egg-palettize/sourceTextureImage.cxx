@@ -237,5 +237,5 @@ make_SourceTextureImage(const FactoryParams &params) {
 void SourceTextureImage::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ImageFile::fillin(scan, manager);
-  manager->read_pointer(scan, this); // _texture
+  manager->read_pointer(scan); // _texture
 }

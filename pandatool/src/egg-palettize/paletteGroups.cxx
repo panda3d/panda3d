@@ -338,5 +338,5 @@ void PaletteGroups::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
   _num_groups = scan.get_int32();
-  manager->read_pointers(scan, this, _num_groups);
+  manager->read_pointers(scan, _num_groups);
 }

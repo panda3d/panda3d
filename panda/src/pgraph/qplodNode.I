@@ -48,6 +48,18 @@ qpLODNode(const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpLODNode::Copy Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE qpLODNode::
+qpLODNode(const qpLODNode &copy) :
+  SelectiveChildNode(copy),
+  _cycler(copy._cycler)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpLODNode::add_switch
 //       Access: Published
 //  Description: Adds a switch range to the qpLODNode.  This implies

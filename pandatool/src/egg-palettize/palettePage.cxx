@@ -347,9 +347,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
   set_name(scan.get_string());
 
-  manager->read_pointer(scan, this);  // _group
+  manager->read_pointer(scan);  // _group
   _properties.fillin(scan, manager);
 
   _num_images = scan.get_uint32();
-  manager->read_pointers(scan, this, _num_images);
+  manager->read_pointers(scan, _num_images);
 }

@@ -426,7 +426,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 {
   PartBundleNode::fillin(scan, manager);
   _cv.fillin(scan, manager);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 
   // Read the number of parts to expect in the _parts list, and then
   // fill the array up with NULLs.  We'll fill in the actual values in
@@ -435,7 +435,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
   _parts.clear();
   _parts.reserve(num_parts);
   for (int i = 0; i < num_parts; i++) {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
     _parts.push_back((PartGroup *)NULL);
   }
 

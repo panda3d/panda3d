@@ -286,7 +286,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
   _solids.reserve(num_solids);
 
   for(i = 0; i < num_solids; i++) {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
     _solids.push_back((CollisionSolid *)NULL);
   }
 

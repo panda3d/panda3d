@@ -1018,18 +1018,18 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _remap_char_uv = (RemapUV)scan.get_int32();
   }
 
-  manager->read_pointer(scan, this);  // _color_type
-  manager->read_pointer(scan, this);  // _alpha_type
-  manager->read_pointer(scan, this);  // _shadow_color_type
-  manager->read_pointer(scan, this);  // _shadow_alpha_type
+  manager->read_pointer(scan);  // _color_type
+  manager->read_pointer(scan);  // _alpha_type
+  manager->read_pointer(scan);  // _shadow_color_type
+  manager->read_pointer(scan);  // _shadow_alpha_type
 
   _num_egg_files = scan.get_int32();
-  manager->read_pointers(scan, this, _num_egg_files);
+  manager->read_pointers(scan, _num_egg_files);
 
   _num_groups = scan.get_int32();
-  manager->read_pointers(scan, this, _num_groups);
+  manager->read_pointers(scan, _num_groups);
 
   _num_textures = scan.get_int32();
-  manager->read_pointers(scan, this, _num_textures);
+  manager->read_pointers(scan, _num_textures);
 }
 

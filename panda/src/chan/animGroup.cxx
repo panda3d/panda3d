@@ -205,11 +205,11 @@ void AnimGroup::
 fillin(DatagramIterator& scan, BamReader* manager)
 {
   set_name(scan.get_string());
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
   _num_children = scan.get_uint16();
   for(int i = 0; i < _num_children; i++)
   {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
   }
 }
 

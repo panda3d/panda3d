@@ -984,9 +984,9 @@ fillin(DatagramIterator& scan, BamReader* manager)
 {
   _graph_type = manager->read_handle(scan);
   //Read in my parent
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
   //Read in my child
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
   //Get my sort relation
   _sort = scan.get_uint16();
 
@@ -994,7 +994,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
   _num_transitions = scan.get_uint16();
   for(int i = 0; i < _num_transitions; i++)
   {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
   }
 }
 

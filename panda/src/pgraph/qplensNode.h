@@ -36,10 +36,9 @@ class EXPCL_PANDA qpLensNode : public PandaNode {
 PUBLISHED:
   INLINE qpLensNode(const string &name);
 
-public:
+protected:
   INLINE qpLensNode(const qpLensNode &copy);
-  INLINE void operator = (const qpLensNode &copy);
-
+public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 

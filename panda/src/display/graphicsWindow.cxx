@@ -34,7 +34,12 @@ TypeHandle GraphicsWindow::WindowPipe::_type_handle;
 
 GraphicsWindow::WindowFactory *GraphicsWindow::_factory = NULL;
 
-#if defined(DO_PSTATS) && !defined(CPPPARSER)
+#ifndef CPPPARSER
+// We must compile these lines, even if DO_PSTATS is not defined,
+// because the symbols for them are declared in the header file.
+// Otherwise they will be undefined symbols at link time.  However,
+// there's no runtime overhead to speak of for declaring these, so
+// there's no harm in compiling them all the time.
 PStatCollector GraphicsWindow::_app_pcollector("App");
 PStatCollector GraphicsWindow::_show_code_pcollector("App:Show code");
 PStatCollector GraphicsWindow::_swap_pcollector("Swap buffers");

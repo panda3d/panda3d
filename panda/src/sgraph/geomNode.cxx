@@ -507,7 +507,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
   _num_geoms = scan.get_uint16();
   for(int i = 0; i < _num_geoms; i++)
   {
-    manager->read_pointer(scan, this);
+    manager->read_pointer(scan);
   }
 }
 

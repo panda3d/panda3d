@@ -189,5 +189,5 @@ make_MaterialTransition(const FactoryParams &params) {
 void MaterialTransition::
 fillin(DatagramIterator& scan, BamReader* manager) {
   OnOffTransition::fillin(scan, manager);
-  manager->read_pointer(scan, this);
+  manager->read_pointer(scan);
 }

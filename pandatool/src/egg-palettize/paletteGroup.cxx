@@ -725,8 +725,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 
   _num_placements = scan.get_uint32();
-  manager->read_pointers(scan, this, _num_placements);
+  manager->read_pointers(scan, _num_placements);
 
   _num_pages = scan.get_uint32();
-  manager->read_pointers(scan, this, _num_pages);
+  manager->read_pointers(scan, _num_pages);
 }

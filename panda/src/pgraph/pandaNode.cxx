@@ -54,6 +54,122 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  manager->write_pointer(dg, _state);
+  manager->write_pointer(dg, _transform);
+
+  // When we write a PandaNode, we write out its complete list of
+  // child node pointers, but we only write out the parent node
+  // pointers that have already been added to the bam file by a
+  // previous write operation.  This is a bit of trickery that allows
+  // us to write out just a subgraph (instead of the complete graph)
+  // when we write out an arbitrary node in the graph, yet also allows
+  // us to keep nodes completely in sync when we use the bam format
+  // for streaming scene graph operations over the network.
+
+  int num_parents = 0;
+  Up::const_iterator ui;
+  for (ui = _up.begin(); ui != _up.end(); ++ui) {
+    PandaNode *parent_node = (*ui).get_parent();
+    if (manager->has_object(parent_node)) {
+      num_parents++;
+    }
+  }
+  nassertv(num_parents == (int)(PN_uint16)num_parents);
+  dg.add_uint16(num_parents);
+  for (ui = _up.begin(); ui != _up.end(); ++ui) {
+    PandaNode *parent_node = (*ui).get_parent();
+    if (manager->has_object(parent_node)) {
+      manager->write_pointer(dg, parent_node);
+    }
+  }
+
+  int num_children = _down.size();
+  nassertv(num_children == (int)(PN_uint16)num_children);
+  dg.add_uint16(num_children);
+
+  // **** We should smarten up the writing of the sort number--most of
+  // the time these will all be zero.
+  Down::const_iterator ci;
+  for (ci = _down.begin(); ci != _down.end(); ++ci) {
+    PandaNode *child_node = (*ci).get_child();
+    int sort = (*ci).get_sort();
+    manager->write_pointer(dg, child_node);
+    dg.add_int32(sort);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int PandaNode::CData::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = CycleData::complete_pointers(p_list, manager);
+
+  // Get the state and transform pointers.
+  _state = DCAST(RenderState, p_list[pi++]);
+  _transform = DCAST(TransformState, p_list[pi++]);
+
+  // Get the parent pointers.
+  Up::iterator ui;
+  for (ui = _up.begin(); ui != _up.end(); ++ui) {
+    PT(PandaNode) parent_node = DCAST(PandaNode, p_list[pi++]);
+    (*ui) = UpConnection(parent_node);
+  }
+
+  // Get the child pointers.
+  Down::iterator di;
+  for (di = _down.begin(); di != _down.end(); ++di) {
+    int sort = (*di).get_sort();
+    PT(PandaNode) child_node = DCAST(PandaNode, p_list[pi++]);
+    (*di) = DownConnection(child_node, sort);
+  }
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new PandaNode.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  // Read the state and transform pointers.
+  manager->read_pointer(scan);
+  manager->read_pointer(scan);
+
+  int num_parents = scan.get_uint16();
+  // Read the list of parent nodes.  Push back a NULL for each one.
+  _up.reserve(num_parents);
+  for (int i = 0; i < num_parents; i++) {
+    manager->read_pointer(scan);
+    _up.push_back(UpConnection(NULL));
+  }
+
+  int num_children = scan.get_uint16();
+  // Read the list of child nodes.  Push back a NULL for each one.
+  _down.reserve(num_children);
+  for (int i = 0; i < num_children; i++) {
+    manager->read_pointer(scan);
+    int sort = scan.get_int32();
+    _down.push_back(DownConnection(NULL, sort));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Constructor
 //       Access: Published
 //  Description:
@@ -73,16 +189,22 @@ PandaNode::
 ~PandaNode() {
   // We shouldn't have any parents left by the time we destruct, or
   // there's a refcount fault somewhere.
-  CDReader cdata(_cycler);
-  nassertv(cdata->_up.empty());
+#ifndef NDEBUG
+  {
+    CDReader cdata(_cycler);
+    nassertv(cdata->_up.empty());
+  }
+#endif  // NDEBUG
 
   remove_all_children();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Copy Constructor
-//       Access: Public
-//  Description:
+//       Access: Protected
+//  Description: Do not call the copy constructor directly; instead,
+//               use make_copy() or copy_subgraph() to make a copy of
+//               a node.
 ////////////////////////////////////////////////////////////////////
 PandaNode::
 PandaNode(const PandaNode &copy) :
@@ -101,29 +223,24 @@ PandaNode(const PandaNode &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Copy Assignment Operator
-//       Access: Public
-//  Description:
+//       Access: Private
+//  Description: Do not call the copy assignment operator at all.  Use
+//               make_copy() or copy_subgraph() to make a copy of a
+//               node.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 operator = (const PandaNode &copy) {
-  TypedWritable::operator = (copy);
-  Namable::operator = (copy);
-  ReferenceCount::operator = (copy);
-
-  // Copy the other node's state.
-  CDReader copy_cdata(copy._cycler);
-  CDWriter cdata(_cycler);
-  cdata->_state = copy_cdata->_state;
-  cdata->_transform = copy_cdata->_transform;
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::make_copy
 //       Access: Public, Virtual
-//  Description: Returns a newly-allocated PandaNode that is a shallow copy
-//               of this one.  It will be a different pointer, but its
-//               internal data may or may not be shared with that of
-//               the original PandaNode.  No children will be copied.
+//  Description: Returns a newly-allocated PandaNode that is a shallow
+//               copy of this one.  It will be a different pointer,
+//               but its internal data may or may not be shared with
+//               that of the original PandaNode.  No children will be
+//               copied.
 ////////////////////////////////////////////////////////////////////
 PandaNode *PandaNode::
 make_copy() const {
@@ -361,28 +478,29 @@ find_child(PandaNode *node) const {
 void PandaNode::
 add_child(PandaNode *child_node, int sort) {
   // Ensure the child_node is not deleted while we do this.
-  PT(PandaNode) keep_child = child_node;
-  remove_child(child_node);
-  CDWriter cdata(_cycler);
-  CDWriter cdata_child(child_node->_cycler);
-  
-  cdata->_down.insert(DownConnection(child_node, sort));
-  cdata_child->_up.insert(UpConnection(this));
-
-  // We also have to adjust any qpNodePathComponents the child might
-  // have that reference the child as a top node.  Any other
-  // components we can leave alone, because we are making a new
-  // instance of the child.
-  Chains::iterator ci;
-  for (ci = cdata_child->_chains.begin();
-       ci != cdata_child->_chains.end();
-       ++ci) {
-    if ((*ci)->is_top_node()) {
-      (*ci)->set_next(get_generic_component());
+  {
+    PT(PandaNode) keep_child = child_node;
+    remove_child(child_node);
+    CDWriter cdata(_cycler);
+    CDWriter cdata_child(child_node->_cycler);
+    
+    cdata->_down.insert(DownConnection(child_node, sort));
+    cdata_child->_up.insert(UpConnection(this));
+    
+    // We also have to adjust any qpNodePathComponents the child might
+    // have that reference the child as a top node.  Any other
+    // components we can leave alone, because we are making a new
+    // instance of the child.
+    Chains::iterator ci;
+    for (ci = cdata_child->_chains.begin();
+	 ci != cdata_child->_chains.end();
+	 ++ci) {
+      if ((*ci)->is_top_node()) {
+	(*ci)->set_next(get_generic_component());
+      }
     }
+    child_node->fix_chain_lengths(cdata_child);
   }
-
-  child_node->fix_chain_lengths();
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -395,44 +513,46 @@ add_child(PandaNode *child_node, int sort) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 remove_child(int n) {
-  CDWriter cdata(_cycler);
-  nassertv(n >= 0 && n < (int)cdata->_down.size());
-
-  PT(PandaNode) child_node = cdata->_down[n].get_child();
-  CDWriter cdata_child(child_node->_cycler);
-
-  cdata->_down.erase(cdata->_down.begin() + n);
-  int num_erased = cdata_child->_up.erase(UpConnection(this));
-  nassertv(num_erased == 1);
-
-  // Now sever any qpNodePathComponents on the child that reference
-  // this node.  If we have multiple of these, we have to collapse
-  // them together.
-  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-  Chains::iterator ci;
-  ci = cdata_child->_chains.begin();
-  while (ci != cdata_child->_chains.end()) {
-    Chains::iterator cnext = ci;
-    ++cnext;
-    if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-      if (collapsed == (qpNodePathComponent *)NULL) {
-        (*ci)->set_top_node();
-        collapsed = (*ci);
-      } else {
-        // This is a different component that used to reference a
-        // different instance, but now it's all just the same topnode.
-        // We have to collapse this and the previous one together.
-        // However, there might be some qpNodePaths out there that
-        // still keep a pointer to this one, so we can't remove it
-        // altogether.
-        (*ci)->collapse_with(collapsed);
-        cdata_child->_chains.erase(ci);
+  {
+    CDWriter cdata(_cycler);
+    nassertv(n >= 0 && n < (int)cdata->_down.size());
+    
+    PT(PandaNode) child_node = cdata->_down[n].get_child();
+    CDWriter cdata_child(child_node->_cycler);
+    
+    cdata->_down.erase(cdata->_down.begin() + n);
+    int num_erased = cdata_child->_up.erase(UpConnection(this));
+    nassertv(num_erased == 1);
+    
+    // Now sever any qpNodePathComponents on the child that reference
+    // this node.  If we have multiple of these, we have to collapse
+    // them together.
+    qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+    Chains::iterator ci;
+    ci = cdata_child->_chains.begin();
+    while (ci != cdata_child->_chains.end()) {
+      Chains::iterator cnext = ci;
+      ++cnext;
+      if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
+	if (collapsed == (qpNodePathComponent *)NULL) {
+	  (*ci)->set_top_node();
+	  collapsed = (*ci);
+	} else {
+	  // This is a different component that used to reference a
+	  // different instance, but now it's all just the same topnode.
+	  // We have to collapse this and the previous one together.
+	  // However, there might be some qpNodePaths out there that
+	  // still keep a pointer to this one, so we can't remove it
+	  // altogether.
+	  (*ci)->collapse_with(collapsed);
+	  cdata_child->_chains.erase(ci);
+	}
       }
+      ci = cnext;
     }
-    ci = cnext;
+    
+    child_node->fix_chain_lengths(cdata_child);
   }
-
-  child_node->fix_chain_lengths();
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -448,73 +568,20 @@ remove_child(int n) {
 bool PandaNode::
 remove_child(PandaNode *child_node) {
   // Ensure the child_node is not deleted while we do this.
-  PT(PandaNode) keep_child = child_node;
-  CDWriter cdata_child(child_node->_cycler);
-
-  // First, look for and remove this node from the child's parent
-  // list.
-  int num_erased = cdata_child->_up.erase(UpConnection(this));
-  if (num_erased == 0) {
-    // No such node; it wasn't our child to begin with.
-    return false;
-  }
-
-  // Now sever any qpNodePathComponents on the child that reference
-  // this node.  If we have multiple of these, we have to collapse
-  // them together (see above).
-  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-  Chains::iterator ci;
-  ci = cdata_child->_chains.begin();
-  while (ci != cdata_child->_chains.end()) {
-    Chains::iterator cnext = ci;
-    ++cnext;
-    if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-      if (collapsed == (qpNodePathComponent *)NULL) {
-        (*ci)->set_top_node();
-        collapsed = (*ci);
-      } else {
-        (*ci)->collapse_with(collapsed);
-        cdata_child->_chains.erase(ci);
-      }
-    }
-    ci = cnext;
-  }
-
-  child_node->fix_chain_lengths();
-
-  // Mark the bounding volumes stale.
-  force_bound_stale();
-
-  CDWriter cdata(_cycler);
-
-  // Now, look for and remove the child node from our down list.
-  Down::iterator di;
-  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
-    if ((*di).get_child() == child_node) {
-      cdata->_down.erase(di);
-      return true;
-    }
-  }
-
-  // We shouldn't get here unless there was a parent-child mismatch.
-  nassertr(false, false);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::remove_all_children
-//       Access: Published
-//  Description: Removes all the children from the node at once.
-////////////////////////////////////////////////////////////////////
-void PandaNode::
-remove_all_children() {
-  CDWriter cdata(_cycler);
-  Down::iterator ci;
-  for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
-    PT(PandaNode) child_node = (*ci).get_child();
+  {
+    PT(PandaNode) keep_child = child_node;
+    
+    CDWriter cdata(_cycler);
     CDWriter cdata_child(child_node->_cycler);
-    cdata_child->_up.erase(UpConnection(this));
-
+    
+    // First, look for and remove this node from the child's parent
+    // list.
+    int num_erased = cdata_child->_up.erase(UpConnection(this));
+    if (num_erased == 0) {
+      // No such node; it wasn't our child to begin with.
+      return false;
+    }
+    
     // Now sever any qpNodePathComponents on the child that reference
     // this node.  If we have multiple of these, we have to collapse
     // them together (see above).
@@ -525,18 +592,75 @@ remove_all_children() {
       Chains::iterator cnext = ci;
       ++cnext;
       if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-        if (collapsed == (qpNodePathComponent *)NULL) {
-          (*ci)->set_top_node();
-          collapsed = (*ci);
-        } else {
-          (*ci)->collapse_with(collapsed);
-          cdata_child->_chains.erase(ci);
-        }
+	if (collapsed == (qpNodePathComponent *)NULL) {
+	  (*ci)->set_top_node();
+	  collapsed = (*ci);
+	} else {
+	  (*ci)->collapse_with(collapsed);
+	  cdata_child->_chains.erase(ci);
+	}
       }
       ci = cnext;
     }
+    
+    child_node->fix_chain_lengths(cdata_child);
+    
+    // Now, look for and remove the child node from our down list.
+    Down::iterator di;
+    bool found = false;
+    for (di = cdata->_down.begin(); di != cdata->_down.end() && !found; ++di) {
+      if ((*di).get_child() == child_node) {
+	cdata->_down.erase(di);
+	found = true;
+      }
+    }
 
-    child_node->fix_chain_lengths();
+    nassertr(found, false);
+  }
+
+  // Mark the bounding volumes stale.
+  force_bound_stale();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::remove_all_children
+//       Access: Published
+//  Description: Removes all the children from the node at once.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+remove_all_children() {
+  {
+    CDWriter cdata(_cycler);
+    Down::iterator ci;
+    for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
+      PT(PandaNode) child_node = (*ci).get_child();
+      CDWriter cdata_child(child_node->_cycler);
+      cdata_child->_up.erase(UpConnection(this));
+      
+      // Now sever any qpNodePathComponents on the child that reference
+      // this node.  If we have multiple of these, we have to collapse
+      // them together (see above).
+      qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+      Chains::iterator ci;
+      ci = cdata_child->_chains.begin();
+      while (ci != cdata_child->_chains.end()) {
+        Chains::iterator cnext = ci;
+        ++cnext;
+        if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
+          if (collapsed == (qpNodePathComponent *)NULL) {
+            (*ci)->set_top_node();
+            collapsed = (*ci);
+          } else {
+            (*ci)->collapse_with(collapsed);
+            cdata_child->_chains.erase(ci);
+          }
+        }
+        ci = cnext;
+      }
+      
+      child_node->fix_chain_lengths(cdata_child);
+    }
   }
 
   // Mark the bounding volumes stale.
@@ -600,8 +724,8 @@ propagate_stale_bound() {
   CDWriter cdata(_cycler);
   Up::const_iterator ui;
   for (ui = cdata->_up.begin(); ui != cdata->_up.end(); ++ui) {
-    PandaNode *parent = (*ui).get_parent();
-    parent->mark_bound_stale();
+    PandaNode *parent_node = (*ui).get_parent();
+    parent_node->mark_bound_stale();
   }
 }
 
@@ -718,57 +842,58 @@ void PandaNode::
 detach(qpNodePathComponent *child) {
   nassertv(child != (qpNodePathComponent *)NULL);
   nassertv(!child->is_top_node());
+
   PandaNode *child_node = child->get_node();
   PandaNode *parent_node = child->get_next()->get_node();
-
-  // Break the qpNodePathComponent connection.
-  child->set_top_node();
-
-  CDWriter cdata_child(child_node->_cycler);
-
-  // Any other components in the same child_node that previously
-  // referenced the same parent has now become invalid and must be
-  // collapsed into this one and removed from the chains set.
-  Chains::iterator ci;
-  ci = cdata_child->_chains.begin();
-  while (ci != cdata_child->_chains.end()) {
-    Chains::iterator cnext = ci;
-    ++cnext;
-    if ((*ci) != child && !(*ci)->is_top_node() && 
-        (*ci)->get_next()->get_node() == parent_node) {
-      (*ci)->collapse_with(child);
-      cdata_child->_chains.erase(ci);
+  
+  {
+    // Break the qpNodePathComponent connection.
+    child->set_top_node();
+    
+    CDWriter cdata_child(child_node->_cycler);
+    CDWriter cdata_parent(parent_node->_cycler);
+    
+    // Any other components in the same child_node that previously
+    // referenced the same parent has now become invalid and must be
+    // collapsed into this one and removed from the chains set.
+    Chains::iterator ci;
+    ci = cdata_child->_chains.begin();
+    while (ci != cdata_child->_chains.end()) {
+      Chains::iterator cnext = ci;
+      ++cnext;
+      if ((*ci) != child && !(*ci)->is_top_node() && 
+	  (*ci)->get_next()->get_node() == parent_node) {
+	(*ci)->collapse_with(child);
+	cdata_child->_chains.erase(ci);
+      }
+      ci = cnext;
     }
-    ci = cnext;
+    
+    // Now look for the child and break the actual connection.
+    
+    // First, look for and remove the parent node from the child's up
+    // list.
+    int num_erased = cdata_child->_up.erase(UpConnection(parent_node));
+    nassertv(num_erased == 1);
+    
+    child_node->fix_chain_lengths(cdata_child);
+    
+    // Now, look for and remove the child node from the parent's down list.
+    Down::iterator di;
+    bool found = false;
+    for (di = cdata_parent->_down.begin(); 
+	 di != cdata_parent->_down.end() && !found; 
+	 ++di) {
+      if ((*di).get_child() == child_node) {
+	cdata_parent->_down.erase(di);
+	found = true;
+      }
+    }
+    nassertv(found);
   }
-
-  child_node->fix_chain_lengths();
 
   // Mark the bounding volumes stale.
   parent_node->force_bound_stale();
-
-  // Now look for the child and break the actual connection.
-
-  // First, look for and remove the parent node from the child's up
-  // list.
-  int num_erased = cdata_child->_up.erase(UpConnection(parent_node));
-  nassertv(num_erased == 1);
-
-  CDWriter cdata_parent(parent_node->_cycler);
-
-  // Now, look for and remove the child node from the parent's down list.
-  Down::iterator di;
-  for (di = cdata_parent->_down.begin(); 
-       di != cdata_parent->_down.end(); 
-       ++di) {
-    if ((*di).get_child() == child_node) {
-      cdata_parent->_down.erase(di);
-      return;
-    }
-  }
-
-  // We shouldn't get here unless there was a parent-child mismatch.
-  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -791,15 +916,17 @@ reparent(qpNodePathComponent *new_parent, qpNodePathComponent *child, int sort) 
   PandaNode *child_node = child->get_node();
   PandaNode *parent_node = new_parent->get_node();
 
-  // Now reattach at the indicated sort position.
-  CDWriter cdata_parent(parent_node->_cycler);
-  CDWriter cdata_child(child_node->_cycler);
-  
-  cdata_parent->_down.insert(DownConnection(child_node, sort));
-  cdata_child->_up.insert(UpConnection(parent_node));
-
-  cdata_child->_chains.insert(child);
-  child_node->fix_chain_lengths();
+  {
+    // Now reattach at the indicated sort position.
+    CDWriter cdata_parent(parent_node->_cycler);
+    CDWriter cdata_child(child_node->_cycler);
+    
+    cdata_parent->_down.insert(DownConnection(child_node, sort));
+    cdata_child->_up.insert(UpConnection(parent_node));
+    
+    cdata_child->_chains.insert(child);
+    child_node->fix_chain_lengths(cdata_child);
+  }
 
   // Mark the bounding volumes stale.
   parent_node->force_bound_stale();
@@ -947,8 +1074,7 @@ delete_component(qpNodePathComponent *component) {
 //               these up.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-fix_chain_lengths() {
-  CDReader cdata(_cycler);
+fix_chain_lengths(const CData *cdata) {
   bool any_wrong = false;
 
   Chains::const_iterator ci;
@@ -964,7 +1090,9 @@ fix_chain_lengths() {
   if (any_wrong) {
     Down::const_iterator di;
     for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
-      (*di).get_child()->fix_chain_lengths();
+      PandaNode *child_node = (*di).get_child();
+      CDReader cdata_child(child_node->_cycler);
+      child_node->fix_chain_lengths(cdata_child);
     }
   }
 }
@@ -1012,57 +1140,9 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  CDReader cdata(_cycler);
-
   dg.add_string(get_name());
-  manager->write_pointer(dg, cdata->_state);
-  manager->write_pointer(dg, cdata->_transform);
 
-  // When we write a PandaNode, we write out its list of child nodes,
-  // but not its parent nodes--so that writing out a node implicitly
-  // writes out all of the nodes in the subgraph below, but not the
-  // nodes above as well.
-
-  int num_children = cdata->_down.size();
-  nassertv(num_children == (int)(PN_uint16)num_children);
-  dg.add_uint16(num_children);
-
-  // **** We should smarten up the writing of the sort number--most of
-  // the time these will all be zero.
-  Down::const_iterator ci;
-  for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
-    PandaNode *child = (*ci).get_child();
-    int sort = (*ci).get_sort();
-    manager->write_pointer(dg, child);
-    dg.add_int32(sort);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
-int PandaNode::
-complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  CDWriter cdata(_cycler);
-  int pi = TypedWritable::complete_pointers(p_list, manager);
-
-  // Get the state and transform pointers.
-  cdata->_state = DCAST(RenderState, p_list[pi++]);
-  cdata->_transform = DCAST(TransformState, p_list[pi++]);
-
-  // Get the child pointers.
-  Down::iterator ci;
-  for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
-    int sort = (*ci).get_sort();
-    PT(PandaNode) node = DCAST(PandaNode, p_list[pi++]);
-    (*ci) = DownConnection(node, sort);
-  }
-
-  return pi;
+  manager->write_cdata(dg, _cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1094,23 +1174,10 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  CDWriter cdata(_cycler);
-
   TypedWritable::fillin(scan, manager);
 
   string name = scan.get_string();
   set_name(name);
 
-  // Read the state and transform pointers.
-  manager->read_pointer(scan, this);
-  manager->read_pointer(scan, this);
-
-  int num_children = scan.get_uint16();
-  // Read the list of child nodes.  Push back a NULL for each one.
-  cdata->_down.reserve(num_children);
-  for (int i = 0; i < num_children; i++) {
-    manager->read_pointer(scan, this);
-    int sort = scan.get_int32();
-    cdata->_down.push_back(DownConnection(NULL, sort));
-  }
+  manager->read_cdata(scan, _cycler);
 }

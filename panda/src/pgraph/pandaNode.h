@@ -53,10 +53,12 @@ PUBLISHED:
   PandaNode(const string &name);
   virtual ~PandaNode();
 
-public:
+protected:
   PandaNode(const PandaNode &copy);
+private:
   void operator = (const PandaNode &copy);
 
+public:
   virtual PandaNode *make_copy() const;
   PandaNode *copy_subgraph() const;
 
@@ -161,7 +163,8 @@ private:
   static PT(qpNodePathComponent) get_top_component(PandaNode *child);
   PT(qpNodePathComponent) get_generic_component();
   void delete_component(qpNodePathComponent *component);
-  void fix_chain_lengths();
+  class CData;
+  void fix_chain_lengths(const CData *cdata);
   void r_list_descendants(ostream &out, int indent_level) const;
 
 private:
@@ -207,6 +210,9 @@ private:
     INLINE CData();
     CData(const CData &copy);
     virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Down _down;
     Up _up;
@@ -242,8 +248,6 @@ public:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
-  virtual int complete_pointers(TypedWritable **plist,
-                                BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

@@ -19,12 +19,14 @@
 #ifndef __BAM_WRITER_
 #define __BAM_WRITER_
 
-#include <pandabase.h>
-#include <notify.h>
+#include "pandabase.h"
+#include "notify.h"
 
 #include "typedWritable.h"
 #include "datagramSink.h"
 #include "pdeque.h"
+
+class PipelineCyclerBase;
 
 // A handy macro for writing PointerToArrays.
 #define WRITE_PTA(Manager, dest, Write_func, array)  \
@@ -78,13 +80,17 @@ public:
 
   bool init();
   bool write_object(const TypedWritable *obj);
+  bool has_object(const TypedWritable *obj) const;
 
 public:
   // Functions to support classes that write themselves to the Bam.
 
   void write_pointer(Datagram &packet, const TypedWritable *dest);
+  void write_cdata(Datagram &packet, const PipelineCyclerBase &cycler);
   bool register_pta(Datagram &packet, const void *ptr);
   void write_handle(Datagram &packet, TypeHandle type);
+
+  
 
 private:
   int enqueue_object(const TypedWritable *object);
