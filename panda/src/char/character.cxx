@@ -44,15 +44,16 @@ PStatCollector Character::_anim_pcollector("App:Animation");
 ////////////////////////////////////////////////////////////////////
 Character::
 Character(const Character &copy) :
-  PartBundleNode(copy.get_name(), new CharacterJointBundle(copy.get_bundle()->get_name())),
+  PartBundleNode(copy, new CharacterJointBundle(copy.get_bundle()->get_name())),
   _cv(DynamicVertices::deep_copy(copy._cv)),
   _computed_vertices(copy._computed_vertices),
   _parts(copy._parts),
   _char_pcollector(copy._char_pcollector)
 {
   // Now make a copy of the joint/slider hierarchy.  We could just use
-  // the PartBundleNode's copy constructor, but if we do it ourselves
-  // we can simultaneously update our _parts list.
+  // the copy_subgraph feature of the PartBundleNode's copy
+  // constructor, but if we do it ourselves we can simultaneously
+  // update our _parts list.
 
   copy_joints(get_bundle(), copy.get_bundle());
 }

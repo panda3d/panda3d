@@ -47,14 +47,21 @@ PartBundleNode() : PandaNode("") {
 //     Function: PartBundleNode::Copy Constructor
 //       Access: Protected
 //  Description: Use make_copy() or copy_subgraph() to copy one of
-//               these.  Copying a PartBundleNode will always force a
-//               deep copy of the PartGroup hierarchy.
+//               these.  
+//
+//               If the supplied PartBundle is non-null, it is
+//               assigned to the new node; otherwise, a copy is made
+//               of the complete PartGroup hierarchy.
 ////////////////////////////////////////////////////////////////////
 INLINE PartBundleNode::
-PartBundleNode(const PartBundleNode &copy) :
-  PandaNode(copy),
-  _bundle(DCAST(PartBundle, copy._bundle->copy_subgraph()))
+PartBundleNode(const PartBundleNode &copy, PartBundle *bundle) :
+  PandaNode(copy)
 {
+  if (bundle != (PartBundle *)NULL) {
+    _bundle = bundle;
+  } else {
+    _bundle = DCAST(PartBundle, copy._bundle->copy_subgraph());
+  }
   _bundle->_node = this;
 }
 

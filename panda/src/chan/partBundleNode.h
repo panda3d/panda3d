@@ -38,7 +38,7 @@ public:
 
 protected:
   INLINE PartBundleNode();
-  INLINE PartBundleNode(const PartBundleNode &copy);
+  INLINE PartBundleNode(const PartBundleNode &copy, PartBundle *bundle = NULL);
 
 public:
   virtual bool safe_to_flatten() const;
