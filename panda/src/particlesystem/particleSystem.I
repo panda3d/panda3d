@@ -80,7 +80,6 @@ set_litter_size(int new_ls) {
 //    Function : set_litter_spread
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_litter_spread(int new_ls) {
   _litter_spread = new_ls;
@@ -90,7 +89,6 @@ set_litter_spread(int new_ls) {
 //    Function : set_renderer
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_renderer(BaseParticleRenderer *r) {
   _renderer = r;
@@ -107,7 +105,6 @@ set_renderer(BaseParticleRenderer *r) {
 //    Function : set_emitter
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_emitter(BaseParticleEmitter *e) {
   _emitter = e;
@@ -117,7 +114,6 @@ set_emitter(BaseParticleEmitter *e) {
 //    Function : set_factory
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_factory(BaseParticleFactory *f) {
   int pool_size = _particle_pool_size;
@@ -128,10 +124,18 @@ set_factory(BaseParticleFactory *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : set_floor_z
+//      Access : Public
+////////////////////////////////////////////////////////////////////
+INLINE void ParticleSystem::
+set_floor_z(float z) {
+  _floor_z = z;
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : set_active_state
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_active_system_flag(bool a) {
   _active_system_flag = a;
@@ -141,7 +145,6 @@ set_active_system_flag(bool a) {
 //    Function : set_local_velocity_flag
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_local_velocity_flag(bool lv) {
   _local_velocity_flag = lv;
@@ -151,7 +154,6 @@ set_local_velocity_flag(bool lv) {
 //    Function : set_spawn_on_death_flag
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_spawn_on_death_flag(bool sod) {
   _spawn_on_death_flag = sod;
@@ -161,7 +163,6 @@ set_spawn_on_death_flag(bool sod) {
 //    Function : set_system_grows_older_flag
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void ParticleSystem::
 set_system_grows_older_flag(bool sgo) {
   _system_grows_older_flag = sgo;
@@ -306,6 +307,15 @@ get_emitter() const {
 INLINE BaseParticleFactory *ParticleSystem::
 get_factory() const {
   return _factory;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_factory
+//      Access : Public
+////////////////////////////////////////////////////////////////////
+INLINE float ParticleSystem::
+get_floor_z() const {
+  return _floor_z;
 }
 
 ////////////////////////////////////////////////////////////////////

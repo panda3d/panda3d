@@ -69,6 +69,7 @@ PUBLISHED:
   INLINE void set_renderer(BaseParticleRenderer *r);
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
+  INLINE void set_floor_z(float z);
 
   INLINE int get_pool_size() const;
   INLINE float get_birth_rate() const;
@@ -87,6 +88,7 @@ PUBLISHED:
   INLINE BaseParticleRenderer *get_renderer() const;
   INLINE BaseParticleEmitter *get_emitter() const;
   INLINE BaseParticleFactory *get_factory() const;
+  INLINE float get_floor_z() const;
 
   // particle template vector
 
@@ -124,6 +126,7 @@ private:
   int _litter_spread;
   float _system_age;
   float _system_lifespan;
+  float _floor_z;
 
   PT(BaseParticleFactory) _factory;
   PT(BaseParticleEmitter) _emitter;
@@ -154,7 +157,7 @@ private:
   bool _i_was_spawned_flag;
 
 public:
-  friend class ParticleSystemManager;
+  friend class ParticleSystemManager; // particleSystemManager.h
 };
 
 #include "particleSystem.I"
