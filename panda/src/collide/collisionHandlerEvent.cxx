@@ -135,11 +135,11 @@ end_group() {
 //               a new "in" event will be thrown for each collision.
 //
 //               This can be called each frame to defeat the
-//               persistant "in" event mechanism, which prevents the
+//               persistent "in" event mechanism, which prevents the
 //               same "in" event from being thrown repeatedly.
 //               However, also see set_again_pattern(), which can be
 //               used to set the event that is thrown when a collision
-//               is detected for more than one consecutive frames.
+//               is detected for two or more consecutive frames.
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerEvent::
 clear() {
