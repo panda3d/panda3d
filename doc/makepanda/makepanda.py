@@ -4037,7 +4037,8 @@ if (OMIT.count("VRPN")==0):
 #
 
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'TIFF', 'FREETYPE']
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 
+      'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
 INFILES=['librecorder.in', 'libpgraph.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
@@ -4060,41 +4061,33 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj', 'recorder_composite1.obj',
           'parametrics_composite1.obj', 'parametrics_composite2.obj', 'libparametrics_igate.obj',
           'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj', 'pnmimagetypes_composite1.obj',
           'pnmimagetypes_composite2.obj', 'pnmimage_composite1.obj', 'pnmimage_composite2.obj', 'libpnmimage_igate.obj',
-          'text_composite1.obj', 'text_composite2.obj', 'libtext_igate.obj', 'tform_composite1.obj', 'tform_composite2.obj',
-          'libtform_igate.obj', 'lerp_composite1.obj', 'liblerp_igate.obj', 'putil_composite1.obj', 'putil_composite2.obj',
-          'libputil_igate.obj', 'audio_composite1.obj', 'libaudio_igate.obj', 'pgui_composite1.obj', 'pgui_composite2.obj',
+          'text_composite1.obj', 'text_composite2.obj', 'libtext_igate.obj',
+          'tform_composite1.obj', 'tform_composite2.obj',
+          'libtform_igate.obj', 'lerp_composite1.obj', 'liblerp_igate.obj',
+          'putil_composite1.obj', 'putil_composite2.obj', 'libputil_igate.obj',
+          'audio_composite1.obj', 'libaudio_igate.obj', 'pgui_composite1.obj', 'pgui_composite2.obj',
           'libpgui_igate.obj', 'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libdtoolconfig.dll', 'libdtool.dll']
-LINKOPTS=['ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'VRPN', 'NSPR', 'ZLIB', 'JPEG', 'PNG', 'TIFF', 'FFTW', 'FREETYPE']
-LINKXDEP=[]
 if OMIT.count("HELIX")==0:
-    OPTS.append('HELIX')
     OBJFILES.append("libhelix.ilb")
     INFILES.append("libhelix.in")
-    LINKOPTS.append('HELIX')
 if OMIT.count("VRPN")==0:
-    OPTS.append("VRPN")
     OBJFILES.append("pvrpn_composite1.obj")
     OBJFILES.append("libpvrpn_igate.obj")
     INFILES.append("libpvrpn.in")
-    LINKOPTS.append("VRPN")
 if OMIT.count("NSPR")==0:
-    OPTS.append("NSPR")
     OBJFILES.append("net_composite1.obj")
     OBJFILES.append("net_composite2.obj")
     OBJFILES.append("libnet_igate.obj")
     INFILES.append("libnet.in")
-    LINKOPTS.append("NSPR")
 if OMIT.count("FREETYPE")==0:
-    OPTS.append("FREETYPE")
     OBJFILES.append("pnmtext_config_pnmtext.obj")
     OBJFILES.append("pnmtext_freetypeFont.obj")
     OBJFILES.append("pnmtext_pnmTextGlyph.obj")
     OBJFILES.append("pnmtext_pnmTextMaker.obj")
-    LINKOPTS.append("FREETYPE")
 InterrogateModule(outc='libpanda_module.cxx', module='panda', library='libpanda', files=INFILES)
 CompileC(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='libpanda_module.cxx', obj='libpanda_module.obj')
-CompileLink(opts=LINKOPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
+CompileLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
         PREFIX+'/tmp/dtool_have_helix.dat',
         PREFIX+'/tmp/dtool_have_vrpn.dat',
         PREFIX+'/tmp/dtool_have_nspr.dat',
@@ -5730,22 +5723,22 @@ CompileLink(opts=['ADVAPI', 'NSPR'], dll='vrml2egg.exe', obj=[
 # DIRECTORY: pandatool/src/win-stats/
 #
 
-if (sys.platform == "win32"):
-  IPATH=['pandatool/src/win-stats']
-  OPTS=['NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='winstats_composite1.cxx', obj='pstats_composite1.obj')
-  CompileLink(opts=['WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR'],
-              dll='pstats.exe', obj=[
-              'pstats_composite1.obj',
-              'libprogbase.lib',
-              'libpstatserver.lib',
-              'libpandatoolbase.lib',
-              'libpandaexpress.dll',
-              'libpanda.dll',
-              'libdtoolconfig.dll',
-              'libdtool.dll',
-              'libpystub.dll',
-              ])
+if (OMIT.count("NSPR")==0) and (sys.platform == "win32"):
+    IPATH=['pandatool/src/win-stats']
+    OPTS=['NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='winstats_composite1.cxx', obj='pstats_composite1.obj')
+    CompileLink(opts=['WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR'],
+                dll='pstats.exe', obj=[
+                'pstats_composite1.obj',
+                'libprogbase.lib',
+                'libpstatserver.lib',
+                'libpandatoolbase.lib',
+                'libpandaexpress.dll',
+                'libpanda.dll',
+                'libdtoolconfig.dll',
+                'libdtool.dll',
+                'libpystub.dll',
+                ])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/
@@ -5813,66 +5806,68 @@ CompileLIB(lib='libpandaappbase.lib', obj=['pandaappbase_pandaappbase.obj'])
 # DIRECTORY: pandaapp/src/httpbackup/
 #
 
-IPATH=['pandaapp/src/httpbackup', 'pandaapp/src/pandaappbase']
-OPTS=['SSL', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='backupCatalog.cxx', obj='httpbackup_backupCatalog.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='httpBackup.cxx', obj='httpbackup_httpBackup.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='httpbackup.exe', obj=[
-             'httpbackup_backupCatalog.obj',
-             'httpbackup_httpBackup.obj',
-             'libpandaappbase.lib',
-             'libpandaexpress.dll',
-             'libpanda.dll',
-             'libdtool.dll',
-             'libdtoolconfig.dll',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpystub.dll',
-])
+if OMIT.count("SSL")==0:
+    IPATH=['pandaapp/src/httpbackup', 'pandaapp/src/pandaappbase']
+    OPTS=['SSL', 'NSPR']
+    CompileC(ipath=IPATH, opts=OPTS, src='backupCatalog.cxx', obj='httpbackup_backupCatalog.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='httpBackup.cxx', obj='httpbackup_httpBackup.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='httpbackup.exe', obj=[
+                 'httpbackup_backupCatalog.obj',
+                 'httpbackup_httpBackup.obj',
+                 'libpandaappbase.lib',
+                 'libpandaexpress.dll',
+                 'libpanda.dll',
+                 'libdtool.dll',
+                 'libdtoolconfig.dll',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandaapp/src/indexify/
 #
 
-IPATH=['pandaapp/src/indexify']
-OPTS=['NSPR', 'FREETYPE']
-CompileC(ipath=IPATH, opts=OPTS, src='default_font.cxx', obj='font-samples_default_font.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='fontSamples.cxx', obj='font-samples_fontSamples.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'FREETYPE'], dll='font-samples.exe', obj=[
-             'font-samples_default_font.obj',
-             'font-samples_fontSamples.obj',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtool.dll',
-             'libdtoolconfig.dll',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpystub.dll',
-])
+if OMIT.count("FREETYPE")==0:
+    IPATH=['pandaapp/src/indexify']
+    OPTS=['NSPR', 'FREETYPE']
+    CompileC(ipath=IPATH, opts=OPTS, src='default_font.cxx', obj='font-samples_default_font.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='fontSamples.cxx', obj='font-samples_fontSamples.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR', 'FREETYPE'], dll='font-samples.exe', obj=[
+                 'font-samples_default_font.obj',
+                 'font-samples_fontSamples.obj',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtool.dll',
+                 'libdtoolconfig.dll',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpystub.dll',
+    ])
 
-CompileC(ipath=IPATH, opts=OPTS, src='default_index_icons.cxx', obj='indexify_default_index_icons.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='default_font.cxx', obj='indexify_default_font.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='indexImage.cxx', obj='indexify_indexImage.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='indexParameters.cxx', obj='indexify_indexParameters.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='indexify.cxx', obj='indexify_indexify.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='photo.cxx', obj='indexify_photo.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='rollDirectory.cxx', obj='indexify_rollDirectory.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'FREETYPE'], dll='indexify.exe', obj=[
-             'indexify_default_index_icons.obj',
-             'indexify_default_font.obj',
-             'indexify_indexImage.obj',
-             'indexify_indexParameters.obj',
-             'indexify_indexify.obj',
-             'indexify_photo.obj',
-             'indexify_rollDirectory.obj',
-             'libpanda.dll',
-             'libpandaexpress.dll',
-             'libdtool.dll',
-             'libdtoolconfig.dll',
-             'libprogbase.lib',
-             'libpandatoolbase.lib',
-             'libpystub.dll',
-])
+    CompileC(ipath=IPATH, opts=OPTS, src='default_index_icons.cxx', obj='indexify_default_index_icons.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='default_font.cxx', obj='indexify_default_font.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='indexImage.cxx', obj='indexify_indexImage.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='indexParameters.cxx', obj='indexify_indexParameters.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='indexify.cxx', obj='indexify_indexify.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='photo.cxx', obj='indexify_photo.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='rollDirectory.cxx', obj='indexify_rollDirectory.obj')
+    CompileLink(opts=['ADVAPI', 'NSPR', 'FREETYPE'], dll='indexify.exe', obj=[
+                 'indexify_default_index_icons.obj',
+                 'indexify_default_font.obj',
+                 'indexify_indexImage.obj',
+                 'indexify_indexParameters.obj',
+                 'indexify_indexify.obj',
+                 'indexify_photo.obj',
+                 'indexify_rollDirectory.obj',
+                 'libpanda.dll',
+                 'libpandaexpress.dll',
+                 'libdtool.dll',
+                 'libdtoolconfig.dll',
+                 'libprogbase.lib',
+                 'libpandatoolbase.lib',
+                 'libpystub.dll',
+    ])
 
 #
 # DIRECTORY: pandaapp/src/stitchbase/
