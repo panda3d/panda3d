@@ -3937,7 +3937,13 @@ void report_errors_loop(GLenum error_code) {
 #define MAXGLERRORSREPORTED 20
   int cnt=0;
   while ((cnt<MAXGLERRORSREPORTED) && (error_code != GL_NO_ERROR)) {
-    glgsg_cat.error() << gluErrorString(error_code) << "\n";
+    const GLubyte *error_string = gluErrorString(error_code);
+    if (error_string != (const GLubyte *)NULL) {
+      glgsg_cat.error() << error_string << "\n";
+    } else {
+      glgsg_cat.error()
+        << "Error number " << (int)error_code << "; no string available.\n";
+    }
     error_code = glGetError();
     cnt++;
   }
