@@ -58,100 +58,33 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 bool EggPolygon::
 calculate_normal(Normald &result, CoordinateSystem cs) const {
-  // We need to find the largest vector resulting from the cross of
-  // three consecutive vertices.  If we just pick the first vector, we
-  // can be fooled by a slightly bow-tie polygon.
+  result = Normald::zero();
 
-  // To avoid being fooled by a concave polygon, we must eliminate
-  // from consideration any three vertices in which the middle vertex
-  // is closer to the centroid than the outer two.
-  size_t num_vertices = size();
-  LPoint3d centroid = LPoint3d::zero();
-  size_t index;
-  for (index = 0; index < num_vertices; index++) {
-    centroid += get_vertex(index)->get_pos3();
-  }
-  centroid /= (double)num_vertices;
-
-  LVector3d max_normal;
-  float max_normal_length = 0.0;
-  bool got_max_normal = false;
-
-  LVector3d max_normal_mc;
-  float max_normal_length_mc = 0.0;
-  bool got_max_normal_mc = false;
-
-  for (index = 0; index < num_vertices; index++) {
-    LPoint3d v0 = get_vertex(index)->get_pos3();
-    LPoint3d v1 = get_vertex((index + 1) % num_vertices)->get_pos3();
-    LPoint3d v2 = get_vertex((index + 2) % num_vertices)->get_pos3();
-
-    double d0 = (v0 - centroid).length_squared();
-    double d1 = (v1 - centroid).length_squared();
-    double d2 = (v2 - centroid).length_squared();
-    
-    if (d1 >= d0 && d1 >= d2) {
-      // The center vertex is no closer to the centroid than the outer
-      // vertices.  This can't be a concave angle.
-      LVector3d a = v1 - v0;
-      LVector3d b = v2 - v0;
-      LVector3d normal = a.cross(b);
-      float normal_length = normal.length();
-      
-      if (!got_max_normal || normal_length > max_normal_length) {
-        max_normal = normal;
-        max_normal_length = normal_length;
-        got_max_normal = true;
-      }
-    } else {
-      // In this case, the center vertex is closer to the centroid
-      // than the outer vertices.  This might be a concave angle, in
-      // which case we should not consider this vertex, but some
-      // convex polygons have the property in which the center vertex
-      // is always closer to the centroid, so if we don't find any
-      // other vertices, we have to consider this one.
-      LVector3d a = v1 - v0;
-      LVector3d b = v2 - v0;
-      LVector3d normal = a.cross(b);
-      float normal_length = normal.length();
-      
-      if (!got_max_normal_mc || normal_length > max_normal_length_mc) {
-        max_normal_mc = normal;
-        max_normal_length_mc = normal_length;
-        got_max_normal_mc = true;
-      }
-    }
+  // Project the polygon into each of the three major planes and
+  // calculate the area of each 2-d projection.  This becomes the
+  // polygon normal.
+  size_t num_verts = size();
+  for (size_t i = 0; i < num_verts; i++) {
+    Vertexd p0 = get_vertex(i)->get_pos3();
+    Vertexd p1 = get_vertex((i + 1) % num_verts)->get_pos3();
+    result[0] += p0[1] * p1[2] - p0[2] * p1[1];
+    result[1] += p0[2] * p1[0] - p0[0] * p1[2];
+    result[2] += p0[0] * p1[1] - p0[1] * p1[0];
   }
 
-  if (!got_max_normal) {
-    // If none of our vertices were worth considering, take the best
-    // of the maybe-concave ones.
-    got_max_normal = got_max_normal_mc;
-    max_normal = max_normal_mc;
-    max_normal_length = max_normal_length_mc;
+  if (!result.normalize()) {
+    // The polygon is degenerate: it has zero area in each plane.
+    return false;
   }
 
-  if (got_max_normal) {
-    if (!IS_NEARLY_ZERO(max_normal_length)) {
-      max_normal /= max_normal_length;
-
-      // If we are in a left-handed coordinate system, we must
-      // reverse the normal.
-      if (cs == CS_default) {
-        cs = default_coordinate_system;
-      }
-      if (cs == CS_zup_left || cs == CS_yup_left) {
-        max_normal = -max_normal;
-      }
-      
-      result = max_normal;
-      return true;
-    }
+  if (cs == CS_default) {
+    cs = default_coordinate_system;
   }
-
-  // The polygon is degenerate: we don't have enough unique vertices
-  // to determine a normal.
-  return false;
+  if (cs == CS_zup_left || cs == CS_yup_left) {
+    // In a left-handed coordinate system, we must flip the result.
+    result = -result;
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
