@@ -889,7 +889,7 @@ run_ssl_handshake() {
 
   SSL *ssl;
   BIO_get_ssl(_sbio, &ssl);
-  nassertr(ssl != (SSL *)NULL, NULL);
+  nassertr(ssl != (SSL *)NULL, false);
 
   if (!_nonblocking) {
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
