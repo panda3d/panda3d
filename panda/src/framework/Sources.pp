@@ -11,10 +11,11 @@
   #define SOURCES \
     config_framework.cxx config_framework.h \
     pandaFramework.cxx pandaFramework.I pandaFramework.h \
-    windowFramework.cxx windowFramework.I windowFramework.h
+    windowFramework.cxx windowFramework.I windowFramework.h \
+    rock_floor_src.cxx
 
   #define INSTALL_HEADERS \
     pandaFramework.I pandaFramework.h \
-    windowFramework.I windowFramework.h
+    windowFramework.I windowFramework.h    
 
 #end lib_target

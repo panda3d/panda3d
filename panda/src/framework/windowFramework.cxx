@@ -47,6 +47,11 @@
 #include "pnmImage.h"
 #include "loaderFileTypeRegistry.h"
 #include "pnmFileTypeRegistry.h"
+#include "pnmImage.h"
+
+// This is generated data for the standard texture we apply to the
+// blue triangle.
+#include "rock_floor_src.cxx"
 
 // This number is chosen arbitrarily to override any settings in model
 // files.
@@ -634,8 +639,16 @@ load_default_model(const NodePath &parent) {
   geom->set_colors(colors, G_PER_VERTEX, cindex);
 
   CPT(RenderState) state = RenderState::make_empty();
-  Texture *tex = TexturePool::load_texture("rock-floor.rgb");
-  if (tex != (Texture *)NULL) {
+
+  // Get the default texture to apply to the triangle; it's compiled
+  // into the code these days.
+  string rock_floor_string(rock_floor, rock_floor_len);
+  istringstream rock_floor_strm(rock_floor_string);
+  PNMImage rock_floor_pnm;
+  if (rock_floor_pnm.read(rock_floor_strm, "rock-floor.rgb")) {
+    PT(Texture) tex = new Texture;
+    tex->set_name("rock-floor.rgb");
+    tex->load(rock_floor_pnm);
     tex->set_minfilter(Texture::FT_linear);
     tex->set_magfilter(Texture::FT_linear);
     state = state->add_attrib(TextureAttrib::make(tex));
