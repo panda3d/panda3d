@@ -32,9 +32,6 @@ class Track(Interval):
         # Initialize superclass
 	Interval.__init__(self, name, duration)
 
-    def __del__(self):
-	print 'Track destructing'
-
     # Access interval at given index
     def __getitem__(self, item):
         return self.ilist[item]

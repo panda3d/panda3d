@@ -16,9 +16,6 @@ class LerpInterval(Interval):
         # Initialize superclass
 	Interval.__init__(self, name, duration)
 
-    def __del__(self):
-	print 'LerpInterval destructing'
-
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
 	"""
@@ -186,9 +183,6 @@ class LerpPosHprInterval(LerpInterval):
 	    LerpPosHprInterval.lerpPosHprNum += 1
         # Initialize superclass
 	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
-
-    def __del__(self):
-	print 'LerpPosHprInterval destructing'
 
 class LerpPosHprScaleInterval(LerpInterval):
     # Interval counter

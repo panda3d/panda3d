@@ -29,9 +29,6 @@ class Interval(DirectObject):
         # Set true if interval responds to setT(t): t>duration
         self.fOpenEnded = openEnded
 
-    def __del__(self):
-	print 'Interval destructing'
-
     def getName(self):
 	""" getName()
 	"""
