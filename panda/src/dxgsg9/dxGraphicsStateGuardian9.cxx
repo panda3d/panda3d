@@ -3499,7 +3499,7 @@ issue_tex_gen(const TexGenAttrib *attrib) {
    * Use the wrap mode from the texture coordinate set at index 1.
    */
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
-  if (attrib->is_off()) {
+  if (attrib->is_empty()) {
 
     //enable_texturing(false);
     // reset the texcoordindex lookup to 0
@@ -3507,7 +3507,7 @@ issue_tex_gen(const TexGenAttrib *attrib) {
     _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 0);
     _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
 
-  } else if (attrib->get_mode() == TexGenAttrib::M_spherical) {
+  } else if (attrib->get_mode(TextureStage::get_default()) == TexGenAttrib::M_sphere_map) {
 
 #if 0
     // best reflection on a sphere is achieved by camera space normals in directx
