@@ -16,8 +16,8 @@ donald.reparentTo(boat)
 dock = loader.loadModel('models/misc/smiley')
 dock.reparentTo(render)
 
-sound = loader.loadSound('phase_6/audio/sfx/SZ_DD_waterlap.mp3')
-foghorn = loader.loadSound('phase_6/audio/sfx/SZ_DD_foghorn.mp3')
+sound = loader.loadSfx('phase_6/audio/sfx/SZ_DD_waterlap.mp3')
+foghorn = loader.loadSfx('phase_6/audio/sfx/SZ_DD_foghorn.mp3')
 
 mp = Mopath.Mopath()
 mp.loadFile(Filename('phase_6/paths/dd-e-w'))

@@ -23,6 +23,7 @@ import time
 import FSM
 import State
 import DirectObject
+import SfxPlayer
 
 __builtins__["FADE_SORT_INDEX"] = 1000
 __builtins__["NO_FADE_SORT_INDEX"] = 2000
@@ -692,6 +693,7 @@ class ShowBase(DirectObject.DirectObject):
             extraSfxManager.setActive(self.sfxActive)
 
     def createBaseAudioManagers(self):
+        self.sfxPlayer = SfxPlayer.SfxPlayer()
         sfxManager = AudioManager.createAudioManager()
         self.addSfxManager(sfxManager)
 
@@ -748,36 +750,21 @@ class ShowBase(DirectObject.DirectObject):
             self.musicManager.setActive(self.musicActive)
         self.notify.debug("Enabling audio")
 
+    # This function should only be in the loader but is here for
+    # backwards compatibility. Please do not add code here, add
+    # it to the loader.
     def loadSfx(self, name):
-        # should return a valid sound obj even if soundMgr is invalid
-        sound = None
-        if (name):
-            # showbase-created sfxManager should always be at front of list
-            sound=self.sfxManagerList[0].getSound(name)
-        if sound == None:
-            self.notify.warning("Could not load sound file %s." % name)
-        return sound
+        return self.loader.loadSfx(name)
 
-
+    # This function should only be in the loader but is here for
+    # backwards compatibility. Please do not add code here, add
+    # it to the loader.
     def loadMusic(self, name):
-        # should return a valid sound obj even if musicMgr is invalid
-        sound = None
-        if (name):
-            sound=self.musicManager.getSound(name)
-        if sound == None:
-            self.notify.warning("Could not load music file %s." % name)
-        return sound
+        return self.loader.loadMusic(name)
 
-    def playSfx(self, sfx, looping = 0, interrupt = 1, volume = None, time = 0.0):
-        if sfx:
-            if volume != None:
-                sfx.setVolume(volume)
-
-            # dont start over if it's already playing, unless "interrupt" was specified
-            if interrupt or (sfx.status() != AudioSound.PLAYING):
-                sfx.setTime(time)
-                sfx.setLoop(looping)
-                sfx.play()
+    def playSfx(self, sfx, looping = 0, interrupt = 1, volume = None, time = 0.0, node = None):
+        # This goes through a special player for potential localization
+        return self.sfxPlayer.playSfx(sfx, looping, interrupt, volume, time, node)
 
     def playMusic(self, music, looping = 0, interrupt = 1, volume = None, time = 0.0):
         if music:

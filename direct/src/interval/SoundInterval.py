@@ -19,7 +19,8 @@ class SoundInterval(Interval.Interval):
     # seems to be some timing in the audio such that the stop doesn't
     # kill the looping sound until the next time around if duration
     # of the interval equals duration of the sound
-    def __init__(self, sound, loop = 0, duration = 0.0, name = None, volume = 1.0, startTime = 0.0):
+    def __init__(self, sound, loop = 0, duration = 0.0, name = None,
+                 volume = 1.0, startTime = 0.0, node=None):
         """__init__(sound, loop, name)
         """
         # Generate unique name
@@ -30,6 +31,7 @@ class SoundInterval(Interval.Interval):
         self.fLoop = loop
         self.volume = volume
         self.startTime = startTime
+        self.node = node
         # If no duration given use sound's duration as interval's duration
         if duration == 0.0 and self.sound != None:
             duration = max(self.sound.length() - self.startTime, 0)
@@ -52,22 +54,14 @@ class SoundInterval(Interval.Interval):
         t1 = t + self.startTime
         if (t1 < 0.1):
             t1 = 0.0
-        if self.sound != None:
-            self.sound.setVolume(self.volume)
-            self.sound.setTime(t1)
-            self.sound.setLoop(self.fLoop)
-            self.sound.play()
+        base.sfxPlayer.playSfx(self.sound, self.fLoop, 1, self.volume, t1, self.node)
         self.state = CInterval.SStarted
         self.currT = t1
 
     def privStep(self, t):
         if self.state == CInterval.SPaused:
             # Restarting from a pause.
-            if self.sound != None:
-                self.sound.setVolume(self.volume)
-                self.sound.setTime(t)
-                self.sound.setLoop(self.fLoop)
-                self.sound.play()
+            base.sfxPlayer.playSfx(self.sound, self.fLoop, 1, self.volume, t, self.node)
         self.state = CInterval.SStarted
         self.currT = t
 

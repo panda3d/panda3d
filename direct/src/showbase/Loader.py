@@ -13,7 +13,6 @@ class Loader:
     """Loader class: contains method to load models, sounds and code"""
 
     notify = directNotify.newCategory("Loader")
-    #notify.setDebug(1)
     modelCount = 0
     
     # special methods
@@ -28,7 +27,7 @@ class Loader:
         """loadModel(self, string)
         Attempt to load a model from given file path, return
         a nodepath to the model if successful or None otherwise."""
-        Loader.notify.debug("Loading model: %s" % (modelPath) )
+        assert(Loader.notify.debug("Loading model: %s" % (modelPath) ))
         if phaseChecker:
             phaseChecker(modelPath)
         node = self.loader.loadSync(Filename(modelPath))
@@ -45,7 +44,7 @@ class Loader:
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise"""
-        Loader.notify.debug("Loading model once: %s" % (modelPath))
+        assert(Loader.notify.debug("Loading model once: %s" % (modelPath)))
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
@@ -71,7 +70,7 @@ class Loader:
         
         """
 
-        Loader.notify.debug("Loading model once: %s under %s" % (modelPath, underNode))
+        assert(Loader.notify.debug("Loading model once: %s under %s" % (modelPath, underNode)))
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
@@ -87,7 +86,7 @@ class Loader:
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise"""
-        Loader.notify.debug("Loading model copy: %s" % (modelPath))
+        assert(Loader.notify.debug("Loading model copy: %s" % (modelPath)))
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
@@ -108,8 +107,7 @@ class Loader:
 
         However, if you're loading a font, see loadFont(), below.
         """
-        
-        Loader.notify.debug("Loading model once node: %s" % (modelPath))
+        assert(Loader.notify.debug("Loading model once node: %s" % (modelPath)))
         if phaseChecker:
             phaseChecker(modelPath)
         return ModelPool.loadModel(modelPath)
@@ -117,7 +115,7 @@ class Loader:
     def unloadModel(self, modelPath):
         """unloadModel(self, string)
         """
-        Loader.notify.debug("Unloading model: %s" % (modelPath))
+        assert(Loader.notify.debug("Unloading model: %s" % (modelPath)))
         ModelPool.releaseModel(modelPath)
 
     # font loading funcs
@@ -136,7 +134,7 @@ class Loader:
         standard font file (like a TTF file) that is supported by
         FreeType.
         """
-        Loader.notify.debug("Loading font: %s" % (modelPath))
+        assert(Loader.notify.debug("Loading font: %s" % (modelPath)))
         if phaseChecker:
             phaseChecker(modelPath)
 
@@ -202,12 +200,12 @@ class Loader:
         TexturePool class. Returns None if not found"""
 
         if alphaPath == None:
-            Loader.notify.debug("Loading texture: %s" % (texturePath) )
+            assert(Loader.notify.debug("Loading texture: %s" % (texturePath) ))
             if phaseChecker:
                 phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath)
         else:
-            Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath) )
+            assert(Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath) ))
             if phaseChecker:
                 phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath, alphaPath)
@@ -216,19 +214,33 @@ class Loader:
     def unloadTexture(self, texture):
         """unloadTexture(self, texture)
         """
-        Loader.notify.debug("Unloading texture: %s" % (texture) )
+        assert(Loader.notify.debug("Unloading texture: %s" % (texture) ))
         TexturePool.releaseTexture(texture)
 
     # sound loading funcs
-    def loadSound(self, soundPath):
-        """loadSound(self, string)
-        Attempt to load a sound from the given file path using
-        Cary's sound class. Returns None if not found"""
-        Loader.notify.debug("Loading sound: %s" % (soundPath) )
+    def loadSfx(self, name):
+        assert(Loader.notify.debug("Loading sound: %s" % (name) ))
         if phaseChecker:
-            phaseChecker(soundPath)
-        sound = base.sfxManager.getSound(soundPath)
+            phaseChecker(name)
+        # should return a valid sound obj even if soundMgr is invalid
+        sound = None
+        if (name):
+            # showbase-created sfxManager should always be at front of list
+            sound=base.sfxManagerList[0].getSound(name)
+        if sound == None:
+            Loader.notify.warning("Could not load sound file %s." % name)
         return sound
+
+    def loadMusic(self, name):
+        assert(Loader.notify.debug("Loading sound: %s" % (name) ))
+        # should return a valid sound obj even if musicMgr is invalid
+        sound = None
+        if (name):
+            sound=base.musicManager.getSound(name)
+        if sound == None:
+            Loader.notify.warning("Could not load music file %s." % name)
+        return sound
+
 
     def makeNodeNamesUnique(self, nodePath, nodeCount):
         if nodeCount == 0:
