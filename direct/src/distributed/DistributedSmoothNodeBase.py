@@ -200,6 +200,7 @@ class DistributedSmoothNodeBase:
 
     def d_broadcastPosHpr_XYH(self):
         # send out the minimal bits to describe our new position
+        assert not self.isEmpty(), 'DistributedSmoothNode %s has been removed from graph?' % self.doId
         xyz = self.getPos()
         h   = self.getH()
 
