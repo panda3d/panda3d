@@ -1377,7 +1377,10 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeTrackball.node().setMat(mat)
 
             self.cam.reparentTo(self.oobeCameraTrackball)
-            self.camNode.setLens(self.oobeLens)
+
+            # Don't change the camera lens--keep it with the original lens.
+            #self.camNode.setLens(self.oobeLens)
+            
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
