@@ -51,7 +51,10 @@ class ActorInterval(Interval):
         # Update animation based upon current time
         # Pose or stop anim
         if (t >= self.getDuration()):
-            self.actor.stop()
+	    if (self.actor != None):
+            	self.actor.stop()
+	    else:
+		self.notify.warning('updateFunc() - actor == None!')
             if self.loop:
                 self.ignore(self.stopEvent)
         elif self.loop == 1:
