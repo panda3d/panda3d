@@ -2063,26 +2063,30 @@ make_vertex_data(const EggRenderState *render_state,
     gvw.set_data_type(InternalName::get_vertex());
     gvw.add_data4f(LCAST(float, vertex->get_pos4() * transform));
 
-    EggMorphVertexList::const_iterator mvi;
-    for (mvi = vertex->_dxyzs.begin(); mvi != vertex->_dxyzs.end(); ++mvi) {
-      const EggMorphVertex &morph = (*mvi);
-      CPT(InternalName) delta_name = 
-        InternalName::get_morph(InternalName::get_vertex(), morph.get_name());
-      gvw.set_data_type(delta_name);
-      gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
+    if (is_dynamic) {
+      EggMorphVertexList::const_iterator mvi;
+      for (mvi = vertex->_dxyzs.begin(); mvi != vertex->_dxyzs.end(); ++mvi) {
+        const EggMorphVertex &morph = (*mvi);
+        CPT(InternalName) delta_name = 
+          InternalName::get_morph(InternalName::get_vertex(), morph.get_name());
+        gvw.set_data_type(delta_name);
+        gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
+      }
     }
 
     if (vertex->has_normal()) {
       gvw.set_data_type(InternalName::get_normal());
       gvw.add_data3f(LCAST(float, vertex->get_normal() * transform));
 
-      EggMorphNormalList::const_iterator mni;
-      for (mni = vertex->_dnormals.begin(); mni != vertex->_dnormals.end(); ++mni) {
-        const EggMorphNormal &morph = (*mni);
-        CPT(InternalName) delta_name = 
-          InternalName::get_morph(InternalName::get_normal(), morph.get_name());
-        gvw.set_data_type(delta_name);
-        gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
+      if (is_dynamic) {
+        EggMorphNormalList::const_iterator mni;
+        for (mni = vertex->_dnormals.begin(); mni != vertex->_dnormals.end(); ++mni) {
+          const EggMorphNormal &morph = (*mni);
+          CPT(InternalName) delta_name = 
+            InternalName::get_morph(InternalName::get_normal(), morph.get_name());
+          gvw.set_data_type(delta_name);
+          gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
+        }
       }
     }
 
@@ -2090,13 +2094,15 @@ make_vertex_data(const EggRenderState *render_state,
       gvw.set_data_type(InternalName::get_color());
       gvw.add_data4f(vertex->get_color());
 
-      EggMorphColorList::const_iterator mci;
-      for (mci = vertex->_drgbas.begin(); mci != vertex->_drgbas.end(); ++mci) {
-        const EggMorphColor &morph = (*mci);
-        CPT(InternalName) delta_name = 
-          InternalName::get_morph(InternalName::get_color(), morph.get_name());
-        gvw.set_data_type(delta_name);
-        gvw.add_data4f(morph.get_offset());
+      if (is_dynamic) {
+        EggMorphColorList::const_iterator mci;
+        for (mci = vertex->_drgbas.begin(); mci != vertex->_drgbas.end(); ++mci) {
+          const EggMorphColor &morph = (*mci);
+          CPT(InternalName) delta_name = 
+            InternalName::get_morph(InternalName::get_color(), morph.get_name());
+          gvw.set_data_type(delta_name);
+          gvw.add_data4f(morph.get_offset());
+        }
       }
     }
 
@@ -2121,19 +2127,21 @@ make_vertex_data(const EggRenderState *render_state,
 
       gvw.set_data2f(LCAST(float, uv));
 
-      EggMorphTexCoordList::const_iterator mti;
-      for (mti = egg_uv->_duvs.begin(); mti != egg_uv->_duvs.end(); ++mti) {
-        const EggMorphTexCoord &morph = (*mti);
-        CPT(InternalName) delta_name = 
-          InternalName::get_morph(iname, morph.get_name());
-        gvw.set_data_type(delta_name);
-        TexCoordd duv = morph.get_offset();
-        if (buv != render_state->_bake_in_uvs.end()) {
-          TexCoordd new_uv = orig_uv + duv;
-          duv = (new_uv * (*buv).second->get_transform()) - uv;
+      if (is_dynamic) {
+        EggMorphTexCoordList::const_iterator mti;
+        for (mti = egg_uv->_duvs.begin(); mti != egg_uv->_duvs.end(); ++mti) {
+          const EggMorphTexCoord &morph = (*mti);
+          CPT(InternalName) delta_name = 
+            InternalName::get_morph(iname, morph.get_name());
+          gvw.set_data_type(delta_name);
+          TexCoordd duv = morph.get_offset();
+          if (buv != render_state->_bake_in_uvs.end()) {
+            TexCoordd new_uv = orig_uv + duv;
+            duv = (new_uv * (*buv).second->get_transform()) - uv;
+          }
+          
+          gvw.add_data2f(LCAST(float, duv));
         }
-        
-        gvw.add_data2f(LCAST(float, duv));
       }
     }
 
