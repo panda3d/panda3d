@@ -33,7 +33,7 @@ class SoundInterval(Interval.Interval):
         self.startTime = startTime
         self.node = node
         # If no duration given use sound's duration as interval's duration
-        if duration == 0.0 and self.sound != None:
+        if float(duration) == 0.0 and self.sound != None:
             duration = max(self.sound.length() - self.startTime, 0)
             if (duration == 0):
                 self.notify.warning('zero length duration!')
