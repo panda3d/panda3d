@@ -1115,8 +1115,8 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
   // could do linear time with some kind of STL hash container I guess
 
   DEVMODE dm;
-  int modenum=0;
-  int goodmodes=0;
+  uint modenum=0;
+  uint goodmodes=0;
   unsigned int *cur_dim_pair=dimen;
   for(;modenum<numsizes;modenum++,cur_dim_pair+=2) {
       bool bIsGoodmode;

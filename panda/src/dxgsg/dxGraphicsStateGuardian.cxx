@@ -2759,7 +2759,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
     cGeomcount++;
 #endif
 
-    int nPrims = geom->get_num_prims();
+    DWORD nPrims = geom->get_num_prims();
     HRESULT hr;
 
     PTA_Vertexf coords;
@@ -2819,7 +2819,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
         // iterate through the triangle primitive
 
-        for (int i = 0; i < nPrims; i++) {
+        for (uint i = 0; i < nPrims; i++) {
             if (_perPrim & PER_COLOR) {
                 GET_NEXT_COLOR();
             }
@@ -2886,7 +2886,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
                 nassertv(norms.size()>=nPrims);
 
-                for (int i=0;i<nPrims;i++,pInVec++,pOutVec+=dwVertsperPrim) {
+                for (uint i=0;i<nPrims;i++,pInVec++,pOutVec+=dwVertsperPrim) {
                     *pOutVec     = *pInVec;
                     *(pOutVec+1) = *pInVec;
                     *(pOutVec+2) = *pInVec;
@@ -2940,14 +2940,14 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                     // but if lighting enabled, we need to color every vert since shading will be GOURAUD
 
                     if(!(_color_transform_enabled || _alpha_transform_enabled)) {
-                        for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
+                        for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
                             D3DCOLOR newcolr = Colorf_to_D3DCOLOR(*pInColor);
                             *pOutColor     = newcolr;
                             *(pOutColor+1) = newcolr;
                             *(pOutColor+2) = newcolr;
                         }
                      } else {
-                        for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
+                        for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
                             D3DCOLOR newcolr;
                             transform_color(*pInColor,newcolr);
 
@@ -2961,11 +2961,11 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                     // MAKE SURE ShadeMode never set to GOURAUD after this!
 
                     if(!(_color_transform_enabled || _alpha_transform_enabled)) {
-                        for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
+                        for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
                             *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                         }
                      } else {
-                        for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
+                        for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
                             transform_color(*pInColor,*pOutColor);
                         }
                     }
@@ -2977,11 +2977,11 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                 DWORD cNumColors=nPrims*dwVertsperPrim;
 
                     if(!(_color_transform_enabled || _alpha_transform_enabled)) {
-                        for (int i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
+                        for (uint i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
                             *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                         }
                      } else {
-                        for (int i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
+                        for (uint i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
                             transform_color(*pInColor,*pOutColor);
                         }
                     }
@@ -3093,8 +3093,8 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 void DXGraphicsStateGuardian::
 draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
-    int nPrims = geom->get_num_prims();
-    const int *pLengthArr = geom->get_lengths();
+    DWORD nPrims = geom->get_num_prims();
+    const uint *pLengthArr = (const uint *) ((const int *)geom->get_lengths());
     HRESULT hr;
 
     if(nPrims==0) {
@@ -3186,7 +3186,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
         // iterate through the triangle primitives
 
-        for (int i = 0; i < nPrims; i++) {
+        for (uint i = 0; i < nPrims; i++) {
 
             if (_perPrim & PER_COLOR) {
                 GET_NEXT_COLOR();
@@ -3265,7 +3265,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
         DWORD cTotalVerts=0;
 
-        for (int i=0;i<nPrims;i++) {
+        for (uint i=0;i<nPrims;i++) {
             cTotalVerts+= pLengthArr[i];
         }
 
@@ -3293,12 +3293,12 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                 // must use tmp array to duplicate-expand per-prim norms to per-vert norms
                 Normalf *pOutVec = pExpandedNormalArray;
                 Normalf *pInVec=norms;
-                const int *pLengths=pLengthArr;
+                const uint *pLengths=pLengthArr;
 
                 nassertv(norms.size()>=nPrims);
 
-                for (int i=0;i<nPrims;i++,pInVec++,pLengths++) {
-                    for (int j=0;j<(*pLengths);j++,pOutVec++) {
+                for (uint i=0;i<nPrims;i++,pInVec++,pLengths++) {
+                    for (uint j=0;j<(*pLengths);j++,pOutVec++) {
                         *pOutVec = *pInVec;
                     }
                 }
@@ -3344,11 +3344,11 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                 NeededShadeMode = D3DSHADE_GOURAUD;
 
                 if(!(_color_transform_enabled || _alpha_transform_enabled)) {
-                    for (int i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
+                    for (uint i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
                         *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                     }
                 } else {
-                    for (int i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
+                    for (uint i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
                         transform_color(*pInColor,*pOutColor);
                     }
                 }
@@ -3360,19 +3360,19 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                 // could save 2 clr writes per strip/fan in flat shade mode but not going to bother here
 
                 if(!(_color_transform_enabled || _alpha_transform_enabled)) {
-                    for (int j=0;j<nPrims;j++,pInColor++) {
+                    for (uint j=0;j<nPrims;j++,pInColor++) {
                         D3DCOLOR lastcolr = Colorf_to_D3DCOLOR(*pInColor);
                         DWORD cStripLength=pLengthArr[j];
-                        for (int i=0;i<cStripLength;i++,pOutColor++) {
+                        for (uint i=0;i<cStripLength;i++,pOutColor++) {
                             *pOutColor = lastcolr;
                         }
                     }
                 } else {
-                    for (int j=0;j<nPrims;j++,pInColor++) {
+                    for (uint j=0;j<nPrims;j++,pInColor++) {
                         D3DCOLOR lastcolr;
                         transform_color(*pInColor,lastcolr);
                         DWORD cStripLength=pLengthArr[j];
-                        for (int i=0;i<cStripLength;i++,pOutColor++) {
+                        for (uint i=0;i<cStripLength;i++,pOutColor++) {
                             *pOutColor = lastcolr;
                         }
                     }
@@ -3384,7 +3384,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
                 #define MULTITRI_COLORCOPY_LOOP                                       \
                     DWORD cCurStripColorCnt=pLengthArr[j]-cNumMoreVertsthanTris;      \
-                    for (int i=0;i<cCurStripColorCnt;i++,pInColor++,pOutColor++)
+                    for (uint i=0;i<cCurStripColorCnt;i++,pInColor++,pOutColor++)
 
                 #define COLOR_CONVERT_COPY_STMT  {*pOutColor = Colorf_to_D3DCOLOR(*pInColor);}
                 #define COLOR_CONVERT_XFORM_STMT {transform_color(*pInColor,*pOutColor);}
@@ -3394,14 +3394,14 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                         /* FLAT shade mode.  for tristrips, skip writing last 2 verts.  */   \
                         /* for trifans, skip first and last verts                       */   \
                         if (trilisttype==D3DPT_TRIANGLESTRIP) {                              \
-                            for (int j=0;j<nPrims;j++) {                                     \
+                            for (uint j=0;j<nPrims;j++) {                                    \
                                 MULTITRI_COLORCOPY_LOOP {                                    \
                                    COLOR_COPYSTMT;                                           \
                                 }                                                            \
                                 pOutColor+=cNumMoreVertsthanTris;                            \
                             }                                                                \
                         } else {  /* trifan */                                               \
-                            for (int j=0;j<nPrims;j++) {                                     \
+                            for (uint j=0;j<nPrims;j++) {                                    \
                                 pOutColor++;                                                 \
                                 MULTITRI_COLORCOPY_LOOP {                                    \
                                    COLOR_COPYSTMT;                                           \
@@ -3411,7 +3411,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                         }                                                                    \
                     } else {  /* GOURAUD shademode (due to presence of normals) */           \
                         if (trilisttype==D3DPT_TRIANGLESTRIP) {                              \
-                            for (int j=0;j<nPrims;j++) {                                     \
+                            for (uint j=0;j<nPrims;j++) {                                    \
                                 MULTITRI_COLORCOPY_LOOP {                                    \
                                    COLOR_COPYSTMT;                                           \
                                 }                                                            \
@@ -3420,7 +3420,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                                 *pOutColor++ = lastcolr;                                     \
                             }                                                                \
                         } else {  /* trifan */                                               \
-                            for (int j=0;j<nPrims;j++) {                                     \
+                            for (uint j=0;j<nPrims;j++) {                                    \
                                 COLOR_COPYSTMT;                                              \
                                 pOutColor++;                                                 \
                                 MULTITRI_COLORCOPY_LOOP {                                    \
@@ -3476,8 +3476,8 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
         set_shademode(NeededShadeMode);
 
-        for (int j=0;j<nPrims;j++) {
-            const int cCurNumStripVerts = pLengthArr[j];
+        for (uint j=0;j<nPrims;j++) {
+            const uint cCurNumStripVerts = pLengthArr[j];
 
             hr = _d3dDevice->DrawPrimitiveStrided(trilisttype, fvf_flags, &dps_data, cCurNumStripVerts, NULL);
             TestDrawPrimFailure(DrawPrimStrided,hr,_pDD,cCurNumStripVerts,cCurNumStripVerts-2);
@@ -7149,7 +7149,7 @@ prepare_geom_node(GeomNode *node) {
 void DXGraphicsStateGuardian::
 draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
 
-  int i,num_geoms = node->get_num_geoms();
+  uint i,num_geoms = node->get_num_geoms();
 
   if (gnc == (GeomNodeContext *)NULL) {
 
