@@ -31,40 +31,49 @@ class ParentMgr:
         # these are nodepaths that have requested to be parented to
         # a node that has not yet been registered
         self.pendingChildren = {}
+        # for efficient removal of pending children, we keep a dict
+        # of pending children to their pending parent
+        self.pendingChild2parentToken = {}
 
     def destroy(self):
         del self.token2nodepath
         del self.pendingChildren
+        del self.pendingChild2parentToken
+
+    def privRemoveReparentRequest(self, child):
+        """ this internal function removes any currently-pending reparent
+        request for the child nodepath """
+        if child in self.pendingChild2parentToken:
+            self.notify.debug("cancelling pending reparent of %s to '%s'" %
+                              (repr(child),
+                               self.pendingChild2parentToken[child]))
+            parentToken = self.pendingChild2parentToken[child]
+            del self.pendingChild2parentToken[child]
+            self.pendingChildren[parentToken].remove(child)
 
     def requestReparent(self, child, parentToken):
         if self.token2nodepath.has_key(parentToken):
             # this parent has registered
+            # this child may already be waiting on a different parent;
+            # make sure they aren't any more
+            self.privRemoveReparentRequest(child)
             self.notify.debug("performing wrtReparent of %s to '%s'" %
                               (repr(child), parentToken))
             child.wrtReparentTo(self.token2nodepath[parentToken])
-            
-            # Since you can only be under one parent at a time any time we
-            # see a successful request, let's clear you out of everybody
-            # else's pendingChildren
-            for key in self.pendingChildren.keys():
-                childList = self.pendingChildren[key]
-                if child in childList:
-                    # take him out of the list
-                    del childList[childList.index(child)]
         else:
             self.notify.warning(
                 "child %s requested reparent to '%s', not in list" %
                 (repr(child), parentToken))
             if not self.pendingChildren.has_key(parentToken):
                 self.pendingChildren[parentToken] = []
-            # make sure the child is not in the pendingChildren list
-            # for more than one parent
-            for key in self.pendingChildren.keys():
-                childList = self.pendingChildren[key]
-                if child in childList:
-                    # take him out of the list
-                    del childList[childList.index(child)]
+            # cancel any pending reparent on behalf of this child
+            self.privRemoveReparentRequest(child)
+            # make note of this pending parent request
+            self.pendingChild2parentToken[child] = parentToken
             self.pendingChildren[parentToken].append(child)
+            # there is no longer any valid place for the child in the
+            # scenegraph; put it under hidden
+            child.reparentTo(hidden)
             
     def registerParent(self, token, parent):
         if self.token2nodepath.has_key(token):
@@ -110,7 +119,7 @@ class ParentMgr:
 
     def unregisterParent(self, token):
         if not self.token2nodepath.has_key(token):
-            self.notify.warning("unknown token '%s'" % token)
+            self.notify.warning("unknown parent token '%s'" % token)
             return
         self.notify.debug("unregistering parent '%s'" % (token))
         del self.token2nodepath[token]
