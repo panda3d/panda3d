@@ -17,7 +17,7 @@ import AngularEulerIntegrator
 import ClockObject
 import Transitions
 import Loader
-
+import time
 
 globalClock = ClockObject.ClockObject.getGlobalClock()
 
@@ -396,7 +396,17 @@ class ShowBase:
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
 
-
+    def screenshot(self, namePrefix='screenshot'):
+        # Get the current date and time to uniquify the image (down to the second)
+        date = time.ctime(time.time())
+        # Get the current frame count to uniqify it even more
+        frameCount = globalClock.getFrameCount()
+        # Replace spaces with dashes because unix does not like spaces in the filename
+        date = date.replace(' ', '-')
+        date = date.replace(':', '-')
+        imageName = (namePrefix + '-' + date + '-' + str(frameCount) + '.pnm')
+        self.notify.info("Taking screenshot: " + imageName)
+        takeSnapshot(self.win, imageName)
 
     def run(self):
         self.taskMgr.run()
