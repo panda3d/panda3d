@@ -352,8 +352,17 @@ class ShowBase:
         self.mouse2cam.node().setArc(self.camera.arc())
         self.useDrive()
 
+        # A ButtonThrower to generate events from the mouse and
+        # keyboard buttons as they are pressed.
         self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower())
 
+        # Specialize the events based on whether the modifier keys are
+        # being held down.
+        mods = ModifierButtons()
+        mods.addButton(KeyboardButton.shift())
+        mods.addButton(KeyboardButton.control())
+        mods.addButton(KeyboardButton.alt())
+        self.buttonThrower.node().setModifierButtons(mods)
 
         # Tell the gui system about our new mouse watcher.
         self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)

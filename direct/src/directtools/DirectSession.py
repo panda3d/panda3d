@@ -158,8 +158,8 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'shift-a', 'b', 'l', 'L', 'o', 'p', 'r', 'shift-r',
-                          's', 't', 'v', 'w']
+                          'shift-a', 'b', 'l', 'shift-l', 'o', 'p', 'r',
+                          'shift-r', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
