@@ -144,8 +144,7 @@ PUBLISHED:
   float calc_width(const string &line) const;
   string wordwrap_to(const string &text, float wordwrap_width) const;
 
-  void print() const;
-  void write(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
   INLINE void rebuild(bool needs_measure);
   INLINE void measure();

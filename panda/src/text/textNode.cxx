@@ -18,6 +18,7 @@
 #include <billboardTransition.h>
 #include <notify.h>
 #include <sceneGraphReducer.h>
+#include <indent.h>
 
 #include <stdio.h>
 #include <ctype.h>
@@ -235,31 +236,25 @@ wordwrap_to(const string &text, float wordwrap_width) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::print
-//       Access: Public, Scheme
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void TextNode::
-print() const {
-  write(nout);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::write
-//       Access: Public, Scheme
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void TextNode::
-write(ostream &out) const {
-  out << "TextNode\n"
-      << _defs.size() << " characters available in font.\n"
-      << "line height is " << _font_height << " units.\n";
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << "TextNode\n"
+    << _defs.size() << " characters available in font.\n"
+    << "line height is " << _font_height << " units.\n";
   if (has_text_color()) {
-    out << "text color is " << _text_color << "\n";
+    indent(out, indent_level)
+      << "text color is " << _text_color << "\n";
   } else {
-    out << "text color is unchanged from source\n";
+    indent(out, indent_level)
+      << "text color is unchanged from source\n";
   }
-  out << "alignment is ";
+  indent(out, indent_level)
+    << "alignment is ";
   switch (_align) {
   case TM_ALIGN_LEFT:
     out << "TM_ALIGN_LEFT\n";
@@ -275,51 +270,65 @@ write(ostream &out) const {
   }
 
   if (has_wordwrap()) {
-    out << "Word-wrapping at " << _wordwrap_width << " units.\n";
+    indent(out, indent_level)
+      << "Word-wrapping at " << _wordwrap_width << " units.\n";
   }
 
   if (has_frame()) {
-    out << "frame of color " << _frame_color << " at " 
-	<< get_frame_as_set() << " line width " << _frame_width << "\n";
+    indent(out, indent_level)
+      << "frame of color " << _frame_color << " at " 
+      << get_frame_as_set() << " line width " << _frame_width << "\n";
     if (get_frame_corners()) {
-      out << "frame corners are enabled\n";
+      indent(out, indent_level)
+	<< "frame corners are enabled\n";
     }
     if (is_frame_as_margin()) {
-      out << "frame coordinates are specified as margin; actual frame is:\n"
-	  << get_frame_actual() << "\n";
+      indent(out, indent_level)
+	<< "frame coordinates are specified as margin; actual frame is:\n"
+	<< get_frame_actual() << "\n";
     } else {
-      out << "frame coordinates are actual\n";
+      indent(out, indent_level)
+	<< "frame coordinates are actual\n";
     }
   }
   if (has_card()) {
-    out << "card of color " << _card_color << " at " 
-	<< get_card_as_set() << "\n";
+    indent(out, indent_level)
+      << "card of color " << _card_color << " at " 
+      << get_card_as_set() << "\n";
     if (is_card_as_margin()) {
-      out << "card coordinates are specified as margin; actual card is:\n"
-	  << get_card_actual() << "\n";
+      indent(out, indent_level)
+	<< "card coordinates are specified as margin; actual card is:\n"
+	<< get_card_actual() << "\n";
     } else {
-      out << "card coordinates are actual\n";
+      indent(out, indent_level)
+	<< "card coordinates are actual\n";
     }
   }
   if (has_shadow()) {
-    out << "shadow of color " << _shadow_color << " at " 
-	<< _shadow_offset << "\n";
+    indent(out, indent_level)
+      << "shadow of color " << _shadow_color << " at " 
+      << _shadow_offset << "\n";
   }
-  out << "draw order is " << _draw_order << ", "
-      << _draw_order + 1 << ", " << _draw_order + 2 << "\n";
+  indent(out, indent_level)
+    << "draw order is " << _draw_order << ", "
+    << _draw_order + 1 << ", " << _draw_order + 2 << "\n";
 
   LVecBase3f scale, hpr, trans;
   if (decompose_matrix(_transform, scale, hpr, trans, _coordinate_system)) {
-    out << "transform is:\n"
-	<< "  scale: " << scale << "\n"
-	<< "    hpr: " << hpr << "\n"
-	<< "  trans: " << hpr << "\n";
+  indent(out, indent_level)
+    << "transform is:\n"
+    << "  scale: " << scale << "\n"
+    << "    hpr: " << hpr << "\n"
+    << "  trans: " << hpr << "\n";
   } else {
-    out << "transform is:\n" << _transform;
+    indent(out, indent_level)
+      << "transform is:\n" << _transform;
   }
-  out << "in coordinate system " << _coordinate_system << "\n";
+  indent(out, indent_level)
+    << "in coordinate system " << _coordinate_system << "\n";
 
-  out << "\ntext is " << _text << "\n";
+  indent(out, indent_level)
+    << "\ntext is " << _text << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
