@@ -44,65 +44,67 @@
 // For a source directory, build a single Makefile with rules to build
 // each target.
 
-// This is the real set of lib_targets we'll be building.  On Windows,
-// we don't build the shared libraries which are included on metalibs.
-#define real_lib_targets
-#define deferred_objs
-#forscopes lib_target
-  #if $[eq $[module $[TARGET],$[TARGET]],]
-    // This library is not on a metalib, so we can build it.
-    #set real_lib_targets $[real_lib_targets] $[TARGET]
-  #else
-    // This library is on a metalib, so we can't build it, but we
-    // should build all the obj's that go into it.
-    #set deferred_objs $[deferred_objs] \
-      $[patsubst %_src.cxx,,%.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]
+#if $[build_directory]
+  // This is the real set of lib_targets we'll be building.  On Windows,
+  // we don't build the shared libraries which are included on metalibs.
+  #define real_lib_targets
+  #define deferred_objs
+  #forscopes lib_target
+    #if $[eq $[module $[TARGET],$[TARGET]],]
+      // This library is not on a metalib, so we can build it.
+      #set real_lib_targets $[real_lib_targets] $[TARGET]
+    #else
+      // This library is on a metalib, so we can't build it, but we
+      // should build all the obj's that go into it.
+      #set deferred_objs $[deferred_objs] \
+        $[patsubst %_src.cxx,,%.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]
+    #endif
+  #end lib_target
+  
+  // We need to know the various targets we'll be building.
+  // $[lib_targets] will be the list of dynamic libraries,
+  // $[static_lib_targets] the list of static libraries, and
+  // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
+  // list of binaries that are to be built only when specifically asked
+  // for.
+  #define lib_targets $[patsubst %,$[so_dir]/lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
+  #define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[st_dir]/lib%$[dllext].lib]
+  #define bin_targets \
+      $[active_target(bin_target noinst_bin_target):%=$[st_dir]/%.exe] \
+      $[active_target(sed_bin_target):%=$[st_dir]/%]
+  #define test_bin_targets $[active_target(test_bin_target):%=$[st_dir]/%.exe]
+  
+  // And these variables will define the various things we need to
+  // install.
+  #define install_lib $[active_target(metalib_target static_lib_target ss_lib_target)] $[real_lib_targets]
+  #define install_bin $[active_target(bin_target)]
+  #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
+  #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
+  #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
+  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
+  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
+  #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
+  
+  // $[so_sources] is the set of sources that belong on a shared object,
+  // and $[st_sources] is the set of sources that belong on a static
+  // object, like a static library or an executable.  In Windows, we
+  // don't need to make this distinction, but we do anyway in case we
+  // might in the future for some nutty reason.
+  #define so_sources $[get_sources(metalib_target lib_target noinst_lib_target)]
+  #define st_sources $[get_sources(static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
+  
+  // These are the source files that our dependency cache file will
+  // depend on.  If it's an empty list, we won't bother writing rules to
+  // freshen the cache file.
+  #define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[so_sources] $[st_sources]]]
+  
+  #if $[eq $[so_dir],$[st_dir]]
+    // If the static and shared directories are the same, we have to use the
+    // same rules to build both shared and static targets.
+    #set st_sources $[so_sources] $[st_sources]
+    #set so_sources
   #endif
-#end lib_target
-
-// We need to know the various targets we'll be building.
-// $[lib_targets] will be the list of dynamic libraries,
-// $[static_lib_targets] the list of static libraries, and
-// $[bin_targets] the list of binaries.  $[test_bin_targets] is the
-// list of binaries that are to be built only when specifically asked
-// for.
-#define lib_targets $[patsubst %,$[so_dir]/lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
-#define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[st_dir]/lib%$[dllext].lib]
-#define bin_targets \
-    $[active_target(bin_target noinst_bin_target):%=$[st_dir]/%.exe] \
-    $[active_target(sed_bin_target):%=$[st_dir]/%]
-#define test_bin_targets $[active_target(test_bin_target):%=$[st_dir]/%.exe]
-
-// And these variables will define the various things we need to
-// install.
-#define install_lib $[active_target(metalib_target static_lib_target ss_lib_target)] $[real_lib_targets]
-#define install_bin $[active_target(bin_target)]
-#define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
-#define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
-#define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
-#define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
-#define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
-#define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
-
-// $[so_sources] is the set of sources that belong on a shared object,
-// and $[st_sources] is the set of sources that belong on a static
-// object, like a static library or an executable.  In Windows, we
-// don't need to make this distinction, but we do anyway in case we
-// might in the future for some nutty reason.
-#define so_sources $[get_sources(metalib_target lib_target noinst_lib_target)]
-#define st_sources $[get_sources(static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
-
-// These are the source files that our dependency cache file will
-// depend on.  If it's an empty list, we won't bother writing rules to
-// freshen the cache file.
-#define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[so_sources] $[st_sources]]]
-
-#if $[eq $[so_dir],$[st_dir]]
-  // If the static and shared directories are the same, we have to use the
-  // same rules to build both shared and static targets.
-  #set st_sources $[so_sources] $[st_sources]
-  #set so_sources
-#endif
+#endif  // $[build_directory]
 
 // And these are the various source files, extracted out by type.
 #define cxx_so_sources $[filter_out %_src.cxx,$[filter %.cxx,$[so_sources]]]
