@@ -22,6 +22,8 @@
 #if defined(WIN32)
 /* begin Win32-specific code */
 
+#include <direct.h>
+
 static string
 front_to_back_slash(const string &str) {
   string result = str;
@@ -825,7 +827,11 @@ make_dir() const {
       string component = _filename.substr(0, slash);
       if (!(component == ".") || 
           !(component == "..")) {
+#ifndef WIN32_VC
         mkdir(component.c_str(), 0xffff);
+#else
+	mkdir(component.c_str());
+#endif
       }
     }
     p = slash;
