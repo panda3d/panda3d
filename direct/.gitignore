@@ -1,2 +1,8 @@
 *.pyc
+/bin/
+/etc/
+/include/
+/lib/
+/shared/
+Makefile
 pp.dep
