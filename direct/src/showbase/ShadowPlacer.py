@@ -21,8 +21,8 @@ class ShadowPlacer(DirectObject.DirectObject):
     # special methods
     def __init__(self, cTrav, shadowNodePath, 
             wallCollideMask, floorCollideMask):
-        self.isActive = 0 # Is the placer "on".  This is also printed in the debugPrint.
-        assert self.debugPrint("ShadowPlacer()")
+        self.isActive = 0 # Is the placer "on".  This is also printed in the debugCall.
+        assert self.notify.debugCall()
         DirectObject.DirectObject.__init__(self)
         self.setup(cTrav, shadowNodePath, 
             wallCollideMask, floorCollideMask)
@@ -35,7 +35,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         """
         Set up the collisions
         """
-        assert self.debugPrint("setup()")
+        assert self.notify.debugCall()
         assert not shadowNodePath.isEmpty()
         assert not hasattr(self, "cTrav") # Protect from setup() being called again.
 
@@ -73,7 +73,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         self.lifter.addCollider(self.cRayNodePath, shadowNodePath)
 
     def delete(self):
-        assert self.debugPrint("delete()")
+        assert self.notify.debugCall()
         self.off()
         if __debug__:
             assert not self.isActive
@@ -95,7 +95,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         Turn on the shadow placement.  The shadow z position will
         start being updated until a call to off() is made.
         """
-        assert self.debugPrint("on() activeCount=%s"%(self.activeCount,))
+        assert self.notify.debugCall("activeCount=%s"%(self.activeCount,))
         if self.isActive:
             assert self.cTrav.hasCollider(self.cRayNodePath)
             return
@@ -113,7 +113,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         there, but the z position will not be updated until a call
         to on() is made.
         """
-        assert self.debugPrint("off() activeCount=%s"%(self.activeCount,))
+        assert self.notify.debugCall("activeCount=%s"%(self.activeCount,))
         if not self.isActive:
             assert not self.cTrav.hasCollider(self.cRayNodePath)
             return
@@ -135,6 +135,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         a one-time straighten-things-up operation after collisions
         have been disabled.
         """
+        assert self.notify.debugCall()
         tempCTrav = CollisionTraverser("oneTimeCollide")
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
@@ -148,9 +149,3 @@ class ShadowPlacer(DirectObject.DirectObject):
                 self.notify.debug(message)
                 onScreenDebug.add("ShadowPlacers", message)
             return 1 # to allow assert(self.debugDisplay())
-    
-    if __debug__:
-        def debugPrint(self, message):
-            """for debugging"""
-            return self.notify.debug(
-                    "%s (%s) %s"%(id(self), self.isActive, message))
