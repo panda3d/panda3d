@@ -460,6 +460,34 @@ def list2dict(L, value=None):
     """creates dict using elements of list, all assigned to same value"""
     return dict([(k,value) for k in L])
 
+def invertDict(D):
+    """creates a dictionary by 'inverting' D; keys are placed in the new
+    dictionary under their corresponding value in the old dictionary.
+    Data will be lost if D contains any duplicate values.
+
+    >>> old = {'key1':1, 'key2':2}
+    >>> invertDict(old)
+    {1: 'key1', 2: 'key2'}
+    """
+    n = {}
+    for key, value in D.items():
+        n[value] = key
+    return n
+
+def invertDictLossless(D):
+    """similar to invertDict, but values of new dict are lists of keys from
+    old dict. No information is lost.
+
+    >>> old = {'key1':1, 'key2':2, 'keyA':2}
+    >>> invertDictLossless(old)
+    {1: ['key1'], 2: ['key2', 'keyA']}
+    """
+    n = {}
+    for key, value in D.items():
+        n.setdefault(value, [])
+        n[value].append(key)
+    return n
+
 def uniqueElements(L):
     """are all elements of list unique?"""
     return len(L) == len(list2dict(L))
@@ -885,6 +913,7 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight,item) pairs, chooses an item based on the
     weights. rng must return 0..1. if you happen to have the sum of the
     weights, pass it in 'sum'."""
+    # TODO: add support for dicts
     if sum is None:
         sum = 0.
         for weight, item in choiceList:
@@ -1012,6 +1041,12 @@ class Enum:
 
     def getString(self, value):
         return self._stringTable[value]
+
+    def __contains__(self, value):
+        return value in self._stringTable
+
+    def __len__(self):
+        return len(self._stringTable)
 
     if __debug__:
         def _checkExistingMembers(self, items):
