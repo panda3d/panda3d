@@ -12,9 +12,10 @@ my $WIN_INSTALLDIR="\\\\dimbo\\panda\\win";
 ### DEBUG SETTINGS
 # my $DEBUG_TREECOPY = 1;
 my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 0; 
-# set DEBUG_GENERATE_PYTHON_CODE_ONLY=1
+
+#$DEBUG_GENERATE_PYTHON_CODE_ONLY=1;
+
 if ($ENV{'DEBUG_GENERATE_PYTHON_CODE_ONLY'} ne '') {
-  $ENV{'PANDA_OPTIMIZE'} ='2';
   $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;
 }
 # my $DO_ARCHIVE_AND_COPY_ONLY = 1;
@@ -34,9 +35,9 @@ for(my $i=0;$i<=$#inst_dirnames;$i++) {
     $inst_dirs[$i]=$WIN_INSTALLDIR."\\".$inst_dirnames[$i];
 }
 
-if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
-    $ENV{'PANDA_OPTIMIZE'}='1';  # var has meaning to my special Config.pp
-}
+#if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+#    $ENV{'PANDA_OPTIMIZE'}='4';  # var has meaning to my special Config.pp
+#}
 
 $ENV{'WINTOOLS'} = '/home/builder/player/wintools';
 #$ENV{'PPREMAKE_CONFIG'} = '/usr/local/etc/Config.pp';  old location
@@ -147,7 +148,9 @@ sub myexecstr() {
   }
 
   if($retval!=0) {
-      $retval= $retval/256;  # actual retval
+      if(($retval>=256) || ($retval<=-256)) {
+         $retval= $retval/256;  # actual retval
+      }
       if($errstr eq "") {
          &logmsg($cmdstr." failed!!!!!  continuing anyway...\nError return value=".$retval);
       } elsif($errstr ne "nomsg") {
@@ -244,52 +247,77 @@ sub addpathsfromfile() {
 
 }
 
+sub AddPckgPath() {
+  my $pckg = shift;
+  $ENV{'PATH'}.=":".$ENV{$pckg}."/bin:".$ENV{$pckg}."/lib";
+}
 
 sub gen_python_code() {
 
-    # ETC_PATH required by generatePythonCode
-    $ENV{'ETC_PATH'}='/home/builder/player/panda/etc /home/builder/player/direct/etc /home/builder/player/dtool/etc /home/builder/player/toontown/etc /home/builder/player/pandatool/etc';
-    my $origpath=$ENV{'PATH'};
+    &mychdir($CYGBLDROOT."/direct/bin");
 
-    $ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin:".$ENV{'WINTOOLS'}."/lib:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/scripts:/home/builder/player/pandatool/bin:/home/builder/player/pandatool/lib";
-    $ENV{'PATH'}.=$ENV{'WINTOOLS'}."/sdk/python/Tcl/bin:".$ENV{'WINTOOLS'}."/sdk/python/Tcl/lib"."/c/WINNT/system32:/c/WINNT";
+    # ETC_PATH required by generatePythonCode?
+    $ENV{'ETC_PATH'}='/home/builder/player/panda/etc /home/builder/player/direct/etc /home/builder/player/dtool/etc /home/builder/player/toontown/etc /home/builder/player/pandatool/etc';
+
+    my $origpath=$ENV{'PATH'};  # save now, restore path after done
+
+    # start new path just for this fn
+    $ENV{'PATH'}="/bin";
+
+    &AddPckgPath('WINTOOLS');
+    &AddPckgPath('DTOOL');
+    &AddPckgPath('PANDATOOL');
+    &AddPckgPath('PANDA');
+    &AddPckgPath('DIRECT');
+    &AddPckgPath('TOONTOWN');
+
+#    $ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin:".$ENV{'WINTOOLS'}."/lib:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/scripts:/home/builder/player/pandatool/bin:/home/builder/player/pandatool/lib";
+    $ENV{'PATH'}.=":/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/Tools:/home/builder/scripts:";
+    $ENV{'PATH'}.=$ENV{'WINTOOLS'}."/sdk/python/Tcl/bin:".$ENV{'WINTOOLS'}."/sdk/python/Tcl/lib";
     
-    $ENV{'PYTHONPATH'}= $WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib;".$WINBLDROOT."\\wintools\\bin;".$WINBLDROOT."\\wintools\\lib;";
+    $ENV{'PYTHONPATH'}= $WINBLDROOT."\\direct\\src\\showbase;".$WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib;".$WINBLDROOT."\\wintools\\bin;".$WINBLDROOT."\\wintools\\lib;";
     $ENV{'PYTHONPATH'}.= $WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\Lib;".$WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\DLLs;";
+    # direct/src/showbase/sitecustomize.py will add paths based on CTPROJS
+    $ENV{'CTPROJS'}="TOONTOWN:personal DIRECT:personal PANDA:personal WINTOOLS:personal DTOOL:personal";
     
-    my $directsrcroot=$WINBLDROOT."\\direct\\src";
+#    my $directsrcroot=$WINBLDROOT."\\direct\\src";
     
-    # add stuff from etc/[dir].pth
-    &addpathsfromfile("direct","PYTHONPATH");
-    &addpathsfromfile("toontown","PYTHONPATH");
+#   this should be unnecessary if sitecustomize.py sees CTPROJS
+#    # add stuff from etc/[dir].pth
+#    &addpathsfromfile("direct","PYTHONPATH");
+#    &addpathsfromfile("toontown","PYTHONPATH");
 
     $ENV{'TCSH_NO_CHANGEPATH'}='1';
 
-    &logmsg("PATH=".$ENV{'PATH'}."\n");
-    &logmsg("PYTHONPATH=".$ENV{'PYTHONPATH'}."\n");
 
-    &mychdir($CYGBLDROOT."/direct/bin");
 
-    $outputdir = $WINBLDROOT."\\direct\\lib\\py";
+# old way that tried to do genPyCode directly
+#    $outputdir = $WINBLDROOT."\\direct\\lib\\py";
 #    &mymkdir($outputdir);
 #    $outputdir.= "\\Opt".$ENV{'PANDA_OPTIMIZE'}."-Win32";
 #    &mymkdir($outputdir);
 # now back to 1 build-type per tree
+#
+#    my $genpyth_str;
+#    my $genargstr="-v -d";
+#
+#    if(($ENV{'PANDA_OPTIMIZE'} eq '1') || ($ENV{'PANDA_OPTIMIZE'} eq '2')) {
+#       $genpyth_str="python_d -v -OO ";
+#       $genargstr="-O ".$genargstr;
+#    } else {
+#       $genpyth_str="python -v -O ";
+#       $genargstr="-O ".$genargstr;
+#    }
+#    $genpyth_str.="generatePythonCode ".$genargstr." '".$outputdir."' -e '".$WINBLDROOT."\\direct\\src\\extensions' -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect libtoontown";
+#   &myexecstr($genpyth_str,"generate python code failed!!!","DO_LOG","NO_PANDA_ATTACH");
 
-    my $genpyth_str;
-    my $genargstr="-v -d";
+    $genpy_args{'1'} = 'win-debug';
+    $genpy_args{'2'} = 'win-debug';
+    $genpy_args{'3'} = 'win-release';
+    $genpy_args{'4'} = 'win-publish';
 
-    if(($ENV{'PANDA_OPTIMIZE'} eq '1') || ($ENV{'PANDA_OPTIMIZE'} eq '2')) {
-       $genpyth_str="python_d -OO ";
-       $genargstr="-O ".$genargstr;
-    } else {
-       $genpyth_str="python -O ";
-       $genargstr="-O ".$genargstr;
-    }
-
-    $genpyth_str.="generatePythonCode ".$genargstr." '".$outputdir."' -e '".$WINBLDROOT."\\direct\\src\\extensions' -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect libtoontown";
-    
-    &myexecstr($genpyth_str,"generate python code failed!!!","DO_LOG","NO_PANDA_ATTACH");
+    $genpy_arg1 = $genpy_args{$ENV{'PANDA_OPTIMIZE'}};
+    &myexecstr("genPyCode ".$genpy_arg1,"genPyCode failed","DO_LOG","NO_PANDA_ATTACH");
     
     $ENV{'PATH'}=$origpath;
     delete $ENV{'TCSH_NO_CHANGEPATH'};
@@ -491,8 +519,8 @@ sub buildall() {
 
     if($treenum == $DEBUGNUM) {
        # get rid of .sbr files before copying
-       &myexecstr("echo .sbr > junk","echo .sbr failed!!", "DO_LOG","NT cmd");
-       $xcopy_opt_str.=" /EXCLUDE:junk";
+       &myexecstr("echo .sbr > C:\\junk","echo .sbr failed!!", "DO_LOG","NT cmd");
+       $xcopy_opt_str.=" /EXCLUDE:C:\\junk";
     }
 
     # hopefully there are no extra dirs underneath
@@ -671,6 +699,8 @@ if($do_install_dir[$DEBUGNUM]) {
     &buildall($DEBUGNUM);
     &make_bsc_file();
     delete $ENV{'USE_BROWSEINFO'};  
+
+    &myexecstr("del /s *.sbr","nomsg","DO_LOG","NT cmd");
 }
 
 AFTER_DBGBUILD:
