@@ -1,0 +1,26 @@
+:palette 256 256
+
+:imagetype rgb
+
+# Allow textures that repeat up to three times to be palettized.  This
+# requires stamping multiple copies of the texture into the palette.
+:coverage 3.0
+
+:group leveleditor dir leveleditor
+
+# The following line flags all textures to use the most generic image
+# type (e.g. 'rgba' as opposed to 'rgba8') and also turns off
+# mipmapping for all textures ('linear').  This enables more textures
+# to be grouped together on the same palettes.  We can turn these back
+# on for individual textures later.  The 'cont' keyword indicates that
+# a texture should not consider itself having matched a line in this
+# file just because it matches this line.
+
+* : rgba linear cont
+
+4map.rgb : 256 256 omit
+donalds_dock_layout.egg : leveleditor
+minnies_melody_land_layout.egg : leveleditor
+toontown_central_layout.egg : leveleditor
+the_burrrgh_layout.egg : leveleditor
+gridBack.egg : leveleditor
