@@ -191,11 +191,9 @@ class OnscreenText(PandaObject, NodePath):
             scale[0], 1, scale[1]) * Mat4.translateMat(pos[0], 0, pos[1])
         textNode.setTransform(mat)
 
-        if drawOrder == None:
-            drawOrder = DirectGuiGlobals.getDefaultDrawOrder()
-
-        textNode.setBin('fixed')
-        textNode.setDrawOrder(drawOrder)
+        if drawOrder != None:
+            textNode.setBin('fixed')
+            textNode.setDrawOrder(drawOrder)
 
         textNode.setText(text)
 
