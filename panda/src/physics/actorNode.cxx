@@ -91,9 +91,7 @@ transform_changed(NodeRelation *arc) {
 
   // extract the orientation
   if (_mass_center->get_oriented() == true) {
-    LOrientationf orientation;
-    orientation.set(tt->get_matrix());
-
+    LOrientationf orientation(tt->get_matrix());
     _mass_center->set_orientation(orientation);
   }
 
