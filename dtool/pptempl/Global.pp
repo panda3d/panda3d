@@ -72,7 +72,7 @@
 // Define some various compile flags, derived from the variables set
 // in Config.pp.
 #set INTERROGATE_PYTHON_INTERFACE $[and $[HAVE_PYTHON],$[INTERROGATE_PYTHON_INTERFACE]]
-#define run_interrogate $[or $[INTERROGATE_C_INTERFACE],$[INTERROGATE_PYTHON_INTERFACE]]
+#define run_interrogate $[HAVE_INTERROGATE]
 
 #define stl_ipath $[wildcard $[STL_IPATH]]
 #define stl_lpath $[wildcard $[STL_LPATH]]
