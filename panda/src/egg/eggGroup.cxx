@@ -971,7 +971,7 @@ adjust_under() {
 void EggGroup::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
             CoordinateSystem to_cs) {
-  if (has_transform()) {
+  if (has_transform() || get_group_type() == GT_joint) {
     // Since we want to apply this transform to all matrices,
     // including nested matrices, we can't simply premult it in and
     // leave it, because that would leave the rotational component in

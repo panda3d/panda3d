@@ -69,6 +69,7 @@ PUBLISHED:
   void add_component_data(const string &component_name, double value);
   void add_component_data(int component, double value);
 
+  virtual bool is_anim_matrix() const;
   virtual void write(ostream &out, int indent_level) const;
 
   static void compose_with_order(LMatrix4d &mat,

@@ -162,6 +162,17 @@ get_value(int row, LMatrix4d &mat) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggXfmAnimData::is_anim_matrix
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents a table of
+//               animation transformation data, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggXfmAnimData::
+is_anim_matrix() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::write
 //       Access: Public, Virtual
 //  Description: Writes the data to the indicated output stream in Egg

@@ -151,6 +151,17 @@ normalize() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::is_anim_matrix
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents a table of
+//               animation transformation data, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggXfmSAnim::
+is_anim_matrix() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::write
 //       Access: Public, Virtual
 //  Description: Writes the data to the indicated output stream in Egg

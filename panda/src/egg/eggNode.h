@@ -71,6 +71,7 @@ PUBLISHED:
   void apply_texmats();
 
   virtual bool is_joint() const;
+  virtual bool is_anim_matrix() const;
 
   virtual EggRenderMode *determine_alpha_mode();
   virtual EggRenderMode *determine_depth_write_mode();
@@ -101,6 +102,7 @@ protected:
   virtual void update_under(int depth_offset);
   virtual void adjust_under();
   virtual bool has_primitives() const;
+  virtual bool joint_has_primitives() const;
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
                            CoordinateSystem to_cs);
@@ -145,7 +147,8 @@ public:
 private:
   static TypeHandle _type_handle;
 
-friend class EggGroupNode;
+  friend class EggGroupNode;
+  friend class EggTable;
 };
 
 #include "eggNode.I"

@@ -779,6 +779,31 @@ has_primitives() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::joint_has_primitives
+//       Access: Published, Virtual
+//  Description: Returns true if there are any primitives
+//               (e.g. polygons) defined within this group or below,
+//               but the search does not include nested joints.
+////////////////////////////////////////////////////////////////////
+bool EggGroupNode::
+joint_has_primitives() const {
+  Children::const_iterator ci;
+  for (ci = _children.begin();
+       ci != _children.end();
+       ++ci) {
+    EggNode *child = (*ci);
+
+    if (!child->is_joint()) {
+      if (child->joint_has_primitives()) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::update_under
 //       Access: Protected, Virtual
 //  Description: This function is called from within EggGroupNode

@@ -59,6 +59,17 @@ is_joint() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggNode::is_anim_matrix
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents a table of
+//               animation transformation data, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggNode::
+is_anim_matrix() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggNode::determine_alpha_mode
 //       Access: Public, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
@@ -320,6 +331,18 @@ adjust_under() {
 ////////////////////////////////////////////////////////////////////
 bool EggNode::
 has_primitives() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::joint_has_primitives
+//       Access: Protected, Virtual
+//  Description: Returns true if there are any primitives
+//               (e.g. polygons) defined within this group or below,
+//               but the search does not include nested joints.
+////////////////////////////////////////////////////////////////////
+bool EggNode::
+joint_has_primitives() const {
   return false;
 }
 

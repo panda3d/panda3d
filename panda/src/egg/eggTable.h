@@ -47,9 +47,14 @@ PUBLISHED:
   INLINE void set_table_type(TableType type);
   INLINE TableType get_table_type() const;
 
+  bool has_transform() const;
   virtual void write(ostream &out, int indent_level) const;
 
   static TableType string_table_type(const string &string);
+
+protected:
+  virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
+                           CoordinateSystem to_cs);
 
 private:
   TableType _type;

@@ -61,6 +61,7 @@ PUBLISHED:
 
   void get_value(int row, LMatrix4d &mat) const;
 
+  virtual bool is_anim_matrix() const;
   virtual void write(ostream &out, int indent_level) const;
 
 protected:
