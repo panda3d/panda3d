@@ -617,7 +617,7 @@ static void setup_gui(void) {
   // test 2
   //  test2(mgr, font);
   // test 3
-  //  test3(mgr, font);
+  test3(mgr, font);
   // test 4
   //  test4(mgr, font);
   // test 5
@@ -636,7 +636,7 @@ static void setup_gui(void) {
   // test 10
   //  test10(mgr, font);
   // test 11
-  test11(mgr, font);
+  //  test11(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -733,10 +733,12 @@ void gui_keys(EventHandler&) {
   have_dlight = true;
 
   event_handler.add_hook("2", event_2);
+  /*
   // for tests 7-11
   event_handler.add_hook("3", event_3);
   // for test 11
   event_handler.add_hook("4", event_4);
+  */
 }
 
 int main(int argc, char *argv[]) {
