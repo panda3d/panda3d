@@ -39,8 +39,8 @@ class ShowBase:
 
         # Store dconfig variables
         self.wantTk = self.config.GetBool('want-tk', 0)
-        self.sfxActive = self.config.GetBool('audio-sfx-active', Settings.getSfx())
-        self.musicActive = self.config.GetBool('audio-music-active', Settings.getMusic())
+        self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
+        self.musicActive = self.config.GetBool('audio-music-active', 1)
         self.wantFog = self.config.GetBool('want-fog', 1)
 
         self.screenshotExtension = self.config.GetString('screenshot-extension', 'jpg')

@@ -13,6 +13,12 @@ shift
 firstarg="$1"
 fi
 
+if [ "$firstarg" = "-b" ]; then
+extra_genPyCode_libs="libbartop"
+shift
+firstarg="$1"
+fi
+
 if [ "$firstarg" = "-v" ]; then
 extra_genPyCode_libs="libvrpn"
 shift
