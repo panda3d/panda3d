@@ -22,6 +22,7 @@
 #include "vrpnClient.h"
 #include "vrpnDialDevice.h"
 #include "vrpnTrackerDevice.h"
+#include "pandaSystem.h"
 
 #include "dconfig.h"
 
@@ -35,4 +36,7 @@ ConfigureFn(config_vrpn) {
   VrpnClient::init_type();
   VrpnDialDevice::init_type();
   VrpnTrackerDevice::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("VRPN");
 }

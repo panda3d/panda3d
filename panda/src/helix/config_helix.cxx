@@ -18,8 +18,9 @@
 
 #include "config_helix.h"
 #include "helixClient.h"
+#include "pandaSystem.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 DLLAccessPath statClnt;
 DLLAccessPath* GetDLLAccessPath()
@@ -32,5 +33,8 @@ NotifyCategoryDef(helix, "");
 
 ConfigureFn(config_helix) {
   HelixClient::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("Helix");
 }
 

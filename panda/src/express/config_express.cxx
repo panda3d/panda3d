@@ -30,6 +30,7 @@
 #include "virtualFileMountMultifile.h"
 #include "virtualFileMountSystem.h"
 #include "virtualFileSimple.h"
+#include "pandaSystem.h"
 
 #include "dconfig.h"
 
@@ -172,6 +173,11 @@ init_libexpress() {
   VirtualFileSimple::init_type();
 
   init_system_type_handles();
+
+#ifdef HAVE_ZLIB
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("zlib");
+#endif
 }
 
 
