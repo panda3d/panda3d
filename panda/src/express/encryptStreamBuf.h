@@ -42,6 +42,15 @@ public:
   void open_write(ostream *dest, bool owns_dest, const string &password);
   void close_write();
 
+  INLINE void set_algorithm(const string &algorithm);
+  INLINE const string &get_algorithm() const;
+
+  INLINE void set_key_length(int key_length);
+  INLINE int get_key_length() const;
+
+  INLINE void set_iteration_count(int iteration_count);
+  INLINE int get_iteration_count() const;
+
 protected:
   virtual int overflow(int c);
   virtual int sync(void);
@@ -57,6 +66,10 @@ private:
 
   ostream *_dest;
   bool _owns_dest;
+
+  string _algorithm;
+  int _key_length;
+  int _iteration_count;
   
   bool _read_valid;
   EVP_CIPHER_CTX _read_ctx;
@@ -68,6 +81,8 @@ private:
   EVP_CIPHER_CTX _write_ctx;
   size_t _write_block_size;
 };
+
+#include "encryptStreamBuf.I"
 
 #endif  // HAVE_SSL
 

@@ -1573,8 +1573,11 @@ write_data(ostream &write, istream *read, streampos fpos,
 #else  // HAVE_ZLIB
     if ((_flags & SF_encrypted) != 0) {
       // Write it encrypted.
-      putter = new OEncryptStream(putter, delete_putter, 
-                                  multifile->_encryption_password);
+      OEncryptStream *encrypt = new OEncryptStream;
+      encrypt->set_iteration_count(multifile_encryption_iteration_count);
+      encrypt->open(putter, delete_putter, multifile->_encryption_password);
+
+      putter = encrypt;
       delete_putter = true;
 
       // Also write the encrypt_header to the beginning of the

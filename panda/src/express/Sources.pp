@@ -23,7 +23,7 @@
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
     dcast.T dcast.h \
-    encryptStreamBuf.h encryptStream.h encryptStream.I \
+    encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
     error_utils.h \
     get_config_path.h \
     hashGeneratorBase.I hashGeneratorBase.h \
@@ -144,7 +144,7 @@
     datagramGenerator.I datagramGenerator.h \
     datagramIterator.I datagramIterator.h \
     datagramSink.I datagramSink.h dcast.T dcast.h \
-    encryptStreamBuf.h encryptStream.h encryptStream.I \
+    encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
     error_utils.h get_config_path.h \
     hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h \

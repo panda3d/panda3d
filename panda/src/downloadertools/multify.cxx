@@ -131,7 +131,7 @@ help() {
     "      encrypted using different passwords (although this requires running\n"
     "      multify multiple times).  It is not possible to encrypt the multifile's\n"
     "      table of contents using this interface, but see the pencrypt program to\n"
-    "      encrypt the entire multifile after it has been generated).\n\n"
+    "      encrypt the entire multifile after it has been generated.\n\n"
 
 
     "  -p \"password\"\n"

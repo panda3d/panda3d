@@ -59,28 +59,28 @@ EXPCL_PANDAEXPRESS bool get_paranoid_clock();
 EXPCL_PANDAEXPRESS bool get_paranoid_inheritance();
 EXPCL_PANDAEXPRESS bool get_verify_dcast();
 
-extern const int patchfile_window_size;
-extern const int patchfile_increment_size;
-extern const int patchfile_buffer_size;
-extern const int patchfile_zone_size;
+extern ConfigVariableInt patchfile_window_size;
+extern ConfigVariableInt patchfile_increment_size;
+extern ConfigVariableInt patchfile_buffer_size;
+extern ConfigVariableInt patchfile_zone_size;
 
-extern const bool keep_temporary_files;
-extern const double average_frame_rate_interval;
+extern ConfigVariableBool keep_temporary_files;
+extern ConfigVariableDouble average_frame_rate_interval;
 
-extern ClockObject::Mode clock_mode;
-extern const double clock_frame_rate;
-extern const double clock_degrade_factor;
-extern const double max_dt;
-extern const double sleep_precision;
+extern ConfigVariableDouble clock_frame_rate;
+extern ConfigVariableDouble clock_degrade_factor;
+extern ConfigVariableDouble max_dt;
+extern ConfigVariableDouble sleep_precision;
 
-extern const string encryption_algorithm;
-extern const int encryption_key_length;
-extern const int encryption_iteration_count;
+extern ConfigVariableString encryption_algorithm;
+extern ConfigVariableInt encryption_key_length;
+extern ConfigVariableInt encryption_iteration_count;
+extern ConfigVariableInt multifile_encryption_iteration_count;
 
-extern EXPCL_PANDAEXPRESS const bool use_vfs;
+extern EXPCL_PANDAEXPRESS ConfigVariableBool use_vfs;
 
-extern EXPCL_PANDAEXPRESS const bool collect_tcp;
-extern EXPCL_PANDAEXPRESS const double collect_tcp_interval;
+extern EXPCL_PANDAEXPRESS ConfigVariableBool collect_tcp;
+extern EXPCL_PANDAEXPRESS ConfigVariableDouble collect_tcp_interval;
 
 // Expose the Config variable for Python access.
 BEGIN_PUBLISH

@@ -21,7 +21,10 @@
 #include "unicodeLatinMap.h"
 
 TypeHandle TextEncoder::_type_handle;
-TextEncoder::Encoding TextEncoder::_default_encoding;
+ConfigVariableEnum<TextEncoder::Encoding> TextEncoder::_default_encoding
+("default-encoding", TextEncoder::E_iso8859,
+ "Specifies how international characters are represented in strings "
+ "of 8-byte characters presented to Panda.  See TextEncoder::set_encoding().");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::make_upper
@@ -321,3 +324,47 @@ expand_amp_sequence(StringDecoder &decoder) const {
 }
 */
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::Encoding ostream operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, TextEncoder::Encoding encoding) {
+  switch (encoding) {
+  case TextEncoder::E_iso8859:
+    return out << "iso8859";
+
+  case TextEncoder::E_utf8:
+    return out << "utf8";
+
+  case TextEncoder::E_unicode:
+    return out << "unicode";
+  };
+
+  return out << "**invalid TextEncoder::Encoding(" << (int)encoding << ")**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::Encoding istream operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, TextEncoder::Encoding &encoding) {
+  string word;
+  in >> word;
+
+  if (word == "iso8859") {
+    encoding = TextEncoder::E_iso8859;
+  } else if (word == "utf8") {
+    encoding = TextEncoder::E_utf8;
+  } else if (word == "unicode") {
+    encoding = TextEncoder::E_unicode;
+  } else {
+    express_cat.error()
+      << "Invalid TextEncoder::Encoding: " << word << "\n";
+    encoding = TextEncoder::E_iso8859;
+  }
+
+  return in;
+}

@@ -48,6 +48,10 @@ public:
                               const string &password);
   INLINE IDecryptStream &close();
 
+  INLINE const string &get_algorithm() const;
+  INLINE int get_key_length() const;
+  INLINE int get_iteration_count() const;
+
 private:
   EncryptStreamBuf _buf;
 };
@@ -72,6 +76,10 @@ public:
   INLINE OEncryptStream &open(ostream *dest, bool owns_dest, 
                               const string &password);
   INLINE OEncryptStream &close();
+
+  INLINE void set_algorithm(const string &algorithm);
+  INLINE void set_key_length(int key_length);
+  INLINE void set_iteration_count(int iteration_count);
 
 private:
   EncryptStreamBuf _buf;

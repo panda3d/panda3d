@@ -46,6 +46,10 @@ EncryptStreamBuf() {
   _dest = (ostream *)NULL;
   _owns_dest = false;
 
+  _algorithm = encryption_algorithm;
+  _key_length = encryption_key_length;
+  _iteration_count = encryption_iteration_count;
+
   _read_valid = false;
   _write_valid = false;
 
@@ -103,9 +107,17 @@ open_read(istream *source, bool owns_source, const string &password) {
     return;
   }
 
-  express_cat.debug()
-    << "Using decryption algorithm " << OBJ_nid2sn(nid) << " with key length "
-    << key_length * 8 << " bits.\n";
+  _algorithm = OBJ_nid2sn(nid);
+  _key_length = key_length * 8;
+  _iteration_count = count * iteration_count_factor;
+
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Using decryption algorithm " << _algorithm << " with key length "
+      << _key_length << " bits.\n";
+    express_cat.debug()
+      << "Key is hashed " << _iteration_count << " extra times.\n";
+  }
 
   int iv_length = EVP_CIPHER_iv_length(cipher);
   _read_block_size = EVP_CIPHER_block_size(cipher);
@@ -186,11 +198,11 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   _write_valid = false;
 
   const EVP_CIPHER *cipher = 
-    EVP_get_cipherbyname(encryption_algorithm.c_str());
+    EVP_get_cipherbyname(_algorithm.c_str());
 
   if (cipher == NULL) {
     express_cat.error()
-      << "Unknown encryption algorithm: " << encryption_algorithm << "\n";
+      << "Unknown encryption algorithm: " << _algorithm << "\n";
     return;
   };
 
@@ -210,7 +222,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   nassertv(result > 0);
 
   // Store the appropriate key length in the context.
-  int key_length = (encryption_key_length + 7) / 8;
+  int key_length = (_key_length + 7) / 8;
   if (key_length == 0) {
     key_length = EVP_CIPHER_CTX_key_length(cipher);
   }
@@ -223,12 +235,18 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
     return;
   }
 
-  express_cat.debug()
-    << "Using encryption algorithm " << OBJ_nid2sn(nid) << " with key length "
-    << key_length * 8 << " bits.\n";
+  int count = _iteration_count / iteration_count_factor;
+
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Using encryption algorithm " << OBJ_nid2sn(nid) << " with key length "
+      << key_length * 8 << " bits.\n";
+    express_cat.debug()
+      << "Hashing key " << count * iteration_count_factor
+      << " extra times.\n";
+  }
 
   // Hash the supplied password into a key of the appropriate length.
-  int count = encryption_iteration_count / iteration_count_factor;
   unsigned char *key = (unsigned char *)alloca(key_length);
   result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),

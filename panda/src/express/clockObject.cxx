@@ -19,6 +19,7 @@
 
 #include "clockObject.h"
 #include "config_express.h"
+#include "configVariableEnum.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -243,10 +244,12 @@ void ClockObject::
 make_global_clock() {
   nassertv(_global_clock == (ClockObject *)NULL);
 
-  // Make sure we have run init_libexpress() by this time.  This
-  // function is responsible for initializing the clock_mode Configrc
-  // variable.
-  init_libexpress();
+  ConfigVariableEnum<ClockObject::Mode> clock_mode
+    ("clock-mode", ClockObject::M_normal,
+     "Specifies the mode of the global clock.  The default mode, normal, "
+     "is a real-time clock; other modes allow non-real-time special "
+     "effects like simulated reduced frame rate.  See "
+     "ClockObject::set_mode().");
 
   _global_clock = new ClockObject;
   _global_clock->set_mode(clock_mode);
@@ -258,4 +261,53 @@ make_global_clock() {
 ////////////////////////////////////////////////////////////////////
 void get_time_of_day(TimeVal &tv) {
   get_true_time_of_day(tv.tv[0], tv.tv[1]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::Mode ostream operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, ClockObject::Mode mode) {
+  switch (mode) {
+  case ClockObject::M_normal:
+    return out << "normal";
+
+  case ClockObject::M_non_real_time:
+    return out << "non-real-time";
+
+  case ClockObject::M_forced:
+    return out << "forced";
+
+  case ClockObject::M_degrade:
+    return out << "degrade";
+  };
+
+  return out << "**invalid ClockObject::Mode(" << (int)mode << ")**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::Mode istream operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, ClockObject::Mode &mode) {
+  string word;
+  in >> word;
+
+  if (word == "normal") {
+    mode = ClockObject::M_normal;
+  } else if (word == "non-real-time") {
+    mode = ClockObject::M_non_real_time;
+  } else if (word == "forced") {
+    mode = ClockObject::M_forced;
+  } else if (word == "degrade") {
+    mode = ClockObject::M_degrade;
+  } else {
+    express_cat.error()
+      << "Invalid ClockObject::Mode: " << word << "\n";
+    mode = ClockObject::M_normal;
+  }
+
+  return in;
 }

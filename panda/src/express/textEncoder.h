@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "unicodeLatinMap.h"
+#include "configVariableEnum.h"
 
 class StringDecoder;
 
@@ -112,7 +113,7 @@ private:
   string _text;
   wstring _wtext;
 
-  static Encoding _default_encoding;
+  static ConfigVariableEnum<Encoding> _default_encoding;
 
 public:
   static TypeHandle get_class_type() {
@@ -125,6 +126,9 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+ostream &operator << (ostream &out, TextEncoder::Encoding encoding);
+istream &operator >> (istream &in, TextEncoder::Encoding &encoding);
 
 #include "textEncoder.I"
 

@@ -46,17 +46,44 @@ usage() {
     << "      Specifies the password to use for encryption.  There are no\n"
     << "      restrictions on the password length or contents, but longer passwords\n"
     << "      are more secure.  If this is not specified, the user is prompted from\n"
-    << "      standard input.\n\n";
+    << "      standard input.\n\n"
+
+    << "  -a \"algorithm\"\n"
+    << "      Specifies the particular encryption algorithm to use.  The complete\n"
+    << "      set of available algorithms is defined by the current version of\n"
+    << "      OpenSSL.  The default algorithm is taken from the encryption-\n"
+    << "      algorithm config variable.\n\n"
+
+    << "  -k key_length\n"
+    << "      Specifies the key length, in bits, for the selected encryption\n"
+    << "      algorithm.  This only makes sense for those algorithms that support\n"
+    << "      a variable key length.  The default value is taken from the\n"
+    << "      encryption-key-length config variable.\n\n"
+
+    << "  -i iteration_count\n"
+    << "      Specifies the number of times the password is hashed to generate\n"
+    << "      a key.  The only purpose of this is to make it computationally\n"
+    << "      more expensive for an attacker to search the key space exhaustively.\n"
+    << "      This should be a multiple of 1,000 and should not exceed about 65\n"
+    << "      million; the value 0 indicates just one application of the hashing\n"
+    << "      algorithm.  The default value is taken from the encryption-iteration-\n"
+    << "      count config variable.\n\n";
 }
 
 int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "p:h";
+  const char *optstr = "p:a:k:i:h";
 
   string password;
   bool got_password = false;
+  string algorithm;
+  bool got_algorithm = false;
+  int key_length = 0;
+  bool got_key_length = false;
+  int iteration_count = 0;
+  bool got_iteration_count = false;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -65,6 +92,21 @@ main(int argc, char *argv[]) {
     case 'p':
       password = optarg;
       got_password = true;
+      break;
+
+    case 'a':
+      algorithm = optarg;
+      got_algorithm = true;
+      break;
+
+    case 'k':
+      key_length = atoi(optarg);
+      got_key_length = true;
+      break;
+
+    case 'i':
+      iteration_count = atoi(optarg);
+      got_iteration_count = true;
       break;
 
     case 'h':
@@ -119,7 +161,17 @@ main(int argc, char *argv[]) {
     
   bool fail = false;
   {
-    OEncryptStream encrypt(&write_stream, false, password);
+    OEncryptStream encrypt;
+    if (got_algorithm) {
+      encrypt.set_algorithm(algorithm);
+    }
+    if (got_key_length) {
+      encrypt.set_key_length(key_length);
+    }
+    if (got_iteration_count) {
+      encrypt.set_iteration_count(iteration_count);
+    }
+    encrypt.open(&write_stream, false, password);
     
     int ch = read_stream.get();
     while (!read_stream.eof() && !read_stream.fail()) {

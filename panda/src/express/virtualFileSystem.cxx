@@ -504,72 +504,67 @@ get_global_ptr() {
     _global_ptr->chdir(ExecutionEnvironment::get_cwd());
 
     // Then, we add whatever mounts are listed in the Configrc file.
-    Config::ConfigTable::Symbol mounts;
-    config_express.GetAll("vfs-mount", mounts);
+    ConfigVariableList mounts
+      ("vfs-mount",
+       "vfs-mount system-filename mount-point [options]");
 
-    // When we use GetAll(), we might inadvertently read duplicate
-    // lines.  Filter them out with a set.
-    pset<string> already_read;
+    int num_unique_values = mounts.get_num_unique_values();
+    for (int i = 0; i < num_unique_values; i++) {
+      string mount_desc = mounts.get_unique_value(i);
 
-    Config::ConfigTable::Symbol::iterator si;
-    for (si = mounts.begin(); si != mounts.end(); ++si) {
-      string mount_desc = (*si).Val();
-      if (already_read.insert(mount_desc).second) {
-
-        // The vfs-mount syntax is:
-
-        // vfs-mount system-filename mount-point [options]
-
-        // The last two spaces mark the beginning of the mount point,
-        // and of the options, respectively.  There might be multiple
-        // spaces in the system filename, which are part of the
-        // filename.
-
-        // The last space marks the beginning of the mount point.
-        // Spaces before that are part of the system filename.
-        size_t space = mount_desc.rfind(' ');
-        if (space == string::npos) {
-          express_cat.warning()
-            << "No space in vfs-mount descriptor: " << mount_desc << "\n";
-          
-        } else {
-          string mount_point = mount_desc.substr(space + 1);
+      // The vfs-mount syntax is:
+      
+      // vfs-mount system-filename mount-point [options]
+      
+      // The last two spaces mark the beginning of the mount point,
+      // and of the options, respectively.  There might be multiple
+      // spaces in the system filename, which are part of the
+      // filename.
+      
+      // The last space marks the beginning of the mount point.
+      // Spaces before that are part of the system filename.
+      size_t space = mount_desc.rfind(' ');
+      if (space == string::npos) {
+        express_cat.warning()
+          << "No space in vfs-mount descriptor: " << mount_desc << "\n";
+        
+      } else {
+        string mount_point = mount_desc.substr(space + 1);
+        while (space > 0 && isspace(mount_desc[space - 1])) {
+          space--;
+        }
+        mount_desc = mount_desc.substr(0, space);
+        string options;
+        
+        space = mount_desc.rfind(' ');
+        if (space != string::npos) {
+          // If there's another space, we have the optional options field.
+          options = mount_point;
+          mount_point = mount_desc.substr(space + 1);
           while (space > 0 && isspace(mount_desc[space - 1])) {
             space--;
           }
           mount_desc = mount_desc.substr(0, space);
-          string options;
-
-          space = mount_desc.rfind(' ');
-          if (space != string::npos) {
-            // If there's another space, we have the optional options field.
-            options = mount_point;
-            mount_point = mount_desc.substr(space + 1);
-            while (space > 0 && isspace(mount_desc[space - 1])) {
-              space--;
-            }
-            mount_desc = mount_desc.substr(0, space);
-          }
-
-          mount_desc = ExecutionEnvironment::expand_string(mount_desc);
-          Filename physical_filename = Filename::from_os_specific(mount_desc);
-
-          int flags = 0;
-          string password;
-
-          // Split the options up by commas.
-          size_t p = 0;
-          size_t q = options.find(',', p);
-          while (q != string::npos) {
-            parse_option(options.substr(p, q - p),
-                         flags, password);
-            p = q + 1;
-            q = options.find(',', p);
-          }
-          parse_option(options.substr(p), flags, password);
-
-          _global_ptr->mount(physical_filename, mount_point, flags, password);
         }
+        
+        mount_desc = ExecutionEnvironment::expand_string(mount_desc);
+        Filename physical_filename = Filename::from_os_specific(mount_desc);
+        
+        int flags = 0;
+        string password;
+        
+        // Split the options up by commas.
+        size_t p = 0;
+        size_t q = options.find(',', p);
+        while (q != string::npos) {
+          parse_option(options.substr(p, q - p),
+                       flags, password);
+          p = q + 1;
+          q = options.find(',', p);
+        }
+        parse_option(options.substr(p), flags, password);
+        
+        _global_ptr->mount(physical_filename, mount_point, flags, password);
       }
     }
   }

@@ -132,6 +132,9 @@ private:
   static ClockObject *_global_clock;
 };
 
+ostream &operator << (ostream &out, ClockObject::Mode mode);
+istream &operator >> (istream &in, ClockObject::Mode &mode);
+
 #include "clockObject.I"
 
 #endif

@@ -379,19 +379,19 @@ MemoryUsage() {
   // time, and who knows when the code in config_express will be
   // executed.
 
-  // track-memory-usage should be true to enable full-force tracking
-  // of C++ allocations and recordkeeping by type.  It's quite
-  // expensive.
-  _track_memory_usage =
-    config_express.GetBool("track-memory-usage", false);
+  _track_memory_usage = ConfigVariableBool
+    ("track-memory-usage", false,
+     "Set this to true to enable full-force tracking of C++ allocations "
+     "and recordkeeping by type.  It's quite expensive.");
 
-  // count-memory-usage is a much lighter-weight version, and only
-  // tracks the total memory allocation.  However, it only works for
-  // certain build environments (in particular, only in an Opt1 or
-  // Opt2 build on Windows).
 #if defined(WIN32_VC) && defined(_DEBUG)
-  _count_memory_usage = config_express.GetBool("count-memory-usage", 
-                                               _track_memory_usage);
+  _count_memory_usage = ConfigVariableBool
+    ("count-memory-usage", _track_memory_usage,
+     "This is a much lighter-weight version of track-memory-usage, and it "
+     "only tracks the total memory allocation.  However, it only exists in "
+     "certain build environments (in particular, only in an Opt1 or "
+     "Opt2 build on Windows.");
+     
 #else
   _count_memory_usage = false;
 #endif
