@@ -80,8 +80,8 @@ class LerpPosHprInterval(LerpInterval):
 	    return functor
 
 	if (name == None):
-	    n = 'LerpPosHpr-%d' % self.lerpPosHprNum
-	    self.lerpPosHprNum = self.lerpPosHprNum + 1
+	    n = 'LerpPosHpr-%d' % LerpPosHprInterval.lerpPosHprNum
+	    LerpPosHprInterval.lerpPosHprNum += 1
 	else:
 	    n = name
 
@@ -115,8 +115,8 @@ class LerpPosInterval(LerpInterval):
 	    return functor
 
 	if (name == None):
-	    n = 'LerpPos-%d' % self.lerpPosNum
-	    self.lerpPosNum = self.lerpPosNum + 1
+	    n = 'LerpPos-%d' % LerpPosInterval.lerpPosNum
+	    LerpPosInterval.lerpPosNum += 1
 	else:
 	    n = name
 
@@ -149,8 +149,8 @@ class LerpHprInterval(LerpInterval):
 	    return functor
 
 	if (name == None):
-	    n = 'LerpHpr-%d' % self.lerpHprNum
-	    self.lerpHprNum = self.lerpHprNum + 1
+	    n = 'LerpHpr-%d' % LerpHprInterval.lerpHprNum
+	    LerpHprInterval.lerpHprNum += 1
 	else:
 	    n = name
 

@@ -30,7 +30,18 @@ class Track(Interval):
     def __buildIlist(self, intervalList):
 	self.ilist = []
 	for i in intervalList:
-	    self.ilist.append((i, 0.0, PREVIOUS_END))
+            if isinstance(i, Interval):
+                self.ilist.append((i, 0.0, PREVIOUS_END))
+            elif isinstance(i, ListType) or isinstance(i, TupleType):
+                t0 = i[0]
+                ival = i[1]
+                try:
+                    type = i[2]
+                except IndexError:
+                    type = TRACK_START
+                self.ilist.append((ival, t0, type))
+            else:
+                print 'Track.__buildIlist: Invalid intervallist entry'
 
     def __computeDuration(self, length):
 	""" __computeDuration(length)
@@ -45,7 +56,7 @@ class Track(Interval):
 	    assert(t0 >= 0.0)
 	    fillTime = t0 
 	    if (type == PREVIOUS_END):
-		pass
+                pass
 	    elif (type == PREVIOUS_START):
 		if (prev != None):
 		    fillTime = t0 - prev.getDuration()
