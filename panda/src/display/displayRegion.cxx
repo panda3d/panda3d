@@ -525,14 +525,6 @@ get_screenshot(PNMImage &image) {
   
   window->make_current();
 
-  int components = 3;
-  Texture::Format format = Texture::F_rgb;
-
-  if ((gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) != 0) {
-    components = 4;
-    format = Texture::F_rgba;
-  }
-
   // Create a temporary texture to receive the framebuffer image.
   PT(Texture) tex = new Texture;
 
