@@ -1,4 +1,7 @@
 
+// This package presently only builds on Windows.
+#define DIRECTORY_IF_WINDOWS yes
+
 //#define LOCAL_LIBS \
 //    directbase
 #define OTHER_LIBS \
