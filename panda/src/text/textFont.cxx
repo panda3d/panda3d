@@ -1,5 +1,5 @@
 // Filename: textFont.cxx
-// Created by:  drose (03May01)
+// Created by:  drose (08Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,16 +18,10 @@
 
 #include "textFont.h"
 #include "config_text.h"
-
-#include "geom.h"
-#include "geomPoint.h"
-#include "geomNode.h"
-#include "namedNode.h"
-#include "renderRelation.h"
-
 #include "ctype.h"
 
 TypeHandle TextFont::_type_handle;
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: isblank
@@ -40,39 +34,18 @@ isblank(char ch) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextFont::CharDef::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-TextFont::CharDef::
-CharDef(Geom *geom, float width, const AllTransitionsWrapper &trans) :
-  _geom(geom), _width(width), _trans(trans) { }
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextFont::Constructor
-//       Access: Published
-//  Description: The constructor expects the root node to a model
-//               generated via egg-mkfont, which consists of a set of
-//               models, one per each character in the font.
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 TextFont::
-TextFont(Node *font_def) {
-  nassertv(font_def != (Node *)NULL);
-  _font = font_def;
-  _defs.clear();
-  _font_height = 1.0;
-
-  find_characters(font_def);
-
-  if (_font->is_of_type(NamedNode::get_class_type())) {
-    NamedNode *named_node = DCAST(NamedNode, _font);
-    set_name(named_node->get_name());
-  }
+TextFont() {
+  _line_height = 1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextFont::Destructor
-//       Access: Published
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TextFont::
@@ -86,19 +59,19 @@ TextFont::
 //               or 0.0 if the character is not known.
 ////////////////////////////////////////////////////////////////////
 float TextFont::
-calc_width(char ch) const {
+calc_width(int ch) const {
   if (ch == ' ') {
     // A space is a special case.
     return 0.25;
   }
 
-  CharDefs::const_iterator cdi = _defs.find(ch);
-  if (cdi == _defs.end()) {
+  const TextGlyph *glyph = get_glyph(ch);
+  if (glyph == (TextGlyph *)NULL) {
     // Unknown character.
     return 0.0;
   }
 
-  return (*cdi).second._width;
+  return glyph->get_advance();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -242,224 +215,13 @@ wordwrap_to(const string &text, float wordwrap_width,
   return output_text;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TextFont::write
-//       Access: Published
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void TextFont::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << "TextFont " << get_name() << "; "
-    << _defs.size() << " characters available in font:\n";
-  CharDefs::const_iterator di;
-  
-  // Figure out which symbols we have.  We collect lowercase letters,
-  // uppercase letters, and digits together for the user's
-  // convenience.
-  static const int num_letters = 26;
-  static const int num_digits = 10;
-  bool lowercase[num_letters];
-  bool uppercase[num_letters];
-  bool digits[num_digits];
-
-  memset(lowercase, 0, sizeof(bool) * num_letters);
-  memset(uppercase, 0, sizeof(bool) * num_letters);
-  memset(digits, 0, sizeof(bool) * num_digits);
-
-  int count_lowercase = 0;
-  int count_uppercase = 0;
-  int count_digits = 0;
-
-  for (di = _defs.begin(); di != _defs.end(); ++di) {
-    int ch = (*di).first;
-    if (islower(ch)) {
-      count_lowercase++;
-      lowercase[ch - 'a'] = true;
-
-    } else if (isupper(ch)) {
-      count_uppercase++;
-      uppercase[ch - 'A'] = true;
-
-    } else if (isdigit(ch)) {
-      count_digits++;
-      digits[ch - '0'] = true;
-    }
-  }
-
-  if (count_lowercase == num_letters) {
-    indent(out, indent_level + 2)
-      << "All lowercase letters\n";
-
-  } else if (count_lowercase > 0) {
-    indent(out, indent_level + 2)
-      << "Some lowercase letters: ";
-    for (int i = 0; i < num_letters; i++) {
-      if (lowercase[i]) {
-        out << (char)(i + 'a');
-      }
-    }
-    out << "\n";
-  }
-
-  if (count_uppercase == num_letters) {
-    indent(out, indent_level + 2)
-      << "All uppercase letters\n";
-
-  } else if (count_uppercase > 0) {
-    indent(out, indent_level + 2)
-      << "Some uppercase letters: ";
-    for (int i = 0; i < num_letters; i++) {
-      if (uppercase[i]) {
-        out << (char)(i + 'A');
-      }
-    }
-    out << "\n";
-  }
-
-  if (count_digits == num_digits) {
-    indent(out, indent_level + 2)
-      << "All digits\n";
-
-  } else if (count_digits > 0) {
-    indent(out, indent_level + 2)
-      << "Some digits: ";
-    for (int i = 0; i < num_digits; i++) {
-      if (digits[i]) {
-        out << (char)(i + '0');
-      }
-    }
-    out << "\n";
-  }
-
-  for (di = _defs.begin(); di != _defs.end(); ++di) {
-    int ch = (*di).first;
-    if (!isalnum(ch)) {
-      indent(out, indent_level + 2)
-        << ch;
-      if (isprint(ch)) {
-        out << " = '" << (char)ch << "'\n";
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::find_character_gsets
-//       Access: Private
-//  Description: Given that 'root' is a Node containing at least a
-//               polygon and a point which define the character's
-//               appearance and kern position, respectively,
-//               recursively walk the hierarchy and root and locate
-//               those two Geoms.
-////////////////////////////////////////////////////////////////////
-bool TextFont::
-find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
-                     AllTransitionsWrapper &trans) {
-  if (root->is_of_type(GeomNode::get_class_type())) {
-    GeomNode *geode = (GeomNode *)root;
-
-    bool found = false;
-    for (int i = 0; i < geode->get_num_geoms(); i++) {
-      dDrawable *geom = geode->get_geom(i);
-      if (geom->is_of_type(GeomPoint::get_class_type())) {
-        dot = DCAST(GeomPoint, geom);
-
-      } else if (geom->is_of_type(Geom::get_class_type())) {
-        ch = DCAST(Geom, geom);
-        found = true;
-      }
-    }
-    return found;
-
-  } else {
-    TypeHandle graph_type = RenderRelation::get_class_type();
-    int num_children = root->get_num_children(graph_type);
-    for (int i = 0; i < num_children; i++) {
-      NodeRelation *child_arc = root->get_child(graph_type, i);
-      if (find_character_gsets(child_arc->get_child(), ch, dot, trans)) {
-        trans.extract_from(child_arc);
-      }
-    }
-    return false;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::find_characters
-//       Access: Private
-//  Description: Walk the hierarchy beginning at the indicated root
-//               and locate any nodes whose names are just integers.
-//               These are taken to be characters, and their
-//               definitions and kern informations are retrieved.
-////////////////////////////////////////////////////////////////////
-void TextFont::
-find_characters(Node *root) {
-  string name;
-  if (root->is_of_type(NamedNode::get_class_type())) {
-    name = DCAST(NamedNode, root)->get_name();
-  }
-
-  bool all_digits = !name.empty();
-  const char *p = name.c_str();
-  while (all_digits && *p != '\0') {
-    // VC++ complains if we treat an int as a bool, so we have to do
-    // this != 0 comparsion on the int isdigit() function to shut it
-    // up.
-    all_digits = (isdigit(*p) != 0);
-    p++;
-  }
-
-  if (all_digits) {
-    int character = atoi(name.c_str());
-    Geom *ch = NULL;
-    GeomPoint *dot = NULL;
-    AllTransitionsWrapper trans;
-    find_character_gsets(root, ch, dot, trans);
-    if (dot != NULL) {
-      // Get the first vertex from the "dot" geoset.  This will be the
-      // origin of the next character.
-      PTA_Vertexf alist;
-      PTA_ushort ilist;
-      float width;
-      dot->get_coords(alist, ilist);
-      if (ilist.empty()) {
-        width = alist[0][0];
-      } else {
-        width = alist[ilist[0]][0];
-      }
-
-      _defs[character] = CharDef(ch, width, trans);
-    }
-
-  } else if (name == "ds") {
-    // The group "ds" is a special node that indicate's the font's
-    // design size, or line height.
-
-    Geom *ch = NULL;
-    GeomPoint *dot = NULL;
-    AllTransitionsWrapper trans;
-    find_character_gsets(root, ch, dot, trans);
-    if (dot != NULL) {
-      // Get the first vertex from the "dot" geoset.  This will be the
-      // design size indicator.
-      PTA_Vertexf alist;
-      PTA_ushort ilist;
-      dot->get_coords(alist, ilist);
-      if (ilist.empty()) {
-        _font_height = alist[0][2];
-      } else {
-        _font_height = alist[ilist[0]][2];
-      }
-    }
-
-  } else {
-    TypeHandle graph_type = RenderRelation::get_class_type();
-    int num_children = root->get_num_children(graph_type);
-    for (int i = 0; i < num_children; i++) {
-      NodeRelation *child_arc = root->get_child(graph_type, i);
-      find_characters(child_arc->get_child());
-    }
-  }
+    << "TextFont " << get_name() << "\n";
 }

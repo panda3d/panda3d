@@ -1,0 +1,89 @@
+// Filename: staticTextFont.h
+// Created by:  drose (03May01)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef STATICTEXTFONT_H
+#define STATICTEXTFONT_H
+
+#include <pandabase.h>
+
+#include "config_text.h"
+#include "textFont.h"
+#include "textGlyph.h"
+
+#include <typedReferenceCount.h>
+#include <namable.h>
+#include <pt_Node.h>
+#include <allTransitionsWrapper.h>
+
+#include "pmap.h"
+
+class Node;
+class Geom;
+class GeomPoint;
+
+////////////////////////////////////////////////////////////////////
+//       Class : StaticTextFont
+// Description : A StaticTextFont is loaded up from a model that was
+//               previously generated via egg-mkfont, and contains all
+//               of its glyphs already generated and available for
+//               use.  It doesn't require linking with any external
+//               libraries like FreeType.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA StaticTextFont : public TextFont {
+PUBLISHED:
+  StaticTextFont(Node *font_def);
+  virtual ~StaticTextFont();
+
+  virtual void write(ostream &out, int indent_level) const;
+
+public:
+  virtual const TextGlyph *get_glyph(int character) const;
+
+private:
+  bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
+                            AllTransitionsWrapper &trans);
+  void find_characters(Node *root);
+
+  typedef pmap<int, TextGlyph> Glyphs;
+  Glyphs _glyphs;
+  float _font_height;
+  PT_Node _font;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TextFont::init_type();
+    register_type(_type_handle, "StaticTextFont",
+                  TextFont::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class TextNode;
+};
+
+#include "staticTextFont.I"
+
+#endif

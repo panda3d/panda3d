@@ -1,5 +1,5 @@
-// Filename: config_text.cxx
-// Created by:  drose (02Mar00)
+// Filename: textGlyph.cxx
+// Created by:  drose (08Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,20 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_text.h"
-#include "staticTextFont.h"
-#include "textFont.h"
-#include "textNode.h"
-
-#include <dconfig.h>
-
-Configure(config_text);
-NotifyCategoryDef(text, "");
-
-ConfigureFn(config_text) {
-  StaticTextFont::init_type();
-  TextFont::init_type();
-  TextNode::init_type();
-}
-
-const bool flatten_text = config_text.GetBool("flatten-text", true);
+#include "textGlyph.h"

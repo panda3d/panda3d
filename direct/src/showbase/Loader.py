@@ -108,7 +108,11 @@ class Loader:
         nodePath = hidden.attachNewNode(node)
         nodePath.adjustAllPriorities(priority)
         # Now create text font from the node
-        font = TextFont(node)
+        # Temporary try..except for old pandas.
+        try:
+            font = StaticTextFont(node)
+        except:
+            font = TextFont(node)
         # And remove node path
         nodePath.removeNode()
         return font

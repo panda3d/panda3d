@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 #include "textNode.h"
+#include "textGlyph.h"
 #include "config_text.h"
 
 #include "compose_matrix.h"
@@ -447,12 +448,12 @@ assemble_row(const char *&source, Node *dest) {
     } else {
       // A printable character.
 
-      const TextFont::CharDef *def = _font->get_char(character);
-      if (def == (const TextFont::CharDef *)NULL) {
+      const TextGlyph *glyph = _font->get_glyph(character);
+      if (glyph == (const TextGlyph *)NULL) {
         text_cat.warning()
           << "No definition in " << _font->get_name() 
           << " for character " << character;
-        if (isprint(character)) {
+        if (character < 128 && isprint(character)) {
           text_cat.warning(false)
             << " ('" << (char)character << "')";
         }
@@ -460,9 +461,9 @@ assemble_row(const char *&source, Node *dest) {
           << "\n";
 
       } else {
-        Geom *char_geom = def->_geom;
-        float char_width = def->_width;
-        const AllTransitionsWrapper &trans = def->_trans;
+        Geom *char_geom = glyph->get_geom();
+        float char_advance = glyph->get_advance();
+        const AllTransitionsWrapper &trans = glyph->get_trans();
 
         LMatrix4f mat = LMatrix4f::ident_mat();
         mat.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
@@ -475,7 +476,7 @@ assemble_row(const char *&source, Node *dest) {
           trans.store_to(rel);
         }
 
-        xpos += char_width;
+        xpos += char_advance;
       }
     }
     source++;
@@ -575,10 +576,10 @@ measure_row(const char *&source) {
     } else {
       // A printable character.
 
-      const TextFont::CharDef *def = _font->get_char(character);
-      if (def != (const TextFont::CharDef *)NULL) {
-        float char_width = def->_width;
-        xpos += char_width;
+      const TextGlyph *glyph = _font->get_glyph(character);
+      if (glyph != (const TextGlyph *)NULL) {
+        float char_advance = glyph->get_advance();
+        xpos += char_advance;
       }
     }
     source++;

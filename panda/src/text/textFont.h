@@ -1,5 +1,5 @@
 // Filename: textFont.h
-// Created by:  drose (03May01)
+// Created by:  drose (08Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -19,61 +19,47 @@
 #ifndef TEXTFONT_H
 #define TEXTFONT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "config_text.h"
-
-#include <typedReferenceCount.h>
-#include <namable.h>
-#include <pt_Node.h>
-#include <allTransitionsWrapper.h>
-
+#include "typedReferenceCount.h"
+#include "namable.h"
 #include "pmap.h"
 
 class Node;
-class Geom;
-class GeomPoint;
+class TextGlyph;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextFont
-// Description :
+// Description : An encapsulation of a font; i.e. a set of glyphs that
+//               may be assembled together by a TextNode to represent
+//               a string of text.
+//
+//               This is just an abstract interface; see
+//               StaticTextFont or DynamicTextFont for an actual
+//               implementation.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TextFont : public TypedReferenceCount, public Namable {
+public:
+  TextFont();
+
 PUBLISHED:
-  TextFont(Node *font_def);
-  ~TextFont();
+  virtual ~TextFont();
 
   INLINE float get_line_height() const;
 
-  float calc_width(char ch) const;
+  float calc_width(int ch) const;
   float calc_width(const string &line) const;
   string wordwrap_to(const string &text, float wordwrap_width,
                      bool preserve_trailing_whitespace) const;
 
-  void write(ostream &out, int indent_level) const;
+  virtual void write(ostream &out, int indent_level) const;
 
-private:
-  // Private interfaces for the benefit of TextNode.
-  class CharDef {
-  public:
-    CharDef() { }
-    CharDef(Geom *geom, float width, const AllTransitionsWrapper &trans);
-    Geom *_geom;
-    float _width;
-    AllTransitionsWrapper _trans;
-  };
+public:
+  virtual const TextGlyph *get_glyph(int character) const=0;
 
-  INLINE const CharDef *get_char(int character) const;
-
-private:
-  bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
-                            AllTransitionsWrapper &trans);
-  void find_characters(Node *root);
-
-  typedef pmap<int, CharDef> CharDefs;
-  CharDefs _defs;
-  float _font_height;
-  PT_Node _font;
+protected:
+  float _line_height;
 
 public:
   static TypeHandle get_class_type() {
@@ -91,8 +77,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class TextNode;
 };
 
 #include "textFont.I"

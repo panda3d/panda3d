@@ -10,13 +10,21 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-    config_text.h textFont.I textFont.h \
+    config_text.h \
+    staticTextFont.I staticTextFont.h \
+    textFont.I textFont.h \
+    textGlyph.I textGlyph.h \
     textNode.I textNode.h textNode.cxx
 
-  #define INCLUDED_SOURCES config_text.cxx textFont.cxx
+  #define INCLUDED_SOURCES \
+    config_text.cxx staticTextFont.cxx textFont.cxx textGlyph.cxx
 
   #define INSTALL_HEADERS \
-    config_text.h textFont.I textFont.h textNode.I textNode.h
+    config_text.h \
+    staticTextFont.I staticTextFont.h \
+    textFont.I textFont.h \
+    textGlyph.I textGlyph.h \
+    textNode.I textNode.h
 
   #define IGATESCAN all
 
