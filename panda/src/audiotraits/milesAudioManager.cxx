@@ -567,16 +567,10 @@ get_registry_entry(HKEY base, const char* subKeyName,
 void MilesAudioManager::
 get_gm_file_path(string& result) {
   if(!get_registry_entry(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", result)) {
-          const char *pDefaultGMLoc="%windir%\\system32\\drivers\\gm.dls";
-          // Find the size of the expanded string:
-          DWORD destSize=ExpandEnvironmentStrings(pDefaultGMLoc, 0, 0);
-          // Get a destination buffer of that size:
-          char* dest = new char[destSize];
-          // Do the expansion:
-          ExpandEnvironmentStrings(pDefaultGMLoc, dest, destSize);
-          // Propagate the result:
-          result=dest;
-          delete [] dest;
+          char sysdir[MAX_PATH+1];
+          GetSystemDirectory(sysdir,MAX_PATH+1);
+          result = sysdir;
+          result.append("\\drivers\\gm.dls");
   }
 
   audio_debug("MilesAudioManager::get_gm_file_path() result out=\""<<result<<"\"");
