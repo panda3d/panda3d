@@ -45,7 +45,7 @@ class DirectSession(PandaObject):
         self.ancestry = []
         self.ancestryIndex = 0
 
-        self.readout = OnscreenText.OnscreenText( pos = (0.1, -0.95) )
+        self.readout = OnscreenText.OnscreenText( pos = (0.1, -0.95), bg=Vec4(1,1,1,1))
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.readout)
         # self.readout.textNode.setCardColor(0.5, 0.5, 0.5, 0.5)
@@ -115,31 +115,31 @@ class DirectSession(PandaObject):
     def enable(self):
         # Make sure old tasks are shut down
         self.disable()
-	# Start all display region context tasks
+        # Start all display region context tasks
         self.drList.spawnContextTask()
-	# Turn on mouse Flying
-	self.cameraControl.enableMouseFly()
+        # Turn on mouse Flying
+        self.cameraControl.enableMouseFly()
         # Turn on object manipulation
         self.manipulationControl.enableManipulation()
         # Make sure list of selected items is reset
         self.selected.reset()
-	# Accept appropriate hooks
-	self.enableKeyEvents()
-	self.enableMouseEvents()
-	self.enableActionEvents()
+        # Accept appropriate hooks
+        self.enableKeyEvents()
+        self.enableMouseEvents()
+        self.enableActionEvents()
         # Set flag
         self.fEnabled = 1
 
     def disable(self):
-	# Shut down all display region context tasks
+        # Shut down all display region context tasks
         self.drList.removeContextTask()
-	# Turn off camera fly
-	self.cameraControl.disableMouseFly()
+        # Turn off camera fly
+        self.cameraControl.disableMouseFly()
         # Turn off object manipulation
         self.manipulationControl.disableManipulation()
-	self.disableKeyEvents()
-	self.disableMouseEvents()
-	self.disableActionEvents()
+        self.disableKeyEvents()
+        self.disableMouseEvents()
+        self.disableActionEvents()
         # Set flag
         self.fEnabled = 0
 
@@ -150,21 +150,21 @@ class DirectSession(PandaObject):
             self.enable()
 
     def minimumConfiguration(self):
-	# Remove context task
+        # Remove context task
         self.drList.removeContextTask()
-	# Turn off camera fly
-	self.cameraControl.disableMouseFly()
-	# Ignore keyboard and action events
-	self.disableKeyEvents()
-	self.disableActionEvents()
-	# But let mouse events pass through
-	self.enableMouseEvents()
+        # Turn off camera fly
+        self.cameraControl.disableMouseFly()
+        # Ignore keyboard and action events
+        self.disableKeyEvents()
+        self.disableActionEvents()
+        # But let mouse events pass through
+        self.enableMouseEvents()
 
     def destroy(self):
-	self.disable()
+        self.disable()
 
     def reset(self):
-	self.enable()
+        self.enable()
 
     # EVENT FUNCTIONS
     def enableActionEvents(self):
@@ -192,7 +192,7 @@ class DirectSession(PandaObject):
             self.ignore(event)
 
     def inputHandler(self, input):
-	# Deal with keyboard and mouse input
+        # Deal with keyboard and mouse input
         if input == 'mouse1':
             messenger.send('handleMouse1')
         elif input == 'mouse1-up':
@@ -393,8 +393,8 @@ class DirectSession(PandaObject):
 
     def showAllDescendants(self, nodePath = render):
         """ Show the level and its descendants """
-	nodePath.showAllDescendants()
-	nodePath.hideCollisionSolids()
+        nodePath.showAllDescendants()
+        nodePath.hideCollisionSolids()
 
     def upAncestry(self):
         if self.ancestry:
@@ -509,7 +509,7 @@ class DirectSession(PandaObject):
         self.widget.reparentTo(direct.group)
 
     def hideReadout(self):
-	self.readout.reparentTo(hidden)
+        self.readout.reparentTo(hidden)
 
     def toggleWidgetVis(self):
         self.widget.toggleWidget()
