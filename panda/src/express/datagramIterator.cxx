@@ -30,8 +30,8 @@ get_string() {
   // First, get the length of the string
   PN_uint16 s_len = get_uint16();
 
-  nassertr(_datagram != (const Datagram *)NULL &&
-           _current_index + s_len <= _datagram->get_length(), "");
+  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_current_index + s_len <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
   int last_index = _current_index;
@@ -52,8 +52,8 @@ get_string32() {
   // First, get the length of the string
   PN_uint32 s_len = get_uint32();
 
-  nassertr(_datagram != (const Datagram *)NULL &&
-           _current_index + s_len <= _datagram->get_length(), "");
+  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_current_index + s_len <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
   int last_index = _current_index;
@@ -78,6 +78,7 @@ get_z_string() {
   size_t length = _datagram->get_length();
   size_t p = _current_index;
   while (p < length && ptr[p] != '\0') {
+    ++p;
   }
   nassertr(p < length, "");  // no NULL character?
 
@@ -96,8 +97,8 @@ get_z_string() {
 ////////////////////////////////////////////////////////////////////
 string DatagramIterator::
 get_fixed_string(size_t size) {
-  nassertr(_datagram != (const Datagram *)NULL &&
-           _current_index + size <= _datagram->get_length(), "");
+  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_current_index + size <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
   string s(ptr + _current_index, size);
@@ -117,8 +118,8 @@ get_fixed_string(size_t size) {
 string DatagramIterator::
 extract_bytes(size_t size) {
   nassertr((int)size >= 0, "");
-  nassertr(_datagram != (const Datagram *)NULL &&
-           _current_index + size <= _datagram->get_length(), "");
+  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_current_index + size <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
   int last_index = _current_index;
@@ -127,4 +128,38 @@ extract_bytes(size_t size) {
 
   return string(ptr + last_index, size);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DatagramIterator::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<""<<"DatagramIterator";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DatagramIterator::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""<<"DatagramIterator:\n";
+  out.width(indent+2); out<<""<<"_current_index "<<_current_index;
+  if (_datagram) {
+    out<<""<<" (of "<<(get_datagram().get_length())<<")\n";
+    get_datagram().write(out, indent+2);
+  } else {
+    out<<""<<" (_datagram is null)\n";
+  }
+  #endif //] NDEBUG
+}
+
 
