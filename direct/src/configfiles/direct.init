@@ -5,5 +5,5 @@ DOCSH set parent=`dirname $DIRECT`
 DOCSH if ( ${?PANDA_ROOT} ) then
 DOCSH   setenv PYTHONPATH "$PYTHONPATH;"`cygpath -w "$parent"`
 DOCSH else
-DOCSH   setenv PYTHONPATH "$PYTHONPATH;$parent"
+DOCSH   setenv PYTHONPATH "$PYTHONPATH:$parent"
 DOCSH endif
