@@ -51,7 +51,7 @@ public:
   void report_pi() const;
   void report_statistics() const;
 
-  void read_txa_file(const Filename &txa_filename);
+  void read_txa_file(istream &txa_file, const string &txa_filename);
   void all_params_set();
   void process_command_line_eggs(bool force_texture_read, const Filename &state_filename);
   void process_all(bool force_texture_read, const Filename &state_filename);
@@ -95,6 +95,7 @@ public:
   // The following parameter values specifically relate to textures
   // and palettes.  These values are stored in the bam file for future
   // reference.
+  string _generated_image_pattern;
   string _map_dirname;
   Filename _shadow_dirname;
   Filename _rel_dirname;

@@ -174,15 +174,51 @@ PaletteImage(PalettePage *page, int index) :
   _new_image = true;
   _got_image = false;
 
-  ostringstream name;
+  // Build up the basename for the palette image, based on the
+  // supplied image pattern.
+  string::iterator si = pal->_generated_image_pattern.begin();
+  while (si != pal->_generated_image_pattern.end()) {
+    if ((*si) == '%') {
+      // Some keycode.
+      ++si;
+      if (si != pal->_generated_image_pattern.end()) {
+        switch (*si) {
+        case '%':
+          _basename += '%';
+          break;
+
+        case 'g':
+          _basename += page->get_group()->get_name();
+          break;
+
+        case 'p':
+          _basename += page->get_name();
+          break;
+
+        case 'i':
+          _basename += format_string(index + 1);
+          break;
+
+        default:
+          _basename += '%';
+          _basename += (*si);
+        }
+        ++si;
+      }
+    } else {
+      // A literal character.
+      _basename += (*si);
+      ++si;
+    }
+  }
+    
   // We must end the basename with a dot, so that it does not appear
   // to have a filename extension.  Otherwise, an embedded dot in the
   // group's name would make everything following appear to be an
   // extension, which would get lost in the set_filename() call.
-  name << page->get_group()->get_name() << "_palette_"
-       << page->get_name() << "_" << index + 1 << ".";
-
-  _basename = name.str();
+  if (_basename.empty() || _basename[_basename.length() - 1] != '.') {
+    _basename += '.';
+  }
 
   set_filename(page->get_group(), _basename);
   _shadow_image.make_shadow_image(_basename);

@@ -19,7 +19,7 @@
 #ifndef SOURCETEXTUREIMAGE_H
 #define SOURCETEXTUREIMAGE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "imageFile.h"
 

@@ -24,15 +24,15 @@
 #include "filenameUnifier.h"
 #include "textureMemoryCounter.h"
 
-#include <pnmImage.h>
-#include <pnmFileTypeRegistry.h>
-#include <pnmFileType.h>
-#include <eggData.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <indent.h>
+#include "pnmImage.h"
+#include "pnmFileTypeRegistry.h"
+#include "pnmFileType.h"
+#include "eggData.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "indent.h"
 
 Palettizer *pal = (Palettizer *)NULL;
 
@@ -41,11 +41,12 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 11;
+int Palettizer::_pi_version = 12;
 // Updated to version 8 on 3/20/03 to remove extensions from texture key names.
 // Updated to version 9 on 4/13/03 to add a few properties in various places.
 // Updated to version 10 on 4/15/03 to add _alpha_file_channel.
-// Updated to version 11 on 4/30/03 to add TextureReference::_tref_name
+// Updated to version 11 on 4/30/03 to add TextureReference::_tref_name.
+// Updated to version 12 on 9/11/03 to add _generated_image_pattern.
 
 int Palettizer::_min_pi_version = 8;
 // Dropped support for versions 7 and below on 7/14/03.
@@ -99,6 +100,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 Palettizer::
 Palettizer() {
+  _generated_image_pattern = "%g_palette_%p_%i";
   _map_dirname = "%g";
   _shadow_dirname = "shadow";
   _margin = 2;
@@ -137,6 +139,7 @@ report_pi() const {
 
   cout
     << "\nparams\n"
+    << "  generated image pattern: " << _generated_image_pattern << "\n"
     << "  map directory: " << _map_dirname << "\n"
     << "  shadow directory: "
     << FilenameUnifier::make_user_filename(_shadow_dirname) << "\n"
@@ -303,7 +306,7 @@ report_statistics() const {
 //               matching textures and egg files.
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-read_txa_file(const Filename &txa_filename) {
+read_txa_file(istream &txa_file, const string &txa_filename) {
   // Clear out the group dependencies, in preparation for reading them
   // again from the .txa file.
   Groups::iterator gi;
@@ -316,7 +319,7 @@ read_txa_file(const Filename &txa_filename) {
   _shadow_color_type = (PNMFileType *)NULL;
   _shadow_alpha_type = (PNMFileType *)NULL;
 
-  if (!_txa_file.read(txa_filename)) {
+  if (!_txa_file.read(txa_file, txa_filename)) {
     exit(1);
   }
 
@@ -883,6 +886,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
 
   datagram.add_int32(_pi_version);
+  datagram.add_string(_generated_image_pattern);
   datagram.add_string(_map_dirname);
   datagram.add_string(FilenameUnifier::make_bam_filename(_shadow_dirname));
   datagram.add_string(FilenameUnifier::make_bam_filename(_rel_dirname));
@@ -1016,6 +1020,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
   _read_pi_version = scan.get_int32();
+  if (_read_pi_version >= 12) {
+    _generated_image_pattern = scan.get_string();
+  }
   _map_dirname = scan.get_string();
   _shadow_dirname = FilenameUnifier::get_bam_filename(scan.get_string());
   _rel_dirname = FilenameUnifier::get_bam_filename(scan.get_string());

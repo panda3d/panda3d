@@ -22,8 +22,8 @@
 #include "paletteGroup.h"
 #include "textureImage.h"
 
-#include <notify.h>
-#include <pnmFileTypeRegistry.h>
+#include "notify.h"
+#include "pnmFileTypeRegistry.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TxaFile::Constructor
@@ -37,23 +37,16 @@ TxaFile() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TxaFile::read
 //       Access: Public
-//  Description: Reads the indicated .txa filename, and returns true
+//  Description: Reads the indicated stream, and returns true
 //               if successful, or false if there is an error.
 ////////////////////////////////////////////////////////////////////
 bool TxaFile::
-read(Filename filename) {
-  filename.set_text();
-  ifstream in;
-  if (!filename.open_read(in)) {
-    nout << "Unable to open " << filename << "\n";
-    return false;
-  }
-
+read(istream &in, const string &filename) {
   string line;
-  getline(in, line);
   int line_number = 1;
 
-  while (!in.eof() && !in.fail()) {
+  int ch = get_line_or_semicolon(in, line);
+  while (ch != EOF || !line.empty()) {
     bool okflag = true;
 
     // Strip off the comment.
@@ -109,9 +102,10 @@ read(Filename filename) {
       nout << "Error on line " << line_number << " of " << filename << "\n";
       return false;
     }
-
-    getline(in, line);
-    line_number++;
+    if (ch == '\n') {
+      line_number++;
+    }
+    ch = get_line_or_semicolon(in, line);
   }
 
   if (!in.eof()) {
@@ -179,6 +173,25 @@ write(ostream &out) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TxaFile::get_line_or_semicolon
+//       Access: Private, Static
+//  Description: Reads the next line, or the next semicolon-delimited
+//               phrase, from the indicated input stream.  Returns
+//               the character that marks the end of the line, or EOF
+//               if the end of file has been reached.
+////////////////////////////////////////////////////////////////////
+int TxaFile::
+get_line_or_semicolon(istream &in, string &line) {
+  line = string();
+  int ch = in.get();
+  while (ch != EOF && ch != '\n' && ch != ';') {
+    line += ch;
+    ch = in.get();
+  }
+
+  return ch;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TxaFile::parse_group_line

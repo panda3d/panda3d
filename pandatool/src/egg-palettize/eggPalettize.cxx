@@ -69,26 +69,58 @@ EggPalettize() : EggMultiFilter(true) {
   _force_complete = true;
 
   add_option
-    ("a", "filename", 0,
+    ("af", "filename", 0,
      "Read the indicated file as the .txa file.  The default is textures.txa.",
      &EggPalettize::dispatch_filename, &_got_txa_filename, &_txa_filename);
 
   add_option
+    ("a", "filename", 0,
+     "Deprecated option.  This is the same as -af.",
+     &EggPalettize::dispatch_filename, &_got_txa_filename, &_txa_filename);
+
+  add_option
+    ("as", "script", 0,
+     "Accept the script specified on the command line as the contents of the "
+     ".txa file, instead of reading a file on disk.  This implies -nodb and "
+     "-opt.",
+     &EggPalettize::dispatch_string, &_got_txa_script, &_txa_script);
+
+  add_option
+    ("nodb", "", 0,
+     "Don't read or record the state information to a .boo file.  By default, "
+     "the palettization information is recorded so it can be preserved "
+     "between multiple invocations of egg-palettize.  If you specify this "
+     "parameter, all the egg files to be palettized together must be "
+     "named at the same time.  This also implies -opt, since there's no point "
+     "in not making an optimal packing if you won't be preserving the "
+     "state for future adjustments.",
+     &EggPalettize::dispatch_none, &_nodb);
+
+  add_option
+    ("tn", "pattern", 0,
+     "Specify the name to generate for each palette image.  The string should "
+     "contain %g for the group name, %p for the page name, and %i for the "
+     "index within the page.  The extension is inferred from the image "
+     "type.  The default is '%g_palette_%p_%i'.",
+     &EggPalettize::dispatch_string, &_got_generated_image_pattern,
+     &_generated_image_pattern);
+
+  add_option
     ("pi", "", 0,
      "Do not process anything, but instead report the detailed palettization "
-     "information.",
+     "information written in the state file.",
      &EggPalettize::dispatch_none, &_report_pi);
 
   add_option
     ("s", "", 0,
      "Do not process anything, but report statistics on palette "
-     "and texture utilization.",
+     "and texture utilization from the state file.",
      &EggPalettize::dispatch_none, &_report_statistics);
 
   add_option
     ("R", "", 0,
      "Remove the named egg files from the previously-generated state data "
-     "in textures.boo.",
+     "file.",
      &EggPalettize::dispatch_none, &_remove_eggs);
 
   // We redefine -d using add_option() instead of redescribe_option()
@@ -507,31 +539,48 @@ run() {
     loader_cat->set_severity(NS_warning);
   }
 
-  if (!_txa_filename.exists() && !_got_txa_filename) {
-    // If we did not specify a filename, and the default filename of
-    // "textures.txa" doesn't exist, try looking in src/maps, as
-    // another likely possibility.
-    Filename maybe = _txa_filename;
-    maybe.set_dirname("src/maps");
-    if (maybe.exists()) {
-      _txa_filename = maybe;
-    }
-  }
-
-  if (!_txa_filename.exists()) {
-    nout << FilenameUnifier::make_user_filename(_txa_filename)
-         << " does not exist; cannot run.\n";
-    exit(1);
-  }
-
-  FilenameUnifier::set_txa_filename(_txa_filename);
-
-  Filename state_filename = _txa_filename;
-  state_filename.set_extension("boo");
-
+  Filename state_filename;
   BamFile state_file;
 
-  if (!state_filename.exists()) {
+  if (_got_txa_script) {
+    // If we got a command-line script instead of a .txa file, we
+    // won't be encoding a .boo file either.
+    _nodb = true;
+
+  } else {
+    // Look for the .txa file.
+    if (!_txa_filename.exists() && !_got_txa_filename) {
+      // If we did not specify a filename, and the default filename of
+      // "textures.txa" doesn't exist, try looking in src/maps, as
+      // another likely possibility.
+      Filename maybe = _txa_filename;
+      maybe.set_dirname("src/maps");
+      if (maybe.exists()) {
+        _txa_filename = maybe;
+      }
+    }
+    
+    if (!_txa_filename.exists()) {
+      nout << FilenameUnifier::make_user_filename(_txa_filename)
+           << " does not exist; cannot run.\n";
+      exit(1);
+    }
+    
+    FilenameUnifier::set_txa_filename(_txa_filename);
+
+    state_filename = _txa_filename;
+    state_filename.set_extension("boo");
+  }
+
+  if (_nodb) {
+    // -nodb means don't attempt to read textures.boo; in fact, don't
+    // even bother reporting this absence to the user.
+    pal = new Palettizer;
+
+    // And -nodb implies -opt.
+    _optimal = true;
+
+  } else if (!state_filename.exists()) {
     nout << FilenameUnifier::make_user_filename(state_filename)
          << " does not exist; starting palettization from scratch.\n";
     pal = new Palettizer;
@@ -599,7 +648,23 @@ run() {
 
   bool okflag = true;
 
-  pal->read_txa_file(_txa_filename);
+  if (_got_txa_script) {
+    istringstream txa_script(_txa_script);
+    pal->read_txa_file(txa_script, "command line");
+
+  } else {
+    _txa_filename.set_text();
+    ifstream txa_file;
+    if (!_txa_filename.open_read(txa_file)) {
+      nout << "Unable to open " << _txa_filename << "\n";
+      exit(1);
+    }
+    pal->read_txa_file(txa_file, _txa_filename);
+  }
+
+  if (_got_generated_image_pattern) {
+    pal->_generated_image_pattern = _generated_image_pattern;
+  }
 
   if (_got_default_groupname) {
     pal->_default_groupname = _default_groupname;
@@ -687,31 +752,33 @@ run() {
     okflag = false;
   }
 
-  // Make up a temporary filename to write the state file to, then
-  // move the state file into place.  We do this in case the user
-  // interrupts us (or we core dump) before we're done; that way we
-  // won't leave the state file incompletely written.
-  string dirname = state_filename.get_dirname();
-  if (dirname.empty()) {
-    dirname = ".";
-  }
-  Filename temp_filename = Filename::temporary(dirname, "pi");
-
-  if (!state_file.open_write(temp_filename) ||
-      !state_file.write_object(pal)) {
-    nout << "Unable to write palettization information to "
-         << FilenameUnifier::make_user_filename(temp_filename)
-         << "\n";
-    exit(1);
-  }
-
-  state_file.close();
-  state_filename.unlink();
-  if (!temp_filename.rename_to(state_filename)) {
-    nout << "Unable to rename temporary file "
-         << FilenameUnifier::make_user_filename(temp_filename) << " to "
-         << FilenameUnifier::make_user_filename(state_filename) << "\n";
-    exit(1);
+  if (!_nodb) {
+    // Make up a temporary filename to write the state file to, then
+    // move the state file into place.  We do this in case the user
+    // interrupts us (or we core dump) before we're done; that way we
+    // won't leave the state file incompletely written.
+    string dirname = state_filename.get_dirname();
+    if (dirname.empty()) {
+      dirname = ".";
+    }
+    Filename temp_filename = Filename::temporary(dirname, "pi");
+    
+    if (!state_file.open_write(temp_filename) ||
+        !state_file.write_object(pal)) {
+      nout << "Unable to write palettization information to "
+           << FilenameUnifier::make_user_filename(temp_filename)
+           << "\n";
+      exit(1);
+    }
+    
+    state_file.close();
+    state_filename.unlink();
+    if (!temp_filename.rename_to(state_filename)) {
+      nout << "Unable to rename temporary file "
+           << FilenameUnifier::make_user_filename(temp_filename) << " to "
+           << FilenameUnifier::make_user_filename(state_filename) << "\n";
+      exit(1);
+    }
   }
 
   if (!okflag) {

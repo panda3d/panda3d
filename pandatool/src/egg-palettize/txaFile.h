@@ -19,12 +19,12 @@
 #ifndef TXAFILE_H
 #define TXAFILE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "txaLine.h"
 
-#include <filename.h>
-#include <vector_string.h>
+#include "filename.h"
+#include "vector_string.h"
 
 #include "pvector.h"
 
@@ -38,7 +38,7 @@ class TxaFile {
 public:
   TxaFile();
 
-  bool read(Filename filename);
+  bool read(istream &in, const string &filename);
 
   bool match_egg(EggFile *egg_file) const;
   bool match_texture(TextureImage *texture) const;
@@ -46,6 +46,8 @@ public:
   void write(ostream &out) const;
 
 private:
+  static int get_line_or_semicolon(istream &in, string &line);
+
   bool parse_group_line(const vector_string &words);
   bool parse_palette_line(const vector_string &words);
   bool parse_margin_line(const vector_string &words);

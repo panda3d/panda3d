@@ -20,11 +20,11 @@
 #include "textureImage.h"
 #include "filenameUnifier.h"
 
-#include <pnmImageHeader.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "pnmImageHeader.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle SourceTextureImage::_type_handle;
 

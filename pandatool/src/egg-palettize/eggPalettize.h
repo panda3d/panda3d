@@ -43,6 +43,11 @@ public:
   // and palettes.  These values are copied to the Palettizer.
   bool _got_txa_filename;
   Filename _txa_filename;
+  bool _got_txa_script;
+  string _txa_script;
+  bool _nodb;
+  string _generated_image_pattern;
+  bool _got_generated_image_pattern;
   string _map_dirname;
   bool _got_map_dirname;
   Filename _shadow_dirname;
