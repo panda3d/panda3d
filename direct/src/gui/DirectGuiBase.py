@@ -6,6 +6,7 @@ from DirectUtil import ROUND_TO
 import PandaObject
 import Task
 import string
+import ShowBase
 
 """
 Base class for all Direct Gui items.  Handles composite widgets and
