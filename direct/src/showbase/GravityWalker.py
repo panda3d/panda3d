@@ -278,6 +278,8 @@ class GravityWalker(DirectObject.DirectObject):
         self.avatarNodePath = avatarNodePath
         
         self.cTrav = collisionTraverser
+        # Changing this from zero may cause the avatar
+        # to float on the ground rather than landing properly:
         self.floorOffset = 0.0
 
         self.setupRay(floorBitmask, self.floorOffset)
@@ -379,6 +381,8 @@ class GravityWalker(DirectObject.DirectObject):
         have been disabled.
         """
         assert(self.debugPrint("oneTimeCollide()"))
+        self.isAirborne = 0
+        self.mayJump = 1
         tempCTrav = CollisionTraverser("oneTimeCollide")
         tempCTrav.addCollider(self.cWallSphereNodePath, self.pusher)
         if self.wantFloorSphere:
@@ -549,6 +553,9 @@ class GravityWalker(DirectObject.DirectObject):
         taskName = "AvatarControls-FixCliff%s"%(id(self),)
         self.fixCliffTask = taskMgr.add(self.FixCliff, taskName, 31)
 
+        self.isAirborne = 0
+        self.mayJump = 1
+
         if self.physVelocityIndicator:
             if self.indicatorTask:
                 self.indicatorTask.remove()
@@ -571,6 +578,9 @@ class GravityWalker(DirectObject.DirectObject):
         if self.indicatorTask:
             self.indicatorTask.remove()
             self.indicatorTask = None
+        if self.jumpDelayTask:
+            self.jumpDelayTask.remove()
+            self.jumpDelayTask = None
 
         if __debug__:
             self.ignore("control-f3") #*#
