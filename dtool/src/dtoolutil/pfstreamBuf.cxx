@@ -89,13 +89,15 @@ int PipeStreamBuf::underflow(void) {
   }
   if (feof(_pipe) != 0)
     return EOF;
-  char* buf = new char[blen()];
-  size_t n = fread(buf, 1, blen(), _pipe);
+  //  size_t len = ebuf() - base();
+  size_t len = 1024;
+  char* buf = new char[len];
+  size_t n = fread(buf, 1, len, _pipe);
   int ret = buf[0];
   if (n == 0)
     ret = EOF;
   else {
-    memcpy(base()+(blen() - n), buf, n);
+    //    memcpy(base()+(len - n), buf, n);
     gbump(-n);
   }
   delete buf;
