@@ -154,6 +154,18 @@
 // to enable it only for optimize levels 1 and 2.
 #defer TRACK_IN_INTERPRETER $[<= $[OPTIMIZE], 2]
 
+// Do you want to compile in support for pipelining?  This enables
+// setting and accessing multiple different copies of frame-specific
+// data stored in nodes, etc.  At the moment, Panda cannot actually
+// take advantage of this support to do anything useful, but
+// eventually this will enable multi-stage pipelining of the render
+// process, as well as potentially remote rendering using a
+// distributed scene graph.  For now, we enable this when building
+// optimize 1 only, since turning this on does perform some additional
+// sanity checks, but doesn't do anything else useful other than
+// increase run-time overhead.
+#define DO_PIPELINING $[<= $[OPTIMIZE], 1]
+
 // Is NSPR installed, and where?  This is the Netscape Portable
 // Runtime library, downloadable as part of the Mozilla package from
 // mozilla.org.  It provides portable threading and networking
