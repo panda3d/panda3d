@@ -67,6 +67,9 @@ const bool auto_flip = config_display.GetBool("auto-flip", true);
 // This indicates if you want multiple window support for same GSG
 const bool multiple_windows = config_display.GetBool("multiple-windows", false);
 
+// This indicates if you want window_and_fullscreen support for same GSG
+const bool window_and_fullscreen = config_display.GetBool("window-and-fullscreen", false);
+
 // Set this true to yield the timeslice at the end of the frame to be
 // more polite to other applications that are trying to run.
 const bool yield_timeslice = config_display.GetBool("yield-timeslice", false);

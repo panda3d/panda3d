@@ -47,6 +47,8 @@ extern const bool prefer_single_buffer;
 
 extern EXPCL_PANDA const bool multiple_windows;
 
+extern EXPCL_PANDA const bool window_and_fullscreen;
+
 extern EXPCL_PANDA void init_libdisplay();
 
 #endif /* CONFIG_DISPLAY_H */

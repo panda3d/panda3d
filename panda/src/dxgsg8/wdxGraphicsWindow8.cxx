@@ -1759,7 +1759,7 @@ open_window(void) {
   if(!choose_device()) {
     return false;
   }
-  if (dxgsg->get_pipe()->get_device() && !multiple_windows) {
+  if (dxgsg->get_pipe()->get_device() && !multiple_windows && !window_and_fullscreen) {
     wdxdisplay8_cat.error() 
       << "Could not create window; multiple window support not enabled.\n";
     return false;
@@ -1777,7 +1777,7 @@ open_window(void) {
   // call may be an extension to create multiple windows on same device
   // In that case just create an additional swapchain for this window
 
-  if (dxgsg->get_pipe()->get_device() == NULL) {
+  if (dxgsg->get_pipe()->get_device() == NULL || window_and_fullscreen) {
     wdxdisplay8_cat.debug() << "device is null \n";
 
     if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer))
