@@ -397,6 +397,8 @@ protected:
   DWORD _old_colormaskval;
   bool _alpha_test_enabled;
   int _decal_level;
+  LPDIRECTDRAWSURFACE7 _pCurDeviceTexture;
+  INLINE void SetDeviceTexture(LPDIRECTDRAWSURFACE7 pTexture);
 
   RenderModeProperty::Mode _current_fill_mode;  //poinr/wireframe/solid
 

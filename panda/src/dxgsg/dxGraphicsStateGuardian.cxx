@@ -124,11 +124,9 @@ static void CountDPs(DWORD nVerts,DWORD nTris) {
     cVertcount+=nVerts;
     cTricount+=nTris;
 
-    LPDIRECTDRAWSURFACE7 pCurTexture;
-    global_pD3DDevice->GetTexture(0,&pCurTexture);
-    if(pCurTexture==pLastTexture) {
+    if(_pCurDeviceTexture==pLastTexture) {
         cDP_noTexChangeCount++;
-    } else pLastTexture = pCurTexture;
+    } else pLastTexture = _pCurDeviceTexture;
 }
 #else
 #define CountDPs(nv,nt)
@@ -348,6 +346,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     _fpsmeter_verts=NULL;
     _fpsmeter_font_surf=NULL;
     _dx_ready = false;
+    _pCurDeviceTexture = NULL;
 
     _CurShadeMode =  D3DSHADE_FLAT;
 
@@ -1250,7 +1249,6 @@ render_frame() {
         if(saved_alphaarg1!=D3DTA_TEXTURE)
             _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
     
-        _d3dDevice->GetTexture(0, &saved_tex_surf);
         hr = _d3dDevice->SetTexture(0, _fpsmeter_font_surf);
         if(FAILED(hr)) {
            dxgsg_cat.error() << "SetTexture failed in draw fps meter, result = " << ConvD3DErrorToString(hr) << endl;
@@ -1290,7 +1288,7 @@ render_frame() {
             _d3dDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, saved_fill_state);            
         }
 
-        _d3dDevice->SetTexture(0, saved_tex_surf);
+        _d3dDevice->SetTexture(0, _pCurDeviceTexture);
   }
 
   hr = _d3dDevice->EndScene();  
@@ -3933,7 +3931,7 @@ apply_texture(TextureContext *tc) {
     // bugbug:  does this handle the case of untextured geometry?
     //          we dont see this bug cause we never mix textured/untextured
 
-    _d3dDevice->SetTexture(0, dtc->_surface );
+    SetDeviceTexture(dtc->_surface);
 
 #if 0
     if (dtc!=NULL) {

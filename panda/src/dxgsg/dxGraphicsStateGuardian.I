@@ -225,6 +225,15 @@ set_shademode(D3DSHADEMODE val) {
   }
 }
 
+INLINE void DXGraphicsStateGuardian::
+SetDeviceTexture(LPDIRECTDRAWSURFACE7 pTexture) {
+  // this fn is useful because GetTexture() does an AddRef, so faster to cache it ourself
+  if (_pCurDeviceTexture != pTexture) {
+    _pCurDeviceTexture = pTexture;
+    _d3dDevice->SetTexture(0,_pCurDeviceTexture);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_fog
 //       Access:
