@@ -571,133 +571,40 @@ convert_soft(bool from_selection) {
     exit(1);
   }
 
+  _tree._use_prefix = use_prefix;
+  _tree._search_prefix = search_prefix;
   all_ok = _tree.build_complete_hierarchy(scene, database);
+  //  exit(1);
+
   char *root_name = _tree.GetRootName( eggFileName );
   cout << "main group name: " << root_name << endl;
   if (root_name)
     _character_name = root_name;
+  
+  if (make_poly) {
+    if (!convert_char_model()) {
+      all_ok = false;
+    }
 
-  if (!convert_char_model()) {
-    all_ok = false;
+    //  reparent_decals(&get_egg_data());
+    cout << softegg_cat.info() << "Converted Softimage file\n";
+
+    // write out the egg model file
+    _egg_data->write_egg(Filename(eggFileName));
+    cout << softegg_cat.info() << "Wrote Egg file " << eggFileName << endl;
   }
-  //  reparent_decals(&get_egg_data());
-  cout << softegg_cat.info() << "Converted Softimage file\n";
+  if (make_anim) {
+    if (!convert_char_chan()) {
+      all_ok = false;
+    }
 
-  // write out the egg file
-  _egg_data->write_egg(Filename(eggFileName));
-  cout << softegg_cat.info() << "Write Egg file\n";
-
-  /*
-  _shaders.clear();
-
-  if (!open_api()) {
-    softegg_cat.error()
-      << "Soft is not available.\n";
-    return false;
+    //  reparent_decals(&get_egg_data());
+    cout << softegg_cat.info() << "Converted Softimage file\n";
+    
+    // write out the egg model file
+    _egg_data->write_egg(Filename(animFileName));
+    cout << softegg_cat.info() << "Wrote Anim file " << animFileName << endl;
   }
-
-  if (_egg_data->get_coordinate_system() == CS_default) {
-    _egg_data->set_coordinate_system(_maya->get_coordinate_system());
-  }
-
-  softegg_cat.info()
-    << "Converting from Soft.\n";
-
-  // Figure out the animation parameters.
-  double start_frame, end_frame, frame_inc, input_frame_rate, output_frame_rate;
-  if (has_start_frame()) {
-    start_frame = get_start_frame();
-  } else {
-    start_frame = MAnimControl::minTime().value();
-  }
-  if (has_end_frame()) {
-    end_frame = get_end_frame();
-  } else {
-    end_frame = MAnimControl::maxTime().value();
-  }
-  if (has_frame_inc()) {
-    frame_inc = get_frame_inc();
-  } else {
-    frame_inc = 1.0;
-  }
-  if (has_input_frame_rate()) {
-    input_frame_rate = get_input_frame_rate();
-  } else {
-    MTime time(1.0, MTime::kSeconds);
-    input_frame_rate = time.as(MTime::uiUnit());
-  }
-  if (has_output_frame_rate()) {
-    output_frame_rate = get_output_frame_rate();
-  } else {
-    output_frame_rate = input_frame_rate;
-  }
-
-  bool all_ok = true;
-
-  if (_from_selection) {
-    all_ok = _tree.build_selected_hierarchy();
-  } else {
-    all_ok = _tree.build_complete_hierarchy();
-  }
-
-  if (all_ok) {
-    switch (get_animation_convert()) {
-    case AC_pose:
-      // pose: set to a specific frame, then get out the static geometry.
-      softegg_cat.info(false)
-        << "frame " << start_frame << "\n";
-      MGlobal::viewFrame(MTime(start_frame, MTime::uiUnit()));
-      // fall through
-      
-    case AC_none:
-      // none: just get out a static model, no animation.
-      all_ok = convert_hierarchy(&get_egg_data());
-      break;
-      
-    case AC_flip:
-    case AC_strobe:
-      // flip or strobe: get out a series of static models, one per
-      // frame, under a sequence node for AC_flip.
-      all_ok = convert_flip(start_frame, end_frame, frame_inc,
-                            output_frame_rate);
-      break;
-
-    case AC_model:
-      // model: get out an animatable model with joints and vertex
-      // membership.
-      all_ok = convert_char_model();
-      break;
-
-    case AC_chan:
-      // chan: get out a series of animation tables.
-      all_ok = convert_char_chan(start_frame, end_frame, frame_inc,
-                                 output_frame_rate);
-      break;
-      
-    case AC_both:
-      // both: Put a model and its animation into the same egg file.
-      _animation_convert = AC_model;
-      if (!convert_char_model()) {
-        all_ok = false;
-      }
-      _animation_convert = AC_chan;
-      if (!convert_char_chan(start_frame, end_frame, frame_inc,
-                             output_frame_rate)) {
-        all_ok = false;
-      }
-      break;
-    };
-
-    reparent_decals(&get_egg_data());
-  }
-  if (all_ok) {
-    softegg_cat.info()
-      << "Converted, no errors.\n";
-  } else {
-    softegg_cat.info()
-      << "Errors encountered in conversion.\n";
-  }
-  */
   return all_ok;
 }
 
@@ -730,6 +637,17 @@ open_api() {
     softegg_cat.info() << "Error: Couldn't load scene " << scene_name << "!\n";
     exit( 1 );
   }
+  if ( SAA_updatelistGet( &scene ) == SI_SUCCESS ) {
+    float time;
+    
+    softegg_cat.info() << "setting Scene to frame " << pose_frame << "...\n";
+    //SAA_sceneSetPlayCtrlCurrentFrame( &scene, pose_frame );
+    SAA_frame2Seconds( &scene, pose_frame, &time );
+    SAA_updatelistEvalScene( &scene, time );
+    if ( make_pose )
+      SAA_sceneFreeze(&scene);
+  } 
+  
   // if no egg filename specified, make up a name
   if ( eggFileName == NULL ) {
     string madeName;
@@ -743,8 +661,16 @@ open_api() {
     }
     eggFileName = new char[madeName.size()+1];
     strcpy(eggFileName, madeName.c_str());
+
+    // if no anim filename specified, make up a name
+    if ( animFileName == NULL ) {
+      madeName.assign(tempName.substr(0,end));
+      madeName.insert(madeName.size(), "-chan.egg");
+      animFileName = new char[strlen(scene_name)+ 10];
+      strcpy(animFileName, madeName.c_str());
+    }
   }
-  
+
   return true;
 }
 
@@ -785,6 +711,103 @@ convert_char_model() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SoftToEggConverter::convert_char_chan
+//       Access: Private
+//  Description: Converts the animation as a series of tables to apply
+//               to the character model, as retrieved earlier via
+//               AC_model.
+////////////////////////////////////////////////////////////////////
+bool SoftToEggConverter::
+convert_char_chan() {
+  int start_frame = -1;
+  int end_frame = -1;
+  int frame_inc, frame;
+  double output_frame_rate = anim_rate;
+  
+  float time;
+
+  EggTable *root_table_node = new EggTable();
+  get_egg_data().add_child(root_table_node);
+  EggTable *bundle_node = new EggTable(_character_name);
+  bundle_node->set_table_type(EggTable::TT_bundle);
+  root_table_node->add_child(bundle_node);
+  EggTable *skeleton_node = new EggTable("<skeleton>");
+  bundle_node->add_child(skeleton_node);
+
+  // Set the frame rate before we start asking for anim tables to be
+  // created.
+  SAA_sceneGetPlayCtrlStartFrame(&scene, &start_frame);
+  SAA_sceneGetPlayCtrlEndFrame(&scene, &end_frame);
+  SAA_sceneGetPlayCtrlFrameStep( &scene, &frame_inc );
+  
+  cout << "animation start frame: " << start_frame << " end frame: " << end_frame << endl;
+  cout << "animation frame inc: " << frame_inc << endl;
+  
+  _tree._fps = output_frame_rate / frame_inc;
+  _tree.clear_egg(&get_egg_data(), NULL, skeleton_node);
+
+  // Now we can get the animation data by walking through all of the
+  // frames, one at a time, and getting the joint angles at each
+  // frame.
+
+  // This is just a temporary EggGroup to receive the transform for
+  // each joint each frame.
+  PT(EggGroup) tgroup = new EggGroup;
+
+  int num_nodes = _tree.get_num_nodes();
+  int i;
+
+  //  MTime frame(start_frame, MTime::uiUnit());
+  //  MTime frame_stop(end_frame, MTime::uiUnit());
+  // start at first frame and go to last
+  for ( frame = start_frame; frame <= end_frame; frame += frame_inc) {
+    SAA_frame2Seconds( &scene, frame, &time );
+    SAA_updatelistEvalScene( &scene, time );
+    cout << "\n> animating frame " << frame << endl;
+
+    //    if (softegg_cat.is_debug()) {
+    //      softegg_cat.debug(false)
+    softegg_cat.info() << "frame " << time << "\n";
+    //} else {
+      // We have to write to cerr instead of softegg_cat to allow
+      // flushing without writing a newline.
+    //      cerr << "." << flush;
+    //    }
+    //    MGlobal::viewFrame(frame);
+
+    for (i = 0; i < num_nodes; i++) {
+      SoftNodeDesc *node_desc = _tree.get_node(i);
+      if (node_desc->is_joint()) {
+        if (softegg_cat.is_spam()) {
+          softegg_cat.spam()
+            << "joint " << node_desc->get_name() << "\n";
+        }
+        EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
+        // following function fills in the anim structure
+        node_desc->get_joint_transform(&scene, tgroup, anim);
+      }
+    }
+
+    //    frame += frame_inc;
+  }
+
+  // Now optimize all of the tables we just filled up, for no real
+  // good reason, except that it makes the resulting egg file a little
+  // easier to read.
+  for (i = 0; i < num_nodes; i++) {
+    SoftNodeDesc *node_desc = _tree.get_node(i);
+    if (node_desc->is_joint()) {
+      _tree.get_egg_anim(node_desc)->optimize();
+    }
+  }
+
+  softegg_cat.info(false)
+    << "\n";
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SoftToEggConverter::convert_hierarchy
 //       Access: Private
 //  Description: Generates egg structures for each node in the Soft
@@ -795,10 +818,12 @@ convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
 
   _tree.clear_egg(&get_egg_data(), egg_root, NULL);
+  cout << "num_nodes = " << num_nodes << endl;
   for (int i = 0; i < num_nodes; i++) {
     if (!process_model_node(_tree.get_node(i))) {
       return false;
     }
+    softegg_cat.info() << i << endl;
   }
   return true;
 }
@@ -814,10 +839,11 @@ convert_hierarchy(EggGroupNode *egg_root) {
 bool SoftToEggConverter::
 process_model_node(SoftNodeDesc *node_desc) {
   EggGroup *egg_group = NULL;
-  char *name = NULL;
+  const char *name = NULL;
   char *fullname = NULL;
   SAA_ModelType type;
 
+#if 0
   // Get the name of the model
   if ( use_prefix ) {
     // Get the FULL name of the model
@@ -827,15 +853,17 @@ process_model_node(SoftNodeDesc *node_desc) {
     // Get the name of the trim curve
     name = _tree.GetName( &scene, node_desc->get_model() );
   }
+#endif
+  name = node_desc->get_name().c_str();
   cout << "element name <" << name << ">\n";
 
   // find out what type of node we're dealing with
   result = SAA_modelGetType( &scene, node_desc->get_model(), &type );
+  egg_group = _tree.get_egg_group(node_desc);
   cout << "encountered ";
   switch(type){
   case SAA_MNILL:
     cout << "null\n";
-    egg_group = _tree.get_egg_group(node_desc);
     node_desc->get_transform(&scene, egg_group);
     handle_null(node_desc->get_model(), egg_group, type, name);
     break;
@@ -847,9 +875,8 @@ process_model_node(SoftNodeDesc *node_desc) {
     break;
   case SAA_MSMSH:
     cout << "mesh\n";
-    egg_group = _tree.get_egg_group(node_desc);
     node_desc->get_transform(&scene, egg_group);
-    make_polyset(node_desc, egg_group, type, name);
+    make_polyset(node_desc, egg_group, type);
     break;
   case SAA_MJNT:
     cout << "joint\n";
@@ -873,6 +900,9 @@ process_model_node(SoftNodeDesc *node_desc) {
     cout << "unknown type: " << type << "\n";
   }
 
+  if (node_desc->is_joint())
+    node_desc->get_transform(&scene, egg_group, TRUE);
+
   return true;
 }
 
@@ -884,8 +914,8 @@ process_model_node(SoftNodeDesc *node_desc) {
 //               group.
 ////////////////////////////////////////////////////////////////////
 void SoftToEggConverter::
-make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type, char *node_name) {
-  string name = node_name;
+make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
+  string name = node_desc->get_name();
   int id = 0;
 
   float *uCoords = NULL;
@@ -915,7 +945,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type, c
        )
     {
       // load all node data from soft for this node_desc
-      node_desc->load_model(&scene, type, node_name);
+      node_desc->load_model(&scene, type);
 
       string vpool_name = name + ".verts";
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
@@ -1073,11 +1103,19 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type, c
         
         // Now apply the shader.
         if (node_desc->textures != NULL) {
-          if (node_desc->numTexLoc)
-            set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[idx]);
-          else
-            set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[0]);
+          if (node_desc->numTexLoc) {
+            if (!strstr(node_desc->texNameArray[idx], "noIcon"))
+              set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[idx]);
+            else
+              cout << "texname :" << node_desc->texNameArray[idx] << endl;
+          }
+          else {
+            if (!strstr(node_desc->texNameArray[0], "noIcon"))
+              set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[0]);
+            else 
+              cout << "texname :" << node_desc->texNameArray[0] << endl;
         }
+      }
       }
 #if 0
   come back to it later
@@ -1129,8 +1167,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type, c
 //               group.
 ////////////////////////////////////////////////////////////////////
 void SoftToEggConverter::
-handle_null(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *node_name) {
-  char *name = node_name;
+handle_null(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, const char *node_name) {
+  const char *name = node_name;
   SAA_AlgorithmType    algo;
   
   SAA_modelGetAlgorithm( &scene, model, &algo );

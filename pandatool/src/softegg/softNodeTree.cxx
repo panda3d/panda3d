@@ -38,9 +38,10 @@
 ////////////////////////////////////////////////////////////////////
 SoftNodeTree::
 SoftNodeTree() {
-  //  _root = new SoftNodeDesc;
-  _root = NULL;
+  _root = new SoftNodeDesc;
   _fps = 0.0;
+  _use_prefix = 0;
+  _search_prefix = NULL;
   _egg_data = (EggData *)NULL;
   _egg_root = (EggGroupNode *)NULL;
   _skeleton_node = (EggGroupNode *)NULL;
@@ -55,7 +56,7 @@ char *SoftNodeTree::
 GetName( SAA_Scene *scene, SAA_Elem *element ) {
   int nameLen;
   char *name;
-
+  
   // get the name
   SAA_elementGetNameLength( scene, element, &nameLen ); 
   name = new char[++nameLen];
@@ -159,21 +160,6 @@ GetRootName( const char *name ) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeTree::build_node
-//       Access: Public
-//  Description: Returns a pointer to the node corresponding to the
-//               indicated dag_path object, creating it first if
-//               necessary.
-////////////////////////////////////////////////////////////////////
-SoftNodeDesc *SoftNodeTree::
-build_node(SAA_Elem *model, const char *name) {
-  string node_name = name;
-  SoftNodeDesc *node_desc = r_build_node(node_name);
-  node_desc->set_model(model);
-  return node_desc;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeTree::build_complete_hierarchy
 //       Access: Public
 //  Description: Walks through the complete Soft hierarchy and builds
@@ -186,7 +172,7 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
   // Get the entire Soft scene.
   int numModels;
   SAA_Elem *models;
-  
+
   SAA_sceneGetNbModels( &scene, &numModels ); 
   cout << "Scene has " << numModels << " model(s)...\n";
   
@@ -203,12 +189,13 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
       for ( int i = 0; i < numModels; i++ ) {
         int level;
         status = SAA_elementGetHierarchyLevel( &scene, &models[i], &level );
-        cout << "level " << level << endl;
+        cout << "model[" << i << "]" << endl;
+        cout << " level " << level << endl;
+        cout << " status is " << status << "\n";
+        
         //        if (!level) {
-          char *name = GetName(&scene, &models[i]);
-          SoftNodeDesc *node_desc = build_node(&models[i], name);
+          build_node(&scene, &models[i]);
           //        }
-        cout << "status is " << status << "\n";
       }
     }
   }
@@ -438,10 +425,10 @@ get_egg_group(SoftNodeDesc *node_desc) {
     //    egg_group->set_user_data(user_data);
     node_desc->_egg_group = egg_group;
   }
-
+  
   return node_desc->_egg_group;
 }
-#if 0
+
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeTree::get_egg_table
 //       Access: Public
@@ -453,29 +440,30 @@ EggTable *SoftNodeTree::
 get_egg_table(SoftNodeDesc *node_desc) {
   nassertr(_skeleton_node != (EggGroupNode *)NULL, NULL);
   nassertr(node_desc->is_joint(), NULL);
-
+  
   if (node_desc->_egg_table == (EggTable *)NULL) {
+    cout << "creating a new table\n";
     // We need to make a new table node.
-    nassertr(node_desc->_parent != (SoftNodeDesc *)NULL, NULL);
-
+    //    nassertr(node_desc->_parent != (SoftNodeDesc *)NULL, NULL);
+    
     EggTable *egg_table = new EggTable(node_desc->get_name());
     node_desc->_anim = new EggXfmSAnim("xform", _egg_data->get_coordinate_system());
     node_desc->_anim->set_fps(_fps);
     egg_table->add_child(node_desc->_anim);
-
-    if (!node_desc->_parent->is_joint()) {
-      // The parent is not a joint; put it at the top.
-      _skeleton_node->add_child(egg_table);
-
+    
+    //    if (!node_desc->_parent->is_joint()) {
+    // The parent is not a joint; put it at the top.
+    _skeleton_node->add_child(egg_table);
+    /*
     } else {
       // The parent is another joint.
       EggTable *parent_egg_table = get_egg_table(node_desc->_parent);
       parent_egg_table->add_child(egg_table);
     }
-
+    */
     node_desc->_egg_table = egg_table;
   }
-
+  
   return node_desc->_egg_table;
 }
 
@@ -491,20 +479,110 @@ get_egg_anim(SoftNodeDesc *node_desc) {
   get_egg_table(node_desc);
   return node_desc->_anim;
 }
-#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeTree::build_node
+//       Access: Public
+//  Description: Returns a pointer to the node corresponding to the
+//               indicated dag_path object, creating it first if
+//               necessary.
+////////////////////////////////////////////////////////////////////
+void SoftNodeTree::
+build_node(SAA_Scene *scene, SAA_Elem *model) {
+  char *name;
+  string node_name;
+  int numChildren;
+  int thisChild;
+  SAA_Elem *children;
+  SAA_Boolean isSkeleton = FALSE;
+
+  if (_use_prefix)
+    name = GetFullName(scene, model);
+  else
+    name = GetName(scene, model);
+
+  node_name = name;
+
+  ///////////////////////////////////////////////////////////////////////
+  // check to see if this is a branch we don't want to descend - this
+  // will prevent creating geometry for animation control structures
+  ///////////////////////////////////////////////////////////////////////
+
+  /*
+  if ( (strstr(name, "con-") == NULL) && 
+       (strstr(name, "con_") == NULL) && 
+       (strstr(name, "fly_") == NULL) && 
+       (strstr(name, "fly-") == NULL) && 
+       (strstr(name, "camRIG") == NULL) &&
+       (strstr(name, "bars") == NULL) && 
+       // split
+       (!_search_prefix || (strstr(name, _search_prefix) != NULL)) )
+    {
+  */
+      SoftNodeDesc *node_desc = r_build_node(NULL, node_name);
+      node_desc->set_model(model);
+      SAA_modelIsSkeleton( scene, model, &isSkeleton );
+      if (isSkeleton || (strstr(node_desc->get_name().c_str(), "joint") != NULL))
+        node_desc->set_joint();
+      
+      SAA_modelGetNbChildren( scene, model, &numChildren );
+      cout << " Model " << node_name << " children: " << numChildren << endl;
+      
+      if ( numChildren ) {
+        children = new SAA_Elem[numChildren];
+        SAA_modelGetChildren( scene, model, numChildren, children );
+        if (!children)
+          cout << "Not enough Memory for children...\n";
+        
+        for ( thisChild = 0; thisChild < numChildren; thisChild++ ) {
+          if (_use_prefix)
+            node_name = GetFullName(scene, &children[thisChild]);
+          else
+            node_name = GetName(scene, &children[thisChild]);
+          
+          cout << " building child " << thisChild << "...";
+
+          SoftNodeDesc *node_child = r_build_node(node_desc, node_name);
+          node_child->set_model(&children[thisChild]);
+          
+          //  if (strstr(name, "joint") != NULL)
+          SAA_modelIsSkeleton( scene, &children[thisChild], &isSkeleton );
+          if (isSkeleton || (strstr(node_child->get_name().c_str(), "joint") != NULL))
+            node_child->set_joint();
+        }
+      }
+      //    }
+  return;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeTree::r_build_node
 //       Access: Private
 //  Description: The recursive implementation of build_node().
 ////////////////////////////////////////////////////////////////////
 SoftNodeDesc *SoftNodeTree::
-r_build_node(const string &name) {
+r_build_node(SoftNodeDesc *parent_node, const string &name) {
+  // If we have already encountered this pathname, return the
+  // corresponding MayaNodeDesc immediately.
+  NodesByName::const_iterator ni = _nodes_by_name.find(name);
+  if (ni != _nodes_by_name.end()) {
+    cout << (*ni).first << endl;
+    return (*ni).second;
+  }
+
   // Otherwise, we have to create it.  Do this recursively, so we
   // create each node along the path.
   SoftNodeDesc *node_desc;
-
-  node_desc = new SoftNodeDesc(name);
+  if (!parent_node) {
+    node_desc = _root;
+  }
+  else {
+    node_desc = new SoftNodeDesc(parent_node, name);
+  }
+  cout << " node name : " << name << endl;
   _nodes.push_back(node_desc);
+
+  _nodes_by_name.insert(NodesByName::value_type(name, node_desc));
 
   return node_desc;
 }

@@ -26,21 +26,21 @@ TypeHandle SoftNodeDesc::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 SoftNodeDesc::
-SoftNodeDesc(const string &name) :
-  Namable(name)
-  //  _parent(parent)
+SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
+  Namable(name),
+  _parent(parent)
 {
   _model = (SAA_Elem *)NULL;
   _egg_group = (EggGroup *)NULL;
   _egg_table = (EggTable *)NULL;
   _anim = (EggXfmSAnim *)NULL;
   _joint_type = JT_none;
-#if 0
+
   // Add ourselves to our parent.
   if (_parent != (SoftNodeDesc *)NULL) {
     _parent->_children.push_back(this);
   }
-#endif
+
   fullname = NULL;
 
   numTexLoc = 0;
@@ -116,6 +116,16 @@ get_model() const {
 bool SoftNodeDesc::
 is_joint() const {
   return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeDesc::set_joint
+//       Access: Private
+//  Description: sets the _joint_type to JT_joint
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+set_joint() {
+  _joint_type = JT_joint; // || _joint_type == JT_pseudo_joint;
 }
 #if 0
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +242,7 @@ check_pseudo_joints(bool joint_above) {
 //               and applies it to the corresponding Egg node.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-get_transform(SAA_Scene *scene, EggGroup *egg_group) {
+get_transform(SAA_Scene *scene, EggGroup *egg_group, bool set_transform) {
   // Get the model's matrix
   SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_GLOBAL,  matrix );
 
@@ -241,30 +251,118 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group) {
   cout << "model matrix = " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2] << " " << matrix[2][3] << "\n";
   cout << "model matrix = " << matrix[3][0] << " " << matrix[3][1] << " " << matrix[3][2] << " " << matrix[3][3] << "\n";
 
-#if 0 // this is not needed according to drose: verified by asad
-  LMatrix4d m4d(matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
-                matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
-                matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
-                matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]);
-  if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
-    egg_group->add_matrix(m4d);
-    cout << "added matrix in egg_group\n";
+  if (set_transform) {
+    LMatrix4d m4d(matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
+                  matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
+                  matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
+                  matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]);
+    if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
+      egg_group->set_transform(m4d);
+      cout << "set transform in egg_group\n";
+    }
   }
-#endif
-
   return;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_polyset
+//     Function: SoftNodeDesc::get_joint_transform
+//       Access: Private
+//  Description: Extracts the transform on the indicated Soft node,
+//               as appropriate for a joint in an animated character,
+//               and applies it to the indicated node.  This is
+//               different from get_transform() in that it does not
+//               respect the _transform_type flag, and it does not
+//               consider the relative transforms within the egg file.
+//               more added functionality: now fills in components of
+//               anim (EffXfmSAnim) class (masad).
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim) {
+  //  SI_Error result;
+  SAA_Elem *skeletonPart = _model;
+  const char *name = get_name().c_str();
+
+  if ( skeletonPart != NULL ) {
+    float i,j,k;
+    float h,p,r;
+    float x,y,z;
+    int size;
+    SAA_Boolean globalFlag = FALSE;
+    SAA_Boolean bigEndian;
+
+    cout << "\n\nanimating child " << name << endl;
+
+    SAA_elementGetUserDataSize( scene, skeletonPart, "GLOBAL", &size );
+        
+    if ( size != 0 )
+      SAA_elementGetUserData( scene, skeletonPart, "GLOBAL", 
+                              sizeof( SAA_Boolean), &bigEndian, (void *)&globalFlag );
+ 
+    if ( globalFlag ) {
+      cout << " using global matrix\n";
+
+      //get SAA orientation
+      SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
+                            &p, &h, &r );
+
+      //get SAA translation
+      SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
+                               &x, &y, &z );
+
+      //get SAA scaling
+      SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
+                           &i, &j, &k );
+    }
+    else {
+      cout << "using local matrix\n";
+
+      //get SAA orientation
+      SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
+                            &p, &h, &r );
+
+      //get SAA translation
+      SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
+                               &x, &y, &z );
+      
+      //get SAA scaling
+      SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
+                           &i, &j, &k );
+    }
+    
+    cout << "\nanim data: " << i << " " << j << " " << k << endl;
+    cout << "\t" << p << " " << h << " " << r << endl;
+    cout << "\t" << x << " " << y << " " << z << endl;
+
+    // make sure the ordering is correct
+    anim->set_order(anim->get_standard_order());
+
+    // Add each component by their names
+    anim->add_component_data("i", i);
+    anim->add_component_data("j", j);
+    anim->add_component_data("k", k);
+    anim->add_component_data("p", p);
+    anim->add_component_data("h", h);
+    anim->add_component_data("r", r);
+    anim->add_component_data("x", x);
+    anim->add_component_data("y", y);
+    anim->add_component_data("z", z);
+  }
+  else {
+    cout << "Cannot build anim table - no skeleton\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeDesc::load_model
 //       Access: Private
 //  Description: Converts the indicated Soft polyset to a bunch of
 //               EggPolygons and parents them to the indicated egg
 //               group.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-load_model(SAA_Scene *scene, SAA_ModelType type, char *name) {
-  SI_Error            result;
+load_model(SAA_Scene *scene, SAA_ModelType type) {
+  SI_Error result;
+  const char *name = get_name().c_str();
   
   int i;
   int id = 0;

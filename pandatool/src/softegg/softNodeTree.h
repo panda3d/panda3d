@@ -39,7 +39,7 @@ class EggGroupNode;
 class SoftNodeTree {
 public:
   SoftNodeTree();
-  SoftNodeDesc *build_node(SAA_Elem *model, const char *name);
+  void build_node(SAA_Scene *scene, SAA_Elem *model);
   bool build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database);
   //  bool build_selected_hierarchy(SAA_Scene *s, SAA_Database *d, char *scene_name);
 
@@ -59,6 +59,9 @@ public:
 
   PT(SoftNodeDesc) _root;
   float _fps;
+  int _use_prefix;
+  char *_search_prefix;
+  
 
 private:
 
@@ -66,11 +69,11 @@ private:
   EggGroupNode *_egg_root;
   EggGroupNode *_skeleton_node;
 
-  SoftNodeDesc *r_build_node(const string &path);
-#if 0
-  typedef pmap<string, SoftNodeDesc *> NodesByPath;
-  NodesByPath _nodes_by_path;
-#endif
+  SoftNodeDesc *r_build_node(SoftNodeDesc *parent_node, const string &path);
+
+  typedef pmap<string, SoftNodeDesc *> NodesByName;
+  NodesByName _nodes_by_name;
+
   typedef pvector<SoftNodeDesc *> Nodes;
   Nodes _nodes;
 };

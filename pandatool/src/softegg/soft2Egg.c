@@ -1331,8 +1331,8 @@ LoadSoft()
                 {
                     SAA_frame2Seconds( &scene, frame, &time );
                     SAA_updatelistEvalScene( &scene, time );
-										sginap( 100 );
-										SAA_updatelistEvalScene( &scene, time );
+                    sginap( 100 );
+                    SAA_updatelistEvalScene( &scene, time );
                     fprintf( outStream, "\n> animating frame %d\n", frame );
 
                     // for each model

@@ -47,7 +47,7 @@ class EggXfmSAnim;
 ////////////////////////////////////////////////////////////////////
 class SoftNodeDesc : public ReferenceCount, public Namable {
 public:
-  SoftNodeDesc(const string &name = string());
+  SoftNodeDesc(SoftNodeDesc *parent=NULL, const string &name = string());
   ~SoftNodeDesc();
 
   void set_model(SAA_Elem *model);
@@ -55,11 +55,12 @@ public:
   SAA_Elem *get_model() const;
 
   bool is_joint() const;
+  void set_joint();
   //  bool is_joint_parent() const;
 
-  //  SoftNodeDesc *_parent;
-  //  typedef pvector< PT(SoftNodeDesc) > Children;
-  //  Children _children;
+  SoftNodeDesc *_parent;
+  typedef pvector< PT(SoftNodeDesc) > Children;
+  Children _children;
   
 private:
   void clear_egg();
@@ -67,7 +68,7 @@ private:
   //  void check_pseudo_joints(bool joint_above);
 
   SAA_ModelType type;
-  char *fullname;
+  const char *fullname;
 
   SAA_Elem *_model;
 
@@ -108,9 +109,9 @@ public:
   SAA_SubElem *triangles;
   SAA_GeomType gtype;
 
-
-  void get_transform(SAA_Scene *scene, EggGroup *egg_group);
-  void load_model(SAA_Scene *scene, SAA_ModelType type, char *name);
+  void get_transform(SAA_Scene *scene, EggGroup *egg_group, bool set_transform=FALSE);
+  void get_joint_transform(SAA_Scene *scene, EggGroup *egg_group, EggXfmSAnim *anim);
+  void load_model(SAA_Scene *scene, SAA_ModelType type);
 
   static TypeHandle get_class_type() {
     return _type_handle;

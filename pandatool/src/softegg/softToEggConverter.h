@@ -81,8 +81,7 @@ private:
                     double frame_inc, double output_frame_rate);
 
   bool convert_char_model();
-  bool convert_char_chan(double start_frame, double end_frame, 
-                         double frame_inc, double output_frame_rate);
+  bool convert_char_chan();
   bool convert_hierarchy(EggGroupNode *egg_root);
   bool process_model_node(SoftNodeDesc *node_desc);
 
@@ -103,8 +102,8 @@ private:
                         const MFnNurbsCurve &curve,
                         EggGroup *group);
   */
-  void make_polyset(SoftNodeDesc *node_Desc, EggGroup *egg_group, SAA_ModelType type, char *node_name);
-  void handle_null(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *node_name);
+  void make_polyset(SoftNodeDesc *node_Desc, EggGroup *egg_group, SAA_ModelType type);
+  void handle_null(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, const char *node_name);
   /*
   void make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
                     EggGroup *egg_group);
