@@ -7,6 +7,14 @@ INLINE WinSample::WinSample(void) : AudioTraits::SoundClass(), _data(NULL),
 				    _len(0) {
 }
 
+INLINE DWORD WinSample::get_length(void) const {
+  return _len;
+}
+
+INLINE WAVEFORMATEX WinSample::get_format(void) const {
+  return _info;
+}
+
 INLINE WinMusic::WinMusic(void) : AudioTraits::SoundClass(),
 				  _performance(NULL), _music(NULL),
 			          _buffer(NULL), _synth(NULL) {

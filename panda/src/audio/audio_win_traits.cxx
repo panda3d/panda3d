@@ -183,10 +183,9 @@ WinSample::~WinSample(void) {
 }
 
 float WinSample::length(void) const {
-  // DO THIS
   if (audio_cat->is_debug())
     audio_cat->debug() << "winsample length called" << endl;
-  return 0.;
+  return _len / (audio_mix_freq * 2. * 2.);
 }
 
 AudioTraits::PlayingClass* WinSample::get_state(void) const {
@@ -801,7 +800,7 @@ WinSamplePlayer::~WinSamplePlayer(void) {
 }
 
 void WinSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
-			   AudioTraits::PlayingClass* play) {
+			   AudioTraits::PlayingClass* play, float start_time) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in winsampleplayer play_sound" << endl;
   initialize();
@@ -812,6 +811,15 @@ void WinSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
   LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
   if (chan) {
     chan->Stop();
+    DWORD l = wsample->get_length();
+    WAVEFORMATEX f = wsample->get_format();
+    float factor = ((float)l) / wsample->get_format().nAvgBytesPerSec;
+    factor = start_time / factor;
+    if (factor > 1.)
+      factor = 1.;
+    DWORD p = (DWORD)(l * factor);
+    p = (p >> 2) << 2;  // zero the last 2 bits
+    chan->SetCurrentPosition(p);
     HRESULT result = chan->Play(0, 0, 0);
     if (FAILED(result))
       audio_cat->error() << "sample play failed" << endl;
@@ -864,7 +872,7 @@ WinMusicPlayer::~WinMusicPlayer(void) {
 }
 
 void WinMusicPlayer::play_sound(AudioTraits::SoundClass* music,
-				AudioTraits::PlayingClass*) {
+				AudioTraits::PlayingClass*, float) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in WinMusicPlayer::play_sound()" << endl;
   initialize();

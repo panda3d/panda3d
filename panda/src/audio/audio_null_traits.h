@@ -21,9 +21,6 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  // REFCOUNT
-  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
-  //  static void destroy(AudioTraits::SoundClass*);
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
 };
 
@@ -42,7 +39,7 @@ public:
   virtual ~NullPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+			  AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);

@@ -27,14 +27,10 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  // REFCOUNT
-  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
 public:
   // used by the readers
   static MikModSample* load_wav(Filename);
-  // REFCOUNT
-  //  static void destroy(AudioTraits::SoundClass*);
   // used by the players
   virtual SAMPLE* get_sample(void);
   virtual int get_freq(void);
@@ -50,9 +46,6 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  // REFCOUNT
-  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
-  //  static void destroy(AudioTraits::SoundClass*);
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
 };
 
@@ -65,9 +58,6 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  // REFCOUNT
-  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
-  //  static void destroy(AudioTraits::SoundClass*);
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
 public:
   // used by the readers
@@ -112,7 +102,7 @@ public:
   virtual ~MikModSamplePlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+			  AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
@@ -129,7 +119,7 @@ public:
   virtual ~MikModFmsynthPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+			  AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
@@ -146,7 +136,7 @@ public:
   virtual ~MikModMidiPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+			  AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);

@@ -270,23 +270,9 @@ AudioTraits::PlayerClass* LinuxSample::get_player(void) const {
   return LinuxSamplePlayer::get_instance();
 }
 
-// REFCOUNT
-/*
-AudioTraits::DeleteSoundFunc* LinuxSample::get_destroy(void) const {
-  return LinuxSample::destroy;
-}
-*/
-
 AudioTraits::DeletePlayingFunc* LinuxSample::get_delstate(void) const {
   return LinuxSamplePlaying::destroy;
 }
-
-// REFCOUNT
-/*
-void LinuxSample::destroy(AudioTraits::SoundClass* sound) {
-  delete sound;
-}
-*/
 
 LinuxSample* LinuxSample::load_raw(byte* data, unsigned long size) {
   LinuxSample* ret = new LinuxSample(data, size);
@@ -308,23 +294,9 @@ AudioTraits::PlayerClass* LinuxMusic::get_player(void) const {
   return LinuxMusicPlayer::get_instance();
 }
 
-// REFCOUNT
-/*
-AudioTraits::DeleteSoundFunc* LinuxMusic::get_destroy(void) const {
-  return LinuxMusic::destroy;
-}
-*/
-
 AudioTraits::DeletePlayingFunc* LinuxMusic::get_delstate(void) const {
   return LinuxMusicPlaying::destroy;
 }
-
-// REFCOUNT
-/*
-void LinuxMusic::destroy(AudioTraits::SoundClass* music) {
-  delete music;
-}
-*/
 
 LinuxSamplePlaying::~LinuxSamplePlaying(void) {
 }
@@ -358,9 +330,18 @@ LinuxSamplePlayer::~LinuxSamplePlayer(void) {
 }
 
 void LinuxSamplePlayer::play_sound(AudioTraits::SoundClass*,
-				   AudioTraits::PlayingClass* playing) {
+				   AudioTraits::PlayingClass* playing,
+				   float start_time) {
   initialize();
   LinuxSamplePlaying* lplaying = (LinuxSamplePlaying*)playing;
+  unsigned long l = lplaying->get_data()->get_size();
+  float factor = ((float)l) / (audio_mix_freq * 2. * sample_size);
+  factor = start_time / factor;
+  if (factor > 1.)
+    factor = 1.;
+  unsigned long p = (unsigned long)(l * factor);
+  p = ( p >> 2 ) << 2;  // zero the last 2 bits
+  lplaying->get_data()->reset(p);
   buffers.insert(lplaying->get_data());
 }
 
@@ -387,7 +368,7 @@ LinuxMusicPlayer::~LinuxMusicPlayer(void) {
 }
 
 void LinuxMusicPlayer::play_sound(AudioTraits::SoundClass*,
-				  AudioTraits::PlayingClass*) {
+				  AudioTraits::PlayingClass*, float) {
   initialize();
 }
 

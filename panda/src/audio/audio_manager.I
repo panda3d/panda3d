@@ -8,9 +8,9 @@
 //       Access: Public, Static
 //  Description: Play some audio
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::play(AudioSound* sound) {
+INLINE void AudioManager::play(AudioSound* sound, float start_time) {
   if (audio_is_active)
-    get_ptr()->ns_play(sound);
+    get_ptr()->ns_play(sound, start_time);
 }
 
 ////////////////////////////////////////////////////////////////////

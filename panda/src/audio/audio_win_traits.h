@@ -30,14 +30,14 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  // REFCOUNT
-  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+
+  // used by play_sound
+  INLINE DWORD get_length(void) const;
+  INLINE WAVEFORMATEX get_format(void) const;
 public:
   static WinSample* load_wav(Filename);
   static WinSample* load_raw(unsigned char*, unsigned long);
-  // REFCOUNT
-  //  static void destroy(AudioTraits::SoundClass*);
 };
 
 class EXPCL_PANDA WinMusic : public AudioTraits::SoundClass {
@@ -46,8 +46,6 @@ private:
   IDirectMusicSegment* _music;
   IDirectSoundBuffer* _buffer;
   IDirectMusicPort* _synth;
-  //  BYTE* _data;
-  //  DWORD _len;
 
   void init(void);
 public:
@@ -57,9 +55,6 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  // REFCOUNT
-  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
-  //  static void destroy(AudioTraits::SoundClass*);
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
   // these are used by the loaders
   static WinMusic* load_midi(Filename);
@@ -101,7 +96,7 @@ public:
   virtual ~WinSamplePlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+			  AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
@@ -118,7 +113,7 @@ public:
   virtual ~WinMusicPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+			  AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);

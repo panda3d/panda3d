@@ -51,9 +51,9 @@ public:
   INLINE unsigned long get_size(void) const {
     return _size;
   }
-  INLINE void reset(void) {
+  INLINE void reset(unsigned long p = 0) {
     _done = false;
-    _pos = 0;
+    _pos = p;
   }
 };
 
@@ -70,9 +70,6 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  // REFCOUNT
-  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
-  //  static void destroy(AudioTraits::SoundClass*);
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
 public:
   // used by the loader
@@ -90,9 +87,6 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  // REFCOUNT
-  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
-  //  static void destroy(AudioTraits::SoundClass*);
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
 };
 
@@ -123,7 +117,7 @@ public:
   virtual ~LinuxSamplePlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+			  AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
@@ -140,7 +134,7 @@ public:
   virtual ~LinuxMusicPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
-			  AudioTraits::PlayingClass*);
+			  AudioTraits::PlayingClass*, float);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);

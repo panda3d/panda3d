@@ -18,7 +18,7 @@ class EXPCL_PANDA AudioManager {
 private:
   INLINE AudioManager(void);
 
-  void ns_play(AudioSound*);
+  void ns_play(AudioSound*, float);
   void ns_stop(AudioSound*);
   void ns_set_loop(AudioSound*, bool);
   bool ns_get_loop(AudioSound*);
@@ -47,7 +47,7 @@ public:
   static void set_shutdown_func(ShutdownFunc*);
 
 PUBLISHED:
-  INLINE static void play(AudioSound*);
+  INLINE static void play(AudioSound*, float = 0.);
   INLINE static void stop(AudioSound*);
   INLINE static void set_loop(AudioSound*, bool);
   INLINE static bool get_loop(AudioSound*);

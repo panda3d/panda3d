@@ -84,10 +84,11 @@ AudioManager* AudioManager::get_ptr(void) {
 //       Access: Private
 //  Description: get the player off the sound, and start it playing
 ////////////////////////////////////////////////////////////////////
-void AudioManager::ns_play(AudioSound* sound) {
+void AudioManager::ns_play(AudioSound* sound, float start_time) {
   if (sound->status() == AudioSound::PLAYING)
     this->ns_stop(sound);
-  sound->get_player()->play_sound(sound->get_sound(), sound->get_state());
+  sound->get_player()->play_sound(sound->get_sound(), sound->get_state(),
+				  start_time);
 }
 
 ////////////////////////////////////////////////////////////////////

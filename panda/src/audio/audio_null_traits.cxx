@@ -41,23 +41,10 @@ AudioTraits::PlayerClass* NullSound::get_player(void) const {
   return new NullPlayer();
 }
 
-// REFCOUNT
-/*
-AudioTraits::DeleteSoundFunc* NullSound::get_destroy(void) const {
-  return NullSound::destroy;
-}
-*/
 
 AudioTraits::DeletePlayingFunc* NullSound::get_delstate(void) const {
   return NullPlaying::destroy;
 }
-
-// REFCOUNT
-/*
-void NullSound::destroy(AudioTraits::SoundClass* sound) {
-  delete sound;
-}
-*/
 
 NullPlaying::~NullPlaying(void) {
 }
@@ -76,7 +63,7 @@ NullPlayer::~NullPlayer(void) {
 }
 
 void NullPlayer::play_sound(AudioTraits::SoundClass*,
-			    AudioTraits::PlayingClass*) {
+			    AudioTraits::PlayingClass*, float) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in play sound in Null audio driver" << endl;
 }

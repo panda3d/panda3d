@@ -26,8 +26,6 @@ public:
     virtual float length(void) const = 0;
     virtual PlayingClass* get_state(void) const = 0;
     virtual PlayerClass* get_player(void) const = 0;
-    // REFCOUNT
-    //    virtual DeleteSoundFunc* get_destroy(void) const = 0;
     virtual DeletePlayingFunc* get_delstate(void) const = 0;
   };
   class EXPCL_PANDA PlayingClass {
@@ -46,7 +44,7 @@ public:
     PlayerClass(void) {}
     virtual ~PlayerClass(void);
 
-    virtual void play_sound(SoundClass*, PlayingClass*) = 0;
+    virtual void play_sound(SoundClass*, PlayingClass*, float) = 0;
     virtual void stop_sound(SoundClass*, PlayingClass*) = 0;
     virtual void set_volume(PlayingClass*, float) = 0;
   };

@@ -24,15 +24,6 @@ AudioTraits::PlayerClass* AudioTraits::SoundClass::get_player(void) const {
   return (AudioTraits::PlayerClass*)0L;
 }
 
-// REFCOUNT
-/*
-AudioTraits::DeleteSoundFunc*
-AudioTraits::SoundClass::get_destroy(void) const {
-  audio_cat->error() << "In abstract SoundClass::get_destroy!" << endl;
-  return (AudioTraits::DeleteSoundFunc*)0L;
-}
-*/
-
 AudioTraits::DeletePlayingFunc*
 AudioTraits::SoundClass::get_delstate(void) const {
   audio_cat->error() << "In abstract SoundClass::get_delstate!" << endl;
@@ -52,7 +43,7 @@ AudioTraits::PlayerClass::~PlayerClass(void) {
 }
 
 void AudioTraits::PlayerClass::play_sound(AudioTraits::SoundClass*,
-					  AudioTraits::PlayingClass*) {
+					  AudioTraits::PlayingClass*, float) {
   audio_cat->error() << "In abstract PlayerClass::play_sound!" << endl;
 }
 
