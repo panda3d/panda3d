@@ -615,13 +615,24 @@ class Actor(PandaObject, NodePath):
             Actor.notify.warning("no lod named %s!" % (lodName))
 
                     
-    def stackDecals(self, frontPartName, backPartName, root=None,
-                    lodName=None):
-        """stackDecals(self, string, string=None, key=None)
+    def drawInFront(self, frontPartName, backPartName, mode,
+                    root=None, lodName=None):
+        """drawInFront(self, string, int, string=None, key=None)
 
-        Arrange geometry so the frontPart is drawn as a decal onto
-        backPart.  This assumes that frontPart is mostly coplanar with
-        and does not extend beyond backPart.
+        Arrange geometry so the frontPart is drawn in front of backPart.
+
+        If mode == 0, the geometry is simply arranged to be drawn in
+        the correct order.
+
+        If mode < 0, one step further is taken: frontPart is drawn
+        as a decal onto backPart.  This assumes that frontPart is
+        mostly coplanar with and does not extend beyond backPart, and
+        that backPart is mostly flat (not self-occluding).
+
+        If mode > 0, the frontPart geometry is placed in the 'fixed'
+        bin, with the indicated drawing order.  This will cause it to
+        be drawn after almost all other geometry.  In this case, the
+        backPartName is actually unused.
         
         Takes an optional argument root as the start of the search for the
         given parts. Also takes optional lod name to refine search for the
@@ -643,25 +654,39 @@ class Actor(PandaObject, NodePath):
             if (root == None):
                 root = self
 
-        # In case people don't have an up-to-date Panda, we'll fall
-        # back on DirectRenderTransition.
-        try:
-            dt = DecalTransition()
-        except:
-            dt = DirectRenderTransition()
+        frontParts = root.findAllMatches( "**/" + frontPartName)
+        if mode > 0:
+            # Use the 'fixed' bin instead of reordering the scene
+            # graph.
+            numFrontParts = frontParts.getNumPaths()
+            for partNum in range(0, numFrontParts):
+                frontParts.getPath(partNum).setBin('fixed', mode)
+            return
 
-        # make the back part have the proper transition
+        # Find the back part.
         backPart = root.find("**/" + backPartName)
         if (backPart.isEmpty()):
             Actor.notify.warning("no part named %s!" % (backPartName))
-        else:
-            backPart.getBottomArc().setTransition(dt)
+            return
+        
+        if mode < 0:
+            # Draw as a decal.  In case people don't have an
+            # up-to-date Panda, we'll fall back on
+            # DirectRenderTransition.
+            
+            try:
+                dt = DecalTransition()
+            except:
+                dt = DirectRenderTransition()
 
-            #reparent the front parts to the back part
-            frontParts = root.findAllMatches( "**/" + frontPartName)
-            numFrontParts = frontParts.getNumPaths()
-            for partNum in range(0, numFrontParts):
-                (frontParts.getPath(partNum)).reparentTo(backPart)
+        else:
+            dt = DirectRenderTransition()
+
+        # make the back part have the proper transition
+        backPart.getBottomArc().setTransition(dt)
+
+        #reparent all the front parts to the back part
+        frontParts.reparentTo(backPart)
 
 
     def fixBounds(self, part=None):
