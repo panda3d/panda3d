@@ -9,9 +9,12 @@ class NotifyPanel:
         notify levels for all available DIRECT and PANDA notify categories
         """
         # Make sure TK mainloop is running
-        from TkGlobal import *
+        from TkGlobal import Pmw, Toplevel, Frame, Label , Radiobutton
+        from TkGlobal import HORIZONTAL, X, W, NW, BOTH, LEFT, RIGHT, IntVar
         # To get severity levels
-        from NotifySeverity import *
+        from NotifySeverity import NSFatal, NSError, NSWarning, NSInfo
+        from NotifySeverity import NSDebug, NSSpam
+        
         if tl == None:
             tl = Toplevel()
             tl.title('Notify Controls')
@@ -21,11 +24,12 @@ class NotifyPanel:
         # Create widgets
         mainFrame = Frame(tl)
         # Paned widget for dividing two halves
-        framePane = Pmw.PanedWidget(mainFrame, orient = HORIZONTAL)
+        framePane = Pmw.PanedWidget(mainFrame,
+                                    orient = HORIZONTAL)
         categoryFrame = framePane.add('categories', size = 200)
         severityFrame = framePane.add('severities', size = 50)
         # Category frame
-        from NotifyCategory import *
+        import NotifyCategory
         # Assemble PANDA categories
         categories = self.getPandaCategoriesAsList()
         self.__categories = {}
@@ -54,7 +58,8 @@ class NotifyPanel:
         # Severity frame
         Label(severityFrame, text = 'Severity:',
               font=('MSSansSerif', 10, 'bold'),
-              justify = RIGHT, anchor = W).pack(fill = X, padx = 5)
+              justify = RIGHT, anchor = W).pack(
+            fill = X, padx = 5)
         self.severity = IntVar()
         self.severity.set(0)
         self.fatalSeverity = Radiobutton(severityFrame, text = 'Fatal',
