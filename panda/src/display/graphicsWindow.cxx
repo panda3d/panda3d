@@ -739,7 +739,16 @@ set_properties_now(WindowProperties &properties) {
     properties.clear();
 
     if (_properties.get_open()) {
-      if (!open_window()) {
+      if (open_window()) {
+        // When the window is first opened, force its size to be
+        // broadcast to its display regions.
+        Channels::iterator ci;
+        for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
+          GraphicsChannel *chan = (*ci);
+          chan->window_resized(_properties.get_x_size(), 
+                               _properties.get_y_size());
+        }
+      } else {
         _properties.set_open(false);
       }
 
@@ -792,6 +801,12 @@ set_properties_now(WindowProperties &properties) {
         properties.clear_origin();
       }
     }
+  }
+
+  if (properties.has_fullscreen() && 
+      properties.get_fullscreen() == _properties.get_fullscreen()) {
+    // Fullscreen property specified, but unchanged.
+    properties.clear_fullscreen();
   }
 }
 
