@@ -411,6 +411,18 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                 self.copyParentMethodsRecursively(parentList, file, nesting)
 
 
+    def inheritsMethodNamed(self, parentList, methodName):
+        """
+        returns true if the named method is a method on this class, or
+        on any parent class except the last one in the list.
+        """
+        if self.hasMethodNamed(methodName):
+            return 1
+        for pi in range(len(parentList) - 1):
+            if parentList[pi].hasMethodNamed(methodName):
+                return 1
+        return 0
+        
     def copyParentMethodsRecursively(self, parentList, file, nesting):
         """
         Copy all the parents instance methods
@@ -427,20 +439,20 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             recurse = 0
 
         for method in parent.instanceMethods:
-            if not self.hasMethodNamed(method.name):
+            if not self.inheritsMethodNamed(parentList, method.name):
                 # with downcast for all instance methods that are not themselves upcasts
                 method.generateInheritedMethodCode(self, parentList, file, nesting, 1)
 
         # Also duplicate the overloaded method dispatch functions, if
         # we don't already have any matching methods by this name.
         for methodSpecList in parent.overloadedInstanceMethods.values():
-            if not self.hasMethodNamed(methodSpecList[0].name):
+            if not self.inheritsMethodNamed(parentList, methodSpecList[0].name):
                 treeColl = FFIOverload.FFIMethodArgumentTreeCollection(self, methodSpecList)
                 treeColl.generateCode(file, nesting)
                 
         # Copy all the parents upcast methods so we transitively pick them up
         for method in parent.upcastMethods:
-            if not self.hasMethodNamed(method.name):
+            if not self.inheritsMethodNamed(parentList, method.name):
                 # no downcast for all instance methods that are themselves upcasts
                 # that would cause an infinite loop
                 method.generateInheritedMethodCode(self, parentList, file, nesting, 0) 
