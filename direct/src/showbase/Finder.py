@@ -132,6 +132,7 @@ def copyFuncs(fromClass, toClass):
                 oldFunc = toClass.__dict__[key]
                 replaceMessengerFunc(oldFunc, newFunc)
                 replaceTaskMgrFunc(oldFunc, newFunc)
+                replaceStateFunc(oldFunc, newFunc)
             toClass.__dict__[key] = newFunc
 
 def replaceMessengerFunc(oldFunc, newFunc):
@@ -143,3 +144,13 @@ def replaceTaskMgrFunc(oldFunc, newFunc):
     res = taskMgr.replaceMethod(oldFunc, newFunc)
     if res:
         print ('replaced taskMgr function: ' + newFunc.__name__)
+
+def replaceStateFunc(oldFunc, newFunc):
+    import State
+    res = State.redefineEnterFunc(oldFunc, newFunc)
+    if res:
+        print ('replaced state enter function: ' + newFunc.__name__)
+    res = State.redefineExitFunc(oldFunc, newFunc)
+    if res:
+        print ('replaced state exit function: ' + newFunc.__name__)
+

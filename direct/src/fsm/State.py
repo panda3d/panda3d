@@ -2,6 +2,69 @@
 """State module: contains State class"""
 
 from DirectObject import *
+import types
+
+# This gets set by a dconfig variable in ShowBase.py
+# We cannot put a dconfig in here because FSM is not
+# dependent on Panda
+FsmRedefine = 0
+
+# Map function pointers back into states so the Finder
+# can find a function and swap a newly redefined function
+# back into the original state
+# The map is keyed off function pointers which map to
+# a list of states that have that function pointer defined
+# as their enter function (or exit function as the case may be)
+EnterFuncRedefineMap = {}
+ExitFuncRedefineMap = {}
+
+
+def redefineEnterFunc(oldMethod, newFunction):
+    import new
+    if not FsmRedefine:
+        return
+    for method in EnterFuncRedefineMap.keys():
+        if (type(method) == types.MethodType):
+            function = method.im_func
+        else:
+            function = method
+        #print ('function: ' + `function` + '\n' +
+        #       'method: ' + `method` + '\n' +
+        #       'oldMethod: ' + `oldMethod` + '\n' +
+        #       'newFunction: ' + `newFunction` + '\n')
+        if (function == oldMethod):
+            newMethod = new.instancemethod(newFunction,
+                                           method.im_self,
+                                           method.im_class)
+            stateList = EnterFuncRedefineMap[method]
+            for state in stateList:
+                state.setEnterFunc(newMethod)
+            return 1
+    return 0
+
+
+def redefineExitFunc(oldMethod, newFunction):
+    import new
+    if not FsmRedefine:
+        return
+    for method in ExitFuncRedefineMap.keys():
+        if (type(method) == types.MethodType):
+            function = method.im_func
+        else:
+            function = method
+        #print ('function: ' + `function` + '\n' +
+        #       'method: ' + `method` + '\n' +
+        #       'oldMethod: ' + `oldMethod` + '\n' +
+        #       'newFunction: ' + `newFunction` + '\n')
+        if (function == oldMethod):
+            newMethod = new.instancemethod(newFunction,
+                                           method.im_self,
+                                           method.im_class)
+            stateList = ExitFuncRedefineMap[method]
+            for state in stateList:
+                state.setExitFunc(newMethod)
+            return 1
+    return 0
 
 
 class State(DirectObject):
@@ -13,6 +76,9 @@ class State(DirectObject):
         """__init__(self, string, func, func, string[], inspectorPos = [])
         State constructor: takes name, enter func, exit func, and
         a list of states it can transition to."""
+        self.__enterFunc = None
+        self.__exitFunc = None
+        
         self.setName(name)
         self.setEnterFunc(enterFunc)
         self.setExitFunc(exitFunc)
@@ -35,8 +101,25 @@ class State(DirectObject):
         """getEnterFunc(self)"""
         return(self.__enterFunc)
 
+    def redefineFunc(self, oldMethod, newMethod, map):
+        if not FsmRedefine:
+            return
+        if map.has_key(oldMethod):
+            # Get the list of states for the old function
+            stateList = map[oldMethod]
+            # Remove this state from that list of states
+            stateList.remove(self)
+            # If the stateList is now empty, remove this entry altogether
+            if not stateList:
+                del(map[oldMethod])
+        # Now add the new function, creating a starter state list
+        # if there is not one already
+        stateList = map.get(newMethod, [])
+        stateList.append(self)
+        map[newMethod] = stateList
+            
     def setEnterFunc(self, stateEnterFunc):
-        """setEnterFunc(self, func)"""
+        self.redefineFunc(self.__enterFunc, stateEnterFunc, EnterFuncRedefineMap)
         self.__enterFunc = stateEnterFunc
 
     def getExitFunc(self):
@@ -45,6 +128,7 @@ class State(DirectObject):
 
     def setExitFunc(self, stateExitFunc):
         """setExitFunc(self, func)"""
+        self.redefineFunc(self.__exitFunc, stateExitFunc, ExitFuncRedefineMap)
         self.__exitFunc = stateExitFunc
 
     def getTransitions(self):
