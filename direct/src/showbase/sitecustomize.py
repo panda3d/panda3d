@@ -2,14 +2,16 @@ import os
 import sys
 import glob
 
-print 'Site customize for Panda'
+print 'Site customize for Panda:'
 
 
 def readpth(tree, fullname):
+    #print "readpth(tree=%s, fullname=%s)" % (tree, fullname)
     try:
         f = open(fullname)
-        print 'Appending paths in ' + fullname
+        print '  Appending paths in ' + fullname
     except IOError:
+        print '  IOError Appending paths in ' + fullname
         return
 
     while 1:
@@ -32,7 +34,10 @@ def addpackage(package):
     comments and empty lines are ok
     """
     tree = os.getenv(package)
-    
+    if tree == None:
+        print "  $%s is not defined." % (package,)
+        return
+
     lowerPackage = package.lower()
     fullname = os.path.join(tree, 'etc', lowerPackage + '.pth')
 
@@ -56,15 +61,17 @@ def getPackages():
         # the current directory.
         player = os.getenv("PLAYER")
         if player == None:
+            print '  Appending paths based on current working directory.'
             searchstr = os.path.join('*', 'src', 'configfiles', '*.pth')
         else:
+            print '  Appending paths based on $PLAYER'
             searchstr = os.path.join(player, '*', 'src', 'configfiles', '*.pth')
             
         filenames = glob.glob(searchstr)
         if len(filenames) == 0:
             print ''
-            print 'Warning: no files found matching %s.' % (searchstr)
-            print 'Check $PLAYER, or your starting directory.'
+            print '  Warning: no files found matching %s.' % (searchstr)
+            print '  Check $PLAYER, or your starting directory.'
             print ''
             
         for filename in filenames:
@@ -75,6 +82,7 @@ def getPackages():
         # The CTPROJS environment variable *is* defined.  We must be
         # using the ctattach tools; get the *.pth files from the set
         # of attached trees.
+        print '  Appending paths based on $CTPROJS'
         packages = []
 
         for proj in ctprojs.split():

@@ -62,7 +62,7 @@
    email: matumoto@math.keio.ac.jp
 */
 
-#include <directbase.h>
+#include "directbase.h"
 
 class EXPCL_DIRECT Mersenne {
 PUBLISHED:
