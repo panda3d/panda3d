@@ -117,9 +117,10 @@ static void* internal_monitor(void*) {
 	    {
 	      float x;
 	      buff = get_float64(buff, x);
-	      if (doing_sync)
+	      if (doing_sync) {
 		clock_skew = ClockObject::get_global_clock()->get_time() - x;
-	      else
+		cerr << "setting clock skew to: " << clock_skew << endl;
+	      } else
 		my_time = x + clock_skew;
 	    }
 	    break;
