@@ -170,7 +170,25 @@ class FFIExternalObject:
         else:
             return 1
 
+    def __str__(self):
+        # Lots of Panda classes have an output function defined that takes an Ostream
+        # We create a LineStream for the output function to write to, then we extract
+        # the string out of it and return it as our str
+        baseRepr = ''
+        import LineStream
+        lineStream = LineStream.LineStream()
+        try:
+            self.output(lineStream)
+            baseRepr = baseRepr + lineStream.getLine()
+        except:
+            pass
+        # In any case, return the baseRepr
+        return baseRepr
+
+
     def __repr__(self):
+        # This is a more complete version of printing which shows the object type
+        # and pointer, plus the output from write() or output() whichever is defined        
         # Print this info for all objects
         baseRepr = ('[' + self.__class__.__name__ + ' at: ' + `self.this` + ']')
         # Lots of Panda classes have an write or output function defined that takes an Ostream
@@ -191,7 +209,6 @@ class FFIExternalObject:
                     baseRepr = baseRepr + '\n' + lineStream.getLine()
             except:
                 pass
-
         # In any case, return the baseRepr
         return baseRepr
 
