@@ -165,18 +165,10 @@ underflow() {
       if (read_count <= 0) {
         _is_closed = !BIO_should_retry(*_source);
         if (_is_closed) {
-          if (read_count == 0) {
-            downloader_cat.info()
-              << "Lost connection to "
-              << _source->get_server_name() << ":" 
-              << _source->get_port() << ".\n";
-          } else {
-            downloader_cat.info()
-              << "Socket error detected on " 
-              << _source->get_server_name() << ":" 
-              << _source->get_port() << ", return code "
-              << read_count << ".\n";
-          }
+          downloader_cat.info()
+            << "Lost connection to "
+            << _source->get_server_name() << ":" 
+            << _source->get_port() << " (" << read_count << ").\n";
 #ifdef REPORT_OPENSSL_ERRORS
           ERR_print_errors_fp(stderr);
 #endif
