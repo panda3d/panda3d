@@ -95,7 +95,7 @@ EggToC() :
 void EggToC::
 run() {
   nout << "Removing invalid primitives.\n";
-  int num_removed = _data->remove_invalid_primitives();
+  int num_removed = _data->remove_invalid_primitives(true);
   nout << "  (" << num_removed << " removed.)\n";
 
   if (_triangulate_polygons) {
@@ -106,7 +106,7 @@ run() {
 
   _data->apply_texmats();
   _data->flatten_transforms();
-  _data->remove_unused_vertices();
+  _data->remove_unused_vertices(true);
 
   // Collect all the polygons together into polysets.
   EggPolysetMaker pmaker;

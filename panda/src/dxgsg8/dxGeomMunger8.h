@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "qpgeomMunger.h"
+#include "graphicsStateGuardian.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DXGeomMunger8
@@ -32,10 +33,12 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGeomMunger8 : public qpGeomMunger {
 public:
-  INLINE DXGeomMunger8();
+  INLINE DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state);
 
 protected:
   virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig);
+  virtual void munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
+  virtual int compare_to_impl(const qpGeomMunger *other) const;
 
 public:
   static TypeHandle get_class_type() {

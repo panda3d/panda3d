@@ -49,11 +49,15 @@ PUBLISHED:
   INLINE const Normald &get_normal() const;
   INLINE void set_normal(const Normald &normal);
   INLINE void clear_normal();
+  INLINE bool matches_normal(const EggAttributes &other) const;
+  INLINE void copy_normal(const EggAttributes &other);
 
   INLINE bool has_color() const;
   INLINE Colorf get_color() const;
   INLINE void set_color(const Colorf &Color);
   INLINE void clear_color();
+  INLINE bool matches_color(const EggAttributes &other) const;
+  INLINE void copy_color(const EggAttributes &other);
 
   void write(ostream &out, int indent_level) const;
   INLINE bool sorts_less_than(const EggAttributes &other) const;

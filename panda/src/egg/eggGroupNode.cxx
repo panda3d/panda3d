@@ -784,7 +784,7 @@ mesh_triangles(int flags) {
 //               appear anywhere in the hierarchy.
 ////////////////////////////////////////////////////////////////////
 int EggGroupNode::
-remove_unused_vertices() {
+remove_unused_vertices(bool recurse) {
   int num_removed = 0;
 
   Children::iterator ci, cnext;
@@ -805,7 +805,9 @@ remove_unused_vertices() {
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      num_removed += DCAST(EggGroupNode, child)->remove_unused_vertices();
+      if (recurse) {
+        num_removed += DCAST(EggGroupNode, child)->remove_unused_vertices(recurse);
+      }
     }
 
     ci = cnext;
@@ -823,7 +825,7 @@ remove_unused_vertices() {
 //               primitives removed.
 ////////////////////////////////////////////////////////////////////
 int EggGroupNode::
-remove_invalid_primitives() {
+remove_invalid_primitives(bool recurse) {
   int num_removed = 0;
 
   Children::iterator ci, cnext;
@@ -841,13 +843,65 @@ remove_invalid_primitives() {
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      num_removed += DCAST(EggGroupNode, child)->remove_invalid_primitives();
+      if (recurse) {
+        num_removed += DCAST(EggGroupNode, child)->remove_invalid_primitives(recurse);
+      }
     }
 
     ci = cnext;
   }
 
   return num_removed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::clear_connected_shading
+//       Access: Published
+//  Description: Resets the connected_shading information on all
+//               primitives at this node and below, so that it may be
+//               accurately rederived by the next call to
+//               get_connected_shading().
+//
+//               It may be a good idea to call
+//               remove_unused_vertices() at the same time, to
+//               establish the correct connectivity.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+clear_connected_shading() {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPrimitive::get_class_type())) {
+      EggPrimitive *prim = DCAST(EggPrimitive, child);
+      prim->clear_connected_shading();
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      DCAST(EggGroupNode, child)->clear_connected_shading();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::get_connected_shading
+//       Access: Published
+//  Description: Queries the connected_shading information on all
+//               primitives at this node and below, to ensure that it
+//               has been completely filled in before we start mucking
+//               around with vertices.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+get_connected_shading() {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPrimitive::get_class_type())) {
+      EggPrimitive *prim = DCAST(EggPrimitive, child);
+      prim->get_connected_shading();
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      DCAST(EggGroupNode, child)->get_connected_shading();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -904,22 +958,31 @@ rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse) {
 //               normals or its vertices will, but not both.  Ditto
 //               for colors.
 //
+//               If use_connected_shading is true, each polygon is
+//               considered in conjunction with all connected
+//               polygons; otherwise, each polygon is considered
+//               individually.
+//
 //               This may create redundant vertices in the vertex
 //               pool, so it may be a good idea to follow this up with
 //               remove_unused_vertices().
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
-unify_attributes(bool recurse) {
+unify_attributes(bool use_connected_shading, bool recurse) {
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggNode *child = *ci;
 
     if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *prim = DCAST(EggPrimitive, child);
-      prim->unify_attributes();
+      if (use_connected_shading) {
+        prim->unify_attributes(prim->get_connected_shading());
+      } else {
+        prim->unify_attributes(prim->get_shading());
+      }
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       if (recurse) {
-        DCAST(EggGroupNode, child)->unify_attributes(recurse);
+        DCAST(EggGroupNode, child)->unify_attributes(use_connected_shading, recurse);
       }
     }
   }
@@ -930,9 +993,10 @@ unify_attributes(bool recurse) {
 //       Access: Published
 //  Description: Sets the last vertex of the triangle (or each
 //               component) to the primitive normal and/or color, if
-//               they exist.  This reflects the Panda convention of
-//               storing flat-shaded properties on the last vertex,
-//               although it is not usually a convention in Egg.
+//               the primitive is flat-shaded.  This reflects the
+//               OpenGL convention of storing flat-shaded properties on
+//               the last vertex, although it is not usually a
+//               convention in Egg.
 //
 //               This may create redundant vertices in the vertex
 //               pool, so it may be a good idea to follow this up with
@@ -956,7 +1020,38 @@ apply_last_attribute(bool recurse) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::post_apply_last_attribute
+//     Function: EggGroupNode::apply_first_attribute
+//       Access: Published
+//  Description: Sets the first vertex of the triangle (or each
+//               component) to the primitive normal and/or color, if
+//               the primitive is flat-shaded.  This reflects the
+//               DirectX convention of storing flat-shaded properties on
+//               the first vertex, although it is not usually a
+//               convention in Egg.
+//
+//               This may create redundant vertices in the vertex
+//               pool, so it may be a good idea to follow this up with
+//               remove_unused_vertices().
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+apply_first_attribute(bool recurse) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPrimitive::get_class_type())) {
+      EggPrimitive *prim = DCAST(EggPrimitive, child);
+      prim->apply_first_attribute();
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      if (recurse) {
+        DCAST(EggGroupNode, child)->apply_first_attribute(recurse);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::post_apply_flat_attribute
 //       Access: Published
 //  Description: Intended as a followup to apply_last_attribute(),
 //               this also sets an attribute on the first vertices of
@@ -964,17 +1059,17 @@ apply_last_attribute(bool recurse) {
 //               attribute set, just so they end up with *something*.
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
-post_apply_last_attribute(bool recurse) {
+post_apply_flat_attribute(bool recurse) {
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggNode *child = *ci;
 
     if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *prim = DCAST(EggPrimitive, child);
-      prim->post_apply_last_attribute();
+      prim->post_apply_flat_attribute();
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       if (recurse) {
-        DCAST(EggGroupNode, child)->post_apply_last_attribute(recurse);
+        DCAST(EggGroupNode, child)->post_apply_flat_attribute(recurse);
       }
     }
   }

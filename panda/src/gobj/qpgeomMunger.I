@@ -72,20 +72,6 @@ compare_to(const qpGeomMunger &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomMunger::munge_data
-//       Access: Public
-//  Description: Given a source GeomVertexData, converts it if
-//               necessary to the appropriate data for rendering.
-////////////////////////////////////////////////////////////////////
-INLINE CPT(qpGeomVertexData) qpGeomMunger::
-munge_data(const qpGeomVertexData *data) const {
-  // We cast away the const pointer, because do_munge_data() needs to
-  // update caches and stuff, but we trust it not to change any
-  // user-definable parameters.
-  return ((qpGeomMunger *)this)->do_munge_data(data);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::munge_format
 //       Access: Public
 //  Description: Given a source GeomVertexFormat, converts it if
@@ -97,6 +83,20 @@ munge_format(const qpGeomVertexFormat *format) const {
   // to update caches and stuff, but we trust it not to change any
   // user-definable parameters.
   return ((qpGeomMunger *)this)->do_munge_format(format);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::munge_data
+//       Access: Public
+//  Description: Given a source GeomVertexData, converts it if
+//               necessary to the appropriate data for rendering.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(qpGeomVertexData) qpGeomMunger::
+munge_data(const qpGeomVertexData *data) const {
+  // We cast away the const pointer, because do_munge_data() needs to
+  // update caches and stuff, but we trust it not to change any
+  // user-definable parameters.
+  return ((qpGeomMunger *)this)->do_munge_data(data);
 }
 
 ////////////////////////////////////////////////////////////////////

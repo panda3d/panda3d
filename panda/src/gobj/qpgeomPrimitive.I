@@ -18,6 +18,37 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_shade_model
+//       Access: Published
+//  Description: Returns the ShadeModel hint for this primitive.
+//               This is intended as a hint to the renderer to tell it
+//               how the per-vertex colors and normals are applied.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomPrimitive::ShadeModel qpGeomPrimitive::
+get_shade_model() const {
+  CDReader cdata(_cycler);
+  return cdata->_shade_model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::set_shade_model
+//       Access: Published
+//  Description: Changes the ShadeModel hint for this primitive.
+//               This is different from the ShadeModelAttrib that
+//               might also be applied from the scene graph.  This
+//               does not affect the shade model that is in effect
+//               when rendering, but rather serves as a hint to the
+//               renderer to tell it how the per-vertex colors and
+//               normals on this primitive are applied.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomPrimitive::
+set_shade_model(qpGeomPrimitive::ShadeModel shade_model) {
+  CDWriter cdata(_cycler);
+  cdata->_shade_model = shade_model;
+  cdata->_rotated_vertices.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_num_vertices
 //       Access: Published
 //  Description: Returns the number of vertex vertices used by all the
@@ -53,6 +84,64 @@ INLINE CPTA_ushort qpGeomPrimitive::
 get_vertices() const {
   CDReader cdata(_cycler);
   return cdata->_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_flat_first_vertices
+//       Access: Published
+//  Description: Returns a const pointer to the vertex index array,
+//               suitable for traversing for a renderer that expects
+//               the key vertex of each triangle in a flat-shaded
+//               model to be the triangle's first vertex (as DirectX
+//               does).
+//
+//               The result of this is dependent on the value
+//               specified to set_shade_model().  If the shade model
+//               indicates flat_last_vertex, this will return the
+//               vertices rotated to bring them into first_vertex
+//               compliance; otherwise, it will be the unmodified
+//               result from get_vertices().
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_ushort qpGeomPrimitive::
+get_flat_first_vertices() const {
+  CDReader cdata(_cycler);
+  if (cdata->_shade_model == SM_flat_last_vertex) {
+    if (cdata->_rotated_vertices == (const ushort *)NULL) {
+      ((qpGeomPrimitive *)this)->do_rotate();
+    }
+    return cdata->_rotated_vertices;
+  } else {
+    return cdata->_vertices;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_flat_last_vertices
+//       Access: Published
+//  Description: Returns a const pointer to the vertex index array,
+//               suitable for traversing for a renderer that expects
+//               the key vertex of each triangle in a flat-shaded
+//               model to be the triangle's last vertex (as OpenGL
+//               does).
+//
+//               The result of this is dependent on the value
+//               specified to set_shade_model().  If the shade model
+//               indicates flat_first_vertex, this will return the
+//               vertices rotated to bring them into last_vertex
+//               compliance; otherwise, it will be the unmodified
+//               result from get_vertices().
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_ushort qpGeomPrimitive::
+get_flat_last_vertices() const {
+  CDReader cdata(_cycler);
+  if (cdata->_shade_model == SM_flat_first_vertex) {
+    if (cdata->_rotated_vertices == (const ushort *)NULL) {
+      ((qpGeomPrimitive *)this)->do_rotate();
+    }
+    return cdata->_rotated_vertices;
+  } else {
+    return cdata->_vertices;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,12 +193,24 @@ get_max_vertex() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_primitive_end
+//       Access: Published
+//  Description: Returns the element within the _vertices list at which
+//               the ith primitive ends.  
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomPrimitive::
+get_primitive_end(int i) const {
+  return get_primitive_start(i + 1);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::CData::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomPrimitive::CData::
 CData() :
+  _shade_model(SM_smooth),
   _got_minmax(true),
   _min_vertex(0),
   _max_vertex(0)
@@ -123,7 +224,9 @@ CData() :
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomPrimitive::CData::
 CData(const qpGeomPrimitive::CData &copy) :
+  _shade_model(copy._shade_model),
   _vertices(copy._vertices),
+  _rotated_vertices(copy._rotated_vertices),
   _ends(copy._ends),
   _got_minmax(copy._got_minmax),
   _min_vertex(copy._min_vertex),

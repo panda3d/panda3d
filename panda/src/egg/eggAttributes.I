@@ -60,6 +60,41 @@ clear_normal() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggAttributes::matches_normal
+//       Access: Published
+//  Description: Returns true if this normal matches that of the other
+//               EggAttributes object, include the morph list.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggAttributes::
+matches_normal(const EggAttributes &other) const {
+  if (((_flags ^ other._flags) & F_has_normal) != 0) {
+    return false;
+  }
+  if (!has_normal()) {
+    return true;
+  }
+  return (get_normal() == other.get_normal() && 
+          _dnormals.compare_to(other._dnormals) == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggAttributes::copy_normal
+//       Access: Published
+//  Description: Sets this normal to be the same as the other's,
+//               include morphs.  If the other has no normal, this
+//               clears the normal.
+////////////////////////////////////////////////////////////////////
+INLINE void EggAttributes::
+copy_normal(const EggAttributes &other) {
+  if (!other.has_normal()) {
+    clear_normal();
+  } else {
+    set_normal(other.get_normal());
+    _dnormals = other._dnormals;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::has_color
 //       Access: Published
 //  Description:
@@ -103,6 +138,41 @@ set_color(const Colorf &color) {
 INLINE void EggAttributes::
 clear_color() {
   _flags &= ~F_has_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggAttributes::matches_color
+//       Access: Published
+//  Description: Returns true if this color matches that of the other
+//               EggAttributes object, include the morph list.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggAttributes::
+matches_color(const EggAttributes &other) const {
+  if (((_flags ^ other._flags) & F_has_color) != 0) {
+    return false;
+  }
+  if (!has_color()) {
+    return true;
+  }
+  return (get_color() == other.get_color() && 
+          _drgbas.compare_to(other._drgbas) == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggAttributes::copy_color
+//       Access: Published
+//  Description: Sets this color to be the same as the other's,
+//               include morphs.  If the other has no color, this
+//               clears the color.
+////////////////////////////////////////////////////////////////////
+INLINE void EggAttributes::
+copy_color(const EggAttributes &other) {
+  if (!other.has_color()) {
+    clear_color();
+  } else {
+    set_color(other.get_color());
+    _drgbas = other._drgbas;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

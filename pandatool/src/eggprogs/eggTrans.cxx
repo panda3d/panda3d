@@ -89,9 +89,9 @@ void EggTrans::
 run() {
   if (_remove_invalid_primitives) {
     nout << "Removing invalid primitives.\n";
-    int num_removed = _data->remove_invalid_primitives();
+    int num_removed = _data->remove_invalid_primitives(true);
     nout << "  (" << num_removed << " removed.)\n";
-    _data->remove_unused_vertices();
+    _data->remove_unused_vertices(true);
   }
 
   if (_triangulate_polygons) {
@@ -108,7 +108,7 @@ run() {
   if (_apply_texmats) {
     nout << "Applying texture matrices.\n";
     _data->apply_texmats();
-    _data->remove_unused_vertices();
+    _data->remove_unused_vertices(true);
   }
 
   if (_collapse_equivalent_textures) {
@@ -120,7 +120,7 @@ run() {
   if (_flatten_transforms) {
     nout << "Flattening transforms.\n";
     _data->flatten_transforms();
-    _data->remove_unused_vertices();
+    _data->remove_unused_vertices(true);
   }
 
   if (_standardize_names) {

@@ -157,8 +157,13 @@ build_graph() {
   // First, load up all of the textures.
   load_textures();
 
+  // Clean up the vertices.
+  _data->clear_connected_shading();
+  _data->remove_unused_vertices(true);
+  _data->unify_attributes(true, true);
+
   // Then bin up the polysets and LOD nodes.
-  _data->remove_invalid_primitives();
+  _data->remove_invalid_primitives(true);
   EggBinner binner(*this);
   binner.make_bins(_data);
 
@@ -1439,19 +1444,11 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
     return NULL;
   }
 
-  // In the normal case--not indexed--we can generate an optimal
-  // vertex pool for the polygons in the bin (which translates
-  // directly to an optimal GeomVertexData structure).  However, if
-  // the indexed flag is set on these polygons, we don't do this,
-  // since the indexed flag means to use the supplied vertex pool
-  // exactly as it is.
-  PT(EggVertexPool) vertex_pool;
-  if (!render_state->_indexed) {
-    vertex_pool = new EggVertexPool("bin");
-    egg_bin->rebuild_vertex_pool(vertex_pool, false);
-  } else {
-    vertex_pool = first_prim->get_pool();
-  }
+  // Generate an optimal vertex pool for the polygons within just the
+  // bin (which translates directly to an optimal GeomVertexData
+  // structure).
+  PT(EggVertexPool) vertex_pool = new EggVertexPool("bin");
+  egg_bin->rebuild_vertex_pool(vertex_pool, false);
 
   if (egg_mesh) {
     // If we're using the mesher, mesh now.
@@ -1463,13 +1460,11 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
     egg_bin->triangulate_polygons(EggGroupNode::T_polygon | EggGroupNode::T_convex);
   }
 
-  if (!render_state->_indexed) {
-    // Now that we've meshed, apply the per-prim attributes onto the
-    // vertices, so we can copy them to the GeomVertexData.
-    egg_bin->apply_last_attribute(false);
-    egg_bin->post_apply_last_attribute(false);
-    vertex_pool->remove_unused_vertices();
-  }
+  // Now that we've meshed, apply the per-prim attributes onto the
+  // vertices, so we can copy them to the GeomVertexData.
+  egg_bin->apply_first_attribute(false);
+  egg_bin->post_apply_flat_attribute(false);
+  vertex_pool->remove_unused_vertices();
 
   //  vertex_pool->write(cerr, 0);
   //  egg_bin->write(cerr, 0);
@@ -1480,7 +1475,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
   for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
     EggPrimitive *egg_prim;
     DCAST_INTO_R(egg_prim, (*ci), NULL);
-    make_primitive(egg_prim, primitives);
+    make_primitive(render_state, egg_prim, primitives);
   }
 
   if (!primitives.empty()) {
@@ -1977,7 +1972,8 @@ make_vertex_data(EggVertexPool *vertex_pool, const LMatrix4d &transform) {
 //               indicated EggPrimitive, and adds it to the set.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-make_primitive(EggPrimitive *egg_prim, EggLoader::Primitives &primitives) {
+make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim, 
+               EggLoader::Primitives &primitives) {
   PT(qpGeomPrimitive) primitive;
   if (egg_prim->is_of_type(EggPolygon::get_class_type())) {
     if (egg_prim->size() == 3) {
@@ -1989,13 +1985,26 @@ make_primitive(EggPrimitive *egg_prim, EggLoader::Primitives &primitives) {
 
   if (primitive == (qpGeomPrimitive *)NULL) {
     // Don't know how to make this kind of primitive.
+    egg2pg_cat.warning()
+      << "Ignoring " << egg_prim->get_class_type() << "\n";
     return;
+  }
+
+  if (render_state->_flat_shaded) {
+    primitive->set_shade_model(qpGeomPrimitive::SM_flat_first_vertex);
+
+  } else if (egg_prim->get_shading() == EggPrimitive::S_overall) {
+    primitive->set_shade_model(qpGeomPrimitive::SM_uniform);
+
+  } else {
+    primitive->set_shade_model(qpGeomPrimitive::SM_smooth);
   }
 
   // Insert the primitive into the set, but if we already have a
   // primitive of that type, reset the pointer to that one instead.
+  PrimitiveUnifier pu(primitive);
   pair<Primitives::iterator, bool> result =
-    primitives.insert(Primitives::value_type(primitive->get_type(), primitive));
+    primitives.insert(Primitives::value_type(pu, primitive));
   primitive = (*result.first).second;
 
   // Now add the vertices.

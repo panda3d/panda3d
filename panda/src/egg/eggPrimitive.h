@@ -66,6 +66,15 @@ private:
   // Here begins the actual public interface to EggPrimitive.
 
 PUBLISHED:
+  enum Shading {
+    // The order here is important.  The later choices are more
+    // specific than the earlier ones.
+    S_unknown,
+    S_overall,
+    S_per_face,
+    S_per_vertex
+  };
+
   INLINE EggPrimitive(const string &name = "");
   INLINE EggPrimitive(const EggPrimitive &copy);
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
@@ -77,6 +86,10 @@ PUBLISHED:
   virtual EggRenderMode *determine_visibility_mode();
   virtual EggRenderMode *determine_draw_order();
   virtual EggRenderMode *determine_bin();
+
+  virtual Shading get_shading() const;
+  INLINE void clear_connected_shading();
+  INLINE Shading get_connected_shading();
 
   INLINE void set_texture(EggTexture *texture);
   INLINE bool has_texture() const;
@@ -101,11 +114,11 @@ PUBLISHED:
 
   bool has_vertex_normal() const;
   bool has_vertex_color() const;
-  bool is_flat_shaded() const;
 
-  virtual void unify_attributes();
+  virtual void unify_attributes(Shading shading);
   virtual void apply_last_attribute();
-  virtual void post_apply_last_attribute();
+  virtual void apply_first_attribute();
+  virtual void post_apply_flat_attribute();
   virtual void reverse_vertex_ordering();
   virtual bool cleanup();
 
@@ -180,7 +193,6 @@ protected:
   virtual void prepare_add_vertex(EggVertex *vertex, int i, int n);
   virtual void prepare_remove_vertex(EggVertex *vertex, int i, int n);
 
-
 protected:
   void write_body(ostream &out, int indent_level) const;
 
@@ -190,12 +202,17 @@ protected:
   virtual void r_flatten_transforms();
   virtual void r_apply_texmats(EggTextureCollection &textures);
 
+  void do_apply_flat_attribute(int vertex_index, EggAttributes *attrib);
+
+private:
+  void set_connected_shading(Shading shading, const EggAttributes *neighbor);
 
 private:
   typedef vector_PT_EggTexture Textures;
   Textures _textures;
   PT_EggMaterial _material;
   bool _bface;
+  Shading _connected_shading;
 
 public:
 

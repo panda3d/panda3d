@@ -274,12 +274,12 @@ release_geom(GeomContext *) {
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomMunger) GraphicsStateGuardian::
-get_geom_munger(const RenderState *) {
+get_geom_munger(const RenderState *state) {
   // The default implementation returns a munger that does nothing,
   // but presumably, every kind of GSG needs some special munging
   // action, so real GSG's will override this to return something more
   // useful.
-  return qpGeomMunger::register_munger(new qpGeomMunger);
+  return qpGeomMunger::register_munger(new qpGeomMunger(this, state));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -632,7 +632,7 @@ begin_draw_primitives(const qpGeomVertexData *data) {
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_triangles(qpGeomTriangles *) {
+draw_triangles(const qpGeomTriangles *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -641,8 +641,8 @@ draw_triangles(qpGeomTriangles *) {
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_tristrips(qpGeomTristrips *primitive) {
-  PT(qpGeomPrimitive) new_prim = primitive->decompose();
+draw_tristrips(const qpGeomTristrips *primitive) {
+  CPT(qpGeomPrimitive) new_prim = primitive->decompose();
   if (!new_prim->is_of_type(qpGeomTristrips::get_class_type())) {
     new_prim->draw(this);
   }
@@ -654,8 +654,8 @@ draw_tristrips(qpGeomTristrips *primitive) {
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-draw_trifans(qpGeomTrifans *primitive) {
-  PT(qpGeomPrimitive) new_prim = primitive->decompose();
+draw_trifans(const qpGeomTrifans *primitive) {
+  CPT(qpGeomPrimitive) new_prim = primitive->decompose();
   if (!new_prim->is_of_type(qpGeomTrifans::get_class_type())) {
     new_prim->draw(this);
   }

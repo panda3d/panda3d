@@ -247,7 +247,7 @@ int qpGeomVertexData::
 get_num_bytes() const {
   CDReader cdata(_cycler);
   
-  int num_bytes = 0;
+  int num_bytes = sizeof(qpGeomVertexData);
 
   Arrays::const_iterator ai;
   for (ai = cdata->_arrays.begin(); ai != cdata->_arrays.end(); ++ai) {
@@ -738,13 +738,13 @@ unpack_argb(float data[4], unsigned int packed_argb) {
 //               This is only called from GeomVertexCacheManager.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-remove_cache_entry(const qpGeomVertexFormat *format) const {
+remove_cache_entry(const qpGeomVertexFormat *modifier) const {
   // We have to operate on stage 0 of the pipeline, since that's where
   // the cache really counts.  Because of the multistage pipeline, we
   // might not actually have a cache entry there (it might have been
   // added to stage 1 instead).  No big deal if we don't.
   CData *cdata = ((qpGeomVertexData *)this)->_cycler.write_stage(0);
-  ConvertedCache::iterator ci = cdata->_converted_cache.find(format);
+  ConvertedCache::iterator ci = cdata->_converted_cache.find(modifier);
   if (ci != cdata->_converted_cache.end()) {
     cdata->_converted_cache.erase(ci);
   }

@@ -18,6 +18,7 @@
 
 #include "qpgeomTristrips.h"
 #include "qpgeomTriangles.h"
+#include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
@@ -53,19 +54,29 @@ qpGeomTristrips::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTristrips::make_copy
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PT(qpGeomPrimitive) qpGeomTristrips::
+make_copy() const {
+  return new qpGeomTristrips(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTristrips::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void qpGeomTristrips::
-draw(GraphicsStateGuardianBase *gsg) {
+draw(GraphicsStateGuardianBase *gsg) const {
   gsg->draw_tristrips(this);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTristrips::decompose_impl
-//       Access: Published, Virtual
+//       Access: Protected, Virtual
 //  Description: Decomposes a complex primitive type into a simpler
 //               primitive type, for instance triangle strips to
 //               triangles, and returns a pointer to the new primitive
@@ -77,47 +88,135 @@ draw(GraphicsStateGuardianBase *gsg) {
 //               primitive without having to write handlers for each
 //               possible kind of primitive type.
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomPrimitive) qpGeomTristrips::
-decompose_impl() {
+CPT(qpGeomPrimitive) qpGeomTristrips::
+decompose_impl() const {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles;
+  triangles->set_shade_model(get_shade_model());
   CPTA_ushort vertices = get_vertices();
   CPTA_int ends = get_ends();
 
-  int vi = 0;
-  int li = 0;
-  while (li < (int)ends.size()) {
-    int end = ends[li];
-    nassertr(vi + 2 <= end, triangles.p());
-    nassertr(vi < (int)vertices.size(), this);
-    int v0 = vertices[vi];
-    ++vi;
-    nassertr(vi < (int)vertices.size(), this);
-    int v1 = vertices[vi];
-    ++vi;
-    bool reversed = false;
-    while (vi < end) {
-      if (reversed) {
-        triangles->add_vertex(v1);
-        triangles->add_vertex(v0);
-        reversed = false;
-      } else {
-        triangles->add_vertex(v0);
-        triangles->add_vertex(v1);
-        reversed = true;
-      }
-      triangles->add_vertex(vertices[vi]);
-      v0 = v1;
+  // We need a slightly different algorithm for SM_flat_first_vertex
+  // than for SM_flat_last_vertex, to preserve the key vertex in the
+  // right place.  The remaining shade models can either either
+  // algorithm.
+  if (get_shade_model() == SM_flat_first_vertex) {
+    // Preserve the first vertex of each component triangle as the
+    // first vertex of each generated triangle.
+    int vi = 0;
+    int li = 0;
+    while (li < (int)ends.size()) {
+      int end = ends[li];
+      nassertr(vi + 2 <= end, triangles.p());
       nassertr(vi < (int)vertices.size(), this);
-      v1 = vertices[vi];
-      triangles->close_primitive();
+      int v0 = vertices[vi];
       ++vi;
+      nassertr(vi < (int)vertices.size(), this);
+      int v1 = vertices[vi];
+      ++vi;
+      bool reversed = false;
+      while (vi < end) {
+        triangles->add_vertex(v0);
+        if (reversed) {
+          triangles->add_vertex(vertices[vi]);
+          triangles->add_vertex(v1);
+          reversed = false;
+        } else {
+          triangles->add_vertex(v1);
+          triangles->add_vertex(vertices[vi]);
+          reversed = true;
+        }
+        v0 = v1;
+        nassertr(vi < (int)vertices.size(), this);
+        v1 = vertices[vi];
+        triangles->close_primitive();
+        ++vi;
+      }
+      ++li;
     }
-    ++li;
+    nassertr(vi == (int)vertices.size(), triangles.p());
+
+  } else {
+    // Preserve the last vertex of each component triangle as the
+    // last vertex of each generated triangle.
+    int vi = 0;
+    int li = 0;
+    while (li < (int)ends.size()) {
+      int end = ends[li];
+      nassertr(vi + 2 <= end, triangles.p());
+      nassertr(vi < (int)vertices.size(), this);
+      int v0 = vertices[vi];
+      ++vi;
+      nassertr(vi < (int)vertices.size(), this);
+      int v1 = vertices[vi];
+      ++vi;
+      bool reversed = false;
+      while (vi < end) {
+        if (reversed) {
+          triangles->add_vertex(v1);
+          triangles->add_vertex(v0);
+          reversed = false;
+        } else {
+          triangles->add_vertex(v0);
+          triangles->add_vertex(v1);
+          reversed = true;
+        }
+        triangles->add_vertex(vertices[vi]);
+        v0 = v1;
+        nassertr(vi < (int)vertices.size(), this);
+        v1 = vertices[vi];
+        triangles->close_primitive();
+        ++vi;
+      }
+      ++li;
+    }
+    nassertr(vi == (int)vertices.size(), triangles.p());
   }
 
-  nassertr(vi == (int)vertices.size(), triangles.p());
-
   return triangles.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTristrips::rotate_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of do_rotate().
+////////////////////////////////////////////////////////////////////
+CPTA_ushort qpGeomTristrips::
+rotate_impl() const {
+  // To rotate a triangle strip with an even number of vertices, we
+  // just reverse the vertices.  But if we have an odd number of
+  // vertices, that doesn't work--in fact, nothing works (without also
+  // changing the winding order), so we don't allow an odd number of
+  // vertices in a flat-shaded tristrip.
+  CPTA_ushort vertices = get_vertices();
+  CPTA_int ends = get_ends();
+  PTA_ushort new_vertices;
+  new_vertices.reserve(vertices.size());
+
+  bool any_odd = false;
+
+  int begin = 0;
+  CPTA_int::const_iterator ei;
+  for (ei = ends.begin(); ei != ends.end(); ++ei) {
+    int end = (*ei);
+    int num_vertices = end - begin;
+
+    if ((num_vertices & 1) == 0) {
+      for (int vi = end - 1; vi >= begin; --vi) {
+        new_vertices.push_back(vertices[vi]);
+      }
+    } else {
+      any_odd = true;
+    }
+
+    begin = end;
+  }
+  nassertr(new_vertices.size() == vertices.size(), vertices);
+
+  // If this assertion is triggered, there was a triangle strip with
+  // an odd number of vertices and either SM_flat_first_vertex or
+  // SM_flat_last_vertex specified--which is not allowed.
+  nassertr(!any_odd, new_vertices);
+  return new_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////

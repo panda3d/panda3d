@@ -2058,14 +2058,14 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_triangles(qpGeomTriangles *primitive) {
+draw_triangles(const qpGeomTriangles *primitive) {
   setup_antialias_polygon();
 
   _glDrawRangeElements(GL_TRIANGLES, 
                        primitive->get_min_vertex(),
                        primitive->get_max_vertex(),
                        primitive->get_num_vertices(),
-                       GL_UNSIGNED_SHORT, primitive->get_vertices());
+                       GL_UNSIGNED_SHORT, primitive->get_flat_last_vertices());
 
   report_my_gl_errors();
 }
@@ -2283,8 +2283,8 @@ static int binary_log_cap(const int x) {
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomMunger) CLP(GraphicsStateGuardian)::
-get_geom_munger(const RenderState *) {
-  PT(CLP(GeomMunger)) munger = new CLP(GeomMunger);
+get_geom_munger(const RenderState *state) {
+  PT(CLP(GeomMunger)) munger = new CLP(GeomMunger)(this, state);
   return qpGeomMunger::register_munger(munger);
 }
 

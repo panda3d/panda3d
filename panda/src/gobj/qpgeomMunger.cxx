@@ -32,7 +32,7 @@ PStatCollector qpGeomMunger::_munge_pcollector("Cull:Munge");
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomMunger::
-qpGeomMunger() :
+qpGeomMunger(const GraphicsStateGuardianBase *, const RenderState *) :
   _is_registered(false)
 {
 }
@@ -93,28 +93,6 @@ remove_data(const qpGeomVertexData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomMunger::do_munge_data
-//       Access: Protected
-//  Description: The protected implementation of munge_data().  This
-//               exists just to cast away the const pointer.
-////////////////////////////////////////////////////////////////////
-CPT(qpGeomVertexData) qpGeomMunger::
-do_munge_data(const qpGeomVertexData *data) {
-  nassertr(_is_registered, NULL);
-  PStatTimer timer(_munge_pcollector);
-
-  CPT(qpGeomVertexFormat) orig_format = data->get_format();
-  CPT(qpGeomVertexFormat) new_format = munge_format(orig_format);
-
-  if (new_format == orig_format) {
-    // Trivial case.
-    return data;
-  }
-
-  return data->convert_to(new_format);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::do_munge_format
 //       Access: Protected
 //  Description: The protected implementation of munge_format().  This
@@ -162,6 +140,28 @@ do_munge_format(const qpGeomVertexFormat *format) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::do_munge_data
+//       Access: Protected
+//  Description: The protected implementation of munge_data().  This
+//               exists just to cast away the const pointer.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexData) qpGeomMunger::
+do_munge_data(const qpGeomVertexData *data) {
+  nassertr(_is_registered, NULL);
+  PStatTimer timer(_munge_pcollector);
+
+  CPT(qpGeomVertexFormat) orig_format = data->get_format();
+  CPT(qpGeomVertexFormat) new_format = munge_format(orig_format);
+
+  if (new_format == orig_format) {
+    // Trivial case.
+    return data;
+  }
+
+  return data->convert_to(new_format);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::munge_format_impl
 //       Access: Protected, Virtual
 //  Description: Given a source GeomVertexFormat, converts it if
@@ -170,6 +170,16 @@ do_munge_format(const qpGeomVertexFormat *format) {
 CPT(qpGeomVertexFormat) qpGeomMunger::
 munge_format_impl(const qpGeomVertexFormat *orig) {
   return orig;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::munge_geom_impl
+//       Access: Protected, Virtual
+//  Description: Converts a Geom and/or its data as necessary.
+////////////////////////////////////////////////////////////////////
+void qpGeomMunger::
+munge_geom_impl(CPT(qpGeom) &, CPT(qpGeomVertexData) &) {
+  // The default implementation does nothing.
 }
 
 ////////////////////////////////////////////////////////////////////

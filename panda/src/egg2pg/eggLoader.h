@@ -57,6 +57,7 @@ class CollisionPlane;
 class CollisionPolygon;
 class PortalNode;
 class PolylightNode;
+class EggRenderState;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggLoader
@@ -99,7 +100,15 @@ private:
   typedef pmap<CPT(InternalName), const EggTexture *> BakeInUVs;
 
   // This is used by make_primitive().
-  typedef pmap<TypeHandle, PT(qpGeomPrimitive) > Primitives;
+  class PrimitiveUnifier {
+  public:
+    INLINE PrimitiveUnifier(const qpGeomPrimitive *prim);
+    INLINE bool operator < (const PrimitiveUnifier &other) const;
+
+    TypeHandle _type;
+    qpGeomPrimitive::ShadeModel _shade_model;
+  };
+  typedef pmap<PrimitiveUnifier, PT(qpGeomPrimitive) > Primitives;
   
   void make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
                         const LMatrix4d &mat);
@@ -130,7 +139,8 @@ private:
                           bool &any_hidden);
   PT(qpGeomVertexData) make_vertex_data(EggVertexPool *vertex_pool, 
                                         const LMatrix4d &transform);
-  void make_primitive(EggPrimitive *egg_prim, Primitives &primitives);
+  void make_primitive(const EggRenderState *render_state, 
+                      EggPrimitive *egg_prim, Primitives &primitives);
 
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
   PT(EggPolygon) find_first_polygon(EggGroup *egg_group);

@@ -25,6 +25,7 @@
 INLINE EggPrimitive::
 EggPrimitive(const string &name): EggNode(name) {
   _bface = false;
+  _connected_shading = S_unknown;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,6 +42,7 @@ EggPrimitive(const EggPrimitive &copy) :
   _bface(copy._bface)
 {
   copy_vertices(copy);
+  _connected_shading = S_unknown;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,6 +58,7 @@ operator = (const EggPrimitive &copy) {
   _textures = copy._textures;
   _material = copy._material;
   _bface = copy._bface;
+  _connected_shading = S_unknown;
   return *this;
 }
 
@@ -67,6 +70,44 @@ operator = (const EggPrimitive &copy) {
 INLINE EggPrimitive::
 ~EggPrimitive() {
   clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::clear_connected_shading
+//       Access: Published
+//  Description: Resets the connected_shading member in this
+//               primitive, so that get_connected_shading() will
+//               recompute a new value.
+////////////////////////////////////////////////////////////////////
+INLINE void EggPrimitive::
+clear_connected_shading() {
+  _connected_shading = S_unknown;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::get_connected_shading
+//       Access: Published
+//  Description: Determines what sort of shading properties this
+//               primitive's connected neighbors have.
+//
+//               To get the most accurate results, you should first
+//               call clear_connected_shading() on all connected
+//               primitives (or on all primitives in the egg file).
+//               It might also be a good idea to call
+//               remove_unused_vertices() to ensure proper
+//               connectivity.
+//
+//               You may find it easiest to call these other methods
+//               on the EggData root node (they are defined on
+//               EggGroupNode).
+////////////////////////////////////////////////////////////////////
+INLINE EggPrimitive::Shading EggPrimitive::
+get_connected_shading() {
+  if (_connected_shading == S_unknown) {
+    set_connected_shading(S_unknown, this);
+  }
+
+  return _connected_shading;
 }
 
 ////////////////////////////////////////////////////////////////////

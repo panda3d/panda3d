@@ -174,9 +174,9 @@ public:
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc)=0;
 
   virtual bool begin_draw_primitives(const qpGeomVertexData *vertex_data)=0;
-  virtual void draw_triangles(qpGeomTriangles *primitive)=0;
-  virtual void draw_tristrips(qpGeomTristrips *primitive)=0;
-  virtual void draw_trifans(qpGeomTrifans *primitive)=0;
+  virtual void draw_triangles(const qpGeomTriangles *primitive)=0;
+  virtual void draw_tristrips(const qpGeomTristrips *primitive)=0;
+  virtual void draw_trifans(const qpGeomTrifans *primitive)=0;
   virtual void end_draw_primitives()=0;
 
   virtual void framebuffer_copy_to_texture

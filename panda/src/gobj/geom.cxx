@@ -1221,11 +1221,6 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     CPT(InternalName) tc = DCAST(InternalName, p_list[pi++]);
     TexCoordDef *def = (*ci);
     _texcoords_by_name[tc] = *def;
-    /*
-    cerr << "InternalName from Geom " << (void *)this
-         << " complete pointers " << tc << " " << *tc 
-         << " = " << def->_texcoords << " and " << def->_tindex << "\n";
-    */
     delete def;
     if (tc == InternalName::get_texcoord()) {
       _bind[G_TEXCOORD] = G_PER_VERTEX;

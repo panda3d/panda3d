@@ -22,6 +22,7 @@
 #include "cullBinManager.h"
 #include "fogAttrib.h"
 #include "transparencyAttrib.h"
+#include "shadeModelAttrib.h"
 #include "pStatTimer.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
@@ -1509,6 +1510,26 @@ determine_transparency() {
     _transparency = DCAST(TransparencyAttrib, attrib);
   }
   _flags |= F_checked_transparency;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_flat_shaded
+//       Access: Private
+//  Description: This is the private implementation of
+//               is_flat_shaded().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_flat_shaded() {
+  const RenderAttrib *attrib = 
+    get_attrib(ShadeModelAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ShadeModelAttrib *sma = DCAST(ShadeModelAttrib, attrib);
+    if (sma->get_mode() == ShadeModelAttrib::M_flat) {
+      _flags |= F_flat_shaded;
+    }
+  }
+
+  _flags |= F_checked_flat_shaded;
 }
 
 ////////////////////////////////////////////////////////////////////

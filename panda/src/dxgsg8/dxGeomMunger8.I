@@ -23,5 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DXGeomMunger8::
-DXGeomMunger8() {
+DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state) :
+  qpGeomMunger(gsg, state)
+{
 }

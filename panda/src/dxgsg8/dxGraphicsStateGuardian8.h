@@ -32,6 +32,7 @@
 #include "displayRegion.h"
 #include "material.h"
 #include "depthTestAttrib.h"
+#include "cullFaceAttrib.h"
 #include "renderModeAttrib.h"
 #include "textureApplyAttrib.h"
 #include "fog.h"
@@ -90,7 +91,7 @@ public:
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
   virtual bool begin_draw_primitives(const qpGeomVertexData *vertex_data);
-  virtual void draw_triangles(qpGeomTriangles *primitive);
+  virtual void draw_triangles(const qpGeomTriangles *primitive);
   virtual void end_draw_primitives();
 
   virtual TextureContext *prepare_texture(Texture *tex);
@@ -122,6 +123,7 @@ public:
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
   virtual void issue_tex_gen(const TexGenAttrib *attrib);
+  virtual void issue_shade_model(const ShadeModelAttrib *attrib);
 
   virtual void bind_light(PointLight *light, int light_id);
   virtual void bind_light(DirectionalLight *light, int light_id);
@@ -163,6 +165,9 @@ protected:
 
   INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
 
+  static CPT(RenderState) get_smooth_state();
+  static CPT(RenderState) get_flat_state();
+
   void do_auto_rescale_normal();
 
   bool                  _bDXisReady;
@@ -194,7 +199,7 @@ protected:
   INLINE void enable_fog(bool val);
   INLINE void enable_zwritemask(bool val);
   INLINE void set_color_writemask(UINT color_writemask);
-  INLINE void enable_gouraud_shading(bool val);
+  void enable_gouraud_shading(bool val);
   INLINE void set_vertex_format(DWORD NewFvfType);
 
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
@@ -291,6 +296,7 @@ protected:
   bool _depth_write_enabled;
   bool _alpha_test_enabled;
   DWORD _clip_plane_bits;
+  CullFaceAttrib::Mode _cull_face_mode;
 
   RenderModeAttrib::Mode _current_fill_mode;  //poinr/wireframe/solid
 

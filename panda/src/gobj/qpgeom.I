@@ -68,6 +68,7 @@ get_primitive(int i) const {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomPrimitive *qpGeom::
 modify_primitive(int i) {
+  clear_cache();
   CDWriter cdata(_cycler);
   nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
   return cdata->_primitives[i];
@@ -80,10 +81,11 @@ modify_primitive(int i) {
 //               the Geom with the new object.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeom::
-set_primitive(int i, qpGeomPrimitive *primitive) {
+set_primitive(int i, const qpGeomPrimitive *primitive) {
+  clear_cache();
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
-  cdata->_primitives[i] = primitive;
+  cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
 }
 
 ////////////////////////////////////////////////////////////////////

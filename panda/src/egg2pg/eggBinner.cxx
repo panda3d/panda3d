@@ -95,15 +95,6 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
         return (compare < 0);
       }
 
-      // If the render state indicates indexed, meaning we keep the
-      // existing vertex pools, then different pools get sorted
-      // separately.
-      if (rsa->_indexed) {
-        if (pa->get_pool() != pb->get_pool()) {
-          return pa->get_pool() < pb->get_pool();
-        }
-      }
-
       return false;
     }
 

@@ -72,3 +72,27 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(new_array_format);
   return qpGeomVertexFormat::register_format(new_format);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGeomMunger8::munge_geom_impl
+//       Access: Protected, Virtual
+//  Description: Converts a Geom and/or its data as necessary.
+////////////////////////////////////////////////////////////////////
+void DXGeomMunger8::
+munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGeomMunger8::compare_to_impl
+//       Access: Protected, Virtual
+//  Description: Called to compare two GeomMungers who are known to be
+//               of the same type, for an apples-to-apples comparison.
+//               This will never be called on two pointers of a
+//               different type.
+////////////////////////////////////////////////////////////////////
+int DXGeomMunger8::
+compare_to_impl(const qpGeomMunger *other) const {
+  //  const DXGeomMunger8 *om = DCAST(DXGeomMunger8, other);
+
+  return 0;
+}

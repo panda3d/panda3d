@@ -126,6 +126,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Cull:Show fps",                    { 0.5, 0.8, 1.0 } },
   { 1, "Cull:Bins",                        { 0.3, 0.6, 0.3 } },
   { 1, "Cull:Munge",                       { 0.3, 0.3, 0.9 } },
+  { 1, "Cull:Rotate",                      { 0.9, 0.8, 0.5 } },
   { 1, "Draw",                             { 1.0, 0.0, 0.0 },  1.0 / 30.0 },
   { 1, "Draw:Make current",                { 0.4, 0.2, 0.6 } },
   { 1, "Draw:Copy texture",                { 0.2, 0.6, 0.4 } },

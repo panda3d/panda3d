@@ -340,24 +340,11 @@ fill_state(EggPrimitive *egg_prim) {
     break;
   }
 
-  _indexed = egg_prim->determine_indexed();
-
-  bool flat_shaded;
-
-  if (!_indexed) {
-    // If the primitive is not indexed, we're allowed to call
-    // unify_attributes(), which will modify the vertex pool.
-    egg_prim->unify_attributes();
-    flat_shaded = egg_prim->is_flat_shaded();
-
-  } else {
-    // If the primitive *is* indexed, we're not allowed to modify the
-    // vertex pool, and so we won't have flat shading anyway.
-    flat_shaded = false;
-  }
+  _flat_shaded = 
+    (egg_prim->get_connected_shading() == EggPrimitive::S_per_face);
 
   if (use_qpgeom) {
-    if (flat_shaded) {
+    if (_flat_shaded) {
       add_attrib(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
     } else {
       add_attrib(ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));

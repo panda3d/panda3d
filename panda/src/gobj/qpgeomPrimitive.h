@@ -25,6 +25,7 @@
 #include "pointerTo.h"
 #include "pta_ushort.h"
 #include "pta_int.h"
+#include "pStatCollector.h"
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
@@ -64,6 +65,18 @@ PUBLISHED:
   qpGeomPrimitive(const qpGeomPrimitive &copy);
   virtual ~qpGeomPrimitive();
 
+  virtual PT(qpGeomPrimitive) make_copy() const=0;
+
+  enum ShadeModel {
+    SM_smooth,
+    SM_uniform,
+    SM_flat_first_vertex,
+    SM_flat_last_vertex,
+  };
+
+  INLINE ShadeModel get_shade_model() const;
+  INLINE void set_shade_model(ShadeModel shade_model);
+
   INLINE int get_num_vertices() const;
   INLINE int get_vertex(int i) const;
   void add_vertex(int vertex);
@@ -72,6 +85,8 @@ PUBLISHED:
   void clear_vertices();
 
   INLINE CPTA_ushort get_vertices() const;
+  INLINE CPTA_ushort get_flat_first_vertices() const;
+  INLINE CPTA_ushort get_flat_last_vertices() const;
   PTA_ushort modify_vertices();
   void set_vertices(PTA_ushort vertices);
 
@@ -88,9 +103,10 @@ PUBLISHED:
   virtual int get_min_num_vertices_per_primitive() const;
   int get_num_primitives() const;
   int get_primitive_start(int i) const;
+  INLINE int get_primitive_end(int i) const;
   int get_primitive_num_vertices(int i) const;
 
-  PT(qpGeomPrimitive) decompose();
+  CPT(qpGeomPrimitive) decompose() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -98,17 +114,22 @@ PUBLISHED:
   void clear_cache();
 
 public:
-  virtual void draw(GraphicsStateGuardianBase *gsg)=0;
+  virtual void draw(GraphicsStateGuardianBase *gsg) const=0;
 
   virtual void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                                  bool &found_any, 
                                  const qpGeomVertexData *vertex_data) const;
 
 protected:
-  virtual PT(qpGeomPrimitive) decompose_impl();
+  virtual CPT(qpGeomPrimitive) decompose_impl() const;
+  virtual CPTA_ushort rotate_impl() const;
 
-private:
+private: 
+  void do_rotate();
   void remove_cache_entry() const;
+
+protected:
+  static PStatCollector _rotate_pcollector;
 
 private:
   // This is the data that must be cycled between pipeline stages.
@@ -121,14 +142,16 @@ private:
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
+    ShadeModel _shade_model;
     PTA_ushort _vertices;
+    CPTA_ushort _rotated_vertices;
     PTA_int _ends;
 
     bool _got_minmax;
     unsigned short _min_vertex;
     unsigned short _max_vertex;
 
-    PT(qpGeomPrimitive) _decomposed;
+    CPT(qpGeomPrimitive) _decomposed;
   };
 
   PipelineCycler<CData> _cycler;

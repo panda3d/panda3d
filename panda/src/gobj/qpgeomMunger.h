@@ -22,10 +22,16 @@
 #include "pandabase.h"
 #include "typedReferenceCount.h"
 #include "qpgeomVertexFormat.h"
+#include "qpgeomVertexData.h"
 #include "indirectCompareTo.h"
 #include "pStatCollector.h"
+#include "pointerTo.h"
 #include "pmap.h"
 #include "pset.h"
+
+class GraphicsStateGuardianBase;
+class RenderState;
+class qpGeom;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : qpGeomMunger
@@ -52,7 +58,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomMunger : public TypedReferenceCount {
 public:
-  qpGeomMunger();
+  qpGeomMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state);
   virtual ~qpGeomMunger();
 
   INLINE bool is_registered() const;
@@ -64,6 +70,8 @@ public:
   INLINE CPT(qpGeomVertexData) munge_data(const qpGeomVertexData *data) const;
   void remove_data(const qpGeomVertexData *data);
 
+  // Also see Geom::munge_geom() for the primary interface.
+
 public:
   INLINE int compare_to(const qpGeomMunger &other) const;
 
@@ -72,6 +80,7 @@ protected:
   CPT(qpGeomVertexData) do_munge_data(const qpGeomVertexData *data);
 
   virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig);
+  virtual void munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
   virtual int compare_to_impl(const qpGeomMunger *other) const;
 
 private:
@@ -116,6 +125,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class qpGeom;
 };
 
 #include "qpgeomMunger.I"

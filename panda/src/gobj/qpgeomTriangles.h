@@ -34,10 +34,15 @@ PUBLISHED:
   qpGeomTriangles(const qpGeomTriangles &copy);
   virtual ~qpGeomTriangles();
 
+  virtual PT(qpGeomPrimitive) make_copy() const;
+
   virtual int get_num_vertices_per_primitive() const;
 
 public:
-  virtual void draw(GraphicsStateGuardianBase *gsg);
+  virtual void draw(GraphicsStateGuardianBase *gsg) const;
+
+protected:
+  virtual CPTA_ushort rotate_impl() const;
 
 public:
   static void register_with_read_factory();

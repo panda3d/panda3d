@@ -105,7 +105,7 @@ public:
   static void unpack_argb(float data[4], unsigned int packed_argb);
 
 private:
-  void remove_cache_entry(const qpGeomVertexFormat *format) const;
+  void remove_cache_entry(const qpGeomVertexFormat *modifier) const;
 
 private:
   CPT(qpGeomVertexFormat) _format;

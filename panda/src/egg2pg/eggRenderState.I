@@ -26,7 +26,7 @@ EggRenderState::
 EggRenderState(EggLoader &loader) :
   _state(RenderState::make_empty()),
   _hidden(false),
-  _indexed(false),
+  _flat_shaded(false),
   _loader(loader)
 {
 }
@@ -57,8 +57,8 @@ compare_to(const EggRenderState &other) const {
   if (_hidden != other._hidden) {
     return (int)_hidden - (int)other._hidden;
   }
-  if (_indexed != other._indexed) {
-    return (int)_indexed - (int)other._indexed;
+  if (_flat_shaded != other._flat_shaded) {
+    return (int)_flat_shaded - (int)other._flat_shaded;
   }
   return 0;
 }

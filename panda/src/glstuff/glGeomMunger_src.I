@@ -23,5 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(GeomMunger)::
-CLP(GeomMunger)() {
+CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
+  qpGeomMunger(gsg, state)
+{
 }

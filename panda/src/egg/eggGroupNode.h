@@ -140,12 +140,15 @@ PUBLISHED:
   int triangulate_polygons(int flags);
   void mesh_triangles(int flags);
 
-  int remove_unused_vertices();
-  int remove_invalid_primitives();
+  int remove_unused_vertices(bool recurse);
+  int remove_invalid_primitives(bool recurse);
+  void clear_connected_shading();
+  void get_connected_shading();
   void rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse);
-  void unify_attributes(bool recurse);
+  void unify_attributes(bool use_connected_shading, bool recurse);
   void apply_last_attribute(bool recurse);
-  void post_apply_last_attribute(bool recurse);
+  void apply_first_attribute(bool recurse);
+  void post_apply_flat_attribute(bool recurse);
   virtual bool has_primitives() const;
   virtual bool joint_has_primitives() const;
   virtual bool has_normals() const;

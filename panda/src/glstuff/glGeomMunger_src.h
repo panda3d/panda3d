@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "qpgeomMunger.h"
+#include "graphicsStateGuardian.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLGeomMunger
@@ -27,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(GeomMunger) : public qpGeomMunger {
 public:
-  INLINE CLP(GeomMunger)();
+  INLINE CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
 
 protected:
   virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig);

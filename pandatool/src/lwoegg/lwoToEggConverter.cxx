@@ -164,7 +164,7 @@ convert_lwo(const LwoHeader *lwo_header) {
   make_egg();
   connect_egg();
 
-  _egg_data->remove_unused_vertices();
+  _egg_data->remove_unused_vertices(true);
   cleanup();
 
   return !had_error();

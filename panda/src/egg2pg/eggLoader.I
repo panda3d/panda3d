@@ -18,6 +18,32 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::PrimitiveUnifier::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE EggLoader::PrimitiveUnifier::
+PrimitiveUnifier(const qpGeomPrimitive *prim) :
+  _type(prim->get_type()),
+  _shade_model(prim->get_shade_model())
+{
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::PrimitiveUnifier::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool EggLoader::PrimitiveUnifier::
+operator < (const PrimitiveUnifier &other) const {
+  if (_type != other._type) {
+    return _type < other._type;
+  }
+  return _shade_model < other._shade_model;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::VertexPoolTransform::operator <
 //       Access: Public
 //  Description: 

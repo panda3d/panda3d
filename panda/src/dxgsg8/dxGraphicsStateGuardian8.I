@@ -188,19 +188,6 @@ set_color_writemask(UINT color_writemask) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::enable_blend
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian8::
-enable_gouraud_shading(bool val) {
-  if (_bGouraudShadingOn != val) {
-    _bGouraudShadingOn = val;
-    _pD3DDevice->SetRenderState(D3DRS_SHADEMODE, (val ? D3DSHADE_GOURAUD : D3DSHADE_FLAT));
-  }
-}
-
 INLINE void DXGraphicsStateGuardian8::
 enable_primitive_clipping(bool val) {
   if (_clipping_enabled != val) {

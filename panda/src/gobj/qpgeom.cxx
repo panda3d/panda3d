@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeom.h"
+#include "qpgeomVertexCacheManager.h"
+#include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
@@ -58,6 +60,7 @@ operator = (const qpGeom &copy) {
   TypedWritableReferenceCount::operator = (copy);
   BoundedObject::operator = (copy);
   */
+  clear_cache();
   Geom::operator = (copy);
   _cycler = copy._cycler;
   mark_bound_stale();
@@ -70,6 +73,25 @@ operator = (const qpGeom &copy) {
 ////////////////////////////////////////////////////////////////////
 qpGeom::
 ~qpGeom() {
+  // When we destruct, we should ensure that all of our cached
+  // entries, across all pipeline stages, are properly removed from
+  // the cache manager.
+  qpGeomVertexCacheManager *cache_mgr = 
+    qpGeomVertexCacheManager::get_global_ptr();
+
+  int num_stages = _cycler.get_num_stages();
+  for (int i = 0; i < num_stages; i++) {
+    if (_cycler.is_stage_unique(i)) {
+      CData *cdata = _cycler.write_stage(i);
+      for (MungedCache::iterator ci = cdata->_munged_cache.begin();
+           ci != cdata->_munged_cache.end();
+           ++ci) {
+        cache_mgr->remove_geom(this, (*ci).first);
+      }
+      cdata->_munged_cache.clear();
+      _cycler.release_write_stage(i, cdata);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +116,7 @@ modify_vertex_data() {
   // Perform copy-on-write: if the reference count on the vertex data
   // is greater than 1, assume some other Geom has the same pointer,
   // so make a copy of it first.
-
+  clear_cache();
   CDWriter cdata(_cycler);
   if (cdata->_data->get_ref_count() > 1) {
     cdata->_data = new qpGeomVertexData(*cdata->_data);
@@ -110,9 +132,10 @@ modify_vertex_data() {
 //               a completely new table.
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
-set_vertex_data(PT(qpGeomVertexData) data) {
+set_vertex_data(const qpGeomVertexData *data) {
+  clear_cache();
   CDWriter cdata(_cycler);
-  cdata->_data = data;
+  cdata->_data = (qpGeomVertexData *)data;
   mark_bound_stale();
 }
 
@@ -125,9 +148,10 @@ set_vertex_data(PT(qpGeomVertexData) data) {
 //               of the indicated type.
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
-add_primitive(qpGeomPrimitive *primitive) {
+add_primitive(const qpGeomPrimitive *primitive) {
+  clear_cache();
   CDWriter cdata(_cycler);
-  cdata->_primitives.push_back(primitive);
+  cdata->_primitives.push_back((qpGeomPrimitive *)primitive);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +161,7 @@ add_primitive(qpGeomPrimitive *primitive) {
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
 remove_primitive(int i) {
+  clear_cache();
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
@@ -152,8 +177,95 @@ remove_primitive(int i) {
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
 clear_primitives() {
+  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_primitives.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_num_bytes
+//       Access: Published
+//  Description: Returns the number of bytes consumed by the geom and
+//               its primitives (but not including its vertex table).
+////////////////////////////////////////////////////////////////////
+int qpGeom::
+get_num_bytes() const {
+  CDReader cdata(_cycler);
+
+  int num_bytes = sizeof(qpGeom);
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    num_bytes += (*pi)->get_num_bytes();
+  }
+
+  return num_bytes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::munge_geom
+//       Access: Published
+//  Description: Applies the indicated munger to the geom and its
+//               data, and returns a (possibly different) geom and
+//               data, according to the munger's whim.  
+//
+//               The assumption is that for a particular geom and a
+//               particular munger, the result will always be the
+//               same; so this result may be cached.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+munge_geom(const qpGeomMunger *munger,
+           CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const {
+  // Look up the format in our cache--maybe we've recently applied the
+  // indicated munger.
+  {
+    // Use read() and release_read() instead of CDReader, because the
+    // call to record_geom() might recursively call back into this
+    // object, and require a write.
+    const CData *cdata = _cycler.read();
+    MungedCache::const_iterator ci = cdata->_munged_cache.find(munger);
+    if (ci != cdata->_munged_cache.end()) {
+      _cycler.release_read(cdata);
+      // Record a cache hit, so this element will stay in the cache a
+      // while longer.
+      qpGeomVertexCacheManager *cache_mgr = 
+        qpGeomVertexCacheManager::get_global_ptr();
+      cache_mgr->record_geom(this, munger, 
+                             (*ci).second._geom->get_num_bytes() +
+                             (*ci).second._data->get_num_bytes());
+
+      result = (*ci).second._geom;
+      data = (*ci).second._data;
+      return;
+    }
+    _cycler.release_read(cdata);
+  }
+
+  // Ok, invoke the munger.
+  PStatTimer timer(qpGeomMunger::_munge_pcollector);
+
+  result = this;
+  data = munger->munge_data(get_vertex_data());
+  ((qpGeomMunger *)munger)->munge_geom_impl(result, data);
+
+  if (result.p() != this) {
+    // Record the new result in the cache.
+    {
+      CDWriter cdata(((qpGeom *)this)->_cycler);
+      MungeResult &mr = cdata->_munged_cache[munger];
+      mr._geom = result;
+      mr._data = data;
+    }
+    
+    // And tell the cache manager about the new entry.  (It might
+    // immediately request a delete from the cache of the thing we just
+    // added.)
+    qpGeomVertexCacheManager *cache_mgr = 
+      qpGeomVertexCacheManager::get_global_ptr();
+    cache_mgr->record_geom(this, munger, 
+                           result->get_num_bytes() + data->get_num_bytes());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,6 +310,28 @@ write(ostream &out, int indent_level) const {
        ++pi) {
     (*pi)->write(out, indent_level);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::clear_cache
+//       Access: Published
+//  Description: Removes all of the previously-cached results of
+//               munge_geom().
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+clear_cache() {
+  // Probably we shouldn't do anything at all here unless we are
+  // running in pipeline stage 0.
+  qpGeomVertexCacheManager *cache_mgr = 
+    qpGeomVertexCacheManager::get_global_ptr();
+
+  CData *cdata = CDWriter(_cycler);
+  for (MungedCache::iterator ci = cdata->_munged_cache.begin();
+       ci != cdata->_munged_cache.end();
+       ++ci) {
+    cache_mgr->remove_geom(this, (*ci).first);
+  }
+  cdata->_munged_cache.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -289,6 +423,27 @@ recompute_bound() {
   }
 
   return bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::remove_cache_entry
+//       Access: Private
+//  Description: Removes a particular entry from the local cache; it
+//               has already been removed from the cache manager.
+//               This is only called from GeomVertexCacheManager.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+remove_cache_entry(const qpGeomMunger *modifier) const {
+  // We have to operate on stage 0 of the pipeline, since that's where
+  // the cache really counts.  Because of the multistage pipeline, we
+  // might not actually have a cache entry there (it might have been
+  // added to stage 1 instead).  No big deal if we don't.
+  CData *cdata = ((qpGeom *)this)->_cycler.write_stage(0);
+  MungedCache::iterator ci = cdata->_munged_cache.find(modifier);
+  if (ci != cdata->_munged_cache.end()) {
+    cdata->_munged_cache.erase(ci);
+  }
+  ((qpGeom *)this)->_cycler.release_write_stage(0, cdata);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -53,19 +53,29 @@ qpGeomTrifans::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTrifans::make_copy
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PT(qpGeomPrimitive) qpGeomTrifans::
+make_copy() const {
+  return new qpGeomTrifans(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTrifans::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void qpGeomTrifans::
-draw(GraphicsStateGuardianBase *gsg) {
+draw(GraphicsStateGuardianBase *gsg) const {
   gsg->draw_trifans(this);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTrifans::decompose_impl
-//       Access: Published, Virtual
+//       Access: Protected, Virtual
 //  Description: Decomposes a complex primitive type into a simpler
 //               primitive type, for instance triangle strips to
 //               triangles, and returns a pointer to the new primitive
@@ -77,9 +87,10 @@ draw(GraphicsStateGuardianBase *gsg) {
 //               primitive without having to write handlers for each
 //               possible kind of primitive type.
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomPrimitive) qpGeomTrifans::
-decompose_impl() {
+CPT(qpGeomPrimitive) qpGeomTrifans::
+decompose_impl() const {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles;
+  triangles->set_shade_model(get_shade_model());
   CPTA_ushort vertices = get_vertices();
   CPTA_int ends = get_ends();
 
@@ -107,6 +118,19 @@ decompose_impl() {
   nassertr(vi == (int)vertices.size(), triangles.p());
 
   return triangles.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTrifans::rotate_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of do_rotate().
+////////////////////////////////////////////////////////////////////
+CPTA_ushort qpGeomTrifans::
+rotate_impl() const {
+  // Actually, we can't rotate fans without chaging the winding order.
+  // It's an error to define a flat shade model for a GeomTrifan.
+  nassertr(false, get_vertices());
+  return get_vertices();
 }
 
 ////////////////////////////////////////////////////////////////////

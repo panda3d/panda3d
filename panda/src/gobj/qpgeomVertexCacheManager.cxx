@@ -62,13 +62,6 @@ get_global_ptr() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexCacheManager::
 record_entry(const qpGeomVertexCacheManager::Entry &entry) {
-  if (gobj_cat.is_debug()) {
-    gobj_cat.debug()
-      << "record_entry(" << entry._munger << ", " 
-      << entry._primitive << ", " << entry._source << ", " 
-      << entry._format << ", " << entry._result_size << ")\n";
-  }
-
   MutexHolder holder(_lock);
   EntriesIndex::iterator ii = _entries_index.find(&entry);
   if (ii != _entries_index.end()) {
@@ -77,6 +70,17 @@ record_entry(const qpGeomVertexCacheManager::Entry &entry) {
     _total_size -= (*ei)._result_size;
     _entries_index.erase(ii);
     _entries.erase(ei);
+
+    if (gobj_cat.is_spam()) {
+      gobj_cat.spam()
+        << "refreshing cache entry: " << entry << "\n";
+    }
+  } else {
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "recording cache entry: " << entry << ", total_size = "
+        << _total_size + entry._result_size << "\n";
+    }
   }
 
   // Add the new entry at the end of the list, so it will be the last
@@ -97,29 +101,40 @@ record_entry(const qpGeomVertexCacheManager::Entry &entry) {
   // is set to 0.
   int max_size = get_max_size();
   while (_total_size > max_size) {
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "total_size = " << _total_size << ", max_size = "
-        << max_size << ", flushing\n";
-    }
     nassertv(!_entries.empty());
     ei = _entries.begin();
     entry_pointer = &(*ei);
 
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "cache total_size = " << _total_size << ", max_size = "
+        << max_size << ", removing " << *entry_pointer << "\n";
+    }
+
     ii = _entries_index.find(entry_pointer);
     nassertv(ii != _entries_index.end());
 
-    if (entry_pointer->_source != (qpGeomVertexData *)NULL) {
-      entry_pointer->_source->remove_cache_entry(entry_pointer->_format);
+    switch (entry_pointer->_cache_type) {
+    case CT_data:
+      entry_pointer->_u._data._source->remove_cache_entry
+        (entry_pointer->_u._data._modifier);
+      break;
+
+    case CT_primitive:
+      entry_pointer->_u._primitive->remove_cache_entry();
+      break;
+
+    case CT_geom:
+      entry_pointer->_u._geom._source->remove_cache_entry
+        (entry_pointer->_u._geom._modifier);
+      break;
+
+    default:
+      break;
     }
     _total_size -= entry_pointer->_result_size;
     _entries_index.erase(ii);
     _entries.erase(ei);
-  }
-  if (gobj_cat.is_debug()) {
-    gobj_cat.debug()
-      << "total_size = " << _total_size << ", max_size = "
-      << max_size << ", done\n";
   }
 }
 
@@ -133,8 +148,7 @@ void qpGeomVertexCacheManager::
 remove_entry(const qpGeomVertexCacheManager::Entry &entry) {
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "remove_entry(" << entry._munger << ", "
-      << entry._source << ", " << entry._format << ")\n";
+      << "remove_entry(" << entry << ")\n";
   }
   MutexHolder holder(_lock);
 
@@ -145,4 +159,36 @@ remove_entry(const qpGeomVertexCacheManager::Entry &entry) {
     _entries_index.erase(ii);
     _entries.erase(ei);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexCacheManager::Entry::
+output(ostream &out) const {
+  out << "[ ";
+  switch (_cache_type) {
+  case CT_munger:
+    out << "munger " << (void *)_u._munger << ":" 
+        << _u._munger->get_ref_count();
+    break;
+
+  case CT_primitive:
+    out << "primitive " << (void *)_u._primitive;
+    break;
+
+  case CT_data:
+    out << "data " << (void *)_u._data._source << ", " 
+        << (void *)_u._data._modifier;
+    break;
+
+  case CT_geom:
+    out << "geom " << (void *)_u._geom._source << ", " 
+        << (void *)_u._geom._modifier;
+    break;
+  }
+
+  out << ", result_size = " << _result_size << " ]";  
 }

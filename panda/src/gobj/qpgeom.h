@@ -28,6 +28,7 @@
 #include "pipelineCycler.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomPrimitive.h"
+#include "qpgeomMunger.h"
 #include "pointerTo.h"
 #include "geom.h"
 
@@ -62,18 +63,25 @@ PUBLISHED:
 
   INLINE CPT(qpGeomVertexData) get_vertex_data() const;
   PT(qpGeomVertexData) modify_vertex_data();
-  void set_vertex_data(PT(qpGeomVertexData) data);
+  void set_vertex_data(const qpGeomVertexData *data);
 
   INLINE int get_num_primitives() const;
   INLINE const qpGeomPrimitive *get_primitive(int i) const;
   INLINE qpGeomPrimitive *modify_primitive(int i);
-  INLINE void set_primitive(int i, qpGeomPrimitive *primitive);
-  void add_primitive(qpGeomPrimitive *primitive);
+  INLINE void set_primitive(int i, const qpGeomPrimitive *primitive);
+  void add_primitive(const qpGeomPrimitive *primitive);
   void remove_primitive(int i);
   void clear_primitives();
 
+  int get_num_bytes() const;
+
+  void munge_geom(const qpGeomMunger *munger,
+                  CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const;
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
+
+  void clear_cache();
 
 public:
   void draw(GraphicsStateGuardianBase *gsg, 
@@ -83,7 +91,22 @@ protected:
   virtual BoundingVolume *recompute_bound();
 
 private:
+  void remove_cache_entry(const qpGeomMunger *modifier) const;
+
+private:
   typedef pvector<PT(qpGeomPrimitive) > Primitives;
+
+  // We have to use reference-counting pointers here instead of having
+  // explicit cleanup in the GeomVertexFormat destructor, because the
+  // cache needs to be stored in the CycleData, which makes accurate
+  // cleanup more difficult.  We use the GeomVertexCacheManager class
+  // to avoid cache bloat.
+  class MungeResult {
+  public:
+    CPT(qpGeom) _geom;
+    CPT(qpGeomVertexData) _data;
+  };
+  typedef pmap<CPT(qpGeomMunger), MungeResult> MungedCache;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -97,6 +120,7 @@ private:
 
     PT(qpGeomVertexData) _data;
     Primitives _primitives;
+    MungedCache _munged_cache;
   };
 
   PipelineCycler<CData> _cycler;
@@ -131,6 +155,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class qpGeomVertexCacheManager;
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeom &obj);

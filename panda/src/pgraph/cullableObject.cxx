@@ -24,6 +24,28 @@ int CullableObject::_num_ever_allocated = 0;
 TypeHandle CullableObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::munge_geom
+//       Access: Public
+//  Description: Uses the indicated GeomMunger to transform the geom
+//               and/or its vertices.
+////////////////////////////////////////////////////////////////////
+void CullableObject::
+munge_geom(const qpGeomMunger *munger) {
+  if (_geom != (Geom *)NULL) {
+    // Temporary test and dcast until the experimental Geom rewrite
+    // becomes the actual Geom rewrite.
+    if (_geom->is_exact_type(qpGeom::get_class_type())) {
+      CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
+      qpgeom->munge_geom(munger, qpgeom, _munged_data);
+      _geom = qpgeom;
+    }
+  }
+  if (_next != (CullableObject *)NULL) {
+    _next->munge_geom(munger);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::Destructor
 //       Access: Public
 //  Description: Automatically deletes the whole chain of these things.

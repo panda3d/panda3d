@@ -114,6 +114,7 @@ PUBLISHED:
   INLINE const CullBinAttrib *get_bin() const;
   INLINE const TransparencyAttrib *get_transparency() const;
   INLINE int get_bin_index() const;
+  INLINE bool is_flat_shaded() const;
 
 public:
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
@@ -150,6 +151,7 @@ private:
   void determine_fog();
   void determine_bin();
   void determine_transparency();
+  void determine_flat_shaded();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -229,6 +231,8 @@ private:
     F_checked_fog          = 0x0002,
     F_checked_bin          = 0x0004,
     F_checked_transparency = 0x0008,
+    F_checked_flat_shaded  = 0x0010,
+    F_flat_shaded          = 0x0020,
     F_is_destructing       = 0x8000,
   };
   unsigned short _flags;

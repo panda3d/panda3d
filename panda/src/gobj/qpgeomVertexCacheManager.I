@@ -69,18 +69,12 @@ get_total_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexCacheManager::
 record_munger(const qpGeomMunger *munger) {
-  Entry entry;
-  entry._munger = munger;
-  entry._primitive = NULL;
-  entry._source = NULL;
-  entry._format = NULL;
-  entry._result_size = 100;  // Make up a nominal number.
-  
-  record_entry(entry);
+  // Make up a nominal result_size for a munger.
+  record_entry(Entry(munger, 100));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexCacheManager::record_decompose
+//     Function: qpGeomVertexCacheManager::record_primitive
 //       Access: Private
 //  Description: Records a new entry in the cache, or marks a cache
 //               hit for a previous entry in the cache.  This should
@@ -88,34 +82,23 @@ record_munger(const qpGeomMunger *munger) {
 //
 //               The cache manager will not hold a reference on the
 //               GeomPrimitive pointer; if it destructs, it should
-//               call remove_decompose() to remove itself from the cache.
+//               call remove_primitive() to remove itself from the cache.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexCacheManager::
-record_decompose(const qpGeomPrimitive *primitive, int result_size) {
-  Entry entry;
-  entry._primitive = primitive;
-  entry._source = NULL;
-  entry._format = NULL;
-  entry._result_size = result_size;
-  
-  record_entry(entry);
+record_primitive(const qpGeomPrimitive *primitive, int result_size) {
+  record_entry(Entry(primitive, result_size));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexCacheManager::remove_decompose
+//     Function: qpGeomVertexCacheManager::remove_primitive
 //       Access: Private
 //  Description: Removes an entry from the cache, if it is there.
 //               Quietly ignores it if it is not.  This should only be
 //               called by GeomPrimitive.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexCacheManager::
-remove_decompose(const qpGeomPrimitive *primitive) {
-  Entry entry;
-  entry._primitive = primitive;
-  entry._source = NULL;
-  entry._format = NULL;
-
-  remove_entry(entry);
+remove_primitive(const qpGeomPrimitive *primitive) {
+  remove_entry(Entry(primitive, 0));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,15 +113,9 @@ remove_decompose(const qpGeomPrimitive *primitive) {
 //               call remove_data() to remove itself from the cache.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexCacheManager::
-record_data(const qpGeomVertexData *source, const qpGeomVertexFormat *format,
+record_data(const qpGeomVertexData *source, const qpGeomVertexFormat *modifier,
             int result_size) {
-  Entry entry;
-  entry._primitive = NULL;
-  entry._source = source;
-  entry._format = format;
-  entry._result_size = result_size;
-  
-  record_entry(entry);
+  record_entry(Entry(source, modifier, result_size));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,13 +127,139 @@ record_data(const qpGeomVertexData *source, const qpGeomVertexFormat *format,
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexCacheManager::
 remove_data(const qpGeomVertexData *source,
-            const qpGeomVertexFormat *format) {
-  Entry entry;
-  entry._primitive = NULL;
-  entry._source = source;
-  entry._format = format;
+            const qpGeomVertexFormat *modifier) {
+  remove_entry(Entry(source, modifier, 0));
+}
 
-  remove_entry(entry);
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::record_geom
+//       Access: Private
+//  Description: Records a new entry in the cache, or marks a cache
+//               hit for a previous entry in the cache.  This should
+//               only be called by Geom.
+//
+//               The cache manager will not hold a reference on the
+//               Geom pointer; if it destructs, it should
+//               call remove_geom() to remove itself from the cache.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexCacheManager::
+record_geom(const qpGeom *source, const qpGeomMunger *modifier,
+            int result_size) {
+  record_entry(Entry(source, modifier, result_size));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::remove_geom
+//       Access: Private
+//  Description: Removes an entry from the cache, if it is there.
+//               Quietly ignores it if it is not.  This should only be
+//               called by Geom.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexCacheManager::
+remove_geom(const qpGeom *source, const qpGeomMunger *modifier) {
+  remove_entry(Entry(source, modifier, 0));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexCacheManager::Entry::
+Entry(const qpGeomMunger *munger, int result_size) :
+  _cache_type(CT_munger),
+  _result_size(result_size)
+{
+  _u._munger = munger;
+  _u._munger->ref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexCacheManager::Entry::
+Entry(const qpGeomPrimitive *primitive, int result_size) :
+  _cache_type(CT_primitive),
+  _result_size(result_size)
+{
+  _u._primitive = primitive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexCacheManager::Entry::
+Entry(const qpGeomVertexData *source, const qpGeomVertexFormat *modifier,
+      int result_size) :
+  _cache_type(CT_data),
+  _result_size(result_size)
+{
+  _u._data._source = source;
+  _u._data._modifier = modifier;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexCacheManager::Entry::
+Entry(const qpGeom *source, const qpGeomMunger *modifier, int result_size) :
+  _cache_type(CT_geom),
+  _result_size(result_size)
+{
+  _u._geom._source = source;
+  _u._geom._modifier = modifier;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexCacheManager::Entry::
+Entry(const qpGeomVertexCacheManager::Entry &copy) :
+  _cache_type(copy._cache_type),
+  _result_size(copy._result_size)
+{
+  _u = copy._u;
+  if (_cache_type == CT_munger) {
+    _u._munger->ref();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexCacheManager::Entry::
+operator = (const qpGeomVertexCacheManager::Entry &copy) {
+  if (_cache_type == CT_munger) {
+    unref_delete(_u._munger);
+  }
+  _cache_type = copy._cache_type;
+  _result_size = copy._result_size;
+  _u = copy._u;
+  if (_cache_type == CT_munger) {
+    _u._munger->ref();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexCacheManager::Entry::
+~Entry() {
+  if (_cache_type == CT_munger) {
+    unref_delete(_u._munger);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,14 +269,32 @@ remove_data(const qpGeomVertexData *source,
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexCacheManager::Entry::
 operator < (const qpGeomVertexCacheManager::Entry &other) const {
-  if (_munger != other._munger) {
-    return _munger < other._munger;
+  switch (_cache_type) {
+  case CT_munger:
+    return _u._munger < other._u._munger;
+
+  case CT_primitive:
+    return _u._primitive < other._u._primitive;
+
+  case CT_data:
+    if (_u._data._source != other._u._data._source) {
+      return _u._data._source < other._u._data._source;
+    }
+    return _u._data._modifier < other._u._data._modifier;
+
+  case CT_geom:
+    if (_u._geom._source != other._u._geom._source) {
+      return _u._geom._source < other._u._geom._source;
+    }
+    return _u._geom._modifier < other._u._geom._modifier;
   }
-  if (_primitive != other._primitive) {
-    return _primitive < other._primitive;
-  }
-  if (_source != other._source) {
-    return _source < other._source;
-  }
-  return _format < other._format;
+
+  return 0;
 }
+
+INLINE ostream &
+operator << (ostream &out, const qpGeomVertexCacheManager::Entry &entry) {
+  entry.output(out);
+  return out;
+}
+

@@ -198,7 +198,7 @@ add_bin(EggBin *egg_bin, XFileNode *x_parent) {
 bool XFileMaker::
 add_polyset(EggBin *egg_bin, XFileNode *x_parent) {
   // Make sure that all our polygons are reasonable.
-  egg_bin->remove_invalid_primitives();
+  egg_bin->remove_invalid_primitives(true);
 
   XFileMesh *mesh = get_mesh(x_parent);
 

@@ -215,7 +215,7 @@ run() {
     // vertices.
     _surfaces.clear();
 
-    _data->remove_unused_vertices();
+    _data->remove_unused_vertices(true);
     write_egg_file();
   }
 }

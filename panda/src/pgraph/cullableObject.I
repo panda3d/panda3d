@@ -104,23 +104,15 @@ has_decals() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::munge_vertices
+//     Function: CullableObject::munge_geom
 //       Access: Public
 //  Description: Gets a GeomMunger from the GSG to transform the
-//               vertices to meet the GSG's vertex requirements for
-//               the current state.
+//               geom and/or its vertices to meet the GSG's vertex
+//               requirements for the current state.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullableObject::
-munge_vertices(GraphicsStateGuardianBase *gsg) {
-  // Temporary test until the experimental Geom rewrite becomes the
-  // actual Geom implementation.
-  if (_geom == (Geom *)NULL || _geom->is_exact_type(qpGeom::get_class_type())) {
-    CPT(qpGeomMunger) munger = gsg->get_geom_munger(_state);
-    _munged_data = munger->munge_data(((const qpGeom *)_geom.p())->get_vertex_data());
-    if (_next != (CullableObject *)NULL) {
-      _next->munge_vertices(gsg);
-    }
-  }
+munge_geom(GraphicsStateGuardianBase *gsg) {
+  munge_geom(gsg->get_geom_munger(_state));
 }
 
 ////////////////////////////////////////////////////////////////////

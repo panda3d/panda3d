@@ -37,6 +37,8 @@ PUBLISHED:
   INLINE EggCompositePrimitive &operator = (const EggCompositePrimitive &copy);
   INLINE ~EggCompositePrimitive();
 
+  virtual Shading get_shading() const;
+
   INLINE int get_num_components() const;
   INLINE const EggAttributes *get_component(int i) const;
   INLINE EggAttributes *get_component(int i);
@@ -45,9 +47,8 @@ PUBLISHED:
   INLINE bool triangulate_into(EggGroupNode *container) const;
   PT(EggCompositePrimitive) triangulate_in_place();
 
-  virtual void unify_attributes();
-  virtual void apply_last_attribute();
-  virtual void post_apply_last_attribute();
+  virtual void unify_attributes(Shading shading);
+  virtual void post_apply_flat_attribute();
   virtual bool cleanup();
 
 protected:

@@ -142,19 +142,19 @@ post_process_egg_file() {
   case NM_strip:
     nout << "Stripping normals.\n";
     _data->strip_normals();
-    _data->remove_unused_vertices();
+    _data->remove_unused_vertices(true);
     break;
 
   case NM_polygon:
     nout << "Recomputing polygon normals.\n";
     _data->recompute_polygon_normals();
-    _data->remove_unused_vertices();
+    _data->remove_unused_vertices(true);
     break;
 
   case NM_vertex:
     nout << "Recomputing vertex normals.\n";
     _data->recompute_vertex_normals(_normals_threshold);
-    _data->remove_unused_vertices();
+    _data->remove_unused_vertices(true);
     break;
 
   case NM_preserve:

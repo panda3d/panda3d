@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomTriangles.h"
+#include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
@@ -52,6 +53,16 @@ qpGeomTriangles::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTriangles::make_copy
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PT(qpGeomPrimitive) qpGeomTriangles::
+make_copy() const {
+  return new qpGeomTriangles(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTriangles::get_num_vertices_per_primitive
 //       Access: Published, Virtual
 //  Description: If the primitive type is a simple type in which all
@@ -74,8 +85,56 @@ get_num_vertices_per_primitive() const {
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void qpGeomTriangles::
-draw(GraphicsStateGuardianBase *gsg) {
+draw(GraphicsStateGuardianBase *gsg) const {
   gsg->draw_triangles(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTriangles::rotate_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of do_rotate().
+////////////////////////////////////////////////////////////////////
+CPTA_ushort qpGeomTriangles::
+rotate_impl() const {
+  // To rotate triangles, we just move one vertex from the front to
+  // the back, or vice-versa; but we have to know what direction we're
+  // going.
+  CPTA_ushort vertices = get_vertices();
+  ShadeModel shade_model = get_shade_model();
+
+  PTA_ushort new_vertices;
+  new_vertices.reserve(vertices.size());
+
+  switch (shade_model) {
+  case SM_flat_first_vertex:
+    // Move the first vertex to the end.
+    {
+      for (int begin = 0; begin < (int)vertices.size(); begin += 3) {
+        new_vertices.push_back(vertices[begin + 1]);
+        new_vertices.push_back(vertices[begin + 2]);
+        new_vertices.push_back(vertices[begin]);
+      }
+    }
+    break;
+    
+  case SM_flat_last_vertex:
+    // Move the last vertex to the front.
+    {
+      for (int begin = 0; begin < (int)vertices.size(); begin += 3) {
+        new_vertices.push_back(vertices[begin + 2]);
+        new_vertices.push_back(vertices[begin]);
+        new_vertices.push_back(vertices[begin + 1]);
+      }
+    }
+    break;
+      
+  default:
+    // This shouldn't get called with any other shade model.
+    nassertr(false, vertices);
+  }
+  
+  nassertr(new_vertices.size() == vertices.size(), vertices);
+  return new_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////

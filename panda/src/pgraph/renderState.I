@@ -155,6 +155,24 @@ get_bin_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::is_flat_shaded
+//       Access: Published
+//  Description: Returns true if this RenderState specifies a flat
+//               shading model (that is, per-vertex color applies to
+//               entire triangles), or false if it specifies a smooth
+//               shading model or does not specify.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderState::
+is_flat_shaded() const {
+  if ((_flags & F_checked_flat_shaded) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal flat_shaded cache.
+    ((RenderState *)this)->determine_flat_shaded();
+  }
+  return ((_flags & F_flat_shaded) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::set_destructing
 //       Access: Private
 //  Description: This function should only be called from the

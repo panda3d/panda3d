@@ -76,7 +76,7 @@ run() {
   int num_removed = strip_prims(_data);
   nout << "Removed " << num_removed << " primitives.\n";
 
-  _data->remove_unused_vertices();
+  _data->remove_unused_vertices(true);
   write_egg_file();
 }
 

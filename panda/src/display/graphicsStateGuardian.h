@@ -144,9 +144,9 @@ public:
   virtual void finish_decal();
 
   virtual bool begin_draw_primitives(const qpGeomVertexData *vertex_data);
-  virtual void draw_triangles(qpGeomTriangles *primitive);
-  virtual void draw_tristrips(qpGeomTristrips *primitive);
-  virtual void draw_trifans(qpGeomTrifans *primitive);
+  virtual void draw_triangles(const qpGeomTriangles *primitive);
+  virtual void draw_tristrips(const qpGeomTristrips *primitive);
+  virtual void draw_trifans(const qpGeomTrifans *primitive);
   virtual void end_draw_primitives();
 
   virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex);

@@ -84,7 +84,7 @@ post_process_egg_files() {
     nout << "Stripping normals.\n";
     for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
       (*ei)->strip_normals();
-      (*ei)->remove_unused_vertices();
+      (*ei)->remove_unused_vertices(true);
     }
     break;
 
@@ -92,7 +92,7 @@ post_process_egg_files() {
     nout << "Recomputing polygon normals.\n";
     for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
       (*ei)->recompute_polygon_normals();
-      (*ei)->remove_unused_vertices();
+      (*ei)->remove_unused_vertices(true);
     }
     break;
 
@@ -100,7 +100,7 @@ post_process_egg_files() {
     nout << "Recomputing vertex normals.\n";
     for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
       (*ei)->recompute_vertex_normals(_normals_threshold);
-      (*ei)->remove_unused_vertices();
+      (*ei)->remove_unused_vertices(true);
     }
     break;
 

@@ -63,7 +63,7 @@ private:
 public:
   CPT(RenderState) _state;
   bool _hidden;
-  bool _indexed;
+  bool _flat_shaded;
 
   typedef EggLoader::BakeInUVs BakeInUVs;
   typedef EggLoader::TextureDef TextureDef;

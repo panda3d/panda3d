@@ -34,6 +34,7 @@
 #include "textureAttrib.h"
 #include "texGenAttrib.h"
 #include "lightAttrib.h"
+#include "shadeModelAttrib.h"
 #include "cullFaceAttrib.h"
 #include "transparencyAttrib.h"
 #include "alphaTestAttrib.h"
@@ -323,8 +324,8 @@ dx_init(void) {
     _color_writemask = 0xFFFFFFFF;
     _CurFVFType = 0x0;  // guards SetVertexShader fmt
 
-    _bGouraudShadingOn = false;
-    _pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
+    _bGouraudShadingOn = true;
+    _pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 
 //   this specifies if lighting model uses material color or vertex color
 //   (not related to gouraud/flat shading)
@@ -520,21 +521,8 @@ dx_init(void) {
     }
 #endif
 
-#ifndef NDEBUG
-    if(dx_force_backface_culling!=0) {
-      if((dx_force_backface_culling > 0) &&
-         (dx_force_backface_culling < D3DCULL_FORCE_DWORD)) {
-             _pD3DDevice->SetRenderState(D3DRS_CULLMODE, dx_force_backface_culling);
-      } else {
-          dx_force_backface_culling=0;
-          if(dxgsg8_cat.is_debug())
-              dxgsg8_cat.debug() << "error, invalid value for dx-force-backface-culling\n";
-      }
-    }
-    _pD3DDevice->SetRenderState(D3DRS_CULLMODE, dx_force_backface_culling);
-#else
+    _cull_face_mode = CullFaceAttrib::M_cull_none;
     _pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-#endif
 
     _alpha_func = D3DCMP_ALWAYS;
     _alpha_func_refval = 1.0f;
@@ -728,6 +716,22 @@ prepare_lens() {
     _pD3DDevice->SetTransform(D3DTS_PROJECTION,
                               (D3DMATRIX*)new_projection_mat.get_data());
   return SUCCEEDED(hr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::enable_gouraud_shading
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+enable_gouraud_shading(bool val) {
+  if (_bGouraudShadingOn != val) {
+    if (val) {
+      modify_state(get_smooth_state());
+    } else {
+      modify_state(get_flat_state());
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1053,9 +1057,6 @@ draw_prim_setup(const Geom *geom) {
     vertex_size += sizeof(float) * 2;
   }
   
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  
   // Note on fogging:
   // the fogging expression should really be || (_fog_enabled && (_doFogType==PerVertexFog))
   // instead of just || (_fog_enabled), since GOURAUD shading should not be required for PerPixel
@@ -1063,10 +1064,17 @@ draw_prim_setup(const Geom *geom) {
   // but dont force the shading mode to gouraud internally, so you end up with flat-shaded fog colors
   // (note, TNT does the right thing tho).  So I guess we must do gouraud shading for all fog rendering for now
   // note that if _doFogType==None, _fog_enabled will always be false
-  
-  bool need_gouraud_shading = ((_perVertex & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0))) || _fog_enabled);
-  
-  enable_gouraud_shading(need_gouraud_shading);
+
+  if ((_perVertex & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0))) || _fog_enabled) {
+    // We definitely need gouraud shading.
+    enable_gouraud_shading(true);
+  } else if ((_perComp & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0)))) {
+    // We definitely need flat shading.
+    enable_gouraud_shading(false);
+  } else {
+    // Don't care about gouraud shading.
+  }
+
   set_vertex_format(newFVFflags);
   
   return vertex_size;
@@ -1517,6 +1525,12 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
   
   
   // Note: for DX8, try to use the PointSprite primitive instead of doing all the stuff below
+
+  // see note on fog and gouraud-shading in draw_prim_setup
+  bool bUseGouraudShadedColor=_fog_enabled;
+  if (_fog_enabled) {
+    enable_gouraud_shading(true);
+  }
   
 #ifdef GSG_VERBOSE
   dxgsg8_cat.debug() << "draw_sprite()" << endl;
@@ -1727,9 +1741,6 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     CurColor = _curD3Dcolor;
   }
   
-  // see note on fog and gouraud-shading in draw_prim_setup
-  bool bUseGouraudShadedColor=_fog_enabled;
-  enable_gouraud_shading(_fog_enabled);
   set_vertex_format(FVFType);
   
 #ifdef _DEBUG
@@ -2665,13 +2676,13 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-draw_triangles(qpGeomTriangles *primitive) {
+draw_triangles(const qpGeomTriangles *primitive) {
   HRESULT hr = _pD3DDevice->DrawIndexedPrimitiveUP
     (D3DPT_TRIANGLELIST, 
      primitive->get_min_vertex(),
      primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
      primitive->get_num_primitives(), 
-     primitive->get_vertices(),
+     primitive->get_flat_first_vertices(),
      D3DFMT_INDEX16,
      _vertex_data->get_array_data(0), 
      _vertex_data->get_format()->get_array(0)->get_stride());
@@ -2903,8 +2914,8 @@ release_texture(TextureContext *tc) {
 //               appropriate to this GSG for the indicated state.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomMunger) DXGraphicsStateGuardian8::
-get_geom_munger(const RenderState *) {
-  PT(DXGeomMunger8) munger = new DXGeomMunger8;
+get_geom_munger(const RenderState *state) {
+  PT(DXGeomMunger8) munger = new DXGeomMunger8(this, state);
   return qpGeomMunger::register_munger(munger);
 }
 
@@ -3305,6 +3316,26 @@ issue_tex_gen(const TexGenAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::issue_shade_model
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+issue_shade_model(const ShadeModelAttrib *attrib) {
+  switch (attrib->get_mode()) {
+  case ShadeModelAttrib::M_smooth:
+    _pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+    _bGouraudShadingOn = true;
+    break;
+
+  case ShadeModelAttrib::M_flat:
+    _pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
+    _bGouraudShadingOn = false;
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::issue_texture
 //       Access: Public, Virtual
 //  Description:
@@ -3464,9 +3495,9 @@ issue_depth_write(const DepthWriteAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 issue_cull_face(const CullFaceAttrib *attrib) {
-  CullFaceAttrib::Mode mode = attrib->get_effective_mode();
+  _cull_face_mode = attrib->get_effective_mode();
 
-  switch (mode) {
+  switch (_cull_face_mode) {
   case CullFaceAttrib::M_cull_none:
     _pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
     break;
@@ -3478,7 +3509,7 @@ issue_cull_face(const CullFaceAttrib *attrib) {
     break;
   default:
     dxgsg8_cat.error()
-      << "invalid cull face mode " << (int)mode << endl;
+      << "invalid cull face mode " << (int)_cull_face_mode << endl;
     break;
   }
 }
@@ -3879,6 +3910,36 @@ set_read_buffer(const RenderBuffer &rb) {
             dxgsg8_cat.error() << "Invalid or unimplemented Argument to set_read_buffer!\n";
     }
     return;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_smooth_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState object that represents
+//               smooth, per-vertex shading.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) DXGraphicsStateGuardian8::
+get_smooth_state() {
+  static CPT(RenderState) state;
+  if (state == (RenderState *)NULL) {
+    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_flat_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState object that represents
+//               flat, per-primitive shading.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) DXGraphicsStateGuardian8::
+get_flat_state() {
+  static CPT(RenderState) state;
+  if (state == (RenderState *)NULL) {
+    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
+  }
+  return state;
 }
 
 ////////////////////////////////////////////////////////////////////

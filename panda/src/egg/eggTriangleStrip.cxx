@@ -29,6 +29,52 @@ TypeHandle EggTriangleStrip::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTriangleStrip::apply_last_attribute
+//       Access: Published, Virtual
+//  Description: Sets the last vertex of the triangle (or each
+//               component) to the primitive normal and/or color, if
+//               the primitive is flat-shaded.  This reflects the
+//               OpenGL convention of storing flat-shaded properties on
+//               the last vertex, although it is not usually a
+//               convention in Egg.
+//
+//               This may introduce redundant vertices to the vertex
+//               pool.
+////////////////////////////////////////////////////////////////////
+void EggTriangleStrip::
+apply_last_attribute() {
+  // The first component gets applied to the third vertex, and so on
+  // from there.
+  for (int i = 0; i < get_num_components(); i++) {
+    EggAttributes *component = get_component(i);
+    do_apply_flat_attribute(i + 2, component);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTriangleStrip::apply_first_attribute
+//       Access: Published, Virtual
+//  Description: Sets the first vertex of the triangle (or each
+//               component) to the primitive normal and/or color, if
+//               the primitive is flat-shaded.  This reflects the
+//               DirectX convention of storing flat-shaded properties
+//               on the first vertex, although it is not usually a
+//               convention in Egg.
+//
+//               This may introduce redundant vertices to the vertex
+//               pool.
+////////////////////////////////////////////////////////////////////
+void EggTriangleStrip::
+apply_first_attribute() {
+  // The first component gets applied to the first vertex, and so on
+  // from there.
+  for (int i = 0; i < get_num_components(); i++) {
+    EggAttributes *component = get_component(i);
+    do_apply_flat_attribute(i, component);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTriangleStrip::write
 //       Access: Published, Virtual
 //  Description: Writes the triangle strip to the indicated output

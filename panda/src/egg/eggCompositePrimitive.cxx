@@ -23,6 +23,72 @@ TypeHandle EggCompositePrimitive::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCompositePrimitive::get_shading
+//       Access: Published, Virtual
+//  Description: Returns the shading properties apparent on this
+//               particular primitive.  This returns S_per_vertex if
+//               the vertices have colors or normals (and they are not
+//               all the same values), or for a simple primitive,
+//               S_overall otherwise.  A composite primitive may also
+//               return S_per_face if the individual component
+//               primitives have colors or normals that are not all
+//               the same values.
+//
+//               To get the most accurate results, you should call
+//               clear_shading() on all connected primitives (or on
+//               all primitives in the egg file), followed by
+//               determine_shading() on each primitive.  You may find
+//               it easiest to call these methods on the EggData root
+//               node (they are defined on EggGroupNode).
+////////////////////////////////////////////////////////////////////
+EggPrimitive::Shading EggCompositePrimitive::
+get_shading() const {
+  Shading basic_shading = EggPrimitive::get_shading();
+  if (basic_shading == S_per_vertex) {
+    return basic_shading;
+  }
+  if (_components.empty()) {
+    return S_overall;
+  }
+
+  // Check if the components all have the same normal.
+  {
+    const EggAttributes *first_component = get_component(0);
+    if (!first_component->has_normal()) {
+      first_component = this;
+    }
+    for (int i = 1; i < get_num_components(); i++) {
+      const EggAttributes *component = get_component(i);
+      if (!component->has_normal()) {
+        component = this;
+      }
+      if (!component->matches_normal(*first_component)) {
+        return S_per_face;
+      }
+    }
+  }
+
+  // Check if the components all have the same color.
+  {
+    const EggAttributes *first_component = get_component(0);
+    if (!first_component->has_color()) {
+      first_component = this;
+    }
+    for (int i = 1; i < get_num_components(); i++) {
+      const EggAttributes *component = get_component(i);
+      if (!component->has_color()) {
+        component = this;
+      }
+      if (!component->matches_color(*first_component)) {
+        return S_per_face;
+      }
+    }
+  }
+
+  return S_overall;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCompositePrimitive::triangulate_in_place
 //       Access: Published
 //  Description: Subdivides the composite primitive into triangles and
@@ -52,10 +118,19 @@ triangulate_in_place() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCompositePrimitive::unify_attributes
 //       Access: Published, Virtual
-//  Description: Applies per-vertex normal and color to all vertices,
-//               if they are in fact per-vertex (and actually
-//               different for each vertex), or moves them to the
-//               primitive if they are all the same.
+//  Description: If the shading property is S_per_vertex, ensures that
+//               all vertices have a normal and a color, and the
+//               overall primitive does not.
+//
+//               If the shading property is S_per_face, and this is a
+//               composite primitive, ensures that all components have
+//               a normal and a color, and the vertices and overall
+//               primitive do not.  (If this is a simple primitive,
+//               S_per_face works the same as S_overall, below).
+//
+//               If the shading property is S_overall, ensures that no
+//               vertices or components have a normal or a color, and
+//               the overall primitive does (if any exists at all).
 //
 //               After this call, either the primitive will have
 //               normals or its vertices will, but not both.  Ditto
@@ -65,188 +140,114 @@ triangulate_in_place() {
 //               pool.
 ////////////////////////////////////////////////////////////////////
 void EggCompositePrimitive::
-unify_attributes() {
-  // A composite primitive wants to do the same sort of thing with
-  // components that the fundamental primitive does with vertices.
-  // But first, we want to make sure that the primitive overall
-  // attributes have been correctly moved from the vertices, so call
-  // up to the base class.
-  EggPrimitive::unify_attributes();
-
-  // Now the rest of this body is more or less what an EggPrimitive
-  // does for vertices, modified to work on components.
-
-  Components components;
-
-  // First, go through the components and apply the primitive overall
-  // attributes to any component that omits them.
-  bool all_have_normal = true;
-  bool all_have_color = true;
-  Components::iterator ci;
-  for (ci = _components.begin(); ci != _components.end(); ++ci) {
-    EggAttributes *orig_component = (*ci);
-    EggAttributes *component = new EggAttributes(*orig_component);
-
-    if (!component->has_normal()) {
-      if (has_normal()) {
-        component->set_normal(get_normal());
-        component->_dnormals = _dnormals;
-      } else {
-        all_have_normal = false;
-      }
-    }
-    if (!component->has_color()) {
-      if (has_color()) {
-        component->set_color(get_color());
-        component->_drgbas = _drgbas;
-      } else {
-        all_have_color = false;
-      }
-    }
-
-    components.push_back(component);
+unify_attributes(EggPrimitive::Shading shading) {
+  if (shading == S_unknown) {
+    shading = get_shading();
   }
 
-  clear_normal();
-  clear_color();
+  switch (shading) {
+  case S_per_vertex:
+    // Propagate everything to the vertices.
+    {
+      iterator pi;
+      for (pi = begin(); pi != end(); ++pi) {
+        EggVertex *orig_vertex = (*pi);
+        PT(EggVertex) vertex = new EggVertex(*orig_vertex);
+        if (!vertex->has_normal() && has_normal()) {
+          vertex->copy_normal(*this);
+        }
+        if (!vertex->has_color() && has_color()) {
+          vertex->copy_color(*this);
+        }
 
-  // Now see if any ended up different.
-  EggAttributes overall;
-  bool normal_different = false;
-  bool color_different = false;
+        vertex = vertex->get_pool()->create_unique_vertex(*vertex);
+        replace(pi, vertex);
+      }
+      Components::iterator ci;
+      for (ci = _components.begin(); ci != _components.end(); ++ci) {
+        (*ci)->clear_normal();
+        (*ci)->clear_color();
+      }
+      clear_normal();
+      clear_color();
+    }
+    break;
 
-  Components::iterator vi;
-  for (vi = components.begin(); vi != components.end(); ++vi) {
-    EggAttributes *component = (*vi);
-    if (!all_have_normal) {
-      component->clear_normal();
-    } else if (!normal_different) {
-      if (!overall.has_normal()) {
-        overall.set_normal(component->get_normal());
-        overall._dnormals = component->_dnormals;
-      } else if (overall.get_normal() != component->get_normal() ||
-                 overall._dnormals.compare_to(component->_dnormals) != 0) {
-        normal_different = true;
+  case S_per_face:
+    // Propagate everything to the components.
+    {
+      Components::iterator ci;
+      for (ci = _components.begin(); ci != _components.end(); ++ci) {
+        EggAttributes *component = (*ci);
+        if (!component->has_normal() && has_normal()) {
+          component->copy_normal(*this);
+        }
+        if (!component->has_color() && has_color()) {
+          component->copy_color(*this);
+        }
+      }
+      iterator pi;
+      for (pi = begin(); pi != end(); ++pi) {
+        EggVertex *orig_vertex = (*pi);
+        if (orig_vertex->has_normal() || orig_vertex->has_color()) {
+          PT(EggVertex) vertex = new EggVertex(*orig_vertex);
+          vertex->clear_normal();
+          vertex->clear_color();
+          
+          vertex = vertex->get_pool()->create_unique_vertex(*vertex);
+          replace(pi, vertex);
+        }
+      }
+      clear_normal();
+      clear_color();
+    }
+    break;
+
+  case S_overall:
+    // Remove everything from the vertices and components.
+    {
+      iterator pi;
+      for (pi = begin(); pi != end(); ++pi) {
+        EggVertex *vertex = (*pi);
+        if (vertex->has_normal()) {
+          if (!has_normal()) {
+            copy_normal(*vertex);
+          }
+          vertex->clear_normal();
+        }
+        if (vertex->has_color()) {
+          if (!has_color()) {
+            copy_color(*vertex);
+          }
+          vertex->clear_color();
+        }
+      }
+      Components::iterator ci;
+      for (ci = _components.begin(); ci != _components.end(); ++ci) {
+        EggAttributes *component = (*ci);
+        if (component->has_normal()) {
+          if (!has_normal()) {
+            copy_normal(*component);
+          }
+          component->clear_normal();
+        }
+        if (component->has_color()) {
+          if (!has_color()) {
+            copy_color(*component);
+          }
+          component->clear_color();
+        }
       }
     }
-    if (!all_have_color) {
-      component->clear_color();
-    } else if (!color_different) {
-      if (!overall.has_color()) {
-        overall.set_color(component->get_color());
-        overall._drgbas = component->_drgbas;
-      } else if (overall.get_color() != component->get_color() ||
-                 overall._drgbas.compare_to(component->_drgbas) != 0) {
-        color_different = true;
-      }
-    }
-  }
+    break;
 
-  if (!color_different || !normal_different) {
-    // Ok, it's flat-shaded after all.  Go back through and remove
-    // this stuff from the components.
-    if (!normal_different) {
-      set_normal(overall.get_normal());
-      _dnormals = overall._dnormals;
-    }
-    if (!color_different) {
-      set_color(overall.get_color());
-      _drgbas = overall._drgbas;
-    }
-    for (vi = components.begin(); vi != components.end(); ++vi) {
-      EggAttributes *component = (*vi);
-      if (!normal_different) {
-        component->clear_normal();
-      }
-      if (!color_different) {
-        component->clear_color();
-      }
-    }
-  }
-
-  // Finally, assign the new components.
-  for (size_t i = 0; i < components.size(); i++) {
-    EggAttributes *component = components[i];
-    set_component(i, component);
-    delete component;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::apply_last_attribute
-//       Access: Published, Virtual
-//  Description: Sets the last vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               they exist.  This reflects the Panda convention of
-//               storing flat-shaded properties on the last vertex,
-//               although it is not usually a convention in Egg.
-//
-//               This may introduce redundant vertices to the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
-void EggCompositePrimitive::
-apply_last_attribute() {
-  // The first component gets applied to the third vertex, and so on
-  // from there.
-  for (int i = 0; i < get_num_components(); i++) {
-    EggAttributes *component = get_component(i);
-
-    // The significant_change flag is set if we have changed the
-    // vertex in some important way, that will invalidate it for other
-    // primitives that might share it.  We don't consider *adding* a
-    // normal where there wasn't one before to be significant, but we
-    // do consider it significant to change a vertex's normal to
-    // something different.  Similarly for color.
-    bool significant_change = false;
-
-    EggVertex *orig_vertex = get_vertex(i + 2);
-    nassertv(orig_vertex != (EggVertex *)NULL);
-    PT(EggVertex) new_vertex = new EggVertex(*orig_vertex);
-
-    if (component->has_normal() || has_normal()) {
-      if (component->has_normal()) {
-        new_vertex->set_normal(component->get_normal());
-        new_vertex->_dnormals = component->_dnormals;
-      } else {
-        new_vertex->set_normal(get_normal());
-        new_vertex->_dnormals = _dnormals;
-      }
-
-      if (orig_vertex->has_normal() &&
-          (orig_vertex->get_normal() != new_vertex->get_normal() ||
-           orig_vertex->_dnormals.compare_to(new_vertex->_dnormals) != 0)) {
-        significant_change = true;
-      }
-    }
-
-    if (component->has_color() || has_color()) {
-      if (component->has_color()) {
-        new_vertex->set_color(component->get_color());
-        new_vertex->_drgbas = component->_drgbas;
-      } else {
-        new_vertex->set_color(get_color());
-        new_vertex->_drgbas = _drgbas;
-      }
-
-      if (orig_vertex->has_color() &&
-          (orig_vertex->get_color() != new_vertex->get_color() ||
-           orig_vertex->_drgbas.compare_to(new_vertex->_drgbas) != 0)) {
-        significant_change = true;
-      }
-    }
-
-    if (significant_change) {
-      new_vertex = get_pool()->create_unique_vertex(*new_vertex);
-      set_vertex(i + 2, new_vertex);
-    } else {
-      // Just copy the new attributes back into the pool.
-      ((EggAttributes *)orig_vertex)->operator = (*new_vertex);
-    }
+  case S_unknown:
+    break;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::post_apply_last_attribute
+//     Function: EggCompositePrimitive::post_apply_flat_attribute
 //       Access: Published, Virtual
 //  Description: Intended as a followup to apply_last_attribute(),
 //               this also sets an attribute on the first vertices of
@@ -254,11 +255,15 @@ apply_last_attribute() {
 //               attribute set, just so they end up with *something*.
 ////////////////////////////////////////////////////////////////////
 void EggCompositePrimitive::
-post_apply_last_attribute() {
+post_apply_flat_attribute() {
   if (!empty()) {
     for (int i = 0; i < (int)size(); i++) {
       EggVertex *vertex = get_vertex(i);
       EggAttributes *component = get_component(max(i - 2, 0));
+
+      // Use set_normal() instead of copy_normal(), to avoid getting
+      // the morphs--we don't want them here, since we're just putting
+      // a bogus value on the normal anyway.
 
       if (component->has_normal() && !vertex->has_normal()) {
         vertex->set_normal(component->get_normal());
