@@ -110,7 +110,7 @@ class ShowBase:
         return Task.cont
     
     def restart(self):
-        #self.shutdown()
+        self.shutdown()
         self.taskMgr.spawnTaskNamed(Task.Task(self.igloop), 'igloop')
         self.eventMgr.restart()
 
@@ -165,8 +165,4 @@ class ShowBase:
         
     def run(self):
         self.taskMgr.run()
-
-if __name__ == '__main__':
-    base = ShowBase()
-    base.run()
 

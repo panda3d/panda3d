@@ -97,7 +97,7 @@ class FSM(DirectObject):
     def __exitCurrent(self, argList):
         """__exitCurrent(self)
         Exit the current state"""
-        FSM.notify.info("exiting %s" % self.__currentState.getName())
+        FSM.notify.debug("exiting %s" % self.__currentState.getName())
         self.__currentState.exit(argList)
         messenger.send(self.getName() + '_' +
                        self.__currentState.getName() + '_exited')
@@ -107,11 +107,11 @@ class FSM(DirectObject):
         """__enter(self, State)
         Enter a given state, if it exists"""
         if (aState in self.__states):
+            FSM.notify.debug("entering %s" % aState.getName())
             self.__currentState = aState
             aState.enter(argList)
             messenger.send(self.getName() + '_' +
                            aState.getName() + '_entered')
-            FSM.notify.info("entering %s" % aState.getName())
         else:
             FSM.notify.error("enter: no such state")
 
@@ -125,14 +125,22 @@ class FSM(DirectObject):
         """request(self, string)
         Attempt transition from currentState to given one.
         Return true is transition exists to given state,
-        false otherwise"""
+        false otherwise. 
+        """
         if (aStateName in self.__currentState.getTransitions()):
             self.__transition(self.getStateNamed(aStateName),
                               enterArgList,
                               exitArgList)
             return 1
+        # We can implicitly always transition to our final state.
+        elif (aStateName == self.__finalState.getName()):
+            FSM.notify.debug("implicit transition to final state: %s" % aStateName)
+            self.__transition(self.getStateNamed(aStateName),
+                              enterArgList,
+                              exitArgList)
+            return 1
         else:
-            FSM.notify.info("no transition exists to %s" % aStateName)
+            FSM.notify.debug("no transition exists to %s" % aStateName)
             return 0
 
 
