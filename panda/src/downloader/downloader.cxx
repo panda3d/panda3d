@@ -111,7 +111,8 @@ connect_to_server(const string &name, uint port) {
       (void)memcpy(&_sin.sin_addr, hp->h_addr, (uint)hp->h_length);
     else {
       downloader_cat.error()
-        << "Downloader::connect_to_server() - gethostbyname() failed: "
+        << "Downloader::connect_to_server() - gethostbyname() failed on: "
+	<< name.c_str() << " with error: "
  	<< handle_socket_error() << endl;
       return get_network_error();
     }
