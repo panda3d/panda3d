@@ -33,7 +33,7 @@ python $[osfilename $[install_bin_dir]/genPyCode.py]
 
 #output genPyCode
 $[hash]! /bin/sh
-python $[install_bin_dir]/genPyCode.py
+ppython '$[osfilename $[install_bin_dir]/genPyCode.py]'
 #end genPyCode
 
 #endif  // Win32
