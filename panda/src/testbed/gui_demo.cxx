@@ -138,26 +138,26 @@ static void setup_gui(void) {
   f1->pack_item(r4, GuiFrame::RIGHT, r2);
   f1->add_item(r5);
   f1->pack_item(r5, GuiFrame::UNDER, r4);
-  f1->pack_item(r5, GuiFrame::RIGHT, r2);
+  f1->pack_item(r5, GuiFrame::LEFT, r4);
   f1->add_item(r6);
   f1->pack_item(r6, GuiFrame::UNDER, r5);
   f1->pack_item(r6, GuiFrame::LEFT, r5);
   f1->add_item(r7);
-  f1->pack_item(r7, GuiFrame::UNDER, r6);
+  f1->pack_item(r7, GuiFrame::ABOVE, r6);
   f1->pack_item(r7, GuiFrame::LEFT, r6);
   f1->add_item(r8);
   f1->pack_item(r8, GuiFrame::ABOVE, r7);
   f1->pack_item(r8, GuiFrame::LEFT, r7);
   f1->add_item(r9);
   f1->pack_item(r9, GuiFrame::ABOVE, r8);
-  f1->pack_item(r9, GuiFrame::LEFT, r8);
+  f1->pack_item(r9, GuiFrame::LEFT, r7);
   f1->add_item(r0);
   f1->pack_item(r0, GuiFrame::ABOVE, r9);
-  f1->pack_item(r0, GuiFrame::LEFT, r8);
+  f1->pack_item(r0, GuiFrame::RIGHT, r9);
   f1->set_scale(0.1);
   f1->set_pos(LVector3f::rfu(0., 0., -0.25));
   f1->manage(mgr, event_handler);
-  cerr << *f1;
+  //  cerr << *f1;
 }
 
 static void event_2(CPT_Event) {
