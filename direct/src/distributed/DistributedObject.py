@@ -14,6 +14,13 @@ class DistributedObject(PandaObject):
             # that lives in the UberZone. This keeps them from being disabled when you change
             # zones, even to the quiet zone.
             self.setNeverDisable(0)
+
+            # This flag tells whether the object can be deleted right away,
+            # or not.
+            self.delayDeleteFlag = 0
+            # This flag tells whether a delete has been requested on this
+            # object.
+            self.deleteImminent = 0
         return None
 
     def setNeverDisable(self, bool):
@@ -23,6 +30,35 @@ class DistributedObject(PandaObject):
 
     def getNeverDisable(self):
         return self.neverDisable
+
+    def deleteOrDelay(self):
+        if self.delayDeleteFlag:
+            self.deleteImminent = 1
+        else:
+            self.disableAnnounceAndDelete()
+        return None
+
+    def delayDelete(self, flag):
+        if self.delayDeleteFlag:
+            if flag:
+                self.notify.warning("Object: " + str(self.getDoId()) +
+                                    " is already in delayDelete mode")
+            else:
+                self.delayDeleteFlag = 0
+                if self.deleteImminent:
+                    self.disableAnnounceAndDelete()
+        else:
+            if flag:
+                self.delayDeleteFlag = 1
+            else:
+                self.notify.warning("Object: " + str(self.getDoId()) +
+                                    " is not in delayDelete mode")
+        return None
+
+    def disableAnnounceAndDelete(self):
+        self.disableAndAnnounce()
+        self.delete()
+        return None
 
     def disableAndAnnounce(self):
         """disableAndAnnounce(self)
