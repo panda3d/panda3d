@@ -37,6 +37,8 @@
 // "dconfig"--whose variable $[TARGET] was defined to be "dconfig").
 #map all_libs TARGET(*/static_lib_target */ss_lib_target */lib_target */noinst_lib_target */metalib_target)
 
+#map dir_type DIR_TYPE(*/)
+
 // These allow us to determine whether a particular local library is a
 // static or a dynamic library.  If the library name appears in the
 // static_libs map, it is a static library (i.e. libname.a);

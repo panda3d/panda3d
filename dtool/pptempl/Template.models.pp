@@ -15,7 +15,17 @@
   #error You need at least ppremake version 0.58 to build models.
 #endif
 
-#define texattrib_dir $[TOPDIR]/src/maps
+// Search for the texattrib dir definition.  This will be in the
+// models_topdir directory.
+#define texattrib_dir $[dir_type $[TEXATTRIB_DIR],models_toplevel]
+
+// Prefix $[TOPDIR].  If it wasn't defined, make a default.
+#if $[texattrib_dir]
+  #define texattrib_dir $[TOPDIR]/$[texattrib_dir]
+#else
+  #define texattrib_dir $[TOPDIR]/src/maps
+#endif
+
 #define texattrib_file $[texattrib_dir]/textures.txa
 
 //////////////////////////////////////////////////////////////////////
