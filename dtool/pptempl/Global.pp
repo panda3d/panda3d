@@ -308,9 +308,9 @@
   $[if $[HAVE_TIFF],$[IF_TIFF_SOURCES]] \
   $[if $[HAVE_FFTW],$[IF_FFTW_SOURCES]] \
   $[if $[HAVE_NURBSPP],$[IF_NURBSPP_SOURCES]] \
-  $[if $[HAVE_ZLIB],$[IF_ZLIB_SOURCES]] \
+  $[if $[HAVE_ZLIB], $[IF_ZLIB_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_ZLIB_INCLUDED_SOURCES], $[IF_ZLIB_COMBINED_SOURCES]]] \  
+  $[if $[HAVE_NET], $[IF_NET_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_NET_INCLUDED_SOURCES], $[IF_NET_COMBINED_SOURCES]]] \  
   $[if $[HAVE_IPC],$[IF_IPC_SOURCES]] \
-  $[if $[HAVE_NET],$[IF_NET_SOURCES]] \
   $[if $[HAVE_PYTHON],$[IF_PYTHON_SOURCES]]
 
 #defer all_sources \
@@ -322,12 +322,12 @@
   $[IF_TIFF_SOURCES] \
   $[IF_FFTW_SOURCES] \
   $[IF_NURBSPP_SOURCES] \
-  $[IF_ZLIB_SOURCES] \
+  $[if $[HAVE_ZLIB], $[IF_ZLIB_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_ZLIB_INCLUDED_SOURCES], $[IF_ZLIB_COMBINED_SOURCES]]] \  
+  $[if $[HAVE_NET], $[IF_NET_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_NET_INCLUDED_SOURCES], $[IF_NET_COMBINED_SOURCES]]] \    
   $[IF_IPC_SOURCES] \
-  $[IF_NET_SOURCES] \
   $[IF_PYTHON_SOURCES]
   
-#defer included_sources $[INCLUDED_SOURCES]
+#defer included_sources $[INCLUDED_SOURCES] $[if $[HAVE_ZLIB],$[IF_ZLIB_INCLUDED_SOURCES]] $[if $[HAVE_NET],$[IF_NET_INCLUDED_SOURCES]]
 
 // This variable returns the set of sources that are to be
 // interrogated for the current target.
