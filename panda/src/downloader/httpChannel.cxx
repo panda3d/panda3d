@@ -91,7 +91,7 @@ HTTPChannel(HTTPClient *client) :
 ////////////////////////////////////////////////////////////////////
 HTTPChannel::
 ~HTTPChannel() {
-  free_bio();
+  close_connection();
   reset_download_to();
 }
 
@@ -149,8 +149,24 @@ will_close_connection() const {
     return true;
   }
 
-  // Assume the serve will keep it open.
+  // Assume the server will keep it open.
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::has_no_body
+//       Access: Public
+//  Description: Returns true if the nature of the request is such
+//               that there is no associated body to read, false if
+//               there should be a body (even if that body might be
+//               empty).
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+has_no_body() const {
+  return (get_status_code() / 100 == 1 ||
+          get_status_code() == 204 ||
+          get_status_code() == 304 || 
+          _method == M_head);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,7 +395,7 @@ run() {
 ////////////////////////////////////////////////////////////////////
 ISocketStream *HTTPChannel::
 read_body() {
-  if (_state != S_read_header && _state != S_begin_body) {
+  if ((_state != S_read_header && _state != S_begin_body) || _source.is_null()) {
     return NULL;
   }
 
@@ -548,7 +564,7 @@ get_connection() {
   _source->set_stream(NULL);
 
   // We're now passing ownership of the connection to the user.
-  free_bio();
+  reset_to_new();
 
   return stream;
 }
@@ -1047,6 +1063,12 @@ run_reading_header() {
 
   _state = S_read_header;
 
+  if (has_no_body() && will_close_connection()) {
+    // If the server said it will close the connection, we should
+    // close it too.
+    close_connection();
+  }
+
   // Handle automatic retries and redirects.
   int last_status = _last_status_code;
   _last_status_code = get_status_code();
@@ -1144,19 +1166,15 @@ run_read_header() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_begin_body() {
-  if (!get_persistent_connection() || will_close_connection()) {
+  if (will_close_connection()) {
     // If the socket will close anyway, no point in skipping past the
     // previous body; just reset.
-    free_bio();
+    reset_to_new();
     return false;
   }
 
-  if (get_status_code() / 100 == 1 ||
-      get_status_code() == 204 ||
-      get_status_code() == 304 || 
-      _method == M_head) {
-    // These status codes, or method HEAD, indicate we have no body.
-    // Therefore, we have already read the (nonexistent) body.
+  if (has_no_body()) {
+    // We have already "read" the nonexistent body.
     _state = S_ready;
 
   } else if (_file_size > 8192) {
@@ -1169,7 +1187,7 @@ run_begin_body() {
         << "Dropping connection rather than skipping past " << _file_size
         << " bytes.\n";
     }
-    free_bio();
+    reset_to_new();
 
   } else {
     nassertr(_body_stream == NULL, false);
@@ -1179,7 +1197,7 @@ run_begin_body() {
         downloader_cat.debug()
           << "Unable to skip body.\n";
       }
-      free_bio();
+      reset_to_new();
       
     } else {
       _state = S_reading_body;
@@ -1203,17 +1221,17 @@ run_begin_body() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_reading_body() {
-  if (!get_persistent_connection() || will_close_connection()) {
+  if (will_close_connection()) {
     // If the socket will close anyway, no point in skipping past the
     // previous body; just reset.
-    free_bio();
+    reset_to_new();
     return false;
   }
 
   // Skip the body we've already started.
   if (_body_stream == NULL) {
     // Whoops, we're not in skip-body mode.  Better reset.
-    free_bio();
+    reset_to_new();
     return false;
   }
 
@@ -1255,10 +1273,10 @@ run_reading_body() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_read_body() {
-  if (!get_persistent_connection() || will_close_connection()) {
+  if (will_close_connection()) {
     // If the socket will close anyway, no point in skipping past the
     // previous body; just reset.
-    free_bio();
+    reset_to_new();
     return false;
   }
   // Skip the trailer following the recently-read body.
@@ -1286,10 +1304,10 @@ run_read_body() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_read_trailer() {
-  if (!get_persistent_connection() || will_close_connection()) {
+  if (will_close_connection()) {
     // If the socket will close anyway, no point in skipping past the
     // previous body; just reset.
-    free_bio();
+    reset_to_new();
     return false;
   }
 
@@ -1397,12 +1415,12 @@ begin_request(HTTPChannel::Method method, const URLSpec &url,
   // dropping the old connection, if any.
   if (_proxy != _client->get_proxy()) {
     _proxy = _client->get_proxy();
-    free_bio();
+    reset_to_new();
   }
 
   if (_nonblocking != nonblocking) {
     _nonblocking = nonblocking;
-    free_bio();
+    reset_to_new();
   }
 
   set_url(url);
@@ -1446,7 +1464,7 @@ begin_request(HTTPChannel::Method method, const URLSpec &url,
 
   // Also, reset from whatever previous request might still be pending.
   if (_state == S_failure || (_state < S_read_header && _state != S_ready)) {
-    free_bio();
+    reset_to_new();
 
   } else if (_state == S_read_header) {
     // Roll one step forwards to start skipping past the previous
@@ -1471,6 +1489,32 @@ reset_for_new_request() {
   _redirect_trail.clear();
   _bytes_downloaded = 0;
   _bytes_requested = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::finished_body
+//       Access: Private
+//  Description: This is called by the body reading
+//               classes--ChunkedStreamBuf and IdentityStreamBuf--when
+//               they have finished reading the body.  It advances the
+//               state appropriately.
+//
+//               has_trailer should be set true if the body type has
+//               an associated trailer which should be read or
+//               skipped, or false if there is no trailer.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+finished_body(bool has_trailer) {
+  if (will_close_connection()) {
+    reset_to_new();
+
+  } else {
+    if (has_trailer) {
+      _state = HTTPChannel::S_read_body;
+    } else {
+      _state = HTTPChannel::S_read_trailer;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1546,7 +1590,7 @@ http_send(const string &str) {
       downloader_cat.debug()
         << "Lost connection to server unexpectedly during write.\n";
     }
-    free_bio();
+    reset_to_new();
     return false;
   }
   
@@ -1589,7 +1633,7 @@ parse_http_response(const string &line) {
     } else {
       // Maybe we were just in some bad state.  Drop the connection
       // and try again, once.
-      free_bio();
+      reset_to_new();
       _response_type = RT_non_http;
     }
     return false;
@@ -1733,7 +1777,7 @@ parse_content_range(const string &content_range) {
 //       Access: Private
 //  Description: Checks whether the connection to the server has been
 //               closed after a failed read.  If it has, issues a
-//               warning and calls free_bio().
+//               warning and calls reset_to_new().
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 check_socket() {
@@ -1743,7 +1787,7 @@ check_socket() {
       downloader_cat.debug()
         << "Lost connection to server unexpectedly during read.\n";
     }
-    free_bio();
+    reset_to_new();
   }
 }
 
@@ -2182,7 +2226,7 @@ set_url(const URLSpec &url) {
   if (url.get_scheme() != _url.get_scheme() ||
       (_proxy.empty() && (url.get_server() != _url.get_server() || 
                           url.get_port() != _url.get_port()))) {
-    free_bio();
+    reset_to_new();
   }
   _url = url;
 }
@@ -2444,28 +2488,6 @@ parse_authentication_schemes(HTTPChannel::AuthenticationSchemes &schemes,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::free_bio
-//       Access: Private
-//  Description: Frees the BIO and its IBioStream object, if
-//               allocated.  This will close the connection if it is
-//               open.
-////////////////////////////////////////////////////////////////////
-void HTTPChannel::
-free_bio() {
-  if (_body_stream != (ISocketStream *)NULL) {
-    delete _body_stream;
-    _body_stream = (ISocketStream *)NULL;
-  }
-  _source.clear();
-  _bio.clear();
-  _working_getline = string();
-  _sent_so_far = 0;
-  _proxy_tunnel = false;
-  _read_index++;
-  _state = S_new;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::reset_download_to
 //       Access: Private
 //  Description: Resets the indication of how the document will be
@@ -2478,6 +2500,37 @@ reset_download_to() {
   _download_to_file.close();
   _download_to_ramfile = (Ramfile *)NULL;
   _download_dest = DD_none;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::reset_to_new
+//       Access: Private
+//  Description: Closes the connection and resets the state to S_new.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+reset_to_new() {
+  close_connection();
+  _state = S_new;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::close_connection
+//       Access: Private
+//  Description: Closes the connection but leaves the _state
+//               unchanged.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+close_connection() {
+  if (_body_stream != (ISocketStream *)NULL) {
+    delete _body_stream;
+    _body_stream = (ISocketStream *)NULL;
+  }
+  _source.clear();
+  _bio.clear();
+  _working_getline = string();
+  _sent_so_far = 0;
+  _proxy_tunnel = false;
+  _read_index++;
 }
 
 ////////////////////////////////////////////////////////////////////

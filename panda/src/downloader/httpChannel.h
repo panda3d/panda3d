@@ -71,6 +71,7 @@ public:
   virtual istream *open_read_file() const;
 
   bool will_close_connection() const;
+  bool has_no_body() const;
 
 PUBLISHED:
   INLINE bool is_valid() const;
@@ -164,6 +165,8 @@ private:
                      size_t first_byte, size_t last_byte);
   void reset_for_new_request();
 
+  void finished_body(bool has_trailer);
+
   bool http_getline(string &str);
   bool http_send(const string &str);
   bool parse_http_response(const string &line);
@@ -194,8 +197,9 @@ private:
   static void show_send(const string &message);
 #endif
 
-  void free_bio();
   void reset_download_to();
+  void reset_to_new();
+  void close_connection();
 
   HTTPClient *_client;
   URLSpec _proxy;

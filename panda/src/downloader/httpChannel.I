@@ -26,8 +26,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 is_valid() const {
-  return (!_source.is_null() && _state != S_failure && 
-          (_status_code / 100) == 2);
+  return (_state != S_failure && (_status_code / 100) == 2 &&
+          (has_no_body() || !_source.is_null()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -372,7 +372,7 @@ get_file_size() const {
 INLINE void HTTPChannel::
 reset() {
   reset_for_new_request();
-  free_bio();
+  reset_to_new();
 }
 
 ////////////////////////////////////////////////////////////////////

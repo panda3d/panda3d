@@ -73,6 +73,7 @@ ChunkedStreamBuf::
 void ChunkedStreamBuf::
 open_read(BioStreamPtr *source, HTTPChannel *doc) {
   _source = source;
+  nassertv(!_source.is_null());
   _chunk_remaining = 0;
   _done = false;
   _doc = doc;
@@ -140,6 +141,7 @@ underflow() {
 ////////////////////////////////////////////////////////////////////
 size_t ChunkedStreamBuf::
 read_chars(char *start, size_t length) {
+  nassertr(!_source.is_null(), 0);
   if (_done) {
     return 0;
   }
@@ -185,7 +187,7 @@ read_chars(char *start, size_t length) {
     // Last chunk; we're done.
     _done = true;
     if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-      _doc->_state = HTTPChannel::S_read_body;
+      _doc->finished_body(true);
     }
     return 0;
   }

@@ -146,9 +146,7 @@ read_chars(char *start, size_t length) {
       if ((*_source)->is_closed()) {
         // socket closed; we're done.
         if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-          // An IdentityStreamBuf doesn't have a trailer, so we've already
-          // "read" it.
-          _doc->_state = HTTPChannel::S_read_trailer;
+          _doc->finished_body(false);
         }
       }
       return 0;
@@ -177,9 +175,7 @@ read_chars(char *start, size_t length) {
     if (_bytes_remaining == 0) {
       // We're done.
       if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-        // An IdentityStreamBuf doesn't have a trailer, so we've already
-        // "read" it.
-        _doc->_state = HTTPChannel::S_read_trailer;
+        _doc->finished_body(false);
       }
     }
   }
