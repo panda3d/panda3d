@@ -20,6 +20,7 @@
 #include "dcPackData.h"
 #include "dcTypedef.h"
 #include "hashGenerator.h"
+#include <math.h>
 
 DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
 DCSimpleParameter::Uint32Uint8Type *DCSimpleParameter::_uint32uint8_type = NULL;
