@@ -15,12 +15,6 @@
 #include <geom.h>
 #include <geomPoint.h>
 
-enum PointParticleBlendType {
-  PP_ONE_COLOR,
-  PP_BLEND_LIFE,
-  PP_BLEND_VEL
-};
-
 ////////////////////////////////////////////////////////////////////
 //       Class : PointParticleRenderer
 // Description : Simple point/point particle renderer.  Does NOT
@@ -29,33 +23,13 @@ enum PointParticleBlendType {
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDAPHYSICS PointParticleRenderer : public BaseParticleRenderer {
-private:
-
-  Colorf _start_color, _end_color;
-  float _point_size;
-
-  PT(GeomPoint) _point_primitive;
-
-  PTA_Vertexf _vertex_array;
-  PTA_Colorf _color_array;
-
-  int _max_pool_size;
-
-  PointParticleBlendType _blend_type;
-  ParticleRendererBlendMethod _blend_method;
-
-  LPoint3f _aabb_min, _aabb_max;
-
-  Colorf create_color(const BaseParticle *p);
-
-  virtual void birth_particle(int index);
-  virtual void kill_particle(int index);
-  virtual void init_geoms(void);
-  virtual void render(vector< PT(PhysicsObject) >& po_vector, 
-		      int ttl_particles);
-  virtual void resize_pool(int new_size);
-
 PUBLISHED:
+  enum PointParticleBlendType {
+    PP_ONE_COLOR,
+    PP_BLEND_LIFE,
+    PP_BLEND_VEL
+  };
+
   PointParticleRenderer(const PointParticleRenderer& copy);
   PointParticleRenderer(ParticleRendererAlphaMode ad = PR_ALPHA_NONE,
 			float point_size = 1.0f,
@@ -79,6 +53,31 @@ PUBLISHED:
   INLINE const Colorf& get_end_color(void) const;
   INLINE PointParticleBlendType get_blend_type(void) const;
   INLINE ParticleRendererBlendMethod get_blend_method(void) const;
+
+private:
+  Colorf _start_color, _end_color;
+  float _point_size;
+
+  PT(GeomPoint) _point_primitive;
+
+  PTA_Vertexf _vertex_array;
+  PTA_Colorf _color_array;
+
+  int _max_pool_size;
+
+  PointParticleBlendType _blend_type;
+  ParticleRendererBlendMethod _blend_method;
+
+  LPoint3f _aabb_min, _aabb_max;
+
+  Colorf create_color(const BaseParticle *p);
+
+  virtual void birth_particle(int index);
+  virtual void kill_particle(int index);
+  virtual void init_geoms(void);
+  virtual void render(vector< PT(PhysicsObject) >& po_vector, 
+		      int ttl_particles);
+  virtual void resize_pool(int new_size);
 };
 
 #include "pointParticleRenderer.I"

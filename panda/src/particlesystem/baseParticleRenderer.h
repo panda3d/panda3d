@@ -19,20 +19,6 @@
 
 #include <vector>
 
-enum ParticleRendererAlphaMode {
-  PR_ALPHA_NONE,
-  PR_ALPHA_OUT,
-  PR_ALPHA_IN,
-  PR_ALPHA_USER,
-  PR_NOT_INITIALIZED_YET
-};
-
-enum ParticleRendererBlendMethod {
-  PP_NO_BLEND,
-  PP_BLEND_LINEAR,
-  PP_BLEND_CUBIC
-};
-
 ////////////////////////////////////////////////////////////////////
 //       Class : BaseParticleRenderer
 // Description : Pure virtual particle renderer base class
@@ -65,6 +51,31 @@ private:
   virtual void render(vector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles) = 0;
 
+PUBLISHED:
+  enum ParticleRendererAlphaMode {
+    PR_ALPHA_NONE,
+    PR_ALPHA_OUT,
+    PR_ALPHA_IN,
+    PR_ALPHA_USER,
+    PR_NOT_INITIALIZED_YET
+  };
+
+  enum ParticleRendererBlendMethod {
+    PP_NO_BLEND,
+    PP_BLEND_LINEAR,
+    PP_BLEND_CUBIC
+  };
+
+  virtual ~BaseParticleRenderer(void);
+
+  INLINE GeomNode *get_render_node(void) const;
+
+  INLINE void set_alpha_mode(ParticleRendererAlphaMode am);
+  INLINE ParticleRendererAlphaMode get_alpha_mode(void) const;
+
+  INLINE void set_user_alpha(float ua);
+  INLINE float get_user_alpha(void) const;
+
 protected:
   GeomNode *_interface_node;
 
@@ -83,17 +94,6 @@ protected:
   virtual void resize_pool(int new_size) = 0;
 
 public:
-
-  virtual ~BaseParticleRenderer(void);
-
-  INLINE GeomNode *get_render_node(void) const;
-
-  INLINE void set_alpha_mode(ParticleRendererAlphaMode am);
-  INLINE ParticleRendererAlphaMode get_alpha_mode(void) const;
-
-  INLINE void set_user_alpha(float ua);
-  INLINE float get_user_alpha(void) const;
-
   virtual BaseParticleRenderer *make_copy(void) = 0;
 
   friend class ParticleSystem;

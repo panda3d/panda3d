@@ -36,7 +36,7 @@ set_end_color(const Colorf& ec) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE void PointParticleRenderer::
-set_blend_type(PointParticleBlendType bt) {
+set_blend_type(PointParticleRenderer::PointParticleBlendType bt) {
   _blend_type = bt;
 }
 
@@ -45,7 +45,7 @@ set_blend_type(PointParticleBlendType bt) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE void PointParticleRenderer::
-set_blend_method(ParticleRendererBlendMethod bm) {
+set_blend_method(BaseParticleRenderer::ParticleRendererBlendMethod bm) {
   _blend_method = bm;
 }
 
@@ -80,7 +80,7 @@ get_end_color(void) const {
 //    Function : get_blend_type
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE PointParticleBlendType PointParticleRenderer::
+INLINE PointParticleRenderer::PointParticleBlendType PointParticleRenderer::
 get_blend_type(void) const {
   return _blend_type;
 }
@@ -89,7 +89,7 @@ get_blend_type(void) const {
 //    Function : get_blend_method
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE ParticleRendererBlendMethod PointParticleRenderer::
+INLINE BaseParticleRenderer::ParticleRendererBlendMethod PointParticleRenderer::
 get_blend_method(void) const {
   return _blend_method;
 }

@@ -35,7 +35,7 @@ protected:
   BaseParticleFactory(void);
   BaseParticleFactory(const BaseParticleFactory &copy);
 
-public:
+PUBLISHED:
   virtual ~BaseParticleFactory(void);
 
   INLINE void set_lifespan_base(float lb);

@@ -20,7 +20,7 @@
 //               particles are randomly generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseParticleEmitter : public ReferenceCount {
-public:
+PUBLISHED:
   enum emissionType {
     ET_EXPLICIT, // all particles are emitted in the same direction
     ET_RADIATE,  // all particles radiate away from a single point

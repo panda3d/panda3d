@@ -232,7 +232,7 @@ get_nonanimated_theta(void) const {
 // Function : get_alpha_blend_method
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE ParticleRendererBlendMethod SpriteParticleRenderer::
+INLINE BaseParticleRenderer::ParticleRendererBlendMethod SpriteParticleRenderer::
 get_alpha_blend_method(void) const {
   return _blend_method;
 }

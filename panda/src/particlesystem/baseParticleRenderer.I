@@ -35,7 +35,7 @@ disable_alpha(void) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleRenderer::
-set_alpha_mode(ParticleRendererAlphaMode am) {
+set_alpha_mode(BaseParticleRenderer::ParticleRendererAlphaMode am) {
   update_alpha_mode(am);
   init_geoms();
 }
@@ -44,7 +44,7 @@ set_alpha_mode(ParticleRendererAlphaMode am) {
 //    Function : get_alpha_mode
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE ParticleRendererAlphaMode BaseParticleRenderer::
+INLINE BaseParticleRenderer::ParticleRendererAlphaMode BaseParticleRenderer::
 get_alpha_mode(void) const {
   return _alpha_mode;
 }
