@@ -248,16 +248,21 @@ class GravityWalker(DirectObject.DirectObject):
         tempCTrav.traverse(render)
     
     def setMayJump(self, task):
+        """
+        This function's use is internal to this class (maybe I'll add
+        the __ someday).  Anyway, if you want to enable or disable
+        jumping in a general way see the ControlManager (don't use this).
+        """
         self.mayJump = 1
         return Task.done
 
-    def startJumpDelay(self):
-        assert(self.debugPrint("startJumpDelay()"))
+    def startJumpDelay(self, delay):
+        assert(self.debugPrint("startJumpDelay(delay=%s)"%(delay,)))
         if self.jumpDelayTask:
             self.jumpDelayTask.remove()
         self.mayJump = 0
         self.jumpDelayTask=taskMgr.doMethodLater(
-            0.5,
+            delay,
             self.setMayJump,
             "jumpDelay-%s"%id(self))
 
@@ -295,14 +300,26 @@ class GravityWalker(DirectObject.DirectObject):
             onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight()) #*#
             onScreenDebug.add("falling", self.falling) #*#
             onScreenDebug.add("isOnGround", self.lifter.isOnGround()) #*#
+
+            onScreenDebug.add("gravity", self.lifter.getGravity()) #*#
+            onScreenDebug.add("jumpForce", self.avatarControlJumpForce) #*#
+            onScreenDebug.add("mayJump", self.mayJump) #*#
+            onScreenDebug.add("impact", self.lifter.getImpactVelocity()) #*#
+
             onScreenDebug.add("velocity", self.lifter.getVelocity()) #*#
             onScreenDebug.add("jump", jump) #*#
         if self.lifter.isOnGround():
             if self.falling:
                 self.falling = 0
-                #messenger.send("jumpHardLand")
-                messenger.send("jumpLand")
-                self.startJumpDelay()
+                impact = self.lifter.getImpactVelocity()
+                if impact < -30.0:
+                    messenger.send("jumpHardLand")
+                    self.startJumpDelay(0.1)
+                else:
+                    messenger.send("jumpLand")
+                    if impact < -5.0:
+                        self.startJumpDelay(0.05)
+                    # else, ignore the little potholes.
             if jump and self.mayJump:
                 # ...the jump button is down and we're close
                 # enough to the ground to jump.

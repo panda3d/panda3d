@@ -122,17 +122,16 @@ class ControlManager:
                 wallBitmask, floorBitmask, avatarRadius, floorOffset)
         self.walkControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
         self.walkControls.disableAvatarControls()
+        self.walkControls.setCollisionsActive(0)
         
         self.swimControls.initializeCollisions(cTrav, self.avatar,
                 wallBitmask, floorBitmask, avatarRadius, floorOffset)
         self.swimControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
         self.swimControls.disableAvatarControls()
+        self.swimControls.setCollisionsActive(0)
 
+        self.walkControls.setCollisionsActive(1)
         self.walkControls.enableAvatarControls()
-
-        if self.wantAvatarPhysicsIndicator:
-            indicator=loader.loadModelCopy('phase_5/models/props/dagger')
-            #self.walkControls.setAvatarPhysicsIndicator(indicator)
 
     def deleteCollisions(self):
         assert(self.debugPrint("deleteCollisions()"))

@@ -723,6 +723,11 @@ class PhysicsWalker(DirectObject.DirectObject):
 
     
     if __debug__:
+        def setupAvatarPhysicsIndicator(self):
+            if self.wantAvatarPhysicsIndicator:
+                indicator=loader.loadModelCopy('phase_5/models/props/dagger')
+                #self.walkControls.setAvatarPhysicsIndicator(indicator)
+
         def debugPrint(self, message):
             """for debugging"""
             return self.notify.debug(
