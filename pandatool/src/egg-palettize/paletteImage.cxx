@@ -294,6 +294,7 @@ count_coverage() const {
 bool PaletteImage::
 place(TexturePlacement *placement) {
   nassertr(placement->is_size_known(), true);
+  nassertr(!placement->is_placed(), true);
 
   int x, y;
   if (find_hole(x, y, placement->get_x_size(), placement->get_y_size())) {
@@ -316,8 +317,9 @@ unplace(TexturePlacement *placement) {
 
   Placements::iterator pi;
   pi = find(_placements.begin(), _placements.end(), placement);
-  if (pi != _placements.end()) {
+  while (pi != _placements.end()) {
     _placements.erase(pi);
+    pi = find(_placements.begin(), _placements.end(), placement);
   }
 
   _cleared_regions.push_back(ClearedRegion(placement));
@@ -356,6 +358,11 @@ check_solitary() {
     Placements::const_iterator pi;
     for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
       TexturePlacement *placement = (*pi);
+      if (!(placement->get_omit_reason() == OR_none ||
+            placement->get_omit_reason() == OR_solitary)) {
+        cerr << "texture " << *placement->get_texture() << " is omitted for "
+             << placement->get_omit_reason() << "\n";
+      }
       nassertv(placement->get_omit_reason() == OR_none ||
                placement->get_omit_reason() == OR_solitary);
       placement->not_solitary();
