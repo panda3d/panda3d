@@ -142,6 +142,8 @@ register_with_read_factory() {
 void TransparencyAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
+
+  dg.add_int8(_mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,7 +163,7 @@ make_from_bam(const FactoryParams &params) {
   parse_params(params, scan, manager);
   attrib->fillin(scan, manager);
 
-  return new_from_bam(attrib, manager);
+  return attrib;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,4 +176,6 @@ make_from_bam(const FactoryParams &params) {
 void TransparencyAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
+
+  _mode = (Mode)scan.get_int8();
 }

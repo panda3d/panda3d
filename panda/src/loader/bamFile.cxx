@@ -192,13 +192,7 @@ write_object(const TypedWritable *object) {
     return false;
   }
 
-  // We'll go ahead and cast the const TypedWritable pointer to a
-  // non-const for issuing the actual write.  This allows
-  // write_datagram to be defined in such a way that it can modify
-  // itself in some minor way if it must; we assume that no class will
-  // abuse this privilege and modify its contents significantly during
-  // write_datagram().
-  if (!_writer->write_object((TypedWritable *)object)) {
+  if (!_writer->write_object(object)) {
     close();
     return false;
   }

@@ -42,6 +42,7 @@ BamReader(DatagramGenerator *generator)
   : _source(generator)
 {
   _num_extra_objects = 0;
+  _now_creating = _created_objs.end();
   _pta_id = -1;
 }
 
@@ -177,13 +178,19 @@ read_object() {
     return (TypedWritable *)NULL;
 
   } else {
-    TypedWritable *object = (*oi).second;
+    CreatedObj &created_obj = (*oi).second;
+    TypedWritable *object = created_obj._ptr;
 
     if (bam_cat.is_spam()) {
       if (object != (TypedWritable *)NULL) {
         bam_cat.spam()
           << "Returning object of type " << object->get_type() << "\n";
       }
+    }
+    if (created_obj._change_this != NULL) {
+      bam_cat.warning()
+        << "Returning pointer to " << object->get_type()
+        << " that might change.\n";
     }
 
     return object;
@@ -210,68 +217,116 @@ read_object() {
 ////////////////////////////////////////////////////////////////////
 bool BamReader::
 resolve() {
-  bool all_completed = true;
+  bool all_completed;
+  bool any_completed_this_pass;
 
-  // Walk through all the objects that still have outstanding pointers.
-  Requests::iterator ri;
-  ri = _deferred_pointers.begin();
-  while (ri != _deferred_pointers.end()) {
-    TypedWritable *whom = (*ri).first;
-    const vector_ushort &pointers = (*ri).second;
+  do {
+    all_completed = true;
+    any_completed_this_pass = false;
 
-    // Now make sure we have all of the pointers this object is
-    // waiting for.  If any of the pointers has not yet been read in,
-    // we can't resolve this object--we can't do anything for a given
-    // object until we have *all* outstanding pointers for that
-    // object.
+    // Walk through all the objects that still have outstanding pointers.
+    Requests::iterator ri;
+    ri = _deferred_pointers.begin();
+    while (ri != _deferred_pointers.end()) {
+      int object_id = (*ri).first;
+      const vector_int &children = (*ri).second;
+      
+      CreatedObjs::iterator ci = _created_objs.find(object_id);
+      nassertr(ci != _created_objs.end(), false);
+      CreatedObj &created_obj = (*ci).second;
+      
+      TypedWritable *object_ptr = created_obj._ptr;
+      
+      // Now make sure we have all of the pointers this object is
+      // waiting for.  If any of the pointers has not yet been read
+      // in, we can't resolve this object--we can't do anything for a
+      // given object until we have *all* outstanding pointers for
+      // that object.
 
-    bool is_complete = true;
-    vector_typedWritable references;
-
-    vector_ushort::const_iterator pi;
-    for (pi = pointers.begin(); pi != pointers.end() && is_complete; ++pi) {
-      int object_id = (*pi);
-
-      if (object_id == 0) {
-        // A NULL pointer is a NULL pointer.
-        references.push_back((TypedWritable *)NULL);
-
-      } else {
-        // See if we have the pointer available now.
-        CreatedObjs::const_iterator oi = _created_objs.find(object_id);
-        if (oi == _created_objs.end()) {
-          // No, too bad.
-          is_complete = false;
-
+      bool is_complete = true;
+      vector_typedWritable references;
+      
+      vector_int::const_iterator pi;
+      for (pi = children.begin(); pi != children.end() && is_complete; ++pi) {
+        int child_id = (*pi);
+        
+        if (child_id == 0) {
+          // A NULL pointer is a NULL pointer.
+          references.push_back((TypedWritable *)NULL);
+          
         } else {
-          // Yes, it's ready.
-          references.push_back((*oi).second);
+          // See if we have the pointer available now.
+          CreatedObjs::const_iterator oi = _created_objs.find(child_id);
+          if (oi == _created_objs.end()) {
+            // No, too bad.
+            is_complete = false;
+            
+          } else {
+            const CreatedObj &child_obj = (*oi).second;
+            if (child_obj._change_this != NULL) {
+              // It's been created, but the pointer might still change.
+              is_complete = false;
+              
+            } else {
+              // Yes, it's ready.
+              references.push_back(child_obj._ptr);
+            }
+          }
         }
       }
+      
+      if (is_complete) {
+        // Okay, here's the complete list of pointers for you!
+        int num_completed = object_ptr->complete_pointers(&references[0], this);
+        if (num_completed != (int)references.size()) {
+          bam_cat.warning()
+            << object_ptr->get_type() << " completed " << num_completed
+            << " of " << references.size() << " pointers.\n";
+        }
+        
+        // Now remove this object from the list of things that need
+        // completion.  We have to be a bit careful when deleting things
+        // from the STL container while we are traversing it.
+        Requests::iterator old = ri;
+        ++ri;
+        _deferred_pointers.erase(old);
+        
+        // Does the pointer need to change?
+        if (created_obj._change_this != NULL) {
+          created_obj._ptr = created_obj._change_this(object_ptr, this);
+          created_obj._change_this = NULL;
+        }
+        any_completed_this_pass = true;
+        
+      } else {
+        // Couldn't complete this object yet; it'll wait for next time.
+        ++ri;
+        all_completed = false;
+      }
     }
-
-    if (is_complete) {
-      // Okay, here's the complete list of pointers for you!
-      whom->complete_pointers(references, this);
-
-      // Now remove this object from the list of things that need
-      // completion.  We have to be a bit careful when deleting things
-      // from the STL container while we are traversing it.
-      Requests::iterator old = ri;
-      ++ri;
-      _deferred_pointers.erase(old);
-
-    } else {
-      // Couldn't complete this object yet; it'll wait for next time.
-      bam_cat.warning()
-        << "Unable to complete " << whom->get_type() << "\n";
-      ++ri;
-      all_completed = false;
-    }
-  }
+  } while (!all_completed && any_completed_this_pass);
 
   if (all_completed) {
     finalize();
+  } else {
+    // Report all the uncompleted objects for no good reason.  This
+    // will probably have to come out later when we have cases in
+    // which some objects might legitimately be uncompleted after
+    // calling resolve(), but for now we expect resolve() to always
+    // succeed.
+    Requests::const_iterator ri;
+    for (ri = _deferred_pointers.begin(); 
+         ri != _deferred_pointers.end();
+         ++ri) {
+      int object_id = (*ri).first;
+      CreatedObjs::iterator ci = _created_objs.find(object_id);
+      nassertr(ci != _created_objs.end(), false);
+      CreatedObj &created_obj = (*ci).second;
+      TypedWritable *object_ptr = created_obj._ptr;
+
+      bam_cat.warning()
+        << "Unable to complete " << object_ptr->get_type() << "\n";
+    }
   }
 
   return all_completed;
@@ -381,9 +436,26 @@ read_handle(DatagramIterator &scan) {
 ////////////////////////////////////////////////////////////////////
 void BamReader::
 read_pointer(DatagramIterator &scan, TypedWritable *for_whom) {
+  nassertv(_now_creating != _created_objs.end());
+  int requestor_id = (*_now_creating).first;
+
+#ifndef NDEBUG
+  // A bit of sanity checking here: we look up the object ID, and
+  // assign the "this" pointer into the record if it's not there
+  // already.  Then we can verify the "this" pointer later.
+  CreatedObj &created_obj = (*_now_creating).second;
+  if (created_obj._ptr == (TypedWritable *)NULL) {
+    created_obj._ptr = for_whom;
+  } else {
+    // We've previously assigned this pointer, and we should have
+    // assigned it to the same this pointer we have now.
+    nassertv(created_obj._ptr == for_whom);
+  }
+#endif  // NDEBUG
+
   // Read the object ID, and associate it with the requesting object.
   int object_id = scan.get_uint16();
-  _deferred_pointers[for_whom].push_back(object_id);
+  _deferred_pointers[requestor_id].push_back(object_id);
 
   // If the object ID is zero (which indicates a NULL pointer), we
   // don't have to do anything else.
@@ -445,6 +517,44 @@ register_finalize(TypedWritable *whom) {
     return;
   }
   _finalize_list.insert(whom);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::register_change_this
+//       Access: Public
+//  Description: Called by an object reading itself from the bam file
+//               to indicate that the object pointer that will be
+//               returned is temporary, and will eventually need to be
+//               replaced with another pointer.
+//
+//               The supplied function pointer will later be called on
+//               the object, immediately after complete_pointers() is
+//               called; it should return the new and final pointer.
+//
+//               We use a static function pointer instead of a virtual
+//               function (as in finalize()), to allow the function to
+//               destruct the old pointer if necessary.  (It is
+//               invalid to destruct the this pointer within a virtual
+//               function.)
+////////////////////////////////////////////////////////////////////
+void BamReader::
+register_change_this(ChangeThisFunc func, TypedWritable *object) {
+  nassertv(_now_creating != _created_objs.end());
+  CreatedObj &created_obj = (*_now_creating).second;
+
+#ifndef NDEBUG
+  // Sanity check the pointer--it should always be the same pointer
+  // after we set it the first time.
+  if (created_obj._ptr == (TypedWritable *)NULL) {
+    created_obj._ptr = object;
+  } else {
+    // We've previously assigned this pointer, and we should have
+    // assigned it to the same this pointer we have now.
+    nassertv(created_obj._ptr == object);
+  }
+#endif  // NDEBUG
+
+  created_obj._change_this = func;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -597,16 +707,43 @@ p_read_object() {
     // First, we must add an entry into the map for this object ID, so
     // that in case this function is called recursively during the
     // object's factory constructor, we will have some definition for
-    // the object.  It doesn't matter yet what the pointer is.
+    // the object.  For now, we give it a NULL pointer.
+    CreatedObj new_created_obj;
+    new_created_obj._ptr = NULL;
+    new_created_obj._change_this = NULL;
     CreatedObjs::iterator oi =
-      _created_objs.insert(CreatedObjs::value_type(object_id, NULL)).first;
+      _created_objs.insert(CreatedObjs::value_type(object_id, new_created_obj)).first;
+    CreatedObj &created_obj = (*oi).second;
 
-    // Now we can call the factory to create the object.
+    // Now we can call the factory to create the object.  Update
+    // _now_creating during this call so if this function calls
+    // read_pointer() or register_change_this() we'll match it up
+    // properly.  This might recursively call back into this
+    // p_read_object(), so be sure to save and restore the original
+    // value of _now_creating.
+    CreatedObjs::iterator was_creating = _now_creating;
+    _now_creating = oi;
     TypedWritable *object =
       _factory->make_instance_more_general(type, fparams);
+    _now_creating = was_creating;
 
     // And now we can store the new object pointer in the map.
-    (*oi).second = object;
+    nassertr(created_obj._ptr == object || created_obj._ptr == NULL, object_id);
+    created_obj._ptr = object;
+
+    if (created_obj._change_this != NULL) {
+      // If the pointer is scheduled to change after
+      // complete_pointers(), but we have no entry in
+      // _deferred_pointers for this object (and hence no plan to call
+      // complete_pointers()), then just change the pointer
+      // immediately.
+      Requests::const_iterator ri = _deferred_pointers.find(object_id);
+      if (ri == _deferred_pointers.end()) {
+        object = created_obj._change_this(object, this);
+        created_obj._ptr = object;
+        created_obj._change_this = NULL;
+      }
+    }
 
     //Just some sanity checks
     if (object == (TypedWritable *)NULL) {

@@ -121,3 +121,53 @@ load_file(const Filename &path, bool report_errors) const
   return result;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeBam::load_file
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) LoaderFileTypeBam::
+qpload_file(const Filename &path, bool report_errors) const {
+  BamFile bam_file;
+  if (!bam_file.open_read(path, report_errors)) {
+    return NULL;
+  }
+
+  PT(PandaNode) result;
+
+  TypedWritable *object = bam_file.read_object();
+  if (object == TypedWritable::Null) {
+    if (report_errors) {
+      loader_cat.error() << "Bam file " << path << " is empty.\n";
+    }
+
+  } else if (!object->is_of_type(PandaNode::get_class_type())) {
+    if (report_errors) {
+      loader_cat.error()
+        << "Bam file " << path
+        << " contains a " << object->get_type() << ", not a PandaNode.\n";
+    }
+
+  } else {
+    result = DCAST(PandaNode, object);
+
+    if (report_errors) {
+      bam_file.read_object();
+      if (!bam_file.is_eof()) {
+        loader_cat.warning()
+          << "Ignoring extra objects in " << path << "\n";
+      }
+    }
+  }
+
+  if (!bam_file.resolve()) {
+    if (report_errors) {
+      loader_cat.error()
+        << "Unable to resolve Bam file.\n";
+      result = (PandaNode *)NULL;
+    }
+  }
+
+  return result;
+}
+

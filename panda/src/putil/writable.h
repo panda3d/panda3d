@@ -58,7 +58,7 @@ public:
   //Return the number of pointers read.  This is useful for when
   //a parent reads in a variable number of pointers, so the child
   //knows where to start reading from.
-  //virtual int complete_pointers(vector_typedWritable &p_list,
+  //virtual int complete_pointers(TypedWritable **p_list,
   //                              BamReader *manager) {}
 
 

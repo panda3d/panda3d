@@ -218,7 +218,40 @@ make_default_impl() const {
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
 void RenderAttrib::
-write_datagram(BamWriter *, Datagram &) {
+write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritable::write_datagram(manager, dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::change_this
+//       Access: Public, Static
+//  Description: Called immediately after complete_pointers(), this
+//               gives the object a chance to adjust its own pointer
+//               if desired.  Most objects don't change pointers after
+//               completion, but some need to.
+//
+//               Once this function has been called, the old pointer
+//               will no longer be accessed.
+////////////////////////////////////////////////////////////////////
+TypedWritable *RenderAttrib::
+change_this(TypedWritable *old_ptr, BamReader *manager) {
+  // First, uniquify the pointer.
+  RenderAttrib *attrib = DCAST(RenderAttrib, old_ptr);
+  CPT(RenderAttrib) pointer = return_new(attrib);
+
+  // But now we have a problem, since we have to hold the reference
+  // count and there's no way to return a TypedWritable while still
+  // holding the reference count!  We work around this by explicitly
+  // upping the count, and also setting a finalize() callback to down
+  // it later.
+  if (pointer == attrib) {
+    pointer->ref();
+    manager->register_finalize(attrib);
+  }
+  
+  // We have to cast the pointer back to non-const, because the bam
+  // reader expects that.
+  return (RenderAttrib *)pointer.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,33 +274,6 @@ finalize() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderAttrib::new_from_bam
-//       Access: Protected, Static
-//  Description: Uniquifies the pointer for a RenderAttrib object just
-//               created from a bam file, and preserves its reference
-//               count correctly.
-////////////////////////////////////////////////////////////////////
-TypedWritable *RenderAttrib::
-new_from_bam(RenderAttrib *attrib, BamReader *manager) {
-  // First, uniquify the pointer.
-  CPT(RenderAttrib) pointer = return_new(attrib);
-
-  // But now we have a problem, since we have to hold the reference
-  // count and there's no way to return a TypedWritable while still
-  // holding the reference count!  We work around this by explicitly
-  // upping the count, and also setting a finalize() callback to down
-  // it later.
-  if (pointer == attrib) {
-    pointer->ref();
-    manager->register_finalize(attrib);
-  }
-  
-  // We have to cast the pointer back to non-const, because the bam
-  // reader expects that.
-  return (RenderAttrib *)pointer.p();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::fillin
 //       Access: Protected
 //  Description: This internal function is called by make_from_bam to
@@ -276,4 +282,5 @@ new_from_bam(RenderAttrib *attrib, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void RenderAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
 }

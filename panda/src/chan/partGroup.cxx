@@ -509,7 +509,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PartGroup::
-complete_pointers(vector_typedWritable &p_list, BamReader*)
+complete_pointers(TypedWritable **p_list, BamReader*)
 {
   int i;
   for(i = 0; i < _num_children; i++)

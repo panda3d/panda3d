@@ -19,13 +19,13 @@
 #ifndef LOADERFILETYPEBAM_H
 #define LOADERFILETYPEBAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "loaderFileType.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypeEgg
-// Description : This defines the Loader interface to read Egg files.
+//       Class : LoaderFileTypeBam
+// Description : This defines the Loader interface to read Bam files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LoaderFileTypeBam : public LoaderFileType {
 public:
@@ -36,6 +36,7 @@ public:
 
   virtual void resolve_filename(Filename &path) const;
   virtual PT_Node load_file(const Filename &path, bool report_errors) const;
+  virtual PT(PandaNode) qpload_file(const Filename &path, bool report_errors) const;
 
 public:
   static TypeHandle get_class_type() {

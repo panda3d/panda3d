@@ -33,6 +33,19 @@ Attribute(const RenderAttrib *attrib, int override) :
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::Attribute::Constructor
 //       Access: Public
+//  Description: This constructor is only used when reading the
+//               RenderState from a bam file.  At this point, the
+//               attribute pointer is unknown.
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Attribute::
+Attribute(int override) :
+  _override(override)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Attribute::Constructor
+//       Access: Public
 //  Description: This constructor makes an invalid Attribute with no
 //               RenderAttrib pointer; its purpose is just to make an
 //               object we can use to look up a particular type in the

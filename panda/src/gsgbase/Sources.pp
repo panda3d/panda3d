@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET gsgbase
   #define LOCAL_LIBS \
-    putil graph
+    putil graph linmath
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 

@@ -577,13 +577,69 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritable::write_datagram(manager, dg);
+
+  if ((_flags & F_is_identity) != 0) {
+    // Identity, nothing much to that.
+    int flags = F_is_identity | F_singular_known;
+    dg.add_uint16(flags);
+
+  } else if ((_flags & F_components_given) != 0) {
+    // A component-based transform.
+    int flags = F_components_given | F_components_known | F_has_components;
+    dg.add_uint16(flags);
+
+    _pos.write_datagram(dg);
+    _hpr.write_datagram(dg);
+    _scale.write_datagram(dg);
+
+  } else {
+    // A general matrix.
+    nassertv((_flags & F_mat_known) != 0);
+    int flags = F_mat_known;
+    dg.add_uint16(flags);
+    _mat.write_datagram(dg);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::change_this
+//       Access: Public, Static
+//  Description: Called immediately after complete_pointers(), this
+//               gives the object a chance to adjust its own pointer
+//               if desired.  Most objects don't change pointers after
+//               completion, but some need to.
+//
+//               Once this function has been called, the old pointer
+//               will no longer be accessed.
+////////////////////////////////////////////////////////////////////
+TypedWritable *TransformState::
+change_this(TypedWritable *old_ptr, BamReader *manager) {
+  // First, uniquify the pointer.
+  TransformState *state = DCAST(TransformState, old_ptr);
+  CPT(TransformState) pointer = return_new(state);
+
+  // But now we have a problem, since we have to hold the reference
+  // count and there's no way to return a TypedWritable while still
+  // holding the reference count!  We work around this by explicitly
+  // upping the count, and also setting a finalize() callback to down
+  // it later.
+  if (pointer == state) {
+    pointer->ref();
+    manager->register_finalize(state);
+  }
+  
+  // We have to cast the pointer back to non-const, because the bam
+  // reader expects that.
+  return (TransformState *)pointer.p();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::finalize
 //       Access: Public, Virtual
-//  Description: Method to ensure that any necessary clean up tasks
-//               that have to be performed by this object are performed
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 finalize() {
@@ -614,35 +670,9 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   state->fillin(scan, manager);
+  manager->register_change_this(change_this, state);
 
-  return new_from_bam(state, manager);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::new_from_bam
-//       Access: Protected, Static
-//  Description: Uniquifies the pointer for a TransformState object just
-//               created from a bam file, and preserves its reference
-//               count correctly.
-////////////////////////////////////////////////////////////////////
-TypedWritable *TransformState::
-new_from_bam(TransformState *state, BamReader *manager) {
-  // First, uniquify the pointer.
-  CPT(TransformState) pointer = return_new(state);
-
-  // But now we have a problem, since we have to hold the reference
-  // count and there's no way to return a TypedWritable while still
-  // holding the reference count!  We work around this by explicitly
-  // upping the count, and also setting a finalize() callback to down
-  // it later.
-  if (pointer == state) {
-    pointer->ref();
-    manager->register_finalize(state);
-  }
-  
-  // We have to cast the pointer back to non-const, because the bam
-  // reader expects that.
-  return (TransformState *)pointer.p();
+  return state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -654,4 +684,19 @@ new_from_bam(TransformState *state, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
+
+  _flags = scan.get_uint16();
+
+  if ((_flags & F_components_known) != 0) {
+    // Componentwise transform.
+    _pos.read_datagram(scan);
+    _hpr.read_datagram(scan);
+    _scale.read_datagram(scan);
+  }
+
+  if ((_flags & F_mat_known) != 0) {
+    // General matrix.
+    _mat.read_datagram(scan);
+  }
 }

@@ -182,7 +182,7 @@ r_traverse(PandaNode *node,
       if (node->is_final()) {
         // The bounding volume is partially, but not completely,
         // within the viewing frustum.  Normally we'd keep testing
-        // child bounded volumes as we continue down.  But this node
+        // child bounding volumes as we continue down.  But this node
         // has the "final" flag, so the user is claiming that there is
         // some important reason we should consider everything visible
         // at this point.  So be it.

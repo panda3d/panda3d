@@ -18,8 +18,9 @@
 
 #include "loaderFileTypeEgg.h"
 #include "load_egg_file.h"
+#include "qpload_egg_file.h"
 
-#include <eggData.h>
+#include "eggData.h"
 
 TypeHandle LoaderFileTypeEgg::_type_handle;
 
@@ -73,4 +74,15 @@ PT_Node LoaderFileTypeEgg::
 load_file(const Filename &path, bool) const {
   PT_NamedNode result = load_egg_file(path);
   return result.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeEgg::load_file
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) LoaderFileTypeEgg::
+qpload_file(const Filename &path, bool) const {
+  PT(PandaNode) result = qpload_egg_file(path);
+  return result;
 }

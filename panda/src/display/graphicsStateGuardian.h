@@ -170,13 +170,6 @@ public:
   INLINE CoordinateSystem get_coordinate_system() const;
   virtual CoordinateSystem get_internal_coordinate_system() const;
 
-  // This function may only be called during a render traversal; it
-  // will compute the distance to the indicated point, assumed to be
-  // in modelview coordinates, from the camera plane.  This is a
-  // virtual function because different GSG's may define the modelview
-  // coordinate space differently.
-  virtual float compute_distance_to(const LPoint3f &point) const=0;
-
   INLINE void clear_cached_state(void) { _state.clear(); };  
 
   virtual void issue_transform(const TransformState *transform);

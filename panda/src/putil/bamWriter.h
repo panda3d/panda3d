@@ -77,17 +77,17 @@ public:
   // The primary interface for a caller.
 
   bool init();
-  bool write_object(TypedWritable *obj);
+  bool write_object(const TypedWritable *obj);
 
 public:
   // Functions to support classes that write themselves to the Bam.
 
-  void write_pointer(Datagram &packet, TypedWritable *dest);
-  bool register_pta(Datagram &packet, void *ptr);
+  void write_pointer(Datagram &packet, const TypedWritable *dest);
+  bool register_pta(Datagram &packet, const void *ptr);
   void write_handle(Datagram &packet, TypeHandle type);
 
 private:
-  int enqueue_object(TypedWritable *object);
+  int enqueue_object(const TypedWritable *object);
 
 
   // This is the set of all TypeHandles already written.
@@ -103,7 +103,7 @@ private:
 
     StoreState(int object_id) : _object_id(object_id), _written(false) {}
   };
-  typedef pmap<TypedWritable *, StoreState> StateMap;
+  typedef pmap<const TypedWritable *, StoreState> StateMap;
   StateMap _state_map;
 
   // This is the next object ID that will be assigned to a new object.
@@ -111,12 +111,12 @@ private:
 
   // This is the queue of objects that need to be written when the
   // current object is finished.
-  typedef pdeque<TypedWritable *> ObjectQueue;
+  typedef pdeque<const TypedWritable *> ObjectQueue;
   ObjectQueue _object_queue;
 
   // These are used by register_pta() to unify multiple references to
   // the same PointerToArray.
-  typedef pmap<void *, int> PTAMap;
+  typedef pmap<const void *, int> PTAMap;
   PTAMap _pta_map;
   int _next_pta_id;
 

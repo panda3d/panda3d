@@ -32,10 +32,8 @@
 #include "geomTri.h"
 #include "texture.h"
 #include "texturePool.h"
-
-// To load egg files directly.
-#include "qpload_egg_file.h"
-#include "eggData.h"
+#include "dSearchPath.h"
+#include "loader.h"
 
 // These are in support of legacy data graph operations.
 #include "namedNode.h"
@@ -199,13 +197,20 @@ get_models(PandaNode *parent, int argc, char *argv[]) {
     make_default_geometry(parent);
 
   } else {
+    Loader loader;
+    DSearchPath local_path(".");
 
     for (int i = 1; i < argc; i++) {
       Filename filename = argv[i];
       
       cerr << "Loading " << filename << "\n";
-      EggData::resolve_egg_filename(filename);
-      PT(PandaNode) node = qpload_egg_file(filename);
+
+      // First, we always try to resolve a filename from the current
+      // directory.  This means a local filename will always be found
+      // before the model path is searched.
+      filename.resolve_filename(local_path);
+
+      PT(PandaNode) node = loader.qpload_sync(filename);
       if (node == (PandaNode *)NULL) {
         cerr << "Unable to load " << filename << "\n";
 

@@ -51,3 +51,16 @@ LoaderFileType::
 void LoaderFileType::
 resolve_filename(Filename &) const {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileType::load_file
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) LoaderFileType::
+qpload_file(const Filename &path, bool report_errors) const
+{
+  loader_cat.error()
+    << get_type() << " cannot read PandaNode objects.\n";
+  return NULL;
+}

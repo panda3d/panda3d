@@ -99,7 +99,7 @@ protected:
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &me);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  virtual int complete_pointers(vector_typedWritable &plist,
+  virtual int complete_pointers(TypedWritable **plist,
                                 BamReader *manager);
 
 public:

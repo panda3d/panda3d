@@ -81,6 +81,7 @@ private:
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
   virtual void finalize();
 
 protected:

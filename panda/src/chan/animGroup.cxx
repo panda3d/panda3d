@@ -221,7 +221,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int AnimGroup::
-complete_pointers(vector_typedWritable &p_list, BamReader*)
+complete_pointers(TypedWritable **p_list, BamReader*)
 {
   nassertr(p_list[0] != TypedWritable::Null, 0);
   _root = DCAST(AnimBundle, p_list[0]);

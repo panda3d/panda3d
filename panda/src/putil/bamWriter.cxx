@@ -97,7 +97,7 @@ init() {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
-write_object(TypedWritable *object) {
+write_object(const TypedWritable *object) {
   nassertr(_object_queue.empty(), false);
 
   int object_id = enqueue_object(object);
@@ -132,7 +132,14 @@ write_object(TypedWritable *object) {
       write_handle(dg, type);
       dg.add_uint16(object_id);
 
-      object->write_datagram(this, dg);
+      // We cast the const pointer to non-const so that we may call
+      // write_datagram() on it.  Really, write_datagram() should be a
+      // const method anyway, but there may be times when a class
+      // object wants to update some transparent cache value during
+      // writing or something like that, so it's more convenient to
+      // cheat and define it as a non-const method.
+      ((TypedWritable *)object)->write_datagram(this, dg);
+
       (*si).second._written = true;
 
     } else {
@@ -170,10 +177,10 @@ write_object(TypedWritable *object) {
 //               automatically be written.
 ////////////////////////////////////////////////////////////////////
 void BamWriter::
-write_pointer(Datagram &packet, TypedWritable *object) {
+write_pointer(Datagram &packet, const TypedWritable *object) {
   // If the pointer is NULL, we always simply write a zero for an
   // object ID and leave it at that.
-  if (object == (TypedWritable *)NULL) {
+  if (object == (const TypedWritable *)NULL) {
     packet.add_uint16(0);
 
   } else {
@@ -211,8 +218,8 @@ write_pointer(Datagram &packet, TypedWritable *object) {
 //               the work that must be done to write a PTA.
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
-register_pta(Datagram &packet, void *ptr) {
-  if (ptr == (void *)NULL) {
+register_pta(Datagram &packet, const void *ptr) {
+  if (ptr == (const void *)NULL) {
     // A zero for the PTA ID indicates a NULL pointer.  This is a
     // special case.
     packet.add_uint16(0);
@@ -313,7 +320,7 @@ write_handle(Datagram &packet, TypeHandle type) {
 //               an error.
 ////////////////////////////////////////////////////////////////////
 int BamWriter::
-enqueue_object(TypedWritable *object) {
+enqueue_object(const TypedWritable *object) {
   Datagram dg;
 
   nassertr(object != TypedWritable::Null, 0);

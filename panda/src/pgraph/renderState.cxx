@@ -929,13 +929,91 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritable::write_datagram(manager, dg);
+
+  int num_attribs = _attributes.size();
+  nassertv(num_attribs == (int)(PN_uint16)num_attribs);
+  dg.add_uint16(num_attribs);
+
+  // **** We should smarten up the writing of the override
+  // number--most of the time these will all be zero.
+  Attributes::const_iterator ai;
+  for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
+    const Attribute &attribute = (*ai);
+
+    manager->write_pointer(dg, attribute._attrib);
+    dg.add_int32(attribute._override);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int RenderState::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritable::complete_pointers(p_list, manager);
+
+  // Get the attribute pointers.
+  Attributes::iterator ai;
+  for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
+    Attribute &attribute = (*ai);
+
+    attribute._attrib = DCAST(RenderAttrib, p_list[pi++]);
+    nassertr(attribute._attrib != (RenderAttrib *)NULL, pi);
+    attribute._type = attribute._attrib->get_type();
+  }
+
+  // Now make sure the array is properly sorted.  (It won't
+  // necessarily preserve its correct sort after being read from bam,
+  // because the sort is based on TypeHandle indices, which can change
+  // from session to session.)
+  _attributes.sort();
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::change_this
+//       Access: Public, Static
+//  Description: Called immediately after complete_pointers(), this
+//               gives the object a chance to adjust its own pointer
+//               if desired.  Most objects don't change pointers after
+//               completion, but some need to.
+//
+//               Once this function has been called, the old pointer
+//               will no longer be accessed.
+////////////////////////////////////////////////////////////////////
+TypedWritable *RenderState::
+change_this(TypedWritable *old_ptr, BamReader *manager) {
+  // First, uniquify the pointer.
+  RenderState *state = DCAST(RenderState, old_ptr);
+  CPT(RenderState) pointer = return_new(state);
+
+  // But now we have a problem, since we have to hold the reference
+  // count and there's no way to return a TypedWritable while still
+  // holding the reference count!  We work around this by explicitly
+  // upping the count, and also setting a finalize() callback to down
+  // it later.
+  if (pointer == state) {
+    pointer->ref();
+    manager->register_finalize(state);
+  }
+  
+  // We have to cast the pointer back to non-const, because the bam
+  // reader expects that.
+  return (RenderState *)pointer.p();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::finalize
 //       Access: Public, Virtual
-//  Description: Method to ensure that any necessary clean up tasks
-//               that have to be performed by this object are performed
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 finalize() {
@@ -966,35 +1044,9 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   state->fillin(scan, manager);
+  manager->register_change_this(change_this, state);
 
-  return new_from_bam(state, manager);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::new_from_bam
-//       Access: Protected, Static
-//  Description: Uniquifies the pointer for a RenderState object just
-//               created from a bam file, and preserves its reference
-//               count correctly.
-////////////////////////////////////////////////////////////////////
-TypedWritable *RenderState::
-new_from_bam(RenderState *state, BamReader *manager) {
-  // First, uniquify the pointer.
-  CPT(RenderState) pointer = return_new(state);
-
-  // But now we have a problem, since we have to hold the reference
-  // count and there's no way to return a TypedWritable while still
-  // holding the reference count!  We work around this by explicitly
-  // upping the count, and also setting a finalize() callback to down
-  // it later.
-  if (pointer == state) {
-    pointer->ref();
-    manager->register_finalize(state);
-  }
-  
-  // We have to cast the pointer back to non-const, because the bam
-  // reader expects that.
-  return (RenderState *)pointer.p();
+  return state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1006,4 +1058,16 @@ new_from_bam(RenderState *state, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
+
+  int num_attribs = scan.get_uint16();
+
+  // Push back a NULL pointer for each attribute for now, until we get
+  // the actual list of pointers later in complete_pointers().
+  _attributes.reserve(num_attribs);
+  for (int i = 0; i < num_attribs; i++) {
+    manager->read_pointer(scan, this);
+    int override = scan.get_int32();
+    _attributes.push_back(Attribute(override));
+  }
 }

@@ -303,7 +303,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int CollisionNode::
-complete_pointers(vector_typedWritable &p_list, BamReader* manager) {
+complete_pointers(TypedWritable **p_list, BamReader* manager) {
   int num_solids = _solids.size();
   int start = NamedNode::complete_pointers(p_list, manager);
 

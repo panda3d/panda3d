@@ -19,12 +19,14 @@
 #ifndef LOADERFILETYPE_H
 #define LOADERFILETYPE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <typedObject.h>
-#include <node.h>
-#include <pt_Node.h>
-#include <filename.h>
+#include "typedObject.h"
+#include "node.h"
+#include "pt_Node.h"
+#include "filename.h"
+#include "pandaNode.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LoaderFileType
@@ -45,6 +47,7 @@ public:
 
   virtual void resolve_filename(Filename &path) const;
   virtual PT_Node load_file(const Filename &path, bool report_errors) const=0;
+  virtual PT(PandaNode) qpload_file(const Filename &path, bool report_errors) const;
 
 public:
   static TypeHandle get_class_type() {

@@ -143,6 +143,7 @@ private:
   class Attribute {
   public:
     INLINE Attribute(const RenderAttrib *attrib, int override);
+    INLINE Attribute(int override);
     INLINE Attribute(TypeHandle type);
     INLINE Attribute(const Attribute &copy);
     INLINE void operator = (const Attribute &copy);
@@ -173,11 +174,12 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
   virtual void finalize();
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
-  static TypedWritable *new_from_bam(RenderState *state, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:

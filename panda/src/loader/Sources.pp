@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET loader
   #define LOCAL_LIBS \
-    event graph ipc putil express downloader
+    event pgraph graph ipc putil express downloader
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 

@@ -91,6 +91,7 @@ init_libpgraph() {
 
   BillboardAttrib::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
+  CullBinAttrib::register_with_read_factory();
   CullFaceAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
   PandaNode::register_with_read_factory();

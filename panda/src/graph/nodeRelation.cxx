@@ -902,7 +902,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int NodeRelation::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
   nassertr(p_list[0] != TypedWritable::Null &&
            p_list[1] != TypedWritable::Null, 0);
   _parent = DCAST(Node, p_list[0]);

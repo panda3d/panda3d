@@ -212,6 +212,42 @@ register_with_read_factory() {
 void qpGeomNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
+
+  CDReader cdata(_cycler);
+
+  int num_geoms = cdata->_geoms.size();
+  nassertv(num_geoms == (int)(PN_uint16)num_geoms);
+  dg.add_uint16(num_geoms);
+  
+  Geoms::const_iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    const GeomEntry &entry = (*gi);
+    manager->write_pointer(dg, entry._geom);
+    manager->write_pointer(dg, entry._state);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int qpGeomNode::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  CDWriter cdata(_cycler);
+  int pi = PandaNode::complete_pointers(p_list, manager);
+
+  // Get the geom and state pointers.
+  Geoms::iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    GeomEntry &entry = (*gi);
+    entry._geom = DCAST(Geom, p_list[pi++]);
+    entry._state = DCAST(RenderState, p_list[pi++]);
+  }
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -243,5 +279,16 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  CDWriter cdata(_cycler);
+
   PandaNode::fillin(scan, manager);
+
+  int num_geoms = scan.get_uint16();
+  // Read the list of geoms and states.  Push back a NULL for each one.
+  cdata->_geoms.reserve(num_geoms);
+  for (int i = 0; i < num_geoms; i++) {
+    manager->read_pointer(scan, this);
+    manager->read_pointer(scan, this);
+    cdata->_geoms.push_back(GeomEntry(NULL, NULL));
+  }
 }

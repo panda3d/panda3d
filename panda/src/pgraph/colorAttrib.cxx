@@ -165,6 +165,9 @@ register_with_read_factory() {
 void ColorAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
+
+  dg.add_int8(_type);
+  _color.write_datagram(dg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,7 +187,7 @@ make_from_bam(const FactoryParams &params) {
   parse_params(params, scan, manager);
   attrib->fillin(scan, manager);
 
-  return new_from_bam(attrib, manager);
+  return attrib;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,4 +200,7 @@ make_from_bam(const FactoryParams &params) {
 void ColorAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
+
+  _type = (Type)scan.get_int8();
+  _color.read_datagram(scan);
 }

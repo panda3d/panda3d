@@ -146,7 +146,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int TextureTransition::
-complete_pointers(vector_typedWritable &p_list, BamReader *) {
+complete_pointers(TypedWritable **p_list, BamReader *) {
   if (p_list[0] == TypedWritable::Null) {
     if (sgattrib_cat.is_debug()) {
       sgattrib_cat->debug()

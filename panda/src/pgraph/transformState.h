@@ -151,11 +151,11 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
   virtual void finalize();
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
-  static TypedWritable *new_from_bam(TransformState *state, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:

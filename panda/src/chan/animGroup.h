@@ -72,7 +72,7 @@ protected:
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);
-  virtual int complete_pointers(vector_typedWritable &p_list,
+  virtual int complete_pointers(TypedWritable **p_list,
                                 BamReader *manager);
 
   static TypedWritable *make_AnimGroup(const FactoryParams &params);

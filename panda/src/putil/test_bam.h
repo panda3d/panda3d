@@ -38,7 +38,7 @@ public:
   void write_datagram(BamWriter*, Datagram&);
 
   static TypedWritable *make_person(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWritable &p_list,
+  virtual int complete_pointers(TypedWritable **p_list,
                                 BamReader *manager);
 protected:
   void fillin(Person*,DatagramIterator&,BamReader*);
@@ -93,7 +93,7 @@ public:
   void write_datagram(BamWriter*, Datagram&);
 
   static TypedWritable *make_parent(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWritable &p_list,
+  virtual int complete_pointers(TypedWritable *p_list,
                                 BamReader *manager);
 protected:
   void fillin(Parent*,DatagramIterator&,BamReader*);
@@ -139,7 +139,7 @@ public:
   void write_datagram(BamWriter*, Datagram&);
 
   static TypedWritable *make_child(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWritable &p_list,
+  virtual int complete_pointers(TypedWritable **p_list,
                                 BamReader *manager);
 protected:
   void fillin(Child*,DatagramIterator&,BamReader*);

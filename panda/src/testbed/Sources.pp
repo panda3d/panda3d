@@ -26,14 +26,12 @@
 
 #end bin_target
 
-#begin test_bin_target
+#begin bin_target
   #define TARGET pview
 
   #define SOURCES \
     pview.cxx
-
-  #define LOCAL_LIBS egg2pg pgraph $[LOCAL_LIBS]
-#end test_bin_target
+#end bin_target
 
 #begin test_bin_target
   #define TARGET open_window

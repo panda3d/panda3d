@@ -220,6 +220,16 @@ register_with_read_factory() {
 void BillboardAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
+
+  dg.add_bool(_off);
+  _up_vector.write_datagram(dg);
+  dg.add_bool(_eye_relative);
+  dg.add_bool(_axial_rotate);
+  dg.add_float32(_offset);
+  _look_at_point.write_datagram(dg);
+
+  // *** We don't write out the _look_at NodeChain right now.  Maybe
+  // we should.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -239,7 +249,7 @@ make_from_bam(const FactoryParams &params) {
   parse_params(params, scan, manager);
   attrib->fillin(scan, manager);
 
-  return new_from_bam(attrib, manager);
+  return attrib;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,4 +262,11 @@ make_from_bam(const FactoryParams &params) {
 void BillboardAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
+
+  _off = scan.get_bool();
+  _up_vector.read_datagram(scan);
+  _eye_relative = scan.get_bool();
+  _axial_rotate = scan.get_bool();
+  _offset = scan.get_float32();
+  _look_at_point.read_datagram(scan);
 }

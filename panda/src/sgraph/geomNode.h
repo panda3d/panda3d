@@ -88,7 +88,7 @@ private:
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);
-  virtual int complete_pointers(vector_typedWritable &plist,
+  virtual int complete_pointers(TypedWritable **plist,
                                 BamReader *manager);
 
   static TypedWritable *make_GeomNode(const FactoryParams &params);

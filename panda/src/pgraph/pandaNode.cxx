@@ -141,7 +141,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 PandaNode *PandaNode::
 copy_subgraph() const {
-  //*** Do something here.
+  // *** Do something here.
   nassertr(false, (PandaNode *)NULL);
   return (PandaNode *)NULL;
 }
@@ -903,6 +903,57 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
+  CDReader cdata(_cycler);
+
+  dg.add_string(get_name());
+  manager->write_pointer(dg, cdata->_state);
+  manager->write_pointer(dg, cdata->_transform);
+
+  // When we write a PandaNode, we write out its list of child nodes,
+  // but not its parent nodes--so that writing out a node implicitly
+  // writes out all of the nodes in the subgraph below, but not the
+  // nodes above as well.
+
+  int num_children = cdata->_down.size();
+  nassertv(num_children == (int)(PN_uint16)num_children);
+  dg.add_uint16(num_children);
+
+  // **** We should smarten up the writing of the sort number--most of
+  // the time these will all be zero.
+  Down::const_iterator ci;
+  for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
+    PandaNode *child = (*ci).get_child();
+    int sort = (*ci).get_sort();
+    manager->write_pointer(dg, child);
+    dg.add_int32(sort);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  CDWriter cdata(_cycler);
+  int pi = TypedWritable::complete_pointers(p_list, manager);
+
+  // Get the state and transform pointers.
+  cdata->_state = DCAST(RenderState, p_list[pi++]);
+  cdata->_transform = DCAST(TransformState, p_list[pi++]);
+
+  // Get the child pointers.
+  Down::iterator ci;
+  for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
+    int sort = (*ci).get_sort();
+    PT(PandaNode) node = DCAST(PandaNode, p_list[pi++]);
+    (*ci) = DownConnection(node, sort);
+  }
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -934,4 +985,23 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  CDWriter cdata(_cycler);
+
+  TypedWritable::fillin(scan, manager);
+
+  string name = scan.get_string();
+  set_name(name);
+
+  // Read the state and transform pointers.
+  manager->read_pointer(scan, this);
+  manager->read_pointer(scan, this);
+
+  int num_children = scan.get_uint16();
+  // Read the list of child nodes.  Push back a NULL for each one.
+  cdata->_down.reserve(num_children);
+  for (int i = 0; i < num_children; i++) {
+    manager->read_pointer(scan, this);
+    int sort = scan.get_int32();
+    cdata->_down.push_back(DownConnection(NULL, sort));
+  }
 }

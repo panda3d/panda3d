@@ -23,6 +23,7 @@
 
 #include "typedReferenceCount.h"
 #include "nodeTransitions.h"
+#include "luse.h"
 
 // A handful of forward references.
 
@@ -147,6 +148,13 @@ public:
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform)=0;
+
+  // This function may only be called during a render traversal; it
+  // will compute the distance to the indicated point, assumed to be
+  // in modelview coordinates, from the camera plane.  This is a
+  // virtual function because different GSG's may define the modelview
+  // coordinate space differently.
+  virtual float compute_distance_to(const LPoint3f &point) const=0;
 
   // Defined here are some internal interface functions for the
   // GraphicsStateGuardian.  These are here to support

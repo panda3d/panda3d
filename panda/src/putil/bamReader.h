@@ -27,7 +27,7 @@
 #include "datagramIterator.h"
 #include "bamReaderParam.h"
 #include "factory.h"
-#include "vector_ushort.h"
+#include "vector_int.h"
 #include "pset.h"
 #include "dcast.h"
 
@@ -114,6 +114,9 @@ public:
 
   void register_finalize(TypedWritable *whom);
 
+  typedef TypedWritable *(*ChangeThisFunc)(TypedWritable *object, BamReader *manager);
+  void register_change_this(ChangeThisFunc func, TypedWritable *whom);
+
   void finalize_now(TypedWritable *whom);
 
   void *get_pta(DatagramIterator &scan);
@@ -143,13 +146,23 @@ private:
 
   // This maps the object ID numbers encountered within the Bam file
   // to the actual pointers of the corresponding generated objects.
-  typedef pmap<int, TypedWritable *> CreatedObjs;
+  class CreatedObj {
+  public:
+    TypedWritable *_ptr;
+    ChangeThisFunc _change_this;
+  };
+  typedef pmap<int, CreatedObj> CreatedObjs;
   CreatedObjs _created_objs;
+  // This is the iterator into the above map for the object we are
+  // currently reading in p_read_object().  It is carefully maintained
+  // during recursion.  We need this so we can associate
+  // read_pointer() calls with the proper objects.
+  CreatedObjs::iterator _now_creating;
 
   // This records all the objects that still need their pointers
   // completed, along with the object ID's of the pointers they need,
   // in the order in which read_pointer() was called.
-  typedef pmap<TypedWritable *, vector_ushort> Requests;
+  typedef pmap<int, vector_int> Requests;
   Requests _deferred_pointers;
 
   // This is the number of extra objects that must still be read (and

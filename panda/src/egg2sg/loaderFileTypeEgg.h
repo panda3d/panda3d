@@ -19,9 +19,9 @@
 #ifndef LOADERFILETYPEEGG_H
 #define LOADERFILETYPEEGG_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <loaderFileType.h>
+#include "loaderFileType.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LoaderFileTypeEgg
@@ -36,6 +36,7 @@ public:
 
   virtual void resolve_filename(Filename &path) const;
   virtual PT_Node load_file(const Filename &path, bool report_errors) const;
+  virtual PT(PandaNode) qpload_file(const Filename &path, bool report_errors) const;
 
 public:
   static TypeHandle get_class_type() {

@@ -137,6 +137,27 @@ register_with_read_factory() {
 void TextureAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
+
+  manager->write_pointer(dg, _texture);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int TextureAttrib::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = RenderAttrib::complete_pointers(p_list, manager);
+
+  TypedWritable *texture = p_list[pi++];
+  if (texture != (TypedWritable *)NULL) {
+    _texture = DCAST(Texture, texture);
+  }
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +177,7 @@ make_from_bam(const FactoryParams &params) {
   parse_params(params, scan, manager);
   attrib->fillin(scan, manager);
 
-  return new_from_bam(attrib, manager);
+  return attrib;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,4 +190,7 @@ make_from_bam(const FactoryParams &params) {
 void TextureAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
+
+  // Read the _texture pointer.
+  manager->read_pointer(scan, this);
 }

@@ -152,7 +152,7 @@ register_with_read_factory(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomSprite::
-complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = Geom::complete_pointers(p_list, manager);
   _texture = DCAST(Texture, p_list[index]);
 
