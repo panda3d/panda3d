@@ -4,7 +4,6 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define USE_DX yes
 
-#if $[BUILD_DX8]
 #begin lib_target
   #define TARGET dxgsg8
   #define LOCAL_LIBS \
@@ -27,4 +26,3 @@
     config_dxgsg8.cxx dxSavedFrameBuffer8.cxx dxTextureContext8.cxx dxGeomNodeContext8.cxx
 
 #end lib_target
-#endif

@@ -4,7 +4,6 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define USE_DX yes
 
-#if $[BUILD_DX8]
 #begin lib_target
   #define TARGET wdxdisplay8
   #define LOCAL_LIBS dxgsg8
@@ -25,4 +24,3 @@
   #define SOURCES wdxGraphicsWindow8.cxx $[INSTALL_HEADERS]
     
 #end lib_target
-#endif
