@@ -288,3 +288,56 @@ class DirectScrolledList(DirectFrame):
     def getSelectedText(self):
         return self['items'][self.index]['text']
     
+
+
+"""
+from DirectGui import *
+
+def makeButton(itemName, itemNum, *extraArgs):
+    def buttonCommand():
+        print itemName, itemNum
+    return DirectButton(text = itemName,
+                        relief = RAISED,
+                        frameSize = (-3.5,3.5,-0.2,0.8),
+                        scale = 0.85,
+                        command = buttonCommand)
+
+s = scrollList = DirectScrolledList(
+    parent = aspect2d,
+    relief = None,
+    # Use the default dialog box image as the background
+    image = getDefaultDialogGeom(),
+    # Scale it to fit around everyting
+    image_scale = (0.7,1,.8),
+    # Give it a label
+    text = "Scrolled List Example",
+    text_scale = 0.06,
+    text_align = TextNode.ACenter,
+    text_pos = (0,0.3),
+    text_fg = (0,0,0,1),
+    # inc and dec are DirectButtons
+    # They can contain a combination of text, geometry and images
+    # Just a simple text one for now
+    incButton_text = 'Increment',
+    incButton_relief = RAISED,
+    incButton_pos = (0.0, 0.0, -0.36),
+    incButton_scale = 0.1,
+    # Same for the decrement button
+    decButton_text = 'Decrement',
+    decButton_relief = RAISED,
+    decButton_pos = (0.0, 0.0, 0.175),
+    decButton_scale = 0.1,
+    # each item is a button with text on it
+    numItemsVisible = 4,
+    itemMakeFunction = makeButton, 
+    items = ['Able', 'Baker', 'Charlie', 'Delta', 'Echo', 'Foxtrot',
+             'Golf', 'Hotel', 'India', 'Juliet', 'Kilo', 'Lima'],
+    # itemFrame is a DirectFrame
+    # Use it to scale up or down the items and to place it relative
+    # to eveything else
+    itemFrame_pos = (0, 0, 0.06),
+    itemFrame_scale = 0.1,
+    itemFrame_frameSize = (-3.1,3.1,-3.3,0.8),
+    itemFrame_relief = GROOVE,
+    )
+"""
