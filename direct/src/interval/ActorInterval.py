@@ -4,8 +4,6 @@ from PandaModules import *
 import Interval
 import math
 
-import DirectNotifyGlobal
-
 class ActorInterval(Interval.Interval):
 
     # create ActorInterval DirectNotify category

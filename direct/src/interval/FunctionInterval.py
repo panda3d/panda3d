@@ -5,6 +5,7 @@ from MessengerGlobal import *
 import Interval
 import types
 
+
 #############################################################
 ###                                                       ###
 ### See examples of function intervals in IntervalTest.py ###

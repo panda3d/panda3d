@@ -431,6 +431,110 @@
             return self.__lerp(functorFunc, time, blendType, task)
         else:
             return self.__lerp(functorFunc, time, blendType)
+
+
+
+    # user callable lerp methods
+    def lerpColorScale(self, *posArgs, **keyArgs):
+        """lerpColorScale(self, *positionArgs, **keywordArgs)
+        determine which lerpColorScale* to call based on arguments
+        """
+        if (len(posArgs) == 2):
+            return apply(self.lerpColorScaleVBase4, posArgs, keyArgs)
+        elif (len(posArgs) == 3):
+            return apply(self.lerpColorScaleVBase4VBase4, posArgs, keyArgs)
+        elif (len(posArgs) == 5):
+            return apply(self.lerpColorScaleRGBA, posArgs, keyArgs)
+        elif (len(posArgs) == 9):
+            return apply(self.lerpColorScaleRGBARGBA, posArgs, keyArgs)
+        else:
+            # bad args
+            raise Exception("Error: NodePath.lerpColorScale: bad number of args")
+
+            
+    def lerpColorScaleRGBA(self, r, g, b, a, time,
+                      blendType="noBlend", auto=None, task=None):
+        """lerpColorScaleRGBA(self, float, float, float, float, float,
+        string="noBlend", string=none, string=none)
+        """
+        def functorFunc(self = self, r = r, g = g, b = b, a = a):
+            import ColorScaleLerpFunctor
+            # just end rgba values, use current color rgba values for start
+            startColor = self.getColor()
+            functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
+                self,
+                startColor[0], startColor[1],
+                startColor[2], startColor[3],
+                r, g, b, a)
+            return functor
+        #determine whether to use auto, spawned, or blocking lerp
+        if (auto != None):
+            return self.__autoLerp(functorFunc, time, blendType, auto)
+        elif (task != None):
+            return self.__lerp(functorFunc, time, blendType, task)
+        else:
+            return self.__lerp(functorFunc, time, blendType)
+
+    def lerpColorScaleRGBARGBA(self, sr, sg, sb, sa, er, eg, eb, ea, time,
+                          blendType="noBlend", auto=None, task=None):
+        """lerpColorScaleRGBARGBA(self, float, float, float, float, float,
+        float, float, float, float, string="noBlend", string=none, string=none)
+        """
+        def functorFunc(self = self, sr = sr, sg = sg, sb = sb, sa = sa,
+                        er = er, eg = eg, eb = eb, ea = ea):
+            import ColorScaleLerpFunctor
+            # start and end rgba values
+            functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(self, sr, sg, sb, sa,
+                                                        er, eg, eb, ea)
+            return functor
+        #determine whether to use auto, spawned, or blocking lerp
+        if (auto != None):
+            return self.__autoLerp(functorFunc, time, blendType, auto)
+        elif (task != None):
+            return self.__lerp(functorFunc, time, blendType, task)
+        else:
+            return self.__lerp(functorFunc, time, blendType)
+
+    def lerpColorScaleVBase4(self, endColor, time,
+                        blendType="noBlend", auto=None, task=None):
+        """lerpColorScaleVBase4(self, VBase4, float, string="noBlend", string=none,
+        string=none)
+        """
+        def functorFunc(self = self, endColor = endColor):
+            import ColorScaleLerpFunctor
+            # just end vec4, use current color for start
+            startColor = self.getColor()
+            functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
+                self, startColor, endColor)
+            return functor
+        #determine whether to use auto, spawned, or blocking lerp
+        if (auto != None):
+            return self.__autoLerp(functorFunc, time, blendType, auto)
+        elif (task != None):
+            return self.__lerp(functorFunc, time, blendType, task)
+        else:
+            return self.__lerp(functorFunc, time, blendType)
+
+    def lerpColorScaleVBase4VBase4(self, startColor, endColor, time,
+                          blendType="noBlend", auto=None, task=None):
+        """lerpColorScaleVBase4VBase4(self, VBase4, VBase4, float, string="noBlend",
+        string=none, string=none)
+        """
+        def functorFunc(self = self, startColor = startColor,
+                        endColor = endColor):
+            import ColorScaleLerpFunctor
+            # start color and end vec
+            functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
+                self, startColor, endColor)
+            return functor
+        #determine whether to use auto, spawned, or blocking lerp
+        if (auto != None):
+            return self.__autoLerp(functorFunc, time, blendType, auto)
+        elif (task != None):
+            return self.__lerp(functorFunc, time, blendType, task)
+        else:
+            return self.__lerp(functorFunc, time, blendType)
+
             
 
     def lerpHpr(self, *posArgs, **keyArgs):
@@ -778,6 +882,9 @@
             return self.__lerp(functorFunc, time, blendType, task)
         else:
             return self.__lerp(functorFunc, time, blendType)
+
+
+
             
     def place(self):
         base.wantTk = 1
