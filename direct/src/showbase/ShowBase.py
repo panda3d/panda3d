@@ -487,7 +487,6 @@ class ShowBase(DirectObject.DirectObject):
         Creates the data graph and populates it with the basic input
         devices.
         """
-        
         self.dataRoot = NodePath('dataRoot')
         # Cache the node so we do not ask for it every frame
         self.dataRootNode = self.dataRoot.node()
