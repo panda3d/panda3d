@@ -1378,7 +1378,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       if (!status) {
         status.perror("MItMeshPolygon::getNormal");
       } else {
-        LVector3d n3d(n[0], n[1], n[2]);
+        Normald n3d(n[0], n[1], n[2]);
         n3d = n3d * vertex_frame_inv;
         vert.set_normal(n3d);
       }
@@ -1414,11 +1414,58 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       egg_poly->add_vertex(vpool->create_unique_vertex(vert));
     }
 
+    // Also get the face normal for the polygon.
+    Normald face_normal;
+    bool got_face_normal = false;
+
+    MVector n;
+    status = pi.getNormal(n, MSpace::kWorld);
+    if (!status) {
+      status.perror("MItMeshPolygon::getNormal face");
+    } else {
+      face_normal.set(n[0], n[1], n[2]);
+      face_normal = face_normal * vertex_frame_inv;
+      got_face_normal = true;
+      egg_poly->set_normal(face_normal);
+    }
+
+    // Now, check that the vertex ordering is consistent with the
+    // direction of the normals.  If not, reverse the vertex ordering
+    // (since we have seen cases where Maya sets this in contradiction
+    // to its normals).
+    Normald order_normal;
+    if (got_face_normal && egg_poly->calculate_normal(order_normal)) {
+      if (order_normal.dot(face_normal) < 0.0) {
+        egg_poly->reverse_vertex_ordering();
+        mayaegg_cat.info()
+          << "reversing polygon\n";
+
+        /*
+        Normald new_normal;
+        egg_poly->calculate_normal(new_normal);
+        if (new_normal.dot(order_normal) >= 0.0) {
+          cerr << "Did not change!  orig " << order_normal
+               << " new " << new_normal << "\n";
+          shader = NULL;
+          egg_poly->write(cerr, 0);
+          egg_poly->reverse_vertex_ordering();
+          egg_poly->write(cerr, 0);
+        } else {
+          cerr << "reversing prim: orig = " 
+               << order_normal
+               << ", new = " << new_normal << ", net = " << face_normal
+               << ", dot = " << order_normal.dot(face_normal)
+               << ", new dot = " << new_normal.dot(face_normal) << "\n";
+        }
+        */
+      }
+    }
+
     // Now apply the shader.
     if (shader != (MayaShader *)NULL) {
       set_shader_attributes(*egg_poly, *shader);
     }
-
+      
     pi.next();
   }
 
