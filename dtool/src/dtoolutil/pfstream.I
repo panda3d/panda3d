@@ -3,26 +3,28 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE ipfstream::ipfstream(const string cmd) : _psb(PipeStreamBuf::Input) {
+INLINE IPipeStream::IPipeStream(const std::string cmd)
+  : istream(&_psb), _psb(PipeStreamBuf::Input) {
   _psb.command(cmd);
 }
 
-INLINE void ipfstream::flush(void) {
+INLINE void IPipeStream::flush(void) {
   _psb.flush();
 }
 
-INLINE ipfstream::ipfstream(void) : _psb(PipeStreamBuf::Input) {
-  cerr << "should never call default constructor of ipfstream" << endl;
+INLINE IPipeStream::IPipeStream(void) : _psb(PipeStreamBuf::Input) {
+  cerr << "should never call default constructor of IPipeStream" << endl;
 }
 
-INLINE opfstream::opfstream(const string cmd) : _psb(PipeStreamBuf::Output) {
+INLINE OPipeStream::OPipeStream(const std::string cmd)
+  : ostream(&_psb), _psb(PipeStreamBuf::Output) {
   _psb.command(cmd);
 }
 
-INLINE void opfstream::flush(void) {
+INLINE void OPipeStream::flush(void) {
   _psb.flush();
 }
 
-INLINE opfstream::opfstream(void) : _psb(PipeStreamBuf::Output) {
-  cerr << "should never call default constructor of opfstream" << endl;
+INLINE OPipeStream::OPipeStream(void) : _psb(PipeStreamBuf::Output) {
+  cerr << "should never call default constructor of OPipeStream" << endl;
 }

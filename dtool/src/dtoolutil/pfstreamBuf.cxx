@@ -20,7 +20,7 @@ PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) : _dir(dir),
   allocate();
   assert((dir == Input) || (dir == Output));
   if (dir == Input) {
-    cerr << "allocated reserve is " << blen() << " bytes long" << endl;
+    //    cerr << "allocated reserve is " << blen() << " bytes long" << endl;
     setg(base(), ebuf(), ebuf());
   } else {
     setp(base(), ebuf());
@@ -74,8 +74,10 @@ int PipeStreamBuf::sync(void) {
     pbump(-n);
   } else {
     streamsize n = egptr() - gptr();
-    gbump(n);  // flush all our stored input away
-    cerr << "pfstream tossed out " << n << " bytes" << endl;
+    if (n != 0) {
+      gbump(n);  // flush all our stored input away
+      cerr << "pfstream tossed out " << n << " bytes" << endl;
+    }
   }
   return 0;
 }

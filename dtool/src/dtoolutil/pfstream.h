@@ -8,27 +8,29 @@
 
 #include "pfstreamBuf.h"
 
-class EXPCL_DTOOL ipfstream : public istream {
+class EXPCL_DTOOL IPipeStream : public istream {
 PUBLISHED:
-  INLINE ipfstream(const string);
+  INLINE IPipeStream(const std::string);
 
   INLINE void flush(void);
 private:
   PipeStreamBuf _psb;
 
-  INLINE ipfstream(void);
+  INLINE IPipeStream(void);
 };
 
-class EXPCL_DTOOL opfstream : public ostream {
+class EXPCL_DTOOL OPipeStream : public ostream {
 PUBLISHED:
-  INLINE opfstream(const string);
+  INLINE OPipeStream(const std::string);
 
   INLINE void flush(void);
 private:
   PipeStreamBuf _psb;
 
-  INLINE opfstream(void);
+  INLINE OPipeStream(void);
 };
+
+#include "pfstream.I"
 
 #endif /* __PFSTREAM_H__ */
 
