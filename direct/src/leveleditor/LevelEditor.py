@@ -33,7 +33,6 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10']
 # The list of neighborhoods to edit
 NEIGHBORHOODS = ['toontown_central', 'donalds_dock',
                  'minnies_melody_land', 'the_burrrgh']
-NEIGHBORHOODS = ['toontown_central', 'donalds_dock',]
 NEIGHBORHOOD_CODES = {'toontown_central': 'TT', 'donalds_dock': 'DD',
                       'minnies_melody_land': 'MM', 'the_burrrgh': 'BR'}
 OBJECT_SNAP_POINTS = {
