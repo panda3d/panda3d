@@ -1,7 +1,5 @@
 // Filename: config_dxgsg.cxx
 // Created by:  drose (06Oct99)
-// 
-////////////////////////////////////////////////////////////////////
 
 #include "config_dxgsg.h"
 #include "dxGraphicsStateGuardian.h"
@@ -31,7 +29,7 @@ bool dx_cheap_textures = config_dxgsg.GetBool("dx-cheap-textures", false);
 // for state-sorting, z-sorting, and binning.
 bool dx_cull_traversal = config_dxgsg.GetBool("dx-cull-traversal", true);
 
-DXDecalType dx_decal_type = GDT_blend;
+DXDecalType dx_decal_type = GDT_offset;
 
 static DXDecalType
 parse_decal_type(const string &type) {

@@ -378,6 +378,8 @@ protected:
   bool _multisample_alpha_mask_enabled;
   bool _blend_enabled;
   bool _depth_test_enabled;
+  bool _depth_write_enabled;
+  DWORD _old_colormaskval;
   bool _fog_enabled;
   bool _alpha_test_enabled;
   int _decal_level;

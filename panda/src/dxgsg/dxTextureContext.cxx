@@ -168,7 +168,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
     DWORD cNumColorChannels = pbuf->get_num_components();
 
     if((cNumColorChannels != 3) && (cNumColorChannels != 4)) {
-        dxgsg_cat.error() << "CreateTexture failed, havent handled pixbufs with < 3 channels yet! \n";
+        dxgsg_cat.error() << "CreateTexture failed for "<< _tex->get_name()<<", havent handled pixbufs with < 3 channels yet! \n";
         return NULL;
     }
 

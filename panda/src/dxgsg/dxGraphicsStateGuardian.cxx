@@ -350,25 +350,50 @@ init_dx(  LPDIRECTDRAW7		context,
 		  LPDIRECTDRAWSURFACE7  pri,
 		  LPDIRECTDRAWSURFACE7  back,
 		  LPDIRECTDRAWSURFACE7  zbuf,
-		  LPDIRECT3D7          d3d,
-		  LPDIRECT3DDEVICE7    d3dDevice,
+		  LPDIRECT3D7          pD3D,
+		  LPDIRECT3DDEVICE7    pDevice,
 		  RECT viewrect)
 {
   _pDD = context;
   _pri = pri;
   _back = back;
   _zbuf = zbuf;
-  _d3d = d3d;
-  _d3dDevice = d3dDevice;
+  _d3d = pD3D;
+  _d3dDevice = pDevice;
   _view_rect = viewrect;
+  HRESULT hr;
 
   _pTexPixFmts = new DDPIXELFORMAT[MAX_DX_TEXPIXFMTS];
 
   assert(_pTexPixFmts!=NULL);
 
-  if (d3dDevice->EnumTextureFormats(EnumTexFmtsCallback, this) != S_OK) {
+  if (pDevice->EnumTextureFormats(EnumTexFmtsCallback, this) != S_OK) {
       dxgsg_cat.error() << "EnumTextureFormats failed!!\n";
   }
+
+  D3DDEVICEDESC7 D3DDevDesc;
+
+  if(FAILED(hr = pDevice->GetCaps(&D3DDevDesc))) {
+    dxgsg_cat.fatal() << "GetCaps failed on Device\n";
+    exit(1);
+  }
+
+  if((dx_decal_type==GDT_offset) && !(D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
+#ifdef _DEBUG
+          dxgsg_cat.error() << "dx-decal-type 'offset' not supported by hardware, switching to decal masking\n";
+#endif
+          dx_decal_type = GDT_mask;
+  } 
+
+  if((dx_decal_type==GDT_mask) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKPLANES)) {
+#ifdef _DEBUG
+          dxgsg_cat.error() << "No hardware support for colorwrite disabling, switching to dx-decal-type 'mask' to 'blend'\n";
+#endif
+          dx_decal_type = GDT_blend;
+  }
+
+  if(((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ))
+         dxgsg_cat.error() << "dx-decal-type mask impossible to implement, no hardware support for Z-masking, decals will not appear correctly\n";
 
   SetRect(&clip_rect, 0,0,0,0);		// no clip rect set
 
@@ -3532,17 +3557,18 @@ begin_decal(GeomNode *base_geom) {
   _decal_level++;
   nassertv(4*_decal_level < 16);
 
-  if (dx_decal_type == GDT_offset) 
-	{
+  if (dx_decal_type == GDT_offset) {
+
+#define POLYGON_OFFSET_MULTIPLIER 2
     // Just draw the base geometry normally.
     base_geom->draw(this);
-    //bugbug:  restoring zbias properly requires a stack of values!!!  this is wrong, need to save old value on stack
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, 4 * _decal_level); // _decal_level better not be higher than 8!
-	} else {
+	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 4!
+  } else {
     if (_decal_level > 1) 
 	      base_geom->draw(this);  // If we're already decaling, just draw the geometry.
     else {
-      // Turn off writing the depth buffer to render the base geometry.
+      // First turn off writing the depth buffer to render the base geometry.
+	  _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (unsigned long *)&_depth_write_enabled);  //save cur val
 	  _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
       
       // Now render the base geometry.
@@ -3551,8 +3577,7 @@ begin_decal(GeomNode *base_geom) {
       // Render all of the decal geometry, too.  We'll keep the depth
       // buffer write off during this.
 	  }
-	}
-
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3569,16 +3594,11 @@ end_decal(GeomNode *base_geom) {
   _decal_level--;
 //  nassertv(_decal_level >= 1);
 
-  if (dx_decal_type == GDT_offset) 
-	{
+  if (dx_decal_type == GDT_offset) {
     // Restore the Zbias offset.
-    //bugbug:  restoring zbias properly requires a stack of values!!!  this is wrong, need to save old value on stack
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, 4 * _decal_level); // _decal_level better not be higher than 8!
-	}
-  else 
-	{
-    if (_decal_level == 0) 
-	  {
+	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
+  } else {  // for GDT_mask
+    if (_decal_level == 0) {
       // Now we need to re-render the base geometry with the depth write
       // on and the color mask off, so we update the depth buffer
       // properly.
@@ -3591,14 +3611,16 @@ end_decal(GeomNode *base_geom) {
 	  _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
       // Disable the writing to the color buffer, however we have to
-      // do this.  (I don't think this is possible in DX without blending.
-//      if (dx_decal_type == GDT_blend) 
-//			{
+      // do this.  (I don't think this is possible in DX without blending.)
+      if (dx_decal_type == GDT_blend) {
 			// Expensive.
 			enable_blend(true);
 			call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
-//			}
-//		else glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      }
+ 	  else {
+        // note: not saving current planemask val, assumes this is always all 1's.  should be ok
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
+      }
 
       // No need to have texturing on for this.
       enable_texturing(false);
@@ -3607,28 +3629,34 @@ end_decal(GeomNode *base_geom) {
     
       // Finally, restore the depth write and color mask states to the
       // way they're supposed to be.
+/*
       DepthWriteAttribute *depth_write;
       if (get_attribute_into(depth_write, _state,
 			     DepthWriteTransition::get_class_type())) 
 			issue_depth_write(depth_write);
 
-//      if (dx_decal_type == GDT_blend) {
-	  enable_blend(was_blend);
-	  if (was_blend)
-			call_dxBlendFunc(old_blend_source_func, old_blend_dest_func);
-      enable_texturing(was_textured);
-	  }
-	}
-/*      } else {
-	ColorMaskAttribute *color_mask;
+     ColorMaskAttribute *color_mask;
 	if (get_attribute_into(color_mask, _state,
 			       ColorMaskTransition::get_class_type())) {
 	  issue_color_mask(color_mask);
 	} else {
+
 	  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	}
-      }
-*/
+	}            
+*/            
+
+       if (dx_decal_type == GDT_blend) {
+    	  enable_blend(was_blend);
+    	  if (was_blend)
+    			call_dxBlendFunc(old_blend_source_func, old_blend_dest_func);
+       } else {
+          _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0xFFFFFFFF);
+       }
+
+       enable_texturing(was_textured);
+   	  _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled); 
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
