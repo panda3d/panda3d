@@ -690,6 +690,22 @@ def findPythonModule(module):
 def describeException(backTrace = 4):
     # When called in an exception handler, returns a string describing
     # the current exception.
+
+    def byteOffsetToLineno(code, byte):
+        # Returns the source line number corresponding to the given byte
+        # offset into the indicated Python code module.
+
+        import array
+        lnotab = array.array('B', code.co_lnotab)
+
+        line   = code.co_firstlineno
+        for i in range(0, len(lnotab),2):
+            byte -= lnotab[i]
+            if byte <= 0:
+                return line
+            line += lnotab[i+1]
+
+        return line
     
     infoArr = sys.exc_info()
     exception = infoArr[0]
@@ -699,14 +715,18 @@ def describeException(backTrace = 4):
 
     stack = []
     while trace.tb_next:
-        module = trace.tb_frame.f_globals.get('__name__', None)
-        lineno = trace.tb_frame.f_lineno
-        stack.append("%s:%s, " % (module, lineno))
+        frame = trace.tb_frame
+        module = frame.f_globals.get('__name__', None)
+        lineno = frame.f_lineno
+        truelineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
+        stack.append("%s:%s(%s), " % (module, lineno, truelineno))
         trace = trace.tb_next
 
-    module = trace.tb_frame.f_globals.get('__name__', None)
-    lineno = trace.tb_frame.f_lineno
-    stack.append("%s:%s, " % (module, lineno))
+    frame = trace.tb_frame
+    module = frame.f_globals.get('__name__', None)
+    lineno = frame.f_lineno
+    truelineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
+    stack.append("%s:%s(%s), " % (module, lineno, truelineno))
 
     description = ""
     for i in range(len(stack) - 1, max(len(stack) - backTrace, 0) - 1, -1):
