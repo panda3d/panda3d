@@ -43,9 +43,9 @@ operator = (const EggPolygon &copy) {
 //               degenerate and does not have a normal.
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggPolygon::
-recompute_polygon_normal() {
+recompute_polygon_normal(CoordinateSystem cs) {
   Normald normal;
-  if (calculate_normal(normal)) {
+  if (calculate_normal(normal, cs)) {
     set_normal(normal);
     return true;
   }

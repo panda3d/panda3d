@@ -22,8 +22,8 @@ public:
 
   virtual bool cleanup();
 
-  bool calculate_normal(Normald &result) const;
-  INLINE bool recompute_polygon_normal();
+  bool calculate_normal(Normald &result, CoordinateSystem cs = CS_default) const;
+  INLINE bool recompute_polygon_normal(CoordinateSystem cs = CS_default);
 
   INLINE bool triangulate_into(EggGroupNode *container, bool convex_also) const;
   PT(EggPolygon) triangulate_in_place(bool convex_also);

@@ -97,8 +97,8 @@ public:
   void resolve_filenames(const DSearchPath &searchpath);
   void reverse_vertex_ordering();
 
-  void recompute_vertex_normals(double threshold);
-  void recompute_polygon_normals();
+  void recompute_vertex_normals(double threshold, CoordinateSystem cs = CS_default);
+  void recompute_polygon_normals(CoordinateSystem cs = CS_default);
   void strip_normals();
 
   int triangulate_polygons(bool convex_also);
@@ -142,7 +142,7 @@ private:
   typedef map<Vertexd, NVertexGroup> NVertexCollection;
 
   void r_collect_vertex_normals(NVertexCollection &collection,
-				double threshold);
+				double threshold, CoordinateSystem cs);
   void do_compute_vertex_normals(const NVertexGroup &group);
 
 public:

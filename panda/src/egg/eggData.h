@@ -54,6 +54,10 @@ public:
   INLINE void set_egg_filename(const Filename &directory);
   INLINE const Filename &get_egg_filename() const;
 
+  INLINE void recompute_vertex_normals(double threshold);
+  INLINE void recompute_polygon_normals();
+  INLINE void strip_normals();
+
 protected:
   virtual void write(ostream &out, int indent_level = 0) const;
 

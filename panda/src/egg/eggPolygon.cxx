@@ -44,7 +44,7 @@ cleanup() {
 //               does not have at least three noncollinear vertices.
 ////////////////////////////////////////////////////////////////////
 bool EggPolygon::
-calculate_normal(Normald &result) const {
+calculate_normal(Normald &result, CoordinateSystem cs) const {
   // Get the first three unique vertices.
   Vertexd v[3];
   int i = 0;
@@ -71,8 +71,16 @@ calculate_normal(Normald &result) const {
 	LVector3d normal = a.cross(b);
 
 	if (normal.normalize()) {
-	  result = normal;
+	  // If we are in a left-handed coordinate system, we must
+	  // reverse the normal.
+	  if (cs == CS_default) {
+	    cs = default_coordinate_system;
+	  }
+	  if (cs == CS_zup_left || cs == CS_yup_left) {
+	    normal = -normal;
+	  }
 
+	  result = normal;
 	  return true;
 	}
 

@@ -328,11 +328,11 @@ reverse_vertex_ordering() {
 //               remove_unused_vertices() after calling this.
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
-recompute_vertex_normals(double threshold) {
+recompute_vertex_normals(double threshold, CoordinateSystem cs) {
   // First, collect all the vertices together with their shared
   // polygons.
   NVertexCollection collection;
-  r_collect_vertex_normals(collection, threshold);
+  r_collect_vertex_normals(collection, threshold, cs);
 
   // Now bust them into separate groups according to the edge
   // threshold.  Two polygons that share a vertex belong in the same
@@ -401,7 +401,7 @@ recompute_vertex_normals(double threshold) {
 //               remove_unused_vertices() after calling this.
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
-recompute_polygon_normals() {
+recompute_polygon_normals(CoordinateSystem cs) {
   Children::iterator ci, cnext;
   ci = _children.begin();
   while (ci != _children.end()) {
@@ -412,7 +412,7 @@ recompute_polygon_normals() {
     if (child->is_of_type(EggPolygon::get_class_type())) {
       EggPolygon *polygon = DCAST(EggPolygon, child);
 
-      if (!polygon->recompute_polygon_normal()) {
+      if (!polygon->recompute_polygon_normal(cs)) {
 	// The polygon is degenerate.  Remove it.
 	prepare_remove_child(child);
 	_children.erase(ci);
@@ -436,7 +436,7 @@ recompute_polygon_normals() {
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      DCAST(EggGroupNode, child)->recompute_polygon_normals();
+      DCAST(EggGroupNode, child)->recompute_polygon_normals(cs);
     }
 
     ci = cnext;
@@ -944,7 +944,7 @@ prepare_remove_child(EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
-			 double threshold) {
+			 double threshold, CoordinateSystem cs) {
   // We can do this ci/cnext iteration through the list as we modify
   // it, only because we know this works with an STL list type
   // container.  If this were a vector or a set, this wouldn't
@@ -963,7 +963,7 @@ r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
 
       NVertexReference ref;
       ref._polygon = polygon;
-      if (!polygon->calculate_normal(ref._normal)) {
+      if (!polygon->calculate_normal(ref._normal, cs)) {
 	// The polygon is degenerate.  Remove it.
 	
 	prepare_remove_child(child);
@@ -986,9 +986,9 @@ r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
       // We can't share vertices across an Instance node.  Don't
       // even bother trying.  Instead, just restart.
       if (group->is_under_instance()) {
-	group->recompute_vertex_normals(threshold);
+	group->recompute_vertex_normals(threshold, cs);
       } else {
-	group->r_collect_vertex_normals(collection, threshold);
+	group->r_collect_vertex_normals(collection, threshold, cs);
       }
     }
 
