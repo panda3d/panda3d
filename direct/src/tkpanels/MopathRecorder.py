@@ -36,9 +36,9 @@ class MopathRecorder(AppShell, PandaObject):
         name = 'recorder-%d' % MopathRecorder.count
         MopathRecorder.count += 1
         optiondefs = (
-            ('title',       self.appname,       None),
-            ('nodePath',    direct.camera,      None),
-            ('name',        name,               None)
+            ('title',       self.appname,         None),
+            ('nodePath',    None,                 None),
+            ('name',        name,                 None)
             )
         self.defineoptions(kw, optiondefs)
 
@@ -47,8 +47,8 @@ class MopathRecorder(AppShell, PandaObject):
         
         self.initialiseoptions(MopathRecorder)
 
-        self.selectRecordNodePathNamed('init')
-        self.selectPlaybackNodePathNamed('init')
+        self.selectRecordNodePathNamed('marker')
+        self.selectPlaybackNodePathNamed('marker')
 
     def appInit(self):
         self.name = self['name']
@@ -64,6 +64,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.playbackMarker.reparentTo(self.recorderNodePath)
         self.playbackMarker.hide()
         self.playbackMarker.setName('Playback Marker')
+        # ID of selected object
         self.manipulandumId = None
         self.tangentGroup = self.playbackMarker.attachNewNode('Tangent Group')
         self.tangentGroup.hide()
@@ -134,6 +135,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.playbackSF = 1.0
         # Sample variables
         self.fEven = 0
+        self.fForward = 0
         self.desampleFrequency = 1
         self.numSamples = 100
         self.recordStart = 0.0
@@ -262,7 +264,7 @@ class MopathRecorder(AppShell, PandaObject):
             entry_width = 20,
             selectioncommand = self.selectPlaybackNodePathNamed,
             scrolledlist_items = self.pbNodePathNames)
-        self.pbNodePathMenu.selectitem('camera')
+        self.pbNodePathMenu.selectitem('marker')
         self.pbNodePathMenuEntry = (
             self.pbNodePathMenu.component('entryfield_entry'))
         self.pbNodePathMenuBG = (
@@ -346,7 +348,7 @@ class MopathRecorder(AppShell, PandaObject):
             label_width = 16, label_anchor = W, entry_width = 20, 
             selectioncommand = self.selectRecordNodePathNamed,
             scrolledlist_items = self.recNodePathNames)
-        self.recNodePathMenu.selectitem('camera')
+        self.recNodePathMenu.selectitem('marker')
         self.recNodePathMenuEntry = (
             self.recNodePathMenu.component('entryfield_entry'))
         self.recNodePathMenuBG = (
@@ -354,6 +356,9 @@ class MopathRecorder(AppShell, PandaObject):
         self.bind(self.recNodePathMenu,
                   'Select node path to track when recording a new curve')
         self.recNodePathMenu.pack(side = LEFT, expand = 0)
+        self.createButton(frame, 'Recording', 'Select',
+                          'Select Current Record Node Path',
+                          lambda s = self: direct.select(s['nodePath']))
         frame.pack(expand = 1, fill = X)
 
         # Hooks
@@ -409,10 +414,17 @@ class MopathRecorder(AppShell, PandaObject):
             side = LEFT)
         widget.component('hull')['relief'] = RIDGE
         widget.onRelease = widget.onReturnRelease = self.sampleCurve
-        self.createCheckbutton(resampleFrame, 'Resample', 'Even',
+        frame = Frame(resampleFrame)
+        self.createCheckbutton(frame, 'Resample', 'Even',
                                'On: Resulting path has constant velocity',
                                self.setEven, self.fEven,
-                               side = LEFT, fill = BOTH, expand = 0)
+                               side = TOP, fill = BOTH, expand = 0)
+        self.createCheckbutton(
+            frame, 'Resample', 'Forward',
+            'On: Resulting hpr curve faces along xyz tangent',
+            self.setForward, self.fForward,
+            side = TOP, fill = BOTH, expand = 0)
+        frame.pack(fill = X, expand = 0)
         resampleFrame.pack(fill = X, expand = 0, pady = 2)
         # Desample
         desampleFrame = Frame(
@@ -683,13 +695,19 @@ class MopathRecorder(AppShell, PandaObject):
                 self.xyzNurbsCurveDrawer.draw()
             # Update tangent
             if self.manipulandumId == self.tangentMarker.id():
+                # If manipulating marker, update tangent
                 # Hide playback marker
                 self.playbackMarker.getChild(0).hide()
-                # If manipulating marker, update curve
-                tan = self.tangentMarker.getPos(self.nodePathParent)
+                # Where is tangent marker relative to playback marker
+                tan = self.tangentMarker.getPos()
+                # Transform this vector to curve space
+                tan2Curve = Vec3(
+                    self.playbackMarker.getMat(
+                    self.nodePathParent).xformVec(tan))
+                # Update nurbs curve
                 self.xyzNurbsCurve.adjustTangent(
                     self.playbackTime,
-                    tan[0], tan[1], tan[2])
+                    tan2Curve[0], tan2Curve[1], tan2Curve[2])
                 self.xyzNurbsCurveDrawer.draw()
             else:
                 # Show playback marker
@@ -697,6 +715,10 @@ class MopathRecorder(AppShell, PandaObject):
                 # Update tangent marker line
                 tan = Point3(0)
                 self.xyzNurbsCurve.getTangent(self.playbackTime, tan)
+                # Transform this point to playback marker space
+                tan.assign(
+                    self.nodePathParent.getMat(
+                    self.playbackMarker).xformVec(tan))
                 self.tangentMarker.setPos(tan)
             # In either case update tangent line
             self.tangentLines.setVertex(1, tan[0], tan[1], tan[2])
@@ -1366,12 +1388,30 @@ class MopathRecorder(AppShell, PandaObject):
             even = self.fEven
         self.xyzCurveFitter.sample(
             self.xyzNurbsCurve, self.numSamples, even)
+        if self.fForward:
+            # Use xyz curve tangent
+            tanPt = Point3(0)
+            lookAtCS = self.playbackMarker.attachNewNode('lookAt')
         # Now sample the hprNurbsCurve using the same delta T
         for i in range(self.numSamples):
             t = self.maxT * (i / float(self.numSamples))
             hpr = Point3(0)
-            self.hprNurbsCurve.getPoint(t, hpr)
+            if self.fForward:
+                # Use xyz curve tangent
+                self.xyzNurbsCurve.getTangent(t, tanPt)
+                # Transform this point to playback marker space
+                tanPt.assign(
+                    self.nodePathParent.getMat(
+                    self.playbackMarker).xformVec(tanPt))
+                lookAtCS.lookAt(tanPt, Z_AXIS)
+                hpr = lookAtCS.getHpr(self.nodePathParent)
+            else:
+                # Sample existing hpr curve
+                self.hprNurbsCurve.getPoint(t, hpr)
             self.hprCurveFitter.addPoint(t, hpr)
+        # Clean up
+        if self.fForward:
+            lookAtCS.removeNode()
         # Now recompute curves
         self.computeCurves()
         # Get new point set based on newly created curve
@@ -1384,6 +1424,9 @@ class MopathRecorder(AppShell, PandaObject):
 
     def setEven(self):
         self.fEven = self.getVariable('Resample', 'Even').get()
+
+    def setForward(self):
+        self.fForward = self.getVariable('Resample', 'Forward').get()
 
     def setPathDuration(self, event):
         newMaxT = float(self.getWidget('Resample', 'Path Duration').get())
