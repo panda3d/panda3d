@@ -134,6 +134,13 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   write_up_list(_up, manager, dg);
   write_down_list(_down, manager, dg);
   write_down_list(_stashed, manager, dg);
+
+  dg.add_uint32(_tag_data.size());
+  TagData::const_iterator ti;
+  for (ti = _tag_data.begin(); ti != _tag_data.end(); ++ti) {
+    dg.add_string((*ti).first);
+    dg.add_string((*ti).second);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,6 +199,16 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   fillin_up_list(_up, scan, manager);
   fillin_down_list(_down, scan, manager);
   fillin_down_list(_stashed, scan, manager);
+
+  // Read in the tag list.
+  if (manager->get_file_minor_ver() >= 4) {
+    int num_tags = scan.get_uint32();
+    for (int i = 0; i < num_tags; i++) {
+      string key = scan.get_string();
+      string value = scan.get_string();
+      _tag_data[key] = value;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1243,6 +1260,57 @@ copy_children(PandaNode *other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::copy_tags
+//       Access: Published
+//  Description: Copies all of the tags stored on the other node onto
+//               this node.  If a particular tag exists on both nodes,
+//               the contents of this node's value is replaced by that
+//               of the other.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+copy_tags(PandaNode *other) {
+  if (other == this) {
+    // Trivial.
+    return;
+  }
+
+  CDWriter cdataw(_cycler);
+  CDReader cdatar(other->_cycler);
+  TagData::const_iterator ti;
+  for (ti = cdatar->_tag_data.begin();
+       ti != cdatar->_tag_data.end();
+       ++ti) {
+    cdataw->_tag_data[(*ti).first] = (*ti).second;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::list_tags
+//       Access: Published
+//  Description: Writes a list of all the tag keys assigned to the
+//               node to the indicated stream.  Writes one instance of
+//               the separator following each key (but does not write
+//               a terminal separator).  The value associated with
+//               each key is not written.
+//
+//               This is mainly for the benefit of the realtime user,
+//               to see the list of all of the associated tag keys.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+list_tags(ostream &out, const string &separator) const {
+  CDReader cdata(_cycler);
+  if (!cdata->_tag_data.empty()) {
+    TagData::const_iterator ti = cdata->_tag_data.begin();
+    out << (*ti).first;
+    ++ti;
+    while (ti != cdata->_tag_data.end()) {
+      out << separator << (*ti).first;
+      ++ti;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::output
 //       Access: Published, Virtual
 //  Description: 
@@ -1261,6 +1329,11 @@ void PandaNode::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
   CDReader cdata(_cycler);
+  if (!cdata->_tag_data.empty()) {
+    out << " [";
+    list_tags(out, " ");
+    out << "]";
+  }
   if (!cdata->_transform->is_identity()) {
     out << " " << *cdata->_transform;
   }
@@ -1984,6 +2057,11 @@ void PandaNode::
 r_list_descendants(ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   indent(out, indent_level) << *this;
+  if (!cdata->_tag_data.empty()) {
+    out << " [";
+    list_tags(out, " ");
+    out << "]";
+  }
   if (!cdata->_transform->is_identity()) {
     out << " " << *cdata->_transform;
   }

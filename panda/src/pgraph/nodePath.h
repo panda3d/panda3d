@@ -519,6 +519,11 @@ PUBLISHED:
   int flatten_medium();
   int flatten_strong();
 
+  INLINE void set_tag(const string &key, const string &value);
+  INLINE string get_tag(const string &key) const;
+  INLINE bool has_tag(const string &key) const;
+  INLINE void clear_tag(const string &key);
+
   bool write_bam_file(const string &filename) const;
 
 private:

@@ -1124,6 +1124,65 @@ compare_to(const NodePath &other) const {
   return _head - other._head;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tag
+//       Access: Published
+//  Description: Associates a user-defined value with a user-defined
+//               key which is stored on the node.  This value has no
+//               meaning to Panda; but it is stored indefinitely on
+//               the node until it is requested again.
+//
+//               Each unique key stores a different string value.
+//               There is no effective limit on the number of
+//               different keys that may be stored or on the length of
+//               any one key's value.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_tag(const string &key, const string &value) {
+  nassertv_always(!is_empty());
+  node()->set_tag(key, value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tag
+//       Access: Published
+//  Description: Retrieves the user-defined value that was previously
+//               set on this node for the particular key, if any.  If
+//               no value has been previously set, returns the empty
+//               string.
+////////////////////////////////////////////////////////////////////
+INLINE string NodePath::
+get_tag(const string &key) const {
+  nassertr_always(!is_empty(), string());
+  return node()->get_tag(key);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_tag
+//       Access: Published
+//  Description: Returns true if a value has been defined on this node
+//               for the particular key (even if that value is the
+//               empty string), or false if no value has been set.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_tag(const string &key) const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_tag(key);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_tag
+//       Access: Published
+//  Description: Removes the value defined for this key on this
+//               particular node.  After a call to clear_tag(),
+//               has_tag() will return false for the indicated key.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_tag(const string &key) {
+  nassertv_always(!is_empty());
+  node()->clear_tag(key);
+}
+
 
 INLINE ostream &operator << (ostream &out, const NodePath &node_path) {
   node_path.output(out);

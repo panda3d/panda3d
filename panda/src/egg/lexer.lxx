@@ -567,6 +567,10 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   return TABLE_V;
 }
+"<TAG>" {
+  accept();
+  return TAG;
+}
 "<TEXLIST>" {
   accept();
   return TEXLIST;

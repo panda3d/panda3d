@@ -125,7 +125,7 @@ egg_cleanup_parser() {
 %token NURBSCURVE NURBSSURFACE OBJECTTYPE ORDER
 %token OUTTANGENT POINTLIGHT POLYGON REF RGBA ROTATE ROTX ROTY ROTZ
 %token SANIM SCALAR SCALE SEQUENCE SHADING SWITCH SWITCHCONDITION
-%token TABLE TABLE_V TEXLIST TEXTURE TLENGTHS TRANSFORM TRANSLATE
+%token TABLE TABLE_V TAG TEXLIST TEXTURE TLENGTHS TRANSFORM TRANSLATE
 %token TREF TRIM TXT UKNOTS UV VKNOTS VERTEX VERTEXANIM
 %token VERTEXPOOL VERTEXREF
 %token XFMANIM XFMSANIM
@@ -995,6 +995,11 @@ group_body:
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)$4;
   group->set_model_flag(value!=0);
+}
+        | group_body TAG optional_name '{' repeated_string '}'
+{
+  EggGroup *group = DCAST(EggGroup, egg_stack.back());
+  group->set_tag($3, $5);
 }
         | group_body TEXLIST '{' integer '}'
 {

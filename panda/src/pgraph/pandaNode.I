@@ -137,6 +137,7 @@ CData(const PandaNode::CData &copy) :
   _state(copy._state),
   _effects(copy._effects),
   _transform(copy._transform),
+  _tag_data(copy._tag_data),
   _draw_mask(copy._draw_mask),
   _fixed_internal_bound(copy._fixed_internal_bound)
 {
@@ -655,6 +656,72 @@ clear_transform() {
   cdata->_transform = TransformState::make_identity();
   mark_bound_stale();
   transform_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_tag
+//       Access: Published
+//  Description: Associates a user-defined value with a user-defined
+//               key which is stored on the node.  This value has no
+//               meaning to Panda; but it is stored indefinitely on
+//               the node until it is requested again.
+//
+//               Each unique key stores a different string value.
+//               There is no effective limit on the number of
+//               different keys that may be stored or on the length of
+//               any one key's value.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_tag(const string &key, const string &value) {
+  CDWriter cdata(_cycler);
+  cdata->_tag_data[key] = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_tag
+//       Access: Published
+//  Description: Retrieves the user-defined value that was previously
+//               set on this node for the particular key, if any.  If
+//               no value has been previously set, returns the empty
+//               string.
+////////////////////////////////////////////////////////////////////
+INLINE string PandaNode::
+get_tag(const string &key) const {
+  CDReader cdata(_cycler);
+  TagData::const_iterator ti;
+  ti = cdata->_tag_data.find(key);
+  if (ti != cdata->_tag_data.end()) {
+    return (*ti).second;
+  }
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_tag
+//       Access: Published
+//  Description: Returns true if a value has been defined on this node
+//               for the particular key (even if that value is the
+//               empty string), or false if no value has been set.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+has_tag(const string &key) const {
+  CDReader cdata(_cycler);
+  TagData::const_iterator ti;
+  ti = cdata->_tag_data.find(key);
+  return (ti != cdata->_tag_data.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_tag
+//       Access: Published
+//  Description: Removes the value defined for this key on this
+//               particular node.  After a call to clear_tag(),
+//               has_tag() will return false for the indicated key.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+clear_tag(const string &key) {
+  CDWriter cdata(_cycler);
+  cdata->_tag_data.erase(key);
 }
 
 ////////////////////////////////////////////////////////////////////

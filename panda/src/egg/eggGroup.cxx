@@ -65,6 +65,8 @@ operator = (const EggGroup &copy) {
   _collision_name = copy._collision_name;
   _fps = copy._fps;
 
+  _tag_data = copy._tag_data;
+
   unref_all_vertices();
   _vref = copy._vref;
 
@@ -286,6 +288,17 @@ write(ostream &out, int indent_level) const {
   }
 
   EggRenderMode::write(out, indent_level + 2);
+
+  TagData::const_iterator ti;
+  for (ti = _tag_data.begin(); ti != _tag_data.end(); ++ti) {
+    const string &key = (*ti).first;
+    const string &value = (*ti).second;
+
+    indent(out, indent_level + 2) << "<Tag> ";
+    enquote_string(out, key) << " {\n";
+    enquote_string(out, value, indent_level + 4) << "\n";
+    indent(out, indent_level + 2) << "}\n";
+  }
 
   // We have to write the children nodes before we write the vertex
   // references, since we might be referencing a vertex that's defined

@@ -150,6 +150,13 @@ PUBLISHED:
   INLINE const TransformState *get_transform() const;
   INLINE void clear_transform();
 
+  INLINE void set_tag(const string &key, const string &value);
+  INLINE string get_tag(const string &key) const;
+  INLINE bool has_tag(const string &key) const;
+  INLINE void clear_tag(const string &key);
+  void copy_tags(PandaNode *other);
+  void list_tags(ostream &out, const string &separator = "\n") const;
+
   INLINE void set_draw_mask(DrawMask mask);
   INLINE DrawMask get_draw_mask() const;
 
@@ -262,6 +269,11 @@ private:
   // each NodePathComponent destructs, it removes itself from this
   // set.
   typedef pset<NodePathComponent *> Paths;
+
+  // This is used to maintain a table of keyed data on each node, for
+  // the user's purposes.
+  typedef pmap<string, string> TagData;
+
   
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -294,6 +306,8 @@ private:
     CPT(RenderState) _state;
     CPT(RenderEffects) _effects;
     CPT(TransformState) _transform;
+
+    TagData _tag_data;
 
     // This is the draw_mask of this particular node.
     DrawMask _draw_mask;

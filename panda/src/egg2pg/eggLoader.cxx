@@ -1467,6 +1467,12 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
     _decals.insert(node);
   }
 
+  // Copy all the tags from the group onto the node.
+  EggGroup::TagData::const_iterator ti;
+  for (ti = egg_group->tag_begin(); ti != egg_group->tag_end(); ++ti) {
+    node->set_tag((*ti).first, (*ti).second);
+  }
+
   // If the group specified some property that should propagate down
   // to the leaves, we have to remember this node and apply the
   // property later, after we've created the actual geometry.

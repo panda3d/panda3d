@@ -40,6 +40,7 @@
 class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform3d {
 public:
   typedef pmap<PT_EggVertex, double> VertexRef;
+  typedef pmap<string, string> TagData;
 
   // These bits are all stored somewhere in _flags.
   enum GroupType {
@@ -184,6 +185,15 @@ public:
   INLINE bool has_lod() const;
   INLINE const EggSwitchCondition &get_lod() const;
 
+  INLINE void set_tag(const string &key, const string &value);
+  INLINE string get_tag(const string &key) const;
+  INLINE bool has_tag(const string &key) const;
+  INLINE void clear_tag(const string &key);
+
+  INLINE TagData::const_iterator tag_begin() const;
+  INLINE TagData::const_iterator tag_end() const;
+  INLINE TagData::size_type tag_size() const;
+
   void ref_vertex(EggVertex *vert, double membership = 1.0);
   void unref_vertex(EggVertex *vert);
   void unref_all_vertices();
@@ -249,6 +259,7 @@ private:
   string _collision_name;
   double _fps;
   PT(EggSwitchCondition) _lod;
+  TagData _tag_data;
   VertexRef _vref;
 
 

@@ -632,6 +632,117 @@ get_lod() const {
   return *_lod;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::set_tag
+//       Access: Published
+//  Description: Associates a user-defined value with a user-defined
+//               key which is stored on the node.  This value has no
+//               meaning to Panda; but it is stored indefinitely on
+//               the node until it is requested again.  This value
+//               will be copied to the PandaNode that is created for
+//               this particular EggGroup if the egg file is loaded as
+//               a scene.
+//
+//               Each unique key stores a different string value.
+//               There is no effective limit on the number of
+//               different keys that may be stored or on the length of
+//               any one key's value.
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+set_tag(const string &key, const string &value) {
+  _tag_data[key] = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::get_tag
+//       Access: Published
+//  Description: Retrieves the user-defined value that was previously
+//               set on this node for the particular key, if any.  If
+//               no value has been previously set, returns the empty
+//               string.
+////////////////////////////////////////////////////////////////////
+INLINE string EggGroup::
+get_tag(const string &key) const {
+  TagData::const_iterator ti;
+  ti = _tag_data.find(key);
+  if (ti != _tag_data.end()) {
+    return (*ti).second;
+  }
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::has_tag
+//       Access: Published
+//  Description: Returns true if a value has been defined on this node
+//               for the particular key (even if that value is the
+//               empty string), or false if no value has been set.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroup::
+has_tag(const string &key) const {
+  TagData::const_iterator ti;
+  ti = _tag_data.find(key);
+  return (ti != _tag_data.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::clear_tag
+//       Access: Published
+//  Description: Removes the value defined for this key on this
+//               particular node.  After a call to clear_tag(),
+//               has_tag() will return false for the indicated key.
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+clear_tag(const string &key) {
+  _tag_data.erase(key);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::tag_begin
+//       Access: Public
+//  Description: Returns an iterator that can, in conjunction with
+//               tag_end(), be used to traverse the entire set of
+//               tag keys.  Each iterator returns a pair<string,
+//               string>.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggGroup::TagData::const_iterator EggGroup::
+tag_begin() const {
+  return _tag_data.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::tag_end
+//       Access: Public
+//  Description: Returns an iterator that can, in conjunction with
+//               tag_begin(), be used to traverse the entire set of
+//               tag keys.  Each iterator returns a pair<string,
+//               string>.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggGroup::TagData::const_iterator EggGroup::
+tag_end() const {
+  return _tag_data.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGrop::tag_size
+//       Access: Public
+//  Description: Returns the number of elements between tag_begin()
+//               and tag_end().
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggGroup::TagData::size_type EggGroup::
+tag_size() const {
+  return _tag_data.size();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::vref_begin
