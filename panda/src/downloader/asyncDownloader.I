@@ -6,30 +6,6 @@
 #include "config_downloader.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Downloader::set_frequency
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void Downloader::
-set_frequency(float frequency) {
-  nassertv(frequency > 0.0);
-  if (_frequency != frequency) {
-    _frequency = frequency;
-    _recompute_buffer = true;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Downloader::get_frequency
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE float Downloader::
-get_frequency(void) const {
-  return _frequency;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Downloader::set_byte_rate
 //       Access: Public
 //  Description: Note: modem speeds are reported in bits, so you 
@@ -38,10 +14,17 @@ get_frequency(void) const {
 INLINE void Downloader::
 set_byte_rate(float bytes) {
   nassertv(bytes > 0.0);
-  if (_byte_rate != bytes) {
-    _byte_rate = bytes;
-    _recompute_buffer = true;
-  }
+  if (bytes == _byte_rate)
+    return;
+#ifdef HAVE_IPC
+  _buffer_lock.lock();
+#endif
+
+  _new_byte_rate = bytes;
+
+#ifdef HAVE_IPC
+  _buffer_lock.unlock();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,6 +38,26 @@ get_byte_rate(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Downloader::enable_download
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Downloader::
+enable_download(bool val) {
+  _download_enabled = val;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::is_download_enabled
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool Downloader::
+is_download_enabled(void) const {
+  return _download_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Downloader::set_disk_write_frequency
 //       Access: Public
 //  Description:
@@ -62,10 +65,15 @@ get_byte_rate(void) const {
 INLINE void Downloader::
 set_disk_write_frequency(int frequency) {
   nassertv(frequency > 0);
-  if (_disk_write_frequency != frequency) {
-    _disk_write_frequency = frequency;
-    _recompute_buffer = true;
-  }
+#ifdef HAVE_IPC
+    _buffer_lock.lock();
+#endif
+
+  _new_disk_write_frequency = frequency;
+
+#ifdef HAVE_IPC
+    _buffer_lock.unlock();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,24 +87,11 @@ get_disk_write_frequency(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Downloader::get_bytes_written
+//     Function: Downloader::get_last_attempt_stalled
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE int Downloader::
-get_bytes_written(void) const {
-  nassertr(_current_status != NULL, 0);
-  return _current_status->_total_bytes_written;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Downloader::get_bytes_per_second
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE float Downloader::
-get_bytes_per_second(void) const {
-  nassertr(_tlast - _tfirst > 0.0, 0.0);
-  nassertr(_current_status != NULL, 0.0);
-  return (float)((double)_current_status->_total_bytes / (_tlast - _tfirst));
+INLINE bool Downloader::
+get_last_attempt_stalled(void) const {
+  return _last_attempt_stalled;
 }

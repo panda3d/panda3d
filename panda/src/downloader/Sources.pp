@@ -8,7 +8,6 @@
   #define TARGET downloader
   
   #define SOURCES							\
-    asyncUtility.I asyncUtility.cxx asyncUtility.h			\
     config_downloader.cxx						\
     config_downloader.h downloadDb.I					\
     downloadDb.cxx downloadDb.h						\
@@ -17,8 +16,7 @@
     multiplexStream.I multiplexStream.cxx multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.cxx multiplexStreamBuf.h \
     patcher.cxx								\
-    patcher.h								\
-    download.I download.cxx download.h
+    patcher.h
 
   #define IF_ZLIB_SOURCES						\
     decompressor.cxx decompressor.h zcompressor.I zcompressor.cxx	\
