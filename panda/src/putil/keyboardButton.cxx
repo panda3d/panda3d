@@ -21,44 +21,6 @@
 
 #include <ctype.h>
 
-static ButtonHandle _space;
-static ButtonHandle _backspace;
-static ButtonHandle _tab;
-static ButtonHandle _enter;
-static ButtonHandle _escape;
-
-static ButtonHandle _f1;
-static ButtonHandle _f2;
-static ButtonHandle _f3;
-static ButtonHandle _f4;
-static ButtonHandle _f5;
-static ButtonHandle _f6;
-static ButtonHandle _f7;
-static ButtonHandle _f8;
-static ButtonHandle _f9;
-static ButtonHandle _f10;
-static ButtonHandle _f11;
-static ButtonHandle _f12;
-
-static ButtonHandle _left;
-static ButtonHandle _right;
-static ButtonHandle _up;
-static ButtonHandle _down;
-static ButtonHandle _page_up;
-static ButtonHandle _page_down;
-static ButtonHandle _home;
-static ButtonHandle _end;
-static ButtonHandle _insert;
-static ButtonHandle _del;
-
-static ButtonHandle _shift;
-static ButtonHandle _control;
-static ButtonHandle _alt;
-static ButtonHandle _meta;
-static ButtonHandle _caps_lock;
-static ButtonHandle _shift_lock;
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: KeyboardButton::ascii_key
 //       Access: Public, Static
@@ -71,183 +33,48 @@ ascii_key(char ascii_equivalent) {
   return ButtonRegistry::ptr()->find_ascii_button(ascii_equivalent);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: KeyboardButton::space
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               Space bar.
-////////////////////////////////////////////////////////////////////
-ButtonHandle KeyboardButton::
-space() {
-  return _space;
-}
+#define DEFINE_KEYBD_BUTTON_HANDLE(KeyName)     \
+                  static ButtonHandle _##KeyName; \
+                  ButtonHandle KeyboardButton::KeyName() { return _##KeyName; }
+                  
 
-////////////////////////////////////////////////////////////////////
-//     Function: KeyboardButton::backspace
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               Backspace key.  Most of the remaining methods in this
-//               file are similar.
-////////////////////////////////////////////////////////////////////
-ButtonHandle KeyboardButton::
-backspace() {
-  return _backspace;
-}
+DEFINE_KEYBD_BUTTON_HANDLE(space)
+DEFINE_KEYBD_BUTTON_HANDLE(backspace)
+DEFINE_KEYBD_BUTTON_HANDLE(tab)
+DEFINE_KEYBD_BUTTON_HANDLE(enter)
+DEFINE_KEYBD_BUTTON_HANDLE(escape)
+DEFINE_KEYBD_BUTTON_HANDLE(f1)
+DEFINE_KEYBD_BUTTON_HANDLE(f2)
+DEFINE_KEYBD_BUTTON_HANDLE(f3)
+DEFINE_KEYBD_BUTTON_HANDLE(f4)
+DEFINE_KEYBD_BUTTON_HANDLE(f5)
+DEFINE_KEYBD_BUTTON_HANDLE(f6)
+DEFINE_KEYBD_BUTTON_HANDLE(f7)
+DEFINE_KEYBD_BUTTON_HANDLE(f8)
+DEFINE_KEYBD_BUTTON_HANDLE(f9)
+DEFINE_KEYBD_BUTTON_HANDLE(f10)
+DEFINE_KEYBD_BUTTON_HANDLE(f11)
+DEFINE_KEYBD_BUTTON_HANDLE(f12)
+DEFINE_KEYBD_BUTTON_HANDLE(left)
+DEFINE_KEYBD_BUTTON_HANDLE(right)
+DEFINE_KEYBD_BUTTON_HANDLE(up)
+DEFINE_KEYBD_BUTTON_HANDLE(down)
+DEFINE_KEYBD_BUTTON_HANDLE(page_up)
+DEFINE_KEYBD_BUTTON_HANDLE(page_down)
+DEFINE_KEYBD_BUTTON_HANDLE(home)
+DEFINE_KEYBD_BUTTON_HANDLE(end)
+DEFINE_KEYBD_BUTTON_HANDLE(insert)
+DEFINE_KEYBD_BUTTON_HANDLE(del)
+DEFINE_KEYBD_BUTTON_HANDLE(meta)
+DEFINE_KEYBD_BUTTON_HANDLE(caps_lock)
+DEFINE_KEYBD_BUTTON_HANDLE(shift_lock)
+DEFINE_KEYBD_BUTTON_HANDLE(scroll_lock)
+DEFINE_KEYBD_BUTTON_HANDLE(num_lock)
+DEFINE_KEYBD_BUTTON_HANDLE(print_screen)
+DEFINE_KEYBD_BUTTON_HANDLE(shift)
+DEFINE_KEYBD_BUTTON_HANDLE(control)
+DEFINE_KEYBD_BUTTON_HANDLE(alt)
 
-ButtonHandle KeyboardButton::
-tab() {
-  return _tab;
-}
-
-ButtonHandle KeyboardButton::
-enter() {
-  return _enter;
-}
-
-ButtonHandle KeyboardButton::
-escape() {
-  return _escape;
-}
-
-ButtonHandle KeyboardButton::
-f1() {
-  return _f1;
-}
-
-ButtonHandle KeyboardButton::
-f2() {
-  return _f2;
-}
-
-ButtonHandle KeyboardButton::
-f3() {
-  return _f3;
-}
-
-ButtonHandle KeyboardButton::
-f4() {
-  return _f4;
-}
-
-ButtonHandle KeyboardButton::
-f5() {
-  return _f5;
-}
-
-ButtonHandle KeyboardButton::
-f6() {
-  return _f6;
-}
-
-ButtonHandle KeyboardButton::
-f7() {
-  return _f7;
-}
-
-ButtonHandle KeyboardButton::
-f8() {
-  return _f8;
-}
-
-ButtonHandle KeyboardButton::
-f9() {
-  return _f9;
-}
-
-ButtonHandle KeyboardButton::
-f10() {
-  return _f10;
-}
-
-ButtonHandle KeyboardButton::
-f11() {
-  return _f11;
-}
-
-ButtonHandle KeyboardButton::
-f12() {
-  return _f12;
-}
-
-ButtonHandle KeyboardButton::
-left() {
-  return _left;
-}
-
-ButtonHandle KeyboardButton::
-right() {
-  return _right;
-}
-
-ButtonHandle KeyboardButton::
-up() {
-  return _up;
-}
-
-ButtonHandle KeyboardButton::
-down() {
-  return _down;
-}
-
-ButtonHandle KeyboardButton::
-page_up() {
-  return _page_up;
-}
-
-ButtonHandle KeyboardButton::
-page_down() {
-  return _page_down;
-}
-
-ButtonHandle KeyboardButton::
-home() {
-  return _home;
-}
-
-ButtonHandle KeyboardButton::
-end() {
-  return _end;
-}
-
-ButtonHandle KeyboardButton::
-insert() {
-  return _insert;
-}
-
-ButtonHandle KeyboardButton::
-del() {
-  return _del;
-}
-
-ButtonHandle KeyboardButton::
-shift() {
-  return _shift;
-}
-
-ButtonHandle KeyboardButton::
-control() {
-  return _control;
-}
-
-ButtonHandle KeyboardButton::
-alt() {
-  return _alt;
-}
-
-ButtonHandle KeyboardButton::
-meta() {
-  return _meta;
-}
-
-ButtonHandle KeyboardButton::
-caps_lock() {
-  return _caps_lock;
-}
-
-ButtonHandle KeyboardButton::
-shift_lock() {
-  return _shift_lock;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: KeyboardButton::init_keyboard_buttons
@@ -293,6 +120,9 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_meta, "meta");
   ButtonRegistry::ptr()->register_button(_caps_lock, "caps_lock");
   ButtonRegistry::ptr()->register_button(_shift_lock, "shift_lock");
+  ButtonRegistry::ptr()->register_button(_num_lock, "num_lock");
+  ButtonRegistry::ptr()->register_button(_scroll_lock, "scroll_lock");
+  ButtonRegistry::ptr()->register_button(_print_screen, "print_screen");
 
   // Also register all of the visible ASCII characters.
   for (int i = 32; i < 127; i++) {

@@ -69,6 +69,9 @@ PUBLISHED:
   static ButtonHandle meta();
   static ButtonHandle caps_lock();
   static ButtonHandle shift_lock();
+  static ButtonHandle num_lock();
+  static ButtonHandle scroll_lock();
+  static ButtonHandle print_screen();
 
 public:
   static void init_keyboard_buttons();
