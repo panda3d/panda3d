@@ -80,6 +80,7 @@ public:
   void show_frame();
   virtual bool resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
+  bool special_check_fullscreen_resolution(UINT xsize,UINT ysize);
   virtual int get_depth_bitwidth(void);
 
 protected:

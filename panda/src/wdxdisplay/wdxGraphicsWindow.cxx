@@ -1539,6 +1539,29 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
    return true;
 }
 
+
+// overrides of the general estimator for known working cases
+bool wdxGraphicsWindow::
+special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
+    assert(IS_VALID_PTR(_dxgsg));
+
+    DWORD VendorId=_dxgsg->scrn.DXDeviceID.dwVendorId;
+    DWORD DeviceId=_dxgsg->scrn.DXDeviceID.dwDeviceId;
+    switch(VendorId) {
+        case 0x8086:  // Intel
+            // Intel i810,i815
+            if((DeviceId==0x7121)||(DeviceId==0x7121)||(DeviceId==0x1132)) {
+                if((xsize==800)&&(ysize==600))
+                    return true;
+                if((xsize==1024)&&(ysize==768))
+                    return true;
+            }
+            break;
+    }
+
+    return false;
+}
+
 unsigned int wdxGraphicsWindow::
 verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
    DWORD num_valid_modes=0;
@@ -1573,25 +1596,30 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
 
        bool bIsGoodMode=false;
 
-       if(_dxgsg->scrn.bIsLowVidMemCard) 
-           bIsGoodMode=(((float)xsize*(float)ysize)<=(float)(640*480));
-         else if(DMI.supportedBitDepths & (DDBD_16 | DDBD_24 | DDBD_32)) {
-             // assume user is testing fullscreen, not windowed, so use the dwTotal value
-             // see if 3 scrnbufs (front/back/z)at 16bpp at xsize*ysize will fit with a few 
-             // extra megs for texmem
-
-             // 8MB Rage Pro says it has 6.8 megs Total free and will run at 1024x768, so
-             // formula makes it so that is OK
-
-             #define REQD_TEXMEM 1800000.0f  
-
-             if(_dxgsg->scrn.MaxAvailVidMem==0) {
-                 //assume buggy drivers return bad val of 0 and everything will be OK
-                 bIsGoodMode=true;
-             } else {
-                 bIsGoodMode = ((((float)xsize*(float)ysize)*6+REQD_TEXMEM) < (float)_dxgsg->scrn.MaxAvailVidMem);
+       if(special_check_fullscreen_resolution(xsize,ysize)) {
+           // bypass the test below for certain cards we know have valid modes
+           bIsGoodMode=true;
+       } else {
+           if(_dxgsg->scrn.bIsLowVidMemCard) 
+               bIsGoodMode=(((float)xsize*(float)ysize)<=(float)(640*480));
+             else if(DMI.supportedBitDepths & (DDBD_16 | DDBD_24 | DDBD_32)) {
+                 // assume user is testing fullscreen, not windowed, so use the dwTotal value
+                 // see if 3 scrnbufs (front/back/z)at 16bpp at xsize*ysize will fit with a few 
+                 // extra megs for texmem
+    
+                 // 8MB Rage Pro says it has 6.8 megs Total free and will run at 1024x768, so
+                 // formula makes it so that is OK
+    
+                 #define REQD_TEXMEM 1800000.0f  
+    
+                 if(_dxgsg->scrn.MaxAvailVidMem==0) {
+                     //assume buggy drivers return bad val of 0 and everything will be OK
+                     bIsGoodMode=true;
+                 } else {
+                     bIsGoodMode = ((((float)xsize*(float)ysize)*6+REQD_TEXMEM) < (float)_dxgsg->scrn.MaxAvailVidMem);
+                 }
              }
-         }
+       }
 
        if(bIsGoodMode)
          num_valid_modes++;

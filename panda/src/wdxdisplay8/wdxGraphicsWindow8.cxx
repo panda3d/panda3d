@@ -1628,6 +1628,28 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
     return bResizeSucceeded;
 }
 
+// overrides of the general estimator for known working cases
+bool wdxGraphicsWindow::
+special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
+    assert(IS_VALID_PTR(_dxgsg));
+
+    DWORD VendorId=_dxgsg->scrn.DXDeviceID.VendorId;
+    DWORD DeviceId=_dxgsg->scrn.DXDeviceID.DeviceId;
+    switch(VendorId) {
+        case 0x8086:  // Intel
+            // Intel i810,i815
+            if((DeviceId==0x7121)||(DeviceId==0x7121)||(DeviceId==0x1132)) {
+                if((xsize==800)&&(ysize==600))
+                    return true;
+                if((xsize==1024)&&(ysize==768))
+                    return true;
+            }
+            break;
+    }
+
+    return false;
+}
+
 UINT wdxGraphicsWindow::
 verify_window_sizes(UINT numsizes,UINT *dimen) {
    // unfortunately this only works AFTER you make the window initially,
@@ -1648,20 +1670,32 @@ verify_window_sizes(UINT numsizes,UINT *dimen) {
       bool CouldntFindAnyValidZBuf;
       D3DFORMAT newPixFmt=D3DFMT_UNKNOWN;
 
-      if(!(_dxgsg->scrn.bIsLowVidMemCard && ((xsize!=640) || (ysize!=480))))
-          search_for_valid_displaymode(xsize,ysize,_dxgsg->scrn.PresParams.EnableAutoDepthStencil!=false,
-                                    IS_STENCIL_FORMAT(_dxgsg->scrn.PresParams.AutoDepthStencilFormat),
-                                    &_dxgsg->scrn.SupportedScreenDepthsMask,&CouldntFindAnyValidZBuf,
-                                    &newPixFmt);
-      if(newPixFmt!=D3DFMT_UNKNOWN) {
+
+      if(special_check_fullscreen_resolution(xsize,ysize)) {
+           // bypass the test below for certain cards we know have valid modes
+           bIsGoodMode=true;
+      } else {
+          if(_dxgsg->scrn.bIsLowVidMemCard) {
+              bIsGoodMode=((xsize==640) && (ysize==480));
+          } else  {
+              search_for_valid_displaymode(xsize,ysize,_dxgsg->scrn.PresParams.EnableAutoDepthStencil!=false,
+                                        IS_STENCIL_FORMAT(_dxgsg->scrn.PresParams.AutoDepthStencilFormat),
+                                        &_dxgsg->scrn.SupportedScreenDepthsMask,&CouldntFindAnyValidZBuf,
+                                        &newPixFmt);
+              bIsGoodMode=(newPixFmt!=D3DFMT_UNKNOWN);
+          }
+      }
+
+      if(bIsGoodMode) {
          num_valid_modes++;
        } else {
             // tell caller the mode is invalid
             pCurDim[0] = 0;
             pCurDim[1] = 0;
        }
+
        if(wdxdisplay_cat.is_spam())
-           wdxdisplay_cat.spam() << "Fullscrn Mode (" << xsize << "," << ysize << ")\t" << ((newPixFmt!=D3DFMT_UNKNOWN) ? "V" : "Inv") <<"alid\n";
+           wdxdisplay_cat.spam() << "Fullscrn Mode (" << xsize << "," << ysize << ")\t" << (bIsGoodMode ? "V" : "Inv") <<"alid\n";
    }
 
    return num_valid_modes;
