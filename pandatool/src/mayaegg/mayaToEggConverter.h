@@ -104,7 +104,8 @@ private:
   // I ran into core dumps trying to pass around a MFnMesh object by
   // value.  From now on, all MFn* objects will be passed around by
   // reference.
-  void make_nurbs_surface(const MDagPath &dag_path, 
+  void make_nurbs_surface(MayaNodeDesc *node_desc,
+                          const MDagPath &dag_path, 
                           MFnNurbsSurface &surface,
                           EggGroup *group);
   EggNurbsCurve *make_trim_curve(const MFnNurbsCurve &curve,

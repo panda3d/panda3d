@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaNodeTree.h"
+#include "mayaBlendDesc.h"
 #include "mayaEggGroupUserData.h"
 #include "config_mayaegg.h"
 #include "maya_funcs.h"
 #include "eggGroup.h"
 #include "eggTable.h"
 #include "eggXfmSAnim.h"
+#include "eggSAnimData.h"
 #include "eggData.h"
 #include "dcast.h"
 
@@ -40,11 +42,12 @@
 ////////////////////////////////////////////////////////////////////
 MayaNodeTree::
 MayaNodeTree() {
-  _root = new MayaNodeDesc;
+  _root = new MayaNodeDesc(this);
   _fps = 0.0;
   _egg_data = (EggData *)NULL;
   _egg_root = (EggGroupNode *)NULL;
   _skeleton_node = (EggGroupNode *)NULL;
+  _morph_node = (EggGroupNode *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,11 +238,12 @@ get_node(int n) const {
 ////////////////////////////////////////////////////////////////////
 void MayaNodeTree::
 clear() {
-  _root = new MayaNodeDesc;
+  _root = new MayaNodeDesc(this);
   _fps = 0.0;
   _egg_data = (EggData *)NULL;
   _egg_root = (EggGroupNode *)NULL;
   _skeleton_node = (EggGroupNode *)NULL;
+  _morph_node = (EggGroupNode *)NULL;
   _nodes_by_path.clear();
   _nodes.clear();
 }
@@ -253,11 +257,17 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void MayaNodeTree::
 clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
-          EggGroupNode *skeleton_node) {
+          EggGroupNode *skeleton_node, EggGroupNode *morph_node) {
   _root->clear_egg();
+  BlendDescs::iterator bi;
+  for (bi = _blend_descs.begin(); bi != _blend_descs.end(); ++bi) {
+    (*bi)->clear_egg();
+  }
+
   _egg_data = egg_data;
   _egg_root = egg_root;
   _skeleton_node = skeleton_node;
+  _morph_node = morph_node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,6 +438,88 @@ get_egg_anim(MayaNodeDesc *node_desc) {
   return node_desc->_anim;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::get_egg_slider
+//       Access: Public
+//  Description: Returns the anim table corresponding to the slider
+//               for the indicated blend.  Creates the table node if it
+//               has not already been created.
+////////////////////////////////////////////////////////////////////
+EggSAnimData *MayaNodeTree::
+get_egg_slider(MayaBlendDesc *blend_desc) {
+  nassertr(_morph_node != (EggGroupNode *)NULL, NULL);
+
+  if (blend_desc->_anim == (EggSAnimData *)NULL) {
+    // We need to make a new anim table.
+    EggSAnimData *egg_anim = new EggSAnimData(blend_desc->get_name());
+    egg_anim->set_fps(_fps);
+    _morph_node->add_child(egg_anim);
+
+    blend_desc->_anim = egg_anim;
+  }
+
+  return blend_desc->_anim;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::add_blend_desc
+//       Access: Public
+//  Description: Adds the indicated MayaBlendDesc object to the list
+//               of blends collected so far.  If a MayaBlendDesc
+//               object with the same name is already part of the
+//               tree, the supplied object is discarded and the
+//               previously-added object is returned; otherwise, the
+//               supplied object is added to the tree and the same
+//               object is returned.
+//
+//               In either case, the return value is the MayaBlendDesc
+//               that should be used henceforth.
+////////////////////////////////////////////////////////////////////
+MayaBlendDesc *MayaNodeTree::
+add_blend_desc(MayaBlendDesc *blend_desc) {
+  BlendDescs::iterator bi = _blend_descs.insert(blend_desc).first;
+
+  return (*bi);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::get_num_blend_descs
+//       Access: Public
+//  Description: Returns the number of unique MayaBlendDesc objects
+//               (and hence the number of morph sliders) discovered in
+//               the tree.
+////////////////////////////////////////////////////////////////////
+int MayaNodeTree::
+get_num_blend_descs() const {
+  return _blend_descs.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::get_blend_desc
+//       Access: Public
+//  Description: Returns the nth MayaBlendDesc object discovered in
+//               the tree.
+////////////////////////////////////////////////////////////////////
+MayaBlendDesc *MayaNodeTree::
+get_blend_desc(int n) const {
+  nassertr(n >= 0 && n < (int)_blend_descs.size(), NULL);
+  return _blend_descs[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::reset_sliders
+//       Access: Public
+//  Description: Resets all of the sliders associated with all blend
+//               shapes down to 0.
+////////////////////////////////////////////////////////////////////
+void MayaNodeTree::
+reset_sliders() {
+  BlendDescs::iterator bi;
+  for (bi = _blend_descs.begin(); bi != _blend_descs.end(); ++bi) {
+    (*bi)->set_slider(0.0);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeTree::r_build_node
@@ -465,7 +557,7 @@ r_build_node(const string &path) {
     }
 
     MayaNodeDesc *parent_node_desc = r_build_node(parent_path);
-    node_desc = new MayaNodeDesc(parent_node_desc, local_name);
+    node_desc = new MayaNodeDesc(this, parent_node_desc, local_name);
     _nodes.push_back(node_desc);
   }
 

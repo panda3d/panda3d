@@ -34,6 +34,7 @@
 #include "eggTexture.h"
 #include "eggTextureCollection.h"
 #include "eggXfmSAnim.h"
+#include "eggSAnimData.h"
 #include "string_utils.h"
 #include "dcast.h"
 
@@ -71,6 +72,7 @@
 #include <maya/MFnSkinCluster.h>
 #include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MFnDoubleIndexedComponent.h>
+#include <maya/MFnBlendShapeDeformer.h>
 #include <maya/MItDependencyGraph.h>
 #include <maya/MDagPathArray.h>
 #include <maya/MSelectionList.h>
@@ -503,6 +505,11 @@ convert_char_model() {
     MGlobal::viewFrame(frame);
   }
 
+  // It's also important for us to reset all the blend shape sliders
+  // to 0 before we get out the model.  Otherwise, the model we
+  // convert will have the current positions of the sliders baked in.
+  _tree.reset_sliders();
+
   EggGroup *char_node = new EggGroup(_character_name);
   get_egg_data().add_child(char_node);
   char_node->set_dart_type(EggGroup::DT_default);
@@ -529,11 +536,13 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
   root_table_node->add_child(bundle_node);
   EggTable *skeleton_node = new EggTable("<skeleton>");
   bundle_node->add_child(skeleton_node);
+  EggTable *morph_node = new EggTable("morph");
+  bundle_node->add_child(morph_node);
 
   // Set the frame rate before we start asking for anim tables to be
   // created.
   _tree._fps = output_frame_rate;
-  _tree.clear_egg(&get_egg_data(), NULL, skeleton_node);
+  _tree.clear_egg(&get_egg_data(), NULL, skeleton_node, morph_node);
 
   // Now we can get the animation data by walking through all of the
   // frames, one at a time, and getting the joint angles at each
@@ -544,6 +553,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
   PT(EggGroup) tgroup = new EggGroup;
 
   int num_nodes = _tree.get_num_nodes();
+  int num_sliders = _tree.get_num_blend_descs();
   int i;
 
   MTime frame(start_frame, MTime::uiUnit());
@@ -576,6 +586,16 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
       }
     }
 
+    for (i = 0; i < num_sliders; i++) {
+      MayaBlendDesc *blend_desc = _tree.get_blend_desc(i);
+      if (mayaegg_cat.is_spam()) {
+        mayaegg_cat.spam()
+          << "slider " << blend_desc->get_name() << "\n";
+      }
+      EggSAnimData *anim = _tree.get_egg_slider(blend_desc);
+      anim->add_data(blend_desc->get_slider());
+    }
+
     frame += frame_inc;
   }
 
@@ -589,6 +609,12 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
     }
   }
 
+  for (i = 0; i < num_sliders; i++) {
+    MayaBlendDesc *blend_desc = _tree.get_blend_desc(i);
+    EggSAnimData *anim = _tree.get_egg_slider(blend_desc);
+    anim->optimize();
+  }
+  
   mayaegg_cat.info(false)
     << "\n";
 
@@ -605,7 +631,7 @@ bool MayaToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
 
-  _tree.clear_egg(&get_egg_data(), egg_root, NULL);
+  _tree.clear_egg(&get_egg_data(), egg_root, NULL, NULL);
   for (int i = 0; i < num_nodes; i++) {
     MayaNodeDesc *node = _tree.get_node(i);
     if (!process_model_node(node)) {
@@ -637,7 +663,7 @@ process_model_node(MayaNodeDesc *node_desc) {
   MFnDagNode dag_node(dag_path, &status);
   if (!status) {
     status.perror("MFnDagNode constructor");
-    mayaegg_cat.error() << dag_path.fullPathName() << "\n";
+    mayaegg_cat.error() << dag_path.fullPathName().asChar() << "\n";
     return false;
   }
 
@@ -701,7 +727,7 @@ process_model_node(MayaNodeDesc *node_desc) {
           << ":\n"
           << "  it appears to have a NURBS surface, but does not.\n";
       } else {
-        make_nurbs_surface(dag_path, surface, egg_group);
+        make_nurbs_surface(node_desc, dag_path, surface, egg_group);
       }
     }
 
@@ -943,8 +969,8 @@ get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group) {
 //               indicated egg group.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
-                   EggGroup *egg_group) {
+make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
+                   MFnNurbsSurface &surface, EggGroup *egg_group) {
   MStatus status;
   string name = surface.name().asChar();
 
@@ -1022,6 +1048,31 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
     status.perror("MFnNurbsSurface::getCVs");
     return;
   }
+
+  // Also get out all the alternate blend shapes for the surface by
+  // applying each morph slider one at a time.
+  pvector<MPointArray> morph_cvs;
+  if (_animation_convert == AC_model) {
+    int num_sliders = node_desc->get_num_blend_descs();
+    morph_cvs.reserve(num_sliders);
+    for (int i = 0; i < num_sliders; i++) {
+      MayaBlendDesc *blend_desc = node_desc->get_blend_desc(i);
+
+      // Temporarily push the slider up to 1.0 so we can see what the
+      // surface looks like at that value.
+      blend_desc->set_slider(1.0);
+      MPointArray cv_array;
+      status = surface.getCVs(cv_array, MSpace::kWorld);
+      blend_desc->set_slider(0.0);
+
+      if (!status) {
+        status.perror("MFnNurbsSurface::getCVs");
+        return;
+      }
+      morph_cvs.push_back(cv_array);
+    }
+  }
+
   MDoubleArray u_knot_array, v_knot_array;
   status = surface.getKnotsInU(u_knot_array);
   if (!status) {
@@ -1044,7 +1095,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
   int v_cvs = surface.numCVsInV();
 
   // Maya repeats CVS at the end for a periodic surface, and doesn't
-  // count them in the weighted array, below.
+  // count them in the joint weight array, below.
   int maya_u_cvs = (u_form == MFnNurbsSurface::kPeriodic) ? u_cvs - u_degree : u_cvs;
   int maya_v_cvs = (v_form == MFnNurbsSurface::kPeriodic) ? v_cvs - v_degree : v_cvs;
 
@@ -1081,9 +1132,10 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
   for (i = 0; i < egg_nurbs->get_num_cvs(); i++) {
     int ui = egg_nurbs->get_u_index(i);
     int vi = egg_nurbs->get_v_index(i);
+    int maya_vi = v_cvs * ui + vi;
 
     double v[4];
-    MStatus status = cv_array[v_cvs * ui + vi].get(v);
+    status = cv_array[maya_vi].get(v);
     if (!status) {
       status.perror("MPoint::get");
     } else {
@@ -1091,6 +1143,28 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
       LPoint4d p4d(v[0], v[1], v[2], v[3]);
       p4d = p4d * vertex_frame_inv;
       vert->set_pos(p4d);
+
+      // Now generate the morph targets for the vertex.
+      if (!morph_cvs.empty()) {
+        // Morph deltas are given in 3-d space, not in 4-d homogenous
+        // space.
+        LPoint3d p3d(v[0] / v[3], v[1] / v[3], v[2] / v[3]);
+
+        for (unsigned int si = 0; si < morph_cvs.size(); si++) {
+          MayaBlendDesc *blend_desc = node_desc->get_blend_desc(si);
+          status = morph_cvs[si][maya_vi].get(v);
+          if (!status) {
+            status.perror("MPoint::get");
+          } else {
+            LPoint3d m3d(v[0] / v[3], v[1] / v[3], v[2] / v[3]);
+            LVector3d delta = m3d - p3d;
+            if (!delta.almost_equal(LVector3d::zero())) {
+              EggMorphVertex dxyz(blend_desc->get_name(), delta);
+              vert->_dxyzs.insert(dxyz);
+            }
+          }
+        }
+      }
 
       egg_nurbs->add_vertex(vert);
     }
@@ -1629,6 +1703,16 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       
     pi.next();
   }
+
+  // TODO: We also need to compute the vertex morphs for the polyset,
+  // based on whatever blend shapes may be present.  This should be
+  // similar to the code in make_nurbs_surface(), except that since we
+  // don't have a one-to-one relationship of egg vertices to Maya
+  // vertices, we probably have to get the morphs down here, after we
+  // have added all of the egg vertices.  I'll be happy to make this
+  // work as soon as someone gives me a sample Maya file that
+  // demonstrates blend shapes with polygon meshes.
+
 
   // Now that we've added all the polygons (and created all the
   // vertices), go back through the vertex pool and set up the

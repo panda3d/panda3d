@@ -21,14 +21,17 @@
 
 #include "pandatoolbase.h"
 
+#include "mayaBlendDesc.h"
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
 
 #include "pre_maya_include.h"
 #include <maya/MDagPath.h>
+#include <maya/MFnDagNode.h>
 #include "post_maya_include.h"
 
+class MayaNodeTree;
 class EggGroup;
 class EggTable;
 class EggXfmSAnim;
@@ -42,18 +45,23 @@ class EggXfmSAnim;
 ////////////////////////////////////////////////////////////////////
 class MayaNodeDesc : public ReferenceCount, public Namable {
 public:
-  MayaNodeDesc(MayaNodeDesc *parent = NULL, const string &name = string());
+  MayaNodeDesc(MayaNodeTree *tree,
+               MayaNodeDesc *parent = NULL, const string &name = string());
   ~MayaNodeDesc();
 
   void from_dag_path(const MDagPath &dag_path);
   bool has_dag_path() const;
   const MDagPath &get_dag_path() const;
 
+  int get_num_blend_descs() const;
+  MayaBlendDesc *get_blend_desc(int n) const;
+
   bool is_joint() const;
   bool is_joint_parent() const;
 
   bool is_tagged() const;
 
+  MayaNodeTree *_tree;
   MayaNodeDesc *_parent;
   typedef pvector< PT(MayaNodeDesc) > Children;
   Children _children;
@@ -65,12 +73,17 @@ private:
   void clear_egg();
   void mark_joint_parent();
   void check_pseudo_joints(bool joint_above);
+  void check_blend_shapes(const MFnDagNode &node, 
+                          const string &attrib_name);
 
   MDagPath *_dag_path;
 
   EggGroup *_egg_group;
   EggTable *_egg_table;
   EggXfmSAnim *_anim;
+
+  typedef pvector< PT(MayaBlendDesc) > BlendDescs;
+  BlendDescs _blend_descs;
 
   enum JointType {
     JT_none,         // Not a joint.

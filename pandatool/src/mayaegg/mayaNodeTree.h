@@ -22,10 +22,16 @@
 #include "pandatoolbase.h"
 
 #include "mayaNodeDesc.h"
+#include "mayaBlendDesc.h"
 #include "globPattern.h"
+#include "indirectCompareNames.h"
+#include "ordered_vector.h"
 
 class EggData;
 class EggGroupNode;
+class EggTable;
+class EggXfmSAnim;
+class EggSAnimData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaNodeTree
@@ -47,26 +53,38 @@ public:
 
   void clear();
   void clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
-                 EggGroupNode *skeleton_node);
+                 EggGroupNode *skeleton_node, EggGroupNode *morph_node);
   EggGroup *get_egg_group(MayaNodeDesc *node_desc);
   EggTable *get_egg_table(MayaNodeDesc *node_desc);
   EggXfmSAnim *get_egg_anim(MayaNodeDesc *node_desc);
+  EggSAnimData *get_egg_slider(MayaBlendDesc *blend_desc);
 
+  MayaBlendDesc *add_blend_desc(MayaBlendDesc *blend_desc);
+  int get_num_blend_descs() const;
+  MayaBlendDesc *get_blend_desc(int n) const;
+
+  void reset_sliders();
+
+public:
   PT(MayaNodeDesc) _root;
   float _fps;
 
 private:
+  MayaNodeDesc *r_build_node(const string &path);
+
   EggData *_egg_data;
   EggGroupNode *_egg_root;
   EggGroupNode *_skeleton_node;
-
-  MayaNodeDesc *r_build_node(const string &path);
+  EggGroupNode *_morph_node;
 
   typedef pmap<string, MayaNodeDesc *> NodesByPath;
   NodesByPath _nodes_by_path;
 
   typedef pvector<MayaNodeDesc *> Nodes;
   Nodes _nodes;
+
+  typedef ov_set<PT(MayaBlendDesc), IndirectCompareNames<MayaBlendDesc> > BlendDescs;
+  BlendDescs _blend_descs;
 };
 
 #endif

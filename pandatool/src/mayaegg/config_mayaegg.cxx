@@ -19,6 +19,7 @@
 #include "config_mayaegg.h"
 #include "mayaEggGroupUserData.h"
 #include "mayaNodeDesc.h"
+#include "mayaBlendDesc.h"
 
 #include "dconfig.h"
 
@@ -60,6 +61,7 @@ init_libmayaegg() {
 
   MayaEggGroupUserData::init_type();
   MayaNodeDesc::init_type();
+  MayaBlendDesc::init_type();
 
   // For some reason, static init is not reliably running when this is
   // loaded as a plug-in of a plug-in.  Initialize these explicitly

@@ -17,7 +17,16 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaNodeDesc.h"
+#include "mayaNodeTree.h"
+#include "mayaBlendDesc.h"
 #include "maya_funcs.h"
+
+#include "pre_maya_include.h"
+#include <maya/MFnBlendShapeDeformer.h>
+#include <maya/MItDependencyGraph.h>
+#include <maya/MFnNurbsSurface.h>
+#include <maya/MFnMesh.h>
+#include "post_maya_include.h"
 
 TypeHandle MayaNodeDesc::_type_handle;
 
@@ -41,8 +50,9 @@ static const int num_transform_connections = sizeof(transform_connections) / siz
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 MayaNodeDesc::
-MayaNodeDesc(MayaNodeDesc *parent, const string &name) :
+MayaNodeDesc(MayaNodeTree *tree, MayaNodeDesc *parent, const string &name) :
   Namable(name),
+  _tree(tree),
   _parent(parent)
 {
   _dag_path = (MDagPath *)NULL;
@@ -73,11 +83,13 @@ MayaNodeDesc::
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeDesc::from_dag_path
 //       Access: Public
-//  Description: Indicates an associated between the MayaNodeDesc and
+//  Description: Indicates an association between the MayaNodeDesc and
 //               some Maya instance.
 ////////////////////////////////////////////////////////////////////
 void MayaNodeDesc::
 from_dag_path(const MDagPath &dag_path) {
+  MStatus status;
+
   if (_dag_path == (MDagPath *)NULL) {
     _dag_path = new MDagPath(dag_path);
 
@@ -113,6 +125,18 @@ from_dag_path(const MDagPath &dag_path) {
         }
       }
     }
+
+    if (dag_path.hasFn(MFn::kNurbsSurface)) {
+      MFnNurbsSurface surface(dag_path, &status);
+      if (status) {
+        check_blend_shapes(surface, "create");
+      }
+    } else if (dag_path.hasFn(MFn::kMesh)) {
+      MFnMesh mesh(dag_path, &status);
+      if (status) {
+        check_blend_shapes(mesh, "inMesh");
+      }
+    }
   }
 }
 
@@ -138,6 +162,30 @@ const MDagPath &MayaNodeDesc::
 get_dag_path() const {
   nassertr(_dag_path != (MDagPath *)NULL, *_dag_path);
   return *_dag_path;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::get_num_blend_descs
+//       Access: Public
+//  Description: Returns the number of unique MayaBlendDesc objects
+//               (and hence the number of morph sliders) that affect
+//               the geometry in this node.
+////////////////////////////////////////////////////////////////////
+int MayaNodeDesc::
+get_num_blend_descs() const {
+  return _blend_descs.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::get_blend_desc
+//       Access: Public
+//  Description: Returns the nth MayaBlendDesc object that affects the
+//               geometry in this node.
+////////////////////////////////////////////////////////////////////
+MayaBlendDesc *MayaNodeDesc::
+get_blend_desc(int n) const {
+  nassertr(n >= 0 && n < (int)_blend_descs.size(), NULL);
+  return _blend_descs[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -294,5 +342,65 @@ check_pseudo_joints(bool joint_above) {
         }
       }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::check_blend_shapes
+//       Access: Private
+//  Description: Looks for blend shapes on a NURBS surface or polygon
+//               mesh and records any blend shapes found.  This is
+//               similar to MayaToEggConverter::get_vertex_weights(),
+//               which checks for membership of vertices to joints;
+//               Maya stores the blend shape table in the same place.
+//               See the comments in get_vertex_weights() for a more
+//               in-depth description of the iteration process here.
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
+  MStatus status;
+
+  MObject attr = node.attribute(attrib_name.c_str()); 
+  
+  MPlug history(node.object(), attr); 
+  MItDependencyGraph it(history, MFn::kDependencyNode, 
+                        MItDependencyGraph::kUpstream, 
+                        MItDependencyGraph::kDepthFirst, 
+                        MItDependencyGraph::kNodeLevel);
+
+  while (!it.isDone()) {
+    MObject c_node = it.thisNode(); 
+
+    if (c_node.hasFn(MFn::kBlendShape)) {
+      MFnBlendShapeDeformer blends(c_node, &status);
+      if (!status) {
+        status.perror("MFnBlendShapeDeformer constructor");
+      } else {
+        MObjectArray base_objects;
+        status = blends.getBaseObjects(base_objects);
+        if (!status) {
+          status.perror("MFnBlendShapeDeformer::getBaseObjects");
+        } else {
+          for (unsigned int oi = 0; oi < base_objects.length(); oi++) {
+            MObject base_object = base_objects[oi];
+
+            MIntArray index_list;
+            status = blends.weightIndexList(index_list);
+            if (!status) {
+              status.perror("MFnBlendShapeDeformer::weightIndexList");
+            } else {
+              for (unsigned int i = 0; i < index_list.length(); i++) {
+                int wi = index_list[i];
+                PT(MayaBlendDesc) blend_desc = new MayaBlendDesc(blends, wi);
+                blend_desc = _tree->add_blend_desc(blend_desc);
+                _blend_descs.push_back(blend_desc);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    it.next();
   }
 }
