@@ -21,6 +21,7 @@
 #include "config_windisplay.h"
 #include "wdxGraphicsPipe7.h"
 #include "dxGraphicsStateGuardian7.h"
+#include "pStatTimer.h"
 
 #include <wingdi.h>
 
@@ -135,6 +136,8 @@ wdxGraphicsWindow7::
 
 void wdxGraphicsWindow7::
 make_current(void) {
+  PStatTimer timer(_make_current_pcollector);
+
   DXGraphicsStateGuardian7 *dxgsg;
   DCAST_INTO_V(dxgsg, _gsg);
   //wglMakeCurrent(_hdc, wdxgsg->_context);

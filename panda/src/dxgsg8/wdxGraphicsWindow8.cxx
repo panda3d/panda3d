@@ -28,10 +28,7 @@
 #include "keyboardButton.h"
 #include "mouseButton.h"
 #include "throw_event.h"
-
-#ifdef DO_PSTATS
 #include "pStatTimer.h"
-#endif
 
 #include <ddraw.h>
 #include <map>
@@ -98,6 +95,8 @@ wdxGraphicsWindow8::
 
 void wdxGraphicsWindow8::
 make_current(void) {
+  PStatTimer timer(_make_current_pcollector);
+
   DXGraphicsStateGuardian8 *dxgsg;
   DCAST_INTO_V(dxgsg, _gsg);
   //wglMakeCurrent(_hdc, wdxgsg->_context);

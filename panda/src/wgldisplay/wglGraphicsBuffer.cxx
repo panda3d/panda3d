@@ -18,9 +18,8 @@
 
 #include "wglGraphicsBuffer.h"
 #include "config_wgldisplay.h"
-#include "wglGraphicsPipe.h"
 #include "glgsg.h"
-#include "frameBufferProperties.h"
+#include "pStatTimer.h"
 
 #include <wingdi.h>
 
@@ -94,6 +93,8 @@ begin_frame() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsBuffer::
 make_current() {
+  PStatTimer timer(_make_current_pcollector);
+
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 

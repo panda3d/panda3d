@@ -20,6 +20,7 @@
 #include "config_wgldisplay.h"
 #include "config_windisplay.h"
 #include "wglGraphicsPipe.h"
+#include "pStatTimer.h"
 #include "glgsg.h"
 
 #include <wingdi.h>
@@ -155,6 +156,8 @@ wglGraphicsWindow::
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 make_current() {
+  PStatTimer timer(_make_current_pcollector);
+
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
   wglMakeCurrent(_hdc, wglgsg->get_context(_hdc));
