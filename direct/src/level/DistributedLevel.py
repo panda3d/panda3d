@@ -28,7 +28,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # this dict stores entity reparents if the parent hasn't been
         # created yet
-        self.pendingEntId2ParentId = {}
+        self.parent2ChildIds = {}
 
         # Most (if not all) of the timed entities of levels
         # run on looping intervals that are started once based on
@@ -123,7 +123,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 self.localEntities[entId] = entity
 
         # there should not be any pending reparents left
-        assert len(self.pendingEntId2ParentId) == 0
+        assert len(self.parent2ChildIds) == 0
 
     def announceGenerate(self):
         self.notify.debug('announceGenerate')
@@ -164,19 +164,30 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 self.notify.debug(
                     'entity %s requesting reparent to %s, not yet created' %
                     (entity, parent))
+
                 entId = entity.entId
-                self.pendingEntId2ParentId[entId] = parentId
                 entity.reparentTo(hidden)
-                # do the reparent once the parent is initialized
-                def doReparent(entId=entId, parentId=parentId, self=self):
-                    entity=self.getEntity(entId)
-                    parent=self.getEntity(parentId)
-                    self.notify.debug(
-                        'performing pending reparent of %s to %s' %
-                        (entity, parent))
-                    entity.reparentTo(parent)
-                    del self.pendingEntId2ParentId[entId]
-                self.accept(self.getEntityCreateEvent(parentId), doReparent)
+
+                # if this parent doesn't already have another child pending,
+                # do some setup
+                if not self.parent2ChildIds.has_key(parentId):
+                    self.parent2ChildIds[parentId] = []
+
+                    # do the reparent once the parent is initialized
+                    def doReparent(parentId=parentId, self=self):
+                        assert self.parent2ChildIds.has_key(parentId)
+                        parent=self.getEntity(parentId)
+                        for entId in self.parent2ChildIds[parentId]:
+                            entity=self.getEntity(entId)
+                            self.notify.debug(
+                                'performing pending reparent of %s to %s' %
+                                (entity, parent))
+                            entity.reparentTo(parent)
+                        del self.parent2ChildIds[parentId]
+
+                    self.accept(self.getEntityCreateEvent(parentId), doReparent)
+
+                self.parent2ChildIds[parentId].append(entId)
 
     def showZone(self, zoneNum):
         self.zoneNum2Node[zoneNum].show()
