@@ -198,6 +198,9 @@ clean : clean-igate
 #if $[st_sources]
 $[TAB] rm -f $[patsubst %,$[%_obj],$[st_sources]]
 #endif
+#if $[deferred_objs]
+$[TAB] rm -f $[deferred_objs]
+#endif
 #if $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 $[TAB] rm -f $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 #endif
