@@ -1275,7 +1275,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::is_geom_node
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: A simple downcast check.  Returns true if this kind
 //               of node happens to inherit from GeomNode, false
 //               otherwise.
@@ -1291,7 +1291,7 @@ is_geom_node() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::as_light
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Cross-casts the node to a Light pointer, if it is one
 //               of the four kinds of Light nodes, or returns NULL if
 //               it is not.
@@ -1303,7 +1303,7 @@ as_light() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_velocity
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Indicates the instantaneous velocity of this node.
 //               This function is meaningless to most kinds of nodes;
 //               it is implemented only for CollisionNodes and is

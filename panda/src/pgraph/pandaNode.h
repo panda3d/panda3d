@@ -177,7 +177,6 @@ PUBLISHED:
   INLINE const BoundingVolume &get_bound() const;
   INLINE const BoundingVolume &get_internal_bound() const;
 
-public:
   virtual bool is_geom_node() const;
   virtual Light *as_light();
   virtual void set_velocity(const LVector3f &vel);
