@@ -66,6 +66,23 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelNode::safe_to_modify_transform
+//       Access: Public, Virtual
+//  Description: Returns true if it is safe to automatically adjust
+//               the transform on this kind of node.  Usually, this is
+//               only a bad idea if the user expects to find a
+//               particular transform on the node.
+//
+//               ModelNodes with the preserve_transform flag set are
+//               presently the only kinds of nodes that should not
+//               have their transform even adjusted.
+////////////////////////////////////////////////////////////////////
+bool ModelNode::
+safe_to_modify_transform() const {
+  return !_preserve_transform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelNode::safe_to_combine
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to combine this

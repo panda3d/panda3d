@@ -406,6 +406,28 @@ r_apply_attribs(PandaNode *node, int attrib_types,
     apply_types |= TT_transform;
   }
 
+  // Also, check the children of this node.  If any of them indicates
+  // it is not safe to modify its transform, we must drop our
+  // transform here.
+  int num_children = node->get_num_children();
+  int i;
+  if ((apply_types & TT_transform) == 0) {
+    bool children_transform_friendly = true;
+    for (i = 0; i < num_children && children_transform_friendly; i++) {
+      PandaNode *child_node = node->get_child(i);
+      children_transform_friendly = child_node->safe_to_modify_transform();
+    }
+
+    if (!children_transform_friendly) {
+      if (pgraph_cat.is_debug()) {
+        pgraph_cat.debug()
+          << "Node " << *node
+          << " has a child that cannot modify its transform; leaving transform here.\n";
+      }
+      apply_types |= TT_transform;
+    }
+  }
+
   // Directly store whatever attributes we must,
   trans.apply_to_node(node, attrib_types & apply_types);
 
@@ -414,8 +436,6 @@ r_apply_attribs(PandaNode *node, int attrib_types,
 
   // Do we need to copy any children to flatten instances?
   bool resist_copy = false;
-  int num_children = node->get_num_children();
-  int i;
   for (i = 0; i < num_children; i++) {
     PandaNode *child_node = node->get_child(i);
 
