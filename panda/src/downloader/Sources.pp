@@ -8,7 +8,7 @@
 #begin lib_target
   #define TARGET downloader
   
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define SOURCES \
     config_downloader.h asyncUtility.I asyncUtility.h \
