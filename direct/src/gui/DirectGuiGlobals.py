@@ -33,36 +33,27 @@ DISABLED = 'disabled'
 FLAT = PGFrameStyle.TFlat
 RAISED = PGFrameStyle.TBevelOut
 SUNKEN = PGFrameStyle.TBevelIn
+GROOVE = PGFrameStyle.TGroove
+RIDGE = PGFrameStyle.TRidge
 
-# Use to extract common prefix of mouse click, press, and release events
-def getGenericMouseEvent(event, mouse):
-    if mouse == 1:
-        mb = MouseButton.one()
-    elif mouse == 2:
-        mb = MouseButton.two()
-    elif mouse == 3:
-        mb = MouseButton.three()
-    if event == 'click':
-        eventFunc = PGButton().getClickEvent
-    elif event == 'press':
-        eventFunc = PGButton().getPressEvent
-    elif event == 'release':
-        eventFunc = PGButton().getReleaseEvent
-    eventString = eventFunc(mb)
-    return eventString[:eventString.rfind('-') + 1]
+FrameStyleDict = {'flat' : FLAT, 'raised' : RAISED, 'sunken': SUNKEN,
+                  'groove' : GROOVE, 'ridge' : RIDGE 
+                  }
 
 # User can bind commands to these gui events
-ENTER = 'enter-'
-EXIT = 'exit-'
-B1CLICK = getGenericMouseEvent('click', 1)
-B2CLICK = getGenericMouseEvent('click', 2)
-B3CLICK = getGenericMouseEvent('click', 3)
-B1PRESS = getGenericMouseEvent('press', 1)
-B2PRESS = getGenericMouseEvent('press', 2)
-B3PRESS = getGenericMouseEvent('press', 3)
-B1RELEASE = getGenericMouseEvent('release', 1)
-B2RELEASE = getGenericMouseEvent('release', 2)
-B3RELEASE = getGenericMouseEvent('release', 3)
+DESTROY = 'destroy-'
+PRINT = 'print-'
+ENTER = PGButton.getEnterPrefix()
+EXIT = PGButton.getExitPrefix()
+B1CLICK = PGButton.getClickPrefix() + MouseButton.one().getName() + '-'
+B2CLICK = PGButton.getClickPrefix() + MouseButton.two().getName() + '-'
+B3CLICK = PGButton.getClickPrefix() + MouseButton.three().getName() + '-'
+B1PRESS = PGButton.getPressPrefix() + MouseButton.one().getName() + '-'  
+B2PRESS = PGButton.getPressPrefix() + MouseButton.two().getName() + '-'  
+B3PRESS = PGButton.getPressPrefix() + MouseButton.three().getName() + '-'
+B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'  
+B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'  
+B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
 
 # For setting the sorting order of a widget's visible components
 IMAGE_SORT_INDEX = 10

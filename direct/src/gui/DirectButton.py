@@ -1,20 +1,21 @@
-from DirectLabel import *
+from DirectFrame import *
 
-class DirectButton(DirectLabel):
+class DirectButton(DirectFrame):
     """
     DirectButton(parent) - Create a DirectGuiWidget which responds
     to mouse clicks and execute a callback function if defined
     """
     def __init__(self, parent = guiTop, **kw):
-        # Inherits from DirectLabel
-        # A Direct Label can have:
+        # Inherits from DirectFrame
+        # A Direct Frame can have:
         # - A background texture (pass in path to image, or Texture Card)
         # - A midground geometry item (pass in geometry)
         # - A foreground text Node (pass in text string or Onscreen Text)
         # For a direct button:
-        # Each of these has 4 states (ready, press, rollover, disabled)
-        # The same object can be used for all four states or each
+        # Each button has 4 states (ready, press, rollover, disabled)
+        # The same image/geom/text can be used for all four states or each
         # state can have a different text/geom/image
+        # State transitions happen automatically based upon mouse interaction
         # Responds to click event and calls command if None
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -34,11 +35,10 @@ class DirectButton(DirectLabel):
             ('pressEffect',     1,          INITOPT),
             )
         # Merge keyword options with default options
-        self.defineoptions(kw, optiondefs,
-                           dynamicGroups = ('text', 'geom', 'image'))
+        self.defineoptions(kw, optiondefs)
 
         # Initialize superclasses
-        DirectLabel.__init__(self, parent)
+        DirectFrame.__init__(self, parent)
         
         # If specifed, add scaling to the pressed state to make it look
         # like the button is moving when you press it

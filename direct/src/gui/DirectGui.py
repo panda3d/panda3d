@@ -6,6 +6,7 @@ __builtin__.guiTop = aspect2d.attachNewNode(PGTop('DirectGuiTop'))
 guiTop.node().setMouseWatcher(base.mouseWatcher.node())
 
 # Direct Gui Classes
+from DirectFrame import *
 from DirectButton import *
 from DirectLabel import *
 

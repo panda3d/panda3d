@@ -42,7 +42,7 @@ def ouch(db):
     db.lerpPos(Point3(newX, 0, newZ), 1.0, task = 'runAway',
                blendType = 'easeOut')
 
-dl = DirectLabel(image = 'phase_4/maps/middayskyB.jpg')
+dl = DirectFrame(image = 'phase_4/maps/middayskyB.jpg')
 dl.setScale(.5)
 
 # Create a button with a background image, smiley as a geometry element,
@@ -69,7 +69,7 @@ for i in range(10):
     db.bind(EXIT, lambda x, db = db: expand(db))
     db.bind(B1PRESS, lambda x, db = db: ouch(db))
     # Pop up placer when button 2 is pressed
-    db.bind(B2PRESS, lambda x, db = db: db.place())
+    db.bind(B3PRESS, lambda x, db = db: db.place())
     
     # To get rid of button and clear out hooks call:
     # db.destroy()

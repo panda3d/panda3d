@@ -1,4 +1,6 @@
 from DirectGuiGlobals import *
+from DirectGeometry import ROUND_TO
+
 """
 Base class for all Direct Gui items.  Handles composite widgets and
 command line argument parsing.
@@ -89,7 +91,7 @@ class DirectGuiBase(PandaObject):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'
         # List of all active hooks
-        self.hookDict = {}
+        self._hookDict = {}
         # To avoid doing things redundantly during initialisation
         self.fInit = 1
 	# Mapping from each megawidget option to a list of information
@@ -140,6 +142,9 @@ class DirectGuiBase(PandaObject):
         # the group is given to the constructor or to configure(), but
         # no components with this group have been created.
         # self._dynamicGroups = ()
+
+    def __del__(self):
+        print 'Bye'
 
     def defineoptions(self, keywords, optionDefs, dynamicGroups = ()):
         """ defineoptions(keywords, optionDefs, dynamicGroups = {}) """
@@ -592,8 +597,11 @@ class DirectGuiBase(PandaObject):
 
     def destroy(self):
         # Clean out any hooks
-        for event in self.hookDict.keys():
+        for event in self._hookDict.keys():
             self.ignore(event)
+        del(self._optionInfo)
+        del(self._hookDict)
+        del(self.__componentInfo)
 
     def bind(self, event, command):
         """
@@ -605,7 +613,7 @@ class DirectGuiBase(PandaObject):
         gEvent = event + self.guiId
         self.accept(gEvent, command)
         # Keep track of all events you're accepting
-        self.hookDict[gEvent] = command
+        self._hookDict[gEvent] = command
         
     def unbind(self, event):
         """
@@ -614,11 +622,20 @@ class DirectGuiBase(PandaObject):
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
         self.ignore(gEvent)
-        if self.hookDict.has_key(gEvent):
-            del(self.hookDict[gEvent])
+        if self._hookDict.has_key(gEvent):
+            del(self._hookDict[gEvent])
 
+def toggleGuiGridSnap():
+    DirectGuiWidget.snapToGrid = 1 - DirectGuiWidget.snapToGrid
+
+def setGuiGridSpacing(spacing):
+    DirectGuiWidget.gridSpacing = spacing
 
 class DirectGuiWidget(DirectGuiBase, NodePath):
+    # Toggle if you wish widget's to snap to grid when draggin
+    snapToGrid = 0
+    gridSpacing = 0.05
+    
     def __init__(self, parent = guiTop, **kw):
         # Direct gui widgets are node paths
         # Direct gui widgets have:
@@ -633,20 +650,20 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         # -  Can position/scale them
         optiondefs = (
             # Widget's constructor
-            ('pgFunc',          PGItem,     None),
-            ('numStates',       1,          None),
-            ('invertedFrames',  (),         None),
+            ('pgFunc',         PGItem,       None),
+            ('numStates',      1,            None),
+            ('invertedFrames', (),           None),
             # Widget's initial state
-            ('state',           NORMAL,     self.setState),
+            ('state',          NORMAL,       self.setState),
             # Widget's frame characteristics
-            ('relief',          FLAT,       self.setRelief),
-            ('borderWidth',     (.1,.1),    self.setBorderWidth),
-            ('frameSize',       None,       self.setFrameSize),
-            ('frameColor',      (1,1,1,1),  self.setFrameColor),
-            ('pad',             (.25,.15),  self.resetFrameSize),
+            ('relief',         FLAT,         self.setRelief),
+            ('borderWidth',    (.1,.1),      self.setBorderWidth),
+            ('frameSize',      None,         self.setFrameSize),
+            ('frameColor',     (.8,.8,.8,1), self.setFrameColor),
+            ('pad',            (.25,.15),    self.resetFrameSize),
             # Initial pos/scale of the widget
-            ('pos',             None,       INITOPT),
-            ('scale',           None,       INITOPT),
+            ('pos',            None,         INITOPT),
+            ('scale',          None,         INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -677,8 +694,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             else:
                 apply(self.setScale, self['scale'])
         # Initialize names
-        self.guiItem.setName(self.guiId)
-        self.setName(self.guiId + 'NodePath')
+        self.setName(self.guiId)
         # Create
         self.stateNodePath = []
         for i in range(self['numStates']):
@@ -690,6 +706,14 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         # For holding bounds info
         self.ll = Point3(0)
         self.ur = Point3(0)
+
+        # Is drag and drop enabled?
+        if base.config.GetBool('direct-gui-edit', 0):
+            self.enableEdit()
+
+        # Bind destroy hook
+        self.bind(DESTROY, self.destroy)
+            
         # Call option initialization functions
         self.initialiseoptions(DirectGuiWidget)
 
@@ -698,6 +722,63 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.updateFrameStyle()
         if not self['frameSize']:
             self.setFrameSize()
+
+    def enableEdit(self):
+        self.bind(B2PRESS, self.editStart)
+        self.bind(B2RELEASE, self.editStop)
+        self.bind(PRINT, self.printConfig)
+        mb = ModifierButtons(base.mouseWatcherNode.getModifierButtons())
+        mb.addButton(KeyboardButton.alt())
+        base.mouseWatcherNode.setModifierButtons(mb)
+
+    def disableEdit(self):
+        self.unbind(B2PRESS)
+        self.unbind(B2RELEASE)
+        self.unbind(PRINT)
+        mb = ModifierButtons(base.mouseWatcherNode.getModifierButtons())
+        mb.removeButton(KeyboardButton.alt())
+        base.mouseWatcherNode.setModifierButtons(mb)
+        
+    def editStart(self, event):
+        taskMgr.removeTasksNamed('guiEditTask')
+        vWidget2render2d = self.getPos(render2d)
+        vMouse2render2d = Point3(event.getMouse()[0], 0, event.getMouse()[1])
+        editVec = Vec3(vWidget2render2d - vMouse2render2d)
+        if base.mouseWatcherNode.getModifierButtons().isDown(
+            KeyboardButton.alt()):
+            t = taskMgr.spawnMethodNamed(self.guiScaleTask, 'guiEditTask')
+            t.refPos = vWidget2render2d
+            t.editVecLen = editVec.length()
+            t.initScale = self.getScale()
+        else:
+            t = taskMgr.spawnMethodNamed(self.guiDragTask, 'guiEditTask')
+            t.editVec = editVec
+
+    def guiScaleTask(self, state):
+        mwn = base.mouseWatcherNode
+        if mwn.hasMouse():
+            vMouse2render2d = Point3(mwn.getMouse()[0], 0, mwn.getMouse()[1])
+            newEditVecLen = Vec3(state.refPos - vMouse2render2d).length()
+            self.setScale(state.initScale * (newEditVecLen/state.editVecLen))
+        return Task.cont
+
+    def guiDragTask(self, state):
+        mwn = base.mouseWatcherNode
+        if mwn.hasMouse():
+            vMouse2render2d = Point3(mwn.getMouse()[0], 0, mwn.getMouse()[1])
+            newPos = vMouse2render2d + state.editVec
+            self.setPos(render2d, newPos)
+            if DirectGuiWidget.snapToGrid:
+                newPos = self.getPos()
+                newPos.set(
+                    ROUND_TO(newPos[0], DirectGuiWidget.gridSpacing),
+                    ROUND_TO(newPos[1], DirectGuiWidget.gridSpacing),
+                    ROUND_TO(newPos[2], DirectGuiWidget.gridSpacing))
+                self.setPos(newPos)
+        return Task.cont
+
+    def editStop(self, event):
+        taskMgr.removeTasksNamed('guiEditTask')
 
     def setState(self):
         if type(self['state']) == type(0):
@@ -744,24 +825,29 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
     def setRelief(self, fSetStyle = 1):
         relief = self['relief']
+        # Convert None, and string arguments
         if relief == None:
-            for i in range(self['numStates']):
-                self.frameStyle[i].setType(PGFrameStyle.TNone)
-        elif (relief == FLAT) or (relief == 'flat'):
-            for i in range(self['numStates']):
-                self.frameStyle[i].setType(FLAT)
-        elif (relief == RAISED) or (relief == 'raised'):
+            relief = PGFrameStyle.TNone
+        elif type(relief) == types.StringType:
+            # Convert string to frame style int
+            relief = FrameStyleDict[relief]
+        # Set style
+        if relief == RAISED:
             for i in range(self['numStates']):
                 if i in self['invertedFrames']:
                     self.frameStyle[1].setType(SUNKEN)
                 else:
                     self.frameStyle[i].setType(RAISED)
-        elif (relief == SUNKEN) or (relief == 'sunken'):
+        elif relief == SUNKEN:
             for i in range(self['numStates']):
                 if i in self['invertedFrames']:
                     self.frameStyle[1].setType(RAISED)
                 else:
                     self.frameStyle[i].setType(SUNKEN)
+        else:
+            for i in range(self['numStates']):
+                self.frameStyle[i].setType(relief)
+        # Apply styles
         self.updateFrameStyle()
 
     def setFrameColor(self):
@@ -777,7 +863,21 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.updateFrameStyle()
             
     def destroy(self):
+        # Destroy children
+        for child in self.getChildrenAsList():
+            messenger.send(DESTROY + child.getName())
+        # Call superclass destruction method (clears out hooks)
         DirectGuiBase.destroy(self)
         # Get rid of node path
         self.removeNode()
+
+    def printConfig(self, indent = 0):
+        space = ' ' * indent
+        print space + self.guiId
+        print space + 'Pos:   ' + `self.getPos()`
+        print space + 'Scale: ' + `self.getScale()`
+        # Print out children info
+        for child in self.getChildrenAsList():
+            messenger.send(PRINT + child.getName(), [indent + 2])
+        
 

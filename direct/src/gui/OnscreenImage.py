@@ -57,7 +57,7 @@ class OnscreenImage(PandaObject, NodePath):
                 node = model.find(image[1])
                 if node:
                     self.assign(node)
-                    self.reparentTo(parent, sort)
+                    self.copyTo(parent, sort)
                 else:
                     print 'OnscreenImage: node %s not found' % image[1]
                     return
