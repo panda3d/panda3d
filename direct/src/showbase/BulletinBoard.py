@@ -14,27 +14,31 @@ class BulletinBoard:
     def __init__(self):
         self._dict = {}
 
-    def get(self, name):
-        return self._dict.get(name)
+    def get(self, postName):
+        return self._dict.get(postName)
 
-    def has(self, name):
-        return name in self._dict
+    def has(self, postName):
+        return postName in self._dict
 
-    def post(self, name, value=None):
-        if name in self._dict:
+    def getEventName(self, postName):
+        return 'bboard-%s' % postName
+
+    def post(self, postName, value=None):
+        if postName in self._dict:
             BulletinBoard.notify.warning('changing %s from %s to %s' % (
-                name, self._dict[name], value))
-        self.update(name, value)
+                postName, self._dict[postName], value))
+        self.update(postName, value)
 
-    def update(self, name, value):
+    def update(self, postName, value):
         """can use this to set value the first time"""
-        if name in self._dict:
-            BulletinBoard.notify.info('update: posting %s' % (name))
-        self._dict[name] = value
+        if postName in self._dict:
+            BulletinBoard.notify.info('update: posting %s' % (postName))
+        self._dict[postName] = value
+        messenger.send(self.getEventName(postName))
         
-    def remove(self, name):
-        if name in self._dict:
-            del self._dict[name]
-        
+    def remove(self, postName):
+        if postName in self._dict:
+            del self._dict[postName]
+
     def __repr__(self):
         return str(self._dict)
