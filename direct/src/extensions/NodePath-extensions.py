@@ -35,11 +35,14 @@
     # For iterating over children
     def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""
-        children = self.getChildren()
-        childrenList = []
-        for childNum in range(self.getNumChildren()):
-            childrenList.append(children[childNum])
-        return childrenList
+        if self.isEmpty():
+            return []
+        else:
+            children = self.getChildren()
+            childrenList = []
+            for childNum in range(self.getNumChildren()):
+                childrenList.append(children[childNum])
+            return childrenList
 
     def printChildren(self):
         """Prints out the children of the bottom node of a node path"""

@@ -356,6 +356,9 @@ class OnscreenText(PandaObject, NodePath):
         getter = eval('self.get' + string.upper(option[0]) + option[1:])
         return getter()
 
+    def setAlign(self, align):
+        self.textNode.setAlign(align)
+
     # Allow index style refererences
     __getitem__ = cget
     

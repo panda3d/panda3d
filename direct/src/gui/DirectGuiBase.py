@@ -346,9 +346,12 @@ class DirectGuiBase(PandaObject.PandaObject):
 		# This is one of the options of this gui item. 
 		# Check it is an initialisation option.
 		if optionInfo[option][FUNCTION] is INITOPT:
-		    raise KeyError, \
-			    'Cannot configure initialisation option "' \
-			    + option + '" for ' + self.__class__.__name__
+                    print 'Cannot configure initialisation option "' \
+                          + option + '" for ' + self.__class__.__name__
+                    break
+		    #raise KeyError, \
+		#	    'Cannot configure initialisation option "' \
+		#	    + option + '" for ' + self.__class__.__name__
 		optionInfo[option][VALUE] = value
 		directOptions.append(option)
             else:
@@ -812,7 +815,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameSize(self, fClearFrame = 0):
         if self['frameSize']:
             # Use user specified bounds
-            bounds = self['frameSize']
+            self.bounds = self['frameSize']
         else:
             # Use ready state to compute bounds
             frameType = self.frameStyle[0].getType()
@@ -824,16 +827,22 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             # Clear out frame before computing bounds
             self.stateNodePath[0].calcTightBounds(self.ll, self.ur)
             # Scale bounds to give a pad around graphics
-            bounds = (self.ll[0] - self['pad'][0],
-                      self.ur[0] + self['pad'][0],
-                      self.ll[2] - self['pad'][1],
-                      self.ur[2] + self['pad'][1])
+            self.bounds = (self.ll[0] - self['pad'][0],
+                           self.ur[0] + self['pad'][0],
+                           self.ll[2] - self['pad'][1],
+                           self.ur[2] + self['pad'][1])
             # Restore frame style if necessary
             if (frameType != PGFrameStyle.TNone):
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
         # Set frame to new dimensions
-        self.guiItem.setFrame(bounds[0], bounds[1],bounds[2], bounds[3])
+        self.guiItem.setFrame(self.bounds[0], self.bounds[1],self.bounds[2], self.bounds[3])
+
+    def getWidth(self):
+        return self.bounds[1] - self.bounds[0] 
+    
+    def getHeight(self):
+        return self.bounds[3] - self.bounds[2]
 
     def updateFrameStyle(self):
         if not self.fInit:
@@ -896,5 +905,13 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         # Print out children info
         for child in self.getChildrenAsList():
             messenger.send(PRINT + child.getName(), [indent + 2])
-        
 
+    def copyOptions(self, other):
+        """
+        Copy other's options into our self so we look and feel like other
+        """
+        for key, value in other._optionInfo.items():
+            self[key] = value[1]
+
+    def taskName(self, idString):
+        return (idString + "-" + str(self.guiId))
