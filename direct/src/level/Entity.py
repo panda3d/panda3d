@@ -26,7 +26,14 @@ class Entity(DirectObject):
         return 'ent%s(%s)' % (self.entId, self.level.getEntityType(self.entId))
     
     def destroy(self):
-        self.level.onEntityDestroy(self.entId)
+        Entity.notify.debug('Entity.destroy() %s' % self.entId)
+        # client-side distributed entities might be doing this after
+        # the level has been been destroyed...?
+        if self.level.isInitialized():
+            self.level.onEntityDestroy(self.entId)
+        else:
+            Entity.notify.warning('Entity %s destroyed after level??' %
+                                  self.entid)
         del self.level
         del self.entId
         
