@@ -40,9 +40,6 @@
   #if $[eq $[PANDA],]
     #error You seem to be attached to some trees, but not PANDA!
   #endif
-  #if $[ne $[canonical $[PANDA]], $[canonical $[TOPDIR]]]
-    #error You are not attached to the right PANDA!
-  #endif
 #else
   #defer PANDA_INSTALL $[unixfilename $[INSTALL_DIR]]
   #defer PANDA_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]

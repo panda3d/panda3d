@@ -42,9 +42,6 @@
   #if $[eq $[PANDATOOL],]
     #error You seem to be attached to some trees, but not PANDATOOL!
   #endif
-  #if $[ne $[canonical $[PANDATOOL]], $[canonical $[TOPDIR]]]
-    #error You are not attached to the right PANDATOOL!
-  #endif
 #else
   #defer PANDATOOL_INSTALL $[unixfilename $[INSTALL_DIR]]
   #defer PANDATOOL_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]

@@ -40,9 +40,6 @@
   #if $[eq $[DIRECT],]
     #error You seem to be attached to some trees, but not DIRECT!
   #endif
-  #if $[ne $[canonical $[DIRECT]], $[canonical $[TOPDIR]]]
-    #error You are not attached to the right DIRECT!
-  #endif
 #else
   #defer DIRECT_INSTALL $[unixfilename $[INSTALL_DIR]]
   #defer DIRECT_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
