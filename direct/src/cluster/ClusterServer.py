@@ -21,8 +21,7 @@ class ClusterServer(DirectObject.DirectObject):
     MSG_NUM = 2000000
 
     def __init__(self,cameraJig,camera):
-        import pdb
-        pdb.set_trace()
+        global clusterServerPort, clusterSyncFlag, clusterDaemonClient, clusterDaemonPort
         print clusterServerPort, clusterSyncFlag, clusterDaemonClient, clusterDaemonPort
         # Store information about the cluster's camera
         self.cameraJig = cameraJig
