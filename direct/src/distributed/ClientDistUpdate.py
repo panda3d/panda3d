@@ -3,7 +3,6 @@
 import DirectNotifyGlobal
 import Datagram
 from MsgTypes import *
-import PythonUtil
 
 # These are stored here so that the distributed classes we load on the fly
 # can be exec'ed in the module namespace as if we imported them normally.
@@ -23,21 +22,22 @@ class ClientDistUpdate:
         self.divisors = []
         self.deriveTypesFromParticle(dcField)
         # Figure out our function pointer
-        if not PythonUtil.findPythonModule(cdc.name):
-            # The ClientDistClass already reported this warning.
-            #self.notify.warning("%s.py does not exist." % (cdc.name))
-            self.func = None
-
-        else:
+        try:
             exec("import " + cdc.name, moduleGlobals, moduleLocals)
-            try:
-                self.func = eval(cdc.name + "." + cdc.name + "." + self.name)
-                # Only catch name and attribute errors
-                # as all other errors are legit errors
-            except (NameError, AttributeError), e:
-                #self.notify.warning(cdc.name + "." + self.name + " does not exist")
-                self.func = None
+        except ImportError, e:
+            # Don't bother reporting this error; the ClientDistClass
+            # will catch it.
+            #self.notify.warning("Unable to import %s.py: %s" % (cdc.name, e))
+            self.func = None
+            return
 
+        try:
+            self.func = eval(cdc.name + "." + cdc.name + "." + self.name)
+        except (NameError, AttributeError), e:
+            # Only catch name and attribute errors
+            # as all other errors are legit errors
+            #self.notify.warning(cdc.name + "." + self.name + " does not exist")
+            self.func = None
         return
 
     def deriveTypesFromParticle(self, dcField):

@@ -3,7 +3,13 @@
 from PandaModules import *
 import DirectNotifyGlobal
 import ClientDistUpdate
-import PythonUtil
+import sys
+
+# These are stored here so that the distributed classes we load on the fly
+# can be exec'ed in the module namespace as if we imported them normally.
+# This is important for redefine to work, and is a good idea anyways.
+moduleGlobals = globals()
+moduleLocals = locals()
 
 class ClientDistClass:
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientDistClass")
@@ -19,19 +25,18 @@ class ClientDistClass:
         self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
 
         # Import the class, and store the constructor
-        if not PythonUtil.findPythonModule(self.name):
-            self.notify.warning("%s.py does not exist." % (self.name))
+        try:
+            exec("import " + self.name, moduleGlobals, moduleLocals)
+        except ImportError, e:
+            self.notify.warning("Unable to import %s.py: %s" % (self.name, e))
             self.constructor = None
-            
-        else:
-            exec("import " + self.name)
+            return
 
-            try:
-                self.constructor = eval(self.name + "." + self.name)
-            except (NameError, AttributeError), e:
-                self.notify.warning("%s.%s does not exist: %s" % (self.name, self.name, e))
-                self.constructor = None
-                
+        try:
+            self.constructor = eval(self.name + "." + self.name)
+        except (NameError, AttributeError), e:
+            self.notify.warning("%s.%s does not exist: %s" % (self.name, self.name, e))
+            self.constructor = None 
         return
 
     def parseFields(self, dcClass):
