@@ -121,10 +121,14 @@ class Messenger:
                 # If this object was only accepting this event once,
                 # remove it from the dictionary
                 if not persistent:
-                    del acceptorDict[object]
-                    # If this dictionary is now empty, remove the event
-                    # entry from the Messenger alltogether
-                    if (len(acceptorDict) == 0):
+                    # We need to check this because the apply above might
+                    # have done an ignore.
+                    if acceptorDict.has_key(object):
+                        del acceptorDict[object]
+                        # If this dictionary is now empty, remove the event
+                        # entry from the Messenger alltogether
+                    if ((len(acceptorDict) == 0) and
+                        (self.dict.has_key(event))):
                         del self.dict[event]
 
     def clear(self):
