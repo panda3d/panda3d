@@ -50,6 +50,8 @@ class ClusterServer(DirectObject.DirectObject):
         if clusterSyncFlag:
             self.startSwapCoordinator()
             base.graphicsEngine.setAutoFlip(0)
+        # Set global clock mode to non-real time
+        globalClock.setMode(ClockObject.MNonRealTime)
         # Send verification of startup to client
         self.daemon = DirectD()
         # These must be passed in as bootstrap arguments and stored in
@@ -166,6 +168,9 @@ class ClusterServer(DirectObject.DirectObject):
         elif (type == CLUSTER_SWAP_NOW):
             self.notify.debug('swapping')
             base.graphicsEngine.flipFrame()
+        elif (type == CLUSTER_TIME_DATA):
+            self.notify.debug('time data')
+            self.handleTimeData(dgi)
         else:
             self.notify.warning("Received unknown packet type:" % type)
         return type
@@ -197,6 +202,14 @@ class ClusterServer(DirectObject.DirectObject):
         if last:
             last.setPosHprScale(x,y,z,h,p,r,sx,sy,sz)
 
+    def handleTimeData(self,dgi):
+        """ Update cameraJig position to reflect latest position """
+        (frameTime, dt) = self.msgHandler.parseTimeDataDatagram(dgi)
+        # Use frame time from client for both real and frame time
+        globalClock.setRealTime(frameTime)
+        globalClock.setFrameTime(frameTime)
+        globalClock.setDt(dt)
+
     def handleCommandString(self, dgi):
         """ Handle arbitrary command string from client """
         command = self.msgHandler.parseCommandStringDatagram(dgi)
@@ -205,3 +218,4 @@ class ClusterServer(DirectObject.DirectObject):
         except:
             pass
         
+

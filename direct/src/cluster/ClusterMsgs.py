@@ -17,6 +17,7 @@ CLUSTER_SWAP_READY = 4
 CLUSTER_SWAP_NOW   = 5
 CLUSTER_COMMAND_STRING = 6
 CLUSTER_SELECTED_MOVEMENT = 7
+CLUSTER_TIME_DATA = 8
 CLUSTER_EXIT = 100
 
 #Port number for cluster rendering
@@ -225,6 +226,21 @@ class ClusterMsgHandler:
         datagram.addUint8(CLUSTER_EXIT)
         return datagram
         
+    def makeTimeDataDatagram(self,frameTime, dt):
+        datagram = PyDatagram()
+        datagram.addUint32(self.packetNumber)
+        self.packetNumber = self.packetNumber + 1
+        datagram.addUint8(CLUSTER_TIME_DATA)
+        datagram.addFloat32(frameTime)
+        datagram.addFloat32(dt)
+        return datagram
+
+    def parseTimeDataDatagram(self, dgi):
+        frameTime=dgi.getFloat32()
+        dt=dgi.getFloat32()
+        self.notify.debug('time data=%f %f' % (frameTime, dt))
+        return (frameTime, dt)
+
 
 
 

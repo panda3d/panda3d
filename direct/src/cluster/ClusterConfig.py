@@ -28,10 +28,13 @@ ClientConfigs = {
     'two-server'          : [{'display name' : 'master',
                               'display mode' : 'client',
                               'pos' : Vec3(0),
-                              'hpr' : Vec3(30,0,0)},
+                              #'hpr' : Vec3(30,0,0)},
+                              'hpr' : Vec3(0,0,0)},
                              {'display name' : 'la',
                               'pos' : Vec3(0),
-                              'hpr' : Vec3(-30,0,0)}
+                              #'hpr' : Vec3(-30,0,0)
+                              'hpr' : Vec3(0,0,0)
+                              }
                              ],
     'mono-cave'   : [{'display name' : 'la',
                       'pos' : Vec3(-0.105, -0.020, 5.000),

@@ -70,10 +70,23 @@ class ClusterClient(DirectObject.DirectObject):
                                           serverConfig.filmSize,
                                           serverConfig.filmOffset)
                 self.serverList.append(server)
+        self.notify.debug('pre startTimeTask')
+        self.startSynchronizeTimeTask()
         self.notify.debug('pre startMoveCam')
         self.startMoveCamTask()
         self.notify.debug('post startMoveCam')
         self.startMoveSelectedTask()
+
+    def startSynchronizeTimeTask(self):
+        self.notify.debug('broadcasting frame time')
+        taskMgr.add(self.synchronizeTimeTask, "synchronizeTimeTask", -40)
+
+    def synchronizeTimeTask(self,task):
+        frameTime = globalClock.getFrameTime()
+        dt = globalClock.getDt()
+        for server in self.serverList:
+            server.sendTimeData(frameTime, dt)
+        return Task.cont
 
     def startMoveCamTask(self):
         self.notify.debug('adding move cam')
@@ -278,6 +291,11 @@ class DisplayConnection:
             "display connect send exit, packet %d" %
             self.msgHandler.packetNumber)
         datagram = self.msgHandler.makeExitDatagram()
+        self.cw.send(datagram, self.tcpConn)
+
+    def sendTimeData(self,frameTime, dt):
+        ClusterClient.notify.debug("send time data...")
+        datagram = self.msgHandler.makeTimeDataDatagram(frameTime, dt)
         self.cw.send(datagram, self.tcpConn)
 
 class ClusterConfigItem:
