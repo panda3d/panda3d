@@ -266,8 +266,9 @@ def createClusterClient():
         fs = configData.get('film size', None)
         fo = configData.get('film offset', None)
         if displayMode == 'client':
-            base.camera.setPosHpr(pos,hpr)
             lens = base.cam.node().getLens()
+            lens.setViewHpr(hpr)
+            lens.setIodOffset(pos[0])
             lens.setFocalLength(fl)
             lens.setFilmSize(fs[0], fs[1])
             lens.setFilmOffset(fo[0], fo[1])
