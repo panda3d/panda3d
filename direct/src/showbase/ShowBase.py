@@ -256,28 +256,29 @@ class ShowBase:
         if music:
             loader.unloadSound(music)
 
-    def playSfx(self, sfx, looping = None, interupt = 1, volume = None):
+    def playSfx(self, sfx, looping = None, interupt = 1, volume = None,
+                time = 0.):
         if sfx:
             if base.wantSfx:
                 if not interupt:
                     if not (sfx.status() == AudioSound.PLAYING):
-                        AudioManager.play(sfx)
+                        AudioManager.play(sfx, time)
                 else:
-                    AudioManager.play(sfx)
+                    AudioManager.play(sfx, time)
                 if looping:
                     AudioManager.setLoop(sfx, 1)
                 if volume:
                     AudioManager.setVolume(sfx, volume)
 
     def playMusic(self, music, looping = None, interupt = 1, volume = None,
-                  restart = None):
+                  restart = None, time = 0.):
         if music:
             if base.wantMusic:
                 if not interupt:
                     if not (music.status() == AudioSound.PLAYING):
-                        AudioManager.plsy(music)
+                        AudioManager.plsy(music, time)
                 else:
-                    AudioManager.play(music)
+                    AudioManager.play(music, time)
                 if looping:
                     AudioManager.setLoop(music, 1)
                 if volume:
