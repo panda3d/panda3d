@@ -167,6 +167,9 @@
 #define EXPCL_MILES_AUDIO
 #define EXPTP_MILES_AUDIO
 
+#define EXPCL_FMOD_AUDIO
+#define EXPTP_FMOD_AUDIO
+
 #define EXPCL_PANDA
 #define EXPTP_PANDA
 
