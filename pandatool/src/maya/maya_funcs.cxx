@@ -104,6 +104,58 @@ has_attribute(MObject &node, const string &attribute_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: remove_attribute
+//  Description: Removes the named attribute from the indicated Maya
+//               node.  Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool
+remove_attribute(MObject &node, const string &attribute_name) {
+  MStatus status;
+  MFnDependencyNode node_fn(node, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
+    return false;
+  }
+
+  MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
+  if (!status) {
+    return false;
+  }
+
+  {
+    // Just to prove the the attr is, in fact, an Attribute.
+    // According to the Maya docs, we shouldn't leave the MFnAttribute
+    // object around while we remove the attribute, though.
+    MFnAttribute attr_fn(attr, &status);
+    if (!status) {
+      maya_cat.error()
+        << "Attribute " << attribute_name << " on " << node_fn.name()
+        << " is a " << attr.apiTypeStr() << ", not an Attribute.\n";
+      return false;
+    }
+  }
+
+  MFnDependencyNode::MAttrClass type = node_fn.attributeClass(attr, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Couldn't get class of attribute " << attribute_name << " on "
+      << node_fn.name() << ".\n";
+    return false;
+  }
+
+  status = node_fn.removeAttribute(attr, type);
+  if (!status) {
+    maya_cat.error()
+      << "Couldn't remove attribute " << attribute_name << " from "
+      << node_fn.name() << ".\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_bool_attribute
 //  Description: Extracts the named boolean attribute from the
 //               MObject.

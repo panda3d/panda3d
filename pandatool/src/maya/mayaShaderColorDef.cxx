@@ -158,7 +158,7 @@ bool MayaShaderColorDef::
 reset_maya_texture(const Filename &texture) {
   if (_color_object != (MObject *)NULL) {
     _has_texture = set_string_attribute(*_color_object, "fileTextureName", 
-                                        texture);
+                                        texture.to_os_generic());
     _texture = texture;
 
     if (!_has_texture) {
@@ -198,14 +198,16 @@ read_surface_color(const MayaShader *shader, MObject color) {
     _color_object = new MObject(color);
     string filename;
     _has_texture = get_string_attribute(color, "fileTextureName", filename);
+    _has_texture = _has_texture && !filename.empty();
     if (_has_texture) {
       _texture = Filename::from_os_specific(filename);
       if (_texture.is_directory()) {
         maya_cat.warning()
           << "Shader " << shader->get_name() 
           << " references texture filename " << filename
-          << " which is a directory; ignoring.\n";
+          << " which is a directory; clearing.\n";
         _has_texture = false;
+        set_string_attribute(color, "fileTextureName", "");
       }
     }
 

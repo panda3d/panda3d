@@ -55,6 +55,9 @@ bool
 has_attribute(MObject &node, const string &attribute_name);
 
 bool
+remove_attribute(MObject &node, const string &attribute_name);
+
+bool
 get_bool_attribute(MObject &node, const string &attribute_name,
                    bool &value);
 
