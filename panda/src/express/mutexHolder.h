@@ -30,7 +30,7 @@
 //               release() automatically when a block exits (for
 //               instance, on return).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MutexHolder {
+class EXPCL_PANDAEXPRESS MutexHolder {
 public:
   INLINE MutexHolder(const Mutex &mutex);
   INLINE MutexHolder(Mutex *&mutex);
