@@ -215,7 +215,7 @@ write_stage(int) {
 template<class CycleDataType>
 INLINE CycleDataType *PipelineCycler<CycleDataType>::
 cheat() const {
-  return &_data;
+  return (CycleDataType *)&_data;
 }
 
 
