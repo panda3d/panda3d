@@ -76,16 +76,17 @@ extern bool dry_run;
 extern bool verbose_dry_run;
 #endif
 
-/* These are defined so that we may build Filename and DSearchPath,
-   which are copied from dtool.  We have to copy these files from
-   dtool since ppremake must be built first, and stands outside of
-   Panda; but we want to minimize the changes we must make to these
-   files so that we can easily recopy them at need. 
+/* These are defined so that we may build Filename, DSearchPath, and
+   GlobPattern, which are copied from dtool and panda.  We have to
+   copy these files in since ppremake must be built first, and stands
+   outside of Panda; but we want to minimize the changes we must make
+   to these files so that we can easily recopy them at need.
 
    These symbols just make the build environment a bit more
    Panda-like. */
 #define PUBLISHED public
 #define INLINE inline
 #define EXPCL_DTOOL
+#define EXPCL_PANDA
 
 #endif

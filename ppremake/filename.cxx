@@ -1065,7 +1065,13 @@ scan_directory(vector_string &contents) const {
 #if defined(HAVE_DIRENT_H)
   size_t orig_size = contents.size();
 
-  DIR *root = opendir(_filename.c_str());
+  string dirname;
+  if (empty()) {
+    dirname = ".";
+  } else {
+    dirname = _filename;
+  }
+  DIR *root = opendir(dirname.c_str());
   if (root == (DIR *)NULL) {
     return false;
   }

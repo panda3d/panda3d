@@ -5,6 +5,7 @@ ppremake_SOURCES =							\
     dSearchPath.I dSearchPath.cxx dSearchPath.h				\
     executionEnvironment.cxx executionEnvironment.h			\
     filename.I filename.cxx filename.h					\
+    globPattern.I globPattern.cxx globPattern.h				\
     gnu_getopt.c gnu_getopt.h gnu_regex.c gnu_regex.h			\
     ppCommandFile.cxx ppCommandFile.h ppDependableFile.cxx		\
     ppDependableFile.h ppDirectory.cxx					\

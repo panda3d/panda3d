@@ -14,10 +14,7 @@
 #include "tokenize.h"
 #include "filename.h"
 #include "dSearchPath.h"
-
-#ifdef HAVE_GLOB_H
-#include <glob.h>
-#endif
+#include "globPattern.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -3102,49 +3099,19 @@ p_find_map_variable(const string &varname) {
 ////////////////////////////////////////////////////////////////////
 void PPScope::
 glob_string(const string &str, vector<string> &results) {
-#ifdef WIN32_VC
-  cerr << "glob temporarily unsupported in Win32 without Cygwin.\n";
-
-#else  // WIN32_VC
-  // We run glob_string() within the directory indicated by
-  // $[THISDIRPREFIX].  This way, local filenames will be expanded the
-  // way we expect.
+  // The globbing is relative to THISDIRPREFIX, not necessarily the
+  // current directory.
   string dirname = trim_blanks(expand_variable("THISDIRPREFIX"));
-  bool changed_dir = false;
-  if (!dirname.empty()) {
-    if (chdir(dirname.c_str()) < 0) {
-      perror("chdir");
-    } else {
-      changed_dir = true;
-    }
-  }
 
   vector<string> words;
   tokenize_whitespace(str, words);
 
   vector<string>::const_iterator wi;
-
-  glob_t pglob;
-  memset(&pglob, 0, sizeof(pglob));
-
-  int flags = 0;
   for (wi = words.begin(); wi != words.end(); ++wi) {
-    glob((*wi).c_str(), flags, NULL, &pglob);
-    flags |= GLOB_APPEND;
+    GlobPattern glob(*wi);
+    glob.match_files(results, dirname);
   }
-
-  for (int i = 0; i < (int)pglob.gl_pathc; i++) {
-    results.push_back(string(pglob.gl_pathv[i]));
-  }
-
-  globfree(&pglob);
 
   // Sort the results into alphabetical order.
   sort(results.begin(), results.end());
-
-  if (changed_dir) {
-    // Now restore the current directory back to where it should be.
-    PPMain::chdir_root();
-  }
-#endif  // WIN32_VC
 }

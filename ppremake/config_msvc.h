@@ -40,9 +40,6 @@
 /* Define if you have the <minmax.h> header file. */
 /* #undef HAVE_MINMAX_H */
 
-/* Define if you have the <glob.h> header file. */
-/* #undef HAVE_GLOB_H */
-
 /* Define if you have the <dirent.h> header file. */
 /* #undef HAVE_DIRENT_H */
 
