@@ -122,6 +122,8 @@ public:
   string to_os_specific() const;
 
   bool exists() const;
+  bool is_regular_file() const;
+  bool is_directory() const;
   int compare_timestamps(const Filename &other,
 			 bool this_missing_is_old = true,
 			 bool other_missing_is_old = true) const;

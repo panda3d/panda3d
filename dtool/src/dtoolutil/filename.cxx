@@ -582,6 +582,61 @@ exists() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::is_regular_file
+//       Access: Public
+//  Description: Returns true if the filename exists and is the
+//               name of a regular file (i.e. not a directory or
+//               device), false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+is_regular_file() const {
+#ifdef WIN32_VC
+  struct _stat this_buf;
+  bool isdir = false;
+
+  if (_stat(to_os_specific().c_str(), &this_buf) == 0) {
+    isdir = S_ISREG(this_buf.st_mode);
+  }
+#else  // WIN32_VC
+  struct stat this_buf;
+  bool isdir = false;
+
+  if (stat(to_os_specific().c_str(), &this_buf) == 0) {
+    isdir = S_ISREG(this_buf.st_mode);
+  }
+#endif
+
+  return isdir;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::is_directory
+//       Access: Public
+//  Description: Returns true if the filename exists and is a
+//               directory name, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+is_directory() const {
+#ifdef WIN32_VC
+  struct _stat this_buf;
+  bool isdir = false;
+
+  if (_stat(to_os_specific().c_str(), &this_buf) == 0) {
+    isdir = S_ISDIR(this_buf.st_mode);
+  }
+#else  // WIN32_VC
+  struct stat this_buf;
+  bool isdir = false;
+
+  if (stat(to_os_specific().c_str(), &this_buf) == 0) {
+    isdir = S_ISDIR(this_buf.st_mode);
+  }
+#endif
+
+  return isdir;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::compare_timestamps
 //       Access: Public
 //  Description: Returns a number less than zero if the file named by
