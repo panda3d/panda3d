@@ -78,7 +78,7 @@ class DirectWaitBar(DirectFrame):
     def update(self, value):
         self['value'] = value
 
-        # Render a frame out-of-sync with the igloop to update the
+        # Render a frame out-of-sync with the igLoop to update the
         # window right now.  This allows the wait bar to be updated
         # even though we are not normally rendering frames.
         base.graphicsEngine.renderFrame()
