@@ -112,7 +112,7 @@ class MetaInterval(CMetaInterval):
         if isinstance(other, MetaInterval):
             self.ivals += other.ivals
         else:
-            self.ivals += list(other.ivals)
+            self.ivals += list(other)
         self.__ivalsDirty = 1
         return self
 
