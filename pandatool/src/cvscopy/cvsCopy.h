@@ -56,6 +56,7 @@ protected:
   bool copy_binary_file(Filename source, Filename dest);
 
   bool cvs_add(const Filename &filename);
+  static string protect_from_shell(const string &source);
 
 private:
   bool scan_hierarchy();

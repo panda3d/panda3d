@@ -342,14 +342,13 @@ cvs_add(const Filename &filename) {
     return true;
   }
 
-  Filename canon = filename;
-
   if (!CVSSourceTree::temp_chdir(filename.get_dirname())) {
     nout << "Invalid directory: " << filename.get_dirname() << "\n";
     return false;
   }
 
-  string command = _cvs_binary + " add -kb " + filename.get_basename();
+  string command = _cvs_binary + " add -kb " + 
+    protect_from_shell(filename.get_basename());
   nout << command << "\n";
   int result = system(command.c_str());
 
@@ -360,6 +359,49 @@ cvs_add(const Filename &filename) {
     return false;
   }
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSCopy::protect_from_shell
+//       Access: Protected, Static
+//  Description: Inserts escape characters into the indicated source
+//               string to protect it from the shell, so that it may
+//               be given on the command line.  Returns the modified
+//               string.
+////////////////////////////////////////////////////////////////////
+string CVSCopy::
+protect_from_shell(const string &source) {
+  string result;
+
+  for (string::const_iterator pi = source.begin(); pi != source.end(); ++pi) {
+    switch (*pi) {
+    case '\\':
+    case ' ':
+    case '\'':
+    case '"':
+    case '(':
+    case ')':
+    case '<':
+    case '>':
+    case '|':
+    case '&':
+    case '!':
+    case '$':
+    case '~':
+    case '*':
+    case '?':
+    case '[':
+    case ']':
+    case ';':
+      result += '\\';
+      // fall through
+
+    default:
+      result += *pi;
+    }
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
