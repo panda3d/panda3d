@@ -30,7 +30,7 @@ public:
   void set_scope(PPScope *scope);
   PPScope *get_scope() const;
 
-  bool read_file(const string &filename);
+  bool read_file(Filename filename);
   bool read_stream(istream &in, const string &filename);
   bool read_stream(istream &in);
   void begin_read();
@@ -65,7 +65,7 @@ protected:
   bool handle_map_command();
   bool handle_addmap_command();
 
-  bool include_file(const string &filename);
+  bool include_file(Filename filename);
   bool replay_forscopes(const string &name);
   bool replay_foreach(const string &varname, const vector<string> &words);
   bool replay_formap(const string &varname, const string &mapvar);

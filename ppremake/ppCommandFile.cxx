@@ -300,10 +300,11 @@ get_scope() const {
 //  Description: Reads input from the given filename.
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
-read_file(const string &filename) {
-  ifstream in(filename.c_str());
+read_file(Filename filename) {
+  filename.set_text();
+  ifstream in;
 
-  if (!in) {
+  if (!filename.open_read(in)) {
     cerr << "Unable to open " << filename << ".\n";
     return false;
   }
@@ -1451,10 +1452,11 @@ handle_addmap_command() {
 //               particular named file at this point.
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
-include_file(const string &filename) {
-  ifstream in(filename.c_str());
+include_file(Filename filename) {
+  filename.set_text();
 
-  if (!in) {
+  ifstream in;
+  if (!filename.open_read(in)) {
     cerr << "Unable to open include file " << filename << ".\n";
     return false;
   }

@@ -113,16 +113,28 @@
 			RelativePath="config_msvc.h">
 		</File>
 		<File
+			RelativePath="dSearchPath.I">
+		</File>
+		<File
+			RelativePath="dSearchPath.cxx">
+		</File>
+		<File
+			RelativePath="dSearchPath.h">
+		</File>
+		<File
+			RelativePath="executionEnvironment.cxx">
+		</File>
+		<File
+			RelativePath="executionEnvironment.h">
+		</File>
+		<File
+			RelativePath="filename.I">
+		</File>
+		<File
 			RelativePath="filename.cxx">
 		</File>
 		<File
 			RelativePath="filename.h">
-		</File>
-		<File
-			RelativePath="find_searchpath.cxx">
-		</File>
-		<File
-			RelativePath="find_searchpath.h">
 		</File>
 		<File
 			RelativePath="gnu_getopt.c">
@@ -135,9 +147,6 @@
 		</File>
 		<File
 			RelativePath="gnu_regex.h">
-		</File>
-		<File
-			RelativePath="include_access.h">
 		</File>
 		<File
 			RelativePath="ppCommandFile.cxx">

@@ -1305,7 +1305,7 @@ expand_isdir(const string &params) {
 
   Filename filename = results[0];
   if (filename.is_directory()) {
-    return filename;
+    return filename.get_fullpath();
   } else {
     return string();
   }
@@ -1333,7 +1333,7 @@ expand_isfile(const string &params) {
 
   Filename filename = results[0];
   if (filename.is_regular_file()) {
-    return filename;
+    return filename.get_fullpath();
   } else {
     return string();
   }
@@ -1423,7 +1423,7 @@ expand_libtest(const string &params) {
 #endif
 
   if (found) {
-    return libname;
+    return libname.get_fullpath();
   } else {
     return string();
   }
@@ -1452,7 +1452,7 @@ expand_bintest(const string &params) {
   // An explicit path from the root does not require a search.
   if (binname.is_fully_qualified()) {
     if (binname.exists()) {
-      return binname;
+      return binname.get_fullpath();
     } else {
       return string();
     }
@@ -1490,7 +1490,7 @@ expand_bintest(const string &params) {
 #endif
 
   if (found) {
-    return binname;
+    return binname.get_fullpath();
   } else {
     return string();
   }

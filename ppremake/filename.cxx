@@ -44,11 +44,13 @@
 #endif
 
 
-#if defined(WIN32)
+#ifdef WIN32
 /* begin Win32-specific code */
 
+#ifdef WIN32_VC
 #include <direct.h>
 #include <windows.h>
+#endif
 
 static string
 front_to_back_slash(const string &str) {
@@ -132,8 +134,13 @@ convert_pathname(const string &unix_style_pathname) {
              unix_style_pathname[2] == '/') {
     // This pathname begins with a slash and a single letter.  That
     // must be the drive letter.
+
+    // We have to cast the result of toupper() to (char) to help some
+    // compilers (e.g. Cygwin's gcc 2.95.3) happy; so that they do not
+    // confuse this string constructor with one that takes two
+    // iterators.
     windows_pathname =
-      string(1, toupper(unix_style_pathname[1])) + ":" +
+      string(1, (char)toupper(unix_style_pathname[1])) + ":" +
       front_to_back_slash(unix_style_pathname.substr(2));
 
   } else {
