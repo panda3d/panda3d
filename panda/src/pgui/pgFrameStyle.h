@@ -43,7 +43,9 @@ PUBLISHED:
     T_none,
     T_flat,
     T_bevel_out,
-    T_bevel_in
+    T_bevel_in,
+    T_groove,
+    T_ridge
   };
 
   INLINE void set_type(Type type);
@@ -66,6 +68,7 @@ public:
 private:
   PT_Node generate_flat_geom(const LVecBase4f &frame);
   PT_Node generate_bevel_geom(const LVecBase4f &frame, bool in);
+  PT_Node generate_groove_geom(const LVecBase4f &frame, bool in);
 
 private:
   Type _type;

@@ -54,3 +54,31 @@ INLINE MouseWatcher *PGTop::
 get_mouse_watcher() const {
   return _watcher;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGTop::add_region
+//       Access: Published
+//  Description: Adds the indicated region to the set of regions in
+//               the group.  Returns true if it was successfully
+//               added, or false if it was already on the list.
+////////////////////////////////////////////////////////////////////
+INLINE bool PGTop::
+add_region(MouseWatcherRegion *region) {
+  if (_watcher_group == (PGMouseWatcherGroup *)NULL) {
+    return false;
+  }
+  return _watcher_group->add_region(region);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGTop::clear_regions
+//       Access: Published
+//  Description: Removes all the regions from the group.
+////////////////////////////////////////////////////////////////////
+INLINE void PGTop::
+clear_regions() {
+  if (_watcher_group == (PGMouseWatcherGroup *)NULL) {
+    return;
+  }
+  _watcher_group->clear_regions();
+}

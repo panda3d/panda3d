@@ -72,6 +72,7 @@ PUBLISHED:
   bool remove_click_button(const ButtonHandle &button);
   bool has_click_button(const ButtonHandle &button);
 
+  INLINE static string get_click_prefix();
   INLINE string get_click_event(const ButtonHandle &button) const;
 
 private:

@@ -12,6 +12,7 @@
   #define SOURCES  \
     config_pgui.h \
     pgButton.I pgButton.h \
+    pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
     pgItem.I pgItem.h \
@@ -22,6 +23,7 @@
   #define SOURCES $[SOURCES] \
     config_pgui.cxx \
     pgButton.cxx \
+    pgMouseWatcherGroup.cxx \
     pgMouseWatcherParameter.cxx \
     pgFrameStyle.cxx \
     pgItem.cxx \
@@ -30,6 +32,7 @@
 
   #define INSTALL_HEADERS \
     pgButton.I pgButton.h \
+    pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
     pgItem.I pgItem.h \

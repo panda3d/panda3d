@@ -164,6 +164,56 @@ get_id() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_enter_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the enter
+//               event for all PGItems.  The enter event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_enter_prefix() {
+  return "enter-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_exit_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the exit
+//               event for all PGItems.  The exit event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_exit_prefix() {
+  return "exit-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_press_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the press
+//               event for all PGItems.  The press event is the
+//               concatenation of this string followed by a button
+//               name, followed by a hyphen and get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_press_prefix() {
+  return "press-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_release_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the release
+//               event for all PGItems.  The release event is the
+//               concatenation of this string followed by a button
+//               name, followed by a hyphen and get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_release_prefix() {
+  return "release-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_enter_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the
@@ -171,7 +221,7 @@ get_id() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_enter_event() const {
-  return "enter-" + get_id();
+  return get_enter_prefix() + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,7 +232,7 @@ get_enter_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_exit_event() const {
-  return "exit-" + get_id();
+  return get_exit_prefix() + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,7 +245,7 @@ get_exit_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_press_event(const ButtonHandle &button) const {
-  return "press-" + button.get_name() + "-" + get_id();
+  return get_press_prefix() + button.get_name() + "-" + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,7 +258,7 @@ get_press_event(const ButtonHandle &button) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_release_event(const ButtonHandle &button) const {
-  return "release-" + button.get_name() + "-" + get_id();
+  return get_release_prefix() + button.get_name() + "-" + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

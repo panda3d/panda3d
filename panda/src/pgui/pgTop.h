@@ -21,8 +21,9 @@
 
 #include "pandabase.h"
 
+#include "pgMouseWatcherGroup.h"
+
 #include "namedNode.h"
-#include "mouseWatcherGroup.h"
 #include "mouseWatcher.h"
 #include "pointerTo.h"
 #include "allAttributesWrapper.h"
@@ -30,6 +31,7 @@
 class GraphicsStateGuardian;
 class RenderTraverser;
 class ArcChain;
+class PGMouseWatcherGroup;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGTop
@@ -45,7 +47,7 @@ class ArcChain;
 //               depth-first, left-to-right order, appropriate for 2-d
 //               objects.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGTop : public NamedNode, public MouseWatcherGroup {
+class EXPCL_PANDA PGTop : public NamedNode {
 PUBLISHED:
   PGTop(const string &name = "");
   virtual ~PGTop();
@@ -66,9 +68,15 @@ PUBLISHED:
   INLINE MouseWatcher *get_mouse_watcher() const;
 
 private:
+  // These methods duplicate the functionality of MouseWatcherGroup.
+  INLINE bool add_region(MouseWatcherRegion *region);
+  INLINE void clear_regions();
+
+private:
   void r_traverse(Node *node, const ArcChain &chain);
 
   PT(MouseWatcher) _watcher;
+  PGMouseWatcherGroup *_watcher_group;
   GraphicsStateGuardian *_gsg;
   RenderTraverser *_trav;
   AllAttributesWrapper _attrib;
@@ -92,6 +100,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class PGMouseWatcherGroup;
 };
 
 #include "pgTop.I"

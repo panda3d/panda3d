@@ -21,8 +21,8 @@
 
 #include "string_utils.h"
 
-TypeHandle PGMouseWatcherRegion::_type_handle;
 int PGMouseWatcherRegion::_next_index = 0;
+TypeHandle PGMouseWatcherRegion::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGMouseWatcherRegion::Constructor

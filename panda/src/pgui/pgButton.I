@@ -67,6 +67,18 @@ set_active(bool active) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGButton::get_click_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the click
+//               event for all PGButtons.  The click event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGButton::
+get_click_prefix() {
+  return "click-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGButton::get_click_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the

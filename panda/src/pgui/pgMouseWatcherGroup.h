@@ -1,5 +1,5 @@
-// Filename: pgMouseWatcherRegion.h
-// Created by:  drose (02Jul01)
+// Filename: pgMouseWatcherGroup.h
+// Created by:  drose (09Jul01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,44 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PGMOUSEWATCHERREGION_H
-#define PGMOUSEWATCHERREGION_H
+#ifndef PGMOUSEWATCHERGROUP_H
+#define PGMOUSEWATCHERGROUP_H
 
 #include "pandabase.h"
 
-#include "mouseWatcherRegion.h"
+#include "mouseWatcherGroup.h"
+#include "pointerTo.h"
 
-class PGItem;
+class PGTop;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PGMouseWatcherRegion
-// Description : This is a specialization on MouseWatcherRegion, to
-//               add a bit more fields that are relevant to the PG
-//               system.  Each PGItem corresponds to exactly one
-//               PGMouseWatcherRegion.
+//       Class : PGMouseWatcherGroup
+// Description : This is a specialization on MouseWatcherGroup, to
+//               associate it with a PGTop.  Originally we had PGTop
+//               multiply inheriting from NamedNode and
+//               MouseWatcherGroup, but this causes problems with
+//               circular reference counts.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGMouseWatcherRegion : public MouseWatcherRegion {
+class EXPCL_PANDA PGMouseWatcherGroup : public MouseWatcherGroup {
 public:
-  PGMouseWatcherRegion(PGItem *item);
-  virtual ~PGMouseWatcherRegion();
+  INLINE PGMouseWatcherGroup(PGTop *top);
+  virtual ~PGMouseWatcherGroup();
 
-  virtual void enter(const MouseWatcherParameter &param);
-  virtual void exit(const MouseWatcherParameter &param);
-  virtual void press(const MouseWatcherParameter &param);
-  virtual void release(const MouseWatcherParameter &param);
+  INLINE void clear_top(PGTop *top);
 
 private:
-  PGItem *_item;
-  static int _next_index;
+  PGTop *_top;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    MouseWatcherRegion::init_type();
-    register_type(_type_handle, "PGMouseWatcherRegion",
-                  MouseWatcherRegion::get_class_type());
+    MouseWatcherGroup::init_type();
+    register_type(_type_handle, "PGMouseWatcherGroup",
+                  MouseWatcherGroup::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -62,10 +60,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class PGItem;
 };
 
-#include "pgMouseWatcherRegion.I"
+#include "pgMouseWatcherGroup.I"
 
 #endif

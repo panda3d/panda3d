@@ -92,6 +92,11 @@ PUBLISHED:
   void set_frame_style(int state, const PGFrameStyle &style);
 
   INLINE const string &get_id() const;
+  INLINE static string get_enter_prefix();
+  INLINE static string get_exit_prefix();
+  INLINE static string get_press_prefix();
+  INLINE static string get_release_prefix();
+
   INLINE string get_enter_event() const;
   INLINE string get_exit_event() const;
   INLINE string get_press_event(const ButtonHandle &button) const;

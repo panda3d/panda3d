@@ -18,6 +18,7 @@
 
 #include "pgTop.h"
 #include "pgItem.h"
+#include "pgMouseWatcherGroup.h"
 
 #include "arcChain.h"
 #include "graphicsStateGuardian.h"
@@ -44,6 +45,7 @@ TypeHandle PGTop::_type_handle;
 PGTop::
 PGTop(const string &name) : NamedNode(name)
 {
+  _watcher_group = (PGMouseWatcherGroup *)NULL;
   _gsg = (GraphicsStateGuardian *)NULL;
   _trav = (RenderTraverser *)NULL;
 
@@ -60,6 +62,7 @@ PGTop(const string &name) : NamedNode(name)
 ////////////////////////////////////////////////////////////////////
 PGTop::
 ~PGTop() {
+  set_mouse_watcher((MouseWatcher *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,12 +139,21 @@ has_sub_render() const {
 ////////////////////////////////////////////////////////////////////
 void PGTop::
 set_mouse_watcher(MouseWatcher *watcher) {
-  if (_watcher != (MouseWatcher *)NULL) {
-    _watcher->remove_group(this);
+  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
+    _watcher_group->clear_top(this);
   }
-  _watcher = watcher;
   if (_watcher != (MouseWatcher *)NULL) {
-    _watcher->add_group(this);
+    _watcher->remove_group(_watcher_group);
+  }
+
+  _watcher = watcher;
+  _watcher_group = (PGMouseWatcherGroup *)NULL;
+
+  if (_watcher != (MouseWatcher *)NULL) {
+    // We create a new PGMouseWatcherGroup, but we don't own the
+    // reference count; the watcher will own this for us.
+    _watcher_group = new PGMouseWatcherGroup(this);
+    _watcher->add_group(_watcher_group);
   }
 }
 
