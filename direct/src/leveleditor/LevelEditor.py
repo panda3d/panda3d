@@ -176,7 +176,7 @@ if sys.argv[1:]:
 # or you can hack this up for your own purposes.
 else:
     hoodString = base.config.GetString('level-editor-hoods',
-                                       'TT DD BR DG DL MM')
+                                       'TT DD BR DG DL MM CC CL CM CS')
     hoods = string.split(hoodString)
 
 # The list of neighborhoods to edit
@@ -186,6 +186,10 @@ hoodIds = {'TT' : 'toontown_central',
            'BR' : 'the_burrrgh',
            'DG' : 'daisys_garden',
            'DL' : 'donalds_dreamland',
+           'CC' : 'cog_hq_bossbot',
+           'CL' : 'cog_hq_lawbot',
+           'CM' : 'cog_hq_cashbot',
+           'CS' : 'cog_hq_sellbot',
            }
 
 # Init neighborhood arrays
@@ -242,6 +246,8 @@ except NameError:
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL.dna', CSDefault, 1)
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_sz.dna', CSDefault, 1)
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_town.dna', CSDefault, 1)
+    if 'CS' in hoods:
+        loadDNAFile(DNASTORE, 'phase_9/dna/storage_CS.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
