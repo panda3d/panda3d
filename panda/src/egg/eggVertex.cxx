@@ -43,6 +43,7 @@ EggVertex::
 EggVertex() {
   _pool = NULL;
   _index = -1;
+  _external_index = -1;
   set_pos(LPoint3d(0.0, 0.0, 0.0));
   test_pref_integrity();
   test_gref_integrity();
@@ -58,6 +59,7 @@ EggVertex::
 EggVertex(const EggVertex &copy)
   : EggObject(copy), EggAttributes(copy),
     _dxyzs(copy._dxyzs),
+    _external_index(copy._external_index),
     _pos(copy._pos),
     _num_dimensions(copy._num_dimensions)
 {
@@ -78,6 +80,7 @@ EggVertex &EggVertex::
 operator = (const EggVertex &copy) {
   EggObject::operator = (copy);
   EggAttributes::operator = (copy);
+  _external_index = copy._external_index;
   _pos = copy._pos;
   _num_dimensions = copy._num_dimensions;
   _dxyzs = copy._dxyzs;
@@ -205,6 +208,9 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 bool EggVertex::
 sorts_less_than(const EggVertex &other) const {
+  if (_external_index != other._external_index) {
+    return _external_index < other._external_index;
+  }
   if (_num_dimensions != other._num_dimensions) {
     return _num_dimensions < other._num_dimensions;
   }

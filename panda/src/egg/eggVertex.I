@@ -175,6 +175,36 @@ get_index() const {
   return _index;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::set_external_index
+//       Access: Public
+//  Description: Sets a special index number that is associated with
+//               the EggVertex (but is not written to the egg file).
+//               This number is not interpreted by any egg code; it is
+//               simply maintained along with the vertex.  It *is*
+//               used to differentiate otherwise identical vertices in
+//               EggVertexPool::create_unique_vertex(), however.
+//
+//               The intention of this number is as an aid for file
+//               converters, to associate an EggVertex back to the
+//               index number of the original source vertex.
+////////////////////////////////////////////////////////////////////
+INLINE void EggVertex::
+set_external_index(int external_index) {
+  _external_index = external_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::get_external_index
+//       Access: Public
+//  Description: Returns the number set by set_external_index().  See
+//               set_external_index().
+////////////////////////////////////////////////////////////////////
+INLINE int EggVertex::
+get_external_index() const {
+  return _external_index;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::gref_begin
