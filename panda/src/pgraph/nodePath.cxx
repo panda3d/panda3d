@@ -1979,6 +1979,8 @@ get_two_sided() const {
   return false;
 }
 
+#if 0
+// programmers prolly wont need alpha-test control
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_alpha_test
 //       Access: Published
@@ -2042,7 +2044,7 @@ get_alpha_test() const {
 
   return false;
 }
-
+#endif
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_depth_test
 //       Access: Published

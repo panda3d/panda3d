@@ -430,12 +430,12 @@ PUBLISHED:
   void clear_two_sided();
   bool has_two_sided() const;
   bool get_two_sided() const;
-
+#if 0
   void set_alpha_test(RenderAttrib::PandaCompareFunc alpha_test_mode,float reference_alpha,int priority = 0);
   void clear_alpha_test();
   bool has_alpha_test() const;
   bool get_alpha_test() const;
-
+#endif
   void set_depth_test(bool depth_test, int priority = 0);
   void clear_depth_test();
   bool has_depth_test() const;
