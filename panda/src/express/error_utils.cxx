@@ -54,6 +54,8 @@ handle_socket_error(void) {
       return "Remote host is unreachable";
     case 10093:
       return "WSAStartup() was not called";
+    case 0:
+      return sterror(errno);
     default:
       if (express_cat.is_debug())
         express_cat.debug()
