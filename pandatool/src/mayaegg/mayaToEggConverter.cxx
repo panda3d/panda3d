@@ -1353,6 +1353,10 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   // will be different from world space.
   LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
 
+  // Save this modeling flag for the vertex color check later (see the
+  // comment below).
+  bool egg_vertex_color = egg_group->has_object_type("vertex-color");
+
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
     egg_group->add_child(egg_poly);
@@ -1376,11 +1380,18 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 
     const MayaShaderColorDef &color_def = shader->_color;
 
-    // Since a texture completely replaces a polygon or vertex color,
-    // we need to know up front whether we have a texture.
-    bool has_texture = false;
+    // Should we extract the color from the vertices?  Normally, in
+    // Maya a texture completely replaces the vertex color, so we
+    // should ignore the vertex color if we have a texture. 
+
+    // However, this is an inconvenient property of Maya; sometimes we
+    // really do want both vertex color and texture applied to the
+    // same object.  To allow this, we define the special egg flag
+    // "vertex-color", which when set indicates that we should
+    // respect the vertex color anyway.
+    bool ignore_vertex_color = false;
     if (shader != (MayaShader *)NULL) {
-      has_texture = color_def._has_texture;
+      ignore_vertex_color = color_def._has_texture && !egg_vertex_color;
     }
 
     // Get the vertices for the polygon.
@@ -1434,7 +1445,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
         }
       }
 
-      if (pi.hasColor() && !has_texture) {
+      if (pi.hasColor() && !ignore_vertex_color) {
         MColor c;
         status = pi.getColor(c, i);
         if (!status) {
@@ -1923,21 +1934,15 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
   // Also apply an overall color to the primitive.
   Colorf rgba = shader.get_rgba();
 
-  // This is a placeholder for a parameter on the shader or group that
-  // we have yet to define.
-  static const bool modulate = false;
-  
-  if (!modulate) {
-    // If modulate is not specified, the existence of a texture on
-    // either color channel completely replaces the flat color.
-    if (color_def._has_texture) {
-      rgba[0] = 1.0f;
-      rgba[1] = 1.0f;
-      rgba[2] = 1.0f;
-    }
-    if (trans_def._has_texture) {
-      rgba[3] = 1.0f;
-    }
+  // The existence of a texture on either color channel completely
+  // replaces the corresponding flat color.
+  if (color_def._has_texture) {
+    rgba[0] = 1.0f;
+    rgba[1] = 1.0f;
+    rgba[2] = 1.0f;
+  }
+  if (trans_def._has_texture) {
+    rgba[3] = 1.0f;
   }
 
   // But the color gain always gets applied.
