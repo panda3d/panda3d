@@ -5,7 +5,7 @@
 
 /* Define if your processor stores words with the most significant
    byte first (like Motorola and SPARC, unlike Intel and VAX).  */
-#undef WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN 1
 
 /* Define if the X Window System is missing or not being used.  */
 #undef X_DISPLAY_MISSING
@@ -17,7 +17,7 @@
 #define HAVE_NAMESPACE 1
 
 /* Define if the C++ iostream library supports ios::binary.  */
-#define HAVE_IOS_BINARY 1
+#undef HAVE_IOS_BINARY
 
 /* Define if we have Python installed.  */
 #define HAVE_PYTHON 1
@@ -59,7 +59,7 @@
 #define HAVE_GETOPT 1
 
 /* Define if you have the getopt_long_only function.  */
-#define HAVE_GETOPT_LONG_ONLY 1
+#undef HAVE_GETOPT_LONG_ONLY
 
 /* Define if you have the <alloca.h> header file.  */
 #define HAVE_ALLOCA_H 1

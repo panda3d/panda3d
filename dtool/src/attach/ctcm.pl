@@ -490,8 +490,8 @@ sub CTCMMv {
     &CTUDebug( "in CTCMMv\n" ) ;
     local( $ret ) = 0 ;
     # first check that the from and to are in the project
-    local( $flav ) = &CTQueryProj( $_[1] ) ;
-    local( $root ) = &CTComputeRoot( $_[1], $flav, $_[2] ) ;
+    local( $flav ) = &CTQueryProj( $_[2] ) ;
+    local( $root ) = &CTComputeRoot( $_[2], $flav, $_[3] ) ;
     local( $pwd ) = &CTUCurrDir() ;
     local( $isok ) = 0 ;
     if ( $_[0] =~ /^\// ) {

@@ -1,7 +1,10 @@
 #define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase pystub
 #define LOCAL_LIBS \
     framework putil collide loader sgmanip chan text chancfg cull \
-    pnmimage pnmimagetypes event effects shader
+    pnmimage pnmimagetypes event effects shader graph gobj display \
+    mathutil sgattrib putil express light dgraph device tform sgraph \
+    linmath pstatclient sgraphutil
+#define UNIX_SYS_LIBS m
 
 
 #begin bin_target

@@ -203,7 +203,7 @@ sub CTNtoolRmElem {
 #
 # output:
 # return success or failure
-sub CTCcaseMv {
+sub CTNtoolMv {
     &CTUDebug( "in CTNtoolMv\n" ) ;
     local( $ret ) = 0 ;
     local( $elem ) = $_[0] ;

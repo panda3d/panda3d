@@ -288,7 +288,8 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   // #include lines.
   if (!no_database) {
     out << "#include <dtoolbase.h>\n"
-	<< "#include <interrogate_request.h>\n";
+	<< "#include <interrogate_request.h>\n"
+	<< "#include <dconfig.h>\n";
   }
   if (watch_asserts) {
     out << "#include <notify.h>\n";
