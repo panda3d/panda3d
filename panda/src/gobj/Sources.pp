@@ -6,7 +6,7 @@
   #define LOCAL_LIBS \
     linmath mathutil pnmimage gsgbase graph putil
 
-  #define COMBINED_SOURCES composite1.cxx composite2.cxx
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
      LOD.I LOD.h config_gobj.h drawable.h fog.I fog.h geom.I geom.N  \
@@ -17,7 +17,7 @@
      orthoProjection.I orthoProjection.h perspectiveProjection.I  \
      perspectiveProjection.h pixelBuffer.I pixelBuffer.N  \
      pixelBuffer.h projection.h texture.I texture.N texture.h \
-     texturePool.I texturePool.h $[COMBINED_SOURCES] 
+     texturePool.I texturePool.h
     
   #define INCLUDED_SOURCES \
      LOD.cxx config_gobj.cxx drawable.cxx fog.cxx geom.cxx  \
