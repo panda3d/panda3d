@@ -29,7 +29,7 @@ typedef enum {
     ConvAlpha8to16_4444,ConvAlpha8to32,ConvAlpha8to8
 } ConversionType;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 char *ConvNameStrs[] = {"None","Conv32to32","Conv32to32_NoAlpha","Conv32to24","Conv32to16_0555",
     "Conv32to16_1555","Conv32to16_0565","Conv32to16_4444","Conv24to32","Conv24to24",
     "Conv24to16_0555","Conv24to16_0565","ConvLum16to16_1555","ConvLum16to16_4444",
@@ -41,6 +41,7 @@ char *PandaFilterNameStrs[] = {"FT_nearest","FT_linear","FT_nearest_mipmap_neare
     "FT_nearest_mipmap_linear", "FT_linear_mipmap_linear"
 };
 #endif
+
 
 TypeHandle DXTextureContext::_type_handle;
 
@@ -1857,7 +1858,7 @@ DXTextureContext(Texture *tex) :
 TextureContext(tex) {
 #ifdef _DEBUG
     if(dxgsg_cat.is_spam()) {
-       dxgsg_cat.spam() << "creating texture [" << tex->get_name() << "], minfilter(" << PandaFilterNameStrs[tex->get_minfilter()] << "), magfilter("<<PandaFilterNameStrs[tex->get_magfilter()] << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
+       dxgsg_cat.spam() << "Creating DX texture [" << tex->get_name() << "], minfilter(" << PandaFilterNameStrs[tex->get_minfilter()] << "), magfilter("<<PandaFilterNameStrs[tex->get_magfilter()] << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
     }
 #endif
     _surface = NULL;

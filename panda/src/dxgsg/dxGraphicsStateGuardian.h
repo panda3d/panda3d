@@ -54,6 +54,12 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 }
 #endif
 
+#ifdef DO_PSTATS
+#define DO_PSTATS_STUFF(XX) XX;
+#else
+#define DO_PSTATS_STUFF(XX)
+#endif
+
 #define DX_DECLARE_CLEAN(type, var) \
     type var;                       \
     ZeroMemory(&var, sizeof(type));  \
@@ -106,6 +112,7 @@ public:
   virtual void draw_point(GeomPoint *geom, GeomContext *gc);
   virtual void draw_line(GeomLine *geom, GeomContext *gc);
   virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc);
+  void draw_linestrip_base(Geom *geom, GeomContext *gc, bool bConnectEnds);
   virtual void draw_sprite(GeomSprite *geom, GeomContext *gc);
   virtual void draw_polygon(GeomPolygon *geom, GeomContext *gc);
   virtual void draw_quad(GeomQuad *geom, GeomContext *gc);
@@ -184,8 +191,6 @@ protected:
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                          CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
-
-  INLINE void activate();
 
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);

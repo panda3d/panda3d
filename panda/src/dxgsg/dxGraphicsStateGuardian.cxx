@@ -129,7 +129,6 @@ DXGraphicsStateGuardian::
 void DXGraphicsStateGuardian::
 reset() {
     free_pointers();
-    activate();
     GraphicsStateGuardian::reset();
     _buffer_mask = 0;
 
@@ -444,8 +443,6 @@ void DXGraphicsStateGuardian::
 clear(const RenderBuffer &buffer) {
   //    PStatTimer timer(_win->_clear_pcollector);
 
-    activate();
-
     nassertv(buffer._gsg == this);
     int buffer_type = buffer._buffer_type;
 
@@ -702,7 +699,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
     }
 
     if(dx_show_fps_meter) {
-         PStatTimer timer(_win->_show_fps_pcollector);
+         DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
 
          DWORD now = timeGetTime();  // this is win32 fn
 
@@ -879,7 +876,6 @@ render_subgraph(RenderTraverser *traverser,
                 Node *subgraph, ProjectionNode *projnode,
                 const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
-//  activate();  doesnt do anything right now
     ProjectionNode *old_projection_node = _current_projection_node;
     _current_projection_node = projnode;
     LMatrix4f old_projection_mat = _current_projection_mat;
@@ -967,7 +963,6 @@ render_subgraph(RenderTraverser *traverser, Node *subgraph,
     << "begin subgraph (pass " << ++_pass_number
     << ") - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
 #endif
-    activate();
 
     nassertv(traverser != (RenderTraverser *)NULL);
     traverser->traverse(subgraph, initial_state, net_trans);
@@ -989,7 +984,6 @@ INLINE void DXGraphicsStateGuardian::
 add_to_FVFBuf(void *data,  size_t bytes) {
     memcpy(_pCurFvfBufPtr, data, bytes);
     _pCurFvfBufPtr += bytes;
-
 }
 
 // generates slightly fewer instrs
@@ -1171,13 +1165,13 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_point(GeomPoint *geom, GeomContext *gc) {
-    activate();
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_point()" << endl;
 #endif
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-
+  
+    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
+  
     // The DX Way
 
     int nPrims = geom->get_num_prims();
@@ -1315,12 +1309,11 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_line(GeomLine* geom, GeomContext *gc) {
-    activate();
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_line()" << endl;
 #endif
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
+   DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
 #ifdef _DEBUG
     static BOOL bPrintedMsg=FALSE;
@@ -1376,14 +1369,31 @@ draw_line(GeomLine* geom, GeomContext *gc) {
         return;
     }
 
-    perVertex = 0;
-    if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PER_COORD;
-    if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PER_NORMAL;
-    if (geom->get_binding(G_COLOR) == G_PER_VERTEX) perVertex |= PER_COLOR;
+    assert(geom->get_binding(G_COORD) == G_PER_VERTEX);
+    perVertex = PER_COORD;
 
-    perPrim = 0;
-    if (geom->get_binding(G_NORMAL) == G_PER_PRIM) perPrim |= PER_NORMAL;
-    if (geom->get_binding(G_COLOR) == G_PER_PRIM) perPrim |= PER_COLOR;
+    perPrim = perComp = 0;
+    switch(geom->get_binding(G_NORMAL)) {
+        case G_PER_VERTEX:
+            perVertex |=  PER_NORMAL;
+            break;
+        case G_PER_COMPONENT:
+            perComp |=  PER_NORMAL;
+            break;
+        default:
+            perPrim |=  PER_NORMAL;
+    }
+
+    switch(geom->get_binding(G_COLOR)) {
+        case G_PER_VERTEX:
+            perVertex |=  PER_COLOR;
+            break;
+        case G_PER_COMPONENT:
+            perComp |= PER_COLOR;
+            break;
+        default:
+            perPrim |= PER_COLOR;
+    }
 
     size_t vertex_size = draw_prim_setup(geom);
 
@@ -1392,6 +1402,7 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 //  nassertv(nPrims * 2 * vertex_size < VERT_BUFFER_SIZE);
 
     if (nPrims * 2 * vertex_size > VERT_BUFFER_SIZE) {
+        // bugbug: need cleaner way to handle tmp buffer size overruns (malloc/realloc?)
         _pCurFvfBufPtr = _tmp_fvf = new char[nPrims * 2 * vertex_size];
     } else  _pCurFvfBufPtr = _pFvfBufBasePtr;            // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
@@ -1419,19 +1430,8 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 #endif              // WBD_GL_MODE
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_linestrip
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
-    activate();
-
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_linestrip()" << endl;
-#endif
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
 #ifdef _DEBUG
     static BOOL bPrintedMsg=FALSE;
@@ -1442,61 +1442,23 @@ draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
     }
 #endif
 
-#ifdef WBD_GL_MODE
-    call_glLineWidth(geom->get_width());
+  draw_linestrip_base(geom,gc,false);
+}
 
-    int nprims = geom->get_num_prims();
-    const int *plen = geom->get_lengths();
-    Geom::VertexIterator vi = geom->make_vertex_iterator();
-    Geom::ColorIterator ci = geom->make_color_iterator();
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::draw_linestrip
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
 
-    GeomIssuer issuer(geom, this,
-                      issue_vertex_gl,
-                      issue_normal_gl,
-                      issue_texcoord_gl,
-                      issue_color_gl);
+#ifdef GSG_VERBOSE
+    dxgsg_cat.debug() << "draw_linestrip()" << endl;
+#endif
 
-    if (geom->get_binding(G_COLOR) == G_PER_VERTEX) {
-        call_glShadeModel(GL_SMOOTH);
-    } else {
-        call_glShadeModel(GL_FLAT);
-    }
+  DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
-    // Draw overall
-    issuer.issue_color(G_OVERALL, ci);
-
-    for (int i = 0; i < nprims; i++) {
-        // Draw per primitive
-        issuer.issue_color(G_PER_PRIM, ci);
-
-        int num_verts = *(plen++);
-        nassertv(num_verts >= 2);
-
-        glBegin(GL_LINE_STRIP);
-
-        // Per-component attributes for the first line segment?
-        issuer.issue_color(G_PER_COMPONENT, ci);
-
-        // Draw the first 2 vertices
-        int v;
-        for (v = 0; v < 2; v++) {
-            issuer.issue_color(G_PER_VERTEX, ci);
-            issuer.issue_vertex(G_PER_VERTEX, vi);
-        }
-
-        // Now draw each of the remaining vertices.  Each vertex from
-        // this point on defines a new line segment.
-        for (v = 2; v < num_verts; v++) {
-            // Per-component attributes?
-            issuer.issue_color(G_PER_COMPONENT, ci);
-
-            // Per-vertex attributes
-            issuer.issue_color(G_PER_VERTEX, ci);
-            issuer.issue_vertex(G_PER_VERTEX, vi);
-        }
-        glEnd();
-    }
-#else
     int nPrims = geom->get_num_prims();
     const int *plen = geom->get_lengths();
 
@@ -1505,18 +1467,31 @@ draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
         return;
     }
 
-    perVertex = 0;
-    if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PER_COORD;
-    if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PER_NORMAL;
-    if (geom->get_binding(G_COLOR) == G_PER_VERTEX) perVertex |= PER_COLOR;
+    assert(geom->get_binding(G_COORD) == G_PER_VERTEX);
+    perVertex = PER_COORD;
 
-    perComp = 0;
-    if (geom->get_binding(G_NORMAL) == G_PER_COMPONENT) perComp |= PER_NORMAL;
-    if (geom->get_binding(G_COLOR) == G_PER_COMPONENT) perComp |= PER_COLOR;
+    perPrim = perComp = 0;
+    switch(geom->get_binding(G_NORMAL)) {
+        case G_PER_VERTEX:
+            perVertex |=  PER_NORMAL;
+            break;
+        case G_PER_COMPONENT:
+            perComp |=  PER_NORMAL;
+            break;
+        default:
+            perPrim |= PER_NORMAL;
+    }
 
-    perPrim = 0;
-    if (geom->get_binding(G_NORMAL) == G_PER_PRIM) perPrim |= PER_NORMAL;
-    if (geom->get_binding(G_COLOR) == G_PER_PRIM) perPrim |= PER_COLOR;
+    switch(geom->get_binding(G_COLOR)) {
+        case G_PER_VERTEX:
+            perVertex |=  PER_COLOR;
+            break;
+        case G_PER_COMPONENT:
+            perComp |= PER_COLOR;
+            break;
+        default:
+            perPrim |= PER_COLOR;
+    }
 
     size_t vertex_size = draw_prim_setup(geom);
 
@@ -1525,25 +1500,36 @@ draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
             GET_NEXT_COLOR();
         }
 
-        int nVerts = *(plen++);
-        nassertv(nVerts >= 2);
+        int nVerts;
 
-        nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
+        if(plen==NULL) {
+            nVerts=4;  // we've been called by draw_quad, which has no lengths array
+        } else {
+            nVerts= *(plen++);
+            nassertv(nVerts >= 2);
+        }
+
+        nassertv(_pCurFvfBufPtr == NULL);   // make sure the storage pointer is clean.
         nassertv(nVerts * vertex_size < VERT_BUFFER_SIZE);
-        _pCurFvfBufPtr = _pFvfBufBasePtr;            // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
+        _pCurFvfBufPtr = _pFvfBufBasePtr;   // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
-        draw_prim_inner_loop(nVerts, geom, perVertex | perComp);
+        DWORD perFlags = perVertex | perComp;
 
-        HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINESTRIP,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
+        draw_prim_inner_loop(nVerts, geom, perFlags);
+
+        if(bConnectEnds) {
+             // append first vertex to end
+             memcpy(_pCurFvfBufPtr,_pFvfBufBasePtr,vertex_size);
+             _pCurFvfBufPtr+=vertex_size;
+             nVerts++;
+        }
+
+        HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINESTRIP, p_flags, _pFvfBufBasePtr, nVerts, NULL);
         TestDrawPrimFailure(DrawPrim,hr,_pDD);
 
         _pCurFvfBufPtr = NULL;
     }
-
-
-#endif              // WBD_GL_MODE
 }
-
 
 // this class exists because an alpha sort is necessary for correct
 // sprite rendering, and we can't simply sort the vertex arrays as
@@ -1567,7 +1553,7 @@ public:
 struct draw_sprite_vertex_less {
     INLINE bool operator ()(const WrappedSpriteSortPtr& v0,
                             const WrappedSpriteSortPtr& v1) const {
-        return v0.z > v1.z; // reversed from gl
+        return v0.z > v1.z; // reversed from gl due to left-handed coordsys of d3d
     }
 };
 /*
@@ -1606,7 +1592,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
+  DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
     Texture *tex = geom->get_texture();
     nassertv(tex != (Texture *) NULL);
@@ -1910,79 +1896,44 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_polygon(GeomPolygon *geom, GeomContext *gc) {
-    activate();
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
+   DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
-/*  wireframe polygon will be drawn as multi-tri trifan until I get this casting issue straightened out
+   // wireframe polygon will be drawn as linestrip, otherwise draw as multi-tri trifan
    DWORD rstate;
    _d3dDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &rstate);
-   if(rstate!=D3DFILL_WIREFRAME) {
-       draw_multitri(geom, D3DPT_TRIANGLEFAN);
+   if(rstate==D3DFILL_WIREFRAME) {
+       draw_linestrip_base(geom,gc,true);
    } else {
-       Geom *gp=dynamic_cast<Geom *>(geom);  doesnt work
-       draw_linestrip(gp);
+       draw_multitri(geom, D3DPT_TRIANGLEFAN);
    }
-*/
-
-    draw_multitri(geom, D3DPT_TRIANGLEFAN);
-
-#ifdef WBD_GL_MODE
-    int nprims = geom->get_num_prims();
-    const int *plen = geom->get_lengths();
-    Geom::VertexIterator vi = geom->make_vertex_iterator();
-    Geom::NormalIterator ni = geom->make_normal_iterator();
-    Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
-    Geom::ColorIterator ci = geom->make_color_iterator();
-
-
-    GeomIssuer issuer(geom, this,
-                      issue_vertex_gl,
-                      issue_normal_gl,
-                      issue_texcoord_gl,
-                      issue_color_gl);
-
-    // If we have per-vertex colors or normals, we need smooth shading.
-    // Otherwise we want flat shading for performance reasons.
-    if (geom->get_binding(G_COLOR) == G_PER_VERTEX ||
-        geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
-        call_glShadeModel(GL_SMOOTH);
-    } else {
-        call_glShadeModel(GL_FLAT);
-    }
-
-    // Draw overall
-    issuer.issue_color(G_OVERALL, ci);
-    issuer.issue_normal(G_OVERALL, ni);
-
-    for (int i = 0; i < nprims; i++) {
-        // Draw per primitive
-        issuer.issue_color(G_PER_PRIM, ci);
-        issuer.issue_normal(G_PER_PRIM, ni);
-
-        int num_verts = *(plen++);
-        nassertv(num_verts >= 3);
-
-        glBegin(GL_POLYGON);
-
-        // Draw the vertices.
-        int v;
-        for (v = 0; v < num_verts; v++) {
-            // Per-vertex attributes.
-            issuer.issue_color(G_PER_VERTEX, ci);
-            issuer.issue_normal(G_PER_VERTEX, ni);
-            issuer.issue_texcoord(G_PER_VERTEX, ti);
-            issuer.issue_vertex(G_PER_VERTEX, vi);
-        }
-        glEnd();
-    }
-#endif              // WBD_GL_MODE
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::draw_quad
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+draw_quad(GeomQuad *geom, GeomContext *gc) {
 
+#ifdef GSG_VERBOSE
+    dxgsg_cat.debug() << "draw_quad()" << endl;
+#endif
+   DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
+
+   // wireframe quad will be drawn as linestrip, otherwise draw as multi-tri trifan
+   DWORD rstate;
+   _d3dDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &rstate);
+   if(rstate==D3DFILL_WIREFRAME) {
+       draw_linestrip_base(geom,gc,true);
+   } else {
+       draw_multitri(geom, D3DPT_TRIANGLEFAN);
+   }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_tri
@@ -1991,12 +1942,11 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_tri(GeomTri *geom, GeomContext *gc) {
-    // activate();
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_tri()" << endl;
 #endif
-  _vertices_tri_pcollector.add_level(geom->get_num_vertices());
+  DO_PSTATS_STUFF(_vertices_tri_pcollector.add_level(geom->get_num_vertices()));
 
 #ifdef _DEBUG
     if (_pCurTexContext!=NULL) {
@@ -2285,75 +2235,6 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_quad
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-draw_quad(GeomQuad *geom, GeomContext *gc) {
-    activate();
-
-#if 1
-    static BOOL bPrintedMsg=FALSE;
-
-    if (!bPrintedMsg) {
-        bPrintedMsg=TRUE;
-        dxgsg_cat.error() << "dxgsg draw_quad drawing not implemented yet!\n";
-    }
-#endif
-
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "draw_quad()" << endl;
-#endif
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
-
-#ifdef WBD_GL_MODE
-    int nprims = geom->get_num_prims();
-    Geom::VertexIterator vi = geom->make_vertex_iterator();
-    Geom::NormalIterator ni = geom->make_normal_iterator();
-    Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
-    Geom::ColorIterator ci = geom->make_color_iterator();
-
-    GeomIssuer issuer(geom, this,
-                      issue_vertex_gl,
-                      issue_normal_gl,
-                      issue_texcoord_gl,
-                      issue_color_gl);
-
-    // If we have per-vertex colors or normals, we need smooth shading.
-    // Otherwise we want flat shading for performance reasons.
-    if (geom->get_binding(G_COLOR) == G_PER_VERTEX ||
-        geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
-        call_glShadeModel(GL_SMOOTH);
-    } else {
-        call_glShadeModel(GL_FLAT);
-    }
-
-    // Draw overall
-    issuer.issue_color(G_OVERALL, ci);
-    issuer.issue_normal(G_OVERALL, ni);
-
-    glBegin(GL_QUADS);
-
-    for (int i = 0; i < nprims; i++) {
-        // Draw per primitive
-        issuer.issue_color(G_PER_PRIM, ci);
-        issuer.issue_normal(G_PER_PRIM, ni);
-
-        for (int j = 0; j < 4; j++) {
-            // Draw per vertex
-            issuer.issue_color(G_PER_VERTEX, ci);
-            issuer.issue_normal(G_PER_VERTEX, ni);
-            issuer.issue_texcoord(G_PER_VERTEX, ti);
-            issuer.issue_vertex(G_PER_VERTEX, vi);
-        }
-    }
-
-    glEnd();
-#endif              // WBD_GL_MODE
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_tristrip
 //       Access: Public, Virtual
 //  Description:
@@ -2364,9 +2245,9 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
-  _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
+  DO_PSTATS_STUFF(_vertices_tristrip_pcollector.add_level(geom->get_num_vertices()));
 
-    draw_multitri(geom, D3DPT_TRIANGLESTRIP);
+  draw_multitri(geom, D3DPT_TRIANGLESTRIP);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2380,9 +2261,9 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
-  _vertices_trifan_pcollector.add_level(geom->get_num_vertices());
+  DO_PSTATS_STUFF(_vertices_trifan_pcollector.add_level(geom->get_num_vertices()));
 
-    draw_multitri(geom, D3DPT_TRIANGLEFAN);
+  draw_multitri(geom, D3DPT_TRIANGLEFAN);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2433,6 +2314,12 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     GeomVrtFmt=MixedFmtVerts;
 #endif
 
+    if(pLengthArr==NULL) {
+       assert(geom->get_num_vertices_per_prim()==4);
+       // we've been called by draw_quad, which has no lengths array
+       GeomVrtFmt=MixedFmtVerts; // dont need efficiency here, just use simpler codepath
+    }
+
     // for Indexed Prims and mixed indexed/non-indexed prims, we will use old pipeline
     // cant handle indexed prims because usually have different index arrays for different components,
     // and DrIdxPrmStrd only accepts 1 index array for all components
@@ -2480,8 +2367,16 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             }
             if (perPrim & PER_NORMAL)
                 p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+            
+            int nVerts;
 
-            int nVerts = *(pLengthArr++);
+            if(pLengthArr==NULL) {
+                // we've been called by draw_quad, which has no lengths array
+                nVerts=4;
+            } else {
+              nVerts = *(pLengthArr++);
+            }
+
 #ifdef _DEBUG
             nassertv(nVerts >= 3);
             nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
@@ -2515,7 +2410,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
         memset(&dps_data,0,sizeof(D3DDRAWPRIMITIVESTRIDEDDATA));
 
 #ifdef _DEBUG
-        nassertv(geom->uses_components());
+//        nassertv(geom->uses_components());
         nassertv(geom->get_binding(G_COORD) == G_PER_VERTEX);
 #endif
 
@@ -3008,7 +2903,7 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
-  _vertices_other_pcollector.add_level(geom->get_num_vertices());
+  DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
     int nprims = geom->get_num_prims();
 
@@ -3099,7 +2994,6 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 TextureContext *DXGraphicsStateGuardian::
 prepare_texture(Texture *tex) {
-    activate();
 
     DXTextureContext *gtc = new DXTextureContext(tex);
 #ifdef WBD_GL_MODE
@@ -3141,7 +3035,6 @@ apply_texture(TextureContext *tc) {
        add_to_texture_record(tc);
     #endif
 
-//  activate();  inactive
 //  bind_texture(tc);
 
 //  specify_texture(tc->_texture);
@@ -3257,9 +3150,10 @@ apply_texture(TextureContext *tc) {
         }
 */
 
-        #ifdef _DEBUG
+        #ifndef NDEBUG
+            extern char *PandaFilterNameStrs[];
             if((!(dtc->_bHasMipMaps))&&(mipfilter!=D3DTFP_NONE)) {
-                dxgsg_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname:" << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
+                dxgsg_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname[" << tex->get_name() << "], filter("<<PandaFilterNameStrs[ft]<<")\n";
                 mipfilter=D3DTFP_NONE;
             }
         #endif
@@ -3343,7 +3237,6 @@ void DXGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
     nassertv(tc != NULL && dr != NULL);
-    activate();
 
     Texture *tex = tc->_texture;
 
@@ -3386,7 +3279,6 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb
     dxgsg_cat.fatal() << "DX copy_texture unimplemented!!!";
     return;
 
-    activate();
     set_read_buffer(rb);
     copy_texture(tc, dr);
 }
@@ -3403,7 +3295,6 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
     return;
 
     nassertv(tc != NULL && dr != NULL);
-    activate();
 
 #ifdef WBD_GL_MODE
     Texture *tex = tc->_texture;
@@ -3487,7 +3378,6 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb
     dxgsg_cat.fatal() << "DXGSG draw_texture unimplemented!!!";
     return;
 
-    activate();
     set_draw_buffer(rb);
     draw_texture(tc, dr);
 }
@@ -3500,7 +3390,6 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb
 void DXGraphicsStateGuardian::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
     nassertv(tc != NULL && pb != NULL);
-    activate();
 
     Texture *tex = tc->_texture;
 
@@ -3527,7 +3416,6 @@ void DXGraphicsStateGuardian::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
                         const DisplayRegion *dr) {
     nassertv(tc != NULL && pb != NULL && dr != NULL);
-    activate();
 
     Texture *tex = tc->_texture;
 
@@ -3608,7 +3496,6 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 #ifdef WBD_GL_MODE
     nassertv(pb != NULL && dr != NULL);
     nassertv(!pb->_image.empty());
-    activate();
 
     DisplayRegionStack old_dr = push_display_region(dr);
     prepare_display_region();
@@ -3731,7 +3618,6 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 void DXGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb, const NodeAttributes& na) {
-    activate();
     set_read_buffer(rb);
     draw_pixel_buffer(pb, dr, na);
 }
@@ -4071,7 +3957,6 @@ void DXGraphicsStateGuardian::apply_light( AmbientLight* light ) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_transform(const TransformAttribute *attrib) {
-    activate();
 #ifndef NDEBUG
     if (dx_show_transforms) {
 
@@ -4118,7 +4003,6 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
     dxgsg_cat.fatal() << "DXGSG issue_tex_matrix unimplemented!!!";
     return;
 
-    activate();
 #ifdef WBD_GL_MODE
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug()
@@ -4141,7 +4025,6 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_color(const ColorAttribute *attrib) {
-    activate();
     if (attrib->is_on()&& attrib->is_real()) {
         _issued_color_enabled = true;
         Colorf c = attrib->get_color();
@@ -4158,8 +4041,6 @@ issue_color(const ColorAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_texture(const TextureAttribute *attrib) {
-
-    activate();
 
     if (attrib->is_on()) {
         enable_texturing(true);
@@ -4180,7 +4061,6 @@ void DXGraphicsStateGuardian::
 issue_tex_gen(const TexGenAttribute *attrib) {
     dxgsg_cat.fatal() << "DXGSG issue_tex_gen unimplemented!!!";
     return;
-    activate();
 #ifdef WBD_GL_MODE
     TexGenProperty::Mode mode = attrib->get_mode();
 
@@ -4234,7 +4114,6 @@ issue_tex_gen(const TexGenAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_material(const MaterialAttribute *attrib) {
-    activate();
     if (attrib->is_on()) {
         const Material *material = attrib->get_material();
         nassertv(material != (const Material *)NULL);
@@ -4249,7 +4128,6 @@ issue_material(const MaterialAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_fog(const FogAttribute *attrib) {
-    activate();
 
     if (attrib->is_on()) {
         enable_fog(true);
@@ -4268,10 +4146,8 @@ issue_fog(const FogAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_render_mode(const RenderModeAttribute *attrib) {
-    activate();
 
     RenderModeProperty::Mode mode = attrib->get_mode();
-
 
     switch (mode) {
         case RenderModeProperty::M_filled:
@@ -4296,7 +4172,6 @@ issue_render_mode(const RenderModeAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib ) {
     nassertv(attrib->get_properties_is_on());
-    activate();
 
     // Initialize the current ambient light total and currently enabled
     // light list
@@ -4404,7 +4279,7 @@ reset_ambient() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_color_blend(const ColorBlendAttribute *attrib) {
-    activate();
+    
     ColorBlendProperty::Mode mode = attrib->get_mode();
 
     switch (mode) {
@@ -4582,7 +4457,7 @@ issue_color_mask(const ColorMaskAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_depth_test(const DepthTestAttribute *attrib) {
-    activate();
+    
 
     DepthTestProperty::Mode mode = attrib->get_mode();
 
@@ -4645,7 +4520,7 @@ issue_stencil(const StencilAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_cull_face(const CullFaceAttribute *attrib) {
-    activate();
+    
 
     CullFaceProperty::Mode mode = attrib->get_mode();
 
@@ -4677,7 +4552,7 @@ issue_cull_face(const CullFaceAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_clip_plane(const ClipPlaneAttribute *attrib) {
-    activate();
+    
 
     // Initialize the currently enabled clip plane list
     int i;
@@ -4761,7 +4636,6 @@ issue_clip_plane(const ClipPlaneAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_transparency(const TransparencyAttribute *attrib ) {
-    activate();
 
     TransparencyProperty::Mode mode = attrib->get_mode();
 
@@ -5527,7 +5401,7 @@ void DXGraphicsStateGuardian::show_frame(void) {
   if(_pri==NULL)
     return;
 
-  PStatTimer timer(_win->_swap_pcollector);  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
+  DO_PSTATS_STUFF(PStatTimer timer(_win->_swap_pcollector));  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
 
   if(dx_full_screen) {
     show_full_screen_frame();
