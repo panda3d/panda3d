@@ -1708,8 +1708,24 @@ get_wrapper(FunctionIndex function_index, WrapperBuilder *wbuilder,
 
     if (wbuilder->return_value_needs_management()) {
       iwrapper._flags |= InterrogateFunctionWrapper::F_caller_manages;
-      iwrapper._return_value_destructor =
-        wbuilder->get_return_value_destructor();
+      int destructor = wbuilder->get_return_value_destructor();
+
+      if (destructor != 0) {
+        iwrapper._return_value_destructor = destructor;
+
+      } else {
+        // We don't need to report this warning, since the FFI code
+        // understands that if the destructor function is zero, it
+        // should use the regular class destructor.
+
+        /*
+        nout << "Warning!  Destructor for " 
+             << *wbuilder->_return_type->get_orig_type()
+             << " is unavailable.\n"
+             << "  Cannot manage return value for:\n  "
+             << description << "\n";
+        */
+      }
     }
   }
 
@@ -1723,8 +1739,9 @@ get_wrapper(FunctionIndex function_index, WrapperBuilder *wbuilder,
 //  Description: Returns a TypeIndex for the "atomic string" type,
 //               which is a bogus type that might be used if -string
 //               is passed to interrogate.  It means to translate
-//               basic_string<char> and char * to some atomic string
-//               type, for the scripting language's convenience.
+//               basic_string<char> and char * to whatever atomic
+//               string type is native to the particular the scripting
+//               language we happen to be generating wrappers for.
 ////////////////////////////////////////////////////////////////////
 TypeIndex InterrogateBuilder::
 get_atomic_string_type() {
@@ -2008,7 +2025,13 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
       (cpptype->_file._source != CPPFile::S_local ||
        in_ignorefile(cpptype->_file._filename_as_referenced))) {
     // The struct type is defined in some other package or in an
-    // ignorable file; skip it.
+    // ignorable file, so don't try to output it.
+
+    // This means we also don't gather any information about its
+    // derivations or determine if an implicit destructor is
+    // necessary.  However, this is not important, and it causes
+    // problems if we do (how many implicit destructors do we need,
+    // anyway?).
     itype._flags &= ~InterrogateType::F_fully_defined;
     return;
   }
@@ -2028,9 +2051,9 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   // A struct type should always be global.
   itype._flags |= InterrogateType::F_global;
-
+  
   CPPScope *scope = cpptype->_scope;
-
+  
   CPPStructType::Derivation::const_iterator bi;
   for (bi = cpptype->_derivation.begin();
        bi != cpptype->_derivation.end();
@@ -2039,7 +2062,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     if (base._vis <= V_public) {
       CPPType *base_type = TypeManager::resolve_type(base._base, scope);
       TypeIndex base_index = get_type(base_type, true);
-
+      
       if (base_index == 0) {
         nout << *cpptype << " reports a derivation from an invalid type.\n";
 
@@ -2468,14 +2491,10 @@ hash_function_signature(WrapperBuilder *wbuilder) {
     return;
   }
 
-  cerr << "hash conflict: " << wbuilder->_function_signature
-       << " maps to " << hash << "\n";
-
   // We have a conflict.  Extend both strings to resolve the
   // ambiguity.
   if ((*hi).second != (WrapperBuilder *)NULL) {
     WrapperBuilder *other_wbuilder = (*hi).second;
-    cerr << "(already taken by " << other_wbuilder->_function_signature << ")\n";
     (*hi).second = (WrapperBuilder *)NULL;
     other_wbuilder->_hash +=
       hash_string(other_wbuilder->_function_signature,
@@ -2487,7 +2506,6 @@ hash_function_signature(WrapperBuilder *wbuilder) {
       nout << "Internal error!  Hash " << other_wbuilder->_hash
            << " already appears!\n";
     }
-    cerr << "first to " << other_wbuilder->_hash << "\n";
   }
 
   hash += hash_string(wbuilder->_function_signature,
@@ -2495,8 +2513,6 @@ hash_function_signature(WrapperBuilder *wbuilder) {
                       11);
   bool inserted = _wrappers_by_hash.insert
     (WrappersByHash::value_type(hash, wbuilder)).second;
-
-  cerr << "second to " << hash << "\n";
 
   if (!inserted) {
     // Huh.  We still have a conflict.  This should be extremely rare.
@@ -2507,7 +2523,6 @@ hash_function_signature(WrapperBuilder *wbuilder) {
       inserted = _wrappers_by_hash.insert
         (WrappersByHash::value_type(hash, wbuilder)).second;
     }
-    cerr << "New hash is " << hash << "\n";
     if (!inserted) {
       nout << "Internal error!  Too many conflicts with hash "
            << hash << "\n";
