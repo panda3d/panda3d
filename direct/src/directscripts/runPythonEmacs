@@ -60,6 +60,11 @@ if [ "$VRIDE" ]; then
     VRIDE=`cygpath -w $VRIDE`
     export VRIDE
 fi
+if [ "$FOURD" ]; then
+    if [ "$debug" ]; then echo "FOURD   $FOURD"; fi
+    FOURD=`cygpath -w $FOURD`
+    export FOURD
+fi
 if [ "$WINTOOLS" ]; then
     if [ "$debug" ]; then echo "WINTOOLS  $WINTOOLS"; fi
     WINTOOLS=`cygpath -w $WINTOOLS`

@@ -3,6 +3,7 @@ from PandaObject import *
 from DirectDeviceManager import *
 from DirectUtil import *
 import OnscreenText
+import Task
 
 """
 TODO:
