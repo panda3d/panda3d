@@ -3401,22 +3401,9 @@ begin_decal(GeomNode *base_geom) {
 
     // Just draw the base geometry normally.
     base_geom->draw(this);
-
-#if 0
-    // Note: code below does not work since state engine resets PolygonOffsetAttrib
-    //       before decal geom is rendered
-
-    // And now draw the decal geoms with a polygon offset specified.
-    NodeAttributes state;
-    PolygonOffsetAttribute *po = new PolygonOffsetAttribute;
-    po->set_units(POLYGON_OFFSET_MULTIPLIER * _decal_level);
-    state.set_attribute(PolygonOffsetTransition::get_class_type(), po);
-    set_state(state, false);
-#else
-    // use old way instead
     glPolygonOffset(0.0f,POLYGON_OFFSET_MULTIPLIER * _decal_level);
     glEnable(GL_POLYGON_OFFSET_FILL);
-#endif
+
   } else {
     // GL 1.0f-style: use three-step rendering to do decals.
 
@@ -3433,6 +3420,11 @@ begin_decal(GeomNode *base_geom) {
 
       // Render all of the decal geometry, too.  We'll keep the depth
       // buffer write off during this.
+
+      // Save the current transform within the GL state so we can
+      // restore it when we come back to draw the base geometry again.
+      glMatrixMode(GL_MODELVIEW);
+      glPushMatrix();
     }
   }
   report_errors();
@@ -3453,28 +3445,10 @@ end_decal(GeomNode *base_geom) {
 
   if (gl_decal_type == GDT_offset) {
     // GL 1.1-style: use glPolygonOffset to do decals.
-
-#if 0
-    // Note: code below does not work since state engine resets PolygonOffsetAttrib
-    //       before decal geom is rendered
-
-    NodeAttributes state;
-    PolygonOffsetAttribute *po = new PolygonOffsetAttribute;
-    if (_decal_level == 0) {
-      po->set_units(0);
-    }
-    else {
-      po->set_units(POLYGON_OFFSET_MULTIPLIER * _decal_level);
-    }
-    state.set_attribute(PolygonOffsetTransition::get_class_type(), po);
-    set_state(state, false);
-#else
-    // use old way instead
     glPolygonOffset(0.0f,POLYGON_OFFSET_MULTIPLIER * _decal_level);
     if (_decal_level == 0) {
       glDisable(GL_POLYGON_OFFSET_FILL);
     }
-#endif
 
   } else {
     // GL 1.0f-style: use three-step rendering to do decals.
@@ -3487,6 +3461,11 @@ end_decal(GeomNode *base_geom) {
       bool was_blend = _blend_enabled;
       GLenum old_blend_source_func = _blend_source_func;
       GLenum old_blend_dest_func = _blend_dest_func;
+
+      // First, we'd better restore the transform matrix in case our
+      // decals screwed it up.
+      glMatrixMode(GL_MODELVIEW);
+      glPopMatrix();
 
       // Enable the writing to the depth buffer.
       call_glDepthMask(true);
