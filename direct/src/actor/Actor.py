@@ -317,15 +317,18 @@ class Actor(PandaObject, NodePath):
         If no anim specified, use the currently playing anim.
         If no part specified, return anim durations of first part.
         NOTE: returns info only for the first LOD"""
+        # use the first LOD
+        lodName = self.__animControlDict.keys()[0]
+
         if (partName == None):
-            partName = self.__animControlDict[0].keys()[0]
+            partName = self.__animControlDict[lodName].keys()[0]
     
         if (animName==None):
             animName = self.getCurrentAnim(partName)
 
         # get duration for named part only
-        if (self.__animControlDict[0].has_key(partName)):        
-            animControl = self.__getAnimControl(animName, partName)
+        if (self.__animControlDict[lodName].has_key(partName)):        
+            animControl = self.__getAnimControl(animName, partName, lodName)
             if (animControl != None):
                 return animControl.getFrameRate()
         else:
@@ -339,13 +342,16 @@ class Actor(PandaObject, NodePath):
         If no part is given, assume first part in dictionary.
         If no anim is given, find the current anim for the part.
         NOTE: Returns info only for the first LOD"""
+        # use the first lod
+        lodName = self.__animControlDict.keys()[0]
+        
         if (partName==None):
-            partName = self.__animControlDict[0].keys()[0]
+            partName = self.__animControlDict[lodName].keys()[0]
 
         if (animName==None):
             animName = self.getCurrentAnim(partName)
             
-        animControl = self.__getAnimControl(animName, partName)
+        animControl = self.__getAnimControl(animName, partName, lodName)
         if (animControl != None):
             return animControl.getPlayRate()
         else:
@@ -380,15 +386,16 @@ class Actor(PandaObject, NodePath):
         If no anim specified, use the currently playing anim.
         If no part specified, return anim duration of first part.
         NOTE: returns info for first LOD only"""
+        lodName = self.__animControlDict.keys()[0]
         if (partName == None):
-            partName = self.__animControlDict[0].keys()[0]
+            partName = self.__animControlDict[lodName].keys()[0]
 
         if (animName==None):
             animName = self.getCurrentAnim(partName)          
 
         # get duration for named part only
-        if (self.__animControlDict[0].has_key(partName)):        
-            animControl = self.__getAnimControl(animName, partName)
+        if (self.__animControlDict[lodName].has_key(partName)):        
+            animControl = self.__getAnimControl(animName, partName, lodName)
             if (animControl != None):
                 return (animControl.getNumFrames() / \
                         animControl.getFrameRate())
@@ -402,13 +409,14 @@ class Actor(PandaObject, NodePath):
         Return the anim current playing on the actor. If part not
         specified return current anim of first part in dictionary.
         NOTE: only returns info for the first LOD"""
+        lodName = self.__animControlDict.keys()[0]
         if (partName==None):
-            partName = self.__animControlDict[0].keys()[0]
+            partName = self.__animControlDict[lodName].keys()[0]
 
         # loop through all anims for named part and find if any are playing
-        if (self.__animControlDict[0].has_key(partName)):
-            for animName in self.__animControlDict[partName].keys():
-                if (self.__getAnimControl(animName, partName).isPlaying()):
+        if (self.__animControlDict[lodName].has_key(partName)):
+            for animName in self.__animControlDict[lodName][partName].keys():
+                if (self.__getAnimControl(animName, partName, lodName).isPlaying()):
                     return animName
         else:
             Actor.notify.warning("no part named %s" % (partName))
