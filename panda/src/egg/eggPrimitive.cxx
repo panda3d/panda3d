@@ -367,7 +367,9 @@ unify_attributes(EggPrimitive::Shading shading) {
           vertex->copy_color(*this);
         }
 
-        vertex = vertex->get_pool()->create_unique_vertex(*vertex);
+        EggVertexPool *vertex_pool = orig_vertex->get_pool();
+        nassertv(vertex_pool != (EggVertexPool *)NULL);
+        vertex = vertex_pool->create_unique_vertex(*vertex);
         replace(pi, vertex);
       }
       clear_normal();
