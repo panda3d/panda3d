@@ -365,16 +365,27 @@ report_new_collectors() {
   nassertv(_is_connected);
 
   if (_collectors_reported < (int)_client->_collectors.size()) {
-    PStatClientControlMessage message;
-    message._type = PStatClientControlMessage::T_define_collectors;
-    while (_collectors_reported < (int)_client->_collectors.size()) {
-      message._collectors.push_back(_client->get_collector_def(_collectors_reported));
-      _collectors_reported++;
-    }
+    // Empirically, we determined that you can't send more than about
+    // 1400 collectors at once without exceeding the 64K limit on a
+    // single datagram.  So we limit ourselves here to sending only
+    // half that many.
+    static const int max_collectors_at_once = 700;
 
-    Datagram datagram;
-    message.encode(datagram);
-    _writer.send(datagram, _tcp_connection);
+    while (_collectors_reported < (int)_client->_collectors.size()) {
+      PStatClientControlMessage message;
+      message._type = PStatClientControlMessage::T_define_collectors;
+      int i = 0;
+      while (_collectors_reported < (int)_client->_collectors.size() &&
+             i < max_collectors_at_once) {
+        message._collectors.push_back(_client->get_collector_def(_collectors_reported));
+        _collectors_reported++;
+        i++;
+      }
+
+      Datagram datagram;
+      message.encode(datagram);
+      _writer.send(datagram, _tcp_connection);
+    }
   }
 }
 
