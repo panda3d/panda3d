@@ -280,7 +280,9 @@ input(istream &in) {
     return false;
   }
 
-  (*this) = HTTPDate(date);
+  // Visual C++ has problems with "(*this) = HTTPDate(date)".
+  HTTPDate new_date(date);
+  (*this) = new_date;
   return is_valid();
 }
 
