@@ -30,6 +30,7 @@
 #include "fogAttrib.h"
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
+#include "alphaTestAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "billboardEffect.h"
@@ -1979,6 +1980,70 @@ get_two_sided() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_alpha_test
+//       Access: Published
+//  Description: Specifically sets or disables the testing of the
+//               alpha buffer on this particular node.  This is
+//               normally on in the 3-d scene graph and off in the 2-d
+//               scene graph; it should be on for rendering most 3-d
+//               objects properly.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_alpha_test(RenderAttrib::PandaCompareFunc alpha_test_mode,float reference_alpha, int priority) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(AlphaTestAttrib::make(alpha_test_mode,reference_alpha), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_alpha_test
+//       Access: Published
+//  Description: Completely removes any alpha-test adjustment that
+//               may have been set on this node via set_alpha_test().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_alpha_test() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(AlphaTestAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_alpha_test
+//       Access: Published
+//  Description: Returns true if a alpha-test adjustment has been
+//               explicitly set on this particular node via
+//               set_alpha_test().  If this returns true, then
+//               get_alpha_test() may be called to determine which has
+//               been set.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_alpha_test() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(AlphaTestAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_alpha_test
+//       Access: Published
+//  Description: Returns true if alpha-test rendering has been
+//               specifically set on this node via set_alpha_test(), or
+//               false if alpha-test rendering has been specifically
+//               disabled, or if nothing has been specifically set.  See
+//               also has_alpha_test().
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+get_alpha_test() const {
+  nassertr_always(!is_empty(), false);
+  const RenderAttrib *attrib =
+    node()->get_attrib(AlphaTestAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const AlphaTestAttrib *dta = DCAST(AlphaTestAttrib, attrib);
+    return (dta->get_mode() != AlphaTestAttrib::M_none);
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_depth_test
 //       Access: Published
 //  Description: Specifically sets or disables the testing of the
@@ -1991,7 +2056,7 @@ void NodePath::
 set_depth_test(bool depth_test, int priority) {
   nassertv_always(!is_empty());
 
-  DepthTestAttrib::Mode mode =
+  DepthTestAttrib::PandaCompareFunc mode =
     depth_test ?
     DepthTestAttrib::M_less :
     DepthTestAttrib::M_none;

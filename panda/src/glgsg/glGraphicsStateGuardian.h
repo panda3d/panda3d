@@ -117,6 +117,7 @@ public:
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
+  virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
   virtual void issue_depth_write(const DepthWriteAttrib *attrib);
   virtual void issue_cull_face(const CullFaceAttrib *attrib);
   virtual void issue_fog(const FogAttrib *attrib);
@@ -240,7 +241,6 @@ protected:
   GLenum get_external_image_format(PixelBuffer::Format format);
   GLenum get_internal_image_format(PixelBuffer::Format format);
   GLint get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const;
-  GLenum get_depth_func_type(DepthTestAttrib::Mode m) const;
   GLenum get_fog_mode_type(Fog::Mode m) const;
 
   static CPT(RenderState) get_untextured_state();

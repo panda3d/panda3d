@@ -75,13 +75,25 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
+  enum PandaCompareFunc {   // intentionally defined to match D3DCMPFUNC
+    M_none=0,           // alpha-test disabled (always-draw)
+    M_never,            // Never draw.
+    M_less,             // incoming < reference_alpha
+    M_equal,            // incoming == reference_alpha
+    M_less_equal,       // incoming <= reference_alpha
+    M_greater,          // incoming > reference_alpha
+    M_not_equal,        // incoming != reference_alpha
+    M_greater_equal,    // incoming >= reference_alpha
+    M_always            // Always draw.  
+  };
+
 protected:
   static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
-
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const=0;
+  void output_comparefunc(ostream &out,PandaCompareFunc fn) const;
 
 private:
   typedef pset<const RenderAttrib *, IndirectCompareTo<RenderAttrib> > Attribs;

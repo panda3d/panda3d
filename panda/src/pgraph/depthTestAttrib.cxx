@@ -32,7 +32,7 @@ TypeHandle DepthTestAttrib::_type_handle;
 //  Description: Constructs a new DepthTestAttrib object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) DepthTestAttrib::
-make(DepthTestAttrib::Mode mode) {
+make(DepthTestAttrib::PandaCompareFunc mode) {
   DepthTestAttrib *attrib = new DepthTestAttrib(mode);
   return return_new(attrib);
 }
@@ -59,43 +59,7 @@ issue(GraphicsStateGuardianBase *gsg) const {
 void DepthTestAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
-  switch (get_mode()) {
-  case M_none:
-    out << "none";
-    break;
-
-  case M_never:
-    out << "never";
-    break;
-
-  case M_less:
-    out << "less";
-    break;
-
-  case M_equal:
-    out << "equal";
-    break;
-
-  case M_less_equal:
-    out << "less_equal";
-    break;
-
-  case M_greater:
-    out << "greater";
-    break;
-
-  case M_not_equal:
-    out << "not_equal";
-    break;
-
-  case M_greater_equal:
-    out << "greater_equal";
-    break;
-
-  case M_always:
-    out << "always";
-    break;
-  }
+  output_comparefunc(out,_mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,5 +155,5 @@ void DepthTestAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  _mode = (Mode)scan.get_int8();
+  _mode = (PandaCompareFunc)scan.get_int8();
 }

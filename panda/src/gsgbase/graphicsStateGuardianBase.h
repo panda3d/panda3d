@@ -62,6 +62,7 @@ class RenderModeAttrib;
 class ColorBlendAttrib;
 class TextureApplyAttrib;
 class ColorWriteAttrib;
+class AlphaTestAttrib;
 class DepthTestAttrib;
 class DepthWriteAttrib;
 class TexGenAttrib;
@@ -170,6 +171,7 @@ public:
   virtual void apply_material(const Material *material)=0;
 
   virtual void issue_transform(const TransformState *) { }
+  virtual void issue_alpha_test(const AlphaTestAttrib *) { }
   virtual void issue_color_scale(const ColorScaleAttrib *) { }
   virtual void issue_color(const ColorAttrib *) { }
   virtual void issue_tex_matrix(const TexMatrixAttrib *) { }

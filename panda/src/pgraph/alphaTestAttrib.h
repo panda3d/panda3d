@@ -28,25 +28,13 @@
 //               based on its alpha value relative to a reference alpha value
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AlphaTestAttrib : public RenderAttrib {
-PUBLISHED:
-  enum Mode {      // defined to match D3DCMPFUNC
-    M_never=1,          // Never draw.
-    M_less,             // incoming < reference_alpha
-    M_equal,            // incoming == reference_alpha
-    M_less_equal,       // incoming <= reference_alpha
-    M_greater,          // incoming > reference_alpha
-    M_not_equal,        // incoming != reference_alpha
-    M_greater_equal,    // incoming >= reference_alpha
-    M_always            // Always draw.  
-  };
-
 private:
-  INLINE AlphaTestAttrib(Mode mode = M_always,unsigned int reference_alpha = 0xFF);
+  INLINE AlphaTestAttrib(PandaCompareFunc mode = M_always,float reference_alpha = 1.0f);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode,unsigned int reference_alpha);
-  INLINE unsigned int get_reference_alpha() const;
-  INLINE Mode get_mode() const;
+  static CPT(RenderAttrib) make(PandaCompareFunc mode,float reference_alpha);
+  INLINE float get_reference_alpha() const;
+  INLINE PandaCompareFunc get_mode() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -57,8 +45,8 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  Mode _mode;
-  unsigned int _reference_alpha;
+  PandaCompareFunc _mode;
+  float _reference_alpha;  // should be in range [0.0-1.0]
 
 public:
   static void register_with_read_factory();

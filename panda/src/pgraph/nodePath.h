@@ -271,9 +271,9 @@ PUBLISHED:
                    const LVecBase3f &hpr);
 
   INLINE void set_hpr_scale(float h, float p, float r,
-			    float sx, float sy, float sz);
+                float sx, float sy, float sz);
   void set_hpr_scale(const LVecBase3f &hpr,
-		     const LVecBase3f &scale);
+             const LVecBase3f &scale);
   INLINE void set_pos_hpr_scale(float x, float y, float z,
                                 float h, float p, float r,
                                 float sx, float sy, float sz);
@@ -347,11 +347,11 @@ PUBLISHED:
                    const LVecBase3f &pos,
                    const LVecBase3f &hpr);
   INLINE void set_hpr_scale(const NodePath &other,
-			    float h, float p, float r,
-			    float sx, float sy, float sz);
+                float h, float p, float r,
+                float sx, float sy, float sz);
   void set_hpr_scale(const NodePath &other,
-		     const LVecBase3f &hpr,
-		     const LVecBase3f &scale);
+             const LVecBase3f &hpr,
+             const LVecBase3f &scale);
   INLINE void set_pos_hpr_scale(const NodePath &other,
                                 float x, float y, float z,
                                 float h, float p, float r,
@@ -430,6 +430,11 @@ PUBLISHED:
   void clear_two_sided();
   bool has_two_sided() const;
   bool get_two_sided() const;
+
+  void set_alpha_test(RenderAttrib::PandaCompareFunc alpha_test_mode,float reference_alpha,int priority = 0);
+  void clear_alpha_test();
+  bool has_alpha_test() const;
+  bool get_alpha_test() const;
 
   void set_depth_test(bool depth_test, int priority = 0);
   void clear_depth_test();

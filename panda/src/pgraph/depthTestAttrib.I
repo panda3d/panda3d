@@ -24,7 +24,7 @@
 //               DepthTestAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE DepthTestAttrib::
-DepthTestAttrib(DepthTestAttrib::Mode mode) :
+DepthTestAttrib(DepthTestAttrib::PandaCompareFunc mode) :
   _mode(mode)
 {
 }
@@ -34,7 +34,7 @@ DepthTestAttrib(DepthTestAttrib::Mode mode) :
 //       Access: Published
 //  Description: Returns the depth write mode.
 ////////////////////////////////////////////////////////////////////
-INLINE DepthTestAttrib::Mode DepthTestAttrib::
+INLINE DepthTestAttrib::PandaCompareFunc DepthTestAttrib::
 get_mode() const {
   return _mode;
 }

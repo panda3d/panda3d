@@ -186,53 +186,53 @@ call_dxLightModelAmbient( const Colorf& color)
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::call_glAlphaFunc
+//     Function: DXGraphicsStateGuardian::call_dxAlphaFunc
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian::
-call_dxAlphaFunc(D3DCMPFUNC func, DWORD ref)
-{
-  if (_alpha_func != func || _alpha_func_ref != ref) {
+call_dxAlphaFunc(D3DCMPFUNC func, float reference_alpha) {
+  if (_alpha_func != func) {
     _alpha_func = func;
-    _alpha_func_ref = ref;
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "dxAlphaFunc(";
     switch (func) {
     case D3DCMP_NEVER:
-      dxgsg_cat.debug(false) << "D3DCMP_NEVER, ";
+      dxgsg_cat.debug(false) << "D3DCMP_NEVER";
       break;
     case D3DCMP_LESS:
-      dxgsg_cat.debug(false) << "D3DCMP_LESS, ";
+      dxgsg_cat.debug(false) << "D3DCMP_LESS";
       break;
     case D3DCMP_EQUAL:
-      dxgsg_cat.debug(false) << "D3DCMP_EQUAL, ";
+      dxgsg_cat.debug(false) << "D3DCMP_EQUAL";
       break;
     case D3DCMP_LEQUAL:
-      dxgsg_cat.debug(false) << "D3DCMP_LEQUAL, ";
+      dxgsg_cat.debug(false) << "D3DCMP_LEQUAL";
       break;
     case D3DCMP_GREATER:
-      dxgsg_cat.debug(false) << "D3DCMP_GREATER, ";
+      dxgsg_cat.debug(false) << "D3DCMP_GREATER";
       break;
     case D3DCMP_NOTEQUAL:
-      dxgsg_cat.debug(false) << "D3DCMP_NOTEQUAL, ";
+      dxgsg_cat.debug(false) << "D3DCMP_NOTEQUAL";
       break;
     case D3DCMP_GEQUAL:
-      dxgsg_cat.debug(false) << "D3DCMP_GEQUAL, ";
+      dxgsg_cat.debug(false) << "D3DCMP_GEQUAL";
       break;
     case D3DCMP_ALWAYS:
-      dxgsg_cat.debug(false) << "D3DCMP_ALWAYS, ";
+      dxgsg_cat.debug(false) << "D3DCMP_ALWAYS";
       break;
     }
-    dxgsg_cat.debug() << ref << ")" << endl;
+    dxgsg_cat.debug() << " , " << reference_alpha << ")" << endl;
 #endif
     scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, func);
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, ref);
+  }
+
+  if(_alpha_func_refval != reference_alpha) {
+      _alpha_func_refval = reference_alpha;
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (UINT) (reference_alpha*255.0f));  //d3d uses 0x0-0xFF, not a float
   }
 }
-
 
 INLINE void DXGraphicsStateGuardian::
 call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc )

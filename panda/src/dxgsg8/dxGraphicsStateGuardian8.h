@@ -123,6 +123,7 @@ public:
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
+  virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
   virtual void issue_depth_write(const DepthWriteAttrib *attrib);
   virtual void issue_cull_face(const CullFaceAttrib *attrib);
@@ -203,7 +204,6 @@ protected:
   INLINE void set_vertex_format(DWORD NewFvfType);
 
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
-  INLINE D3DCMPFUNC get_depth_func_type(DepthTestAttrib::Mode m) const;
   INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
 
   INLINE void enable_primitive_clipping(bool val);
@@ -213,7 +213,7 @@ protected:
   INLINE void enable_point_smooth(bool val);
   INLINE void enable_texturing(bool val);
   INLINE void call_dxLightModelAmbient(const Colorf& color);
-  INLINE void call_dxAlphaFunc(D3DCMPFUNC func, DWORD ref);
+  INLINE void call_dxAlphaFunc(D3DCMPFUNC func, float refval);
   INLINE void call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc);
   INLINE void enable_dither(bool val);
   INLINE void enable_stencil_test(bool val);
@@ -279,7 +279,8 @@ protected:
   TODO: cache fog state
   float _fog_start,_fog_end,_fog_density,float _fog_color;
 */    
-  float      _alpha_func_ref;
+
+  float      _alpha_func_refval;  // d3d stores UINT, panda stores this as float.  we store float
   D3DCMPFUNC _alpha_func;
 
   D3DBLEND _blend_source_func;

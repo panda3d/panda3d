@@ -112,6 +112,12 @@ output(ostream &out) const {
   out << get_type();
 }
 
+void RenderAttrib::
+output_comparefunc(ostream &out,PandaCompareFunc fn) const {
+   static char *FuncStrs[M_always+1] = {"none","never","less","equal", "less or equal","greater","not equal","greater or equal","always"};
+   out << FuncStrs[fn];
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::write
 //       Access: Published, Virtual

@@ -28,26 +28,13 @@
 // Description : Enables or disables writing to the depth buffer.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DepthTestAttrib : public RenderAttrib {
-PUBLISHED:
-  enum Mode {
-    M_none,             // No depth test; may still write to depth buffer.
-    M_never,            // Never draw.
-    M_less,             // incoming < stored
-    M_equal,            // incoming == stored
-    M_less_equal,       // incoming <= stored
-    M_greater,          // incoming > stored
-    M_not_equal,        // incoming != stored
-    M_greater_equal,    // incoming >= stored
-    M_always            // Always draw.  Same effect as none, more expensive.
-  };
-
 private:
-  INLINE DepthTestAttrib(Mode mode = M_less);
+  INLINE DepthTestAttrib(PandaCompareFunc mode = M_less);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode);
+  static CPT(RenderAttrib) make(PandaCompareFunc mode);
 
-  INLINE Mode get_mode() const;
+  INLINE PandaCompareFunc get_mode() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -58,7 +45,7 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  Mode _mode;
+  PandaCompareFunc _mode;
 
 public:
   static void register_with_read_factory();

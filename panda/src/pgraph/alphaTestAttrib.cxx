@@ -32,7 +32,8 @@ TypeHandle AlphaTestAttrib::_type_handle;
 //  Description: Constructs a new AlphaTestAttrib object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) AlphaTestAttrib::
-make(AlphaTestAttrib::Mode mode, unsigned int reference_value) {
+make(PandaCompareFunc mode, float reference_value) {
+  assert((reference_value >=0.0f) && (reference_value <=1.0f));
   AlphaTestAttrib *attrib = new AlphaTestAttrib(mode,reference_value);
   return return_new(attrib);
 }
@@ -59,39 +60,7 @@ issue(GraphicsStateGuardianBase *gsg) const {
 void AlphaTestAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
-  switch (get_mode()) {
-      case M_always:
-        out << "always";
-        break;
-
-      case M_never:
-        out << "never";
-        break;
-    
-      case M_less:
-        out << "less";
-        break;
-    
-      case M_equal:
-        out << "equal";
-        break;
-    
-      case M_less_equal:
-        out << "less_equal";
-        break;
-    
-      case M_greater:
-        out << "greater";
-        break;
-    
-      case M_not_equal:
-        out << "not_equal";
-        break;
-    
-      case M_greater_equal:
-        out << "greater_equal";
-        break;
-  }
+  output_comparefunc(out,_mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,7 +82,10 @@ int AlphaTestAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const AlphaTestAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  return (int)_mode - (int)ta->_mode;
+  int compare_result = ((int)_mode - (int)ta->_mode) ;
+  if(compare_result!=0)
+      return compare_result;
+   else return (int) (255.0f*(_reference_alpha - ta->_reference_alpha));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,6 +126,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   dg.add_int8(_mode);
+  dg.add_float32(_reference_alpha);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,5 +160,6 @@ void AlphaTestAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  _mode = (Mode)scan.get_int8();
+  _mode = (PandaCompareFunc)scan.get_int8();
+  _reference_alpha = scan.get_float32();
 }

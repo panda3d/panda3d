@@ -39,6 +39,7 @@
 #include "lightAttrib.h"
 #include "cullFaceAttrib.h"
 #include "transparencyAttrib.h"
+#include "alphaTestAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"
@@ -2142,6 +2143,9 @@ issue_color_write(const ColorWriteAttrib *attrib) {
   report_errors();
 }
 
+// PandaCompareFunc - 1 + 0x200 === GL_NEVER, etc.  order is sequential
+#define PANDA_TO_GL_COMPAREFUNC(PANDACMPFUNC) (PANDACMPFUNC-1 +0x200)
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_depth_test
 //       Access: Public, Virtual
@@ -2149,14 +2153,31 @@ issue_color_write(const ColorWriteAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_depth_test(const DepthTestAttrib *attrib) {
-  DepthTestAttrib::Mode mode = attrib->get_mode();
+  DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     enable_depth_test(false);
   } else {
     enable_depth_test(true);
-    glDepthFunc(get_depth_func_type(mode));
+    glDepthFunc(PANDA_TO_GL_COMPAREFUNC(mode));
   }
   report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_alpha_test
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_alpha_test(const AlphaTestAttrib *attrib) {
+  AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
+  if (mode == AlphaTestAttrib::M_none) {
+    enable_alpha_test(false);
+  } else {
+    assert(GL_NEVER==(AlphaTestAttrib::M_never-1+0x200));
+    call_glAlphaFunc(PANDA_TO_GL_COMPAREFUNC(mode), attrib->get_reference_alpha());
+    enable_alpha_test(true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3250,31 +3271,6 @@ get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_depth_func_type
-//       Access: Protected
-//  Description: Maps from the depth func modes to gl version
-////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
-get_depth_func_type(DepthTestAttrib::Mode m) const
-{
-  switch(m) {
-  case DepthTestAttrib::M_never: return GL_NEVER;
-  case DepthTestAttrib::M_less: return GL_LESS;
-  case DepthTestAttrib::M_equal: return GL_EQUAL;
-  case DepthTestAttrib::M_less_equal: return GL_LEQUAL;
-  case DepthTestAttrib::M_greater: return GL_GREATER;
-  case DepthTestAttrib::M_not_equal: return GL_NOTEQUAL;
-  case DepthTestAttrib::M_greater_equal: return GL_GEQUAL;
-  case DepthTestAttrib::M_always: return GL_ALWAYS;
-
-  default:
-    glgsg_cat.error()
-      << "Invalid DepthTestAttrib::Mode value" << endl;
-    return GL_LESS;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_fog_mode_type
 //       Access: Protected
 //  Description: Maps from the fog types to gl version
@@ -3526,51 +3522,51 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 
   // No color blend; is there a transparency set?
   switch (transparency_mode) {
-  case TransparencyAttrib::M_none:
-    break;
+      case TransparencyAttrib::M_none:
+        break;
+    
+      case TransparencyAttrib::M_alpha:
+      case TransparencyAttrib::M_alpha_sorted:
+        // Should we really have an "alpha" and an "alpha_sorted" mode,
+        // like Performer does?  (The difference is that "alpha" is with
+        // the write to the depth buffer disabled.)  Or should we just use
+        // the separate depth write transition to control this?  Doing it
+        // implicitly requires a bit more logic here and in the state
+        // management; for now we require the user to explicitly turn off
+        // the depth write.
+        enable_multisample_alpha_one(false);
+        enable_multisample_alpha_mask(false);
+        enable_blend(true);
+        enable_alpha_test(false);
+        call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        return;
 
-  case TransparencyAttrib::M_alpha:
-  case TransparencyAttrib::M_alpha_sorted:
-    // Should we really have an "alpha" and an "alpha_sorted" mode,
-    // like Performer does?  (The difference is that "alpha" is with
-    // the write to the depth buffer disabled.)  Or should we just use
-    // the separate depth write transition to control this?  Doing it
-    // implicitly requires a bit more logic here and in the state
-    // management; for now we require the user to explicitly turn off
-    // the depth write.
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    enable_alpha_test(false);
-    call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    return;
-
-  case TransparencyAttrib::M_multisample:
-    enable_multisample_alpha_one(true);
-    enable_multisample_alpha_mask(true);
-    enable_blend(false);
-    enable_alpha_test(false);
-    return;
-
-  case TransparencyAttrib::M_multisample_mask:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(true);
-    enable_blend(false);
-    enable_alpha_test(false);
-    return;
-
-  case TransparencyAttrib::M_binary:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(false);
-    enable_alpha_test(true);
-    call_glAlphaFunc(GL_EQUAL, 1);
-    return;
-
-  default:
-    glgsg_cat.error()
-      << "invalid transparency mode " << (int)transparency_mode << endl;
-    break;
+      case TransparencyAttrib::M_binary:
+        enable_multisample_alpha_one(false);
+        enable_multisample_alpha_mask(false);
+        enable_blend(false);
+        enable_alpha_test(true);
+        call_glAlphaFunc(GL_EQUAL, 1);
+        return;
+    
+      case TransparencyAttrib::M_multisample:
+        enable_multisample_alpha_one(true);
+        enable_multisample_alpha_mask(true);
+        enable_blend(false);
+        enable_alpha_test(false);
+        return;
+    
+      case TransparencyAttrib::M_multisample_mask:
+        enable_multisample_alpha_one(false);
+        enable_multisample_alpha_mask(true);
+        enable_blend(false);
+        enable_alpha_test(false);
+        return;
+    
+      default:
+        glgsg_cat.error()
+          << "invalid transparency mode " << (int)transparency_mode << endl;
+        break;
   }
 
   // Nothing's set, so disable blending.

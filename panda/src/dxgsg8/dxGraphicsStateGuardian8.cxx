@@ -36,6 +36,7 @@
 #include "lightAttrib.h"
 #include "cullFaceAttrib.h"
 #include "transparencyAttrib.h"
+#include "alphaTestAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"
@@ -841,14 +842,14 @@ dx_init(HCURSOR hMouseCursor) {
 #endif
 
     _alpha_func = D3DCMP_ALWAYS;
-    _alpha_func_ref = 0;
+    _alpha_func_refval = 1.0f;
     scrn.pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, _alpha_func);
-    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHAREF, _alpha_func_ref);
+    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHAREF, (UINT)(_alpha_func_refval*255.0f));
     _alpha_test_enabled = false;
     scrn.pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, _alpha_test_enabled);
 
     // this is a new DX8 state that lets you do additional operations other than ADD (e.g. subtract/max/min)
-    // must check (scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon85, no on TNT)
+    // must check (scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon8500, no on TNT)
     scrn.pD3DDevice->SetRenderState(D3DRS_BLENDOP,D3DBLENDOP_ADD);
 
     if((scrn.pProps->_fullscreen) && dx_use_dx_cursor) {
@@ -3763,14 +3764,31 @@ issue_texture_apply(const TextureApplyAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_depth_test(const DepthTestAttrib *attrib) {
-  DepthTestAttrib::Mode mode = attrib->get_mode();
+  DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     _depth_test_enabled = false;
     scrn.pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
   } else {
     _depth_test_enabled = true;
     scrn.pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-    scrn.pD3DDevice->SetRenderState(D3DRS_ZFUNC, get_depth_func_type(mode));
+    scrn.pD3DDevice->SetRenderState(D3DRS_ZFUNC, (D3DCMPFUNC) mode);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_alpha_test
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_alpha_test(const AlphaTestAttrib *attrib) {
+  AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
+  if (mode == AlphaTestAttrib::M_none) {
+    enable_alpha_test(false);
+  } else {
+    //  AlphaTestAttrib::PandaCompareFunc === D3DCMPFUNC
+    call_dxAlphaFunc((D3DCMPFUNC)mode, attrib->get_reference_alpha());
+    enable_alpha_test(true);
   }
 }
 
@@ -4289,28 +4307,6 @@ get_texture_wrap_mode(Texture::WrapMode wm) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_depth_func_type
-//       Access: Protected
-//  Description: Maps from the depth func modes to gl version
-////////////////////////////////////////////////////////////////////
-INLINE D3DCMPFUNC DXGraphicsStateGuardian::
-get_depth_func_type(DepthTestAttrib::Mode m) const {
-  switch (m) {
-  case DepthTestAttrib::M_never: return D3DCMP_NEVER;
-  case DepthTestAttrib::M_less: return D3DCMP_LESS;
-  case DepthTestAttrib::M_equal: return D3DCMP_EQUAL;
-  case DepthTestAttrib::M_less_equal: return D3DCMP_LESSEQUAL;
-  case DepthTestAttrib::M_greater: return D3DCMP_GREATER;
-  case DepthTestAttrib::M_not_equal: return D3DCMP_NOTEQUAL;
-  case DepthTestAttrib::M_greater_equal: return D3DCMP_GREATEREQUAL;
-  case DepthTestAttrib::M_always: return D3DCMP_ALWAYS;
-  }
-  dxgsg_cat.error()
-    << "Invalid DepthTestAttrib::Mode value" << endl;
-  return D3DCMP_LESS;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_fog_mode_type
 //       Access: Protected
 //  Description: Maps from the fog types to gl version
@@ -4441,7 +4437,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   case TransparencyAttrib::M_binary:
     enable_blend(false);
     enable_alpha_test(true);
-    call_dxAlphaFunc(D3DCMP_EQUAL, 1);
+    call_dxAlphaFunc(D3DCMP_EQUAL, 1.0f);
     return;
 
   default:
