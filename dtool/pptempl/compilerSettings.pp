@@ -4,7 +4,7 @@
   #define LINKER link
   #define LIBBER lib
   #define COMMONFLAGS /Gi-
-  #define OPTFLAGS /O2 /Ob1 /G6
+  #define OPTFLAGS /O2 /Ob1 /G6 /QIfist
   #define OPT1FLAGS /GZ 
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
@@ -45,7 +45,7 @@
   #define UNKNOWN_ALLOCATOR 1  
 
   #define COMMONFLAGS /DHAVE_DINKUM 
-  #define OPTFLAGS /O2 /Ob1 /G6
+  #define OPTFLAGS /O2 /Ob1 /G6 /QIfist
   #define OPT1FLAGS /GZ /GS
   
 //  #define WARNING_LEVEL_FLAG /Wall  //this is scary
@@ -81,7 +81,7 @@
   #define LIBBER xilib
   #define COMMONFLAGS /Gi- /Qwd985
 //  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
-  #define OPTFLAGS /O3 /G6 /Qvc6 /Qip
+  #define OPTFLAGS /O3 /G6 /Qvc6 /Qip /QIfist
   // Oy- needed for MS debugger
   #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info /Oy-
   #define OPT1FLAGS /GZ /Od
