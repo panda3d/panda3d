@@ -48,6 +48,10 @@ class DistributedObject(PandaObject):
             # is only trustworthy if the inheriting class properly
             # calls up the chain for disable() and generate().
             self.activeState = ESNew
+
+            # These are used by getCallbackContext() and doCallbackContext().
+            self.__nextContext = 0
+            self.__callbacks = {}
             
         return None
 
@@ -142,6 +146,7 @@ class DistributedObject(PandaObject):
         Inheritors should redefine this to take appropriate action on disable
         """
         self.activeState = ESDisabled
+        self.__callbacks = {}
 
     def isDisabled(self):
         """isDisabled(self)
@@ -217,3 +222,43 @@ class DistributedObject(PandaObject):
     
 
 
+    def getCallbackContext(self, callback, extraArgs = []):
+        # Some objects implement a back-and-forth handshake operation
+        # with the AI via an arbitrary context number.  This method
+        # (coupled with doCallbackContext(), below) maps a Python
+        # callback onto that context number so that client code may
+        # easily call the method and wait for a callback, rather than
+        # having to negotiate context numbers.
+
+        # This method generates a new context number and stores the
+        # callback so that it may later be called when the response is
+        # returned.
+
+        # This is intended to be called within derivations of
+        # DistributedObject, not directly by other objects.
+
+        context = self.__nextContext
+        self.__callbacks[context] = (callback, extraArgs)
+        # We assume the context number is passed as a uint16.
+        self.__nextContext = (self.__nextContext + 1) & 0xffff
+
+        return context
+
+    def doCallbackContext(self, context, args):
+        # This is called after the AI has responded to the message
+        # sent via getCallbackContext(), above.  The context number is
+        # looked up in the table and the associated callback is
+        # issued.
+
+        # This is intended to be called within derivations of
+        # DistributedObject, not directly by other objects.
+
+        tuple = self.__callbacks.get(context)
+        if tuple:
+            callback, extraArgs = tuple
+            completeArgs = args + extraArgs
+            callback(*completeArgs)
+            del self.__callbacks[context]
+        else:
+            self.notify.warning("Got unexpected context from AI: %s" % (context))
+        
