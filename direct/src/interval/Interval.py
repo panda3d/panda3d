@@ -36,6 +36,8 @@ class Interval(DirectObject):
         # if it should be ignored in this case.
         self.openEnded = openEnded
 
+        assert(self.duration >= 0)
+
     def getName(self):
         return self.name
 
