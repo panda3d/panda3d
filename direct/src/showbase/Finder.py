@@ -89,9 +89,10 @@ def rebindClass(builtins, filename):
     if res:
         realClass, realNameSpace = res
     else:
-        print ('Warning: could not find class, defining new class in builtins: ' + className)
+        # print ('Warning: could not find class, defining new class in builtins: ' + className)
         # Now execute that class def
-        execfile(filename, builtins)
+        # execfile(filename, builtins)
+        print ('Warning: Finder could not find class.')
         # Remove that temp file
         file.close()
         os.remove(filename)
