@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_physics.h"
+#include "physicsCollisionHandler.h"
 #include "physicsObject.h"
 #include "physicalNode.h"
 #include "linearIntegrator.h"
@@ -81,6 +82,7 @@ init_libphysics() {
   LinearUserDefinedForce::init_type();
   LinearVectorForce::init_type();
   Physical::init_type();
+  PhysicsCollisionHandler::init_type();
   PhysicalNode::init_type();
   PhysicsObject::init_type();
 }
