@@ -36,6 +36,7 @@ PUBLISHED:
 
   INLINE void set_region(float, float, float, float);
   INLINE LVector4f get_frame(void) const;
+  INLINE int set_draw_order(int);
 
 public:
   // type interface

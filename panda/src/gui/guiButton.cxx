@@ -613,15 +613,30 @@ void GuiButton::set_priority(GuiItem* i, const GuiItem::Priority p) {
 }
 
 int GuiButton::set_draw_order(int v) {
-  int o = _up->set_draw_order(v);
-  o = _down->set_draw_order(o);
-  if (_up_rollover != (GuiLabel*)0L)
-    o = _up_rollover->set_draw_order(o);
-  if (_down_rollover != (GuiLabel*)0L)
-    o = _down_rollover->set_draw_order(o);
-  if (_inactive != (GuiLabel*)0L)
-    o = _inactive->set_draw_order(o);
-  return GuiBehavior::set_draw_order(o);
+  // No two of these labels will ever be drawn simultaneously, so
+  // there's no need to cascade the draw orders.  They can each be
+  // assigned the same value, and the value we return is the maximum
+  // of any of the values returned by the labels.
+  int o = _rgn->set_draw_order(v);
+  int o1 = _up->set_draw_order(v);
+  o = max(o, o1);
+  o1 = _down->set_draw_order(v);
+  o = max(o, o1);
+  if (_up_rollover != (GuiLabel*)0L) {
+    o1 = _up_rollover->set_draw_order(v);
+    o = max(o, o1);
+  }
+  if (_down_rollover != (GuiLabel*)0L) {
+    o1 = _down_rollover->set_draw_order(v);
+    o = max(o, o1);
+  }
+  if (_inactive != (GuiLabel*)0L) {
+    o1 = _inactive->set_draw_order(v);
+    o = max(o, o1);
+  }
+  o1 = GuiBehavior::set_draw_order(v);
+  o = max(o, o1);
+  return o;
 }
 
 void GuiButton::output(ostream& os) const {

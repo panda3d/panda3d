@@ -47,3 +47,8 @@ INLINE LVector4f GuiRegion::get_frame(void) const {
   _region->test_ref_count_integrity();
   return LVector4f(_left, _right, _bottom, _top);
 }
+
+INLINE int GuiRegion::set_draw_order(int draw_order) {
+  _region->set_sort(draw_order);
+  return draw_order + 1;
+}
