@@ -46,7 +46,7 @@ PT(AudioManager) AudioManager::
 create_AudioManager() {
   audio_debug("create_AudioManager()\n  audio_library_name=\""
       <<*audio_library_name<<"\"");
-  static lib_load;
+  static int lib_load;
   if (!lib_load) {
     lib_load=1;
     if (!audio_library_name->empty() && !((*audio_library_name) == "null")) {
