@@ -18,8 +18,7 @@
 
 #include "dxGraphicsStateGuardian8.h"
 #include "config_dxgsg8.h"
-#include "d3dx8.h"
-
+#include <d3dx8.h>
 #include "displayRegion.h"
 #include "renderBuffer.h"
 #include "geom.h"
@@ -58,32 +57,6 @@
 // simulate the variable that used to be cached within the GSG.
 #define _color_transform_required (_color_transform_enabled || _alpha_transform_enabled)
 
-#ifdef _DEBUG
-// defns for print formatting in debugger
-typedef struct {
-  float x,y,z;
-  float nx,ny,nz;
-  D3DCOLOR diffuse;
-  float u,v;
-} POS_NORM_COLOR_TEX_VERTEX;
-
-typedef struct {
-  float x,y,z;
-  D3DCOLOR diffuse;
-  float u,v;
-} POS_COLOR_TEX_VERTEX;
-
-typedef struct {
-  float x,y,z;
-  float u,v;
-} POS_TEX_VERTEX;
-
-// define junk vars so symbols are included in dbginfo
-POS_TEX_VERTEX junk11;  
-POS_COLOR_TEX_VERTEX junk22;  
-POS_NORM_COLOR_TEX_VERTEX junk33;
-#endif
-
 // disable nameless struct 'warning'
 #pragma warning (disable : 4201)
 
@@ -91,8 +64,7 @@ POS_NORM_COLOR_TEX_VERTEX junk33;
 
 // print out simple drawprim stats every few secs
 //#define COUNT_DRAWPRIMS
-
-//#define PRINT_TEXSTATS
+//#define PRINT_RESOURCESTATS  // uses d3d GetInfo
 
 //#define DISABLE_DECALING
 #define DISABLE_POLYGON_OFFSET_DECALING
@@ -130,8 +102,7 @@ static D3DMATRIX matIdentity;
 #define __D3DLIGHT_RANGE_MAX ((float)sqrt(FLT_MAX))  //for some reason this is missing in dx8 hdrs
 
 #ifdef COUNT_DRAWPRIMS
-// you should just use Intel GPT instead of this stuff
-
+// instead of this use nvidia stat drvr or GetInfo VtxStats?
 static DWORD cDPcount=0;
 static DWORD cVertcount=0;
 static DWORD cTricount=0;
@@ -156,7 +127,7 @@ static void CountDPs(DWORD nVerts,DWORD nTris) {
 
 #define MY_D3DRGBA(r,g,b,a) ((D3DCOLOR) D3DCOLOR_COLORVALUE(r,g,b,a))
 
-#if defined(DO_PSTATS) || defined(PRINT_TEXSTATS)
+#if defined(DO_PSTATS) || defined(PRINT_RESOURCESTATS)
 static bool bTexStatsRetrievalImpossible=false;
 #endif
 
@@ -996,15 +967,14 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3D
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 report_texmgr_stats() {
-#if 0
-// not implemented for dx8 yet
 
-#if defined(DO_PSTATS)||defined(PRINT_TEXSTATS)
-
+#if defined(DO_PSTATS)||defined(PRINT_RESOURCESTATS)
   HRESULT hr;
+
+#ifdef TEXMGRSTATS_USES_GETAVAILVIDMEM
   DWORD dwTexTotal,dwTexFree,dwVidTotal,dwVidFree;
 
-#ifndef PRINT_TEXSTATS
+#ifndef PRINT_RESOURCESTATS
   if (_total_texmem_pcollector.is_active())
 #endif
   {
@@ -1024,29 +994,31 @@ report_texmgr_stats() {
             exit(1);
       }
   }
+#endif
 
-  D3DDEVINFO_TEXTUREMANAGER tminfo;
-  ZeroMemory(&tminfo,sizeof(D3DDEVINFO_TEXTUREMANAGER));
+  D3DDEVINFO_RESOURCEMANAGER all_resource_stats;
+  ZeroMemory(&all_resource_stats,sizeof(D3DDEVINFO_RESOURCEMANAGER));
 
   if(!bTexStatsRetrievalImpossible) {
-      hr = scrn.pD3DDevice->GetInfo(D3DDEVINFOID_TEXTUREMANAGER,&tminfo,sizeof(D3DDEVINFO_TEXTUREMANAGER));
+      hr = scrn.pD3DDevice->GetInfo(D3DDEVINFOID_RESOURCEMANAGER,&all_resource_stats,sizeof(D3DDEVINFO_RESOURCEMANAGER));
       if (hr!=D3D_OK) {
           if (hr==S_FALSE) {
               static int PrintedMsg=2;
               if(PrintedMsg>0) {
                   if(dxgsg_cat.is_debug())
-                    dxgsg_cat.debug() << " ************ texstats GetInfo() requires debug DX DLLs to be installed!!  ***********\n";
-                  ZeroMemory(&tminfo,sizeof(D3DDEVINFO_TEXTUREMANAGER));
+                    dxgsg_cat.debug() << "Error: texstats GetInfo() requires debug DX DLLs to be installed!!  ***********\n";
+                  ZeroMemory(&all_resource_stats,sizeof(D3DDEVINFO_RESOURCEMANAGER));
                   bTexStatsRetrievalImpossible=true;
               }
           } else {
-              dxgsg_cat.error() << "d3ddev->GetInfo(TEXTUREMANAGER) failed to get tex stats: result = " << D3DERRORSTRING(hr);
+              dxgsg_cat.error() << "GetInfo(RESOURCEMANAGER) failed to get tex stats: result = " << D3DERRORSTRING(hr);
               return;
           }
       }
   }
 
-#ifdef PRINT_TEXSTATS
+#ifdef PRINT_RESOURCESTATS
+#ifdef TEXMGRSTATS_USES_GETAVAILVIDMEM
     char tmpstr1[50],tmpstr2[50],tmpstr3[50],tmpstr4[50];
     sprintf(tmpstr1,"%.4g",dwVidTotal/1000000.0);
     sprintf(tmpstr2,"%.4g",dwVidFree/1000000.0);
@@ -1054,39 +1026,56 @@ report_texmgr_stats() {
     sprintf(tmpstr4,"%.4g",dwTexFree/1000000.0);
     dxgsg_cat.debug() << "\nAvailableVidMem for RenderSurfs: (megs) total: " << tmpstr1 << "  free: " << tmpstr2
                       << "\nAvailableVidMem for Textures:    (megs) total: " << tmpstr3 << "  free: " << tmpstr4 << endl;
+#endif
+
+   #define REAL_D3DRTYPECOUNT ((UINT) D3DRTYPE_INDEXBUFFER)     // d3d boneheads defined D3DRTYPECOUNT wrong
+   static char *ResourceNameStrs[REAL_D3DRTYPECOUNT]={"SURFACE","VOLUME","TEXTURE","VOLUME TEXTURE","CUBE TEXTURE","VERTEX BUFFER","INDEX BUFFER"};
+   static bool bDoGetInfo[REAL_D3DRTYPECOUNT]={true,false,true,false,false,true,false};  // not using volume or cube textures yet
 
    if(!bTexStatsRetrievalImpossible) {
-            dxgsg_cat.spam()
-                << "\n bThrashing:\t" << tminfo.bThrashing
-                << "\n NumEvicts:\t" << tminfo.dwNumEvicts
-                << "\n NumVidCreates:\t" << tminfo.dwNumVidCreates
-                << "\n NumTexturesUsed:\t" << tminfo.dwNumTexturesUsed
-                << "\n NumUsedTexInVid:\t" << tminfo.dwNumUsedTexInVid
-                << "\n WorkingSet:\t" << tminfo.dwWorkingSet
-                << "\n WorkingSetBytes:\t" << tminfo.dwWorkingSetBytes
-                << "\n TotalManaged:\t" << tminfo.dwTotalManaged
-                << "\n TotalBytes:\t" << tminfo.dwTotalBytes
-                << "\n LastPri:\t" << tminfo.dwLastPri << endl;
+        for(UINT r=0; r<(UINT)REAL_D3DRTYPECOUNT;r++) {
+            if(!bDoGetInfo[r])
+               continue;
 
-            D3DDEVINFO_TEXTURING texappinfo;
-            ZeroMemory(&texappinfo,sizeof(D3DDEVINFO_TEXTURING));
-            hr = scrn.pD3DDevice->GetInfo(D3DDEVINFOID_TEXTURING,&texappinfo,sizeof(D3DDEVINFO_TEXTURING));
-            if (hr!=D3D_OK) {
-                dxgsg_cat.error() << "GetInfo(TEXTURING) failed : result = " << D3DERRORSTRING(hr);
-                return;
+            D3DRESOURCESTATS *pRStats=&all_resource_stats.stats[r];
+            if(pRStats->NumUsed>0) {
+                char hitrate_str[20];
+                float fHitRate = (pRStats->NumUsedInVidMem * 100.0f) / pRStats->NumUsed;
+                sprintf(hitrate_str,"%.1f",fHitRate);
+    
+                dxgsg_cat.spam()
+                    << "\n***** Stats for " << ResourceNameStrs[r] << " ********"
+                    << "\n HitRate:\t" << hitrate_str << "%"
+                    << "\n bThrashing:\t" << pRStats->bThrashing
+                    << "\n NumEvicts:\t" << pRStats->NumEvicts
+                    << "\n NumVidCreates:\t" << pRStats->NumVidCreates
+                    << "\n NumUsed:\t" << pRStats->NumUsed
+                    << "\n NumUsedInVidMem:\t" << pRStats->NumUsedInVidMem
+                    << "\n WorkingSet:\t" << pRStats->WorkingSet
+                    << "\n WorkingSetBytes:\t" << pRStats->WorkingSetBytes
+                    << "\n ApproxBytesDownloaded:\t" << pRStats->ApproxBytesDownloaded
+                    << "\n TotalManaged:\t" << pRStats->TotalManaged
+                    << "\n TotalBytes:\t" << pRStats->TotalBytes
+                    << "\n LastPri:\t" << pRStats->LastPri << endl;
             } else {
                 dxgsg_cat.spam()
-                << "\n NumTexLoads:\t" << texappinfo.dwNumLoads
-                << "\n ApproxBytesLoaded:\t" << texappinfo.dwApproxBytesLoaded
-                << "\n NumPreLoads:\t" << texappinfo.dwNumPreLoads
-                << "\n NumSet:\t" << texappinfo.dwNumSet
-                << "\n NumCreates:\t" << texappinfo.dwNumCreates
-                << "\n NumDestroys:\t" << texappinfo.dwNumDestroys
-                << "\n NumSetPriorities:\t" << texappinfo.dwNumSetPriorities
-                << "\n NumSetLODs:\t" << texappinfo.dwNumSetLODs
-                << "\n NumLocks:\t" << texappinfo.dwNumLocks
-                << "\n NumGetDCs:\t" << texappinfo.dwNumGetDCs << endl;
+                    << "\n***** Stats for " << ResourceNameStrs[r] << " ********"
+                    << "\n NumUsed: 0\n";
             }
+        }
+
+        D3DDEVINFO_D3DVERTEXSTATS vtxstats;
+        ZeroMemory(&vtxstats,sizeof(D3DDEVINFO_D3DVERTEXSTATS));
+        hr = scrn.pD3DDevice->GetInfo(D3DDEVINFOID_VERTEXSTATS,&vtxstats,sizeof(D3DDEVINFO_D3DVERTEXSTATS));
+        if (hr!=D3D_OK) {
+            dxgsg_cat.error() << "GetInfo(D3DVERTEXSTATS) failed : result = " << D3DERRORSTRING(hr);
+            return;
+        } else {
+            dxgsg_cat.spam() 
+            << "\n***** Triangle Stats ********"
+            << "\n NumRenderedTriangles:\t" << vtxstats.NumRenderedTriangles
+            << "\n NumExtraClippingTriangles:\t" << vtxstats.NumExtraClippingTriangles << endl;
+        }
     }
 #endif
 
@@ -1095,18 +1084,16 @@ report_texmgr_stats() {
 
   if (_texmgrmem_total_pcollector.is_active()) {
       // report zero if no debug dlls, to signal this info is invalid
-      _texmgrmem_total_pcollector.set_level(tminfo.dwTotalBytes);
-      _texmgrmem_resident_pcollector.set_level(tminfo.dwWorkingSetBytes);
+      _texmgrmem_total_pcollector.set_level(all_resource_stats.stats[D3DRTYPE_TEXTURE].TotalBytes);
+      _texmgrmem_resident_pcollector.set_level(all_resource_stats.stats[D3DRTYPE_TEXTURE].WorkingSetBytes);
   }
-    
+#ifdef TEXMGRSTATS_USES_GETAVAILVIDMEM
   if (_total_texmem_pcollector.is_active()) {
     _total_texmem_pcollector.set_level(dwTexTotal);
     _used_texmem_pcollector.set_level(dwTexTotal - dwTexFree);
   }
 #endif
-
 #endif
-
 #endif
 }
 
@@ -3836,8 +3823,8 @@ end_frame() {
     }
 #endif
 
-#if defined(DO_PSTATS)||defined(PRINT_TEXSTATS)
-#ifndef PRINT_TEXSTATS
+#if defined(DO_PSTATS)||defined(PRINT_RESOURCESTATS)
+#ifndef PRINT_RESOURCESTATS
   if (_texmgrmem_total_pcollector.is_active()) 
 #endif
   {
@@ -4985,3 +4972,30 @@ End:
     RELEASE(pCursorBitmap,dxgsg,"pCursorBitmap",RELEASE_ONCE);
     return hr;
 }
+
+#ifdef _DEBUG
+// defns for print formatting in debugger
+typedef struct {
+  float x,y,z;
+  float nx,ny,nz;
+  D3DCOLOR diffuse;
+  float u,v;
+} POS_NORM_COLOR_TEX_VERTEX;
+
+typedef struct {
+  float x,y,z;
+  D3DCOLOR diffuse;
+  float u,v;
+} POS_COLOR_TEX_VERTEX;
+
+typedef struct {
+  float x,y,z;
+  float u,v;
+} POS_TEX_VERTEX;
+
+// define junk vars so symbols are included in dbginfo
+POS_TEX_VERTEX junk11;  
+POS_COLOR_TEX_VERTEX junk22;  
+POS_NORM_COLOR_TEX_VERTEX junk33;
+#endif
+
