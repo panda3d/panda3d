@@ -42,6 +42,10 @@ if [ "$BARTOP" ]; then
     BARTOP=`cygpath -w $BARTOP`
     export BARTOP
 fi
+if [ "$TTRADER" ]; then
+    TTRADER=`cygpath -w $TTRADER`
+    export TTRADER
+fi
 if [ "$WINTOOLS" ]; then
     WINTOOLS=`cygpath -w $WINTOOLS`
     export WINTOOLS
