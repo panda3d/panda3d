@@ -27,7 +27,7 @@ public:
   CollisionEntrySorter(CollisionEntry *entry) {
     _entry = entry;
     LVector3f vec =
-      entry->get_from_intersection_point() -
+      entry->get_surface_point(entry->get_from_node_path()) -
       entry->get_from()->get_collision_origin();
     _dist2 = vec.length_squared();
   }
