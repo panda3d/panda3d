@@ -48,7 +48,6 @@ class LerpPosHprInterval(LerpInterval):
 
 	self.blendType = self.__getBlend(blendType)
 	self.lerp = Lerp.Lerp(functor, self.duration, self.blendType)
-	self.lastT = 0.0
 
     def setT(self, t):
 	""" setT(t)
@@ -56,10 +55,7 @@ class LerpPosHprInterval(LerpInterval):
 	if (t > self.duration):
 	    return
 	assert(t >= 0)
-	tt = t - self.lastT
-	self.lastT = t
-	self.lerp.setStepSize(tt)
-	self.lerp.step()
+	self.lerp.setT(t)
 
     def __getBlend(self, blendType):
         """__getBlend(self, string)
