@@ -1001,42 +1001,11 @@ enable_polygon_offset(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_current_color_mat
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &GLGraphicsStateGuardian::
-get_current_color_mat() const {
-  return _current_color_mat;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_current_alpha_offset
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const float &GLGraphicsStateGuardian::
-get_current_alpha_offset() const {
-  return _current_alpha_offset;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_current_alpha_scale
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const float &GLGraphicsStateGuardian::
-get_current_alpha_scale() const {
-  return _current_alpha_scale;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_id
 //       Access: Public
 //  Description: Convert index to gl light id
 ////////////////////////////////////////////////////////////////////
-INLINE GLenum GLGraphicsStateGuardian::get_light_id(int index) const
-{
+INLINE GLenum GLGraphicsStateGuardian::get_light_id(int index) const {
   return GL_LIGHT0 + index;
 }
 
@@ -1047,20 +1016,7 @@ INLINE GLenum GLGraphicsStateGuardian::get_light_id(int index) const
 ////////////////////////////////////////////////////////////////////
 INLINE GLenum GLGraphicsStateGuardian::
 get_clip_plane_id(int index) const {
-  switch(index) {
-    case 0: return GL_CLIP_PLANE0;
-    case 1: return GL_CLIP_PLANE1;
-    case 2: return GL_CLIP_PLANE2;
-    case 3: return GL_CLIP_PLANE3;
-    case 4: return GL_CLIP_PLANE4;
-    case 5: return GL_CLIP_PLANE5;
-    default:
-      glgsg_cat.error()
-        << "get_clip_plane_id() - we don't currently support ids "
-        << "> 5" << endl;
-      break;
-  }
-  return GL_CLIP_PLANE0;
+  return GL_CLIP_PLANE0 + index;
 }
 
 ////////////////////////////////////////////////////////////////////

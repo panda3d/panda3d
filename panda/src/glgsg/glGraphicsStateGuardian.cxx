@@ -498,10 +498,9 @@ draw_point(GeomPoint *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -559,10 +558,9 @@ draw_line(GeomLine *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -628,10 +626,9 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -990,10 +987,9 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -1071,10 +1067,9 @@ draw_tri(GeomTri *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -1150,10 +1145,9 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -1228,10 +1222,9 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -1327,10 +1320,9 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -1424,10 +1416,9 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 
   GeomIssuer::IssueColor *issue_color;
 
-  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+  if (_color_transform_enabled == 0) {
     issue_color = issue_color_gl;
-  }
-  else {
+  } else {
     issue_color = issue_transformed_color_gl;
   }
 
@@ -3361,22 +3352,12 @@ print_gfx_visual() {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_transformed_color(const Colorf &color) const {
-  // To be truly general, we really need a 5x5 matrix to transform a
-  // 4-component color.  Rather than messing with that, we instead
-  // treat the color as a 3-component RGB, which can be transformed by
-  // the ordinary 4x4 matrix, and a separate alpha value, which can be
-  // scaled and offsetted.
-  LPoint3f temp(color[0], color[1], color[2]);
-  temp = temp * get_current_color_mat();
-  float alpha = (color[3] * get_current_alpha_scale()) +
-    get_current_alpha_offset();
+  Colorf transformed
+    ((color[0] * _current_color_scale[0]) + _current_color_offset[0],
+     (color[1] * _current_color_scale[1]) + _current_color_offset[1],
+     (color[2] * _current_color_scale[2]) + _current_color_offset[2],
+     (color[3] * _current_color_scale[3]) + _current_color_offset[3]);
 
-  Colorf transformed(temp[0], temp[1], temp[2], alpha);
-
-  //   glgsg_cat.debug() << "Issuing color " << transformed << "\n";
-  //   glgsg_cat.debug() << "\tTransformed by " << get_current_color_mat() << "\n";
-  //   glgsg_cat.debug() << "\tAlpha Transformed by " << get_current_alpha_offset() << " "
-  //                     << get_current_alpha_scale() << "\n";
   glColor4fv(transformed.get_data());
 }
 

@@ -52,12 +52,6 @@
 #include "pStatCollector.h"
 #endif
 
-// This is a temporary hack.  The whole color_transform and
-// alpha_transform system will soon be replaced with something a
-// little smaller.  Until then, we'll just define this macro to
-// simulate the variable that used to be cached within the GSG.
-#define _color_transform_required (_color_transform_enabled || _alpha_transform_enabled)
-
 // disable nameless struct 'warning'
 #pragma warning (disable : 4201)
 
@@ -599,14 +593,6 @@ dx_init(HCURSOR hMouseCursor) {
     scrn.pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, _depth_test_enabled);
 
     _pCurTexContext = NULL;
-
-    //Color and alpha transform variables
-    _color_transform_enabled = false;
-    _alpha_transform_enabled = false;
-
-    _current_color_mat = LMatrix4f::ident_mat();
-    _current_alpha_offset = 0.0f;
-    _current_alpha_scale = 1.0f;
 
     _line_smooth_enabled = false;
     scrn.pD3DDevice->SetRenderState(D3DRS_EDGEANTIALIAS, false);
@@ -1407,16 +1393,12 @@ typedef enum {
 
 INLINE void DXGraphicsStateGuardian::
 transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
-  // To be truly general, we really need a 5x5 matrix to transform a
-  // 4-component color.  Rather than messing with that, we instead
-  // treat the color as a 3-component RGB, which can be transformed by
-  // the ordinary 4x4 matrix, and a separate alpha value, which can be
-  // scaled and offsetted.
-
-    LPoint4f temp_pnt(InColor[0], InColor[1], InColor[2], 1.0f);
-    Colorf out_color = temp_pnt * _current_color_mat;  // maybe expand this out for efficiency
-    out_color[3] = (InColor[3] * _current_alpha_scale) + _current_alpha_offset;
-    OutRGBAColor = Colorf_to_D3DCOLOR(out_color);
+  Colorf transformed
+    ((InColor[0] * _current_color_scale[0]) + _current_color_offset[0],
+     (InColor[1] * _current_color_scale[1]) + _current_color_offset[1],
+     (InColor[2] * _current_color_scale[2]) + _current_color_offset[2],
+     (InColor[3] * _current_color_scale[3]) + _current_color_offset[3]);
+  OutRGBAColor = Colorf_to_D3DCOLOR(InColor);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1441,7 +1423,7 @@ draw_prim_setup(const Geom *geom) {
 #define GET_NEXT_TEXCOORD() { p_texcoord = geom->get_next_texcoord(ti); }
 #define GET_NEXT_COLOR() {                                                           \
     Colorf tempcolor = geom->get_next_color(ci);                                     \
-    if(!_color_transform_required) {                                                 \
+    if(_color_transform_enabled == 0) {                                                 \
         _curD3Dcolor = Colorf_to_D3DCOLOR(tempcolor);                                \
     } else {                                                                         \
         transform_color(tempcolor,_curD3Dcolor);                                     \
@@ -1478,10 +1460,10 @@ draw_prim_setup(const Geom *geom) {
         if (_has_scene_graph_color) {
             if (_scene_graph_color_stale) {
               // Compute the D3DCOLOR for the scene graph override color.
-              if(_color_transform_required) {
-                transform_color(_scene_graph_color, _scene_graph_color_D3DCOLOR);
-              } else {
+              if(_color_transform_enabled == 0) {
                 _scene_graph_color_D3DCOLOR = Colorf_to_D3DCOLOR(_scene_graph_color);
+              } else {
+                transform_color(_scene_graph_color, _scene_graph_color_D3DCOLOR);
               }
               _scene_graph_color_stale = false;
             }

@@ -54,13 +54,6 @@
 
 #include <mmsystem.h>
 
-// This is a temporary hack.  The whole color_transform and
-// alpha_transform system will soon be replaced with something a
-// little smaller.  Until then, we'll just define this macro to
-// simulate the variable that used to be cached within the GSG.
-#define _color_transform_required (_color_transform_enabled || _alpha_transform_enabled)
-
-
 // print out simple drawprim stats every few secs
 //#define COUNT_DRAWPRIMS
 
@@ -514,14 +507,6 @@ dx_init( void) {
     _pTexPixFmts = NULL;
 #endif
     _pCurTexContext = NULL;
-
-    //Color and alpha transform variables
-    _color_transform_enabled = false;
-    _alpha_transform_enabled = false;
-
-    _current_color_mat = LMatrix4f::ident_mat();
-    _current_alpha_offset = 0;
-    _current_alpha_scale = 1;
 
     // none of these are implemented
     //_multisample_enabled = false;
@@ -1284,16 +1269,12 @@ typedef enum {
 
 INLINE void DXGraphicsStateGuardian::
 transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
-  // To be truly general, we really need a 5x5 matrix to transform a
-  // 4-component color.  Rather than messing with that, we instead
-  // treat the color as a 3-component RGB, which can be transformed by
-  // the ordinary 4x4 matrix, and a separate alpha value, which can be
-  // scaled and offsetted.
-
-    LPoint4f temp_pnt(InColor[0], InColor[1], InColor[2], 1.0f);
-    Colorf out_color = temp_pnt * _current_color_mat;  // maybe expand this out for efficiency
-    out_color[3] = (InColor[3] * _current_alpha_scale) + _current_alpha_offset;
-    OutRGBAColor = Colorf_to_D3DCOLOR(out_color);
+  Colorf transformed
+    ((InColor[0] * _current_color_scale[0]) + _current_color_offset[0],
+     (InColor[1] * _current_color_scale[1]) + _current_color_offset[1],
+     (InColor[2] * _current_color_scale[2]) + _current_color_offset[2],
+     (InColor[3] * _current_color_scale[3]) + _current_color_offset[3]);
+  OutRGBAColor = Colorf_to_D3DCOLOR(InColor);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1318,7 +1299,7 @@ draw_prim_setup(const Geom *geom) {
 #define GET_NEXT_TEXCOORD() { p_texcoord = geom->get_next_texcoord(ti); }
 #define GET_NEXT_COLOR() {                                                           \
     Colorf tempcolor = geom->get_next_color(ci);                                     \
-    if(!_color_transform_required) {                                                 \
+    if(_color_transform_enabled == 0) {                                                 \
         _curD3Dcolor = Colorf_to_D3DCOLOR(tempcolor);                                \
     } else {                                                                         \
         transform_color(tempcolor,_curD3Dcolor);                                     \
@@ -1355,10 +1336,10 @@ draw_prim_setup(const Geom *geom) {
         if (_has_scene_graph_color) {
             if (_scene_graph_color_stale) {
               // Compute the D3DCOLOR for the scene graph override color.
-              if(_color_transform_required) {
-                transform_color(_scene_graph_color, _scene_graph_color_D3DCOLOR);
-              } else {
+              if(_color_transform_enabled == 0) {
                 _scene_graph_color_D3DCOLOR = Colorf_to_D3DCOLOR(_scene_graph_color);
+              } else {
+                transform_color(_scene_graph_color, _scene_graph_color_D3DCOLOR);
               }
               _scene_graph_color_stale = false;
             }
@@ -1658,17 +1639,18 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
             // BUGBUG: eventually this hack every-frame all-colors conversion needs
             // to be done only once as part of a vertex buffer
 
-            if(_color_transform_required) {
-                for (int i=0;i<nPrims;i++) {
-                    D3DCOLOR RGBA_color;
-                    transform_color(colors[i],RGBA_color);
-                    add_DWORD_to_FVFBuf(RGBA_color);
-                }
-            } else
-             for (int i=0;i<nPrims;i++) {
+            if(_color_transform_enabled == 0) {
+              for (int i=0;i<nPrims;i++) {
                 Colorf out_color=colors[i];
                 add_DWORD_to_FVFBuf(Colorf_to_D3DCOLOR(out_color));
-             }
+              }
+            } else {
+              for (int i=0;i<nPrims;i++) {
+                D3DCOLOR RGBA_color;
+                transform_color(colors[i],RGBA_color);
+                add_DWORD_to_FVFBuf(RGBA_color);
+              }
+            }
         }
 
         if (_curFVFflags & D3DFVF_TEXCOUNT_MASK) {
@@ -2591,7 +2573,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                 if (NeededShadeMode!=D3DSHADE_FLAT) {
                     // but if lighting enabled, we need to color every vert since shading will be GOURAUD
 
-                    if(!_color_transform_required) {
+                    if(_color_transform_enabled == 0) {
                         for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
                             D3DCOLOR newcolr = Colorf_to_D3DCOLOR(*pInColor);
                             *pOutColor     = newcolr;
@@ -2612,7 +2594,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                     // dont write 2nd,3rd colors in output buffer, these are not used in flat shading
                     // MAKE SURE ShadeMode never set to GOURAUD after this!
 
-                    if(!_color_transform_required) {
+                    if(_color_transform_enabled == 0) {
                         for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
                             *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                         }
@@ -2628,7 +2610,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                 // want to do this conversion once in retained mode
                 DWORD cNumColors=nPrims*dwVertsperPrim;
 
-                    if(!_color_transform_required) {
+                    if(_color_transform_enabled == 0) {
                         for (uint i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
                             *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                         }
@@ -2643,7 +2625,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 #endif
                 // copy the one global color in, set stride to 0
 
-                if(!_color_transform_required) {
+                if(_color_transform_enabled == 0) {
                     if (bDoGlobalSceneGraphColor) {
                         Colorf colr = _scene_graph_color;
                         *pConvertedColorArray = Colorf_to_D3DCOLOR(colr);
@@ -3025,7 +3007,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             if (ColorBinding==G_PER_VERTEX) {
                 NeededShadeMode = D3DSHADE_GOURAUD;
 
-                if(!_color_transform_required) {
+                if(_color_transform_enabled == 0) {
                     for (uint i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
                         *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                     }
@@ -3041,7 +3023,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
                 // could save 2 clr writes per strip/fan in flat shade mode but not going to bother here
 
-                if(!_color_transform_required) {
+                if(_color_transform_enabled == 0) {
                     for (uint j=0;j<nPrims;j++,pInColor++) {
                         D3DCOLOR lastcolr = Colorf_to_D3DCOLOR(*pInColor);
                         DWORD cStripLength=pLengthArr[j];
@@ -3114,7 +3096,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                     }                                                                        \
                   }
 
-                if(!_color_transform_required) {
+                if(_color_transform_enabled == 0) {
                   COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_COPY_STMT);
                 } else {
                   COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_XFORM_STMT);
@@ -3125,7 +3107,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 #endif
                 // copy the one global color in, set stride to 0
 
-                if(!_color_transform_required) {
+                if(_color_transform_enabled == 0) {
                     if (bDoGlobalSceneGraphColor) {
                         Colorf colr = _scene_graph_color();
                         *pConvertedColorArray = Colorf_to_D3DCOLOR(colr);

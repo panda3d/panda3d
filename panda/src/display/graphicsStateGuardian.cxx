@@ -145,11 +145,9 @@ reset() {
   _normals_enabled = false;
 
   //Color and alpha transform variables
-  _color_transform_enabled = false;
-  _alpha_transform_enabled = false;
-  _current_color_mat = LMatrix4f::ident_mat();
-  _current_alpha_offset = 0;
-  _current_alpha_scale = 1;
+  _color_transform_enabled = 0;
+  _current_color_offset.set(0.0f, 0.0f, 0.0f, 0.0f);
+  _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
 
   _color_write_mode = ColorWriteAttrib::M_on;
   _color_blend_mode = ColorBlendAttrib::M_none;
@@ -674,27 +672,12 @@ issue_transform(const TransformState *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 issue_color_scale(const ColorScaleAttrib *attrib) {
-  const LVecBase4f &scale = attrib->get_scale();
+  _current_color_scale = attrib->get_scale();
 
-  // For now, we set a full-featured matrix, even though we only use
-  // the scale part of it.  Soon we will strip this down.
-  LVecBase3f color_scale(scale[0], scale[1], scale[2]);
-  float alpha_scale = scale[3];
-
-  _current_color_mat = LMatrix4f::scale_mat(color_scale);
-  _current_alpha_offset= 0.0f;
-  _current_alpha_scale = alpha_scale;
-
-  if (color_scale == LVecBase3f(1.0f, 1.0f, 1.0f)) {
-    _color_transform_enabled = false;
+  if (_current_color_scale == LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
+    _color_transform_enabled &= ~CT_scale;
   } else {
-    _color_transform_enabled = true;
-  }
-
-  if (_current_alpha_scale == 1.0f) {
-    _alpha_transform_enabled = false;
-  } else {
-    _alpha_transform_enabled = true;
+    _color_transform_enabled |= CT_scale;
   }
 
   _scene_graph_color_stale = _has_scene_graph_color;

@@ -144,11 +144,6 @@ public:
   //enabled/disable GL State compared to what GL says it is
   void dump_state(void);
 
-  //Methods for extracting the current color and alpha transformations
-  INLINE const LMatrix4f &get_current_color_mat() const;
-  INLINE const float &get_current_alpha_offset() const;
-  INLINE const float &get_current_alpha_scale() const;
-
   void issue_transformed_color(const Colorf &color) const;
 
 protected:

@@ -247,11 +247,13 @@ protected:
   bool _vertex_colors_enabled;
   bool _lighting_enabled;
 
-  bool _color_transform_enabled;
-  bool _alpha_transform_enabled;
-  LMatrix4f _current_color_mat;
-  float _current_alpha_offset;
-  float _current_alpha_scale;
+  enum ColorTransform {
+    CT_offset  = 0x01,
+    CT_scale   = 0x02,
+  };
+  int _color_transform_enabled;  // Zero or more of ColorTransform bits, above.
+  LVecBase4f _current_color_offset;
+  LVecBase4f _current_color_scale;
 
   ColorWriteAttrib::Mode _color_write_mode;
   ColorBlendAttrib::Mode _color_blend_mode;
