@@ -99,7 +99,7 @@ get_panda_root() {
       panda_root = front_to_back_slash(envvar);
     }
 
-    if (!panda_root.empty() && panda_root[panda_root.length() - 1] != '\\') {
+    if (panda_root.empty() || panda_root[panda_root.length() - 1] != '\\') {
       panda_root += '\\';
     }
 
@@ -161,9 +161,7 @@ convert_pathname(const string &unix_style_pathname) {
 #else  // HAVE_CYGWIN
     // Without Cygwin, just prefix $PANDA_ROOT.
     windows_pathname = get_panda_root();
-    if (unix_style_pathname != "/") {
-      windows_pathname += front_to_back_slash(unix_style_pathname.substr(1));
-    }
+    windows_pathname += front_to_back_slash(unix_style_pathname.substr(1));
 #endif  // HAVE_CYGWIN
   }
 
