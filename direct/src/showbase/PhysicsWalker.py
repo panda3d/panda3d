@@ -382,7 +382,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         current walker.
         """
         self.oneTimeCollide()
-        self.setZ(self.getZ()-self.getAirborneHeight())
+        self.avatarNodePath.setZ(self.avatarNodePath.getZ()-self.getAirborneHeight())
 
     def oneTimeCollide(self):
         """
