@@ -16,7 +16,7 @@
 #include "version.h"
 #include "compile.h"
 #include "libpbm.h"
-#if __STDC__
+#if defined(__STDC__) || defined(WIN32_VC)
 #include <stdarg.h>
 #else /*__STDC__*/
 #include <varargs.h>
