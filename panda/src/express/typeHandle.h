@@ -99,6 +99,7 @@ PUBLISHED:
   INLINE bool operator <= (const TypeHandle &other) const;
   INLINE bool operator > (const TypeHandle &other) const;
   INLINE bool operator >= (const TypeHandle &other) const;
+  INLINE int compare_to(const TypeHandle &other) const;
 
   INLINE string get_name(TypedObject *object = (TypedObject *)NULL) const;
   INLINE bool is_derived_from(TypeHandle parent,

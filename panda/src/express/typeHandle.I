@@ -105,6 +105,19 @@ operator >= (const TypeHandle &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::compare_to
+//       Access: Published
+//  Description: Sorts TypeHandles arbitrarily (according to <, >,
+//               etc.).  Returns a number less than 0 if this type
+//               sorts before the other one, greater than zero if it
+//               sorts after, 0 if they are equivalent.
+////////////////////////////////////////////////////////////////////
+INLINE int TypeHandle::
+compare_to(const TypeHandle &other) const {
+  return _index - other._index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_name
 //       Access: Published
 //  Description: Returns the name of the type.
