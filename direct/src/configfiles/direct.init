@@ -1,3 +1,4 @@
+ATTACH dmodels
 ATTACH panda
 MODREL ETC_PATH etc
 SEP PYTHONPATH ;
