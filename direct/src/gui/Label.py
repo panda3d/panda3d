@@ -64,7 +64,13 @@ def textLabelAndText(string, style,
     text.setCardAsMargin(0.1, 0.1, 0.0, 0.0)
     text.setTransform(Mat4.scaleMat(scale))
 
-    if style == ButtonUp:
+    # The style might *itself* be a four-component color.
+    if (isinstance(style, types.TupleType) or
+        isinstance(style, VBase4)):
+        # If the style is a tuple, it means black on the specified color.
+        text.setCardColor(style[0], style[1], style[2], style[3])
+
+    elif style == ButtonUp:
         # This is the default: black on white.
         pass
 
