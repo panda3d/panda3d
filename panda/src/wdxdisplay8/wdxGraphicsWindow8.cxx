@@ -1773,7 +1773,9 @@ find_all_card_memavails(void) {
         DWORD dwVidMemTotal,dwVidMemFree;
         dwVidMemTotal=dwVidMemFree=0;
         ZeroMemory(&ddsGAVMCaps,sizeof(DDSCAPS2));
-        ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
+
+        // just want to measure localvidmem, not AGP texmem
+        ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
         if(FAILED(hr = pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
            wdxdisplay_cat.error() << "GetAvailableVidMem failed for device #"<< pDX7DeviceID->szDescription<< D3DERRORSTRING(hr);
            // goto skip_device;
