@@ -295,9 +295,9 @@ class SliderWidget(Pmw.MegaWidget):
     def updateIndicator(self, value):
         if self['style'] == VALUATOR_MINI:
             # Get current marker position
-            markerX = self._getMarkerX()
-            percentX = (value - self['min'])/(self['max'] - self['min'])
+            percentX = (value - self['min'])/float(self['max'] - self['min'])
             newX = percentX * (self.right - self.left) + self.left
+            markerX = self._getMarkerX()
             dx = newX - markerX
             self._widget.move('marker', dx, 0)
         else:

@@ -49,7 +49,7 @@ class Valuator(Pmw.MegaWidget):
         Pmw.MegaWidget.__init__(self, parent)
 
         # Current adjusted (for min/max/resolution) value
-        self.adjustedValue = 0.0
+        self.adjustedValue = self['value']
 
         # Create the components
         interior = self.interior()
