@@ -19,11 +19,11 @@ from ShowBaseGlobal import *
 ****************************************************************************
 
 All object manipulation is performed with left mouse button (LMB).
-Object's are selected by clicking on the with the LMB.  Objects
-can be manipulated freely, or manipulation can be constrained using DIRECT
+Objects are selected by clicking on them with the LMB.  Objects can be
+manipulated freely, or manipulation can be constrained using DIRECT
 widgets.  Rotations and scales are relative to the object's Center of
-Action (COA).  If widget is made visible ('v' key), this is the point of
-intersection of the three axes (red,green,blue lines).
+Action (COA).  If widget is made visible ('v' key), this is the point
+of intersection of the three axes (red, green, blue lines).
 
 FREE MANIPULATION:
 For free manipulation, the window is divided up into three regions: an
