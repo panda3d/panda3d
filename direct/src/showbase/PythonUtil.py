@@ -464,6 +464,14 @@ def uniqueElements(L):
     """are all elements of list unique?"""
     return len(L) == len(list2dict(L))
 
+def disjoint(L1, L2):
+    """returns non-zero if L1 and L2 have no common elements"""
+    used = dict([(k,None) for k in L1])
+    for k in L2:
+        if k in used:
+            return 0
+    return 1
+
 def contains(whole, sub):
     """
     Return 1 if whole contains sub, 0 otherwise
@@ -931,3 +939,71 @@ def randUint31(rng=random.random):
     """returns a random integer in [0..2^31).
     rng must return float in [0..1]"""
     return int(rng() * 0x7FFFFFFF)
+
+class Enum:
+    """Pass in list of strings or string of comma-separated strings.
+    Items are accessible as instance.item, and are assigned unique,
+    increasing integer values. Pass in integer for 'start' to override
+    starting value.
+
+    Example:
+    
+    >>> colors = Enum('red, green, blue')
+    >>> colors.red
+    0
+    >>> colors.green
+    1
+    >>> colors.blue
+    2
+    >>> colors.getString(colors.red)
+    'red'
+    """
+
+    if __debug__:
+        # chars that cannot appear within an item string.
+        InvalidChars = string.whitespace
+        def _checkValidIdentifier(item):
+            invalidChars = string.whitespace+string.punctuation
+            invalidChars = invalidChars.replace('_','')
+            invalidFirstChars = invalidChars+string.digits
+            if item[0] in invalidFirstChars:
+                raise SyntaxError, ("Enum '%s' contains invalid first char" %
+                                    item)
+            if not disjoint(item, invalidChars):
+                for char in item:
+                    if char in invalidChars:
+                        raise SyntaxError, (
+                            "Enum\n'%s'\ncontains illegal char '%s'" %
+                            (item, char))
+            return 1
+        _checkValidIdentifier = staticmethod(_checkValidIdentifier)
+
+    def __init__(self, items, start=0):
+        if type(items) == types.StringType:
+            items = items.split(',')
+
+        self._stringTable = {}
+
+        # make sure we don't overwrite an existing element of the class
+        assert(self._checkExistingMembers(items))
+        assert(uniqueElements(items))
+
+        i = start
+        for item in items:
+            # remove leading/trailing whitespace
+            item = string.strip(item)
+            # make sure there are no invalid characters
+            assert(Enum._checkValidIdentifier(item))
+            self.__dict__[item] = i
+            self._stringTable[i] = item
+            i += 1
+
+    def getString(self, value):
+        return self._stringTable[value]
+
+    if __debug__:
+        def _checkExistingMembers(self, items):
+            for item in items:
+                if hasattr(self, item):
+                    return 0
+            return 1
