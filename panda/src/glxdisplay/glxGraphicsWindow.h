@@ -56,6 +56,7 @@ private:
   void set_wm_properties(const WindowProperties &properties);
 
   void setup_colormap(GLXFBConfig fbconfig);
+  void setup_colormap(XVisualInfo *visual);
   void handle_keystroke(XKeyEvent &event);
   void handle_keypress(XKeyEvent &event);
   void handle_keyrelease(XKeyEvent &event);

@@ -30,10 +30,11 @@ glxGraphicsStateGuardian::
 glxGraphicsStateGuardian(const FrameBufferProperties &properties,
                          glxGraphicsStateGuardian *share_with,
                          GLXContext context, GLXFBConfig fbconfig,
-                         Display *display, int screen) :
+                         XVisualInfo *visual, Display *display, int screen) :
   GLGraphicsStateGuardian(properties),
   _context(context),
   _fbconfig(fbconfig),
+  _visual(visual),
   _display(display),
   _screen(screen)
 {
@@ -49,6 +50,9 @@ glxGraphicsStateGuardian(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
 ~glxGraphicsStateGuardian() {
+  if (_visual != (XVisualInfo *)NULL) {
+    XFree(_visual);
+  }
   if (_context != (GLXContext)NULL) {
     glXDestroyContext(_display, _context);
     _context = (GLXContext)NULL;

@@ -93,6 +93,11 @@ private:
   GLXFBConfig choose_fbconfig(FrameBufferProperties &properties) const;
   GLXFBConfig try_for_fbconfig(int framebuffer_mode,
                                int want_depth_bits, int want_color_bits) const;
+
+  XVisualInfo *choose_visual(FrameBufferProperties &properties) const;
+  XVisualInfo *try_for_visual(int framebuffer_mode,
+                              int want_depth_bits, int want_color_bits) const;
+
   void make_hidden_cursor();
   void release_hidden_cursor();
 

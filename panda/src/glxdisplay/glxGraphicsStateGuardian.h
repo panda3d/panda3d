@@ -34,11 +34,12 @@ public:
   glxGraphicsStateGuardian(const FrameBufferProperties &properties,
                            glxGraphicsStateGuardian *share_with,
                            GLXContext context, GLXFBConfig fbconfig,
-                           Display *display, int screen);
+                           XVisualInfo *visual, Display *display, int screen);
   virtual ~glxGraphicsStateGuardian();
 
   GLXContext _context;
   GLXFBConfig _fbconfig;
+  XVisualInfo *_visual;
   Display *_display;
   int _screen;
 

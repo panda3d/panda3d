@@ -505,9 +505,7 @@ open_window() {
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
 
-  XVisualInfo *visual_info = 
-    glXGetVisualFromFBConfig(_display, glxgsg->_fbconfig);
-
+  XVisualInfo *visual_info = glxgsg->_visual;
   if (visual_info == NULL) {
     // No X visual for this fbconfig; how can we open the window?
     glxdisplay_cat.error()
@@ -516,7 +514,6 @@ open_window() {
   }
   Visual *visual = visual_info->visual;
   int depth = visual_info->depth;
-  XFree(visual_info);
 
 
   if (!_properties.has_origin()) {
@@ -528,7 +525,11 @@ open_window() {
 
   Window root_window = glx_pipe->get_root();
 
-  setup_colormap(glxgsg->_fbconfig);
+  if (glxgsg->_fbconfig != None) {
+    setup_colormap(glxgsg->_fbconfig);
+  } else {
+    setup_colormap(visual_info);
+  }
 
   _event_mask =
     ButtonPressMask | ButtonReleaseMask |
@@ -727,6 +728,54 @@ setup_colormap(GLXFBConfig fbconfig) {
     case GrayScale:
       _colormap = XCreateColormap(_display, root_window,
                                   visual, AllocNone);
+      break;
+    default:
+      glxdisplay_cat.error()
+        << "Could not allocate a colormap for visual class "
+        << visual_class << ".\n";
+      break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::setup_colormap
+//       Access: Private
+//  Description: Allocates a colormap appropriate to the visual and
+//               stores in in the _colormap method.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+setup_colormap(XVisualInfo *visual) {
+  glxGraphicsPipe *glx_pipe;
+  DCAST_INTO_V(glx_pipe, _pipe);
+  Window root_window = glx_pipe->get_root();
+
+  int visual_class = visual->c_class;
+  int rc, is_rgb;
+
+  switch (visual_class) {
+    case PseudoColor:
+      rc = glXGetConfig(_display, visual, GLX_RGBA, &is_rgb);
+      if (rc == 0 && is_rgb) {
+        glxdisplay_cat.warning()
+          << "mesa pseudocolor not supported.\n";
+        // this is a terrible terrible hack, but it seems to work
+        _colormap = (Colormap)0;
+
+      } else {
+        _colormap = XCreateColormap(_display, root_window,
+                                    visual->visual, AllocAll);
+      }
+      break;
+    case TrueColor:
+    case DirectColor:
+      _colormap = XCreateColormap(_display, root_window,
+                                  visual->visual, AllocNone);
+      break;
+    case StaticColor:
+    case StaticGray:
+    case GrayScale:
+      _colormap = XCreateColormap(_display, root_window,
+                                  visual->visual, AllocNone);
       break;
     default:
       glxdisplay_cat.error()
