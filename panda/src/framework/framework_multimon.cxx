@@ -735,7 +735,7 @@ void event_n(CPT_Event) {
   normals_on = !normals_on;
 
   // do i do this for every window??  bugbug
-  for(int j=0;j<pWinGrp->_windows.size();j++) 
+  for(unsigned int j=0;j<pWinGrp->_windows.size();j++) 
       if (normals_on) {
           NormalAddTraverser trav(pWinGrp->_windows[j]->get_gsg());
           df_traverse(render, trav, NullTransitionWrapper(), NullLevelState(),
@@ -889,7 +889,7 @@ void event_3(CPT_Event) {
     // skip over the ones marked as bad (0)
   } while(window_sizearr[cur_winsize_idx*2]==0);
 
-  for(int j=0;j<pWinGrp->_windows.size();j++) 
+  for(unsigned int j=0;j<pWinGrp->_windows.size();j++) 
       pWinGrp->_windows[j]->resize(window_sizearr[cur_winsize_idx*2],window_sizearr[cur_winsize_idx*2+1]);
 }
 
