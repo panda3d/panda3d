@@ -56,6 +56,10 @@ template<class NumType>
 static void
 _heads_up(LMatrix3<NumType> &mat, const LVector3<NumType> &fwd, 
 	  const LVector3<NumType> &up, CoordinateSystem cs) {
+  if (cs == CS_default) {
+    cs = default_coordinate_system;
+  }
+
   if (cs == CS_zup_right || cs == CS_zup_left) {
     // Z-up.
 
