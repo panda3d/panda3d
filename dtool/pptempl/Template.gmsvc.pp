@@ -230,15 +230,6 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
      $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[install_igatedb_dir]/%]
 
 #define install_targets \
-     $[sort \
-       $[if $[install_lib],$[install_lib_dir]] \
-       $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
-       $[if $[install_headers],$[install_headers_dir]] \
-       $[if $[install_parser_inc],$[install_parser_inc_dir]] \
-       $[if $[install_data],$[install_data_dir]] \
-       $[if $[install_config],$[install_config_dir]] \
-       $[if $[install_igatedb],$[install_igatedb_dir]] \
-     ] \
      $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=install-lib%] \
      $[active_target(bin_target sed_bin_target):%=install-%] \
      $[installed_files]
@@ -265,10 +256,10 @@ $[TAB] rm -f $[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]
 #endif
 #endif
 
-// We need a rule for each directory we might need to make.  This
-// loops through the full set of directories and creates a rule to
-// make each one, as needed.
-#foreach directory $[sort \
+// Rather than making a rule to generate each install directory later,
+// we create the directories now.  This reduces problems from
+// multiprocess builds.
+#mkdir $[sort \
     $[if $[install_lib],$[install_lib_dir]] \
     $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
     $[if $[install_headers],$[install_headers_dir]] \
@@ -277,13 +268,9 @@ $[TAB] rm -f $[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]
     $[if $[install_config],$[install_config_dir]] \
     $[if $[install_igatedb],$[install_igatedb_dir]] \
     ]
-$[directory] :
-$[TAB] @test -d $[directory] || echo mkdir -p $[directory]
-$[TAB] @test -d $[directory] || mkdir -p $[directory]
-#end directory
 
-// We need to ensure that $[st_dir] exists.  Trying to make the
-// makefiles do this automatically just causes problems with
+// Similarly, we need to ensure that $[st_dir] exists.  Trying to make
+// the makefiles do this automatically just causes problems with
 // multiprocess builds.
 #mkdir $[st_dir]
 
