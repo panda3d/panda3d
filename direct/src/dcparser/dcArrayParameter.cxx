@@ -275,7 +275,6 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
   packer.pop();
   if (!packer.end_pack()) {
     pack_error = true;
-
   } else {
     pack_data.append_data(packer.get_data(), packer.get_length());
   }

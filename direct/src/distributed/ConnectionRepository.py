@@ -165,7 +165,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
             components = moduleName.split('.')
             dcImports[components[0]] = module
 
-    def connect(self, serverList, 
+    def connect(self, serverList,
                 successCallback = None, successArgs = [],
                 failureCallback = None, failureArgs = []):
         """
@@ -223,10 +223,10 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
             # run out of servers).
 
             ch = self.http.makeChannel(0)
-            self.httpConnectCallback(ch, serverList, 0,
-                                     successCallback, successArgs,
-                                     failureCallback, failureArgs)
-
+            self.httpConnectCallback(
+                    ch, serverList, 0,
+                    successCallback, successArgs,
+                    failureCallback, failureArgs)
         else:
             # Try each of the servers in turn.
             for url in serverList:
@@ -274,7 +274,6 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
             self.startReaderPollTask()
             if successCallback:
                 successCallback(*successArgs)
-
         elif serverIndex < len(serverList):
             # No connection yet, but keep trying.
             
