@@ -229,6 +229,9 @@ class FSM(DirectObject):
                                     aStateName))
             return 0
 
+    def view(self):
+        import FSMInspector
+        FSMInspector.FSMInspector(self)
 
 
 
