@@ -4,23 +4,24 @@ from ClockDelta import *
 from PythonUtil import Functor, sameElements, list2dict, uniqueElements
 import ToontownGlobals
 import DistributedObject
-import LevelBase
+import Level
 import DirectNotifyGlobal
 import EntityCreator
 
 class DistributedLevel(DistributedObject.DistributedObject,
-                       LevelBase.LevelBase):
+                       Level.Level):
     """DistributedLevel"""
     notify = DirectNotifyGlobal.directNotify.newCategory('DistributedLevel')
 
     WantVisibility = config.GetBool('level-visibility', 1)
     HideZones = config.GetBool('level-hidezones', 1)
 
+    # TODO: move level-model stuff to LevelMgr or FactoryLevelMgr?
     FloorCollPrefix = 'zoneFloor'
 
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
-        LevelBase.LevelBase.__init__(self)
+        Level.Level.__init__(self)
 
     def generate(self):
         self.notify.debug('generate')
@@ -52,6 +53,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def setScenarioIndex(self, scenarioIndex):
         self.scenarioIndex = scenarioIndex
+
         # ugly hack: we treat these DC fields as if they were required,
         # and use 'levelAnnounceGenerate()' in place of regular old
         # announceGenerate(). Note that we have to call
@@ -65,8 +67,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def initializeLevel(self, spec):
         """subclass should call this as soon as it's located its spec data.
         Must be called after obj has been generated."""
-        LevelBase.LevelBase.initializeLevel(self, self.doId,
-                                            spec, self.scenarioIndex)
+        Level.Level.initializeLevel(self, self.doId,
+                                    spec, self.scenarioIndex)
 
         # all of the entities have been created now.
         # there should not be any pending reparents left at this point
@@ -83,23 +85,17 @@ class DistributedLevel(DistributedObject.DistributedObject,
         Inheritors, override if desired."""
         return EntityCreator.EntityCreator(level=self)
 
-    def setupEntityCreationHandlers(self):
-        LevelBase.LevelBase.setupEntityCreationHandlers(self)
-        # load up the model ASAP so that we can get zone info out of it
-        self.acceptOnce(self.getEntityTypeCreateEvent('levelMgr'),
-                        self.handleLevelMgrCreated)
-        """ it would be nice to be able to do this, but this overrides the
-        handler in LevelBase. For now, just override the LevelBase handler
-        and call down.
-        # fix up the model wrt zone collisions
-        self.acceptOnce(self.getEntityTypeCreateEvent('zone'),
-                        self.handleAllZonesCreated)
-                        """
+    def onEntityTypePostCreate(self, entType):
+        """listen for certain entity types to be created"""
+        Level.Level.onEntityTypePostCreate(self, entType)
+        # NOTE: these handlers are private in order to avoid overriding
+        # similar handlers in base classes
+        if entType == 'levelMgr':
+            self.__handleLevelMgrCreated()
+        elif entType == 'zone':
+            self.__handleAllZonesCreated()
 
-    def removeEntityCreationHandlers(self):
-        LevelBase.LevelBase.removeEntityCreationHandlers(self)
-
-    def handleLevelMgrCreated(self):
+    def __handleLevelMgrCreated(self):
         # as soon as the levelMgr has been created, load up the model
         # and extract zone info
         self.geom = self.levelMgr.geom
@@ -141,9 +137,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # find the doorway nodes
         self.doorwayNum2Node = findNumberedNodes('Doorway')
 
-    def handleAllZonesCreated(self):
-        LevelBase.LevelBase.handleAllZonesCreated(self)
-        
+    def __handleAllZonesCreated(self):
         # fix up the floor collisions for walkable zones before
         # any entities get put under the model
         for zoneNum in self.zoneNums:

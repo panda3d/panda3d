@@ -2,19 +2,19 @@
 
 from ClockDelta import *
 import DistributedObjectAI
-import LevelBase
+import Level
 import DirectNotifyGlobal
 import EntityCreatorAI
 import WeightedChoice
 
 class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
-                         LevelBase.LevelBase):
+                         Level.Level):
     """DistributedLevelAI"""
     notify = DirectNotifyGlobal.directNotify.newCategory('DistributedLevelAI')
 
     def __init__(self, air, zoneId):
         DistributedObjectAI.DistributedObjectAI.__init__(self, air)
-        LevelBase.LevelBase.__init__(self)
+        Level.Level.__init__(self)
         self.uberZoneId = zoneId
 
     def generate(self, spec):
@@ -29,12 +29,11 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
     def delete(self):
         self.notify.debug('delete')
-        
+        self.destroyLevel()
+
         # we do not allocate the uberZone for now, so don't deallocate it
         for zoneId in self.zoneIds[1:]:
             self.air.deallocateZone(zoneId)
-
-        self.destroyLevel()
 
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
@@ -52,27 +51,16 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         # this will hold the network zoneIds that we allocate
         self.zoneIds = [self.uberZoneId]
 
-        LevelBase.LevelBase.initializeLevel(self, self.doId,
-                                            spec, scenarioIndex)
+        Level.Level.initializeLevel(self, self.doId,
+                                    spec, scenarioIndex)
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
         Inheritors, override if desired."""
         return EntityCreatorAI.EntityCreatorAI(self.air, level=self)
 
-    def setupEntityCreationHandlers(self):
-        LevelBase.LevelBase.setupEntityCreationHandlers(self)
-        # listen for the creation of each zone object
-        self.accept(self.getEntityOfTypeCreateEvent('zone'),
-                    self.zoneEntCreated)
-
-    def removeEntityCreationHandlers(self):
-        LevelBase.LevelBase.removeEntityCreationHandlers(self)
-        self.ignore(self.getEntityOfTypeCreateEvent('zone'))
-
-    def zoneEntCreated(self, entId):
-        if entId == LevelBase.LevelBase.UberZoneEntId:
-            return
+    def allocateZoneId(self):
+        # set aside a zoneId for each zone; this is called by ZoneEntityAI
         # there is error checking in air.allocateZone
         self.zoneIds.append(self.air.allocateZone())
 
