@@ -57,8 +57,8 @@ Step 1: Install Visual C++ (v6.0)
   
 Step 2: Install MS Platform SDK to get updated VC libs and headers
   - Install MS Platform SDK MSDN CD in default location. 
-  - Run v:\platform-sdk\setup.exe, or install from a (Feb/Jul/Oct) 2000 Platform SDK CD
-    Do not use a Feb 2001 or newer release, since it will be missing DX7 d3dim.lib
+  - Run v:\platform-sdk\setup.exe to install the Feb 2001 Platform SDK. 
+    (there may be problems with other versions of the Platform SDK) 
     This should prepend the Platform SDK paths to your PATH,INCLUDE, and
     LIB dirs.  Building libpandadx requires this step (needs DX7 headers/libs)
 
