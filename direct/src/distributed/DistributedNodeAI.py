@@ -10,6 +10,8 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
         NodePath.__init__(self, hidden.attachNewNode(name))
 
     def delete(self):
+        if not self.isEmpty():
+            self.removeNode()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
     ### setParent ###
