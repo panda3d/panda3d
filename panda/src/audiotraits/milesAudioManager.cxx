@@ -37,7 +37,7 @@ PT(AudioManager) Create_AudioManager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::MilesAudioManager
 //       Access: Public
-//  Description: set the overall volume of SFX
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
 MilesAudioManager() {
@@ -88,14 +88,14 @@ MilesAudioManager() {
   // We increment _active_managers regardless of possible errors above.
   // The miles shutdown call will do the right thing when it's called,
   // either way.
-  audio_debug("  _active_managers="<<_active_managers);
   ++_active_managers;
+  audio_debug("  _active_managers="<<_active_managers);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::MilesAudioManager
+//     Function: MilesAudioManager::~MilesAudioManager
 //       Access: Public
-//  Description: set the overall volume of SFX
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
 ~MilesAudioManager() {
@@ -108,6 +108,7 @@ MilesAudioManager::
   }
   _sounds.clear();
   --_active_managers;
+  audio_debug("  _active_managers="<<_active_managers);
   if (!_active_managers) {
     if (audio_software_midi) {
       HDLSDEVICE dls;

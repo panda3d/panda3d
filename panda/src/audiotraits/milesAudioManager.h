@@ -45,14 +45,18 @@ public:
   bool get_active();
 
 private:
+  // The sound cache/pool:
   typedef pmap<string, HAUDIO > SoundMap;
   SoundMap _sounds;
+  // The offspring of this manager:
   typedef pset<MilesAudioSound* > AudioSet;
   AudioSet _soundsOnLoan;
+  // State:
   float _volume;
   bool _active;
   // keep a count for startup and shutdown:
   static int _active_managers;
+  // Optional Downloadable Sound field for software midi:
   static HDLSFILEID _dls_field;
   
   HAUDIO load(Filename file_name);
