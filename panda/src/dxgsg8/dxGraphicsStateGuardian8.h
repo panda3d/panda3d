@@ -180,7 +180,6 @@ public:
 
 public:
   // recreate_tex_callback needs these to be public
-//  LPDIRECT3DDEVICE7 _pCurD3DDevice;  //this needs to be set every device iteration
   DXScreenData scrn;
 
 protected:
@@ -193,8 +192,9 @@ protected:
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
 
+  DWORD _CurFVFType;
   // for storage of the flexible vertex format
-  char *_pCurFvfBufPtr,*_pFvfBufBasePtr;
+  BYTE *_pCurFvfBufPtr,*_pFvfBufBasePtr;
   INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
   WORD *_index_buf;  // base of malloced array
 
@@ -211,9 +211,9 @@ protected:
 
   void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
                     void *pIndexSpace,DWORD dwIndexSpaceByteSize,
-                    D3DVECTOR *pCenter, float fRadius,
+                    D3DXVECTOR3 *pCenter, float fRadius,
                     DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
-                    DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize);
+                    DWORD *pNumVertices,DWORD *pNumTris,DWORD fvfFlags,DWORD dwVertSize);
   HRESULT RestoreAllVideoSurfaces(void);
   HRESULT RecreateAllVideoSurfaces(void);
   HRESULT DeleteAllVideoSurfaces(void);
@@ -229,6 +229,7 @@ protected:
   INLINE void enable_fog(bool val);
   INLINE void enable_zwritemask(bool val);
   INLINE void enable_gouraud_shading(bool val);
+  INLINE void set_vertex_format(DWORD NewFvfType);
 
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
   INLINE D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
@@ -388,13 +389,6 @@ public:
   static void init_type(void);
   virtual TypeHandle get_type(void) const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-/*
-  LPDIRECT3DDEVICE7 GetD3DDevice()  {  return scrn.pD3DDevice; }
-  LPDIRECTDRAW7 GetDDInterface()  {  return scrn.pDD; }
-  LPDIRECTDRAWSURFACE7 GetBackBuffer()  {  return scrn.pddsBackBuffer; }
-  LPDIRECTDRAWSURFACE7 GetZBuffer()  {  return _zbuf; }
-*/  
-//  INLINE void Set_HDC(HDC hdc)  {  _front_hdc = hdc;  }
   void adjust_view_rect(int x, int y);
   INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
   INLINE bool GetDXReady(void)  { return _dx_ready;}
@@ -409,13 +403,6 @@ public:
   void  show_frame();
   void  show_full_screen_frame();
   void  show_windowed_frame();
-/*  void  dx_init(  LPDIRECTDRAW7     context,
-          LPDIRECTDRAWSURFACE7  pri,
-          LPDIRECTDRAWSURFACE7  back,
-          LPDIRECTDRAWSURFACE7  zbuf,
-          LPDIRECT3D7          d3d,
-          LPDIRECT3DDEVICE7    d3dDevice,
-          RECT  viewrect); */
   void dx_init(void);
   
 private:

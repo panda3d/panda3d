@@ -95,6 +95,8 @@
 #define DO_PSTATS_STUFF(XX)
 #endif
 
+#define PANDA_MAXNUMVERTS 0xFFFF  // Note Device may support more than this if it supports D3DFMT_INDEX32 indexbufs.
+
 #define FLG(NN) (1<<NN)
 #define MAX_POSSIBLE_TEXFMTS 32
 typedef enum {

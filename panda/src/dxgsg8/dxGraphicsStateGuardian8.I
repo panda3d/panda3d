@@ -197,6 +197,25 @@ enable_fog(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::set_vertex_format
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
+set_vertex_format(DWORD NewFvfType) {
+  if (_CurFVFType != NewFvfType) {
+    _CurFVFType = NewFvfType;
+    HRESULT hr = scrn.pD3DDevice->SetVertexShader(NewFvfType);
+ #ifndef NDEBUG
+    if(FAILED(hr)) {
+           dxgsg_cat.error() << "SetVertexShader(0x" << (void*)NewFvfType<<") failed, hr = " << D3DERRORSTRING(hr);
+           exit(1);
+    }
+ #endif
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_alpha_test
 //       Access:
 //  Description:
