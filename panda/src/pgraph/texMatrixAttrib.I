@@ -46,7 +46,7 @@ TexMatrixAttrib(const TexMatrixAttrib &copy) :
 //  Description: Builds the linear list of TextureStages if it needs
 //               to be built.
 ////////////////////////////////////////////////////////////////////
-void TexMatrixAttrib::
+INLINE void TexMatrixAttrib::
 check_stage_list() const {
   if (_stage_list_stale) {
     ((TexMatrixAttrib *)this)->rebuild_stage_list();
