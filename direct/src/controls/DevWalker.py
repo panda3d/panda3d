@@ -23,6 +23,7 @@ class DevWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("DevWalker")
     wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
+    runMultiplier = base.config.GetFloat('dev-run-multiplier', 4.0)
 
     # Ghost mode overrides this:
     slideName = "slide-is-disabled"
@@ -94,7 +95,7 @@ class DevWalker(DirectObject.DirectObject):
         slideRight = inputState.isSet("slideRight")
         levitateUp = inputState.isSet("levitateUp")
         levitateDown = inputState.isSet("levitateDown")
-        run = inputState.isSet("run") and 4.0 or 1.0
+        run = inputState.isSet("run") and self.runMultiplier or 1.0
         # Determine what the speeds are based on the buttons:
         self.speed=(
                 (forward and self.avatarControlForwardSpeed or 
