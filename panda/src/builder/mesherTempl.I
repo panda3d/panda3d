@@ -500,6 +500,10 @@ find_fans() {
 
   Verts::iterator vi;
 
+  // Build up a list of far fan edges.
+  typedef pvector<FanMaker> FanMakers;
+  FanMakers fans;
+
   for (vi = _verts.begin(); vi != _verts.end(); ++vi) {
     EdgePtrs &edges = (*vi).second;
 
@@ -511,11 +515,6 @@ find_fans() {
     // quadsheets are defined with triangles flipped here and there.
     if (edges.size() > 6) {
       const Vertex &v = (*vi).first;
-
-      // Build up a list of far fan edges.
-      typedef pvector<FanMaker> FanMakers;
-
-      FanMakers fans;
 
       EdgePtrs::iterator ei;
       Edge::Strips::iterator si;
@@ -529,35 +528,35 @@ find_fans() {
           }
         }
       }
-
-      // Sort the fans list by edge pointers, and remove duplicates.
-      sort(fans.begin(), fans.end());
-      fans.erase(unique(fans.begin(), fans.end()),
-                 fans.end());
-
-      FanMakers::iterator fi, fi2;
-
-      // Now pull out connected edges.
-      int joined_any;
-      do {
-        joined_any = false;
-        for (fi = fans.begin(); fi != fans.end(); ++fi) {
-          if (!(*fi).is_empty()) {
-            fi2 = fi;
-            for (++fi2; fi2 != fans.end(); ++fi2) {
-              if (!(*fi2).is_empty()) {
-                joined_any = (*fi).join(*fi2);
-              }
-            }
+    }
+  }
+  
+  // Sort the fans list by edge pointers, and remove duplicates.
+  sort(fans.begin(), fans.end());
+  fans.erase(unique(fans.begin(), fans.end()), fans.end());
+  
+  FanMakers::iterator fi, fi2;
+  
+  // Now pull out connected edges.
+  int joined_any;
+  do {
+    joined_any = false;
+    for (fi = fans.begin(); fi != fans.end(); ++fi) {
+      if (!(*fi).is_empty()) {
+        fi2 = fi;
+        for (++fi2; fi2 != fans.end(); ++fi2) {
+          if (!(*fi2).is_empty()) {
+            joined_any = (*fi).join(*fi2);
           }
         }
-      } while (joined_any);
-
-      for (fi = fans.begin(); fi != fans.end(); ++fi) {
-        if ((*fi).is_valid()) {
-          (*fi).build();
-        }
       }
+    }
+  } while (joined_any);
+
+  for (fi = fans.begin(); fi != fans.end(); ++fi) {
+    cerr << "Got fan, is_valid = " << (*fi).is_valid() << "\n";
+    if ((*fi).is_valid()) {
+      (*fi).build();
     }
   }
 #endif
