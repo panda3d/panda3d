@@ -178,7 +178,7 @@ scan(const string &extension) {
 
   if (_photos.empty()) {
     nout << _dir << " contains no photos.\n";
-    return false;
+    // This is not an error, just a notice.
   }
 
   return true;
@@ -193,6 +193,10 @@ void RollDirectory::
 collect_index_images() {
   // Don't call this twice.
   nassertv(_index_images.empty());
+
+  if (is_empty()) {
+    return;
+  }
 
   IndexImage *index_image = new IndexImage(this, _index_images.size());
   _index_images.push_back(index_image);
@@ -221,6 +225,17 @@ collect_index_images() {
 const Filename &RollDirectory::
 get_newest_contributing_filename() const {
   return _newest_contributing_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::is_empty
+//       Access: Public
+//  Description: Returns true if the directory is empty (has no
+//               photos).
+////////////////////////////////////////////////////////////////////
+bool RollDirectory::
+is_empty() const {
+  return _photos.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,6 +289,9 @@ get_index_image(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool RollDirectory::
 generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
+  if (is_empty()) {
+    return true;
+  }
   nassertr(!_index_images.empty(), false);
 
   IndexImages::iterator ii;
@@ -297,11 +315,24 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
 bool RollDirectory::
 generate_html(ostream &root_html, const Filename &archive_dir, 
               const Filename &roll_dir_root) {
+  if (is_empty()) {
+    return true;
+  }
   nassertr(!_index_images.empty(), false);
 
+  root_html
+    << "<a name=\"" << _basename << "\">\n";
+
   if (!omit_roll_headers) {
-    Filename cm_filename(_dir, _basename);
+    Filename cm_filename(_basename);
     cm_filename.set_extension("cm");
+    if (cm_search.is_empty() || !cm_filename.resolve_filename(cm_search)) {
+      // If the cm file isn't found along the search path specified
+      // via -cmdir on the command line, then look for it in the
+      // appropriate source directory.
+      cm_filename = Filename(_dir, cm_filename);
+    }
+
     if (cm_filename.exists()) {
       // If the comment file for the roll exists, insert its contents
       // here instead of the generic header.

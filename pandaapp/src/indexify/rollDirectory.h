@@ -46,6 +46,7 @@ public:
 
   const Filename &get_newest_contributing_filename() const;
 
+  bool is_empty() const;
   int get_num_photos() const;
   Photo *get_photo(int n) const;
 

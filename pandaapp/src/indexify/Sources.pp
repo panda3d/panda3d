@@ -1,5 +1,5 @@
 #begin bin_target
-  #define USE_FREETYPE yes
+  #define USE_PACKAGES freetype
 
   #define TARGET indexify
   #define OTHER_LIBS \
@@ -21,7 +21,7 @@
 #end bin_target
 
 #begin bin_target
-  #define USE_FREETYPE yes
+  #define USE_PACKAGES freetype
 
   #define TARGET font-samples
   #define OTHER_LIBS \

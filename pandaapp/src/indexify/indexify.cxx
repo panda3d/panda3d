@@ -135,6 +135,12 @@ Indexify() {
      &Indexify::dispatch_none, &omit_roll_headers);
 
   add_option
+    ("cmdir", "director", 0,
+     "Searches in the named directory for .cm files before searching within "
+     "the source archive.  This option may be repeated.",
+     &Indexify::dispatch_search_path, NULL, &cm_search);
+
+  add_option
     ("omit-full", "", 0,
      "Omits links to the full-size images.",
      &Indexify::dispatch_none, &omit_full_links);

@@ -22,6 +22,7 @@
 #include "pandatoolbase.h"
 
 #include "filename.h"
+#include "dSearchPath.h"
 
 // Some of these constants may be modified by command-line parameters
 // from the user.
@@ -92,6 +93,7 @@ extern bool draw_frames;
 // with its own little header.  This also ignored the roll.cm file if
 // it exists.
 extern bool omit_roll_headers;
+extern DSearchPath cm_search;
 
 // True to omit links to the full-size source images.
 extern bool omit_full_links;
