@@ -382,7 +382,7 @@ string TextNode::
 encode_wchar(wchar_t ch) const {
   switch (_encoding) {
   case E_iso8859:
-    if (isascii(ch)) {
+    if (isascii((unsigned int)ch)) {
       return string(1, (char)ch);
     } else {
       return ".";
@@ -502,7 +502,7 @@ expand_amp_sequence(StringDecoder &decoder) const {
     // An explicit numeric sequence: &#nnn;
     result = 0;
     character = decoder.get_next_character();
-    while (!decoder.is_eof() && character < 128 && isdigit(character)) {
+    while (!decoder.is_eof() && character < 128 && isdigit((unsigned int)character)) {
       result = (result * 10) + (character - '0');
       character = decoder.get_next_character();
     }
@@ -517,7 +517,7 @@ expand_amp_sequence(StringDecoder &decoder) const {
   string sequence;
   
   // Some non-numeric sequence.
-  while (!decoder.is_eof() && character < 128 && isalpha(character)) {
+  while (!decoder.is_eof() && character < 128 && isalpha((unsigned int)character)) {
     sequence += character;
     character = decoder.get_next_character();
   }
@@ -673,7 +673,7 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
         text_cat.warning()
           << "No definition in " << _font->get_name() 
           << " for character " << character;
-        if (character < 128 && isprint(character)) {
+        if (character < 128 && isprint((unsigned int)character)) {
           text_cat.warning(false)
             << " ('" << (char)character << "')";
         }

@@ -22,7 +22,6 @@
 
 #include "config_text.h"
 #include "config_util.h"
-#include "ctype.h"
 
 bool DynamicTextFont::_update_cleared_glyphs = text_update_cleared_glyphs;
 

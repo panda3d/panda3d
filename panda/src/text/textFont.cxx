@@ -29,7 +29,7 @@ TypeHandle TextFont::_type_handle;
 //               does not consider newlines to be whitespace.
 ////////////////////////////////////////////////////////////////////
 INLINE bool
-isblank(int ch) {
+isblank(unsigned int ch) {
   return (ch == ' ' || ch == '\t');
 }
 
@@ -39,7 +39,7 @@ isblank(int ch) {
 //               safe to call for a wide character.
 ////////////////////////////////////////////////////////////////////
 INLINE bool
-isspacew(int ch) {
+isspacew(unsigned int ch) {
   return isascii(ch) && isspace(ch);
 }
 
@@ -125,7 +125,7 @@ wordwrap_to(const string &text, float wordwrap_width,
 
   // Preserve any initial whitespace and newlines.
   float initial_width = 0.0f;
-  while (p < text.length() && isspace(text[p])) {
+  while (p < text.length() && isspace((unsigned int)text[p])) {  // dbg runtime will bomb if text[p]>=128 without (unsigned int) cast
     if (text[p] == '\n') {
       initial_width = 0.0f;
     } else {
@@ -137,7 +137,7 @@ wordwrap_to(const string &text, float wordwrap_width,
   bool needs_newline = false;
 
   while (p < text.length()) {
-    nassertr(!isspace(text[p]), string());
+    nassertr(!isspace((unsigned int)text[p]), string());
 
     // Scan the next n characters, until the end of the string or an
     // embedded newline character, or we exceed wordwrap_width.
@@ -148,7 +148,7 @@ wordwrap_to(const string &text, float wordwrap_width,
 
     float width = initial_width;
     while (q < text.length() && text[q] != '\n') {
-      if (isspace(text[q])) {
+      if (isspace((unsigned int)text[q])) {
         any_spaces = true;
       }
 
@@ -166,7 +166,7 @@ wordwrap_to(const string &text, float wordwrap_width,
     if (overflow && any_spaces) {
       // If we stopped because we exceeded the wordwrap width, then
       // back up to the end of the last complete word.
-      while (q > p && !isspace(text[q])) {
+      while (q > p && !isspace((unsigned int)text[q])) {
         q--;
       }
     }
@@ -215,7 +215,7 @@ wordwrap_to(const string &text, float wordwrap_width,
 
     // Preserve any initial whitespace and newlines.
     initial_width = 0.0f;
-    while (p < text.length() && isspace(text[p])) {
+    while (p < text.length() && isspace((unsigned int)text[p])) {
       if (text[p] == '\n') {
         initial_width = 0.0f;
       } else {
