@@ -47,7 +47,7 @@ public:
 
   bool check_currency(Node *node, 
 		      const AllTransitionsWrapper &trans,
-		      UpdateSeq now);
+		      UpdateSeq as_of);
 
   INLINE void mark_verified(Node *node, UpdateSeq now);
 

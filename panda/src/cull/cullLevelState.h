@@ -21,7 +21,7 @@
 class EXPCL_PANDA CullLevelState {
 public:
   CullStateLookup *_lookup;
-  UpdateSeq _now;
+  UpdateSeq _as_of;
 };
 
 #endif

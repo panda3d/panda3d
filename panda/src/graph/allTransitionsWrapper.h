@@ -23,6 +23,7 @@
 
 #include "nodeTransition.h"
 #include "nodeTransitionCache.h"
+#include "config_graph.h"
 
 #include <pointerTo.h>
 
@@ -76,7 +77,8 @@ public:
 
   INLINE Node *extract_from_cache(const NodeRelation *arc);
   INLINE void store_to_cache(NodeRelation *arc, Node *top_subtree);
-  INLINE bool is_cache_verified(UpdateSeq now) const;
+  INLINE void store_to_cache_partial(NodeRelation *arc, Node *top_subtree);
+  INLINE bool is_cache_verified(UpdateSeq as_of) const;
   INLINE void set_computed_verified(UpdateSeq now);
 
   INLINE void cached_compose(const AllTransitionsWrapper &cache, 
@@ -104,6 +106,7 @@ public:
 
 private:
   PT(NodeTransitionCache) _cache;
+  UpdateSeq _all_verified;
 
   // This is a special cache object which is always around and always
   // empty.  It's used just so we can have a sensible return value

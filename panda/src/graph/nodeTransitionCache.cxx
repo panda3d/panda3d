@@ -390,7 +390,11 @@ invert_compose(const NodeTransitionCache *a, const NodeTransitionCache *b) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::cached_compose
 //       Access: Public, Static
-//  Description: 
+//  Description: Returns a cache pointer (which might be a pointer to
+//               the same cache object, or to a newly allocated
+//               object) that represents the result of compose(a, b),
+//               as computed using the cache value as a hint.  Mark
+//               the result as computed at time 'now'.
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache *NodeTransitionCache::
 cached_compose(const NodeTransitionCache *a, 
@@ -440,7 +444,8 @@ cached_compose(const NodeTransitionCache *a,
 //  Description: Returns a new pointer that represents the adjustment
 //               of the given cache to set each computed and verified
 //               value to the current now value.  This may modify the
-//               source cache only if there is only one pointer to it.
+//               source cache only if there are no other pointers to
+//               it.
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache *NodeTransitionCache::
 set_computed_verified(const NodeTransitionCache *a, UpdateSeq now) {

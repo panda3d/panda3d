@@ -32,7 +32,7 @@ public:
 
   bool check_currency(const AllTransitionsWrapper &trans, 
 		      Node *top_subtree,
-		      UpdateSeq now);
+		      UpdateSeq as_of);
   INLINE void update(const AllTransitionsWrapper &trans,
 		     Node *top_subtree,
 		     UpdateSeq now);

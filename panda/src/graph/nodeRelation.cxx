@@ -442,14 +442,32 @@ attach() {
   nassertv(!_attached);
 
   _attached = true;
+
+  DownRelationPointers &parent_list = _parent->_children[_type];
+  UpRelationPointers &child_list = _child->_parents[_type];
   
-  bool inserted_one = internal_insert_arc(_parent->_children[_type], this);
-  bool inserted_two = internal_insert_arc(_child->_parents[_type], this);
+  bool inserted_one = internal_insert_arc(parent_list, this);
+  bool inserted_two = internal_insert_arc(child_list, this);
   nassertv(inserted_one && inserted_two);
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
   _last_update = ++last_graph_update[_type];
+
+  /*
+  // If we have just added a new parent arc to a node that previously
+  // had exactly one parent, we also need to increment the update
+  // counter for all the children of that node.
+  if (child_list.size() == 2) {
+    cerr << "Attaching " << *this << " at " << _last_update << "\n";
+    DownRelationPointers &child_children = _child->_children[_type];
+    DownRelationPointers::iterator drpi;
+    for (drpi = child_children.begin(); drpi != child_children.end(); ++drpi) {
+      cerr << "Forcing update for " << *(*drpi) << "\n";
+      (*drpi)->_last_update = _last_update;
+    }
+  }
+  */
 
   _parent->force_bound_stale();
   mark_bound_stale();
@@ -481,8 +499,11 @@ detach() {
 
   force_bound_stale();
 
-  bool removed_one = internal_remove_arc(_parent->_children[_type], this);
-  bool removed_two = internal_remove_arc(_child->_parents[_type], this);
+  DownRelationPointers &parent_list = _parent->_children[_type];
+  UpRelationPointers &child_list = _child->_parents[_type];
+
+  bool removed_one = internal_remove_arc(parent_list, this);
+  bool removed_two = internal_remove_arc(child_list, this);
 
   nassertr(removed_one, result);
   nassertr(removed_two, result);
@@ -492,6 +513,19 @@ detach() {
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
   _last_update = ++last_graph_update[_type];
+
+  /*
+  // If we have just removed a parent arc from a node, leaving exactly
+  // one parent, we also need to increment the update counter for all
+  // the children of that node.
+  if (child_list.size() == 1) {
+    DownRelationPointers &child_children = _child->_children[_type];
+    DownRelationPointers::iterator drpi;
+    for (drpi = child_children.begin(); drpi != child_children.end(); ++drpi) {
+      (*drpi)->_last_update = _last_update;
+    }
+  }
+  */
 
   return result;
 }

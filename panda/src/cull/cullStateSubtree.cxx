@@ -25,11 +25,11 @@ CullStateSubtree::
 ////////////////////////////////////////////////////////////////////
 bool CullStateSubtree::
 check_currency(const AllTransitionsWrapper &, Node *top_subtree, 
-	       UpdateSeq now) {
+	       UpdateSeq as_of) {
   if (cull_cat.is_spam()) {
     cull_cat.spam()
       << "Checking currency for subtree " << (void *)this
-      << ", _verified = " << _verified << " now = " << now << "\n";
+      << ", _verified = " << _verified << " as_of = " << as_of << "\n";
   }
 
   // Make sure we've still got the same top_subtree node.
@@ -38,7 +38,7 @@ check_currency(const AllTransitionsWrapper &, Node *top_subtree,
   }
 
   // First, check the verified time stamp.
-  if (_verified == now && !_verified.is_fresh()) {
+  if (as_of <= _verified && !_verified.is_fresh()) {
     return true;
   }
 

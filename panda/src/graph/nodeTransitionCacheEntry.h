@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include "nodeTransition.h"
+#include "config_graph.h"
 
 #include <updateSeq.h>
 #include <pointerTo.h>
@@ -35,7 +36,7 @@ public:
   INLINE bool has_trans() const;
   INLINE NodeTransition *get_trans() const;
 
-  INLINE bool is_cache_verified(UpdateSeq now) const;
+  INLINE bool is_cache_verified(UpdateSeq as_of) const;
   INLINE bool is_freshly_computed(UpdateSeq changed) const;
   INLINE void set_computed_verified(UpdateSeq now);
 

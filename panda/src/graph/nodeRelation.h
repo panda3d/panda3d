@@ -156,6 +156,11 @@ private:
   PT(NodeTransitionCache) _net_transitions;
   Node *_top_subtree;
 
+  // This is updated with the current update sequence whenever we
+  // verify that *all* the transitions to this arc are accurately
+  // reflected in the above set.
+  UpdateSeq _all_verified;
+
   // This is updated with the current update sequence each time the
   // arc is changed (for instance, to change its state or to reparent
   // it or something).  It exists to support caching in the cull

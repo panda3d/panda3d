@@ -66,7 +66,7 @@ public:
 
   INLINE Node *extract_from_cache(const NodeRelation *arc);
   INLINE void store_to_cache(NodeRelation *arc, Node *top_subtree);
-  INLINE bool is_cache_verified(UpdateSeq now) const;
+  INLINE bool is_cache_verified(UpdateSeq as_of) const;
   INLINE void set_computed_verified(UpdateSeq now);
 
   INLINE void cached_compose(const NodeTransitionWrapper &cache, 

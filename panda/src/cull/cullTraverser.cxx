@@ -91,11 +91,12 @@ traverse(Node *root,
   bool is_initial = (_nested_count == 0);
   if (is_initial) {
     if (cull_force_update) {
-      _now = UpdateSeq::fresh();
+      _as_of = UpdateSeq::fresh();
     } else {
-      _now = UpdateSeq::initial();
+      _as_of = UpdateSeq::initial();
     }
   }
+  _now = last_graph_update[_graph_type];
   _nested_count++;
 
   if (is_initial) {
@@ -109,7 +110,7 @@ traverse(Node *root,
 
   CullLevelState level_state;
   level_state._lookup = &_lookup;
-  level_state._now = _now;
+  level_state._as_of = _as_of;
 
   // Determine the relative transform matrix from the camera to our
   // starting node.  This is important for proper view-frustum
@@ -304,7 +305,7 @@ add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
   complete_trans.clear_transition(DirectRenderTransition::get_class_type());
 
   CullState *cs = level_state._lookup->find_node
-    (node, complete_trans, level_state._now);
+    (node, complete_trans, level_state._as_of);
   if (cs == (CullState *)NULL) {
     if (cull_cat.is_spam()) {
       cull_cat.spam()
@@ -316,7 +317,7 @@ add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
     cs = find_bin_state(complete_trans);
     nassertv(cs != (CullState *)NULL);
 
-    level_state._lookup->record_node(node, cs, level_state._now);
+    level_state._lookup->record_node(node, cs, level_state._as_of);
   }
 
   cs->record_current_geom_node(arc_chain);
@@ -347,14 +348,14 @@ add_direct_node(Node *node, const AllTransitionsWrapper &trans,
   complete_trans.clear_transition(DirectRenderTransition::get_class_type());
 
   CullState *cs = level_state._lookup->find_node
-    (node, complete_trans, level_state._now);
+    (node, complete_trans, level_state._as_of);
   if (cs == (CullState *)NULL) {
     // The node didn't have a previously-associated CullState that we
     // could use, so determine a new one for it.
     cs = find_bin_state(complete_trans);
     nassertv(cs != (CullState *)NULL);
 
-    level_state._lookup->record_node(node, cs, level_state._now);
+    level_state._lookup->record_node(node, cs, level_state._as_of);
   }
 
   cs->record_current_direct_node(arc_chain);
@@ -385,8 +386,8 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   AllTransitionsWrapper trans;
 
   UpdateSeq last_update = arc->get_last_update();
-  if (level_state._now < last_update) {
-    level_state._now = last_update;
+  if (level_state._as_of < last_update) {
+    level_state._as_of = last_update;
   }
 
   bool is_instanced = (node->get_num_parents(_graph_type) > 1);
@@ -435,16 +436,17 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 #endif
 
   if (arc_has_sub_render) {
-    level_state._now = UpdateSeq::fresh();
+    level_state._as_of = UpdateSeq::fresh();
   }
-  _now = level_state._now;
+  _as_of = level_state._as_of;
 
   mark_forward_arc(arc);
 
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Reached " << *node << ":\n"
-      << " now = " << level_state._now
+      << " as_of = " << level_state._as_of
+      << " now = " << _now
       << " is_instanced = " << is_instanced
       << " is_geom = " << is_geom
       << " node_has_sub_render = " << node_has_sub_render
@@ -458,6 +460,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     // In any of these cases, we'll need to determine the net
     // transition to this node.
     wrt_subtree(arc, level_state._lookup->get_top_subtree(), 
+		level_state._as_of, _now,
 		trans, _graph_type);
   }
 

@@ -21,7 +21,8 @@ AllTransitionsWrapper() {
 ////////////////////////////////////////////////////////////////////
 INLINE AllTransitionsWrapper::
 AllTransitionsWrapper(const AllTransitionsWrapper &copy) :
-  _cache(copy._cache)
+  _cache(copy._cache),
+  _all_verified(copy._all_verified)
 {
 }
 
@@ -33,6 +34,7 @@ AllTransitionsWrapper(const AllTransitionsWrapper &copy) :
 INLINE void AllTransitionsWrapper::
 operator = (const AllTransitionsWrapper &copy) {
   _cache = copy._cache;
+  _all_verified = copy._all_verified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,11 +104,12 @@ set_transition(TypeHandle handle, NodeTransition *trans) {
   if (_cache == (NodeTransitionCache *)NULL) {
     _cache = new NodeTransitionCache;
   }
+  _all_verified.clear();
   return _cache->set_transition(handle, trans);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AllTransitionsWrapperset_transition
+//     Function: AllTransitionsWrapper::set_transition
 //       Access: Public
 //  Description: This flavor of set_transition() accepts a pointer to
 //               a NodeTransition only.  It infers the type of the
@@ -137,6 +140,7 @@ clear_transition(TypeHandle handle) {
   if (_cache == (NodeTransitionCache *)NULL) {
     return NULL;
   }
+  _all_verified.clear();
   return _cache->clear_transition(handle);
 }
 
@@ -245,6 +249,7 @@ extract_from(const NodeRelation *arc) {
   } else {
     _cache = new NodeTransitionCache(arc->_transitions);
   }
+  _all_verified.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,6 +272,7 @@ store_to(NodeRelation *arc) const {
 INLINE void AllTransitionsWrapper::
 compose_in_place(const AllTransitionsWrapper &other) {
   _cache = NodeTransitionCache::compose(_cache, other._cache);
+  _all_verified.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,6 +283,7 @@ compose_in_place(const AllTransitionsWrapper &other) {
 INLINE void AllTransitionsWrapper::
 invert_in_place() {
   _cache = NodeTransitionCache::invert(_cache);
+  _all_verified.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -288,6 +295,7 @@ invert_in_place() {
 INLINE void AllTransitionsWrapper::
 invert_compose_in_place(const AllTransitionsWrapper &other) {
   _cache = NodeTransitionCache::invert_compose(_cache, other._cache);
+  _all_verified.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -300,19 +308,63 @@ invert_compose_in_place(const AllTransitionsWrapper &other) {
 INLINE Node *AllTransitionsWrapper::
 extract_from_cache(const NodeRelation *arc) {
   _cache = arc->_net_transitions;
+  _all_verified = arc->_all_verified;
+#ifndef NDEBUG
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "AllTransitionsWrapper::extract_from_cache(" << *arc
+      << "), _all_verified = " << _all_verified << "\n";
+  }
+#endif
   return arc->_top_subtree;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::store_to_cache
 //       Access: Public
-//  Description:
+//  Description: Completely replaces the cached state on the arc with
+//               what is represented here.  This makes sense if we
+//               have computed the complete set of net transitions to
+//               the arc.
 ////////////////////////////////////////////////////////////////////
 INLINE void AllTransitionsWrapper::
 store_to_cache(NodeRelation *arc, Node *top_subtree) {
   arc->_top_subtree = top_subtree;
+  arc->_net_transitions = _cache;
+  arc->_all_verified = _all_verified;
+
+#ifndef NDEBUG
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "AllTransitionsWrapper::store_to_cache(" << *arc
+      << "), _all_verified = " << _all_verified << "\n";
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::store_to_cache_partial
+//       Access: Public
+//  Description: Updates the cached state on the arc with what is
+//               represented here, but does not remove transitions on
+//               the arc's cache that are not mentioned here.  This
+//               makes sense if this cache represents only some of the
+//               net transitions to the arc, but not necessarily all
+//               of them.
+////////////////////////////////////////////////////////////////////
+INLINE void AllTransitionsWrapper::
+store_to_cache_partial(NodeRelation *arc, Node *top_subtree) {
+  arc->_top_subtree = top_subtree;
   arc->_net_transitions = 
     NodeTransitionCache::c_union(arc->_net_transitions, _cache);
+
+#ifndef NDEBUG
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "AllTransitionsWrapper::store_to_cache_partial(" << *arc
+      << "), _all_verified = " << _all_verified << "\n";
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,10 +373,16 @@ store_to_cache(NodeRelation *arc, Node *top_subtree) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool AllTransitionsWrapper::
-is_cache_verified(UpdateSeq) const {
-  // We can't ever know if all elements in the set are verified,
-  // because the set might not be complete.
-  return false;
+is_cache_verified(UpdateSeq as_of) const {
+#ifndef NDEBUG
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "AllTransitionsWrapper::is_cache_verified(" << as_of 
+      << "), _all_verified = " << _all_verified << ", result = "
+      << (as_of <= _all_verified) << "\n";
+  }
+#endif
+  return as_of <= _all_verified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,6 +393,14 @@ is_cache_verified(UpdateSeq) const {
 INLINE void AllTransitionsWrapper::
 set_computed_verified(UpdateSeq now) {
   _cache = NodeTransitionCache::set_computed_verified(_cache, now);
+  _all_verified = now;
+
+#ifndef NDEBUG
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "AllTransitionsWrapper::set_computed_verified(" << now << ")\n";
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,6 +416,7 @@ cached_compose(const AllTransitionsWrapper &cache,
 	       UpdateSeq now) {
   _cache = NodeTransitionCache::cached_compose(_cache, cache._cache,
 					       value._cache, now);
+  _all_verified = now;
 }
 
 ////////////////////////////////////////////////////////////////////

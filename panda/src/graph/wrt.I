@@ -21,15 +21,20 @@
 //               transitions returned by this function, the result is
 //               always unambiguous; any wrt() ambiguity is resolved
 //               later.
+//
+//               as_of is the most recent update so far on this branch
+//               of the scene graph; now is the stamp to use to mark
+//               any computed cache values.
 ////////////////////////////////////////////////////////////////////
 template<class TransitionWrapper>
 void
-get_cached_net_transition(NodeRelation *arc, Node *&root, UpdateSeq now,
+get_cached_net_transition(NodeRelation *arc, Node *&root, 
+			  UpdateSeq as_of, UpdateSeq now,
 			  TransitionWrapper &net, TypeHandle graph_type) {
   TransitionWrapper cur_cache = TransitionWrapper::init_from(net);
   Node *top_subtree = cur_cache.extract_from_cache(arc);
 
-  if (cur_cache.is_cache_verified(now)) {
+  if (cur_cache.is_cache_verified(as_of)) {
     // This arc's cached value has recently been verified, so we don't
     // even need to go anywhere--we trust it's still good.
     root = top_subtree;
@@ -45,7 +50,11 @@ get_cached_net_transition(NodeRelation *arc, Node *&root, UpdateSeq now,
 	wrt_cat.debug(false) << *root;
       }
       wrt_cat.debug(false)
-	<< ") is current as of " << now << "\n";
+	<< ") is current as of " << as_of << " (now is " 
+	<< now << ")\n";
+      if (wrt_cat.is_spam()) {
+	wrt_cat.spam() << "result of " << *arc << " is " << net << "\n";
+      }	
     }
 #endif
 
@@ -83,7 +92,7 @@ get_cached_net_transition(NodeRelation *arc, Node *&root, UpdateSeq now,
       // The node has exactly one parent.  Carry on.
 
       NodeRelation *parent = *(*uri).second.begin();
-      get_cached_net_transition(parent, root, now, net, graph_type);
+      get_cached_net_transition(parent, root, as_of, now, net, graph_type);
 
       // Now recompute our own cache.
       TransitionWrapper cur_value = TransitionWrapper::init_from(net);
@@ -103,7 +112,11 @@ get_cached_net_transition(NodeRelation *arc, Node *&root, UpdateSeq now,
 	wrt_cat.debug(false) << *root;
       }
       wrt_cat.debug(false)
-	<< ") is recomputed as of " << now << "\n";
+	<< ") is recomputed as of " << as_of << " (now is " 
+	<< now << ")\n";
+      if (wrt_cat.is_spam()) {
+	wrt_cat.spam() << "result of " << *arc << " is " << net << "\n";
+      }	
     }
 #endif
   }
@@ -120,13 +133,17 @@ get_cached_net_transition(NodeRelation *arc, Node *&root, UpdateSeq now,
 //               contains a list of NodeRelation pointers to resolve
 //               ambiguities when a node with multiple parents is
 //               encountered.
+//
+//               as_of is the most recent update so far on this branch
+//               of the scene graph; now is the stamp to use to mark
+//               any computed cache values.
 ////////////////////////////////////////////////////////////////////
 template<class InputIterator, class TransitionWrapper>
 void
 get_cached_net_transition(const Node *node, 
 			  InputIterator arc_list_begin, 
 			  InputIterator arc_list_end,
-			  UpdateSeq now,
+			  UpdateSeq as_of, UpdateSeq now,
 			  TransitionWrapper &result,
 			  TypeHandle graph_type) {
   if (node == NULL) {
@@ -219,15 +236,15 @@ get_cached_net_transition(const Node *node,
 
   // Get the net transition leading into this node.
   Node *root;
-  get_cached_net_transition((NodeRelation *)parent_arc, root, now, result, 
-			    graph_type);
+  get_cached_net_transition((NodeRelation *)parent_arc, root, 
+			    as_of, now, result, graph_type);
 
   if (root != NULL) {
     // There's more to get.  The above function call was forced to
     // stop at a node with multiple parents.
     TransitionWrapper more = TransitionWrapper::init_from(result);
     get_cached_net_transition(root, arc_list_begin, arc_list_end, 
-			      now, more, graph_type);
+			      as_of, now, more, graph_type);
     more.compose_in_place(result);
     result = more;
   }
@@ -396,14 +413,15 @@ cached_wrt_base(const Node *from,
       wrt_cat.debug(false) << *to;
     }
     wrt_cat.debug(false)
-      << "), as of " << now << "\n";
+      << "), as of " << now << " (now is " 
+      << now << ")\n";
   }
 #endif
 
-  get_cached_net_transition(from, from_arcs_begin, from_arcs_end, now,
-			    net_from_trans, graph_type);
-  get_cached_net_transition(to, to_arcs_begin, to_arcs_end, now,
-			    result, graph_type);
+  get_cached_net_transition(from, from_arcs_begin, from_arcs_end, 
+			    now, now, net_from_trans, graph_type);
+  get_cached_net_transition(to, to_arcs_begin, to_arcs_end, 
+			    now, now, result, graph_type);
   
 #ifndef NDEBUG
   if (paranoid_wrt) {
@@ -686,8 +704,8 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
 
 template<class TransitionWrapper>
 INLINE Node *
-uncached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result, 
-		     TypeHandle graph_type) {
+uncached_wrt_subtree(NodeRelation *arc, Node *to,
+		     TransitionWrapper &result, TypeHandle graph_type) {
   Node *stop = 
     get_uncached_wrt_subtree(arc->get_parent(), to,
 			     result, graph_type);
@@ -717,14 +735,12 @@ uncached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
 
 template<class TransitionWrapper>
 Node *
-cached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result, 
-		   TypeHandle graph_type) {
-  UpdateSeq now = last_graph_update[graph_type];
-
+cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
+		   TransitionWrapper &result, TypeHandle graph_type) {
   // First, determine the net transition up to the top of the current
   // subtree.
   Node *top_subtree;
-  get_cached_net_transition(arc, top_subtree, now, result, graph_type);
+  get_cached_net_transition(arc, top_subtree, as_of, now, result, graph_type);
 
   if (top_subtree == to || to == (Node *)NULL) {
     // If the top of the subtree is the node we asked to wrt to,
@@ -749,12 +765,6 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
     // Otherwise, it must be the case that the node we want to wrt to is
     // some descendent of the top_subtree node.  It also therefore
     // follows that this node has exactly one parent.
-    
-    nassertr(to->get_num_parents(graph_type) == 1, NULL);
-    NodeRelation *to_arc = to->get_parent(graph_type, 0);
-    
-    // Save the result from the first pass.
-    TransitionWrapper net_from_trans = result;
 
 #ifndef NDEBUG
     if (wrt_cat.is_spam()) {
@@ -765,15 +775,22 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
       } else {
 	wrt_cat.spam(false) << *top_subtree;
       }
-      wrt_cat.spam() << ", first result is:\n";
+      wrt_cat.spam(false) << ", first result is:\n";
       result.write(wrt_cat.spam(false), 2);
     }
 #endif
     
+    nassertr(to->get_num_parents(graph_type) == 1, NULL);
+    NodeRelation *to_arc = to->get_parent(graph_type, 0);
+    
+    // Save the result from the first pass.
+    TransitionWrapper net_from_trans = result;
+    
     // Now determine the net transition to the top of the subtree from
     // this arc.  It had better be the same subtree!
     Node *top_subtree_2;
-    get_cached_net_transition(to_arc, top_subtree_2, now, result, graph_type);
+    get_cached_net_transition(to_arc, top_subtree_2, as_of, now,
+			      result, graph_type);
     nassertr(top_subtree == top_subtree_2, NULL);
     
     // And now compute the actual wrt.
@@ -855,15 +872,15 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
 
 template<class TransitionWrapper>
 INLINE Node *
-wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result, 
-	    TypeHandle graph_type) {
+wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
+	    TransitionWrapper &result, TypeHandle graph_type) {
 #ifndef NDEBUG
   if (!cache_wrt) {
-    // If we aren't caching wrt, do this the hard way.
+    // If we aren't caching wrt, compute it explicitly.
     return uncached_wrt_subtree(arc, to, result, graph_type);
   }
 #endif
-  return cached_wrt_subtree(arc, to, result, graph_type);
+  return cached_wrt_subtree(arc, to, as_of, now, result, graph_type);
 }
 
 

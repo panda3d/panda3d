@@ -118,10 +118,14 @@ uncached_wrt(const Node *from,
 // general utility; it is of primary interest to code (like the
 // CullTraverser) that needs to cache a wrt-type value for many nodes
 // across the entire tree.
+
+// as_of is the most recent update between 'arc' and 'to'; now is the
+// current most recent update sequence anywhere, used to use to mark
+// any computed cache values.
 template<class TransitionWrapper>
 INLINE Node *
-wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result, 
-	    TypeHandle graph_type);
+wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
+	    TransitionWrapper &result, TypeHandle graph_type);
 
 
 #include "wrt.I"

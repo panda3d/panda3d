@@ -35,7 +35,7 @@ update(const AllTransitionsWrapper &trans, Node *top_subtree, UpdateSeq now) {
   // blow out the cache for all of our children.  We do it for now
   // just to cut down on things that can go wrong, but this should
   // come out of here before long.
-  clear();
+  //  clear();
 
   _trans = trans;
   _parent->compose_trans(_trans, _trans_from_root);

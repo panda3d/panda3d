@@ -214,8 +214,8 @@ store_to_cache(NodeRelation *arc, Node *top_subtree) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodeTransitionWrapper::
-is_cache_verified(UpdateSeq now) const {
-  return _entry.is_cache_verified(now);
+is_cache_verified(UpdateSeq as_of) const {
+  return _entry.is_cache_verified(as_of);
 }
 
 ////////////////////////////////////////////////////////////////////

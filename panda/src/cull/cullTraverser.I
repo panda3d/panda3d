@@ -107,7 +107,7 @@ INLINE CullStateLookup *CullTraverser::
 add_instance(NodeRelation *arc, const AllTransitionsWrapper &trans,
 	     Node *top_subtree, const CullLevelState &level_state) {
   return level_state._lookup->get_subtree
-    (arc, trans, top_subtree, level_state._now);
+    (arc, trans, top_subtree, level_state._as_of);
 }
 
 ////////////////////////////////////////////////////////////////////

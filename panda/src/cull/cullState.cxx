@@ -20,21 +20,24 @@
 ////////////////////////////////////////////////////////////////////
 bool CullState::
 check_currency(Node *node, const AllTransitionsWrapper &,
-	       UpdateSeq now) {
+	       UpdateSeq as_of) {
   // First, check the verified time stamp.
   Verified::iterator vi;
   vi = _verified.find(node);
-  nassertr(vi != _verified.end(), false);
+  if (vi == _verified.end()) {
+    // We have never seen this node before.
+    return false;
+  }
 
   UpdateSeq verified_stamp = (*vi).second;
 
   if (cull_cat.is_spam()) {
     cull_cat.spam()
       << "Checking currency for " << *node << ", verified_stamp = "
-      << verified_stamp << " now = " << now << "\n";
+      << verified_stamp << " as_of = " << as_of << "\n";
   }
 
-  if (verified_stamp == now && !verified_stamp.is_fresh()) {
+  if (as_of <= verified_stamp && !verified_stamp.is_fresh()) {
     return true;
   }
 

@@ -142,8 +142,16 @@ get_trans() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodeTransitionCacheEntry::
-is_cache_verified(UpdateSeq now) const {
-  return _verified == now;
+is_cache_verified(UpdateSeq as_of) const {
+#ifndef NDEBUG
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "NodeTransitionCacheEntry::is_cache_verified(" << as_of 
+      << "), _verified = " << _verified << ", result = "
+      << (as_of <= _verified) << "\n";
+  }
+#endif
+  return as_of <= _verified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -275,7 +283,8 @@ invert_compose(const NodeTransitionCacheEntry &a,
 //     Function: NodeTransitionCacheEntry::cached_compose
 //       Access: Public, Static
 //  Description: Sets this cache entry to the result of compose(a, b),
-//               as computed using the cache value as a hint.
+//               as computed using the cache value as a hint.  Mark
+//               the result as computed at time 'now'.
 ////////////////////////////////////////////////////////////////////
 INLINE NodeTransitionCacheEntry NodeTransitionCacheEntry::
 cached_compose(const NodeTransitionCacheEntry &a, 

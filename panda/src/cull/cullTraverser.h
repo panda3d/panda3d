@@ -103,6 +103,7 @@ private:
 
   CullStateLookup _lookup;
   int _nested_count;
+  UpdateSeq _as_of;
   UpdateSeq _now;
 
 public:
