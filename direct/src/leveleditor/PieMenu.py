@@ -8,8 +8,9 @@ class PieMenu(NodePath, PandaObject):
         self.assign(hidden.attachNewNode(NamedNode('PieMenu')))
         # Attach the menu
         self.menu = menu
-        # Try to flatten the menu
-        menu.flattenStrong()
+        # Try to flatten the menu (note, flattenStrong is too strong
+        # for texture text
+        menu.flattenMedium()
         self.menu.reparentTo(self)
         # Initialize instance variables
         self.direct = direct

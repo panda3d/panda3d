@@ -21,6 +21,7 @@ class VectorEntry(Pmw.MegaWidget):
         optiondefs = (
             ('dim',                 DEFAULT_DIM,    INITOPT),
             ('initialValue',        DEFAULT_VALUE,  INITOPT),
+            ('resetValue',          DEFAULT_VALUE,  None),
             ('label_width',         12,             None),
             ('command',             None,           None),
             ('entryWidth',          8,              self._updateEntryWidth),
@@ -40,6 +41,7 @@ class VectorEntry(Pmw.MegaWidget):
         # Initialize value
         # Make sure its a list (and as a byproduct, make a distinct copy)
         self._value = list(self['initialValue'])
+        self['resetValue'] = self['initialValue']
         self._floaters = None
         self.entryFormat = '%.2f'
 
@@ -211,7 +213,7 @@ class VectorEntry(Pmw.MegaWidget):
             self['command'](self._value)        
         
     def reset(self):
-        self.set(self['initialValue'])
+        self.set(self['resetValue'])
 
     def addMenuItem(self, label = '', command = None):
         self.menu.add_command(label = label, command = command)

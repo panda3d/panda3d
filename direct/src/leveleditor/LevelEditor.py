@@ -463,8 +463,8 @@ class LevelEditor(NodePath, PandaObject):
 	self.accept('createNewLevelGroup', self.createNewLevelGroup)
 	self.accept('setNodePathName', self.setNodePathName)
         self.accept('manipulateObjectCleanup', self.updateSelectedPose)
-        #self.accept('SGESelectNodePath', self.selectNodePath)
-        self.accept('SGESelectNodePath', self.flashNodePath)
+        self.accept('SGESelectNodePath', self.selectNodePath)
+        #self.accept('SGESelectNodePath', self.flashNodePath)
 	self.accept('SGEFlashNodePath', self.flashNodePath)
         self.accept('SGEIsolateNodePath', self.isolateNodePath)
         self.accept('SGEToggle VizNodePath', self.toggleNodePathViz)
@@ -671,8 +671,7 @@ class LevelEditor(NodePath, PandaObject):
                 self.direct.select(dnaRoot)
 
     def getDNARoot(self, aNodePath):
-        if ((aNodePath.node() == render.node()) |
-            (aNodePath.node() == hidden.node())):
+        if not aNodePath.hasParent():
             return 0
         name = aNodePath.getName()
         if (name[-8:] == '_DNARoot'):
@@ -1757,8 +1756,6 @@ class LevelEditor(NodePath, PandaObject):
     def addFlatBuilding(self, buildingType):
 	# Create new building
 	newDNAFlatBuilding = DNAFlatBuilding(buildingType + '_DNARoot')
-        newDNAFlatBuilding = DNAFlatBuilding(buildingType)
-
 	# Select walls
         if buildingType == 'random20':
             selectedType = self.selectBuildingType('twenty')
@@ -1766,7 +1763,6 @@ class LevelEditor(NodePath, PandaObject):
             selectedType = self.selectBuildingType('thirty')
         else:
             selectedType = buildingType
-
         if selectedType == 'toonTenTen':
             self.setBuildingHeight(20.0)
             newDNAFlatBuilding.add(self.createWall(10.0))
@@ -1795,21 +1791,17 @@ class LevelEditor(NodePath, PandaObject):
             newDNAFlatBuilding.add(self.createWall(10.0))
         elif selectedType == 'toonThirty':
             newDNAFlatBuilding.add(self.createWall(30.0))
-
 	# Pick a style for this building
 	self.setRandomBuildingStyle(newDNAFlatBuilding)
-
 	# Initialize its position and hpr
 	newDNAFlatBuilding.setPos(VBase3(0))
 	newDNAFlatBuilding.setHpr(VBase3(0))
-
 	# Now place new building in the world
 	self.addDNAGroupTypeMethod(newDNAFlatBuilding,buildingType,
                                    self.addFlatBuilding)
 
     def addLandmark(self, landmarkType):
 	newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType + '_DNARoot')
-        newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType)
 	newDNALandmarkBuilding.setCode(self.getDNACode(landmarkType))
 	newDNALandmarkBuilding.setPos(VBase3(0))
 	newDNALandmarkBuilding.setHpr(VBase3(0))
@@ -1828,7 +1820,6 @@ class LevelEditor(NodePath, PandaObject):
 
     def addProp(self, newPropType):
 	newDNAProp = DNAProp(newPropType + '_DNARoot')
-        newDNAProp = DNAProp(newPropType)
 	newDNAProp.setCode(self.getDNACode(newPropType))
 	newDNAProp.setPos(VBase3(0))
 	newDNAProp.setHpr(VBase3(0))
@@ -1838,7 +1829,6 @@ class LevelEditor(NodePath, PandaObject):
 
     def addStreetModule(self, streetType):
 	newDNAStreet = DNAStreet(streetType + '_DNARoot')
-        newDNAStreet = DNAStreet(streetType)
 	newDNAStreet.setCode(self.getDNACode(streetType))
 	newDNAStreet.setPos(VBase3(0))
 	newDNAStreet.setHpr(VBase3(0))
@@ -2534,6 +2524,8 @@ class LevelEditor(NodePath, PandaObject):
                 if not(groupClass.eq(DNAGroup.getClassType())):
                     dnaGroup.setPos(aNodePath.getPos())
                     dnaGroup.setHpr(aNodePath.getHpr())
+                    if (groupClass.eq(DNAProp.getClassType())):
+                        dnaGroup.setScale(aNodePath.getScale())
 
     def updateDoorTextureNum(self, doorTextureNumber):
 	self.updateObjDoorTexture(self.targetDNAObject, doorTextureNumber)
@@ -3255,6 +3247,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.levelEditor.addLandmark(self.landmarkType)
 
     def setPropType(self,name):
+        import pdb
+        pdb.set_trace()
         self.propType = 'prop_' + name
         
     def addProp(self):
@@ -3278,6 +3272,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                              int(colorVec[1] * 255.0),
                              int(colorVec[2] * 255.0),
                              255])
+        self.colorEntry['resetValue'] = (
+            [int(colorVec[0] * 255.0),
+             int(colorVec[1] * 255.0),
+             int(colorVec[2] * 255.0),
+             255])
 
     def updateSelectedObjColor(self, color):
         obj = self.levelEditor.targetDNAObject
