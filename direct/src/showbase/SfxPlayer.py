@@ -1,15 +1,31 @@
 
-
+import math
 
 class SfxPlayer:
     """
     Play sound effects, potentially localized.
     """
 
+    UseInverseSquare = 0
+
     def __init__(self):
         # Distance at which sounds can no longer be heard
         # This was determined experimentally
         self.cutoffDistance = 120.0
+
+        # cutoff for inverse square attenuation
+        #self.cutoffDistance = 300.0
+        # volume attenuates according to the inverse square of the
+        # distance from the source. volume = 1/(distance^2)
+        # this is the volume at which a sound is nearly inaudible
+        self.cutoffVolume = .02
+        # this is the 'raw' distance at which the volume of a sound will
+        # be equal to the cutoff volume
+        rawCutoffDistance = math.sqrt(1./self.cutoffVolume)
+        # this is a scale factor to convert distances so that a sound
+        # located at self.cutoffDistance will have a volume
+        # of self.cutoffVolume
+        self.distanceScale = rawCutoffDistance / self.cutoffDistance
 
     def getLocalizedVolume(self, node):
         """
@@ -21,7 +37,13 @@ class SfxPlayer:
         if d > self.cutoffDistance:
             volume = 0
         else:
-            volume = (1 - (d / self.cutoffDistance))
+            if SfxPlayer.UseInverseSquare:
+                sd = d*self.distanceScale
+                volume = min(1, 1 / (sd*sd))
+                #print d, sd, volume
+            else:
+                volume = 1 - (d / self.cutoffDistance)
+                #print d, volume
         return volume
 
     def playSfx(self, sfx, looping = 0, interrupt = 1, volume = None, time = 0.0, node=None):
