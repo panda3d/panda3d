@@ -72,6 +72,16 @@ class DirectScrolledList(DirectFrame):
 
     def scrollTo(self, index):
         self.index = index
+
+        # Not enough items to even worry about scrolling,
+        # just disable the buttons and do nothing
+        if (len(self["items"]) <= self["numItemsVisible"]):
+            self.incButton['state'] = DISABLED
+            self.decButton['state'] = DISABLED
+            # Hmm.. just reset self.index to 0 I guess
+            self.index = 0
+            return
+        
         if (self.index <= 0):
             self.index = 0
             self.decButton['state'] = DISABLED
