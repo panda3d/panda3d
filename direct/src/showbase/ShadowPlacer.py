@@ -19,18 +19,18 @@ class ShadowPlacer(DirectObject.DirectObject):
         activeCount = 0
 
     # special methods
-    def __init__(self, cTrav, shadowNodePath, 
+    def __init__(self, cTrav, shadowNodePath,
             wallCollideMask, floorCollideMask):
         self.isActive = 0 # Is the placer "on".  This is also printed in the debugCall.
         assert self.notify.debugCall()
         DirectObject.DirectObject.__init__(self)
-        self.setup(cTrav, shadowNodePath, 
+        self.setup(cTrav, shadowNodePath,
             wallCollideMask, floorCollideMask)
         if __debug__:
             self.count += 1
             self.debugDisplay()
 
-    def setup(self, cTrav, shadowNodePath, 
+    def setup(self, cTrav, shadowNodePath,
             wallCollideMask, floorCollideMask):
         """
         Set up the collisions
