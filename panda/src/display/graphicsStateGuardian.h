@@ -165,6 +165,7 @@ public:
 
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
+  virtual CoordinateSystem get_internal_coordinate_system() const;
 
   // This function may only be called during a render traversal; it
   // will compute the distance to the indicated point, assumed to be

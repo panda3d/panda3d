@@ -202,7 +202,7 @@ public:
 protected:
   void add_bucket(const BuilderBucket &bucket);
 
-  typedef pset<BuilderBucketNode, less<BuilderBucketNode> > Buckets;
+  typedef pset<BuilderBucketNode> Buckets;
 
   Buckets _buckets;
   Buckets::iterator _bi;

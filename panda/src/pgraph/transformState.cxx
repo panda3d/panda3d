@@ -383,22 +383,29 @@ invert_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 output(ostream &out) const {
-  out << get_type() << ":";
+  out << "T:";
   if (is_identity()) {
     out << "(identity)";
 
   } else if (has_components()) {
-    out << "(";
-    if (get_pos() != LVecBase3f(0.0f, 0.0f, 0.0f)) {
-      out << "pos " << get_pos();
+    char lead = '(';
+    if (!get_pos().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
+      out << lead << "pos " << get_pos();
+      lead = ' ';
     }
-    if (get_hpr() != LVecBase3f(0.0f, 0.0f, 0.0f)) {
-      out << "hpr " << get_hpr();
+    if (!get_hpr().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
+      out << lead << "hpr " << get_hpr();
+      lead = ' ';
     }
-    if (get_scale() != LVecBase3f(1.0f, 1.0f, 1.0f)) {
-      out << "scale " << get_scale();
+    if (!get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+      out << lead << "scale " << get_scale();
+      lead = ' ';
     }
-    out << ")";
+    if (lead == '(') {
+      out << "(almost identity)";
+    } else {
+      out << ")";
+    }
 
   } else {
     out << get_mat();
@@ -462,7 +469,7 @@ return_new(TransformState *state) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 do_compose(const TransformState *other) const {
-  LMatrix4f new_mat = get_mat() * other->get_mat();
+  LMatrix4f new_mat = other->get_mat() * get_mat();
   return make_mat(new_mat);
 }
 
@@ -475,7 +482,7 @@ CPT(TransformState) TransformState::
 do_invert_compose(const TransformState *other) const {
   LMatrix4f new_mat;
   new_mat.invert_from(get_mat());
-  new_mat = new_mat * other->get_mat();
+  new_mat = other->get_mat() * new_mat;
   return make_mat(new_mat);
 }
 

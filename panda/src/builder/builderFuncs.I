@@ -761,13 +761,12 @@ build_geoms(InputIterator first, InputIterator last,
   }
     */
 
-  //    geom->setGState((pfGeoState *)bucket.getGState());
   //  geom->setDrawBin(bucket._drawBin);
   //  geom->setDrawOrder(bucket._drawOrder);
 
   Geom *new_geom = bucket.done_geom(geom);
   if (new_geom != (Geom *)NULL) {
-    geom_node->add_geom(new_geom);
+    geom_node->add_geom(new_geom, bucket._state);
   }
 
   return 1;

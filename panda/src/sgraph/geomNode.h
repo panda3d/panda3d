@@ -30,6 +30,7 @@
 
 class GraphicsStateGuardianBase;
 class GeomNodeContext;
+class RenderState;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomNode
@@ -67,7 +68,8 @@ PUBLISHED:
   dDrawable *get_geom(int n) const;
   void remove_geom(int n);
   void clear();
-  int add_geom(dDrawable *geom);
+  // RenderState pointer here as a temporary builder hack.
+  int add_geom(dDrawable *geom, const RenderState *ptr = NULL);
   void add_geoms_from(const GeomNode *other);
 
 protected:

@@ -106,7 +106,8 @@ public:
     if (_bucket->get_name() != other._bucket->get_name()) {
       return _bucket->get_name() < other._bucket->get_name();
     }
-    return (_bucket->_state < other._bucket->_state);
+    return 0;
+    //    return (_bucket->_state < other._bucket->_state);
   }
 
   PandaNode *_node;
@@ -325,7 +326,6 @@ qpbuild(const string &default_name) {
 
     PandaNode *node = nm._node;
     const string &name = nm._bucket->get_name();
-    CPT(RenderState) state = nm._bucket->_state;
 
     // Assign the name to the geom, if it doesn't have one already.
     if (!geom_node->has_name()) {
@@ -350,11 +350,6 @@ qpbuild(const string &default_name) {
 
       } else {
         node->add_child(geom_node);
-        // Now, this is our only opportunity to apply the scene-graph
-        // state specified in the bucket to the node: we have created
-        // our own geom_node for these buckets, and we have parented
-        // it to the scene graph.
-        geom_node->set_state(state);
       }
     }
   }

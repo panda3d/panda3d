@@ -473,7 +473,7 @@ remove(TypeHandle type) const {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 output(ostream &out) const {
-  out << get_type() << ":";
+  out << "S:";
   if (_attributes.empty()) {
     out << "(empty)";
 

@@ -171,8 +171,12 @@ operator < (const BuilderBucket &other) const {
     return get_name() < other.get_name();
   }
 
-  if (_node != other._node)
+  if (_node != other._node) {
     return _node < other._node;
+  }
+  if (_qpnode != other._qpnode) {
+    return _qpnode < other._qpnode;
+  }
 
   if (_coords != other._coords)
     return _coords < other._coords;
@@ -211,6 +215,9 @@ output(ostream &out) const {
   if (_node != (NamedNode *)NULL) {
     out << " attached to " << *_node << "\n";
   }
+  if (_qpnode != (PandaNode *)NULL) {
+    out << " attached to " << *_qpnode << "\n";
+  }
   out << "\n";
 
 
@@ -236,6 +243,10 @@ output(ostream &out) const {
 
   if (_drawOrder != 0) {
     out << "_drawOrder = " << _drawOrder << "\n";
+  }
+
+  if (!_state->is_empty()) {
+    out << *_state << "\n";
   }
 
   BuilderProperties::output(out);

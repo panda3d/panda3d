@@ -165,6 +165,7 @@ public:
   virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
 
+  virtual CoordinateSystem get_internal_coordinate_system() const;
   virtual float compute_distance_to(const LPoint3f &point) const;
 
   void print_gfx_visual();

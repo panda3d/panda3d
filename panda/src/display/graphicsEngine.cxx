@@ -157,7 +157,19 @@ cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
   DrawCullHandler cull_handler(gsg);
   qpCullTraverser trav;
   trav.set_cull_handler(&cull_handler);
-  trav.set_world_transform(camera.get_rel_transform(NodeChain()));
+
+  // The world transform is computed from the camera's position; we
+  // then might need to adjust it into the GSG's internal coordinate
+  // system.
+  CPT(TransformState) world_transform = camera.get_rel_transform(NodeChain());
+  CoordinateSystem external_cs = gsg->get_coordinate_system();
+  CoordinateSystem internal_cs = gsg->get_internal_coordinate_system();
+  if (internal_cs != CS_default && internal_cs != external_cs) {
+    CPT(TransformState) cs_transform = 
+      TransformState::make_mat(LMatrix4f::convert_mat(external_cs, internal_cs));
+    world_transform = cs_transform->compose(world_transform);
+  }
+  trav.set_world_transform(world_transform);
   
   DisplayRegionStack old_dr = gsg->push_display_region(dr);
   gsg->prepare_display_region();

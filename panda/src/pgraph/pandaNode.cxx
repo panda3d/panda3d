@@ -346,7 +346,7 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
   CDReader cdata(_cycler);
   if (!cdata->_transform->is_identity()) {
-    out << " T";
+    out << " " << *cdata->_transform;
   }
   if (!cdata->_state->is_empty()) {
     out << " " << *cdata->_state;

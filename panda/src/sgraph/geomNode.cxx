@@ -361,7 +361,7 @@ clear() {
 //               new Geom's index number within the node.
 ////////////////////////////////////////////////////////////////////
 int GeomNode::
-add_geom(dDrawable *geom) {
+add_geom(dDrawable *geom, const RenderState *) {
   if (_geoms.get_ref_count() == 1) {
     // The normal case; we own the only pointer to the array.
     _geoms.push_back(geom);

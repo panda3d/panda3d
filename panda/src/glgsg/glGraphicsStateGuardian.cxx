@@ -3617,6 +3617,24 @@ end_decal(GeomNode *base_geom) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_internal_coordinate_system
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return the
+//               coordinate system used internally by the GSG, if any
+//               one particular coordinate system is used.  The
+//               default, CS_default, indicates that the GSG can use
+//               any coordinate system.
+//
+//               If this returns other than CS_default, the
+//               GraphicsEngine will automatically convert all
+//               transforms into the indicated coordinate system.
+////////////////////////////////////////////////////////////////////
+CoordinateSystem GLGraphicsStateGuardian::
+get_internal_coordinate_system() const {
+  return CS_yup_right;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::compute_distance_to
 //       Access: Public, Virtual
 //  Description: This function may only be called during a render
