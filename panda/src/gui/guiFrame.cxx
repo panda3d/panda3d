@@ -206,6 +206,8 @@ void GuiFrame::remove_item(GuiItem* item) {
   }
   // now get rid of the thing itself
   _items.erase(i);
+  this->recompute();
+  item->unmanage();
 }
 
 void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to, float gap) {

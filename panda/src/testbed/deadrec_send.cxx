@@ -48,6 +48,7 @@ static void deadrec_setup(void) {
 		     << c->get_address().get_port() << " and IP "
 		     << c->get_address() << endl;
   writer = new ConnectionWriter(&cm, 0);
+}
 
 static void deadrec_keys(EventHandler& eh) {
   deadrec_setup();
