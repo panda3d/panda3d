@@ -31,9 +31,6 @@ class DirectOptionMenu(DirectButton):
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses
         DirectButton.__init__(self, parent)
-        # This is created when you set the menu's items
-        self.popupMenu = None
-        self.selectedIndex = None
         # Record any user specified frame size
         self.initFrameSize = self['frameSize']
         # Create a small rectangular marker to distinguish this button
@@ -49,10 +46,19 @@ class DirectOptionMenu(DirectButton):
         # Make popup marker have the same click sound
         self.popupMarker.guiItem.setSound(
             B1PRESS + self.popupMarker.guiId,self['clickSound'])
+        # Create an invisible frame to hold cancel frame and popup frame
+        # Used to reparent menu and cancel frame to render so that its drawn
+        # on top of everything
+        self.reparentFrame = self.createcomponent(
+            'reparentFrame', (), None,
+            DirectFrame, (self,))
+        # This is created when you set the menu's items
+        self.popupMenu = None
+        self.selectedIndex = None
         # A big screen encompassing frame to catch the cancel clicks
         self.cancelFrame = self.createcomponent(
             'cancelframe', (), None,
-            DirectFrame, (self,),
+            DirectFrame, (self.reparentFrame,),
             frameSize = (-1,1,-1,1),
             relief = None)
         self.cancelFrame.bind(B1PRESS, self.hidePopupMenu)
@@ -73,7 +79,8 @@ class DirectOptionMenu(DirectButton):
             self.destroycomponent('popupMenu')
         # Create new component
         self.popupMenu = self.createcomponent('popupMenu', (), None,
-                                              DirectFrame, (self,),
+                                              DirectFrame,
+                                              (self.reparentFrame,),
                                               relief = 'raised',
                                               )
         if not self['items']:
@@ -160,6 +167,12 @@ class DirectOptionMenu(DirectButton):
         Adjust popup position if default position puts it outside of
         visible screen region
         """
+        # Show the menu
+        self.reparentFrame.reparentTo(aspect2d)
+        self.popupMenu.show()
+        # Make sure its at the right scale
+        self.popupMenu.setScale(self, VBase3(1))       
+        # Compute bounds
         b = self.getBounds()
         fb = self.popupMenu.getBounds()
         # Where did the user click his mouse?
@@ -169,9 +182,10 @@ class DirectOptionMenu(DirectButton):
         else:
             # If no mouse watcher, use midpoint of menu button
             xPos = (b[1] - b[0])/2.0 - fb[0]
-            self.popupMenu.setX(xPos)
+            self.popupMenu.setX(self, xPos)
         # Try to set height to line up selected item with button
-        self.popupMenu.setZ((self.selectedIndex + 1)*self.maxHeight - fb[3])
+        self.popupMenu.setZ(
+            self, self.minZ + (self.selectedIndex + 1)*self.maxHeight)
         # Make sure the whole popup menu is visible
         pos = self.popupMenu.getPos(render2d)
         scale = self.popupMenu.getScale(render2d)
@@ -189,8 +203,6 @@ class DirectOptionMenu(DirectButton):
         elif maxZ > 1.0:
             # Menu too high, move it down
             self.popupMenu.setZ(render2d, pos[2] + (1.0 - maxZ))
-        # Show the menu in its new position
-        self.popupMenu.show()
         # Also display cancel frame to catch clicks outside of the popup
         self.cancelFrame.show()
         # Position and scale cancel frame to fill entire window
@@ -199,6 +211,7 @@ class DirectOptionMenu(DirectButton):
 
     def hidePopupMenu(self, event = None):
         """ Put away popup and cancel frame """
+        self.reparentFrame.reparentTo(self)
         self.popupMenu.hide()
         self.cancelFrame.hide()
 
@@ -243,7 +256,12 @@ class DirectOptionMenu(DirectButton):
         """
         pass
         
-
+    def destroy(self):
+        """
+        Make sure you clean up popup menu
+        """
+        self.reparentFrame.reparentTo(self)
+        DirectGuiBase.destroy(self)
 
 
 
