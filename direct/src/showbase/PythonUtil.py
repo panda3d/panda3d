@@ -20,6 +20,23 @@ from direct.directutil import Verify
 #     dict.setdefault(key, defaultValue)
 # Please use setdefault instead -- Joe
 
+def enumerate(L):
+    """Returns (0, L[0]), (1, L[1]), etc., allowing this syntax:
+    for i, item in enumerate(L):
+       ...
+
+    enumerate is a built-in feature in Python 2.3, which implements it
+    using an iterator. For now, we can use this quick & dirty
+    implementation that returns a list of tuples that is completely
+    constructed every time enumerate() is called.
+    """
+    return zip(xrange(len(L)), L)
+
+import __builtin__
+if hasattr(__builtin__, 'enumerate'):
+    print 'enumerate is already present in __builtin__'
+else:
+    __builtin__.enumerate = enumerate
 
 def unique(L1, L2):
     """Return a list containing all items in 'L1' that are not in 'L2'"""
