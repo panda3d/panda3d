@@ -103,18 +103,28 @@ class Loader:
         Loader.notify.debug("Loading font: %s" % (modelPath))
         if phaseChecker:
             phaseChecker(modelPath)
-        node = ModelPool.loadModel(modelPath)
-        # Create a temp node path so you can adjust priorities
-        nodePath = hidden.attachNewNode(node)
-        nodePath.adjustAllPriorities(priority)
-        # Now create text font from the node
-        # Temporary try..except for old pandas.
-        try:
+
+        # Check the filename extension.
+        fn = Filename(modelPath)
+        extension = fn.getExtension()
+
+        if extension == "" or extension == "egg" or extension == "bam":
+            # A traditional model file is probably an old-style,
+            # static font.
+            node = ModelPool.loadModel(modelPath)
+            # Create a temp node path so you can adjust priorities
+            nodePath = hidden.attachNewNode(node)
+            nodePath.adjustAllPriorities(priority)
+            # Now create text font from the node
             font = StaticTextFont(node)
-        except:
-            font = TextFont(node)
-        # And remove node path
-        nodePath.removeNode()
+
+            # And remove node path
+            nodePath.removeNode()
+        else:
+            # Otherwise, it must be a new-style, dynamic font.  Maybe
+            # it's just a TTF file or something.
+            font = DynamicTextFont(fn)
+
         return font
 
     # texture loading funcs
