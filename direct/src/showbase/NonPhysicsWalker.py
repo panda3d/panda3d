@@ -74,7 +74,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         # a higher or lower value depending on whether you want an avatar
         # that is outside of the world to step up to the floor when they
         # get under valid floor:
-        self.cRay = CollisionRay(0.0, 0.0, 400000.0, 0.0, 0.0, -1.0)
+        self.cRay = CollisionRay(0.0, 0.0, 4000.0, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('NPW.cRayNode')
         cRayNode.addSolid(self.cRay)
         self.cRayNodePath = avatarNodePath.attachNewNode(cRayNode)
