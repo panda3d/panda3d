@@ -322,8 +322,16 @@
 
 // Do we have Freetype 2.0 (or better)?  If available, this package is
 // used to generate dynamic in-the-world text from font files.
+
+// On Unix, freetype comes with the freetype-config executable, which
+// tells us where to look for the various files.  On Windows, we need to
+// supply this information explicitly.
 #define FREETYPE_CONFIG freetype-config
 #defer HAVE_FREETYPE $[bintest $[FREETYPE_CONFIG]]
+#define FREETYPE_CFLAGS
+#define FREETYPE_IPATH
+#define FREETYPE_LPATH
+#define FREETYPE_LIBS
 
 // Is Maya installed?  This matters only to programs in PANDATOOL.
 #define MAYA_LOCATION /usr/aw/maya3.0
