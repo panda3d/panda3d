@@ -66,6 +66,7 @@ PUBLISHED:
   // Temporary.
   virtual Geom *make_copy() const;
 
+  INLINE qpGeomPrimitive::PrimitiveType get_primitive_type() const;
   INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
 
   INLINE CPT(qpGeomVertexData) get_vertex_data() const;
@@ -137,6 +138,7 @@ private:
 
     PT(qpGeomVertexData) _data;
     Primitives _primitives;
+    qpGeomPrimitive::PrimitiveType _primitive_type;
     qpGeomUsageHint::UsageHint _usage_hint;
     bool _got_usage_hint;
     UpdateSeq _modified;

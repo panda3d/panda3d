@@ -1787,6 +1787,14 @@ primitive_body:
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
     primitive->set_bin(strval);
+  } else if (cmp_nocase_uh(name, "thick") == 0) {
+    if (primitive->is_of_type(EggLine::get_class_type())) {
+      DCAST(EggLine, primitive)->set_thick(value);
+    } else if (primitive->is_of_type(EggPoint::get_class_type())) {
+      DCAST(EggPoint, primitive)->set_thick(value);
+    } else {
+      eggyywarning("scalar thick is only meaningful for points and lines.");
+    }
   } else {
     eggyywarning("Unknown scalar " + name);
   }

@@ -92,6 +92,14 @@ PUBLISHED:
     SM_flat_last_vertex,
   };
 
+  enum PrimitiveType {
+    PT_none,
+    PT_polygons,
+    PT_lines,
+    PT_points
+  };
+
+  virtual PrimitiveType get_primitive_type() const=0;
   INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
 
   INLINE ShadeModel get_shade_model() const;

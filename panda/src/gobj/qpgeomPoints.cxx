@@ -1,5 +1,5 @@
-// Filename: qpgeomTriangles.cxx
-// Created by:  drose (06Mar05)
+// Filename: qpgeomPoints.cxx
+// Created by:  drose (22Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,56 +16,56 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "qpgeomTriangles.h"
+#include "qpgeomPoints.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
-TypeHandle qpGeomTriangles::_type_handle;
+TypeHandle qpGeomPoints::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::Constructor
+//     Function: qpGeomPoints::Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-qpGeomTriangles::
-qpGeomTriangles(qpGeomUsageHint::UsageHint usage_hint) :
+qpGeomPoints::
+qpGeomPoints(qpGeomUsageHint::UsageHint usage_hint) :
   qpGeomPrimitive(usage_hint)
 {
 }
  
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::Copy Constructor
+//     Function: qpGeomPoints::Copy Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-qpGeomTriangles::
-qpGeomTriangles(const qpGeomTriangles &copy) :
+qpGeomPoints::
+qpGeomPoints(const qpGeomPoints &copy) :
   qpGeomPrimitive(copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::Destructor
+//     Function: qpGeomPoints::Destructor
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-qpGeomTriangles::
-~qpGeomTriangles() {
+qpGeomPoints::
+~qpGeomPoints() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::make_copy
+//     Function: qpGeomPoints::make_copy
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomPrimitive) qpGeomTriangles::
+PT(qpGeomPrimitive) qpGeomPoints::
 make_copy() const {
-  return new qpGeomTriangles(*this);
+  return new qpGeomPoints(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::get_primitive_type
+//     Function: qpGeomPoints::get_primitive_type
 //       Access: Published, Virtual
 //  Description: Returns the fundamental rendering type of this
 //               primitive: whether it is points, lines, or polygons.
@@ -73,108 +73,60 @@ make_copy() const {
 //               antialiasing settings when AntialiasAttrib::M_auto is
 //               in effect.
 ////////////////////////////////////////////////////////////////////
-qpGeomPrimitive::PrimitiveType qpGeomTriangles::
+qpGeomPrimitive::PrimitiveType qpGeomPoints::
 get_primitive_type() const {
-  return PT_polygons;
+  return PT_points;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::get_num_vertices_per_primitive
+//     Function: qpGeomPoints::get_num_vertices_per_primitive
 //       Access: Published, Virtual
 //  Description: If the primitive type is a simple type in which all
 //               primitives have the same number of vertices, like
-//               triangles, returns the number of vertices per
+//               points, returns the number of vertices per
 //               primitive.  If the primitive type is a more complex
 //               type in which different primitives might have
 //               different numbers of vertices, for instance a
-//               triangle strip, returns 0.
+//               point strip, returns 0.
 ////////////////////////////////////////////////////////////////////
-int qpGeomTriangles::
+int qpGeomPoints::
 get_num_vertices_per_primitive() const {
-  return 3;
+  return 1;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::draw
+//     Function: qpGeomPoints::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the
 //               primitive.
 ////////////////////////////////////////////////////////////////////
-void qpGeomTriangles::
+void qpGeomPoints::
 draw(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_triangles(this);
+  gsg->draw_points(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::rotate_impl
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of do_rotate().
-////////////////////////////////////////////////////////////////////
-CPTA_ushort qpGeomTriangles::
-rotate_impl() const {
-  // To rotate triangles, we just move one vertex from the front to
-  // the back, or vice-versa; but we have to know what direction we're
-  // going.
-  CPTA_ushort vertices = get_vertices();
-  ShadeModel shade_model = get_shade_model();
-
-  PTA_ushort new_vertices;
-  new_vertices.reserve(vertices.size());
-
-  switch (shade_model) {
-  case SM_flat_first_vertex:
-    // Move the first vertex to the end.
-    {
-      for (int begin = 0; begin < (int)vertices.size(); begin += 3) {
-        new_vertices.push_back(vertices[begin + 1]);
-        new_vertices.push_back(vertices[begin + 2]);
-        new_vertices.push_back(vertices[begin]);
-      }
-    }
-    break;
-    
-  case SM_flat_last_vertex:
-    // Move the last vertex to the front.
-    {
-      for (int begin = 0; begin < (int)vertices.size(); begin += 3) {
-        new_vertices.push_back(vertices[begin + 2]);
-        new_vertices.push_back(vertices[begin]);
-        new_vertices.push_back(vertices[begin + 1]);
-      }
-    }
-    break;
-      
-  default:
-    // This shouldn't get called with any other shade model.
-    nassertr(false, vertices);
-  }
-  
-  nassertr(new_vertices.size() == vertices.size(), vertices);
-  return new_vertices;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::register_with_read_factory
+//     Function: qpGeomPoints::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
 //               qpGeom.
 ////////////////////////////////////////////////////////////////////
-void qpGeomTriangles::
+void qpGeomPoints::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::make_from_bam
+//     Function: qpGeomPoints::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
 //               when a new object of type qpGeom is encountered
 //               in the Bam file.  It should create the qpGeom
 //               and extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *qpGeomTriangles::
+TypedWritable *qpGeomPoints::
 make_from_bam(const FactoryParams &params) {
-  qpGeomTriangles *object = new qpGeomTriangles(qpGeomUsageHint::UH_client);
+  qpGeomPoints *object = new qpGeomPoints(qpGeomUsageHint::UH_client);
   DatagramIterator scan;
   BamReader *manager;
 

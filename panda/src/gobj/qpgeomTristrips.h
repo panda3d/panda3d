@@ -35,6 +35,7 @@ PUBLISHED:
   virtual ~qpGeomTristrips();
 
   virtual PT(qpGeomPrimitive) make_copy() const;
+  virtual PrimitiveType get_primitive_type() const;
 
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const;

@@ -66,6 +66,20 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTristrips::get_primitive_type
+//       Access: Published, Virtual
+//  Description: Returns the fundamental rendering type of this
+//               primitive: whether it is points, lines, or polygons.
+//               This is used primarily to set up the appropriate
+//               antialiasing settings when AntialiasAttrib::M_auto is
+//               in effect.
+////////////////////////////////////////////////////////////////////
+qpGeomPrimitive::PrimitiveType qpGeomTristrips::
+get_primitive_type() const {
+  return PT_polygons;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTristrips::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the
@@ -99,7 +113,7 @@ decompose_impl() const {
 
   // We need a slightly different algorithm for SM_flat_first_vertex
   // than for SM_flat_last_vertex, to preserve the key vertex in the
-  // right place.  The remaining shade models can either either
+  // right place.  The remaining shade models can use either
   // algorithm.
   if (get_shade_model() == SM_flat_first_vertex) {
     // Preserve the first vertex of each component triangle as the

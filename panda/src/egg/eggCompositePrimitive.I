@@ -36,17 +36,6 @@ EggCompositePrimitive(const EggCompositePrimitive &copy) : EggPrimitive(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE EggCompositePrimitive::
-~EggCompositePrimitive() {
-  clear();
-  nassertv(_components.empty());
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggCompositePrimitive::Copy assignment operator
 //       Access: Published
 //  Description:

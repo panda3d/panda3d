@@ -35,7 +35,7 @@ PUBLISHED:
   INLINE EggCompositePrimitive(const string &name = "");
   INLINE EggCompositePrimitive(const EggCompositePrimitive &copy);
   INLINE EggCompositePrimitive &operator = (const EggCompositePrimitive &copy);
-  INLINE ~EggCompositePrimitive();
+  virtual ~EggCompositePrimitive();
 
   virtual Shading get_shading() const;
 
@@ -48,14 +48,17 @@ PUBLISHED:
   PT(EggCompositePrimitive) triangulate_in_place();
 
   virtual void unify_attributes(Shading shading);
+  virtual void apply_last_attribute();
+  virtual void apply_first_attribute();
   virtual void post_apply_flat_attribute();
   virtual bool cleanup();
 
 protected:
+  virtual int get_num_lead_vertices() const=0;
   virtual void prepare_add_vertex(EggVertex *vertex, int i, int n);
   virtual void prepare_remove_vertex(EggVertex *vertex, int i, int n);
 
-  virtual bool do_triangulate(EggGroupNode *container) const=0;
+  virtual bool do_triangulate(EggGroupNode *container) const;
 
   void write_body(ostream &out, int indent_level) const;
 

@@ -47,6 +47,12 @@ cleanup() {
 void EggPoint::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<PointLight>");
-  write_body(out, indent_level+2);
+
+  if (has_thick()) {
+    indent(out, indent_level + 2) 
+      << "<Scalar> thick { " << get_thick() << " }\n";
+  }
+
+  write_body(out, indent_level + 2);
   indent(out, indent_level) << "}\n";
 }

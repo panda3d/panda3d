@@ -34,9 +34,18 @@ PUBLISHED:
   INLINE EggPoint(const EggPoint &copy);
   INLINE EggPoint &operator = (const EggPoint &copy);
 
+  INLINE bool has_thick() const;
+  INLINE double get_thick() const;
+  INLINE void set_thick(const double thick);
+  INLINE void clear_thick();
+
   virtual bool cleanup();
 
   virtual void write(ostream &out, int indent_level) const;
+
+private:
+  double _thick;
+  bool _has_thick;
 
 public:
 

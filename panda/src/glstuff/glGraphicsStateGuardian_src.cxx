@@ -25,6 +25,9 @@
 #include "qpgeomTriangles.h"
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
+#include "qpgeomLines.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomPoints.h"
 #include "graphicsWindow.h"
 #include "lens.h"
 #include "perspectiveLens.h"
@@ -2065,6 +2068,20 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
   _geom_display_list = 0;
 
+  if (_auto_antialias_mode) {
+    switch (geom->get_primitive_type()) {
+    case qpGeomPrimitive::PT_polygons:
+      setup_antialias_polygon();
+      break;
+    case qpGeomPrimitive::PT_points:
+      setup_antialias_point();
+      break;
+    case qpGeomPrimitive::PT_lines:
+      setup_antialias_line();
+      break;
+    }
+  }
+
   if (geom->get_usage_hint() == qpGeomUsageHint::UH_static && 
       _vertex_data->get_usage_hint() == qpGeomUsageHint::UH_static &&
       display_lists) {
@@ -2209,7 +2226,6 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_triangles(const qpGeomTriangles *primitive) {
-  //  setup_antialias_polygon();
   _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   const unsigned short *client_pointer = setup_primitive(primitive);
 
@@ -2229,8 +2245,6 @@ draw_triangles(const qpGeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const qpGeomTristrips *primitive) {
-  //  setup_antialias_polygon();
-
   _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
   const unsigned short *client_pointer = setup_primitive(primitive);
 
@@ -2246,6 +2260,44 @@ draw_tristrips(const qpGeomTristrips *primitive) {
                          GL_UNSIGNED_SHORT, client_pointer + start);
     start = ends[i];
   }
+
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::draw_lines
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected line segments.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+draw_lines(const qpGeomLines *primitive) {
+  _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+  const unsigned short *client_pointer = setup_primitive(primitive);
+
+  _glDrawRangeElements(GL_LINES, 
+                       primitive->get_min_vertex(),
+                       primitive->get_max_vertex(),
+                       primitive->get_num_vertices(),
+                       GL_UNSIGNED_SHORT, client_pointer);
+
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::draw_points
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected points.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+draw_points(const qpGeomPoints *primitive) {
+  _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+  const unsigned short *client_pointer = setup_primitive(primitive);
+
+  _glDrawRangeElements(GL_POINTS, 
+                       primitive->get_min_vertex(),
+                       primitive->get_max_vertex(),
+                       primitive->get_num_vertices(),
+                       GL_UNSIGNED_SHORT, client_pointer);
 
   report_my_gl_errors();
 }

@@ -65,6 +65,20 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTrifans::get_primitive_type
+//       Access: Published, Virtual
+//  Description: Returns the fundamental rendering type of this
+//               primitive: whether it is points, lines, or polygons.
+//               This is used primarily to set up the appropriate
+//               antialiasing settings when AntialiasAttrib::M_auto is
+//               in effect.
+////////////////////////////////////////////////////////////////////
+qpGeomPrimitive::PrimitiveType qpGeomTrifans::
+get_primitive_type() const {
+  return PT_polygons;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTrifans::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the

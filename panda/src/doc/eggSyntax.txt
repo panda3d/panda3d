@@ -707,6 +707,7 @@ GEOMETRY ENTRIES
         indices 
         <Ref> { pool-name } 
     } 
+    [component attributes]
 }
 
   A Line is a connected set of line segments.  The listed N vertices
@@ -714,7 +715,11 @@ GEOMETRY ENTRIES
   vertex 1, vertex 1 and vertex 2, etc.  The line is not implicitly
   closed; if you wish to represent a loop, you must repeat vertex 0 at
   the end.  As with a PointLight, normals, textures, colors,
-  draw_order, and the "thick" attribute are all valid.
+  draw_order, and the "thick" attribute are all valid.  Also, since a
+  Line (with more than two vertices) is made up of multiple line
+  segments, it may contain a number of <Component> entries, to set a
+  different color and/or normal for each line segment, as in
+  TriangleStrip, below.
 
 
 <TriangleStrip> name { 

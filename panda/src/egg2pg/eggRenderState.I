@@ -27,6 +27,7 @@ EggRenderState(EggLoader &loader) :
   _state(RenderState::make_empty()),
   _hidden(false),
   _flat_shaded(false),
+  _primitive_type(qpGeomPrimitive::PT_none),
   _loader(loader)
 {
 }
@@ -59,6 +60,9 @@ compare_to(const EggRenderState &other) const {
   }
   if (_flat_shaded != other._flat_shaded) {
     return (int)_flat_shaded - (int)other._flat_shaded;
+  }
+  if (_primitive_type != other._primitive_type) {
+    return (int)_primitive_type - (int)other._primitive_type;
   }
   return 0;
 }

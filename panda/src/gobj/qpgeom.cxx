@@ -149,7 +149,13 @@ void qpGeom::
 add_primitive(const qpGeomPrimitive *primitive) {
   clear_cache();
   CDWriter cdata(_cycler);
+  // All primitives within a particular Geom must have the same
+  // primitive type.
+  nassertv(cdata->_primitive_type == qpGeomPrimitive::PT_none ||
+           cdata->_primitive_type == primitive->get_primitive_type());
+
   cdata->_primitives.push_back((qpGeomPrimitive *)primitive);
+  cdata->_primitive_type = primitive->get_primitive_type();
 
   if (cdata->_got_usage_hint) {
     cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
@@ -174,6 +180,9 @@ remove_primitive(int i) {
     cdata->_got_usage_hint = false;
   }
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
+  if (cdata->_primitives.empty()) {
+    cdata->_primitive_type = qpGeomPrimitive::PT_none;
+  }
   cdata->_modified = qpGeom::get_next_modified();
 }
 
@@ -190,6 +199,7 @@ clear_primitives() {
   clear_cache();
   CDWriter cdata(_cycler);
   cdata->_primitives.clear();
+  cdata->_primitive_type = qpGeomPrimitive::PT_none;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -922,7 +922,35 @@ rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse) {
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggNode *child = *ci;
 
-    if (child->is_of_type(EggPrimitive::get_class_type())) {
+    if (child->is_of_type(EggCompositePrimitive::get_class_type())) {
+      typedef pvector< PT(EggVertex) > Vertices;
+      typedef pvector<EggAttributes> Attributes;
+      Vertices vertices;
+      Attributes attributes;
+
+      EggCompositePrimitive *prim = DCAST(EggCompositePrimitive, child);
+      EggPrimitive::const_iterator pi;
+      for (pi = prim->begin(); pi != prim->end(); ++pi) {
+        vertices.push_back(*pi);
+      }
+      int i;
+      int num_components = prim->get_num_components();
+      for (i = 0; i < num_components; i++) {
+        attributes.push_back(*prim->get_component(i));
+      }
+
+      prim->clear();
+
+      Vertices::const_iterator vi;
+      for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+        EggVertex *vertex = (*vi);
+        prim->add_vertex(vertex_pool->create_unique_vertex(*vertex));
+      }
+      for (i = 0; i < num_components; i++) {
+        prim->set_component(i, &attributes[i]);
+      }
+
+    } else if (child->is_of_type(EggPrimitive::get_class_type())) {
       typedef pvector< PT(EggVertex) > Vertices;
       Vertices vertices;
 

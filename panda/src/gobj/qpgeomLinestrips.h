@@ -1,5 +1,5 @@
-// Filename: qpgeomTrifans.h
-// Created by:  drose (08Mar05)
+// Filename: qpgeomLinestrips.h
+// Created by:  drose (22Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,23 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef qpGEOMTRIFANS_H
-#define qpGEOMTRIFANS_H
+#ifndef qpGEOMLINESTRIPS_H
+#define qpGEOMLINESTRIPS_H
 
 #include "pandabase.h"
 #include "qpgeomPrimitive.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : qpGeomTrifans
-// Description : Defines a series of triangle fans.
+//       Class : qpGeomLinestrips
+// Description : Defines a series of line strips.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomTrifans : public qpGeomPrimitive {
+class EXPCL_PANDA qpGeomLinestrips : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomTrifans(qpGeomUsageHint::UsageHint usage_hint);
-  qpGeomTrifans(const qpGeomTrifans &copy);
-  virtual ~qpGeomTrifans();
+  qpGeomLinestrips(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomLinestrips(const qpGeomLinestrips &copy);
+  virtual ~qpGeomLinestrips();
 
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
@@ -56,7 +56,7 @@ public:
   }
   static void init_type() {
     qpGeomPrimitive::init_type();
-    register_type(_type_handle, "qpGeomTrifans",
+    register_type(_type_handle, "qpGeomLinestrips",
                   qpGeomPrimitive::get_class_type());
   }
   virtual TypeHandle get_type() const {

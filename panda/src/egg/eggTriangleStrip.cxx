@@ -29,49 +29,13 @@ TypeHandle EggTriangleStrip::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::apply_last_attribute
+//     Function: EggTriangleStrip::Destructor
 //       Access: Published, Virtual
-//  Description: Sets the last vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               OpenGL convention of storing flat-shaded properties on
-//               the last vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may introduce redundant vertices to the vertex
-//               pool.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-void EggTriangleStrip::
-apply_last_attribute() {
-  // The first component gets applied to the third vertex, and so on
-  // from there.
-  for (int i = 0; i < get_num_components(); i++) {
-    EggAttributes *component = get_component(i);
-    do_apply_flat_attribute(i + 2, component);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::apply_first_attribute
-//       Access: Published, Virtual
-//  Description: Sets the first vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               DirectX convention of storing flat-shaded properties
-//               on the first vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may introduce redundant vertices to the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
-void EggTriangleStrip::
-apply_first_attribute() {
-  // The first component gets applied to the first vertex, and so on
-  // from there.
-  for (int i = 0; i < get_num_components(); i++) {
-    EggAttributes *component = get_component(i);
-    do_apply_flat_attribute(i, component);
-  }
+EggTriangleStrip::
+~EggTriangleStrip() {
+  clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +49,19 @@ write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<TriangleStrip>");
   write_body(out, indent_level+2);
   indent(out, indent_level) << "}\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTriangleStrip::get_num_lead_vertices
+//       Access: Protected, Virtual
+//  Description: Returns the number of initial vertices that are not
+//               used in defining any component; the first component
+//               is defined by the (n + 1)th vertex, and then a new
+//               component at each vertex thereafter.
+////////////////////////////////////////////////////////////////////
+int EggTriangleStrip::
+get_num_lead_vertices() const {
+  return 2;
 }
 
 ////////////////////////////////////////////////////////////////////

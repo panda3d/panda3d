@@ -40,6 +40,9 @@
 #include "qpgeom.h"
 #include "qpgeomTriangles.h"
 #include "qpgeomTristrips.h"
+#include "qpgeomLines.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomPoints.h"
 #include "sequenceNode.h"
 #include "switchNode.h"
 #include "portalNode.h"
@@ -1993,8 +1996,19 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
     if (egg_prim->size() == 3) {
       primitive = new qpGeomTriangles(qpGeomUsageHint::UH_static);
     }
+
   } else if (egg_prim->is_of_type(EggTriangleStrip::get_class_type())) {
     primitive = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+
+  } else if (egg_prim->is_of_type(EggLine::get_class_type())) {
+    if (egg_prim->size() == 2) {
+      primitive = new qpGeomLines(qpGeomUsageHint::UH_static);
+    } else {
+      primitive = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+    }
+
+  } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
+    primitive = new qpGeomPoints(qpGeomUsageHint::UH_static);
   }
 
   if (primitive == (qpGeomPrimitive *)NULL) {

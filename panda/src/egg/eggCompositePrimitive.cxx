@@ -23,6 +23,18 @@ TypeHandle EggCompositePrimitive::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCompositePrimitive::Destructor
+//       Access: Published, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+EggCompositePrimitive::
+~EggCompositePrimitive() {
+  // Every derived class of EggCompositePrimitive must call clear() in
+  // its destructor.
+  nassertv(_components.empty());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCompositePrimitive::get_shading
 //       Access: Published, Virtual
 //  Description: Returns the shading properties apparent on this
@@ -146,7 +158,7 @@ unify_attributes(EggPrimitive::Shading shading) {
   }
 
   // Not having a color is implicitly white.
-  if (!has_color()) {
+  if (!has_color() && shading != S_overall) {
     set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   }
 
@@ -253,6 +265,57 @@ unify_attributes(EggPrimitive::Shading shading) {
   case S_unknown:
     break;
   }
+
+  if (!has_color() && shading == S_overall) {
+    set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCompositePrimitive::apply_last_attribute
+//       Access: Published, Virtual
+//  Description: Sets the last vertex of the triangle (or each
+//               component) to the primitive normal and/or color, if
+//               the primitive is flat-shaded.  This reflects the
+//               OpenGL convention of storing flat-shaded properties on
+//               the last vertex, although it is not usually a
+//               convention in Egg.
+//
+//               This may introduce redundant vertices to the vertex
+//               pool.
+////////////////////////////////////////////////////////////////////
+void EggCompositePrimitive::
+apply_last_attribute() {
+  // The first component gets applied to the third vertex, and so on
+  // from there.
+  int num_lead_vertices = get_num_lead_vertices();
+  for (int i = 0; i < get_num_components(); i++) {
+    EggAttributes *component = get_component(i);
+    do_apply_flat_attribute(i + num_lead_vertices, component);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCompositePrimitive::apply_first_attribute
+//       Access: Published, Virtual
+//  Description: Sets the first vertex of the triangle (or each
+//               component) to the primitive normal and/or color, if
+//               the primitive is flat-shaded.  This reflects the
+//               DirectX convention of storing flat-shaded properties
+//               on the first vertex, although it is not usually a
+//               convention in Egg.
+//
+//               This may introduce redundant vertices to the vertex
+//               pool.
+////////////////////////////////////////////////////////////////////
+void EggCompositePrimitive::
+apply_first_attribute() {
+  // The first component gets applied to the first vertex, and so on
+  // from there.
+  for (int i = 0; i < get_num_components(); i++) {
+    EggAttributes *component = get_component(i);
+    do_apply_flat_attribute(i, component);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,9 +329,10 @@ unify_attributes(EggPrimitive::Shading shading) {
 void EggCompositePrimitive::
 post_apply_flat_attribute() {
   if (!empty()) {
+    int num_lead_vertices = get_num_lead_vertices();
     for (int i = 0; i < (int)size(); i++) {
       EggVertex *vertex = get_vertex(i);
-      EggAttributes *component = get_component(max(i - 2, 0));
+      EggAttributes *component = get_component(max(i - num_lead_vertices, 0));
 
       // Use set_normal() instead of copy_normal(), to avoid getting
       // the morphs--we don't want them here, since we're just putting
@@ -300,7 +364,7 @@ post_apply_flat_attribute() {
 ////////////////////////////////////////////////////////////////////
 bool EggCompositePrimitive::
 cleanup() {
-  return size() >= 3;
+  return (int)size() >= get_num_lead_vertices() + 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,8 +383,9 @@ void EggCompositePrimitive::
 prepare_add_vertex(EggVertex *vertex, int i, int n) {
   EggPrimitive::prepare_add_vertex(vertex, i, n);
 
-  if (n >= 3) {
-    i = max(i - 2, 0);
+  int num_lead_vertices = get_num_lead_vertices();
+  if (n >= num_lead_vertices + 1) {
+    i = max(i - num_lead_vertices, 0);
     nassertv(i <= (int)_components.size());
     _components.insert(_components.begin() + i, new EggAttributes(*this));
   }
@@ -346,12 +411,34 @@ void EggCompositePrimitive::
 prepare_remove_vertex(EggVertex *vertex, int i, int n) {
   EggPrimitive::prepare_remove_vertex(vertex, i, n);
 
-  if (n >= 3) {
-    i = max(i - 2, 0);
+  int num_lead_vertices = get_num_lead_vertices();
+  if (n >= num_lead_vertices + 1) {
+    i = max(i - num_lead_vertices, 0);
     nassertv(i < (int)_components.size());
     delete _components[i];
     _components.erase(_components.begin() + i);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCompositePrimitive::triangulate_poly
+//       Access: Protected, Virtual
+//  Description: Fills the container up with EggPolygons that
+//               represent the component triangles of this triangle
+//               strip.
+//
+//               It is assumed that the EggCompositePrimitive is not
+//               already a child of any other group when this function
+//               is called.
+//
+//               Returns true if the triangulation is successful, or
+//               false if there was some error (in which case the
+//               container may contain some partial triangulation).
+////////////////////////////////////////////////////////////////////
+bool EggCompositePrimitive::
+do_triangulate(EggGroupNode *container) const {
+  container->add_child((EggCompositePrimitive *)this);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

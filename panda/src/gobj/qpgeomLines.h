@@ -1,5 +1,5 @@
-// Filename: qpgeomTrifans.h
-// Created by:  drose (08Mar05)
+// Filename: qpgeomLines.h
+// Created by:  drose (22Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef qpGEOMTRIFANS_H
-#define qpGEOMTRIFANS_H
+#ifndef qpGEOMLINES_H
+#define qpGEOMLINES_H
 
 #include "pandabase.h"
 #include "qpgeomPrimitive.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : qpGeomTrifans
-// Description : Defines a series of triangle fans.
+//       Class : qpGeomLines
+// Description : Defines a series of disconnected line segments.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomTrifans : public qpGeomPrimitive {
+class EXPCL_PANDA qpGeomLines : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomTrifans(qpGeomUsageHint::UsageHint usage_hint);
-  qpGeomTrifans(const qpGeomTrifans &copy);
-  virtual ~qpGeomTrifans();
+  qpGeomLines(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomLines(const qpGeomLines &copy);
+  virtual ~qpGeomLines();
 
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
+
+  virtual int get_num_vertices_per_primitive() const;
 
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const;
 
 protected:
-  virtual CPT(qpGeomPrimitive) decompose_impl() const;
   virtual CPTA_ushort rotate_impl() const;
 
 public:
@@ -56,7 +57,7 @@ public:
   }
   static void init_type() {
     qpGeomPrimitive::init_type();
-    register_type(_type_handle, "qpGeomTrifans",
+    register_type(_type_handle, "qpGeomLines",
                   qpGeomPrimitive::get_class_type());
   }
   virtual TypeHandle get_type() const {

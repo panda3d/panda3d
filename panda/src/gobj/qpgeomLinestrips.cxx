@@ -1,5 +1,5 @@
-// Filename: qpgeomTriangles.cxx
-// Created by:  drose (06Mar05)
+// Filename: qpgeomLinestrips.cxx
+// Created by:  drose (22Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,56 +16,57 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "qpgeomTriangles.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomLines.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
-TypeHandle qpGeomTriangles::_type_handle;
+TypeHandle qpGeomLinestrips::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::Constructor
+//     Function: qpGeomLinestrips::Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-qpGeomTriangles::
-qpGeomTriangles(qpGeomUsageHint::UsageHint usage_hint) :
+qpGeomLinestrips::
+qpGeomLinestrips(qpGeomUsageHint::UsageHint usage_hint) :
   qpGeomPrimitive(usage_hint)
 {
 }
  
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::Copy Constructor
+//     Function: qpGeomLinestrips::Copy Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-qpGeomTriangles::
-qpGeomTriangles(const qpGeomTriangles &copy) :
+qpGeomLinestrips::
+qpGeomLinestrips(const qpGeomLinestrips &copy) :
   qpGeomPrimitive(copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::Destructor
+//     Function: qpGeomLinestrips::Destructor
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-qpGeomTriangles::
-~qpGeomTriangles() {
+qpGeomLinestrips::
+~qpGeomLinestrips() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::make_copy
+//     Function: qpGeomLinestrips::make_copy
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(qpGeomPrimitive) qpGeomTriangles::
+PT(qpGeomPrimitive) qpGeomLinestrips::
 make_copy() const {
-  return new qpGeomTriangles(*this);
+  return new qpGeomLinestrips(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::get_primitive_type
+//     Function: qpGeomLinestrips::get_primitive_type
 //       Access: Published, Virtual
 //  Description: Returns the fundamental rendering type of this
 //               primitive: whether it is points, lines, or polygons.
@@ -73,108 +74,118 @@ make_copy() const {
 //               antialiasing settings when AntialiasAttrib::M_auto is
 //               in effect.
 ////////////////////////////////////////////////////////////////////
-qpGeomPrimitive::PrimitiveType qpGeomTriangles::
+qpGeomPrimitive::PrimitiveType qpGeomLinestrips::
 get_primitive_type() const {
-  return PT_polygons;
+  return PT_lines;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::get_num_vertices_per_primitive
-//       Access: Published, Virtual
-//  Description: If the primitive type is a simple type in which all
-//               primitives have the same number of vertices, like
-//               triangles, returns the number of vertices per
-//               primitive.  If the primitive type is a more complex
-//               type in which different primitives might have
-//               different numbers of vertices, for instance a
-//               triangle strip, returns 0.
-////////////////////////////////////////////////////////////////////
-int qpGeomTriangles::
-get_num_vertices_per_primitive() const {
-  return 3;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::draw
+//     Function: qpGeomLinestrips::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the
 //               primitive.
 ////////////////////////////////////////////////////////////////////
-void qpGeomTriangles::
+void qpGeomLinestrips::
 draw(GraphicsStateGuardianBase *gsg) const {
-  gsg->draw_triangles(this);
+  gsg->draw_linestrips(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::rotate_impl
+//     Function: qpGeomLinestrips::decompose_impl
+//       Access: Protected, Virtual
+//  Description: Decomposes a complex primitive type into a simpler
+//               primitive type, for instance line strips to
+//               lines, and returns a pointer to the new primitive
+//               definition.  If the decomposition cannot be
+//               performed, this might return the original object.
+//
+//               This method is useful for application code that wants
+//               to iterate through the set of lines on the
+//               primitive without having to write handlers for each
+//               possible kind of primitive type.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomPrimitive) qpGeomLinestrips::
+decompose_impl() const {
+  PT(qpGeomLines) lines = new qpGeomLines(get_usage_hint());
+  lines->set_shade_model(get_shade_model());
+  CPTA_ushort vertices = get_vertices();
+  CPTA_int ends = get_ends();
+
+  int vi = 0;
+  int li = 0;
+  while (li < (int)ends.size()) {
+    int end = ends[li];
+    nassertr(vi + 1 <= end, lines.p());
+    nassertr(vi < (int)vertices.size(), this);
+    int v0 = vertices[vi];
+    ++vi;
+    while (vi < end) {
+      lines->add_vertex(v0);
+      lines->add_vertex(vertices[vi]);
+      nassertr(vi < (int)vertices.size(), this);
+      v0 = vertices[vi];
+      lines->close_primitive();
+      ++vi;
+    }
+    ++li;
+  }
+  nassertr(vi == (int)vertices.size(), lines.p());
+
+  return lines.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomLinestrips::rotate_impl
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of do_rotate().
 ////////////////////////////////////////////////////////////////////
-CPTA_ushort qpGeomTriangles::
+CPTA_ushort qpGeomLinestrips::
 rotate_impl() const {
-  // To rotate triangles, we just move one vertex from the front to
-  // the back, or vice-versa; but we have to know what direction we're
-  // going.
+  // To rotate a line strip, we just reverse the vertices.
   CPTA_ushort vertices = get_vertices();
-  ShadeModel shade_model = get_shade_model();
-
+  CPTA_int ends = get_ends();
   PTA_ushort new_vertices;
   new_vertices.reserve(vertices.size());
 
-  switch (shade_model) {
-  case SM_flat_first_vertex:
-    // Move the first vertex to the end.
-    {
-      for (int begin = 0; begin < (int)vertices.size(); begin += 3) {
-        new_vertices.push_back(vertices[begin + 1]);
-        new_vertices.push_back(vertices[begin + 2]);
-        new_vertices.push_back(vertices[begin]);
-      }
+  int begin = 0;
+  CPTA_int::const_iterator ei;
+  for (ei = ends.begin(); ei != ends.end(); ++ei) {
+    int end = (*ei);
+    int num_vertices = end - begin;
+
+    for (int vi = end - 1; vi >= begin; --vi) {
+      new_vertices.push_back(vertices[vi]);
     }
-    break;
-    
-  case SM_flat_last_vertex:
-    // Move the last vertex to the front.
-    {
-      for (int begin = 0; begin < (int)vertices.size(); begin += 3) {
-        new_vertices.push_back(vertices[begin + 2]);
-        new_vertices.push_back(vertices[begin]);
-        new_vertices.push_back(vertices[begin + 1]);
-      }
-    }
-    break;
-      
-  default:
-    // This shouldn't get called with any other shade model.
-    nassertr(false, vertices);
+
+    begin = end;
   }
-  
   nassertr(new_vertices.size() == vertices.size(), vertices);
+
   return new_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::register_with_read_factory
+//     Function: qpGeomLinestrips::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
 //               qpGeom.
 ////////////////////////////////////////////////////////////////////
-void qpGeomTriangles::
+void qpGeomLinestrips::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTriangles::make_from_bam
+//     Function: qpGeomLinestrips::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
 //               when a new object of type qpGeom is encountered
 //               in the Bam file.  It should create the qpGeom
 //               and extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *qpGeomTriangles::
+TypedWritable *qpGeomLinestrips::
 make_from_bam(const FactoryParams &params) {
-  qpGeomTriangles *object = new qpGeomTriangles(qpGeomUsageHint::UH_client);
+  qpGeomLinestrips *object = new qpGeomLinestrips(qpGeomUsageHint::UH_client);
   DatagramIterator scan;
   BamReader *manager;
 

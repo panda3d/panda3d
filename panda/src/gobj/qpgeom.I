@@ -18,6 +18,20 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_primitive_type
+//       Access: Published
+//  Description: Returns the primitive type that is common to all
+//               GeomPrimitives added within the Geom.  All nested
+//               primitives within a particular Geom must be the same
+//               type.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomPrimitive::PrimitiveType qpGeom::
+get_primitive_type() const {
+  CDReader cdata(_cycler);
+  return cdata->_primitive_type;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_usage_hint
 //       Access: Published
 //  Description: Returns the minimum (i.e. most dynamic) usage_hint
@@ -104,6 +118,11 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
   clear_cache();
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+
+  // All primitives within a particular Geom must have the same
+  // primitive type.
+  nassertv(cdata->_primitive_type == qpGeomPrimitive::PT_none ||
+           cdata->_primitive_type == primitive->get_primitive_type());
   if (cdata->_got_usage_hint &&
       cdata->_primitives[i]->get_usage_hint() != primitive->get_usage_hint()) {
     if (cdata->_primitives[i]->get_usage_hint() < primitive->get_usage_hint()) {
@@ -118,6 +137,7 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
     }
   }
   cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
+  cdata->_primitive_type = primitive->get_primitive_type();
   cdata->_modified = qpGeom::get_next_modified();
 }
 
@@ -169,6 +189,7 @@ operator < (const CacheEntry &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeom::CData::
 CData() :
+  _primitive_type(qpGeomPrimitive::PT_none),
   _usage_hint(qpGeomUsageHint::UH_static),
   _got_usage_hint(false)
 {
@@ -183,6 +204,7 @@ INLINE qpGeom::CData::
 CData(const qpGeom::CData &copy) :
   _data(copy._data),
   _primitives(copy._primitives),
+  _primitive_type(copy._primitive_type),
   _usage_hint(copy._usage_hint),
   _got_usage_hint(copy._got_usage_hint),
   _modified(copy._modified)

@@ -353,7 +353,7 @@ unify_attributes(EggPrimitive::Shading shading) {
   }
 
   // Not having a color is implicitly white.
-  if (!has_color()) {
+  if (!has_color() && shading != S_overall) {
     set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   }
 
@@ -407,6 +407,10 @@ unify_attributes(EggPrimitive::Shading shading) {
 
   case S_unknown:
     break;
+  }
+
+  if (!has_color() && shading == S_overall) {
+    set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   }
 }
 

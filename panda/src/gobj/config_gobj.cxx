@@ -28,6 +28,9 @@
 #include "qpgeomTriangles.h"
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
+#include "qpgeomLines.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomPoints.h"
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "qpgeomVertexData.h"
@@ -189,6 +192,9 @@ ConfigureFn(config_gobj) {
   qpGeomTriangles::init_type();
   qpGeomTristrips::init_type();
   qpGeomTrifans::init_type();
+  qpGeomLines::init_type();
+  qpGeomLinestrips::init_type();
+  qpGeomPoints::init_type();
   qpGeomVertexArrayData::init_type();
   qpGeomVertexArrayFormat::init_type();
   qpGeomVertexData::init_type();
@@ -223,6 +229,9 @@ ConfigureFn(config_gobj) {
   qpGeomTriangles::register_with_read_factory();
   qpGeomTristrips::register_with_read_factory();
   qpGeomTrifans::register_with_read_factory();
+  qpGeomLines::register_with_read_factory();
+  qpGeomLinestrips::register_with_read_factory();
+  qpGeomPoints::register_with_read_factory();
   qpGeomVertexArrayData::register_with_read_factory();
   qpGeomVertexArrayFormat::register_with_read_factory();
   qpGeomVertexData::register_with_read_factory();

@@ -21,30 +21,42 @@
 
 #include "pandabase.h"
 
-#include "eggPrimitive.h"
+#include "eggCompositePrimitive.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggLine
 // Description : A line segment, or a series of connected line
 //               segments, defined by a <Line> entry.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggLine : public EggPrimitive {
+class EXPCL_PANDAEGG EggLine : public EggCompositePrimitive {
 PUBLISHED:
   INLINE EggLine(const string &name = "");
   INLINE EggLine(const EggLine &copy);
   INLINE EggLine &operator = (const EggLine &copy);
+  virtual ~EggLine();
 
   virtual void write(ostream &out, int indent_level) const;
 
-public:
+  INLINE bool has_thick() const;
+  INLINE double get_thick() const;
+  INLINE void set_thick(const double thick);
+  INLINE void clear_thick();
 
+protected:
+  virtual int get_num_lead_vertices() const;
+
+private:
+  double _thick;
+  bool _has_thick;
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    EggPrimitive::init_type();
+    EggCompositePrimitive::init_type();
     register_type(_type_handle, "EggLine",
-                  EggPrimitive::get_class_type());
+                  EggCompositePrimitive::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

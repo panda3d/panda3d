@@ -24,6 +24,9 @@
     qpgeomTriangles.h \
     qpgeomTristrips.h \
     qpgeomTrifans.h \
+    qpgeomLines.h \
+    qpgeomLinestrips.h \
+    qpgeomPoints.h \
     qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
@@ -62,6 +65,9 @@
     qpgeomTriangles.cxx \
     qpgeomTristrips.cxx \
     qpgeomTrifans.cxx \
+    qpgeomLines.cxx \
+    qpgeomLinestrips.cxx \
+    qpgeomPoints.cxx \
     qpgeomVertexArrayData.cxx \
     qpgeomVertexArrayFormat.cxx \
     qpgeomCacheEntry.cxx \
@@ -96,6 +102,9 @@
     qpgeomTriangles.h \
     qpgeomTristrips.h \
     qpgeomTrifans.h \
+    qpgeomLines.h \
+    qpgeomLinestrips.h \
+    qpgeomPoints.h \
     qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \

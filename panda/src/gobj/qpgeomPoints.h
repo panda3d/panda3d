@@ -1,5 +1,5 @@
-// Filename: qpgeomTrifans.h
-// Created by:  drose (08Mar05)
+// Filename: qpgeomPoints.h
+// Created by:  drose (22Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef qpGEOMTRIFANS_H
-#define qpGEOMTRIFANS_H
+#ifndef qpGEOMPOINTS_H
+#define qpGEOMPOINTS_H
 
 #include "pandabase.h"
 #include "qpgeomPrimitive.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : qpGeomTrifans
-// Description : Defines a series of triangle fans.
+//       Class : qpGeomPoints
+// Description : Defines a series of disconnected points.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomTrifans : public qpGeomPrimitive {
+class EXPCL_PANDA qpGeomPoints : public qpGeomPrimitive {
 PUBLISHED:
-  qpGeomTrifans(qpGeomUsageHint::UsageHint usage_hint);
-  qpGeomTrifans(const qpGeomTrifans &copy);
-  virtual ~qpGeomTrifans();
+  qpGeomPoints(qpGeomUsageHint::UsageHint usage_hint);
+  qpGeomPoints(const qpGeomPoints &copy);
+  virtual ~qpGeomPoints();
 
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
 
+  virtual int get_num_vertices_per_primitive() const;
+
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const;
-
-protected:
-  virtual CPT(qpGeomPrimitive) decompose_impl() const;
-  virtual CPTA_ushort rotate_impl() const;
 
 public:
   static void register_with_read_factory();
@@ -56,7 +54,7 @@ public:
   }
   static void init_type() {
     qpGeomPrimitive::init_type();
-    register_type(_type_handle, "qpGeomTrifans",
+    register_type(_type_handle, "qpGeomPoints",
                   qpGeomPrimitive::get_class_type());
   }
   virtual TypeHandle get_type() const {

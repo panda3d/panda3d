@@ -41,6 +41,7 @@
 #include "pStatTimer.h"
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
+#include "qpgeomLinestrips.h"
 
 #include <algorithm>
 
@@ -710,6 +711,37 @@ draw_trifans(const qpGeomTrifans *primitive) {
   if (!new_prim->is_of_type(qpGeomTrifans::get_class_type())) {
     new_prim->draw(this);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_lines
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected line segments.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+draw_lines(const qpGeomLines *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_linestrips
+//       Access: Public, Virtual
+//  Description: Draws a series of line strips.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+draw_linestrips(const qpGeomLinestrips *primitive) {
+  CPT(qpGeomPrimitive) new_prim = primitive->decompose();
+  if (!new_prim->is_of_type(qpGeomLinestrips::get_class_type())) {
+    new_prim->draw(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_points
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected points.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+draw_points(const qpGeomPoints *) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -23,7 +23,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPoint::
-EggPoint(const string &name) : EggPrimitive(name) {
+EggPoint(const string &name) : 
+  EggPrimitive(name),
+  _has_thick(false)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,7 +35,11 @@ EggPoint(const string &name) : EggPrimitive(name) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPoint::
-EggPoint(const EggPoint &copy) : EggPrimitive(copy) {
+EggPoint(const EggPoint &copy) : 
+  EggPrimitive(copy),
+  _thick(copy._thick),
+  _has_thick(copy._has_thick)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,5 +50,53 @@ EggPoint(const EggPoint &copy) : EggPrimitive(copy) {
 INLINE EggPoint &EggPoint::
 operator = (const EggPoint &copy) {
   EggPrimitive::operator = (copy);
+  _thick = copy._thick;
+  _has_thick = copy._has_thick;
   return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPoint::has_thick
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool EggPoint::
+has_thick() const {
+  return _has_thick;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPoint::get_thick
+//       Access: Published
+//  Description: Returns the thick set on this particular attribute.
+//               If there is no thick set, returns white.
+////////////////////////////////////////////////////////////////////
+INLINE double EggPoint::
+get_thick() const {
+  if (has_thick()) {
+    return _thick;
+  } else {
+    return 1.0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPoint::
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggPoint::
+set_thick(double thick) {
+  _thick = thick;
+  _has_thick = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPoint::
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggPoint::
+clear_thick() {
+  _has_thick = false;
 }

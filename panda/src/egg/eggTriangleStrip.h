@@ -34,13 +34,12 @@ PUBLISHED:
   INLINE EggTriangleStrip(const string &name = "");
   INLINE EggTriangleStrip(const EggTriangleStrip &copy);
   INLINE EggTriangleStrip &operator = (const EggTriangleStrip &copy);
-
-  virtual void apply_last_attribute();
-  virtual void apply_first_attribute();
+  virtual ~EggTriangleStrip();
 
   virtual void write(ostream &out, int indent_level) const;
 
 protected:
+  virtual int get_num_lead_vertices() const;
   virtual bool do_triangulate(EggGroupNode *container) const;
 
 public:
