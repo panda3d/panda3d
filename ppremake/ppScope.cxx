@@ -572,6 +572,25 @@ get_bottom_scope() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::get_enclosing_scope
+//       Access: Public, Static
+//  Description: Returns the scope n below the top of the stack, or
+//               the bottom scope if the stack has exactly n or fewer
+//               scopes.
+//
+//               This will be the scope associated with the nth
+//               enclosing syntax in the source file.
+////////////////////////////////////////////////////////////////////
+PPScope *PPScope::
+get_enclosing_scope(int n) {
+  assert(n >= 0);
+  if (n >= _scope_stack.size()) {
+    return get_bottom_scope();
+  }
+  return _scope_stack[_scope_stack.size() - 1 - n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::tokenize_params
 //       Access: Public
 //  Description: Separates a string into tokens based on comma
@@ -663,6 +682,42 @@ tokenize_numeric_pair(const string &str, double &a, double &b) {
   a = results[0];
   b = results[1];
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::scan_to_whitespace
+//       Access: Public
+//  Description: Scans to the end of the first whitespace-delimited
+//               word in the indicated string, even if it includes a
+//               nested variable reference (which is itself allowed to
+//               contain whitespace).
+//
+//               On input, str is a string, and start is the starting
+//               position within the string of the scan; it should
+//               point to a non-whitespace character.
+//
+//               The return value is the position within the string of
+//               the first whitespace character encountered at its
+//               original position or later, that is not part of a
+//               variable reference.  All variable references are left
+//               unexpanded.
+////////////////////////////////////////////////////////////////////
+size_t PPScope::
+scan_to_whitespace(const string &str, size_t start) {
+  size_t p = start;
+  while (p < str.length() && !isspace(str[p])) {
+    string token;
+    if (p + 1 < str.length() && str[p] == VARIABLE_PREFIX &&
+        str[p + 1] == VARIABLE_OPEN_BRACE) {
+      // Skip a nested variable reference.
+      r_scan_variable(str, p);
+
+    } else {
+      p++;
+    }
+  }
+
+  return p;
 }
 
 ////////////////////////////////////////////////////////////////////

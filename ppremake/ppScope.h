@@ -56,10 +56,12 @@ public:
   static void push_scope(PPScope *scope);
   static PPScope *pop_scope();
   static PPScope *get_bottom_scope();
+  static PPScope *get_enclosing_scope(int n);
 
   void tokenize_params(const string &str, vector<string> &tokens,
-               bool expand);
+                       bool expand);
   bool tokenize_numeric_pair(const string &str, double &a, double &b);
+  size_t scan_to_whitespace(const string &str, size_t start = 0);
 
   static MapVariableDefinition _null_map_def;
 

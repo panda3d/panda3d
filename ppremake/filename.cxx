@@ -59,7 +59,7 @@
 // pathnames.
 #ifdef HAVE_CYGWIN
 extern "C" void cygwin_conv_to_win32_path(const char *path, char *win32);
-//extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
+extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
 #endif
 
 static string
@@ -1294,7 +1294,21 @@ bool Filename::
 touch() const {
 #ifdef HAVE_UTIME_H
   // Most Unix systems can do this explicitly.
+
   string os_specific = to_os_specific();
+#ifdef HAVE_CYGWIN
+  // In the Cygwin case, it seems we need to be sure to use the
+  // Cygwin-style name; some broken utime() implementation.  That's
+  // almost the same thing as the original Panda-style name, but not
+  // exactly, so we first convert the Panda name to a Windows name,
+  // then convert it back to Cygwin, to ensure we get it exactly right
+  // by Cygwin rules.
+  {
+    char result[4096] = "";
+    cygwin_conv_to_posix_path(os_specific.c_str(), result);
+    os_specific = result;
+  }
+#endif  // HAVE_CYGWIN
   int result = utime(os_specific.c_str(), NULL);
   if (result < 0) {
     if (errno == ENOENT) {
@@ -1311,14 +1325,14 @@ touch() const {
     return false;
   }
   return true;
-#else
+#else  // HAVE_UTIME_H
   // Other systems may not have an explicit control over the
   // modification time.  For these systems, we'll just temporarily
   // open the file in append mode, then close it again (it gets closed
   // when the ofstream goes out of scope).
   ofstream file;
   return open_append(file);
-#endif
+#endif  // HAVE_UTIME_H
 }
 
 ////////////////////////////////////////////////////////////////////

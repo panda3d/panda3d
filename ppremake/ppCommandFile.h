@@ -54,6 +54,7 @@ protected:
 
   bool handle_format_command();
   bool handle_print_command();
+  bool handle_printvar_command();
   bool handle_include_command();
   bool handle_sinclude_command();
   bool handle_call_command();
@@ -64,6 +65,7 @@ protected:
   bool handle_set_command();
   bool handle_map_command();
   bool handle_addmap_command();
+  bool handle_push_command();
 
   bool include_file(Filename filename);
   bool replay_forscopes(const string &name);
@@ -121,6 +123,7 @@ private:
   };
 
   enum WriteFormat {
+    WF_error,      // anything other than whitespace is an error.
     WF_straight,   // write lines directly as they come in
     WF_collapse,   // collapse out consecutive blank lines
     WF_makefile    // fancy makefile formatting

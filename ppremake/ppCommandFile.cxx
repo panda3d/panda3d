@@ -74,7 +74,7 @@ pop(PPCommandFile *file) {
 ////////////////////////////////////////////////////////////////////
 PPCommandFile::WriteState::
 WriteState() {
-  _out = &cout;
+  _out = NULL;
   _format = WF_collapse;
   _last_blank = true;
 }
@@ -99,20 +99,28 @@ WriteState(const WriteState &copy) :
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::WriteState::
 write_line(const string &line) {
-  switch (_format) {
-  case WF_straight:
-    (*_out) << line << "\n";
+  if (_out == (ostream *)NULL || _format == WF_error) {
+    if (!line.empty()) {
+      cerr << "Ignoring: " << line << "\n";
+    }
     return true;
 
-  case WF_collapse:
-    return write_collapse_line(line);
+  } else {
+    switch (_format) {
+    case WF_straight:
+      (*_out) << line << "\n";
+      return true;
+      
+    case WF_collapse:
+      return write_collapse_line(line);
+      
+    case WF_makefile:
+      return write_makefile_line(line);
+    }
 
-  case WF_makefile:
-    return write_makefile_line(line);
+    cerr << "Unsupported write format: " << (int)_format << "\n";
+    return false;
   }
-
-  cerr << "Unsupported write format: " << (int)_format << "\n";
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,8 +284,8 @@ set_output(ostream *out) {
 ////////////////////////////////////////////////////////////////////
 void PPCommandFile::
 set_scope(PPScope *scope) {
-  _scope = scope;
   _native_scope = scope;
+  _scope = scope;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -622,6 +630,9 @@ handle_command(const string &line) {
   } else if (_command == "print") {
     return handle_print_command();
 
+  } else if (_command == "printvar") {
+    return handle_printvar_command();
+
   } else if (_command == "include") {
     return handle_include_command();
 
@@ -648,6 +659,9 @@ handle_command(const string &line) {
 
   } else if (_command == "addmap") {
     return handle_addmap_command();
+
+  } else if (_command == "push") {
+    return handle_push_command();
   }
    
   cerr << "Invalid command: " << COMMAND_PREFIX << _command << "\n";
@@ -792,7 +806,7 @@ handle_endif_command() {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 handle_begin_command() {
-  string name = trim_blanks(_scope->expand_string(_params));
+  string name = trim_blanks(_params);
   BlockNesting *nest = new BlockNesting(BS_begin, name);
 
   if (contains_whitespace(name)) {
@@ -828,7 +842,7 @@ handle_begin_command() {
 bool PPCommandFile::
 handle_forscopes_command() {
   BlockState state = _in_for ? BS_nested_forscopes : BS_forscopes;
-  string name = trim_blanks(_scope->expand_string(_params));
+  string name = trim_blanks(_params);
   BlockNesting *nest = new BlockNesting(state, name);
   nest->push(this);
 
@@ -985,18 +999,25 @@ handle_defsub_command(bool is_defsub) {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 handle_output_command() {
-  vector<string> words;
-  tokenize_whitespace(_scope->expand_string(_params), words);
+  // We must get the filename out (the first parameter) without
+  // expanding it, because it might involve a string that has to be
+  // expanded later.
+  size_t p = _scope->scan_to_whitespace(_params);
+  string name = _params.substr(0, p);
 
-  if (words.empty()) {
+  if (name.empty()) {
     cerr << "#output command requires one parameter.\n";
     return false;
   }
 
-  BlockNesting *nest = new BlockNesting(BS_output, words[0]);
+  // Now get the remaining parameters out; these we will expand immediately.
+  vector<string> words;
+  tokenize_whitespace(_scope->expand_string(_params.substr(p)), words);
+
+  BlockNesting *nest = new BlockNesting(BS_output, name);
 
   // Also check the output flags.
-  for (int i = 1; i < (int)words.size(); i++) {
+  for (int i = 0; i < (int)words.size(); i++) {
     if (words[i] == "notouch") {
       nest->_flags |= OF_notouch;
     } else {
@@ -1007,7 +1028,7 @@ handle_output_command() {
   nest->push(this);
 
   if (!_in_for) {
-    string filename = nest->_name;
+    string filename = trim_blanks(_scope->expand_string(nest->_name));
     if (filename.empty()) {
       cerr << "Attempt to output to empty filename\n";
       return false;
@@ -1041,7 +1062,13 @@ handle_end_command() {
     return false;
   }
 
-  string name = trim_blanks(_scope->expand_string(_params));
+  // We don't expand the closing name string, because we didn't expand
+  // the opening string.  (This is especially true for an #output
+  // statement.  On some of the other statements, we might have
+  // inadvertently expanded this string, but probably that was a
+  // mistake; and there's no reason for programmers to take advantage
+  // of an expansion there.)
+  string name = trim_blanks(_params);
   if (name != _block_nesting->_name) {
     cerr << "end " << name << " encountered where end "
          << _block_nesting->_name << " expected.\n";
@@ -1155,6 +1182,33 @@ handle_format_command() {
 bool PPCommandFile::
 handle_print_command() {
   cerr << _scope->expand_string(_params) << "\n";
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_printvar_command
+//       Access: Protected
+//  Description: Writes the literal contents of the named variable(s)
+//               (the variables are named directly without enclosing
+//               $[ ... ] syntax) to cerr, for debugging.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_printvar_command() {
+  size_t p = 0;
+
+  while (p < _params.length()) {
+    // Pull off the next varname.
+    size_t q = _scope->scan_to_whitespace(_params, p);
+    string varname = trim_blanks(_scope->expand_string(_params.substr(p, q)));
+
+    cerr << varname << " = \"" << _scope->get_variable(varname)
+         << "\" ";
+    p = q;
+    while (p < _params.length() && isspace(_params[p])) {
+      p++;
+    }
+  }
+  cerr << "\n";
   return true;
 }
 
@@ -1288,11 +1342,8 @@ handle_error_command() {
 bool PPCommandFile::
 handle_defer_command() {
   // Pull off the first word and the rest of the params.
-  size_t p = 0;
-  while (p < _params.length() && !isspace(_params[p])) {
-    p++;
-  }
-  string varname = _params.substr(0, p);
+  size_t p = _scope->scan_to_whitespace(_params);
+  string varname = trim_blanks(_scope->expand_string(_params.substr(0, p)));
 
   if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
     cerr << "Warning: variable " << varname
@@ -1310,7 +1361,6 @@ handle_defer_command() {
   // should expand any simple self-reference immediately, to allow for
   // recursive definitions.
   def = _scope->expand_self_reference(def, varname);
-
   _scope->define_variable(varname, def);
 
   return true;
@@ -1327,11 +1377,8 @@ handle_defer_command() {
 bool PPCommandFile::
 handle_define_command() {
   // Pull off the first word and the rest of the params.
-  size_t p = 0;
-  while (p < _params.length() && !isspace(_params[p])) {
-    p++;
-  }
-  string varname = _params.substr(0, p);
+  size_t p = _scope->scan_to_whitespace(_params);
+  string varname = trim_blanks(_scope->expand_string(_params.substr(0, p)));
 
   if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
     cerr << "Warning: variable " << varname
@@ -1366,11 +1413,8 @@ handle_define_command() {
 bool PPCommandFile::
 handle_set_command() {
   // Pull off the first word and the rest of the params.
-  size_t p = 0;
-  while (p < _params.length() && !isspace(_params[p])) {
-    p++;
-  }
-  string varname = _params.substr(0, p);
+  size_t p = _scope->scan_to_whitespace(_params);
+  string varname = trim_blanks(_scope->expand_string(_params.substr(0, p)));
 
   if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
     cerr << "Warning: variable " << varname
@@ -1403,18 +1447,14 @@ handle_set_command() {
 bool PPCommandFile::
 handle_map_command() {
   // Pull off the first word and the rest of the params.
-  size_t p = 0;
-  while (p < _params.length() && !isspace(_params[p])) {
-    p++;
-  }
-  string varname = _params.substr(0, p);
+  size_t p = _scope->scan_to_whitespace(_params);
+  string varname = trim_blanks(_scope->expand_string(_params.substr(0, p)));
   
   // Skip whitespace between the variable name and its definition.
   while (p < _params.length() && isspace(_params[p])) {
     p++;
   }
   string def = trim_blanks(_params.substr(p));
-
   _scope->define_map_variable(varname, def);
   return true;
 }
@@ -1428,11 +1468,8 @@ handle_map_command() {
 bool PPCommandFile::
 handle_addmap_command() {
   // Pull off the first word and the rest of the params.
-  size_t p = 0;
-  while (p < _params.length() && !isspace(_params[p])) {
-    p++;
-  }
-  string varname = _params.substr(0, p);
+  size_t p = _scope->scan_to_whitespace(_params);
+  string varname = trim_blanks(_scope->expand_string(_params.substr(0, p)));
   
   // Skip whitespace between the variable name and the key.
   while (p < _params.length() && isspace(_params[p])) {
@@ -1441,6 +1478,61 @@ handle_addmap_command() {
   string key = trim_blanks(_scope->expand_string(_params.substr(p)));
 
   _scope->add_to_map_variable(varname, key, _scope);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_push_command
+//       Access: Protected
+//  Description: Handles the #push command: push a variable definition
+//               out to the enclosing scope.  Useful for defining
+//               variables within a #forscopes block that you want to
+//               persist longer than the block itself.
+//
+//               Syntax is:
+//
+//               #push n varname [varname2 ... ]
+//
+//               Where n is the number of levels out to push.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_push_command() {
+  // The first word is the number of levels.
+  size_t p = _scope->scan_to_whitespace(_params);
+  string levels_str = trim_blanks(_scope->expand_string(_params.substr(0, p)));
+
+  // Validate the number.
+  const char *param = levels_str.c_str();
+  char *n;
+  int levels = strtol(param, &n, 10);
+  if (n == param || levels < 0) {
+    // Invalid integer.
+    cerr << "#push with invalid level count: " << levels_str << "\n";
+    return false;
+  }
+
+  PPScope *enclosing_scope = _scope;
+  if (levels > 0) {
+    enclosing_scope = _scope->get_enclosing_scope(levels - 1);
+  }
+
+  // Skip whitespace to the first variable name.
+  while (p < _params.length() && isspace(_params[p])) {
+    p++;
+  }
+
+  while (p < _params.length()) {
+    // Pull off the next varname.
+    size_t q = _scope->scan_to_whitespace(_params, p);
+    string varname = trim_blanks(_scope->expand_string(_params.substr(p, q)));
+    string def = _scope->get_variable(varname);
+    enclosing_scope->define_variable(varname, def);
+
+    p = q;
+    while (p < _params.length() && isspace(_params[p])) {
+      p++;
+    }
+  }
   return true;
 }
 
