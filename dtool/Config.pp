@@ -146,6 +146,8 @@
 // is someplace standard like /usr/include, you may leave it blank.)
 #define PYTHON_IPATH /usr/local/include/python1.6
 #define PYTHON_LPATH
+#define PYTHON_FPATH
+#define PYTHON_FRAMEWORK Python
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 
 // Do you want to enable the "in_interpreter" global variable?  This
@@ -535,7 +537,8 @@
   #define CXX g++
 
   // gcc might run into template limits on some parts of Panda.
-  #define C++FLAGS_GEN -ftemplate-depth-25
+  // I upped this from 25 to build on OS X (GCC 3.3) -- skyler.
+  #define C++FLAGS_GEN -ftemplate-depth-30
 #else
   #define CC cc
   #define CXX CC
@@ -584,13 +587,17 @@
 // $[sources] is the list of .o files.  $[libs] is a space-separated
 // list of dependent libraries, and $[lpath] is a space-separated list
 // of directories in which those libraries can be found.
-#defer LINK_BIN_C $[cc_ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-#defer LINK_BIN_C++ $[cxx_ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#defer LINK_BIN_C $[cc_ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]\
+ $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[frameworks]]
+#defer LINK_BIN_C++ $[cxx_ld]\
+ -o $[target] $[sources]\
+ $[lpath:%=-L%] $[libs:%=-l%]\
+ $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[frameworks]]
 
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o
 // files that will go into the library.
-#if $[eq $[PLATFORM], osx]
+#if $[eq $[PLATFORM], osx]	
   #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
   #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
 #else
@@ -608,8 +615,8 @@
 // libraries, and $[lpath] is a space-separated list of directories in
 // which those libraries can be found.
 #if $[eq $[PLATFORM], osx]
-  #defer SHARED_LIB_C $[cc_ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-  #defer SHARED_LIB_C++ $[cxx_ld] -dynamic -dynamiclib -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C $[cc_ld] -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+  #defer SHARED_LIB_C++ $[cxx_ld] -dynamic -dynamiclib -o $[target] -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
 #else
   #defer SHARED_LIB_C $[cc_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
   #defer SHARED_LIB_C++ $[cxx_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]

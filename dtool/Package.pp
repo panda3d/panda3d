@@ -88,6 +88,8 @@
 // Config.pp.
 #set PYTHON_IPATH $[unixfilename $[PYTHON_IPATH]]
 #set PYTHON_LPATH $[unixfilename $[PYTHON_LPATH]]
+#set PYTHON_FPATH $[unixfilename $[PYTHON_FPATH]]
+#set PYTHON_FRAMEWORK $[unixfilename $[PYTHON_FRAMEWORK]]
 #set HAVE_PYTHON $[HAVE_PYTHON]
 
 #set NSPR_IPATH $[unixfilename $[NSPR_IPATH]]
