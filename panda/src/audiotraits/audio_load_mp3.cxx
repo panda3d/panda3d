@@ -131,7 +131,6 @@ static void initialize(void) {
   initialized = true;
 }
 
-/*
 class BufferStuff {
 private:
   typedef vector<unsigned char> Buffer;
@@ -158,7 +157,6 @@ public:
 };
 
 static BufferStuff* my_buf;
-*/
 
 /*
 class BufferPart {
@@ -200,7 +198,9 @@ static BufferPart* my_buf_head;
 static BufferPart* my_buf_curr;
 */
 
+/*
 string my_buf;
+*/
 
 extern "C" {
 int audio_open(struct audio_info_struct* ai) {
@@ -256,15 +256,18 @@ int audio_play_samples(struct audio_info_struct* ai, unsigned char* buf,
     my_buf_curr = my_buf_curr->add(buf, len);
   }
   */
-  /*
+
   if (my_buf == (BufferStuff*)0L)
     my_buf = new BufferStuff;
   my_buf->add(buf, len);
-  */
+
+  /*
   string tmp;
   for (int i=0; i<len; ++i)
     tmp += buf[i];
   my_buf += tmp;
+  */
+
   return len;
 }
 
@@ -283,16 +286,20 @@ int wav_close(void) { return 0; }
 int xfermem_get_usedspace(txfermem*) { return 0; }
 }
 
+// static unsigned char* real_sample_buf;
+
 static void init_output(void) {
-  static int init_done = FALSE;
-  if (init_done)
-    return;
-  init_done = TRUE;
+  //  static int init_done = FALSE;
+  //  if (init_done)
+  //    return;
+  //  init_done = TRUE;
   // + 1024 for NtoM rate converter
-  if (!(pcm_sample = (unsigned char*)malloc(audiobufsize*2 + 2*1024))) {
+  //  if (!(real_sample_buf=(unsigned char*)malloc(2*(audiobufsize*2 + 2*1024)))) {
+  if (!(pcm_sample=(unsigned char*)malloc(audiobufsize*2 + 2*1024))) {
     audio_cat->fatal() << "cannot allocate sample buffer" << endl;
     exit(1);
   }
+  //  pcm_sample = &(real_sample_buf[1024]);
   switch (param.outmode) {
   case DECODE_AUDIO:
     if (audio_open(&ai) < 0) {
@@ -420,8 +427,8 @@ static void read_file(Filename filename, unsigned char** buf,
 
   initialize();
   //  my_buf_head = my_buf_curr = (BufferPart*)0L;
-  //  my_buf = (BufferStuff*)0L;
-  my_buf = "";
+  my_buf = (BufferStuff*)0L;
+  //  my_buf = "";
   if (open_stream((char*)(filename.to_os_specific().c_str()), -1)) {
     long leftFrames, newFrame;
 
@@ -455,8 +462,6 @@ static void read_file(Filename filename, unsigned char** buf,
   if (audio_cat->is_debug())
     audio_cat->debug(false) << endl;
   audio_flush(param.outmode, &ai);
-  if (pcm_sample != (unsigned char*)0L)
-    free(pcm_sample);
   switch (param.outmode) {
   case DECODE_AUDIO:
     audio_close(&ai);
@@ -471,6 +476,16 @@ static void read_file(Filename filename, unsigned char** buf,
     cdr_close();
     break;
   }
+  /*
+  if (real_sample_buf != (unsigned char*)0L) {
+    free(real_sample_buf);
+    pcm_sample = (unsigned char*)0L;
+  }
+  */
+  if (pcm_sample != (unsigned char*)0L) {
+    free(pcm_sample);
+    pcm_sample = (unsigned char*)0L;
+  }
   // generate output
   /*
   slen = my_buf_head->length();
@@ -478,16 +493,18 @@ static void read_file(Filename filename, unsigned char** buf,
   my_buf_head->output(*buf);
   delete my_buf_head;
   */
-  /*
+
   slen = my_buf->length();
   *buf = new byte[slen];
   my_buf->output(*buf);
   delete my_buf;
   my_buf = (BufferStuff*)0L;
-  */
+
+  /*
   slen = my_buf.size();
   *buf = new byte[slen];
   memcpy(*buf, my_buf.data(), slen);
+  */
 }
 
 #ifdef AUDIO_USE_MIKMOD

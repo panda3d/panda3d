@@ -28,7 +28,7 @@ void GuiLabel::recompute_transform(void) {
     break;
   default:
     gui_cat->warning() << "recompute_transform on invalid label type ("
-		       << _type << ")" << endl;
+		       << (int)_type << ")" << endl;
   }
   set_properties();
 }
@@ -61,7 +61,7 @@ void GuiLabel::set_properties(void) {
     break;
   default:
     gui_cat->warning() << "recompute_transform on invalid label type ("
-		       << _type << ")" << endl;
+		       << (int)_type << ")" << endl;
   }
 }
 
