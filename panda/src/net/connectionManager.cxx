@@ -321,7 +321,7 @@ connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
     if (errcode == 0) {
       net_cat.info()
         << "Connection " << (void *)connection
-        << " was closed normally by the other end.\n";
+        << " was closed normally by the other end";
 
     } else {
       net_cat.info()
@@ -331,26 +331,28 @@ connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
       switch (errcode) {
       case PR_CONNECT_RESET_ERROR:
         net_cat.info(false)
-          << "connection reset\n";
+          << "connection reset";
         break;
         
 #ifdef PR_SOCKET_SHUTDOWN_ERROR
       case PR_SOCKET_SHUTDOWN_ERROR:
         net_cat.info(false)
-          << "socket shutdown\n";
+          << "socket shutdown";
         break;
         
       case PR_CONNECT_ABORTED_ERROR:
         net_cat.info(false)
-          << "connection aborted\n";
+          << "connection aborted";
         break;
 #endif
 
       default:
         net_cat.info(false)
-          << "NSPR error code " << errcode << "\n";
+          << "NSPR error code " << errcode;
       }
     }
+    net_cat.info(false)
+      << " (os error = " << PR_GetOSError() << ").\n";
   }
 }
 
