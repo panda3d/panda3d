@@ -1616,6 +1616,7 @@ extract_manifest_args(const string &name, int num_args,
       c = get();
     }
     args.push_back(arg);
+
   } else {
     // Skip paren.
     c = get();
@@ -1624,6 +1625,23 @@ extract_manifest_args(const string &name, int num_args,
       if (c == ',') {
         args.push_back(arg);
         arg = "";
+
+      } else if (c == '"' || c == '\'') {
+        // Quoted string or character.
+        int quote_mark = c;
+        arg += c;
+        c = get();
+        while (c != EOF && c != quote_mark && c != '\n') {
+          if (c == '\\') {
+            arg += c;
+            c = get();
+          }
+          if (c != EOF) {
+            arg += c;
+            c = get();
+          }
+        }
+        arg += c;
 
       } else if (c == '(') {
         // Nested parens.
@@ -1723,6 +1741,21 @@ extract_manifest_args_inline(const string &name, int num_args,
       p++;
     }
     args.push_back(expr.substr(q, p - q));
+
+  } else if (expr[p] == '"' || expr[p] == '\'') {
+    // Quoted string or character.
+    int quote_mark = expr[p];
+    p++;
+    while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
+      if (expr[p] == '\\') {
+        p++;
+      }
+      if (p < expr.size()) {
+        p++;
+      }
+    }
+    p++;
+    
   } else {
     // Skip paren.
     p++;
