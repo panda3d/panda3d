@@ -157,7 +157,7 @@ extend_by_finite(const FiniteBoundingVolume *volume) {
   LVector3f max1 = volume->get_max();
 
   if (is_empty()) {
-    _center = (min1 + max1) / 2.0;
+    _center = (min1 + max1) * 0.5;
     _radius = length(LVector3f(max1 - _center));
     _flags = 0;
   } else {
