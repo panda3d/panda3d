@@ -72,7 +72,7 @@ class EXPCL_PANDA GraphicsWindow : public Configurable, public ReferenceCount {
 PUBLISHED:
   class EXPCL_PANDA Properties {
   PUBLISHED:
-    INLINE Properties();
+    Properties();
     INLINE Properties(const Properties &);
     INLINE ~Properties();
 
