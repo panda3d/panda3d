@@ -278,6 +278,7 @@ class ParticlePanel(AppShell):
         zSpinPage = self.factoryNotebook.add('ZSpinParticleFactory')
         self.createAngleDial(zSpinPage, 'Z Spin Factory', 'Initial Angle',
                              'Starting angle in degrees',
+                             fRollover = 1,
                              command = self.setFactoryZSpinInitialAngle)
         self.createAngleDial(
             zSpinPage, 'Z Spin Factory',
@@ -286,6 +287,7 @@ class ParticlePanel(AppShell):
             command = self.setFactoryZSpinInitialAngleSpread)
         self.createAngleDial(zSpinPage, 'Z Spin Factory', 'Final Angle',
                              'Final angle in degrees',
+                             fRollover = 1,
                              command = self.setFactoryZSpinFinalAngle)
         self.createAngleDial(
             zSpinPage, 'Z Spin Factory',
@@ -694,11 +696,13 @@ class ParticlePanel(AppShell):
 
     def createFloater(self, parent, category, text, balloonHelp,
                       command = None, min = 0.0, resolution = None,
+                      significantDigits = 3,
                       maxVelocity = 10.0, **kw):
         kw['text'] = text
         kw['min'] = min
         kw['maxVelocity'] = maxVelocity
         kw['resolution'] = resolution
+        kw['significantDigits'] = significantDigits
         widget = apply(Floater.Floater, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command

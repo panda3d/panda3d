@@ -55,7 +55,7 @@ class MopathRecorder(AppShell, PandaObject):
             'mopathRecorderTempCS')
         self.transitionCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTransitionCS')
-        self.playbackMarker = loader.loadModel('models/directmodels/happy')
+        self.playbackMarker = loader.loadModel('models/directmodels/smiley')
         self.playbackMarker.reparentTo(self.recorderNodePath)
         self.playbackNodePath = None
         self.lastPlaybackNodePath = None
@@ -448,28 +448,25 @@ class MopathRecorder(AppShell, PandaObject):
         widget.onRelease = widget.onReturnRelease = self.getPostPoints
         refineFrame.pack(fill = X)
 
-        offsetFrame = Frame(self.refinePage)
-        self.createButton(offsetFrame, 'Refine Page', 'Offset',
-                          'Zero refine curve offset',
-                          self.resetOffset, side = LEFT)
-        self.createLabeledEntry(offsetFrame, 'Refine Page', 'X',
-                                'Refine pass X offset', width = 3, expand = 1)
-        self.createLabeledEntry(offsetFrame, 'Refine Page', 'Y',
-                                'Refine pass Y offset', width = 3, expand = 1)
-        self.createLabeledEntry(offsetFrame, 'Refine Page', 'Z',
-                                'Refine pass Z offset', width = 3, expand = 1)
-        self.createLabeledEntry(offsetFrame, 'Refine Page', 'H',
-                                'Refine pass H offset', width = 3, expand = 1)
-        self.createLabeledEntry(offsetFrame, 'Refine Page', 'P',
-                                'Refine pass P offset', width = 3, expand = 1)
-        self.createLabeledEntry(offsetFrame, 'Refine Page', 'R',
-                                'Refine pass R offset', width = 3, expand = 1)
-        offsetFrame.pack(fill = X)
-
-        frame = Frame(self.refinePage)
-        self.createButton(frame, 'Refine Page', 'Speed',
-                          'Reset refine speed',
-                          self.resetRefineSpeed, side = LEFT,)
+        frame = Frame(refineFrame)
+        widget = self.createCheckbutton(
+            self.frame, 'Refine Page', 'Refining Path',
+            ('On: Next record session refines current path ' +
+             'Off: Next record session records a new path'),
+            self.toggleRefine, 0,
+            side = LEFT, fill = BOTH, expand = 1)
+        widget.pack_forget()
+        widget.grid(row=0, column=0, sticky = NSEW)
+        widget.configure(relief = RAISED, borderwidth = 2,
+                         anchor = CENTER, width = 10)
+        widget = self.createButton(
+            frame, 'Refine Page', 'Start Refining',
+            'Start refining path using current refining settings',
+            self.startRefining,
+            side = LEFT, expand = 1)
+        widget.pack_forget()
+        widget.grid(row=0, column=1, sticky = NSEW)
+        frame.pack(expand = 1, fill = x)
 
         self.mainNotebook.setnaturalsize()        
         
@@ -516,10 +513,9 @@ class MopathRecorder(AppShell, PandaObject):
         self.recorderNodePath.removeNode()
 
     def createNewPointSet(self):
-        self.pointSet = []
         self.pointSetName = self['name'] + '-ps-' + `self.pointSetCount`
         # Update dictionary
-        self.pointSetDict[self.pointSetName] = self.pointSet
+        self.pointSet = self.pointSetDict[self.pointSetName] = []
         # Update combo box
         comboBox = self.getWidget('Mopath', 'Point Set')
         scrolledList = comboBox.component('scrolledlist')
@@ -989,8 +985,8 @@ class MopathRecorder(AppShell, PandaObject):
         self.createNewPointSet()
         for i in range(self.xyzCurveFitter.getNumSamples()):
             time = self.xyzCurveFitter.getSampleT(i)
-            pos = self.xyzCurveFitter.getSamplePoint(i)
-            hpr = self.hprCurveFitter.getSamplePoint(i)
+            pos = Point3(self.xyzCurveFitter.getSamplePoint(i))
+            hpr = Point3(self.hprCurveFitter.getSamplePoint(i))
             self.pointSet.append([time, pos, hpr])
         # Resize curve to original duration
         self.setPathDurationTo(maxT)
@@ -1017,8 +1013,8 @@ class MopathRecorder(AppShell, PandaObject):
         self.createNewPointSet()
         for i in range(self.xyzCurveFitter.getNumSamples()):
             time = self.xyzCurveFitter.getSampleT(i)
-            pos = self.xyzCurveFitter.getSamplePoint(i)
-            hpr = self.hprCurveFitter.getSamplePoint(i)
+            pos = Point3(self.xyzCurveFitter.getSamplePoint(i))
+            hpr = Point3(self.hprCurveFitter.getSamplePoint(i))
             self.pointSet.append([time, pos, hpr])
         # Resize curve to original duration
         self.setPathDurationTo(maxT)
@@ -1156,12 +1152,6 @@ class MopathRecorder(AppShell, PandaObject):
             self.xyzCurveFitter.addPoint(adjustedTime, pos)
             self.hprCurveFitter.addPoint(adjustedTime, hpr)
 
-    def resetOffset(self):
-        print 'reset offset'
-
-    def resetRefineSpeed(self):
-        pass
-    
     ## WIDGET UTILITY FUNCTIONS ##
     def addWidget(self, widget, category, text):
         self.widgetDict[category + '-' + text] = widget
