@@ -68,17 +68,28 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.avatarControlForwardSpeed=forward
         self.avatarControlJumpForce=0.0
         self.avatarControlReverseSpeed=reverse
-        self.avatarControlRotateSpeed=0.3*rotate
+        self.avatarControlRotateSpeed=rotate
 
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.__speed, self.__rotationSpeed)
 
-    def setShip(self, ship):
+    def setAvatar(self, ship):
         self.ship = ship
         if ship is not None:
             #self.setupShip()
-            self.avatarNodePath = self.setupPhysics(ship)
+            self.setupPhysics(ship)
+            
+            #*# Debug:
+            if not hasattr(ship, "acceleration"):
+                self.ship.acceleration = 60
+                self.ship.maxSpeed = 100
+                self.ship.reverseAcceleration = 10
+                self.ship.maxReverseSpeed = 20
+                self.ship.turnRate = 30
+                self.ship.maxTurn = 30
+                self.ship.anchorDrag = .9
+                self.ship.hullDrag = .9
 
     def setupRay(self, floorBitmask, floorOffset):
         # This is a ray cast from your head down to detect floor polygons
@@ -171,16 +182,23 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
     def setupPhysics(self, avatarNodePath):
         assert(self.debugPrint("setupPhysics()"))
+        if avatarNodePath is None:
+            return
+        assert not avatarNodePath.isEmpty()
         # Connect to Physics Manager:
         self.actorNode=ActorNode("physicsActor")
         self.actorNode.getPhysicsObject().setOriented(1)
         self.actorNode.getPhysical(0).setViscosity(0.1)
-        physicsActor=NodePath(self.actorNode)
+        physicsActor=render.attachNewNode(self.actorNode)
+        physicsActor.setPos(avatarNodePath, Vec3(0))
+        physicsActor.setHpr(avatarNodePath, Vec3(0))
         avatarNodePath.reparentTo(physicsActor)
+        avatarNodePath.setPos(Vec3(0))
+        avatarNodePath.setHpr(Vec3(0))
         avatarNodePath.assign(physicsActor)
         self.phys=PhysicsManager.PhysicsManager()
 
-        fn=ForceNode("gravity")
+        fn=ForceNode("ship gravity")
         fnp=NodePath(fn)
         #fnp.reparentTo(physicsActor)
         fnp.reparentTo(render)
@@ -189,7 +207,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.phys.addLinearForce(gravity)
         self.gravity = gravity
 
-        fn=ForceNode("priorParent")
+        fn=ForceNode("ship priorParent")
         fnp=NodePath(fn)
         fnp.reparentTo(render)
         priorParent=LinearVectorForce(0.0, 0.0, 0.0)
@@ -198,8 +216,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.priorParentNp = fnp
         self.priorParent = priorParent
 
-        if 0:
-            fn=ForceNode("viscosity")
+        if 1:
+            fn=ForceNode("ship viscosity")
             fnp=NodePath(fn)
             #fnp.reparentTo(physicsActor)
             fnp.reparentTo(render)
@@ -212,16 +230,28 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.phys.attachPhysicalnode(physicsActor.node())
 
         self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
-        fn=ForceNode("avatarControls")
+        fn=ForceNode("ship vatarControls")
         fnp=NodePath(fn)
         fnp.reparentTo(render)
         fn.addForce(self.acForce)
         self.phys.addLinearForce(self.acForce)
         #self.phys.removeLinearForce(self.acForce)
         #fnp.remove()
-        return avatarNodePath
 
-    def initializeCollisions(self, collisionTraverser, avatarNodePath, 
+        #avatarNodePath.reparentTo(render)
+        self.avatarNodePath = avatarNodePath
+        #self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
+        #self.actorNode.updateTransform()
+
+        assert not avatarNodePath.isEmpty()
+        if 0 or self.useHeightRay:
+            #self.setupRay(self.floorBitmask, self.avatarRadius)
+            self.setupRay(self.floorBitmask, 0.0)
+        self.setupSphere(self.wallBitmask|self.floorBitmask, self.avatarRadius)
+
+        self.setCollisionsActive(1)
+
+    def initializeCollisions(self, collisionTraverser,
             wallBitmask, floorBitmask, 
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
@@ -229,18 +259,14 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         """
         assert(self.debugPrint("initializeCollisions()"))
         
-        assert not avatarNodePath.isEmpty()
         
         self.cTrav = collisionTraverser
         self.floorOffset = floorOffset = 7.0
-
-        self.avatarNodePath = self.setupPhysics(avatarNodePath)
-        if 0 or self.useHeightRay:
-            #self.setupRay(floorBitmask, avatarRadius)
-            self.setupRay(floorBitmask, 0.0)
-        self.setupSphere(wallBitmask|floorBitmask, avatarRadius)
-
-        self.setCollisionsActive(1)
+        self.wallBitmask = wallBitmask
+        self.floorBitmask = floorBitmask
+        self.avatarRadius = avatarRadius
+        self.floorOffset = floorOffset
+        self.reach = reach
 
     def setAirborneHeightFunc(self, getAirborneHeight):
         self.getAirborneHeight = getAirborneHeight
