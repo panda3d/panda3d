@@ -18,7 +18,7 @@ DOSH   CONFIG_CONFIG=:configpath=CFG_PATH:configpath=ETC_PATH
 DOSH   CFG_PATH=.:$HOME:/usr/local/etc
 DOSH   export CONFIG_CONFIG CFG_PATH
 DOSH fi
-SEP PYTHONPATH :
+SEP PYTHONPATH ;
 MODREL PYTHONPATH lib
 DOSH if [ -e /usr/local/libmikmod ]; then USE_MIKMOD="t"; export USE_MIKMOD; fi
 DOSH if [ -e /for/program/libmikmod ]; then USE_MIKMOD="t"; export USE_MIKMOD; fi
