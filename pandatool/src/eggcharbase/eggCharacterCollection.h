@@ -26,7 +26,6 @@
 #include "eggData.h"
 #include "eggNode.h"
 #include "pointerTo.h"
-#include "nameUniquifier.h"
 
 class EggTable;
 class EggAttributes;
@@ -79,7 +78,6 @@ public:
   typedef pvector<EggCharacterData *> Characters;
   Characters _characters;
   Characters _characters_by_model_index;
-  NameUniquifier _component_names;
 
 private:
   bool scan_hierarchy(EggNode *egg_node);

@@ -29,7 +29,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggCharacterData::
-EggCharacterData(EggCharacterCollection *collection) {
+EggCharacterData(EggCharacterCollection *collection) :
+  _component_names("_", "joint_")
+{
   _collection = collection;
   _root_joint = _collection->make_joint_data(this);
   // The fictitious root joint is not added to the _components list.

@@ -40,9 +40,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggCharacterCollection::
-EggCharacterCollection() :
-  _component_names("_", "joint_")
-{
+EggCharacterCollection() {
   _next_model_index = 0;
 }
 
@@ -603,7 +601,7 @@ void EggCharacterCollection::
 found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
                 EggNode *egg_node, int egg_index, int model_index) {
   if (egg_node->has_name()) {
-    joint_data->add_name(egg_node->get_name(), _component_names);
+    joint_data->add_name(egg_node->get_name(), char_data->_component_names);
   }
   egg_node->set_name(joint_data->get_name());
   joint_data->add_back_pointer(model_index, egg_node);

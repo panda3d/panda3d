@@ -27,6 +27,7 @@
 #include "eggData.h"
 #include "pointerTo.h"
 #include "namable.h"
+#include "nameUniquifier.h"
 
 #include "pmap.h"
 
@@ -113,6 +114,8 @@ protected:
 
   typedef pvector<EggComponentData *> Components;
   Components _components;
+
+  NameUniquifier _component_names;
 
   friend class EggCharacterCollection;
 };
