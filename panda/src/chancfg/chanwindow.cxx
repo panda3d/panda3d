@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chanwindow.h"
-#include "chanparse.h"
-#include "chanshare.h"
-
-#include <notify.h>
+#include "chancfg_headers.h"
+#pragma hdrstop
 
 WindowType* WindowDB = (WindowType*)0;
 

@@ -21,6 +21,8 @@
   #define INSTALL_CONFIG \
     layout_db setup_db window_db
 
+  #define PRECOMPILED_HEADER chancfg_headers.h 
+
   #define IGATESCAN chancfg.h
 
 #end lib_target

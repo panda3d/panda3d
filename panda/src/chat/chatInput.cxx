@@ -15,13 +15,8 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#include "chatInput.h"
-
-#include <buttonEventDataTransition.h>
-#include <buttonEventDataAttribute.h>
-#include <buttonEvent.h>
-#include <keyboardButton.h>
-#include <throw_event.h>
+#include "chat_headers.h"
+#pragma hdrstop
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

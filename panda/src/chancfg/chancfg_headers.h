@@ -1,5 +1,5 @@
-// Filename: config_chat.cxx
-// Created by:  drose (04May00)
+// Filename: xxx_headers.h
+// Created by:  georges (30May01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,12 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chat_headers.h"
+#include <camera.h>
+#include <dconfig.h>
+#include <displayRegion.h>
+#include <dSearchPath.h>
+#include <filename.h>
+#include <frustum.h>
+#include <graphicsChannel.h>
+#include <hardwareChannel.h>
+#include <notify.h>
+#include <perspectiveProjection.h>
+#include <renderRelation.h>
+#include <transformTransition.h>
+
+#include "chancfg.h"
+#include "chanlayout.h"
+#include "chanparse.h"
+#include "chansetup.h"
+#include "chanshare.h"
+#include "chanwindow.h"
+
 #pragma hdrstop
 
-Configure(config_chat);
-NotifyCategoryDef(chat, "");
-
-ConfigureFn(config_chat) {
-  ChatInput::init_type();
-}

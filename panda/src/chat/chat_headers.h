@@ -1,5 +1,5 @@
-// Filename: config_chat.cxx
-// Created by:  drose (04May00)
+// Filename: chat_headers.h
+// Created by:  georges (30May01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,12 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chat_headers.h"
+#include <buttonEvent.h>
+#include <buttonEventDataAttribute.h>
+#include <buttonEventDataTransition.h>
+#include <dconfig.h>
+#include <keyboardButton.h>
+#include <throw_event.h>
+#include "chatHelpers.h"
+#include "chatInput.h"
+#include "config_chat.h"
+
 #pragma hdrstop
 
-Configure(config_chat);
-NotifyCategoryDef(chat, "");
-
-ConfigureFn(config_chat) {
-  ChatInput::init_type();
-}

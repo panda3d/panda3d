@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chanparse.h"
-
-#include <notify.h>
+#include "chancfg_headers.h"
+#pragma hdrstop
 
 const int ChanFileEOF = -1;
 

@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chanlayout.h"
-#include "chanparse.h"
-#include "chanshare.h"
-
-#include <notify.h>
+#include "chancfg_headers.h"
+#pragma hdrstop
 
 LayoutType* LayoutDB = (LayoutType*)0;
 

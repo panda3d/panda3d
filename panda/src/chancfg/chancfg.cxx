@@ -16,23 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chancfg.h"
-
-#include <dconfig.h>
-#include <notify.h>
-#include <filename.h>
-#include <transformTransition.h>
-#include <camera.h>
-#include <graphicsChannel.h>
-#include <hardwareChannel.h>
-#include <displayRegion.h>
-#include <perspectiveProjection.h>
-#include <frustum.h>
-#include <renderRelation.h>
-#include <dSearchPath.h>
+#include "chancfg_headers.h"
+#pragma hdrstop
 
 #include <algorithm>
-
 
 Configure(chanconfig);
 

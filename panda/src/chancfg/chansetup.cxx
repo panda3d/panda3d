@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chansetup.h"
-#include "chanparse.h"
-#include "chanshare.h"
-
-#include <notify.h>
+#include "chancfg_headers.h"
+#pragma hdrstop
 
 SetupType* SetupDB = (SetupType*)0;
 
