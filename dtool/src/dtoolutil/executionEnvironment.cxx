@@ -196,6 +196,19 @@ ns_get_environment_variable(const string &var) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::ns_set_environment_variable
+//       Access: Private
+//  Description: Changes the definition of the indicated environment
+//               variable.  The nonstatic implementation.
+////////////////////////////////////////////////////////////////////
+void ExecutionEnvironment::
+ns_set_environment_variable(const string &var, const string &value) {
+  _variables[var] = value;
+  string put = var + "=" + value;
+  putenv(put.c_str());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::ns_get_num_args
 //       Access: Private
 //  Description: Returns the number of command-line arguments

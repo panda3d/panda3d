@@ -41,6 +41,17 @@ get_environment_variable(const string &var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::set_environment_variable
+//       Access: Public, Static
+//  Description: Changes the definition of the indicated environment
+//               variable.
+////////////////////////////////////////////////////////////////////
+INLINE void ExecutionEnvironment::
+set_environment_variable(const string &var, const string &value) {
+  return get_ptr()->ns_set_environment_variable(var, value);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::get_num_args
 //       Access: Public, Static
 //  Description: Returns the number of command-line arguments

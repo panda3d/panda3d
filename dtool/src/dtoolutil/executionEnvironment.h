@@ -41,6 +41,7 @@ private:
 public:
   INLINE static bool has_environment_variable(const string &var);
   INLINE static string get_environment_variable(const string &var);
+  INLINE static void set_environment_variable(const string &var, const string &value);
 
   static string expand_string(const string &str);
 
@@ -54,6 +55,7 @@ public:
 private:
   bool ns_has_environment_variable(const string &var) const;
   string ns_get_environment_variable(const string &var) const;
+  void ns_set_environment_variable(const string &var, const string &value);
 
   int ns_get_num_args() const;
   string ns_get_arg(int n) const;
