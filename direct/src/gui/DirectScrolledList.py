@@ -191,6 +191,24 @@ class DirectScrolledList(DirectFrame):
             apply(self['command'], self['extraArgs'])    
         return ret
 
+    def makeAllItems(self):
+        for i in range(len(self['items'])):
+            item = self["items"][i]
+            # If the item is a 'str', then it has not been created
+            # Therefore, use the the function given to make it or
+            # just make it a frame
+            if item.__class__.__name__ == 'str':
+                if self['itemMakeFunction']:
+                    # If there is a function to create the item
+                    item = apply(self['itemMakeFunction'],
+                                 (item, i, self['itemMakeExtraArgs']))
+                else:
+                    item = DirectFrame(text = item, relief = None)
+                # Then add the newly formed item back into the normal item list
+                self["items"][i] = item
+                item.reparentTo(self.itemFrame)
+        self.recordMaxHeight()
+
     def __scrollByTask(self, task):
         if ((task.time - task.prevTime) < task.delayTime):
             return Task.cont
