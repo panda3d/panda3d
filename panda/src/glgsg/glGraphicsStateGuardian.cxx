@@ -106,6 +106,10 @@
 
 TypeHandle GLGraphicsStateGuardian::_type_handle;
 
+#ifndef CPPPARSER
+PStatCollector GLGraphicsStateGuardian::_vertices_display_list_pcollector("Vertices:Display lists");
+#endif
+
 static void
 issue_vertex_gl(const Geom *geom, Geom::VertexIterator &viterator) {
   const Vertexf &vertex = geom->get_next_vertex(viterator);
@@ -492,6 +496,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
   // For Pstats to track our current texture memory usage, we have to
   // reset the set of current textures each frame.
   init_frame_pstats();
+  _vertices_display_list_pcollector.clear_level();
 
   // But since we don't get sent a new issue_texture() unless our
   // texture state has changed, we have to be sure to clear the
@@ -1815,6 +1820,17 @@ prepare_geom_node(GeomNode *node) {
   _normals_enabled = true;
   _texturing_enabled = true;
 
+#ifdef DO_PSTATS
+  // Count up the number of vertices we're about to render, by
+  // checking the PStats vertex counters now, and at the end.  This is
+  // kind of hacky, but this is debug code.
+  float num_verts_before = 
+    _vertices_tristrip_pcollector.get_level() +
+    _vertices_trifan_pcollector.get_level() +
+    _vertices_tri_pcollector.get_level() +
+    _vertices_other_pcollector.get_level();
+#endif
+
   // Now define the display list.
   glNewList(ggnc->_index, GL_COMPILE);
   for (i = 0; i < num_geoms; i++) {
@@ -1830,6 +1846,16 @@ prepare_geom_node(GeomNode *node) {
     }
   }
   glEndList();
+
+#ifdef DO_PSTATS
+  float num_verts_after = 
+    _vertices_tristrip_pcollector.get_level() +
+    _vertices_trifan_pcollector.get_level() +
+    _vertices_tri_pcollector.get_level() +
+    _vertices_other_pcollector.get_level();
+  float num_verts = num_verts_after - num_verts_before;
+  ggnc->_num_verts = (int)(num_verts + 0.5);
+#endif
 
   _normals_enabled = old_normals_enabled;
   _texturing_enabled = old_texturing_enabled;
@@ -1865,6 +1891,10 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
     add_to_geom_node_record(gnc);
     GLGeomNodeContext *ggnc = DCAST(GLGeomNodeContext, gnc);
     glCallList(ggnc->_index);
+
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggnc->_num_verts);
+#endif
 
     // Also draw all the dynamic Geoms.
     int num_geoms = ggnc->_dynamic_geoms.size();

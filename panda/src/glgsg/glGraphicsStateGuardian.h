@@ -368,6 +368,8 @@ public:
   virtual TypeHandle get_type(void) const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
+  static PStatCollector _vertices_display_list_pcollector;
+
 private:
   static TypeHandle _type_handle;
 };

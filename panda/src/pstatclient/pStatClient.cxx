@@ -635,7 +635,8 @@ add_level(int collector_index, int thread_index, float increment) {
 ////////////////////////////////////////////////////////////////////
 float PStatClient::
 get_level(int collector_index, int thread_index) const {
-  return _collectors[collector_index]._per_thread[thread_index]._level;
+  return _collectors[collector_index]._per_thread[thread_index]._level /
+    _collectors[collector_index]._def->_factor;
 }
 
 ////////////////////////////////////////////////////////////////////

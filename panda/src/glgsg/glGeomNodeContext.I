@@ -27,4 +27,7 @@ GLGeomNodeContext(GeomNode *node) :
   GeomNodeContext(node)
 {
   _index = 0;
+#ifdef DO_PSTATS
+  _num_verts = 0;
+#endif
 }
