@@ -3,68 +3,6 @@ from DirectButton import *
 import GuiGlobals
 import Task
 
-"""
-from DirectGui import *
-
-def choseAvatar(item):
-    print item
-
-model = loader.loadModel("phase_4/models/gui/friendslist_gui")
-
-names = ['Top', 'Flippy1', 'Joe', 'Shochet', 'Mother', 'Father', 'Brother', 'Sister', 'One', 'Two', 'Three', 'Flippy2', 'Ashy', 'Bob', 'Moe', 'Funk', 'Bottom']
-
-buttons = []
-for name in names:
-    buttons.append(DirectButton(
-        text = name,
-        text_scale = 0.05,
-        relief = None,
-        text2_bg = Vec4(1,1,0,1),
-        text1_bg = Vec4(0.5,0.9,1,1),
-        command = choseAvatar,
-        extraArgs = [name],
-    ))
-
-
-s = DirectScrolledList(
-    image = model.find("**/FriendsBox_Open"),
-    relief = None,
-    # inc and dec are DirectButtons
-    incButton_image = (model.find("**/FndsLst_ScrollUp"),
-                       model.find("**/FndsLst_ScrollDN"),
-                       model.find("**/FndsLst_ScrollUp_Rllvr"),
-                       ),
-    incButton_relief = None,
-    incButton_scale = (1,1,-1),
-    incButton_pos = (0,0,-0.316),
-    decButton_image = (model.find("**/FndsLst_ScrollUp"),
-                       model.find("**/FndsLst_ScrollDN"),
-                       model.find("**/FndsLst_ScrollUp_Rllvr"),
-                       ),
-    decButton_relief = None,
-    decButton_scale = (1,1,1),
-    decButton_pos = (0,0,0.119),
-    # itemFrame is a DirectFrame
-    itemFrame_pos = (0,0,0.05),
-    itemFrame_scale = 0.9,
-    itemFrame_relief = None,
-    # each item is a button with text on it
-    numItemsVisible = 7,
-    items = buttons,
-    )
-
-s.addItem(DirectButton(
-    text = "Added",
-    text_scale = 0.05,
-    relief = None,
-    text2_bg = Vec4(1,1,0,1),
-    text1_bg = Vec4(0.5,0.9,1,1),
-    command = choseAvatar,
-    extraArgs = ["Added"])
-s.removeItem(index)
-s.setItems(stringList, extraArgList)
-"""
-
 class DirectScrolledList(DirectFrame):
     def __init__(self, parent = guiTop, **kw):
 
