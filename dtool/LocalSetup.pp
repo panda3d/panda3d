@@ -171,6 +171,9 @@ $[cdefine HAVE_DIRENT_H]
    interface)? */
 $[cdefine HAVE_SYS_SOUNDCARD_H]
 
+/* Do we have RTTI (and <typeinfo>)? */
+$[cdefine HAVE_RTTI]
+
 #end dtool_config.h
 
 #endif   // BUILD_TYPE

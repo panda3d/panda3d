@@ -91,6 +91,9 @@
 // interface)?
 #define HAVE_SYS_SOUNDCARD_H
 
+// Do we have RTTI (and <typeinfo>)?
+#define HAVE_RTTI 1
+
 // can Intel C++ build this directory successfully (if not, change CC to msvc)
 #define NOT_INTEL_BUILDABLE false
 

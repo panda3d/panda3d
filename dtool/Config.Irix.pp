@@ -90,3 +90,6 @@
 // Do we have <sys/soundcard.h> (and presumably a Linux-style audio
 // interface)?
 #define HAVE_SYS_SOUNDCARD_H
+
+// Do we have RTTI (and <typeinfo>)?
+#define HAVE_RTTI 1
