@@ -84,6 +84,49 @@ class ShowBase(DirectObject.DirectObject):
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
 
+        # Get the default window properties.
+        winWidth = self.config.GetInt('win-width', 640)
+        winHeight = self.config.GetInt('win-height', 480)
+        fullscreen = self.config.GetBool('fullscreen', 0)
+        undecorated = self.config.GetBool('undecorated', 0)
+        cursorHidden = self.config.GetBool('cursor-hidden', 0)
+        windowTitle = self.config.GetString('window-title', 'Panda')
+        
+        self.defaultWindowProps = WindowProperties()
+        self.defaultWindowProps.setOpen(1)
+        self.defaultWindowProps.setSize(winWidth, winHeight)
+        self.defaultWindowProps.setFullscreen(fullscreen)
+        self.defaultWindowProps.setUndecorated(undecorated)
+        self.defaultWindowProps.setCursorHidden(cursorHidden)
+        self.defaultWindowProps.setTitle(windowTitle)
+
+        # If the aspect ratio is 0 or None, it means to infer the
+        # aspect ratio from the window size.
+        self.aspectRatio = self.config.GetFloat('aspect-ratio', 0)
+
+        # The default background color for a window.
+        self.winBackgroundColor = VBase4(
+            self.config.GetFloat('win-background-r', 0.41),
+            self.config.GetFloat('win-background-g', 0.41),
+            self.config.GetFloat('win-background-b', 0.41),
+            1.0)
+
+        # base.win is the main, or only window; base.winList is a list of
+        # *all* windows.  Similarly with base.camList.
+        self.win = None
+        self.frameRateMeter = None
+        self.winList = []
+        self.mainWinMinimized = 0
+        self.pipe = None
+        self.pipeList = []
+        self.mak = None
+        self.cam = None
+        self.camList = []
+        self.camNode = None
+        self.camLens = None
+        self.camera = None
+        self.camera2d = None
+
         # This is used for syncing multiple PCs in a distributed cluster
         try:
             # Has the cluster sync variable been set externally?
@@ -113,24 +156,6 @@ class ShowBase(DirectObject.DirectObject):
         # This is the DataGraph traverser, which we might as well
         # create now.
         self.dgTrav = DataGraphTraverser()
-
-        # base.win is the main, or only window; base.winList is a list of
-        # *all* windows.  Similarly with base.camList.
-        self.win = None
-        self.frameRateMeter = None
-        self.winList = []
-        self.mainWinMinimized = 0
-        self.pipe = None
-        self.pipeList = []
-        self.mak = None
-        self.cam = None
-        self.camList = []
-        self.camNode = None
-        self.camLens = None
-        #self.camera = self.render.attachNewNode('camera')
-        self.camera = None
-        self.cameraList = []
-        self.camera2d = self.render2d.attachNewNode('camera2d')
 
         # Maybe create a RecorderController to record and/or play back
         # the user session.
@@ -328,33 +353,54 @@ class ShowBase(DirectObject.DirectObject):
                 else:
                     self.notify.info("Could not make graphics pipe %s." % (pipeType.getName()))
 
-    def openWindow(self):
+    def openWindow(self, props = None, pipe = None, gsg = None):
         """
-        Invokes ChanConfig to create a window and adds it to the list
-        of windows that are to be updated every frame.
+        Creates a window and adds it to the list of windows that are
+        to be updated every frame.
         """
-        if self.pipe == None:
-            self.makeDefaultPipe()
+        if pipe == None:
+            pipe = self.pipe
+        
+            if pipe == None:
+                self.makeDefaultPipe()
+                pipe = self.pipe
 
-        chanString = self.config.GetString('chan-config', 'single')
-        chanConfig = ChanConfig(self.graphicsEngine, self.pipe, chanString,
-                                self.render)
-            
-        win = chanConfig.getWin()
-        if win != None:
-            # Adjust some of the window properties.
-            props = WindowProperties()
-            windowTitle = self.config.GetString("window-title", "");
-            if windowTitle:
-                props.setTitle(windowTitle)
+            if pipe == None:
+                # We couldn't get a pipe.
+                return None
 
-            win.requestProperties(props)
+        if gsg == None:
+            # If we weren't given a gsg, create a new one just for
+            # this window.
+            gsg = self.graphicsEngine.makeGsg(pipe)
 
-            if self.win == None:
-                self.win = win
+            if gsg == None:
+                # Couldn't make a gsg.
+                return None
 
-            self.winList.append(win)
-            self.getCameras(chanConfig)
+        win = self.graphicsEngine.makeWindow(pipe, gsg)
+        if win == None:
+            # Couldn't create a window!
+            return None
+
+        if props == None:
+            props = self.defaultWindowProps
+
+        win.requestProperties(props)
+
+        # By default, the window is cleared to the background color.
+        win.setClearColorActive(1)
+        win.setClearDepthActive(1)
+        win.setClearColor(self.winBackgroundColor)
+        win.setClearDepth(1.0)
+
+        if self.win == None:
+            self.win = win
+
+        self.winList.append(win)
+
+        # Set up a 3-d camera for the window by default.
+        self.makeCamera(win)
             
         return win
 
@@ -377,15 +423,12 @@ class ShowBase(DirectObject.DirectObject):
                 # remove it.
                 if self.camList.count(cam) != 0:
                     self.camList.remove(cam)
-                if not cam.isEmpty():
-                    camera = cam.getParent()
-                    if self.cameraList.count(camera) != 0:
-                        self.cameraList.remove(camera)
-                    # Don't throw away self.camera; we want to
-                    # preserve it for reopening the window.
-                    if cam == self.cam:
-                        self.cam = None
-                    cam.removeNode()
+
+                # Don't throw away self.camera; we want to
+                # preserve it for reopening the window.
+                if cam == self.cam:
+                    self.cam = None
+                cam.removeNode()
 
         # Now we can actually close the window.
         self.graphicsEngine.removeWindow(win)
@@ -428,7 +471,7 @@ class ShowBase(DirectObject.DirectObject):
         
         if self.win != None:
             self.setupMouse(self.win)
-            self.makeCamera2d(self.win, -1, 1, -1, 1)
+            self.makeCamera2d(self.win)
 
             if oldLens != None:
                 # Restore the previous lens properties.
@@ -496,35 +539,125 @@ class ShowBase(DirectObject.DirectObject):
         # anything we parent to render2d gets stretched.  For things
         # where that makes a difference, we set up aspect2d, which
         # scales things back to the right aspect ratio.
-
-        # For now, we assume that the window will have an aspect ratio
-        # matching that of a traditional PC screen (w / h) = (4 / 3)
-        self.aspectRatio = self.config.GetFloat('aspect-ratio', (4.0 / 3.0))
-
+        aspectRatio = self.getAspectRatio()
         self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
-        self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
+        self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
 
         # It's important to know the bounds of the aspect2d screen.
         self.a2dTop = 1.0
         self.a2dBottom = -1.0
-        self.a2dLeft = -self.aspectRatio
-        self.a2dRight = self.aspectRatio
+        self.a2dLeft = -aspectRatio
+        self.a2dRight = aspectRatio
 
-    def makeCamera2d(self, win, left, right, bottom, top):
+    def getAspectRatio(self, win = None):
+        # Returns the actual aspect ratio of the indicated (or main
+        # window), or the default aspect ratio if there is not yet a
+        # main window.
+        
+        if self.aspectRatio:
+            return self.aspectRatio
+
+        aspectRatio = 1
+
+        if win == None:
+            win = self.win
+
+        props = self.defaultWindowProps
+        if win:
+            props = win.getProperties()
+        if not props.hasSize():
+            props = win.getRequestedProperties()
+        if props.hasSize():
+            aspectRatio = float(props.getXSize()) / float(props.getYSize())
+
+        return aspectRatio
+
+    def makeCamera(self, win, chan = None, layer = None, layerSort = 0,
+                   displayRegion = (0, 1, 0, 1), aspectRatio = None):
+        """
+
+        Makes a new 3-d camera associated with the indicated window,
+        and creates a display region in the indicated subrectangle.
+        
+        """
+        if chan == None:
+            chan = win.getChannel(0)
+
+        if layer == None:
+            # Make a new layer on the window.
+            layer = chan.makeLayer(layerSort)
+
+        # And make a display region on this layer of the requested
+        # area.
+        dr = layer.makeDisplayRegion(*displayRegion)
+
+        # By default, we do not clear 3-d display regions (the entire
+        # window will be cleared, which is normally sufficient).
+
+        if aspectRatio == None:
+            aspectRatio = self.aspectRatio
+
+        # Now make a new Camera node.
+        camNode = Camera('cam')
+        lens = PerspectiveLens()
+
+        if aspectRatio:
+            lens.setAspectRatio(aspectRatio)
+
+        else:
+            # If the aspectRatio is 0 or None, set up the lens with a
+            # film size that matches the window size.  This sets up
+            # the correct aspect ratio automatically (assuming the
+            # pixels are square).
+            
+            props = win.getProperties()
+            if not props.hasSize():
+                props = win.getRequestedProperties()
+            if props.hasSize():
+                lens.setFilmSize(props.getXSize(), props.getYSize())
+            
+        camNode.setLens(lens)
+        camNode.setScene(self.render)
+
+        # self.camera is the parent node of all cameras: a node that
+        # we can move around to move all cameras as a group.
+        if self.camera == None:
+            self.camera = self.render.attachNewNode('camera')
+        
+        cam = self.camera.attachNewNode(camNode)
+        dr.setCamera(cam)
+
+        if self.cam == None:
+            self.cam = cam
+            self.camNode = camNode
+            self.camLens = lens
+
+        self.camList.append(cam)
+
+        return cam
+
+    def makeCamera2d(self, win, chan = None, layer = None, layerSort = 10,
+                     displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1)):
         """
         Makes a new camera2d associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2d.
         """
-        # First, we need to make a new layer on the window.
-        chan = win.getChannel(0)
-        layer = chan.makeLayer(10)
+        if chan == None:
+            chan = win.getChannel(0)
 
-        # And make a display region to cover the whole layer.
-        dr = layer.makeDisplayRegion()
+        if layer == None:
+            # Make a new layer on the window.
+            layer = chan.makeLayer(layerSort)
+
+        # And make a display region on this layer of the requested
+        # area.
+        dr = layer.makeDisplayRegion(*displayRegion)
 
         # Enable clearing of the depth buffer on this new display
-        # region (see the comment above).
+        # region (see the comment in setupRender2d, above).
         dr.setClearDepthActive(1)
+
+        left, right, bottom, top = coords
 
         # Now make a new Camera node.
         cam2dNode = Camera('cam2d')
@@ -534,6 +667,12 @@ class ShowBase(DirectObject.DirectObject):
         lens.setNearFar(-1000, 1000)
         cam2dNode.setLens(lens)
         cam2dNode.setScene(self.render2d)
+
+        # self.camera2d is the analog of self.camera, although it's
+        # not as clear how useful it is.
+        if self.camera2d == None:
+            self.camera2d = self.render2d.attachNewNode('camera2d')
+            
         camera2d = self.camera2d.attachNewNode(cam2dNode)
         dr.setCamera(camera2d)
 
@@ -651,54 +790,13 @@ class ShowBase(DirectObject.DirectObject):
         mouseViz = render2d.attachNewNode('mouseViz')
         lilsmiley = loader.loadModel('lilsmiley')
         lilsmiley.reparentTo(mouseViz)
+
+        aspectRatio = self.getAspectRatio()
         # Scale the smiley face to 32x32 pixels.
-        lilsmiley.setScale(32.0 / self.win.getHeight() / self.aspectRatio, 1.0, 32.0 / self.win.getHeight())
+        lilsmiley.setScale(32.0 / self.win.getHeight() / aspectRatio,
+                           1.0, 32.0 / self.win.getHeight())
         #self.mouseWatcherNode.setGeometry(mouseViz)
         
-
-    def getCameras(self, chanConfig):
-        """
-        getCameras(self, chanConfig)
-        Extracts the camera(s) out of the ChanConfig record, parents
-        them all to base.camera, and adds them to base.camList.
-        """
-
-        for i in range(chanConfig.getNumGroups()):
-            # Create a top level camera node for this group
-
-            camera = NodePath(chanConfig.getGroupNode(i))
-            # Extract camera
-            cam = camera.find('**/+Camera')
-
-            # A special case: if we have a camera but not a
-            # cameraList, we must have just reopened the window. Use
-            # that existing camera instead of creating a new one.
-            if self.camera != None and len(self.cameraList) == 0:
-                # Throw away the chancfg group in this special case.
-                camera = self.camera
-                cam.reparentTo(camera)
-            else:
-                camera.reparentTo(self.render)
-
-            self.cameraList.append(camera)
-            self.camList.append(cam)
-            # Enforce our expected aspect ratio, overriding whatever
-            # nonsense ChanConfig put in there.
-            lens = cam.node().getLens()
-            lens.setAspectRatio(self.aspectRatio)
-
-        # Update main camera variables
-        if self.camera == None:
-            self.camera = self.cameraList[0]
-        if self.cam == None:
-            self.cam = self.camList[0]
-            # If you need to get a handle to the camera node itself,
-            # use self.camNode.
-            self.camNode = self.cam.node()
-            # If you need to adjust camera parameters, like fov or
-            # near/far clipping planes, use self.camLens.
-            self.camLens = self.camNode.getLens()
-
     def getAlt(self):
         return self.mouseWatcherNode.getModifierButtons().isDown(
             KeyboardButton.alt())
@@ -1123,7 +1221,7 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeCamera = self.hidden.attachNewNode('oobeCamera')
             self.oobeCameraTrackball = self.oobeCamera.attachNewNode('oobeCameraTrackball')
             self.oobeLens = PerspectiveLens()
-            self.oobeLens.setAspectRatio(self.aspectRatio)
+            self.oobeLens.setAspectRatio(self.getAspectRatio())
             self.oobeLens.setNearFar(0.1, 10000.0)
             self.oobeLens.setFov(52.0)
 

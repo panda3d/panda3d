@@ -931,21 +931,21 @@ class DisplayRegionList(PandaObject):
         else:
             # MRM: Doesn't properly handle multiple camera groups anymore
             # Assumes everything is under main camera
-            for cameraGroup in base.cameraList:
-                # This is following the old way of setting up
-                # display regions.  A display region is set up for
-                # each camera node in the scene graph.  This was done
-                # so that only display regions in the scene graph are
-                # considered.  The right way to do this is to set up
-                # a display region for each real display region, and then
-                # keep track of which are currently active (e.g. use a flag)
-                # processing only them.
-                for camIndex in range(len(base.camList)):
-                    cam = base.camList[camIndex]
-                    if cam.getName()=='<noname>':
-                        cam.setName('Camera%d' % camIndex)
-                    drc = DisplayRegionContext(cam)
-                    self.displayRegionList.append(drc)
+
+            # This is following the old way of setting up
+            # display regions.  A display region is set up for
+            # each camera node in the scene graph.  This was done
+            # so that only display regions in the scene graph are
+            # considered.  The right way to do this is to set up
+            # a display region for each real display region, and then
+            # keep track of which are currently active (e.g. use a flag)
+            # processing only them.
+            for camIndex in range(len(base.camList)):
+                cam = base.camList[camIndex]
+                if cam.getName()=='<noname>':
+                    cam.setName('Camera%d' % camIndex)
+                drc = DisplayRegionContext(cam)
+                self.displayRegionList.append(drc)
 
         self.accept("DIRECT-mouse1",self.mouseUpdate)
         self.accept("DIRECT-mouse2",self.mouseUpdate)
