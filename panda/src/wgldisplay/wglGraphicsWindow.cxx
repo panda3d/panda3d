@@ -32,6 +32,7 @@
 #include <throw_event.h>
 //#include <eventQueue.h>
 #include <string.h>
+#include "Win32Defs.h"
 
 #define WGL_WGLEXT_PROTOTYPES
 #include "wglext.h"
@@ -204,6 +205,7 @@ void AtExitFn() {
 #define MY_DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
         EXTERN_C const GUID DECLSPEC_SELECTANY name \
                 = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
+                
 MY_DEFINE_GUID( IID_IDirectDraw2, 0xB3A6F3E0,0x2B43,0x11CF,0xA2,0xDE,0x00,0xAA,0x00,0xB9,0x33,0x56 );
 
 ////////////////////////////////////////////////////////////////////
@@ -261,7 +263,7 @@ static DWORD GetAvailVidMem(void) {
     // to figure out optimal mode using this estimate
     DDSCAPS ddsCaps;
     DWORD dwTotal,dwFree;
-    ZeroMemory(&ddsCaps,sizeof(DDSCAPS2));
+    ZeroMemory(&ddsCaps,sizeof(DDSCAPS));
     ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
 
     if(FAILED(hr = pDD2->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
@@ -2138,22 +2140,6 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
         case DD_OK:
             return "No error.\0";
 
-        case DDERR_NOSTEREOHARDWARE       : // ( 181 )
-            return "DDERR_NOSTEREOHARDWARE      ";//: // ( 181 )
-        case DDERR_NOSURFACELEFT              : // ( 182 )
-            return "DDERR_NOSURFACELEFT             ";//: // ( 182 )
-        case DDERR_DDSCAPSCOMPLEXREQUIRED            : // ( 542 )
-            return "DDERR_DDSCAPSCOMPLEXREQUIRED";//: // ( 542 )
-        case DDERR_NOTONMIPMAPSUBLEVEL               : // ( 603 )
-            return "DDERR_NOTONMIPMAPSUBLEVEL";//: // ( 603 )
-        case DDERR_TESTFINISHED                      : // ( 692 )
-            return "DDERR_TESTFINISHED";//: // ( 692 )
-        case DDERR_NEWMODE                           : // ( 693 )
-            return "DDERR_NEWMODE";//: // ( 693 )
-//#endif
-    //case D3DERR_COMMAND_UNPARSED              : // (3000)
-    /// return "case";//D3DERR_COMMAND_UNPARSED              : // (3000)
-
         case DDERR_ALREADYINITIALIZED     : // ( 5 )
             return "DDERR_ALREADYINITIALIZED        ";//: // ( 5 )
         case DDERR_CANNOTATTACHSURFACE        : // ( 10 )
@@ -2209,9 +2195,7 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
         case DDERR_NOTFOUND               : // ( 255 )
             return "DDERR_NOTFOUND              ";//: // ( 255 )
         case DDERR_NOOVERLAYHW            : // ( 260 )
-            return "DDERR_NOOVERLAYHW           ";//: // ( 260 )
-        case DDERR_OVERLAPPINGRECTS           : // ( 270 )
-            return "DDERR_OVERLAPPINGRECTS          ";//: // ( 270 )
+        return "DDERR_NOOVERLAYHW           ";//: // ( 260 )
         case DDERR_NORASTEROPHW           : // ( 280 )
             return "DDERR_NORASTEROPHW          ";//: // ( 280 )
         case DDERR_NOROTATIONHW           : // ( 290 )
@@ -2268,8 +2252,6 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
             return "DDERR_UNSUPPORTEDFORMAT         ";//: // ( 510 )
         case DDERR_UNSUPPORTEDMASK            : // ( 520 )
             return "DDERR_UNSUPPORTEDMASK           ";//: // ( 520 )
-        case DDERR_INVALIDSTREAM                     : // ( 521 )
-            return "DDERR_INVALIDSTREAM";//: // ( 521 )
         case DDERR_VERTICALBLANKINPROGRESS        : // ( 537 )
             return "DDERR_VERTICALBLANKINPROGRESS       ";//: // ( 537 )
         case DDERR_WASSTILLDRAWING            : // ( 540 )
@@ -2358,8 +2340,6 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
             return "DDERR_NOTPAGELOCKED         ";//: // ( 680 )
         case DDERR_MOREDATA                   : // ( 690 )
             return "DDERR_MOREDATA                  ";//: // ( 690 )
-        case DDERR_EXPIRED                           : // ( 691 )
-            return "DDERR_EXPIRED";//: // ( 691 )
         case DDERR_VIDEONOTACTIVE             : // ( 695 )
             return "DDERR_VIDEONOTACTIVE            ";//: // ( 695 )
         case DDERR_DEVICEDOESNTOWNSURFACE         : // ( 699 )
@@ -3413,12 +3393,6 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
 // Global system parameters we want to modify during our run
 static int iMouseTrails;
 static bool bCursorShadowOn,bMouseVanish;
-
-#ifndef SPI_GETMOUSEVANISH
-// get of this when we upgrade to winxp winuser.h
-#define SPI_GETMOUSEVANISH                  0x1020
-#define SPI_SETMOUSEVANISH                  0x1021
-#endif
 
 void set_global_parameters(void) {
   // turn off mousetrails and cursor shadow and mouse cursor vanish

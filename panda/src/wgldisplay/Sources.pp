@@ -9,15 +9,15 @@
     glgsg display putil
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+  
+  #define INSTALL_HEADERS \
+     config_wgldisplay.h wglGraphicsPipe.h wglGraphicsWindow.h Win32Defs.h  
 
   #define SOURCES \
-    config_wgldisplay.h wglGraphicsPipe.h wglGraphicsWindow.cxx wglGraphicsWindow.h wglext.h
+    wglGraphicsWindow.cxx wglext.h $[INSTALL_HEADERS]
     
   #define INCLUDED_SOURCES \
     config_wgldisplay.cxx wglGraphicsPipe.cxx
-
-  #define INSTALL_HEADERS \
-     config_wgldisplay.h wglGraphicsPipe.h wglGraphicsWindow.h
 
 #end lib_target
 
