@@ -75,7 +75,6 @@ def xpaths(prefix,base,suffix):
   return(result);
 
 if (sys.platform == "win32"):
-
   import _winreg;
   def GetRegistryKey(path, subkey):
     k1=0
@@ -86,20 +85,6 @@ if (sys.platform == "win32"):
     except: pass;
     if (key!=0): _winreg.CloseKey(key);
     return k1;
-
-  def backslashify(exp):
-    return exp
-    if 0:
-        if (type(exp) == str):
-          return(string.replace(exp,"/","\\"))
-        result = []
-        for x in exp: result.append(backslashify(x))
-        return(result)
-
-else:
-
-  def backslashify(exp):
-    return(exp)
 
 if 0:
   def oslocalcmd(cd, cmd):
@@ -1346,17 +1331,17 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
 def InterrogateModule(outc=0, module=0, library=0, files=0):
   if ((outc==0)|(module==0)|(library==0)|(files==0)):
     sys.exit("syntax error in InterrogateModule directive");
-  woutc = backslashify("built/tmp/"+outc)
-  wfiles = backslashify(xpaths("built/etc/",files,""))
-  if (older(woutc, wfiles)):
+  outc = "built/tmp/"+outc
+  files = xpaths("built/etc/",files,"")
+  if (older(outc, files)):
     if (COMPILER=="MSVC7"):
         cmd = "built\\bin\\interrogate_module.exe "
     if (COMPILER=="LINUXA"):
         cmd = "built/bin/interrogate_module "
-    cmd = cmd + " -oc " + woutc + ' -module "' + module + '" -library "' + library + '" -python '
-    for x in wfiles: cmd = cmd + ' ' + x
+    cmd = cmd + " -oc \"" + outc + '" -module "' + module + '" -library "' + library + '" -python '
+    for x in files: cmd = cmd + ' "' + x + '" '
     oscmd(cmd)
-    updatefiledate(woutc);
+    updatefiledate(outc);
 
 ########################################################################
 ##
@@ -1403,17 +1388,17 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
 
   if (COMPILER=="MSVC7"):
     ALLTARGETS.append("built/bin/"+dll)
-    wdll = backslashify("built/bin/"+dll)
-    wlib = backslashify("built/lib/"+dll[:-4]+".lib")
+    dll = "built/bin/"+dll
+    lib = "built/lib/"+dll[:-4]+".lib"
     wobj = []
     for x in obj:
       suffix = x[-4:]
-      if   (suffix==".obj"): wobj.append("built\\tmp\\"+x)
-      elif (suffix==".dll"): wobj.append("built\\lib\\"+x[:-4]+".lib")
-      elif (suffix==".lib"): wobj.append("built\\lib\\"+x)
-      elif (suffix==".res"): wobj.append("built\\tmp\\"+x)
+      if   (suffix==".obj"): wobj.append("built/tmp/"+x)
+      elif (suffix==".dll"): wobj.append("built/lib/"+x[:-4]+".lib")
+      elif (suffix==".lib"): wobj.append("built/lib/"+x)
+      elif (suffix==".res"): wobj.append("built/tmp/"+x)
       else: sys.exit("unknown suffix in object list.")
-    if (older(wdll, wobj+backslashify(xdep))):
+    if (older(dll, wobj+xdep)):
       cmd = 'link.exe /nologo /NODEFAULTLIB:LIBCI.LIB'
       if (dll[-4:-1]==".dl"): cmd = cmd + " /DLL"
       if (OPTIMIZE==1): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRT.LIB "
@@ -1425,7 +1410,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
       if (PkgSelected(opts,"MAX5") or PkgSelected(opts,"MAX6")
           or PkgSelected(opts,"MAX7")):
         cmd = cmd + ' /DEF:".\\pandatool\\src\\maxegg\\MaxEgg.def" '
-      cmd = cmd + " /OUT:" + wdll + " /IMPLIB:" + wlib + " /MAP:NUL"
+      cmd = cmd + " /OUT:\"" + dll + "\" /IMPLIB:\"" + lib + "\" /MAP:NUL"
       cmd = cmd + " /LIBPATH:built\\python\\libs "
       for x in wobj: cmd = cmd + " " + x
       if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
@@ -1488,7 +1473,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
         WriteFile('built\\tmp\\linkcontrol',cmd)
         print "link.exe "+cmd
         oscmd("link.exe @built\\tmp\\linkcontrol")
-      updatefiledate(wdll);
+      updatefiledate(dll);
       if ((OPTIMIZE == 1) and (dll[-4:]==".dll")):
         CopyFile(dll[:-4]+"_d.dll", dll);
 
@@ -1527,7 +1512,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
       if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L"' + THIRDPARTY + 'fftw/lib" -lrfftw -lfftw'
       if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
       oscmd(cmd)
-      updatefiledate(wdll);
+      updatefiledate(dll);
 
 ##########################################################################################
 #
@@ -1707,13 +1692,13 @@ CopyFile('built/', 'Config.prc')
 for pkg in PACKAGES:
   if (OMIT.count(pkg)==0):
     if (sys.platform == "win32"):
-      if (os.path.exists(backslashify(STDTHIRDPARTY + pkg.lower() + "/bin"))):
+      if (os.path.exists(STDTHIRDPARTY+pkg.lower()+"/bin")):
         CopyAllFiles("built/bin/", STDTHIRDPARTY + pkg.lower() + "/bin/")
     else:
       if (os.path.exists(STDTHIRDPARTY + pkg.lower() + "/lib")):
         CopyAllFiles("built/lib/", STDTHIRDPARTY + pkg.lower() + "/lib/")
 
-if (os.path.exists(backslashify(STDTHIRDPARTY + "extras/bin"))):
+if (os.path.exists(STDTHIRDPARTY+"extras/bin")):
   CopyAllFiles("built/bin/", STDTHIRDPARTY + "extras/bin/")
 if (sys.platform == "win32"):
   CopyTree('built/python', STDTHIRDPARTY+'win-python')
@@ -6085,9 +6070,9 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 if (older('built/lib/pandac/PandaModules.pyz',xpaths("built/etc/",ALLIN,""))):
   ALLTARGETS.append('built/lib/pandac/PandaModules.pyz')
   if (sys.platform=="win32"):
-    oscmd(backslashify("built/bin/genpycode.exe"))
+    oscmd("built/bin/genpycode.exe")
   else:
-    oscmd(backslashify("built/bin/genpycode"))
+    oscmd("built/bin/genpycode")
   updatefiledate('built/lib/pandac/PandaModules.pyz')
 
 ########################################################################
