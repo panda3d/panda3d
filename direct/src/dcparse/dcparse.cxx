@@ -18,6 +18,8 @@
 
 #include "dcbase.h"
 #include "dcFile.h"
+#include "dcClass.h"
+#include "dcTypedef.h"
 
 #ifndef HAVE_GETOPT
 #include "gnu_getopt.h"
@@ -93,8 +95,16 @@ main(int argc, char *argv[]) {
     }
   }
 
-  if (!file.all_classes_valid() && !dump_brief) {
-    cerr << "File is incomplete.  The following classes are undefined:\n";
+  if (!file.all_objects_valid() && !dump_brief) {
+    cerr << "File is incomplete.  The following objects are undefined:\n";
+
+    int num_typedefs = file.get_num_typedefs();
+    for (int i = 0; i < num_typedefs; i++) {
+      DCTypedef *dtypedef = file.get_typedef(i);
+      if (dtypedef->is_bogus_typedef()) {
+        cerr << "  " << dtypedef->get_name() << "\n";
+      }
+    }
 
     int num_classes = file.get_num_classes();
     for (int i = 0; i < num_classes; i++) {
