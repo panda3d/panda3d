@@ -15,6 +15,7 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef GRAPHICSWINDOW_H
 #define GRAPHICSWINDOW_H
 
@@ -38,10 +39,6 @@
 
 #include "pvector.h"
 #include "pdeque.h"
-
-class GraphicsPipe;
-class GraphicsWindow;
-class CullHandler;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindow
@@ -158,7 +155,7 @@ protected:
   Mutex _input_lock;
 
   PT(GraphicsStateGuardian) _gsg;
-  GraphicsPipe *_pipe;
+  PT(GraphicsPipe) _pipe;
 
 private:
   INLINE void determine_display_regions() const;

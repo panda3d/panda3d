@@ -69,48 +69,6 @@ operator = (const GraphicsPipe &) {
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
 ~GraphicsPipe() {
-  // On destruction, we need to clean up our references to all of the
-  // windows.
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    GraphicsWindow *window = (*wi);
-    window->_pipe = NULL;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::get_num_windows
-//       Access: Published
-//  Description: Returns the number of windows that have been created
-//               on this pipe.
-////////////////////////////////////////////////////////////////////
-int GraphicsPipe::
-get_num_windows() const {
-  int result;
-  {
-    MutexHolder holder(_lock);
-    result = _windows.size();
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::get_window
-//       Access: Published
-//  Description: Returns the nth window that has been created
-//               on this pipe.  It is possible for this to return NULL
-//               due to a window being removed in another thread.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsWindow) GraphicsPipe::
-get_window(int n) const {
-  PT(GraphicsWindow) result;
-  {
-    MutexHolder holder(_lock);
-    if (n >= 0 && n < (int)_windows.size()) {
-      result = _windows[n];
-    }
-  }
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,42 +99,4 @@ get_num_hw_channels() {
 HardwareChannel *GraphicsPipe::
 get_hw_channel(GraphicsWindow *, int) {
   return (HardwareChannel*)0L;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::add_window
-//       Access: Protected
-//  Description: This is intended to be called by the derived
-//               make_window() function to add the newly-created
-//               window to the list of windows owned by this pipe.
-////////////////////////////////////////////////////////////////////
-void GraphicsPipe::
-add_window(GraphicsWindow *window) {
-  nassertv(window->_pipe == this);
-  MutexHolder holder(_lock);
-  _windows.push_back(window);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::remove_window
-//       Access: Protected
-//  Description: This is intended to be called by the GraphicsEngine
-//               when a window is to be removed.  It returns true if
-//               the window is removed, or false if it was not found.
-////////////////////////////////////////////////////////////////////
-bool GraphicsPipe::
-remove_window(GraphicsWindow *window) {
-  bool removed = false;
-  {
-    MutexHolder holder(_lock);
-    PT(GraphicsWindow) ptwin = window;
-    window->_pipe = NULL;
-    Windows::iterator wi = find(_windows.begin(), _windows.end(), ptwin);
-    if (wi != _windows.end()) {
-      _windows.erase(wi);
-      removed = true;
-    }
-  }
-
-  return removed;
 }

@@ -765,10 +765,7 @@ setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
 void GraphicsEngine::
 do_remove_window(GraphicsWindow *window) {
   PT(GraphicsPipe) pipe = window->get_pipe();
-  if (pipe != (GraphicsPipe *)NULL) {
-    pipe->remove_window(window);
-    window->_pipe = (GraphicsPipe *)NULL;
-  }
+  window->_pipe = (GraphicsPipe *)NULL;
 
   // Now remove the window from all threads that know about it.
   _app.remove_window(window);

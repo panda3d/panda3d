@@ -56,9 +56,6 @@ private:
 PUBLISHED:
   virtual ~GraphicsPipe();
 
-  int get_num_windows() const;
-  PT(GraphicsWindow) get_window(int n) const;
-
   INLINE bool is_valid() const;
   INLINE bool supports_fullscreen() const;
 
@@ -78,11 +75,6 @@ protected:
   // particular pipe.
   virtual PT(GraphicsWindow) make_window()=0;
 
-  void add_window(GraphicsWindow *window);
-  bool remove_window(GraphicsWindow *window);
-
-  typedef pvector< PT(GraphicsWindow) > Windows;
-  Windows _windows;
   Mutex _lock;
 
   bool _is_valid;
