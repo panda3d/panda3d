@@ -20,6 +20,7 @@
 #include "virtualFileSystem.h"
 #include "virtualFileList.h"
 #include "config_express.h"
+#include "pvector.h"
 
 TypeHandle VirtualFile::_type_handle;
 
@@ -179,11 +180,26 @@ read_file(string &result) const {
       << "Unable to read " << get_filename() << "\n";
     return false;
   }
-  int byte = in->get();
-  while (!in->eof() && !in->fail()) {
-    result += (char)byte;
-    byte = in->get();
+
+  // Repeatedly appending into a string seems to be prohibitively
+  // expensive on MSVC7's implementation of string, but the vector
+  // implementation works much better.  Even still, it seems to be
+  // better to add the data in large chunks, rather than one byte at a
+  // time.
+  pvector<char> result_vec;
+
+  static const int buffer_size = 1024;
+  char buffer[buffer_size];
+
+  in->read(buffer, buffer_size);
+  size_t count = in->gcount();
+  while (count != 0) {
+    result_vec.insert(result_vec.end(), buffer, buffer + count);
+    in->read(buffer, buffer_size);
+    count = in->gcount();
   }
+  result.assign(&result_vec[0], result_vec.size());
+
   bool failed = in->fail() && !in->eof();
   delete in;
 
