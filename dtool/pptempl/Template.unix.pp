@@ -427,6 +427,8 @@ $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
+$[TARGET] : $[st_dir]/$[TARGET]
+
 #define target $[st_dir]/$[TARGET]
 #define source $[SOURCE]
 #define script $[COMMAND]
@@ -458,6 +460,8 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
+$[TARGET] : $[st_dir]/$[TARGET]
+
 bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
 #define target $[st_dir]/$[TARGET]
 #define sources $(bin_$[TARGET])
@@ -504,6 +508,8 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_bin_target test_bin_target
+$[TARGET] : $[st_dir]/$[TARGET]
+
 bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
 #define target $[st_dir]/$[TARGET]
 #define sources $(bin_$[TARGET])

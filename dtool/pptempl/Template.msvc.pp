@@ -466,6 +466,8 @@ $[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[st_dir]\lib$[TARGET]$[dllext].l
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
+$[TARGET] : $[st_dir]\$[TARGET]
+
 #define target $[st_dir]\$[TARGET]
 #define source $[SOURCE]
 #define script $[COMMAND]
@@ -496,6 +498,8 @@ $[install_bin_dir]\$[TARGET] : $[st_dir]\$[TARGET]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
+$[TARGET] : $[st_dir]\$[TARGET].exe
+
 bin_$[TARGET] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
 #define target $[st_dir]\$[TARGET].exe
 #define sources $(bin_$[TARGET])
@@ -542,8 +546,10 @@ $[install_bin_dir]\$[TARGET].exe : $[st_dir]\$[TARGET].exe
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_bin_target test_bin_target
+$[TARGET] : $[st_dir]\$[TARGET].exe
+
 bin_$[TARGET] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
-#define target $[st_dir]\$[TARGET]
+#define target $[st_dir]\$[TARGET].exe
 #define sources $(bin_$[TARGET])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
