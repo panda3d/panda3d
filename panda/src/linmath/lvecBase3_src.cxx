@@ -19,7 +19,6 @@ const FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::_unit_z =
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
 void FLOATNAME(LVecBase3)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {

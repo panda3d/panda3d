@@ -60,7 +60,8 @@ public:
   INLINE const_iterator end() const;
 
 PUBLISHED:
-  bool operator == (const FLOATNAME(LMatrix3) &other) const;
+  INLINE bool operator < (const FLOATNAME(LMatrix3) &other) const;
+  INLINE bool operator == (const FLOATNAME(LMatrix3) &other) const;
   INLINE bool operator != (const FLOATNAME(LMatrix3) &other) const;
 
   INLINE int compare_to(const FLOATNAME(LMatrix3) &other) const;

@@ -17,7 +17,6 @@ FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ident_mat =
 //               fill_value.  This is of questionable value, but is
 //               sometimes useful when initializing to zero.
 ////////////////////////////////////////////////////////////////////
-
 void FLOATNAME(LMatrix3)::
 fill(FLOATTYPE fill_value) {
   set(fill_value, fill_value, fill_value,
@@ -26,24 +25,14 @@ fill(FLOATTYPE fill_value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::Equality Operator
+//     Function: LMatrix3::compare_to
 //       Access: Public
-//  Description: 
+//  Description: Sorts matrices lexicographically, componentwise.
+//               Returns a number less than 0 if this matrix sorts
+//               before the other one, greater than zero if it sorts
+//               after, 0 if they are equivalent (within the indicated
+//               tolerance).
 ////////////////////////////////////////////////////////////////////
-
-bool FLOATNAME(LMatrix3)::
-operator == (const FLOATNAME(LMatrix3) &other) const {
-  return ((*this)(0, 0) == other(0, 0) &&
-	  (*this)(0, 1) == other(0, 1) &&
-	  (*this)(0, 2) == other(0, 2) &&
-	  (*this)(1, 0) == other(1, 0) &&
-	  (*this)(1, 1) == other(1, 1) &&
-	  (*this)(1, 2) == other(1, 2) &&
-	  (*this)(2, 0) == other(2, 0) &&
-	  (*this)(2, 1) == other(2, 1) &&
-	  (*this)(2, 2) == other(2, 2));
-}
-
 int FLOATNAME(LMatrix3)::
 compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
   for (int i = 0; i < 9; i++) {
@@ -60,7 +49,6 @@ compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
 //  Description: Returns true if two matrices are memberwise equal
 //               within a specified tolerance.
 ////////////////////////////////////////////////////////////////////
-
 bool FLOATNAME(LMatrix3)::
 almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
@@ -79,7 +67,6 @@ almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
 void FLOATNAME(LMatrix3)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -95,7 +82,6 @@ init_type() {
 //     Function: LMatrix3::write_datagram
 //  Description: Writes the matrix to the datagram
 ////////////////////////////////////////////////////////////////////
-
 void FLOATNAME(LMatrix3)::
 write_datagram(Datagram &destination) const
 {
@@ -112,7 +98,6 @@ write_datagram(Datagram &destination) const
 //     Function: LMatrix3::read_datagram
 //  Description: Reads itself out of the datagram
 ////////////////////////////////////////////////////////////////////
-
 void FLOATNAME(LMatrix3)::
 read_datagram(DatagramIterator &scan) 
 {

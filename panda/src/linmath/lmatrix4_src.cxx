@@ -24,39 +24,11 @@ const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_z_to_y_up_mat =
 		      0.0, 0.0, 0.0, 1.0);
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Equality Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-
-bool FLOATNAME(LMatrix4)::
-operator == (const FLOATNAME(LMatrix4) &other) const {
-  return ((*this)(0, 0) == other(0, 0) &&
-	  (*this)(0, 1) == other(0, 1) &&
-	  (*this)(0, 2) == other(0, 2) &&
-	  (*this)(0, 3) == other(0, 3) &&
-	  (*this)(1, 0) == other(1, 0) &&
-	  (*this)(1, 1) == other(1, 1) &&
-	  (*this)(1, 2) == other(1, 2) &&
-	  (*this)(1, 3) == other(1, 3) &&
-	  (*this)(2, 0) == other(2, 0) &&
-	  (*this)(2, 1) == other(2, 1) &&
-	  (*this)(2, 2) == other(2, 2) &&
-	  (*this)(2, 3) == other(2, 3) &&
-	  (*this)(3, 0) == other(3, 0) &&
-	  (*this)(3, 1) == other(3, 1) &&
-	  (*this)(3, 2) == other(3, 2) &&
-	  (*this)(3, 3) == other(3, 3));
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::convert_mat
 //       Access: Public, Static
 //  Description: Returns a matrix that transforms from the indicated
 //               coordinate system to the indicated coordinate system.
 ////////////////////////////////////////////////////////////////////
-
 FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 convert_mat(CoordinateSystem from, CoordinateSystem to) {
   if (from == CS_default) {
@@ -121,7 +93,6 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
 //  Description: Returns true if two matrices are memberwise equal
 //               within a specified tolerance.
 ////////////////////////////////////////////////////////////////////
-
 bool FLOATNAME(LMatrix4)::
 almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
@@ -148,7 +119,6 @@ almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-
 bool FLOATNAME(LMatrix4)::
 decompose_mat(int index[4]) {
   int i, j, k;
@@ -222,7 +192,6 @@ decompose_mat(int index[4]) {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-
 bool FLOATNAME(LMatrix4)::
 back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const {
   int ii = -1;
@@ -258,7 +227,6 @@ back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const {
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
 void FLOATNAME(LMatrix4)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -274,7 +242,6 @@ init_type() {
 //     Function: LMatrix4::write_datagram
 //  Description: Writes the matrix to the datagram
 ////////////////////////////////////////////////////////////////////
-
 void FLOATNAME(LMatrix4)::
 write_datagram(Datagram &destination) const
 {
@@ -292,7 +259,6 @@ write_datagram(Datagram &destination) const
 //     Function: LMatrix4::read_datagram
 //  Description: Reads itself out of the datagram
 ////////////////////////////////////////////////////////////////////
-
 void FLOATNAME(LMatrix4)::
 read_datagram(DatagramIterator &scan) 
 {
@@ -314,7 +280,6 @@ read_datagram(DatagramIterator &scan)
 //               after, 0 if they are equivalent (within the indicated
 //               tolerance).
 ////////////////////////////////////////////////////////////////////
-
 int FLOATNAME(LMatrix4)::
 compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   for (int i = 0; i < 16; i++) {

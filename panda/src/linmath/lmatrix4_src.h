@@ -67,7 +67,8 @@ PUBLISHED:
   INLINE const_iterator begin() const;
   INLINE const_iterator end() const;
 
-  bool operator == (const FLOATNAME(LMatrix4) &other) const;
+  INLINE bool operator < (const FLOATNAME(LMatrix4) &other) const;
+  INLINE bool operator == (const FLOATNAME(LMatrix4) &other) const;
   INLINE bool operator != (const FLOATNAME(LMatrix4) &other) const;
 
   INLINE int compare_to(const FLOATNAME(LMatrix4) &other) const;

@@ -316,6 +316,30 @@ end() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Ordering Operator
+//       Access: Public
+//  Description: This performs a lexicographical comparison.  It's of
+//               questionable mathematical meaning, but sometimes has
+//               a practical purpose for sorting unique vectors,
+//               especially in an STL container.  Also see
+//               compare_to().
+////////////////////////////////////////////////////////////////////
+INLINE bool FLOATNAME(LMatrix3)::
+operator < (const FLOATNAME(LMatrix3) &other) const {
+  return compare_to(other) < 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Equality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool FLOATNAME(LMatrix3)::
+operator == (const FLOATNAME(LMatrix3) &other) const {
+  return compare_to(other) == 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Inequality Operator
 //       Access: Public
 //  Description: 

@@ -420,6 +420,30 @@ end() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Ordering Operator
+//       Access: Public
+//  Description: This performs a lexicographical comparison.  It's of
+//               questionable mathematical meaning, but sometimes has
+//               a practical purpose for sorting unique vectors,
+//               especially in an STL container.  Also see
+//               compare_to().
+////////////////////////////////////////////////////////////////////
+INLINE bool FLOATNAME(LMatrix4)::
+operator < (const FLOATNAME(LMatrix4) &other) const {
+  return compare_to(other) < 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Equality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool FLOATNAME(LMatrix4)::
+operator == (const FLOATNAME(LMatrix4) &other) const {
+  return compare_to(other) == 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Inequality Operator
 //       Access: Public
 //  Description: 
