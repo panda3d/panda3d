@@ -53,11 +53,6 @@ INLINE ostream &operator << (ostream &out, const EggMorphColor &m);
 // operator again.
 //INLINE ostream &operator << (ostream &out, const EggMorphNormal &m);
 
-typedef set<EggMorphVertex> EggMorphVertices;
-typedef set<EggMorphNormal> EggMorphNormals;
-typedef set<EggMorphTexCoord> EggMorphTexCoords;
-typedef set<EggMorphColor> EggMorphColors;
-
 #include "eggMorph.I"
 
 #endif

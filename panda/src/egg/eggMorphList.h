@@ -10,17 +10,29 @@
 
 #include "eggMorph.h"
 
-#include <set>
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggMorphList
 // Description : A collection of <Dxyz>'s or <Duv>'s or some such.
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-class EggMorphList : public set<MorphType> {
+class EggMorphList : public vector<MorphType> {
 public:
+  pair<iterator, bool> insert(const MorphType &value);
   void write(ostream &out, int indent_level) const;
 };
+
+
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<EggMorphVertex>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<EggMorphNormal>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<EggMorphTexCoord>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<EggMorphColor>)
+
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<EggMorphVertex>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<EggMorphNormal>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<EggMorphTexCoord>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<EggMorphColor>)
 
 typedef EggMorphList<EggMorphVertex> EggMorphVertexList;
 typedef EggMorphList<EggMorphNormal> EggMorphNormalList;

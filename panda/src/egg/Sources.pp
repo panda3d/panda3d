@@ -23,7 +23,9 @@
     eggMaterialCollection.I eggMaterialCollection.cxx \
     eggMaterialCollection.h \
     eggMiscFuncs.I \
-    eggMiscFuncs.cxx eggMiscFuncs.h eggNamedObject.I eggNamedObject.cxx \
+    eggMiscFuncs.cxx eggMiscFuncs.h \
+    eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h \
+    eggNamedObject.I eggNamedObject.cxx \
     eggNamedObject.h eggNameUniquifier.cxx eggNameUniquifier.h \
     eggNode.I eggNode.cxx eggNode.h eggNurbsCurve.I \
     eggNurbsCurve.cxx eggNurbsCurve.h eggNurbsSurface.I \
