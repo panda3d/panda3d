@@ -177,6 +177,9 @@ PUBLISHED:
   INLINE void set_portal_flag(bool flag);
   INLINE bool get_portal_flag() const;
 
+  INLINE void set_polylight_flag(bool flag);
+  INLINE bool get_polylight_flag() const;
+
   INLINE void set_collide_mask(CollideMask mask);
   INLINE void clear_collide_mask();
   INLINE bool has_collide_mask() const;
@@ -268,6 +271,7 @@ private:
 
     F2_dcs_type              = 0x00000030,
     F2_portal_flag           = 0x00000040,
+    F2_polylight_flag        = 0x00000080,
   };
 
   int _flags;

@@ -491,6 +491,30 @@ get_portal_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::set_polylight_flag
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+set_polylight_flag(bool flag) {
+  if (flag) {
+    _flags2 |= F2_polylight_flag;
+  } else {
+    _flags2 &= ~F2_polylight_flag;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::get_polylight_flag
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroup::
+get_polylight_flag() const {
+  return ((_flags2 & F2_polylight_flag) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_collide_mask
 //       Access: Public
 //  Description:

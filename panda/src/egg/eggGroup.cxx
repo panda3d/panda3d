@@ -213,6 +213,10 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level) << "<Portal> { 1 }\n";
   }
 
+  if (get_polylight_flag()) {
+    indent(out, indent_level) << "<Polylight> { 1 }\n";
+  }
+
   // We have to write the children nodes before we write the vertex
   // references, since we might be referencing a vertex that's defined
   // in one of those children nodes!
