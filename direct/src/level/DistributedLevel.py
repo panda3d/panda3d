@@ -192,14 +192,16 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def requestReparent(self, entity, parentId):
         assert(entity.entId != parentId)
-        if self.entities.has_key(parentId):
+        parent = self.getEntity(parentId)
+        if parent is not None:
             # parent has already been created
-            entity.reparentTo(self.entities[parentId].getNodePath())
+            entity.reparentTo(parent.getNodePath())
         else:
             # parent hasn't been created yet; schedule the reparent
             self.notify.debug(
                 'entity %s requesting reparent to %s, not yet created' %
                 (entity, parentId))
+            print self.entities
 
             entId = entity.entId
             entity.reparentTo(hidden)
