@@ -366,7 +366,7 @@
 // Is Maya installed?  This matters only to programs in PANDATOOL.
 #define MAYA_LOCATION /usr/aw/maya3.0
 #defer MAYA_LIBS $[if $[WINDOWS_PLATFORM],Foundation.lib OpenMaya.lib]
-#defer HAVE_MAYA $[isdir $[MAYA_LOCATION]]
+#defer HAVE_MAYA $[isdir $[MAYA_LOCATION]/include/maya]
 
 
 // Define this to generate static libraries and executables, rather than
