@@ -1051,14 +1051,11 @@ transpose_in_place() {
 //               successfully inverted, false if the was a
 //               singularity.
 ////////////////////////////////////////////////////////////////////
-
-// bugbug: we could optimize this for rotation/scale/translation matrices
-//         (transpose upper 3x3 and take negative of translation component)
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_from(const FLOATNAME(LMatrix4) &other) {
-  if (IS_NEARLY_EQUAL(other._m.m._30, 0.0f) &&
-      IS_NEARLY_EQUAL(other._m.m._31, 0.0f) &&
-      IS_NEARLY_EQUAL(other._m.m._32, 0.0f) &&
+  if (IS_NEARLY_EQUAL(other._m.m._03, 0.0f) &&
+      IS_NEARLY_EQUAL(other._m.m._13, 0.0f) &&
+      IS_NEARLY_EQUAL(other._m.m._23, 0.0f) &&
       IS_NEARLY_EQUAL(other._m.m._33, 1.0f)) {
     return invert_affine_from(other);
   }
