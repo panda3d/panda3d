@@ -210,6 +210,7 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
     // Only one point; we have a radius of zero.  This is not the same
     // thing as an empty sphere, because our volume contains one
     // point; an empty sphere contains no points.
+    _center = min_box;
     _radius = 0.0;
 
   } else {
