@@ -102,8 +102,8 @@
   #define LINKER_FLAGS /DEBUG $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no 
   
 // in case we have mixed intel/msvc build
-  #define EXTRA_LIBPATH /ia32/lib
-  #define EXTRA_INCPATH /ia32/include  
+//  #define EXTRA_LIBPATH /ia32/lib
+//  #define EXTRA_INCPATH /ia32/include  
     
 #elif $[eq $[USE_COMPILER], INTEL]
   #define COMPILER icl
