@@ -13,18 +13,21 @@ class MopathInterval(LerpInterval.LerpFunctionInterval):
     notify = directNotify.newCategory('MopathInterval')
     # Class methods
     def __init__(self, mopath, node, fromT = 0, toT = None,
-                 blendType = 'noBlend', name = None):
+                 duration = None, blendType = 'noBlend', name = None):
         if toT == None:
             toT = mopath.getMaxT()
+
+        if duration == None:
+            duration = abs(toT - fromT)
         
         # Generate unique name if necessary
         if (name == None):
             name = 'Mopath-%d' % MopathInterval.mopathNum
-            MopathInterval.mopathNum += 1
+            MopathInterval.mopathNum += 1        
 
         LerpInterval.LerpFunctionInterval.__init__(
             self, self.__doMopath, fromData = fromT, toData = toT,
-            duration = abs(toT - fromT), blendType = blendType,
+            duration = duration, blendType = blendType,
             name = name)
         
         self.mopath = mopath 
