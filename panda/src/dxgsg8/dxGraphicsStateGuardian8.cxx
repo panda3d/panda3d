@@ -4767,8 +4767,10 @@ void DXGraphicsStateGuardian8::set_render_target() {
 
   _pD3DDevice->GetDepthStencilSurface(&pStencil);
   _pD3DDevice->SetRenderTarget(pBack,pStencil);
-  pBack->Release();
-  pStencil->Release();
+  if (pBack)
+    pBack->Release();
+  if (pStencil)
+    pStencil->Release();
 }
 
 ////////////////////////////////////////////////////////////////////
