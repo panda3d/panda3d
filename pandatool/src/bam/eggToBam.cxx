@@ -42,18 +42,8 @@ EggToBam() :
   // provide it as an option to the user.
   remove_option("f");
 
-  add_option
-    ("tp", "path", 0,
-     "Add the indicated colon-delimited paths to the texture-path.  This "
-     "option may also be repeated to add multiple paths.",
-     &EggToBam::dispatch_search_path, NULL, &get_texture_path());
-
-  add_option
-    ("kp", "", 0,
-     "Keep the texture paths exactly as they are specified in the egg file, "
-     "as relative paths, rather than storing them as full paths or as "
-     "whatever is specified by the bam-texture-mode Configrc variable.",
-     &EggToBam::dispatch_none, &_keep_paths);
+  add_path_replace_options();
+  add_path_store_options();
 
   add_option
     ("fl", "flag", 0,
@@ -106,13 +96,6 @@ EggToBam() :
 ////////////////////////////////////////////////////////////////////
 void EggToBam::
 run() {
-  if (_keep_paths) {
-    // If the user specified -kp, we need to set a couple of Configrc
-    // variables directly to achieve this.
-    egg_keep_texture_pathnames = true;
-    bam_texture_mode = BTM_fullpath;
-  }
-
   if (_has_egg_flatten) {
     // If the user specified some -fl, we need to set the
     // corresponding Configrc variable.
@@ -163,6 +146,30 @@ run() {
     nout << "Error in writing.\n";
       exit(1);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggToBam::handle_args
+//       Access: Protected, Virtual
+//  Description: Does something with the additional arguments on the
+//               command line (after all the -options have been
+//               parsed).  Returns true if the arguments are good,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggToBam::
+handle_args(ProgramBase::Args &args) {
+  // If the user specified a path store option, we need to set the
+  // bam-texture-mode Configrc variable directly to support this
+  // (otherwise the bam code will do what it wants to do anyway).
+  if (_got_path_store) {
+    bam_texture_mode = BTM_unchanged;
+  } else {
+    // Otherwise, the default path store is absolute; then the
+    // bam-texture-mode can do the appropriate thing to it.
+    _path_replace->_path_store = PS_absolute;
+  }
+
+  return EggToSomething::handle_args(args);
 }
 
 

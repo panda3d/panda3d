@@ -33,7 +33,10 @@ public:
 
   void run();
 
-  bool _keep_paths;
+protected:
+  virtual bool handle_args(Args &args);
+
+private:
   bool _has_egg_flatten;
   int _egg_flatten;
   bool _ls;
