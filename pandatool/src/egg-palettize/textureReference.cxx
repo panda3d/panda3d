@@ -313,9 +313,11 @@ update_egg() {
   if (_placement->get_omit_reason() == OR_unknown) {
     // The texture doesn't even exist.  We can't update the egg to
     // point to any meaningful path; just leave it pointing to the
-    // source texture.  Maybe it will be found along the texture path
-    // later.
+    // source texture's basename.  Maybe it will be found along the
+    // texture path later.
+    Filename orig_filename = _egg_tex->get_filename();
     texture->update_egg_tex(_egg_tex);
+    _egg_tex->set_filename(orig_filename.get_basename());
     return;
   }
   if (_placement->get_omit_reason() != OR_none) {
