@@ -42,10 +42,14 @@ determine_alpha_mode() {
   if (get_alpha_mode() != AM_unspecified) {
     return this;
   }
-  if (has_texture() && get_texture()->get_alpha_mode() != AM_unspecified) {
-    return get_texture();
+
+  EggRenderMode *result = EggNode::determine_alpha_mode();
+  if (result == (EggRenderMode *)NULL) {
+    if (has_texture() && get_texture()->get_alpha_mode() != AM_unspecified) {
+      result = get_texture();
+    }
   }
-  return EggNode::determine_alpha_mode();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,11 +66,15 @@ determine_depth_write_mode() {
   if (get_depth_write_mode() != DWM_unspecified) {
     return this;
   }
-  if (has_texture() &&
-      get_texture()->get_depth_write_mode() != DWM_unspecified) {
-    return get_texture();
+
+  EggRenderMode *result = EggNode::determine_depth_write_mode();
+  if (result == (EggRenderMode *)NULL) {
+    if (has_texture() &&
+        get_texture()->get_depth_write_mode() != DWM_unspecified) {
+      result = get_texture();
+    }
   }
-  return EggNode::determine_depth_write_mode();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,11 +91,15 @@ determine_depth_test_mode() {
   if (get_depth_test_mode() != DTM_unspecified) {
     return this;
   }
-  if (has_texture() &&
-      get_texture()->get_depth_test_mode() != DTM_unspecified) {
-    return get_texture();
+
+  EggRenderMode *result = EggNode::determine_depth_test_mode();
+  if (result == (EggRenderMode *)NULL) {
+    if (has_texture() &&
+        get_texture()->get_depth_test_mode() != DTM_unspecified) {
+      result = get_texture();
+    }
   }
-  return EggNode::determine_depth_test_mode();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,10 +116,14 @@ determine_draw_order() {
   if (has_draw_order()) {
     return this;
   }
-  if (has_texture() && get_texture()->has_draw_order()) {
-    return get_texture();
+
+  EggRenderMode *result = EggNode::determine_depth_test_mode();
+  if (result == (EggRenderMode *)NULL) {
+    if (has_texture() && get_texture()->has_draw_order()) {
+      result = get_texture();
+    }
   }
-  return EggNode::determine_draw_order();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,10 +140,14 @@ determine_bin() {
   if (has_bin()) {
     return this;
   }
-  if (has_texture() && get_texture()->has_bin()) {
-    return get_texture();
+
+  EggRenderMode *result = EggNode::determine_depth_test_mode();
+  if (result == (EggRenderMode *)NULL) {
+    if (has_texture() && get_texture()->has_bin()) {
+      result = get_texture();
+    }
   }
-  return EggNode::determine_bin();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
