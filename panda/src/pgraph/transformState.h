@@ -115,6 +115,9 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
+  static int get_cache_size();
+  static int clear_cache();
+
 private:
   static CPT(TransformState) return_new(TransformState *state);
   CPT(TransformState) do_compose(const TransformState *other) const;

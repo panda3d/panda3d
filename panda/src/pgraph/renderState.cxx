@@ -622,6 +622,89 @@ get_max_priority() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_cache_size
+//       Access: Published, Static
+//  Description: Returns the total number of unique RenderState
+//               objects allocated in the world.  This will go up and
+//               down during normal operations.
+////////////////////////////////////////////////////////////////////
+int RenderState::
+get_cache_size() {
+  if (_states == (States *)NULL) {
+    return 0;
+  }
+  return _states->size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::clear_cache
+//       Access: Published, Static
+//  Description: Empties the cache of composed RenderStates.  This
+//               makes every RenderState forget what results when
+//               it is composed with other RenderStates.
+//
+//               This will eliminate any RenderState objects that
+//               have been allocated but have no references outside of
+//               the internal RenderState map.  It will not
+//               eliminate RenderState objects that are still in
+//               use.
+//
+//               Normally, RenderState objects will remove
+//               themselves from the interal map when their reference
+//               counts go to 0, but since circular references are
+//               possible there may be some cycles that cannot remove
+//               themselves.  Calling this function from time to time
+//               will ensure there is no wasteful memory leakage, but
+//               calling it too often may result in decreased
+//               performance as the cache is forced to be recomputed.
+//
+//               The return value is the number of RenderStates
+//               freed by this operation.
+////////////////////////////////////////////////////////////////////
+int RenderState::
+clear_cache() {
+  if (_states == (States *)NULL) {
+    return 0;
+  }
+
+  int orig_size = _states->size();
+
+  // First, we need to copy the entire set of states to a temporary
+  // vector, reference-counting each object.  That way we can walk
+  // through the copy, without fear of dereferencing (and deleting)
+  // the objects in the map as we go.
+  {
+    typedef pvector< CPT(RenderState) > TempStates;
+    TempStates temp_states;
+    temp_states.reserve(orig_size);
+
+    copy(_states->begin(), _states->end(),
+         back_inserter(temp_states));
+
+    // Now it's safe to walk through the list, destroying the cache
+    // within each object as we go.  Nothing will be destructed till
+    // we're done.
+    TempStates::iterator ti;
+    for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
+      RenderState *state = (RenderState *)(*ti).p();
+      state->_composition_cache.clear();
+      state->_invert_composition_cache.clear();
+      if (state->_self_compose != (RenderState *)NULL && 
+          state->_self_compose != state) {
+        unref_delete((RenderState *)state->_self_compose);
+      }
+    }
+
+    // Once this block closes and the temp_states object goes away,
+    // all the destruction will begin.  Anything whose reference was
+    // held only within the various objects' caches will go away.
+  }
+
+  int new_size = _states->size();
+  return orig_size - new_size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::issue_delta_modify
 //       Access: Public
 //  Description: This is intended to be called only from

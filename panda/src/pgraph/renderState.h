@@ -95,6 +95,9 @@ PUBLISHED:
 
   static int get_max_priority();
 
+  static int get_cache_size();
+  static int clear_cache();
+
 public:
   INLINE int get_bin_index() const;
   INLINE int get_draw_order() const;
