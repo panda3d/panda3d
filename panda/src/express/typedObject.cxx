@@ -46,3 +46,15 @@ get_type() const {
     << "TypedObject::get_type() called!\n";
   return _type_handle;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedObject::init_type
+//       Access: Public, Static
+//  Description: This function is declared non-inline to work around a
+//               compiler bug in g++ 2.96.  Making it inline seems to
+//               cause problems in the optimizer.
+////////////////////////////////////////////////////////////////////
+void TypedObject::
+init_type() {
+  register_type(_type_handle, "TypedObject");
+}
