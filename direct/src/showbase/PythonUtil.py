@@ -496,3 +496,13 @@ class Functor:
         _kargs = self._kargs.copy()
         _kargs.update(kargs)
         return apply(self._function,_args,_kargs)
+
+def bound(value, bound1, bound2):
+    """
+    returns value if value is between bound1 and bound2
+    otherwise returns bound that is closer to value
+    """
+    if bound1 > bound2:
+        return min(max(value, bound2), bound1)
+    else:
+        return min(max(value, bound1), bound2)
