@@ -26,7 +26,7 @@
 
 class Photo;
 class IndexImage;
-class TextMaker;
+class PNMTextMaker;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RollDirectory
@@ -52,7 +52,7 @@ public:
   int get_num_index_images() const;
   IndexImage *get_index_image(int n) const;
 
-  bool generate_images(const Filename &archive_dir, TextMaker *text_maker);
+  bool generate_images(const Filename &archive_dir, PNMTextMaker *text_maker);
   bool generate_html(ostream &root_html, const Filename &archive_dir,
                      const Filename &roll_dir_root);
 

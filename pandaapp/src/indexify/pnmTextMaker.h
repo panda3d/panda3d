@@ -1,4 +1,4 @@
-// Filename: textMaker.h
+// Filename: pnmTextMaker.h
 // Created by:  drose (03Apr02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TEXTMAKER_H
-#define TEXTMAKER_H
+#ifndef PNMTEXTMAKER_H
+#define PNMTEXTMAKER_H
 
 #include "pandatoolbase.h"
 #include "pmap.h"
@@ -28,18 +28,18 @@
 
 class Filename;
 class PNMImage;
-class TextGlyph;
+class PNMTextGlyph;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : TextMaker
+//       Class : PNMTextMaker
 // Description : An object that uses Freetype to generate text at a
 //               fixed pixel size into a PNMImage.
 ////////////////////////////////////////////////////////////////////
-class TextMaker : public Namable {
+class PNMTextMaker : public Namable {
 public:
-  TextMaker(const Filename &font_filename, int face_index);
-  TextMaker(const char *font_data, int font_data_size, int face_index);
-  ~TextMaker();
+  PNMTextMaker(const Filename &font_filename, int face_index);
+  PNMTextMaker(const char *font_data, int font_data_size, int face_index);
+  ~PNMTextMaker();
 
   bool is_valid() const;
 
@@ -49,8 +49,8 @@ public:
                      PNMImage &dest_image, int x, int y);
 
 private:
-  TextGlyph *get_glyph(int character);
-  TextGlyph *make_glyph(int glyph_index);
+  PNMTextGlyph *get_glyph(int character);
+  PNMTextGlyph *make_glyph(int glyph_index);
   bool reset_scale(int pixel_size, double scale_factor);
   void empty_cache();
 
@@ -58,7 +58,7 @@ private:
 
   bool _is_valid;
 
-  typedef pmap<int, TextGlyph *> Glyphs;
+  typedef pmap<int, PNMTextGlyph *> Glyphs;
   Glyphs _glyphs;
 
   FT_Face _face;

@@ -1,4 +1,4 @@
-// Filename: textGlyph.h
+// Filename: pnmTextGlyph.h
 // Created by:  drose (03Apr02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,21 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TEXTGLYPH_H
-#define TEXTGLYPH_H
+#ifndef PNMTEXTGLYPH_H
+#define PNMTEXTGLYPH_H
 
 #include "pandatoolbase.h"
 
 #include "pnmImage.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : TextGlyph
-// Description : A single glyph in the font.
+//       Class : PNMTextGlyph
+// Description : A single glyph in a PNMTextMaker.
 ////////////////////////////////////////////////////////////////////
-class TextGlyph {
+class PNMTextGlyph {
 public:
-  TextGlyph(double advance);
-  ~TextGlyph();
+  PNMTextGlyph(double advance);
+  ~PNMTextGlyph();
 
   void rescale(double scale_factor);
   int get_advance() const;
@@ -44,7 +44,7 @@ private:
   double _advance;
   int _int_advance;
 
-  friend class TextMaker;
+  friend class PNMTextMaker;
 };
 
 #endif

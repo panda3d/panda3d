@@ -26,7 +26,7 @@
 #include "pvector.h"
 
 class RollDirectory;
-class TextMaker;
+class PNMTextMaker;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Indexify
@@ -57,7 +57,7 @@ public:
   typedef pvector<RollDirectory *> RollDirs;
   RollDirs _roll_dirs;
 
-  TextMaker *_text_maker;
+  PNMTextMaker *_text_maker;
 };
 
 #endif

@@ -19,7 +19,7 @@
 #include "indexify.h"
 #include "rollDirectory.h"
 #include "notify.h"
-#include "textMaker.h"
+#include "pnmTextMaker.h"
 #include "default_font.h"
 #include "default_index_icons.h"
 #include "indexParameters.h"
@@ -213,7 +213,7 @@ Indexify() {
      &Indexify::dispatch_filename, NULL, &up_icon);
 
   _photo_extension = "jpg";
-  _text_maker = (TextMaker *)NULL;
+  _text_maker = (PNMTextMaker *)NULL;
   _font_aa_factor = 4.0;
 }
 
@@ -230,7 +230,7 @@ Indexify::
     delete roll_dir;
   }
 
-  if (_text_maker != (TextMaker *)NULL) {
+  if (_text_maker != (PNMTextMaker *)NULL) {
     delete _text_maker;
   }
 }
@@ -324,23 +324,23 @@ post_command_line() {
     
   if (caption_font_size != 0) {
     if (!_font_filename.empty()) {
-      _text_maker = new TextMaker(_font_filename, 0);
+      _text_maker = new PNMTextMaker(_font_filename, 0);
       if (!_text_maker->is_valid()) {
 	delete _text_maker;
-	_text_maker = (TextMaker *)NULL;
+	_text_maker = (PNMTextMaker *)NULL;
       }
     }
     
-    if (_text_maker == (TextMaker *)NULL) {
-      _text_maker = new TextMaker(default_font, default_font_size, 0);
+    if (_text_maker == (PNMTextMaker *)NULL) {
+      _text_maker = new PNMTextMaker(default_font, default_font_size, 0);
       if (!_text_maker->is_valid()) {
 	nout << "Unable to open default font.\n";
 	delete _text_maker;
-	_text_maker = (TextMaker *)NULL;
+	_text_maker = (PNMTextMaker *)NULL;
       }
     }
     
-    if (_text_maker != (TextMaker *)NULL) {
+    if (_text_maker != (PNMTextMaker *)NULL) {
       _text_maker->set_pixel_size(caption_font_size, _font_aa_factor);
     }
   }

@@ -19,7 +19,7 @@
 #include "indexImage.h"
 #include "rollDirectory.h"
 #include "photo.h"
-#include "textMaker.h"
+#include "pnmTextMaker.h"
 #include "indexParameters.h"
 #include "pnmImage.h"
 
@@ -88,7 +88,7 @@ add_photo(int photo_index) {
 //               failure.
 ////////////////////////////////////////////////////////////////////
 bool IndexImage::
-generate_images(const Filename &archive_dir, TextMaker *text_maker) {
+generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
   int count = _photos.size();
   int num_rows = (count + thumb_count_x - 1) / thumb_count_x;
   int actual_index_height = thumb_y_space + num_rows * (thumb_height + thumb_caption_height + thumb_y_space);
@@ -248,7 +248,7 @@ generate_images(const Filename &archive_dir, TextMaker *text_maker) {
 				 pinfo._x_place + x_center, 
 				 pinfo._y_place + y_center);
       
-      if (text_maker != (TextMaker *)NULL) {
+      if (text_maker != (PNMTextMaker *)NULL) {
 	text_maker->generate_into(photo->get_frame_number(), index_image, 
 				  pinfo._x_place + thumb_width / 2, 
 				  pinfo._y_place + thumb_height + thumb_caption_height);

@@ -1,4 +1,4 @@
-// Filename: textGlyph.cxx
+// Filename: pnmTextGlyph.cxx
 // Created by:  drose (03Apr02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,15 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "textGlyph.h"
+#include "pnmTextGlyph.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::Constructor
+//     Function: PNMTextGlyph::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TextGlyph::
-TextGlyph(double advance) : 
+PNMTextGlyph::
+PNMTextGlyph(double advance) : 
   _advance(advance) 
 {
   _left = 0;
@@ -33,21 +33,21 @@ TextGlyph(double advance) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::Destructor
+//     Function: PNMTextGlyph::Destructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TextGlyph::
-~TextGlyph() {
+PNMTextGlyph::
+~PNMTextGlyph() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::rescale
+//     Function: PNMTextGlyph::rescale
 //       Access: Public
 //  Description: After the image has been rendered large by FreeType,
 //               scales it small again for placing.
 ////////////////////////////////////////////////////////////////////
-void TextGlyph::
+void PNMTextGlyph::
 rescale(double scale_factor) {
   if (scale_factor == 1.0) {
     return;
@@ -103,23 +103,23 @@ rescale(double scale_factor) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::get_advance
+//     Function: PNMTextGlyph::get_advance
 //       Access: Public
 //  Description: Returns the number of pixels by which the pen should
 //               be advanced after rendering this glyph.
 ////////////////////////////////////////////////////////////////////
-int TextGlyph::
+int PNMTextGlyph::
 get_advance() const {
   return _int_advance;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::place
+//     Function: PNMTextGlyph::place
 //       Access: Public
 //  Description: Copies the glyph to the indicated destination image
 //               at the indicated origin.
 ////////////////////////////////////////////////////////////////////
-void TextGlyph::
+void PNMTextGlyph::
 place(PNMImage &dest_image, int xp, int yp) {
   if (!_image.is_valid()) {
     // If we have no image, do nothing.

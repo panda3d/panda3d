@@ -273,7 +273,7 @@ get_index_image(int n) const {
 //               success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool RollDirectory::
-generate_images(const Filename &archive_dir, TextMaker *text_maker) {
+generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
   nassertr(!_index_images.empty(), false);
 
   IndexImages::iterator ii;

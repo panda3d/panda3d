@@ -16,25 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "textMaker.h"
-#include "textGlyph.h"
+#include "pnmTextMaker.h"
+#include "pnmTextGlyph.h"
 #include "filename.h"
 #include "pnmImage.h"
 
-FT_Library TextMaker::_ft_library;
-bool TextMaker::_ft_initialized = false;
-bool TextMaker::_ft_ok = false;
+FT_Library PNMTextMaker::_ft_library;
+bool PNMTextMaker::_ft_initialized = false;
+bool PNMTextMaker::_ft_ok = false;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::Constructor
+//     Function: PNMTextMaker::Constructor
 //       Access: Public
 //  Description: The constructor expects the name of some font file
 //               that FreeType can read, along with face_index,
 //               indicating which font within the file to load
 //               (usually 0).
 ////////////////////////////////////////////////////////////////////
-TextMaker::
-TextMaker(const Filename &font_filename, int face_index) {
+PNMTextMaker::
+PNMTextMaker(const Filename &font_filename, int face_index) {
   _is_valid = false;
 
   if (!_ft_initialized) {
@@ -92,14 +92,14 @@ TextMaker(const Filename &font_filename, int face_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::Constructor
+//     Function: PNMTextMaker::Constructor
 //       Access: Public
 //  Description: This constructor works as above, but it takes the
 //               font data from an in-memory buffer instead of from a
 //               named file.
 ////////////////////////////////////////////////////////////////////
-TextMaker::
-TextMaker(const char *font_data, int font_data_size, int face_index) {
+PNMTextMaker::
+PNMTextMaker(const char *font_data, int font_data_size, int face_index) {
   _is_valid = false;
 
   if (!_ft_initialized) {
@@ -144,12 +144,12 @@ TextMaker(const char *font_data, int font_data_size, int face_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::Destructor
+//     Function: PNMTextMaker::Destructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TextMaker::
-~TextMaker() {
+PNMTextMaker::
+~PNMTextMaker() {
   empty_cache();
 
   if (_is_valid) {
@@ -159,18 +159,18 @@ TextMaker::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::is_valid
+//     Function: PNMTextMaker::is_valid
 //       Access: Public
-//  Description: Returns true if the TextMaker is valid and ready to
+//  Description: Returns true if the PNMTextMaker is valid and ready to
 //               generate text, false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool TextMaker::
+bool PNMTextMaker::
 is_valid() const {
   return _is_valid;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::set_pixel_size
+//     Function: PNMTextMaker::set_pixel_size
 //       Access: Public
 //  Description: Specifies the pixel size of the font to use to
 //               generate future text.  If the scale_factor is
@@ -185,7 +185,7 @@ is_valid() const {
 //               scale_factor to produce the requested pixel_size
 //               output from the closest matching input size.
 ////////////////////////////////////////////////////////////////////
-void TextMaker::
+void PNMTextMaker::
 set_pixel_size(int pixel_size, double scale_factor) {
   nassertv(_is_valid);
   reset_scale(pixel_size, scale_factor);
@@ -193,20 +193,20 @@ set_pixel_size(int pixel_size, double scale_factor) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::generate_into
+//     Function: PNMTextMaker::generate_into
 //       Access: Public
 //  Description: Generates text into the indicated image at the
 //               indicated position.  Currently, text is centered
 //               horizontally, with the baseline on the y position.
 ////////////////////////////////////////////////////////////////////
-void TextMaker::
+void PNMTextMaker::
 generate_into(const string &text, PNMImage &dest_image, int x, int y) {
   // First, measure the total width in pixels, so we can center.
   int width = 0;
   string::const_iterator ti;
   for (ti = text.begin(); ti != text.end(); ++ti) {
     int ch = (unsigned char)(*ti);
-    TextGlyph *glyph = get_glyph(ch);
+    PNMTextGlyph *glyph = get_glyph(ch);
     width += glyph->get_advance();
   }
 
@@ -216,19 +216,19 @@ generate_into(const string &text, PNMImage &dest_image, int x, int y) {
   // Now place the text.
   for (ti = text.begin(); ti != text.end(); ++ti) {
     int ch = (unsigned char)(*ti);
-    TextGlyph *glyph = get_glyph(ch);
+    PNMTextGlyph *glyph = get_glyph(ch);
     glyph->place(dest_image, xp, yp);
     xp += glyph->get_advance();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::get_glyph
+//     Function: PNMTextMaker::get_glyph
 //       Access: Private
 //  Description: Returns the glyph for the indicated index, or NULL if
 //               it is not defined in the font.
 ////////////////////////////////////////////////////////////////////
-TextGlyph *TextMaker::
+PNMTextGlyph *PNMTextMaker::
 get_glyph(int character) {
   int glyph_index = FT_Get_Char_Index(_face, character);
 
@@ -238,23 +238,23 @@ get_glyph(int character) {
     return (*gi).second;
   }
 
-  TextGlyph *glyph = make_glyph(glyph_index);
+  PNMTextGlyph *glyph = make_glyph(glyph_index);
   _glyphs.insert(Glyphs::value_type(glyph_index, glyph));
   return glyph;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::make_glyph
+//     Function: PNMTextMaker::make_glyph
 //       Access: Private
-//  Description: Creates a new TextGlyph object for the indicated
+//  Description: Creates a new PNMTextGlyph object for the indicated
 //               index, if possible.
 ////////////////////////////////////////////////////////////////////
-TextGlyph *TextMaker::
+PNMTextGlyph *PNMTextMaker::
 make_glyph(int glyph_index) {
   int error = FT_Load_Glyph(_face, glyph_index, FT_LOAD_RENDER);
   if (error) {
     nout << "Unable to render glyph " << glyph_index << "\n";
-    return (TextGlyph *)NULL;
+    return (PNMTextGlyph *)NULL;
   }
 
   FT_GlyphSlot slot = _face->glyph;
@@ -264,12 +264,12 @@ make_glyph(int glyph_index) {
 
   if (bitmap.width == 0 || bitmap.rows == 0) {
     // If we got an empty bitmap, it's a special case.
-    TextGlyph *glyph = new TextGlyph(advance);
+    PNMTextGlyph *glyph = new PNMTextGlyph(advance);
     glyph->rescale(_scale_factor);
     return glyph;
 
   } else {
-    TextGlyph *glyph = new TextGlyph(advance);
+    PNMTextGlyph *glyph = new PNMTextGlyph(advance);
     PNMImage &glyph_image = glyph->_image;
     glyph_image.clear(bitmap.width, bitmap.rows, 1);
 
@@ -322,12 +322,12 @@ make_glyph(int glyph_index) {
 }
  
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::reset_scale
+//     Function: PNMTextMaker::reset_scale
 //       Access: Private
 //  Description: Sets the font to use the appropriate scale pixels,
 //               and sets _scale_factor accordingly.
 ////////////////////////////////////////////////////////////////////
-bool TextMaker::
+bool PNMTextMaker::
 reset_scale(int pixel_size, double scale_factor) {
   _scale_factor = scale_factor;
   int want_pixel_size = (int)(pixel_size * _scale_factor + 0.5);
@@ -372,26 +372,26 @@ reset_scale(int pixel_size, double scale_factor) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::empty_cache
+//     Function: PNMTextMaker::empty_cache
 //       Access: Private
 //  Description: Empties the cache of previously-generated glyphs.
 ////////////////////////////////////////////////////////////////////
-void TextMaker::
+void PNMTextMaker::
 empty_cache() {
   Glyphs::iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
-    TextGlyph *glyph = (*gi).second;
+    PNMTextGlyph *glyph = (*gi).second;
     delete glyph;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextMaker::initialize_ft_library
+//     Function: PNMTextMaker::initialize_ft_library
 //       Access: Private, Static
 //  Description: Should be called exactly once to initialize the
 //               FreeType library.
 ////////////////////////////////////////////////////////////////////
-void TextMaker::
+void PNMTextMaker::
 initialize_ft_library() {
   if (!_ft_initialized) {
     int error = FT_Init_FreeType(&_ft_library);

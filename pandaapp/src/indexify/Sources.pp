@@ -15,7 +15,7 @@
     indexify.cxx indexify.h \
     photo.cxx photo.h \
     rollDirectory.cxx rollDirectory.h \
-    textGlyph.cxx textGlyph.h \
-    textMaker.cxx textMaker.h
+    pnmTextGlyph.cxx pnmTextGlyph.h \
+    pnmTextMaker.cxx pnmTextMaker.h
 
 #end bin_target
