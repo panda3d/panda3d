@@ -20,6 +20,7 @@
 #include <depthTestProperty.h>
 #include <stencilProperty.h>
 #include <fog.h>
+#include <pt_Light.h>
 
 #ifdef WIN32_VC
 // Must include windows.h before gl.h on NT
@@ -295,13 +296,11 @@ protected:
   bool _multisample_enabled;
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
-  bool* _light_enabled;      // bool[_max_lights]
   bool _scissor_enabled;
   bool _lighting_enabled;
   bool _texturing_enabled;
   bool _dither_enabled;
   bool _stencil_test_enabled;
-  bool* _clip_plane_enabled;      // bool[_max_clip_planes]
   bool _multisample_alpha_one_enabled;
   bool _multisample_alpha_mask_enabled;
   bool _blend_enabled;
@@ -313,17 +312,25 @@ protected:
   bool _alpha_transform_enabled;
   int _decal_level;
 
-  PTA(Light*) _available_light_ids;
-  GLint _max_lights;
-  bool* _cur_light_enabled;
+  class LightInfo {
+  public:
+    INLINE LightInfo();
+    PT_Light _light;
+    bool _enabled;
+    bool _next_enabled;
+  };
+
+  int _max_lights;
+  LightInfo *_light_info;          // LightInfo[_max_lights]
   int _cur_light_id;
-  Colorf _cur_ambient_light;
+
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;
 
-  PTA(PlaneNode*) _available_clip_plane_ids;
-  GLint _max_clip_planes;
-  bool* _cur_clip_plane_enabled;
+  int _max_clip_planes;
+  PTA(PlaneNode *)_available_clip_plane_ids;  // pPlaneNode[_max_clip_planes]
+  bool *_clip_plane_enabled;              // bool[_max_clip_planes]
+  bool *_cur_clip_plane_enabled;          // bool[_max_clip_planes]
   int _cur_clip_plane_id;
 
   CPT(DisplayRegion) _actual_display_region;

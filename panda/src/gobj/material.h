@@ -29,22 +29,22 @@ PUBLISHED:
 
   INLINE bool has_ambient() const;
   INLINE const Colorf &get_ambient() const;
-  INLINE void set_ambient(const Colorf &color);
+  void set_ambient(const Colorf &color);
   INLINE void clear_ambient();
 
   INLINE bool has_diffuse() const;
   INLINE const Colorf &get_diffuse() const;
-  INLINE void set_diffuse(const Colorf &color);
+  void set_diffuse(const Colorf &color);
   INLINE void clear_diffuse();
 
   INLINE bool has_specular() const;
   INLINE const Colorf &get_specular() const;
-  INLINE void set_specular(const Colorf &color);
+  void set_specular(const Colorf &color);
   INLINE void clear_specular();
 
   INLINE bool has_emission() const;
   INLINE const Colorf &get_emission() const;
-  INLINE void set_emission(const Colorf &color);
+  void set_emission(const Colorf &color);
   INLINE void clear_emission();
 
   INLINE float get_shininess() const;

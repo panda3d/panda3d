@@ -8,6 +8,18 @@
 #include <graphicsWindow.h>
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::LightInfo::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GLGraphicsStateGuardian::LightInfo::
+LightInfo() {
+  _light = (Light *)NULL;
+  _enabled = false;
+  _next_enabled = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::activate
 //       Access: Public
 //  Description: Sets this context to be the active context for future
@@ -861,14 +873,14 @@ get_clip_plane_id(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::enable_light(int light, bool val)
 {
-    if ( _light_enabled[light] != val )
+    if ( _light_info[light]._enabled != val )
     {
-	_light_enabled[light] = val;
+	_light_info[light]._enabled = val;
 	if ( val )
         {
 #ifdef GSG_VERBOSE
           glgsg_cat.debug()
-	    << "glEnable(GL_LIGHT_" << light << ")" << endl;
+	    << "glEnable(GL_LIGHT" << light << ")" << endl;
 #endif
 	    glEnable( get_light_id( light ) );
         }
@@ -876,7 +888,7 @@ INLINE void GLGraphicsStateGuardian::enable_light(int light, bool val)
 	{
 #ifdef GSG_VERBOSE
           glgsg_cat.debug()
-	    << "glDisable(GL_LIGHT_" << light << ")" << endl;
+	    << "glDisable(GL_LIGHT" << light << ")" << endl;
 #endif
 	    glDisable( get_light_id( light ) );
 	}

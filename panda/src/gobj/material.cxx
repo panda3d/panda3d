@@ -35,6 +35,83 @@ operator = (const Material &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Material::set_ambient
+//       Access: Public
+//  Description: Specifies the ambient color setting of the material.
+//               This will be the multiplied by any ambient lights in
+//               effect on the material to set its base color.
+//
+//               This is the color of the object as it appears in the
+//               absence of direct light.
+//
+//               If this is not set, the object color will be used.
+////////////////////////////////////////////////////////////////////
+void Material::
+set_ambient(const Colorf &color) {
+  _ambient = color;
+  _flags |= F_ambient;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::set_diffuse
+//       Access: Public
+//  Description: Specifies the diffuse color setting of the material.
+//               This will be multiplied by any lights in effect on
+//               the material to get the color in the parts of the
+//               object illuminated by the lights.
+//
+//               This is the primary color of an object; the color of
+//               the object as it appears in direct light, in the
+//               absence of highlights.
+//
+//               If this is not set, the object color will be used.
+////////////////////////////////////////////////////////////////////
+void Material::
+set_diffuse(const Colorf &color) {
+  _diffuse = color;
+  _flags |= F_diffuse;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::set_specular
+//       Access: Public
+//  Description: Specifies the diffuse color setting of the material.
+//               This will be multiplied by any lights in effect on
+//               the material to compute the color of specular
+//               highlights on the object.
+//
+//               This is the highlight color of an object: the color
+//               of small highlight reflections.
+//
+//               If this is not set, highlights will not appear.
+////////////////////////////////////////////////////////////////////
+void Material::
+set_specular(const Colorf &color) {
+  _specular = color;
+  _flags |= F_specular;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::set_emission
+//       Access: Public
+//  Description: Specifies the emission color setting of the material.
+//               This is the color of the object as it appears in the
+//               absence of any light whatsover, including ambient
+//               light.  It is as if the object is glowing by this
+//               color (although of course it will not illuminate
+//               neighboring objects).
+//
+//               If this is not set, the object will not glow by its
+//               own light and will only appear visible in the
+//               presence of one or more lights.
+////////////////////////////////////////////////////////////////////
+void Material::
+set_emission(const Colorf &color) {
+  _emission = color;
+  _flags |= F_emission;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Material::compare_to
 //       Access: Public
 //  Description: Returns a number less than zero if this material

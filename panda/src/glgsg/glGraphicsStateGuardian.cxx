@@ -152,8 +152,7 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 ////////////////////////////////////////////////////////////////////
 GLGraphicsStateGuardian::
 GLGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
-  _light_enabled = (bool *)NULL;
-  _cur_light_enabled = (bool *)NULL;
+  _light_info = (LightInfo *)NULL;
   _clip_plane_enabled = (bool *)NULL;
   _cur_clip_plane_enabled = (bool *)NULL;
   
@@ -281,21 +280,17 @@ reset() {
   }
 
   // Set up the light id map
-  glGetIntegerv( GL_MAX_LIGHTS, &_max_lights );
-  _available_light_ids = PTA(Light*)(_max_lights);
-  _light_enabled = new bool[_max_lights];
-  _cur_light_enabled = new bool[_max_lights];
-  int i;
-  for (i = 0; i < _max_lights; i++ ) {
-    _available_light_ids[i] = NULL;
-    _light_enabled[i] = false;
-  }
+  GLint max_lights;
+  glGetIntegerv( GL_MAX_LIGHTS, &max_lights );
+  _max_lights = max_lights;
+  _light_info = new LightInfo[_max_lights];
 
   // Set up the clip plane id map
   glGetIntegerv(GL_MAX_CLIP_PLANES, &_max_clip_planes);
   _available_clip_plane_ids = PTA(PlaneNode*)(_max_clip_planes);
   _clip_plane_enabled = new bool[_max_clip_planes];
   _cur_clip_plane_enabled = new bool[_max_clip_planes];
+  int i;
   for (i = 0; i < _max_clip_planes; i++) {
     _available_clip_plane_ids[i] = NULL;
     _clip_plane_enabled[i] = false;
@@ -518,16 +513,14 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
   // Now we're done with the frame processing.  Clean up.
 
-  if(_lighting_enabled) {
+  if (_lighting_enabled) {
     // Let's turn off all the lights we had on, and clear the light
     // cache--to force the lights to be reissued next frame, in case
     // their parameters or positions have changed between frames.
     
     for (int i = 0; i < _max_lights; i++) {
-      if (_light_enabled[i]) {
-	enable_light(i, false);
-      }
-      _available_light_ids[i] = NULL;
+      enable_light(i, false);
+      _light_info[i]._light = (Light *)NULL;
     }
     
     // Also force the lighting state to unlit, so that issue_light()
@@ -2420,9 +2413,9 @@ void GLGraphicsStateGuardian::apply_light( Spotlight* light )
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::apply_light( AmbientLight* light )
+void GLGraphicsStateGuardian::apply_light( AmbientLight* )
 {
-    _cur_ambient_light = _cur_ambient_light + light->get_color(); 
+  // Ambient lights are handled as a special case in issue_light().
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2687,81 +2680,80 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
   nassertv(attrib->get_properties_is_on());
   //  activate();
 
-  // Initialize the current ambient light total and currently enabled
+  // Initialize the current ambient light total and newly enabled
   // light list
-  _cur_ambient_light.set(0, 0, 0, 1);
+  Colorf cur_ambient_light(0.0, 0.0, 0.0, 1.0);
   int i;
-  for (i = 0; i < _max_lights; i++)
-    _cur_light_enabled[i] = false;
+  for (i = 0; i < _max_lights; i++) {
+    _light_info[i]._next_enabled = false;
+  }
 
   int num_enabled = 0;
   LightAttribute::const_iterator li;
   for (li = attrib->begin(); li != attrib->end(); ++li) {
-    _cur_light_id = -1;
     num_enabled++;
     enable_lighting(true);
     Light *light = (*li);
     nassertv(light != (Light *)NULL);
 
-    // Ambient lights don't require specific light ids
-    // Simply add in the ambient contribution to the current total
     if (light->get_light_type() == AmbientLight::get_class_type()) {
-      light->apply(this);
-      // We need to indicate that no light id is necessary because
-      // it's an ambient light
-      _cur_light_id = -2;
-    }
+      // Ambient lights don't require specific light ids; simply add
+      // in the ambient contribution to the current total
+      cur_ambient_light += light->get_color(); 
 
-    // Check to see if this light has already been bound to an id
-    for (i = 0; i < _max_lights; i++) {
-      if (_available_light_ids[i] == light) {
-	// Light has already been bound to an id, we only need
-	// to enable the light, not apply it
-	_cur_light_id = -2;
-	enable_light(i, true);
-	_cur_light_enabled[i] = true;
-	break;
-      }
-    }
-    
-    // See if there are any unbound light ids 
-    if (_cur_light_id == -1) {
+    } else {
+      // Check to see if this light has already been bound to an id
+      _cur_light_id = -1;
       for (i = 0; i < _max_lights; i++) {
-	if (_available_light_ids[i] == NULL) {
-	  _available_light_ids[i] = light;
-	  _cur_light_id = i;
+	if (_light_info[i]._light == light) {
+	  // Light has already been bound to an id, we only need
+	  // to enable the light, not apply it
+	  _cur_light_id = -2;
+	  enable_light(i, true);
+	  _light_info[i]._next_enabled = true;
 	  break;
 	}
       }
-    } 
     
-    // If there were no unbound light ids, see if we can replace
-    // a currently unused but previously bound id 
-    if (_cur_light_id == -1) {
-      for (i = 0; i < _max_lights; i++) {
-	if (attrib->is_off(_available_light_ids[i])) {
-	  _available_light_ids[i] = light;
-	  _cur_light_id = i;
-	  break;
-	} 
+      // See if there are any unbound light ids 
+      if (_cur_light_id == -1) {
+	for (i = 0; i < _max_lights; i++) {
+	  if (_light_info[i]._light == (Light *)NULL) {
+	    _light_info[i]._light = light;
+	    _cur_light_id = i;
+	    break;
+	  }
+	}
       }
-    }
+    
+      // If there were no unbound light ids, see if we can replace
+      // a currently unused but previously bound id 
+      if (_cur_light_id == -1) {
+	for (i = 0; i < _max_lights; i++) {
+	  if (attrib->is_off(_light_info[i]._light)) {
+	    _light_info[i]._light = light;
+	    _cur_light_id = i;
+	    break;
+	  } 
+	}
+      }
 
-    if (_cur_light_id >= 0) {
-      enable_light(_cur_light_id, true);
-      _cur_light_enabled[_cur_light_id] = true;
-      
-      // We need to do something different for each type of light
-      light->apply(this);
-    } else if (_cur_light_id == -1) {
-      glgsg_cat.error()
-	<< "issue_light() - failed to bind light to id" << endl;
+      if (_cur_light_id >= 0) {
+	enable_light(_cur_light_id, true);
+	_light_info[i]._next_enabled = true;
+	
+	// We need to do something different for each type of light
+	light->apply(this);
+      } else if (_cur_light_id == -1) {
+	glgsg_cat.error()
+	  << "issue_light() - failed to bind light to id" << endl;
+      }
     }
   }
 
   // Disable all unused lights
   for (i = 0; i < _max_lights; i++) {
-    if (_cur_light_enabled[i] == false)
+    if (!_light_info[i]._next_enabled)
       enable_light(i, false);
   }
 
@@ -2769,7 +2761,7 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
   if (num_enabled == 0) {
     enable_lighting(false);
   } else {
-    call_glLightModelAmbient(_cur_ambient_light);
+    call_glLightModelAmbient(cur_ambient_light);
   }
   report_errors();
 }
@@ -3932,13 +3924,9 @@ print_gfx_visual() {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 free_pointers() {
-  if (_light_enabled != (bool *)NULL) {
-    delete[] _light_enabled;
-    _light_enabled = (bool *)NULL;
-  }
-  if (_cur_light_enabled != (bool *)NULL) {
-    delete[] _cur_light_enabled;
-    _cur_light_enabled = (bool *)NULL;
+  if (_light_info != (LightInfo *)NULL) {
+    delete[] _light_info;
+    _light_info = (LightInfo *)NULL;
   }
   if (_clip_plane_enabled != (bool *)NULL) {
     delete[] _clip_plane_enabled;
@@ -4166,7 +4154,7 @@ dump_state(void)
     dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)glIsEnabled(GL_LIGHTING) << "\n";
     for(i = 0; i < _max_lights; i++)
     {
-      dump << "\t\t\t\t" << "GL_LIGHT" << i << " " << _light_enabled[i] << " " << (bool)glIsEnabled(GL_LIGHT0+i) << "\n";
+      dump << "\t\t\t\t" << "GL_LIGHT" << i << " " << _light_info[i]._enabled << " " << (bool)glIsEnabled(GL_LIGHT0+i) << "\n";
     }
     dump << "\t\t" << "GL_COLOR_MATERIAL " << _color_material_enabled << " " << (bool)glIsEnabled(GL_COLOR_MATERIAL) << "\n";
     dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)glIsEnabled(GL_SCISSOR_TEST) << "\n";
