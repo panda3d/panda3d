@@ -69,10 +69,15 @@ get_status_string() const {
 //     Function: HTTPDocument::get_file_size
 //       Access: Published
 //  Description: Returns the size of the file, if it is known.
-//               Returns 0 if the file size is not known.  This may
-//               increase as the file is read due to the nature of
-//               HTTP/1.1 requests which can change their minds
-//               midstream about how much data they're sending you.
+//               Returns 0 if the file size is not known.  
+//
+//               If the file is dynamically generated, the size may
+//               not be available until a read has started
+//               (e.g. open_read_file() has been called); and even
+//               then it may increase as more of the file is read due
+//               to the nature of HTTP/1.1 requests which can change
+//               their minds midstream about how much data they're
+//               sending you.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t HTTPDocument::
 get_file_size() const {
