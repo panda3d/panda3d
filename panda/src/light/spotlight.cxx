@@ -11,7 +11,6 @@
 #include "config_light.h"
 
 #include <renderRelation.h>
-#include <mathutil.h>
 #include <perspectiveProjection.h>
 #include <texture.h>
 #include <geomNode.h>

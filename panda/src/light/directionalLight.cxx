@@ -10,7 +10,6 @@
 #include "directionalLight.h"
 
 #include <perspectiveProjection.h>
-#include <mathutil.h>
 #include <indent.h>
 
 ////////////////////////////////////////////////////////////////////

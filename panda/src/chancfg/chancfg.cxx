@@ -8,7 +8,6 @@
 #include <dconfig.h>
 #include <notify.h>
 #include <filename.h>
-#include <mathutil.h>
 #include <transformTransition.h>
 #include <camera.h>
 #include <graphicsChannel.h>

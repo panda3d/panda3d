@@ -34,7 +34,6 @@
 #include <textureContext.h>
 #include <light.h>
 #include <get_rel_pos.h>
-#include <mathutil.h>
 #include <projection.h>
 #include <perspectiveProjection.h>
 #include <frustum.h>

@@ -11,7 +11,6 @@
 #include <mouseData.h>
 #include <buttonHandle.h>
 #include <buttonEvent.h>
-#include <mathutil.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
