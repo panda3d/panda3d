@@ -4,8 +4,11 @@ import ZoneEntityBase
 import BasicEntities
 
 class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
-    __attribs = (
-        'modelZoneNum',
+    __delAttribs__ = (
+        'parent', 'pos', 'hpr',
+        )
+    __attribs__ = (
+        'description', 'modelZoneNum',
         )
     
     def __init__(self, level, entId):
@@ -13,7 +16,6 @@ class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
 
         self.nodePath = self.level.getZoneNode(self.modelZoneNum)
         self.initNodePathAttribs(doReparent=0)
-
 
     def getNodePath(self):
         return self.nodePath

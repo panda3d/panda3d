@@ -38,6 +38,9 @@ class NodePathAttribs:
     def setSz(self, *args): self.getNodePath().setSz(*args)
     
 class privNodePathImpl(NodePath.NodePath):
+    __attribs__ = (
+        'parent', 'pos', 'hpr',
+        )
     def __init__(self, name):
         node = hidden.attachNewNode(name)
         NodePath.NodePath.__init__(self, node)
@@ -60,9 +63,6 @@ class NodePathEntity(Entity.Entity, privNodePathImpl):
     """This is an entity that represents a NodePath on the client.
     It may be instantiated directly or used as a base class for other
     entity types."""
-    __attribs__ = (
-        'parent', 'pos', 'hpr',
-        )
     def __init__(self, level, entId):
         privNodePathImpl.__init__(self, '')
         Entity.Entity.__init__(self, level, entId)
@@ -81,9 +81,6 @@ class DistributedNodePathEntity(DistributedEntity.DistributedEntity,
     """This is a distributed version of NodePathEntity. It should not
     be instantiated directly; derive your client-side distEntity from
     this class instead of DistributedEntity."""
-    __attribs__ = (
-        'parent', 'pos', 'hpr',
-        )
     def __init__(self, cr):
         DistributedEntity.DistributedEntity.__init__(self, cr)
         privNodePathImpl.__init__(self, 'DistributedNodePathEntity')

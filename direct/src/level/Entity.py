@@ -133,31 +133,46 @@ class Entity(DirectObject):
 
             while len(classList):
                 cl = classList.pop()
-                Entity.notify.debug('looking for attribs for %s' % cl.__name__)
-                if cl.__dict__.has_key('__attribs__'):
-                    cAttribs = cl.__attribs__
-                elif isDistObjAI(cl):
-                    # It's a distributed AI class. Check the client-side class
-                    globals = {}
-                    locals = {}
-                    ccn = cl.__name__[:-2] # clientClassName
-                    Entity.notify.debug('importing client class %s' % ccn)
-                    try:
-                        exec 'import %s' % ccn in globals, locals
-                    except:
-                        print 'could not import %s' % ccn
-                        continue
-                    exec 'cAttribs = %s.%s.__dict__.get("__attribs__")' % (
-                        ccn, ccn) in globals, locals
-                    cAttribs = locals['cAttribs']
-                    if cAttribs is None:
-                        continue
-                else:
-                    continue
+                Entity.notify.debug('looking for attribs on %s' % cl.__name__)
 
-                for attrib in cAttribs:
-                    if attrib not in allAttribs:
-                        allAttribs.append(attrib)
+                def getClassAttr(cl, name, self=self):
+                    """grab an attribute, such as __attribs__, off of a class"""
+                    if cl.__dict__.has_key(name):
+                        return cl.__dict__[name]
+                    elif isDistObjAI(cl):
+                        # It's a distributed AI class.
+                        # Check the client-side class
+                        globals = {}
+                        locals = {}
+                        ccn = cl.__name__[:-2] # clientClassName
+                        Entity.notify.debug('importing client class %s' % ccn)
+                        try:
+                            exec 'import %s' % ccn in globals, locals
+                        except:
+                            print 'could not import %s' % ccn
+                            return None
+                        exec 'attr = %s.%s.__dict__.get("%s")' % (
+                            ccn, ccn, name) in globals, locals
+                        return locals['attr']
+                    else:
+                        return None
+
+                # delete some attribs?
+                delAttribs = getClassAttr(cl, '__delAttribs__')
+                if delAttribs is not None:
+                    assert type(delAttribs) in (types.TupleType, types.ListType)
+                    Entity.notify.debug('delAttribs: %s' % list(delAttribs))
+                    for attrib in delAttribs:
+                        if attrib in allAttribs:
+                            allAttribs.remove(attrib)
+
+                attribs = getClassAttr(cl, '__attribs__')
+                if attribs is not None:
+                    assert type(attribs) in (types.TupleType, types.ListType)
+                    Entity.notify.debug('attribs: %s' % list(attribs))
+                    for attrib in attribs:
+                        if attrib not in allAttribs:
+                            allAttribs.append(attrib)
 
             # we now have an ordered list of all of the attribute descriptors
             # for this class. Cache it on the class object
