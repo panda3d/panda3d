@@ -4,15 +4,15 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -1160,8 +1160,8 @@ find_on_searchpath(const DSearchPath &searchpath) {
 bool Filename::
 scan_directory(vector_string &contents) const {
 #if defined(WIN32_VC)
-  // Use FindFirstFile()/FindNextFile() to walk through the list of
-  // files in a directory.
+  // Use Windows' FindFirstFile() / FindNextFile() to walk through the
+  // list of files in a directory.
   size_t orig_size = contents.size();
 
   string match;
@@ -1194,38 +1194,9 @@ scan_directory(vector_string &contents) const {
   sort(contents.begin() + orig_size, contents.end());
   return scan_ok;
 
-#elif defined(HAVE_GLOB_H)
-  // In some cases, particularly with NFS, it seems that opendir()
-  // .. readdir() fails to properly read the entire directory ("Value
-  // too large for defined data type"), but glob() succeeds.
-  string dirname;
-  if (empty()) {
-    dirname = "*";
-  } else if (_filename[_filename.length() - 1] == '/') {
-    dirname = _filename + "*";
-  } else {
-    dirname = _filename + "/*";
-  }
-
-  glob_t globbuf;
-
-  int r = glob(dirname.c_str(), GLOB_ERR, NULL, &globbuf);
-#ifdef GLOB_NOMATCH
-  if (r != 0 && r != GLOB_NOMATCH) {
-    perror(dirname.c_str());
-    return false;
-  }
-#endif
-  size_t offset = dirname.size() - 1;
-
-  for (int i = 0; globbuf.gl_pathv[i] != NULL; i++) {
-    contents.push_back(globbuf.gl_pathv[i] + offset);
-  }
-  globfree(&globbuf);
-
-  return true;
-
 #elif defined(HAVE_DIRENT_H)
+  // Use Posix's opendir() / readir() to walk through the list of
+  // files in a directory.
   size_t orig_size = contents.size();
 
   string dirname;
@@ -1248,15 +1219,65 @@ scan_directory(vector_string &contents) const {
     }
     d = readdir(root);
   }
+
+  // It turns out to be a mistake to check the value of errno after
+  // calling readdir(), since it might have been set to non-zero
+  // during some internal operation of readdir(), even though there
+  // wasn't really a problem with scanning the directory itself.
+  /*
   if (errno != 0 && errno != ENOENT && errno != ENOTDIR) {
     cerr << "Error occurred while scanning directory " << dirname << "\n";
     perror(dirname.c_str());
     closedir(root);
     return false;
   }
+  */
   closedir(root);
 
   sort(contents.begin() + orig_size, contents.end());
+  return true;
+
+#elif defined(HAVE_GLOB_H)
+  // It's hard to imagine a system that provides glob.h but does not
+  // provide openddir() .. readdir(), but this code is leftover from a
+  // time when there was an undetected bug in the above readdir()
+  // loop, and it works, so we might as well keep it around for now.
+  string dirname;
+  if (empty()) {
+    dirname = "*";
+  } else if (_filename[_filename.length() - 1] == '/') {
+    dirname = _filename + "*";
+  } else {
+    dirname = _filename + "/*";   /* comment to fix emacs syntax hilight */
+  }
+
+  glob_t globbuf;
+
+  int r = glob(dirname.c_str(), GLOB_ERR, NULL, &globbuf);
+
+  if (r != 0) {
+    // Some error processing the match string.  If our version of
+    // glob.h defines GLOB_NOMATCH, then we can differentiate an empty
+    // return result from some other kind of error.
+#ifdef GLOB_NOMATCH
+    if (r != GLOB_NOMATCH) {
+      perror(dirname.c_str());
+      return false;
+    }
+#endif
+
+    // Otherwise, all errors mean the same thing: no matches, but
+    // otherwise no problem.
+    return true;
+  }
+
+  size_t offset = dirname.size() - 1;
+
+  for (int i = 0; globbuf.gl_pathv[i] != NULL; i++) {
+    contents.push_back(globbuf.gl_pathv[i] + offset);
+  }
+  globfree(&globbuf);
+
   return true;
   
 #else
