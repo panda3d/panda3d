@@ -39,7 +39,7 @@ ProfileTimer(const ProfileTimer& other) {
   _autoTimerCount=other._autoTimerCount;
   _entryCount=other._entryCount;
   if (other._entries) {
-    memcpy(_entries, other._entries, _entryCount * sizeof TimerEntry);
+    memcpy(_entries, other._entries, _entryCount * sizeof(TimerEntry));
   }
 }
 

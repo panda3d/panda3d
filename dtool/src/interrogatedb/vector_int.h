@@ -21,7 +21,7 @@
 
 #ifdef HAVE_DINKUM
 #define VV_INT std::_Vector_val<int, std::allocator<int> >
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOL, EXPTP_DTOOL, VV_INT)
+EXPORT_TEMPLATE_CLASS(EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG, VV_INT)
 #endif
 EXPORT_TEMPLATE_CLASS(EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG, std::vector<int>)
 typedef vector<int> vector_int;
