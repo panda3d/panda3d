@@ -36,8 +36,6 @@
 // [ HEADER ]
 //   4 bytes  0xfeebfaab ("magic number")
 //   4 bytes  length of resulting patched file
-//   4 bytes  LFN = length of target file's name
-// LFN bytes  file name string
 //
 // [ ADD/COPY pairs; repeated N times ]
 //   2 bytes  AL = ADD length
@@ -57,7 +55,7 @@
 const PN_uint32 Patchfile::_magic_number = 0xfeebfaab;
 
 const PN_uint32 Patchfile::_HASHTABLESIZE = PN_uint32(1) << 16;
-const PN_uint32 Patchfile::_DEFAULT_FOOTPRINT_LENGTH = 9; // this gave the smallest patch file for libpanda.dll when tested, 12/20/2000
+const PN_uint32 Patchfile::_DEFAULT_FOOTPRINT_LENGTH = 9; // this produced the smallest patch file for libpanda.dll when tested, 12/20/2000
 const PN_uint32 Patchfile::_NULL_VALUE = PN_uint32(0) - 1;
 const PN_uint32 Patchfile::_MAX_RUN_LENGTH = (PN_uint32(1) << 16) - 1;
 
@@ -151,7 +149,7 @@ cleanup(void) {
 ////////////////////////////////////////////////////////////////////
 int Patchfile::
 initiate(Filename &patch_file, Filename &file) {
-  const int _header_length = sizeof(PN_uint32) + sizeof(PN_uint32) + sizeof(PN_int32);
+  const int _header_length = sizeof(PN_uint32) + sizeof(PN_uint32);
 
   if (true == _initiated) {
     express_cat.error()
@@ -217,23 +215,12 @@ initiate(Filename &patch_file, Filename &file) {
   // get the length of the patched result file
   _result_file_length = di.get_uint32();
 
-  // check the filename
-  PN_int32 name_length = di.get_int32();
-  nassertr(_buffer->get_length() >= name_length, false);
-  _patch_stream.read(_buffer->_buffer, name_length);
-  _datagram.clear();
-  _datagram.append_data(_buffer->_buffer, name_length);
-  DatagramIterator di2(_datagram);
-  string name = di2.extract_bytes(name_length);
-  if (name != _orig_file.get_basename_wo_extension()) {
-    express_cat.error()
-      << "Patchfile::initiate() - patch intended for file: " << name
-      << ", not file: " << _orig_file << endl;
-    return EU_error_file_invalid;
-  }
-
+  express_cat.debug()
+    << "Patchfile::initiate() - valid patchfile" << endl;
+  /*
   express_cat.debug()
     << "Patchfile::initiate() - valid patchfile for file: " << name << endl;
+  */
 
   _total_bytes_processed = 0;
 
@@ -649,24 +636,11 @@ build(Filename &file_orig, Filename &file_new) {
   build_hash_link_tables(buffer_orig, length_orig, hash_table, link_table);
 
   // prepare to write the patch file header
-  // Strip the v# out of the filename
-  // Save the original extension
-  string ext = file_orig.get_extension();
-  // Strip out the extension
-  Filename tfile = file_orig.get_basename_wo_extension();
-  // Now strip out the .v#
-  string fname = tfile.get_basename_wo_extension();
-  if(ext != "") {
-    fname += ".";
-    fname += ext;
-  }
 
   // write the patch file header
   _datagram.clear();
   _datagram.add_uint32(_magic_number);
   _datagram.add_uint32(length_new);
-  _datagram.add_int32(fname.length());
-  _datagram.append_data(fname.c_str(), fname.length());
   string msg = _datagram.get_message();
   write_stream.write((char *)msg.data(), msg.length());
 
