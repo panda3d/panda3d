@@ -79,6 +79,7 @@ class EggNode;
 class EXPCL_PANDAEGG EggNameUniquifier : public EggObject {
 public:
   EggNameUniquifier();
+  ~EggNameUniquifier();
 
   void clear();
 

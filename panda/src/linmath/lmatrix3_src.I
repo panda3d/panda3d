@@ -763,7 +763,7 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy) {
 //               degrees counterclockwise about the indicated vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) &axis,
+rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 	   CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
@@ -1003,8 +1003,6 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator / (FLOATTYPE scalar) const {
-  FLOATNAME(LMatrix3) t;
-
   FLOATTYPE recip_scalar = 1.0/scalar;
   return (*this) * recip_scalar;
 }

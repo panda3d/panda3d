@@ -355,24 +355,29 @@ rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
   }
   FLOATTYPE vy,vz;
   switch(cs) {
-	  case CS_yup_right:
-	  vz = -fwd_v;
-	  vy = up_v;
-	  break;
+  case CS_yup_right:
+    vz = -fwd_v;
+    vy = up_v;
+    break;
+    
+  case CS_yup_left:
+    vz = fwd_v;
+    vy = up_v;
+    break;
+    
+  case CS_zup_right:
+    vy = fwd_v;
+    vz = up_v;
+    break;
+    
+  case CS_zup_left:
+    vy = -fwd_v;
+    vz = up_v;
 
-	  case CS_yup_left:
-	  vz = fwd_v;
-	  vy = up_v;
-	  break;
-
-	  case CS_zup_right:
-	  vy = fwd_v;
-	  vz = up_v;
-	  break;
-
-	  case CS_zup_left:
-	  vy = -fwd_v;
-	  vz = up_v;
+  default:
+    linmath_cat.error()
+      << "Invalid coordinate system!\n";
+    return FLOATNAME(LVector3)(0.0, 0.0, 0.0);
   }
 
  return FLOATNAME(LVector3)(right_v,vy,vz);

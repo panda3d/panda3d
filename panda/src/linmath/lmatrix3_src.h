@@ -117,7 +117,7 @@ PUBLISHED:
   // The following named constructors return 3x3 matrices suitable for
   // scale/rotate transforms in 3-d coordinate space.
   static INLINE_LINMATH FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE angle,
-				      FLOATNAME(LVecBase3) &axis,
+				      FLOATNAME(LVecBase3) axis,
 				      CoordinateSystem cs = CS_default);
   static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase3) &scale);
   static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);

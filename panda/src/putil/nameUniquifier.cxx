@@ -11,6 +11,40 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NameUniquifier::Constructor
+//       Access: Public
+//  Description: Creates a new NameUniquifier.  
+//
+//               The separator string is used to separate the original
+//               name (or supplied prefix) and the generated number
+//               when a name must be generated.
+//
+//               If the original name is empty, the empty string is
+//               used, followed by the generated number.
+////////////////////////////////////////////////////////////////////
+NameUniquifier::
+NameUniquifier(const string &separator,
+	       const string &empty) :
+  _separator(separator),
+  _empty(empty)
+{
+  _counter = 0;
+
+  if (_empty.empty()) {
+    _empty = _separator;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NameUniquifier::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NameUniquifier::
+~NameUniquifier() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NameUniquifier::add_name_body
 //       Access: Private
 //  Description: The actual implementation of the two flavors of

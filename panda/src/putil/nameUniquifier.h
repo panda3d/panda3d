@@ -21,8 +21,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NameUniquifier {
 public:
-  INLINE NameUniquifier(const string &separator = string(),
-			const string &empty = string());
+  NameUniquifier(const string &separator = string(),
+		 const string &empty = string());
+  ~NameUniquifier();
 
   INLINE string add_name(const string &name);
   INLINE string add_name(const string &name, const string &prefix);
