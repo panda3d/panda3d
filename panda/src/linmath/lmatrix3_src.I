@@ -587,7 +587,7 @@ transpose(const FLOATNAME(LMatrix3) &a) {
 #define MATRIX3_DETERMINANT(mat)                                  \
    ( (mat)._00 * DET2((mat)._11,(mat)._12,(mat)._21,(mat)._22)    \
     -(mat)._01 * DET2((mat)._10,(mat)._12,(mat)._20,(mat)._22)    \
-    +(mat)._01 * DET2((mat)._10,(mat)._11,(mat)._20,(mat)._21))
+    +(mat)._02 * DET2((mat)._10,(mat)._11,(mat)._20,(mat)._21))
 
 
 ////////////////////////////////////////////////////////////////////

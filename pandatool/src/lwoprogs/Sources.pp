@@ -17,6 +17,11 @@
   #define TARGET lwo-scan
   #define LOCAL_LIBS lwo progbase
 
+  #define OTHER_LIBS \
+    linmath:c panda:m \
+    express:c pandaexpress:m \
+    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+
   #define SOURCES \
     lwoScan.cxx lwoScan.h
 

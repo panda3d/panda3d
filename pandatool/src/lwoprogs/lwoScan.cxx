@@ -73,6 +73,7 @@ handle_args(ProgramBase::Args &args) {
 
 int
 main(int argc, char *argv[]) {
+  init_liblwo();
   LwoScan prog;
   prog.parse_command_line(argc, argv);
   prog.run();
