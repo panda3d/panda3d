@@ -16,8 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "wdxdisplay_headers.h"
-#pragma hdrstop
+#include "wdxGraphicsPipe.h"
+#include "config_wdxdisplay.h"
+#include <mouseButton.h>
+#include <keyboardButton.h>
+#include <dxfile.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

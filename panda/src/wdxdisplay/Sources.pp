@@ -9,14 +9,16 @@
   #define LOCAL_LIBS \
     dxgsg
     
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+    
   #define SOURCES \
-    config_wdxdisplay.cxx config_wdxdisplay.h wdxGraphicsPipe.cxx \
-    wdxGraphicsPipe.h wdxGraphicsWindow.cxx wdxGraphicsWindow.h
-
+    config_wdxdisplay.h wdxGraphicsPipe.h wdxGraphicsWindow.cxx wdxGraphicsWindow.h
+    
+  #define INCLUDED_SOURCES \
+    config_wdxdisplay.cxx wdxGraphicsPipe.cxx 
+    
   #define INSTALL_HEADERS \
     config_wdxdisplay.h wdxGraphicsPipe.h wdxGraphicsWindow.h
     
-//  #define PRECOMPILED_HEADER wdxdisplay_headers.h 
-
 #end lib_target
 
