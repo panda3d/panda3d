@@ -63,10 +63,10 @@ const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ly_to_rz_mat =
 const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 convert_mat(CoordinateSystem from, CoordinateSystem to) {
   if (from == CS_default) {
-    from = default_coordinate_system;
+    from = get_default_coordinate_system();
   }
   if (to == CS_default) {
-    to = default_coordinate_system;
+    to = get_default_coordinate_system();
   }
   switch (from) {
   case CS_zup_left:

@@ -41,6 +41,7 @@ enum CPPInstanceIdentifierType {
   IIT_const,
   IIT_paren,
   IIT_func,
+  IIT_initializer,
 };
 
 ///////////////////////////////////////////////////////////////////
@@ -61,6 +62,9 @@ public:
   void add_func_modifier(CPPParameterList *params, int flags);
   void add_scoped_pointer_modifier(CPPIdentifier *scoping);
   void add_array_modifier(CPPExpression *expr);
+  void add_initializer_modifier(CPPParameterList *params);
+
+  CPPParameterList *get_initializer() const;
 
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
                       CPPPreprocessor *error_sink = NULL) const;
@@ -73,6 +77,7 @@ public:
     static Modifier func_type(CPPParameterList *params, int flags);
     static Modifier array_type(CPPExpression *expr);
     static Modifier scoped_pointer_type(CPPIdentifier *scoping);
+    static Modifier initializer_type(CPPParameterList *params);
 
     CPPInstanceIdentifierType _type;
     CPPParameterList *_func_params;

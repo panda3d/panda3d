@@ -34,10 +34,8 @@
 #include "geomSphere.h"
 #include "portalClipper.h"
 
-#ifndef CPPPARSER
 PStatCollector CullTraverser::_nodes_pcollector("Nodes");
 PStatCollector CullTraverser::_geom_nodes_pcollector("Nodes:GeomNodes");
-#endif  // CPPPARSER
 
 TypeHandle CullTraverser::_type_handle;
 

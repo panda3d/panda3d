@@ -33,9 +33,7 @@
 
 TypeHandle Character::_type_handle;
 
-#ifndef CPPPARSER
 PStatCollector Character::_anim_pcollector("App:Animation");
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::Copy Constructor

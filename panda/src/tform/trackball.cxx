@@ -56,7 +56,7 @@ Trackball(const string &name) :
   _mat = LMatrix4f::ident_mat();
   _orig = LMatrix4f::ident_mat();
   _invert = true;
-  _cs = default_coordinate_system;
+  _cs = get_default_coordinate_system();
 
   // We want to track the state of these buttons.
   watch_button(MouseButton::one());

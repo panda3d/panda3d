@@ -40,7 +40,6 @@
   #include <sys/time.h>
 #endif
 
-#ifndef CPPPARSER
 PStatCollector GraphicsEngine::_app_pcollector("App");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
@@ -53,7 +52,6 @@ PStatCollector GraphicsEngine::_transform_states_pcollector("TransformStates");
 PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformStates:Unused");
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
 PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
-#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor

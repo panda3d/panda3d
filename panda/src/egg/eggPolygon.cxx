@@ -80,7 +80,7 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
   }
 
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
   if (cs == CS_zup_left || cs == CS_yup_left) {
     // In a left-handed coordinate system, we must flip the result.

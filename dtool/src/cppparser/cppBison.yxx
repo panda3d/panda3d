@@ -340,6 +340,8 @@ pop_struct() {
 %type <u.expr> no_angle_bracket_const_expr
 %type <u.expr> const_expr
 %type <u.expr> const_operand
+%type <u.expr> formal_const_expr
+%type <u.expr> formal_const_operand
 
 
 /* Precedence rules. */
@@ -1211,7 +1213,15 @@ instance_identifier:
 {
   pop_scope();
   $$ = $1;
-  $$->add_func_modifier($4, $6);
+  if ($4->is_parameter_expr() && $6 == 0) {
+    // Oops, this must have been an instance declaration with a
+    // parameter list, not a function prototype.
+    $$->add_initializer_modifier($4);
+
+  } else {
+    // This was (probably) a function prototype.
+    $$->add_func_modifier($4, $6);
+  }
 }
         ;
 
@@ -1334,6 +1344,13 @@ formal_parameter:
   $3->add_modifier(IIT_const);
   $$ = new CPPInstance($2, $3, 0, @3.file);
   $$->set_initializer($4);
+}
+	| formal_const_expr
+{
+  CPPType *type =
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_parameter));
+  $$ = new CPPInstance(type, "expr");
+  $$->set_initializer($1);
 }
         ;
 
@@ -2469,6 +2486,191 @@ const_operand:
         | IDENTIFIER
 {
   $$ = new CPPExpression($1, current_scope, global_scope, current_lexer);
+}
+        ;
+
+/* This is used for a const_expr as a "formal parameter", which really
+   means an instance declaration using a parameter list (which looks a
+   lot like a function prototype).  It differs from const_expr mainly
+   in that it forbids some expressions unless they are parenthesized,
+   to avoid shift/reduce conflicts with the actual formal parameter
+   definition. */
+
+formal_const_expr:
+        formal_const_operand
+{
+  $$ = $1;
+}
+        | '(' full_type ')' const_expr %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::typecast_op($2, $4));
+}
+        | KW_STATIC_CAST '<' full_type '>' '(' const_expr_comma ')'
+{
+  $$ = new CPPExpression(CPPExpression::typecast_op($3, $6));
+}
+        | KW_DYNAMIC_CAST '<' full_type '>' '(' const_expr_comma ')'
+{
+  $$ = new CPPExpression(CPPExpression::typecast_op($3, $6));
+}
+        | KW_SIZEOF '(' full_type ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::sizeof_func($3));
+}
+        | KW_NEW predefined_type %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::new_op($2));
+}
+        | KW_NEW predefined_type '(' optional_const_expr_comma ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::new_op($2, $4));
+}
+        | '!' const_expr    %prec UNARY
+{
+  $$ = new CPPExpression(UNARY_NOT, $2);
+}
+        | '~' const_expr    %prec UNARY
+{
+  $$ = new CPPExpression(UNARY_NEGATE, $2);
+}
+        | '-' const_expr    %prec UNARY
+{
+  if ($2->_type == CPPExpression::T_integer) {
+    $$ = $2;
+    $$->_u._integer = -$$->_u._integer;
+  } else if ($2->_type == CPPExpression::T_real) {
+    $$ = $2;
+    $$->_u._real = -$$->_u._real;
+  } else {
+    $$ = new CPPExpression(UNARY_MINUS, $2);
+  }
+}
+        | '&' const_expr    %prec UNARY
+{
+  $$ = new CPPExpression(UNARY_REF, $2);
+}
+        | formal_const_expr '*' const_expr
+{
+  $$ = new CPPExpression('*', $1, $3);
+}
+        | formal_const_expr '/' const_expr
+{
+  $$ = new CPPExpression('/', $1, $3);
+}
+        | formal_const_expr '%' const_expr
+{
+  $$ = new CPPExpression('%', $1, $3);
+}
+        | formal_const_expr '+' const_expr
+{
+  $$ = new CPPExpression('+', $1, $3);
+}
+        | formal_const_expr '-' const_expr
+{
+  $$ = new CPPExpression('-', $1, $3);
+}
+        | formal_const_expr '|' const_expr
+{
+  $$ = new CPPExpression('|', $1, $3);
+}
+        | formal_const_expr '&' const_expr
+{
+  $$ = new CPPExpression('&', $1, $3);
+}
+        | formal_const_expr OROR const_expr
+{
+  $$ = new CPPExpression(OROR, $1, $3);
+}
+        | formal_const_expr ANDAND const_expr
+{
+  $$ = new CPPExpression(ANDAND, $1, $3);
+}
+        | formal_const_expr EQCOMPARE const_expr
+{
+  $$ = new CPPExpression(EQCOMPARE, $1, $3);
+}
+        | formal_const_expr NECOMPARE const_expr
+{
+  $$ = new CPPExpression(NECOMPARE, $1, $3);
+}
+        | formal_const_expr LECOMPARE const_expr
+{
+  $$ = new CPPExpression(LECOMPARE, $1, $3);
+}
+        | formal_const_expr GECOMPARE const_expr
+{
+  $$ = new CPPExpression(GECOMPARE, $1, $3);
+}
+        | formal_const_expr '<' const_expr
+{
+  $$ = new CPPExpression('<', $1, $3);
+}
+        | formal_const_expr '>' const_expr
+{
+  $$ = new CPPExpression('>', $1, $3);
+}
+        | formal_const_expr LSHIFT const_expr
+{
+  $$ = new CPPExpression(LSHIFT, $1, $3);
+}
+        | formal_const_expr RSHIFT const_expr
+{
+  $$ = new CPPExpression(RSHIFT, $1, $3);
+}
+        | formal_const_expr '?' const_expr ':' const_expr
+{
+  $$ = new CPPExpression('?', $1, $3, $5);
+}
+        | formal_const_expr '[' const_expr ']'
+{
+  $$ = new CPPExpression('[', $1, $3);
+}
+        | formal_const_expr '(' const_expr_comma ')'
+{
+  $$ = new CPPExpression('f', $1, $3);
+}
+        | formal_const_expr '(' ')'
+{
+  $$ = new CPPExpression('f', $1);
+}
+        | formal_const_expr '.' const_expr
+{
+  $$ = new CPPExpression('.', $1, $3);
+}
+        | formal_const_expr POINTSAT const_expr
+{
+  $$ = new CPPExpression(POINTSAT, $1, $3);
+}
+        | '(' const_expr_comma ')'
+{
+  $$ = $2;
+}
+        ;
+
+formal_const_operand:
+        INTEGER
+{
+  $$ = new CPPExpression($1);
+}
+        | KW_TRUE
+{
+  $$ = new CPPExpression(true);
+}
+        | KW_FALSE
+{
+  $$ = new CPPExpression(false);
+}
+        | CHAR
+{
+  $$ = new CPPExpression($1);
+}
+        | REAL
+{
+  $$ = new CPPExpression($1);
+}
+        | string
+{
+  $$ = new CPPExpression($1);
 }
         ;
 

@@ -63,15 +63,15 @@ ConfigureFn(config_egg) {
   init_libegg();
 }
 
-const DSearchPath &
-get_egg_path() {
-  static DSearchPath *egg_path = NULL;
-  return get_config_path("egg-path", egg_path);
-}
+ConfigVariableSearchPath egg_path
+("egg-path", 
+ "The search path along which only egg files are searched.  Generally, you "
+ "should use model-path instead of egg-path.");
 
-// Set this true to support loading of old character animation files, which
-// had the convention that the order "phr" implied a reversed roll.
-bool egg_support_old_anims = config_egg.GetBool("egg-support-old-anims", true);
+ConfigVariableBool egg_support_old_anims
+("egg-support-old-anims", true,
+ "Set this true to support loading of old character animation files, which "
+ "had the convention that the order \"phr\" implied a reversed roll.");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libegg

@@ -79,6 +79,19 @@ scoped_pointer_type(CPPIdentifier *scoping) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPInstanceIdentifier::Modifier::named initializer_type constructor
+//       Access: Public, Static
+//  Description: This is used only for instance declarations that turn
+//               out to be have a parameter list for an initializer.
+////////////////////////////////////////////////////////////////////
+CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
+initializer_type(CPPParameterList *params) {
+  Modifier mod(IIT_initializer);
+  mod._func_params = params;
+  return mod;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::Constructor
 //       Access: Public
 //  Description:
@@ -114,7 +127,7 @@ add_modifier(CPPInstanceIdentifierType type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::add_modifier
+//     Function: CPPInstanceIdentifier::add_func_modifier
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -123,19 +136,60 @@ add_func_modifier(CPPParameterList *params, int flags) {
   _modifiers.push_back(Modifier::func_type(params, flags));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CPPInstanceIdentifier::add_scoped_pointer_modifier
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 void CPPInstanceIdentifier::
 add_scoped_pointer_modifier(CPPIdentifier *scoping) {
   _modifiers.push_back(Modifier::scoped_pointer_type(scoping));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::add_modifier
+//     Function: CPPInstanceIdentifier::add_array_modifier
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPInstanceIdentifier::
 add_array_modifier(CPPExpression *expr) {
   _modifiers.push_back(Modifier::array_type(expr));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPInstanceIdentifier::add_initializer_modifier
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CPPInstanceIdentifier::
+add_initializer_modifier(CPPParameterList *params) {
+  _modifiers.push_back(Modifier::initializer_type(params));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPInstanceIdentifier::get_initializer
+//       Access: Public
+//  Description: Returns the initializer parameter list that was set
+//               for this particular instance, e.g. if the instance
+//               were:
+//
+//                  int foo(0);
+//
+//               this would return the parameter list (0).  Returns
+//               NULL if the instance did not use a parameter list
+//               initializer.
+////////////////////////////////////////////////////////////////////
+CPPParameterList *CPPInstanceIdentifier::
+get_initializer() const {
+  Modifiers::const_iterator mi;
+  for (mi = _modifiers.begin(); mi != _modifiers.end(); ++mi) {
+    const Modifier &mod = (*mi);
+    if (mod._type == IIT_initializer) {
+      return mod._func_params;
+    }
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -214,6 +268,13 @@ r_unroll_type(CPPType *start_type,
       result = new CPPFunctionType(return_type, mod._func_params,
                                    mod._func_flags);
     }
+    break;
+
+  case IIT_initializer:
+    // In this case, we have parsed an instance declaration with a set
+    // of initializers as a parameter list.  We lose the initializers
+    // at this point, but the instance will put it back again.
+    result = start_type;
     break;
 
   default:

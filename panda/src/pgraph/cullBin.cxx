@@ -18,11 +18,8 @@
 
 #include "cullBin.h"
 
-
-#ifndef CPPPARSER
 PStatCollector CullBin::_cull_bin_pcollector("Cull:Bins");
 PStatCollector CullBin::_draw_bin_pcollector("Draw:Bins");
-#endif
 
 TypeHandle CullBin::_type_handle;
 

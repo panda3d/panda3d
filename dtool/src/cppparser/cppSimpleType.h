@@ -37,6 +37,20 @@ public:
     T_double,
     T_void,
     T_unknown,
+
+    // T_parameter is a special type which is assigned to expressions
+    // that are discovered where a formal parameter was expected.
+    // This is a special case for handling cases like this:
+    //
+    //   int foo(0);
+    //
+    // which really means the same thing as:
+    //
+    //   int foo = 0;
+    //
+    // but it initially looks like a function prototype.
+    //
+    T_parameter,
   };
 
   enum Flags {
@@ -53,6 +67,7 @@ public:
   int _flags;
 
   virtual bool is_tbd() const;
+  virtual bool is_parameter_expr() const;
 
   virtual string get_preferred_name() const;
 

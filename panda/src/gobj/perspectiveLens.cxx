@@ -54,7 +54,7 @@ void PerspectiveLens::
 compute_projection_mat() {
   CoordinateSystem cs = _cs;
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   float fl = get_focal_length();

@@ -52,6 +52,7 @@ public:
                                 CPPScope *global_scope);
 
   virtual bool is_tbd() const;
+  virtual bool is_parameter_expr() const;
 
   bool has_typedef_name() const;
   string get_typedef_name(CPPScope *scope = NULL) const;

@@ -1201,7 +1201,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
            CoordinateSystem cs) {
 
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
   FLOATNAME(LMatrix4) mat;
 
@@ -1297,7 +1297,7 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
                                         FLOATNAME(LMatrix4) &result_mat, CoordinateSystem cs) {
 
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   if(IS_LEFT_HANDED_COORDSYSTEM(cs)) {

@@ -67,6 +67,21 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPType::is_parameter_expr
+//       Access: Public, Virtual
+//  Description: Returns true if the type is a special parameter
+//               expression type.
+//
+//               This sort of type is created to handle instance
+//               declarations that initially look like function
+//               prototypes.
+////////////////////////////////////////////////////////////////////
+bool CPPType::
+is_parameter_expr() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPType::has_typedef_name
 //       Access: Public
 //  Description: Returns true if the type has even been typedef'ed and

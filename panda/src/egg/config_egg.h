@@ -21,13 +21,13 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
-
-class DSearchPath;
+#include "configVariableSearchPath.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(egg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 
-const DSearchPath &get_egg_path();
-extern bool egg_support_old_anims;
+extern ConfigVariableSearchPath egg_path;
+extern ConfigVariableBool egg_support_old_anims;
 
 extern EXPCL_PANDAEGG void init_libegg();
 

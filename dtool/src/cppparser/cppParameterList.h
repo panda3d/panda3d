@@ -30,7 +30,8 @@ class CPPScope;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CPPParameterList
-// Description :
+// Description : A list of formal parameters for a function
+//               declaration.
 ////////////////////////////////////////////////////////////////////
 class CPPParameterList {
 public:
@@ -43,6 +44,7 @@ public:
   bool operator < (const CPPParameterList &other) const;
 
   bool is_tbd() const;
+  bool is_parameter_expr() const;
 
   bool is_fully_specified() const;
   CPPParameterList *substitute_decl(CPPDeclaration::SubstDecl &subst,

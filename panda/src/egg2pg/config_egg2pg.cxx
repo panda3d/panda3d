@@ -131,7 +131,7 @@ init_libegg2pg() {
     cs = CS_default;
   }
   egg_coordinate_system = (cs == CS_default) ?
-    default_coordinate_system : cs;
+    get_default_coordinate_system() : cs;
 
   // Get egg-alpha-mode
   string amstr = config_egg2pg.GetString("egg-alpha-mode", "blend");

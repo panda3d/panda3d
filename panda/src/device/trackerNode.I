@@ -95,7 +95,7 @@ INLINE void TrackerNode::
 set_tracker_coordinate_system(CoordinateSystem cs) {
   _tracker_cs = cs;
   if (_tracker_cs == CS_default) {
-    _tracker_cs = default_coordinate_system;
+    _tracker_cs = get_default_coordinate_system();
   }
 }
 
@@ -121,7 +121,7 @@ INLINE void TrackerNode::
 set_graph_coordinate_system(CoordinateSystem cs) {
   _graph_cs = cs;
   if (_graph_cs == CS_default) {
-    _graph_cs = default_coordinate_system;
+    _graph_cs = get_default_coordinate_system();
   }
 }
 

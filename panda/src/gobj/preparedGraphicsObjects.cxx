@@ -20,9 +20,7 @@
 #include "textureContext.h"
 #include "mutexHolder.h"
 
-#ifndef CPPPARSER
 PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
-#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::Constructor

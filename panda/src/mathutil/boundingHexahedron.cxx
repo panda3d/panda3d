@@ -29,7 +29,7 @@ BoundingHexahedron::
 BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
                    CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   float fs = 1.0f;

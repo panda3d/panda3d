@@ -65,7 +65,7 @@ void OrthographicLens::
 compute_projection_mat() {
   CoordinateSystem cs = _cs;
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   float a = 2.0f / (_far_distance - _near_distance);

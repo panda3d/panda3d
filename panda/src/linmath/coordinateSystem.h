@@ -23,15 +23,13 @@
 
 #include "typedef.h"
 
-#include <string>
-
 BEGIN_PUBLISH
 
 enum CoordinateSystem {
   // The CS_default entry does not refer to a particular coordinate
   // system, but rather to the value stored in
   // default_coordinate_system, which in turn is loaded from the
-  // Configrc variable "coordinate-system".
+  // config variable "coordinate-system".
   CS_default,
 
   CS_zup_right,
@@ -45,16 +43,17 @@ enum CoordinateSystem {
   CS_invalid,
 };
 
+EXPCL_PANDA CoordinateSystem get_default_coordinate_system();
+
 END_PUBLISH
 
-extern CoordinateSystem EXPCL_PANDA default_coordinate_system;
-
-CoordinateSystem EXPCL_PANDA parse_coordinate_system_string(const string &str);
-bool EXPCL_PANDA is_right_handed(CoordinateSystem cs = CS_default);
+EXPCL_PANDA CoordinateSystem parse_coordinate_system_string(const string &str);
+EXPCL_PANDA bool is_right_handed(CoordinateSystem cs = CS_default);
 
 #define IS_LEFT_HANDED_COORDSYSTEM(cs) ((cs==CS_zup_left) || (cs==CS_yup_left))
 
-ostream EXPCL_PANDA &operator << (ostream &out, CoordinateSystem cs);
+EXPCL_PANDA ostream &operator << (ostream &out, CoordinateSystem cs);
+EXPCL_PANDA istream &operator >> (istream &in, CoordinateSystem &cs);
 
 
 #endif

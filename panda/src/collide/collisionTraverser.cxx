@@ -32,10 +32,8 @@
 #include "pStatTimer.h"
 #include "indent.h"
 
-#ifndef CPPPARSER
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 PStatCollector CollisionTraverser::_reset_prev_pcollector("App:Collisions:Reset");
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::Constructor

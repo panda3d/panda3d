@@ -28,9 +28,7 @@
 #include "pStatTimer.h"
 #include <stdio.h>  // For sprintf/snprintf
 
-#ifndef CPPPARSER
 PStatCollector FrameRateMeter::_show_fps_pcollector("Cull:Show fps");
-#endif  // CPPPARSER
 
 TypeHandle FrameRateMeter::_type_handle;
 

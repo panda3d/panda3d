@@ -771,7 +771,7 @@ write_egg(Filename filename, CoordinateSystem cs) {
 bool ParametricCurveCollection::
 write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   if (cs != CS_invalid) {

@@ -41,12 +41,10 @@
 
 PStatClient *PStatClient::_global_pstats = NULL;
 
-#ifndef CPPPARSER
 PStatCollector _total_size_pcollector("Memory usage");
 PStatCollector _cpp_size_pcollector("Memory usage:C++");
 PStatCollector _interpreter_size_pcollector("Memory usage:Interpreter");
 PStatCollector _pstats_pcollector("App:PStats");
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::PerThreadData::Constructor

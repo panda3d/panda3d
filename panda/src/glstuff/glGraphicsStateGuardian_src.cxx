@@ -60,7 +60,7 @@
 
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
-#if !defined(CPPPARSER) && defined(DO_PSTATS)
+#ifdef DO_PSTATS
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
 #endif
 

@@ -40,7 +40,6 @@ ConfigureDef(config_util);
 NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
-#ifndef CPPPARSER
 ConfigVariableSearchPath model_path
 ("model-path", "The default directories to search for all models and general files loaded into Panda.");
 
@@ -49,7 +48,6 @@ ConfigVariableSearchPath texture_path
 
 ConfigVariableSearchPath sound_path
 ("sound-path", "The directories to search for loaded sound and music files.");
-#endif  // CPPPARSER
 
 ConfigureFn(config_util) {
   BamReaderParam::init_type();

@@ -252,7 +252,7 @@ operator / (FLOATTYPE scalar) const {
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 up(CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
   switch (cs) {
   case CS_zup_right:
@@ -290,7 +290,7 @@ right(CoordinateSystem) {
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 forward(CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
   switch (cs) {
   case CS_zup_right:
@@ -364,7 +364,7 @@ rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
 
 
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
   FLOATTYPE vy,vz;
   switch(cs) {

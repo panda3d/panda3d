@@ -62,7 +62,7 @@ void
 heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
          const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   if (cs == CS_zup_right || cs == CS_zup_left) {
@@ -198,7 +198,7 @@ void
 look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
         const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   if (cs == CS_zup_right || cs == CS_zup_left) {

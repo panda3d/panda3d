@@ -30,9 +30,7 @@
 
 TypeHandle PolylightEffect::_type_handle;
 
-#ifndef CPPPARSER
 PStatCollector PolylightEffect::_cull_pcollector("Cull:Polylight");
-#endif /// CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::make

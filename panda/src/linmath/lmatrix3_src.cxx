@@ -61,7 +61,7 @@ scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
                 const FLOATNAME(LVecBase3) &shear,
                 CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   // We have to match the placement of the shear components in the
@@ -134,10 +134,10 @@ scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
 const FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 convert_mat(CoordinateSystem from, CoordinateSystem to) {
   if (from == CS_default) {
-    from = default_coordinate_system;
+    from = get_default_coordinate_system();
   }
   if (to == CS_default) {
-    to = default_coordinate_system;
+    to = get_default_coordinate_system();
   }
   switch (from) {
   case CS_zup_left:

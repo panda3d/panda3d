@@ -173,7 +173,7 @@ get_perspective_params(FLOATTYPE& xfov, FLOATTYPE& yfov, FLOATTYPE& aspect,
 INLINE_MATHUTIL FLOATNAME(LMatrix4) FLOATNAME(Frustum)::
 get_perspective_projection_mat(CoordinateSystem cs) const {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   FLOATTYPE recip_far_minus_near = 1.0f/(_ffar - _fnear);
@@ -235,7 +235,7 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
 INLINE_MATHUTIL FLOATNAME(LMatrix4) FLOATNAME(Frustum)::
 get_ortho_projection_mat(CoordinateSystem cs) const {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   FLOATTYPE a = 2.0f / (_r - _l);

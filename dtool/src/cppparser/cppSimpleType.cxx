@@ -45,6 +45,21 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPSimpleType::is_parameter_expr
+//       Access: Public, Virtual
+//  Description: Returns true if the type is a special parameter
+//               expression type.
+//
+//               This sort of type is created to handle instance
+//               declarations that initially look like function
+//               prototypes.
+////////////////////////////////////////////////////////////////////
+bool CPPSimpleType::
+is_parameter_expr() const {
+  return (_type == T_parameter);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPSimpleType::get_preferred_name
 //       Access: Public, Virtual
 //  Description:
@@ -114,6 +129,10 @@ output(ostream &out, int, CPPScope *, bool) const {
 
   case T_unknown:
     out << "unknown";
+    break;
+
+  case T_parameter:
+    out << "parameter";
     break;
 
   default:

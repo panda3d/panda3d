@@ -55,7 +55,7 @@ resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
     }
 
     vfs->resolve_filename(egg_filename, searchpath, "egg") ||
-      vfs->resolve_filename(egg_filename, get_egg_path(), "egg") ||
+      vfs->resolve_filename(egg_filename, egg_path, "egg") ||
       vfs->resolve_filename(egg_filename, get_model_path(), "egg");
 
     return vfs->exists(egg_filename);
@@ -66,7 +66,7 @@ resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
     }
 
     egg_filename.resolve_filename(searchpath, "egg") ||
-      egg_filename.resolve_filename(get_egg_path(), "egg") ||
+      egg_filename.resolve_filename(egg_path, "egg") ||
       egg_filename.resolve_filename(get_model_path(), "egg");
     
     return egg_filename.exists();
@@ -278,7 +278,7 @@ write_egg(ostream &out) {
 void EggData::
 set_coordinate_system(CoordinateSystem new_coordsys) {
   if (new_coordsys == CS_default) {
-    new_coordsys = default_coordinate_system;
+    new_coordsys = get_default_coordinate_system();
   }
   if (new_coordsys != _coordsys &&
       (_coordsys != CS_default && _coordsys != CS_invalid)) {

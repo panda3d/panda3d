@@ -18,14 +18,25 @@
 
 #include "coordinateSystem.h"
 #include "config_linmath.h"
+#include "configVariableEnum.h"
 
 #include "dconfig.h"
 #include "notify.h"
 
 #include <ctype.h>
-#include <string>
 
-CoordinateSystem default_coordinate_system;
+static ConfigVariableEnum<CoordinateSystem> default_cs
+("coordinate-system", CS_zup_right,
+ "The default coordinate system to use throughout Panda for rendering, "
+ "user input, and matrix operations, unless specified otherwise.");
+
+
+CoordinateSystem
+get_default_coordinate_system() {
+  CoordinateSystem cs = default_cs;
+  return (cs == CS_default || cs == CS_invalid) ? CS_zup_right : cs;
+}
+
 
 CoordinateSystem
 parse_coordinate_system_string(const string &str) {
@@ -57,10 +68,10 @@ parse_coordinate_system_string(const string &str) {
   return CS_invalid;
 }
 
-INLINE_LINMATH bool
+bool
 is_right_handed(CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
   switch (cs) {
   case CS_zup_right:
@@ -106,3 +117,12 @@ operator << (ostream &out, CoordinateSystem cs) {
   nassertr(false, out);
   return out;
 }
+
+istream &
+operator >> (istream &in, CoordinateSystem &cs) {
+  string word;
+  in >> word;
+  cs = parse_coordinate_system_string(word);
+  return in;
+}
+

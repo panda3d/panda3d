@@ -360,7 +360,7 @@ apply(double x, double y, bool any_button) {
   // To prevent upward drift due to numerical errors, force the
   // vertical component of our step to zero (it should be pretty near
   // zero anyway).
-  switch (default_coordinate_system) {
+  switch (get_default_coordinate_system()) {
   case CS_zup_right:
   case CS_zup_left:
     step[2] = 0.0f;

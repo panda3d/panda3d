@@ -27,10 +27,8 @@
 
 TypeHandle GraphicsOutput::_type_handle;
 
-#ifndef CPPPARSER
 PStatCollector GraphicsOutput::_make_current_pcollector("Draw:Make current");
 PStatCollector GraphicsOutput::_copy_texture_pcollector("Draw:Copy texture");
-#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::Constructor

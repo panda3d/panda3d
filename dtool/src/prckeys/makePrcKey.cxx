@@ -105,7 +105,7 @@ output_c_string(ostream &out, const string &string_name,
       }
     }
   }
-  out << "\";\nstatic const size_t " << string_name << index
+  out << "\";\nstatic const unsigned int " << string_name << index
       << "_length = " << data_size << ";\n";
 }
 

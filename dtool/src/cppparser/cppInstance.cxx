@@ -25,10 +25,10 @@
 #include "cppSimpleType.h"
 #include "cppExpression.h"
 #include "cppPreprocessor.h"
-#include "indent.h"
-
+#include "cppParameterList.h"
 #include "cppReferenceType.h"
 #include "cppConstType.h"
+#include "indent.h"
 
 #include <algorithm>
 
@@ -79,8 +79,20 @@ CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
   _ident = ii->_ident;
   ii->_ident = NULL;
   _storage_class = storage_class;
-  delete ii;
   _initializer = NULL;
+
+  CPPParameterList *params = ii->get_initializer();
+  if (params != (CPPParameterList *)NULL) {
+    // In this case, the instance has a parameter-list initializer, e.g.:
+    //
+    //   int foo(0);
+    //
+    // We really should save this initializer in the instance object.
+    // But we don't for now, since no one really cares about
+    // initializers anyway.
+  }
+
+  delete ii;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -489,6 +501,17 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 void CPPInstance::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete,
        int num_default_parameters) const {
+  assert(_type != NULL);
+
+  if (_type->is_parameter_expr()) {
+    // In this case, the whole thing is really an expression, and not
+    // an instance at all.  This can only happen if we parsed an
+    // instance declaration while we thought we were parsing a
+    // function prototype.
+    out << *_initializer;
+    return;
+  }
+
   if (is_template()) {
     get_template_scope()->_parameters.write_formal(out, scope);
     indent(out, indent_level);
@@ -525,12 +548,12 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
   if (_ident != NULL) {
     name = _ident->get_local_name(scope);
   }
-  assert(_type != NULL);
 
   if (_type->as_function_type()) {
     _type->as_function_type()->
       output_instance(out, indent_level, scope, complete, "", name,
                       num_default_parameters);
+
   } else {
     _type->output_instance(out, indent_level, scope, complete, "", name);
   }

@@ -29,19 +29,18 @@ ConfigureFn(config_linmath) {
   init_liblinmath();
 }
 
-// Set this true to doublecheck the quaternion-hpr compose and
-// decompose operations against the quaternion-matrix and matrix-hpr
-// operations.  This only has effect if NDEBUG is not defined.
-const bool paranoid_hpr_quat = config_linmath.GetBool("paranoid-hpr-quat", false);
+ConfigVariableBool paranoid_hpr_quat
+("paranoid-hpr-quat", false,
+ "Set this true to doublecheck the quaternion-hpr compose and "
+ "decompose operations against the quaternion-matrix and matrix-hpr "
+ "operations.  This only has effect if NDEBUG is not defined.");
 
-// Set this true to compute hpr's correctly.  Presently, we apply
-// these in the wrong order, and roll is backwards relative to the
-// other two.  But we can't globally fix this because some of our old
-// tools, most notably egg-optchar, depend on the old broken behavior.
-// Until we are able to rewrite these tools into the new system, we
-// must keep the old behavior; setting this switch lets you use the
-// new, correct behavior but you don't get animated characters.
-const bool temp_hpr_fix = config_linmath.GetBool("temp-hpr-fix", false);
+ConfigVariableBool temp_hpr_fix
+("temp-hpr-fix", true,
+ "Set this true to compute hpr's correctly.  Historically, Panda has "
+ "applied these in the wrong order, and roll was backwards relative "
+ "to the other two.  Set this false if you need compatibility with "
+ "Panda's old hpr calculations.");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_liblinmath
@@ -90,14 +89,4 @@ init_liblinmath() {
   LQuaterniond::init_type();
   LRotationd::init_type();
   LOrientationd::init_type();
-
-  string csstr = config_linmath.GetString("coordinate-system", "default");
-  CoordinateSystem cs = parse_coordinate_system_string(csstr);
-
-  if (cs == CS_invalid) {
-    linmath_cat.error()
-      << "Unexpected coordinate-system string: " << csstr << "\n";
-    cs = CS_default;
-  }
-  default_coordinate_system = (cs == CS_default) ? CS_zup_right : cs;
 }

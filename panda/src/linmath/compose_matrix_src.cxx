@@ -527,7 +527,7 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
                  FLOATNAME(LVecBase3) &hpr,
                  CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   if (linmath_cat.is_debug()) {
@@ -649,7 +649,7 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
                  FLOATTYPE roll,
                  CoordinateSystem cs) {
   if (cs == CS_default) {
-    cs = default_coordinate_system;
+    cs = get_default_coordinate_system();
   }
 
   if (linmath_cat.is_debug()) {

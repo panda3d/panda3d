@@ -123,6 +123,24 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPParameterList::is_parameter_expr
+//       Access: Public
+//  Description: Returns true if any of the types in the parameter
+//               list turns out to be a constant expression, which is
+//               a clue that this parameter list is actually intended
+//               to be an instance declaration.
+////////////////////////////////////////////////////////////////////
+bool CPPParameterList::
+is_parameter_expr() const {
+  for (int i = 0; i < (int)_parameters.size(); i++) {
+    if (_parameters[i]->_type->is_parameter_expr()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPParameterList::is_fully_specified
 //       Access: Public
 //  Description: Returns true if this declaration is an actual,

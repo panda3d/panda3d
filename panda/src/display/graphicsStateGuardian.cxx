@@ -40,7 +40,6 @@
 
 #include <algorithm>
 
-#ifndef CPPPARSER
 PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage");
 PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
 PStatCollector GraphicsStateGuardian::_total_geom_pcollector("Prepared Geoms");
@@ -62,8 +61,6 @@ PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive
 PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 
-#endif
-
 TypeHandle GraphicsStateGuardian::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +71,7 @@ TypeHandle GraphicsStateGuardian::_type_handle;
 GraphicsStateGuardian::
 GraphicsStateGuardian(const FrameBufferProperties &properties) {
   _properties = properties;
-  _coordinate_system = default_coordinate_system;
+  _coordinate_system = get_default_coordinate_system();
   _current_display_region = (DisplayRegion*)0L;
   _current_lens = (Lens *)NULL;
   _needs_reset = true;
