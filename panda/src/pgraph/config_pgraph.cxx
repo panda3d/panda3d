@@ -40,6 +40,8 @@
 #include "qplensNode.h"
 #include "qplodNode.h"
 #include "materialAttrib.h"
+#include "qpmodelNode.h"
+#include "qpmodelRoot.h"
 #include "qpnodePath.h"
 #include "qpnodePathComponent.h"
 #include "pandaNode.h"
@@ -113,6 +115,8 @@ init_libpgraph() {
   qpLensNode::init_type();
   qpLODNode::init_type();
   MaterialAttrib::init_type();
+  qpModelNode::init_type();
+  qpModelRoot::init_type();
   qpNodePath::init_type();
   qpNodePathComponent::init_type();
   PandaNode::init_type();
@@ -146,6 +150,8 @@ init_libpgraph() {
   qpLensNode::register_with_read_factory();
   qpLODNode::register_with_read_factory();
   MaterialAttrib::register_with_read_factory();
+  qpModelNode::register_with_read_factory();
+  qpModelRoot::register_with_read_factory();
   PandaNode::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();

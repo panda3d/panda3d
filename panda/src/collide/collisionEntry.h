@@ -102,9 +102,6 @@ private:
   LVector3f _into_surface_normal;
   float _into_depth;
 
-  friend class CollisionTraverser;
-
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -121,6 +118,9 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class CollisionTraverser;
+  friend class qpCollisionTraverser;
 };
 
 #include "collisionEntry.I"

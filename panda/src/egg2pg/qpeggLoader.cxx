@@ -38,6 +38,8 @@
 #include "qpgeomNode.h"
 #include "qpsequenceNode.h"
 #include "qplodNode.h"
+#include "qpmodelNode.h"
+#include "qpmodelRoot.h"
 #include "string_utils.h"
 #include "eggPrimitive.h"
 #include "eggPoint.h"
@@ -53,6 +55,10 @@
 #include "qpcharacter.h"
 #include "animBundleMaker.h"
 #include "qpanimBundleNode.h"
+#include "qpcollisionNode.h"
+#include "collisionSphere.h"
+#include "collisionPlane.h"
+#include "collisionPolygon.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -129,7 +135,7 @@ build_graph() {
   load_textures();
 
   // Now build up the scene graph.
-  _root = new PandaNode(_data.get_egg_filename().get_basename());
+  _root = new qpModelRoot(_data.get_egg_filename().get_basename());
   make_node(&_data, _root);
   _builder.qpbuild();
 
@@ -1248,7 +1254,7 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
 ////////////////////////////////////////////////////////////////////
 PandaNode *qpEggLoader::
 make_node(EggGroup *egg_group, PandaNode *parent) {
-  PandaNode *node = NULL;
+  PT(PandaNode) node = NULL;
 
   if (egg_group->has_objecttype()) {
     // We'll allow recursive expansion of ObjectType strings--but we
@@ -1342,12 +1348,10 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
 
   } else if (egg_group->get_cs_type() != EggGroup::CST_none &&
              egg_group->get_cs_type() != EggGroup::CST_geode) {
-    /*
     // A collision group: create collision geometry.
-    node = new CollisionNode;
-    node->set_name(egg_group->get_name());
+    node = new qpCollisionNode(egg_group->get_name());
 
-    make_collision_solids(egg_group, egg_group, (CollisionNode *)node);
+    make_collision_solids(egg_group, egg_group, (qpCollisionNode *)node.p());
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the
       // traversal.
@@ -1357,13 +1361,12 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       }
     }
 
-    PandaNode *arc = create_group_arc(egg_group, parent, node);
+    node = create_group_arc(egg_group, parent, node);
 
     if (!egg_show_collision_solids) {
-      arc->set_transition(new PruneTransition());
+      node->set_draw_mask(DrawMask::all_off());
     }
-    return arc;
-    */
+    return node;
 
   } else if (egg_group->get_switch_flag() &&
              egg_group->get_switch_fps() != 0.0) {
@@ -1378,9 +1381,8 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
 
   } else if (egg_group->get_model_flag() || egg_group->get_dcs_flag()) {
     // A model or DCS flag; create a model node.
-    node = new PandaNode(egg_group->get_name());
-
-    //    DCAST(ModelNode, node)->set_preserve_transform(egg_group->get_dcs_flag());
+    node = new qpModelNode(egg_group->get_name());
+    DCAST(qpModelNode, node)->set_preserve_transform(egg_group->get_dcs_flag());
 
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
@@ -1522,7 +1524,6 @@ make_node(EggGroupNode *egg_group, PandaNode *parent) {
   return node;
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::make_collision_solids
 //       Access: Private
@@ -1532,7 +1533,7 @@ make_node(EggGroupNode *egg_group, PandaNode *parent) {
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
 make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
-                      CollisionNode *cnode) {
+                      qpCollisionNode *cnode) {
   if (egg_group->get_cs_type() != EggGroup::CST_none) {
     start_group = egg_group;
   }
@@ -1578,9 +1579,7 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
     }
   }
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::make_collision_plane
 //       Access: Private
@@ -1588,7 +1587,7 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
 //               to the first polygon associated with this group.
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
-make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
+make_collision_plane(EggGroup *egg_group, qpCollisionNode *cnode,
                      EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
@@ -1606,9 +1605,7 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
     }
   }
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::make_collision_polygon
 //       Access: Private
@@ -1616,7 +1613,7 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
 //               to the first polygon associated with this group.
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
-make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
+make_collision_polygon(EggGroup *egg_group, qpCollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
 
   EggGroup *geom_group = find_collision_geometry(egg_group);
@@ -1630,9 +1627,7 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
     }
   }
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::make_collision_polyset
 //       Access: Private
@@ -1640,7 +1635,7 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
 //               to the polygons associated with this group.
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
-make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
+make_collision_polyset(EggGroup *egg_group, qpCollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
@@ -1653,9 +1648,7 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
     }
   }
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::make_collision_sphere
 //       Access: Private
@@ -1663,7 +1656,7 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
 //               to the polygons associated with this group.
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
-make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
+make_collision_sphere(EggGroup *egg_group, qpCollisionNode *cnode,
                       EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
@@ -1729,9 +1722,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     }
   }
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::apply_collision_flags
 //       Access: Private
@@ -1746,9 +1737,7 @@ apply_collision_flags(CollisionSolid *solid,
     solid->set_tangible(false);
   }
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::find_collision_geometry
 //       Access: Private
@@ -1786,9 +1775,7 @@ find_collision_geometry(EggGroup *egg_group) {
   // We got nothing.
   return NULL;
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::create_collision_plane
 //       Access: Private
@@ -1832,18 +1819,16 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
   Planef plane(vertices[0], vertices[1], vertices[2]);
   return new CollisionPlane(plane);
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::create_collision_polygons
 //       Access: Private
 //  Description: Creates one or more CollisionPolygons from the
 //               indicated EggPolygon, and adds them to the indicated
-//               CollisionNode.
+//               qpCollisionNode.
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
-create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
+create_collision_polygons(qpCollisionNode *cnode, EggPolygon *egg_poly,
                           EggGroup *parent_group,
                           EggGroup::CollideFlags flags) {
 
@@ -1899,7 +1884,6 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
     }
   }
 }
-*/
 
 
 /*

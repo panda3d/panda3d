@@ -9,4 +9,5 @@
 #include "collisionHandlerQueue.cxx"
 #include "collisionLevelState.cxx"
 #include "collisionNode.cxx"
+#include "qpcollisionNode.cxx"
 

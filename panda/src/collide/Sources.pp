@@ -10,28 +10,37 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-     collisionEntry.I collisionEntry.h collisionHandler.h  \
-     collisionHandlerEvent.I collisionHandlerEvent.h  \
-     collisionHandlerFloor.I collisionHandlerFloor.h  \
-     collisionHandlerPhysical.I collisionHandlerPhysical.h  \
-     collisionHandlerPusher.I collisionHandlerPusher.h  \
-     collisionHandlerQueue.h collisionLevelState.I  \
-     collisionLevelState.N collisionLevelState.h collisionNode.I  \
-     collisionNode.h collisionPlane.I collisionPlane.h  \
-     collisionPolygon.I collisionPolygon.h collisionRay.I  \
-     collisionRay.h collisionSegment.I collisionSegment.h  \
-     collisionSolid.I collisionSolid.h collisionSphere.I  \
-     collisionSphere.h collisionTraverser.I collisionTraverser.h  \
-     config_collide.h
+    collisionEntry.I collisionEntry.h collisionHandler.h  \
+    collisionHandlerEvent.I collisionHandlerEvent.h  \
+    collisionHandlerFloor.I collisionHandlerFloor.h  \
+    collisionHandlerPhysical.I collisionHandlerPhysical.h  \
+    collisionHandlerPusher.I collisionHandlerPusher.h  \
+    collisionHandlerQueue.h collisionLevelState.I  \
+    collisionLevelState.N collisionLevelState.h \
+    collisionNode.I collisionNode.h \
+    qpcollisionNode.I qpcollisionNode.h \
+    collisionPlane.I collisionPlane.h  \
+    collisionPolygon.I collisionPolygon.h collisionRay.I  \
+    collisionRay.h collisionSegment.I collisionSegment.h  \
+    collisionSolid.I collisionSolid.h collisionSphere.I  \
+    collisionSphere.h \
+    collisionTraverser.I collisionTraverser.h  \
+    qpcollisionTraverser.I qpcollisionTraverser.h  \
+    config_collide.h
     
  #define INCLUDED_SOURCES \
-     collisionEntry.cxx collisionHandler.cxx collisionHandlerEvent.cxx  \
-     collisionHandlerFloor.cxx collisionHandlerPhysical.cxx  \
-     collisionHandlerPusher.cxx collisionHandlerQueue.cxx  \
-     collisionLevelState.cxx collisionNode.cxx collisionPlane.cxx  \
-     collisionPolygon.cxx collisionRay.cxx collisionSegment.cxx  \
-     collisionSolid.cxx collisionSphere.cxx  \
-     collisionTraverser.cxx config_collide.cxx 
+    collisionEntry.cxx collisionHandler.cxx collisionHandlerEvent.cxx  \
+    collisionHandlerFloor.cxx collisionHandlerPhysical.cxx  \
+    collisionHandlerPusher.cxx collisionHandlerQueue.cxx  \
+    collisionLevelState.cxx \
+    collisionNode.cxx \
+    qpcollisionNode.cxx \
+    collisionPlane.cxx  \
+    collisionPolygon.cxx collisionRay.cxx collisionSegment.cxx  \
+    collisionSolid.cxx collisionSphere.cxx  \
+    collisionTraverser.cxx \
+    qpcollisionTraverser.cxx \
+    config_collide.cxx 
 
   #define INSTALL_HEADERS \
     collisionEntry.I collisionEntry.h collisionHandler.h \
@@ -40,11 +49,15 @@
     collisionHandlerPhysical.I collisionHandlerPhysical.h \
     collisionHandlerPusher.I collisionHandlerPusher.h \
     collisionHandlerQueue.h collisionLevelState.I collisionLevelState.h \
-    collisionNode.I collisionNode.h collisionPlane.I collisionPlane.h \
+    collisionNode.I collisionNode.h \
+    qpcollisionNode.I qpcollisionNode.h \
+    collisionPlane.I collisionPlane.h \
     collisionPolygon.I collisionPolygon.h collisionRay.I collisionRay.h \
     collisionSegment.I collisionSegment.h \
     collisionSolid.I collisionSolid.h collisionSphere.I \
-    collisionSphere.h collisionTraverser.I collisionTraverser.h
+    collisionSphere.h \
+    collisionTraverser.I collisionTraverser.h \
+    qpcollisionTraverser.I qpcollisionTraverser.h
 
   #define IGATESCAN all
 

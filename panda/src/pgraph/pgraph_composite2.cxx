@@ -8,6 +8,8 @@
 #include "qplensNode.cxx"
 #include "qplodNode.cxx"
 #include "materialAttrib.cxx"
+#include "qpmodelNode.cxx"
+#include "qpmodelRoot.cxx"
 #include "qpnodePath.cxx"
 #include "qpnodePathCollection.cxx"
 #include "qpnodePathComponent.cxx"

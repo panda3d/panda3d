@@ -10,15 +10,23 @@
 
   #define SOURCES \
     cardMaker.I cardMaker.h \
+    qpcardMaker.I qpcardMaker.h \
     config_grutil.h \
-    lineSegs.I lineSegs.h
+    lineSegs.I lineSegs.h \
+    qplineSegs.I qplineSegs.h
     
   #define INCLUDED_SOURCES \
-    cardMaker.cxx config_grutil.cxx lineSegs.cxx
+    cardMaker.cxx \
+    qpcardMaker.cxx \
+    config_grutil.cxx \
+    qplineSegs.cxx \
+    lineSegs.cxx
 
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
-    lineSegs.I lineSegs.h
+    qpcardMaker.I qpcardMaker.h \
+    lineSegs.I lineSegs.h \
+    qplineSegs.I qplineSegs.h
 
   #define IGATESCAN all
 

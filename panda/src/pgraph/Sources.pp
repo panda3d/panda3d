@@ -39,6 +39,8 @@
     qplensNode.I qplensNode.h \
     qplodNode.I qplodNode.h \
     materialAttrib.I materialAttrib.h \
+    qpmodelNode.I qpmodelNode.h \
+    qpmodelRoot.I qpmodelRoot.h \
     qpnodePath.I qpnodePath.h \
     qpnodePathCollection.I qpnodePathCollection.h \
     qpnodePathComponent.I qpnodePathComponent.h \
@@ -92,6 +94,8 @@
     qplensNode.cxx \
     qplodNode.cxx \
     materialAttrib.cxx \
+    qpmodelNode.cxx \
+    qpmodelRoot.cxx \
     qpnodePath.cxx \
     qpnodePathCollection.cxx \
     qpnodePathComponent.cxx \
@@ -147,6 +151,8 @@
     qplensNode.I qplensNode.h \
     qplodNode.I qplodNode.h \
     materialAttrib.I materialAttrib.h \
+    qpmodelNode.I qpmodelNode.h \
+    qpmodelRoot.I qpmodelRoot.h \
     qpnodePath.I qpnodePath.h \
     qpnodePathCollection.I qpnodePathCollection.h \
     qpnodePathComponent.I qpnodePathComponent.h \

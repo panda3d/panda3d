@@ -47,7 +47,7 @@ class EggMaterial;
 class ComputedVerticesMaker;
 class RenderRelation;
 class CollisionSolid;
-class CollisionNode;
+class qpCollisionNode;
 class CollisionPlane;
 class CollisionPolygon;
 
@@ -102,26 +102,26 @@ private:
   PandaNode *make_node(EggTable *egg_table, PandaNode *parent);
   PandaNode *make_node(EggGroupNode *egg_group, PandaNode *parent);
 
-  /*
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
-                             CollisionNode *cnode);
-  void make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
+                             qpCollisionNode *cnode);
+  void make_collision_plane(EggGroup *egg_group, qpCollisionNode *cnode,
                             EggGroup::CollideFlags flags);
-  void make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
+  void make_collision_polygon(EggGroup *egg_group, qpCollisionNode *cnode,
                               EggGroup::CollideFlags flags);
-  void make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
+  void make_collision_polyset(EggGroup *egg_group, qpCollisionNode *cnode,
                               EggGroup::CollideFlags flags);
-  void make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
+  void make_collision_sphere(EggGroup *egg_group, qpCollisionNode *cnode,
                              EggGroup::CollideFlags flags);
   void apply_collision_flags(CollisionSolid *solid,
                              EggGroup::CollideFlags flags);
   EggGroup *find_collision_geometry(EggGroup *egg_group);
   CollisionPlane *create_collision_plane(EggPolygon *egg_poly,
                                          EggGroup *parent_group);
-  void create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
+  void create_collision_polygons(qpCollisionNode *cnode, EggPolygon *egg_poly,
                                  EggGroup *parent_group,
                                  EggGroup::CollideFlags flags);
 
+  /*
   void apply_deferred_arcs(PandaNode *root);
   */
 
