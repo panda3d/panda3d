@@ -944,9 +944,10 @@ typedef struct {
   float radius;
 } gridded_file_info;
 
-void
-move_gridded_stuff(gridded_file_info *InfoArr, RenderRelation **pRRptrArr,
+// making these fns to get around ridiculous VC++ matrix inlining bugs at Opt2
+void move_gridded_stuff(gridded_file_info *InfoArr, RenderRelation **pRRptrArr,
                    int size) {
+
   for(int i = 0; i < size; i++) {
     InfoArr[i].ang1+=InfoArr[i].ang1_inc;
     InfoArr[i].ang2+=InfoArr[i].ang2_inc;
@@ -954,17 +955,27 @@ move_gridded_stuff(gridded_file_info *InfoArr, RenderRelation **pRRptrArr,
     // xforms happen left to right
     LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
       LMatrix3f::rotate_mat(InfoArr[i].ang2);
+
+    LVector3f translate_vec(InfoArr[i].xcenter+new_center._v.v._0,
+                            InfoArr[i].ycenter+new_center._v.v._1,
+                            0.0);
     
-    LMatrix4f xfm_mat=
-      LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang1,
-                                     LVector3f(0.0, 0.0, 1.0)) *
-      LMatrix4f::translate_mat(LVector3f(InfoArr[i].xcenter+new_center._v.v._0,
-                                         InfoArr[i].ycenter+new_center._v.v._1,
-                                         0.0));
+	LMatrix4f tmat1,tmat2,xfm_mat;
+
+	LVector3f rotation_axis(0.0, 0.0, 1.0);
+
+    tmat1 = LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang1,rotation_axis);
+    tmat2 = LMatrix4f::translate_mat(translate_vec);
+    xfm_mat = tmat1 * tmat2;
     pRRptrArr[i]->set_transition(new TransformTransition(xfm_mat));
   }
 }
 
+void make_xfm_mat(LVector3f &rotate_axis,LVector3f &translate_vec,float ang,LMatrix4f *xfm_mat) {
+	  LMatrix4f tmat1 = LMatrix4f::rotate_mat_normaxis(ang,rotate_axis);
+      LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+	  *xfm_mat = tmat1 * tmat2;
+}
 
 int framework_main(int argc, char *argv[]) {
   pystub();
@@ -1332,12 +1343,17 @@ int framework_main(int argc, char *argv[]) {
 				  LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) * 
 					           LMatrix3f::rotate_mat(InfoArr[filenum].ang2);
 
-				  xfm_mat = LMatrix4f::rotate_mat_normaxis(InfoArr[filenum].ang1,
-												   LVector3f(0.0, 0.0, 1.0)) *
-							LMatrix4f::translate_mat(LVector3f(xpos+new_center._v.v._0, ypos+new_center._v.v._1, 0.0));
+				  LVector3f rotate_axis(0.0, 0.0, 1.0);
+
+				  LVector3f translate_vec(xpos+new_center._v.v._0, 
+										  ypos+new_center._v.v._1,
+										  0.0);
+				  // call dumb fn to do math since I cant do it here because of stupid VC bugs
+				  make_xfm_mat(rotate_axis,translate_vec,InfoArr[filenum].ang1,&xfm_mat);
 
 			  } else {
-				  xfm_mat = LMatrix4f::translate_mat(LVector3f(xpos, ypos, 0.0));
+				  LVector3f translate_vec(xpos, ypos, 0.0);
+				  xfm_mat = LMatrix4f::translate_mat(translate_vec);
 			  }
 
 			  pRRptrArr[filenum]->set_transition(new TransformTransition(xfm_mat));
