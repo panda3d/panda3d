@@ -3,13 +3,12 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "pandadx.h"
+#include "pandadx7.h"
 
-#include <config_dxgsg.h>
-#include <config_wdxdisplay.h>
+#include "config_dxgsg7.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libpandadx
+//     Function: init_libpandadx7
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -17,7 +16,6 @@
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libpandadx() {
-  init_libdxgsg();
-  init_libwdxdisplay();
+init_libpandadx7() {
+  init_libdxgsg7();
 }
