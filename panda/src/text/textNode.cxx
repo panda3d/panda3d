@@ -626,10 +626,10 @@ make_card() {
   lengths.push_back(4);
 
   PTA_Vertexf verts;
-  verts.push_back(Vertexf::rfu(left, 0.02f, top));
-  verts.push_back(Vertexf::rfu(left, 0.02f, bottom));
-  verts.push_back(Vertexf::rfu(right, 0.02f, top));
-  verts.push_back(Vertexf::rfu(right, 0.02f, bottom));
+  verts.push_back(Vertexf(left, 0.02f, top));
+  verts.push_back(Vertexf(left, 0.02f, bottom));
+  verts.push_back(Vertexf(right, 0.02f, top));
+  verts.push_back(Vertexf(right, 0.02f, bottom));
 
   geoset->set_num_prims(1);
   geoset->set_lengths(lengths);
@@ -684,29 +684,29 @@ make_card_with_border() {
 
   PTA_Vertexf verts;
   // verts 1,2,3,4
-  verts.push_back(Vertexf::rfu(left, 0.02f, top));
-  verts.push_back(Vertexf::rfu(left, 0.02f, top - _card_border_size));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02f, top));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02f,
-                               top - _card_border_size));
+  verts.push_back(Vertexf(left, 0.02f, top));
+  verts.push_back(Vertexf(left, 0.02f, top - _card_border_size));
+  verts.push_back(Vertexf(left + _card_border_size, 0.02f, top));
+  verts.push_back(Vertexf(left + _card_border_size, 0.02f,
+                          top - _card_border_size));
   // verts 5,6,7,8
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02f, top));
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02f,
-                               top - _card_border_size));
-  verts.push_back(Vertexf::rfu(right, 0.02f, top));
-  verts.push_back(Vertexf::rfu(right, 0.02f, top - _card_border_size));
+  verts.push_back(Vertexf(right - _card_border_size, 0.02f, top));
+  verts.push_back(Vertexf(right - _card_border_size, 0.02f,
+                          top - _card_border_size));
+  verts.push_back(Vertexf(right, 0.02f, top));
+  verts.push_back(Vertexf(right, 0.02f, top - _card_border_size));
   // verts 9,10,11,12
-  verts.push_back(Vertexf::rfu(left, 0.02f, bottom + _card_border_size));
-  verts.push_back(Vertexf::rfu(left, 0.02f, bottom));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02f,
-                               bottom + _card_border_size));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02f, bottom));
+  verts.push_back(Vertexf(left, 0.02f, bottom + _card_border_size));
+  verts.push_back(Vertexf(left, 0.02f, bottom));
+  verts.push_back(Vertexf(left + _card_border_size, 0.02f,
+                          bottom + _card_border_size));
+  verts.push_back(Vertexf(left + _card_border_size, 0.02f, bottom));
   // verts 13,14,15,16
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02f,
-                               bottom + _card_border_size));
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02f, bottom));
-  verts.push_back(Vertexf::rfu(right, 0.02f, bottom + _card_border_size));
-  verts.push_back(Vertexf::rfu(right, 0.02f, bottom));
+  verts.push_back(Vertexf(right - _card_border_size, 0.02f,
+                          bottom + _card_border_size));
+  verts.push_back(Vertexf(right - _card_border_size, 0.02f, bottom));
+  verts.push_back(Vertexf(right, 0.02f, bottom + _card_border_size));
+  verts.push_back(Vertexf(right, 0.02f, bottom));
 
   PTA_ushort indices;
   // tristrip #1
