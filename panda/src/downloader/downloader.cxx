@@ -578,7 +578,7 @@ download(const string &file_name, Filename file_dest,
 
       if (ans == RS_eof) {
 
-	if (got_any_data == true) {
+	if (bytes > 0 || got_any_data == true) {
 	  if (downloader_cat.is_debug())
 	    downloader_cat.debug()
 	      << "Download for: " << file_name << " completed" << endl;
