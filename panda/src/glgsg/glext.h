@@ -2931,16 +2931,58 @@ typedef void (APIENTRY * PFNGLTEXTURECOLORMASKSGISPROC) (GLboolean red, GLboolea
 
 /* Extensions */
 #define GL_ARB_texture_border_clamp       1
+#define GL_ARB_texture_env_combine        1
+#define GL_ARB_texture_env_dot3           1
+#define GL_EXT_texture_env_dot3           1
+#define GL_IBM_texture_mirrored_repeat    1
 #define GL_NV_evaluators                  1
-#define GL_NV_fence                                               1
-#define GL_NV_packed_depth_stencil                1
+#define GL_NV_fence                       1
+#define GL_NV_multisample_filter_hint     1
+#define GL_NV_packed_depth_stencil        1
 #define GL_NV_register_combiners2         1
+#define GL_NV_texture_compression_vtc     1
 #define GL_NV_texture_rectangle           1
 #define GL_NV_texture_shader              1
+#define GL_NV_texture_shader2             1
 #define GL_NV_vertex_program              1
 
 /* ARB_texture_border_clamp */
 #define GL_CLAMP_TO_BORDER_ARB            0x812D
+
+/* ARB_texture_env_combine */
+#define GL_COMBINE_ARB                    0x8570
+#define GL_COMBINE_RGB_ARB                0x8571
+#define GL_COMBINE_ALPHA_ARB              0x8572
+#define GL_RGB_SCALE_ARB                  0x8573
+#define GL_ADD_SIGNED_ARB                 0x8574
+#define GL_INTERPOLATE_ARB                0x8575
+#define GL_CONSTANT_ARB                   0x8576
+#define GL_PRIMARY_COLOR_ARB              0x8577
+#define GL_PREVIOUS_ARB                   0x8578
+#define GL_SOURCE0_RGB_ARB                0x8580
+#define GL_SOURCE1_RGB_ARB                0x8581
+#define GL_SOURCE2_RGB_ARB                0x8582
+#define GL_SOURCE0_ALPHA_ARB              0x8588
+#define GL_SOURCE1_ALPHA_ARB              0x8589
+#define GL_SOURCE2_ALPHA_ARB              0x858A
+#define GL_OPERAND0_RGB_ARB               0x8590
+#define GL_OPERAND1_RGB_ARB               0x8591
+#define GL_OPERAND2_RGB_ARB               0x8592
+#define GL_OPERAND0_ALPHA_ARB             0x8598
+#define GL_OPERAND1_ALPHA_ARB             0x8599
+#define GL_OPERAND2_ALPHA_ARB             0x859A
+#define GL_SUBTRACT_ARB                   0x84E7
+
+/* ARB_texture_env_dot3 */
+#define GL_DOT3_RGB_ARB                   0x86AE
+#define GL_DOT3_RGBA_ARB                  0x86AF
+
+/* EXT_texture_env_dot3 */
+#define GL_DOT3_RGB_EXT                   0x8740
+#define GL_DOT3_RGBA_EXT                  0x8741
+
+/* IBM_texture_mirrored_repeat */
+#define GL_MIRRORED_REPEAT_IBM            0x8370
 
 /* NV_vertex_program */
 #define GL_VERTEX_PROGRAM_NV              0x8620
@@ -3140,6 +3182,9 @@ typedef void (APIENTRY * PFNGLTEXTURECOLORMASKSGISPROC) (GLboolean red, GLboolea
 #define GL_TEXTURE_DT_SIZE_NV             0x871E
 #define GL_TEXTURE_MAG_SIZE_NV            0x871F
 
+/* NV_texture_shader2 */
+#define GL_DOT_PRODUCT_TEXTURE_3D_NV      0x86EF
+
 /* NV_register_combiners2 */
 #define GL_PER_STAGE_CONSTANTS_NV         0x8535
 
@@ -3147,6 +3192,10 @@ typedef void (APIENTRY * PFNGLTEXTURECOLORMASKSGISPROC) (GLboolean red, GLboolea
 #define GL_DEPTH_STENCIL_NV               0x84F9
 #define GL_UNSIGNED_INT_24_8_NV           0x84FA
 
+/* NV_multisample_filter_hint */
+#define GL_MULTISAMPLE_FILTER_HINT_NV     0x8534
+
+/* NV_texture_compression_vtc */
 
 /* NV_vertex_program */
 typedef GLboolean (APIENTRY * PFNGLAREPROGRAMSRESIDENTNVPROC) (GLsizei n, const GLuint *programs, GLboolean *residences);
