@@ -457,7 +457,7 @@ def usage(problem):
     print "  --compiler X      (currently, compiler can only be MSVC7,LINUXA)"
     print "  --optimize X      (optimization level can be 1,2,3,4)"
     print "  --thirdparty X    (directory containing third-party software)"
-    print "  --complete        (copy models, samples, direct into the build)"
+    print "  --complete        (copy samples and direct into the build)"
     print "  --installer       (build an executable installer)"
     print "  --v1 X            (set the major version number)"
     print "  --v2 X            (set the minor version number)"
@@ -5926,6 +5926,63 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 
 ##########################################################################################
 #
+# Copy Sounds, Icons, and Models into the build.
+#
+##########################################################################################
+
+MakeDirectory(PREFIX+"/audio")
+MakeDirectory(PREFIX+"/audio/sfx")
+
+CopyFile(PREFIX+"/audio/sfx/GUI_rollover.wav",       "dmodels/src/audio/sfx/GUI_rollover.wav")
+CopyFile(PREFIX+"/audio/sfx/GUI_click.wav",          "dmodels/src/audio/sfx/GUI_click.wav")
+
+MakeDirectory(PREFIX+"/icons")
+
+CopyFile(PREFIX+"/icons/folder.gif",     "dmodels/src/icons/folder.gif")
+CopyFile(PREFIX+"/icons/minusnode.gif",  "dmodels/src/icons/minusnode.gif")
+CopyFile(PREFIX+"/icons/openfolder.gif", "dmodels/src/icons/openfolder.gif")
+CopyFile(PREFIX+"/icons/plusnode.gif",   "dmodels/src/icons/plusnode.gif")
+CopyFile(PREFIX+"/icons/python.gif",     "dmodels/src/icons/python.gif")
+CopyFile(PREFIX+"/icons/Sources.pp",     "dmodels/src/icons/Sources.pp")
+CopyFile(PREFIX+"/icons/sphere2.gif",    "dmodels/src/icons/sphere2.gif")
+CopyFile(PREFIX+"/icons/tk.gif",         "dmodels/src/icons/tk.gif")
+CopyFile(PREFIX+"/icons/actor.gif",      "dmodels/src/icons/actor.gif")
+CopyFile(PREFIX+"/icons/blank.gif",      "dmodels/src/icons/blank.gif")
+CopyFile(PREFIX+"/icons/control.gif",    "dmodels/src/icons/control.gif")
+CopyFile(PREFIX+"/icons/grid.gif",       "dmodels/src/icons/grid.gif")
+CopyFile(PREFIX+"/icons/help.gif",       "dmodels/src/icons/help.gif")
+CopyFile(PREFIX+"/icons/lights.gif",     "dmodels/src/icons/lights.gif")
+CopyFile(PREFIX+"/icons/model.gif",      "dmodels/src/icons/model.gif")
+CopyFile(PREFIX+"/icons/mopath.gif",     "dmodels/src/icons/mopath.gif")
+CopyFile(PREFIX+"/icons/new.gif",        "dmodels/src/icons/new.gif")
+CopyFile(PREFIX+"/icons/open.gif",       "dmodels/src/icons/open.gif")
+CopyFile(PREFIX+"/icons/particles.gif",  "dmodels/src/icons/particles.gif")
+CopyFile(PREFIX+"/icons/placer.gif",     "dmodels/src/icons/placer.gif")
+CopyFile(PREFIX+"/icons/save.gif",       "dmodels/src/icons/save.gif")
+CopyFile(PREFIX+"/icons/smoke.gif",      "dmodels/src/icons/smoke.gif")
+
+MakeDirectory(PREFIX+"/models")
+MakeDirectory(PREFIX+"/models/misc")
+MakeDirectory(PREFIX+"/models/gui")
+
+CompileBAM(PREFIX+"/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
+CompileBAM(PREFIX+"/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
+CompileBAM(PREFIX+"/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
+CompileBAM(PREFIX+"/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")
+CompileBAM(PREFIX+"/models/misc/gridBack.bam",       "dmodels/src/misc/gridBack.flt")
+CompileBAM(PREFIX+"/models/misc/iris.bam",           "dmodels/src/misc/iris.flt")
+CompileBAM(PREFIX+"/models/misc/lilsmiley.bam",      "dmodels/src/misc/lilsmiley.egg")
+CompileBAM(PREFIX+"/models/misc/objectHandles.bam",  "dmodels/src/misc/objectHandles.flt")
+CompileBAM(PREFIX+"/models/misc/rgbCube.bam",        "dmodels/src/misc/rgbCube.flt")
+CompileBAM(PREFIX+"/models/misc/smiley.bam",         "dmodels/src/misc/smiley.egg")
+CompileBAM(PREFIX+"/models/misc/sphere.bam",         "dmodels/src/misc/sphere.flt")
+CompileBAM(PREFIX+"/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
+CompileBAM(PREFIX+"/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
+CompileBAM(PREFIX+"/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
+CompileBAM(PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
+
+##########################################################################################
+#
 # Run genpycode
 #
 ##########################################################################################
@@ -5954,7 +6011,7 @@ if (icache!=0):
 #
 # 'Complete' mode.
 #
-# Copies the samples, models, and direct into the build. Note that
+# Copies the samples and direct into the build. Note that
 # this isn't usually what you want.  It is usually better to let the
 # compiled panda load this stuff directly from the source tree.
 # The only time you really want to do this is if you plan to move
@@ -5967,7 +6024,6 @@ if (COMPLETE):
     CopyFile(PREFIX+'/', 'LICENSE')
     CopyFile(PREFIX+'/', 'README')
     CopyTree(PREFIX+'/samples', 'samples')
-    CopyTree(PREFIX+'/models', 'models')
     CopyTree(PREFIX+'/direct/src', 'direct/src')
     CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
 
