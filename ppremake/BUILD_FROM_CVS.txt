@@ -1,0 +1,52 @@
+To build ppremake on Unix (or Windows Cygwin) using autoconf, follow
+the following steps. 
+
+Note that if you are building on Windows, you do not need to use
+Cygwin (a VC7 project file is provided), but you must use Cygwin to
+build ppremake if you want to build a version of ppremake that can
+correctly decode Cygwin-style pathnames into Windows-style pathnames.
+
+(1) If the file "configure" exists, skip to step (4), below.  This is
+    the normal case; you have unpacked a tarball that includes the
+    normal autoconf files already generated for you.  You can now
+    successfully build the tree without having autoconf installed on
+    your own machine.
+
+    Otherwise, you must have checked this tree directly out from CVS.
+    Since the autoconf-generated files are not part of the source
+    tree, you must now generate them.
+
+  (2) Install autoconf and/or automake, if they are not already
+      installed.  If you are building on a Linux machine, you probably
+      already have these installed.  If you are running on Cygwin, you
+      may need to explicitly check the "autoconf" install option in
+      order to install these scripts.
+
+  (3) Run the following commands within the ppremake directory:
+
+      aclocal
+      autoheader
+      automake --foreign -a
+      autoconf
+ 
+(4) Now you have a tree that has been processed with autoconf, and you
+    are ready to run the resulting configure script.  Type the
+    following command within the ppremake directory:
+
+    ./configure
+
+    This will examine the machine's environment for header files,
+    etc., and set up the Makefile to build ppremake appropriately.
+    The default path to copy the installed binary is within
+    /usr/local/panda; if you wish to install it somewhere else, for
+    instance /my/install/dir, use:
+
+    ./configure --prefix=/my/install/dir
+
+    Note that this is a Cygwin-style path, with forward slashes and no
+    drive letter; not a Windows-style path.
+
+(5) Type the following to build and install ppremake:
+
+    make
+    make install
