@@ -281,7 +281,7 @@ void take_snapshot(GraphicsWindow *win, const string &name) {
 		PixelBuffer::F_rgb);
 
   p.copy(gsg, dr, rb);
-  p.write(name.c_str());
+  p.write(name);
 }
 
 // Returns the configure object for accessing config variables from a
