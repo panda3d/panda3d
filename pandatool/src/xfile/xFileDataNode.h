@@ -22,21 +22,32 @@
 #include "pandatoolbase.h"
 #include "xFileNode.h"
 #include "xFileDataObject.h"
+#include "xFileTemplate.h"
 #include "pointerTo.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileDataNode
-// Description : This is an XFileNode which is also an
-//               XFileDataObject.  Specifically, this is the base
-//               class of XFileDataNodeTemplate and
-//               XFileDataNodeReference, both of which have a similar
-//               interface--they can both appear as the child of a
-//               XFileNode, and they both contain additional nodes and
-//               data objects.
+// Description : This is an abstract base class for an XFileNode which
+//               is also an XFileDataObject.  That is to say, objects
+//               that inherit from this class may be added to the
+//               toplevel X file graph as nodes, and they also may be
+//               containers for data elements.
+//
+//               Specifically, this is the base class of both
+//               XFileDataNodeTemplate and XFileDataNodeReference.
 ////////////////////////////////////////////////////////////////////
 class XFileDataNode : public XFileNode, public XFileDataObject {
 public:
-  XFileDataNode(XFile *x_file, const string &name);
+  XFileDataNode(XFile *x_file, const string &name,
+                XFileTemplate *xtemplate);
+
+  INLINE const XFileDataNode &get_data_child(int n) const;
+
+  INLINE XFileTemplate *get_template() const;
+
+protected:
+  PT(XFileTemplate) _template;
 
 public:
   static TypeHandle get_class_type() {

@@ -88,6 +88,10 @@ private:
                         const PrevData &prev_data,
                         size_t &index, size_t &sub_index) const;
   PT(XFileDataObject) 
+    unpack_string_value(const XFileParseDataList &parse_data_list,
+                        const PrevData &prev_data,
+                        size_t &index, size_t &sub_index) const;
+  PT(XFileDataObject) 
     unpack_template_value(const XFileParseDataList &parse_data_list,
                           const PrevData &prev_data,
                           size_t &index, size_t &sub_index) const;

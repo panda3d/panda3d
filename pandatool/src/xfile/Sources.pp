@@ -23,6 +23,7 @@
      xFileDataObjectArray.cxx xFileDataObjectArray.I xFileDataObjectArray.h \
      xFileDataObjectDouble.cxx xFileDataObjectDouble.I xFileDataObjectDouble.h \
      xFileDataObjectInteger.cxx xFileDataObjectInteger.I xFileDataObjectInteger.h \
+     xFileDataObjectString.cxx xFileDataObjectString.I xFileDataObjectString.h \
      xFileDataNode.cxx xFileDataNode.I xFileDataNode.h \
      xFileDataNodeReference.cxx xFileDataNodeReference.I xFileDataNodeReference.h \
      xFileDataNodeTemplate.cxx xFileDataNodeTemplate.I xFileDataNodeTemplate.h \

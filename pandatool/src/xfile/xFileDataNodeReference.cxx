@@ -28,7 +28,8 @@ TypeHandle XFileDataNodeReference::_type_handle;
 ////////////////////////////////////////////////////////////////////
 XFileDataNodeReference::
 XFileDataNodeReference(XFileDataNodeTemplate *object) :
-  XFileDataNode(object->get_x_file(), object->get_name()),
+  XFileDataNode(object->get_x_file(), object->get_name(),
+                object->get_template()),
   _object(object)
 {
 }

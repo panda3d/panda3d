@@ -18,16 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeReference::get_template
-//       Access: Public
-//  Description: Returns the template used to define this data object.
-////////////////////////////////////////////////////////////////////
-INLINE XFileTemplate *XFileDataNodeReference::
-get_template() const {
-  return _object->get_template();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: XFileDataNodeReference::get_object
 //       Access: Public
 //  Description: Returns the actual data object being referenced.

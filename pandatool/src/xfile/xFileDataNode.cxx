@@ -27,7 +27,9 @@ TypeHandle XFileDataNode::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFileDataNode::
-XFileDataNode(XFile *x_file, const string &name) :
-  XFileNode(x_file, name)
+XFileDataNode(XFile *x_file, const string &name,
+              XFileTemplate *xtemplate) :
+  XFileNode(x_file, name),
+  _template(xtemplate)
 {
 }

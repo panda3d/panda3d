@@ -60,9 +60,10 @@ write_data(ostream &out, int indent_level, const char *separator) const {
     bool indented = false;
     for (size_t i = 0; i < _nested_elements.size() - 1; i++) {
       XFileDataObject *object = _nested_elements[i];
-      if (object->is_complex_object()) {
-        // If we have a "complex" nested object, output it on its own
-        // line.
+      if (object->is_complex_object() ||
+          _nested_elements.size() > 16) {
+        // If we have a "complex" nested object, or more than 16
+        // elements in the array, output it on its own line.
         if (indented) {
           out << "\n";
           indented = false;

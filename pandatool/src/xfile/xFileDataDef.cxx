@@ -22,8 +22,10 @@
 #include "xFileParseData.h"
 #include "xFileDataObjectInteger.h"
 #include "xFileDataObjectDouble.h"
+#include "xFileDataObjectString.h"
 #include "xFileDataNodeTemplate.h"
 #include "xFileDataObjectArray.h"
+#include "string_utils.h"
 
 TypeHandle XFileDataDef::_type_handle;
 
@@ -182,28 +184,25 @@ repack_data(XFileDataObject *object,
                               &XFileDataDef::unpack_double_value);
     break;
 
+  case T_string:
+  case T_cstring:
+  case T_unicode:
+    data_value = unpack_value(parse_data_list, 0,
+                              prev_data, index, sub_index,
+                              &XFileDataDef::unpack_string_value);
+    break;
+
   case T_template:
     data_value = unpack_value(parse_data_list, 0,
                               prev_data, index, sub_index,
                               &XFileDataDef::unpack_template_value);
     break;
-
-  default:
-    {
-      const XFileParseData &parse_data = parse_data_list._list[index];
-      parse_data.yyerror("Unexpected data for " + get_name());
-    }
-    return false;
   }
 
   if (data_value != (XFileDataObject *)NULL) {
-    if (!object->add_element(data_value)) {
-      // This is really an internal error--this shouldn't happen.
-      const XFileParseData &parse_data = parse_data_list._list[index];
-      parse_data.yyerror("Data does not accept a nested element.");
-    }
+    object->add_element(data_value);
+    prev_data[this] = data_value;
   }
-  prev_data[this] = data_value;
 
   return XFileNode::repack_data(object, parse_data_list, 
                                 prev_data, index, sub_index);
@@ -220,6 +219,7 @@ PT(XFileDataObject) XFileDataDef::
 unpack_integer_value(const XFileParseDataList &parse_data_list,
                      const XFileDataDef::PrevData &prev_data,
                      size_t &index, size_t &sub_index) const {
+  nassertr(index < parse_data_list._list.size(), NULL);
   const XFileParseData &parse_data = parse_data_list._list[index];
 
   PT(XFileDataObject) data_value;
@@ -252,6 +252,7 @@ PT(XFileDataObject) XFileDataDef::
 unpack_double_value(const XFileParseDataList &parse_data_list,
                     const XFileDataDef::PrevData &prev_data,
                     size_t &index, size_t &sub_index) const {
+  nassertr(index < parse_data_list._list.size(), NULL);
   const XFileParseData &parse_data = parse_data_list._list[index];
 
   PT(XFileDataObject) data_value;
@@ -280,6 +281,33 @@ unpack_double_value(const XFileParseDataList &parse_data_list,
 
   } else {
     parse_data.yyerror("Expected floating-point data for " + get_name());
+  }
+
+  return data_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::unpack_string_value
+//       Access: Private
+//  Description: Unpacks and returns the next sequential string value
+//               from the parse_data_list.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+unpack_string_value(const XFileParseDataList &parse_data_list,
+                    const XFileDataDef::PrevData &prev_data,
+                    size_t &index, size_t &sub_index) const {
+  nassertr(index < parse_data_list._list.size(), NULL);
+  const XFileParseData &parse_data = parse_data_list._list[index];
+
+  PT(XFileDataObject) data_value;
+
+  if ((parse_data._parse_flags & XFileParseData::PF_string) != 0) {
+    data_value = new XFileDataObjectString(this, parse_data._string);
+    index++;
+    sub_index = 0;
+
+  } else {
+    parse_data.yyerror("Expected string data for " + get_name());
   }
 
   return data_value;
@@ -330,6 +358,12 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
     int array_size = _array_def[array_index].get_size(prev_data);
 
     for (int i = 0; i < array_size; i++) {
+      if (index >= parse_data_list._list.size()) {
+        xyyerror(string("Expected ") + format_string(array_size)
+                 + " array elements, found " + format_string(i));
+        return data_value;
+      }
+
       PT(XFileDataObject) array_element = 
         unpack_value(parse_data_list, array_index + 1,
                      prev_data, index, sub_index,

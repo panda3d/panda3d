@@ -1,5 +1,5 @@
-// Filename: xFileDataNodeTemplate.I
-// Created by:  drose (03Oct04)
+// Filename: xFileDataObjectString.I
+// Created by:  drose (08Oct04)
 //
 ////////////////////////////////////////////////////////////////////
 //

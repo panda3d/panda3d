@@ -37,7 +37,7 @@ get_size(const XFileNode::PrevData &prev_data) const {
   } else {
     XFileNode::PrevData::const_iterator pi;
     pi = prev_data.find(_dynamic_size);
-    nassertr(pi != prev_data.end(), 0);
+    nassertr_always(pi != prev_data.end(), 0);
     nassertr((*pi).second != (XFileDataObject *)NULL, 0);
     return (*pi).second->i();
   }

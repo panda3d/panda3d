@@ -30,9 +30,8 @@ TypeHandle XFileDataNodeTemplate::_type_handle;
 ////////////////////////////////////////////////////////////////////
 XFileDataNodeTemplate::
 XFileDataNodeTemplate(XFile *x_file, const string &name,
-                        XFileTemplate *xtemplate) :
-  XFileDataNode(x_file, name),
-  _template(xtemplate)
+                      XFileTemplate *xtemplate) :
+  XFileDataNode(x_file, name, xtemplate)
 {
 }
 

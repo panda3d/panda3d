@@ -29,18 +29,16 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileDataNodeTemplate
-// Description : A data element that represents a combination of
-//               multiple data elements as defined by a template.  The
-//               individual data elements of the template may be
-//               obtained by walking through the children of this
-//               object.
+// Description : This is a node which contains all of the data
+//               elements defined by a template.  See XFileTemplate
+//               for the definition of the template; this class only
+//               contains the data members for a particular instance
+//               of a template.
 ////////////////////////////////////////////////////////////////////
 class XFileDataNodeTemplate : public XFileDataNode {
 public:
   XFileDataNodeTemplate(XFile *x_file, const string &name,
-                          XFileTemplate *xtemplate);
-
-  INLINE XFileTemplate *get_template() const;
+                        XFileTemplate *xtemplate);
 
   virtual bool is_complex_object() const;
 
@@ -61,8 +59,6 @@ protected:
   virtual const XFileDataObject *get_element(const string &name) const;
 
 private:
-  PT(XFileTemplate) _template;
-
   XFileParseDataList _parse_data_list;
   
   typedef pvector< PT(XFileDataObject) > NestedElements;

@@ -1,4 +1,4 @@
-// Filename: xFileDataNodeReference.h
+// Filename: xFileDataObjectString.h
 // Created by:  drose (08Oct04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,49 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILEDATANODEREFERENCE_H
-#define XFILEDATANODEREFERENCE_H
+#ifndef XFILEDATAOBJECTSTRING_H
+#define XFILEDATAOBJECTSTRING_H
 
 #include "pandatoolbase.h"
-#include "xFileDataNodeTemplate.h"
-#include "pointerTo.h"
+#include "xFileDataObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileDataNodeReference
-// Description : This is a nested reference to an instance of a
-//               template object, declared via the syntax:
-//
-//                 { InstanceName }
-//
-//               in the X File.
+//       Class : XFileDataObjectString
+// Description : An string-valued data element.  This matches one
+//               string data member of a template, or a single
+//               element of an string array.
 ////////////////////////////////////////////////////////////////////
-class XFileDataNodeReference : public XFileDataNode {
+class XFileDataObjectString : public XFileDataObject {
 public:
-  XFileDataNodeReference(XFileDataNodeTemplate *object);
+  XFileDataObjectString(const XFileDataDef *data_def, const string &value);
 
-  INLINE XFileTemplate *get_template() const;
-  INLINE XFileDataNodeTemplate *get_object() const;
-
-  virtual bool is_complex_object() const;
-
-  virtual void write_text(ostream &out, int indent_level) const;
+  virtual void output_data(ostream &out) const;
+  virtual void write_data(ostream &out, int indent_level,
+                          const char *separator) const;
 
 protected:
-  virtual int get_num_elements() const;
-  virtual const XFileDataObject *get_element(int n) const;
-  virtual const XFileDataObject *get_element(const string &name) const;
+  virtual string as_string_value() const;
 
 private:
-  PT(XFileDataNodeTemplate) _object;
+  void enquote_string(ostream &out) const;
 
+  string _value;
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    XFileDataNode::init_type();
-    register_type(_type_handle, "XFileDataNodeReference",
-                  XFileDataNode::get_class_type());
+    XFileDataObject::init_type();
+    register_type(_type_handle, "XFileDataObjectString",
+                  XFileDataObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -69,10 +62,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "xFileDataNodeReference.I"
+#include "xFileDataObjectString.I"
 
 #endif
-  
-
-
-
