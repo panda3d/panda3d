@@ -95,7 +95,7 @@ set_encryption_flag(bool flag) {
 #ifndef HAVE_SSL
   if (flag) {
     express_cat.warning()
-      << "OpenSSL not compiled in; cannot generated compressed multifiles.\n";
+      << "OpenSSL not compiled in; cannot generated encrypted multifiles.\n";
     flag = false;
   }
 #endif  // HAVE_SSL
