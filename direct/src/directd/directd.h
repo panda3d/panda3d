@@ -64,20 +64,35 @@ PUBLISHED:
   // Description: Call connect_to from client for each server.
   void connect_to(const string& server_host, int port);
   
+  // Description: 
+  void disconnect_from(const string& server_host, int port);
+  
   // Description: Call listen_to in the server.
   //              port is a rendezvous port.
-  void listen_to(int port);
+  //              
+  //              backlog refers to how many connections can queue up
+  //              before you handle them.  Consider setting backlog to
+  //              the count you send to wait_for_servers(); or higher.
+  void listen_to(int port, int backlog=8);
   
-  // Description: 
-  ////void disconnect() {
-  
-  // process command string.
+  // Description: process command string.
   void send_command(const string& cmd);
 
-  // Description: This function is overly named, but that's what it does.
-  //              Call this function from the server when import ShowbaseGlobal is
-  //              nearly finished.
-  int tell_client_the_server_is_ready(const string& client_host, int port);
+  // Description: Call this function from the client when
+  //              import ShowbaseGlobal is nearly finished.
+  int client_is_ready(const string& client_host, int port);
+
+  // Description: Call this function from the client after
+  //              calling <count> client_is_ready() calls.
+  //              
+  //              Call listen_to(port) prior to calling
+  //              wait_for_servers() (or better yet, prior
+  //              to calling client_is_ready()).
+  bool wait_for_servers(int count, int timeout_ms);
+
+  // Description: Call this function from the server when
+  //              import ShowbaseGlobal is nearly finished.
+  int server_is_ready(const string& client_host, int port);
 
 public:
   void set_host_name(const string& host_name);
@@ -107,10 +122,6 @@ protected:
   string _host_name;
   int _port;
   intptr_t _app_pid;
-  #if 0 //[
-  typedef pvector<pair<const string*, int> > ServerList;
-  ServerList _servers;
-  #endif //]
   typedef pset< PT(Connection) > ConnectionSet;
   ConnectionSet _connections;
 

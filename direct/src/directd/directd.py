@@ -10,13 +10,13 @@ import DatagramIterator
 print "hello"
 
 
-class DirectDServer:
+class DirectD:
     notify = DirectNotifyGlobal.directNotify.newCategory("DirectD")
 
     def __init__(self):
         pass
 
-    def connect(self, ip, port, timeout=35000):
+    def connect(self, ip, port, timeout=5000):
         self.qcm=QueuedConnectionManager()
         self.tcpConn=self.qcm.openTCPClientConnection(ip, port, timeout)
         
@@ -29,7 +29,7 @@ class DirectDServer:
             self.qcr=QueuedConnectionReader(self.qcm, 0)
             self.qcr.addConnection(self.tcpConn)
             self.cw=ConnectionWriter(self.qcm, 0)
-            while 1:
+            while 0:
                 s=raw_input("send: ")
                 d=Datagram.Datagram()
                 d.addString(s)
@@ -45,5 +45,6 @@ class DirectDServer:
             #self.registerForChannel(self.ourChannel)
 
 def foo():
-    dds = DirectDServer()
-    dds.connect("127.0.0.1", 8000)
+    dd = DirectD()
+    dd.connect("127.0.0.1", 8001)
+    dd.connect("127.0.0.1", 8002)

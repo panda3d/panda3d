@@ -144,6 +144,7 @@ DirectD::~DirectD() {
     _cm.close_connection((*ci));
   }
   _connections.clear();
+  cerr<<"DirectD dtor"<<endl;
 }
 
 
@@ -169,39 +170,61 @@ DirectDClient::handle_command(const string& cmd) {
   }
 }
 
-
-#if 0 //[
-void 
-DirectD::add_server(const string& server_host, int port) {
-  string* s = new String(server_host);
-  _servers.push_back(pair<const string*, int>(&s, port));
-}
-
-// Description: free memory and earse all elements from _servers.
-void
-DirectD::clear_server_list() {
-  ServerList::const_iterator i = _servers.begin();
-  for (; i!=_servers.end(); ++i) {
-    string* name=(*i).first;
-    delete name;
-  }
-  _servers.clear();
-}
-
 int 
-DirectD::connect() {
-  ServerList::const_iterator i = _servers;
-  for (; i!=_servers.end(); ++i) {
-    string* name=(*i).first;
-    int port=(*i).second;
-    cerr<<"connecting to "<<name<<" "<<port<<endl;
-  }
+DirectD::client_is_ready(const string& client_host, int port) {
+  connect_to(client_host, port);
+  send_command("s");
+  disconnect_from(client_host, port);
   return 0;
 }
-#endif //]
+
+bool
+DirectD::wait_for_servers(int count, int timeout_ms) {
+  if (count <= 0) {
+    return true;
+  }
+  // The timeout is a rough estimate, we may wait slightly longer.
+  const wait_ms=200;
+  int cycles=timeout_ms/wait_ms;
+  while (cycles--) {
+    check_for_new_clients();
+    check_for_lost_connection();
+    /*
+        The following can be more generalized with a little work.
+        check_for_datagrams() could take a handler function as an arugment, maybe.
+    */
+    ////check_for_datagrams();
+    // Process all available datagrams.
+    while (_reader.data_available()) {
+      NetDatagram datagram;
+      if (_reader.get_data(datagram)) {
+        if (_verbose) {
+          nout << "Got datagram " /*<< datagram <<*/ "from "
+               << datagram.get_address() << endl;
+          datagram.dump_hex(nout);
+        }
+        //handle_datagram(datagram);
+        DatagramIterator di(datagram);
+        string s=di.get_string();
+        if (s=="r" && --count) {
+          return true;
+        }
+      }
+    }
+
+    // Yield the timeslice before we poll again.
+    PR_Sleep(PR_MillisecondsToInterval(wait_ms));
+  }
+  // We've waited long enough, assume they're not going to be
+  // ready in the time we want them:
+  return false;
+}
 
 int 
-DirectD::tell_client_the_server_is_ready(const string& client_host, int port) {
+DirectD::server_is_ready(const string& client_host, int port) {
+  connect_to(client_host, port);
+  send_command("r");
+  disconnect_from(client_host, port);
   return 0;
 }
 
@@ -351,6 +374,19 @@ DirectD::connect_to(const string& host_name, int port) {
 }
 
 void
+DirectD::disconnect_from(const string& host_name, int port) {
+  for (ConnectionSet::iterator i=_connections.begin(); i != _connections.end(); ++i) {
+    if ((*i)->get_address().get_ip_string()==host_name 
+        && (*i)->get_address().get_port()==port) {
+      _cm.close_connection((*i));
+      _reader.remove_connection((*i));
+      _connections.erase(i);
+      break;
+    }
+  }
+}
+
+void
 DirectD::check_for_lost_connection() {
   while (_cm.reset_connection_available()) {
     PT(Connection) c;
@@ -386,8 +422,7 @@ DirectD::spawn_background_server() {
 }
 
 void
-DirectD::listen_to(int port) {
-  const backlog=8;
+DirectD::listen_to(int port, int backlog) {
   PT(Connection) rendezvous = _cm.open_TCP_server_rendezvous(_port, backlog);
   if (rendezvous.is_null()) {
     nout << "Cannot grab port " << _port << ".\n";
