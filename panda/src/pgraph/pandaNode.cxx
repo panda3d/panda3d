@@ -1026,8 +1026,15 @@ stash_child(int child_index) {
   nassertv(child_index >= 0 && child_index < get_num_children());
   PT(PandaNode) child_node = get_child(child_index);
   int sort = get_child_sort(child_index);
+
+  cerr << "  a: " << this << ":" << get_ref_count() << ", " << child_node
+       << "  " << *this << " stashes " << *child_node << "\n";
+
+  PT(PandaNode) self = this;
   
   remove_child(child_index);
+
+  cerr << "  b\n";
   
   CDWriter cdata(_cycler);
   CDWriter cdata_child(child_node->_cycler);
@@ -1042,7 +1049,7 @@ stash_child(int child_index) {
 
   // Call callback hooks.
   children_changed();
-  child_node->parents_changed();
+  cerr << "stash done.\n";
 }
 
 ////////////////////////////////////////////////////////////////////

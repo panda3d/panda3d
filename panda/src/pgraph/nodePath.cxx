@@ -1098,7 +1098,7 @@ get_hpr(const NodePath &other, float roll) const {
   // function is deprecated anyway.
   LMatrix4f mat = get_mat(other);
   LVector3f scale, hpr, pos;
-  decompose_matrix(mat, scale, hpr, pos, roll);
+  decompose_matrix(mat, scale, hpr, pos, roll, CS_default);
   return hpr;
 }
 
