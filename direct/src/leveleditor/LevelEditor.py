@@ -416,8 +416,6 @@ class LevelEditor(NodePath, PandaObject):
         self.pointDict = {}
         self.point2edgeDict = {}
         self.cellDict = {}
-        self.visitedPoints = []
-        self.visitedEdges = []
         
         # Initialize LevelEditor variables DNAData, DNAToplevel, NPToplevel
         # DNAParent, NPParent, groupNum, lastAngle
@@ -617,6 +615,9 @@ class LevelEditor(NodePath, PandaObject):
         self.snapList = []
         # Last menu used
         self.activeMenu = None
+        # For highlighting suit paths
+        self.visitedPoints = []
+        self.visitedEdges = []
         # Update scene graph explorer
         if fUpdateExplorer:
             self.panel.sceneGraphExplorer.update()
@@ -774,17 +775,34 @@ class LevelEditor(NodePath, PandaObject):
                     print 'Suit Point:', pointOrCell
                     if DNASTORE.removeSuitPoint(pointOrCell):
                         print "Removed from DNASTORE"
-                        del(self.pointDict[pointOrCell])
-                        # Update edge dict
-                        for edge in self.point2edgeDict[pointOrCell]:
-                            # Is it still in edge dict?
-                            oldEdgeLine = self.edgeDict.get(edge, None)
-                            if oldEdgeLine:
-                                del self.edgeDict[edge]
-                                oldEdgeLine.reset()
-                                del oldEdgeLine
                     else:
                         print "Not found in DNASTORE"
+                    # Remove point from pointDict
+                    del(self.pointDict[pointOrCell])
+                    # Remove point from visitedPoints list
+                    if pointOrCell in self.visitedPoints:
+                        self.visitedPoints.remove(pointOrCell)
+                    # Update edge related dictionaries
+                    for edge in self.point2edgeDict[pointOrCell]:
+                        # Is it still in edge dict?
+                        oldEdgeLine = self.edgeDict.get(edge, None)
+                        if oldEdgeLine:
+                            del self.edgeDict[edge]
+                            oldEdgeLine.reset()
+                            del oldEdgeLine
+                        # Find other endpoints of edge and clear out
+                        # corresponding point2edgeDict entry
+                        startPoint = edge.getStartPoint()
+                        endPoint = edge.getEndPoint()
+                        if pointOrCell == startPoint:
+                            self.point2edgeDict[endPoint].remove(edge)
+                        elif pointOrCell == endPoint:
+                            self.point2edgeDict[startPoint].remove(edge)
+                        # Is it in the visited edges list?
+                        if edge in self.visitedEdges:
+                            self.visitedEdges.remove(edge)
+                    # Now delete point2edgeDict entry for this point
+                    del(self.point2edgeDict[pointOrCell])
                 elif (type == 'battleCellMarker'):
                     # Get parent vis group
                     visGroupNP, visGroupDNA = self.findParentVisGroup(nodePath)
@@ -894,13 +912,15 @@ class LevelEditor(NodePath, PandaObject):
                         print "Found suit point!", pointOrCell
                         # Ok, now update all the lines into that node
                         for edge in self.point2edgeDict[pointOrCell]:
-                            oldEdgeLine = self.edgeDict[edge]
-                            del self.edgeDict[edge]
-                            oldEdgeLine.reset()
-                            del oldEdgeLine
-                            newEdgeLine = self.drawSuitEdge(
-                                edge, self.NPParent)
-                            self.edgeDict[edge] = newEdgeLine
+                            # Is it still in edge dict?
+                            oldEdgeLine = self.edgeDict.get(edge, None)
+                            if oldEdgeLine:
+                                del self.edgeDict[edge]
+                                oldEdgeLine.reset()
+                                del oldEdgeLine
+                                newEdgeLine = self.drawSuitEdge(
+                                    edge, self.NPParent)
+                                self.edgeDict[edge] = newEdgeLine
                     elif (type == 'battleCellMarker'):
                         print "Found battle cell!", pointOrCell
 

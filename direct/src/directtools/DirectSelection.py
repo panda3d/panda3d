@@ -1,9 +1,10 @@
 from PandaObject import *
 from DirectGeometry import *
 from DirectSelection import *
+import __builtin__
 
 UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
-              'GridBack']
+              'gridBack']
 
 # MRM: To do: handle broken node paths in selected and deselected dicts
 class DirectNodePath(NodePath):
@@ -55,7 +56,7 @@ class SelectedNodePaths(PandaObject):
     def reset(self):
         self.selectedDict = {}
         self.deselectedDict = {}
-        self.last = None
+        __builtin__.last = self.last = None
 
     def select(self, nodePath, fMultiSelect = 0):
         """ Select the specified node path.  Multiselect as required """
@@ -89,7 +90,7 @@ class SelectedNodePaths(PandaObject):
             # Add it to the selected dictionary
             self.selectedDict[dnp.id()] = dnp
         # And update last
-        self.last = dnp
+        __builtin__.last = self.last = dnp
         return dnp
 
     def deselect(self, nodePath):
@@ -210,7 +211,7 @@ class SelectedNodePaths(PandaObject):
 	selected = self.last
         if selected:
             selected.remove()
-        self.last = None
+        __builtin__.last = self.last = None
         
     def removeAll(self):
 	# Remove all selected nodePaths from the Scene Graph

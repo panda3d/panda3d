@@ -98,6 +98,12 @@ class Messenger:
         # If we looked in both dictionaries and made it here
         # that object must not be accepting that event.
         return 0
+
+    def whoAccepts(self, event):
+        """ whoAccepts(self, event):
+        Return objects accepting the given event
+        """
+        return self.dict.get(event, None)
         
     def isIgnoring(self, event, object):
         """ isIgnorning(self, string, DirectObject)

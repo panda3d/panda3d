@@ -49,11 +49,19 @@ class DirectSession(PandaObject):
         self.ancestryIndex = 0
         self.activeParent = None
 
-        self.readout = OnscreenText.OnscreenText( pos = (0.1, -0.95), bg=Vec4(1,1,1,1))
+        self.selectedNPReadout = OnscreenText.OnscreenText(
+            pos = (-1.0, -0.9), bg=Vec4(1,1,1,1),
+            scale = 0.05, align = TMALIGNLEFT)
         # Make sure readout is never lit or drawn in wireframe
-        useDirectRenderStyle(self.readout)
-        # self.readout.textNode.setCardColor(0.5, 0.5, 0.5, 0.5)
-        self.readout.reparentTo( hidden )
+        useDirectRenderStyle(self.selectedNPReadout)
+        self.selectedNPReadout.reparentTo( hidden )
+
+        self.activeParentReadout = OnscreenText.OnscreenText(
+            pos = (-1.0, -0.975), bg=Vec4(1,1,1,1),
+            scale = 0.05, align = TMALIGNLEFT)
+        # Make sure readout is never lit or drawn in wireframe
+        useDirectRenderStyle(self.activeParentReadout)
+        self.activeParentReadout.reparentTo( hidden )
 
         # Create a vrpn client vrpn-server or default
         if base.config.GetBool('want-vrpn', 0):
@@ -113,7 +121,7 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'A', 'b', 'l', 's', 't', 'v', 'w']
+                          'A', 'b', 'l', 'p', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
@@ -241,6 +249,9 @@ class DirectSession(PandaObject):
             base.toggleBackface()
         elif input == 'l':
             self.lights.toggle()
+        elif input == 'p':
+            if self.selected.last:
+                self.setActiveParent(self.selected.last)
         elif input == 's':
             if self.selected.last:
                 self.select(self.selected.last)
@@ -264,9 +275,10 @@ class DirectSession(PandaObject):
                 self.ancestry = dnp.getAncestry()
                 self.ancestry.reverse()
                 self.ancestryIndex = 0
-            # Update the readout
-            self.readout.reparentTo(render2d)
-            self.readout.setText(dnp.name)
+            # Update the selectedNPReadout
+            self.selectedNPReadout.reparentTo(aspect2d)
+            self.selectedNPReadout.setText(
+                'Selected:' + dnp.name)
             # Show the manipulation widget
             self.widget.showWidget()
             # Update camera controls coa to this point
@@ -300,8 +312,8 @@ class DirectSession(PandaObject):
         if dnp:
             # Hide the manipulation widget
             self.widget.hideWidget()
-            self.readout.reparentTo(hidden)
-            self.readout.setText(' ')
+            self.selectedNPReadout.reparentTo(hidden)
+            self.selectedNPReadout.setText(' ')
             taskMgr.removeTasksNamed('followSelectedNodePath')
             self.ancestry = []
             # Send an message marking the event
@@ -311,13 +323,17 @@ class DirectSession(PandaObject):
         self.selected.deselectAll()
         # Hide the manipulation widget
         self.widget.hideWidget()
-        self.readout.reparentTo(hidden)
-        self.readout.setText(' ')
+        self.selectedNPReadout.reparentTo(hidden)
+        self.selectedNPReadout.setText(' ')
         taskMgr.removeTasksNamed('followSelectedNodePath')
 
     def setActiveParent(self, nodePath = None):
         # Record new parent
         self.activeParent = nodePath
+        # Update the activeParentReadout
+        self.activeParentReadout.reparentTo(aspect2d)
+        self.activeParentReadout.setText(
+            'Active Parent:' + nodePath.getName())
         # Alert everyone else
         messenger.send('DIRECT_activeParent', [self.activeParent])
         
@@ -550,8 +566,11 @@ class DirectSession(PandaObject):
         self.widget = self.manipulationControl.objectHandles
         self.widget.reparentTo(direct.group)
 
-    def hideReadout(self):
-        self.readout.reparentTo(hidden)
+    def hideSelectedNPReadout(self):
+        self.selectedNPReadout.reparentTo(hidden)
+
+    def hideActiveParentReadout(self):
+        self.activeParentReadout.reparentTo(hidden)
 
     def toggleWidgetVis(self):
         self.widget.toggleWidget()
