@@ -703,11 +703,17 @@ get_card_as_set() const {
 //               size of the current text; if the card was set via
 //               set_card_actual(), this returns the values
 //               actually set.
+//
+//               If the text has no card at all, this returns the
+//               dimensions of the text itself, as if the card were
+//               set with a margin of 0, 0, 0, 0.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase4f TextNode::
 get_card_actual() const {
-  nassertr(has_card(), LVecBase4f(0.0, 0.0, 0.0, 0.0));
-  if (is_card_as_margin()) {
+  if (!has_card()) {
+    return LVecBase4f(get_left(), get_right(), get_bottom(), get_top());
+
+  } else if (is_card_as_margin()) {
     return LVecBase4f(get_left() - _card_ul[0], 
 		      get_right() + _card_lr[0],
 		      get_bottom() - _card_lr[1],
@@ -849,11 +855,15 @@ get_bin() const {
 //               This affects the sorting order assigned to the arcs
 //               as they are created, and also is passed to whatever
 //               bin may be assigned via set_bin().
+//
+//               The return value is the first unused draw_order
+//               number, e.g. _draw_order + 3.
 ////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
+INLINE int TextNode::
 set_draw_order(int draw_order) {
   _draw_order = draw_order;
   rebuild(false);
+  return _draw_order + 3;
 }
 
 ////////////////////////////////////////////////////////////////////

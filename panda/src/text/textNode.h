@@ -128,7 +128,7 @@ PUBLISHED:
   INLINE bool has_bin() const;
   INLINE const string &get_bin() const;
 
-  INLINE void set_draw_order(int draw_order);
+  INLINE int set_draw_order(int draw_order);
   INLINE int get_draw_order() const;
 
   INLINE void set_billboard(bool billboard);
