@@ -45,8 +45,9 @@ PortalNode(const string &name) :
   _into_portal_mask(PortalMask::all_on()),
   _flags(0)
 {
-  // PortalNodes are hidden by default.
-  set_draw_mask(DrawMask::all_off());
+  _zone_in = NULL;
+  _zone_out = NULL;
+  _visible = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,6 +62,9 @@ PortalNode(const PortalNode &copy) :
   _into_portal_mask(copy._into_portal_mask),
   _flags(copy._flags)
 {
+  _zone_in = NULL;
+  _zone_out = NULL;
+  _visible = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,7 +158,7 @@ combine_with(PandaNode *other) {
 ////////////////////////////////////////////////////////////////////
 bool PortalNode::
 has_cull_callback() const {
-  return true;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,24 +166,26 @@ has_cull_callback() const {
 //       Access: Public, Virtual
 //  Description: If has_cull_callback() returns true, this function
 //               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.  This may include additional manipulation
-//               of render state or additional visible/invisible
-//               decisions, or any other arbitrary operation.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
+//               reduced frustum culling. Basically, once the scenegraph
+//               comes across a portal node, it calculates a CulltraverserData
+//               with which zone, this portal leads out to and the new frustum.
+//               Then it traverses that child
 //
 //               The return value is true if this node should be
 //               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
 bool PortalNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  // Append our portal vizzes to the drawing, even though they're
-  // not actually part of the scene graph.
+  
+  // Calculate the reduced frustum for this portal
+
+  CullTraverserData next_data(data, _zone_out);
+
+  // We don't want to inherit the render state from above for these
+  // guys.
+  next_data._state = RenderState::make_empty();
+  trav->traverse(next_data);
+
   // Now carry on to render our child nodes.
   return true;
 }

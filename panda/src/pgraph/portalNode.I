@@ -169,19 +169,54 @@ get_vertex(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::set_zone
+//     Function: PortalNode::set_zone_in
 //       Access: Published
 //  Description: Sets the zone that this portal belongs to
 ////////////////////////////////////////////////////////////////////
-INLINE void PortalNode::set_zone(PandaNode *zone) {
-  _zone_node = zone;
+INLINE void PortalNode::set_zone_in(PandaNode *zone) {
+  _zone_in = zone;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::set_zone
+//     Function: PortalNode::get_zone_in
 //       Access: Published
 //  Description: Sets the zone that this portal belongs to
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *PortalNode::get_zone() const {
-  return _zone_node;
+INLINE PandaNode *PortalNode::get_zone_in() const {
+  return _zone_in;
+}
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::set_zone_out
+//       Access: Published
+//  Description: Sets the zone that this portal leads out to
+////////////////////////////////////////////////////////////////////
+INLINE void PortalNode::set_zone_out(PandaNode *zone) {
+  _zone_out = zone;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::get_zone_out
+//       Access: Published
+//  Description: Sets the zone that this portal leads out to
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *PortalNode::get_zone_out() const {
+  return _zone_out;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::set_visible
+//       Access: Published
+//  Description: Python sets this based on curent camera zone
+////////////////////////////////////////////////////////////////////
+INLINE void PortalNode::set_visible(bool value) {
+  _visible = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::is_visible
+//       Access: Published
+//  Description: Is this portal visible from current camera zone
+////////////////////////////////////////////////////////////////////
+INLINE bool PortalNode::is_visible() {
+  return _visible;
 }

@@ -62,11 +62,11 @@ public:
   ~PortalClipper();
 
   INLINE bool is_facing_camera();
-  void prepare_portal(int idx);
+  void prepare_portal(NodePath &node_path);
 
-  void clip_portal(int idx);
+  void clip_portal(NodePath &node_path);
 
-  PT(BoundingVolume) get_reduced_frustum(int idx);
+  PT(BoundingVolume) get_reduced_frustum(NodePath &node_path);
 
   void draw_lines();
   INLINE void draw_camera_frustum();

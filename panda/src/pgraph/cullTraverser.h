@@ -76,8 +76,8 @@ public:
   INLINE CullHandler *get_cull_handler() const;
 
   void traverse(const NodePath &root, bool python_cull_control=false);
-  void traverse(CullTraverserData &data);
-  void traverse_below(CullTraverserData &data);
+  void traverse(CullTraverserData &data, PortalClipper *portal_viewer=NULL);
+  void traverse_below(CullTraverserData &data, PortalClipper *portal_viewer=NULL);
 
 public:
   // Statistics

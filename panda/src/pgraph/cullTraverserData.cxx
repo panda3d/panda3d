@@ -18,9 +18,9 @@
 
 #include "cullTraverserData.h"
 #include "cullTraverser.h"
-#include "config_pgraph.h"
 #include "pandaNode.h"
 #include "colorAttrib.h"
+#include "config_pgraph.h"
 #include "textureAttrib.h"
 #include "renderModeAttrib.h"
 #include "billboardEffect.h"

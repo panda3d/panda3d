@@ -68,8 +68,14 @@ PUBLISHED:
   INLINE int get_num_vertices() const;
   INLINE const LPoint3f &get_vertex(int n) const;
 
-  INLINE void set_zone(PandaNode *zone);
-  INLINE PandaNode *get_zone() const;
+  INLINE void set_zone_in(PandaNode *zone);
+  INLINE PandaNode *get_zone_in() const;
+
+  INLINE void set_zone_out(PandaNode *zone);
+  INLINE PandaNode *get_zone_out() const;
+
+  INLINE void set_visible(bool value);
+  INLINE bool is_visible();
 
 protected:
   virtual BoundingVolume *recompute_bound();
@@ -93,7 +99,10 @@ private:
   typedef pvector<LPoint3f> Vertices;
   Vertices _vertices;
 
-  PT(PandaNode) _zone_node;  // This is the zone it belongs to
+  PT(PandaNode) _zone_in;  // This is the zone it resides in
+  PT(PandaNode) _zone_out;  // This is the zone it leads out to
+
+  bool _visible;
 
 public:
   static void register_with_read_factory();

@@ -227,66 +227,59 @@ draw_lines()
 //               for now. More functionalities coming up
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
-prepare_portal(int idx)
+prepare_portal(NodePath &node_path)
 {
   SegmentList segs;
-  char portal_name[128];
 
-  // print some messages to see if i am getting to this part
-  pgraph_cat.debug() << "creating portal clipper " << idx << endl;
+  // Get the Portal Node from this node_path
+  PandaNode *node = node_path.node();
+  PortalNode *portal_node = NULL;
+  if (node->is_of_type(PortalNode::get_class_type()))
+    portal_node = DCAST(PortalNode, node);
 
   // walk the portal
   _num_vert = 0;
-  sprintf(portal_name, "**/portal%d", idx);
-  NodePath portal_nodepath = _scene_setup->get_scene_root().find(portal_name);
-  if (!portal_nodepath.is_empty()) {
-    pgraph_cat.debug() << "portal nodepath " << portal_nodepath << endl;
+
+  // Get the geometry from the portal    
+  pgraph_cat.debug() << *portal_node << endl;
+
+  /*
+  // Get the World transformation matrix
+  CPT(TransformState) wtransform = portal_nodepath.get_transform(_scene_setup->get_scene_root());
+  LMatrix4f wmat = wtransform->get_mat();
+  pgraph_cat.debug() << wmat << endl;
+  */
+  
+  // Get the camera transformation matrix
+  CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_cull_center());
+  //CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_camera_path());
+  LMatrix4f cmat = ctransform->get_mat();
+  pgraph_cat.debug() << cmat << endl;
+  
+  _coords[0] = portal_node->get_vertex(0)*cmat;
+  _coords[1] = portal_node->get_vertex(1)*cmat;
+  _coords[2] = portal_node->get_vertex(2)*cmat;
+  _coords[3] = portal_node->get_vertex(3)*cmat;
+  
+  pgraph_cat.debug() << "after transformation to camera space" << endl;
+  pgraph_cat.debug() << _coords[0] << endl;
+  pgraph_cat.debug() << _coords[1] << endl;
+  pgraph_cat.debug() << _coords[2] << endl;
+  pgraph_cat.debug() << _coords[3] << endl;
+  
+  // check if facing camera
+  if (is_facing_camera()) {
     
-    /*
-    // Get the World transformation matrix
-    CPT(TransformState) wtransform = portal_nodepath.get_transform(_scene_setup->get_scene_root());
-    LMatrix4f wmat = wtransform->get_mat();
-    pgraph_cat.debug() << wmat << endl;
-    */
+    // ok, now lets add the near plane to this portal
+    _color = Colorf(1,0,0,1);
+    move_to(_coords[0]);
+    draw_to(_coords[1]);
+    draw_to(_coords[2]);
+    draw_to(_coords[3]);
+    draw_to(_coords[0]);
     
-    // Get the camera transformation matrix
-    CPT(TransformState) ctransform = portal_nodepath.get_transform(_scene_setup->get_cull_center());
-    //CPT(TransformState) ctransform = portal_nodepath.get_transform(_scene_setup->get_camera_path());
-    LMatrix4f cmat = ctransform->get_mat();
-    pgraph_cat.debug() << cmat << endl;
-    
-    // Get the geometry from the portal    
-    PandaNode *node = portal_nodepath.node();
-    if (node->is_of_type(PortalNode::get_class_type())) {
-      PortalNode *portal_node = DCAST(PortalNode, node);
-      pgraph_cat.debug() << *portal_node << endl;
-    
-      _coords[0] = portal_node->get_vertex(0)*cmat;
-      _coords[1] = portal_node->get_vertex(1)*cmat;
-      _coords[2] = portal_node->get_vertex(2)*cmat;
-      _coords[3] = portal_node->get_vertex(3)*cmat;
-      
-      pgraph_cat.debug() << "after transformation to camera space" << endl;
-      pgraph_cat.debug() << _coords[0] << endl;
-      pgraph_cat.debug() << _coords[1] << endl;
-      pgraph_cat.debug() << _coords[2] << endl;
-      pgraph_cat.debug() << _coords[3] << endl;
-      
-      // check if facing camera
-      if (is_facing_camera()) {
-        
-        // ok, now lets add the near plane to this portal
-        _color = Colorf(1,0,0,1);
-        move_to(_coords[0]);
-        draw_to(_coords[1]);
-        draw_to(_coords[2]);
-        draw_to(_coords[3]);
-        draw_to(_coords[0]);
-        
-        pgraph_cat.debug() << "assembled portal" << idx << " frustum points" << endl;
-        _num_vert = portal_node->get_num_vertices();
-      }
-    }
+    pgraph_cat.debug() << "assembled " << portal_node->get_name() << ": frustum points" << endl;
+    _num_vert = portal_node->get_num_vertices();
   }
 }
 
@@ -297,7 +290,7 @@ prepare_portal(int idx)
 //               and form the new planes of the reduced view frustum
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
-clip_portal(int idx)
+clip_portal(NodePath &node_path)
 {
   int num_planes = _hex_frustum->get_num_planes();
 
@@ -338,7 +331,7 @@ clip_portal(int idx)
 //               fill in the new frustum. Return true if success
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) PortalClipper::
-get_reduced_frustum(int idx)
+get_reduced_frustum(NodePath &node_path)
 {
   int num_planes = 6;
   LPoint3f intersect_points[4];
@@ -416,7 +409,7 @@ get_reduced_frustum(int idx)
     visible = false;
 
   if (!visible) {
-    pgraph_cat.debug() << "portal" << idx << " is not visible from current camera look at" << endl;
+    pgraph_cat.debug() << "portal is not visible from current camera look at" << endl;
     return NULL;
   }
   
