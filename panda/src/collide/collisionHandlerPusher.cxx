@@ -252,9 +252,21 @@ handle_entries() {
           }
 #endif
           
-          LMatrix4f mat;
-          def.get_mat(mat);
-          def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
+          if (def._node != (PandaNode *)NULL) {
+            // If we are adjusting a plain PandaNode, get the
+            // transform and adjust just the position to preserve
+            // maximum precision.
+            CPT(TransformState) trans = def._node->get_transform();
+            LVecBase3f pos = trans->get_pos();
+            pos += net_shove * trans->get_mat();
+            def._node->set_transform(trans->set_pos(pos));
+          } else {          
+            // Otherwise, go ahead and do the matrix math to do things
+            // the old and clumsy way.
+            LMatrix4f mat;
+            def.get_mat(mat);
+            def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
+          }
         }
       }
     }
