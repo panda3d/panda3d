@@ -22,6 +22,10 @@ class Loader:
         """
         self.base = base
         self.loader = PandaLoader()
+
+    def destroy(self):
+        del self.base
+        del self.loader
         
     # model loading funcs
     def loadModel(self, modelPath, fMakeNodeNamesUnique = 0):
