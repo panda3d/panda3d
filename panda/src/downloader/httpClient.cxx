@@ -532,7 +532,8 @@ get_https_proxy(const string &method, const URLSpec &url, const string &body) {
     ostringstream request;
     request 
       << "CONNECT " << url.get_server() << ":" << url.get_port()
-      << " " << get_http_version_string() << "\r\n";
+      << " " << get_http_version_string() << "\r\n"
+      << "\r\n";
     string request_str = request.str();
 
 #ifndef NDEBUG
