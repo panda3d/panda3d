@@ -140,7 +140,7 @@ void AsyncUtility::
 nap(void) const {
 #ifdef HAVE_IPC
 #ifdef WIN32
-  _sleep(1000 * _frequency);
+  _sleep((DWORD)(1000 * _frequency));
 #else
   struct timeval tv;
   tv.tv_sec = 0;

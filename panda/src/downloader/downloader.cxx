@@ -36,7 +36,7 @@ const int MAX_RECEIVE_BYTES = 16384;
 Downloader::
 Downloader(void) {
   _frequency = downloader_frequency;
-  _byte_rate = downloader_byte_rate;
+  _byte_rate = (float) downloader_byte_rate;
   _disk_write_frequency = downloader_disk_write_frequency;
   nassertv(_frequency > 0 && _byte_rate > 0 && _disk_write_frequency > 0);
   _receive_size = (ulong)(_byte_rate * _frequency);
@@ -486,8 +486,7 @@ run(void) {
     _tfirst = t0;
     _current_status->_total_bytes = 0;
 
-  } else if (_current_status->_bytes_in_buffer + _receive_size > 
-						_disk_buffer_size) {
+  } else if (_current_status->_bytes_in_buffer + _receive_size > ((unsigned int)_disk_buffer_size)) {
 
     // Flush the current buffer if the next request would overflow it
     if (downloader_cat.is_debug())
@@ -607,7 +606,7 @@ run_to_ram(void) {
     _current_status->_total_bytes = 0;
 
   } else if (_current_status->_bytes_in_buffer + _receive_size > 
-						_disk_buffer_size) {
+						((unsigned int)_disk_buffer_size)) {
 
     // Flush the current buffer if the next request would overflow it
     if (downloader_cat.is_debug())
