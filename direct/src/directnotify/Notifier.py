@@ -207,9 +207,10 @@ class Notifier:
                 if hasattr(obj, 'fsm'):
                     #state = "%s=%s"%(obj.fsm.getName(), obj.fsm.getCurrentState().getName())
                     state = obj.fsm.getCurrentState().getName()
-            string = ":%s [%-7s] %s.%s"%(
+            string = ":%s [%-7s] %s %s.%s"%(
                 self.getOnlyTime(),
                 state,
+                id(obj),
                 self.__name,
                 PythonUtil.traceParentCall())
             self.__log(string)
