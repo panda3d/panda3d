@@ -196,7 +196,52 @@ class Actor(PandaObject, NodePath):
         Actor print function"""
         return "Actor: partBundleDict = %s,\n animControlDict = %s" % \
                (self.__partBundleDict, self.__animControlDict)
-        
+
+    def getActorInfo(self):
+        """getActorInfo(self)
+        Utility function to create a list of information about a actor.
+        Useful for iterating over details of an actor.
+        """
+        lodInfo = []
+        for lodName in self.__animControlDict.keys():
+            partDict = self.__animControlDict[lodName]
+            partInfo = []
+            for partName in partDict.keys():
+                partBundle = self.__partBundleDict[lodName][partName]
+                animDict = partDict[partName]
+                animInfo = []
+                for animName in animDict.keys():
+                    file = animDict[animName][0]
+                    animControl = animDict[animName][1]
+                    animInfo.append([animName, file, animControl])
+                partInfo.append([partName, partBundle, animInfo])
+            lodInfo.append([lodName, partInfo])
+        return lodInfo
+
+    def getAnimNames(self):
+        animNames = []
+        for lodName, lodInfo in self.getActorInfo():
+            for partName, bundle, animInfo in lodInfo:
+                for animName, file, animControl in animInfo:
+                    if animName not in animNames:
+                        animNames.append(animName)
+        return animNames
+
+    def pprint(self):
+        """pprint(self)
+        Pretty print actor's details
+        """
+        for lodName, lodInfo in self.getActorInfo():
+            print 'LOD:', lodName
+            for partName, bundle, animInfo in lodInfo:
+                print '  Part:', partName
+                print '  Bundle:', `bundle`
+                for animName, file, animControl in animInfo:
+                    print '    Anim:', animName
+                    print '      File:', file
+                    print ('      NumFrames: %d PlayRate: %0.2f' %
+                           (animControl.getNumFrames(),
+                            animControl.getPlayRate()))
 
     def cleanup(self):
         """cleanup(self)
