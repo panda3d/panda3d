@@ -258,18 +258,20 @@ debug_output(ostream &out, unsigned int indent) const {
 
   out.width(indent+2);
   out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
-  for (LinearForceVector::const_iterator i=_linear_forces.begin();
-       i != _linear_forces.end();
-       ++i) {
-    (*i)->write(out, indent+2);
+  LinearForceVector::const_iterator li;
+  for (li=_linear_forces.begin();
+       li != _linear_forces.end();
+       ++li) {
+    (*li)->write(out, indent+2);
   }
 
   out.width(indent+2);
   out<<""<<"  _angular_forces "<<_angular_forces.size()<<"\n";
-  for (AngularForceVector::const_iterator i=_angular_forces.begin();
-       i != _angular_forces.end();
-       ++i) {
-    (*i)->write(out, indent+2);
+  AngularForceVector::const_iterator ai;
+  for (ai=_angular_forces.begin();
+       ai != _angular_forces.end();
+       ++ai) {
+    (*ai)->write(out, indent+2);
   }
   #endif //] NDEBUG
 }
