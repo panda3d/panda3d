@@ -402,16 +402,13 @@ reset() {
     GLint sample_buffers;
     GLP(GetIntegerv)(GL_SAMPLE_BUFFERS, &sample_buffers);
     if (sample_buffers != 1) {
+      // Even if the API supports multisample, we might have ended up
+      // with a framebuffer that doesn't have any multisample bits.
+      // (It's also possible the graphics card doesn't provide any
+      // framebuffers with multisample.)  In this case, we don't
+      // really support the multisample API's, since they won't do
+      // anything.
       _supports_multisample = false;
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Selected frame buffer does not provide antialiasing support.\n";
-      }
-    } else {
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Selected frame buffer provides antialiasing support.\n";
-      }
     }
   }
 
