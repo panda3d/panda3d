@@ -23,7 +23,7 @@ class DirectWaitBar(DirectFrame):
             ('frameSize',      (-1,1,-0.08,0.08),  None),
             ('borderWidth',    (0,0),              None),
             ('range',          100,                self.setRange),
-            ('value',          50,                 self.setValue),
+            ('value',          0,                  self.setValue),
             ('barBorderWidth', (0,0),              self.setBarBorderWidth),
             ('barColor',       (1,0,0,1),          self.setBarColor),
             ('barRelief',      FLAT,               self.setBarRelief),
