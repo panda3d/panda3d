@@ -8,6 +8,7 @@ import Task
 # Interval events
 IVAL_NONE = 0
 IVAL_INIT = 1
+IVAL_DONE = 2
 
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
@@ -80,7 +81,7 @@ class Interval(DirectObject):
     def setFinalT(self):
 	""" setFinalT()
 	"""
-	self.setT(self.getDuration(), event=IVAL_NONE)
+	self.setT(self.getDuration(), event=IVAL_DONE)
 
     def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
@@ -135,21 +136,21 @@ class Interval(DirectObject):
         t = self.clock.getFrameTime()
         te = self.offset + ((t - self.startT) * self.scale)
         if (te < self.endTime):
-            # If first call, init intervals
-	    if (self.firstTime):
-		self.setT(te, event = IVAL_INIT)
-		self.firstTime = 0
-	    else:
-            	self.setT(te)
+            if (self.firstTime):
+                # If first call, init intervals
+                self.setT(te, event = IVAL_INIT)
+                self.firstTime = 0
+            else:
+                self.setT(te)
             return Task.cont
         else:
             te = self.endTime
-            # If first call, init intervals
-	    if (self.firstTime):
-		self.setT(te, event = IVAL_INIT)
-		self.firstTime = 0
-	    else:
-                self.setT(te)
+            if (self.firstTime):
+                # If first call, init intervals
+                self.setT(te, event = IVAL_INIT)
+                self.firstTime = 0
+            else:
+                self.setT(te, IVAL_DONE)
             messenger.send(self.name + "-loop")
             return Task.done
 

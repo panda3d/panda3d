@@ -182,7 +182,9 @@ class Track(Interval):
 	    for ival, itime, itype, tStart, tEnd in self.ilist:
                 # Compare time with each ival's start/end times
                 if (t < tStart):
-                    if (self.prev_t > tStart):
+                    if (event == IVAL_DONE):
+                        ival.setT(ival.getDuration(), event)
+                    elif (self.prev_t > tStart):
                         # We just crossed the start of this interval
                         # going backwards (e.g. via the slider)
                         # Execute this interval at its start time
@@ -191,17 +193,22 @@ class Track(Interval):
                     break
                 elif (t >= tStart) and (t <= tEnd):
                     # Between start/end, record current interval
-                    currentInterval = ival
                     # Make sure event == IVAL_INIT if entering new interval
                     if ((event == IVAL_NONE) and
                         ((self.prev_t < tStart) or
                           (ival != self.currentInterval))):
                         event = IVAL_INIT
                     # Evaluate interval at interval relative time
-                    currentInterval.setT(t - tStart, event)
+                    if (event == IVAL_DONE):
+                        ival.setT(ival.getDuration(), event)
+                    else:
+                        ival.setT(t - tStart, event)
+                    currentInterval = ival
                 elif (t > tEnd):
                     # Crossing over interval end 
-                    if (((event == IVAL_NONE) and (self.prev_t < tEnd)) or
+                    if ((((event == IVAL_NONE) or (event == IVAL_DONE)) and
+                         (self.prev_t < tEnd))
+                        or
                         ((event == IVAL_INIT) and ival.getfOpenEnded())):
                         # If we've just crossed the end of this interval
                         # or its an INIT event after the interval's end
