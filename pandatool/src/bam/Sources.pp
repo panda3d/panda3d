@@ -5,7 +5,7 @@
   #define OTHER_LIBS \
     parametrics:c collide:c chan:c char:c \
     egg:c pnmimagetypes:c pgraph:c gobj:c \
-    putil:c linmath:c express:c pandaegg:m panda:m pandaexpress:m \
+    putil:c linmath:c event:c express:c pandaegg:m panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
@@ -25,7 +25,7 @@
     dgraph:c \
     egg2pg:c builder:c egg:c pnmimagetypes:c \
     pgraph:c gobj:c chan:c putil:c linmath:c \
-    express:c pandaegg:m panda:m pandaexpress:m \
+    event:c express:c pandaegg:m panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
@@ -45,7 +45,7 @@
     egg:c pandaegg:m \
     pgraph:cparametrics:c collide:c chan:c char:c \
     gobj:c pnmimagetypes:c pstatclient:c \
-    putil:c linmath:c express:c panda:m pandaexpress:m \
+    putil:c linmath:c event:c express:c panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define UNIX_SYS_LIBS \
