@@ -405,14 +405,15 @@ class FFIMethodArgumentTree:
                 indent(file, nesting+2, 'return ')
                 methodSpec.outputOverloadedCall(file, self.classTypeDesc, 0)
             else:
+                # This is handled at the top of the file now (?)
                 # Import a file if we need to for this typeDesc
-                if ((typeDesc != 0) and
-                    (not typeDesc.isNested) and
-                    # Do not put our own module in the import list
-                    (self.classTypeDesc != typeDesc) and
-                    # If this is a class (not a primitive), put it on the list
-                    (typeDesc.__class__ == FFITypes.ClassTypeDescriptor)):
-                    indent(file, nesting+2, 'import ' + typeDesc.foreignTypeName + '\n')
+                # if ((typeDesc != 0) and
+                #     (not typeDesc.isNested) and
+                #     # Do not put our own module in the import list
+                #     (self.classTypeDesc != typeDesc) and
+                #     # If this is a class (not a primitive), put it on the list
+                #     (typeDesc.__class__ == FFITypes.ClassTypeDescriptor)):
+                #     indent(file, nesting+2, 'import ' + typeDesc.foreignTypeName + '\n')
 
                 # Specify that at least one of these trees had arguments
                 # so we know to output an else clause
