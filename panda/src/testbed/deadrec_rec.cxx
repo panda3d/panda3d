@@ -257,7 +257,7 @@ static void deadrec_setup(EventHandler& eh) {
   clerpButton = make_button("lerp", font, eh, correct_event);
   clerpButton->set_scale(0.08);
   f2->add_item(clerpButton);
-  csplineButton = make_button("lerp", font, eh, correct_event);
+  csplineButton = make_button("spline", font, eh, correct_event);
   csplineButton->set_scale(0.08);
   f2->add_item(csplineButton);
   f2->pack_item(cpopButton, GuiFrame::UNDER, s2);
