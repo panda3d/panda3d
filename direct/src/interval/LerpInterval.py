@@ -108,22 +108,26 @@ class LerpPosInterval(LerpNodePathInterval):
                 
 
 class LerpHprInterval(LerpNodePathInterval):
-    def __init__(self, nodePath, duration, hpr, startHpr = None,
+    def __init__(self, nodePath, duration, hpr,
+                 startHpr = None, startQuat = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
 
         # Check for functors in the input parameters.
-        self.paramSetup = self.anyCallable(hpr, startHpr)
+        self.paramSetup = self.anyCallable(hpr, startHpr, startQuat)
         if self.paramSetup:
             self.endHpr = hpr
             self.startHpr = startHpr
+            self.startQuat = startQuat
             self.inPython = 1
         else:
             self.setEndHpr(hpr)
             if startHpr != None:
                 self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
 
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
@@ -131,6 +135,38 @@ class LerpHprInterval(LerpNodePathInterval):
         if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
+        LerpNodePathInterval.privDoEvent(self, t, event)
+
+class LerpQuatInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, quat,
+                 startHpr = None, startQuat = None,
+                 other = None, blendType = 'noBlend',
+                 bakeInStart = 1, fluid = 0, name = None):
+        LerpNodePathInterval.__init__(self, name, duration, blendType,
+                                      bakeInStart, fluid, nodePath, other)
+
+        # Check for functors in the input parameters.
+        self.paramSetup = self.anyCallable(quat, startHpr, startQuat)
+        if self.paramSetup:
+            self.endQuat = quat
+            self.startHpr = startHpr
+            self.startQuat = startQuat
+            self.inPython = 1
+        else:
+            self.setEndQuat(quat)
+            if startHpr != None:
+                self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
+
+    def privDoEvent(self, t, event):
+        # This function is only used if Python functors were passed in
+        # for some of the input parameters.
+        if self.paramSetup and event == CInterval.ETInitialize:
+            self.setupParam(self.setEndQuat, self.endQuat)
+            self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpScaleInterval(LerpNodePathInterval):
@@ -185,18 +221,19 @@ class LerpShearInterval(LerpNodePathInterval):
 
 class LerpPosHprInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, hpr,
-                 startPos = None, startHpr = None,
+                 startPos = None, startHpr = None, startQuat = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
         # Check for functors in the input parameters.
-        self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr)
+        self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr, startQuat)
         if self.paramSetup:
             self.endPos = pos
             self.startPos = startPos
             self.endHpr = hpr
             self.startHpr = startHpr
+            self.startQuat = startQuat
             self.inPython = 1
         else:
             self.setEndPos(pos)
@@ -205,6 +242,8 @@ class LerpPosHprInterval(LerpNodePathInterval):
             self.setEndHpr(hpr)
             if startHpr != None:
                 self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
 
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
@@ -214,21 +253,60 @@ class LerpPosHprInterval(LerpNodePathInterval):
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
+        LerpNodePathInterval.privDoEvent(self, t, event)
+
+class LerpPosQuatInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, pos, quat,
+                 startPos = None, startHpr = None, startQuat = None,
+                 other = None, blendType = 'noBlend',
+                 bakeInStart = 1, fluid = 0, name = None):
+        LerpNodePathInterval.__init__(self, name, duration, blendType,
+                                      bakeInStart, fluid, nodePath, other)
+        # Check for functors in the input parameters.
+        self.paramSetup = self.anyCallable(pos, startPos, quat, startHpr, startQuat)
+        if self.paramSetup:
+            self.endPos = pos
+            self.startPos = startPos
+            self.endQuat = quat
+            self.startHpr = startHpr
+            self.startQuat = startQuat
+            self.inPython = 1
+        else:
+            self.setEndPos(pos)
+            if startPos != None:
+                self.setStartPos(startPos)
+            self.setEndQuat(quat)
+            if startHpr != None:
+                self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
+
+    def privDoEvent(self, t, event):
+        # This function is only used if Python functors were passed in
+        # for some of the input parameters.
+        if self.paramSetup and event == CInterval.ETInitialize:
+            self.setupParam(self.setEndPos, self.endPos)
+            self.setupParam(self.setStartPos, self.startPos)
+            self.setupParam(self.setEndQuat, self.endQuat)
+            self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpHprScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, hpr, scale,
-                 startHpr = None, startScale = None,
+                 startHpr = None, startQuat = None, startScale = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
 
         # Check for functors in the input parameters.
-        self.paramSetup = self.anyCallable(hpr, startHpr, scale, startScale)
+        self.paramSetup = self.anyCallable(hpr, startHpr, startQuat, scale, startScale)
         if self.paramSetup:
             self.endHpr = hpr
             self.startHpr = startHpr
+            self.startQuat = startQuat
             self.endScale = scale
             self.startScale = startScale
             self.inPython = 1
@@ -236,6 +314,8 @@ class LerpHprScaleInterval(LerpNodePathInterval):
             self.setEndHpr(hpr)
             if startHpr != None:
                 self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
             self.setEndScale(scale)
             if startScale != None:
                 self.setStartScale(startScale)
@@ -246,24 +326,66 @@ class LerpHprScaleInterval(LerpNodePathInterval):
         if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
+            self.setupParam(self.setEndScale, self.endScale)
+            self.setupParam(self.setStartScale, self.startScale)
+        LerpNodePathInterval.privDoEvent(self, t, event)
+
+class LerpQuatScaleInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, quat, scale,
+                 startHpr = None, startQuat = None, startScale = None,
+                 other = None, blendType = 'noBlend',
+                 bakeInStart = 1, fluid = 0, name = None):
+        LerpNodePathInterval.__init__(self, name, duration, blendType,
+                                      bakeInStart, fluid, nodePath, other)
+
+        # Check for functors in the input parameters.
+        self.paramSetup = self.anyCallable(quat, startHpr, startQuat, scale, startScale)
+        if self.paramSetup:
+            self.endQuat = quat
+            self.startHpr = startHpr
+            self.startQuat = startQuat
+            self.endScale = scale
+            self.startScale = startScale
+            self.inPython = 1
+        else:
+            self.setEndQuat(quat)
+            if startHpr != None:
+                self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
+            self.setEndScale(scale)
+            if startScale != None:
+                self.setStartScale(startScale)
+
+    def privDoEvent(self, t, event):
+        # This function is only used if Python functors were passed in
+        # for some of the input parameters.
+        if self.paramSetup and event == CInterval.ETInitialize:
+            self.setupParam(self.setEndQuat, self.endQuat)
+            self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosHprScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, hpr, scale,
-                 startPos = None, startHpr = None, startScale = None,
+                 startPos = None, startHpr = None, startQuat = None,
+                 startScale = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
         # Check for functors in the input parameters.
-        self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr, scale, startScale)
+        self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr,
+                                           startQuat, scale, startScale)
         if self.paramSetup:
             self.endPos = pos
             self.startPos = startPos
             self.endHpr = hpr
             self.startHpr = startHpr
+            self.startQuat = startQuat
             self.endScale = scale
             self.startScale = startScale
             self.inPython = 1
@@ -274,6 +396,8 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
             self.setEndHpr(hpr)
             if startHpr != None:
                 self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
             self.setEndScale(scale)
             if startScale != None:
                 self.setStartScale(startScale)
@@ -286,24 +410,75 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
+            self.setupParam(self.setEndScale, self.endScale)
+            self.setupParam(self.setStartScale, self.startScale)
+        LerpNodePathInterval.privDoEvent(self, t, event)
+
+class LerpPosQuatScaleInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, pos, quat, scale,
+                 startPos = None, startHpr = None, startQuat = None,
+                 startScale = None,
+                 other = None, blendType = 'noBlend',
+                 bakeInStart = 1, fluid = 0, name = None):
+        LerpNodePathInterval.__init__(self, name, duration, blendType,
+                                      bakeInStart, fluid, nodePath, other)
+        # Check for functors in the input parameters.
+        self.paramSetup = self.anyCallable(pos, startPos, quat, startHpr,
+                                           startQuat, scale, startScale)
+        if self.paramSetup:
+            self.endPos = pos
+            self.startPos = startPos
+            self.endQuat = quat
+            self.startHpr = startHpr
+            self.startQuat = startQuat
+            self.endScale = scale
+            self.startScale = startScale
+            self.inPython = 1
+        else:
+            self.setEndPos(pos)
+            if startPos != None:
+                self.setStartPos(startPos)
+            self.setEndQuat(quat)
+            if startHpr != None:
+                self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
+            self.setEndScale(scale)
+            if startScale != None:
+                self.setStartScale(startScale)
+
+    def privDoEvent(self, t, event):
+        # This function is only used if Python functors were passed in
+        # for some of the input parameters.
+        if self.paramSetup and event == CInterval.ETInitialize:
+            self.setupParam(self.setEndPos, self.endPos)
+            self.setupParam(self.setStartPos, self.startPos)
+            self.setupParam(self.setEndQuat, self.endQuat)
+            self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosHprScaleShearInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, hpr, scale, shear,
-                 startPos = None, startHpr = None, startScale = None, startShear = None,
+                 startPos = None, startHpr = None, startQuat = None,
+                 startScale = None, startShear = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
         # Check for functors in the input parameters.
-        self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr, scale, startScale, shear, startShear)
+        self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr,
+                                           startQuat, scale, startScale,
+                                           shear, startShear)
         if self.paramSetup:
             self.endPos = pos
             self.startPos = startPos
             self.endHpr = hpr
             self.startHpr = startHpr
+            self.startQuat = startQuat
             self.endScale = scale
             self.startScale = startScale
             self.endShear = shear
@@ -316,6 +491,8 @@ class LerpPosHprScaleShearInterval(LerpNodePathInterval):
             self.setEndHpr(hpr)
             if startHpr != None:
                 self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
             self.setEndScale(scale)
             if startScale != None:
                 self.setStartScale(startScale)
@@ -331,6 +508,61 @@ class LerpPosHprScaleShearInterval(LerpNodePathInterval):
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
+            self.setupParam(self.setEndScale, self.endScale)
+            self.setupParam(self.setStartScale, self.startScale)
+            self.setupParam(self.setEndShear, self.endShear)
+            self.setupParam(self.setStartShear, self.startShear)
+        LerpNodePathInterval.privDoEvent(self, t, event)
+
+class LerpPosQuatScaleShearInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, pos, quat, scale, shear,
+                 startPos = None, startHpr = None, startQuat = None,
+                 startScale = None, startShear = None,
+                 other = None, blendType = 'noBlend',
+                 bakeInStart = 1, fluid = 0, name = None):
+        LerpNodePathInterval.__init__(self, name, duration, blendType,
+                                      bakeInStart, fluid, nodePath, other)
+        # Check for functors in the input parameters.
+        self.paramSetup = self.anyCallable(pos, startPos, quat, startHpr,
+                                           startQuat, scale, startScale,
+                                           shear, startShear)
+        if self.paramSetup:
+            self.endPos = pos
+            self.startPos = startPos
+            self.endQuat = quat
+            self.startHpr = startHpr
+            self.startQuat = startQuat
+            self.endScale = scale
+            self.startScale = startScale
+            self.endShear = shear
+            self.startShear = startShear
+            self.inPython = 1
+        else:
+            self.setEndPos(pos)
+            if startPos != None:
+                self.setStartPos(startPos)
+            self.setEndQuat(quat)
+            if startHpr != None:
+                self.setStartHpr(startHpr)
+            if startQuat != None:
+                self.setStartQuat(startQuat)
+            self.setEndScale(scale)
+            if startScale != None:
+                self.setStartScale(startScale)
+            self.setEndShear(shear)
+            if startShear != None:
+                self.setStartShear(startShear)
+
+    def privDoEvent(self, t, event):
+        # This function is only used if Python functors were passed in
+        # for some of the input parameters.
+        if self.paramSetup and event == CInterval.ETInitialize:
+            self.setupParam(self.setEndPos, self.endPos)
+            self.setupParam(self.setStartPos, self.startPos)
+            self.setupParam(self.setEndQuat, self.endQuat)
+            self.setupParam(self.setStartHpr, self.startHpr)
+            self.setupParam(self.setStartQuat, self.startQuat)
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
             self.setupParam(self.setEndShear, self.endShear)

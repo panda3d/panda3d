@@ -955,6 +955,10 @@
     def hprInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpHprInterval(self, *args, **kw)
+    
+    def quatInterval(self, *args, **kw):
+        from direct.interval import LerpInterval
+        return LerpInterval.LerpQuatInterval(self, *args, **kw)
 
     def scaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
@@ -968,17 +972,33 @@
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprInterval(self, *args, **kw)
 
+    def posQuatInterval(self, *args, **kw):
+        from direct.interval import LerpInterval
+        return LerpInterval.LerpPosQuatInterval(self, *args, **kw)
+
     def hprScaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpHprScaleInterval(self, *args, **kw)
+
+    def quatScaleInterval(self, *args, **kw):
+        from direct.interval import LerpInterval
+        return LerpInterval.LerpQuatScaleInterval(self, *args, **kw)
 
     def posHprScaleInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprScaleInterval(self, *args, **kw)
 
+    def posQuatScaleInterval(self, *args, **kw):
+        from direct.interval import LerpInterval
+        return LerpInterval.LerpPosQuatScaleInterval(self, *args, **kw)
+
     def posHprScaleShearInterval(self, *args, **kw):
         from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprScaleShearInterval(self, *args, **kw)
+
+    def posQuatScaleShearInterval(self, *args, **kw):
+        from direct.interval import LerpInterval
+        return LerpInterval.LerpPosQuatScaleShearInterval(self, *args, **kw)
 
     def colorInterval(self, *args, **kw):
         from direct.interval import LerpInterval

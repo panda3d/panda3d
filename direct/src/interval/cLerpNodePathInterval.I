@@ -74,10 +74,11 @@ set_end_pos(const LVecBase3f &pos) {
 //     Function: CLerpNodePathInterval::set_start_hpr
 //       Access: Published
 //  Description: Indicates the initial rotation of the lerped node.
-//               This is meaningful only if set_end_hpr() is also
-//               called.  This parameter is optional; if unspecified,
-//               the value will be taken from the node's actual
-//               rotation at the time the lerp is performed.
+//               This is meaningful only if either set_end_hpr() or
+//               set_end_quat() is also called.  This parameter is
+//               optional; if unspecified, the value will be taken
+//               from the node's actual rotation at the time the lerp
+//               is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_hpr(const LVecBase3f &hpr) {
@@ -90,14 +91,91 @@ set_start_hpr(const LVecBase3f &hpr) {
 //       Access: Published
 //  Description: Indicates that the rotation of the node should be
 //               lerped, and specifies the final rotation of the node.
-//               This should be called before priv_initialize().  If this
-//               is not called, the node's rotation will not be
-//               affected by the lerp.
+//               This should be called before priv_initialize().
+//
+//               This replaces a previous call to set_end_quat().  If
+//               neither set_end_hpr() nor set_end_quat() is called,
+//               the node's rotation will not be affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_hpr(const LVecBase3f &hpr) {
   _end_hpr = hpr;
-  _flags |= F_end_hpr;
+  _flags = (_flags & ~F_end_quat) | F_end_hpr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_end_hpr
+//       Access: Published
+//  Description: Indicates that the rotation of the node should be
+//               lerped, and specifies the final rotation of the node.
+//               This should be called before priv_initialize().
+//
+//               This special function is overloaded to accept a
+//               quaternion, even though the function name is
+//               set_end_hpr().  The quaternion will be implicitly
+//               converted to a HPR trio, and the lerp will be
+//               performed in HPR space, componentwise.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_end_hpr(const LQuaternionf &quat) {
+  _end_hpr = quat.get_hpr();
+  _flags = (_flags & ~F_end_quat) | F_end_hpr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_start_quat
+//       Access: Published
+//  Description: Indicates the initial rotation of the lerped node.
+//               This is meaningful only if either set_end_quat() or
+//               set_end_hpr() is also called.  This parameter is
+//               optional; if unspecified, the value will be taken
+//               from the node's actual rotation at the time the lerp
+//               is performed.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_start_quat(const LQuaternionf &quat) {
+  _start_quat = quat;
+  _flags |= F_start_quat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_end_quat
+//       Access: Published
+//  Description: Indicates that the rotation of the node should be
+//               lerped, and specifies the final rotation of the node.
+//               This should be called before priv_initialize().
+//
+//               This replaces a previous call to set_end_hpr().  If
+//               neither set_end_quat() nor set_end_hpr() is called,
+//               the node's rotation will not be affected by the lerp.
+//
+//               This special function is overloaded to accept a HPR
+//               trio, even though the function name is
+//               set_end_quat().  The HPR will be implicitly converted
+//               to a quaternion, and the lerp will be performed in
+//               quaternion space, as a spherical lerp.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_end_quat(const LVecBase3f &hpr) {
+  _end_quat.set_hpr(hpr);
+  _flags = (_flags & ~F_end_hpr) | F_end_quat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_end_quat
+//       Access: Published
+//  Description: Indicates that the rotation of the node should be
+//               lerped, and specifies the final rotation of the node.
+//               This should be called before priv_initialize().
+//
+//               This replaces a previous call to set_end_hpr().  If
+//               neither set_end_quat() nor set_end_hpr() is called,
+//               the node's rotation will not be affected by the lerp.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_end_quat(const LQuaternionf &quat) {
+  _end_quat = quat;
+  _flags = (_flags & ~F_end_hpr) | F_end_quat;
 }
 
 ////////////////////////////////////////////////////////////////////

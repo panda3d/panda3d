@@ -128,7 +128,7 @@ priv_step(double t) {
   // Save this in case we want to restore it later.
   CPT(TransformState) prev_transform = _node.get_prev_transform();
 
-  if ((_flags & (F_end_pos | F_end_hpr | F_end_scale | F_end_shear)) != 0) {
+  if ((_flags & (F_end_pos | F_end_hpr | F_end_quat | F_end_scale | F_end_shear)) != 0) {
     // We have some transform lerp.
     CPT(TransformState) transform;
 
@@ -143,6 +143,7 @@ priv_step(double t) {
     
     LPoint3f pos;
     LVecBase3f hpr;
+    LQuaternionf quat;
     LVecBase3f scale;
     LVecBase3f shear;
 
@@ -165,6 +166,11 @@ priv_step(double t) {
       if ((_flags & F_start_hpr) != 0) {
         lerp_value(hpr, d, _start_hpr, _end_hpr);
 
+      } else if ((_flags & F_start_quat) != 0) {
+        _start_hpr = _start_quat.get_hpr();
+        _flags |= F_start_hpr;
+        lerp_value(hpr, d, _start_hpr, _end_hpr);
+
       } else if ((_flags & F_bake_in_start) != 0) {
         set_start_hpr(transform->get_hpr());
         lerp_value(hpr, d, _start_hpr, _end_hpr);
@@ -173,6 +179,25 @@ priv_step(double t) {
         hpr = transform->get_hpr();
         lerp_value_from_prev(hpr, d, _prev_d, hpr, _end_hpr);
       }
+    }
+    if ((_flags & F_end_quat) != 0) {
+      if ((_flags & F_start_quat) != 0) {
+        lerp_value(quat, d, _start_quat, _end_quat);
+
+      } else if ((_flags & F_start_hpr) != 0) {
+        _start_quat.set_hpr(_start_hpr);
+        _flags |= F_start_quat;
+        lerp_value(quat, d, _start_quat, _end_quat);
+
+      } else if ((_flags & F_bake_in_start) != 0) {
+        set_start_quat(transform->get_quat());
+        lerp_value(quat, d, _start_quat, _end_quat);
+
+      } else {
+        quat = transform->get_quat();
+        lerp_value_from_prev(quat, d, _prev_d, quat, _end_quat);
+      }
+      quat.normalize();
     }
     if ((_flags & F_end_scale) != 0) {
       if ((_flags & F_start_scale) != 0) {
@@ -206,7 +231,8 @@ priv_step(double t) {
     // transform has hpr/scale components if they're not needed.  And
     // in any case, we only want to apply the components that we
     // computed, above.
-    switch (_flags & (F_end_pos | F_end_hpr | F_end_scale)) {
+    unsigned int transform_flags = _flags & (F_end_pos | F_end_hpr | F_end_quat | F_end_scale);
+    switch (transform_flags) {
     case 0:
       break;
 
@@ -226,6 +252,14 @@ priv_step(double t) {
       }
       break;
 
+    case F_end_quat:
+      if (_other.is_empty()) {
+        _node.set_quat(quat);
+      } else {
+        _node.set_quat(_other, quat);
+      }
+      break;
+
     case F_end_scale:
       if (_other.is_empty()) {
         _node.set_scale(scale);
@@ -242,11 +276,27 @@ priv_step(double t) {
       }
       break;
 
+    case F_end_quat | F_end_scale:
+      if (_other.is_empty()) {
+        _node.set_quat_scale(quat, scale);
+      } else {
+        _node.set_quat_scale(quat, scale);
+      }
+      break;
+
     case F_end_pos | F_end_hpr:
       if (_other.is_empty()) {
         _node.set_pos_hpr(pos, hpr);
       } else {
         _node.set_pos_hpr(_other, pos, hpr);
+      }
+      break;
+
+    case F_end_pos | F_end_quat:
+      if (_other.is_empty()) {
+        _node.set_pos_quat(pos, quat);
+      } else {
+        _node.set_pos_quat(_other, pos, quat);
       }
       break;
 
@@ -284,16 +334,33 @@ priv_step(double t) {
       }
       break;
 
+    case F_end_pos | F_end_quat | F_end_scale:
+      if ((_flags & F_end_shear) != 0) {
+        // Even better: we have all four components.
+        if (_other.is_empty()) {
+          _node.set_pos_quat_scale_shear(pos, quat, scale, shear);
+        } else {
+          _node.set_pos_quat_scale_shear(_other, pos, quat, scale, shear);
+        }
+      } else {
+        // We have only the primary three components.
+        if (_other.is_empty()) {
+          _node.set_pos_quat_scale(pos, quat, scale);
+        } else {
+          _node.set_pos_quat_scale(_other, pos, quat, scale);
+        }
+      }
+      break;
+
     default:
       // Some unhandled combination.  We should handle this.
       interval_cat.error()
         << "Internal error in CLerpNodePathInterval::priv_step().\n";
     }
-
     if ((_flags & F_end_shear) != 0) {
       // Also apply changes to shear.
-      if ((_flags & (F_end_pos | F_end_hpr | F_end_scale)) == 
-          (F_end_pos | F_end_hpr | F_end_scale)) {
+      if (transform_flags == (F_end_pos | F_end_hpr | F_end_scale) ||
+          transform_flags == (F_end_pos | F_end_quat | F_end_scale)) {
         // Actually, we already handled this case above.
 
       } else {
@@ -384,9 +451,7 @@ priv_step(double t) {
     } else {
       _node.set_state(_other, state);
     }
-  }
-
-  _prev_d = d;
+  }  _prev_d = d;
   _curr_t = t;
 }
 
@@ -449,6 +514,14 @@ output(ostream &out) const {
       out << " from " << _start_hpr;
     }
     out << " to " << _end_hpr;
+  }
+
+  if ((_flags & F_end_quat) != 0) {
+    out << " quat";
+    if ((_flags & F_start_quat) != 0) {
+      out << " from " << _start_quat;
+    }
+    out << " to " << _end_quat;
   }
 
   if ((_flags & F_end_scale) != 0) {

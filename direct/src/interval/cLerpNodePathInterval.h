@@ -42,6 +42,10 @@ PUBLISHED:
   INLINE void set_end_pos(const LVecBase3f &pos);
   INLINE void set_start_hpr(const LVecBase3f &hpr);
   INLINE void set_end_hpr(const LVecBase3f &hpr);
+  INLINE void set_end_hpr(const LQuaternionf &quat);
+  INLINE void set_start_quat(const LQuaternionf &quat);
+  INLINE void set_end_quat(const LVecBase3f &hpr);
+  INLINE void set_end_quat(const LQuaternionf &quat);
   INLINE void set_start_scale(const LVecBase3f &scale);
   INLINE void set_start_scale(float scale);
   INLINE void set_end_scale(const LVecBase3f &scale);
@@ -68,13 +72,15 @@ private:
   enum Flags {
     F_end_pos            = 0x0001,
     F_end_hpr            = 0x0002,
-    F_end_scale          = 0x0004,
-    F_end_color          = 0x0008,
-    F_end_color_scale    = 0x0010,
-    F_end_shear          = 0x0020,
+    F_end_quat           = 0x0004,
+    F_end_scale          = 0x0008,
+    F_end_color          = 0x0010,
+    F_end_color_scale    = 0x0020,
+    F_end_shear          = 0x0040,
 
-    F_start_pos          = 0x0100,
-    F_start_hpr          = 0x0200,
+    F_start_pos          = 0x0080,
+    F_start_hpr          = 0x0100,
+    F_start_quat         = 0x0200,
     F_start_scale        = 0x0400,
     F_start_color        = 0x0800,
     F_start_color_scale  = 0x1000,
@@ -87,6 +93,7 @@ private:
   unsigned int _flags;
   LPoint3f _start_pos, _end_pos;
   LVecBase3f _start_hpr, _end_hpr;
+  LQuaternionf _start_quat, _end_quat;
   LVecBase3f _start_scale, _end_scale;
   LVecBase3f _start_shear, _end_shear;
   Colorf _start_color, _end_color;
