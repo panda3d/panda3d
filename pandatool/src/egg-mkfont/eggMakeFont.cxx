@@ -257,7 +257,7 @@ run() {
     // want to keep the glyph textures full-sized, because the
     // palettizer will reduce them later.
 
-    _tex_margin *= _scale_factor;
+    _tex_margin = (int)(_tex_margin * _scale_factor);
     _poly_margin *= _scale_factor;
     _pixels_per_unit *= _scale_factor;
     _scale_factor = 1.0;
@@ -267,8 +267,8 @@ run() {
     // If -nr was specified, but we're still palettizing, we don't
     // even want to reduce the palette images.  Instead, we'll
     // generate extra-large palette images.
-    _palette_size[0] *= _palettize_scale_factor;
-    _palette_size[1] *= _palettize_scale_factor;
+    _palette_size[0] = (int)(_palette_size[0] * _palettize_scale_factor);
+    _palette_size[1] = (int)(_palette_size[1] * _palettize_scale_factor);
     _palettize_scale_factor = 1.0;
   }
 

@@ -1,5 +1,7 @@
 #begin ss_lib_target
   #define TARGET palettizer
+  #define LOCAL_LIBS \
+    pandatoolbase
   #define OTHER_LIBS \
     egg:c pgraph:c linmath:c putil:c express:c pnmimage:c pnmimagetypes:c \
     event:c mathutil:c \
