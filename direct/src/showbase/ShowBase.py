@@ -321,6 +321,11 @@ class ShowBase(DirectObject.DirectObject):
                 if self.camList.count(cam) != 0:
                     self.camList.remove(cam)
                 if not cam.isEmpty():
+                    camera = cam.getParent()
+                    if self.cameraList.count(camera) != 0:
+                        self.cameraList.remove(camera)
+                    # Don't throw away self.camera; we want to
+                    # preserve it for reopening the window.
                     if cam == self.cam:
                         self.cam = None
                     cam.removeNode()
@@ -578,10 +583,22 @@ class ShowBase(DirectObject.DirectObject):
 
         for i in range(chanConfig.getNumGroups()):
             # Create a top level camera node for this group
-            camera = self.render.attachNewNode(chanConfig.getGroupNode(i))
-            self.cameraList.append(camera)
+
+            camera = NodePath(chanConfig.getGroupNode(i))
             # Extract camera
             cam = camera.find('**/+Camera')
+
+            # A special case: if we have a camera but not a
+            # cameraList, we must have just reopened the window. Use
+            # that existing camera instead of creating a new one.
+            if self.camera != None and len(self.cameraList) == 0:
+                # Throw away the chancfg group in this special case.
+                camera = self.camera
+                cam.reparentTo(camera)
+            else:
+                camera.reparentTo(self.render)
+
+            self.cameraList.append(camera)
             self.camList.append(cam)
             # Enforce our expected aspect ratio, overriding whatever
             # nonsense ChanConfig put in there.
