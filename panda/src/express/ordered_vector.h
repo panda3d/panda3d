@@ -105,13 +105,13 @@ public:
   // Be careful when using the non-const iterators that you do not
   // disturb the sorted order of the vector, or that if you do, you
   // call sort() when you are done.
-  typedef typename Vector::iterator ITERATOR;
-  typedef typename Vector::const_iterator CONST_ITERATOR;
-  typedef typename Vector::reverse_iterator REVERSE_ITERATOR;
-  typedef typename Vector::const_reverse_iterator CONST_REVERSE_ITERATOR;
+  typedef TYPENAME Vector::iterator ITERATOR;
+  typedef TYPENAME Vector::const_iterator CONST_ITERATOR;
+  typedef TYPENAME Vector::reverse_iterator REVERSE_ITERATOR;
+  typedef TYPENAME Vector::const_reverse_iterator CONST_REVERSE_ITERATOR;
 
-  typedef typename Vector::difference_type DIFFERENCE_TYPE;
-  typedef typename Vector::size_type SIZE_TYPE;
+  typedef TYPENAME Vector::difference_type DIFFERENCE_TYPE;
+  typedef TYPENAME Vector::size_type SIZE_TYPE;
 
   // Since the #define symbols do not actually expand to the correct
   // names, we have to re-typedef them so callers can reference them
@@ -255,8 +255,8 @@ private:
 template<class Key, class Compare = less<Key> >
 class ov_set : public ordered_vector<Key, Compare> {
 public:
-  typedef typename ordered_vector<Key, Compare>::ITERATOR ITERATOR;
-  typedef typename ordered_vector<Key, Compare>::VALUE_TYPE VALUE_TYPE;
+  typedef TYPENAME ordered_vector<Key, Compare>::ITERATOR ITERATOR;
+  typedef TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE VALUE_TYPE;
 
   INLINE ov_set(const Compare &compare = Compare());
   INLINE ov_set(const ov_set<Key, Compare> &copy);
@@ -278,8 +278,8 @@ public:
 template<class Key, class Compare = less<Key> >
 class ov_multiset : public ordered_vector<Key, Compare> {
 public:
-  typedef typename ordered_vector<Key, Compare>::ITERATOR ITERATOR;
-  typedef typename ordered_vector<Key, Compare>::VALUE_TYPE VALUE_TYPE;
+  typedef TYPENAME ordered_vector<Key, Compare>::ITERATOR ITERATOR;
+  typedef TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE VALUE_TYPE;
 
   INLINE ov_multiset(const Compare &compare = Compare());
   INLINE ov_multiset(const ov_multiset<Key, Compare> &copy);

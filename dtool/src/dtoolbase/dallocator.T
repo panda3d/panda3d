@@ -63,9 +63,9 @@ dallocator() throw() {
 }
 
 template<class Type>
-INLINE typename dallocator<Type>::pointer dallocator<Type>::
-allocate(typename dallocator<Type>::size_type n, allocator<void>::const_pointer) {
-  return (typename dallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
+INLINE TYPENAME dallocator<Type>::pointer dallocator<Type>::
+allocate(TYPENAME dallocator<Type>::size_type n, allocator<void>::const_pointer) {
+  return (TYPENAME dallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
 }
 
 template<class Type>

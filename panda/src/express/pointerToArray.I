@@ -75,7 +75,7 @@ PointerToArray(const PointerToArray<Element> &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::iterator PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 begin() const {
   if (_ptr == NULL) {
     return _empty_array.begin();
@@ -89,7 +89,7 @@ begin() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::iterator PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 end() const {
   if (_ptr == NULL) {
     return _empty_array.begin();
@@ -103,7 +103,7 @@ end() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::reverse_iterator PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::reverse_iterator PointerToArray<Element>::
 rbegin() const {
   if (_ptr == NULL) {
     return _empty_array.rbegin();
@@ -117,7 +117,7 @@ rbegin() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::reverse_iterator PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::reverse_iterator PointerToArray<Element>::
 rend() const {
   if (_ptr == NULL) {
     return _empty_array.rbegin();
@@ -131,7 +131,7 @@ rend() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::size_type PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::size_type PointerToArray<Element>::
 size() const {
   return (_ptr == NULL) ? 0 : _ptr->size();
 }
@@ -142,7 +142,7 @@ size() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::size_type PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::size_type PointerToArray<Element>::
 max_size() const {
   nassertd(_ptr != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
@@ -168,7 +168,7 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
-reserve(typename PointerToArray<Element>::size_type n) {
+reserve(TYPENAME PointerToArray<Element>::size_type n) {
   if (_ptr == NULL) {
     reassign(new RefCountObj<pvector<Element> >);
   }
@@ -181,7 +181,7 @@ reserve(typename PointerToArray<Element>::size_type n) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::size_type PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::size_type PointerToArray<Element>::
 capacity() const {
   nassertr(_ptr != NULL, 0);
   return _ptr->capacity();
@@ -193,7 +193,7 @@ capacity() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::reference PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 front() const {
   nassertd(_ptr != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
@@ -210,7 +210,7 @@ front() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::reference PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 back() const {
   nassertd(_ptr != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
@@ -227,7 +227,7 @@ back() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename PointerToArray<Element>::iterator PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 insert(iterator position, const Element &x) const {
   nassertr(_ptr != NULL, position);
   nassertr(position >= _ptr->begin() &&
@@ -506,7 +506,7 @@ ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::iterator ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::iterator ConstPointerToArray<Element>::
 begin() const {
   if (_ptr == NULL) {
     return _empty_array.begin();
@@ -520,7 +520,7 @@ begin() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::iterator ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::iterator ConstPointerToArray<Element>::
 end() const {
   if (_ptr == NULL) {
     return _empty_array.begin();
@@ -534,7 +534,7 @@ end() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::reverse_iterator ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::reverse_iterator ConstPointerToArray<Element>::
 rbegin() const {
   if (_ptr == NULL) {
     return _empty_array.rbegin();
@@ -548,7 +548,7 @@ rbegin() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::reverse_iterator ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::reverse_iterator ConstPointerToArray<Element>::
 rend() const {
   if (_ptr == NULL) {
     return _empty_array.rbegin();
@@ -562,7 +562,7 @@ rend() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 size() const {
   return (_ptr == NULL) ? 0 : _ptr->size();
 }
@@ -573,7 +573,7 @@ size() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 max_size() const {
   nassertd(_ptr != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
@@ -598,7 +598,7 @@ empty() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 capacity() const {
   nassertd(_ptr != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
@@ -613,7 +613,7 @@ capacity() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 operator[](size_type n) const {
   nassertd(_ptr != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
@@ -632,7 +632,7 @@ operator[](size_type n) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 front() const {
   nassertd(_ptr != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
@@ -649,7 +649,7 @@ front() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE typename ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
+INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 back() const {
   nassertd(_ptr != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);

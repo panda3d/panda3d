@@ -78,9 +78,9 @@ pallocator() throw() {
 }
 
 template<class Type>
-INLINE typename pallocator<Type>::pointer pallocator<Type>::
-allocate(typename pallocator<Type>::size_type n, typename allocator<void>::const_pointer) {
-  return (typename pallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
+INLINE TYPENAME pallocator<Type>::pointer pallocator<Type>::
+allocate(TYPENAME pallocator<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
+  return (TYPENAME pallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
 }
 
 template<class Type>

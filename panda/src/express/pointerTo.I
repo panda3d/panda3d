@@ -315,7 +315,7 @@ PointerTo(const PointerTo<T> &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE typename PointerTo<T>::To &PointerTo<T>::
+INLINE TYPENAME PointerTo<T>::To &PointerTo<T>::
 operator *() const {
   return *_ptr;
 }
@@ -326,7 +326,7 @@ operator *() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE typename PointerTo<T>::To *PointerTo<T>::
+INLINE TYPENAME PointerTo<T>::To *PointerTo<T>::
 operator -> () const {
   return _ptr;
 }
@@ -343,7 +343,7 @@ operator -> () const {
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T>::
-operator typename PointerToBase<T>::To *() const {
+operator TYPENAME PointerToBase<T>::To *() const {
   return _ptr;
 }
 
@@ -355,7 +355,7 @@ operator typename PointerToBase<T>::To *() const {
 //               for implicit upcasts.
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE typename PointerTo<T>::To *PointerTo<T>::
+INLINE TYPENAME PointerTo<T>::To *PointerTo<T>::
 p() const {
   return _ptr;
 }
@@ -366,7 +366,7 @@ p() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE typename PointerTo<T> &PointerTo<T>::
+INLINE TYPENAME PointerTo<T> &PointerTo<T>::
 operator = (To *ptr) {
   reassign(ptr);
   return *this;
@@ -378,7 +378,7 @@ operator = (To *ptr) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE typename PointerTo<T> &PointerTo<T>::
+INLINE TYPENAME PointerTo<T> &PointerTo<T>::
 operator = (const PointerTo<T> &copy) {
   reassign((const PointerToBase<T> &)copy);
   return *this;
@@ -426,7 +426,7 @@ ConstPointerTo(const ConstPointerTo<T> &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE const typename ConstPointerTo<T>::To &ConstPointerTo<T>::
+INLINE const TYPENAME ConstPointerTo<T>::To &ConstPointerTo<T>::
 operator *() const {
   return *_ptr;
 }
@@ -437,7 +437,7 @@ operator *() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE const typename ConstPointerTo<T>::To *ConstPointerTo<T>::
+INLINE const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
 operator -> () const {
   return _ptr;
 }
@@ -455,8 +455,8 @@ operator -> () const {
 
 #ifndef CPPPARSER
 template<class T>
-INLINE typename ConstPointerTo<T>::
-operator const typename PointerToBase<T>::To *() const {
+INLINE TYPENAME ConstPointerTo<T>::
+operator const TYPENAME PointerToBase<T>::To *() const {
   return _ptr;
 }
 #else
@@ -476,7 +476,7 @@ operator const PointerToBase<T>::To *() const {
 //               for implicit upcasts.
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE const typename ConstPointerTo<T>::To *ConstPointerTo<T>::
+INLINE const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
 p() const {
   return _ptr;
 }
