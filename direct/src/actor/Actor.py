@@ -759,7 +759,9 @@ class Actor(PandaObject, NodePath):
 
         If mode == -1, the geometry is simply arranged to be drawn in
         the correct order, assuming it is already under a
-        direct-render scene graph (like the DirectGui system).
+        direct-render scene graph (like the DirectGui system).  That
+        is, frontPart is reparented to backPart, and backPart is
+        reordered to appear first among its siblings.
 
         If mode == -2, the geometry is arranged to be drawn in the
         correct order, and depth test/write is turned off for
@@ -824,6 +826,9 @@ class Actor(PandaObject, NodePath):
             # Draw as a decal.
             dt = DecalTransition()
             backPart.arc().setTransition(dt)
+        else:
+            # Reorder the backPart to be the first of its siblings.
+            backPart.reparentTo(backPart.getParent(), -1)
 
         #reparent all the front parts to the back part
         frontParts.reparentTo(backPart)
