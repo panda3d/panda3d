@@ -6,7 +6,7 @@
     linmath:c putil:c panda:m express:c pandaexpress:m dtoolconfig dtool
 
   #define SOURCES \
-    showBase.cxx showBase.h mersenne.cxx mersenne.h projectionScreen.h projectionScreen.I projectionScreen.cxx
+    showBase.cxx showBase.h mersenne.cxx mersenne.h
 
   #define IGATESCAN all
 #end lib_target
