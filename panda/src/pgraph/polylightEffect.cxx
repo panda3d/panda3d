@@ -57,71 +57,66 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
   r = 1.0;
   g = 1.0;
   b = 1.0;
-  if(is_enabled()) {
+  if (is_enabled()) {
     LIGHTGROUP::const_iterator light_iter; 
     // Cycle through all the lights in this effect's lightgroup
     for (light_iter = _lightgroup.begin(); light_iter != _lightgroup.end(); light_iter++){
       const PolylightNode *light = DCAST(PolylightNode,light_iter->second.node()); 
-	  // light holds the current PolylightNode
-	  if(light->is_enabled()) { // if enabled get all the properties
-	    float light_radius = light->get_radius();
-	    PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
-	    float light_a0 = light->get_a0();
-	    float light_a1 = light->get_a1();
-	    float light_a2 = light->get_a2();
-	    if(light_a0 == 0 && light_a1 == 0 && light_a2 == 0) { // To prevent division by zero
+      // light holds the current PolylightNode
+      if (light->is_enabled()) { // if enabled get all the properties
+        float light_radius = light->get_radius();
+        PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
+        float light_a0 = light->get_a0();
+        float light_a1 = light->get_a1();
+        float light_a2 = light->get_a2();
+        if (light_a0 == 0 && light_a1 == 0 && light_a2 == 0) { // To prevent division by zero
           light_a0 = 1.0;
-	    }
-	    Colorf light_color;
-	    if(light->is_flickering()) { // If flickering, modify color
-	      light_color = light->flicker();
-	    }
-	    else {
-	      light_color = light->get_color();
-	    }
-	
-	    // Calculate the distance of the node from the light
-	    //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
+        }
+        Colorf light_color;
+        if (light->is_flickering()) { // If flickering, modify color
+          light_color = light->flicker();
+        } else {
+          light_color = light->get_color_scenegraph();
+        }
+        // Calculate the distance of the node from the light
+        //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
         const NodePath lightnp = light_iter->second;
         LPoint3f point = data->_node_path.get_node_path().get_relative_point(lightnp,
           light->get_pos());
         dist = (point - _effect_center).length();
 
-	    if(dist < light_radius) { // If node is in range of this light
-          if(light_attenuation == PolylightNode::ALINEAR) {
-		    light_scale = (light_radius - dist)/light_radius;
-	      }
-	      else if(light_attenuation == PolylightNode::AQUADRATIC) {
-	        fd = 1.0 / (light_a0 + light_a1 * dist + light_a2 * dist * dist);
-		    if(fd < 1.0) {
-		      light_scale = fd;
-		    }
-		    else {
-		      light_scale = 1.0;
-		    }
-		  }
-          else {
-            light_scale = 1.0;
-          }
-          // Keep accumulating each lights contribution... we divide by 
-		  // number of lights later.
-	      Rcollect += light_color[0] * light_scale;
-	      Gcollect += light_color[1] * light_scale;
-	      Bcollect += light_color[2] * light_scale;
-	      num_lights++;
-	    } // if dist< radius
-	  } // if light is enabled
+        if (dist < light_radius) { // If node is in range of this light
+          if (light_attenuation == PolylightNode::ALINEAR) {
+            light_scale = (light_radius - dist)/light_radius;
+          } else if (light_attenuation == PolylightNode::AQUADRATIC) {
+            fd = 1.0 / (light_a0 + light_a1 * dist + light_a2 * dist * dist);
+            if (fd < 1.0) {
+              light_scale = fd;
+            } else {
+              light_scale = 1.0;
+            }
+         } else {
+             light_scale = 1.0;
+         }
+         // Keep accumulating each lights contribution... we divide by 
+         // number of lights later.
+           Rcollect += light_color[0] * light_scale;
+           Gcollect += light_color[1] * light_scale;
+           Bcollect += light_color[2] * light_scale;
+           num_lights++;
+        } // if dist< radius
+      } // if light is enabled
     } // for all lights
   
 
-    if( _contribution_type == CALL) {
+    if ( _contribution_type == CALL) {
       // Sometimes to prevent snapping of color at light volume boundaries
-	  // just divide total contribution by all the lights in the effect
-	  // whether or not they contribute color
+      // just divide total contribution by all the lights in the effect
+      // whether or not they contribute color
       num_lights = _lightgroup.size();
     }
 
-    if(num_lights == 0) {
+    if (num_lights == 0) {
       no_lights_closeby = true;
       num_lights = 1;
     }
@@ -129,7 +124,7 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
     Gcollect /= num_lights;
     Bcollect /= num_lights;
 
-    if(!no_lights_closeby) {
+    if (!no_lights_closeby) {
       //r = 1.0 + ((1.0 - _weight) + Rcollect * _weight);
       //g = 1.0 + ((1.0 - _weight) + Gcollect * _weight);
       //b = 1.0 + ((1.0 - _weight) + Bcollect * _weight);
@@ -163,7 +158,7 @@ compare_to_impl(const RenderEffect *other) const {
   DCAST_INTO_R(ta, other, 0);
 
   if (_enabled != ta->_enabled) {
-	  return _enabled ? 1 : -1;
+    return _enabled ? 1 : -1;
   }
 
   if (_contribution_type != ta->_contribution_type) {
@@ -171,7 +166,7 @@ compare_to_impl(const RenderEffect *other) const {
   }
  
   if (_weight != ta->_weight) {
-	return _weight < ta->_weight ? -1 :1;
+    return _weight < ta->_weight ? -1 :1;
   }
 
   if (_lightgroup != ta->_lightgroup) {

@@ -67,7 +67,7 @@ draw_with_decals(CullableObject *object, GraphicsStateGuardianBase *gsg) {
   while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
     gsg->set_state_and_transform(base->_state->compose(state), base->_transform);
     base->_geom->draw(gsg);
-
+    
     base = base->_next;
   }
 
@@ -79,7 +79,6 @@ draw_with_decals(CullableObject *object, GraphicsStateGuardianBase *gsg) {
     while (decal != (CullableObject *)NULL) {
       gsg->set_state_and_transform(decal->_state->compose(state), decal->_transform);
       decal->_geom->draw(gsg);
-      
       decal = decal->_next;
     }
   }

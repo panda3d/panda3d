@@ -74,7 +74,7 @@ add_light(const string &lightname, const NodePath &newlight) {
   nassertr(newlight.node() != (PolylightNode *)NULL,false);
   
   // Check if light name is unique
-  if(_lightgroup.find(lightname) != _lightgroup.end()) {
+  if (_lightgroup.find(lightname) != _lightgroup.end()) {
     cerr << "Light name already exists. Please choose another name\n";
     return false;
   }
@@ -96,7 +96,7 @@ INLINE bool PolylightEffect::
 remove_light(const string &lightname) {
 
   // Check if light name exists
-  if(_lightgroup.find(lightname) == _lightgroup.end()) {
+  if (_lightgroup.find(lightname) == _lightgroup.end()) {
     cerr << "Light name does not exist\n";
     return false;
   }
@@ -155,7 +155,7 @@ get_weight() const {
 //               _contribution_type is a string that controls how
 //               this division occurs.
 //               "proximal" : A light only contributes if the node 
-//				 is inside its volume
+//               is inside its volume
 //               "all" : All lights added to the effect are used in
 //               division irrespective of their light volumes
 ////////////////////////////////////////////////////////////////////

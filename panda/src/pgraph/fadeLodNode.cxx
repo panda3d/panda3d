@@ -137,16 +137,16 @@ bool FadeLODNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PandaNode *node = data.node();
   CDReader cdata(_cycler);
-  if(_fade_mode) {
+  if (_fade_mode) {
     float in_alpha;
     float out_alpha;
     _fade_timer -= ClockObject::get_global_clock()->get_dt();
-      if(_fade_timer <= (cdata->_fade_time / 2.0)) { 
+      if (_fade_timer <= (cdata->_fade_time / 2.0)) { 
         //SECOND HALF OF FADE:
         //Fade out the old LOD with z write off and 
         //draw the opaque new LOD with z write on
         out_alpha = (_fade_timer*2.0) / cdata->_fade_time;  
-        if(out_alpha < 0.0) {
+        if (out_alpha < 0.0) {
           out_alpha = 0.0;
         }
         
@@ -167,13 +167,12 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         
         trav->traverse(next_data_in);
         trav->traverse(next_data_out);
-      }
-      else {
+      } else {
         // FIRST HALF OF FADE
         // Fade the new LOD in with z writing off
         // Keep drawing the old LOD opaque with z writing on
         in_alpha = (1.0 - (_fade_timer / cdata->_fade_time))*2.0;  
-         if(in_alpha > 1.0) {
+         if (in_alpha > 1.0) {
           in_alpha = 1.0;
         }
         
@@ -194,18 +193,16 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         trav->traverse(next_data_out);
         trav->traverse(next_data_in);
       }
-    if(_fade_timer < 0) { // Fading Complete
+    if (_fade_timer < 0) { // Fading Complete
       _fade_mode = false;
     }
-  } 
-  else {
+  } else {
     if (data._net_transform->is_singular()) {
       // If we're under a singular transform, we can't compute the LOD;
       // select none of them instead.
       //select_child(get_num_children());
       return false;
-    }
-    else { 
+    } else { 
       LPoint3f camera_pos(0, 0, 0);
       // Get the LOD center in camera space
       CPT(TransformState) rel_transform =
@@ -214,16 +211,15 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // Determine which child to traverse 
       int index = cdata->_lod.compute_child(camera_pos, center);
       //printf("CHILD: %d PREVIOUS %d \n",index,_previous_child);
-      if(index != _previous_child) { // Transition occurred
-	    _fade_mode = true;
+      if (index != _previous_child) { // Transition occurred
+        _fade_mode = true;
         _fade_timer = cdata->_fade_time;
         _fade_out = _previous_child; 
         _fade_in = index;
-	    _previous_child = index;
+        _previous_child = index;
         CullTraverserData next_data_transition(data, node->get_child(_fade_out));
         trav->traverse(next_data_transition);
-      }
-      else {
+      } else {
         // No transition... handle things as usual
         // Traverse only one valid child
         CullTraverserData next_data_normal(data, node->get_child(index));

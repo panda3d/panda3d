@@ -70,36 +70,34 @@ Colorf PolylightNode::flicker() const {
   float r,g,b;
 
   Colorf color;
-  color = get_color();
+  color = get_color_scenegraph();
   r = color[0];
   g = color[1];
   b = color[2];
   float variation= 0.0;
   
-  if(_flicker_type == FRANDOM) {
+  if (_flicker_type == FRANDOM) {
     //srand((int)ClockObject::get_global_clock()->get_frame_time());
     variation = (rand()%100);// * ClockObject::get_global_clock()->get_dt();
-	variation /= 100.0;
-	//printf("Random Variation: %f\n",variation);
-	variation += _offset;
-	variation *= _scale;
-  }
-  else if(_flicker_type == FSIN) {
-	double now = ClockObject::get_global_clock()->get_frame_time();
+    variation /= 100.0;
+    //printf("Random Variation: %f\n",variation);
+    variation += _offset;
+    variation *= _scale;
+  } else if (_flicker_type == FSIN) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
     variation = sinf(now*_sin_freq);// * ClockObject::get_global_clock()->get_dt();
-	//printf("Variation: %f\n",variation);
-	variation += _offset;
-	variation *= _scale;
-  }
-  else if(_flicker_type == FCUSTOM) {
+    //printf("Variation: %f\n",variation);
+    variation += _offset;
+    variation *= _scale;
+  } else if (_flicker_type == FCUSTOM) {
     // fixed point list of variation values coming soon...
     //double index = (ClockObject::get_global_clock()->get_frame_time() % len(fixed_points)) *  ClockObject::get_global_clock()->get_dt();
-	//index *= _speed;
-	/*if(!(int)index > len(fixed_points) {
-	  variation = _fixed_points[(int)index];
-	  variation += _offset;
-	  variation *= _scale;
-	}*/
+    //index *= _speed;
+    /*if (!(int)index > len(fixed_points) {
+        variation = _fixed_points[(int)index];
+        variation += _offset;
+        variation *= _scale;
+      }*/
   }
   //printf("Variation: %f\n",variation);
   r+=variation;
@@ -107,7 +105,7 @@ Colorf PolylightNode::flicker() const {
   b+=variation;
  
   /* CLAMPING
-  if(fabs(r - color[0]) > 0.5 || fabs(g - color[1]) > 0.5 || fabs(b - color[2]) > 0.5) {
+  if (fabs(r - color[0]) > 0.5 || fabs(g - color[1]) > 0.5 || fabs(b - color[2]) > 0.5) {
     r = color[0];
     g = color[1];
     b = color[2];
@@ -126,7 +124,7 @@ Colorf PolylightNode::flicker() const {
 //
 //               Two PolylightNodes are considered equivalent if they
 //               consist of exactly the same properties
-//				 Otherwise, they are different; different
+//               Otherwise, they are different; different
 //               PolylightNodes will be ranked in a consistent but
 //               undefined ordering; the ordering is useful only for
 //               placing the PolylightNodes in a sorted container like an
@@ -136,62 +134,62 @@ int PolylightNode::
 compare_to(const PolylightNode &other) const {
   
   if (_enabled != other._enabled) {
-	return _enabled ? 1 :-1;
+    return _enabled ? 1 :-1;
   }
 
   if (_radius != other._radius) {
-	return _radius < other._radius ? -1 :1;
+    return _radius < other._radius ? -1 :1;
   }
   LVecBase3f position = get_pos();
   LVecBase3f other_position = other.get_pos();
   if (position != other_position) {
-	return position < other_position ? -1 :1;
+    return position < other_position ? -1 :1;
   }
 
   Colorf color = get_color();
   Colorf other_color = other.get_color();
   if (color != other_color) {
-	return color < other_color ? -1 :1;
+    return color < other_color ? -1 :1;
   }
 
   if (_attenuation_type != other._attenuation_type) {
-	return _attenuation_type < other._attenuation_type ? -1 :1;
+    return _attenuation_type < other._attenuation_type ? -1 :1;
   }
 
   if (_a0 != other._a0) {
-	return _a0 < other._a0 ? -1 :1;
+    return _a0 < other._a0 ? -1 :1;
   }
 
   if (_a1 != other._a1) {
-	return _a1 < other._a1 ? -1 :1;
+    return _a1 < other._a1 ? -1 :1;
   }
 
   if (_a2 != other._a2) {
-	return _a2 < other._a2 ? -1 :1;
+    return _a2 < other._a2 ? -1 :1;
   }
 
   if (_flickering != other._flickering) {
-	return _flickering ? 1 :-1;
+    return _flickering ? 1 :-1;
   }
 
   if (_flicker_type != other._flicker_type) {
-	return _flicker_type < other._flicker_type ? -1 :1;
+    return _flicker_type < other._flicker_type ? -1 :1;
   }
 
   if (_offset != other._offset) {
-	return _offset < other._offset ? -1 :1;
+    return _offset < other._offset ? -1 :1;
   }
 
   if (_scale != other._scale) {
-	return _scale < other._scale ? -1 :1;
+    return _scale < other._scale ? -1 :1;
   }
 
   if (_step_size != other._step_size) {
-	return _step_size < other._step_size ? -1 :1;
+    return _step_size < other._step_size ? -1 :1;
   }
 
   if (_sin_freq != other._sin_freq) {
-	return _sin_freq < other._sin_freq ? -1 :1;
+    return _sin_freq < other._sin_freq ? -1 :1;
   }
 
 

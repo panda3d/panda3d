@@ -359,7 +359,8 @@ get_step_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
 set_color(Colorf color) {
-  PandaNode::set_attrib(ColorAttrib::make_flat(color));
+  //PandaNode::set_attrib(ColorAttrib::make_flat(color));
+  _color = color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -369,12 +370,18 @@ set_color(Colorf color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
 set_color(float r, float g, float b) {
+  /*
   Colorf color;
   color[0] = r;
   color[1] = g;
   color[2] = b;
   color[3] = 1.0;
   PandaNode::set_attrib(ColorAttrib::make_flat(color));
+  */
+  _color[0] = r;
+  _color[1] = g;
+  _color[2] = b;
+  _color[3] = 1.0;  
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -384,6 +391,19 @@ set_color(float r, float g, float b) {
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf PolylightNode::
 get_color() const {
+  return _color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightNode::get_color_scenegraph
+//       Access: Published
+//  Description: This differs from get_color in that when applying
+//               the light color we need to make sure that a color
+//               flattening external to the PolylightNode is not 
+//               ignored.
+////////////////////////////////////////////////////////////////////
+INLINE Colorf PolylightNode::
+get_color_scenegraph() const {
 
   const RenderAttrib *attrib =
     PandaNode::get_attrib(ColorAttrib::get_class_type());
@@ -394,7 +414,7 @@ get_color() const {
     }
   }
     
-  return Colorf(1.0f, 1.0f, 1.0f, 1.0f);
+  return _color;
  
 }
 

@@ -43,9 +43,9 @@ PUBLISHED:
   // have a simpler constructor and require the programmer
   // to use set_* methods.
   PolylightNode(const string &name, float x = 0.0, float y = 0.0, float z = 0.0,
-	float r = 1.0, float g = 1.0, float b = 1.0,
-	float radius=50.0, string attenuation_type= "linear",
-	bool flickering =false, string flicker_type="random");
+  float r = 1.0, float g = 1.0, float b = 1.0,
+  float radius=50.0, string attenuation_type= "linear",
+  bool flickering =false, string flicker_type="random");
   */
 
   enum Flicker_Type {
@@ -68,6 +68,7 @@ PUBLISHED:
   INLINE void set_color(Colorf color);
   INLINE void set_color(float r, float g, float b);
   INLINE Colorf get_color() const;
+  INLINE Colorf get_color_scenegraph() const;
   INLINE void set_radius(float r);
   INLINE float get_radius() const;
   INLINE bool set_attenuation(Attenuation_Type type);
@@ -107,7 +108,7 @@ public:
 private:
   bool _enabled;
   LVecBase3f _position;
-  //Colorf _color;
+  Colorf _color;
   float _radius;
   Attenuation_Type _attenuation_type;
   float _a0;
