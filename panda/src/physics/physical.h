@@ -41,7 +41,7 @@ class PhysicsManager;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS Physical : public TypedReferenceCount {
 PUBLISHED:
-  Physical(int ttl_objects = 1, bool pre_alloc = false);
+  Physical(int total_objects = 1, bool pre_alloc = false);
   Physical(const Physical& copy);
 
   virtual ~Physical();
@@ -64,6 +64,9 @@ PUBLISHED:
   INLINE PT(LinearForce) get_linear_force(int index) const;
   INLINE int get_num_angular_forces() const;
   INLINE PT(AngularForce) get_angular_force(int index) const;
+
+  INLINE void set_viscosity(float viscosity);
+  INLINE float get_viscosity() const;
   
   virtual void output(ostream &out) const;
   virtual void write_physics_objects(ostream &out, unsigned int indent=0) const;
@@ -84,6 +87,7 @@ public:
   friend class PhysicalNode;
 
 protected:
+  float _viscosity;
   // containers
   PhysicsObjectVector _physics_objects;
   LinearForceVector _linear_forces;

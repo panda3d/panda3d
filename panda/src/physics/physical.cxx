@@ -23,40 +23,39 @@
 
 TypeHandle Physical::_type_handle;
 
-// the idea here is that most physicals will NOT be collections of
-// sets (i.e. particle systems and whatever else).  Because of this,
-// the default constructor, unless otherwise specified, will
-// automatically allocate and initialize one PhysicalObject.
-// this makes it easier for high-level work.
-
-// pre-alloc is ONLY for multiple-object physicals, and if true,
-// fills the physics_object vector with dead nodes, pre-allocating
-// for the speed end of the speed-vs-overhead deal.
-
 ////////////////////////////////////////////////////////////////////
 //     Function : Physical
 //       Access : Public
 //  Description : Default Constructor
+//
+//                The idea here is that most physicals will NOT 
+//                be collections of sets (i.e. particle systems 
+//                and whatever else).  Because of this, the default 
+//                constructor, unless otherwise specified, will 
+//                automatically allocate and initialize one 
+//                PhysicalObject.  This makes it easier for 
+//                high-level work.
+//
+//                pre-alloc is ONLY for multiple-object physicals, 
+//                and if true, fills the physics_object vector 
+//                with dead nodes, pre-allocating for the speed
+//                end of the speed-vs-overhead deal.
 ////////////////////////////////////////////////////////////////////
 Physical::
-Physical(int ttl_objects, bool pre_alloc) {
+Physical(int total_objects, bool pre_alloc) {
+  _viscosity=0.0;
   _physical_node = (PhysicalNode *) NULL;
   _physics_manager = (PhysicsManager *) NULL;
 
-  if (ttl_objects == 1) {
+  if (total_objects == 1) {
     _phys_body = new PhysicsObject;
     add_physics_object(_phys_body);
-  }
-  else {
-    int i;
+  } else {
     _phys_body = (PhysicsObject *) NULL;
-
     // allocate each object.
     if (pre_alloc == true) {
-      PhysicsObject *po;
-
-      for (i = 0; i < ttl_objects; i++) {
-        po = new PhysicsObject;
+      for (int i = 0; i < total_objects; ++i) {
+        PhysicsObject *po = new PhysicsObject;
         add_physics_object(po);
       }
     }

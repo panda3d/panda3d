@@ -210,3 +210,24 @@ get_angular_force(int index) const {
   nassertr(index >= 0 && index < (int)_angular_forces.size(), NULL);
   return _angular_forces[index];
 }
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_viscosity
+//      Access : Public
+// Description : Set the local viscosity.
+////////////////////////////////////////////////////////////////////
+INLINE void Physical::
+set_viscosity(float viscosity) {
+  _viscosity=viscosity;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_viscosity
+//      Access : Public
+// Description : Get the local viscosity.
+////////////////////////////////////////////////////////////////////
+INLINE float Physical::
+get_viscosity() const {
+  //zzzzzzzzzzzzzzzz return max(_viscosity, get_physics_manager()->get_viscosity());
+  return _viscosity;
+}
