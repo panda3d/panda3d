@@ -91,11 +91,18 @@ sub CTAttachMod {
 	    $newenv{$_[0]} = &CTSpoolEnv( $_[0] ) ;
 	}
 	if ( ! ( $newenv{$_[0]} =~ /$_[1]/ )) {
+	    &CTUDebug( "'" . $_[1] . "' exists in " . $_[0] .
+		       " testing for simple modification\n" ) ;
 	    # if it's in there already, we're done before we started.
 	    if ( $_[1] =~ /^$_[2]/ ) {
+		&CTUDebug( "new value contains root '" . $_[2] .
+			   "', may not be able to do simple edit\n" ) ;
 		# damn, might need to do an in-place edit
 		local( $curroot ) = $ENV{$_[3]} ;
+		&CTUDebug( "current root for '" . $_[3] . "' is '" .
+			   $curroot . "'\n" ) ;
 		if ( $curroot eq "" ) {
+		    &CTUDebug( "can do simple edit\n" ) ;
 		    $dosimple = 1 ;
 		} else {
 		    local( $test ) = $_[1] ;
@@ -110,10 +117,14 @@ sub CTAttachMod {
 				   $_[1] . "' yielding '" . $foo . "'\n" ) ;
 			$newenv{$_[0]} = $foo ;
 		    } else {
+			&CTUDebug( "'" . $test . "' did not appear in $_[0]." .
+                                   "  Simple edit\n" ) ;
 			$dosimple = 1 ;
 		    }
 		}
 	    } else {
+		&CTUDebug( "new value does not contain root '" . $_[2] .
+			   "', can do simple edit\n" ) ;
 		# don't have to sweat in-place edits
 		$dosimple = 1 ;
 	    }
