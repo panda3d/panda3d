@@ -1,3 +1,6 @@
+# Before getting started, you'll need to install VisualC++ sp5 and
+# the Microsoft Platform SDK
+
 #
 # Make a directory for installing Panda, e.g. c:\pandadir
 
