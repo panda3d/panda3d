@@ -82,7 +82,7 @@ ConfigureFn(config_audio) {
     audio_thread_priority = -1;
 }
 
-void audio_load_loaders(void) {
+void audio_load_loaders() {
   static bool did_load = false;
 
   if (did_load)

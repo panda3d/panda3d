@@ -333,17 +333,20 @@ HRESULT wave_read_file(HMMIO hmmio, UINT cbRead, BYTE* pbDest, MMCKINFO* pckIn,
   for (DWORD cT=0; cT<cbDataIn; ++cT) {
     // copy bytes from the io to the buffer
     if (mmioinfoIn.pchNext == mmioinfoIn.pchEndRead) {
-      if (mmioAdvance(hmmio, &mmioinfoIn, MMIO_READ) != 0)
-    return E_FAIL;
-      if (mmioinfoIn.pchNext == mmioinfoIn.pchEndRead)
-    return E_FAIL;
+      if (mmioAdvance(hmmio, &mmioinfoIn, MMIO_READ) != 0) {
+        return E_FAIL;
+      }
+      if (mmioinfoIn.pchNext == mmioinfoIn.pchEndRead) {
+        return E_FAIL;
+      }
     }
     // actual copy
     *((BYTE*)pbDest+cT) = *((BYTE*)mmioinfoIn.pchNext);
     mmioinfoIn.pchNext++;
   }
-  if (mmioSetInfo(hmmio, &mmioinfoIn, 0) != 0)
+  if (mmioSetInfo(hmmio, &mmioinfoIn, 0) != 0) {
     return E_FAIL;
+  }
   *cbActualRead = cbDataIn;
   return S_OK;
 }

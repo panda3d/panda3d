@@ -61,7 +61,7 @@ INLINE AudioSound& AudioSound::operator=(const AudioSound& c) {
 //       Access: Protected
 //  Description: return the player for this sound
 ////////////////////////////////////////////////////////////////////
-INLINE AudioTraits::PlayerClass* AudioSound::get_player(void) const {
+INLINE AudioTraits::PlayerClass* AudioSound::get_player() const {
   return _player;
 }
 
@@ -70,7 +70,7 @@ INLINE AudioTraits::PlayerClass* AudioSound::get_player(void) const {
 //       Access: Protected
 //  Description: return the trait sound class for this sound
 ////////////////////////////////////////////////////////////////////
-INLINE AudioTraits::SoundClass* AudioSound::get_sound(void) const {
+INLINE AudioTraits::SoundClass* AudioSound::get_sound() const {
   return _sound;
 }
 
@@ -79,7 +79,7 @@ INLINE AudioTraits::SoundClass* AudioSound::get_sound(void) const {
 //       Access: Protected
 //  Description: return the trait playing class for this sound
 ////////////////////////////////////////////////////////////////////
-INLINE AudioTraits::PlayingClass* AudioSound::get_state(void) const {
+INLINE AudioTraits::PlayingClass* AudioSound::get_state() const {
   return _state;
 }
 

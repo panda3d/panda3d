@@ -27,28 +27,28 @@ protected:
   PT(GuiBehavior::BehaviorFunctor) _prev;
   PT(AudioSound) _sound;
 public:
-  virtual ~AudioGuiFunctor(void);
+  virtual ~AudioGuiFunctor();
   virtual void doit(GuiBehavior*);
 PUBLISHED:
   AudioGuiFunctor(AudioSound* = (AudioSound*)0L,
                   GuiBehavior::BehaviorFunctor* =
                   (GuiBehavior::BehaviorFunctor*)0L);
-  INLINE AudioSound* get_sound(void) const { return _sound; }
-  INLINE GuiBehavior::BehaviorFunctor* get_prev(void) const { return _prev; }
+  INLINE AudioSound* get_sound() const { return _sound; }
+  INLINE GuiBehavior::BehaviorFunctor* get_prev() const { return _prev; }
 public:
   // type interface
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     GuiBehavior::BehaviorFunctor::init_type();
     register_type(_type_handle, "AudioGuiFunctor",
                   GuiBehavior::BehaviorFunctor::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }

@@ -33,13 +33,13 @@ public:
 
   class EXPCL_PANDA SoundClass : public ReferenceCount {
   public:
-    SoundClass(void) {}
-    virtual ~SoundClass(void);
+    SoundClass() {}
+    virtual ~SoundClass();
 
-    virtual float length(void) const = 0;
-    virtual PlayingClass* get_state(void) const = 0;
-    virtual PlayerClass* get_player(void) const = 0;
-    virtual DeletePlayingFunc* get_delstate(void) const = 0;
+    virtual float length() const = 0;
+    virtual PlayingClass* get_state() const = 0;
+    virtual PlayerClass* get_player() const = 0;
+    virtual DeletePlayingFunc* get_delstate() const = 0;
   };
   class EXPCL_PANDA PlayingClass {
   protected:
@@ -47,18 +47,18 @@ public:
     float _volume;
   public:
     PlayingClass(SoundClass* s) : _sound(s), _volume(1.) {}
-    virtual ~PlayingClass(void);
+    virtual ~PlayingClass();
 
     enum PlayingStatus { BAD, READY, PLAYING } ;
 
-    virtual PlayingStatus status(void) = 0;
+    virtual PlayingStatus status() = 0;
     INLINE void set_volume(float v) { _volume = v; }
-    INLINE float get_volume(void) const { return _volume; }
+    INLINE float get_volume() const { return _volume; }
   };
   class EXPCL_PANDA PlayerClass {
   public:
-    PlayerClass(void) {}
-    virtual ~PlayerClass(void);
+    PlayerClass() {}
+    virtual ~PlayerClass();
 
     virtual void play_sound(SoundClass*, PlayingClass*, float) = 0;
     virtual void stop_sound(SoundClass*, PlayingClass*) = 0;

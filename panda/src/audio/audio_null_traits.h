@@ -28,28 +28,28 @@ class NullPlaying;
 
 class EXPCL_PANDA NullSound : public AudioTraits::SoundClass {
 public:
-  INLINE NullSound(void);
-  virtual ~NullSound(void);
+  INLINE NullSound();
+  virtual ~NullSound();
 
-  virtual float length(void) const;
-  virtual AudioTraits::PlayingClass* get_state(void) const;
-  virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  virtual float length() const;
+  virtual AudioTraits::PlayingClass* get_state() const;
+  virtual AudioTraits::PlayerClass* get_player() const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate() const;
 };
 
 class EXPCL_PANDA NullPlaying : public AudioTraits::PlayingClass {
 public:
   INLINE NullPlaying(AudioTraits::SoundClass*);
-  virtual ~NullPlaying(void);
+  virtual ~NullPlaying();
 
-  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  virtual AudioTraits::PlayingClass::PlayingStatus status();
   static void destroy(AudioTraits::PlayingClass*);
 };
 
 class EXPCL_PANDA NullPlayer : public AudioTraits::PlayerClass {
 public:
-  INLINE NullPlayer(void);
-  virtual ~NullPlayer(void);
+  INLINE NullPlayer();
+  virtual ~NullPlayer();
 
   virtual void play_sound(AudioTraits::SoundClass*,
                           AudioTraits::PlayingClass*, float);

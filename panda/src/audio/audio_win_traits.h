@@ -37,17 +37,17 @@ public:
   DWORD _len;
   WAVEFORMATEX _info;
 public:
-  INLINE WinSample(void);
-  virtual ~WinSample(void);
+  INLINE WinSample();
+  virtual ~WinSample();
 
-  virtual float length(void) const;
-  virtual AudioTraits::PlayingClass* get_state(void) const;
-  virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  virtual float length() const;
+  virtual AudioTraits::PlayingClass* get_state() const;
+  virtual AudioTraits::PlayerClass* get_player() const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate() const;
 
   // used by play_sound
-  INLINE DWORD get_length(void) const;
-  INLINE WAVEFORMATEX get_format(void) const;
+  INLINE DWORD get_length() const;
+  INLINE WAVEFORMATEX get_format() const;
 public:
   static WinSample* load_wav(Filename);
   static WinSample* load_raw(unsigned char*, unsigned long);
@@ -60,20 +60,20 @@ private:
   IDirectSoundBuffer* _buffer;
   IDirectMusicPort* _synth;
 
-  void init(void);
+  void init();
 public:
-  INLINE WinMusic(void);
-  virtual ~WinMusic(void);
+  INLINE WinMusic();
+  virtual ~WinMusic();
 
-  virtual float length(void) const;
-  virtual AudioTraits::PlayingClass* get_state(void) const;
-  virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  virtual float length() const;
+  virtual AudioTraits::PlayingClass* get_state() const;
+  virtual AudioTraits::PlayerClass* get_player() const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate() const;
   // these are used by the loaders
   static WinMusic* load_midi(Filename);
   // these are used by the players
-  INLINE IDirectMusicPerformance* get_performance(void) const;
-  INLINE IDirectMusicSegment* get_music(void);
+  INLINE IDirectMusicPerformance* get_performance() const;
+  INLINE IDirectMusicSegment* get_music();
 };
 
 class EXPCL_PANDA WinSamplePlaying : public AudioTraits::PlayingClass {
@@ -82,31 +82,31 @@ private:
   BYTE* _data;
 public:
   WinSamplePlaying(AudioTraits::SoundClass*);
-  ~WinSamplePlaying(void);
+  ~WinSamplePlaying();
 
-  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  virtual AudioTraits::PlayingClass::PlayingStatus status();
   static void destroy(AudioTraits::PlayingClass*);
   // these are used by the laoders
-  BYTE* lock(void);
-  void  unlock(void);
+  BYTE* lock();
+  void  unlock();
   // these are used by the player
-  INLINE LPDIRECTSOUNDBUFFER get_channel(void);
+  INLINE LPDIRECTSOUNDBUFFER get_channel();
 };
 
 class EXPCL_PANDA WinMusicPlaying : public AudioTraits::PlayingClass {
 public:
   WinMusicPlaying(AudioTraits::SoundClass*);
-  ~WinMusicPlaying(void);
+  ~WinMusicPlaying();
 
-  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  virtual AudioTraits::PlayingClass::PlayingStatus status();
   static void destroy(AudioTraits::PlayingClass*);
-  INLINE IDirectMusicPerformance* get_performance(void) const;
+  INLINE IDirectMusicPerformance* get_performance() const;
 };
 
 class EXPCL_PANDA WinSamplePlayer : public AudioTraits::PlayerClass {
 public:
-  INLINE WinSamplePlayer(void);
-  virtual ~WinSamplePlayer(void);
+  INLINE WinSamplePlayer();
+  virtual ~WinSamplePlayer();
 
   virtual void play_sound(AudioTraits::SoundClass*,
                           AudioTraits::PlayingClass*, float);
@@ -116,15 +116,15 @@ public:
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
-  static WinSamplePlayer* get_instance(void);
+  static WinSamplePlayer* get_instance();
 private:
   static WinSamplePlayer* _global_instance;
 };
 
 class EXPCL_PANDA WinMusicPlayer : public AudioTraits::PlayerClass {
 public:
-  INLINE WinMusicPlayer(void);
-  virtual ~WinMusicPlayer(void);
+  INLINE WinMusicPlayer();
+  virtual ~WinMusicPlayer();
 
   virtual void play_sound(AudioTraits::SoundClass*,
                           AudioTraits::PlayingClass*, float);
@@ -134,7 +134,7 @@ public:
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
-  static WinMusicPlayer* get_instance(void);
+  static WinMusicPlayer* get_instance();
 private:
   static WinMusicPlayer* _global_instance;
 };

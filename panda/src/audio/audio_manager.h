@@ -29,23 +29,23 @@
 
 class EXPCL_PANDA AudioManager {
 private:
-  INLINE AudioManager(void);
+  INLINE AudioManager();
 
-  void copy_loopset(void);
+  void copy_loopset();
   void ns_play(AudioSound*, float);
   void ns_stop(AudioSound*);
   void ns_set_loop(AudioSound*, bool);
   bool ns_get_loop(AudioSound*);
   void ns_set_volume(AudioSound*, float);
-  void ns_spawn_update(void);
-  void ns_shutdown(void);
-  void ns_update(void);
+  void ns_spawn_update();
+  void ns_shutdown();
+  void ns_update();
 
-  static AudioManager* get_ptr(void);
+  static AudioManager* get_ptr();
   static void* spawned_update(void*);
 
-  typedef void UpdateFunc(void);
-  typedef void ShutdownFunc(void);
+  typedef void UpdateFunc();
+  typedef void ShutdownFunc();
   typedef pset<AudioSound*> LoopSet;
   static AudioManager* _global_ptr;
   static UpdateFunc* _update_func;
@@ -63,7 +63,7 @@ private:
   static float _master_music_volume;
   static bool _master_volume_change;
 public:
-  virtual ~AudioManager(void);
+  virtual ~AudioManager();
 
   static void set_update_func(UpdateFunc*);
   static void set_shutdown_func(ShutdownFunc*);
@@ -74,19 +74,19 @@ PUBLISHED:
   INLINE static void set_loop(AudioSound*, bool);
   INLINE static bool get_loop(AudioSound*);
   INLINE static void set_volume(AudioSound*, float);
-  INLINE static void update(void);
-  INLINE static void spawn_update(void);
-  INLINE static void shutdown(void);
+  INLINE static void update();
+  INLINE static void spawn_update();
+  INLINE static void shutdown();
   INLINE static void set_master_sfx_volume(float);
   INLINE static void set_master_music_volume(float);
-  INLINE static float get_master_sfx_volume(void);
-  INLINE static float get_master_music_volume(void);
+  INLINE static float get_master_sfx_volume();
+  INLINE static float get_master_music_volume();
   INLINE static void set_all_sound_active(bool);
-  INLINE static bool get_all_sound_active(void);
+  INLINE static bool get_all_sound_active();
   INLINE static void set_sfx_active(bool);
   INLINE static void set_music_active(bool);
-  INLINE static bool get_sfx_active(void);
-  INLINE static bool get_music_active(void);
+  INLINE static bool get_sfx_active();
+  INLINE static bool get_music_active();
 public:
   INLINE static void set_hard_sfx_active(bool);
   INLINE static void set_hard_music_active(bool);

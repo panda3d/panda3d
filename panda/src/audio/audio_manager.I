@@ -31,7 +31,7 @@ INLINE void AudioManager::play(AudioSound* sound, float start_time) {
 //       Access: Public, Static
 //  Description: make sure buffers are full
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::update(void) {
+INLINE void AudioManager::update() {
   if (!audio_is_active)
     return;
   {
@@ -48,7 +48,7 @@ INLINE void AudioManager::update(void) {
 //       Access: Public, Static
 //  Description: spawn a thread to call update
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::spawn_update(void) {
+INLINE void AudioManager::spawn_update() {
   if (audio_is_active)
     get_ptr()->ns_spawn_update();
 }
@@ -58,7 +58,7 @@ INLINE void AudioManager::spawn_update(void) {
 //       Access: Public, Static
 //  Description: kill any internal threads, free any internal data
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::shutdown(void) {
+INLINE void AudioManager::shutdown() {
   get_ptr()->ns_shutdown();
 }
 
@@ -108,7 +108,7 @@ INLINE bool AudioManager::get_loop(AudioSound* sound) {
 //               directly; there's only supposed to be one AudioManager
 //               in the universe and it constructs itself.
 ////////////////////////////////////////////////////////////////////
-INLINE AudioManager::AudioManager(void) {
+INLINE AudioManager::AudioManager() {
   _sfx_active = _hard_sfx_active = audio_sfx_active;
   _music_active = _hard_music_active = audio_music_active;
   _master_sfx_volume = audio_master_sfx_volume;
@@ -141,7 +141,7 @@ INLINE void AudioManager::set_master_music_volume(float v) {
 //       Access: Public, Static
 //  Description: return the overall volume of SFX
 ////////////////////////////////////////////////////////////////////
-INLINE float AudioManager::get_master_sfx_volume(void) {
+INLINE float AudioManager::get_master_sfx_volume() {
   get_ptr();
   return AudioManager::_master_sfx_volume;
 }
@@ -151,7 +151,7 @@ INLINE float AudioManager::get_master_sfx_volume(void) {
 //       Access: Public, Static
 //  Description: return the overall volume of music
 ////////////////////////////////////////////////////////////////////
-INLINE float AudioManager::get_master_music_volume(void) {
+INLINE float AudioManager::get_master_music_volume() {
   get_ptr();
   return AudioManager::_master_music_volume;
 }
@@ -171,7 +171,7 @@ INLINE void AudioManager::set_all_sound_active(bool f) {
 //       Access: Public, Static
 //  Description: turn on/off all audio
 ////////////////////////////////////////////////////////////////////
-INLINE bool AudioManager::get_all_sound_active(void) {
+INLINE bool AudioManager::get_all_sound_active() {
   get_ptr();
   return audio_is_active;
 }
@@ -217,7 +217,7 @@ INLINE void AudioManager::set_music_active(bool f) {
 //       Access: Public, Static
 //  Description: return the state of SFX playing
 ////////////////////////////////////////////////////////////////////
-INLINE bool AudioManager::get_sfx_active(void) {
+INLINE bool AudioManager::get_sfx_active() {
   get_ptr();
   return (AudioManager::_sfx_active && audio_is_active);
 }
@@ -227,7 +227,7 @@ INLINE bool AudioManager::get_sfx_active(void) {
 //       Access: Public, Static
 //  Description: return the state of music playing
 ////////////////////////////////////////////////////////////////////
-INLINE bool AudioManager::get_music_active(void) {
+INLINE bool AudioManager::get_music_active() {
   get_ptr();
   return (AudioManager::_music_active && audio_is_active);
 }

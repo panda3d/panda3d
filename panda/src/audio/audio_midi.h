@@ -30,7 +30,7 @@ private:
 public:
   AudioMidi(Filename, int = 1);
   AudioMidi(const AudioMidi&);
-  ~AudioMidi(void);
+  ~AudioMidi();
 
   AudioMidi& operator=(const AudioMidi&);
   bool operator==(const AudioMidi&) const;

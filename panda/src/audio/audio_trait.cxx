@@ -19,40 +19,40 @@
 #include "audio_trait.h"
 #include "config_audio.h"
 
-AudioTraits::SoundClass::~SoundClass(void) {
+AudioTraits::SoundClass::~SoundClass() {
 }
 
-float AudioTraits::SoundClass::length(void) const {
+float AudioTraits::SoundClass::length() const {
   audio_cat->error() << "In abstract SoundClass::length!" << endl;
   return -1.;
 }
 
-AudioTraits::PlayingClass* AudioTraits::SoundClass::get_state(void) const {
+AudioTraits::PlayingClass* AudioTraits::SoundClass::get_state() const {
   audio_cat->error() << "In abstract SoundClass::get_state!" << endl;
   return (AudioTraits::PlayingClass*)0L;
 }
 
-AudioTraits::PlayerClass* AudioTraits::SoundClass::get_player(void) const {
+AudioTraits::PlayerClass* AudioTraits::SoundClass::get_player() const {
   audio_cat->error() << "In abstract SoundClass::get_player!" << endl;
   return (AudioTraits::PlayerClass*)0L;
 }
 
 AudioTraits::DeletePlayingFunc*
-AudioTraits::SoundClass::get_delstate(void) const {
+AudioTraits::SoundClass::get_delstate() const {
   audio_cat->error() << "In abstract SoundClass::get_delstate!" << endl;
   return (AudioTraits::DeletePlayingFunc*)0L;
 }
 
-AudioTraits::PlayingClass::~PlayingClass(void) {
+AudioTraits::PlayingClass::~PlayingClass() {
 }
 
 AudioTraits::PlayingClass::PlayingStatus
-AudioTraits::PlayingClass::status(void) {
+AudioTraits::PlayingClass::status() {
   audio_cat->error() << "In abstract PlayingClass::status!" << endl;
   return BAD;
 }
 
-AudioTraits::PlayerClass::~PlayerClass(void) {
+AudioTraits::PlayerClass::~PlayerClass() {
 }
 
 void AudioTraits::PlayerClass::play_sound(AudioTraits::SoundClass*,

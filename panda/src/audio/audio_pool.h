@@ -29,15 +29,15 @@
 
 class EXPCL_PANDA AudioPool {
 private:
-  INLINE AudioPool(void);
+  INLINE AudioPool();
 
   bool ns_has_sound(Filename filename);
   AudioSound* ns_load_sound(Filename filename);
   void ns_release_sound(AudioSound* sound);
-  void ns_release_all_sounds(void);
+  void ns_release_all_sounds();
   string ns_get_nth_sound_name(int) const;
 
-  static AudioPool* get_ptr(void);
+  static AudioPool* get_ptr();
 
   static AudioPool *_global_ptr;
   typedef pmap<string, PT(AudioTraits::SoundClass) > SoundMap;
@@ -50,8 +50,8 @@ PUBLISHED:
   INLINE static bool verify_sound(const string& filename);
   INLINE static AudioSound* load_sound(const string& filename);
   INLINE static void release_sound(AudioSound* sound);
-  INLINE static void release_all_sounds(void);
-  INLINE static int get_num_loaded_sounds(void);
+  INLINE static void release_all_sounds();
+  INLINE static int get_num_loaded_sounds();
   INLINE static string get_nth_sound_name(int);
   static void register_sound_loader(const string&, SoundLoadFunc*);
 };

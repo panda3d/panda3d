@@ -25,44 +25,44 @@
 
 static bool have_initialized = false;
 
-static void update_null(void) {
+static void update_null() {
   if (audio_cat.is_debug())
     audio_cat->debug() << "Update in Null audio driver" << endl;
 }
 
-static void initialize(void) {
+static void initialize() {
   if (have_initialized)
     return;
   AudioManager::set_update_func(update_null);
   have_initialized = true;
 }
 
-NullSound::~NullSound(void) {
+NullSound::~NullSound() {
 }
 
-float NullSound::length(void) const {
+float NullSound::length() const {
   if (audio_cat.is_debug())
     audio_cat->debug() << "in sample length in Null audio driver" << endl;
   return -1.;
 }
 
-AudioTraits::PlayingClass* NullSound::get_state(void) const {
+AudioTraits::PlayingClass* NullSound::get_state() const {
   return new NullPlaying((NullSound*)this);
 }
 
-AudioTraits::PlayerClass* NullSound::get_player(void) const {
+AudioTraits::PlayerClass* NullSound::get_player() const {
   return new NullPlayer();
 }
 
 
-AudioTraits::DeletePlayingFunc* NullSound::get_delstate(void) const {
+AudioTraits::DeletePlayingFunc* NullSound::get_delstate() const {
   return NullPlaying::destroy;
 }
 
-NullPlaying::~NullPlaying(void) {
+NullPlaying::~NullPlaying() {
 }
 
-AudioTraits::PlayingClass::PlayingStatus NullPlaying::status(void) {
+AudioTraits::PlayingClass::PlayingStatus NullPlaying::status() {
   if (audio_cat.is_debug())
     audio_cat->debug() << "in playing status in Null audio driver" << endl;
   return BAD;
@@ -72,7 +72,7 @@ void NullPlaying::destroy(AudioTraits::PlayingClass* play) {
   delete play;
 }
 
-NullPlayer::~NullPlayer(void) {
+NullPlayer::~NullPlayer() {
 }
 
 void NullPlayer::play_sound(AudioTraits::SoundClass*,

@@ -79,7 +79,7 @@ INLINE void AudioPool::release_sound(AudioSound* sound) {
 //  Description: Releases all sounds in the pool and restores the
 //               pool to the empty state.
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioPool::release_all_sounds(void) {
+INLINE void AudioPool::release_all_sounds() {
   get_ptr()->ns_release_all_sounds();
 }
 
@@ -90,7 +90,7 @@ INLINE void AudioPool::release_all_sounds(void) {
 //               directly; there's only supposed to be one AudioPool
 //               in the universe and it constructs itself.
 ////////////////////////////////////////////////////////////////////
-INLINE AudioPool::AudioPool(void) {}
+INLINE AudioPool::AudioPool() {}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioPool::get_num_loaded_sounds
@@ -98,7 +98,7 @@ INLINE AudioPool::AudioPool(void) {}
 //  Description: return the number of sounds the audiopool thinks
 //               are loaded at the moment
 ////////////////////////////////////////////////////////////////////
-INLINE int AudioPool::get_num_loaded_sounds(void) {
+INLINE int AudioPool::get_num_loaded_sounds() {
   return get_ptr()->_sounds.size();
 }
 

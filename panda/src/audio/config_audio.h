@@ -39,6 +39,6 @@ extern EXPCL_PANDA float audio_master_sfx_volume;
 extern EXPCL_PANDA float audio_master_music_volume;
 extern EXPCL_PANDA int audio_thread_priority;
 
-extern EXPCL_PANDA void audio_load_loaders(void);
+extern EXPCL_PANDA void audio_load_loaders();
 
 #endif /* __CONFIG_AUDIO_H__ */

@@ -35,43 +35,43 @@ private:
 
   MikModSample(SAMPLE*);
 public:
-  virtual ~MikModSample(void);
+  virtual ~MikModSample();
 
-  virtual float length(void) const;
-  virtual AudioTraits::PlayingClass* get_state(void) const;
-  virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  virtual float length() const;
+  virtual AudioTraits::PlayingClass* get_state() const;
+  virtual AudioTraits::PlayerClass* get_player() const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate() const;
 public:
   // used by the readers
   static MikModSample* load_wav(Filename);
   // used by the players
-  virtual SAMPLE* get_sample(void);
-  virtual int get_freq(void);
+  virtual SAMPLE* get_sample();
+  virtual int get_freq();
 };
 
 class EXPCL_PANDA MikModMusic : public AudioTraits::SoundClass {
 private:
   MODULE* _music;
 public:
-  MikModMusic(void);
-  virtual ~MikModMusic(void);
+  MikModMusic();
+  virtual ~MikModMusic();
 
-  virtual float length(void) const;
-  virtual AudioTraits::PlayingClass* get_state(void) const;
-  virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  virtual float length() const;
+  virtual AudioTraits::PlayingClass* get_state() const;
+  virtual AudioTraits::PlayerClass* get_player() const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate() const;
 };
 
 class EXPCL_PANDA MikModMidi : public AudioTraits::SoundClass {
 private:
 public:
-  MikModMidi(void);
-  virtual ~MikModMidi(void);
+  MikModMidi();
+  virtual ~MikModMidi();
 
-  virtual float length(void) const;
-  virtual AudioTraits::PlayingClass* get_state(void) const;
-  virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  virtual float length() const;
+  virtual AudioTraits::PlayingClass* get_state() const;
+  virtual AudioTraits::PlayerClass* get_player() const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate() const;
 public:
   // used by the readers
   static MikModMidi* load_midi(Filename);
@@ -82,37 +82,37 @@ private:
   int _voice;
 public:
   MikModSamplePlaying(AudioTraits::SoundClass*);
-  ~MikModSamplePlaying(void);
+  ~MikModSamplePlaying();
 
-  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  virtual AudioTraits::PlayingClass::PlayingStatus status();
   static void destroy(AudioTraits::PlayingClass*);
 public:
   virtual void set_voice(int);
-  virtual int get_voice(void) const;
+  virtual int get_voice() const;
 };
 
 class EXPCL_PANDA MikModMusicPlaying : public AudioTraits::PlayingClass {
 public:
   MikModMusicPlaying(AudioTraits::SoundClass*);
-  ~MikModMusicPlaying(void);
+  ~MikModMusicPlaying();
 
-  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  virtual AudioTraits::PlayingClass::PlayingStatus status();
   static void destroy(AudioTraits::PlayingClass*);
 };
 
 class EXPCL_PANDA MikModMidiPlaying : public AudioTraits::PlayingClass {
 public:
   MikModMidiPlaying(AudioTraits::SoundClass*);
-  ~MikModMidiPlaying(void);
+  ~MikModMidiPlaying();
 
-  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  virtual AudioTraits::PlayingClass::PlayingStatus status();
   static void destroy(AudioTraits::PlayingClass*);
 };
 
 class EXPCL_PANDA MikModSamplePlayer : public AudioTraits::PlayerClass {
 public:
-  MikModSamplePlayer(void);
-  virtual ~MikModSamplePlayer(void);
+  MikModSamplePlayer();
+  virtual ~MikModSamplePlayer();
 
   virtual void play_sound(AudioTraits::SoundClass*,
                           AudioTraits::PlayingClass*, float);
@@ -122,15 +122,15 @@ public:
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
-  static MikModSamplePlayer* get_instance(void);
+  static MikModSamplePlayer* get_instance();
 private:
   static MikModSamplePlayer* _global_instance;
 };
 
 class EXPCL_PANDA MikModFmsynthPlayer : public AudioTraits::PlayerClass {
 public:
-  MikModFmsynthPlayer(void);
-  virtual ~MikModFmsynthPlayer(void);
+  MikModFmsynthPlayer();
+  virtual ~MikModFmsynthPlayer();
 
   virtual void play_sound(AudioTraits::SoundClass*,
                           AudioTraits::PlayingClass*, float);
@@ -140,15 +140,15 @@ public:
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
-  static MikModFmsynthPlayer* get_instance(void);
+  static MikModFmsynthPlayer* get_instance();
 private:
   static MikModFmsynthPlayer* _global_instance;
 };
 
 class EXPCL_PANDA MikModMidiPlayer : public AudioTraits::PlayerClass {
 public:
-  MikModMidiPlayer(void);
-  virtual ~MikModMidiPlayer(void);
+  MikModMidiPlayer();
+  virtual ~MikModMidiPlayer();
 
   virtual void play_sound(AudioTraits::SoundClass*,
                           AudioTraits::PlayingClass*, float);
@@ -158,7 +158,7 @@ public:
   virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
-  static MikModMidiPlayer* get_instance(void);
+  static MikModMidiPlayer* get_instance();
 private:
   static MikModMidiPlayer* _global_instance;
 };

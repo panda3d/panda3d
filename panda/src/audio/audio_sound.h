@@ -45,27 +45,27 @@ protected:
   INLINE AudioSound(const AudioSound&);
   INLINE AudioSound& operator=(const AudioSound&);
 
-  INLINE AudioTraits::PlayerClass* get_player(void) const;
-  INLINE AudioTraits::SoundClass* get_sound(void) const;
-  INLINE AudioTraits::PlayingClass* get_state(void) const;
+  INLINE AudioTraits::PlayerClass* get_player() const;
+  INLINE AudioTraits::SoundClass* get_sound() const;
+  INLINE AudioTraits::PlayingClass* get_state() const;
 
   friend class AudioPool;
   friend class AudioManager;
 PUBLISHED:
-  virtual ~AudioSound(void);
+  virtual ~AudioSound();
   INLINE bool operator==(const AudioSound&) const;
   INLINE bool operator!=(const AudioSound&) const;
 
   enum SoundStatus { BAD, READY, PLAYING } ;
 
-  float length(void) const;
-  SoundStatus status(void) const;
+  float length() const;
+  SoundStatus status() const;
 public:
   // type stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     /*
     TypedObject::init_type();
     register_type(_type_handle, "AudioSound",
@@ -75,10 +75,10 @@ public:
     register_type(_type_handle, "AudioSound",
                   TypedReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }

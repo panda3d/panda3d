@@ -24,7 +24,7 @@ AudioGuiFunctor::AudioGuiFunctor(AudioSound* sound,
                                  GuiBehavior::BehaviorFunctor* prev)
   : GuiBehavior::BehaviorFunctor(), _prev(prev), _sound(sound) {}
 
-AudioGuiFunctor::~AudioGuiFunctor(void) {
+AudioGuiFunctor::~AudioGuiFunctor() {
   _prev.clear();
 }
 

@@ -28,11 +28,11 @@
 static bool have_initialized = false;
 static bool initialization_error = false;
 
-static void update_mikmod(void) {
+static void update_mikmod() {
   MikMod_Update();
 }
 
-static void initialize(void) {
+static void initialize() {
   if (have_initialized)
     return;
   if (initialization_error)
@@ -140,25 +140,25 @@ static void initialize(void) {
 MikModSample::MikModSample(SAMPLE* sample) : _sample(sample) {
 }
 
-MikModSample::~MikModSample(void) {
+MikModSample::~MikModSample() {
   Sample_Free(_sample);
 }
 
-float MikModSample::length(void) const {
+float MikModSample::length() const {
   float len = _sample->length;
   float speed = _sample->speed;
   return len / speed;
 }
 
-AudioTraits::PlayingClass* MikModSample::get_state(void) const {
+AudioTraits::PlayingClass* MikModSample::get_state() const {
   return new MikModSamplePlaying((MikModSample*)this);
 }
 
-AudioTraits::PlayerClass* MikModSample::get_player(void) const {
+AudioTraits::PlayerClass* MikModSample::get_player() const {
   return MikModSamplePlayer::get_instance();
 }
 
-AudioTraits::DeletePlayingFunc* MikModSample::get_delstate(void) const {
+AudioTraits::DeletePlayingFunc* MikModSample::get_delstate() const {
   return MikModSamplePlaying::destroy;
 }
 
@@ -173,40 +173,40 @@ MikModSample* MikModSample::load_wav(Filename filename) {
   return new MikModSample(sample);
 }
 
-SAMPLE* MikModSample::get_sample(void) {
+SAMPLE* MikModSample::get_sample() {
   return _sample;
 }
 
-int MikModSample::get_freq(void) {
+int MikModSample::get_freq() {
   return _sample->speed;
 }
 
-MikModMusic::MikModMusic(void) {
+MikModMusic::MikModMusic() {
 }
 
-MikModMusic::~MikModMusic(void) {
+MikModMusic::~MikModMusic() {
 }
 
-float MikModMusic::length(void) const {
+float MikModMusic::length() const {
   return -1.;
 }
 
-AudioTraits::PlayingClass* MikModMusic::get_state(void) const {
+AudioTraits::PlayingClass* MikModMusic::get_state() const {
   return new MikModMusicPlaying((MikModMusic*)this);
 }
 
-AudioTraits::PlayerClass* MikModMusic::get_player(void) const {
+AudioTraits::PlayerClass* MikModMusic::get_player() const {
   return MikModFmsynthPlayer::get_instance();
 }
 
-AudioTraits::DeletePlayingFunc* MikModMusic::get_delstate(void) const {
+AudioTraits::DeletePlayingFunc* MikModMusic::get_delstate() const {
   return MikModMusicPlaying::destroy;
 }
 
-MikModMidi::MikModMidi(void) {
+MikModMidi::MikModMidi() {
 }
 
-MikModMidi::~MikModMidi(void) {
+MikModMidi::~MikModMidi() {
 }
 
 MikModMidi* MikModMidi::load_midi(Filename) {
@@ -214,19 +214,19 @@ MikModMidi* MikModMidi::load_midi(Filename) {
   return new MikModMidi();
 }
 
-float MikModMidi::length(void) const {
+float MikModMidi::length() const {
   return -1.;
 }
 
-AudioTraits::PlayingClass* MikModMidi::get_state(void) const {
+AudioTraits::PlayingClass* MikModMidi::get_state() const {
   return new MikModMidiPlaying((MikModMidi*)this);
 }
 
-AudioTraits::PlayerClass* MikModMidi::get_player(void) const {
+AudioTraits::PlayerClass* MikModMidi::get_player() const {
   return MikModMidiPlayer::get_instance();
 }
 
-AudioTraits::DeletePlayingFunc* MikModMidi::get_delstate(void) const {
+AudioTraits::DeletePlayingFunc* MikModMidi::get_delstate() const {
   return MikModMidiPlaying::destroy;
 }
 
@@ -234,10 +234,10 @@ MikModSamplePlaying::MikModSamplePlaying(AudioTraits::SoundClass* s)
   : AudioTraits::PlayingClass(s) {
 }
 
-MikModSamplePlaying::~MikModSamplePlaying(void) {
+MikModSamplePlaying::~MikModSamplePlaying() {
 }
 
-AudioTraits::PlayingClass::PlayingStatus MikModSamplePlaying::status(void) {
+AudioTraits::PlayingClass::PlayingStatus MikModSamplePlaying::status() {
   return AudioTraits::PlayingClass::BAD;
 }
 
@@ -245,7 +245,7 @@ void MikModSamplePlaying::set_voice(int v) {
   _voice = v;
 }
 
-int MikModSamplePlaying::get_voice(void) const {
+int MikModSamplePlaying::get_voice() const {
   return _voice;
 }
 
@@ -257,10 +257,10 @@ MikModMusicPlaying::MikModMusicPlaying(AudioTraits::SoundClass* s)
   : AudioTraits::PlayingClass(s) {
 }
 
-MikModMusicPlaying::~MikModMusicPlaying(void) {
+MikModMusicPlaying::~MikModMusicPlaying() {
 }
 
-AudioTraits::PlayingClass::PlayingStatus MikModMusicPlaying::status(void) {
+AudioTraits::PlayingClass::PlayingStatus MikModMusicPlaying::status() {
   return AudioTraits::PlayingClass::BAD;
 }
 
@@ -272,10 +272,10 @@ MikModMidiPlaying::MikModMidiPlaying(AudioTraits::SoundClass* s)
   : AudioTraits::PlayingClass(s) {
 }
 
-MikModMidiPlaying::~MikModMidiPlaying(void) {
+MikModMidiPlaying::~MikModMidiPlaying() {
 }
 
-AudioTraits::PlayingClass::PlayingStatus MikModMidiPlaying::status(void) {
+AudioTraits::PlayingClass::PlayingStatus MikModMidiPlaying::status() {
   return AudioTraits::PlayingClass::BAD;
 }
 
@@ -286,10 +286,10 @@ void MikModMidiPlaying::destroy(AudioTraits::PlayingClass* play) {
 MikModSamplePlayer* MikModSamplePlayer::_global_instance =
     (MikModSamplePlayer*)0L;
 
-MikModSamplePlayer::MikModSamplePlayer(void) : AudioTraits::PlayerClass() {
+MikModSamplePlayer::MikModSamplePlayer() : AudioTraits::PlayerClass() {
 }
 
-MikModSamplePlayer::~MikModSamplePlayer(void) {
+MikModSamplePlayer::~MikModSamplePlayer() {
 }
 
 void MikModSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
@@ -344,7 +344,7 @@ bool MikModSamplePlayer::adjust_volume(AudioTraits::PlayingClass* state) {
   return false;
 }
 
-MikModSamplePlayer* MikModSamplePlayer::get_instance(void) {
+MikModSamplePlayer* MikModSamplePlayer::get_instance() {
   if (_global_instance == (MikModSamplePlayer*)0L)
     _global_instance = new MikModSamplePlayer();
   return _global_instance;
@@ -353,10 +353,10 @@ MikModSamplePlayer* MikModSamplePlayer::get_instance(void) {
 MikModFmsynthPlayer* MikModFmsynthPlayer::_global_instance =
   (MikModFmsynthPlayer*)0L;
 
-MikModFmsynthPlayer::MikModFmsynthPlayer(void) {
+MikModFmsynthPlayer::MikModFmsynthPlayer() {
 }
 
-MikModFmsynthPlayer::~MikModFmsynthPlayer(void) {
+MikModFmsynthPlayer::~MikModFmsynthPlayer() {
 }
 
 void MikModFmsynthPlayer::play_sound(AudioTraits::SoundClass*,
@@ -382,7 +382,7 @@ bool MikModFmsynthPlayer::adjust_volume(AudioTraits::PlayingClass*) {
   return false;
 }
 
-MikModFmsynthPlayer* MikModFmsynthPlayer::get_instance(void) {
+MikModFmsynthPlayer* MikModFmsynthPlayer::get_instance() {
   if (_global_instance == (MikModFmsynthPlayer*)0L)
     _global_instance = new MikModFmsynthPlayer();
   return _global_instance;
@@ -390,10 +390,10 @@ MikModFmsynthPlayer* MikModFmsynthPlayer::get_instance(void) {
 
 MikModMidiPlayer* MikModMidiPlayer::_global_instance = (MikModMidiPlayer*)0L;
 
-MikModMidiPlayer::MikModMidiPlayer(void) {
+MikModMidiPlayer::MikModMidiPlayer() {
 }
 
-MikModMidiPlayer::~MikModMidiPlayer(void) {
+MikModMidiPlayer::~MikModMidiPlayer() {
 }
 
 void MikModMidiPlayer::play_sound(AudioTraits::SoundClass*,
@@ -418,7 +418,7 @@ bool MikModMidiPlayer::adjust_volume(AudioTraits::PlayingClass*) {
   return false;
 }
 
-MikModMidiPlayer* MikModMidiPlayer::get_instance(void) {
+MikModMidiPlayer* MikModMidiPlayer::get_instance() {
   if (_global_instance == (MikModMidiPlayer*)0L)
     _global_instance = new MikModMidiPlayer();
   return _global_instance;

@@ -234,7 +234,7 @@ AudioMidi::AudioMidi(Filename filename, int header_idx) {
 
 AudioMidi::AudioMidi(const AudioMidi& c) : _seq(c._seq) {}
 
-AudioMidi::~AudioMidi(void) {
+AudioMidi::~AudioMidi() {
 }
 
 AudioMidi& AudioMidi::operator=(const AudioMidi&) {

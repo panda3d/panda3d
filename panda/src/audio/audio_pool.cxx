@@ -29,7 +29,7 @@ SoundLoaders* _sound_loaders = (SoundLoaders*)0L;
 //       Access: Static
 //  Description: ensure that the sound loaders map has been initialized
 ////////////////////////////////////////////////////////////////////
-static void check_sound_loaders(void) {
+static void check_sound_loaders() {
   if (_sound_loaders == (SoundLoaders*)0L)
     _sound_loaders = new SoundLoaders;
 }
@@ -40,7 +40,7 @@ static void check_sound_loaders(void) {
 //  Description: Initializes and/or returns the global pointer to the
 //               one AudioPool object in the system.
 ////////////////////////////////////////////////////////////////////
-AudioPool* AudioPool::get_ptr(void) {
+AudioPool* AudioPool::get_ptr() {
   if (_global_ptr == (AudioPool*)0L)
     _global_ptr = new AudioPool;
   audio_load_loaders();
@@ -140,7 +140,7 @@ void AudioPool::ns_release_sound(AudioSound* sound) {
 //       Access: Private
 //  Description: The nonstatic implementation of release_all_sounds().
 ////////////////////////////////////////////////////////////////////
-void AudioPool::ns_release_all_sounds(void) {
+void AudioPool::ns_release_all_sounds() {
   if (audio_cat.is_debug())
     audio_cat->debug() << "AudioPool: releasing all sounds" << endl;
   _sounds.clear();

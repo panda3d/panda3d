@@ -42,7 +42,7 @@ float AudioManager::_master_music_volume = 0.;
 //       Access: Public
 //  Description: delete the AudioManager singleton
 ////////////////////////////////////////////////////////////////////
-AudioManager::~AudioManager(void) {
+AudioManager::~AudioManager() {
   shutdown();
   _global_ptr = (AudioManager*)0L;
 }
@@ -66,7 +66,7 @@ void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
 //  Description: make a copy of the loopset to use for the rest of
 //               update
 ////////////////////////////////////////////////////////////////////
-void AudioManager::copy_loopset(void) {
+void AudioManager::copy_loopset() {
   if (_loopcopy == (LoopSet*)0L)
     _loopcopy = new LoopSet;
   if (_loopset != (LoopSet*)0L)
@@ -78,7 +78,7 @@ void AudioManager::copy_loopset(void) {
 //       Access: Public, Static
 //  Description: do generic update stuff
 ////////////////////////////////////////////////////////////////////
-void AudioManager::ns_update(void) {
+void AudioManager::ns_update() {
   // handle looping
   if (_loopcopy != (LoopSet*)0L)
     for (LoopSet::iterator i=_loopcopy->begin(); i!=_loopcopy->end(); ++i) {
@@ -122,7 +122,7 @@ void AudioManager::set_shutdown_func(AudioManager::ShutdownFunc* func) {
 //  Description: Initializes and/or returns the global pointer to the
 //               one AudioManager object in the system.
 ////////////////////////////////////////////////////////////////////
-AudioManager* AudioManager::get_ptr(void) {
+AudioManager* AudioManager::get_ptr() {
   if (_global_ptr == (AudioManager*)0L)
     _global_ptr = new AudioManager;
   return _global_ptr;
@@ -217,7 +217,7 @@ void AudioManager::ns_set_volume(AudioSound* sound, float v) {
 //       Access: Private
 //  Description: spawn a thread that calls update every so often
 ////////////////////////////////////////////////////////////////////
-void AudioManager::ns_spawn_update(void) {
+void AudioManager::ns_spawn_update() {
   if (_spawned == (thread*)0L) {
     if (_quit == (bool*)0L)
       _quit = new bool(false);
@@ -250,7 +250,7 @@ void AudioManager::ns_spawn_update(void) {
 //       Access: Private
 //  Description: non-static implementation of shutdown stuff
 ////////////////////////////////////////////////////////////////////
-void AudioManager::ns_shutdown(void) {
+void AudioManager::ns_shutdown() {
   if (_quit != (bool*)0L)
     *_quit = true;
   if (_shutdown_func != (ShutdownFunc*)0L)
