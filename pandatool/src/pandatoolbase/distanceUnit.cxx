@@ -18,8 +18,8 @@
 
 #include "distanceUnit.h"
 
-#include <string_utils.h>
-#include <notify.h>
+#include "string_utils.h"
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: format_abbrev_unit

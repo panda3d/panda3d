@@ -19,7 +19,7 @@
 #ifndef DISTANCEUNIT_H
 #define DISTANCEUNIT_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 ////////////////////////////////////////////////////////////////////
 //        Enum : DistanceUnit

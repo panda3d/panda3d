@@ -1,7 +1,7 @@
 #begin ss_lib_target
   #define TARGET progbase
   #define LOCAL_LIBS \
-    converter pandatoolbase
+    pandatoolbase
   #define OTHER_LIBS \
     pnmimage:c linmath:c putil:c express:c panda:m pystub dtool
     
