@@ -5,13 +5,18 @@
   #define TARGET loader
   #define LOCAL_LIBS \
     event graph ipc putil express downloader
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
-    bamFile.I bamFile.cxx bamFile.h config_loader.cxx config_loader.h \
-    loader.I loader.cxx loader.h loaderFileType.cxx loaderFileType.h \
-    loaderFileTypeBam.cxx loaderFileTypeBam.h \
-    loaderFileTypeRegistry.cxx loaderFileTypeRegistry.h modelPool.I \
-    modelPool.cxx modelPool.h
+     bamFile.I bamFile.h config_loader.h loader.I loader.h  \
+     loaderFileType.h loaderFileTypeBam.h  \
+     loaderFileTypeRegistry.h modelPool.I modelPool.h  
+     
+  #define INCLUDED_SOURCES  \
+     bamFile.cxx config_loader.cxx loader.cxx loaderFileType.cxx  \
+     loaderFileTypeBam.cxx loaderFileTypeRegistry.cxx  \
+     modelPool.cxx 
 
   #define INSTALL_HEADERS \
     bamFile.I bamFile.h loader.I loader.h loaderFileType.h \
