@@ -197,6 +197,7 @@ decompress(const Filename &source_file) {
   }
 
   cleanup();
+  _source_filename.unlink();
   return true;
 }
 
