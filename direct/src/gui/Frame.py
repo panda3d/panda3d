@@ -3,9 +3,6 @@ import GuiManager
 import GuiFrame
 import Vec3
 
-#import ClockObject
-#clock = ClockObject.ClockObject.getGlobalClock()
-
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node())
 font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
 
