@@ -1158,7 +1158,7 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
     LVecBase4f full(point2d[0], point2d[1], -1.0f, 1.0f);
     full = projection_mat_inv.xform(full);
 
-    float recip_full3 = 1.0f / max(full[3], 0.001f);
+    float recip_full3 = 1.0f / max(full[3], 0.00001f);
     near_point.set(full[0] * recip_full3, 
                    full[1] * recip_full3, 
                    full[2] * recip_full3);
@@ -1172,7 +1172,7 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
     // past infinity and comes back in behind the lens, which is just
     // crazy.  Truncating it to zero keeps the far plane from moving
     // too far out.
-    float recip_full3 = 1.0f / max(full[3], 0.001f);
+    float recip_full3 = 1.0f / max(full[3], 0.00001f);
     far_point.set(full[0] * recip_full3, 
                   full[1] * recip_full3, 
                   full[2] * recip_full3);
