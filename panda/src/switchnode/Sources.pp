@@ -6,11 +6,17 @@
   #define LOCAL_LIBS \
     display sgraph graph sgraphutil sgattrib gobj putil gsgbase linmath \
     mathutil
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
-    LODNode.I LODNode.cxx LODNode.h config_switchnode.cxx \
-    config_switchnode.h sequenceNode.cxx sequenceNode.h \
-    switchNodeOne.I switchNodeOne.cxx switchNodeOne.h
+    LODNode.I LODNode.h \
+    config_switchnode.h sequenceNode.h \
+    switchNodeOne.I switchNodeOne.h
+    
+  #define INCLUDED_SOURCES \
+    LODNode.cxx config_switchnode.cxx \
+    sequenceNode.cxx switchNodeOne.cxx  
 
   #define INSTALL_HEADERS \
     config_switchnode.h LODNode.I LODNode.h sequenceNode.h \
