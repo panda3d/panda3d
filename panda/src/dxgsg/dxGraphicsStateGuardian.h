@@ -345,6 +345,19 @@ protected:
   Geom::TexCoordIterator ti;
   Geom::ColorIterator ci;
 
+  // these are used for fastpaths that bypass the iterators above
+  // pointers to arrays in current geom, used to traverse indexed and non-indexed arrays
+  PTA_Vertexf _coords;
+  Vertexf *_pCurCoord;
+  PTA_ushort _vindexes;
+  ushort *_pCurCoordIndex;  
+
+
+  PTA_Normalf _norms;
+  PTA_Colorf _colors;
+  PTA_TexCoordf _texcoords;
+  PTA_ushort _cindexes,_nindexes,_tindexes;
+
   Colorf _lmodel_ambient;
   float _material_ambient;
   float _material_diffuse;
