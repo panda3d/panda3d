@@ -1268,8 +1268,11 @@ set_fluid_pos(const NodePath &other, const LVecBase3f &pos) {
     const LVecBase3f &orig_scale = orig_transform->get_scale();
     const LVecBase3f &orig_shear = orig_transform->get_shear();
 
+    // Use the relative set_transform() to compute the relative pos, and
+    // then reset all of the other components back to the way they were.
     set_transform(other, rel_transform->set_pos(pos));
-    set_pos_hpr_scale_shear(get_transform()->get_pos(), orig_hpr, orig_scale, orig_shear);
+    set_transform(TransformState::make_pos_hpr_scale_shear
+                  (get_transform()->get_pos(), orig_hpr, orig_scale, orig_shear));
 
   } else {
     // If we didn't have a componentwise transform already, never
