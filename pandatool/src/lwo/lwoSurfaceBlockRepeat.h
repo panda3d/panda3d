@@ -1,32 +1,32 @@
-// Filename: lwoSurface.h
+// Filename: lwoSurfaceBlockRepeat.h
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LWOSURFACE_H
-#define LWOSURFACE_H
+#ifndef LWOSURFACEBLOCKREPEAT_H
+#define LWOSURFACEBLOCKREPEAT_H
 
 #include <pandatoolbase.h>
 
-#include "lwoGroupChunk.h"
+#include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurface
-// Description : Describes the shading attributes of a surface.  This
-//               is similar to the concept usually called a "material"
-//               or "shader" in other file formats.
+// 	 Class : LwoSurfaceBlockRepeat
+// Description : For cylindrical and spherical projections, this
+//               parameter controls how many times the image repeats
+//               over each full interval, in either dimension.  The
+//               dimension is specified by the id of the chunk, either
+//               WRPW or WRPH.  This is a subchunk of LwoSurfaceBlock.
 ////////////////////////////////////////////////////////////////////
-class LwoSurface : public LwoGroupChunk {
+class LwoSurfaceBlockRepeat : public LwoChunk {
 public:
-  string _name;
-  string _source;
+  float _cycles;
+  int _envelope;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
   virtual void write(ostream &out, int indent_level = 0) const;
-
-  virtual IffChunk *make_new_chunk(IffInputFile *in, IffId id);
-
+  
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -36,9 +36,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LwoGroupChunk::init_type();
-    register_type(_type_handle, "LwoSurface",
-		  LwoGroupChunk::get_class_type());
+    LwoChunk::init_type();
+    register_type(_type_handle, "LwoSurfaceBlockRepeat",
+		  LwoChunk::get_class_type());
   }
 
 private:
@@ -48,5 +48,3 @@ private:
 #endif
 
   
-
-

@@ -1,32 +1,29 @@
-// Filename: lwoSurface.h
+// Filename: lwoSurfaceBlockChannel.h
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LWOSURFACE_H
-#define LWOSURFACE_H
+#ifndef LWOSURFACEBLOCKCHANNEL_H
+#define LWOSURFACEBLOCKCHANNEL_H
 
 #include <pandatoolbase.h>
 
-#include "lwoGroupChunk.h"
+#include "lwoChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurface
-// Description : Describes the shading attributes of a surface.  This
-//               is similar to the concept usually called a "material"
-//               or "shader" in other file formats.
+// 	 Class : LwoSurfaceBlockChannel
+// Description : Indicates which channel the texture in this
+//               LwoSurfaceBlock is applied to.  This is a subchunk of
+//               LwoSurfaceBlockHeader.
 ////////////////////////////////////////////////////////////////////
-class LwoSurface : public LwoGroupChunk {
+class LwoSurfaceBlockChannel : public LwoChunk {
 public:
-  string _name;
-  string _source;
+  IffId _channel_id;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
   virtual void write(ostream &out, int indent_level = 0) const;
-
-  virtual IffChunk *make_new_chunk(IffInputFile *in, IffId id);
-
+  
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -36,9 +33,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LwoGroupChunk::init_type();
-    register_type(_type_handle, "LwoSurface",
-		  LwoGroupChunk::get_class_type());
+    LwoChunk::init_type();
+    register_type(_type_handle, "LwoSurfaceBlockChannel",
+		  LwoChunk::get_class_type());
   }
 
 private:
@@ -48,5 +45,3 @@ private:
 #endif
 
   
-
-

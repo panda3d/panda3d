@@ -26,8 +26,16 @@
     lwoStillImage.h lwoStillImage.cxx \
     lwoSurface.h lwoSurface.cxx \
     lwoSurfaceBlock.h lwoSurfaceBlock.cxx \
+    lwoSurfaceBlockAxis.h lwoSurfaceBlockAxis.cxx \
+    lwoSurfaceBlockChannel.h lwoSurfaceBlockChannel.cxx \
+    lwoSurfaceBlockEnabled.h lwoSurfaceBlockEnabled.cxx \
+    lwoSurfaceBlockImage.h lwoSurfaceBlockImage.cxx \
+    lwoSurfaceBlockOpacity.h lwoSurfaceBlockOpacity.cxx \
+    lwoSurfaceBlockProjection.h lwoSurfaceBlockProjection.cxx \
     lwoSurfaceBlockHeader.h lwoSurfaceBlockHeader.cxx \
+    lwoSurfaceBlockRepeat.h lwoSurfaceBlockRepeat.cxx \
     lwoSurfaceBlockTMap.h lwoSurfaceBlockTMap.cxx \
+    lwoSurfaceBlockWrap.h lwoSurfaceBlockWrap.cxx \
     lwoSurfaceColor.h lwoSurfaceColor.cxx \
     lwoSurfaceParameter.h lwoSurfaceParameter.cxx \
     lwoSurfaceSidedness.h lwoSurfaceSidedness.cxx \
@@ -52,8 +60,16 @@
     lwoStillImage.h \
     lwoSurface.h \
     lwoSurfaceBlock.h \
+    lwoSurfaceBlockAxis.h \
+    lwoSurfaceBlockChannel.h \
+    lwoSurfaceBlockEnabled.h \
+    lwoSurfaceBlockImage.h \
+    lwoSurfaceBlockOpacity.h \
+    lwoSurfaceBlockProjection.h \
     lwoSurfaceBlockHeader.h \
+    lwoSurfaceBlockRepeat.h \
     lwoSurfaceBlockTMap.h \
+    lwoSurfaceBlockWrap.h \
     lwoSurfaceColor.h \
     lwoSurfaceParameter.h \
     lwoSurfaceSidedness.h \

@@ -5,8 +5,13 @@
 
 #include "lwoSurfaceBlock.h"
 #include "iffInputFile.h"
+#include "lwoSurfaceBlockAxis.h"
+#include "lwoSurfaceBlockImage.h"
 #include "lwoSurfaceBlockHeader.h"
+#include "lwoSurfaceBlockProjection.h"
+#include "lwoSurfaceBlockRepeat.h"
 #include "lwoSurfaceBlockTMap.h"
+#include "lwoSurfaceBlockWrap.h"
 
 #include <indent.h>
 
@@ -59,6 +64,22 @@ make_new_chunk(IffInputFile *in, IffId id) {
 
   } else if (id == IffId("TMAP")) {
     return new LwoSurfaceBlockTMap;
+
+  } else if (id == IffId("PROJ")) {
+    return new LwoSurfaceBlockProjection;
+
+  } else if (id == IffId("AXIS")) {
+    return new LwoSurfaceBlockAxis;
+
+  } else if (id == IffId("IMAG")) {
+    return new LwoSurfaceBlockImage;
+
+  } else if (id == IffId("WRAP")) {
+    return new LwoSurfaceBlockWrap;
+
+  } else if (id == IffId("WRPH") ||
+	     id == IffId("WRPW")) {
+    return new LwoSurfaceBlockRepeat;
 
   } else  {
     return IffChunk::make_new_chunk(in, id);

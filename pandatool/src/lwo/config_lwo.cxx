@@ -21,8 +21,16 @@
 #include "lwoStillImage.h"
 #include "lwoSurface.h"
 #include "lwoSurfaceBlock.h"
+#include "lwoSurfaceBlockAxis.h"
+#include "lwoSurfaceBlockChannel.h"
+#include "lwoSurfaceBlockEnabled.h"
+#include "lwoSurfaceBlockImage.h"
+#include "lwoSurfaceBlockOpacity.h"
+#include "lwoSurfaceBlockProjection.h"
 #include "lwoSurfaceBlockHeader.h"
+#include "lwoSurfaceBlockRepeat.h"
 #include "lwoSurfaceBlockTMap.h"
+#include "lwoSurfaceBlockWrap.h"
 #include "lwoSurfaceColor.h"
 #include "lwoSurfaceParameter.h"
 #include "lwoSurfaceSidedness.h"
@@ -53,8 +61,16 @@ ConfigureFn(config_lwo) {
   LwoStillImage::init_type();
   LwoSurface::init_type();
   LwoSurfaceBlock::init_type();
+  LwoSurfaceBlockAxis::init_type();
+  LwoSurfaceBlockChannel::init_type();
+  LwoSurfaceBlockEnabled::init_type();
+  LwoSurfaceBlockImage::init_type();
+  LwoSurfaceBlockOpacity::init_type();
+  LwoSurfaceBlockProjection::init_type();
   LwoSurfaceBlockHeader::init_type();
+  LwoSurfaceBlockRepeat::init_type();
   LwoSurfaceBlockTMap::init_type();
+  LwoSurfaceBlockWrap::init_type();
   LwoSurfaceColor::init_type();
   LwoSurfaceParameter::init_type();
   LwoSurfaceSidedness::init_type();
