@@ -42,10 +42,12 @@ class Interval(DirectObject):
 	"""
 	self.setT(self.getDuration(), entry=1)
 
-    def play(self, t0=0.0, duration=0.0):
+    def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
         """
         self.startT = self.clock.getFrameTime() - t0
+	assert(scale > 0.0)
+	self.scale = scale
         if (duration == 0.0):
             self.playDuration = self.duration
         else:
@@ -61,7 +63,7 @@ class Interval(DirectObject):
         """ __playTask(task)
         """
         t = self.clock.getFrameTime()
-        te = t - self.startT
+        te = (t - self.startT) * self.scale
         if (te <= self.playDuration):
             self.setT(te)
             return Task.cont

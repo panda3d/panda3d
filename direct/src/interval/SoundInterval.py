@@ -39,6 +39,6 @@ class SoundInterval(Interval):
 	assert(t >= 0)
 	if (entry == 1):
 	    self.isPlaying = 1
-	    AudioManager.play(self.sound)
+	    AudioManager.play(self.sound, t)
 	    if (self.loop):
 		AudioManager.setLoop(self.sound, 1)
