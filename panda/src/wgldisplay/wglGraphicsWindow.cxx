@@ -776,7 +776,11 @@ void wglGraphicsWindow::config(void) {
 
   if(gl_show_fps_meter) {
 
-	 // 128 handles all the ascii chars
+	  _start_time = timeGetTime();
+	  _current_fps = 0.0;
+	  _start_frame_count = _cur_frame_count = 0;
+
+	 // 128 enough to handle all the ascii chars
 	 // this creates a display list for each char.  displist numbering starts
 	 // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
 	 // mem by just allocing bitmaps for chars we need (0-9 fps,SPC) 
@@ -868,7 +872,7 @@ void wglGraphicsWindow::end_frame(void) {
 	if(gl_show_fps_meter) {
 		 DWORD now = timeGetTime();  // this is win32 fn
 
-		 float time_delta = (now - _start_time)/1000.0;
+		 float time_delta = (now - _start_time) * 0.001f;
 
 		 if(time_delta > gl_fps_meter_update_interval) {
 			 // didnt use global clock object, it wasnt working properly when I tried,
@@ -881,8 +885,8 @@ void wglGraphicsWindow::end_frame(void) {
 			 _start_frame_count = _cur_frame_count;
 		 }
 
-		 char fps_msg[20];
-		 sprintf(fps_msg, "%7.02f fps", _current_fps);
+		 char fps_msg[15];
+		 sprintf(fps_msg, "%.02f fps", _current_fps);
 
 		 // Note: we cant use simple GDI TextOut calls to draw FPS meter chars (like DX fps meter)
 		 // because WGL doesnt support GDI in double-buffered mode.  Instead we have to 
@@ -905,7 +909,7 @@ void wglGraphicsWindow::end_frame(void) {
 		 glOrtho(_props._xorg,_props._xorg+_props._xsize,
 				 _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
 					
-		 glRasterPos2f(_props._xsize-75,_props._ysize-20);  // these seem to be good for default font
+		 glRasterPos2f(_props._xsize-70,_props._ysize-20);  // these seem to be good for default font
 
 		 // set up for a string-drawing display list call 
 		 glListBase(FONT_BITMAP_OGLDISPLAYLISTNUM);
