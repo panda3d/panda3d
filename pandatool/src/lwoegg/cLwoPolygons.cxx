@@ -298,7 +298,7 @@ make_faces() {
     }
   }
 
-  CoordinateSystem cs = _converter->get_egg_data().get_coordinate_system();
+  CoordinateSystem cs = _converter->get_egg_data()->get_coordinate_system();
   if (smooth_angle > 0.0) {
     _egg_group->recompute_vertex_normals(rad_2_deg(smooth_angle), cs);
   } else {

@@ -66,14 +66,14 @@ LwoToEgg() :
 ////////////////////////////////////////////////////////////////////
 void LwoToEgg::
 run() {
-  _data.set_coordinate_system(_coordinate_system);
+  _data->set_coordinate_system(_coordinate_system);
 
   if (_input_units == DU_invalid) {
     _input_units = DU_meters;
   }
 
   LwoToEggConverter converter;
-  converter.set_egg_data(&_data, false);
+  converter.set_egg_data(_data);
   apply_parameters(converter);
 
   if (!converter.convert_file(_input_filename)) {

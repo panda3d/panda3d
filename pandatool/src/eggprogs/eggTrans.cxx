@@ -89,44 +89,44 @@ void EggTrans::
 run() {
   if (_remove_invalid_primitives) {
     nout << "Removing invalid primitives.\n";
-    int num_removed = _data.remove_invalid_primitives();
+    int num_removed = _data->remove_invalid_primitives();
     nout << "  (" << num_removed << " removed.)\n";
-    _data.remove_unused_vertices();
+    _data->remove_unused_vertices();
   }
 
   if (_triangulate_polygons) {
     nout << "Triangulating polygons.\n";
-    int num_produced = _data.triangulate_polygons(~0);
+    int num_produced = _data->triangulate_polygons(~0);
     nout << "  (" << num_produced << " triangles produced.)\n";
   }
 
   if (_mesh_triangles) {
     nout << "Meshing triangles.\n";
-    _data.mesh_triangles(~0);
+    _data->mesh_triangles(~0);
   }
 
   if (_apply_texmats) {
     nout << "Applying texture matrices.\n";
-    _data.apply_texmats();
-    _data.remove_unused_vertices();
+    _data->apply_texmats();
+    _data->remove_unused_vertices();
   }
 
   if (_collapse_equivalent_textures) {
     nout << "Collapsing equivalent textures.\n";
-    int num_removed = _data.collapse_equivalent_textures();
+    int num_removed = _data->collapse_equivalent_textures();
     nout << "  (" << num_removed << " removed.)\n";
   }
 
   if (_flatten_transforms) {
     nout << "Flattening transforms.\n";
-    _data.flatten_transforms();
-    _data.remove_unused_vertices();
+    _data->flatten_transforms();
+    _data->remove_unused_vertices();
   }
 
   if (_standardize_names) {
     nout << "Standardizing group names.\n";
     EggGroupUniquifier uniquifier;
-    uniquifier.uniquify(&_data);
+    uniquifier.uniquify(_data);
   }
 
   if (!do_reader_options()) {

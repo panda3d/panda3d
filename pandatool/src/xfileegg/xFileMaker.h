@@ -47,7 +47,7 @@ public:
 
   bool write(const Filename &filename);
 
-  bool add_tree(EggData &egg_data);
+  bool add_tree(EggData *egg_data);
 
 private:
   bool add_node(EggNode *egg_node, XFileNode *x_parent);

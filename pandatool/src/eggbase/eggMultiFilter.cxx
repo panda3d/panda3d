@@ -149,7 +149,7 @@ post_command_line() {
     if (_got_coordinate_system) {
       data->set_coordinate_system(_coordinate_system);
     }
-    append_command_comment(*data);
+    append_command_comment(data);
   }
 
   return EggMultiBase::post_command_line();

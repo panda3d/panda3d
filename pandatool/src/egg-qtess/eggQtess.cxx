@@ -149,7 +149,7 @@ run() {
     read_qtess = true;
   }
 
-  find_surfaces(&_data);
+  find_surfaces(_data);
 
   QtessInputEntry &default_entry = _qtess_file.get_default_entry();
   if (!read_qtess || default_entry.get_num_surfaces() == 0) {
@@ -215,7 +215,7 @@ run() {
     // vertices.
     _surfaces.clear();
 
-    _data.remove_unused_vertices();
+    _data->remove_unused_vertices();
     write_egg_file();
   }
 }

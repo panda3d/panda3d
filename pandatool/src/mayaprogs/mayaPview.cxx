@@ -146,8 +146,8 @@ convert(const NodePath &parent) {
   // Also search along the model path.
   path_replace->_path.append_path(get_model_path());
 
-  EggData egg_data;
-  converter.set_egg_data(&egg_data, false);
+  PT(EggData) egg_data = new EggData;
+  converter.set_egg_data(egg_data);
   converter.set_from_selection(true);
 
   if (!converter.convert_maya()) {
@@ -157,7 +157,7 @@ convert(const NodePath &parent) {
 
   // Now the converter has filled up our egg structure with data, so
   // convert this egg data to Panda data for immediate viewing.
-  egg_data.set_coordinate_system(CS_default);
+  egg_data->set_coordinate_system(CS_default);
   PT(PandaNode) result = load_egg_data(egg_data);
 
   if (result == (PandaNode *)NULL) {

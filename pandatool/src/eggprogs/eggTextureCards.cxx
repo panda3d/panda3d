@@ -296,7 +296,7 @@ run() {
   // vertices.  We can use the same four vertices on all polygons.
 
   EggGroup *group = new EggGroup();
-  _data.add_child(group);
+  _data->add_child(group);
 
   // If we have more than one tile, make the group a sequence, as a
   // convenience.  If we view the egg file directly we can see all the

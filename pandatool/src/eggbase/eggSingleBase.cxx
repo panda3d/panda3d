@@ -31,7 +31,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggSingleBase::
-EggSingleBase() {
+EggSingleBase() :
+  _data(new EggData)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +78,7 @@ as_writer() {
 bool EggSingleBase::
 post_command_line() {
   if (_got_coordinate_system) {
-    _data.set_coordinate_system(_coordinate_system);
+    _data->set_coordinate_system(_coordinate_system);
   }
 
   return EggBase::post_command_line();

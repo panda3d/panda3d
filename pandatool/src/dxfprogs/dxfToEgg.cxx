@@ -56,10 +56,10 @@ void DXFToEgg::
 run() {
   nout << "Reading " << _input_filename << "\n";
 
-  _data.set_coordinate_system(_coordinate_system);
+  _data->set_coordinate_system(_coordinate_system);
 
   DXFToEggConverter converter;
-  converter.set_egg_data(&_data, false);
+  converter.set_egg_data(_data);
   converter._allow_errors = _allow_errors;
 
   apply_parameters(converter);

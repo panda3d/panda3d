@@ -445,7 +445,7 @@ convert_maya() {
       
     case AC_none:
       // none: just get out a static model, no animation.
-      all_ok = convert_hierarchy(&get_egg_data());
+      all_ok = convert_hierarchy(get_egg_data());
       break;
       
     case AC_flip:
@@ -485,7 +485,7 @@ convert_maya() {
       break;
     };
 
-    reparent_decals(&get_egg_data());
+    reparent_decals(get_egg_data());
   }
 
   if (had_error()) {
@@ -564,7 +564,7 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
   bool all_ok = true;
 
   EggGroup *sequence_node = new EggGroup(_character_name);
-  get_egg_data().add_child(sequence_node);
+  get_egg_data()->add_child(sequence_node);
   if (_animation_convert == AC_flip) { 
     sequence_node->set_switch_flag(true);
     sequence_node->set_switch_fps(output_frame_rate);
@@ -612,7 +612,7 @@ convert_char_model() {
   _tree.reset_sliders();
 
   EggGroup *char_node = new EggGroup(_character_name);
-  get_egg_data().add_child(char_node);
+  get_egg_data()->add_child(char_node);
   char_node->set_dart_type(EggGroup::DT_default);
 
   return convert_hierarchy(char_node);
@@ -631,7 +631,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
   //  MStatus status;
 
   EggTable *root_table_node = new EggTable();
-  get_egg_data().add_child(root_table_node);
+  get_egg_data()->add_child(root_table_node);
   EggTable *bundle_node = new EggTable(_character_name);
   bundle_node->set_table_type(EggTable::TT_bundle);
   root_table_node->add_child(bundle_node);
@@ -643,7 +643,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
   // Set the frame rate before we start asking for anim tables to be
   // created.
   _tree._fps = output_frame_rate;
-  _tree.clear_egg(&get_egg_data(), NULL, skeleton_node, morph_node);
+  _tree.clear_egg(get_egg_data(), NULL, skeleton_node, morph_node);
 
   // Now we can get the animation data by walking through all of the
   // frames, one at a time, and getting the joint angles at each
@@ -732,7 +732,7 @@ bool MayaToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
 
-  _tree.clear_egg(&get_egg_data(), egg_root, NULL, NULL);
+  _tree.clear_egg(get_egg_data(), egg_root, NULL, NULL);
   for (int i = 0; i < num_nodes; i++) {
     MayaNodeDesc *node = _tree.get_node(i);
     if (!process_model_node(node)) {

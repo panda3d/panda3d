@@ -196,13 +196,13 @@ add_merge_externals_options() {
 //               done automatically when the file is written out.
 ////////////////////////////////////////////////////////////////////
 void SomethingToEgg::
-apply_units_scale(EggData &data) {
+apply_units_scale(EggData *data) {
   if (_output_units != DU_invalid && _input_units != DU_invalid &&
       _input_units != _output_units) {
     nout << "Converting from " << format_long_unit(_input_units)
          << " to " << format_long_unit(_output_units) << "\n";
     double scale = convert_units(_input_units, _output_units);
-    data.transform(LMatrix4d::scale_mat(scale));
+    data->transform(LMatrix4d::scale_mat(scale));
   }
 }
 

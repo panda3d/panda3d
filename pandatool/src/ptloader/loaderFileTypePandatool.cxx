@@ -99,8 +99,8 @@ PT(PandaNode) LoaderFileTypePandatool::
 load_file(const Filename &path, bool) const {
   PT(PandaNode) result;
 
-  EggData egg_data;
-  _converter->set_egg_data(&egg_data, false);
+  PT(EggData) egg_data = new EggData;
+  _converter->set_egg_data(egg_data);
 
   DSearchPath file_path;
   file_path.append_directory(path.get_dirname());
@@ -116,11 +116,11 @@ load_file(const Filename &path, bool) const {
         << "Converting from " << format_long_unit(input_units)
         << " to " << format_long_unit(ptloader_units) << "\n";
       double scale = convert_units(input_units, ptloader_units);
-      egg_data.transform(LMatrix4d::scale_mat(scale));
+      egg_data->transform(LMatrix4d::scale_mat(scale));
     }
 
-    if (!egg_data.has_normals()) {
-      egg_data.recompute_polygon_normals();
+    if (!egg_data->has_normals()) {
+      egg_data->recompute_polygon_normals();
     }
 
     result = load_egg_data(egg_data);

@@ -131,30 +131,30 @@ post_process_egg_file() {
     _transform.write(nout, 2);
     LVecBase3d scale, hpr, translate;
     if (decompose_matrix(_transform, scale, hpr, translate,
-                         _data.get_coordinate_system())) {
+                         _data->get_coordinate_system())) {
       nout << "(scale " << scale << ", hpr " << hpr << ", translate "
            << translate << ")\n";
     }
-    _data.transform(_transform);
+    _data->transform(_transform);
   }
 
   switch (_normals_mode) {
   case NM_strip:
     nout << "Stripping normals.\n";
-    _data.strip_normals();
-    _data.remove_unused_vertices();
+    _data->strip_normals();
+    _data->remove_unused_vertices();
     break;
 
   case NM_polygon:
     nout << "Recomputing polygon normals.\n";
-    _data.recompute_polygon_normals();
-    _data.remove_unused_vertices();
+    _data->recompute_polygon_normals();
+    _data->remove_unused_vertices();
     break;
 
   case NM_vertex:
     nout << "Recomputing vertex normals.\n";
-    _data.recompute_vertex_normals(_normals_threshold);
-    _data.remove_unused_vertices();
+    _data->recompute_vertex_normals(_normals_threshold);
+    _data->remove_unused_vertices();
     break;
 
   case NM_preserve:
@@ -175,7 +175,7 @@ post_process_egg_file() {
 void EggWriter::
 write_egg_file() {
   post_process_egg_file();
-  _data.write_egg(get_output());
+  _data->write_egg(get_output());
 }
 
 ////////////////////////////////////////////////////////////////////

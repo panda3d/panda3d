@@ -52,7 +52,7 @@ EggToDXF() :
 ////////////////////////////////////////////////////////////////////
 void EggToDXF::
 run() {
-  get_layers(&_data);
+  get_layers(_data);
   if (_layers.empty()) {
     nout << "Egg file contains no polygons.  Output file not written.\n";
     exit(1);

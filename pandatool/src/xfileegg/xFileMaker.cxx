@@ -75,15 +75,15 @@ write(const Filename &filename) {
 //               failure.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-add_tree(EggData &egg_data) {
+add_tree(EggData *egg_data) {
   _meshes.clear();
 
   // Now collect all the polygons together into polysets.
   EggPolysetMaker pmaker;
-  pmaker.make_bins(&egg_data);
+  pmaker.make_bins(egg_data);
 
   // And now we're ready to traverse the egg hierarchy.
-  if (!recurse_nodes(&egg_data, _x_file)) {
+  if (!recurse_nodes(egg_data, _x_file)) {
     return false;
   }
 

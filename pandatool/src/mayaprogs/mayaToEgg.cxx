@@ -195,9 +195,9 @@ run() {
   if (!_got_coordinate_system) {
     _coordinate_system = converter._maya->get_coordinate_system();
   }
-  _data.set_coordinate_system(_coordinate_system);
+  _data->set_coordinate_system(_coordinate_system);
 
-  converter.set_egg_data(&_data, false);
+  converter.set_egg_data(_data);
 
   if (!converter.convert_file(_input_filename)) {
     nout << "Errors in conversion.\n";

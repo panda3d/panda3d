@@ -68,11 +68,11 @@ FltToEgg() :
 ////////////////////////////////////////////////////////////////////
 void FltToEgg::
 run() {
-  _data.set_coordinate_system(_coordinate_system);
+  _data->set_coordinate_system(_coordinate_system);
 
   FltToEggConverter converter;
   converter.set_merge_externals(_merge_externals);
-  converter.set_egg_data(&_data, false);
+  converter.set_egg_data(_data);
   converter._compose_transforms = _compose_transforms;
   converter._allow_errors = _allow_errors;
 

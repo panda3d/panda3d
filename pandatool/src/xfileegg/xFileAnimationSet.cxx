@@ -54,7 +54,7 @@ create_hierarchy(XFileToEggConverter *converter) {
   // Egg animation tables start off with one Table entry, enclosing a
   // Bundle entry.
   EggTable *table = new EggTable(get_name());
-  converter->get_egg_data().add_child(table);
+  converter->get_egg_data()->add_child(table);
   EggTable *bundle = new EggTable(converter->_char_name);
   table->add_child(bundle);
   bundle->set_table_type(EggTable::TT_bundle);
@@ -150,7 +150,7 @@ mirror_table(XFileToEggConverter *converter,
         EggTable *new_table = new EggTable(group->get_name());
         anim_node->add_child(new_table);
         CoordinateSystem cs = 
-          converter->get_egg_data().get_coordinate_system();
+          converter->get_egg_data()->get_coordinate_system();
         EggXfmSAnim *xform = new EggXfmSAnim("xform", cs);
         new_table->add_child(xform);
         xform->set_fps(converter->_frame_rate);

@@ -99,9 +99,9 @@ public:
   INLINE void set_merge_externals(bool merge_externals);
   INLINE bool get_merge_externals() const;
 
-  void set_egg_data(EggData *egg_data, bool owns_egg_data);
+  void set_egg_data(EggData *egg_data);
   INLINE void clear_egg_data();
-  INLINE EggData &get_egg_data();
+  INLINE EggData *get_egg_data();
 
   virtual string get_name() const=0;
   virtual string get_extension() const=0;
@@ -143,8 +143,7 @@ protected:
 
   bool _merge_externals;
 
-  EggData *_egg_data;
-  bool _owns_egg_data;
+  PT(EggData) _egg_data;
 
   bool _error;
 };

@@ -87,10 +87,10 @@ XFileToEgg() :
 ////////////////////////////////////////////////////////////////////
 void XFileToEgg::
 run() {
-  _data.set_coordinate_system(_coordinate_system);
+  _data->set_coordinate_system(_coordinate_system);
 
   XFileToEggConverter converter;
-  converter.set_egg_data(&_data, false);
+  converter.set_egg_data(_data);
 
   converter._frame_rate = _frame_rate;
   converter._make_char = _make_char;

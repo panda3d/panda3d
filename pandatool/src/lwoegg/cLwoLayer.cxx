@@ -59,6 +59,6 @@ connect_egg() {
          << "; cannot parent layer " << _layer->_number << " properly.\n";
   }
 
-  _converter->get_egg_data().add_child(_egg_group.p());
+  _converter->get_egg_data()->add_child(_egg_group.p());
 }
 

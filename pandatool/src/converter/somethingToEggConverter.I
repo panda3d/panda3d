@@ -487,7 +487,7 @@ get_merge_externals() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void SomethingToEggConverter::
 clear_egg_data() {
-  set_egg_data((EggData *)NULL, false);
+  set_egg_data((EggData *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -495,9 +495,9 @@ clear_egg_data() {
 //       Access: Public
 //  Description: Returns the EggData structure.
 ////////////////////////////////////////////////////////////////////
-INLINE EggData &SomethingToEggConverter::
+INLINE EggData *SomethingToEggConverter::
 get_egg_data() {
-  return *_egg_data;
+  return _egg_data;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -45,7 +45,7 @@ public:
   void add_merge_externals_options();
 
 protected:
-  void apply_units_scale(EggData &data);
+  void apply_units_scale(EggData *data);
   void apply_parameters(SomethingToEggConverter &converter);
 
   virtual bool handle_args(Args &args);

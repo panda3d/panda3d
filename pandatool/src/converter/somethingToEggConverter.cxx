@@ -41,7 +41,6 @@ SomethingToEggConverter() {
   _control_flags = 0;
   _merge_externals = false;
   _egg_data = (EggData *)NULL;
-  _owns_egg_data = false;
   _error = false;
 }
 
@@ -57,7 +56,6 @@ SomethingToEggConverter(const SomethingToEggConverter &copy) :
   _merge_externals(copy._merge_externals)
 {
   _egg_data = (EggData *)NULL;
-  _owns_egg_data = false;
   _error = false;
 }
 
@@ -76,18 +74,11 @@ SomethingToEggConverter::
 //       Access: Public
 //  Description: Sets the egg data that will be filled in when
 //               convert_file() is called.  This must be called before
-//               convert_file().  If owns_egg_data is true, the
-//               egg_data will be deleted when the converter
-//               destructs.  (We don't use the reference counting on
-//               EggData, to allow static EggDatas to be passed in.)
+//               convert_file().
 ////////////////////////////////////////////////////////////////////
 void SomethingToEggConverter::
-set_egg_data(EggData *egg_data, bool owns_egg_data) {
-  if (_owns_egg_data) {
-    delete _egg_data;
-  }
+set_egg_data(EggData *egg_data) {
   _egg_data = egg_data;
-  _owns_egg_data = owns_egg_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,9 +128,9 @@ handle_external_reference(EggGroupNode *egg_parent,
                           const Filename &ref_filename) {
   if (_merge_externals) {
     SomethingToEggConverter *ext = make_copy();
-    EggData egg_data;
-    egg_data.set_coordinate_system(get_egg_data().get_coordinate_system());
-    ext->set_egg_data(&egg_data, false);
+    PT(EggData) egg_data = new EggData;
+    egg_data->set_coordinate_system(get_egg_data()->get_coordinate_system());
+    ext->set_egg_data(egg_data);
 
     if (!ext->convert_file(ref_filename)) {
       delete ext;
@@ -148,7 +139,7 @@ handle_external_reference(EggGroupNode *egg_parent,
       return false;
     }
 
-    egg_parent->steal_children(egg_data);
+    egg_parent->steal_children(*egg_data);
     delete ext;
     return true;
 

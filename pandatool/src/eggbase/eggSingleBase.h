@@ -24,6 +24,7 @@
 #include "eggBase.h"
 #include "coordinateSystem.h"
 #include "eggData.h"
+#include "pointerTo.h"
 
 class EggReader;
 class EggWriter;
@@ -51,7 +52,7 @@ protected:
   virtual bool post_command_line();
 
 protected:
-  EggData _data;
+  PT(EggData) _data;
 };
 
 #endif

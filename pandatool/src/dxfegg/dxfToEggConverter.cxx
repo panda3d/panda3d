@@ -108,7 +108,7 @@ convert_file(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 DXFLayer *DXFToEggConverter::
 new_layer(const string &name) {
-  return new DXFToEggLayer(name, &get_egg_data());
+  return new DXFToEggLayer(name, get_egg_data());
 }
 
 ////////////////////////////////////////////////////////////////////

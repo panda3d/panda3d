@@ -108,7 +108,7 @@ run() {
 
   // First, create an enclosing group and a vertex pool.
   _group = new EggGroup("tube");
-  _data.add_child(_group);
+  _data->add_child(_group);
 
   _vpool = new EggVertexPool("tube");
   _group->add_child(_vpool);

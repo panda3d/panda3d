@@ -87,7 +87,7 @@ run() {
   _flt_header = new FltHeader(_path_replace);
   _flt_header->set_auto_attr_update(_auto_attr_update);
 
-  traverse(&_data, _flt_header, FltGeometry::BT_none);
+  traverse(_data, _flt_header, FltGeometry::BT_none);
 
   // Finally, write the resulting file out.
   FltError result = _flt_header->write_flt(get_output());

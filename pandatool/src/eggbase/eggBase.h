@@ -44,8 +44,8 @@ public:
                             const DSearchPath &additional_path);
 
 protected:
-  void append_command_comment(EggData &_data);
-  static void append_command_comment(EggData &_data, const string &comment);
+  void append_command_comment(EggData *_data);
+  static void append_command_comment(EggData *_data, const string &comment);
 
   static bool dispatch_normals(ProgramBase *self, const string &opt, const string &arg, void *mode);
   bool ns_dispatch_normals(const string &opt, const string &arg, void *mode);

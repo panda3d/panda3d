@@ -178,7 +178,7 @@ convert_paths(EggNode *node, PathReplace *path_replace,
 //               call it explicitly.
 ////////////////////////////////////////////////////////////////////
 void EggBase::
-append_command_comment(EggData &data) {
+append_command_comment(EggData *data) {
   append_command_comment(data, get_exec_command());
 }
 
@@ -194,8 +194,8 @@ append_command_comment(EggData &data) {
 //               call it explicitly.
 ////////////////////////////////////////////////////////////////////
 void EggBase::
-append_command_comment(EggData &data, const string &comment) {
-  data.insert(data.begin(), new EggComment("", comment));
+append_command_comment(EggData *data, const string &comment) {
+  data->insert(data->begin(), new EggComment("", comment));
 }
 
 ////////////////////////////////////////////////////////////////////

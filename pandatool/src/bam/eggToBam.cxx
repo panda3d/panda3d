@@ -154,7 +154,7 @@ run() {
   if (!_got_coordinate_system) {
     // If the user didn't specify otherwise, ensure the coordinate
     // system is Z-up.
-    _data.set_coordinate_system(CS_zup_right);
+    _data->set_coordinate_system(CS_zup_right);
   }
 
   PT(PandaNode) root = load_egg_data(_data);

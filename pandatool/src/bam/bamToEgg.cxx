@@ -101,15 +101,15 @@ run() {
   bam_file.resolve();
   bam_file.close();
 
-  _data.set_coordinate_system(_coordinate_system);
+  _data->set_coordinate_system(_coordinate_system);
   _vpool = new EggVertexPool("vpool");
-  _data.add_child(_vpool);
+  _data->add_child(_vpool);
 
   if (objects.size() == 1 && 
       objects[0]->is_of_type(PandaNode::get_class_type())) {
     PandaNode *node = DCAST(PandaNode, objects[0]);
     NodePath root(node);
-    convert_node(WorkingNodePath(root), &_data, false);
+    convert_node(WorkingNodePath(root), _data, false);
 
   } else {
     nout << "File does not contain a scene graph.\n";
@@ -118,7 +118,7 @@ run() {
 
   // Remove the vertex pool if it has no vertices.
   if (_vpool->empty()) {
-    _data.remove_child(_vpool);
+    _data->remove_child(_vpool);
   }
 
   write_egg_file();

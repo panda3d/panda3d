@@ -95,23 +95,23 @@ EggToC() :
 void EggToC::
 run() {
   nout << "Removing invalid primitives.\n";
-  int num_removed = _data.remove_invalid_primitives();
+  int num_removed = _data->remove_invalid_primitives();
   nout << "  (" << num_removed << " removed.)\n";
 
   if (_triangulate_polygons) {
     nout << "Triangulating polygons.\n";
-    int num_produced = _data.triangulate_polygons(true);
+    int num_produced = _data->triangulate_polygons(~0);
     nout << "  (" << num_produced << " triangles produced.)\n";
   }
 
-  _data.apply_texmats();
-  _data.flatten_transforms();
-  _data.remove_unused_vertices();
+  _data->apply_texmats();
+  _data->flatten_transforms();
+  _data->remove_unused_vertices();
 
   // Collect all the polygons together into polysets.
   EggPolysetMaker pmaker;
   pmaker.set_properties(0);
-  pmaker.make_bins(&_data);
+  pmaker.make_bins(_data);
 
   get_output()
     << "/*\n"
@@ -122,7 +122,7 @@ run() {
 
   _next_vpool_index = 0;
   _next_bin_index = 0;
-  traverse(&_data);
+  traverse(_data);
 }
 
 ////////////////////////////////////////////////////////////////////

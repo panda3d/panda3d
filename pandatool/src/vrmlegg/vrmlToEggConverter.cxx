@@ -121,7 +121,7 @@ convert_file(const Filename &filename) {
   // build the egg structure.
   VrmlScene::const_iterator csi;
   for (csi = scene->begin(); csi != scene->end(); ++csi) {
-    vrml_node((*csi)._node, &get_egg_data(), LMatrix4d::ident_mat());
+    vrml_node((*csi)._node, get_egg_data(), LMatrix4d::ident_mat());
   }
 
   return !had_error();

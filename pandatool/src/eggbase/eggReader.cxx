@@ -168,7 +168,7 @@ handle_args(ProgramBase::Args &args) {
   // get implicitly loaded up into one big egg file.
 
   if (!args.empty()) {
-    _data.set_egg_filename(Filename::from_os_specific(args[0]));
+    _data->set_egg_filename(Filename::from_os_specific(args[0]));
   }
   Args::const_iterator ai;
   for (ai = args.begin(); ai != args.end(); ++ai) {
@@ -207,7 +207,7 @@ handle_args(ProgramBase::Args &args) {
     // specified _path_replace.
     convert_paths(&file_data, _path_replace, file_path);
 
-    _data.merge(file_data);
+    _data->merge(file_data);
   }
 
   return true;
@@ -247,7 +247,7 @@ do_reader_options() {
   }
 
   if (_delod >= 0.0) {
-    do_delod(&_data);
+    do_delod(_data);
   }
 
   return okflag;
@@ -265,7 +265,7 @@ bool EggReader::
 copy_textures() {
   bool success = true;
   EggTextureCollection textures;
-  textures.find_used_textures(&_data);
+  textures.find_used_textures(_data);
 
   EggTextureCollection::const_iterator ti;
   for (ti = textures.begin(); ti != textures.end(); ++ti) {
