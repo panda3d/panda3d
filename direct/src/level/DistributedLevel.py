@@ -33,7 +33,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
         Level.Level.__init__(self)
-        self.lastToonZone = 0
+        self.lastToonZone = None
         self.lastCamZone = 0
         self.titleColor = (1,1,1,1)
         self.titleText = OnscreenText.OnscreenText(
@@ -564,10 +564,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
             # make sure that the visibility list includes the zone that the toon
             # is standing in
             if self.lastToonZone not in visibleZoneNums:
-                self.notify.warning('adding zoneNum %s to visibility list '
-                                    'because toon is standing in that zone!' %
-                                    self.lastToonZone)
-                visibleZoneNums.update(list2dict([self.lastToonZone]))
+                # make sure there IS a last zone
+                if self.lastToonZone is not None:
+                    self.notify.warning(
+                        'adding zoneNum %s to visibility list '
+                        'because toon is standing in that zone!' %
+                        self.lastToonZone)
+                    visibleZoneNums.update(list2dict([self.lastToonZone]))
 
         # we should not have the uberZone in the list at this point
         assert not 0 in visibleZoneNums
