@@ -89,6 +89,22 @@ new_data(int thread_index, int frame_number) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::update_labels
+//       Access: Protected, Virtual
+//  Description: Resets the list of labels.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+update_labels() {
+  PStatStripChart::update_labels();
+
+  _label_stack.clear_labels();
+  for (int i = 0; i < get_num_labels(); i++) {
+    _label_stack.add_label(WinStatsGraph::_monitor, get_label_collector(i));
+  }
+  _labels_changed = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsStripChart::clear_region
 //       Access: Protected, Virtual
 //  Description: Erases the chart area.
@@ -218,7 +234,7 @@ create_window() {
   register_window_class(application);
 
   string window_title = get_title_text();
-  DWORD window_style = WS_CHILD | WS_OVERLAPPEDWINDOW;
+  DWORD window_style = WS_CHILD | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 
   RECT win_rect = { 
     0, 0,
@@ -241,7 +257,7 @@ create_window() {
   }
 
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
-  ShowWindow(_window, SW_SHOWNORMAL);
+  setup_label_stack();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -315,6 +331,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                  HIWORD(lparam) - (_top_margin + _bottom_margin));
     setup_bitmap(get_xsize(), get_ysize());
     force_redraw();
+    move_label_stack();
     InvalidateRect(hwnd, NULL, FALSE);
     break;
 

@@ -20,6 +20,7 @@
 #define WINSTATSGRAPH_H
 
 #include "pandatoolbase.h"
+#include "winStatsLabelStack.h"
 #include "pmap.h"
 
 #include <windows.h>
@@ -45,6 +46,8 @@ protected:
 
   void setup_bitmap(int xsize, int ysize);
   void release_bitmap();
+  void setup_label_stack();
+  void move_label_stack();
 
   HBRUSH get_collector_brush(int collector_index);
   void draw_graph(HDC hdc);
@@ -56,6 +59,7 @@ protected:
 
   WinStatsMonitor *_monitor;
   HWND _window;
+  WinStatsLabelStack _label_stack;
 
   HBITMAP _bitmap;
   HDC _bitmap_dc;

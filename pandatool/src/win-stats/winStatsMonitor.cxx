@@ -249,7 +249,8 @@ create_window() {
   register_window_class(application);
 
   _window_title = get_client_progname() + " on " + get_client_hostname();
-  DWORD window_style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+  DWORD window_style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | 
+    WS_CLIPSIBLINGS | WS_VISIBLE;
 
   _window = 
     CreateWindow(_window_class_name, _window_title.c_str(), window_style,

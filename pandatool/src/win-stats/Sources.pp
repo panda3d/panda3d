@@ -13,6 +13,8 @@
   #define SOURCES \
     winStats.cxx \
     winStatsGraph.cxx winStatsGraph.h \
+    winStatsLabel.cxx winStatsLabel.h \
+    winStatsLabelStack.cxx winStatsLabelStack.h \
     winStatsServer.cxx winStatsServer.h \
     winStatsMonitor.cxx winStatsMonitor.h \
     winStatsStripChart.cxx winStatsStripChart.h

@@ -89,7 +89,7 @@ protected:
   void changed_size(int xsize, int ysize);
   void force_redraw();
   void force_reset();
-  void update_labels();
+  virtual void update_labels();
   virtual void normal_guide_bars();
 
   virtual void clear_region();

@@ -18,6 +18,7 @@
 
 #include "winStatsGraph.h"
 #include "winStatsMonitor.h"
+#include "winStatsLabelStack.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::Constructor
@@ -33,7 +34,7 @@ WinStatsGraph(WinStatsMonitor *monitor) :
   _bitmap_dc = 0;
   _bitmap_xsize = 0;
   _bitmap_ysize = 0;
-  _left_margin = 64;
+  _left_margin = 96;
   _right_margin = 32;
   _top_margin = 16;
   _bottom_margin = 8;
@@ -134,6 +135,34 @@ release_bitmap() {
     DeleteDC(_bitmap_dc);
     _bitmap_dc = 0;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::setup_label_stack
+//       Access: Protected
+//  Description: Sets up the label stack on the left edge of the
+//               frame.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+setup_label_stack() {
+  _label_stack.setup(_window, 8, 8, _left_margin - 16, _top_margin + _bitmap_ysize + _bottom_margin - 16);
+  /*
+  if (_label_stack()->get_ideal_width() > _label_stack->get_width()) {
+    _left_margin = _label_stack->get_ideal_width() + 16;
+    move_label_stack();
+  }
+  */
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::move_label_stack
+//       Access: Protected
+//  Description: Repositions the label stack if its coordinates or
+//               size have changed.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+move_label_stack() {
+  _label_stack.set_pos(8, 8, _left_margin - 16, _top_margin + _bitmap_ysize + _bottom_margin - 16);
 }
 
 ////////////////////////////////////////////////////////////////////

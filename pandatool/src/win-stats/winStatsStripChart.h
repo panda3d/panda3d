@@ -43,6 +43,8 @@ public:
   virtual void new_data(int thread_index, int frame_number);
 
 protected:
+  virtual void update_labels();
+
   virtual void clear_region();
   virtual void copy_region(int start_x, int end_x, int dest_x);
   virtual void draw_slice(int x, int frame_number);
