@@ -71,7 +71,7 @@ add_curve(ParametricCurve *curve, int index) {
 //               found.
 ////////////////////////////////////////////////////////////////////
 int ParametricCurveCollection::
-add_curves(Node *node) {
+add_curves(PandaNode *node) {
   int num_curves = r_add_curves(node);
 
   if (num_curves > 0) {
@@ -853,7 +853,7 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
 //  Description: The recursive implementation of add_curves().
 ////////////////////////////////////////////////////////////////////
 int ParametricCurveCollection::
-r_add_curves(Node *node) {
+r_add_curves(PandaNode *node) {
   int num_curves = 0;
 
   if (node->is_of_type(ParametricCurve::get_class_type())) {
@@ -863,10 +863,10 @@ r_add_curves(Node *node) {
     num_curves++;
   }
 
-  int num_children = node->get_num_children(RenderRelation::get_class_type());
+  int num_children = node->get_num_children();
   for (int i = 0; i < num_children; i++) {
-    NodeRelation *arc = node->get_child(RenderRelation::get_class_type(), i);
-    num_curves += r_add_curves(arc->get_child());
+    PandaNode *child = node->get_child(i);
+    num_curves += r_add_curves(child);
   }
 
   return num_curves;

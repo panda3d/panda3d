@@ -39,20 +39,9 @@ TypeHandle ParametricCurve::_type_handle;
 //               one from Scheme.
 ////////////////////////////////////////////////////////////////////
 ParametricCurve::
-ParametricCurve() {
+ParametricCurve() : PandaNode("curve") {
   _curve_type = PCT_NONE;
   _num_dimensions = 3;
-
-  // This CurveDrawer object is used to draw the curve implicitly if
-  // it happens to get parented to render, but only if the curve_type
-  // is set to PCT_XYZ or PCT_NONE.
-  _implicit_drawer = (ParametricCurveDrawer *)NULL;
-
-  // And until we attempt to draw it, we set our bounding volume to be
-  // infinitely large (since we don't know).  Once we draw it the
-  // first time, we'll recompute the bounding volume according to the
-  // geometry of what we just drew.
-  set_bound(OmniBoundingVolume());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,15 +51,38 @@ ParametricCurve() {
 ////////////////////////////////////////////////////////////////////
 ParametricCurve::
 ~ParametricCurve() {
-  if (_implicit_drawer != (ParametricCurveDrawer *)NULL) {
-    delete _implicit_drawer;
-  }
-
   // Our drawer list must be empty by the time we destruct, since our
   // drawers all maintain reference-counting pointers to us!  If this
   // is not so, we have lost a reference count somewhere, or we have
   // gotten confused about which drawers we're registered to.
   nassertv(_drawers.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::safe_to_flatten
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to flatten out
+//               this particular kind of PandaNode by duplicating
+//               instances, false otherwise (for instance, a Camera
+//               cannot be safely flattened, because the Camera
+//               pointer itself is meaningful).
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+safe_to_flatten() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::safe_to_transform
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to transform
+//               this particular kind of PandaNode by calling the
+//               xform() method, false otherwise.  For instance, it's
+//               usually a bad idea to attempt to xform a Character.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+safe_to_transform() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -613,32 +625,6 @@ convert_to_nurbs(ParametricCurve *nc) const {
   return nc->recompute();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::draw_traverse
-//       Access: Public, Virtual
-//  Description: This is called by the Draw traversal by virtue of the
-//               node's being present in the scene graph.  Its job is
-//               to make sure the visualization of the collideable
-//               geometry is up-to-date.
-////////////////////////////////////////////////////////////////////
-void ParametricCurve::
-draw_traverse(const ArcChain &) {
-  if (_implicit_drawer == (ParametricCurveDrawer *)NULL) {
-    _implicit_drawer = new ParametricCurveDrawer();
-    _implicit_drawer->set_curve(this);
-    _implicit_drawer->draw();
-    _viz_arc = new RenderRelation(this, _implicit_drawer->detach_geom_node());
-
-    // We must then tell the drawer to forget about us, so we don't
-    // maintain a circular reference count.
-    _implicit_drawer->clear_curves();
-
-    // Set our bounding type to accurately reflect the new geometry
-    // beneath this node.
-    set_bound(BVT_dynamic_sphere);
-  }
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurve::register_drawer
@@ -698,26 +684,6 @@ invalidate_all() {
        n != _drawers.end();
        ++n) {
     (*n)->redraw();
-  }
-
-  // Also update the implicit representation.
-  if (_implicit_drawer != (ParametricCurveDrawer *)NULL) {
-    if (_viz_arc->get_parent() != this) {
-      // Hey, someone has moved the visualization.  In that case,
-      // forget about it.
-      _viz_arc = (NodeRelation *)NULL;
-      delete _implicit_drawer;
-      _implicit_drawer = (ParametricCurveDrawer *)NULL;
-      set_bound(OmniBoundingVolume());
-
-    } else {
-      // Ok, the visualization is still there.  Regenerate it.
-      remove_arc(_viz_arc);
-      _implicit_drawer->set_curve(this);
-      _implicit_drawer->draw();
-      _viz_arc = new RenderRelation(this, _implicit_drawer->detach_geom_node());
-      _implicit_drawer->clear_curves();
-    }
   }
 }
 
@@ -856,7 +822,7 @@ r_find_length(float target_length, float &found_t,
 ////////////////////////////////////////////////////////////////////
 void ParametricCurve::
 write_datagram(BamWriter *manager, Datagram &me) {
-  NamedNode::write_datagram(manager, me);
+  PandaNode::write_datagram(manager, me);
 
   me.add_int8(_curve_type);
   me.add_int8(_num_dimensions);
@@ -872,7 +838,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 ////////////////////////////////////////////////////////////////////
 void ParametricCurve::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  NamedNode::fillin(scan, manager);
+  PandaNode::fillin(scan, manager);
 
   _curve_type = scan.get_int8();
   _num_dimensions = scan.get_int8();

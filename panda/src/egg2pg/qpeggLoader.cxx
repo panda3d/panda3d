@@ -60,6 +60,10 @@
 #include "collisionSphere.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
+#include "parametricCurve.h"
+#include "nurbsCurve.h"
+#include "classicNurbsCurve.h"
+#include "nurbsCurveInterface.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -1090,10 +1094,8 @@ make_node(EggNode *egg_node, PandaNode *parent) {
 ////////////////////////////////////////////////////////////////////
 PandaNode *qpEggLoader::
 make_node(EggNurbsCurve *egg_curve, PandaNode *parent) {
-  return (PandaNode *)NULL;
-  /*
   assert(parent != NULL);
-  assert(!parent->is_of_type(GeomNode::get_class_type()));
+  assert(!parent->is_geom_node());
 
   PT(ParametricCurve) curve;
 
@@ -1160,8 +1162,8 @@ make_node(EggNurbsCurve *egg_curve, PandaNode *parent) {
     return (PandaNode *)NULL;
   }
 
-  return new PandaNode(parent, curve);
-  */
+  parent->add_child(curve);
+  return curve;
 }
 
 ////////////////////////////////////////////////////////////////////

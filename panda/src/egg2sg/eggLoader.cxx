@@ -1162,6 +1162,8 @@ make_node(EggNode *egg_node, NamedNode *parent) {
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
+  return (RenderRelation *)NULL;
+  /*
   assert(parent != NULL);
   assert(!parent->is_of_type(GeomNode::get_class_type()));
 
@@ -1231,6 +1233,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
   }
 
   return new RenderRelation(parent, curve);
+  */
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -49,6 +49,7 @@ ConfigureFn(config_parametrics) {
 
 #ifdef HAVE_NURBSPP
   NurbsPPCurve::init_type();
+  NurbsPPCurve::register_with_read_factory();
 #endif
 
   ClassicNurbsCurve::register_with_read_factory();

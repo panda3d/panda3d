@@ -49,7 +49,7 @@ PUBLISHED:
 
   void add_curve(ParametricCurve *curve);
   void add_curve(ParametricCurve *curve, int index);
-  int add_curves(Node *node);
+  int add_curves(PandaNode *node);
   bool remove_curve(ParametricCurve *curve);
   void remove_curve(int index);
   bool has_curve(ParametricCurve *curve) const;
@@ -95,7 +95,7 @@ PUBLISHED:
   bool write_egg(ostream &out, const Filename &filename, CoordinateSystem cs);
 
 public:
-  int r_add_curves(Node *node);
+  int r_add_curves(PandaNode *node);
   void register_drawer(ParametricCurveDrawer *drawer);
   void unregister_drawer(ParametricCurveDrawer *drawer);
 

@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET parametrics
   #define LOCAL_LIBS \
-    grutil sgattrib linmath express putil pandabase
+    pgraph grutil sgattrib linmath express putil pandabase
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
