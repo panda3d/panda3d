@@ -64,11 +64,17 @@ PUBLISHED:
     // A.k.a. trilinear filtering: Bilinear filter the pixel from
     // two mipmap levels, and linearly blend the results.
     FT_linear_mipmap_linear,
+
+    // Returned by string_filter_type() for an invalid match.
+    FT_invalid
   };
 
   enum WrapMode {
     WM_clamp,
     WM_repeat,
+
+    // Returned by string_wrap_mode() for an invalid match.
+    WM_invalid
   };
 
 PUBLISHED:
@@ -129,6 +135,9 @@ public:
   };
 
   void mark_dirty(int flags_to_set);
+
+  static WrapMode string_wrap_mode(const string &string);
+  static FilterType string_filter_type(const string &string);
 
 private:
   WrapMode _wrapu;

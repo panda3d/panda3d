@@ -47,14 +47,11 @@ DynamicTextPage(DynamicTextFont *font) :
   set_keep_ram_image(true);
 
   // We don't necessarily want to use mipmaps, since we don't want to
-  // regenerate those every time the texture changes, but we do want
-  // at least linear filtering.
-  set_magfilter(FT_linear);
-  if (text_mipmap) {
-    set_minfilter(FT_linear_mipmap_linear);
-  } else {
-    set_minfilter(FT_linear);
-  }
+  // regenerate those every time the texture changes, but we probably
+  // do want at least linear filtering.  Use whatever the Configrc
+  // file suggests.
+  set_minfilter(text_minfilter);
+  set_magfilter(text_magfilter);
 
   // Anisotropic filtering can help the look of the text, and doesn't
   // require generating mipmaps, but does require hardware support.

@@ -28,6 +28,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "string_utils.h"
 
 #include <stddef.h>
 
@@ -536,6 +537,53 @@ mark_dirty(int flags_to_set) {
   }
 
   _all_dirty_flags |= flags_to_set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_wrap_mode
+//       Access: Public
+//  Description: Returns the WrapMode value associated with the given
+//               string representation, or WM_invalid if the string
+//               does not match any known WrapMode value.
+////////////////////////////////////////////////////////////////////
+Texture::WrapMode Texture::
+string_wrap_mode(const string &string) {
+  if (cmp_nocase_uh(string, "repeat") == 0) {
+    return WM_repeat;
+  } else if (cmp_nocase_uh(string, "clamp") == 0) {
+    return WM_clamp;
+  } else {
+    return WM_invalid;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::string_filter_type
+//       Access: Public
+//  Description: Returns the FilterType value associated with the given
+//               string representation, or FT_invalid if the string
+//               does not match any known FilterType value.
+////////////////////////////////////////////////////////////////////
+Texture::FilterType Texture::
+string_filter_type(const string &string) {
+  if (cmp_nocase_uh(string, "nearest") == 0) {
+    return FT_nearest;
+  } else if (cmp_nocase_uh(string, "linear") == 0) {
+    return FT_linear;
+  } else if (cmp_nocase_uh(string, "nearest_mipmap_nearest") == 0) {
+    return FT_nearest_mipmap_nearest;
+  } else if (cmp_nocase_uh(string, "linear_mipmap_nearest") == 0) {
+    return FT_linear_mipmap_nearest;
+  } else if (cmp_nocase_uh(string, "nearest_mipmap_linear") == 0) {
+    return FT_nearest_mipmap_linear;
+  } else if (cmp_nocase_uh(string, "linear_mipmap_linear") == 0) {
+    return FT_linear_mipmap_linear;
+  } else if (cmp_nocase_uh(string, "mipmap") == 0) {
+    return FT_linear_mipmap_linear;
+
+  } else {
+    return FT_invalid;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,8 +19,9 @@
 #ifndef CONFIG_TEXT_H
 #define CONFIG_TEXT_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
+#include "texture.h"
 
 class DSearchPath;
 
@@ -28,7 +29,6 @@ NotifyCategoryDecl(text, EXPCL_PANDA, EXPTP_PANDA);
 
 extern const bool text_flatten;
 extern const bool text_update_cleared_glyphs;
-extern const bool text_mipmap;
 extern const int text_anisotropic_degree;
 extern const int text_texture_margin;
 extern const float text_poly_margin;
@@ -38,5 +38,10 @@ extern const float text_point_size;
 extern const float text_pixels_per_unit;
 extern const bool text_small_caps;
 extern const float text_small_caps_scale;
+
+extern Texture::FilterType text_minfilter;
+extern Texture::FilterType text_magfilter;
+
+extern EXPCL_PANDA void init_libtext();
 
 #endif
