@@ -3,7 +3,148 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include <indent.h>
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE EggMorphList<MorphType>::
+EggMorphList() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE EggMorphList<MorphType>::
+EggMorphList(const EggMorphList<MorphType> &copy) :
+  _morphs(copy._morphs)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE void EggMorphList<MorphType>::
+operator = (const EggMorphList &copy) {
+  _morphs = copy._morphs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE EggMorphList<MorphType>::
+~EggMorphList() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::operator == 
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE bool EggMorphList<MorphType>::
+operator == (const EggMorphList<MorphType> &other) const {
+  return (_morphs == other._morphs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::operator != 
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE bool EggMorphList<MorphType>::
+operator != (const EggMorphList<MorphType> &other) const {
+  return (_morphs != other._morphs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::operator < 
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE bool EggMorphList<MorphType>::
+operator < (const EggMorphList<MorphType> &other) const {
+  return (_morphs < other._morphs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::begin
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
+begin() {
+  return _morphs.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::begin
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
+begin() const {
+  return _morphs.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::end
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
+end() {
+  return _morphs.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::end
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
+end() const {
+  return _morphs.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::size
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE EggMorphList<MorphType>::size_type EggMorphList<MorphType>::
+size() const {
+  return _morphs.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::empty
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE bool EggMorphList<MorphType>::
+empty() const {
+  return _morphs.empty();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::insert
@@ -20,19 +161,19 @@ template<class MorphType>
 pair<EggMorphList<MorphType>::iterator, bool> EggMorphList<MorphType>::
 insert(const MorphType &value) {
   pair<iterator, bool> result;
-  iterator i;
-  for (i = begin(); i != end(); ++i) {
-    if ((*i) == value) {
+  Morphs::iterator mi;
+  for (mi = _morphs.begin(); mi != _morphs.end(); ++mi) {
+    if ((*mi) == value) {
       // This value is already present.
-      result.first = i;
+      result.first = mi;
       result.second = false;
       return result;
     }
   }
 
   // This value is not already present; add it to the list.
-  push_back(value);
-  result.first = begin() + size() - 1;
+  _morphs.push_back(value);
+  result.first = _morphs.begin() + _morphs.size() - 1;
   result.second = true;
   return result;
 }

@@ -10,6 +10,8 @@
 
 #include "eggMorph.h"
 
+#include <indent.h>
+
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
@@ -17,10 +19,38 @@
 // Description : A collection of <Dxyz>'s or <Duv>'s or some such.
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-class EggMorphList : public vector<MorphType> {
+class EggMorphList {
+private:
+  typedef vector<MorphType> Morphs;
+
 public:
-  pair<EggMorphList<MorphType>::iterator, bool> insert(const MorphType &value);
+  typedef Morphs::iterator iterator;
+  typedef Morphs::const_iterator const_iterator;
+  typedef Morphs::size_type size_type;
+
+  INLINE EggMorphList();
+  INLINE EggMorphList(const EggMorphList<MorphType> &copy);
+  INLINE void operator = (const EggMorphList<MorphType> &copy);
+  INLINE ~EggMorphList();
+
+  INLINE bool operator == (const EggMorphList<MorphType> &other) const;
+  INLINE bool operator != (const EggMorphList<MorphType> &other) const;
+  INLINE bool operator < (const EggMorphList<MorphType> &other) const;
+
+  INLINE iterator begin();
+  INLINE const_iterator begin() const;
+  INLINE iterator end();
+  INLINE const_iterator end() const;
+
+  INLINE size_type size() const;
+  INLINE bool empty() const;
+
+  pair<iterator, bool> insert(const MorphType &value);
+
   void write(ostream &out, int indent_level) const;
+
+private:
+  Morphs _morphs;
 };
 
 
