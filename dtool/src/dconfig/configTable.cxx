@@ -357,10 +357,18 @@ void ConfigTable::MicroConfig(void)
             microconfig_cat->spam() << "separator character is: '" << sep
                                     << "'" << endl;
          typedef std::vector<ConfigString> strvec;
-         typedef Serialize::Deserializer<strvec, Serialize::StdExt<ConfigString> > deser;
-         configconfig.erase(0, 1);
-         deser ds(configconfig, sep);
-         strvec sv = ds;
+         strvec sv;
+         size_t q = 1;
+         size_t p = configconfig.find(sep, q);
+         while (p != ConfigString::npos) {
+           sv.push_back(configconfig.substr(q, p - q));
+           q = p + 1;
+           p = configconfig.find(sep, q);
+         }
+         if (q + 1 < configconfig.size()) {
+           sv.push_back(configconfig.substr(q));
+         }
+         
          if (microconfig_cat->is_spam())
             microconfig_cat->spam()
                << "extracted vector of microconfig options" << endl;
