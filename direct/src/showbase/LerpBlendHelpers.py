@@ -1,14 +1,13 @@
 """LerpBlendHelpers module: contains LerpBlendHelpers class"""
 
 from PandaModules import *
-class LerpBlendHelpers:
 
-    """global lerp blend types for lerp function"""
+"""global lerp blend types for lerp function"""
     
-    easeIn = EaseInBlendType()
+easeIn = EaseInBlendType()
 
-    easeOut = EaseOutBlendType()
+easeOut = EaseOutBlendType()
 
-    easeInOut = EaseInOutBlendType()
+easeInOut = EaseInOutBlendType()
 
-    noBlend = NoBlendType()
+noBlend = NoBlendType()

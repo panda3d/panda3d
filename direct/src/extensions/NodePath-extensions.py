@@ -246,13 +246,13 @@
         import LerpBlendHelpers
 
         if (blendType == "easeIn"):
-            return LerpBlendHelpers.LerpBlendHelpers.easeIn
+            return LerpBlendHelpers.easeIn
         elif (blendType == "easeOut"):
-            return LerpBlendHelpers.LerpBlendHelpers.easeOut
+            return LerpBlendHelpers.easeOut
         elif (blendType == "easeInOut"):
-            return LerpBlendHelpers.LerpBlendHelpers.easeInOut
+            return LerpBlendHelpers.easeInOut
         elif (blendType == "noBlend"):
-            return LerpBlendHelpers.LerpBlendHelpers.noBlend
+            return LerpBlendHelpers.noBlend
         else:
             raise Exception("Error: NodePath.__getBlend: Unknown blend type")
 

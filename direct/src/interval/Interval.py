@@ -18,13 +18,14 @@ class Interval(DirectObject):
 
     playbackCounter = 0
 
+    clock = ClockObject.ClockObject.getGlobalClock()
+
     # Class methods
     def __init__(self, name, duration, openEnded = 1):
         """__init__(name, duration)
         """
 	self.name = name
 	self.duration = duration
-	self.clock = ClockObject.ClockObject.getGlobalClock()
 	self.curr_t = 0.0
 	self.prev_t = 0.0
         self.stopEventList = []

@@ -182,3 +182,20 @@ print(t2)
 # mtrack.play()
 # t1.play()
 # t2.play()
+
+
+def test(n):
+    lerps = []
+    for i in range(n):
+        lerps.append(LerpPosHprInterval(dock, 5.0, 
+                                        pos=Point3(0, 0, -5), 
+                                        hpr=Vec3(0, 0, 0),
+                                        startPos=dock.getPos(),
+                                        startHpr=dock.getHpr(),
+                                        name='dock-lerp'))
+        lerps.append(EventInterval("joe"))
+    t = Track(lerps)
+    mt = MultiTrack([t])
+    # return mt
+
+    
