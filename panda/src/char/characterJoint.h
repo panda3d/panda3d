@@ -87,6 +87,7 @@ protected:
 
 private:
   int _num_net_arcs, _num_local_arcs;
+  int _num_net_nodes, _num_local_nodes;
 
 public:
   // The _geom_node member just holds a temporary pointer to a node
@@ -118,6 +119,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class Character;
+  friend class qpCharacter;
 };
 
 #endif

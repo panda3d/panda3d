@@ -32,7 +32,7 @@ static const unsigned short _bam_major_ver = 3;
 // Bumped to major version 2 on 7/6/00 due to major changes in Character.
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 
-static const unsigned short _bam_minor_ver = 6;
+static const unsigned short _bam_minor_ver = 7;
 // Bumped to minor version 1 on 12/15/00 to add FFT-style channel
 // compression.
 // Bumped to minor version 2 on 2/15/01 to add ModelNode::_preserve_transform.
@@ -40,6 +40,7 @@ static const unsigned short _bam_minor_ver = 6;
 // Bumped to minor version 4 on 12/11/01 to transpose quaternions.
 // Bumped to minor version 5 on 12/13/01 to remove obsolete fields from Texture.
 // Bumped to minor version 6 on 5/16/02 to add ImageBuffer::_filename.
+// Bumped to minor version 7 on 5/19/02 to add CharacterJoint::_net_transform_nodes, etc.
 
 
 #endif

@@ -21,13 +21,12 @@
 #include "computedVertices.h"
 #include "config_char.h"
 
-#include "geomNode.h"
+#include "qpgeomNode.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "pStatTimer.h"
-#include "geomNode.h"
 #include "animControl.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
@@ -211,92 +210,76 @@ copy_joints(PartGroup *copy, PartGroup *orig) {
   }
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: qpCharacter::r_copy_subgraph
-//       Access: Private, Virtual
-//  Description: This is a virtual function inherited from Node.  It's
-//               called when a copy_subgraph() operation reaches the
-//               qpCharacter node.  In the case of a qpCharacter, it's
-//               overridden to do the all right things to copy the
-//               dynamic geometry to the new qpCharacter.
+//     Function: qpCharacter::r_copy_children
+//       Access: Protected, Virtual
+//  Description: This is called by r_copy_subgraph(); the copy has
+//               already been made of this particular node (and this
+//               is the copy); this function's job is to copy all of
+//               the children from the original.
 //
 //               Note that it includes the parameter inst_map, which
 //               is a map type, and is not (and cannot be) exported
-//               from PANDA.DLL.  Thus, any derivative of Node that is
-//               not also a member of PANDA.DLL *cannot* access this
-//               map.
+//               from PANDA.DLL.  Thus, any derivative of PandaNode
+//               that is not also a member of PANDA.DLL *cannot*
+//               access this map, and probably should not even
+//               override this function.
 ////////////////////////////////////////////////////////////////////
-Node *qpCharacter::
-r_copy_subgraph(TypeHandle graph_type, Node::InstanceMap &) const {
-  Node *copy = make_copy();
-  nassertr(copy != (Node *)NULL, NULL);
-  if (copy->get_type() != get_type()) {
-    graph_cat.warning()
-      << "Don't know how to copy nodes of type " << get_type() << "\n";
-  }
-
+void qpCharacter::
+r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
   // We assume there will be no instancing going on below the
   // qpCharacter node.  If there is, too bad; it will get flattened out.
 
-  // Now we preempt the node's r_copy_subgraph() operation with our
-  // own function that keeps track of the old vs. new arcs and also
+  // We preempt the node's r_copy_children() operation with our own
+  // function that keeps track of the old vs. new nodes and also
   // updates any Geoms we find with our new dynamic vertices.
 
-  qpCharacter *char_copy;
-  DCAST_INTO_R(char_copy, copy, NULL);
-  ArcMap arc_map;
-  char_copy->r_copy_char(char_copy, this, graph_type, this, arc_map);
-  char_copy->copy_arc_pointers(this, arc_map);
-
-  return copy;
+  const qpCharacter *from_char;
+  DCAST_INTO_V(from_char, from);
+  NodeMap node_map;
+  r_copy_char(this, from_char, from_char, node_map);
+  copy_node_pointers(from_char, node_map);
 }
-*/
 
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCharacter::r_copy_char
 //       Access: Private
-//  Description: Recursively walks the scene graph hierarchy below the
+//  Description: Recursively walks the scene graph hiernodehy below the
 //               qpCharacter node, duplicating it while noting the
-//               orig:copy arc mappings, and also updates any
+//               orig:copy node mappings, and also updates any
 //               GeomNodes found.
 ////////////////////////////////////////////////////////////////////
 void qpCharacter::
-r_copy_char(Node *dest, const Node *source, TypeHandle graph_type,
-            const qpCharacter *from, qpCharacter::ArcMap &arc_map) {
-  if (source->is_of_type(GeomNode::get_class_type())) {
-    const GeomNode *source_gnode;
-    GeomNode *dest_gnode;
+r_copy_char(PandaNode *dest, const PandaNode *source,
+            const qpCharacter *from, qpCharacter::NodeMap &node_map) {
+  if (source->is_geom_node()) {
+    const qpGeomNode *source_gnode;
+    qpGeomNode *dest_gnode;
     DCAST_INTO_V(source_gnode, source);
     DCAST_INTO_V(dest_gnode, dest);
 
-    dest_gnode->clear();
+    dest_gnode->remove_all_geoms();
     int num_geoms = source_gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      dDrawable *d = source_gnode->get_geom(i);
-      if (d->is_of_type(Geom::get_class_type())) {
-        dest_gnode->add_geom(copy_geom(DCAST(Geom, d), from));
-      } else {
-        dest_gnode->add_geom(d);
-      }
+      Geom *geom = source_gnode->get_geom(i);
+      const RenderState *state = source_gnode->get_geom_state(i);
+      dest_gnode->add_geom(copy_geom(geom, from), state);
     }
   }
 
-  int num_children = source->get_num_children(graph_type);
+  int num_children = source->get_num_children();
   for (int i = 0; i < num_children; i++) {
-    NodeRelation *source_arc = source->get_child(graph_type, i);
-    const Node *source_child = source_arc->get_child();
-    nassertv(source_child != (Node *)NULL);
+    const PandaNode *source_child = source->get_child(i);
+    int source_sort = source->get_child_sort(i);
 
-    Node *dest_child;
+    PandaNode *dest_child;
     if (source_child->is_of_type(qpCharacter::get_class_type())) {
       // We make a special case for nodes of type qpCharacter.  If we
       // encounter one of these, we have a qpCharacter under a
       // qpCharacter, and the nested qpCharacter's copy should be called
       // instead of ours.
-      dest_child = source_child->copy_subgraph(graph_type);
+      dest_child = source_child->copy_subgraph();
 
     } else {
       // Otherwise, we assume that make_copy() will make a suitable
@@ -304,21 +287,13 @@ r_copy_char(Node *dest, const Node *source, TypeHandle graph_type,
       // have parented to a qpCharacter and expect copy_subgraph() to
       // work correctly.  Too bad.
       dest_child = source_child->make_copy();
-      r_copy_char(dest_child, source_child, graph_type, from, arc_map);
+      r_copy_char(dest_child, source_child, from, node_map);
     }
-
-    NodeRelation *dest_arc =
-      NodeRelation::create_typed_arc(graph_type, dest, dest_child);
-    nassertv(dest_arc != (NodeRelation *)NULL);
-    nassertv(dest_arc->is_exact_type(graph_type));
-
-    dest_arc->copy_transitions_from(source_arc);
-    arc_map[source_arc] = dest_arc;
+    dest->add_child(dest_child, source_sort);
+    node_map[source_child] = dest_child;
   }
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCharacter::copy_geom
 //       Access: Private
@@ -373,18 +348,16 @@ copy_geom(Geom *source, const qpCharacter *from) {
 
   return dest;
 }
-*/
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: qpCharacter::copy_arc_pointers
+//     Function: qpCharacter::copy_node_pointers
 //       Access: Public
-//  Description: Creates _net_transform_arcs and _local_transform_arcs
+//  Description: Creates _net_transform_nodes and _local_transform_nodes
 //               as appropriate in each of the qpCharacter's joints, as
 //               copied from the other qpCharacter.
 ////////////////////////////////////////////////////////////////////
 void qpCharacter::
-copy_arc_pointers(const qpCharacter *from, const qpCharacter::ArcMap &arc_map) {
+copy_node_pointers(const qpCharacter *from, const qpCharacter::NodeMap &node_map) {
   nassertv(_parts.size() == from->_parts.size());
   for (int i = 0; i < (int)_parts.size(); i++) {
     if (_parts[i]->is_of_type(CharacterJoint::get_class_type())) {
@@ -394,44 +367,43 @@ copy_arc_pointers(const qpCharacter *from, const qpCharacter::ArcMap &arc_map) {
       DCAST_INTO_V(source_joint, from->_parts[i]);
       DCAST_INTO_V(dest_joint, _parts[i]);
 
-      CharacterJoint::ArcList::const_iterator ai;
-      for (ai = source_joint->_net_transform_arcs.begin();
-           ai != source_joint->_net_transform_arcs.end();
+      CharacterJoint::NodeList::const_iterator ai;
+      for (ai = source_joint->_net_transform_nodes.begin();
+           ai != source_joint->_net_transform_nodes.end();
            ++ai) {
-        NodeRelation *source_arc = (*ai);
+        PandaNode *source_node = (*ai);
 
-        ArcMap::const_iterator mi;
-        mi = arc_map.find(source_arc);
-        if (mi != arc_map.end()) {
-          NodeRelation *dest_arc = (*mi).second;
+        NodeMap::const_iterator mi;
+        mi = node_map.find(source_node);
+        if (mi != node_map.end()) {
+          PandaNode *dest_node = (*mi).second;
 
           // Here's an internal joint that the source qpCharacter was
           // animating directly.  We'll animate our corresponding
           // joint the same way.
-          dest_joint->add_net_transform(dest_arc);
+          dest_joint->add_net_transform(dest_node);
         }
       }
 
-      for (ai = source_joint->_local_transform_arcs.begin();
-           ai != source_joint->_local_transform_arcs.end();
+      for (ai = source_joint->_local_transform_nodes.begin();
+           ai != source_joint->_local_transform_nodes.end();
            ++ai) {
-        NodeRelation *source_arc = (*ai);
+        PandaNode *source_node = (*ai);
 
-        ArcMap::const_iterator mi;
-        mi = arc_map.find(source_arc);
-        if (mi != arc_map.end()) {
-          NodeRelation *dest_arc = (*mi).second;
+        NodeMap::const_iterator mi;
+        mi = node_map.find(source_node);
+        if (mi != node_map.end()) {
+          PandaNode *dest_node = (*mi).second;
 
           // Here's an internal joint that the source qpCharacter was
           // animating directly.  We'll animate our corresponding
           // joint the same way.
-          dest_joint->add_local_transform(dest_arc);
+          dest_joint->add_local_transform(dest_node);
         }
       }
     }
   }
 }
-*/
 
 
 ////////////////////////////////////////////////////////////////////

@@ -66,15 +66,13 @@ PUBLISHED:
 private:
   void copy_joints(PartGroup *copy, PartGroup *orig);
 
-  /*
-  typedef pmap<NodeRelation *, NodeRelation *> ArcMap;
-  virtual Node *r_copy_subgraph(TypeHandle graph_type,
-                                InstanceMap &inst_map) const;
-  void r_copy_char(Node *dest, const Node *source, TypeHandle graph_type,
-                   const qpCharacter *from, ArcMap &arc_map);
+  typedef pmap<const PandaNode *, PandaNode *> NodeMap;
+
+  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map);
+  void r_copy_char(PandaNode *dest, const PandaNode *source,
+                   const qpCharacter *from, NodeMap &node_map);
   PT(Geom) copy_geom(Geom *source, const qpCharacter *from);
-  void copy_arc_pointers(const qpCharacter *from, const ArcMap &arc_map);
-  */
+  void copy_node_pointers(const qpCharacter *from, const NodeMap &node_map);
 
   // These are the actual dynamic vertex pools for this qpCharacter's
   // ComputedVertices--the vertices that it will recompute each frame

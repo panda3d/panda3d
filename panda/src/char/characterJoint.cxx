@@ -383,6 +383,7 @@ void CharacterJoint::
 write_datagram(BamWriter *manager, Datagram &me)
 {
   ArcList::iterator ai;
+  NodeList::iterator ni;
 
   // First, make sure all of our arcs are still valid, before we try
   // to write them out.  Remove any invalid arcs.
@@ -414,16 +415,33 @@ write_datagram(BamWriter *manager, Datagram &me)
   }
 
   MovingPartMatrix::write_datagram(manager, me);
-  me.add_uint16(_net_transform_arcs.size());
 
-  for(ai = _net_transform_arcs.begin(); ai != _net_transform_arcs.end(); ai++) {
+  me.add_uint16(_net_transform_arcs.size());
+  for(ai = _net_transform_arcs.begin(); 
+      ai != _net_transform_arcs.end(); 
+      ai++) {
     manager->write_pointer(me, (*ai));
   }
 
   me.add_uint16(_local_transform_arcs.size());
-  for(ai = _local_transform_arcs.begin(); ai != _local_transform_arcs.end(); ai++)
-  {
+  for(ai = _local_transform_arcs.begin(); 
+      ai != _local_transform_arcs.end(); 
+      ai++) {
     manager->write_pointer(me, (*ai));
+  }
+
+  me.add_uint16(_net_transform_nodes.size());
+  for(ni = _net_transform_nodes.begin(); 
+      ni != _net_transform_nodes.end(); 
+      ni++) {
+    manager->write_pointer(me, (*ni));
+  }
+
+  me.add_uint16(_local_transform_nodes.size());
+  for(ni = _local_transform_nodes.begin(); 
+      ni != _local_transform_nodes.end(); 
+      ni++) {
+    manager->write_pointer(me, (*ni));
   }
 
   _initial_net_transform_inverse.write_datagram(me);
@@ -438,20 +456,34 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   int i;
   MovingPartMatrix::fillin(scan, manager);
   _num_net_arcs = scan.get_uint16();
-  for(i = 0; i < _num_net_arcs; i++)
-  {
+  for(i = 0; i < _num_net_arcs; i++) {
     manager->read_pointer(scan);
   }
 
   _num_local_arcs = scan.get_uint16();
-  for(i = 0; i < _num_local_arcs; i++)
-  {
+  for(i = 0; i < _num_local_arcs; i++) {
     manager->read_pointer(scan);
+  }
+
+  if (manager->get_file_minor_ver() < 7) {
+    // No _node lists before version 3.7.
+    _num_net_nodes = 0;
+    _num_local_nodes = 0;
+  } else {
+    _num_net_nodes = scan.get_uint16();
+    for(i = 0; i < _num_net_nodes; i++) {
+      manager->read_pointer(scan);
+    }
+    
+    _num_local_nodes = scan.get_uint16();
+    for(i = 0; i < _num_local_nodes; i++) {
+      manager->read_pointer(scan);
+    }
+    cerr << "read " << _num_net_nodes << " net transforms\n";
   }
 
   _initial_net_transform_inverse.read_datagram(scan);
@@ -467,38 +499,26 @@ fillin(DatagramIterator& scan, BamReader* manager)
 int CharacterJoint::
 complete_pointers(TypedWritable **p_list, BamReader* manager)
 {
+  int pi = MovingPartMatrix::complete_pointers(p_list, manager);
+
   int i;
-  int start = MovingPartMatrix::complete_pointers(p_list, manager);
-  int mid = start+_num_net_arcs;
-  int end = start+_num_net_arcs+_num_local_arcs;
-
-  for(i = start; i < mid; i++)
-  {
-    if (p_list[i] == TypedWritable::Null)
-    {
-      char_cat->warning() << get_name()
-                          << " Ignoring null Net NodeRelation" << endl;
-    }
-    else
-    {
-      add_net_transform(DCAST(NodeRelation, p_list[i]));
-    }
+  for (i = 0; i < _num_net_arcs; i++) {
+    add_net_transform(DCAST(NodeRelation, p_list[pi++]));
   }
 
-  for(i = mid; i < end; i++)
-  {
-    if (p_list[i] == TypedWritable::Null)
-    {
-      char_cat->warning() << get_name()
-                          << " Ignoring null Local NodeRelation" << endl;
-    }
-    else
-    {
-      add_local_transform(DCAST(NodeRelation, p_list[i]));
-    }
+  for (i = 0; i < _num_local_arcs; i++) {
+    add_local_transform(DCAST(NodeRelation, p_list[pi++]));
   }
 
-  return end;
+  for (i = 0; i < _num_net_nodes; i++) {
+    add_net_transform(DCAST(PandaNode, p_list[pi++]));
+  }
+
+  for (i = 0; i < _num_local_nodes; i++) {
+    add_local_transform(DCAST(PandaNode, p_list[pi++]));
+  }
+
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -217,7 +217,7 @@ parent_joint_nodes(PartGroup *part) {
     PandaNode *joint_node = joint->_qpgeom_node;
     if (joint_node != NULL) {
       _character_node->add_child(joint_node);
-      //      joint->add_net_transform(joint_node);
+      joint->add_net_transform(joint_node);
       joint_node->set_transform(TransformState::make_mat(joint->_net_transform));
     }
   }
