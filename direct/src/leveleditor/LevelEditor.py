@@ -3750,7 +3750,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.fUpdateSelected = 1
         # Handle to the toplevels hull
         hull = self.component('hull')
-        hull.geometry('400x575')
+        hull.geometry('400x680')
         
         balloon = self.balloon = Pmw.Balloon(hull)
         # Start with balloon help disabled
