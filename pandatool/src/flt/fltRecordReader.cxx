@@ -116,7 +116,7 @@ advance(bool ok_eof) {
   char bytes[header_size];
   _in.read(bytes, header_size);
 
-  if (_in.eof()) {
+  if ((int)_in.gcount() < header_size && _in.eof()) {
     _state = S_eof;
     if (ok_eof) {
       return FE_ok;
@@ -148,7 +148,7 @@ advance(bool ok_eof) {
   _datagram = Datagram(buffer, length);
   delete[] buffer;
 
-  if (_in.eof()) {
+  if ((int)_in.gcount() < length && _in.eof()) {
     _state = S_eof;
     assert(!flt_error_abort);
     return FE_end_of_file;
