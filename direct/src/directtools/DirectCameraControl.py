@@ -267,10 +267,7 @@ class DirectCameraControl(PandaObject):
         angle = getCrankAngle(state.coaCenter)
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
-        if base.config.GetBool('temp-hpr-fix',0):
-            self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
-        else:
-            self.camManipRef.setHpr(self.camManipRef, 0, 0, -deltaAngle)
+        self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
         direct.camera.setTransform(self.camManipRef, wrt)
         return Task.cont
 

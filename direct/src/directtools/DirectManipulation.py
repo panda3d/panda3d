@@ -318,10 +318,7 @@ class DirectManipulationControl(PandaObject):
         if self.rotateAxis == 'x':
             direct.widget.setP(direct.widget, deltaAngle)
         elif self.rotateAxis == 'y':
-            if base.config.GetBool('temp-hpr-fix',0):
-                direct.widget.setR(direct.widget, deltaAngle)
-            else:
-                direct.widget.setR(direct.widget, -deltaAngle)
+            direct.widget.setR(direct.widget, deltaAngle)
         elif self.rotateAxis == 'z':
             direct.widget.setH(direct.widget, deltaAngle)
         # Record crank angle for next time around
@@ -450,10 +447,7 @@ class DirectManipulationControl(PandaObject):
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
         # Mouse motion edge to edge of display region results in one full turn
-        if base.config.GetBool('temp-hpr-fix',0):
-            relHpr(direct.widget, direct.camera, 0, 0, -deltaAngle)
-        else:
-            relHpr(direct.widget, direct.camera, 0, 0, deltaAngle)
+        relHpr(direct.widget, direct.camera, 0, 0, -deltaAngle)
 
     def scale3D(self, state):
         # Scale the selected node based upon up down mouse motion
