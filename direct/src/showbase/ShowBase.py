@@ -94,44 +94,9 @@ class ShowBase(DirectObject.DirectObject):
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
 
-        # Get the default window properties.
-        winWidth = self.config.GetInt('win-width', 640)
-        winHeight = self.config.GetInt('win-height', 480)
-        winOriginX = self.config.GetInt('win-origin-x', -1)
-        winOriginY = self.config.GetInt('win-origin-y', -1)
-        fullscreen = self.config.GetBool('fullscreen', 0)
-        undecorated = self.config.GetBool('undecorated', 0)
-        cursorHidden = self.config.GetBool('cursor-hidden', 0)
-        zOrder = self.config.GetString('z-order', 'normal')
-        windowTitle = self.config.GetString('window-title', 'Panda')
-        
-        self.defaultWindowProps = WindowProperties()
-        self.defaultWindowProps.setOpen(1)
-        self.defaultWindowProps.setSize(winWidth, winHeight)
-        if winOriginX >= 0 and winOriginY >= 0:
-            self.defaultWindowProps.setOrigin(winOriginX, winOriginY)
-        self.defaultWindowProps.setFullscreen(fullscreen)
-        self.defaultWindowProps.setUndecorated(undecorated)
-        self.defaultWindowProps.setCursorHidden(cursorHidden)
-        if zOrder == 'bottom':
-            self.defaultWindowProps.setZOrder(WindowProperties.ZBottom)
-        elif zOrder == 'top':
-            self.defaultWindowProps.setZOrder(WindowProperties.ZTop)
-        elif zOrder != 'normal':
-            self.notify.warning("Unknown z-order: %s" % (zOrder))
-        
-        self.defaultWindowProps.setTitle(windowTitle)
-
         # If the aspect ratio is 0 or None, it means to infer the
         # aspect ratio from the window size.
-        self.aspectRatio = self.config.GetFloat('aspect-ratio', 0)
-
-        # The default background color for a window.
-        self.winBackgroundColor = VBase4(
-            self.config.GetFloat('win-background-r', 0.41),
-            self.config.GetFloat('win-background-g', 0.41),
-            self.config.GetFloat('win-background-b', 0.41),
-            1.0)
+        self.aspectRatio = ConfigVariableDouble('aspect-ratio', 0)
 
         self.windowType = self.config.GetString('window-type', 'onscreen')
 
@@ -409,7 +374,7 @@ class ShowBase(DirectObject.DirectObject):
             type = self.windowType
 
         if props == None:
-            props = self.defaultWindowProps
+            props = WindowProperties.getDefault()
 
         if name == None:
             name = 'window%s' % (self.nextWindowIndex)
@@ -428,12 +393,6 @@ class ShowBase(DirectObject.DirectObject):
 
         if hasattr(win, "requestProperties"):
             win.requestProperties(props)
-
-        # By default, the window is cleared to the background color.
-        win.setClearColorActive(1)
-        win.setClearDepthActive(1)
-        win.setClearColor(self.winBackgroundColor)
-        win.setClearDepth(1.0)
 
         if self.win == None:
             self.win = win
@@ -735,7 +694,7 @@ class ShowBase(DirectObject.DirectObject):
             aspectRatio = float(win.getXSize()) / float(win.getYSize())
 
         else:
-            props = self.defaultWindowProps
+            props = WindowProperties.getDefault()
             if not props.hasSize():
                 props = win.getRequestedProperties()
             if props.hasSize():
