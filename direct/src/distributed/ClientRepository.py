@@ -48,6 +48,13 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.heartbeatInterval = base.config.GetDouble('heartbeat-interval', 10)
         self.heartbeatStarted = 0
         self.lastHeartbeat = 0
+        if wantOtpServer:
+            ##
+            ## Top level Interest Manager
+            ##
+            self.__interest_id_assign = 1
+            self.__interesthash = {}
+        
     
     def abruptCleanup(self):
         """
@@ -167,8 +174,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         dclass.startGenerate()
         # If the class is a neverDisable class (which implies uberzone) we
         # should go ahead and generate it even though we are in the quiet zone
-        if dclass.getClassDef().neverDisable:
-            # Create a new distributed object, and put it in the dictionary
+        if not wantOtpServer:
+            if dclass.getClassDef().neverDisable:
+                # Create a new distributed object, and put it in the dictionary
+                distObj = self.generateWithRequiredFields(dclass, doId, di)
+        else:
             distObj = self.generateWithRequiredFields(dclass, doId, di)
         dclass.stopGenerate()
 
@@ -183,8 +193,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # If the class is a neverDisable class (which implies uberzone) we
         # should go ahead and generate it even though we are in the quiet zone
         dclass.startGenerate()
-        if dclass.getClassDef().neverDisable:
-            # Create a new distributed object, and put it in the dictionary
+        if not wantOtpServer:
+            if dclass.getClassDef().neverDisable:
+                # Create a new distributed object, and put it in the dictionary
+                distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
+        else:
             distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
         dclass.stopGenerate()
 
@@ -225,6 +238,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             distObj.generate()
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
+            if wantOtpServer:
+                print "New DO:%s, dclass:%s"%(doId, dclass.getName())
         return distObj
 
     def generateGlobalObject(self , doId, dcname):
@@ -247,7 +262,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         distObj.generateInit()  # Only called when constructed
         distObj.generate()
         # updateRequiredFields calls announceGenerate
-        return  distObj       
+        return  distObj
 
     def generateWithRequiredOtherFields(self, dclass, doId, di):
         if self.doId2do.has_key(doId):
@@ -336,19 +351,19 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         This is not a distributed message and does not delete the
         object on the server or on any other client.
         """
-        # If it is in the dictionary, remove it.
         if self.doId2do.has_key(doId):
+            # If it is in the dictionary, remove it.
             obj = self.doId2do[doId]
             # Remove it from the dictionary
             del(self.doId2do[doId])
             # Disable, announce, and delete the object itself...
             # unless delayDelete is on...
             obj.deleteOrDelay()
-        # If it is in the cache, remove it.
         elif self.cache.contains(doId):
+            # If it is in the cache, remove it.
             self.cache.delete(doId)
-        # Otherwise, ignore it
         else:
+            # Otherwise, ignore it
             ClientRepository.notify.warning(
                 "Asked to delete non-existent DistObj " + str(doId))
 
@@ -407,7 +422,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # Got a system message from the server.
         message = di.getString()
         self.notify.info('Message from server: %s' % (message))
-
         return message
 
     def handleUnexpectedMsgType(self, msgType, di):
@@ -427,6 +441,12 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self.handleServerHeartbeat(di)
         elif msgType == CLIENT_SYSTEM_MESSAGE:
             self.handleSystemMessage(di)
+        elif wantOtpServer and msgType == CLIENT_CREATE_OBJECT_REQUIRED:
+            self.handleGenerateWithRequired(di)
+        elif wantOtpServer and dmsgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
+            self.handleGenerateWithRequiredOther(di)
+        elif wantOtpServer and msgType == CLIENT_DONE_SET_ZONE_RESP:
+            self.handleSetZoneDone()
         else:
             currentLoginState = self.loginFSM.getCurrentState()
             if currentLoginState:
@@ -492,6 +512,112 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # If we're processing a lot of datagrams within one frame, we
         # may forget to send heartbeats.  Keep them coming!
         self.considerHeartbeat()
+      
+    if wantOtpServer:
+        ##
+        ##
+        ## interest managment 
+        ##
+        ##
+        def InterestAdd(self,  parentId, zoneId, Description):        
+            """
+            Part of the new otp-server code.
+            """
+            self.__interest_id_assign += 1
+            self.__interesthash[self.__interest_id_assign] = Description
+            contextId = self.__interest_id_assign;
+            self.__sendAddInterest(contextId, parentId, zoneId)
+            self.DumpInterests()
+            return contextId;
+            
+        def InterestRemove(self,  contextId):        
+            """
+            Part of the new otp-server code.
+            """
+            answer = 0;
+            if  self.__interesthash.has_key(contextId):
+                self.__sendRemoveInterest(contextId)
+                del self.__interesthash[contextId]
+                answer = 1        
+                        
+            self.DumpInterests()            
+            return answer
+
+
+        def InterestAlter(self, contextId, parentId, zoneId, Description):        
+            """
+            Part of the new otp-server code.        
+                Removes old and adds new.. 
+            """
+            answer = 0
+            if  self.__interesthash.has_key(contextId):
+                self.__interesthash[contextId] = Description
+                self.__sendAlterInterest(contextId, parentId, zoneId)
+                answer = 1
+                
+            self.DumpInterests()            
+            return answer
+            
+        def DumpInterests(self):
+            """
+            Part of the new otp-server code.        
+            """
+            print "*********************** Interest Sets **************"
+            for i in self.__interesthash.keys():
+                 print "Interest ID:%s, Description=%s"%(i,self.__interesthash[i])
+            print "****************************************************"
+
+        
+        def __sendAddInterest(self, contextId, parentId, zoneId):
+            """
+            Part of the new otp-server code.
+
+            contextId is a client-side created number that refers to
+                    a set of interests.  The same contextId number doesn't
+                    necessarily have any relationship to the same contextId
+                    on another client.
+            """
+            datagram = PyDatagram()
+            # Add message type
+            datagram.addUint16(CLIENT_ADD_INTEREST)
+            datagram.addUint16(contextId)
+            datagram.addUint32(parentId)
+            datagram.addUint32(zoneId)
+            self.send(datagram)
+
+        def __sendAlterInterest(self, contextId, parentId, zoneId):
+            """
+            Part of the new otp-server code.
+
+            contextId is a client-side created number that refers to
+                    a set of interests.  The same contextId number doesn't
+                    necessarily have any relationship to the same contextId
+                    on another client.
+            """
+            datagram = PyDatagram()
+            # Add message type
+            datagram.addUint16(CLIENT_ALTER_INTEREST)
+            datagram.addUint16(contextId)
+            datagram.addUint32(parentId)
+            datagram.addUint32(zoneId)
+            self.send(datagram)
+
+        def __sendRemoveInterest(self, contextId):
+            """
+            Part of the new otp-server code.
+
+            contextId is a client-side created number that refers to
+                    a set of interests.  The same contextId number doesn't
+                    necessarily have any relationship to the same contextId
+                    on another client.
+            """
+            datagram = PyDatagram()
+            # Add message type
+            datagram.addUint16(CLIENT_REMOVE_INTEREST)
+            datagram.addUint16(contextId)
+            self.send(datagram)
+
+
 
     def sendHeartbeat(self):
         datagram = PyDatagram()
