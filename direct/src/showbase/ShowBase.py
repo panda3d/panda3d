@@ -601,14 +601,9 @@ class ShowBase(DirectObject.DirectObject):
         # support legacy code that did not expect a time parameter; it
         # will eventually be folded into the normal ButtonThrower,
         # above.
-
-        # Temporary hasattr() for old pandas.
-        if hasattr(ButtonThrower, "setTimeFlag"):
-            self.timeButtonThrower = self.mouseWatcher.attachNewNode(ButtonThrower('timeButtons'))
-            self.timeButtonThrower.node().setPrefix('time-')
-            self.timeButtonThrower.node().setTimeFlag(1)
-        else:
-            self.timeButtonThrower = None
+        self.timeButtonThrower = self.mouseWatcher.attachNewNode(ButtonThrower('timeButtons'))
+        self.timeButtonThrower.node().setPrefix('time-')
+        self.timeButtonThrower.node().setTimeFlag(1)
 
         # Tell the gui system about our new mouse watcher.
         self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
