@@ -1,6 +1,6 @@
 // Filename: BaseParticle.I
 // Created by:  charles (16Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 INLINE void BaseParticle::set_age(float age) {
@@ -28,9 +28,11 @@ INLINE bool BaseParticle::get_alive(void) const {
 }
 
 INLINE float BaseParticle::get_parameterized_age(void) const {
+  if (_lifespan <= 0) return 1.0;
   return _age / _lifespan;
 }
 
 INLINE float BaseParticle::get_parameterized_vel(void) const {
+  if (0 == get_terminal_velocity()) return 0.0;
   return (get_velocity().length()) / get_terminal_velocity();
 }

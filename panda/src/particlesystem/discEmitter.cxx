@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////
 DiscEmitter::
 DiscEmitter(void) {
-  _radius = 0.0f;
+  _radius = 1.0f;
   _inner_aoe = _outer_aoe = 0.0f;
   _inner_magnitude = _outer_magnitude = 0.0f;
   _cubic_lerping = false;

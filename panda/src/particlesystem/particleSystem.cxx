@@ -31,9 +31,9 @@ ParticleSystem::
 ParticleSystem(int pool_size) :
   Physical(pool_size, false), _particle_pool_size(pool_size)
 {
-  _birth_rate = 0.0f;
+  _birth_rate = 0.5f;
   _tics_since_birth = _birth_rate;
-  _litter_size = 0;
+  _litter_size = 1;
   _litter_spread = 0;
   _living_particles = 0;
   _active_system_flag = true;
@@ -64,7 +64,7 @@ ParticleSystem(int pool_size) :
 ////////////////////////////////////////////////////////////////////
 ParticleSystem::
 ParticleSystem(const ParticleSystem& copy) :
-  Physical(copy), 
+  Physical(copy),
   _system_age(0.0f),
   _template_system_flag(false)
 {

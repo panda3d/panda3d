@@ -1,13 +1,13 @@
 // Filename: particleSystem.I
 // Created by:  charles (14Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //    Function : render
 //      Access : Public
-// Description : Populates an atteched GeomNode structure with the
-//               particle geometry for rendering.  This is a 
+// Description : Populates an attached GeomNode structure with the
+//               particle geometry for rendering.  This is a
 //               wrapper for accessability.
 ////////////////////////////////////////////////////////////////////
 
@@ -182,7 +182,7 @@ set_render_parent(Node *node) {
   }
 
   _render_parent = node;
-  _render_arc = new RenderRelation(_render_parent, 
+  _render_arc = new RenderRelation(_render_parent,
 				   _renderer->get_render_node());
 }
 

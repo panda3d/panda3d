@@ -13,7 +13,7 @@
 LineEmitter::
 LineEmitter(void) :
   BaseParticleEmitter() {
-  _endpoint1.set(0.0f, 0.0f, 0.0f);
+  _endpoint1.set(1.0f, 0.0f, 0.0f);
   _endpoint2.set(0.0f, 0.0f, 0.0f);
 }
 

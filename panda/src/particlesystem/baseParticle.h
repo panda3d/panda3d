@@ -24,7 +24,7 @@ private:
   LPoint3f _last_position;
 
 protected:
-  BaseParticle(int lifespan = 0, bool alive = false);
+  BaseParticle(int lifespan = 1, bool alive = false);
   BaseParticle(const BaseParticle &copy);
   virtual ~BaseParticle(void);
 

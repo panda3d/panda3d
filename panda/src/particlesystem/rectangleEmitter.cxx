@@ -13,8 +13,8 @@
 RectangleEmitter::
 RectangleEmitter(void) :
   BaseParticleEmitter() {
-  _vmin.set(0.0f, 0.0f);
-  _vmax.set(0.0f, 0.0f);
+  _vmin.set(-0.5f, -0.5f);
+  _vmax.set( 0.5f,  0.5f);
 }
 
 ////////////////////////////////////////////////////////////////////
