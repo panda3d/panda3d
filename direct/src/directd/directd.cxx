@@ -122,7 +122,7 @@ namespace {
       CloseHandle(pi.hProcess);
       CloseHandle(pi.hThread);
     } else {
-      cerr<<"CreateProcess failed: "<<cmd<<endl;
+      nout<<"CreateProcess failed: "<<cmd<<endl;
     }
     return pid;
   }
@@ -131,8 +131,7 @@ namespace {
 
 
 DirectD::DirectD() :
-    _host_name("localhost"),
-    _port(8001), _app_pid(0),
+    _app_pid(0),
     _reader(&_cm, 1), _writer(&_cm, 1), _listener(&_cm, 0),
     _shutdown(false) {
 }
@@ -144,7 +143,6 @@ DirectD::~DirectD() {
     _cm.close_connection((*ci));
   }
   _connections.clear();
-  cerr<<"DirectD dtor"<<endl;
 }
 
 int 
@@ -182,7 +180,7 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
         //handle_datagram(datagram);
         DatagramIterator di(datagram);
         string s=di.get_string();
-        cerr<<"wait_for_servers() count="<<count<<", s="<<s<<endl;
+        nout<<"wait_for_servers() count="<<count<<", s="<<s<<endl;
         if (s=="r" && !--count) {
           return true;
         }
@@ -214,7 +212,7 @@ DirectD::start_app(const string& cmd) {
 void
 DirectD::kill_app() {
   if (_app_pid) {
-    cerr<<"trying k "<<_app_pid<<endl;
+    nout<<"trying kill "<<_app_pid<<endl;
     TerminateApp(_app_pid, 1000);
   }
 }
@@ -274,7 +272,7 @@ DirectD::send_one_message(const string& host_name,
   _cm.close_connection(c);
 }
 
-void
+int
 DirectD::connect_to(const string& host_name, int port) {
   NetAddress host;
   if (!host.set_host(host_name, port)) {
@@ -285,7 +283,7 @@ DirectD::connect_to(const string& host_name, int port) {
   PT(Connection) c = _cm.open_TCP_client_connection(host, timeout_ms);
   if (c.is_null()) {
     nout << "No connection.\n";
-    return;
+    return 0;
   }
 
   nout << "Successfully opened TCP connection to " << host_name
@@ -295,6 +293,7 @@ DirectD::connect_to(const string& host_name, int port) {
 
   _reader.add_connection(c);
   _connections.insert(c);
+  return  c->get_address().get_port();
 }
 
 void
@@ -339,20 +338,13 @@ DirectD::check_for_datagrams(){
 }
 
 void
-DirectD::spawn_background_server() {
-  stringstream ss;
-  ss<<"directd -s "<<_host_name.c_str()<<" "<<_port;
-  DWORD serverPID = StartApp(ss.str());
-}
-
-void
 DirectD::listen_to(int port, int backlog) {
-  PT(Connection) rendezvous = _cm.open_TCP_server_rendezvous(_port, backlog);
+  PT(Connection) rendezvous = _cm.open_TCP_server_rendezvous(port, backlog);
   if (rendezvous.is_null()) {
-    nout << "Cannot grab port " << _port << ".\n";
+    nout << "Cannot grab port " << port << ".\n";
     exit(1);
   }
-  nout << "Listening for connections on port " << _port << "\n";
+  nout << "Listening for connections on port " << port << "\n";
   _listener.add_connection(rendezvous);
 }
 

@@ -39,8 +39,29 @@ typedef int intptr_t;
 //              
 //              Start a directd client on the controlling machine or 
 //              import ShowBaseGlobal with the xxxxx flag in your
-//              Configrc.  The client will connact each of the servers 
+//              Configrc.  The client will connect each of the servers 
 //              in the xxxxx list in your Configrc.
+//              
+//              There are two API groups in this class, they are:
+//              
+//                listen_to()
+//                client_ready()
+//                wait_for_servers()
+//                server_ready()
+//              
+//              and:
+//              
+//                connect_to()
+//                send_command()
+//                disconnect_from()
+//              
+//              The second group was from a more general implementation
+//              of DirectD.  The first group summarizes the main intents
+//              of DirectD.
+//              Both groups are presented in order chronologically by their
+//              intended usage.
+//              The first group will probably provide everthing needed for
+//              DirectD.
 class EXPCL_DIRECT DirectD {
 PUBLISHED:
   DirectD();
@@ -58,6 +79,9 @@ PUBLISHED:
   //              import ShowbaseGlobal is nearly finished.
   //              cmd: a cli command that will be executed on the remote
   //                   machine.
+  //              A new connection will be created and closed.  If you
+  //              want to send more than one command, you should use
+  //              connect_to(), send_command(), and disconnect_from().
   int client_ready(const string& client_host, int port, const string& cmd);
 
   // Description: Call this function from the client after
@@ -66,6 +90,8 @@ PUBLISHED:
   //              Call listen_to(port) prior to calling
   //              wait_for_servers() (or better yet, prior
   //              to calling client_ready()).
+  //              
+  //              timeout_ms defaults to two minutes.
   bool wait_for_servers(int count, int timeout_ms=2*60*1000);
 
   // Description: Call this function from the server when
@@ -73,16 +99,23 @@ PUBLISHED:
   int server_ready(const string& client_host, int port);
   
   // Description: Call connect_to from client for each server.
-  void connect_to(const string& server_host, int port);
+  //              returns the port number of the connection (which
+  //              is different from the rendezvous port used in the
+  //              second argument).  The return value can be used
+  //              for the port arguemnt in disconnect_from().
+  int connect_to(const string& server_host, int port);
   
-  // Description: 
+  // Description: This is the counterpart to connect_to().  Pass
+  //              the same server_host as for connect_to(), but pass
+  //              the return value from connect_to() for the port,
+  //              not the port passed to connect_to().
   void disconnect_from(const string& server_host, int port);
   
-  // Description: process command string.
+  // Description: Send the same command string to all current
+  //              connections.
   void send_command(const string& cmd);
 
 protected:
-  void spawn_background_server();
   void start_app(const string& cmd);
   void kill_app();
   virtual void handle_command(const string& cmd);
@@ -95,8 +128,6 @@ protected:
   ConnectionWriter _writer;
   QueuedConnectionListener _listener;
 
-  string _host_name;
-  int _port;
   intptr_t _app_pid;
   typedef pset< PT(Connection) > ConnectionSet;
   ConnectionSet _connections;
