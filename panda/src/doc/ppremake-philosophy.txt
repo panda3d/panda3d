@@ -59,7 +59,7 @@ WHAT IS PPREMAKE, EXACTLY?
   ppremake, including the meaning of all the variables defined within
   the various Sources.pp files (see below) and all of the generated
   output, is almost entirely controlled by scripts written in its own
-  scripting language.  Most of these are control scripts are defined
+  scripting language.  Most of these control scripts are defined
   in the directory $DTOOL/pptempl.
 
 

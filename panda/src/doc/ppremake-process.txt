@@ -48,7 +48,7 @@ The following steps are executed when ppremake is invoked:
      needs to include.  The use of System.pp to define these
      filenames, instead of hardcoding them into ppremake, is
      consistent with the ppremake philosophy of letting as much of its
-     behavior as possible to be controlled from within the scripting
+     behavior as possible be controlled from within the scripting
      language itself.
         
   3. Once Package.pp has been read, traverse the entire source
@@ -76,7 +76,7 @@ The following steps are executed when ppremake is invoked:
      relationships between different directories within the source
      hierarchy.  Each directory may depend on code from zero or more
      other directories within the same package.  (That is, a directory
-     may include header files define within another directory, and/or
+     may include header files defined within another directory, and/or
      require linking with a library built in that directory.)
 
      This inter-directory dependency is critical to determine things
@@ -138,5 +138,5 @@ The following steps are executed when ppremake is invoked:
      directory.  Since there may be different kinds of source
      directories, each with very different makefile requirements, the
      Template files usually have one large #if condition based on the
-     value of $[DIR_TYPE], which is set within in each Sources.pp (and
+     value of $[DIR_TYPE], which is set within each Sources.pp (and
      is set in System.pp to default to "src").
