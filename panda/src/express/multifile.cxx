@@ -1441,13 +1441,15 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
 ////////////////////////////////////////////////////////////////////
 void Multifile::Subfile::
 rewrite_index_flags(ostream &write) {
-  nassertv(_index_start != (streampos)0);
-
-  static const size_t flags_offset = 4 + 4 + 4;
-  size_t flags_pos = _index_start + (streampos)flags_offset;
-  write.seekp(flags_pos);
-  nassertv(!write.fail());
-
-  StreamWriter writer(write);
-  writer.add_uint16(_flags);
+  // If the subfile has never even been recorded to disk, we don't
+  // need to do anything at all in this function.
+  if (_index_start != (streampos)0) {
+    static const size_t flags_offset = 4 + 4 + 4;
+    size_t flags_pos = _index_start + (streampos)flags_offset;
+    write.seekp(flags_pos);
+    nassertv(!write.fail());
+    
+    StreamWriter writer(write);
+    writer.add_uint16(_flags);
+  }
 }
