@@ -39,7 +39,6 @@ typedef int XIC;
 #else
 #include <X11/Xlib.h>
 #include <GL/glx.h>
-#endif  // CPPPARSER
 
 #ifndef GLX_VERSION_1_3
   // Pre-glx 1.3, these GLXFBConfig definitions might have been
@@ -54,6 +53,7 @@ typedef int XIC;
   #define glXDestroyPbuffer glXDestroyGLXPbufferSGIX
 #endif // GLX_VERSION_1_3
 
+#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsPipe
