@@ -734,7 +734,9 @@ render_frame(const AllAttributesWrapper &initial_state) {
 			 sprintf(fps_msg, "%7.02f fps", _current_fps);
 			 SetTextColor(hDC, RGB(255,255,0) );
 			 SetBkMode(hDC, TRANSPARENT );
-             TextOutA(hDC, (_view_rect.right-_view_rect.left)-85, 0, fps_msg, strlen(fps_msg));
+
+			 // 75,8 seem to work well w/default font
+             TextOutA(hDC, (_view_rect.right-_view_rect.left)-75, 8, fps_msg, strlen(fps_msg));
              _back->ReleaseDC(hDC);
 		 }
 
