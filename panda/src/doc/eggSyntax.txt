@@ -1117,6 +1117,21 @@ GROUPING ENTRIES
       The geometry represents a sphere.  The vertices in the group are
       averaged together to determine the sphere's center and radius.
 
+    InvSphere
+
+      The geometry represents an inverse sphere.  This is the same as
+      Sphere, with the normal inverted, so that the solid part of an
+      inverse sphere is the entire world outside of it.  Note that an
+      inverse sphere is in infinitely large solid with a finite hole
+      cut into it.
+
+    Tube
+
+      The geometry represents a tube.  This is a cylinder-like shape
+      with hemispherical endcaps; it is sometimes called a capsule or
+      a lozenge in other packages.  The smallest tube shape that will
+      fit around the vertices is used.
+
 
     The flags may be any zero or more of:
 

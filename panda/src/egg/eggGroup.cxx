@@ -813,6 +813,9 @@ string_cs_type(const string &string) {
     return CST_polyset;
   } else if (cmp_nocase_uh(string, "sphere") == 0) {
     return CST_sphere;
+  } else if (cmp_nocase_uh(string, "inv-sphere") == 0 ||
+             cmp_nocase_uh(string, "invsphere") == 0) {
+    return CST_inv_sphere;
   } else if (cmp_nocase_uh(string, "tube") == 0) {
     return CST_tube;
   } else {
@@ -1185,6 +1188,8 @@ ostream &operator << (ostream &out, EggGroup::CollisionSolidType t) {
     return out << "Polyset";
   case EggGroup::CST_sphere:
     return out << "Sphere";
+  case EggGroup::CST_inv_sphere:
+    return out << "InvSphere";
   case EggGroup::CST_tube:
     return out << "Tube";
   }

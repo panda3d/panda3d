@@ -74,6 +74,7 @@ egg-object-type-dcs             <DCS> { 1 }
 # collisions more optimally than regular visible polygons.
 egg-object-type-barrier         <Collide> { Polyset descend }
 egg-object-type-sphere          <Collide> { Sphere descend }
+egg-object-type-invsphere       <Collide> { InvSphere descend }
 egg-object-type-tube            <Collide> { Tube descend }
 
 # As above, but these are flagged to be "intangible", so that they

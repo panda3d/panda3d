@@ -303,7 +303,7 @@ fill_viz_geom() {
       << "Recomputing viz for " << *this << "\n";
   }
 
-  static const int num_slices = 8;
+  static const int num_slices = 16;
   static const int num_stacks = 8;
 
   GeomTristrip *sphere = new GeomTristrip;

@@ -68,6 +68,7 @@
 #include "selectiveChildNode.h"
 #include "collisionNode.h"
 #include "collisionSphere.h"
+#include "collisionInvSphere.h"
 #include "collisionTube.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
@@ -2196,6 +2197,10 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
     make_collision_sphere(egg_group, cnode, start_group->get_collide_flags());
     break;
 
+  case EggGroup::CST_inv_sphere:
+    make_collision_inv_sphere(egg_group, cnode, start_group->get_collide_flags());
+    break;
+
   case EggGroup::CST_tube:
     make_collision_tube(egg_group, cnode, start_group->get_collide_flags());
     break;
@@ -2296,6 +2301,26 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
   if (make_sphere(egg_group, center, radius, dummycolor)) {
     CollisionSphere *cssphere =
       new CollisionSphere(center, radius);
+    apply_collision_flags(cssphere, flags);
+    cnode->add_solid(cssphere);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_collision_inv_sphere
+//       Access: Private
+//  Description: Creates a single CollisionInvSphere corresponding
+//               to the polygons associated with this group.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
+                          EggGroup::CollideFlags flags) {
+  LPoint3f center;
+  float radius;
+  Colorf dummycolor;
+  if (make_sphere(egg_group, center, radius, dummycolor)) {
+    CollisionInvSphere *cssphere =
+      new CollisionInvSphere(center, radius);
     apply_collision_flags(cssphere, flags);
     cnode->add_solid(cssphere);
   }

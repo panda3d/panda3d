@@ -79,11 +79,11 @@ PUBLISHED:
     CST_polyset              = 0x00030000,
     CST_sphere               = 0x00040000,
     CST_tube                 = 0x00050000,
+    CST_inv_sphere           = 0x00060000,
   };
   enum CollideFlags {
     // The bits here must correspond to those in Flags, below.
     CF_none                  = 0x00000000,
-    CF_intangible            = 0x00080000,
     CF_descend               = 0x00100000,
     CF_event                 = 0x00200000,
     CF_keep                  = 0x00400000,
@@ -91,6 +91,7 @@ PUBLISHED:
     CF_center                = 0x01000000,
     CF_turnstile             = 0x02000000,
     CF_level                 = 0x04000000,
+    CF_intangible            = 0x08000000,
   };
 
   EggGroup(const string &name = "");
