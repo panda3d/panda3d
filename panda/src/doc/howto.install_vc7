@@ -30,7 +30,7 @@ are running from the NT command line, run
 "C:\Program Files\Microsoft Visual Studio .NET\Vc7\bin\vcvars32.bat"
 
 If you are using tcsh.exe under cygwin, enable VC7 using 
-'source $WINTOOLS/bin/setup_msvc7.csh' 
+'source $WINTOOLS/etc/setup_msvc7.csh' 
 
 You will want to copy the top portion of setup_msvc7.csh to your
 .cshrc, so you can do 'set_msvc7' to set up the PATH properly in the
