@@ -80,7 +80,7 @@ ProgramBase() {
 
   add_option("h", "", 100, 
 	     "Display this help page.", 
-	     &ProgramBase::handle_help_option);
+	     &ProgramBase::handle_help_option, NULL, (void *)this);
 
   // Should we report DConfig's debugging information?
   if (dconfig_cat.is_debug()) {
@@ -298,8 +298,7 @@ parse_command_line(int argc, char *argv[]) {
 	const Option &opt = *(*ii).second;
 	bool okflag = true;
 	if (opt._option_function != (OptionDispatch)NULL) {
-	  okflag = (this->*opt._option_function)(opt._option, arg, 
-						 opt._option_data);
+	  okflag = (*opt._option_function)(opt._option, arg, opt._option_data);
 	}
 	if (opt._bool_var != (bool *)NULL) {
 	  (*opt._bool_var) = true;
@@ -508,7 +507,7 @@ remove_option(const string &option) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_none
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               no parameters, and does nothing special.  Typically
 //               this would be used for a boolean flag, whose presence
@@ -524,7 +523,7 @@ dispatch_none(const string &, const string &, void *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_count
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               no parameters, but whose presence on the command line
 //               increments an integer counter for each time it
@@ -541,7 +540,7 @@ dispatch_count(const string &, const string &, void *var) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_int
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               one parameter, which is to be interpreted as an
 //               integer.  The data pointer is to an int variable.
@@ -569,7 +568,7 @@ dispatch_int(const string &opt, const string &arg, void *var) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_int_pair
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               a pair of integer parameters.  The data pointer is to
 //               an array of two integers.
@@ -618,7 +617,7 @@ dispatch_int_pair(const string &opt, const string &arg, void *var) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_double
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               one parameter, which is to be interpreted as a
 //               double.  The data pointer is to an double variable.
@@ -646,7 +645,7 @@ dispatch_double(const string &opt, const string &arg, void *var) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_string
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               one parameter, which is to be interpreted as a
 //               string.  The data pointer is to a string variable.
@@ -661,7 +660,7 @@ dispatch_string(const string &, const string &arg, void *var) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_filename
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               one parameter, which is to be interpreted as a
 //               filename.  The data pointer is to a Filename variable.
@@ -681,7 +680,7 @@ dispatch_filename(const string &opt, const string &arg, void *var) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_search_path
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               one parameter, which is to be interpreted as a
 //               colon-delimited search path.  The data pointer is to
@@ -704,7 +703,7 @@ dispatch_search_path(const string &opt, const string &arg, void *var) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_coordinate_system
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               one parameter, which is to be interpreted as a
 //               coordinate system string.  The data pointer is to a
@@ -727,15 +726,16 @@ dispatch_coordinate_system(const string &opt, const string &arg, void *var) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::handle_help_option
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Called when the user enters '-h', this describes how
 //               to use the program and then exits.
 ////////////////////////////////////////////////////////////////////
 bool ProgramBase::
-handle_help_option(const string &, const string &, void *) {
-  show_description();
-  show_usage();
-  show_options();
+handle_help_option(const string &, const string &, void *data) {
+  ProgramBase *me = (ProgramBase *)data;
+  me->show_description();
+  me->show_usage();
+  me->show_options();
   exit(0);
 
   return false;

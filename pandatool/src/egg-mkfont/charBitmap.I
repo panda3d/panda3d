@@ -1,0 +1,36 @@
+// Filename: charBitmap.I
+// Created by:  drose (16Feb01)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharBitmap::get_width
+//       Access: Public
+//  Description: Returns the width of the character in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE int CharBitmap::
+get_width() const {
+  return _block.empty() ? 0 : _block[0].size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharBitmap::get_height
+//       Access: Public
+//  Description: Returns the height of the character in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE int CharBitmap::
+get_height() const {
+  return _block.size();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: SortCharBitmap::Function Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool SortCharBitmap::
+operator() (const CharBitmap *c1, const CharBitmap *c2) const {
+  return (c1->get_height() > c2->get_height());
+}

@@ -13,6 +13,7 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 #include <map>
 
 ////////////////////////////////////////////////////////////////////
@@ -36,12 +37,12 @@ public:
 
   virtual void parse_command_line(int argc, char *argv[]);
 
-  typedef vector_string Args;
+  typedef deque<string> Args;
   Filename _program_name;
   Args _program_args;
 
 protected:
-  typedef bool (ProgramBase::*OptionDispatch)(const string &opt, const string &parm, void *data);
+  typedef bool (*OptionDispatch)(const string &opt, const string &parm, void *data);
 
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
@@ -58,17 +59,17 @@ protected:
   bool redescribe_option(const string &option, const string &description);
   bool remove_option(const string &option);
 
-  bool dispatch_none(const string &opt, const string &arg, void *);
-  bool dispatch_count(const string &opt, const string &arg, void *var);
-  bool dispatch_int(const string &opt, const string &arg, void *var);
-  bool dispatch_int_pair(const string &opt, const string &arg, void *var);
-  bool dispatch_double(const string &opt, const string &arg, void *var);
-  bool dispatch_string(const string &opt, const string &arg, void *var);
-  bool dispatch_filename(const string &opt, const string &arg, void *var);
-  bool dispatch_search_path(const string &opt, const string &arg, void *var);
-  bool dispatch_coordinate_system(const string &opt, const string &arg, void *var);
+  static bool dispatch_none(const string &opt, const string &arg, void *);
+  static bool dispatch_count(const string &opt, const string &arg, void *var);
+  static bool dispatch_int(const string &opt, const string &arg, void *var);
+  static bool dispatch_int_pair(const string &opt, const string &arg, void *var);
+  static bool dispatch_double(const string &opt, const string &arg, void *var);
+  static bool dispatch_string(const string &opt, const string &arg, void *var);
+  static bool dispatch_filename(const string &opt, const string &arg, void *var);
+  static bool dispatch_search_path(const string &opt, const string &arg, void *var);
+  static bool dispatch_coordinate_system(const string &opt, const string &arg, void *var);
 
-  bool handle_help_option(const string &opt, const string &arg, void *);
+  static bool handle_help_option(const string &opt, const string &arg, void *);
 
   static void format_text(ostream &out, bool &last_newline,
 			  const string &prefix, int indent_width,
