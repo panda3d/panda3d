@@ -95,6 +95,8 @@ PUBLISHED:
   int get_num_display_regions() const;
   DisplayRegion *get_display_region(int n) const;
 
+  GraphicsOutput *make_texture_buffer(const string &name, int x_size, int y_size);
+
   INLINE Filename save_screenshot_default(const string &prefix = "screenshot");
   INLINE bool save_screenshot(const Filename &filename);
   INLINE bool get_screenshot(PNMImage &image);
@@ -108,6 +110,8 @@ public:
   INLINE void win_display_regions_changed();
 
   INLINE bool operator < (const GraphicsOutput &other) const;
+
+  virtual GraphicsOutput *get_host();
 
   virtual void request_open();
   virtual void request_close();

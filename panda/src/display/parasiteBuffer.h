@@ -63,6 +63,7 @@ PUBLISHED:
   virtual bool is_active() const;
 
 public:
+  virtual GraphicsOutput *get_host();
   virtual void make_current();
 
 private:

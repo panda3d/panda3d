@@ -54,7 +54,7 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
 
   _is_valid = true;
 
-  nassertv(_x_size < host->get_x_size() && _y_size < host->get_y_size());
+  nassertv(_x_size <= host->get_x_size() && _y_size <= host->get_y_size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +75,20 @@ ParasiteBuffer::
 bool ParasiteBuffer::
 is_active() const {
   return _host->is_active();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::get_host
+//       Access: Public, Virtual
+//  Description: This is normally called only from within
+//               make_texture_buffer().  When called on a
+//               ParasiteBuffer, it returns the host of that buffer;
+//               but when called on some other buffer, it returns the
+//               buffer itself.
+////////////////////////////////////////////////////////////////////
+GraphicsOutput *ParasiteBuffer::
+get_host() {
+  return _host;
 }
 
 ////////////////////////////////////////////////////////////////////

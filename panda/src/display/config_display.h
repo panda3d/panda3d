@@ -42,6 +42,9 @@ extern const string screenshot_extension;
 
 extern const bool show_buffers;
 
+extern const bool prefer_parasite_buffer;
+extern const bool prefer_single_buffer;
+
 extern EXPCL_PANDA const bool multiple_windows;
 
 extern EXPCL_PANDA void init_libdisplay();

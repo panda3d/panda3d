@@ -299,6 +299,94 @@ get_display_region(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_texture_buffer
+//       Access: Published
+//  Description: Creates and returns an offscreen buffer for rendering
+//               into, the result of which will be a texture suitable
+//               for applying to geometry within the scene rendered
+//               into this window.
+//
+//               This will attempt to be smart about maximizing render
+//               performance while minimizing framebuffer waste.  It
+//               might return a GraphicsBuffer set to render directly
+//               into a texture, if possible; or it might return a
+//               ParasiteBuffer that renders into this window.  The
+//               return value is NULL if the buffer could not be
+//               created for some reason.
+//
+//               Assuming the return value is not NULL, the texture
+//               that is represents the scene rendered to the new
+//               buffer can be accessed by buffer->get_texture().
+//               When you are done using the buffer, you should remove
+//               it with a call to GraphicsEngine::remove_window().
+////////////////////////////////////////////////////////////////////
+GraphicsOutput *GraphicsOutput::
+make_texture_buffer(const string &name, int x_size, int y_size) {
+  GraphicsStateGuardian *gsg = get_gsg();
+  GraphicsEngine *engine = gsg->get_engine();
+  GraphicsOutput *host = get_host();
+
+  // The new buffer should be drawn before this buffer is drawn.  If
+  // the user requires more control than this, he can set the sort
+  // value himself.
+  int sort = get_sort() - 1;
+
+  if (show_buffers) {
+    // If show_buffers is true, just go ahead and call make_buffer(),
+    // since it all amounts to the same thing anyway--this will
+    // actually create a new GraphicsWindow.
+    return engine->make_buffer(gsg, name, sort, x_size, y_size, true);
+  }
+
+  GraphicsOutput *buffer = NULL;
+
+  // If the user so indicated in the Configrc file, try to create a
+  // parasite buffer first.  We can only do this if the requested size
+  // fits within the available framebuffer size.
+  if (prefer_parasite_buffer && 
+      (x_size <= host->get_x_size() && y_size <= host->get_y_size())) {
+    buffer = engine->make_parasite(host, name, sort, x_size, y_size);
+    if (buffer != (GraphicsOutput *)NULL) {
+      return buffer;
+    }
+  }
+
+  // Attempt to create a single-buffered offscreen buffer.
+  if (prefer_single_buffer) {
+    FrameBufferProperties sb_props = gsg->get_properties();
+    int orig_mode = sb_props.get_frame_buffer_mode();
+    int sb_mode = (orig_mode & ~FrameBufferProperties::FM_buffer) | FrameBufferProperties::FM_single_buffer;
+    sb_props.set_frame_buffer_mode(sb_mode);
+    
+    if (sb_mode != orig_mode) {
+      PT(GraphicsStateGuardian) sb_gsg = 
+        engine->make_gsg(gsg->get_pipe(), sb_props, gsg);
+      if (sb_gsg != (GraphicsStateGuardian *)NULL) {
+        buffer = engine->make_buffer(sb_gsg, name, sort, x_size, y_size, true);
+        if (buffer != (GraphicsOutput *)NULL) {
+          return buffer;
+        }
+      }
+    }
+  }
+
+  // All right, attempt to create an offscreen buffer, using the same
+  // GSG.  This will be a double-buffered offscreen buffer, if the
+  // source window is double-buffered.
+  buffer = engine->make_buffer(gsg, name, sort, x_size, y_size, true);
+  if (buffer != (GraphicsOutput *)NULL) {
+    return buffer;
+  }
+
+  // Looks like we have to settle for a parasite buffer.
+  if (x_size <= host->get_x_size() && y_size <= host->get_y_size()) {
+    return engine->make_parasite(host, name, sort, x_size, y_size);
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::make_scratch_display_region
 //       Access: Public
 //  Description: Allocates and returns a temporary DisplayRegion that
@@ -324,6 +412,20 @@ make_scratch_display_region(int x_size, int y_size) {
   PT(DisplayRegion) region = new DisplayRegion(this, x_size, y_size);
   region->copy_clear_settings(*this);
   return region;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_host
+//       Access: Public, Virtual
+//  Description: This is normally called only from within
+//               make_texture_buffer().  When called on a
+//               ParasiteBuffer, it returns the host of that buffer;
+//               but when called on some other buffer, it returns the
+//               buffer itself.
+////////////////////////////////////////////////////////////////////
+GraphicsOutput *GraphicsOutput::
+get_host() {
+  return this;
 }
  
 ////////////////////////////////////////////////////////////////////

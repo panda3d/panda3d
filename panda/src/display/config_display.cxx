@@ -81,6 +81,24 @@ const string screenshot_extension = config_display.GetString("screenshot-extensi
 // interactively.  Handy during development of multipass algorithms.
 const bool show_buffers = config_display.GetBool("show-buffers", false);
 
+// Set this true to make GraphicsOutput::make_render_texture() try to
+// create a parasite buffer before it tries to create an offscreen
+// buffer.  This may be desired if you know your graphics API does not
+// support render-directly-to-texture and you want to minimize
+// framebuffer memory.
+const bool prefer_parasite_buffer = config_display.GetBool("prefer-parasite-buffer", false);
+
+// Set this true to make GraphicsOutput::make_render_texture() first
+// try to create a single-buffered offscreen buffer, before falling
+// back to a double-buffered one (or whatever kind the source window
+// has).  This is true by default to reduce waste of framebuffer
+// memory, but you may get a performance benefit by setting it to
+// false (since in that case the buffer can share a graphics context
+// with the window).
+const bool prefer_single_buffer = config_display.GetBool("prefer-single-buffer", true);
+
+
+
 // Use the variable load-display to specify the name of the default
 // graphics display library or GraphicsPipe to load.  It is the name
 // of a shared library (or * for all libraries named in aux-display),
