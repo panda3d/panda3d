@@ -21,6 +21,11 @@
 
 #include "dcbase.h"
 #include "dcDeclaration.h"
+#include "dcPackerInterface.h"
+
+class DCParameter;
+class HashGenerator;
+class DCField;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCSwitch
