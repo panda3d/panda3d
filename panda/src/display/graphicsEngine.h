@@ -103,9 +103,34 @@ public:
     TS_terminate
   };
 
+  enum CallbackTime {
+    CB_pre_frame,
+    CB_post_frame,
+    CB_len  // Not an option; just indicates the size of the list.
+  };
+
+  typedef void CallbackFunction(void *data);
+
+  bool add_callback(const string &thread_name, CallbackTime callback_time,
+                    CallbackFunction *func, void *data);
+  bool remove_callback(const string &thread_name, CallbackTime callback_time,
+                       CallbackFunction *func, void *data);
+
 private:
+  class Callback {
+  public:
+    INLINE Callback(CallbackFunction *func, void *data);
+    INLINE bool operator < (const Callback &other) const;
+    INLINE void do_callback() const;
+
+  private:
+    CallbackFunction *_func;
+    void *_data;
+  };
+
   typedef ov_multiset< PT(GraphicsOutput), IndirectLess<GraphicsOutput> > Windows;
   typedef pset< PT(GraphicsStateGuardian) > GSGs;
+  typedef pset< Callback > Callbacks;
 
   void set_window_sort(GraphicsOutput *window, int sort);
 
@@ -152,6 +177,13 @@ private:
     void do_pending(GraphicsEngine *engine);
     bool any_done_gsgs() const;
 
+    bool add_callback(CallbackTime callback_time, const Callback &callback);
+    bool remove_callback(CallbackTime callback_time, const Callback &callback);
+
+  private:
+    void do_callbacks(CallbackTime callback_time);
+
+  public:
     Windows _cull;    // cull stage
     Windows _cdraw;   // cull-and-draw-together stage
     Windows _draw;    // draw stage
@@ -162,6 +194,8 @@ private:
     Windows _pending_close;   // moved from _window, pending close.
 
     GSGs _gsgs;       // draw stage
+
+    Callbacks _callbacks[CB_len];
     Mutex _wl_lock;
   };
 

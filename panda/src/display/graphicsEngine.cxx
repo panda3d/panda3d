@@ -565,6 +565,51 @@ render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::add_callback
+//       Access: Public
+//  Description: Adds the indicated C/C++ function and an arbitrary
+//               associated data pointer to the list of functions that
+//               will be called in the indicated thread at the
+//               indicated point of the frame.
+//
+//               The thread name may be one of the cull or draw names
+//               specified in set_threading_model(), or it may be the
+//               empty string to indicated the app or main thread.
+//
+//               The return value is true if the function and data
+//               pointer are successfully added to the appropriate
+//               callback list, or false if the same function and data
+//               pointer were already there.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::
+add_callback(const string &thread_name, 
+             GraphicsEngine::CallbackTime callback_time,
+             GraphicsEngine::CallbackFunction *func, void *data) {
+  WindowRenderer *wr = get_window_renderer(thread_name);
+  return wr->add_callback(callback_time, Callback(func, data));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::remove_callback
+//       Access: Public
+//  Description: Removes a callback added by a previous call to
+//               add_callback().  All parameters must match the same
+//               parameters passed to add_callback().  The return
+//               value is true if the callback is successfully
+//               removed, or false if it was not on the list (either
+//               one or more of the parameters did not match the call
+//               to add_callback(), or the callback has already been
+//               removed).
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::
+remove_callback(const string &thread_name, 
+                GraphicsEngine::CallbackTime callback_time,
+                GraphicsEngine::CallbackFunction *func, void *data) {
+  WindowRenderer *wr = get_window_renderer(thread_name);
+  return wr->remove_callback(callback_time, Callback(func, data));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::set_window_sort
 //       Access: Private
 //  Description: Changes the sort value of a particular window (or
@@ -1248,6 +1293,9 @@ resort_windows() {
 void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine) {
   MutexHolder holder(_wl_lock);
+
+  do_callbacks(CB_pre_frame);
+
   engine->cull_bin_draw(_cull);
   engine->cull_and_draw_together(_cdraw);
   engine->process_events(_window);
@@ -1271,6 +1319,8 @@ do_frame(GraphicsEngine *engine) {
 
     _gsgs.swap(new_gsgs);
   }
+
+  do_callbacks(CB_post_frame);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1391,6 +1441,60 @@ any_done_gsgs() const {
   }
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::add_callback
+//       Access: Public
+//  Description: Adds the indicated callback to this renderer's list
+//               for the indicated callback time.  Returns true if it
+//               is successfully added, false if it was already there.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::WindowRenderer::
+add_callback(GraphicsEngine::CallbackTime callback_time, 
+             const GraphicsEngine::Callback &callback) {
+  nassertr(callback_time >= 0 && callback_time < CB_len, false);
+  MutexHolder holder(_wl_lock);
+  return _callbacks[callback_time].insert(callback).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::remove_callback
+//       Access: Public
+//  Description: Removes the indicated callback from this renderer's
+//               list for the indicated callback time.  Returns true
+//               if it is successfully removed, or false if it was not
+//               on the list.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::WindowRenderer::
+remove_callback(GraphicsEngine::CallbackTime callback_time, 
+                const GraphicsEngine::Callback &callback) {
+  nassertr(callback_time >= 0 && callback_time < CB_len, false);
+  MutexHolder holder(_wl_lock);
+  Callbacks::iterator cbi = _callbacks[callback_time].find(callback);
+  if (cbi != _callbacks[callback_time].end()) {
+    _callbacks[callback_time].erase(cbi);
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::do_callbacks
+//       Access: Private
+//  Description: Calls all of the callback functions on the indicated
+//               list.  Intended to be called internally when we have
+//               reached the indicated point on the frame.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+do_callbacks(GraphicsEngine::CallbackTime callback_time) {
+  nassertv(callback_time >= 0 && callback_time < CB_len);
+  Callbacks::const_iterator cbi;
+  for (cbi = _callbacks[callback_time].begin();
+       cbi != _callbacks[callback_time].end();
+       ++cbi) {
+    (*cbi).do_callback();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
