@@ -406,6 +406,7 @@ void AudioDestroySt(AudioTraits::SampleClass* sample) {
 void AudioLoadSt(AudioTraits::SampleClass** sample,
 		 AudioTraits::PlayerClass** player,
 		 AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
+#ifdef HAVE_SOXST
   unsigned char* buf;
   unsigned long len;
   read_file(filename, &buf, len);
@@ -414,6 +415,11 @@ void AudioLoadSt(AudioTraits::SampleClass** sample,
     *player = WinPlayer::get_instance();
     *destroy = AudioDestroySt;
   }
+#else /* HAVE_SOXST */
+  *sample = (AudioTraits::SampleClass*)0L;
+  *player = (AudioTraits::PlayerClass*)0L;
+  *destroy = AudioDestroySt;
+#endif /* HAVE_SOXST */
 }
 
 #else /* AUDIO_USE_WIN32 */
