@@ -32,6 +32,54 @@ class OnscreenText(PandaObject, NodePath):
 
         Make a text node from string, put it into the 2d sg and set it
         up with all the indicated parameters.
+
+        The parameters are as follows:
+
+          text: the actual text to display.  This may be omitted and
+              specified later via setText() if you don't have it
+              available, but it is better to specify it up front.
+
+          style: one of the pre-canned style parameters defined at the
+              head of this file.  This sets up the default values for
+              many of the remaining parameters if they are
+              unspecified; however, a parameter may still be specified
+              to explicitly set it, overriding the pre-canned style.
+
+          pos: the x, y position of the text on the screen.
+
+          scale: the size of the text.  This may either be a single
+              float (and it will usually be a small number like 0.07)
+              or it may be a 2-tuple of floats, specifying a different
+              x, y scale.
+
+          fg: the r, g, b, a foreground color of the text.  This is
+              normally a 4-tuple of floats or ints.
+
+          bg: the r, g, b, a background color of the text.  If the
+              fourth value, a, is nonzero, a card is created to place
+              behind the text and set to the given color.
+
+          shadow: the r, g, b, a color of the shadow behind the text.
+              If the fourth value, a, is nonzero, a little drop shadow
+              is created and placed behind the text.
+
+          frame: the r, g, b, a color of the frame drawn around the
+              text.  If the fourth value, a, is nonzero, a frame is
+              created around the text.
+
+          align: one of TMALIGNLEFT, TMALIGNRIGHT, or TMALIGNCENTER.
+
+          wordwrap: either the width to wordwrap the text at, or None
+              to specify no automatic word wrapping.
+
+          drawOrder: the drawing order of this text with respect to
+              all other things in the 'fixed' bin within render2d.
+              The text will actually use drawOrder through drawOrder +
+              2.
+
+          font: the font to use for the text.
+
+          parent: the NodePath to parent the text to initially.
         
         """
 
