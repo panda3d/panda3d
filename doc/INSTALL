@@ -214,16 +214,17 @@ definitions that are sensible for you; some will not.  You must
 customize these variables before you run ppremake.
 
 Normally, rather than modifying dtool/Config.pp directly, you should
-create your own, empty Config.pp file in a safe place (for instance,
-in your personal home directory) and define just the variables you
-need there.  The definitions you give in your personal Config.pp file
-will override those in the source directory.  You will need to set an
-environment variable PPREMAKE_CONFIG to the full filename path of your
-personal Config.pp (more on this in the platform-specific installation
-notes, below).  It is also possible simply to modify dtool/Config.pp,
-but this is not recommended as it makes it difficult to remember which
-customizations you have made, and makes installing updated versions of
-Panda problematic.
+create your own, empty Config.pp file.  By default, this file will be
+found in the root of the Panda install directory, but you may put it
+elsewhere if you prefer by setting the environment variable
+PPREMAKE_CONFIG to its full filename path (more on this in the
+platform-specific installation notes, below).
+
+The definitions you give in your personal Config.pp file will override
+those in the source directory.  It is also possible simply to modify
+dtool/Config.pp, but this is not recommended as it makes it difficult
+to remember which customizations you have made, and makes installing
+updated versions of Panda problematic.
 
 The syntax of the Config.pp file is something like a cross between the
 C preprocessor and Makefile syntax.  The full syntax of ppremake
@@ -249,9 +250,10 @@ the variables you may define.  The ones that you are most likely to
 find useful are:
 
   INSTALL_DIR - this is the prefix of the directory hierarchy into
-    which Panda should be installed.  By default, this is
-    /usr/local/panda, a fine convention for Unix machines although a
-    little questionable for Windows environments.
+    which Panda should be installed.  If this is not defined, the
+    default for Unix systems is taken from the configure parameter to
+    ppremake (usually /usr/local/panda); for Windows machines the
+    default is C:\Panda3d.
 
   OPTIMIZE - define this to 1, 2, 3, or 4.  This is not the same thing
     as compiler optimization level; our four levels of OPTIMIZE define
@@ -303,30 +305,24 @@ everything within a directory called "panda3d" in your home directory.
 
   mkdir ~/panda3d
 
-You must compile ppremake before you can begin to compile Panda
-itself.  Generally, you do something like the following:
+You should also create the directory into which panda should be
+installed.  The default installation directory is /usr/local/panda.
+You may choose an alternate installation directory by using the
+--prefix parameter to the ppremake configure script, described below.
+We recommend giving yourself write permission to this directory, so
+that you can run 'make install' and similar scripts that will need to
+write to this installation directory, without having to be root.
 
-  cd ~/panda3d/ppremake
-  ./configure
-  make
-  make install
+  su root
+  mkdir /usr/local/panda
+  chown <your-user-name> /usr/local/panda
+  exit
 
-If the configure script does not already exist, read the document
-BUILD_FROM_CVS.txt in the ppremake source directory.
-
-By default, ppremake will install itself in /usr/local/panda/bin, the
-same directory that the other Panda binaries will install themselves
-to.  If you prefer, you can install it in another directory by doing
-something like this:
-
-  ./configure --prefix=/my/install/directory
-
-If you do this, you will probably also want to redefine INSTALL_DIR in your
-Config.pp to be the same directory (see above).  Wherever you install
-it, you should make sure the bin directory is included on your search
-path, and the corresponding lib directory (e.g. /usr/local/panda/lib)
-is on your LD_LIBRARY_PATH (the following example assumes you are
-using a csh derivative):
+Whatever you choose for your installation directory, you should make
+sure the bin directory (e.g. /usr/local/panda/bin) is included on your
+search path, and the lib directory (e.g. /usr/local/panda/lib) is on
+your LD_LIBRARY_PATH.  If you use a C-shell derivative like tcsh, the
+syntax for this is:
 
   set path=(/usr/local/panda/bin $path)
   setenv LD_LIBRARY_PATH /usr/local/panda/lib:$LD_LIBRARY_PATH
@@ -337,9 +333,33 @@ If you have a Bourne-shell derivative, e.g. bash, the syntax is:
   LD_LIBRARY_PATH=/usr/local/panda/lib:$LD_LIBRARY_PATH
   export LD_LIBRARY_PATH
 
+
+You must now compile ppremake before you can begin to compile Panda
+itself.  Generally, you do something like the following:
+
+  cd ~/panda3d/ppremake
+  ./configure
+  make
+  make install
+
+If the configure script does not already exist, read the document
+BUILD_FROM_CVS.txt in the ppremake source directory.
+
+As mentioned above, the default installation directory is
+/usr/local/panda.  Thus, ppremake will install itself into
+/usr/local/panda/bin.  If you prefer, you can install it in another
+directory by doing something like this:
+
+  ./configure --prefix=/my/install/directory
+  make
+  make install
+
 Now you should create your personal Config.pp file, as described
-above, and customize whatever variables are appropriate.  Be sure to
-set the PPREMAKE_CONFIG environment variable to point to it.
+above, and customize whatever variables are appropriate.  By default,
+ppremake will look for this file in the root of the install directory,
+e.g. /usr/local/panda/Config.pp.  If you want to put it somewhere
+else, for instance in your home directory, you must set the
+PPREMAKE_CONFIG environment variable to point to it:
 
   setenv PPREMAKE_CONFIG ~/Config.pp
 
@@ -412,10 +432,8 @@ HOW TO BUILD PANDA ON A WINDOWS SYSTEM, USING CYGWIN
 
 Cygwin is a set of third-party libraries and tools that present a very
 Unix-like environment for Windows systems.  If you prefer to use a
-Unix environment, Cygwin is the way to go.  You can download a free
-version from http://www.cygwin.com which will have almost everything
-you might need, or you can purchase a CD which has some additional
-tools (including csh or bash) that you might find useful.
+Unix environment, Cygwin is the way to go.  You can download Cygwin
+for free from http://www.cygwin.com.
 
 Panda can build and run within a Cygwin environment, but it does not
 require it.  Note that Cygwin is used strictly as a build environment;
@@ -496,23 +514,24 @@ Note: although Panda can be built without Cygwin, for the moment we
 have dropped support for the Microsoft nmake program (which is not
 really supported by Microsoft either).  Thus, even though you do not
 need to have all of Cygwin installed, you will need to have at least
-GNU make.  This program is available from Cygwin (make.exe); you can
-copy this program from someone who has installed Cygwin, or you can go
-to www.cygwin.com and try to install just this one program.  You will
-also need the support DLL, cygwin1.dll.
+GNU make, as well as a few associated tools.  These programs are
+available from Cygwin (make.exe, sh.exe, cp.exe, rm.exe); you can copy
+these programs from someone who has installed Cygwin.  You will also
+need the support DLL, cygwin1.dll.
 
 You will need a directory for holding the installed Panda.  This can
-be anywhere you like; in this example we'll assume you use a directory
-called "panda3d" on the root of the C drive.
+be anywhere you like; the default is C:\Panda3d.  If you choose to
+specify otherwise you should redefine INSTALL_DIR within your
+Config.pp file (described above).
 
-  md c:\panda3d
+  md C:\Panda3d
 
 You will first need to build a copy of ppremake.exe.  There is a
 Microsoft project file in the ppremake directory that will build this.
 Once it is built, copy it to the Panda bin directory (which you will
 have to make yourself).  This will be a directory called "bin" below
 the root of the installed directory you created above; for instance,
-c:\panda3d\bin.
+C:\Panda3d\bin.
 
 Make sure the Panda bin and lib directories are on your path, and set
 a few environment variables for building.  We suggest creating a file
@@ -521,44 +540,48 @@ batch file before every Panda session to set up your environment
 properly.  Alternatively, you may make these definitions in the
 registry.
 
-  path c:\panda3d\bin;c:\panda3d\lib;%PATH%
+  path C:\Panda3d\bin;C:\Panda3d\lib;%PATH%
   set PANDA_ROOT=c:\
-  set PPREMAKE_CONFIG=c:\panda3d\Config.pp
 
-Setting PANDA_ROOT specifies the default drive Panda will search for
-file references.  (Panda internally uses a Unix-like filename
-convention, which does not use leading drive letters.  See the bullet
-points in the Cygwin section, above, describing the rules Panda uses
-to map its Unix-like filenames to Windows filenames.)
+Setting PANDA_ROOT is optional; this specifies the default drive Panda
+will search for file references.  (Panda internally uses a Unix-like
+filename convention, which does not use leading drive letters.  See
+the bullet points in the Cygwin section, above, describing the rules
+Panda uses to map its Unix-like filenames to Windows filenames.)
+
+By default, ppremake looks for a local Config.pp file within the
+install directory (e.g. C:\Panda3d).
 
 Now make a directory for building Panda.  This may be different from
 the directory, above, that holds the installed Panda files; or it may
 be the same.  In this example we assume you will be building in the
-same directory, c:\panda3d.
+same directory, C:\Panda3d.
 
 Now set up your personal Config.pp file to control your local
-configuration settings, as described above.  We suggest putting it in
-the root of the build directory.
+configuration settings, as described above.  By default, ppremake will
+look for this file in the root of the install directory,
+e.g. C:\Panda3d\Config.pp; but if you want to put it somewhere else
+you should define the variable PPREMAKE_CONFIG to indicate its full
+path.
 
-  edit c:\panda3d\Config.pp
+Add the appropriate lines to your Config.pp to define the correct
+paths to the various packages you have installed on your system.  See
+HOW TO CONFIGURE PANDA FOR YOUR ENVIRONMENT, above.
 
-Add at least the following line to your Config.pp file.  (You may want
-to add additional lines, according to your needs.  See HOW TO
-CONFIGURE PANDA FOR YOUR ENVIRONMENT, above.)
+  edit C:\Panda3d\Config.pp
 
-  #define INSTALL_DIR c:\panda3d
 
 Now you should be able to build dtool.
 
-  c:
-  cd \panda3d\dtool
+  C:
+  cd \Panda3d\dtool
   ppremake
   make
   make install
 
 And then build panda.
 
-  cd \panda3d\panda
+  cd \Panda3d\panda
   ppremake
   make
   make install
@@ -566,7 +589,7 @@ And then build panda.
 And (optionally) build direct.  You only need to build this if you
 intend to use the Python interfaces.
 
-  cd \panda3d\direct
+  cd \Panda3d\direct
   ppremake
   make
   make install
@@ -575,7 +598,7 @@ And (optionally) build pandatool.  You only need to build this if you
 want to take advantage of model conversion utilities for Panda like
 maya2egg and egg2bam.
 
-  cd \panda3d\pandatool
+  cd \Panda3d\pandatool
   ppremake
   make
   make install
@@ -587,7 +610,8 @@ maya2egg and egg2bam.
 HOW TO RUN PANDA
 
 Once Panda has been successfully built and installed, you should be
-able to run pview to test that everything is working:
+able to run pview to test that everything is working (you might need
+to type rehash first if you use csh):
 
   pview
 
@@ -600,9 +624,11 @@ file, you should see something like this:
 If you get instead an error about some shared library or libraries not
 being found, check that your LD_LIBRARY_PATH setting (on Unix) or your
 PATH (on Windows) include the directory in which all of the Panda
-libraries have been installed (That is, $INSTALL_DIR/lib, or whatever
-you set INSTALL_DIR to followed by "lib".  On Unix, this defaults to
-/usr/local/panda/lib).
+libraries have been installed.  (This is normally $INSTALL_DIR/lib, or
+whatever you set INSTALL_DIR to followed by "lib".  On Unix, this
+defaults to /usr/local/panda/lib.  If you have defined INSTALL_LIB_DIR
+in your Config.pp, for instance to define Panda as a native Python
+module, you should use this directory instead.)
 
 If you do get the above error message, you will need to create a
 Configrc file to indicate some run-time parameters.  This is different
@@ -628,7 +654,8 @@ add instead the line:
   load-display pandadx8
 
 Later you may add additional lines here to control the default
-behavior of Panda in other ways.
+behavior of Panda in other ways.  See the file Configrc in this
+directory for more examples.
 
 If you do not specify otherwise (and you did not redefine
 DEFAULT_CONFIGRC_DIR in your Config.pp file), Panda will look for the
@@ -644,6 +671,7 @@ If you want to load the Configrc from other than the compiled-in
 default directory, set the environment variable:
 
   CONFIGRC_DIR=/my/home/directory
+  export CONFIGRC_DIR
 
 Where /my/home/directory is the name of your home directory (or
 wherever you put the Configrc file).
@@ -655,8 +683,8 @@ wherever you put the Configrc file).
 HOW TO BUILD THE PYTHON INTERFACES
 
 You may stop now if you only intend to use Panda as a C++ library.
-However, if you wish to use Panda within Python, you must now generate
-the Python interfaces.
+However, if you wish to use Panda from within Python, you must now
+generate the Python interfaces.
 
 There are two parts to the Python interface for Panda.  The first part
 is a series of wrapper functions that are compiled into the Panda
@@ -673,29 +701,6 @@ because you defined an invalid directory in PYTHON_IPATH, you can go
 back and fix this now, and simply re-run ppremake and make install
 again in each of dtool, panda, and direct.
 
-The second part to the Python interface is a series of Python wrapper
-classes that are generated, for each C++ class detected by
-interrogate.  These classes must be generated after all of the C++
-code has been compiled and installed.  Execute the following command:
-
-  genPyCode
-
-This is a script that was installed into $INSTALL_DIR/bin as part of
-the build of direct.  It invokes Python to read the *.in files
-generated by interrogate, and generates the appropriate wrapper
-functions, which are written into $INSTALL_DIR/lib/pandac.  (There
-will be several hundred generated Python modules; these are normally
-"squeezed" into a single file called PandaModules.pyz using
-PythonWare's SqueezeTool.  This squeeze step gives a significant
-runtime performance advantage, especially on Windows; but if it causes
-problems, you can use the option -n, e.g. 'genPyCode -n', to avoid
-it.)
-
-You will need to re-run this script only if the Panda interface
-changes, e.g. if a class is added or a method's parameters change.
-You should certainly re-run it any time you update and install a new
-version of Panda.
-
 To make Panda accessible to Python, you will need to add
 $INSTALL_DIR/lib to your PYTHONPATH variable, e.g.:
 
@@ -703,22 +708,57 @@ $INSTALL_DIR/lib to your PYTHONPATH variable, e.g.:
 
 Or, on Windows:
 
-  set PYTHONPATH=%PYTHONPATH%;c:\panda3d\lib
+  set PYTHONPATH=%PYTHONPATH%;C:\Panda3d\lib
 
-We recommend this approach for most users, since it collects all of
-the Panda libraries in one directory and doesn't clutter up the Python
-distribution.  However, if you only intend to use Panda from Python,
-and especially if you want to make it accessible to multiple users, it
-may be more attractive to install the Panda libraries as a standard
-Python module, so that it is not necessary to modify your PYTHONPATH
-variable.  To do this, you should add the following line to your
+We recommend the PYTHONPATH approach for most users, since it keeps
+all of the Panda files within one directory and doesn't clutter up the
+Python distribution.  However, if you only intend to use Panda from
+Python, and especially if you want to make it accessible to multiple
+users, it may be more attractive to install the Panda libraries as a
+standard Python module, so that it is not necessary to modify your
+PYTHONPATH variable; see "Installing Panda as a standard Python
+module", below.
+
+The second part to the Python interface is a series of Python wrapper
+classes that are generated, for each C++ class detected by
+interrogate.  These classes must be generated after all of the C++
+code has been compiled and installed.  Execute the following command
+(you might need to type rehash first if you use csh):
+
+  genPyCode
+
+This is a script that was installed into $INSTALL_DIR/bin as part of
+the build of direct.  It invokes Python to read the *.in files
+generated by interrogate, and generates the appropriate wrapper
+functions, which are written into $INSTALL_DIR/lib/pandac.  (There
+will be several hundred generated Python modules, which are normally
+"squeezed" into a single file called PandaModules.pyz using
+PythonWare's SqueezeTool.  This squeeze step gives a significant
+load-time speedup, especially on Windows; but if it causes problems,
+you can use the option -n, e.g. 'genPyCode -n', to avoid it.)
+
+You will need to re-run this script only if the Panda interface
+changes, e.g. if a class is added or a method's parameters change.
+You should certainly re-run it any time you update and install a new
+version of Panda.
+
+
+Installing Panda as a native Python module
+
+Panda can be optionally configured to install its run-time interfaces
+into the Python installation directory, instead of into the normal
+$INSTALL_DIR/lib directory.  This means you can run Panda from Python
+without having to set your PYTHONPATH variable, but it does clutter up
+your Python distribution a bit.
+
+To do this, simply add something like the following line to your
 Config.pp:
 
   #define INSTALL_LIB_DIR /usr/lib/python2.2/site-packages
 
 Where you give the actual path to the site-packages directory for your
-installation of Python.  On Windows, this will probably be something
-like this:
+particular installation of Python.  On Windows, this will probably be
+something like this:
 
   #define INSTALL_LIB_DIR C:\Python22\Lib\site-packages
 
@@ -726,3 +766,17 @@ Then go back and re-run ppremake and make install in each of dtool,
 panda, and direct, and then re-run genPyCode, to install the Panda
 libraries and Python files directly into the Python site-packages
 directory.
+
+Unix users should note that you must have write permission to the
+site-packages directory.  You may run these steps as root to avoid
+this problem.  If you have difficulty running genPyCode as root, make
+sure that you still have LD_LIBRARY_PATH defined appropriately once
+you have become root.  Alternatively, instead of running genPyCode as
+root, you may simply create the directory site-packages/pandac as
+root, and then give yourself write permission to this directory (this
+is all that genPyCode requires).
+
+You may also need to set your LD_LIBRARY_PATH (on Unix) or PATH (on
+Windows) to reference this new directory instead of $INSTALL_DIR/lib,
+especially if you want to be able run pview or any of the model
+converters occasionally.
