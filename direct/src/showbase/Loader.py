@@ -165,7 +165,7 @@ class Loader:
             font = DynamicTextFont(fn, faceIndex)
 
         # The following properties may only be set for dynamic fonts.
-        if isinstance(font, DynamicTextFont):
+        if hasattr(font, "setPointSize"):
             if pointSize != None:
                 font.setPointSize(pointSize)
             if pixelsPerUnit != None:
