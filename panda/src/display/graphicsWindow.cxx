@@ -65,6 +65,7 @@ Properties() {
   _mask = W_RGBA | W_DOUBLE | W_DEPTH;
   _want_depth_bits = 1;
   _want_color_bits = 1;
+  _bCursorIsVisible=true;
 }
 
 ////////////////////////////////////////////////////////////////////
