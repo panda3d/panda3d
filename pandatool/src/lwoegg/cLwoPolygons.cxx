@@ -180,7 +180,8 @@ make_egg() {
     nout << "Ignoring Catmull-Rom splines.\n";
 
   } else if (_polygons->_polygon_type == IffId("PTCH")) {
-    nout << "Ignoring subdivision patches.\n";
+    nout << "Treating subdivision patches as ordinary polygons.\n";
+    make_faces();
 
   } else if (_polygons->_polygon_type == IffId("MBAL")) {
     nout << "Ignoring metaballs.\n";
