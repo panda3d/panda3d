@@ -216,9 +216,9 @@ remove_display_region(DisplayRegion *display_region) {
 
   nassertr(display_region != _default_display_region, false);
 
+  PT(DisplayRegion) drp = display_region;
   TotalDisplayRegions::iterator dri =
-    find(_total_display_regions.begin(), _total_display_regions.end(),
-         display_region);
+    find(_total_display_regions.begin(), _total_display_regions.end(), drp);
   if (dri != _total_display_regions.end()) {
     display_region->_window = NULL;
     _total_display_regions.erase(dri);
