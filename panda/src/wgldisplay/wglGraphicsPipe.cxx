@@ -17,15 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 #include "wglGraphicsPipe.h"
 #include "config_wgldisplay.h"
-#include <mouseButton.h>
-#include <keyboardButton.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
 ////////////////////////////////////////////////////////////////////
 TypeHandle wglGraphicsPipe::_type_handle;
-
-//wglGraphicsPipe *global_pipe;
 
 wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
   : InteractiveGraphicsPipe(spec)

@@ -113,8 +113,6 @@ void wglGraphicsWindow::DestroyMe(bool bAtExit) {
       // revert to default display mode
       ChangeDisplaySettings(NULL,0x0);
   }
-  
-  global_wglwinptr=NULL;  //should be safe to do this now, since anyone who needs it at CreateWin will just set it during creation
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -425,6 +423,7 @@ void wglGraphicsWindow::config(void) {
   }
     
   hwnd_pandawin_map[_mwindow] = this;
+  global_wglwinptr = NULL;  // get rid of any reference to this obj
     
   // move window to top of zorder
   SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
@@ -870,42 +869,6 @@ int wglGraphicsWindow::choose_visual(void) {
   return i;
 }
 
-#if 0
-////////////////////////////////////////////////////////////////////
-//     Function: adjust_coords
-//       Access:
-//  Description: Adjust the window rectangle because Win32 thinks
-//       that the x, y, width, and height are the *entire*
-//       window, including decorations, whereas we assume
-//       the size is the *client* area of the window.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::
-adjust_coords(int &xorg, int &yorg, int &xsize, int &ysize) {
-  RECT rect;
-  rect.left = xorg;  rect.top = yorg;
-  rect.right = xorg + xsize;
-  rect.bottom = yorg + ysize;
-
-  // Style determines whether there are borders or not
-  // False in third parameter indicates window has no menu bar
-  AdjustWindowRect(&rect, WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-              WS_OVERLAPPEDWINDOW, false);
-
-  // Readjust if the x and y are offscreen
-  if (rect.left < 0)
-    xorg = 0;
-  else
-    xorg = rect.left;
-
-  if (rect.top < 0)
-    yorg = 0;
-  else
-    yorg = rect.top;
-
-  xsize = rect.right - rect.left;
-  ysize = rect.bottom - rect.top;
-}
-#endif
 ////////////////////////////////////////////////////////////////////
 //     Function: setup_colormap
 //       Access:
