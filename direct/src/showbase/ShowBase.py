@@ -512,6 +512,7 @@ class ShowBase:
         self.musicManagerIsValid=self.musicManager!=None \
                 and self.musicManager.isValid()
         if self.musicManagerIsValid:
+            self.musicManager.setMutuallyExclusive(1)  # ensure only 1 midi song is playing at a time
             self.musicManager.setActive(self.musicActive)
 
     # enableMusic/enableSoundEffects are meant to be called in response to a user request
@@ -914,13 +915,14 @@ class ShowBase:
     def screenshot(self, namePrefix='screenshot'):
         # Get the current date and time to uniquify the image (down to the second)
         date = time.ctime(time.time())
-        # Get the current frame count to uniqify it even more
+        # Get the current frame count to uniquify it even more
         frameCount = globalClock.getFrameCount()
         # Replace spaces with dashes because unix does not like spaces in the filename
         date = date.replace(' ', '-')
         date = date.replace(':', '-')
         imageName = ('%s-%s-%d.%s' % (namePrefix, date, frameCount, self.screenshotExtension))
         self.notify.info("Taking screenshot: " + imageName)
+
         takeSnapshot(self.win, imageName)
         # Announce to anybody that a screenshot has been taken
         messenger.send('screenshot')
