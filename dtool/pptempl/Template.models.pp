@@ -33,15 +33,14 @@
 #defer source_prefix $[SOURCE_DIR:%=%/]
 
 #define build_models \
-   $[SOURCES(flt_egg):%.flt=%.egg]
-
-#define build_chars \
+   $[SOURCES(flt_egg):%.flt=%.egg] \
+   $[SOURCES(lwo_egg):%.lwo=%.egg] \
    $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]]
 
 #define build_anims \
    $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%.egg]]
 
-#define build_eggs $[sort $[build_models] $[build_chars] $[build_anims]]
+#define build_eggs $[sort $[build_models] $[build_anims]]
 #define install_eggs $[sort $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)]]
 #define install_other $[sort $[SOURCES(install_audio install_dna install_icons install_misc)]]
 
@@ -157,6 +156,17 @@ $[target] : $[source]
 
   #end flt
 #end flt_egg
+
+// Egg file generation from Lightwave files.
+#forscopes lwo_egg
+  #foreach lwo $[SOURCES]
+    #define target $[lwo:%.lwo=%.egg]
+    #define source $[lwo]
+$[target] : $[source]
+	lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
+
+  #end lwo
+#end lwo_egg
 
 // Egg character model generation from Soft databases.
 #forscopes soft_char_egg
