@@ -479,7 +479,7 @@ void wglGraphicsWindow::config(void) {
   }
 
   // Initializes _colormap
-//  setup_colormap();
+  setup_colormap();
 
   _context = wglCreateContext(_hdc);
   if (!_context) {
