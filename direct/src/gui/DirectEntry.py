@@ -100,10 +100,7 @@ class DirectEntry(DirectFrame):
 
     def setObscureMode(self):
         # Temporary try..except to support old Pandas.
-        try:
-            PGEntry.setObscureMode(self.guiItem, self['obscured'])
-        except:
-            pass
+        PGEntry.setObscureMode(self.guiItem, self['obscured'])
 
     def setBackgroundFocus(self):
         PGEntry.setBackgroundFocus(self.guiItem, self['backgroundFocus'])
