@@ -56,19 +56,26 @@ sub CTCvsLogin {
 	}
 	&CTUDebug( "looking for '" . $path . "'\n" ) ;
 	if ( -e $path ) {
+	    local( $passdone ) = 0 ;
+	    local( $ok ) = 0 ;
 	    open( PASSFILE, "< $path" ) ;
-	    $_ = <PASSFILE> ;
-	    s/\n$// ;
-	    local( @line ) = split ;
-	    # ok, the server line is in [0] and the password in [1].
-	    &CTUDebug( "server line from .cvspass is '" . $line[0] . "'\n" ) ;
-	    if ( $line[0] ne $_[0] ) {
+	    while ( <PASSFILE> ) {
+		s/\n$// ;
+		local( @line ) = split ;
+		# ok, the server line is in [0] and the password in [1].
+		&CTUDebug( "server line from .cvspass is '" . $line[0] .
+			   "'\n" ) ;
+		if ( $line[0] eq $_[0] ) {
+		    # we're fine, we're already logged in to that
+		    $ret = 1 ;
+		    $passdone = 1;
+		}
+	    }
+	    if ( ! $passdone ) {
+		# ran out of lines in the file
 		local( $line ) = "cvs -d " . $_[0] . " login >/dev/null" ;
 		&CTUDebug( "about to run '" . $line . "'\n" ) ;
 		$ret = &CTURetCode( system( $line )) ;
-	    } else {
-		# we're fine, we're already logged in to that
-		$ret = 1 ;
 	    }
 	} else {
 	    &CTUDebug( $path . " file does not exist\n" ) ;
