@@ -415,10 +415,10 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     LPoint3f a = sphere->get_center() * wrt_prev_space->get_mat();
     LVector3f delta = b - a;
 
-    // First, there is no collision if the "from" object is moving in
-    // the same direction as the plane's normal.
+    // First, there is no collision if the "from" object is definitely
+    // moving in the same direction as the plane's normal.
     float dot = delta.dot(get_normal());
-    if (dot > 0.0f) {
+    if (dot > 0.1f) {
       return NULL;
     }
 
