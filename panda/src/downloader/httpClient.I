@@ -79,16 +79,3 @@ get_proxy() const {
   return _proxy;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::make_ctx
-//       Access: Private
-//  Description: Creates the OpenSSL context object.
-////////////////////////////////////////////////////////////////////
-INLINE void HTTPClient::
-make_ctx() {
-  if (!_ssl_initialized) {
-    initialize_ssl();
-  }
-  _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
-}

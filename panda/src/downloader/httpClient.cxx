@@ -18,6 +18,9 @@
 
 #include "httpClient.h"
 #include "config_downloader.h"
+#include "filename.h"
+#include "config_express.h"
+#include "virtualFileSystem.h"
 
 #ifdef HAVE_SSL
 
@@ -28,8 +31,42 @@
 bool HTTPClient::_ssl_initialized = false;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::load_certificates
+//       Access: Published
+//  Description: Reads the certificate(s) (delimited by -----BEGIN
+//               CERTIFICATE----- and -----END CERTIFICATE-----) from
+//               the indicated file and makes them known as trusted
+//               public keys for validating future connections.
+//               Returns true on success, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+load_certificates(const Filename &filename) {
+  int result;
+  
+  if (use_vfs) {
+    result = load_verify_locations(_ssl_ctx, filename);
+
+  } else {
+    string os_specific = filename.to_os_specific();
+    result =
+      SSL_CTX_load_verify_locations(_ssl_ctx, os_specific.c_str(), NULL);
+  }
+
+  if (result <= 0) {
+    downloader_cat.info()
+      << "Could not load certificates from " << filename << ".\n";
+#ifndef NDEBUG
+    ERR_print_errors_fp(stderr);
+#endif
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::get_document
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: Opens the named document for reading, or if body is
 //               nonempty, posts data for a particular URL and
 //               retrieves the response.  Returns a new HTTPDocument
@@ -59,6 +96,39 @@ get_document(const URLSpec &url, const string &body) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::make_ctx
+//       Access: Private
+//  Description: Creates the OpenSSL context object.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+make_ctx() {
+  if (!_ssl_initialized) {
+    initialize_ssl();
+  }
+  _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
+
+  // Load in any default certificates listed in the Configrc file.
+  Config::ConfigTable::Symbol cert_files;
+  config_express.GetAll("ssl-certificates", cert_files);
+  
+  // When we use GetAll(), we might inadvertently read duplicate
+  // lines.  Filter them out with a set.
+  pset<string> already_read;
+  
+  Config::ConfigTable::Symbol::iterator si;
+  for (si = cert_files.begin(); si != cert_files.end(); ++si) {
+    string cert_file = (*si).Val();
+    if (already_read.insert(cert_file).second) {
+      Filename filename = Filename::from_os_specific(cert_file);
+      if (load_certificates(filename)) {
+        downloader_cat.info()
+          << "Appending SSL certificates from " << cert_file << "\n";
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::initialize_ssl
 //       Access: Private, Static
 //  Description: Called once the first time this class is used to
@@ -76,6 +146,66 @@ initialize_ssl() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::load_verify_locations
+//       Access: Private, Static
+//  Description: An implementation of the OpenSSL-provided
+//               SSL_CTX_load_verify_locations() that takes a Filename
+//               (and supports Panda vfs).
+//
+//               This reads the certificates from the named ca_file
+//               and makes them available to the given SSL context.
+//               It returns a positive number on success, or <= 0 on
+//               failure.
+////////////////////////////////////////////////////////////////////
+int HTTPClient::
+load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  // First, read the complete file into memory.
+  string data;
+  if (!vfs->read_file(ca_file, data)) {
+    // Could not find or read file.
+    downloader_cat.info()
+      << "Could not read " << ca_file << ".\n";
+    return 0;
+  }
+
+  STACK_OF(X509_INFO) *inf;
+
+  // Now create an in-memory BIO to read the "file" from the buffer we
+  // just read, and call the low-level routines to read the
+  // certificates from the BIO.
+  BIO *mbio = BIO_new_mem_buf((void *)data.data(), data.length());
+  inf = PEM_X509_INFO_read_bio(mbio, NULL, NULL, NULL);
+  BIO_free(mbio);
+
+  if (!inf) {
+    // Could not scan certificates.
+    return 0;
+  }
+
+  // Now add the certificates to the context.
+  X509_STORE *store = ctx->cert_store;
+
+  int count = 0;
+  for (int i = 0; i < sk_X509_INFO_num(inf); i++) {
+    X509_INFO *itmp = sk_X509_INFO_value(inf, i);
+
+    if (itmp->x509) {
+      X509_STORE_add_cert(store, itmp->x509);
+      count++;
+
+    } else if (itmp->crl) {
+      X509_STORE_add_crl(store, itmp->crl);
+      count++;
+    }
+  }
+  sk_X509_INFO_pop_free(inf, X509_INFO_free);
+
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::get_https
 //       Access: Private
 //  Description: Opens the indicated URL directly as an ordinary http
@@ -83,7 +213,7 @@ initialize_ssl() {
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
 get_http(const URLSpec &url, const string &body) {
-  stringstream server;
+  ostringstream server;
   server << url.get_server() << ":" << url.get_port();
   string server_str = server.str();
 
@@ -116,7 +246,7 @@ get_https(const URLSpec &url, const string &body) {
   nassertr(ssl != (SSL *)NULL, NULL);
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 
-  stringstream server;
+  ostringstream server;
   server << url.get_server() << ":" << url.get_port();
   string server_str = server.str();
 
@@ -152,7 +282,7 @@ get_https(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
 get_http_proxy(const URLSpec &url, const string &body) {
-  stringstream proxy_server;
+  ostringstream proxy_server;
   proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
   string proxy_server_str = proxy_server.str();
 
@@ -180,7 +310,7 @@ get_http_proxy(const URLSpec &url, const string &body) {
 BIO *HTTPClient::
 get_https_proxy(const URLSpec &url, const string &body) {
   // First, ask the proxy to open a connection for us.
-  stringstream proxy_server;
+  ostringstream proxy_server;
   proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
   string proxy_server_str = proxy_server.str();
 

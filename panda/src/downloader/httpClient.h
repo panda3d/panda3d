@@ -34,6 +34,8 @@
 
 #include <openssl/ssl.h>
 
+class Filename;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : HTTPClient
 // Description : Handles contacting an HTTP server and retrieving a
@@ -49,11 +51,14 @@ PUBLISHED:
   INLINE void set_proxy(const URLSpec &proxy);
   INLINE const URLSpec &get_proxy() const;
 
+  bool load_certificates(const Filename &filename);
+
   PT(HTTPDocument) get_document(const URLSpec &url, const string &body = string());
 
 private:
-  INLINE void make_ctx();
+  void make_ctx();
   static void initialize_ssl();
+  static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
 
   BIO *get_http(const URLSpec &url, const string &body);
   BIO *get_https(const URLSpec &url, const string &body);
