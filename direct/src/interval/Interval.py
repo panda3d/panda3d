@@ -19,7 +19,7 @@ class Interval(DirectObject):
 
     # Class methods
     def __init__(self, name, duration, openEnded=1):
-        """__init__(name, duration, openEnded, reverse)
+        """__init__(name, duration, openEnded)
         """
         self.name = name
         self.duration = duration
