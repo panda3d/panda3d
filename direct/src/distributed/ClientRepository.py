@@ -310,6 +310,24 @@ class ClientRepository(DirectObject.DirectObject):
     def handleDelete(self, di):
         # Get the DO Id
         doId = di.getArg(STUint32)
+        self.deleteObject(doId)
+
+    def deleteObject(self, doId):
+        """deleteObject(self, doId)
+
+        Removes the object from the client's view of the world.  This
+        should normally not be called except in the case of error
+        recovery, since the server will normally be responsible for
+        deleting and disabling objects as they go out of scope.
+
+        After this is called, future updates by server on this object
+        will be ignored (with a warning message).  The object will
+        become valid again the next time the server sends a generate
+        message for this doId.
+
+        This is not a distributed message and does not delete the
+        object on the server or on any other client.
+        """
         # If it is in the dictionaries, remove it.
         if self.doId2do.has_key(doId):
             obj = self.doId2do[doId]
