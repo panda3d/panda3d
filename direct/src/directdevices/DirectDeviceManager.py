@@ -91,30 +91,14 @@ class DirectAnalogs(AnalogNode, DirectObject):
         # Attach node to data graph
         self.nodePath = myBase.dataRoot.attachNewNode(self)
         # See if any of the general analog parameters are dconfig'd
-        generalAnalogDeadband = myBase.config.GetFloat('vrpn-analog-deadband',
+        self.analogDeadband = myBase.config.GetFloat('vrpn-analog-deadband',
                                                        ANALOG_DEADBAND)
-        generalAnalogMin = myBase.config.GetFloat('vrpn-analog-min',
+        self.analogMin = myBase.config.GetFloat('vrpn-analog-min',
                                                   ANALOG_MIN)
-        generalAnalogMax = myBase.config.GetFloat('vrpn-analog-max',
+        self.analogMax = myBase.config.GetFloat('vrpn-analog-max',
                                                   ANALOG_MAX)
-        # See if any of the specific analogs paramaters have been dconfig'd
-        # These will override the general ones above. We just grab the analog
-        # number off the end of the name.
-        self.analogDeadband = myBase.config.GetFloat('vrpn-analog-deadband-'
-                                                     + self.name[-1:],
-                                                     generalAnalogDeadband)
-        self.analogMin = myBase.config.GetFloat('vrpn-analog-min-'
-                                                + self.name[-1:],
-                                                generalAnalogMin)
-        self.analogMax = myBase.config.GetFloat('vrpn-analog-max-'
-                                                + self.name[-1:],
-                                                generalAnalogMax)
         self.analogRange = self.analogMax - self.analogMin
-        print "Analog ", self.name[-1:], ": "
-        print "   dead = ", self.analogDeadband
-        print "    max = ", self.analogMax
-        print "    min = ", self.analogMin
-        print "  range = ", self.analogRange
+
     
     def __getitem__(self, index):
         if (index < 0) or (index >= self.getNumControls()):
