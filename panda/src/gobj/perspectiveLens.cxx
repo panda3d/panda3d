@@ -58,8 +58,14 @@ compute_projection_mat() {
   }
 
   float fl = get_focal_length();
-  float a = (get_far() + get_near()) / (get_far() - get_near());
-  float b = -2.0f * get_far() * get_near() / (get_far() - get_near());
+  float fFar = get_far();
+  float fNear = get_near();
+  float far_minus_near = fFar-fNear;
+  float a = (fFar + fNear);
+  float b = -2.0f * fFar * fNear;
+
+  a/=far_minus_near;
+  b/=far_minus_near;
 
   LMatrix4f canonical;
   switch (cs) {
