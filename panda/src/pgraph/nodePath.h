@@ -254,6 +254,9 @@ PUBLISHED:
   INLINE float get_p() const;
   INLINE float get_r() const;
 
+  void set_quat(const LQuaternionf &quat);
+  LQuaternionf get_quat() const;
+
   INLINE void set_scale(float scale);
   INLINE void set_scale(float sx, float sy, float sz);
   void set_scale(const LVecBase3f &scale);
@@ -271,15 +274,18 @@ PUBLISHED:
                    const LVecBase3f &hpr);
 
   INLINE void set_hpr_scale(float h, float p, float r,
-                float sx, float sy, float sz);
+                            float sx, float sy, float sz);
   void set_hpr_scale(const LVecBase3f &hpr,
-             const LVecBase3f &scale);
+                     const LVecBase3f &scale);
   INLINE void set_pos_hpr_scale(float x, float y, float z,
                                 float h, float p, float r,
                                 float sx, float sy, float sz);
   void set_pos_hpr_scale(const LVecBase3f &pos,
                          const LVecBase3f &hpr,
                          const LVecBase3f &scale);
+  void set_pos_quat_scale(const LVecBase3f &pos,
+                          const LQuaternionf &quat,
+                          const LVecBase3f &scale);
 
   void set_mat(const LMatrix4f &mat);
   INLINE void clear_mat();
@@ -330,6 +336,9 @@ PUBLISHED:
   INLINE float get_p(const NodePath &other) const;
   INLINE float get_r(const NodePath &other) const;
 
+  void set_quat(const NodePath &other, const LQuaternionf &quat);
+  LQuaternionf get_quat(const NodePath &other) const;
+
   INLINE void set_scale(const NodePath &other, float sx, float sy, float sz);
   void set_scale(const NodePath &other, const LVecBase3f &scale);
   void set_sx(const NodePath &other, float sx);
@@ -360,6 +369,10 @@ PUBLISHED:
                          const LVecBase3f &pos,
                          const LVecBase3f &hpr,
                          const LVecBase3f &scale);
+  void set_pos_quat_scale(const NodePath &other,
+                          const LVecBase3f &pos,
+                          const LQuaternionf &quat,
+                          const LVecBase3f &scale);
 
   const LMatrix4f &get_mat(const NodePath &other) const;
   void set_mat(const NodePath &other, const LMatrix4f &mat);

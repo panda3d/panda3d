@@ -666,6 +666,33 @@ get_hpr(float roll) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_quat
+//       Access: Published
+//  Description: Sets the rotation component of the transform,
+//               leaving translation and scale untouched.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_quat(const LQuaternionf &quat) {
+  nassertv_always(!is_empty());
+  CPT(TransformState) transform = get_transform();
+  nassertv(transform->has_quat());
+  set_transform(transform->set_quat(quat));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_quat
+//       Access: Published
+//  Description: Retrieves the rotation component of the transform.
+////////////////////////////////////////////////////////////////////
+LQuaternionf NodePath::
+get_quat() const {
+  nassertr_always(!is_empty(), LQuaternionf::ident_quat());
+  CPT(TransformState) transform = get_transform();
+  nassertr(transform->has_quat(), LQuaternionf::ident_quat());
+  return transform->get_quat();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_scale
 //       Access: Published
 //  Description: Sets the scale component of the transform,
@@ -765,6 +792,20 @@ set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_hpr_scale
                 (pos, hpr, scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_quat_scale
+//       Access: Published
+//  Description: Completely replaces the transform with new
+//               translation, rotation, and scale components.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat,
+                   const LVecBase3f &scale) {
+  nassertv_always(!is_empty());
+  set_transform(TransformState::make_pos_quat_scale
+                (pos, quat, scale));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1036,6 +1077,54 @@ get_hpr(const NodePath &other, float roll) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_quat
+//       Access: Published
+//  Description: Sets the rotation component of the transform,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_quat(const NodePath &other, const LQuaternionf &quat) {
+  nassertv_always(!is_empty());
+  CPT(TransformState) rel_transform = get_transform(other);
+  nassertv(rel_transform->has_quat());
+
+  CPT(TransformState) orig_transform = get_transform();
+  if (orig_transform->has_components()) {
+    // If we had a componentwise transform before we started, we
+    // should be careful to preserve the other two components.  We
+    // wouldn't need to do this, except for the possibility of
+    // numerical error or decompose ambiguity.
+    const LVecBase3f &orig_pos = orig_transform->get_pos();
+    const LVecBase3f &orig_scale = orig_transform->get_scale();
+
+    set_transform(other, rel_transform->set_quat(quat));
+    const TransformState *new_transform = get_transform();
+    if (new_transform->has_components()) {
+      set_pos_quat_scale(orig_pos, new_transform->get_quat(), orig_scale);
+    }
+
+  } else {
+    // If we didn't have a componentwise transform already, never
+    // mind.
+    set_transform(other, rel_transform->set_quat(quat));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_quat
+//       Access: Published
+//  Description: Returns the relative orientation of the bottom node
+//               as seen from the other node.
+////////////////////////////////////////////////////////////////////
+LQuaternionf NodePath::
+get_quat(const NodePath &other) const {
+  nassertr_always(!is_empty(), LQuaternionf::ident_quat());
+  CPT(TransformState) transform = get_transform(other);
+  nassertr(transform->has_quat(), LQuaternionf::ident_quat());
+  return transform->get_quat();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_scale
 //       Access: Published
 //  Description: Sets the scale component of the transform,
@@ -1179,6 +1268,22 @@ set_pos_hpr_scale(const NodePath &other,
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_hpr_scale
                 (pos, hpr, scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_quat_scale
+//       Access: Published
+//  Description: Completely replaces the transform with new
+//               translation, rotation, and scale components, relative
+//               to the other node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_pos_quat_scale(const NodePath &other,
+                   const LVecBase3f &pos, const LQuaternionf &quat,
+                   const LVecBase3f &scale) {
+  nassertv_always(!is_empty());
+  set_transform(other, TransformState::make_pos_quat_scale
+                (pos, quat, scale));
 }
 
 ////////////////////////////////////////////////////////////////////
