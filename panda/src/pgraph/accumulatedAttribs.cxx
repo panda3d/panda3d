@@ -23,6 +23,7 @@
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "texMatrixAttrib.h"
+#include "textureAttrib.h"
 #include "config_pgraph.h"
 
 
@@ -119,14 +120,107 @@ collect(PandaNode *node, int attrib_types) {
       }
       node->clear_attrib(TexMatrixAttrib::get_class_type());
     }
+
+    // We also need to accumulate the texture state if we are
+    // accumulating texture matrix.
+    const RenderAttrib *tex_attrib = 
+      node->get_attrib(TextureAttrib::get_class_type());
+    if (tex_attrib != (const RenderAttrib *)NULL) {
+      if (_texture == (const RenderAttrib *)NULL) {
+        _texture = tex_attrib;
+      } else {
+        _texture = _texture->compose(tex_attrib);
+      }
+
+      // However, we don't remove the texture state from the node.
+      // We're just accumulating it so we can tell which texture
+      // coordinates are safe to flatten.
+    }
   }
 
-  if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
+  if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
     // Collect everything else.
     nassertv(_other != (RenderState *)NULL);
     _other = _other->compose(node->get_state());
     node->set_state(RenderState::make_empty());
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AccumulatedAttribs::collect
+//       Access: Public
+//  Description: Collects the state and transform from the indicated
+//               node and adds it to the accumulator, removing it from
+//               the state (and returning a new state).
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) AccumulatedAttribs::
+collect(const RenderState *state, int attrib_types) {
+  CPT(RenderState) new_state = state;
+
+  if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
+    const RenderAttrib *node_attrib = 
+      new_state->get_attrib(ColorAttrib::get_class_type());
+    if (node_attrib != (const RenderAttrib *)NULL) {
+      // The node has a color attribute; apply it.
+      if (_color == (const RenderAttrib *)NULL) {
+        _color = node_attrib;
+      } else {
+        _color = _color->compose(node_attrib);
+      }
+      new_state = new_state->remove_attrib(ColorAttrib::get_class_type());
+    }
+  }
+
+  if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
+    const RenderAttrib *node_attrib = 
+      new_state->get_attrib(ColorScaleAttrib::get_class_type());
+    if (node_attrib != (const RenderAttrib *)NULL) {
+      if (_color_scale == (const RenderAttrib *)NULL) {
+        _color_scale = node_attrib;
+      } else {
+        _color_scale = _color_scale->compose(node_attrib);
+      }
+      new_state = new_state->remove_attrib(ColorScaleAttrib::get_class_type());
+    }
+  }
+
+  if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
+    const RenderAttrib *node_attrib = 
+      new_state->get_attrib(TexMatrixAttrib::get_class_type());
+    if (node_attrib != (const RenderAttrib *)NULL) {
+      if (_tex_matrix == (const RenderAttrib *)NULL) {
+        _tex_matrix = node_attrib;
+      } else {
+        _tex_matrix = _tex_matrix->compose(node_attrib);
+      }
+      new_state = new_state->remove_attrib(TexMatrixAttrib::get_class_type());
+    }
+
+    // We also need to accumulate the texture state if we are
+    // accumulating texture matrix.
+    const RenderAttrib *tex_attrib = 
+      new_state->get_attrib(TextureAttrib::get_class_type());
+    if (tex_attrib != (const RenderAttrib *)NULL) {
+      if (_texture == (const RenderAttrib *)NULL) {
+        _texture = tex_attrib;
+      } else {
+        _texture = _texture->compose(tex_attrib);
+      }
+
+      // However, we don't remove the texture state from the node.
+      // We're just accumulating it so we can tell which texture
+      // coordinates are safe to flatten.
+    }
+  }
+
+  if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
+    // Collect everything else.
+    nassertr(_other != (RenderState *)NULL, new_state);
+    _other = _other->compose(new_state);
+    new_state = RenderState::make_empty();
+  }
+
+  return new_state;
 }
 
 ////////////////////////////////////////////////////////////////////

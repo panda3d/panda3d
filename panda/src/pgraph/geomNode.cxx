@@ -188,33 +188,93 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       transformer.transform_vertices(this, attribs._transform->get_mat());
     }
   }
-  if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
-    if (attribs._color != (const RenderAttrib *)NULL) {
-      const ColorAttrib *ca = DCAST(ColorAttrib, attribs._color);
-      if (ca->get_color_type() == ColorAttrib::T_flat) {
-        transformer.set_color(this, ca->get_color());
+
+  GeomNode::CDWriter cdata(_cycler);
+  GeomNode::Geoms::iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    GeomEntry &entry = (*gi);
+    PT(Geom) new_geom = entry._geom->make_copy();
+
+    AccumulatedAttribs geom_attribs = attribs;
+    entry._state = geom_attribs.collect(entry._state, attrib_types);
+
+    bool any_changed = false;
+    
+    if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
+      if (geom_attribs._color != (const RenderAttrib *)NULL) {
+        const ColorAttrib *ca = DCAST(ColorAttrib, geom_attribs._color);
+        if (ca->get_color_type() == ColorAttrib::T_flat) {
+          if (transformer.set_color(new_geom, ca->get_color())) {
+            any_changed = true;
+          }
+        }
       }
     }
-  }
-  if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
-    if (attribs._color_scale != (const RenderAttrib *)NULL) {
-      const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attribs._color_scale);
-      if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
-        transformer.transform_colors(this, csa->get_scale());
+    if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
+      if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
+        const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
+        if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
+          if (transformer.transform_colors(new_geom, csa->get_scale())) {
+            any_changed = true;
+          }
+        }
       }
     }
-  }
-  if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
-    if (attribs._tex_matrix != (const RenderAttrib *)NULL) {
-      const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attribs._tex_matrix);
-      if (tma->get_mat() != LMatrix4f::ident_mat()) {
-        transformer.transform_texcoords(this, tma->get_mat());
+    if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
+      if (geom_attribs._tex_matrix != (const RenderAttrib *)NULL) {
+        // Determine which texture coordinate names are used more than
+        // once.  This assumes we have discovered all of the textures
+        // that are in effect on the geomNode; this may not be true if
+        // there is a texture that has been applied at a node above
+        // that from which we started the flatten operation, but
+        // caveat programmer.
+        NameCount name_count;
+
+        if (geom_attribs._texture != (RenderAttrib *)NULL) {
+          const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
+          int num_on_stages = ta->get_num_on_stages();
+          for (int si = 0; si < num_on_stages; si++) {
+            TextureStage *stage = ta->get_on_stage(si);
+            const TexCoordName *name = stage->get_texcoord_name();
+            count_name(name_count, name);
+          }
+        }
+
+        const TexMatrixAttrib *tma = 
+          DCAST(TexMatrixAttrib, geom_attribs._tex_matrix);
+
+        CPT(TexMatrixAttrib) new_tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
+
+        int num_stages = tma->get_num_stages();
+        for (int i = 0; i < num_stages; i++) {
+          TextureStage *stage = tma->get_stage(i);
+          const TexCoordName *name = stage->get_texcoord_name();
+          if (get_name_count(name_count, name) > 1) {
+            // We can't transform these texcoords, since the name is
+            // used by more than one active stage.
+            new_tma = DCAST(TexMatrixAttrib, new_tma->add_stage(stage, tma->get_transform(stage)));
+
+          } else {
+            // It's safe to transform these texcoords; the name is
+            // used by no more than one active stage.
+            if (transformer.transform_texcoords(new_geom, name, name, tma->get_mat(stage))) {
+              any_changed = true;
+            }
+          }
+        }
+
+        if (!new_tma->is_empty()) {
+          entry._state = entry._state->add_attrib(new_tma);
+        }
       }
     }
-  }
-  if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
-    if (!attribs._other->is_empty()) {
-      transformer.apply_state(this, attribs._other);
+
+    if (any_changed) {
+      entry._geom = new_geom;
+    }
+
+    if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
+      entry._state = geom_attribs._other->compose(entry._state);
     }
   }
 }

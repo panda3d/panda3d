@@ -24,7 +24,7 @@
 //               TexMatrixAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE TexMatrixAttrib::
-TexMatrixAttrib() {
+TexMatrixAttrib() : _stage_list_stale(true) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,6 +35,20 @@ TexMatrixAttrib() {
 ////////////////////////////////////////////////////////////////////
 INLINE TexMatrixAttrib::
 TexMatrixAttrib(const TexMatrixAttrib &copy) :
-  _stages(copy._stages)
+  _stages(copy._stages),
+  _stage_list_stale(true)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexMatrixAttrib::check_stage_list
+//       Access: Private
+//  Description: Builds the linear list of TextureStages if it needs
+//               to be built.
+////////////////////////////////////////////////////////////////////
+void TexMatrixAttrib::
+check_stage_list() const {
+  if (_stage_list_stale) {
+    ((TexMatrixAttrib *)this)->rebuild_stage_list();
+  }
 }

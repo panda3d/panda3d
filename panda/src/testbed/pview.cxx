@@ -114,6 +114,7 @@ event_0(CPT_Event event, void *) {
   static PT(TextureStage) ts;
   if (ts == (TextureStage *)NULL) {
     ts = new TextureStage("ts");
+    ts->set_sort(50);
   }
 
   NodePath models = framework.get_models();

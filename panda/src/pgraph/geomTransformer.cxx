@@ -150,18 +150,16 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
 //               Geom was changed, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-transform_texcoords(Geom *geom, const LMatrix4f &mat) {
+transform_texcoords(Geom *geom, const TexCoordName *from_name, 
+                    const TexCoordName *to_name, const LMatrix4f &mat) {
   bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);
 
-  PTA_TexCoordf texcoords;
-  GeomBindType bind;
-  PTA_ushort index;
+  PTA_TexCoordf texcoords = geom->get_texcoords_array(from_name);
+  PTA_ushort index = geom->get_texcoords_index(from_name);
 
-  geom->get_texcoords(texcoords, bind, index);
-
-  if (bind != G_OFF) {
+  if (!texcoords.is_null()) {
     // Look up the Geom's texcoords in our table--have we already
     // transformed this array?
     SourceTexCoords stc;
@@ -183,7 +181,7 @@ transform_texcoords(Geom *geom, const LMatrix4f &mat) {
       nassertr(new_texcoords.size() == texcoords.size(), false);
     }
 
-    geom->set_texcoords(new_texcoords, bind, index);
+    geom->set_texcoords(to_name, new_texcoords, index);
     transformed = true;
   }
 
@@ -203,7 +201,8 @@ transform_texcoords(Geom *geom, const LMatrix4f &mat) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-transform_texcoords(GeomNode *node, const LMatrix4f &mat) {
+transform_texcoords(GeomNode *node, const TexCoordName *from_name,
+                    const TexCoordName *to_name, const LMatrix4f &mat) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);
@@ -211,7 +210,7 @@ transform_texcoords(GeomNode *node, const LMatrix4f &mat) {
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom->make_copy();
-    if (transform_texcoords(new_geom, mat)) {
+    if (transform_texcoords(new_geom, from_name, to_name, mat)) {
       entry._geom = new_geom;
       any_changed = true;
     }

@@ -53,6 +53,9 @@ PUBLISHED:
   bool is_empty() const;
   bool has_stage(TextureStage *stage) const;
 
+  int get_num_stages() const;
+  TextureStage *get_stage(int n) const;
+
   const LMatrix4f &get_mat() const;
   const LMatrix4f &get_mat(TextureStage *stage) const;
 
@@ -69,8 +72,15 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
+  INLINE void check_stage_list() const;
+  void rebuild_stage_list();
+
   typedef pmap< PT(TextureStage), CPT(TransformState) > Stages;
   Stages _stages;
+
+  typedef pvector<TextureStage *> StageList;
+  StageList _stage_list;
+  bool _stage_list_stale;
 
   // This element is only used during reading from a bam file.  It has
   // no meaningful value any other time.

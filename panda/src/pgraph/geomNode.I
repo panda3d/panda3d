@@ -178,3 +178,32 @@ INLINE CollideMask GeomNode::
 get_default_collide_mask() {
   return default_geom_node_collide_mask;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::count_name
+//       Access: Private
+//  Description: Increments the count for the indicated TexCoordName.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomNode::
+count_name(GeomNode::NameCount &name_count, const TexCoordName *name) {
+  pair<NameCount::iterator, bool> result = 
+    name_count.insert(NameCount::value_type(name, 1));
+  if (!result.second) {
+    (*result.first).second++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::get_name_count
+//       Access: Private
+//  Description: Returns the count for the indicated TexCoordName.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomNode::
+get_name_count(const GeomNode::NameCount &name_count, const TexCoordName *name) {
+  NameCount::const_iterator ni;
+  ni = name_count.find(name);
+  if (ni != name_count.end()) {
+    return (*ni).second;
+  }
+  return 0;
+}

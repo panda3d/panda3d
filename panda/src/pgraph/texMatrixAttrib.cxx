@@ -61,6 +61,9 @@ make() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexMatrixAttrib::
 make(const LMatrix4f &mat) {
+  if (mat == LMatrix4f::ident_mat()) {
+    return make();
+  }
   CPT(TransformState) transform = TransformState::make_mat(mat);
   return make(TextureStage::get_default(), transform);
 }
@@ -73,6 +76,9 @@ make(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexMatrixAttrib::
 make(const TransformState *transform) {
+  if (transform->is_identity()) {
+    return make();
+  }
   return make(TextureStage::get_default(), transform);
 }
 
@@ -84,6 +90,9 @@ make(const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexMatrixAttrib::
 make(TextureStage *stage, const TransformState *transform) {
+  if (transform->is_identity()) {
+    return make();
+  }
   TexMatrixAttrib *attrib = new TexMatrixAttrib;
   attrib->_stages.insert(Stages::value_type(stage, transform));
   return return_new(attrib);
@@ -98,6 +107,9 @@ make(TextureStage *stage, const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexMatrixAttrib::
 add_stage(TextureStage *stage, const TransformState *transform) const {
+  if (transform->is_identity()) {
+    return remove_stage(stage);
+  }
   TexMatrixAttrib *attrib = new TexMatrixAttrib(*this);
   attrib->_stages[stage] = transform;
   return return_new(attrib);
@@ -150,6 +162,31 @@ bool TexMatrixAttrib::
 has_stage(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
   return (mi != _stages.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexMatrixAttrib::get_num_stages
+//       Access: Published
+//  Description: Returns the number of stages that are represented by
+//               this attrib.
+////////////////////////////////////////////////////////////////////
+int TexMatrixAttrib::
+get_num_stages() const {
+  return _stages.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexMatrixAttrib::get_stage
+//       Access: Published
+//  Description: Returns the nth stage that is represented by this
+//               attrib.  The TextureStages are in no particular
+//               order.
+////////////////////////////////////////////////////////////////////
+TextureStage *TexMatrixAttrib::
+get_stage(int n) const {
+  nassertr(n >= 0 && n < (int)_stages.size(), NULL);
+  check_stage_list();
+  return _stage_list[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -425,6 +462,25 @@ invert_compose_impl(const RenderAttrib *other) const {
 RenderAttrib *TexMatrixAttrib::
 make_default_impl() const {
   return new TexMatrixAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexMatrixAttrib::rebuild_stage_list
+//       Access: Private
+//  Description: Builds the linear list of TextureStages, the first
+//               time someone asks for it.
+////////////////////////////////////////////////////////////////////
+void TexMatrixAttrib::
+rebuild_stage_list() {
+  _stage_list.clear();
+  _stage_list.reserve(_stages.size());
+
+  Stages::const_iterator si;
+  for (si = _stages.begin(); si != _stages.end(); ++si) {
+    _stage_list.push_back((*si).first);
+  }
+
+  _stage_list_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -43,12 +43,14 @@ public:
   void write(ostream &out, int attrib_types, int indent_level) const;
   
   void collect(PandaNode *node, int attrib_types);
+  CPT(RenderState) collect(const RenderState *state, int attrib_types);
   void apply_to_node(PandaNode *node, int attrib_types);
 
   CPT(TransformState) _transform;
   CPT(RenderAttrib) _color;
   CPT(RenderAttrib) _color_scale;
   CPT(RenderAttrib) _tex_matrix;
+  CPT(RenderAttrib) _texture;
   CPT(RenderState) _other;
 };
 
