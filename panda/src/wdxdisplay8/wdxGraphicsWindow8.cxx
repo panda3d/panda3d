@@ -2907,7 +2907,6 @@ lookup_key(WPARAM wparam) const {
         case VK_MENU:
         case VK_LMENU:
         case VK_RMENU:
-            wdxdisplay_cat.debug() << "XXXX got alt-key event!\n";
             return KeyboardButton::alt();
 
         default:
