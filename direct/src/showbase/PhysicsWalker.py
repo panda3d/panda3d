@@ -586,7 +586,8 @@ class PhysicsWalker(DirectObject.DirectObject):
             rotation = dt * self.__rotationSpeed
 
             #debugTempH=self.avatarNodePath.getH()
-            assert self.avatarNodePath.getHpr().getStandardizedHpr().almostEqual(physObject.getOrientation().getHpr().getStandardizedHpr(), 0.0001)
+            # temporary hasattr for old Pandas
+            assert not hasattr(Quat, "isSameDirection") or self.avatarNodePath.getQuat().isSameDirection(physObject.getOrientation())
             assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
             # update pos:
@@ -611,7 +612,8 @@ class PhysicsWalker(DirectObject.DirectObject):
             # sync the change:
             self.actorNode.updateTransform()
 
-            assert self.avatarNodePath.getHpr().getStandardizedHpr().almostEqual(physObject.getOrientation().getHpr().getStandardizedHpr(), 0.0001)
+            # temporary hasattr for old Pandas
+            assert not hasattr(Quat, "isSameDirection") or self.avatarNodePath.getQuat().isSameDirection(physObject.getOrientation())
             assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
             #assert self.avatarNodePath.getH()==debugTempH-rotation
             messenger.send("avatarMoving")
