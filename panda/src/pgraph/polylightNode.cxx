@@ -69,27 +69,25 @@ PandaNode(name)
 Colorf PolylightNode::flicker() const {
   float r,g,b;
 
-  Colorf color;
-  color = get_color();
-  //color = get_color_scenegraph();
+  float variation= 0.0;
+  Colorf color = get_color();  //color = get_color_scenegraph();
+
   r = color[0];
   g = color[1];
   b = color[2];
-  float variation= 0.0;
   
   if (_flicker_type == FRANDOM) {
     //srand((int)ClockObject::get_global_clock()->get_frame_time());
-    variation = (rand()%100);// * ClockObject::get_global_clock()->get_dt();
+    variation = (rand()%100);  // a value between 0-99
     variation /= 100.0;
-    //printf("Random Variation: %f\n",variation);
-    //variation += _offset;
-    variation *= _scale;
+    pgraph_cat.info() << "Random Variation: " << variation << endl;
   } else if (_flicker_type == FSIN) {
     double now = ClockObject::get_global_clock()->get_frame_time();
-    variation = sinf(now*_sin_freq);// * ClockObject::get_global_clock()->get_dt();
-    //printf("Variation: %f\n",variation);
-    //variation += _offset;
-    variation *= _scale;
+    variation = sinf(now*_sin_freq);
+    pgraph_cat.info() << "Variation: " << variation << endl;
+    // can't use negative variation, so make it positive
+    if (variation < 0.0)
+      variation *= -1.0;
   } else if (_flicker_type == FCUSTOM) {
     // fixed point list of variation values coming soon...
     //double index = (ClockObject::get_global_clock()->get_frame_time() % len(fixed_points)) *  ClockObject::get_global_clock()->get_dt();
@@ -100,6 +98,10 @@ Colorf PolylightNode::flicker() const {
         variation *= _scale;
       }*/
   }
+  
+  //variation += _offset;
+  variation *= _scale;
+
   //printf("Variation: %f\n",variation);
   r+=variation;
   g+=variation;
@@ -112,7 +114,7 @@ Colorf PolylightNode::flicker() const {
     b = color[2];
   }
   */
-  //printf("Color R:%f G:%f B:%f\n",r,g,b);
+  pgraph_cat.debug() << "Color R:" << r << "; G:" << g << "; B:" << b << endl;
   return Colorf(r,g,b,1.0);
 }
 

@@ -155,7 +155,7 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
         dist = xz.length(); // this does not count height difference
       }
 
-      if (dist < light_radius) { // If node is in range of this light
+      if (dist <= light_radius) { // If node is in range of this light
         pgraph_cat.debug() << "light's position = " << light->get_pos() << endl;
         pgraph_cat.debug() << "relative position = " << point << endl;
         pgraph_cat.debug() << "effect center = " << _effect_center << endl;
@@ -222,7 +222,7 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
     r = Rcollect / num_lights;
     g = Gcollect / num_lights;
     b = Bcollect / num_lights;
-    pgraph_cat.debug() << "r = " << r << ";g = " << g << ";b = " << b << endl;
+    pgraph_cat.info() << "r=" << r << "; g=" << g << "; b=" << b << endl;
   }
 
   return ColorScaleAttrib::make(LVecBase4f(r, g, b, 1.0));
