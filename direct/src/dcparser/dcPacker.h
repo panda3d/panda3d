@@ -154,6 +154,7 @@ PUBLISHED:
 // this is a hack to allw me to get in and out of 32bit Mode Faster
 // need to agree with channel_type in dcbase.h
 #define RAW_PACK_CHANNEL(in)  raw_pack_uint64(in)
+#define RAW_UNPACK_CHANNEL()  raw_unpack_uint64()
   
 
   INLINE int raw_unpack_int8();

@@ -100,9 +100,20 @@ PUBLISHED:
   INLINE void set_simulated_disconnect(bool simulated_disconnect);
   INLINE bool get_simulated_disconnect() const;
 
+#ifndef NDEBUG
+  INLINE void toggle_verbose();
+  INLINE void set_verbose(bool verbose);
+  INLINE bool get_verbose() const;
+#endif  // NDEBUG
+
 private:
   bool do_check_datagram();
   bool handle_update_field();
+
+#ifndef NDEBUG
+  void describe_message(ostream &out, const string &prefix, 
+                        const string &message_data) const;
+#endif  // NDEBUG
 
 #ifdef HAVE_PYTHON
   PyObject *_python_repository;
@@ -122,6 +133,7 @@ private:
   DCFile _dc_file;
   bool _client_datagram;
   bool _simulated_disconnect;
+  bool _verbose;
 
   Datagram _dg;
   DatagramIterator _di;

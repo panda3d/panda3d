@@ -19,6 +19,7 @@
 #include "cConnectionRepository.h"
 #include "dcmsgtypes.h"
 #include "dcClass.h"
+#include "dcPacker.h"
 
 #include "config_distributed.h"
 #include "httpChannel.h"
@@ -53,6 +54,7 @@ CConnectionRepository() :
 #endif
   _client_datagram(true),
   _simulated_disconnect(false),
+  _verbose(distributed_cat.is_spam()),
   _msg_channel(0),
   _msg_sender(0),
   _sec_code(0),
@@ -135,6 +137,12 @@ check_datagram() {
   }
 
   while (do_check_datagram()) {
+#ifndef NDEBUG
+    if (get_verbose()) {
+      describe_message(nout, "receive ", _dg.get_message());
+    }
+#endif  // NDEBUG
+
     // Start breaking apart the datagram.
     _di = DatagramIterator(_dg);
 
@@ -237,6 +245,12 @@ send_datagram(const Datagram &dg) {
       << "Unable to send datagram during simulated disconnect.\n";
     return false;
   }
+
+#ifndef NDEBUG
+  if (get_verbose()) {
+    describe_message(nout, "send ", dg.get_message());
+  }
+#endif  // NDEBUG
 
 #ifdef HAVE_NSPR
   if (_nspr_conn) {
@@ -425,3 +439,92 @@ handle_update_field() {
 
   return true;
 }
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::describe_message
+//       Access: Private
+//  Description: Unpacks the message and reformats it for user
+//               consumption, writing a description on the indicated
+//               output stream.
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+describe_message(ostream &out, const string &prefix, 
+                 const string &message_data) const {
+  DCPacker packer;
+  packer.set_unpack_data(message_data);
+  CHANNEL_TYPE do_id;
+  int msg_type;
+  bool is_update = false;
+
+  if (!_client_datagram) {
+    packer.RAW_UNPACK_CHANNEL();  // msg_channel
+    packer.RAW_UNPACK_CHANNEL();  // msg_sender
+    packer.raw_unpack_uint8();    // sec_code
+    msg_type = packer.raw_unpack_uint16();
+    is_update = (msg_type == STATESERVER_OBJECT_UPDATE_FIELD);
+    
+  } else {
+    msg_type = packer.raw_unpack_uint16();
+    is_update = (msg_type == CLIENT_OBJECT_UPDATE_FIELD);
+  }
+
+  if (!is_update) {
+    out << prefix << "message " << msg_type << "\n";
+
+  } else {
+    // It's an update message.  Figure out what dclass the object is
+    // based on its doId, so we can decode the rest of the message.
+    do_id = packer.raw_unpack_uint32();
+    DCClass *dclass = NULL;
+
+#ifdef HAVE_PYTHON
+    if (_python_repository != (PyObject *)NULL) {
+      PyObject *doId2do =
+        PyObject_GetAttrString(_python_repository, "doId2do");
+      nassertv(doId2do != NULL);
+
+      PyObject *doId = PyInt_FromLong(do_id);
+      PyObject *distobj = PyDict_GetItem(doId2do, doId);
+      Py_DECREF(doId);
+      Py_DECREF(doId2do);
+
+      if (distobj != NULL) {
+        PyObject *dclass_obj = PyObject_GetAttrString(distobj, "dclass");
+        nassertv(dclass_obj != NULL);
+
+        PyObject *dclass_this = PyObject_GetAttrString(dclass_obj, "this");
+        Py_DECREF(dclass_obj);
+        nassertv(dclass_this != NULL);
+        
+        dclass = (DCClass *)PyInt_AsLong(dclass_this);
+        Py_DECREF(dclass_this);
+      }
+    }
+#endif  // HAVE_PYTHON  
+
+    int field_id = packer.raw_unpack_uint16();
+
+    if (dclass == (DCClass *)NULL) {
+      out << prefix << "update for unknown object " << do_id 
+          << ", field " << field_id << "\n";
+
+    } else {
+      out << prefix << "update for " << dclass->get_name()
+          << " " << do_id << ": ";
+      if (field_id < 0 || field_id >= dclass->get_num_inherited_fields()) {
+        out << "unknown field " << field_id << "\n";
+        
+      } else {
+        DCField *field = dclass->get_inherited_field(field_id);
+        out << field->get_name();
+        packer.begin_unpack(field);
+        packer.unpack_and_format(out);
+        packer.end_unpack();
+        out << "\n";
+      }
+    }
+  }
+}
+#endif  // NDEBUG
+
