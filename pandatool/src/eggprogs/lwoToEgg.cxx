@@ -8,6 +8,7 @@
 #include <lwoToEggConverter.h>
 #include <lwoHeader.h>
 #include <lwoInputFile.h>
+#include <config_lwo.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoToEgg::Constructor
@@ -74,6 +75,7 @@ run() {
 
 
 int main(int argc, char *argv[]) {
+  init_liblwo();
   LwoToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();

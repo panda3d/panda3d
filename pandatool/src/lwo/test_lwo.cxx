@@ -5,9 +5,11 @@
 
 #include "lwoInputFile.h"
 #include "lwoChunk.h"
+#include "config_lwo.h"
 
 int
 main(int argc, char *argv[]) {
+  init_liblwo();
   if (argc != 2) {
     cerr << "test_lwo file.lwo\n";
     exit(1);

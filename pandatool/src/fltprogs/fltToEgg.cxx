@@ -6,6 +6,7 @@
 #include "fltToEgg.h"
 
 #include <fltToEggConverter.h>
+#include <config_flt.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEgg::Constructor
@@ -78,6 +79,7 @@ run() {
 
 
 int main(int argc, char *argv[]) {
+  init_libflt();
   FltToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();
