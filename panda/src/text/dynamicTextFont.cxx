@@ -98,6 +98,7 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
       }
       set_name(name);
 
+      /*
       if (!FT_IS_SCALABLE(_face)) {
         text_cat.error()
           << "Unable to read font " << get_name()
@@ -106,7 +107,7 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
         // haven't bothered to write the few lines of glue code that
         // would do it.
 
-      } else {
+        } else */ {
         text_cat.info()
           << "Loaded font " << get_name() << "\n";
         _is_valid = true;
@@ -299,6 +300,37 @@ reset_scale() {
                                (int)(_point_size * 64), (int)(_point_size * 64),
                                dpi, dpi);
   if (error) {
+    // If we were unable to set a particular char size, perhaps we
+    // have a non-scalable font.  Try to figure out the closest
+    // available size.
+    int desired_height = (int)(_pixels_per_unit * _point_size / points_per_unit + 0.5f);
+    int best_size = -1;
+    if (_face->num_fixed_sizes > 0) {
+      best_size = 0;
+      int best_diff = abs(desired_height - _face->available_sizes[0].height);
+      for (int i = 1; i < _face->num_fixed_sizes; i++) {
+        int diff = abs(desired_height - _face->available_sizes[i].height);
+        if (diff < best_diff) {
+          best_size = i;
+          best_diff = diff;
+        }
+      }
+    }
+    if (best_size >= 0) {
+      int pixel_height = _face->available_sizes[best_size].height;
+      int pixel_width = _face->available_sizes[best_size].width;
+      error = FT_Set_Pixel_Sizes(_face, pixel_width, pixel_height);
+      if (!error) {
+        text_cat.info()
+          << "Using " << pixel_height << "-pixel font for "
+          << get_name() << "\n";
+
+        _pixels_per_unit = pixel_height * points_per_unit / _point_size;
+      }
+    }
+  }
+
+  if (error) {
     text_cat.warning()
       << "Unable to set " << get_name() 
       << " to " << _point_size << "pt at " << dpi << " dpi.\n";
@@ -306,11 +338,7 @@ reset_scale() {
     return false;
   }
 
-  // The face's height is only relevant for scalable fonts,
-  // according to FreeType.  How should we determine whether we
-  // have a scalable font or otherwise?
-  float pixel_size = _point_size * (_pixels_per_unit / points_per_unit);
-  _line_height = (float)_face->height * pixel_size / ((float)_face->units_per_EM * 64.0f);
+  _line_height = _face->size->metrics.height / (_pixels_per_unit * 64.0f);
 
   // Determine the correct width for a space.
   error = FT_Load_Char(_face, ' ', FT_LOAD_DEFAULT);
@@ -354,29 +382,64 @@ make_glyph(int glyph_index) {
     return glyph;
 
   } else {
-    if (bitmap.pixel_mode != ft_pixel_mode_grays) {
+    DynamicTextGlyph *glyph = slot_glyph(bitmap.width, bitmap.rows);
+
+    if (bitmap.pixel_mode == ft_pixel_mode_grays && bitmap.num_grays == 256) {
+      // This is the easy case: we can memcpy the rendered glyph
+      // directly into our texture image, one row at a time.
+      unsigned char *buffer_row = bitmap.buffer;
+      for (int yi = 0; yi < bitmap.rows; yi++) {
+        unsigned char *texture_row = glyph->get_row(yi);
+        nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
+        memcpy(texture_row, buffer_row, bitmap.width);
+        buffer_row += bitmap.pitch;
+      }
+
+    } else if (bitmap.pixel_mode == ft_pixel_mode_mono) {
+      // This is a little bit more work: we have to expand the
+      // one-bit-per-pixel bitmap into a one-byte-per-pixel texture.
+      unsigned char *buffer_row = bitmap.buffer;
+      for (int yi = 0; yi < bitmap.rows; yi++) {
+        unsigned char *texture_row = glyph->get_row(yi);
+        nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
+
+        int bit = 0x80;
+        unsigned char *b = buffer_row;
+        for (int xi = 0; xi < bitmap.width; xi++) {
+          if (*b & bit) {
+            texture_row[xi] = 0xff;
+          } else {
+            texture_row[xi] = 0x00;
+          }
+          bit >>= 1;
+          if (bit == 0) {
+            ++b;
+            bit = 0x80;
+          }
+        }
+
+        buffer_row += bitmap.pitch;
+      }
+      
+
+    } else if (bitmap.pixel_mode == ft_pixel_mode_grays) {
+      // Here we must expand a grayscale pixmap with n levels of gray
+      // into our 256-level texture.
+      unsigned char *buffer_row = bitmap.buffer;
+      for (int yi = 0; yi < bitmap.rows; yi++) {
+        unsigned char *texture_row = glyph->get_row(yi);
+        nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
+        for (int xi = 0; xi < bitmap.width; xi++) {
+          texture_row[xi] = (int)(buffer_row[xi] * 255) / (bitmap.num_grays - 1);
+        }
+        buffer_row += bitmap.pitch;
+      }
+
+    } else {
       text_cat.error()
         << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
-      return (DynamicTextGlyph *)NULL;
     }
-    
-    if (bitmap.num_grays != 256) {
-      // We expect 256 levels of grayscale to come back from FreeType,
-      // since that's what we asked for.
-      text_cat.warning()
-        << "Expected 256 levels of gray, got " << bitmap.num_grays << "\n";
-    }
-    
-    DynamicTextGlyph *glyph = slot_glyph(bitmap.width, bitmap.rows);
-    
-    // Now copy the rendered glyph into the texture.
-    unsigned char *buffer_row = bitmap.buffer;
-    for (int yi = 0; yi < bitmap.rows; yi++) {
-      unsigned char *texture_row = glyph->get_row(yi);
-      nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
-      memcpy(texture_row, buffer_row, bitmap.width);
-      buffer_row += bitmap.pitch;
-    }
+
     glyph->_page->mark_dirty(Texture::DF_image);
     
     glyph->make_geom(slot->bitmap_top, slot->bitmap_left, advance,
