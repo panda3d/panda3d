@@ -394,7 +394,7 @@ texture_body:
     texture->set_bin(strval);
 
   } else if (cmp_nocase_uh(name, "alpha_file") == 0) {
-    texture->set_alpha_file(strval);
+    texture->set_alpha_filename(strval);
 
   } else {
     eggyywarning("Unsupported texture scalar: " + name);

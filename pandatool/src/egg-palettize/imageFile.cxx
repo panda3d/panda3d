@@ -387,9 +387,9 @@ update_egg_tex(EggTexture *egg_tex) const {
   if (_properties._alpha_type != (PNMFileType *)NULL &&
       _properties.uses_alpha() &&
       !_alpha_filename.empty()) {
-    egg_tex->set_alpha_file(FilenameUnifier::make_egg_filename(_alpha_filename));
+    egg_tex->set_alpha_filename(FilenameUnifier::make_egg_filename(_alpha_filename));
   } else {
-    egg_tex->clear_alpha_file();
+    egg_tex->clear_alpha_filename();
   }
 
   _properties.update_egg_tex(egg_tex);

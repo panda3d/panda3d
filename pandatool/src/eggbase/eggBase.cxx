@@ -87,15 +87,26 @@ convert_paths(EggNode *node, PathReplace *path_replace,
               const DSearchPath &additional_path) {
   if (node->is_of_type(EggTexture::get_class_type())) {
     EggTexture *egg_tex = DCAST(EggTexture, node);
-    egg_tex->set_filename(path_replace->convert_path(egg_tex->get_filename(),
-                                                     additional_path));
-    if (egg_tex->has_alpha_file()) {
-      egg_tex->set_alpha_file(path_replace->convert_path(egg_tex->get_alpha_file(), additional_path));
+    Filename fullpath = 
+      path_replace->match_path(egg_tex->get_filename(), additional_path);
+    egg_tex->set_filename(path_replace->store_path(fullpath));
+    egg_tex->set_fullpath(fullpath);
+
+    if (egg_tex->has_alpha_filename()) {
+      Filename alpha_fullpath = 
+        path_replace->match_path(egg_tex->get_alpha_filename(), additional_path);
+      egg_tex->set_alpha_filename(path_replace->store_path(alpha_fullpath));
+      egg_tex->set_alpha_fullpath(alpha_fullpath);
     }
 
   } else if (node->is_of_type(EggFilenameNode::get_class_type())) {
-    EggFilenameNode *egg_fname = DCAST(EggFilenameNode, node);
-    egg_fname->set_filename(path_replace->convert_path(egg_fname->get_filename(), additional_path));
+    EggFilenameNode *egg_fnode = DCAST(EggFilenameNode, node);
+
+    Filename fullpath = 
+      path_replace->match_path(egg_fnode->get_filename(), additional_path);
+    egg_fnode->set_filename(path_replace->store_path(fullpath));
+    egg_fnode->set_fullpath(fullpath);
+
   } else if (node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *egg_group = DCAST(EggGroupNode, node);
     EggGroupNode::const_iterator ci;

@@ -19,14 +19,14 @@
 #ifndef EGGFILE_H
 #define EGGFILE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "paletteGroups.h"
 #include "textureReference.h"
 
-#include <filename.h>
-#include <namable.h>
-#include <typedWritable.h>
+#include "filename.h"
+#include "namable.h"
+#include "typedWritable.h"
 
 #include "pset.h"
 

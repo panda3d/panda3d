@@ -77,7 +77,7 @@ operator = (const EggTexture &copy) {
   _env_type = copy._env_type;
   _flags = copy._flags;
   _transform = copy._transform;
-  _alpha_file = copy._alpha_file;
+  _alpha_filename = copy._alpha_filename;
 
   return *this;
 }
@@ -133,10 +133,10 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> envtype { " << get_env_type() << " }\n";
   }
 
-  if (has_alpha_file()) {
+  if (has_alpha_filename()) {
     indent(out, indent_level + 2)
       << "<Scalar> alpha-file { ";
-    enquote_string(out, get_alpha_file());
+    enquote_string(out, get_alpha_filename());
     out << " }\n";
   }
 

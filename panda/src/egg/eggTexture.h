@@ -120,11 +120,13 @@ public:
   INLINE LMatrix3d get_transform() const;
   INLINE bool transform_is_identity() const;
 
-  INLINE void set_alpha_file(const Filename &filename);
-  INLINE void clear_alpha_file();
-  INLINE bool has_alpha_file() const;
-  INLINE const Filename &get_alpha_file() const;
-  INLINE Filename &update_alpha_file();
+  INLINE void set_alpha_filename(const Filename &filename);
+  INLINE void clear_alpha_filename();
+  INLINE bool has_alpha_filename() const;
+  INLINE const Filename &get_alpha_filename() const;
+
+  INLINE void set_alpha_fullpath(const Filename &fullpath);
+  INLINE const Filename &get_alpha_fullpath() const;
 
   static Format string_format(const string &string);
   static WrapMode string_wrap_mode(const string &string);
@@ -137,7 +139,7 @@ protected:
 private:
   enum Flags {
     F_has_transform          = 0x0001,
-    F_has_alpha_file         = 0x0002,
+    F_has_alpha_filename     = 0x0002,
     F_has_anisotropic_degree = 0x0004,
   };
 
@@ -148,7 +150,8 @@ private:
   EnvType _env_type;
   int _flags;
   LMatrix3d _transform;
-  Filename _alpha_file;
+  Filename _alpha_filename;
+  Filename _alpha_fullpath;
 
 
 public:

@@ -97,8 +97,8 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
 
   Filename filename = _egg_tex->get_filename();
   Filename alpha_filename;
-  if (_egg_tex->has_alpha_file()) {
-    alpha_filename = _egg_tex->get_alpha_file();
+  if (_egg_tex->has_alpha_filename()) {
+    alpha_filename = _egg_tex->get_alpha_filename();
   }
 
   _properties._format = _egg_tex->get_format();

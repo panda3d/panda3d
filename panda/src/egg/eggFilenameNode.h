@@ -42,10 +42,13 @@ public:
 
   INLINE const Filename &get_filename() const;
   INLINE void set_filename(const Filename &filename);
-  INLINE Filename &update_filename();
+
+  INLINE const Filename &get_fullpath() const;
+  INLINE void set_fullpath(const Filename &fullpath);
 
 private:
   Filename _filename;
+  Filename _fullpath;
 
 public:
   static TypeHandle get_class_type() {

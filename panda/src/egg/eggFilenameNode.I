@@ -80,14 +80,36 @@ get_filename() const {
 INLINE void EggFilenameNode::
 set_filename(const Filename &filename) {
   _filename = filename;
+  _fullpath = filename;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggFilenameNode::update_filename
+//     Function: EggFilenameNode::get_fullpath
 //       Access: Public
-//  Description: Returns a modifiable reference to the filename.
+//  Description: Returns the full pathname to the file, if it is
+//               known; otherwise, returns the same thing as
+//               get_filename().
+//
+//               This function simply returns whatever was set by the
+//               last call to set_fullpath().  This string is not
+//               written to the egg file; its main purpose is to
+//               record the full path to a filename (for instance, a
+//               texture filename) if it is known, for egg structures
+//               that are generated in-memory and then immediately
+//               converted to a scene graph.
 ////////////////////////////////////////////////////////////////////
-INLINE Filename &EggFilenameNode::
-update_filename() {
-  return _filename;
+INLINE const Filename &EggFilenameNode::
+get_fullpath() const {
+  return _fullpath;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::set_fullpath
+//       Access: Public
+//  Description: Records the full pathname to the file, for the
+//               benefit of get_fullpath().
+////////////////////////////////////////////////////////////////////
+INLINE void EggFilenameNode::
+set_fullpath(const Filename &fullpath) {
+  _fullpath = fullpath;
 }

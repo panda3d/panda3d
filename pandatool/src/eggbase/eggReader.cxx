@@ -176,13 +176,22 @@ handle_args(ProgramBase::Args &args) {
 
     DSearchPath file_path;
     file_path.append_directory(filename.get_dirname());
-    convert_paths(&file_data, _path_replace, file_path);
+
+    // We always resolve filenames first based on the source egg
+    // filename, since egg files almost always store relative paths.
+    // This is a temporary kludge around integrating the path_replace
+    // system with the EggData better.
+    file_data.resolve_filenames(file_path);
     
     if (_force_complete) {
       if (!file_data.load_externals()) {
         exit(1);
       }
     }
+
+    // Now resolve the filenames again according to the user's
+    // specified _path_replace.
+    convert_paths(&file_data, _path_replace, file_path);
 
     _data.merge(file_data);
   }

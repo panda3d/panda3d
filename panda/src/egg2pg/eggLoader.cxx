@@ -477,14 +477,22 @@ load_textures() {
 bool EggLoader::
 load_texture(TextureDef &def, const EggTexture *egg_tex) {
   Texture *tex;
-  if (egg_tex->has_alpha_file()) {
-    tex = TexturePool::load_texture(egg_tex->get_filename(),
-                                    egg_tex->get_alpha_file());
+  if (egg_tex->has_alpha_filename()) {
+    tex = TexturePool::load_texture(egg_tex->get_fullpath(),
+                                    egg_tex->get_alpha_fullpath());
   } else {
-    tex = TexturePool::load_texture(egg_tex->get_filename());
+    tex = TexturePool::load_texture(egg_tex->get_fullpath());
   }
   if (tex == (Texture *)NULL) {
     return false;
+  }
+
+  // Record the original original filenames in the textures (as loaded
+  // from the egg file).  These filenames will be written back to the
+  // bam file if the bam file is written out.
+  tex->set_filename(egg_tex->get_filename());
+  if (egg_tex->has_alpha_filename()) {
+    tex->set_alpha_filename(egg_tex->get_alpha_filename());
   }
 
   apply_texture_attributes(tex, egg_tex);

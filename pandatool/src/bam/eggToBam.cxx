@@ -86,6 +86,7 @@ EggToBam() :
      "one of 'y-up', 'z-up', 'y-up-left', or 'z-up-left'.  The default "
      "is z-up.");
 
+  _force_complete = true;
   _egg_flatten = 0;
 }
 

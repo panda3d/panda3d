@@ -299,7 +299,7 @@ transform_is_identity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::set_alpha_file
+//     Function: EggTexture::set_alpha_filename
 //       Access: Public
 //  Description: Specifies a separate file that will be loaded in with
 //               the 1- or 3-component texture and applied as the
@@ -308,60 +308,78 @@ transform_is_identity() const {
 //               instance jpg.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
-set_alpha_file(const Filename &alpha_file) {
-  _alpha_file = alpha_file;
-  _flags |= F_has_alpha_file;
+set_alpha_filename(const Filename &alpha_filename) {
+  _alpha_filename = alpha_filename;
+  _alpha_fullpath = alpha_filename;
+  _flags |= F_has_alpha_filename;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::clear_alpha_file
+//     Function: EggTexture::clear_alpha_filename
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
-clear_alpha_file() {
-  _alpha_file = Filename();
-  _flags &= ~F_has_alpha_file;
+clear_alpha_filename() {
+  _alpha_filename = Filename();
+  _alpha_fullpath = Filename();
+  _flags &= ~F_has_alpha_filename;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::has_alpha_file
+//     Function: EggTexture::has_alpha_filename
 //       Access: Public
 //  Description: Returns true if a separate file for the alpha
 //               component has been applied, false otherwise.  See
-//               set_alpha_file().
+//               set_alpha_filename().
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggTexture::
-has_alpha_file() const {
-  return (_flags & F_has_alpha_file) != 0;
+has_alpha_filename() const {
+  return (_flags & F_has_alpha_filename) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::get_alpha_file
+//     Function: EggTexture::get_alpha_filename
 //       Access: Public
 //  Description: Returns the separate file assigned for the alpha
 //               channel.  It is an error to call this unless
-//               has_alpha_file() returns true.  See set_alpha_file().
+//               has_alpha_filename() returns true.  See set_alpha_filename().
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &EggTexture::
-get_alpha_file() const {
-  nassertr(has_alpha_file(), _alpha_file);
-  return _alpha_file;
+get_alpha_filename() const {
+  nassertr(has_alpha_filename(), _alpha_filename);
+  return _alpha_filename;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::update_alpha_file
+//     Function: EggTexture::get_alpha_fullpath
 //       Access: Public
-//  Description: Returns a modifiable reference to the separate file
-//               assigned for the alpha channel.  If an alpha file has
-//               not yet been added, this adds an empty one.
+//  Description: Returns the full pathname to the alpha file, if it is
+//               known; otherwise, returns the same thing as
+//               get_alpha_filename().
+//
+//               This function simply returns whatever was set by the
+//               last call to set_alpha_fullpath().  This string is
+//               not written to the egg file; its main purpose is to
+//               record the full path to the alpha filename if it is
+//               known, for egg structures that are generated
+//               in-memory and then immediately converted to a scene
+//               graph.
 ////////////////////////////////////////////////////////////////////
-INLINE Filename &EggTexture::
-update_alpha_file() {
-  if (!has_alpha_file()) {
-    set_alpha_file(Filename());
-  }
-  return _alpha_file;
+INLINE const Filename &EggTexture::
+get_alpha_fullpath() const {
+  return _alpha_fullpath;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_alpha_fullpath
+//       Access: Public
+//  Description: Records the full pathname to the file, for the
+//               benefit of get_alpha_fullpath().
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_alpha_fullpath(const Filename &alpha_fullpath) {
+  _alpha_fullpath = alpha_fullpath;
 }
 
 ////////////////////////////////////////////////////////////////////
