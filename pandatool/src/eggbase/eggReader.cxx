@@ -21,6 +21,10 @@
 #include "pnmImage.h"
 #include "config_util.h"
 #include "eggTextureCollection.h"
+#include "eggGroup.h"
+#include "eggGroupNode.h"
+#include "eggSwitchCondition.h"
+#include "string_utils.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggReader::Constructor
@@ -45,6 +49,7 @@ EggReader() {
      &EggReader::dispatch_none, &_force_complete);
 
   _tex_type = (PNMFileType *)NULL;
+  _delod = -1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +61,7 @@ EggReader() {
 //               converted as each egg file is read.
 //
 //               Note that if you call this function to add these
-//               options, you must call copy_textures() at the
+//               options, you must call do_reader_options() at the
 //               appropriate point before or during processing to
 //               execute the options if the user specified them.
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +90,40 @@ add_texture_options() {
      "the extension is insufficient to unambiguously specify an image "
      "type.",
      &EggReader::dispatch_image_type, NULL, &_tex_type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggRead::add_delod_options
+//       Access: Public
+//  Description: Adds -delod as a valid option for this program.
+//
+//               Note that if you call this function to add these
+//               options, you must call do_reader_options() at the
+//               appropriate point before or during processing to
+//               execute the options if the user specified them.
+////////////////////////////////////////////////////////////////////
+void EggReader::
+add_delod_options(double default_delod) {
+  _delod = default_delod;
+
+  if (default_delod < 0) {
+    add_option
+      ("delod", "dist", 40,
+       "Eliminate LOD's by choosing the level that would be appropriate for "
+       "a camera at the indicated fixed distance from each LOD.  "
+       "Use -delod -1 to keep all the LOD's as they are, which is "
+       "the default.\n",
+       &EggReader::dispatch_double, NULL, &_delod);
+
+  } else {
+    add_option
+      ("delod", "dist", 40,
+       "Eliminate LOD's by choosing the level that would be appropriate for "
+       "a camera at the indicated fixed distance from each LOD.  "
+       "Use -delod -1 to keep all the LOD's as they are.  The default value "
+       "is " + format_string(default_delod),
+       &EggReader::dispatch_double, NULL, &_delod);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,8 +201,33 @@ post_command_line() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggReader::copy_textures
+//     Function: EggReader::do_reader_options
 //       Access: Protected
+//  Description: Postprocesses the egg file as the user requested
+//               according to whatever command-line options are in
+//               effect.  Returns true if everything is done
+//               correctly, false if there was some problem.
+////////////////////////////////////////////////////////////////////
+bool EggReader::
+do_reader_options() {
+  bool okflag = true;
+
+  if (_got_tex_dirname || _got_tex_extension) {
+    if (!copy_textures()) {
+      okflag = false;
+    }
+  }
+
+  if (_delod >= 0.0) {
+    do_delod(&_data);
+  }
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggReader::copy_textures
+//       Access: Private
 //  Description: Renames and copies the textures referenced in the egg
 //               file, if so specified by the -td and -te options.
 //               Returns true if all textures are copied successfully,
@@ -171,10 +235,6 @@ post_command_line() {
 ////////////////////////////////////////////////////////////////////
 bool EggReader::
 copy_textures() {
-  if (!_got_tex_dirname && !_got_tex_extension) {
-    return true;
-  }
-
   bool success = true;
   EggTextureCollection textures;
   textures.find_used_textures(&_data);
@@ -227,4 +287,57 @@ copy_textures() {
   }
 
   return success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggReader::do_delod
+//       Access: Private
+//  Description: Removes all the LOD's in the egg file by treating the
+//               camera as being _delod distance from each LOD.
+//               Returns true if this particular group should be
+//               preserved, false if it should be removed.
+////////////////////////////////////////////////////////////////////
+bool EggReader::
+do_delod(EggNode *node) {
+  if (node->is_of_type(EggGroup::get_class_type())) {
+    EggGroup *group = DCAST(EggGroup, node);
+    if (group->has_lod()) {
+      const EggSwitchCondition &cond = group->get_lod();
+      if (cond.is_of_type(EggSwitchConditionDistance::get_class_type())) {
+        const EggSwitchConditionDistance *dist = 
+          DCAST(EggSwitchConditionDistance, &cond);
+        if (_delod >= dist->_switch_out && _delod < dist->_switch_in) {
+          // Preserve this group node, but not the LOD information
+          // itself.
+          nout << "Preserving LOD " << node->get_name() 
+               << " (" << dist->_switch_out << " to " << dist->_switch_in
+               << ")\n";
+          group->clear_lod();
+        } else {
+          // Remove this group node.
+          nout << "Eliminating LOD " << node->get_name()
+               << " (" << dist->_switch_out << " to " << dist->_switch_in
+               << ")\n";
+          return false;
+        }
+      }
+    }
+  }
+
+  // Now process all the children.
+  if (node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *group = DCAST(EggGroupNode, node);
+    EggGroupNode::iterator ci;
+    ci = group->begin();
+    while (ci != group->end()) {
+      EggNode *child = *ci;
+      ++ci;
+
+      if (!do_delod(child)) {
+        group->remove_child(child);
+      }
+    }
+  }
+
+  return true;
 }

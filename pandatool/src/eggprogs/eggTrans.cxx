@@ -30,6 +30,7 @@ EggTrans() {
   add_normals_options();
   add_transform_options();
   add_texture_options();
+  add_delod_options();
 
   set_program_description
     ("egg-trans reads an egg file and writes an essentially equivalent "
@@ -112,7 +113,7 @@ run() {
     uniquifier.uniquify(&_data);
   }
 
-  if (!copy_textures()) {
+  if (!do_reader_options()) {
     exit(1);
   }
 

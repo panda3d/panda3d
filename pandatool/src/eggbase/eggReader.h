@@ -36,6 +36,7 @@ public:
   EggReader();
 
   void add_texture_options();
+  void add_delod_options(double default_delod = -1.0);
   
   virtual EggReader *as_reader();
 
@@ -43,7 +44,11 @@ protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
+  bool do_reader_options();
+
+private:
   bool copy_textures();
+  bool do_delod(EggNode *node);
 
 protected:
   bool _force_complete;
@@ -54,6 +59,7 @@ private:
   string _tex_extension;
   bool _got_tex_extension;
   PNMFileType *_tex_type;
+  double _delod;
 };
 
 #endif
