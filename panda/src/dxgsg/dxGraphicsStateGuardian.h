@@ -343,17 +343,13 @@ protected:
 
   // these are used for fastpaths that bypass the iterators above
   // pointers to arrays in current geom, used to traverse indexed and non-indexed arrays
-  PTA_Vertexf _coords;
-  Vertexf *_pCurCoord;
-  PTA_ushort _vindexes;
-  ushort *_pCurCoordIndex;  
+  Vertexf *_coord_array,*_pCurCoord;
+  ushort *_coordindex_array,*_pCurCoordIndex;
 
-  PTA_TexCoordf _texcoords;
-  TexCoordf *_pCurTexCoord;
-  PTA_ushort _texcoord_indexes;
-  ushort *_pCurTexCoordIndex;  
+  TexCoordf *_texcoord_array,*_pCurTexCoord;
+  ushort *_texcoordindex_array,*_pCurTexCoordIndex;
 
-/*  not used yet
+/*
   PTA_Normalf _norms;
   PTA_Colorf _colors;
   PTA_ushort _cindexes,_nindexes;

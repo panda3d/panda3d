@@ -1788,6 +1788,30 @@ transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::wants_colors
+//       Access: Public, Virtual
+//  Description: Returns true if the GSG should issue geometry color
+//               commands, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool DXGraphicsStateGuardian::
+wants_colors() const {
+    // If we have scene graph color enabled, return false to indicate we
+    // shouldn't bother issuing geometry color commands.
+
+    const ColorTransition *catt;
+    if (!get_attribute_into(catt, this)) {
+        // No scene graph color at all.
+        return true;
+    }
+
+    // We should issue geometry colors only if the scene graph color is off.
+    if (catt->is_off() || (!catt->is_real()))
+        return true;
+
+    return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_prim_setup
 //       Access: Private
 //  Description: This adds data to the flexible vertex format
@@ -1815,12 +1839,16 @@ draw_prim_setup(const Geom *geom) {
 ////////
     
    // this stuff should eventually replace the iterators below
-   geom->get_coords(_coords,_vindexes);
-   if(_vindexes!=NULL) {
-      _pCurCoordIndex = &_vindexes[0];
+   PTA_Vertexf coords;
+   PTA_ushort vindexes;
+
+   geom->get_coords(coords,vindexes);
+   if(vindexes!=NULL) {
+      _pCurCoordIndex = _coordindex_array = &vindexes[0];
    } else {
-      _pCurCoord = &_coords[0];
+      _pCurCoordIndex = _coordindex_array = NULL;
    }
+   _pCurCoord = _coord_array = &coords[0];
 
    ///////////////
 
@@ -1862,15 +1890,18 @@ draw_prim_setup(const Geom *geom) {
 
 
    GeomBindType TexCoordBinding;
-   geom->get_texcoords(_texcoords,TexCoordBinding,_texcoord_indexes);
+   PTA_TexCoordf texcoords;
+   PTA_ushort tindexes;
+   geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
    if (TexCoordBinding != G_OFF) {
-
        // used by faster path
-       if(_texcoord_indexes!=NULL) {
-           _pCurTexCoordIndex = &_texcoord_indexes[0];
+       if(tindexes!=NULL) {
+          _pCurTexCoordIndex = _texcoordindex_array = &tindexes[0];
        } else {
-           _pCurTexCoord = &_texcoords[0];
+          _pCurTexCoordIndex = _texcoordindex_array = NULL;
        }
+       _pCurTexCoord = _texcoord_array = &texcoords[0];
+       //////
 
        ti = geom->make_texcoord_iterator();
        _curFVFflags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
@@ -1895,30 +1926,6 @@ draw_prim_setup(const Geom *geom) {
    set_shademode(needed_shademode);
 
    return vertex_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::wants_colors
-//       Access: Public, Virtual
-//  Description: Returns true if the GSG should issue geometry color
-//               commands, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool DXGraphicsStateGuardian::
-wants_colors() const {
-    // If we have scene graph color enabled, return false to indicate we
-    // shouldn't bother issuing geometry color commands.
-
-    const ColorTransition *catt;
-    if (!get_attribute_into(catt, this)) {
-        // No scene graph color at all.
-        return true;
-    }
-
-    // We should issue geometry colors only if the scene graph color is off.
-    if (catt->is_off() || (!catt->is_real()))
-        return true;
-
-    return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1977,31 +1984,28 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
-    // inc'ing local ptrs avoids 'this' ptr derefs for member fields
+    // assumes coord and texcoord data is per-vertex, color is not per-vert, and no normal data
+    // this should be common situation for animated character data
+    // inc'ing local ptrs instead of member ones, seems to optimize better
     // bypass all the slow vertex iterator stuff
 
-    Vertexf *pCurVert = _pCurCoord;
-    ushort *pCurVertIndex = _pCurCoordIndex;
+    Vertexf *pCurCoord = _pCurCoord;
+    ushort *pCurCoordIndex = _pCurCoordIndex;
     TexCoordf *pCurTexCoord = _pCurTexCoord;
     ushort *pCurTexCoordIndex = _pCurTexCoordIndex;
-    char *LocalFvfBufPtr=_pCurFvfBufPtr;
+
+    char *LocalFvfBufPtr = _pCurFvfBufPtr;
     DWORD cur_color = _curD3Dcolor;
-    bool bDoIndexedTexCoords = (_texcoord_indexes != NULL);
-    bool bDoIndexedCoords = (_vindexes != NULL);
+    bool bDoIndexedTexCoords = (_texcoordindex_array != NULL);
+    bool bDoIndexedCoords = (_coordindex_array != NULL);
 
-    if(bDoIndexedTexCoords)
-        pCurTexCoord=&_texcoords[0];
-
-    if(bDoIndexedCoords)
-        pCurVert=&_coords[0];
-
-    for(;nVerts > 0;nVerts--) {
+    for(;nVerts>0;nVerts--) {
         if(bDoIndexedCoords) {
-           memcpy(LocalFvfBufPtr,(void*)&pCurVert[*pCurVertIndex],sizeof(D3DVECTOR));
-           pCurVertIndex++;           
+           memcpy(LocalFvfBufPtr,(void*)&_coord_array[*pCurCoordIndex],sizeof(D3DVECTOR));
+           pCurCoordIndex++;           
         } else {
-           memcpy(LocalFvfBufPtr,(void*)pCurVert,sizeof(D3DVECTOR));
-           pCurVert++;
+           memcpy(LocalFvfBufPtr,(void*)pCurCoord,sizeof(D3DVECTOR));
+           pCurCoord++;
         }
 
         LocalFvfBufPtr+=sizeof(D3DVECTOR);
@@ -2010,7 +2014,7 @@ draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
         LocalFvfBufPtr += sizeof(DWORD);
 
         if(bDoIndexedTexCoords) {
-           memcpy(LocalFvfBufPtr,(void*)&pCurTexCoord[*pCurTexCoordIndex],sizeof(TexCoordf));
+           memcpy(LocalFvfBufPtr,(void*)&_texcoord_array[*pCurTexCoordIndex],sizeof(TexCoordf));
            pCurTexCoordIndex++;
         } else {
            memcpy(LocalFvfBufPtr,(void*)pCurTexCoord,sizeof(TexCoordf));
@@ -2020,8 +2024,8 @@ draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
     }
 
     _pCurFvfBufPtr=LocalFvfBufPtr;
-    _pCurCoord = pCurVert;
-    _pCurCoordIndex = pCurVertIndex;
+    _pCurCoord = pCurCoord;
+    _pCurCoordIndex = pCurCoordIndex;
     _pCurTexCoord = pCurTexCoord;
     _pCurTexCoordIndex = pCurTexCoordIndex;
 }
