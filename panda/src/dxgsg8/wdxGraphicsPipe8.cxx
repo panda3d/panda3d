@@ -570,8 +570,8 @@ search_for_valid_displaymode(DXScreenData &scrn,
       if (bVerboseMode) {
         wdxdisplay8_cat.info()
           << "Mode dimension " << dispmode.Width << "x" << dispmode.Height
-          << " and format " << dispmode.Format
-          << ": continuing onto next mode\n";
+          << "; format " << D3DFormatStr(dispmode.Format)
+          << ": onto next mode\n";
       }
       continue;
     }
