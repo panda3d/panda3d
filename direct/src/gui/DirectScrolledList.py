@@ -6,6 +6,7 @@ class DirectScrolledList(DirectFrame):
     def __init__(self, parent = aspect2d, **kw):
 
         self.index = 0
+        self.forceHeight = None
 
         # If one were to want a scrolledList that makes and adds its items
         #   as needed, simply pass in an items list of strings (type 'str')
@@ -23,6 +24,7 @@ class DirectScrolledList(DirectFrame):
             ('itemMakeExtraArgs',  [],        None),
             ('numItemsVisible',    1,         self.setNumItemsVisible),
             ('scrollSpeed',        8,         self.setScrollSpeed),
+            ('forceHeight',        None,      self.setForceHeight),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -53,12 +55,19 @@ class DirectScrolledList(DirectFrame):
         #    self.scrollTo(0)
         self.scrollTo(0)
         
+    def setForceHeight(self):
+        self.forceHeight = self["forceHeight"]
 
     def recordMaxHeight(self):
+        if self.forceHeight is not None:
+            self.maxHeight = self.forceHeight
+            return
+        
         self.maxHeight = 0.0
         for item in self["items"]:
             if item.__class__.__name__ != 'str':
                 self.maxHeight = max(self.maxHeight, item.getHeight())
+        return
         
     def setScrollSpeed(self):
         # Items per second to move

@@ -859,6 +859,8 @@ class ShowBase:
         imageName = ('%s-%s-%d.%s' % (namePrefix, date, frameCount, self.screenshotExtension))
         self.notify.info("Taking screenshot: " + imageName)
         takeSnapshot(self.win, imageName)
+        # Announce to anybody that a screenshot has been taken
+        messenger.send('screenshot')
 
     def movie(self, namePrefix = 'movie', duration = 1.0, fps = 30,
               format = 'rgb', sd = 4):
