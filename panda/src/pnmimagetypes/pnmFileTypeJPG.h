@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_JPEG
+
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
@@ -120,6 +122,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#endif
+#endif  // HAVE_JPEG
 
+#endif
 

@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeTIFF.h"
+
+#ifdef HAVE_TIFF
+
 #include "config_pnmimagetypes.h"
 
 #include "pnmFileTypeRegistry.h"
@@ -217,7 +220,7 @@ TypeHandle PNMFileTypeTIFF::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::
 PNMFileTypeTIFF() {
-  // This constructor may run at static init type, so we use the ->
+  // This constructor may run at static init time, so we use the ->
   // dereferencing convention on the notify category.
   if (pnmimage_tiff_cat->is_debug()) {
     pnmimage_tiff_cat->debug()
@@ -987,3 +990,5 @@ TypedWritable *PNMFileTypeTIFF::
 make_PNMFileTypeTIFF(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
 }
+
+#endif  // HAVE_TIFF

@@ -105,10 +105,10 @@
 #set JPEG_LIBS $[JPEG_LIBS]
 #set HAVE_JPEG $[HAVE_JPEG]
 
-#set JPEG2000_IPATH $[unixfilename $[JPEG2000_IPATH]]
-#set JPEG2000_LPATH $[unixfilename $[JPEG2000_LPATH]]
-#set JPEG2000_LIBS $[JPEG2000_LIBS]
-#set HAVE_JPEG2000 $[HAVE_JPEG2000]
+#set PNG_IPATH $[unixfilename $[PNG_IPATH]]
+#set PNG_LPATH $[unixfilename $[PNG_LPATH]]
+#set PNG_LIBS $[PNG_LIBS]
+#set HAVE_PNG $[HAVE_PNG]
 
 #set TIFF_IPATH $[unixfilename $[TIFF_IPATH]]
 #set TIFF_LPATH $[unixfilename $[TIFF_LPATH]]
@@ -134,6 +134,12 @@
 #set GL_LPATH $[unixfilename $[GL_LPATH]]
 #set GL_LIBS $[GL_LIBS]
 #set HAVE_GL $[HAVE_GL]
+
+#set MESA_IPATH $[unixfilename $[MESA_IPATH]]
+#set MESA_LPATH $[unixfilename $[MESA_LPATH]]
+#set MESA_LIBS $[MESA_LIBS]
+#set MESA_MGL $[MESA_MGL]
+#set HAVE_MESA $[HAVE_MESA]
 
 #set CHROMIUM_IPATH $[unixfilename $[CHROMIUM_IPATH]]
 #set CHROMIUM_LPATH $[unixfilename $[CHROMIUM_LPATH]]

@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeJPG.h"
+
+#ifdef HAVE_JPEG
+
 #include "config_pnmimagetypes.h"
 
 #include "pnmFileTypeRegistry.h"
@@ -164,3 +167,5 @@ TypedWritable *PNMFileTypeJPG::
 make_PNMFileTypeJPG(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
 }
+
+#endif  // HAVE_JPEG

@@ -5,5 +5,6 @@
 #include "pnmFileTypeBMPWriter.cxx"
 #include "pnmFileTypeIMG.cxx"
 #include "pnmFileTypeBMP.cxx"
-
-
+#include "pnmFileTypeJPG.cxx"
+#include "pnmFileTypeJPGReader.cxx"
+#include "pnmFileTypeJPGWriter.cxx"

@@ -160,11 +160,11 @@
   #define jpeg_libs $[JPEG_LIBS]
 #endif
 
-#if $[HAVE_JPEG2000]
-  #define jpeg2000_ipath $[wildcard $[JPEG2000_IPATH]]
-  #define jpeg2000_lpath $[wildcard $[JPEG2000_LPATH]]
-  #define jpeg2000_cflags $[JPEG2000_CFLAGS]
-  #define jpeg2000_libs $[JPEG2000_LIBS]
+#if $[HAVE_PNG]
+  #define png_ipath $[wildcard $[PNG_IPATH]]
+  #define png_lpath $[wildcard $[PNG_LPATH]]
+  #define png_cflags $[PNG_CFLAGS]
+  #define png_libs $[PNG_LIBS]
 #endif
 
 #if $[HAVE_TIFF]

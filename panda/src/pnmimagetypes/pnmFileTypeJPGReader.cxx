@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeJPG.h"
+
+#ifdef HAVE_JPEG
+
 #include "config_pnmimagetypes.h"
 
 
@@ -407,3 +410,5 @@ read_data(xel *array, xelval *) {
 
   return _y_size;
 }
+
+#endif  // HAVE_JPEG

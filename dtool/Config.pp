@@ -215,11 +215,11 @@
 #define JPEG_LIBS jpeg
 #defer HAVE_JPEG $[libtest $[JPEG_LPATH],$[JPEG_LIBS]]
 
-// Is libjasper installed, and where?
-#define JPEG2000_IPATH
-#define JPEG2000_LPATH
-#define JPEG2000_LIBS jasper
-#defer HAVE_JPEG2000 $[libtest $[JPEG2000_LPATH],$[JPEG2000_LIBS]]
+// Is libpng installed, and where?
+#define PNG_IPATH
+#define PNG_LPATH
+#define PNG_LIBS png
+#defer HAVE_PNG $[libtest $[PNG_LPATH],$[PNG_LIBS]]
 
 // Is libtiff installed, and where?
 #define TIFF_IPATH

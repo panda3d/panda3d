@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_TIFF
+
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
@@ -108,6 +110,6 @@ private:
   static TypeHandle _type_handle;
 };
 
+#endif  // HAVE_TIFF
+
 #endif
-
-

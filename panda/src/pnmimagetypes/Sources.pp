@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES tiff jpeg jpeg2000
+#define USE_PACKAGES jpeg png zlib tiff
 
 #begin lib_target
   #define TARGET pnmimagetypes
@@ -8,29 +8,27 @@
     pnmimage
 
   #define COMBINED_SOURCES \
-     $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx \
-     $[if $[HAVE_JPEG], $[TARGET]_composite3.cxx] \
-     $[if $[HAVE_JPEG2000], $[TARGET]_composite4.cxx]
+     $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES  \
      config_pnmimagetypes.h pnmFileTypeAlias.h pnmFileTypeBMP.h  \
      pnmFileTypeIMG.h  \
+     pnmFileTypePNG.cxx pnmFileTypePNG.h \
      pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
      pnmFileTypeTGA.h \
-     $[if $[HAVE_TIFF], pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h] \
-     $[if $[HAVE_JPEG], pnmFileTypeJPG.h] \
-     $[if $[HAVE_JPEG2000], pnmFileTypeJPG2000.h]
+     pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h \
+     pnmFileTypeJPG.h
 
   #define INCLUDED_SOURCES  \
      config_pnmimagetypes.cxx pnmFileTypeAlias.cxx  \
      pnmFileTypeBMPReader.cxx pnmFileTypeBMPWriter.cxx  \
-     pnmFileTypeIMG.cxx pnmFileTypeBMP.cxx  \
-     pnmFileTypeSGI.cxx  \
+     pnmFileTypeBMP.cxx \
+     pnmFileTypeIMG.cxx \
+     pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx \
+     pnmFileTypeSGI.cxx \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
      pnmFileTypeSoftImage.cxx \
      pnmFileTypeTGA.cxx \
-     $[if $[HAVE_JPEG], pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx] \
-     $[if $[HAVE_JPEG2000], pnmFileTypeJPG2000.cxx pnmFileTypeJPG2000Reader.cxx pnmFileTypeJPG2000Writer.cxx]
 
   #define INSTALL_HEADERS \
     config_pnmimagetypes.h

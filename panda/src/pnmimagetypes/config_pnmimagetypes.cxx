@@ -23,15 +23,9 @@
 #include "pnmFileTypeIMG.h"
 #include "pnmFileTypeSoftImage.h"
 #include "pnmFileTypeBMP.h"
-#ifdef HAVE_TIFF
-  #include "pnmFileTypeTIFF.h"
-#endif
-#ifdef HAVE_JPEG
-  #include "pnmFileTypeJPG.h"
-#endif
-#ifdef HAVE_JPEG2000
-  #include "pnmFileTypeJPG2000.h"
-#endif
+#include "pnmFileTypeJPG.h"
+#include "pnmFileTypePNG.h"
+#include "pnmFileTypeTIFF.h"
 #include "sgi.h"
 
 #include "config_pnmimage.h"
@@ -42,13 +36,13 @@
 Configure(config_pnmimagetypes);
 NotifyCategoryDefName(pnmimage_sgi, "sgi", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_alias, "alias", pnmimage_cat);
-NotifyCategoryDefName(pnmimage_tiff, "tiff", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tga, "tga", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_img, "img", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_soft, "soft", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_bmp, "bmp", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_jpg, "jpg", pnmimage_cat);
-NotifyCategoryDefName(pnmimage_jpg2000, "jpg2000", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_png, "png", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_tiff, "tiff", pnmimage_cat);
 
 int sgi_storage_type = STORAGE_RLE;
 const string sgi_imagename = config_pnmimagetypes.GetString("sgi-imagename", "");
@@ -117,14 +111,14 @@ init_libpnmimagetypes() {
   PNMFileTypeIMG::init_type();
   PNMFileTypeSoftImage::init_type();
   PNMFileTypeBMP::init_type();
-#ifdef HAVE_TIFF
-  PNMFileTypeTIFF::init_type();
-#endif
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::init_type();
 #endif
-#ifdef HAVE_JPEG2000
-  PNMFileTypeJPG2000::init_type();
+#ifdef HAVE_PNG
+  PNMFileTypePNG::init_type();
+#endif
+#ifdef HAVE_TIFF
+  PNMFileTypeTIFF::init_type();
 #endif
 
   string sgi_storage_type_str =
@@ -160,14 +154,14 @@ init_libpnmimagetypes() {
   tr->register_type(new PNMFileTypeIMG);
   tr->register_type(new PNMFileTypeSoftImage);
   tr->register_type(new PNMFileTypeBMP);
-#ifdef HAVE_TIFF
-  tr->register_type(new PNMFileTypeTIFF);
-#endif
 #ifdef HAVE_JPEG
   tr->register_type(new PNMFileTypeJPG);
 #endif
-#ifdef HAVE_JPEG2000
-  tr->register_type(new PNMFileTypeJPG2000);
+#ifdef HAVE_PNG
+  tr->register_type(new PNMFileTypePNG);
+#endif
+#ifdef HAVE_TIFF
+  tr->register_type(new PNMFileTypeTIFF);
 #endif
 
   // Also register with the Bam reader.
@@ -177,13 +171,13 @@ init_libpnmimagetypes() {
   PNMFileTypeIMG::register_with_read_factory();
   PNMFileTypeSoftImage::register_with_read_factory();
   PNMFileTypeBMP::register_with_read_factory();
-#ifdef HAVE_TIFF
-  PNMFileTypeTIFF::register_with_read_factory();
-#endif
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::register_with_read_factory();
 #endif
-#ifdef HAVE_JPEG2000
-  PNMFileTypeJPG2000::register_with_read_factory();
+#ifdef HAVE_PNG
+  PNMFileTypePNG::register_with_read_factory();
+#endif
+#ifdef HAVE_TIFF
+  PNMFileTypeTIFF::register_with_read_factory();
 #endif
 }

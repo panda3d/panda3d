@@ -1,5 +1,5 @@
-// Filename: pnmFileTypeJPG2000.h
-// Created by:  mike (17Jun00)
+// Filename: pnmFileTypePNG.h
+// Created by:  drose (16Mar04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PNMFILETYPEJPG2000_H
-#define PNMFILETYPEJPG2000_H
+#ifndef PNMFILETYPEPNG_H
+#define PNMFILETYPEPNG_H
 
 #include "pandabase.h"
+
+#ifdef HAVE_PNG
 
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-#if defined(_WIN32)
-#include <windows.h>  // we need to include this before jpeglib.
-#endif
-
-#include "typedef.h"  // jasper requires this first.
-#include <jasper/jasper.h>
-
-// Undo jasper-inflicted damage.
-#undef bool
+#include <png.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeJPG2000
-// Description : For reading and writing Jpeg2000 files.
+//       Class : PNMFileTypePNG
+// Description : For reading and writing PNG files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileTypeJPG2000 : public PNMFileType {
+class EXPCL_PANDA PNMFileTypePNG : public PNMFileType {
 public:
-  PNMFileTypeJPG2000();
+  PNMFileTypePNG();
 
   virtual string get_name() const;
 
@@ -60,52 +54,47 @@ public:
   class Reader : public PNMReader {
   public:
     Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
-    ~Reader(void);
+    virtual ~Reader();
 
-    virtual int read_data(xel *array, xelval *alpha);
+    virtual int read_data(xel *array, xelval *alpha_data);
 
   private:
-/*
-    // struct jpeg_decompress_struct _cinfo;
-    jas_image_t *image;
-    jas_stream_t *in;
-    jas_stream_t *out;
-*/  
+    void free_png();
+    static void png_read_data(png_structp png_ptr, png_bytep data, 
+                              png_size_t length);
 
+    static void png_error(png_structp png_ptr, png_const_charp error_msg);
+    static void png_warning(png_structp png_ptr, png_const_charp warning_msg);
 
-    struct my_error_mgr {
-      struct jpeg_error_mgr pub;
-      jmp_buf setjmp_buffer;
-    };
-    typedef struct my_error_mgr *_my_error_ptr;
-    struct my_error_mgr _jerr;
-    unsigned long       pos;
+    png_structp _png;
+    png_infop _info;
 
-    unsigned long offBits;
-
-    unsigned short  cBitCount;
-    int             indexed;
-    int             classv;
-
-    pixval R[256];      /* reds */
-    pixval G[256];      /* greens */
-    pixval B[256];      /* blues */
+    // We need a jmp_buf to support libpng's fatal error handling, in
+    // which the error handler must not immediately leave libpng code,
+    // but must return to the caller in Panda.
+    jmp_buf _jmpbuf;
   };
 
+  /*
   class Writer : public PNMWriter {
   public:
     Writer(PNMFileType *type, ostream *file, bool owns_file);
 
     virtual int write_data(xel *array, xelval *alpha);
-  };
 
+  private:
+    static void png_write_data(png_structp png_ptr, png_bytep data, 
+                               png_size_t length);
+    static void png_flush_data(png_structp png_ptr);
+  };
+  */
 
   // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
 
 protected:
-  static TypedWritable *make_PNMFileTypeJPG2000(const FactoryParams &params);
+  static TypedWritable *make_PNMFileTypePNG(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {
@@ -113,7 +102,7 @@ public:
   }
   static void init_type() {
     PNMFileType::init_type();
-    register_type(_type_handle, "PNMFileTypeJPG2000",
+    register_type(_type_handle, "PNMFileTypePNG",
                   PNMFileType::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -125,6 +114,6 @@ private:
   static TypeHandle _type_handle;
 };
 
+#endif  // HAVE_PNG
+
 #endif
-
-
