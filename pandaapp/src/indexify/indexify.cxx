@@ -131,10 +131,15 @@ Indexify() {
      &Indexify::dispatch_none, &_generate_icons);
 
   add_option
-    ("omitrh", "", 0,
+    ("omit-rh", "", 0,
      "Omits roll headers introducing each roll directory, including any "
      "headers defined in roll.cm files.",
      &Indexify::dispatch_none, &omit_roll_headers);
+
+  add_option
+    ("omit-full", "", 0,
+     "Omits links to the full-size images.",
+     &Indexify::dispatch_none, &omit_full_links);
 
   add_option
     ("caption", "size[,spacing]", 0,

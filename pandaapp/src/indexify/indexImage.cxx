@@ -466,9 +466,11 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
     << " height=" << photo->_reduced_y_size << " alt=\"" << photo->get_name()
     << "\"></a></p>\n";
 
-  html
-    << "<p><a href=\"" << full << "\">View full size image ("
-    << photo->_full_x_size << " x " << photo->_full_y_size << ")</a></p>";
+  if (!omit_full_links) {
+    html
+      << "<p><a href=\"" << full << "\">View full size image ("
+      << photo->_full_x_size << " x " << photo->_full_y_size << ")</a></p>";
+  }
 
   generate_nav_buttons(html, prev_photo_filename, next_photo_filename,
                        up_href);

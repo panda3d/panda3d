@@ -93,6 +93,9 @@ extern bool draw_frames;
 // it exists.
 extern bool omit_roll_headers;
 
+// True to omit links to the full-size source images.
+extern bool omit_full_links;
+
 // True to caption photos with just a frame number instead of the
 // whole image basename.  This only works if the photo image filenames
 // consist of the roll directory name concatenated with a frame number.

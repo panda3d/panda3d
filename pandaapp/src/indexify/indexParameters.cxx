@@ -47,6 +47,7 @@ bool format_rose = false;
 bool dummy_mode = false;
 bool draw_frames = false;
 bool omit_roll_headers = false;
+bool omit_full_links = false;
 bool caption_frame_numbers = false;
 
 
