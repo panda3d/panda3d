@@ -937,44 +937,117 @@ void event_x(CPT_Event) {
 #define RANDFRAC (rand()/(float)(RAND_MAX))
 
 typedef struct {
-  float xcenter,ycenter;
-  float xoffset,yoffset;
-  float ang1,ang1_inc;
-  float ang2,ang2_inc;
-  float radius;
+	// for rot moving
+	float xcenter,ycenter;
+	float xoffset,yoffset;
+	float ang1,ang1_vel;
+	float ang2,ang2_vel;
+	
+	float radius;
+
+	// for moving
+	float xstart,ystart;
+	float xend,yend;
+	float xdel,ydel,timedel;
+	double starttime,endtime;
+    double vel;
+	LMatrix4f rotmat;
 } gridded_file_info;
 
+typedef enum {None,Rotation,LinearMotion} GriddedMotionType;
+
+#define GRIDCELLSIZE 5.0
+static int gridwidth;  // cells/side
+
+#define MIN_WANDERAREA_DIMENSION 120.0
+
+static float grid_pos_offset;  // origin of grid
+static float wander_area_pos_offset;  
+
 // making these fns to get around ridiculous VC++ matrix inlining bugs at Opt2
-void move_gridded_stuff(gridded_file_info *InfoArr, RenderRelation **pRRptrArr,
-                   int size) {
+static void move_gridded_stuff(GriddedMotionType gridmotiontype,gridded_file_info *InfoArr, RenderRelation **pRRptrArr, int size) {
+
+  double now = ClockObject::get_global_clock()->get_frame_time();
+
+  LMatrix4f tmat1,tmat2,xfm_mat;
 
   for(int i = 0; i < size; i++) {
-    InfoArr[i].ang1+=InfoArr[i].ang1_inc;
-    InfoArr[i].ang2+=InfoArr[i].ang2_inc;
-    
-    // xforms happen left to right
-    LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
-      LMatrix3f::rotate_mat(InfoArr[i].ang2);
+	double time_delta = (now-InfoArr[i].starttime);
 
-    LVector3f translate_vec(InfoArr[i].xcenter+new_center._v.v._0,
-                            InfoArr[i].ycenter+new_center._v.v._1,
-                            0.0);
-    
-	LMatrix4f tmat1,tmat2,xfm_mat;
+	#define DO_FP_MODULUS(VAL,MAXVAL)  \
+	  {if(VAL > MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL-idivresult*MAXVAL;} else  \
+	  if(VAL < -MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL+idivresult*MAXVAL;}}
+	
+	// probably should use panda lerps for this stuff, but I dont understand how
 
-	LVector3f rotation_axis(0.0, 0.0, 1.0);
+    if(gridmotiontype==Rotation) {
+	
+		InfoArr[i].ang1=time_delta*InfoArr[i].ang1_vel;
+		DO_FP_MODULUS(InfoArr[i].ang1,360.0);
+		InfoArr[i].ang2=time_delta*InfoArr[i].ang2_vel;
+		DO_FP_MODULUS(InfoArr[i].ang2,360.0);
+		
+		// xforms happen left to right
+		LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
+		  LMatrix3f::rotate_mat(InfoArr[i].ang1);
+	
+		LVector3f translate_vec(InfoArr[i].xcenter+new_center._v.v._0,
+								InfoArr[i].ycenter+new_center._v.v._1,
+								0.0);
+	
+		const LVector3f rotation_axis(0.0, 0.0, 1.0);
+	
+		tmat1 = LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang2,rotation_axis);
+		tmat2 = LMatrix4f::translate_mat(translate_vec);
+		xfm_mat = tmat1 * tmat2;
+	} else {
+		  
+		  float xpos,ypos;
 
-    tmat1 = LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang1,rotation_axis);
-    tmat2 = LMatrix4f::translate_mat(translate_vec);
-    xfm_mat = tmat1 * tmat2;
+		  if(now>InfoArr[i].endtime) {
+			  InfoArr[i].starttime = now;
+
+			  xpos = InfoArr[i].xstart = InfoArr[i].xend;
+			  ypos = InfoArr[i].ystart = InfoArr[i].yend;
+/*
+			  if(InfoArr[i].xend == -wander_area_pos_offset) {
+				  InfoArr[i].xend = wander_area_pos_offset;
+				  InfoArr[i].yend = wander_area_pos_offset;
+			  } else {
+				  InfoArr[i].xend = -wander_area_pos_offset;
+				  InfoArr[i].yend = -wander_area_pos_offset;
+
+			  }
+*/
+
+			  InfoArr[i].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+			  InfoArr[i].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+
+			  float xdel = InfoArr[i].xdel = InfoArr[i].xend-InfoArr[i].xstart;
+			  float ydel = InfoArr[i].ydel = InfoArr[i].yend-InfoArr[i].ystart;
+
+			  InfoArr[i].endtime = now + csqrt(xdel*xdel+ydel*ydel)/InfoArr[i].vel;
+			  InfoArr[i].timedel = InfoArr[i].endtime - InfoArr[i].starttime;
+
+			  const LVector3f rotate_axis(0.0, 0.0, 1.0);
+
+			  float ang = rad_2_deg(atan2(-xdel,ydel));
+
+              InfoArr[i].rotmat= LMatrix4f::rotate_mat_normaxis(ang,rotate_axis);
+		  } else {
+			  float timefrac= time_delta/InfoArr[i].timedel;
+
+			  xpos = InfoArr[i].xdel*timefrac+InfoArr[i].xstart;
+			  ypos = InfoArr[i].ydel*timefrac+InfoArr[i].ystart;
+		  }
+
+		  LVector3f translate_vec(xpos, ypos, 0.0);
+		  LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+
+		  xfm_mat = InfoArr[i].rotmat * tmat2;
+	}
     pRRptrArr[i]->set_transition(new TransformTransition(xfm_mat));
   }
-}
-
-void make_xfm_mat(LVector3f &rotate_axis,LVector3f &translate_vec,float ang,LMatrix4f *xfm_mat) {
-	  LMatrix4f tmat1 = LMatrix4f::rotate_mat_normaxis(ang,rotate_axis);
-      LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
-	  *xfm_mat = tmat1 * tmat2;
 }
 
 int framework_main(int argc, char *argv[]) {
@@ -1025,6 +1098,9 @@ int framework_main(int argc, char *argv[]) {
   Files *pFileCollection = &files;
 
   int gridrepeats=1;
+  GriddedMotionType gridmotiontype = None;
+
+  bool bRotateGriddedObjs = false;
   bool bMoveGriddedObjs = false;
 
   for (int a = 1; a < argc; a++) {
@@ -1032,8 +1108,12 @@ int framework_main(int argc, char *argv[]) {
 	((argv[a])[0] != '+') && ((argv[a])[0] != '#'))
       pFileCollection->push_back(Filename::from_os_specific(argv[a]));
 	else switch((argv[a])[1]) {
-			  case 'r': 
-				 bMoveGriddedObjs = true;
+			 case 'r': 
+				 gridmotiontype = Rotation;
+				 break;
+
+			 case 'm': 
+				 gridmotiontype = LinearMotion;
 				 break;
 
 			  case 'g': {
@@ -1271,86 +1351,128 @@ int framework_main(int argc, char *argv[]) {
 		InfoArr = new gridded_file_info[gridded_files.size()*gridrepeats];
 
 
-		int i=0;
+		int j=0;
 
-		for (fi = gridded_files.begin(); fi != gridded_files.end(); (++fi),i++) {
+		for (fi = gridded_files.begin(); fi != gridded_files.end(); (++fi),j++) {
 			  Filename filename = (*fi);
 		
 			  filename.resolve_filename(local_path);
 		
-			  pNodeArr[i] = loader.load_sync(filename);
+			  pNodeArr[j] = loader.load_sync(filename);
 		
-			  if (pNodeArr[i] == (Node *)NULL) {
+			  if (pNodeArr[j] == (Node *)NULL) {
 				  framework_cat.error() << "Unable to load file " << filename << "\n";
-				  i--;
+				  j--;
 				  gridded_files_size--;
 				  continue;
 			  }
 		}
 	
-		#define GRIDCELLSIZE 5.0
-		#define ROTATION_INCREMENT 6.0
-		#define REVOLUTION_INCREMENT 3.0
-		#define MAX_RADIUS 4.0*GRIDCELLSIZE
-		#define MIN_RADIUS 0.1*GRIDCELLSIZE		
-		 
-		int gridwidth=1;
+		gridwidth=1;
 		while(gridwidth*gridwidth < gridded_files_size*gridrepeats) {
 			gridwidth++;
 		}
-	
-		float xpos= -gridwidth*GRIDCELLSIZE/2.0;
-		float ypos = xpos;
+
+		grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
+		wander_area_pos_offset = -max(fabs(grid_pos_offset),MIN_WANDERAREA_DIMENSION/2.0);
+
+		float xpos = grid_pos_offset;
+		float ypos = grid_pos_offset;
 		int filenum=0;
 
 		srand( (unsigned)time( NULL ) );
+
+		double now = ClockObject::get_global_clock()->get_frame_time();
 	
 		for(int passnum=0;passnum<gridrepeats;passnum++) {
-  		  for (i = 0; i < gridded_files_size; i++,filenum++) {
+  		  for (j = 0; j < gridded_files_size; j++,filenum++) {
 
 			  if(passnum>0) {
 				// cant directly instance characters due to LOD problems,
 				// must copy using copy_subgraph for now
 
-				  pNodeArr[filenum] = pNodeArr[i]->copy_subgraph(RenderRelation::get_class_type());
+				  pNodeArr[filenum] = pNodeArr[j]->copy_subgraph(RenderRelation::get_class_type());
 			  }
 
 			  pRRptrArr[filenum] = new RenderRelation(root, pNodeArr[filenum]);
 
-			  LMatrix4f xfm_mat;
+			  LMatrix4f xfm_mat,tmat1,tmat2;
 
-			  if(bMoveGriddedObjs) {
+			  if(gridmotiontype==Rotation) {
+
+				  #define MIN_REVOLUTION_ANGVEL 30
+				  #define MAX_REVOLUTION_ANGVEL 60
+
+				  #define MIN_ROTATION_ANGVEL 30
+				  #define MAX_ROTATION_ANGVEL 600
+
+				  #define MAX_RADIUS 4.0*GRIDCELLSIZE
+				  #define MIN_RADIUS 0.1*GRIDCELLSIZE		
+				  
+				  InfoArr[filenum].starttime = now;
 
 				  InfoArr[filenum].xcenter=xpos;
 				  InfoArr[filenum].ycenter=ypos;
 				  InfoArr[filenum].ang1=RANDFRAC * 360.0;
-				  InfoArr[filenum].ang1_inc=ROTATION_INCREMENT;
+				  InfoArr[filenum].ang1_vel=((MAX_REVOLUTION_ANGVEL-MIN_REVOLUTION_ANGVEL) * RANDFRAC) + MIN_REVOLUTION_ANGVEL;
 				  
 				  InfoArr[filenum].ang2=RANDFRAC * 360.0;
-				  InfoArr[filenum].ang2_inc=REVOLUTION_INCREMENT;
+				  InfoArr[filenum].ang2_vel=((MAX_ROTATION_ANGVEL-MIN_ROTATION_ANGVEL) * RANDFRAC) + MIN_ROTATION_ANGVEL;
 	
 				  InfoArr[filenum].radius = (RANDFRAC * (MAX_RADIUS-MIN_RADIUS)) + MIN_RADIUS;
 	
 				  if(RANDFRAC>0.5) {
-					  InfoArr[filenum].ang1_inc=-InfoArr[filenum].ang1_inc;
+					  InfoArr[filenum].ang1_vel=-InfoArr[filenum].ang1_vel;
 				  }
 
 				  if(RANDFRAC>0.5) {
-					  InfoArr[filenum].ang2_inc=-InfoArr[filenum].ang2_inc;
+					  InfoArr[filenum].ang2_vel=-InfoArr[filenum].ang2_vel;
 				  }
-
+				  
 				  // xforms happen left to right
 				  LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) * 
-					           LMatrix3f::rotate_mat(InfoArr[filenum].ang2);
+					           LMatrix3f::rotate_mat(InfoArr[filenum].ang1);
 
-				  LVector3f rotate_axis(0.0, 0.0, 1.0);
+				  const LVector3f rotate_axis(0.0, 0.0, 1.0);
 
 				  LVector3f translate_vec(xpos+new_center._v.v._0, 
 										  ypos+new_center._v.v._1,
 										  0.0);
-				  // call dumb fn to do math since I cant do it here because of stupid VC bugs
-				  make_xfm_mat(rotate_axis,translate_vec,InfoArr[filenum].ang1,&xfm_mat);
 
+				  LMatrix4f::rotate_mat_normaxis(InfoArr[filenum].ang2,rotate_axis,tmat1);
+				  tmat2 = LMatrix4f::translate_mat(translate_vec);
+				  xfm_mat = tmat1 * tmat2;
+			  } else if(gridmotiontype==LinearMotion) {
+
+				      #define MIN_VEL 2.0
+				      #define MAX_VEL (fabs(wander_area_pos_offset))
+	
+					  InfoArr[filenum].vel=((MAX_VEL-MIN_VEL) * RANDFRAC) + MIN_VEL;
+	
+					  InfoArr[filenum].xstart=xpos;
+					  InfoArr[filenum].ystart=ypos;
+
+					  InfoArr[filenum].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+					  InfoArr[filenum].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+
+					  InfoArr[filenum].starttime = now;
+	
+					  float xdel = InfoArr[filenum].xdel = InfoArr[filenum].xend-InfoArr[filenum].xstart;
+					  float ydel = InfoArr[filenum].ydel = InfoArr[filenum].yend-InfoArr[filenum].ystart;
+
+					  InfoArr[filenum].endtime = csqrt(xdel*xdel+ydel*ydel)/InfoArr[filenum].vel;
+	
+					  InfoArr[filenum].timedel = InfoArr[filenum].endtime - InfoArr[filenum].starttime;
+
+					  const LVector3f rotate_axis(0.0, 0.0, 1.0);
+					  float ang = rad_2_deg(atan2(-xdel,ydel));
+
+					  LMatrix4f::rotate_mat_normaxis(ang,rotate_axis,InfoArr[filenum].rotmat);
+
+					  LVector3f translate_vec(xpos, ypos, 0.0);
+					  LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+
+					  xfm_mat = InfoArr[filenum].rotmat * tmat2;
 			  } else {
 				  LVector3f translate_vec(xpos, ypos, 0.0);
 				  xfm_mat = LMatrix4f::translate_mat(translate_vec);
@@ -1454,8 +1576,8 @@ int framework_main(int argc, char *argv[]) {
          main_win->update();
          handle_framerate();
 
-         if((!gridded_files.empty()) && bMoveGriddedObjs) {
-           move_gridded_stuff(InfoArr, pRRptrArr, gridded_files_size*gridrepeats);
+         if((!gridded_files.empty()) && gridmotiontype) {
+           move_gridded_stuff(gridmotiontype,InfoArr, pRRptrArr, gridded_files_size*gridrepeats);
          }
        }
      }
