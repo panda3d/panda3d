@@ -2,6 +2,7 @@ from ShowBaseGlobal import *
 from GuiGlobals import *
 import PandaObject
 import Button
+import Label
 import OnscreenText
 import types
 
@@ -237,7 +238,11 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                    pos = (0, 0),
                    geomRect = None,
                    supportInactive = 0,
-                   inactive = 0):
+                   inactive = 0,
+                   upStyle = Label.ButtonUp,
+                   litStyle = Label.ButtonLit,
+                   downStyle = Label.ButtonDown,
+                   inactiveStyle = Label.ButtonInactive):
         """makeButton(self, ...)
 
         Creates a button on the panel.  The return value is the button
@@ -273,7 +278,11 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                                pos = pos,
                                geomRect = geomRect,
                                supportInactive = supportInactive,
-                               inactive = inactive)
+                               inactive = inactive,
+                               upStyle = upStyle,
+                               litStyle = litStyle,
+                               downStyle = downStyle,
+                               inactiveStyle = inactiveStyle)
 
         self.panelButtons.append(button)
         
