@@ -26,6 +26,9 @@ const float downloader_frequency =
 const float downloader_bandwidth =
 	config_downloader.GetFloat("downloader-bandwidth", 3600.0);
 
+const int downloader_timeout =
+	config_downloader.GetInt("downloader-timeout", 2);
+
 const int decompressor_buffer_size =
 	config_downloader.GetInt("decompressor-buffer-size", 4096);
 

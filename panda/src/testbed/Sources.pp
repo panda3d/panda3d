@@ -29,6 +29,9 @@
   #define SOURCES \
     downloader_test.cxx
 
+  #define USE_ZLIB yes
+  #define TARGET_IF_ZLIB yes
+
 #end test_bin_target
 
 #begin test_bin_target

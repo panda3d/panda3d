@@ -178,9 +178,6 @@ connect_to_server(void) {
     _connected = false;
   }
 
-  // Make socket non blocking
-  //if (setsockopt(_socket, SOL_SOCKET, 
-
   return _connected;
 }
 
@@ -337,6 +334,94 @@ process_request() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Downloader::safe_send
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool Downloader::
+safe_send(int socket, const char *data, int length, long timeout) {
+  if (length == 0) {
+    downloader_cat.error()
+      << "Downloader::safe_send() - requested 0 length send!" << endl;
+    return false;
+  }
+  int bytes = 0;
+  struct timeval tv;
+  tv.tv_sec = timeout;
+  tv.tv_usec = 0;
+  fd_set wset;
+  FD_ZERO(&wset);
+  while (bytes < length) {
+    FD_SET(socket, &wset);
+    int sret = select(socket + 1, NULL, &wset, NULL, &tv);
+    if (sret == 0) {
+      downloader_cat.error()
+	<< "Downloader::safe_send() - select timed out after: "
+	<< timeout << " seconds" << endl;
+      return false;
+    } else if (sret == -1) {
+      downloader_cat.error()
+	<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
+      return false;
+    }
+    int ret = send(socket, data, length, 0);
+    if (ret > 0)
+      bytes += ret;
+    else {
+      downloader_cat.error()
+	<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
+      return false;
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::safe_receive
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+int Downloader::
+safe_receive(int socket, char *data, int length, long timeout) {
+  if (length == 0) {
+    downloader_cat.error()
+      << "Downloader::safe_receive() - requested 0 length receive!" << endl;
+    return 0;
+  }
+  int bytes = 0;
+  struct timeval tv;
+  tv.tv_sec = timeout;
+  tv.tv_usec = 0;
+  fd_set rset;
+  FD_ZERO(&rset);
+  while (bytes < length) {
+    FD_SET(socket, &rset);
+    int sret = select(socket + 1, &rset, NULL, NULL, &tv);
+    if (sret == 0) {
+      downloader_cat.error()
+	<< "Downloader::safe_receive() - select timed out after: "
+	<< timeout << " seconds" << endl;
+      return bytes;
+    } else if (sret == -1) {
+      downloader_cat.error()
+	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
+      return bytes;
+    }
+    int ret = recv(socket, data, length, 0);
+    if (ret > 0)
+      bytes += ret;
+    else if (ret == 0)
+      return 0;
+    else {
+      downloader_cat.error()
+	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
+      return bytes;
+    }
+  }
+  return bytes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Downloader::download
 //       Access: Private
 //  Description:
@@ -383,27 +468,17 @@ download(const string &file_name, Filename file_dest,
   int outlen = request.size();
   downloader_cat.debug()
     << "Downloader::download() - Sending request:\n" << request << endl;
-  if (send(_socket, request.c_str(), outlen, 0) != outlen) {
-    downloader_cat.error()
-      << "Downloader::download() - Error sending HTTP request: "
-      << request << "\n" << "error: " << strerror(errno) << endl;
+  if (safe_send(_socket, request.c_str(), outlen, 
+			(long)downloader_timeout) == false)
     return false;
-  }
 
   // Loop at the requested frequency until the download completes
   DownloadStatus status(_buffer->_buffer, event_name, first_byte, last_byte,
 			total_bytes, partial_content, id);
   bool got_any_data = false;
   
-  // MPG - Get *safe* socket read code from Roger 
-  // send() can write fewer than the requested # of bytes, so we need to
-  // loop on send.
-  // recv() can block forever, so we probably want to use a non-blocking
-  // socket and then check for EWOULDBLOCK error (which wouldn't be an
-  // error for us in this case - we should just go back to sleep for
-  // a while).
   for (;;) {
-    if (_download_enabled) {
+    if (_download_enabled) { 
       // Ensure that these don't change while we're computing read_size
       _bandwidth_frequency_lock.lock();
  	int read_size = (int)(_bandwidth * _frequency);	
@@ -420,7 +495,8 @@ download(const string &file_name, Filename file_dest,
       }
 
       // Grab the next chunk
-      int ans = recv(_socket, status._next_in, read_size, 0); 
+      int ans = safe_receive(_socket, status._next_in, read_size,
+					(long)downloader_timeout); 
 
       if (ans < 0) {
         downloader_cat.error()
@@ -514,7 +590,7 @@ parse_header(DownloadStatus &status) {
       if (status._first_byte == 0)
 	client_download_bytes += 1;
       if (client_download_bytes != server_download_bytes) {
-	downloader_cat.error()
+  	downloader_cat.error()
 	  << "Downloader::parse_header() - server size = " 
 	  << server_download_bytes << ", client size = " 
 	  << client_download_bytes << " ("
@@ -542,6 +618,12 @@ parse_header(DownloadStatus &status) {
     }
 
     p = nl + 2;
+  }
+
+  if (status._total_bytes == 0) {
+    downloader_cat.error()
+      << "Downloader::parse_header() - Total bytes == 0!" << endl;
+    return false;
   }
 
   return true;

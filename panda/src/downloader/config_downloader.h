@@ -14,6 +14,7 @@ NotifyCategoryDecl(downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 extern const int downloader_buffer_size;
 extern const float downloader_frequency;
 extern const float downloader_bandwidth;
+extern const int downloader_timeout;
 
 extern const int decompressor_buffer_size;
 extern const float decompressor_frequency;
