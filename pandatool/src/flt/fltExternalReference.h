@@ -36,6 +36,8 @@ public:
   string _bead_id;
   int _flags;
 
+  Filename get_ref_filename() const;
+
 protected:
   virtual bool extract_record(FltRecordReader &reader);
   virtual bool build_record(FltRecordWriter &writer) const;

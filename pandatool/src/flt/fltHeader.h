@@ -182,11 +182,16 @@ public:
   void add_texture(FltTexture *texture);
   void remove_texture(int texture_index);
 
-  // Sometimes Flt files store textures as relative pathnames.
-  // Setting this search path helps resolve that tendency.
+  // Sometimes Flt files store textures and external references as
+  // relative pathnames.  Setting these search paths helps resolve
+  // that tendency.
   void set_texture_path(const DSearchPath &path);
   DSearchPath &update_texture_path();
   const DSearchPath &get_texture_path() const;
+
+  void set_model_path(const DSearchPath &path);
+  DSearchPath &update_model_path();
+  const DSearchPath &get_model_path() const;
 
 
   // Accessors into the light source palette.
@@ -207,6 +212,9 @@ public:
   FltTrackplane *get_trackplane(int n);
 
 private:
+  DSearchPath _texture_path;
+  DSearchPath _model_path;
+
   // Instance subtrees.  These are standalone subtrees, which may be
   // referenced by various points in the hierarchy, stored by instance
   // ID number.
@@ -252,7 +260,6 @@ private:
   AttrUpdate _auto_attr_update;
   typedef map<int, PT(FltTexture)> Textures;
   Textures _textures;
-  DSearchPath _texture_path;
 
 
   // Support for the light source palette.

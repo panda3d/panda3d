@@ -50,9 +50,6 @@ FltCopy() {
 ////////////////////////////////////////////////////////////////////
 void FltCopy::
 run() {
-  if (_search_path.get_num_directories() == 0) {
-    _search_path.append_directory(".");
-  }
   SourceFiles::iterator fi;
   for (fi = _source_files.begin(); fi != _source_files.end(); ++fi) {
     ExtraData ed;
@@ -99,6 +96,7 @@ copy_flt_file(const Filename &source, const Filename &dest,
 	      CVSSourceDirectory *dir) {
   PT(FltHeader) header = new FltHeader;
   header->set_texture_path(_search_path);
+  header->set_model_path(_search_path);
 
   // We don't want to automatically generate .attr files--we'd rather
   // write them out explicitly.
@@ -118,8 +116,7 @@ copy_flt_file(const Filename &source, const Filename &dest,
   Refs::const_iterator ri;
   for (ri = refs.begin(); ri != refs.end(); ++ri) {
     FltExternalReference *ref = (*ri);
-    Filename ref_filename = ref->_filename;
-    ref_filename.resolve_filename(_search_path);
+    Filename ref_filename = ref->get_ref_filename();
 
     if (!ref_filename.exists()) {
       nout << "*** Warning: external reference " << ref_filename

@@ -6,6 +6,7 @@
 #include "fltExternalReference.h"
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
+#include "fltHeader.h"
 
 TypeHandle FltExternalReference::_type_handle;
 
@@ -33,6 +34,21 @@ output(ostream &out) const {
   if (!_bead_id.empty()) {
     out << " (" << _bead_id << ")";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltTexture::get_ref_filename
+//       Access: Public
+//  Description: Returns the name of the referenced file.  If it
+//               appears to be a relative filename, it will be
+//               converted to the correct full pathname according to
+//               the model_path specified in the header.
+////////////////////////////////////////////////////////////////////
+Filename FltExternalReference::
+get_ref_filename() const {
+  Filename file(_filename);
+  file.resolve_filename(_header->get_model_path());
+  return file;
 }
 
 ////////////////////////////////////////////////////////////////////

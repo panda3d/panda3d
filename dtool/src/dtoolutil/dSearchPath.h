@@ -49,6 +49,7 @@ PUBLISHED:
 
   void clear();
   void append_directory(const Filename &directory);
+  void prepend_directory(const Filename &directory);
   void append_path(const string &path,
 		   const string &delimiters = ": \t\n");
 

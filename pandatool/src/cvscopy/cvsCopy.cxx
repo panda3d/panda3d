@@ -290,6 +290,7 @@ copy_binary_file(Filename source, Filename dest) {
     return false;
   }
 
+  dest.unlink();
   if (!dest.open_write(out)) {
     nout << "Cannot write " << dest << "\n";
     return false;
@@ -310,7 +311,7 @@ copy_binary_file(Filename source, Filename dest) {
     nout << "Error writing " << dest << "\n";
     return false;
   }
-  
+
   return true;
 }
 

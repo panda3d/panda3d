@@ -146,6 +146,16 @@ append_directory(const Filename &directory) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::prepend_directory
+//       Access: Public
+//  Description: Adds a new directory to the front of the search list.
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+prepend_directory(const Filename &directory) {
+  _directories.insert(_directories.begin(), directory);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::append_path
 //       Access: Public
 //  Description: Adds all of the directories listed in the search path
