@@ -1207,18 +1207,7 @@ render_frame() {
     }   //  for (int c = 0; c < max_channel_index; c++)
 #endif
 
-  // do I need to do this to avoid extra refs to geom arrays?
-  #define SETNULL(_PTR) { if(_PTR != NULL)  _PTR = NULL; }
-  SETNULL(_coords);
-  SETNULL(_colors);
-  SETNULL(_norms);
-  SETNULL(_texcoords);
-  SETNULL(_vindexes);
-  SETNULL(_cindexes);
-  SETNULL(_nindexes);
-  SETNULL(_tindexes);
-
-  // draw new tri-based FPS meter
+    // draw new tri-based FPS meter
 
   if(dx_show_fps_meter) {             
         DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
@@ -1821,15 +1810,6 @@ draw_prim_setup(const Geom *geom) {
 
 ////////
 
-   geom->get_coords(_coords,_vindexes);
-   if(_vindexes!=NULL) {
-       _pCurCoordIndex = &_vindexes[0];
-   } else {
-       _pCurCoord = &_coords[0];
-   }
-
-   // eventually want to elim the make_vi, make sure nothing else requires it (sprites/spheres)
-
    vi = geom->make_vertex_iterator();
    _curFVFflags = D3DFVF_XYZ;
    size_t vertex_size = sizeof(D3DVALUE) * 3;
@@ -1925,27 +1905,14 @@ wants_colors() const {
 void DXGraphicsStateGuardian::
 draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
 
-//    Vertexf NextVert;
-    Vertexf *pNextVert;
+    Vertexf NextVert;
     perFlags &= ~PER_COORD;  // should always be set anyway
-
-    // 2 branches, 1 for indexed verts
 
     for(;nVerts > 0;nVerts--) {
 
          // coord info will always be _perVertex
-//        GET_NEXT_VERTEX(NextVert);     // need to optimize these 
-//        add_to_FVFBuf((void *)&NextVert, sizeof(D3DVECTOR));
-
-        if(_vindexes != NULL) {
-           pNextVert= &_coords[*_pCurCoordIndex];
-           _pCurCoordIndex++;           
-        } else {
-           pNextVert = _pCurCoord;
-           _pCurCoord++;
-        }
-        memcpy(_pCurFvfBufPtr,(void*)pNextVert,sizeof(D3DVECTOR));
-        _pCurFvfBufPtr+=sizeof(D3DVECTOR);
+        GET_NEXT_VERTEX(NextVert);     // need to optimize these 
+        add_to_FVFBuf((void *)&NextVert, sizeof(D3DVECTOR));
 
         if(perFlags==0xC) {
             // break out the common case first
@@ -2022,7 +1989,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
     GeomBindType bind;
     PTA_ushort vindexes,nindexes,tindexes,cindexes;
 
-    geom->get_coords(coords,vindexes);
+    geom->get_coords(coords,bind,vindexes);
     geom->get_normals(norms,bind,nindexes);
     geom->get_colors(colors,bind,cindexes);
     geom->get_texcoords(texcoords,bind,tindexes);
@@ -2397,7 +2364,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     _d3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
 
-//    Geom::VertexIterator vi = geom->make_vertex_iterator();
+    Geom::VertexIterator vi = geom->make_vertex_iterator();
     Geom::ColorIterator ci = geom->make_color_iterator();
 
     // note although sprite particles technically dont require a texture,
@@ -2828,10 +2795,10 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
     PTA_Normalf norms;
     PTA_Colorf colors;
     PTA_TexCoordf texcoords;
-    GeomBindType TexCoordBinding,ColorBinding,NormalBinding;
+    GeomBindType TexCoordBinding,ColorBinding,NormalBinding,junk1;
     PTA_ushort vindexes,nindexes,tindexes,cindexes;
 
-    geom->get_coords(coords,vindexes);
+    geom->get_coords(coords,junk1,vindexes);
     geom->get_normals(norms,NormalBinding,nindexes);
     geom->get_colors(colors,ColorBinding,cindexes);
     geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
@@ -3174,16 +3141,19 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     PTA_Normalf norms;
     PTA_Colorf colors;
     PTA_TexCoordf texcoords;
-    GeomBindType TexCoordBinding,ColorBinding,NormalBinding;
+    GeomBindType TexCoordBinding,ColorBinding,NormalBinding,junk1;
     PTA_ushort vindexes,nindexes,tindexes,cindexes;
 
-    geom->get_coords(coords,vindexes);
+    geom->get_coords(coords,junk1,vindexes);
     geom->get_normals(norms,NormalBinding,nindexes);
     geom->get_colors(colors,ColorBinding,cindexes);
     geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
 
-#ifndef DONT_USE_DRAWPRIMSTRIDED
     GeomVertFormat GeomVrtFmt;
+
+#ifdef DONT_USE_DRAWPRIMSTRIDED
+    GeomVrtFmt=MixedFmtVerts;
+#else
     GeomVrtFmt=FlatVerts;
 
     if(!geom->uses_components()) {
@@ -3208,15 +3178,13 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     // for Indexed Prims and mixed indexed/non-indexed prims, we will use old pipeline
     // cant handle indexed prims because usually have different index arrays for different components,
     // and DrIdxPrmStrd only accepts 1 index array for all components
-#ifndef DONT_USE_DRAWPRIMSTRIDED
     if (GeomVrtFmt!=FlatVerts) {
-#endif
 
         // this is the old geom setup, it reformats every vtx into an output array passed to d3d
         _perVertex = PER_COORD;
         _perPrim = _perComp = 0;
 
-        switch(NormalBinding) {
+        switch (geom->get_binding(G_NORMAL)) {
             case G_PER_VERTEX:
                 _perVertex |= PER_NORMAL;
                 break;
@@ -3228,7 +3196,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                 break;
         }
 
-        switch (ColorBinding) {
+        switch (geom->get_binding(G_COLOR)) {
             case G_PER_VERTEX:
                 _perVertex |= PER_COLOR;
                 break;
@@ -3240,7 +3208,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                 break;
         }
 
-        if(TexCoordBinding == G_PER_VERTEX)  // does any other setting make sense?
+        if (geom->get_binding(G_TEXCOORD) == G_PER_VERTEX)
             _perVertex |= PER_TEXCOORD;
 
         size_t vertex_size = draw_prim_setup(geom);
@@ -3248,7 +3216,6 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
         // iterate through the triangle primitives
 
         for (uint i = 0; i < nPrims; i++) {
-            int nVerts;
 
             if (_perPrim & PER_COLOR) {
                 GET_NEXT_COLOR();
@@ -3256,11 +3223,13 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             if (_perPrim & PER_NORMAL)
                 p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
             
-            if(pLengthArr!=NULL) {
-                nVerts = *(pLengthArr++);
-            } else {
-                // else we've been called by draw_quad, which has no lengths array
+            int nVerts;
+
+            if(pLengthArr==NULL) {
+                // we've been called by draw_quad, which has no lengths array
                 nVerts=4;
+            } else {
+              nVerts = *(pLengthArr++);
             }
 
 #ifdef _DEBUG
@@ -3268,36 +3237,36 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
             nassertv(nVerts * vertex_size < VERT_BUFFER_SIZE);
 #endif
-            _pCurFvfBufPtr = _pFvfBufBasePtr; // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
+            _pCurFvfBufPtr = _pFvfBufBasePtr;            // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
             if(_perComp==0x0) {
-               draw_prim_inner_loop(nVerts, geom, _perVertex);
+                    draw_prim_inner_loop(nVerts, geom, _perVertex);
             } else {
-               if(trilisttype==D3DPT_TRIANGLESTRIP) {
-                  // in flat shade mode, D3D strips color using the 1st vertex. 
-                  // (note: differs from OGL, which always uses last vtx for strips&fans
+                    if(trilisttype==D3DPT_TRIANGLESTRIP) {
+                       // in flat shade mode, D3D strips color using the 1st vertex. 
+                       // (note: differs from OGL, which always uses last vtx for strips&fans
 
-                       // Store all but last 2 verts
-                       draw_prim_inner_loop(nVerts-2, geom, _perVertex | _perComp);
+                            // Store all but last 2 verts
+                            draw_prim_inner_loop(nVerts-2, geom, _perVertex | _perComp);
 
-                       // _perComp attribs should not be fetched for last 2 verts
-                       draw_prim_inner_loop(2, geom, _perVertex);
-               } else {
-                  // in flat shade mode, D3D fans color using the 2nd vertex. 
-                  // (note: differs from OGL, which always uses last vtx for strips&fans
-                  // _perComp attribs should not be fetched for first & last verts, they will
-                  // be associated with middle n-2 verts
+                            // _perComp attribs should not be fetched for last 2 verts
+                            draw_prim_inner_loop(2, geom, _perVertex);
+                    } else {
+                       // in flat shade mode, D3D fans color using the 2nd vertex. 
+                       // (note: differs from OGL, which always uses last vtx for strips&fans
+                       // _perComp attribs should not be fetched for first & last verts, they will
+                       // be associated with middle n-2 verts
 
-                       draw_prim_inner_loop(1, geom, _perVertex);
+                            draw_prim_inner_loop(1, geom, _perVertex);
 
-                       draw_prim_inner_loop(nVerts-2, geom, _perVertex | _perComp);
+                            draw_prim_inner_loop(nVerts-2, geom, _perVertex | _perComp);
 
-                       draw_prim_inner_loop(1, geom, _perVertex);
-               }
+                            draw_prim_inner_loop(1, geom, _perVertex);
+                    }
             }
 
             if(!_bDrawPrimDoSetupVertexBuffer) {
-                hr = _d3dDevice->DrawPrimitive(trilisttype,  _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
+                HRESULT hr = _d3dDevice->DrawPrimitive(trilisttype,  _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
                 TestDrawPrimFailure(DrawPrim,hr,_pDD,nVerts,nVerts-2);
             } else {
                 COPYVERTDATA_2_VERTEXBUFFER(trilisttype,nVerts);
@@ -3305,8 +3274,6 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
             _pCurFvfBufPtr = NULL;
         }
-#ifndef DONT_USE_DRAWPRIMSTRIDED
-// strided path didnt provide speedup, harder to maintain
     } else {
 
         // new geom setup that uses strided DP calls to avoid making an extra pass over the data
@@ -3552,7 +3519,6 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
         nassertv(_pCurFvfBufPtr == NULL);
     }
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -4635,11 +4601,59 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
+    // The light position will be relative to the current matrix, so
+    // we have to know what the current matrix is.  Find a better
+    // solution later.
+#ifdef WBD_GL_MODE
+#ifdef GSG_VERBOSE
+    dxgsg_cat.debug()
+    << "glMatrixMode(GL_MODELVIEW)" << endl;
+    dxgsg_cat.debug()
+    << "glPushMatrix()" << endl;
+    dxgsg_cat.debug()
+    << "glLoadIdentity()" << endl;
+#endif
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
+                  .get_data());
 
+    GLenum id = get_light_id( _cur_light_id );
+    Colorf black(0, 0, 0, 1);
+    glLightfv(id, GL_AMBIENT, black.get_data());
+    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
+    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
+
+    // Position needs to specify x, y, z, and w
+    // w == 0 implies light is at infinity
+    LPoint3f dir = get_rel_forward( light, _current_root_node,
+                                    _coordinate_system );
+    LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
+    glLightfv( id, GL_POSITION, pos.get_data() );
+
+    // GL_SPOT_DIRECTION is not significant when cutoff == 180
+    // In this case, position x, y, z specifies direction
+
+    // Exponent == 0 implies uniform light distribution
+    glLightf( id, GL_SPOT_EXPONENT, 0 );
+
+    // Cutoff == 180 means uniform point light source
+    glLightf( id, GL_SPOT_CUTOFF, 180.0 );
+
+    // Default attenuation values (only spotlight can modify these)
+    glLightf( id, GL_CONSTANT_ATTENUATION, 1 );
+    glLightf( id, GL_LINEAR_ATTENUATION, 0 );
+    glLightf( id, GL_QUADRATIC_ATTENUATION, 0 );
+
+    glPopMatrix();
+#ifdef GSG_VERBOSE
+    dxgsg_cat.debug()
+    << "glPopMatrix()" << endl;
+#endif
+#else           // DX Directional light
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
 
-    // DX Directional light
     D3DLIGHT7  alight;
     ZeroMemory(&alight, sizeof(D3DLIGHT7));
 
@@ -4648,21 +4662,21 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
     alight.dcvAmbient  =  black ;
     alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
 
-    // The light direction will be relative to the current matrix, so
-    // we have to know what the current matrix is.  Find a better
-    // solution later.
-
     alight.dvDirection = *(D3DVECTOR *)
                          (get_rel_forward( light, _current_projection_node, CS_yup_left).get_data());
 
     alight.dvRange =  D3DLIGHT_RANGE_MAX;
     alight.dvFalloff =  1.0f;
 
-    alight.dvAttenuation0 = 1.0f;       // constant factor
-    alight.dvAttenuation1 = 0.0f;       // linear factor
-    alight.dvAttenuation2 = 0.0f;       // quadratic factor
+    alight.dvAttenuation0 = 1.0f;       // constant
+    alight.dvAttenuation1 = 0.0f;       // linear
+    alight.dvAttenuation2 = 0.0f;       // quadratic
 
     HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
+//    _d3dDevice->LightEnable( _cur_light_id, TRUE );
+//    _d3dDevice->SetRenderState( D3DRENDERSTATE_LIGHTING, TRUE );
+
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4671,6 +4685,54 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
+    // The light position will be relative to the current matrix, so
+    // we have to know what the current matrix is.  Find a better
+    // solution later.
+#ifdef WBD_GL_MODE
+#ifdef GSG_VERBOSE
+    dxgsg_cat.debug()
+    << "glMatrixMode(GL_MODELVIEW)" << endl;
+    dxgsg_cat.debug()
+    << "glPushMatrix()" << endl;
+    dxgsg_cat.debug()
+    << "glLoadIdentity()" << endl;
+#endif
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
+                  .get_data());
+
+    GLenum id = get_light_id( _cur_light_id );
+    Colorf black(0, 0, 0, 1);
+    glLightfv(id, GL_AMBIENT, black.get_data());
+    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
+    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
+
+    // Position needs to specify x, y, z, and w
+    // w == 1 implies non-infinite position
+    LPoint3f pos = get_rel_pos( light, _current_projection_node );
+    LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
+    glLightfv( id, GL_POSITION, fpos.get_data() );
+
+    glLightfv( id, GL_SPOT_DIRECTION,
+               get_rel_forward( light, _current_projection_node,
+                                _coordinate_system ).get_data() );
+    glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
+    glLightf( id, GL_SPOT_CUTOFF,
+              light->get_cutoff_angle() );
+    glLightf( id, GL_CONSTANT_ATTENUATION,
+              light->get_constant_attenuation() );
+    glLightf( id, GL_LINEAR_ATTENUATION,
+              light->get_linear_attenuation() );
+    glLightf( id, GL_QUADRATIC_ATTENUATION,
+              light->get_quadratic_attenuation() );
+
+    glPopMatrix();
+#ifdef GSG_VERBOSE
+    dxgsg_cat.debug()
+    << "glPopMatrix()" << endl;
+#endif
+#else       // DX Spotlight
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
 
@@ -4681,10 +4743,6 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
     alight.dcvAmbient  =  black ;
     alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
     alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
-
-    // The light position will be relative to the current matrix, so
-    // we have to know what the current matrix is.  Find a better
-    // solution later.
 
     alight.dvPosition = *(D3DVECTOR *)
                         (get_rel_pos( light, _current_root_node ).get_data());
@@ -4702,6 +4760,8 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
     alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();// quadratic
 
     HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
+
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5000,7 +5060,7 @@ void DXGraphicsStateGuardian::issue_light(const LightTransition *attrib ) {
 
   // Initialize the current ambient light total and currently enabled
   // light list
-  _cur_ambient_light.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _cur_ambient_light.set(0, 0, 0, 1);
   int i;
   for (i = 0; i < _max_lights; i++)
     _cur_light_enabled[i] = false;
@@ -5062,12 +5122,13 @@ void DXGraphicsStateGuardian::issue_light(const LightTransition *attrib ) {
       }
 
       if (_cur_light_id >= 0) {
-       _cur_light_enabled[_cur_light_id] = enable_light(_cur_light_id, true);
+        if (enable_light(_cur_light_id, true))  _cur_light_enabled[_cur_light_id] = true;
 
         // We need to do something different for each type of light
         light->apply(this);
       } else if (_cur_light_id == -1) {
-        dxgsg_cat.error() << "issue_light() - failed to bind light to id" << endl;
+        dxgsg_cat.error()
+          << "issue_light() - failed to bind light to id" << endl;
       }
     }
   }
@@ -6896,7 +6957,7 @@ prepare_geom_node(GeomNode *node) {
     }  // end per-Prim (strip) loop
 
     if(old_coord_indices!=NULL)  {
-        me->set_coords(old_coords, new_coord_indices);
+        me->set_coords(old_coords, coordbinding, new_coord_indices);
         new_lengths.push_back(new_coord_indices.size());
     } else {
         me->set_coords(new_coords);
