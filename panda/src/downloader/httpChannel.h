@@ -94,6 +94,9 @@ PUBLISHED:
   INLINE void set_blocking_connect(bool blocking_connect);
   INLINE bool get_blocking_connect() const;
 
+  INLINE void set_http_timeout(double timeout_seconds);
+  INLINE double get_http_timeout() const;
+
   INLINE void set_download_throttle(bool download_throttle);
   INLINE bool get_download_throttle() const;
 
@@ -204,6 +207,7 @@ private:
   PT(BioStreamPtr) _source;
   bool _persistent_connection;
   double _connect_timeout;
+  double _http_timeout;
   bool _blocking_connect;
   bool _download_throttle;
   double _max_bytes_per_second;
@@ -223,6 +227,7 @@ private:
   bool _server_response_has_no_body;
   size_t _first_byte;
   size_t _last_byte;
+  int _connect_count;
 
   enum DownloadDest {
     DD_none,
@@ -251,11 +256,13 @@ private:
   string _www_username;
   PT(HTTPAuthorization) _www_auth;
 
+  // What type of response do we get to our HTTP request?
   enum ResponseType {
     RT_none,
-    RT_hangup,
-    RT_non_http,
-    RT_http
+    RT_hangup,       // immediately lost connection 
+    RT_non_http,     // something that wasn't an expected HTTP response
+    RT_http_hangup,  // the start of an HTTP response, then a lost connection
+    RT_http_complete // a valid HTTP response completed
   };
   ResponseType _response_type;
   
@@ -295,6 +302,7 @@ private:
   State _state;
   State _done_state;
   double _started_connecting_time;
+  double _sent_request_time;
   bool _started_download;
   string _proxy_header;
   string _proxy_request_text;

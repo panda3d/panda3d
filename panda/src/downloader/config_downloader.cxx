@@ -85,10 +85,25 @@ config_downloader.GetString("http-proxy", "");
 const string http_proxy_username =
 config_downloader.GetString("http-proxy-username", "");
 
-// This is the default amount of time to wait for a connection, in
-// seconds.  It is presently only used for nonblocking sockets.
+// This is the default amount of time to wait for a TCP/IP connection
+// to be established, in seconds.  It is presently only used for
+// nonblocking sockets.
 const double connect_timeout =
 config_downloader.GetDouble("connect-timeout", 5.0);
+
+// This is the default amount of time to wait for the HTTP server to
+// finish sending its response to our request, in seconds.  It starts
+// counting after the TCP connection has been established
+// (connect_timeout, above) and the request has been sent.
+const double http_timeout =
+config_downloader.GetDouble("http-timeout", 20.0);
+
+// This is the maximum number of times to try reconnecting to the
+// server on any one document attempt.  This is just a failsafe to
+// prevent the code from attempting runaway connections; this limit
+// should never be reached in practice.
+const int http_max_connect_count =
+config_downloader.GetInt("http-max-connect-count", 10);
 
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL

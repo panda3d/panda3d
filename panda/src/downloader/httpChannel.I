@@ -200,7 +200,7 @@ get_persistent_connection() const {
 //               channel will wait before giving up on establishing a
 //               TCP connection.
 //
-//               At the present, this is used only for the nonblocking
+//               At present, this is used only for the nonblocking
 //               interfaces (e.g. begin_get_document(),
 //               begin_connect_to()), but it is used whether
 //               set_blocking_connect() is true or false.
@@ -231,6 +231,14 @@ get_connect_timeout() const {
 //               false, a socket connect will not block for
 //               nonblocking I/O calls, but will block for blocking
 //               I/O calls (get_document(), connect_to(), etc.).
+
+//               Setting this true is useful when you want to use
+//               non-blocking I/O once you have established the
+//               connection, but you don't want to bother with polling
+//               for the initial connection.  It's also useful when
+//               you don't particularly care about non-blocking I/O,
+//               but you need to respect timeouts like connect_timeout
+//               and http_timeout.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
 set_blocking_connect(bool blocking_connect) {
@@ -250,6 +258,39 @@ set_blocking_connect(bool blocking_connect) {
 INLINE bool HTTPChannel::
 get_blocking_connect() const {
   return _blocking_connect;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_http_timeout
+//       Access: Published
+//  Description: Sets the maximum length of time, in seconds, that the
+//               channel will wait for the HTTP server to finish
+//               sending its response to our request.
+//
+//               The timer starts counting after the TCP connection
+//               has been established (see set_connect_timeout(),
+//               above) and the request has been sent.
+//
+//               At present, this is used only for the nonblocking
+//               interfaces (e.g. begin_get_document(),
+//               begin_connect_to()), but it is used whether
+//               set_blocking_connect() is true or false.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_http_timeout(double http_timeout) {
+  _http_timeout = http_timeout;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_http_timeout
+//       Access: Published
+//  Description: Returns the length of time, in seconds, to wait for 
+//               the HTTP server to respond to our request.  See
+//               set_http_timeout().
+////////////////////////////////////////////////////////////////////
+INLINE double HTTPChannel::
+get_http_timeout() const {
+  return _http_timeout;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -43,6 +43,7 @@ HTTPChannel(HTTPClient *client) :
 {
   _persistent_connection = false;
   _connect_timeout = connect_timeout;
+  _http_timeout = http_timeout;
   _blocking_connect = false;
   _download_throttle = false;
   _max_bytes_per_second = downloader_byte_rate;
@@ -254,6 +255,17 @@ run() {
   bool repeat_later;
   do {
     if (_bio.is_null()) {
+      if (_connect_count > http_max_connect_count) {
+        // Too many connection attempts, just give up.  We should
+        // never trigger this failsafe, since the code in each
+        // individual case has similar logic to prevent more than two
+        // consecutive lost connections.
+        downloader_cat.warning()
+          << "Too many lost connections, giving up.\n";
+        _state = S_failure;
+        return false;
+      }
+
       // No connection.  Attempt to establish one.
       _proxy = _client->get_proxy();
       
@@ -266,10 +278,17 @@ run() {
       if (_nonblocking) {
         BIO_set_nbio(*_bio, 1);
       }
+
+      if (_connect_count > 0) {
+        downloader_cat.info()
+          << "Reconnecting to " << _bio->get_server_name() << ":" 
+          << _bio->get_port() << "\n";
+      }
       
       _state = S_connecting;
       _started_connecting_time = 
         ClockObject::get_global_clock()->get_real_time();
+      _connect_count++;
     }
 
     if (downloader_cat.is_spam()) {
@@ -667,8 +686,7 @@ run_connecting_wait() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << "waiting to connect to " << _url.get_server() << ":" 
-      << _url.get_port() << ".\n";
+      << "waiting to connect to " << _url.get_server_and_port() << ".\n";
   }
   fd_set wset;
   FD_ZERO(&wset);
@@ -699,8 +717,7 @@ run_connecting_wait() {
          _started_connecting_time > get_connect_timeout())) {
       // Time to give up.
       downloader_cat.info()
-        << "Timeout connecting to " << _url.get_server() << ":" 
-        << _url.get_port() << ".\n";
+        << "Timeout connecting to " << _url.get_server_and_port() << ".\n";
       _state = S_failure;
       return false;
     }
@@ -877,7 +894,7 @@ run_ssl_handshake() {
     }
     downloader_cat.info()
       << "Could not establish SSL handshake with " 
-      << _url.get_server() << ":" << _url.get_port() << "\n";
+      << _url.get_server_and_port() << "\n";
 #ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
@@ -904,8 +921,7 @@ run_ssl_handshake() {
   long verify_result = SSL_get_verify_result(ssl);
   if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
     downloader_cat.info()
-      << "Expired certificate from " << _url.get_server() << ":"
-      << _url.get_port() << "\n";
+      << "Expired certificate from " << _url.get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
       _state = S_failure;
       return false;
@@ -913,8 +929,7 @@ run_ssl_handshake() {
 
   } else if (verify_result == X509_V_ERR_CERT_NOT_YET_VALID) {
     downloader_cat.info()
-      << "Premature certificate from " << _url.get_server() << ":"
-      << _url.get_port() << "\n";
+      << "Premature certificate from " << _url.get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
       _state = S_failure;
       return false;
@@ -922,8 +937,8 @@ run_ssl_handshake() {
 
   } else if (verify_result != X509_V_OK) {
     downloader_cat.info()
-      << "Unable to verify identity of " << _url.get_server() << ":" 
-      << _url.get_port() << ", verify error code " << verify_result << "\n";
+      << "Unable to verify identity of " << _url.get_server_and_port()
+      << ", verify error code " << verify_result << "\n";
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
       _state = S_failure;
       return false;
@@ -997,6 +1012,7 @@ run_ready() {
     
   // All done sending request.
   _state = S_request_sent;
+  _sent_request_time = ClockObject::get_global_clock()->get_real_time();
   return false;
 }
 
@@ -1021,17 +1037,22 @@ run_request_sent() {
         // Try again, once.
         _response_type = RT_hangup;
       }
+
+    } else if (ClockObject::get_global_clock()->get_real_time() -
+               _sent_request_time > get_http_timeout()) {
+      // Time to give up.
+      downloader_cat.info()
+        << "Timeout waiting for " << _url.get_server_and_port() << ".\n";
+      _state = S_failure;
     }
+
     return true;
   }
 
   if (!parse_http_response(line)) {
+    // Not an HTTP response.  _state is already set appropriately.
     return false;
   }
-
-  // Ok, we've established an HTTP connection to the server.  Our
-  // extra send headers have done their job; clear them for next time.
-  clear_extra_headers();
 
   _state = S_reading_header;
   _current_field_name = string();
@@ -1052,8 +1073,32 @@ run_request_sent() {
 bool HTTPChannel::
 run_reading_header() {
   if (parse_http_header()) {
+    if (_bio.is_null()) {
+      downloader_cat.info()
+        << "Connection lost while reading HTTP response.\n";
+      if (_response_type == RT_http_hangup) {
+        // This was our second hangup in a row.  Give up.
+        _state = S_failure;
+        
+      } else {
+        // Try again, once.
+        _response_type = RT_http_hangup;
+      }
+
+    } else if (ClockObject::get_global_clock()->get_real_time() -
+               _sent_request_time > get_http_timeout()) {
+      // Time to give up.
+      downloader_cat.info()
+        << "Timeout waiting for " << _url.get_server_and_port() << ".\n";
+      _state = S_failure;
+    }
     return true;
   }
+  _response_type = RT_http_complete;
+
+  // Ok, we've established an HTTP connection to the server.  Our
+  // extra send headers have done their job; clear them for next time.
+  clear_extra_headers();
 
   _server_response_has_no_body = 
     (get_status_code() / 100 == 1 ||
@@ -1490,6 +1535,7 @@ begin_request(HTTPEnum::Method method, const URLSpec &url,
 
   _first_byte = first_byte;
   _last_byte = last_byte;
+  _connect_count = 0;
 
   make_header();
   make_request_text();
@@ -1751,9 +1797,6 @@ parse_http_response(const string &line) {
     }
     return false;
   }
-
-  // Okay, we're sane.
-  _response_type = RT_http;
 
   // Split out the first line into its three components.
   size_t p = 5;

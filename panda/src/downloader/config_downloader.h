@@ -45,6 +45,8 @@ extern const bool verify_ssl;
 extern const string http_proxy;
 extern const string http_proxy_username;
 extern const double connect_timeout;
+extern const double http_timeout;
+extern const int http_max_connect_count;
 
 // Later, we can make this conditional on NDEBUG or something along
 // those lines; for now, we define it always to be true so we get
