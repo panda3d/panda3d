@@ -27,26 +27,29 @@ import sys,os,time,stat,string,re,getopt,cPickle
 
 global FileDateCache
 FileDateCache = {}
+skylerTest=0
 
-def filedate(path) :
+def filedate(path):
   global FileDateCache
   if (FileDateCache.has_key(path)):
     return(FileDateCache[path])
-  try : date = os.path.getmtime(path)
-  except : date = 0
+  try: date = os.path.getmtime(path)
+  except: date = 0
   FileDateCache[path] = date
   return(date)
 
-def updatefiledate(path) :
+def updatefiledate(path):
   global FileDateCache
-  try : date = os.path.getmtime(path)
-  except : date = 0
+  try: date = os.path.getmtime(path)
+  except: date = 0
   FileDateCache[path] = date
 
 def youngest(files):
   if (type(files) == str):
     source = filedate(files)
-    if (source==0): sys.exit("Error: source file not readable: "+files)
+    if (source==0):
+      import pdb; pdb.set_trace()
+      sys.exit("Error: source file not readable: "+files)
     return(source)
   result = 0
   for sfile in files:
@@ -125,6 +128,17 @@ if 1:
     cmdLine = cmd.split()
     cmd = getExecutablePath(cmdLine[0])
     exitCode = os.spawnv(os.P_WAIT, cmd, cmdLine)
+    if exitCode:
+      sys.exit("Failed: \"%s\" returned exit code (%s)"%(cmd, exitCode))
+
+  def osCmdEnv(cmd, environment):
+    global VERBOSE
+    if VERBOSE >= 1:
+      print cmd
+    sys.stdout.flush()
+    cmdLine = cmd.split()
+    cmd = getExecutablePath(cmdLine[0])
+    exitCode = os.spawnve(os.P_WAIT, cmd, cmdLine, environment)
     if exitCode:
       sys.exit("Failed: \"%s\" returned exit code (%s)"%(cmd, exitCode))
 else:
@@ -841,7 +855,7 @@ def printStatus(header,warnings):
     tomit = ""
     for x in PACKAGES:
       if (OMIT.count(x)==0): tkeep = tkeep + x + " "
-      else                 : tomit = tomit + x + " "
+      else:                  tomit = tomit + x + " "
     print "Makepanda: Prefix Directory:",PREFIX
     print "Makepanda: Compiler:",COMPILER
     print "Makepanda: Optimize:",OPTIMIZE
@@ -1162,12 +1176,12 @@ def CompileFlex(pre,dst,src,dashi):
     if (COMPILER=="MSVC7"):
       flexFullPath=os.path.abspath(STDTHIRDPARTY+"win-util/flex.exe")
       if (dashi): oscdcmd(PREFIX+"/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + fn)
-      else      : oscdcmd(PREFIX+"/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
+      else:       oscdcmd(PREFIX+"/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
       replaceInFile(PREFIX+'/tmp/lex.yy.c', dst, '#include <unistd.h>', '')
       #WriteFile(wdst, ReadFile("built\\tmp\\lex.yy.c").replace("#include <unistd.h>",""))
     if (COMPILER=="LINUXA"):
       if (dashi): oscdcmd(PREFIX+"/tmp", "flex -i -P" + pre + " -olex.yy.c " + fn)
-      else      : oscdcmd(PREFIX+"/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
+      else:       oscdcmd(PREFIX+"/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
       oscmd('cp built/tmp/lex.yy.c '+dst)
     updatefiledate(dst)
 
@@ -1288,6 +1302,7 @@ def CompileRES(obj=0,src=0,ipath=[],opts=[]):
 def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, files=0):
   if ((ipath==0)|(opts==0)|(outd==0)|(outc==0)|(src==0)|(module==0)|(library==0)|(files==0)):
     sys.exit("syntax error in Interrogate directive")
+  ALLIN.append(outd)
   ipath = [PREFIX+"/tmp"] + ipath + [PREFIX+"/include"]
   outd = PREFIX+"/etc/"+outd
   outc = PREFIX+"/tmp/"+outc
@@ -1295,7 +1310,6 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
   dep = CxxCalcDependenciesAll(paths, ipath)
   dotdots = ""
   for i in range(0,src.count("/")+1): dotdots = dotdots + "../"
-  ALLIN.append(outd)
   building = 0
   for x in opts:
     if (x[:9]=="BUILDING_"): building = x[9:]
@@ -1350,6 +1364,9 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
   outc = PREFIX+"/tmp/"+outc
   files = xpaths(PREFIX+"/etc/",files,"")
   if (older(outc, files)):
+    global VERBOSE
+    if VERBOSE >= 1:
+      print "Generating Python-stub cxx file for %s"%(library,)
     if (COMPILER=="MSVC7"):
         cmd = PREFIX+"/bin/interrogate_module.exe "
     if (COMPILER=="LINUXA"):
@@ -1679,7 +1696,7 @@ conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
 for key,win,unix in DTOOLDEFAULTS:
   val = DTOOLCONFIG[key]
   if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
-  else               : conf = conf + "#define " + key + " " + val + "\n"
+  else:                conf = conf + "#define " + key + " " + val + "\n"
 ConditionalWriteFile(PREFIX+'/include/dtool_config.h',conf)
 
 ##########################################################################################
@@ -1717,12 +1734,16 @@ if (sys.platform == "win32"):
 ##
 ########################################################################
 
-IPATH=['direct/src/directbase']
-CompileC(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
-CompileLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
-IPATH=['direct/src/directbase']
-CompileC(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
-CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
+WANT_PPYTHON=not skylerTest
+WANT_GENPYCODE_EXE=not skylerTest
+if WANT_PPYTHON:
+  IPATH=['direct/src/directbase']
+  CompileC(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
+  CompileLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
+if WANT_GENPYCODE_EXE:
+  IPATH=['direct/src/directbase']
+  CompileC(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
+  CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
 
 ########################################################################
 #
@@ -6072,13 +6093,27 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 #
 ##########################################################################################
 
-if (older(PREFIX+'/lib/pandac/PandaModules.pyz',xpaths(PREFIX+"/etc/",ALLIN,""))):
-  ALLTARGETS.append(PREFIX+'/lib/pandac/PandaModules.pyz')
-  if (sys.platform=="win32"):
-    oscmd(PREFIX+"/bin/genpycode.exe")
-  else:
-    oscmd(PREFIX+"/bin/genpycode")
-  updatefiledate(PREFIX+'/lib/pandac/PandaModules.pyz')
+if skylerTest:
+  if older(PREFIX+'/lib/pandac/PandaModules.pyz', xpaths(PREFIX+"/etc/", ALLIN, "")):
+    ALLTARGETS.append(PREFIX+'/lib/pandac/PandaModules.pyz')
+    if (sys.platform=="win32"):
+      env=os.environ.copy()
+      env["PYTHONPATH"]="%s;%s\\bin;%s\\lib;%s;%s"%(
+        PREFIX, PREFIX, PREFIX, PANDASOURCE, os.getenv("PYTHONPATH"))
+      env["PATH"]="%s\\bin;%s"%(PREFIX, os.getenv("PATH"))
+      env["PANDAROOT"]=PANDASOURCE
+      osCmdEnv("python.exe \""+PANDASOURCE+"\\direct\\src/ffi/jGenPyCode.py\"", env)
+    else:
+      oscmd(PREFIX+"/bin/genpycode")
+    updatefiledate(PREFIX+'/lib/pandac/PandaModules.pyz')
+else:
+  if (older(PREFIX+'/lib/pandac/PandaModules.pyz',xpaths(PREFIX+"/etc/",ALLIN,""))):
+    ALLTARGETS.append(PREFIX+'/lib/pandac/PandaModules.pyz')
+    if (sys.platform=="win32"):
+      oscmd(PREFIX+"/bin/genpycode.exe")
+    else:
+      oscmd(PREFIX+"/bin/genpycode")
+    updatefiledate(PREFIX+'/lib/pandac/PandaModules.pyz')
 
 ########################################################################
 ##
