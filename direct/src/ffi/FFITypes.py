@@ -212,10 +212,6 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         # Instance methods that had no this pointer are moved into here
         self.staticMethods = []
         
-        # Global methods that take this class as the first parameter are just
-        # stored with the class because it is more useable that way
-        self.globalMethods = []
-
         # These are dictionaries used to temporarily hold methods for
         # overloading while generating code
         self.overloadedClassMethods = {}
@@ -223,6 +219,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
         # Nested typeDescriptors inside this class
         self.nestedTypes = []
+
 
     def getExtensionModuleName(self):
         """
@@ -243,12 +240,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             # Otherwise, it must be our first time through, do the real work
             self.CModules = []
             for method in (self.constructors + [self.destructor] + self.instanceMethods
-                           + self.upcastMethods + self.downcastMethods 
-                           + self.staticMethods + self.globalMethods):
+                           + self.upcastMethods + self.downcastMethods + self.staticMethods):
                 if method:
                     if (not (method.typeDescriptor.moduleName in self.CModules)):
                         self.CModules.append(method.typeDescriptor.moduleName)
-                        
                         # Now look at all the methods that we might inherit if we are at
                         # a multiple inheritance node and get their C modules
                         if (len(self.parentTypes) >= 2):
@@ -259,10 +254,6 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                                 for method in parentType.upcastMethods:
                                     if (not (method.typeDescriptor.moduleName in self.CModules)):
                                         self.CModules.append(method.typeDescriptor.moduleName)
-                                for method in parentType.globalMethods:
-                                    if (not (method.typeDescriptor.moduleName in self.CModules)):
-                                        self.CModules.append(method.typeDescriptor.moduleName)
-                                        
             return self.CModules
 
 
@@ -272,51 +263,52 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         class references.
         Be careful about nested types
         """
-        moduleList = []
-
-        upcastMethods = []
-        if (len(self.parentTypes) >= 2):
-            for parentType in self.parentTypes:
-                for method in parentType.instanceMethods:
-                    upcastMethods.append(method)
-                for method in parentType.upcastMethods:
-                    upcastMethods.append(method)
-                for method in parentType.globalMethods:
-                    upcastMethods.append(method)
-                    
-        for method in (self.constructors + [self.destructor] + self.instanceMethods
-                       + self.upcastMethods + self.downcastMethods 
-                       + self.staticMethods + self.globalMethods + upcastMethods):
-            if method:
-                # Get the real return type (not derived)
-                returnType = method.typeDescriptor.returnType.recursiveTypeDescriptor()
-                if (not returnType.isNested):
-                    returnTypeName = returnType.foreignTypeName
-                    # Do not put our own module in the import list
-                    if ((returnTypeName != self.foreignTypeName) and
-                        # Do not put modules already in the list (like a set)
-                        (not (returnTypeName in moduleList))):
-                        # If this is a class (not a primitive), put it on the list
-                        if (returnType.__class__ == ClassTypeDescriptor):
-                            moduleList.append(returnTypeName)
-                        
-                # Now look at all the arguments
-                argTypes = method.typeDescriptor.argumentTypes
-                for argType in argTypes:
+        # Return type modules are cached once they are calculated so we
+        # do not have to calculate them again
+        try:
+            return self.returnTypeModules
+        except:
+            moduleList = []
+            upcastMethods = []
+            if (len(self.parentTypes) >= 2):
+                for parentType in self.parentTypes:
+                    for method in parentType.instanceMethods:
+                        upcastMethods.append(method)
+                    for method in parentType.upcastMethods:
+                        upcastMethods.append(method)
+            for method in (self.constructors + [self.destructor] + self.instanceMethods
+                           + self.upcastMethods + self.downcastMethods 
+                           + self.staticMethods + upcastMethods):
+                if method:
                     # Get the real return type (not derived)
-                    argType = argType.typeDescriptor.recursiveTypeDescriptor()
-                    if (not argType.isNested):
-                        argTypeName = argType.foreignTypeName
+                    returnType = method.typeDescriptor.returnType.recursiveTypeDescriptor()
+                    if (not returnType.isNested):
+                        returnTypeName = returnType.foreignTypeName
                         # Do not put our own module in the import list
-                        if ((argTypeName != self.foreignTypeName) and
+                        if ((returnTypeName != self.foreignTypeName) and
                             # Do not put modules already in the list (like a set)
-                            (not (argTypeName in moduleList))):
+                            (not (returnTypeName in moduleList))):
                             # If this is a class (not a primitive), put it on the list
-                            if (argType.__class__ == ClassTypeDescriptor):
-                                moduleList.append(argTypeName)
-                   
-        return moduleList
-    
+                            if (returnType.__class__ == ClassTypeDescriptor):
+                                moduleList.append(returnTypeName)
+                    # Now look at all the arguments
+                    argTypes = method.typeDescriptor.argumentTypes
+                    for argType in argTypes:
+                        # Get the real return type (not derived)
+                        argType = argType.typeDescriptor.recursiveTypeDescriptor()
+                        if (not argType.isNested):
+                            argTypeName = argType.foreignTypeName
+                            # Do not put our own module in the import list
+                            if ((argTypeName != self.foreignTypeName) and
+                                # Do not put modules already in the list (like a set)
+                                (not (argTypeName in moduleList))):
+                                # If this is a class (not a primitive), put it on the list
+                                if (argType.__class__ == ClassTypeDescriptor):
+                                    moduleList.append(argTypeName)
+            self.returnTypeModules = moduleList
+            return self.returnTypeModules
+
+
     def recordClassMethod(self, methodSpec):
         """
         Record all class methods in a 2 level dictionary so we can go
@@ -326,6 +318,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         methodList = ifAbsentPut(self.overloadedClassMethods, methodSpec.name, [])
         methodList.append(methodSpec)
     
+
     def recordInstanceMethod(self, methodSpec):
         """
         Record all instance methods in a 2 level dictionary so we can go
@@ -335,6 +328,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         methodList = ifAbsentPut(self.overloadedInstanceMethods, methodSpec.name, [])
         methodList.append(methodSpec)
 
+
     def cullOverloadedMethods(self):
         """
         Find all the entries that have multiple indexes for the same method name
@@ -342,6 +336,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         self.overloadedClassMethods = FFIOverload.cullOverloadedMethods(self.overloadedClassMethods)
         self.overloadedInstanceMethods = FFIOverload.cullOverloadedMethods(self.overloadedInstanceMethods)
+
 
     def filterOutStaticMethods(self):
         """
@@ -361,6 +356,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                 newInstanceMethods.append(method)
         self.instanceMethods = newInstanceMethods
 
+
     def recordOverloadedMethods(self):
         """
         Record all the methods in dictionaries based on method name
@@ -372,16 +368,75 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         for method in classMethods:
             self.recordClassMethod(method)
 
-        instanceMethods = (self.instanceMethods + self.globalMethods
-                           + self.upcastMethods + self.downcastMethods)
+        instanceMethods = (self.instanceMethods + self.upcastMethods + self.downcastMethods)
         for method in instanceMethods:
             self.recordInstanceMethod(method)
+
+
+    def hasMethodNamed(self, methodName):
+        for method in (self.constructors + [self.destructor] + self.instanceMethods
+                       + self.upcastMethods + self.downcastMethods + self.staticMethods):
+            if (method and (method.name == methodName)):
+                return 1
+        return 0
+
+
+    def copyParentMethods(self, file, nesting):
+        """
+        At multiple inheritance nodes, copy all the parent methods into
+        this class and call them after upcasting us to that class
+        """
+        if (len(self.parentTypes) >= 2):
+            indent(file, nesting+1, '\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '#  Upcast inherited instance method wrappers     #\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '\n')
+            for parentType in self.parentTypes:
+                parentList = [parentType]
+                self.copyParentMethodsRecursively(parentList, file, nesting)
+
+
+    def copyParentMethodsRecursively(self, parentList, file, nesting):
+        """
+        Copy all the parents instance methods
+        Do not copy functions if this class already has a function with that name
+        We need to recurse up the hierarchy copying all our parents nodes all
+        the way up the tree stopping either at the top, or at another MI node
+        that has already copied his parent's methods in
+        Note: Do not copy the downcast methods
+        """
+        parent = parentList[-1]
+        if (len(parent.parentTypes) > 0):
+            recurse = 1
+        else:
+            recurse = 0
+
+        for method in parent.instanceMethods:
+            if not self.hasMethodNamed(method.name):
+                # with downcast for all instance methods that are not themselves upcasts
+                method.generateInheritedMethodCode(self, parentList, file, nesting, 1) 
+        # Copy all the parents upcast methods so we transitively pick them up
+        for method in parent.upcastMethods:
+            if not self.hasMethodNamed(method.name):
+                # no downcast for all instance methods that are themselves upcasts
+                # that would cause an infinite loop
+                method.generateInheritedMethodCode(self, parentList, file, nesting, 0) 
+
+        # Now recurse up the heirarchy until we get to a node that is itself
+        # a multiple inheritance node and stop there because he will have already
+        # copied all his parent functions in
+        if recurse:
+            for parentType in parent.parentTypes:
+                newParentList = parentList[:]
+                newParentList.append(parentType)
+                self.copyParentMethodsRecursively(newParentList, file, nesting)
+
 
     def generateOverloadedMethods(self, file, nesting):
         """
         Generate code for all the overloaded methods of this class
         """
-
         if (len(self.overloadedClassMethods.values()) or
             len(self.overloadedInstanceMethods.values())):
             indent(file, nesting+1, '\n')
@@ -389,13 +444,12 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             indent(file, nesting+1, '#  Overloaded methods                            #\n')
             indent(file, nesting+1, '##################################################\n')
             indent(file, nesting+1, '\n')
-        
-        for methodSpecList in self.overloadedClassMethods.values():
+        # Overload all the class and instance methods
+        for methodSpecList in (self.overloadedClassMethods.values() +
+                               self.overloadedInstanceMethods.values()):
             treeColl = FFIOverload.FFIMethodArgumentTreeCollection(self, methodSpecList)
             treeColl.generateCode(file, nesting)
-        for methodSpecList in self.overloadedInstanceMethods.values():
-            treeColl = FFIOverload.FFIMethodArgumentTreeCollection(self, methodSpecList)
-            treeColl.generateCode(file, nesting)
+
 
     def generateGlobalCode(self, dir, extensionsDir):
         """
@@ -413,6 +467,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         self.copyExtensions(extensionsDir, file, 0)
         self.outputClassFooter(file)
         file.close()
+
 
     def generateCode(self, file, nesting):
         self.recordOverloadedMethods()
@@ -482,45 +537,11 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             for method in self.downcastMethods:
                 method.generateDowncastMethodCode(self, file, nesting)
 
-        if len(self.globalMethods):
-            indent(file, nesting+1, '\n')
-            indent(file, nesting+1, '##################################################\n')
-            indent(file, nesting+1, '#  Global methods                                #\n')
-            indent(file, nesting+1, '##################################################\n')
-            indent(file, nesting+1, '\n')
-            for method in self.globalMethods:
-                method.generateMethodCode(self, file, nesting)
-
-        # At multiple inheritance nodes, copy all the parent methods into
-        # this class and call them after upcasting us to that class
-        if (len(self.parentTypes) >= 2):
-            indent(file, nesting+1, '\n')
-            indent(file, nesting+1, '##################################################\n')
-            indent(file, nesting+1, '#  Upcast inherited instance method wrappers     #\n')
-            indent(file, nesting+1, '##################################################\n')
-            indent(file, nesting+1, '\n')
-            for parentType in self.parentTypes:
-                # Copy all the parents instance methods
-                for method in parentType.instanceMethods:
-                    method.generateInheritedMethodCode(self, parentType, file, nesting, 1) # with downcast
-                # Copy all the parents upcast methods so we transitively pick them up
-                for method in parentType.upcastMethods:
-                    method.generateInheritedMethodCode(self, parentType, file, nesting, 0) # no downcast
-                # Do not copy the downcast methods
-
-        # At multiple inheritance nodes, copy all the parent methods into
-        # this class and call them after upcasting us to that class
-        if (len(self.parentTypes) >= 2):
-            indent(file, nesting+1, '\n')
-            indent(file, nesting+1, '##################################################\n')
-            indent(file, nesting+1, '#  Upcast global method wrappers                 #\n')
-            indent(file, nesting+1, '##################################################\n')
-            indent(file, nesting+1, '\n')
-            for parentType in self.parentTypes:
-                for method in parentType.globalMethods:
-                    method.generateInheritedMethodCode(self, parentType, file, nesting, 1) # with downcast
-
+        # Copy in all our parent nodes (only does work if we are an MI node)
+        self.copyParentMethods(file, nesting)
+        
         self.generateOverloadedMethods(file, nesting)
+
 
     def outputNestedTypes(self, file, nesting):
         if (len(self.nestedTypes) > 0):
@@ -532,6 +553,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         # Output code in this same file for all our nested types
         for nestedType in self.nestedTypes:
             nestedType.generateCode(file, nesting+1)
+
 
     def copyExtensions(self, extensionsDir, file, nesting):
         """
@@ -568,27 +590,36 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             indent(file, 0, 'import ' + moduleName + 'Downcasts\n')
         indent(file, 0, '\n')
         indent(file, 0, 'import FFIExternalObject\n')
+
+
+    def outputImportsRecursively(self, parent, file, nesting):
+        for parentType in parent.parentTypes:
+            self.outputImportsRecursively(parentType, file, nesting)
+        indent(file, nesting, 'import ' + parent.foreignTypeName + '\n')
         
+        returnTypeModules = parent.getReturnTypeModules()
+        if len(returnTypeModules):
+            for moduleName in returnTypeModules:
+                indent(file, nesting, 'import ' + moduleName + '\n')
         
+
     def outputImports(self, file, nesting):
         """
         Generate code that imports the modules we need for this class
         """
+        indent(file, nesting, '# Import everybody we inherit from\n')
+        indent(file, nesting, '# and all the shadow class modules this class uses\n')
 
-        if len(self.parentTypes):
-            indent(file, nesting, '# Import everybody we inherit from\n')
-            for parent in self.parentTypes:
-                indent(file, nesting, 'import ' + parent.foreignTypeName + '\n')
-            indent(file, nesting, '\n')
-
+        # Output all of our return types
         returnTypeModules = self.getReturnTypeModules()
         if len(returnTypeModules):
-            indent(file, nesting, '# Import all the shadow class modules this class uses\n')
             for moduleName in returnTypeModules:
                 indent(file, nesting, 'import ' + moduleName + '\n')
-            
-        # an extra line just for spacing
+       
+        for parentType in self.parentTypes:
+            self.outputImportsRecursively(parentType, file, nesting)
         indent(file, nesting, '\n')
+
 
     def outputClassComment(self, file, nesting):
         """
@@ -660,6 +691,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
     def outputClassFooter(self, file):
         indent(file, 0, " # When this class gets defined, put it in this module's namespace\n")
         indent(file, 0, " globals()['" + self.foreignTypeName + "'] = " + self.foreignTypeName + '\n')
+
     
     def outputBaseConstructor(self, file, nesting):
         """
@@ -681,6 +713,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, nesting+2, 'apply(self.constructor, _args)\n')
         indent(file, nesting+2, '\n')
 
+
     def outputEmptyConstructor(self, file, nesting):
         """
         If there is no C++ constructor, we output code for a runtime error
@@ -688,6 +721,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         indent(file, nesting+1, 'def constructor(self):\n')
         indent(file, nesting+2, "raise RuntimeError, 'No C++ constructor defined for class: ' + self.__class__.__name__\n")
+
 
     def outputBaseDestructor(self, file, nesting):
         """
@@ -711,6 +745,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, nesting+2, 'if (self.userManagesMemory and (self.this != 0)):\n')
         indent(file, nesting+3, 'self.destructor()\n')
 
+
     def outputEmptyDestructor(self, file, nesting):
         """
         If there is no C++ destructor, we just output this
@@ -719,8 +754,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, nesting+1, 'def destructor(self):\n')
         indent(file, nesting+2, 'pass\n')
 
-    def generateReturnValueWrapper(self, file, userManagesMemory,
-                                   needsDowncast, nesting):
+
+    def generateReturnValueWrapper(self, file, userManagesMemory, needsDowncast, nesting):
         """
         Generate code that creates a shadow object of this type
         then sets the this pointer and returns the object. We call the
