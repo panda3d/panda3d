@@ -55,6 +55,15 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         return None
 
     def setParent(self, parentToken):
+        return self.do_setParent(parentToken)
+
+    def do_setParent(self, parentToken):
+        """do_setParent(self, int parentToken)
+
+        This function is defined simply to allow a derived class (like
+        DistributedAvatar) to override the behavior of setParent if
+        desired.
+        """
         assert(self.cr.token2nodePath.has_key(parentToken))
         parent = self.cr.token2nodePath[parentToken]
         self.wrtReparentTo(parent)
