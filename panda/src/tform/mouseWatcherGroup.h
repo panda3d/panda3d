@@ -32,6 +32,9 @@
 //               that may be managed as a group.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseWatcherGroup : virtual public ReferenceCount {
+public:
+  virtual ~MouseWatcherGroup();
+
 PUBLISHED:
   bool add_region(MouseWatcherRegion *region);
   bool has_region(MouseWatcherRegion *region) const;

@@ -22,6 +22,15 @@
 TypeHandle MouseWatcherGroup::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherGroup::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MouseWatcherGroup::
+~MouseWatcherGroup() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherGroup::add_region
 //       Access: Published
 //  Description: Adds the indicated region to the set of regions in
