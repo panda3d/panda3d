@@ -386,7 +386,6 @@ def DNASetBaselineString(baseline, text):
     t.setText(text)
     for i in range(t.getNumChars()):
         ch = t.getEncodedChar(i)
-        print "adding ch: %s" % (ch)
         text=DNASignText("text")
         text.setLetters(ch)
         baseline.add(text)
