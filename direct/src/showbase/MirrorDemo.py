@@ -31,13 +31,13 @@ def setupMirror(name, width, height):
 
     # Create a polygon to be the visible representation of the mirror.
     cm = CardMaker('mirror')
-    cm.setFrame(-width / 2.0, width / 2.0, -height / 2.0, height / 2.0)
+    cm.setFrame(width / 2.0, -width / 2.0, -height / 2.0, height / 2.0)
     cm.setHasUvs(1)
     card = root.attachNewNode(cm.generate())
     
     # Create a PlaneNode to represent the mirror's position, for
     # computing where the mirror's camera belongs each frame.
-    plane = Plane(Vec3(0, -1, 0), Point3(0, 0, 0))
+    plane = Plane(Vec3(0, 1, 0), Point3(0, 0, 0))
     planeNode = PlaneNode('mirrorPlane')
     planeNode.setPlane(plane)
     planeNP = root.attachNewNode(planeNode)
@@ -61,15 +61,16 @@ def setupMirror(name, width, height):
     # Since the reflection matrix will reverse the vertex-winding
     # order of all the polygons in the world, we have to tell the
     # camera to reverse the direction of its face culling.  We also
-    # tell it not to draw (to clip) anything behind the mirror plane.
+    # tell it not to draw (that is, to clip) anything behind the
+    # mirror plane.
     camera.setInitialState(RenderState.make(
         CullFaceAttrib.makeReverse(),
         ClipPlaneAttrib.make(ClipPlaneAttrib.OAdd, planeNode)))
 
     # Create a visible representation of the camera so we can see it.
-    cameraVis = loader.loadModel('camera.egg')
-    if not cameraVis.isEmpty():
-        cameraVis.reparentTo(cameraNP)
+    #cameraVis = loader.loadModel('camera.egg')
+    #if not cameraVis.isEmpty():
+    #    cameraVis.reparentTo(cameraNP)
 
     # Spawn a task to keep that camera on the opposite side of the
     # mirror.
