@@ -370,7 +370,7 @@ class MopathRecorder(AppShell, PandaObject):
             'Number of samples in resampled curve',
             resolution = 1, min = 2, max = 1000, command = self.setNumSamples)
         widget.component('hull')['relief'] = RIDGE
-        widget.onRelease = widget.onReturnRelease = self.sampleCurve
+        widget['preCallback'] = widget['postCallback'] = self.sampleCurve
 
         frame = Frame(resampleFrame)
         self.createButton(
@@ -395,7 +395,7 @@ class MopathRecorder(AppShell, PandaObject):
             min = 1, max = 100, resolution = 1,
             command = self.setDesampleFrequency)
         widget.component('hull')['relief'] = RIDGE
-        widget.onRelease = widget.onReturnRelease = self.desampleCurve
+        widget['postCallback'] = self.desampleCurve
         desampleFrame.pack(fill = X, expand = 0, pady = 2)
 
         ## REFINE PAGE ##
@@ -410,29 +410,28 @@ class MopathRecorder(AppShell, PandaObject):
                                        'Begin time of refine pass',
                                        resolution = 0.01,
                                        command = self.setRecordStart)
-        widget.onPress = self.setRefineMode
-        widget.onRelease = widget.onReturnRelease = (
-            lambda s = self: s.getPrePoints('Refine'))
+        widget['preCallback'] = self.setRefineMode
+        widget['postCallback'] = lambda s = self: s.getPrePoints('Refine')
         widget = self.createEntryScale(
             refineFrame, 'Refine Page',
             'Control Start',
             'Time when full control of node path is given during refine pass',
             resolution = 0.01,
             command = self.setControlStart)
-        widget.onPress = widget.onReturn = self.setRefineMode
+        widget['preCallback'] = self.setRefineMode
         widget = self.createEntryScale(
             refineFrame, 'Refine Page',
             'Control Stop',
             'Time when node path begins transition back to original curve',
             resolution = 0.01,
             command = self.setControlStop)
-        widget.onPress = widget.onReturn = self.setRefineMode
+        widget['preCallback'] = self.setRefineMode
         widget = self.createEntryScale(refineFrame, 'Refine Page', 'Refine To',
                                        'Stop time of refine pass',
                                        resolution = 0.01,
                                        command = self.setRefineStop)
-        widget.onPress = self.setRefineMode
-        widget.onRelease = widget.onReturnRelease = self.getPostPoints
+        widget['preCallback'] = self.setRefineMode
+        widget['postCallback'] = self.getPostPoints
         refineFrame.pack(fill = X)
 
         ## EXTEND PAGE ##
@@ -447,16 +446,15 @@ class MopathRecorder(AppShell, PandaObject):
                                        'Begin time of extend pass',
                                        resolution = 0.01,
                                        command = self.setRecordStart)
-        widget.onPress = self.setExtendMode
-        widget.onRelease = widget.onReturnRelease = (
-            lambda s = self: s.getPrePoints('Extend'))
+        widget['preCallback'] = self.setExtendMode
+        widget['postCallback'] = lambda s = self: s.getPrePoints('Extend')
         widget = self.createEntryScale(
             extendFrame, 'Extend Page',
             'Control Start',
             'Time when full control of node path is given during extend pass',
             resolution = 0.01,
             command = self.setControlStart)
-        widget.onPress = widget.onReturn = self.setExtendMode
+        widget['preCallback'] = self.setExtendMode
         extendFrame.pack(fill = X)
 
         ## CROP PAGE ##
@@ -529,48 +527,48 @@ class MopathRecorder(AppShell, PandaObject):
             sfFrame, 'Style', 'Num Segs',
             'Set number of segments used to approximate each parametric unit',
             min = 1.0, max = 400, resolution = 1.0,
-            initialValue = 40, 
+            value = 40, 
             command = self.setNumSegs, side = TOP)
         widget.component('hull')['relief'] = RIDGE
         widget = self.createEntryScale(
             sfFrame, 'Style', 'Num Ticks',
             'Set number of tick marks drawn for each unit of time',
             min = 0.0, max = 10.0, resolution = 1.0,
-            initialValue = 0.0,
+            value = 0.0,
             command = self.setNumTicks, side = TOP)
         widget.component('hull')['relief'] = RIDGE
         widget = self.createEntryScale(
             sfFrame, 'Style', 'Tick Scale',
             'Set visible size of time tick marks',
             min = 0.01, max = 100.0, resolution = 0.01,
-            initialValue = 5.0,
+            value = 5.0,
             command = self.setTickScale, side = TOP)
         widget.component('hull')['relief'] = RIDGE
         self.createColorEntry(
             sfFrame, 'Style', 'Path Color',
             'Color of curve',
             command = self.setPathColor,
-            initialValue = [255.0,255.0,255.0,255.0])
+            value = [255.0,255.0,255.0,255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Knot Color',
             'Color of knots',
             command = self.setKnotColor,
-            initialValue = [0,0,255.0,255.0])
+            value = [0,0,255.0,255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'CV Color',
             'Color of CVs',
             command = self.setCvColor,
-            initialValue = [255.0,0,0,255.0])
+            value = [255.0,0,0,255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Tick Color',
             'Color of Ticks',
             command = self.setTickColor,
-            initialValue = [255.0,0,0,255.0])
+            value = [255.0,0,0,255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Hull Color',
             'Color of Hull',
             command = self.setHullColor,
-            initialValue = [255.0,128.0,128.0,255.0])
+            value = [255.0,128.0,128.0,255.0])
 
         #drawFrame.pack(fill = X)
 
@@ -585,7 +583,7 @@ class MopathRecorder(AppShell, PandaObject):
         widget = self.createLabeledEntry(
             frame, 'Recording', 'Record Hook',
             'Hook used to start/stop recording',
-            initialValue = self.startStopHook,
+            value = self.startStopHook,
             command = self.setStartStopHook)[0]
         label = self.getWidget('Recording', 'Record Hook-Label')
         label.configure(width = 16, anchor = W)
@@ -593,7 +591,7 @@ class MopathRecorder(AppShell, PandaObject):
         widget = self.createLabeledEntry(
             frame, 'Recording', 'Keyframe Hook',
             'Hook used to add a new keyframe',
-            initialValue = self.keyframeHook,
+            value = self.keyframeHook,
             command = self.setKeyframeHook)[0]
         label = self.getWidget('Recording', 'Keyframe Hook-Label')
         label.configure(width = 16, anchor = W)
@@ -1678,12 +1676,12 @@ class MopathRecorder(AppShell, PandaObject):
         return self.variableDict[category + '-' + text]
 
     def createLabeledEntry(self, parent, category, text, balloonHelp,
-                           initialValue = '', command = None,
+                           value = '', command = None,
                            relief = 'sunken', side = LEFT,
                            expand = 1, width = 12):
         frame = Frame(parent)
         variable = StringVar()
-        variable.set(initialValue)
+        variable.set(value)
         label = Label(frame, text = text)
         label.pack(side = LEFT, fill = X)
         self.bind(label, balloonHelp)

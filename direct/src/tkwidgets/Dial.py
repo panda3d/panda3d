@@ -1,6 +1,6 @@
 from Tkinter import *
 from PandaModules import ClockObject
-from WidgetPropertiesDialog import *
+import WidgetPropertiesDialog
 import Pmw
 import Task
 import math
@@ -17,7 +17,7 @@ DIAL_FULL = 'full'
 DIAL_MINI = 'mini'
 
 DIAL_FULL_SIZE = 45
-DIAL_MINI_SIZE = 20
+DIAL_MINI_SIZE = 30
 
 globalClock = ClockObject.getGlobalClock()
 
@@ -29,13 +29,8 @@ class Dial(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
         #define the megawidget options
         INITOPT = Pmw.INITOPT
-        if 'full' == kw.get('style', DIAL_FULL):
-            DIAL_SIZE = DIAL_FULL_SIZE
-        else:
-            DIAL_SIZE = DIAL_MINI_SIZE
         optiondefs = (
             ('style',             DIAL_FULL,      INITOPT),
-            ('dial_size',         DIAL_SIZE,      None),
             # Widget relief
             ('relief',            GROOVE,         None),
             # Widget borderwidth
@@ -46,20 +41,29 @@ class Dial(Pmw.MegaWidget):
             ('numDigits',         2,              self.setEntryFormat),
             ('command',           None,           None),
             ('commandData',       [],             None),
-            ('callbackData',      [],             self.setCallbackData),
             ('min',               None,           self.setMin),
             ('max',               None,           self.setMax),
             ('base',              0.0,            self.setBase),
             ('delta',             1.0,            self.setDelta),
-            ('onReturnPress',     None,           None),
-            ('onReturnRelease',   None,           None),
-            ('onButtonPress',     None,           self.setButtonPressCmd),
-            ('onButtonRelease',   None,           self.setButtonReleaseCmd),
+            # Callbacks to execute when updating widget's value
+            ('preCallback',       None,           self.setPreCallbackCmd),
+            ('postCallback',      None,           self.setPostCallbackCmd),
+            # Extra data to be passed to callback function, needs to be a list
+            ('callbackData',      [],             self.setCallbackData),
             )
         self.defineoptions(kw, optiondefs)
         
         # Initialize the superclass
         Pmw.MegaWidget.__init__(self, parent)
+
+        # Override size if style specified by size is not
+        if not kw.has_key('dial_size'):
+            if self['style'] == DIAL_FULL:
+                dialSize = DIAL_FULL_SIZE
+            else:
+                dialSize = DIAL_MINI_SIZE
+        else:
+            dialSize = DIAL_FULL_SIZE
 
         # Create the components
         interior = self.interior()
@@ -68,15 +72,24 @@ class Dial(Pmw.MegaWidget):
         # The Dial 
         self._dial = self.createcomponent('dial', (), None,
                                           DialWidget, (interior,),
+                                          size = dialSize,
                                           command = self.setEntry,
                                           value = self['value'])
 
-        self._dial.propertyDict['numDigits'] = {
-            'widget' : self,
-            'type' : 'integer',
-            'help' : 'Enter number of digits after decimal point.'
-            }
-        self._dial.propertyList.append('numDigits')
+        self._dial.addPropertyToDialog(
+            'text',
+            {'widget' : self,
+             'type' : 'string',
+             'help' : 'Enter label text for Dial.'
+             }
+            )
+        self._dial.addPropertyToDialog(
+            'numDigits',
+            {'widget' : self,
+             'type' : 'integer',
+             'help' : 'Enter number of digits after decimal point.'
+             }
+            )
 
         # The Label
         self._label = self.createcomponent('label', (), None,
@@ -99,14 +112,14 @@ class Dial(Pmw.MegaWidget):
 
         if self['style'] == DIAL_FULL:
             # Attach dial to entry
-            self._dial.grid(rowspan = 2, columnspan = 2)
+            self._dial.grid(rowspan = 2, columnspan = 2, padx = 2, pady = 2)
             self._label.grid(row = 0, col = 2, sticky = EW)
             self._entry.grid(row = 1, col = 2, sticky = EW)
             interior.columnconfigure(2, weight = 1)
         else:
             self._label.grid(row=0,col=0, sticky = EW)
             self._entry.grid(row=0,col=1, sticky = EW)
-            self._dial.grid(row=0,col=2)
+            self._dial.grid(row=0,col=2, padx = 2, pady = 2)
             interior.columnconfigure(0, weight = 1)
 
         # Make sure input variables processed 
@@ -144,13 +157,13 @@ class Dial(Pmw.MegaWidget):
 
     def _onReturnPress(self, *args):
         """ User redefinable callback executed on <Return> in entry """
-        if self['onReturnPress']:
-            apply(self['onReturnPress'], self['callbackData'])
+        if self['preCallback']:
+            apply(self['preCallback'], self['callbackData'])
 
     def _onReturnRelease(self, *args):
         """ User redefinable callback executed on <Return> release in entry """
-        if self['onReturnRelease']:
-            apply(self['onReturnRelease'], self['callbackData'])
+        if self['postCallback']:
+            apply(self['postCallback'], self['callbackData'])
 
     # Pass settings down to dial
     def setCallbackData(self):
@@ -175,11 +188,12 @@ class Dial(Pmw.MegaWidget):
     def setLabel(self):
         self._label['text'] = self['text']
 
-    def setButtonPressCmd(self):
-        self._dial['onButtonPress'] = self['onButtonPress']
+    def setPreCallbackCmd(self):
+        self._dial['preCallback'] = self['preCallback']
 
-    def setButtonReleaseCmd(self):
-        self._dial['onButtonRelease'] = self['onButtonRelease']
+    def setPostCallbackCmd(self):
+        self._dial['postCallback'] = self['postCallback']
+
 
 class AngleDial(Dial):
     def __init__(self, parent = None, **kw):
@@ -237,10 +251,11 @@ class DialWidget(Pmw.MegaWidget):
             ('command',         None,           None),
             # Extra data to be passed to command function
             ('commandData',     [],             None),
-            # Extra data to be passed to callback function
+            # Callback's to execute during mouse interaction
+            ('preCallback',     None,           None),
+            ('postCallback',    None,           None),
+            # Extra data to be passed to callback function, needs to be a list
             ('callbackData',    [],             None),
-            ('onButtonPress',   None,           None),
-            ('onButtonRelease', None,           None),
             )
         self.defineoptions(kw, optiondefs)
         
@@ -261,31 +276,6 @@ class DialWidget(Pmw.MegaWidget):
         radius = self.radius = int(dim/2.0)
         # Radius of the inner knob
         inner_radius = max(3,radius * INNER_SF)
-
-        # A Dictionary of dictionaries
-        self.propertyDict = {
-            'min' : { 'widget' : self,
-                      'type' : 'real',
-                      'fNone' : 1,
-                      'help' : 'Minimum allowable dial value, Enter None for no minimum'},
-            'max' : { 'widget' : self,
-                      'type' : 'real',
-                      'fNone' : 1,
-                      'help' : 'Maximum allowable dial value, Enter None for no maximum'},
-            'base' : { 'widget' : self,
-                       'type' : 'real',
-                       'help' : 'Dial value = base + delta * numRevs'},
-            'delta' : { 'widget' : self,
-                        'type' : 'real',
-                        'help' : 'Dial value = base + delta * numRevs'},
-            'numSegments' : { 'widget' : self,
-                              'type' : 'integer',
-                              'help' : 'Number of segments to divide dial into'},
-            'resetValue' : { 'widget' : self,
-                             'type' : 'real',
-                             'help' : 'Enter value to set dial to on reset.'}
-            }
-        self.propertyList = ['min', 'max', 'base', 'delta', 'numSegments', 'resetValue']
 
         # The canvas 
         self._canvas = self.createcomponent('canvas', (), None,
@@ -312,6 +302,32 @@ class DialWidget(Pmw.MegaWidget):
                                  fill = '#A0A0A0',
                                  tags = ('knob',))
 
+        # A Dictionary of dictionaries used for the popup property dialog
+        self.propertyDict = {
+            'min' : { 'widget' : self,
+                      'type' : 'real',
+                      'fNone' : 1,
+                      'help' : 'Minimum allowable dial value, Enter None for no minimum'},
+            'max' : { 'widget' : self,
+                      'type' : 'real',
+                      'fNone' : 1,
+                      'help' : 'Maximum allowable dial value, Enter None for no maximum'},
+            'base' : { 'widget' : self,
+                       'type' : 'real',
+                       'help' : 'Dial value = base + delta * numRevs'},
+            'delta' : { 'widget' : self,
+                        'type' : 'real',
+                        'help' : 'Dial value = base + delta * numRevs'},
+            'numSegments' : { 'widget' : self,
+                              'type' : 'integer',
+                              'help' : 'Number of segments to divide dial into'},
+            'resetValue' : { 'widget' : self,
+                             'type' : 'real',
+                             'help' : 'Enter value to set dial to on reset.'}
+            }
+        self.propertyList = ['min', 'max', 'base', 'delta',
+                             'resetValue', 'numSegments']
+
         # The popup menu
         self._popupMenu = Menu(interior, tearoff = 0)
         self._fSnap = IntVar()
@@ -325,8 +341,11 @@ class DialWidget(Pmw.MegaWidget):
             self._popupMenu.add_checkbutton(label = 'Rollover',
                                             variable = self._fRollover,
                                             command = self.setRollover)
-            self._popupMenu.add_command(label = 'Properties...',
-                                        command = self.getProperties)
+            self._popupMenu.add_command(
+                label = 'Properties...',
+                command = self.popupPropertiesDialog)
+        self._popupMenu.add_command(label = 'Zero Dial',
+                                    command = self.zero)
         self._popupMenu.add_command(label = 'Reset Dial',
                                     command = self.reset)
 
@@ -375,6 +394,14 @@ class DialWidget(Pmw.MegaWidget):
         # Record value
         self.value = value
     
+    # Set floater to zero
+    def zero(self):
+        """
+        self.reset()
+        Set dial to zero
+        """
+        self.set(0.0)
+
     # Reset dial to reset value
     def reset(self):
         """
@@ -384,6 +411,7 @@ class DialWidget(Pmw.MegaWidget):
         self.set(self['resetValue'])
 
     def mouseReset(self,event):
+        # If not over any canvas item
         if not self._canvas.find_withtag(CURRENT):
             self.reset()
         
@@ -465,7 +493,6 @@ class DialWidget(Pmw.MegaWidget):
         # Update value
         currT = globalClock.getFrameTime()
         dt = currT - state.lastTime
-        #self.set(self.value + self['delta'] * self.knobSF * dt)
         self.set(self.value + self.knobSF * dt)
         state.lastTime = currT
         return Task.cont
@@ -548,24 +575,28 @@ class DialWidget(Pmw.MegaWidget):
         self['fRollover'] = self._fRollover.get()
 
     # This handles the popup dial min dialog
-    def getProperties(self):
+    def popupPropertiesDialog(self):
         # Popup dialog to adjust widget properties
-        WidgetPropertiesDialog(
+        WidgetPropertiesDialog.WidgetPropertiesDialog(
             self.propertyDict,
             propertyList = self.propertyList,
             title = 'Dial Widget Properties',
             parent = self._canvas)
+
+    def addPropertyToDialog(self, property, pDict):
+        self.propertyDict[property] = pDict
+        self.propertyList.append(property)
             
     # User callbacks
     def _onButtonPress(self, *args):
         """ User redefinable callback executed on button press """
-        if self['onButtonPress']:
-            apply(self['onButtonPress'], self['callbackData'])
+        if self['preCallback']:
+            apply(self['preCallback'], self['callbackData'])
 
     def _onButtonRelease(self, *args):
         """ User redefinable callback executed on button release """
-        if self['onButtonRelease']:
-            apply(self['onButtonRelease'], self['callbackData'])
+        if self['postCallback']:
+            apply(self['postCallback'], self['callbackData'])
 
   
 if __name__ == '__main__':

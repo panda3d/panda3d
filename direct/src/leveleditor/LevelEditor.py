@@ -4435,7 +4435,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.fUpdateSelected = 1
         # Handle to the toplevels hull
         hull = self.component('hull')
-        hull.geometry('400x550')
+        hull.geometry('400x515')
         
         balloon = self.balloon = Pmw.Balloon(hull)
         # Start with balloon help disabled
@@ -4737,63 +4737,73 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.addKernFloater = Floater.Floater(
             gridFrame, 
             text='Kern',
-            maxVelocity=1.0,
+            #maxVelocity=1.0,
             command=self.setSignBaselineKern)
-        self.addKernFloater.grid(row=4, column=0, rowspan=2, columnspan=3)
+        self.addKernFloater.grid(row=4, column=0, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addWiggleFloater = Floater.Floater(
             gridFrame, 
             text='Wiggle',
-            maxVelocity=10.0,
+            #maxVelocity=10.0,
             command=self.setSignBaselineWiggle)
-        self.addWiggleFloater.grid(row=6, column=0, rowspan=2, columnspan=3)
+        self.addWiggleFloater.grid(row=6, column=0, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addStumbleFloater = Floater.Floater(
             gridFrame, 
             text='Stumble',
-            maxVelocity=1.0,
+            #maxVelocity=1.0,
             command=self.setSignBaselineStumble)
-        self.addStumbleFloater.grid(row=8, column=0, rowspan=2, columnspan=3)
+        self.addStumbleFloater.grid(row=8, column=0, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addStompFloater = Floater.Floater(
             gridFrame, 
             text='Stomp',
-            maxVelocity=1.0,
+            #maxVelocity=1.0,
             command=self.setSignBaselineStomp)
-        self.addStompFloater.grid(row=10, column=0, rowspan=2, columnspan=3)
+        self.addStompFloater.grid(row=10, column=0, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addCurveFloater = Floater.Floater(
             gridFrame, 
             text='Curve',
-            maxVelocity = 1.0,
+            #maxVelocity = 1.0,
             command=self.setSignBaselineCurve)
-        self.addCurveFloater.grid(row=12, column=0, rowspan=2, columnspan=3)
+        self.addCurveFloater.grid(row=12, column=0, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addXFloater = Floater.Floater(
             gridFrame, 
             text='X',
-            maxVelocity=1.0,
+            #maxVelocity=1.0,
             command=self.setDNATargetX)
-        self.addXFloater.grid(row=4, column=3, rowspan=2, columnspan=3)
+        self.addXFloater.grid(row=4, column=3, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addZFloater = Floater.Floater(
             gridFrame, 
             text='Z',
-            maxVelocity=1.0,
+            #maxVelocity=1.0,
             command=self.setDNATargetZ)
-        self.addZFloater.grid(row=6, column=3, rowspan=2, columnspan=3)
+        self.addZFloater.grid(row=6, column=3, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addScaleXFloater = Floater.Floater(
             gridFrame, 
             text='Scale X',
-            maxVelocity=1.0,
+            #maxVelocity=1.0,
             command=self.setDNATargetScaleX)
-        self.addScaleXFloater.grid(row=8, column=3, rowspan=2, columnspan=3)
+        self.addScaleXFloater.grid(row=8, column=3, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addScaleZFloater = Floater.Floater(
             gridFrame, 
             text='Scale Z',
-            maxVelocity=1.0,
+            #maxVelocity=1.0,
             command=self.setDNATargetScaleZ)
-        self.addScaleZFloater.grid(row=10, column=3, rowspan=2, columnspan=3)
+        self.addScaleZFloater.grid(row=10, column=3, rowspan=2, columnspan=3,
+                                 sticky = EW)
         self.addRollFloater = Floater.Floater(
             gridFrame, 
             text='Roll',
-            maxVelocity=10.0,
+            #maxVelocity=10.0,
             command=self.setDNATargetRoll)
-        self.addRollFloater.grid(row=12, column=3, rowspan=2, columnspan=3)
+        self.addRollFloater.grid(row=12, column=3, rowspan=2, columnspan=3,
+                                 sticky = EW)
 
         gridFrame.pack(fill=BOTH)
 

@@ -369,7 +369,7 @@ class DirectSessionPanel(AppShell):
         self.pConstantAttenuation = EntryScale.EntryScale(
             pointPage,
             text = 'Constant Attenuation',
-            min = 0.0, max = 1.0, initialValue = 1.0)
+            min = 0.0, max = 1.0, value = 1.0)
         self.pConstantAttenuation['command'] = self.setConstantAttenuation
         self.pConstantAttenuation.pack(fill = X, expand = 0)
         self.bind(self.pConstantAttenuation,
@@ -378,7 +378,7 @@ class DirectSessionPanel(AppShell):
         self.pLinearAttenuation = EntryScale.EntryScale(
             pointPage,
             text = 'Linear Attenuation',
-            min = 0.0, max = 1.0, initialValue = 0.0)
+            min = 0.0, max = 1.0, value = 0.0)
         self.pLinearAttenuation['command'] = self.setLinearAttenuation
         self.pLinearAttenuation.pack(fill = X, expand = 0)
         self.bind(self.pLinearAttenuation,
@@ -387,7 +387,7 @@ class DirectSessionPanel(AppShell):
         self.pQuadraticAttenuation = EntryScale.EntryScale(
             pointPage,
             text = 'Quadratic Attenuation',
-            min = 0.0, max = 1.0, initialValue = 0.0)
+            min = 0.0, max = 1.0, value = 0.0)
         self.pQuadraticAttenuation['command'] = self.setQuadraticAttenuation
         self.pQuadraticAttenuation.pack(fill = X, expand = 0)
         self.bind(self.pQuadraticAttenuation,
@@ -404,7 +404,7 @@ class DirectSessionPanel(AppShell):
         self.sConstantAttenuation = EntryScale.EntryScale(
             spotPage,
             text = 'Constant Attenuation',
-            min = 0.0, max = 1.0, initialValue = 1.0)
+            min = 0.0, max = 1.0, value = 1.0)
         self.sConstantAttenuation['command'] = self.setConstantAttenuation
         self.sConstantAttenuation.pack(fill = X, expand = 0)
         self.bind(self.sConstantAttenuation,
@@ -413,7 +413,7 @@ class DirectSessionPanel(AppShell):
         self.sLinearAttenuation = EntryScale.EntryScale(
             spotPage,
             text = 'Linear Attenuation',
-            min = 0.0, max = 1.0, initialValue = 0.0)
+            min = 0.0, max = 1.0, value = 0.0)
         self.sLinearAttenuation['command'] = self.setLinearAttenuation
         self.sLinearAttenuation.pack(fill = X, expand = 0)
         self.bind(self.sLinearAttenuation,
@@ -422,7 +422,7 @@ class DirectSessionPanel(AppShell):
         self.sQuadraticAttenuation = EntryScale.EntryScale(
             spotPage,
             text = 'Quadratic Attenuation',
-            min = 0.0, max = 1.0, initialValue = 0.0)
+            min = 0.0, max = 1.0, value = 0.0)
         self.sQuadraticAttenuation['command'] = self.setQuadraticAttenuation
         self.sQuadraticAttenuation.pack(fill = X, expand = 0)
         self.bind(self.sQuadraticAttenuation,
@@ -431,7 +431,7 @@ class DirectSessionPanel(AppShell):
         self.sExponent = EntryScale.EntryScale(
             spotPage,
             text = 'Exponent',
-            min = 0.0, max = 1.0, initialValue = 0.0)
+            min = 0.0, max = 1.0, value = 0.0)
         self.sExponent['command'] = self.setExponent
         self.sExponent.pack(fill = X, expand = 0)
         self.bind(self.sExponent,
@@ -478,7 +478,7 @@ class DirectSessionPanel(AppShell):
             gridPage,
             text = 'Grid Spacing',
             min = 0.1,
-            initialValue = direct.grid.getGridSpacing())
+            value = direct.grid.getGridSpacing())
         self.gridSpacing['command'] = direct.grid.setGridSpacing
         self.gridSpacing.pack(fill = X, expand = 0)
         
@@ -486,13 +486,14 @@ class DirectSessionPanel(AppShell):
             gridPage,
             text = 'Grid Size',
             min = 1.0,
-            initialValue = direct.grid.getGridSize())
+            value = direct.grid.getGridSize())
         self.gridSize['command'] = direct.grid.setGridSize
         self.gridSize.pack(fill = X, expand = 0)
 
         self.gridSnapAngle = Dial.AngleDial(
             gridPage,
             text = 'Snap Angle',
+            style = Dial.DIAL_MINI,
             value = direct.grid.getSnapAngle())
         self.gridSnapAngle['command'] = direct.grid.setSnapAngle
         self.gridSnapAngle.pack(fill = X, expand = 0)
@@ -544,7 +545,7 @@ class DirectSessionPanel(AppShell):
             self.jbXyzSF = EntryScale.EntryScale(
                 joyboxFrame,
                 text = 'XYZ Scale Factor',
-                initialValue = 1.0,
+                value = 1.0,
                 hull_relief = RIDGE, hull_borderwidth = 2,
                 min = 1.0, max = 100.0)
             self.jbXyzSF['command'] = (
@@ -555,7 +556,7 @@ class DirectSessionPanel(AppShell):
             self.jbHprSF = EntryScale.EntryScale(
                 joyboxFrame,
                 text = 'HPR Scale Factor',
-                initialValue = 1.0,
+                value = 1.0,
                 hull_relief = RIDGE, hull_borderwidth = 2,
                 min = 1.0, max = 100.0)
             self.jbHprSF['command'] = (

@@ -19,14 +19,16 @@ class EntryScale(Pmw.MegaWidget):
 
         # Define the megawidget options.
         optiondefs = (
-            ('initialValue',        0.0,           Pmw.INITOPT),
+            ('value',        0.0,           Pmw.INITOPT),
             ('resolution',          0.001,         None),
             ('command',             None,          None),
+            ('preCallback',         None,          None),
+            ('postCallback',        None,          None),
             ('callbackData',        [],            None),
             ('min',                 0.0,           self._updateValidate),
             ('max',                 100.0,         self._updateValidate),
             ('text',                'EntryScale',  self._updateLabelText),
-            ('significantDigits',   2,             self._setSigDigits),
+            ('numDigits',   2,             self._setSigDigits),
             )
         self.defineoptions(kw, optiondefs)
  
@@ -34,7 +36,7 @@ class EntryScale(Pmw.MegaWidget):
         Pmw.MegaWidget.__init__(self, parent)
 
         # Initialize some class variables
-        self.value = self['initialValue']
+        self.value = self['value']
         self.entryFormat = '%.2f'
         self.fScaleCommand = 0
 
@@ -49,7 +51,7 @@ class EntryScale(Pmw.MegaWidget):
                                                Frame, interior)
         # Create an entry field to display and validate the entryScale's value
         self.entryValue = StringVar()
-        self.entryValue.set(self['initialValue'])
+        self.entryValue.set(self['value'])
         self.entry = self.createcomponent('entryField',
                                           # Access widget's entry using "entry"
                                           (('entry', 'entryField_entry'),),
@@ -105,7 +107,7 @@ class EntryScale(Pmw.MegaWidget):
                                           showvalue = 0)
         self.scale.pack(side = 'left', expand = 1, fill = 'x')
         # Set scale to the middle of its range
-        self.scale.set(self['initialValue'])
+        self.scale.set(self['value'])
         self.scale.bind('<Button-1>', self.__onPress)
         self.scale.bind('<ButtonRelease-1>', self.__onRelease)
         self.scale.bind('<Button-3>', self.askForResolution)
@@ -218,7 +220,7 @@ class EntryScale(Pmw.MegaWidget):
             pass
 
     def _setSigDigits(self):
-        sd = self['significantDigits']
+        sd = self['numDigits']
         self.entryFormat = '%.' + '%d' % sd + 'f'
         # And reset value to reflect change
         self.entryValue.set( self.entryFormat % self.value )
@@ -260,7 +262,8 @@ class EntryScale(Pmw.MegaWidget):
 
     def __onPress(self, event):
         # First execute onpress callback
-        apply(self.onPress, self['callbackData'])
+        if self['preCallback']:
+            apply(self['preCallback'], self['callbackData'])
         # Now enable slider command
         self.fScaleCommand = 1
 
@@ -272,7 +275,8 @@ class EntryScale(Pmw.MegaWidget):
         # Now disable slider command
         self.fScaleCommand = 0
         # First execute onpress callback
-        apply(self.onRelease, self['callbackData'])
+        if self['postCallback']:
+            apply(self['postCallback'], self['callbackData'])
 
     def onRelease(self, *args):
         """ User redefinable callback executed on button release """
@@ -295,9 +299,11 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             ('side',            TOP,                    INITOPT),
             ('title',           'Group',                None),
             # A tuple of initial values, one for each entryScale
-            ('initialValue',    DEFAULT_VALUE,          INITOPT),
+            ('value',    DEFAULT_VALUE,          INITOPT),
             # The command to be executed any time one of the entryScales is updated
             ('command',         None,                   None),
+            ('preCallback',     None,                   None),
+            ('postCallback',    None,                   None),
             # A tuple of labels, one for each entryScale
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
             # Destroy or withdraw
@@ -311,7 +317,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
         # Create the components
         interior = self.interior()
         # Get a copy of the initial value (making sure its a list)
-        self._value = list(self['initialValue'])
+        self._value = list(self['value'])
 
         # The Menu Bar
         self.balloon = Pmw.Balloon()
@@ -349,7 +355,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             #   fg.configure(Valuator_XXX = YYY)
             f = self.createcomponent(
                 'entryScale%d' % index, (), 'Valuator', EntryScale,
-                (interior,), initialValue = self._value[index],
+                (interior,), value = self._value[index],
                 text = self['labels'][index])
             # Do this separately so command doesn't get executed during construction
             f['command'] = lambda val, s=self, i=index: s._entryScaleSetAt(i, val)
@@ -357,13 +363,13 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             # Callbacks
             f.onReturn = self.__onReturn
             f.onReturnRelease = self.__onReturnRelease
-            f.onPress = self.__onPress
-            f.onRelease = self.__onRelease
+            f['preCallback'] = self.__onPress
+            f['postCallback'] = self.__onRelease
             f.pack(side = self['side'], expand = 1, fill = X)
             self.entryScaleList.append(f)
 
         # Make sure entryScales are initialized
-        self.set(self['initialValue'])
+        self.set(self['value'])
         
         # Make sure input variables processed 
         self.initialiseoptions(EntryScaleGroup)
@@ -405,7 +411,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             self['command'](self._value)
 
     def reset(self):
-        self.set(self['initialValue'])
+        self.set(self['value'])
 
     def __onReturn(self, esg):
         # Execute onReturn callback
@@ -425,7 +431,8 @@ class EntryScaleGroup(Pmw.MegaToplevel):
 
     def __onPress(self, esg):
         # Execute onPress callback
-        apply(self.onPress, esg.get())
+        if self['preCallback']:
+            apply(self['preCallback'], esg.get())
 
     def onPress(self, *args):
         """ User redefinable callback executed on button press """
@@ -433,7 +440,8 @@ class EntryScaleGroup(Pmw.MegaToplevel):
 
     def __onRelease(self, esg):
         # Execute onRelease callback
-        apply(self.onRelease, esg.get())
+        if self['postCallback']:
+            apply(self['postCallback'], esg.get())
 
     def onRelease(self, *args):
         """ User redefinable callback executed on button release """
@@ -455,7 +463,7 @@ def rgbPanel(nodePath, callback = None):
     esg = EntryScaleGroup(title = 'RGBA Panel: ' + nodePath.getName(),
                           dim = 4,
                           labels = ['R','G','B','A'],
-                          initialValue = [int(initColor[0]),
+                          value = [int(initColor[0]),
                                           int(initColor[1]),
                                           int(initColor[2]),
                                           int(initColor[3])],
@@ -499,7 +507,7 @@ def rgbPanel(nodePath, callback = None):
     # Set callback
     def onRelease(r,g,b,a, nodePath = nodePath):
         messenger.send('RGBPanel_setColor', [nodePath, r,g,b,a])
-    esg.onRelease = onRelease
+    esg['postCallback'] = onRelease
     return esg
 
 ## SAMPLE CODE
@@ -519,7 +527,7 @@ if __name__ == '__main__':
     """
     # These are things you can set/configure
     # Starting value for entryScale    
-    mega1['initialValue'] = 123.456
+    mega1['value'] = 123.456
     mega1['text'] = 'Drive delta X'
     mega1['min'] = 0.0
     mega1['max'] = 1000.0
@@ -530,7 +538,7 @@ if __name__ == '__main__':
     # To have really fine control, for example
     # mega1['maxVelocity'] = 0.1
     # Number of digits to the right of the decimal point, default = 2
-    # mega1['significantDigits'] = 5
+    # mega1['numDigits'] = 5
     """
 
     # To create a entryScale group to set an RGBA value:

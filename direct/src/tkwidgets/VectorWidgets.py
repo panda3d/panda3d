@@ -20,7 +20,7 @@ class VectorEntry(Pmw.MegaWidget):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('dim',                 DEFAULT_DIM,    INITOPT),
-            ('initialValue',        DEFAULT_VALUE,  INITOPT),
+            ('value',        DEFAULT_VALUE,  INITOPT),
             ('resetValue',          DEFAULT_VALUE,  None),
             ('label_width',         12,             None),
             ('command',             None,           None),
@@ -30,7 +30,7 @@ class VectorEntry(Pmw.MegaWidget):
             ('text',                'Vector:',      self._updateText),
             ('min',                 None,           self._updateValidate),
             ('max',                 None,           self._updateValidate),
-            ('significantDigits',   2,              self._setSigDigits),
+            ('numDigits',   2,              self._setSigDigits),
             ('valuatorType',        VALUATOR,       None),
             ('state',               'normal',       self._setState),
             )
@@ -41,8 +41,8 @@ class VectorEntry(Pmw.MegaWidget):
 
         # Initialize value
         # Make sure its a list (and as a byproduct, make a distinct copy)
-        self._value = list(self['initialValue'])
-        self['resetValue'] = self['initialValue']
+        self._value = list(self['value'])
+        self['resetValue'] = self['value']
         self._floaters = None
         self.entryFormat = '%.2f'
 
@@ -103,7 +103,7 @@ class VectorEntry(Pmw.MegaWidget):
                                              
 
         # Make sure entries are updated
-        self.set(self['initialValue'])
+        self.set(self['value'])
 
         # Record entry color
         self.entryBackground = self.cget('Entry_entry_background')
@@ -142,9 +142,9 @@ class VectorEntry(Pmw.MegaWidget):
         self['Entry_entry_width'] = self['entryWidth']
 
     def _setSigDigits(self):
-        sd = self['significantDigits']
+        sd = self['numDigits']
         self.entryFormat = '%.' + '%d' % sd + 'f'
-        self.configure(Valuator_significantDigits = sd)
+        self.configure(Valuator_numDigits = sd)
         # And refresh value to reflect change
         for index in range(self['dim']):
             self._refreshEntry(index)
@@ -232,8 +232,10 @@ class VectorEntry(Pmw.MegaWidget):
             self.configure(Entry_entry_state = 'disabled')
             self.configure(Entry_entry_background = '#C0C0C0')
             # Disable floater Group scale
+            """
             self.component('fGroup').configure(
                 Valuator_scale_state = 'disabled')
+            """
             # Disable floater group entry
             self.component('fGroup').configure(
                 Valuator_entry_state = 'disabled')
@@ -244,8 +246,10 @@ class VectorEntry(Pmw.MegaWidget):
             self.configure(Entry_entry_state = 'normal')
             self.configure(Entry_entry_background = self.entryBackground)
             # Disable floater Group scale
+            """
             self.component('fGroup').configure(
                 Valuator_scale_state = 'normal')
+            """
             # Disable floater group entry
             self.component('fGroup').configure(
                 Valuator_entry_state = 'normal')
@@ -302,7 +306,7 @@ class ColorEntry(VectorEntry):
             ('fGroup_labels',           ('R','G','B','A'),  None),
             ('min',                     0.0,                None),
             ('max',                     255.0,              None),
-            ('significantDigits',       0,                  None),
+            ('nuDigits',       0,                  None),
             ('Valuator_resolution',     1.0,                None),
             )
         self.defineoptions(kw, optiondefs)

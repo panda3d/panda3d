@@ -110,15 +110,17 @@ class WidgetPropertiesDialog(Toplevel):
                     extra = ''
             # Set up help string and validator based upon type
             if entryType == 'real':
+                # Only allow real numbers
                 entry['validate'] = { 'validator' : self.realOrNone }
                 if helpString is None:
                     helpString = 'Enter a floating point number' + extra + '.'
             elif entryType == 'integer':
+                # Only allow integer values
                 entry['validate'] = { 'validator' : self.intOrNone }
                 if helpString is None:
                     helpString = 'Enter an integer' + extra + '.'
             else:
-                entry['validate'] = { 'validator' : 'alphanumeric' }
+                # Anything goes with a string widget
                 if helpString is None:
                     helpString = 'Enter a string' + extra + '.'
             # Bind balloon with help string to entry

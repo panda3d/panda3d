@@ -328,14 +328,14 @@ class AppShell(Pmw.MegaWidget, PandaObject):
         return widget
 
     def newCreateLabeledEntry(self, parent, category, text, help = '', 
-                              command = None, initialValue = '',
+                              command = None, value = '',
                               width = 12, relief = SUNKEN,
                               side = LEFT, fill = X, expand = 0):
         """ createLabeledEntry(parent, category, text, [options]) """
         # Create labeled entry
         frame = Frame(parent)
         variable = StringVar()
-        variable.set(initialValue)
+        variable.set(value)
         label = Label(frame, text = text)
         label.pack(side = LEFT, fill = X, expand = 0)
         entry = Entry(frame, width = width, relief = relief,

@@ -18,8 +18,8 @@ class Placer(AppShell):
     # Override class variables here
     appname = 'Placer Panel'
     frameWidth      = 625
-    frameHeight     = 290
-    usecommandarea = 1
+    frameHeight     = 215
+    usecommandarea = 0
     usestatusarea  = 0
 
     def __init__(self, parent = None, **kw):
@@ -82,6 +82,7 @@ class Placer(AppShell):
     def createInterface(self):
         # The interior of the toplevel panel
         interior = self.interior()
+        interior['relief'] = FLAT
         # Add placer commands to menubar
         self.menuBar.addmenu('Placer', 'Placer Panel Operations')
         self.menuBar.addmenuitem('Placer', 'command',
@@ -159,20 +160,16 @@ class Placer(AppShell):
         self.redoButton.pack(side = 'left', expand = 0)
         self.bind(self.redoButton, 'Redo last operation')
 
-        # The master frame for the dials
-        dialFrame = Frame(interior)
-        dialFrame.pack(fill = 'both', expand = 1)
-        
         # Create and pack the Pos Controls
-        posGroup = Pmw.Group(dialFrame,
+        posGroup = Pmw.Group(interior,
                              tag_pyclass = Menubutton,
                              tag_text = 'Position',
-                             tag_font=('MSSansSerif', 14, 'bold'),
+                             tag_font=('MSSansSerif', 14),
                              tag_activebackground = '#909090',
-                             ring_relief = 'flat')
+                             ring_relief = RIDGE)
         posMenubutton = posGroup.component('tag')
         self.bind(posMenubutton, 'Position menu operations')
-        posMenu = Menu(posMenubutton)
+        posMenu = Menu(posMenubutton, tearoff = 0)
         posMenu.add_command(label = 'Set to zero', command = self.zeroPos)
         posMenu.add_command(label = 'Reset initial',
                             command = self.resetPos)
@@ -183,56 +180,50 @@ class Placer(AppShell):
         # Create the dials
         self.posX = self.createcomponent('posX', (), None,
                                          Floater.Floater, (posInterior,),
-                                         text = 'X',
-                                         initialValue = 0.0,
+                                         text = 'X', relief = FLAT,
+                                         value = 0.0,
                                          label_foreground = 'Red')
         self.posX['command'] = self.xform
         self.posX['commandData'] = ['x']
+        self.posX['preCallback'] = self.xformStart
+        self.posX['postCallback'] = self.xformStop
         self.posX['callbackData'] = ['x']
-        self.posX.onReturn = self.xformStart
-        self.posX.onReturnRelease = self.xformStop
-        self.posX.onPress = self.xformStart
-        self.posX.onRelease = self.xformStop
         self.posX.pack(expand=1,fill='both')
         
         self.posY = self.createcomponent('posY', (), None,
                                          Floater.Floater, (posInterior,),
-                                         text = 'Y',
-                                         initialValue = 0.0,
+                                         text = 'Y', relief = FLAT,
+                                         value = 0.0,
                                          label_foreground = '#00A000')
         self.posY['command'] = self.xform
         self.posY['commandData'] = ['y']
+        self.posY['preCallback'] = self.xformStart
+        self.posY['postCallback'] = self.xformStop
         self.posY['callbackData'] = ['y']
-        self.posY.onReturn = self.xformStart
-        self.posY.onReturnRelease = self.xformStop
-        self.posY.onPress = self.xformStart
-        self.posY.onRelease = self.xformStop
         self.posY.pack(expand=1,fill='both')
         
         self.posZ = self.createcomponent('posZ', (), None,
                                          Floater.Floater, (posInterior,),
-                                         text = 'Z',
-                                         initialValue = 0.0,
+                                         text = 'Z', relief = FLAT,
+                                         value = 0.0,
                                          label_foreground = 'Blue')
         self.posZ['command'] = self.xform
         self.posZ['commandData'] = ['z']
+        self.posZ['preCallback'] = self.xformStart
+        self.posZ['postCallback'] = self.xformStop
         self.posZ['callbackData'] = ['z']
-        self.posZ.onReturn = self.xformStart
-        self.posZ.onReturnRelease = self.xformStop
-        self.posZ.onPress = self.xformStart
-        self.posZ.onRelease = self.xformStop
         self.posZ.pack(expand=1,fill='both')
 
         # Create and pack the Hpr Controls
-        hprGroup = Pmw.Group(dialFrame,
+        hprGroup = Pmw.Group(interior,
                              tag_pyclass = Menubutton,
                              tag_text = 'Orientation',
-                             tag_font=('MSSansSerif', 14, 'bold'),
+                             tag_font=('MSSansSerif', 14),
                              tag_activebackground = '#909090',
-                             ring_relief = 'flat')
+                             ring_relief = RIDGE)
         hprMenubutton = hprGroup.component('tag')
         self.bind(hprMenubutton, 'Orientation menu operations')
-        hprMenu = Menu(hprMenubutton)
+        hprMenu = Menu(hprMenubutton, tearoff = 0)
         hprMenu.add_command(label = 'Set to zero', command = self.zeroHpr)
         hprMenu.add_command(label = 'Reset initial', command = self.resetHpr)
         hprMenubutton['menu'] = hprMenu
@@ -242,41 +233,41 @@ class Placer(AppShell):
         # Create the dials
         self.hprH = self.createcomponent('hprH', (), None,
                                          Dial.AngleDial, (hprInterior,),
+                                         style = Dial.DIAL_MINI,
                                          text = 'H', value = 0.0,
+                                         relief = FLAT,
                                          label_foreground = 'blue')
         self.hprH['command'] = self.xform
         self.hprH['commandData'] = ['h']
+        self.hprH['preCallback'] = self.xformStart
+        self.hprH['postCallback'] = self.xformStop
         self.hprH['callbackData'] = ['h']
-        self.hprH['onReturnPress'] = self.xformStart
-        self.hprH['onReturnRelease'] = self.xformStop
-        self.hprH['onButtonPress'] = self.xformStart
-        self.hprH['onButtonRelease'] = self.xformStop
         self.hprH.pack(expand=1,fill='both')
         
         self.hprP = self.createcomponent('hprP', (), None,
                                          Dial.AngleDial, (hprInterior,),
+                                         style = Dial.DIAL_MINI,
                                          text = 'P', value = 0.0,
+                                         relief = FLAT,
                                          label_foreground = 'red')
         self.hprP['command'] = self.xform
         self.hprP['commandData'] = ['p']
+        self.hprP['preCallback'] = self.xformStart
+        self.hprP['postCallback'] = self.xformStop
         self.hprP['callbackData'] = ['p']
-        self.hprP['onReturnPress'] = self.xformStart
-        self.hprP['onReturnRelease'] = self.xformStop
-        self.hprP['onButtonPress'] = self.xformStart
-        self.hprP['onButtonRelease'] = self.xformStop
         self.hprP.pack(expand=1,fill='both')
         
         self.hprR = self.createcomponent('hprR', (), None,
                                          Dial.AngleDial, (hprInterior,),
+                                         style = Dial.DIAL_MINI,
                                          text = 'R', value = 0.0,
+                                         relief = FLAT,
                                          label_foreground = '#00A000')
         self.hprR['command'] = self.xform
         self.hprR['commandData'] = ['r']
+        self.hprR['preCallback'] = self.xformStart
+        self.hprR['postCallback'] = self.xformStop
         self.hprR['callbackData'] = ['r']
-        self.hprR['onReturnPress'] = self.xformStart
-        self.hprR['onReturnRelease'] = self.xformStop
-        self.hprR['onButtonPress'] = self.xformStart
-        self.hprR['onButtonRelease'] = self.xformStop
         self.hprR.pack(expand=1,fill='both')
 
         # Create and pack the Scale Controls
@@ -284,18 +275,18 @@ class Placer(AppShell):
         self.scalingMode = StringVar()
         self.scalingMode.set('Scale Uniform')
         # The scaling widgets
-        scaleGroup = Pmw.Group(dialFrame,
+        scaleGroup = Pmw.Group(interior,
                                tag_text = 'Scale Uniform',
                                tag_pyclass = Menubutton,
-                               tag_font=('MSSansSerif', 14, 'bold'),
+                               tag_font=('MSSansSerif', 14),
                                tag_activebackground = '#909090',
-                               ring_relief = 'flat')
+                               ring_relief = RIDGE)
         self.scaleMenubutton = scaleGroup.component('tag')
         self.bind(self.scaleMenubutton, 'Scale menu operations')
         self.scaleMenubutton['textvariable'] = self.scalingMode
 
         # Scaling menu
-        scaleMenu = Menu(self.scaleMenubutton)
+        scaleMenu = Menu(self.scaleMenubutton, tearoff = 0)
         scaleMenu.add_command(label = 'Set to unity',
                               command = self.unitScale)
         scaleMenu.add_command(label = 'Reset initial',
@@ -313,48 +304,45 @@ class Placer(AppShell):
         
         # Create the dials
         self.scaleX = self.createcomponent('scaleX', (), None,
-                                           Dial.Dial, (scaleInterior,),
+                                           Floater.Floater, (scaleInterior,),
                                            text = 'X Scale',
+                                           relief = FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Red')
         self.scaleX['command'] = self.xform
         self.scaleX['commandData'] = ['sx']
         self.scaleX['callbackData'] = ['sx']
-        self.scaleX['onReturnPress'] = self.xformStart
-        self.scaleX['onReturnRelease'] = self.xformStop
-        self.scaleX['onButtonPress'] = self.xformStart
-        self.scaleX['onButtonRelease'] = self.xformStop
+        self.scaleX['preCallback'] = self.xformStart
+        self.scaleX['postCallback'] = self.xformStop
         self.scaleX.pack(expand=1,fill='both')
         
         self.scaleY = self.createcomponent('scaleY', (), None,
-                                           Dial.Dial, (scaleInterior,),
+                                           Floater.Floater, (scaleInterior,),
                                            text = 'Y Scale',
+                                           relief = FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = '#00A000')
         self.scaleY['command'] = self.xform
         self.scaleY['commandData'] = ['sy']
         self.scaleY['callbackData'] = ['sy']
-        self.scaleY['onReturnPress'] = self.xformStart
-        self.scaleY['onReturnRelease'] = self.xformStop
-        self.scaleY['onButtonPress'] = self.xformStart
-        self.scaleY['onButtonRelease'] = self.xformStop
+        self.scaleY['preCallback'] = self.xformStart
+        self.scaleY['postCallback'] = self.xformStop
         self.scaleY.pack(expand=1,fill='both')
         
         self.scaleZ = self.createcomponent('scaleZ', (), None,
-                                           Dial.Dial, (scaleInterior,),
+                                           Floater.Floater, (scaleInterior,),
                                            text = 'Z Scale',
+                                           relief = FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Blue')
         self.scaleZ['command'] = self.xform
         self.scaleZ['commandData'] = ['sz']
         self.scaleZ['callbackData'] = ['sz']
-        self.scaleZ['onReturnPress'] = self.xformStart
-        self.scaleZ['onReturnRelease'] = self.xformStop
-        self.scaleZ['onButtonPress'] = self.xformStart
-        self.scaleZ['onButtonRelease'] = self.xformStop
+        self.scaleZ['preCallback'] = self.xformStart
+        self.scaleZ['postCallback'] = self.xformStop
         self.scaleZ.pack(expand=1,fill='both')
 
         # Make sure appropriate labels are showing
@@ -363,33 +351,6 @@ class Placer(AppShell):
         self.selectNodePathNamed('init')
         self.selectRefNodePathNamed('parent')
 
-        self.createButtons()
-
-    def createButtons(self):
-        self.buttonAdd('Zero All',
-                       helpMessage='Zero Node Path',
-                       statusMessage='Zero Node Path',
-                       command=self.zeroAll)
-        self.buttonAdd('Reset All',
-                       helpMessage='Reset Node Path',
-                       statusMessage='Reset Node Path',
-                       command=self.resetAll)
-        self.buttonAdd('Print Info',
-                       helpMessage='Print Node Path Info',
-                       statusMessage='Print Node Path Info',
-                       command=self.printNodePathInfo)
-        self.buttonAdd('Toggle Widget Viz',
-                       helpMessage='Toggle Object Handles Visability',
-                       statusMessage='Toggle Object Handles Visability',
-                       command=direct.toggleWidgetVis)
-        self.buttonAdd(
-            'Toggle Widget Mode',
-            helpMessage='Toggle Widget Move/COA Mode',
-            statusMessage='Toggle Widget Move/COA Mode',
-            command=direct.manipulationControl.toggleObjectHandlesMode)
-        
-        # Make all buttons as wide as widest
-        self.alignbuttons()
 
     ### WIDGET OPERATIONS ###
     def setMovementMode(self, movementMode):
@@ -715,8 +676,17 @@ class Placer(AppShell):
 
     def updateResetValues(self, nodePath):
         self.initPos.assign(nodePath.getPos())
+        self.posX['resetValue'] = self.initPos[0]
+        self.posY['resetValue'] = self.initPos[1]
+        self.posZ['resetValue'] = self.initPos[2]
         self.initHpr.assign(nodePath.getHpr())
+        self.hprH['resetValue'] = self.initHpr[0]
+        self.hprP['resetValue'] = self.initHpr[1]
+        self.hprR['resetValue'] = self.initHpr[2]
         self.initScale.assign(nodePath.getScale())
+        self.scaleX['resetValue'] = self.initScale[0]
+        self.scaleY['resetValue'] = self.initScale[1]
+        self.scaleZ['resetValue'] = self.initScale[2]
 
     def resetAll(self):
         if self['nodePath']:

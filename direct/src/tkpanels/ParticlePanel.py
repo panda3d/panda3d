@@ -20,7 +20,7 @@ class ParticlePanel(AppShell):
     # Override class variables
     appname = 'Particle Panel'
     frameWidth  = 375
-    frameHeight = 775
+    frameHeight = 575
     usecommandarea = 0
     usestatusarea  = 0
     balloonState = 'both'
@@ -374,7 +374,7 @@ class ParticlePanel(AppShell):
         self.createVector3Entry(boxPage, 'Box Emitter', 'Max',
                                 'Max point defining emitter box',
                                 command = self.setEmitterBoxPoint2,
-                                initialValue = (1.0, 1.0, 1.0))
+                                value = (1.0, 1.0, 1.0))
         # Disc page #
         discPage = self.emitterNotebook.add('DiscEmitter')
         self.createFloater(discPage, 'Disc Emitter', 'Radius',
@@ -408,7 +408,7 @@ class ParticlePanel(AppShell):
         self.createVector3Entry(linePage, 'Line Emitter', 'Max',
                                 'Max point defining emitter line',
                                 command = self.setEmitterLinePoint2,
-                                initialValue = (1.0, 0.0, 0.0))
+                                value = (1.0, 0.0, 0.0))
         # Point page #
         emitterPointPage = self.emitterNotebook.add('PointEmitter')
         self.createVector3Entry(emitterPointPage, 'Point Emitter', 'Position',
@@ -736,13 +736,11 @@ class ParticlePanel(AppShell):
 
     def createFloater(self, parent, category, text, balloonHelp,
                       command = None, min = 0.0, resolution = None,
-                      significantDigits = 3,
-                      maxVelocity = 10.0, **kw):
+                      numDigits = 3, **kw):
         kw['text'] = text
         kw['min'] = min
-        kw['maxVelocity'] = maxVelocity
-        kw['resolution'] = resolution
-        kw['significantDigits'] = significantDigits
+        kw['floater_resolution'] = resolution
+        kw['numDigits'] = numDigits
         widget = apply(Floater.Floater, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
@@ -754,6 +752,7 @@ class ParticlePanel(AppShell):
     def createAngleDial(self, parent, category, text, balloonHelp,
                         command = None, **kw):
         kw['text'] = text
+        kw['style'] = Dial.DIAL_MINI
         widget = apply(Dial.AngleDial,(parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
@@ -1771,7 +1770,7 @@ class ParticlePanel(AppShell):
         self.createFloater(frame, pageName, forceName + ' Amplitude',
                            'Force amplitude multiplier',
                            command = setAmplitude,
-                           initialValue = force.getAmplitude())
+                           value = force.getAmplitude())
         cbf = Frame(frame, relief = FLAT)
         self.createCheckbutton(cbf, pageName, forceName + ' Mass Dependent',
                                ('On: force depends on mass; ' +
@@ -1808,7 +1807,7 @@ class ParticlePanel(AppShell):
         self.createVector3Entry(frame, pageName, forceName,
                                 'Set force direction and magnitude',
                                 command = setVec,
-                                initialValue = [vec[0], vec[1], vec[2]])
+                                value = [vec[0], vec[1], vec[2]])
         self.createForceActiveWidget(frame, pageName, forceName, force)
 
     def createLinearRandomForceWidget(self, forcePage, pageName, count,
@@ -1828,7 +1827,7 @@ class ParticlePanel(AppShell):
         self.createFloater(frame, pageName, forceName + ' Coef',
                            'Set linear friction force',
                            command = setCoef, min = None,
-                           initialValue = force.getCoef())
+                           value = force.getCoef())
         self.createForceActiveWidget(frame, pageName, forceName, force)
 
     def createLinearCylinderVortexForceWidget(self, forcePage, pageName,
@@ -1845,15 +1844,15 @@ class ParticlePanel(AppShell):
         self.createFloater(frame, pageName, forceName + ' Coef',
                            'Set linear cylinder vortex coefficient',
                            command = setCoef,
-                           initialValue = force.getCoef())
+                           value = force.getCoef())
         self.createFloater(frame, pageName, forceName + ' Length',
                            'Set linear cylinder vortex length',
                            command = setLength,
-                           initialValue = force.getLength())
+                           value = force.getLength())
         self.createFloater(frame, pageName, forceName + ' Radius',
                            'Set linear cylinder vortex radius',
                            command = setRadius,
-                           initialValue = force.getRadius())
+                           value = force.getRadius())
         self.createForceActiveWidget(frame, pageName, forceName, force)
 
     def createLinearDistanceForceWidget(self, forcePage, pageName,
@@ -1896,12 +1895,12 @@ class ParticlePanel(AppShell):
                                 'Set center of force',
                                 command = setForceCenter,
                                 label_width = 16,
-                                initialValue = [vec[0], vec[1], vec[2]])
+                                value = [vec[0], vec[1], vec[2]])
         self.createFloater(frame, pageName, forceName + ' Radius',
                            'Set falloff radius',
                            command = setRadius,
                            min = 0.01,
-                           initialValue = force.getRadius())
+                           value = force.getRadius())
         self.createForceActiveWidget(frame, pageName, forceName, force)
 
 ######################################################################
