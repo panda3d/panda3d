@@ -359,9 +359,9 @@ $[varname] = $[osfilename $[sources]]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
 #if $[GENERATE_BUILDDATE]
-$[target] : $[sources] "$[dtool_ver_dir]\version.rc"
+$[target] : $[sources] "$[dtool_ver_dir]\version.rc" "$[dtool_ver_dir]\$[DLLBASEADDRFILENAME]"
 //  first generate builddate for rc compiler
-$[TAB] cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[TEMP]\verdate.h"
+$[TAB] cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp" > "$[TEMP]\verdate.h"
 $[TAB] rc /n /I$[TEMP] /fo$[ver_resource] $[filter /D%, $[flags]] "$[dtool_ver_dir]\version.rc"
 $[TAB] rm -f "$[dtool_ver_dir]\verdate.h"
 #else

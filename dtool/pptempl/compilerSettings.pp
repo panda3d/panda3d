@@ -8,7 +8,8 @@
   #define OPT1FLAGS /GZ 
   
 //  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUG_TYPE_FLAGS]
-  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
+//  #defer DEBUGINFOFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
+  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
   #define RELEASEFLAGS /MD
   
   #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:FIXUPS /MAPINFO:LINES

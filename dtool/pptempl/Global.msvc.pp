@@ -103,16 +103,18 @@
 
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
+
+// should be OK to build debug info for all builds, although it increases size of DLL by a tiny amt
+#define FORCE_DEBUG_FLAGS 1
 
 #if $[FORCE_DEBUG_FLAGS]
 // make them all link with non-debug msvc runtime dlls for this case
 #defer DEBUGFLAGS $[subst /MDd,,$[DEBUGFLAGS]]
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
 #define LINKER_FLAGS $[LINKER_FLAGS] /debug
 #else
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
 #endif
 
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
@@ -143,7 +145,6 @@
 
 #defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
-
 #defer MAIN_C_COMPILE_ARGS /nologo /c $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath]] $[flags] $[extra_cflags] $[source]
 
 #defer COMPILE_C $[COMPILER] /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS]
@@ -165,7 +166,12 @@
 #define ver_resource
 #endif
 
-#defer SHARED_LIB_C $[LINKER] /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[ver_resource] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+// use predefined bases to speed dll loading and simplify debugging
+#defer DLLNAMEBASE lib$[TARGET]$[dllext]
+#defer DLLBASEADDRFILENAME dllbase.txt
+#defer DLLBASEARG "/BASE:@$[dtool_ver_dir]\$[DLLBASEADDRFILENAME],$[DLLNAMEBASE]"
+
+#defer SHARED_LIB_C $[LINKER] /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] $[sources] $[ver_resource] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
 #defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
