@@ -211,10 +211,19 @@ class DistributedObjectAI(DirectObject.DirectObject):
         if self.air:
             self.air.sendUpdate(self, fieldName, args)
 
-    def sendUpdateToAvatarId(self, avId, fieldName, args):
-        assert self.notify.debugStateCall(self)
-        channelId = avId + 1
-        self.sendUpdateToChannel(channelId, fieldName, args)
+    if wantOtpServer:
+        def GetPuppetConnectionChannel(self, doId):
+            return doId + ( 1L << 32);
+
+        def sendUpdateToAvatarId(self, avId, fieldName, args):
+            assert self.notify.debugStateCall(self)
+            channelId = self.GetPuppetConnectionChannel(avId)
+            self.sendUpdateToChannel(channelId, fieldName, args)
+    else:
+        def sendUpdateToAvatarId(self, avId, fieldName, args):
+            assert self.notify.debugStateCall(self)
+            channelId = avId + 1
+            self.sendUpdateToChannel(channelId, fieldName, args)
 
     def sendUpdateToChannel(self, channelId, fieldName, args):
         assert self.notify.debugStateCall(self)
@@ -283,11 +292,19 @@ class DistributedObjectAI(DirectObject.DirectObject):
         assert self.notify.debugStateCall(self)
 
     if wantOtpServer:
-        def generateInit(self):
+        def generateInit(self, repository):
             """
             First generate (not from cache).
             """
             assert self.notify.debugStateCall(self)
+            
+        def generateTargetChannel(self, repository):
+            """
+            Who to send this to for generate messages
+            """        
+            if hasattr(self, "dbObject"):
+                return self.doId
+            return repository.serverId
 
     def sendGenerateWithRequired(self, repository, parentId, zoneId, optionalFields=[]):
         assert self.notify.debugStateCall(self)
@@ -303,7 +320,8 @@ class DistributedObjectAI(DirectObject.DirectObject):
         else:
             dg = self.dclass.aiFormatGenerate(
                     self, self.doId, parentId, zoneId,
-                    repository.serverId,
+                    #repository.serverId,
+                    self.generateTargetChannel(repository),                    
                     repository.ourChannel,
                     optionalFields)
         repository.send(dg)
