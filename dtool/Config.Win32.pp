@@ -135,3 +135,8 @@
 
 // can Intel C++ build this directory successfully (if not, change CC to msvc)
 #define NOT_INTEL_BUILDABLE false
+
+// The dynamic library file extension (usually .so .dll or .dylib):
+#define DYNAMIC_LIB_EXT .dll
+  
+

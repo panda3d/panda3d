@@ -40,7 +40,7 @@
   // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
   // list of binaries that are to be built only when specifically asked
   // for.
-  #define lib_targets $[active_target(metalib_target lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/lib%.so]
+  #define lib_targets $[active_target(metalib_target lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/lib%$[DYNAMIC_LIB_EXT]]
 
   #define static_lib_targets $[active_target(static_lib_target):%=$[ODIR]/lib%.a]
   #define bin_targets $[active_target(bin_target noinst_bin_target sed_bin_target):%=$[ODIR]/%]
@@ -330,7 +330,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
-  #define target $[ODIR]/lib$[TARGET].so
+  #define target $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
   #define sources $($[varname])
 
 $[target] : $[sources] $[static_lib_dependencies]
@@ -345,7 +345,7 @@ $[TAB] $[SHARED_LIB_C]
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET].so \
+    $[install_lib_dir]/lib$[TARGET]$[DYNAMIC_LIB_EXT] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -359,8 +359,8 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET].so : $[ODIR]/lib$[TARGET].so
-#define local $[ODIR]/lib$[TARGET].so
+$[install_lib_dir]/lib$[TARGET]$[DYNAMIC_LIB_EXT] : $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
+#define local $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
 
@@ -426,7 +426,7 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/lib$[TARGET].so
+#define target $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]

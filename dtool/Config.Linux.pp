@@ -139,3 +139,8 @@
 // What is the syntax of the STL allocator declaration?  See
 // LocalSetup.pp for allowable values.
 #define STL_ALLOCATOR GNU
+
+// The dynamic library file extension (usually .so .dll or .dylib):
+#define DYNAMIC_LIB_EXT .so
+  
+
