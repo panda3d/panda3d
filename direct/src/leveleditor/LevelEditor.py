@@ -2868,6 +2868,9 @@ class LevelEditor(NodePath, PandaObject):
         # Store the point in the DNA. If this point is already in there,
         # it returns the existing point
         suitPoint = DNASTORE.storeSuitPoint(self.currentSuitPointType, absPos)
+        print "placeSuitPoint: ", suitPoint
+        # In case the point returned is a different type, update our type
+        self.currentSuitPointType = suitPoint.getPointType()
         if not self.pointDict.has_key(suitPoint):
             marker = self.drawSuitPoint(suitPoint,
                 absPos, self.currentSuitPointType,
