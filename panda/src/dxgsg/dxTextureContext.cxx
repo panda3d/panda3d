@@ -16,8 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dxgsg_headers.h"
-#pragma hdrstop
+#include <assert.h>
+#include <time.h>
+#include "dxTextureContext.h"
+#include "config_dxgsg.h"
+#include "dxGraphicsStateGuardian.h"
+#include "pnmImage.h"
 
 //#define FORCE_16bpp_1555
 

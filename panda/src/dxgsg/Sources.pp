@@ -6,19 +6,21 @@
 
 #begin lib_target
 
-
   #define TARGET dxgsg
   #define LOCAL_LIBS \
     cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display light \
     putil linmath sgraph mathutil pnmimage event
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 
   #define SOURCES \
-    config_dxgsg.cxx config_dxgsg.h dxGraphicsStateGuardian.I \
+    config_dxgsg.h dxGraphicsStateGuardian.I \
     dxGraphicsStateGuardian.cxx dxGraphicsStateGuardian.h \
-    dxSavedFrameBuffer.I dxSavedFrameBuffer.cxx dxSavedFrameBuffer.h \
-    dxTextureContext.I dxTextureContext.cxx dxTextureContext.h
+    dxSavedFrameBuffer.I dxSavedFrameBuffer.h \
+    dxTextureContext.I dxTextureContext.h
     
-//  #define PRECOMPILED_HEADER dxgsg_headers.h
+  #define INCLUDED_SOURCES \
+    config_dxgsg.cxx dxSavedFrameBuffer.cxx dxTextureContext.cxx 
     
   #define INSTALL_HEADERS \
     config_dxgsg.h dxGraphicsStateGuardian.I dxGraphicsStateGuardian.h \

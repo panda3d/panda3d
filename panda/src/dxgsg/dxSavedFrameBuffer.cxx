@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dxgsg_headers.h"
-#pragma hdrstop
+#include "dxSavedFrameBuffer.h"
 
 TypeHandle DXSavedFrameBuffer::_type_handle;

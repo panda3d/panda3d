@@ -16,8 +16,74 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dxgsg_headers.h"
-#pragma hdrstop
+#include <pandabase.h>
+#include <directRenderTraverser.h>
+#include <cullTraverser.h>
+#include <displayRegion.h>
+#include <projectionNode.h>
+#include <camera.h>
+#include <renderBuffer.h>
+#include <geom.h>
+#include <geomSphere.h>
+#include <geomIssuer.h>
+#include <graphicsWindow.h>
+#include <graphicsChannel.h>
+#include <projection.h>
+#include <get_rel_pos.h>
+#include <perspectiveProjection.h>
+#include <ambientLight.h>
+#include <directionalLight.h>
+#include <pointLight.h>
+#include <spotlight.h>
+#include <projectionNode.h>
+#include <transformAttribute.h>
+#include <transformTransition.h>
+#include <colorAttribute.h>
+#include <colorTransition.h>
+#include <lightAttribute.h>
+#include <lightTransition.h>
+#include <textureAttribute.h>
+#include <textureTransition.h>
+#include <renderModeAttribute.h>
+#include <renderModeTransition.h>
+#include <materialAttribute.h>
+#include <materialTransition.h>
+#include <colorBlendAttribute.h>
+#include <colorBlendTransition.h>
+#include <colorMaskAttribute.h>
+#include <colorMaskTransition.h>
+#include <texMatrixAttribute.h>
+#include <texMatrixTransition.h>
+#include <texGenAttribute.h>
+#include <texGenTransition.h>
+#include <textureApplyAttribute.h>
+#include <textureApplyTransition.h>
+#include <clipPlaneAttribute.h>
+#include <clipPlaneTransition.h>
+#include <transparencyAttribute.h>
+#include <transparencyTransition.h>
+#include <fogAttribute.h>
+#include <fogTransition.h>
+#include <linesmoothAttribute.h>
+#include <linesmoothTransition.h>
+#include <depthTestAttribute.h>
+#include <depthTestTransition.h>
+#include <depthWriteAttribute.h>
+#include <depthWriteTransition.h>
+#include <cullFaceAttribute.h>
+#include <cullFaceTransition.h>
+#include <stencilAttribute.h>
+#include <stencilTransition.h>
+#include <throw_event.h>
+#ifdef DO_PSTATS
+#include <pStatTimer.h>
+#include <pStatCollector.h>
+#endif
+
+#include "config_dxgsg.h"
+#include "dxGraphicsStateGuardian.h"
+
+#include <mmsystem.h>
 
 
 // print out simple drawprim stats every few secs
@@ -5671,6 +5737,63 @@ void DXGraphicsStateGuardian::adjust_view_rect(int x, int y) {
 //  set_clipper(clip_rect);
     }
 }
+
+#if 0
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::save_mipmap_images
+//       Access: Protected
+//  Description: Saves out each mipmap level of the indicated texture
+//               (which must also be the currently active texture in
+//               the GL state) as a separate image file to disk.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::read_mipmap_images(Texture *tex) {
+   Filename filename = tex->get_name();
+   string name;
+   if (filename.empty()) {
+     static index = 0;
+     name = "texture" + format_string(index);
+     index++;
+   } else {
+     name = filename.get_basename_wo_extension();
+   }
+
+   PixelBuffer *pb = tex->get_ram_image();
+   nassertv(pb != (PixelBuffer *)NULL);
+
+   GLenum external_format = get_external_image_format(pb->get_format());
+   GLenum type = get_image_type(pb->get_image_type());
+
+   int xsize = pb->get_xsize();
+   int ysize = pb->get_ysize();
+
+   // Specify byte-alignment for the pixels on output.
+   glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+   int mipmap_level = 0;
+   do {
+     xsize = max(xsize, 1);
+     ysize = max(ysize, 1);
+
+     PT(PixelBuffer) mpb =
+       new PixelBuffer(xsize, ysize, pb->get_num_components(),
+                       pb->get_component_width(), pb->get_image_type(),
+                       pb->get_format());
+     glGetTexImage(GL_TEXTURE_2D, mipmap_level, external_format,
+                   type, mpb->_image);
+     Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".pnm";
+     nout << "Writing mipmap level " << mipmap_level
+          << " (" << xsize << " by " << ysize << ") "
+          << mipmap_filename << "\n";
+     mpb->write(mipmap_filename);
+
+     xsize >>= 1;
+     ysize >>= 1;
+     mipmap_level++;
+   } while (xsize > 0 && ysize > 0);
+}
+#endif
+
 
 #if 0
 //-----------------------------------------------------------------------------
