@@ -4091,9 +4091,7 @@ if OMIT.count("HELIX")==0:
 InterrogateModule(outc='libpanda_module.cxx', module='panda', library='libpanda', files=INFILES)
 CompileC(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='libpanda_module.cxx', obj='libpanda_module.obj')
-CompileLink(opts=['ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'HELIX', 'VRPN', 'NSPR',
-                  'ZLIB', 'JPEG', 'PNG', 'TIFF', 'FFTW', 'FREETYPE'],
-            xdep=[PREFIX+'/tmp/dtool_have_helix.dat'],  dll='libpanda.dll', obj=OBJFILES)
+CompileLink(opts=LINKOPTS, xdep=LINKXDEP,  dll='libpanda.dll', obj=OBJFILES)
 
 #
 # DIRECTORY: panda/src/audiotraits/
