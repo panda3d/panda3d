@@ -3,6 +3,7 @@
 #include "binCullHandler.cxx"
 #include "qpcamera.cxx"
 #include "colorAttrib.cxx"
+#include "colorBlendAttrib.cxx"
 #include "colorScaleAttrib.cxx"
 #include "colorWriteAttrib.cxx"
 #include "config_pgraph.cxx"

@@ -22,6 +22,7 @@
 #include "billboardEffect.h"
 #include "qpcamera.h"
 #include "colorAttrib.h"
+#include "colorBlendAttrib.h"
 #include "colorScaleAttrib.h"
 #include "colorWriteAttrib.h"
 #include "cullFaceAttrib.h"
@@ -107,6 +108,7 @@ init_libpgraph() {
   BillboardEffect::init_type();
   qpCamera::init_type();
   ColorAttrib::init_type();
+  ColorBlendAttrib::init_type();
   ColorScaleAttrib::init_type();
   ColorWriteAttrib::init_type();
   CullFaceAttrib::init_type();
@@ -164,6 +166,7 @@ init_libpgraph() {
   BillboardEffect::register_with_read_factory();
   qpCamera::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
+  ColorBlendAttrib::register_with_read_factory();
   ColorScaleAttrib::register_with_read_factory();
   ColorWriteAttrib::register_with_read_factory();
   CullBinAttrib::register_with_read_factory();

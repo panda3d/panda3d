@@ -173,10 +173,8 @@ public:
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
   virtual void issue_depth_write(const DepthWriteAttrib *attrib);
   virtual void issue_cull_face(const CullFaceAttrib *attrib);
-  virtual void issue_transparency(const TransparencyAttrib *attrib);
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
-  //  virtual void issue_color_blend(const ColorBlendAttrib *attrib);
   //  virtual void issue_tex_gen(const TexGenAttrib *attrib);
   //  virtual void issue_stencil(const StencilAttrib *attrib);
   //  virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
@@ -215,6 +213,10 @@ protected:
   virtual void enable_light(int light_id, bool enable);
   virtual void begin_bind_lights();
   virtual void end_bind_lights();
+
+  virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
+                              ColorBlendAttrib::Mode color_blend_mode,
+                              TransparencyAttrib::Mode transparency_mode);
 
   void free_pointers();
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,

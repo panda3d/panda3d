@@ -11,6 +11,7 @@
     binCullHandler.I binCullHandler.h \
     qpcamera.I qpcamera.h \
     colorAttrib.I colorAttrib.h \
+    colorBlendAttrib.I colorBlendAttrib.h \
     colorScaleAttrib.I colorScaleAttrib.h \
     colorWriteAttrib.I colorWriteAttrib.h \
     config_pgraph.h \
@@ -79,6 +80,7 @@
     binCullHandler.cxx \
     qpcamera.cxx \
     colorAttrib.cxx \
+    colorBlendAttrib.cxx \
     colorScaleAttrib.cxx \
     colorWriteAttrib.cxx \
     config_pgraph.cxx \
@@ -152,6 +154,7 @@
     binCullHandler.I binCullHandler.h \
     qpcamera.I qpcamera.h \
     colorAttrib.I colorAttrib.h \
+    colorBlendAttrib.I colorBlendAttrib.h \
     colorScaleAttrib.I colorScaleAttrib.h \
     colorWriteAttrib.I colorWriteAttrib.h \
     config_pgraph.h \

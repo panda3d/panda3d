@@ -152,6 +152,10 @@ reset() {
   _current_alpha_offset = 0;
   _current_alpha_scale = 1;
 
+  _color_write_mode = ColorWriteAttrib::M_on;
+  _color_blend_mode = ColorBlendAttrib::M_none;
+  _transparency_mode = TransparencyAttrib::M_none;
+
   _has_scene_graph_color = false;
   _issued_color_stale = false;
   _vertex_colors_enabled = true;
@@ -1288,6 +1292,39 @@ issue_light(const LightAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_color_write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_color_write(const ColorWriteAttrib *attrib) {
+  _color_write_mode = attrib->get_mode();
+  set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_transparency
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_transparency(const TransparencyAttrib *attrib) {
+  _transparency_mode = attrib->get_mode();
+  set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_color_blend
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_color_blend(const ColorBlendAttrib *attrib) {
+  _color_blend_mode = attrib->get_mode();
+  set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
@@ -1407,6 +1444,19 @@ begin_bind_lights() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_bind_lights() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_blend_mode
+//       Access: Protected, Virtual
+//  Description: Called after any of these three blending states have
+//               changed; this function is responsible for setting the
+//               appropriate color blending mode based on the given
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+set_blend_mode(ColorWriteAttrib::Mode, ColorBlendAttrib::Mode,
+               TransparencyAttrib::Mode) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -39,6 +39,9 @@
 #include "transformState.h"
 #include "renderState.h"
 #include "light.h"
+#include "colorWriteAttrib.h"
+#include "colorBlendAttrib.h"
+#include "transparencyAttrib.h"
 
 #include "notify.h"
 #include "pvector.h"
@@ -188,6 +191,9 @@ public:
   virtual void issue_color_scale(const ColorScaleAttrib *attrib);
   virtual void issue_color(const ColorAttrib *attrib);
   virtual void issue_light(const LightAttrib *attrib);
+  virtual void issue_color_write(const ColorWriteAttrib *attrib);
+  virtual void issue_transparency(const TransparencyAttrib *attrib);
+  virtual void issue_color_blend(const ColorBlendAttrib *attrib);
 
   virtual void bind_light(PointLight *light, int light_id);
   virtual void bind_light(DirectionalLight *light, int light_id);
@@ -201,6 +207,10 @@ protected:
   virtual void enable_light(int light_id, bool enable);
   virtual void begin_bind_lights();
   virtual void end_bind_lights();
+
+  virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
+                              ColorBlendAttrib::Mode color_blend_mode,
+                              TransparencyAttrib::Mode transparency_mode);
 
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                                                  CPT(DisplayRegion) dr)=0;
@@ -291,6 +301,10 @@ protected:
   LMatrix4f _current_color_mat;
   float _current_alpha_offset;
   float _current_alpha_scale;
+
+  ColorWriteAttrib::Mode _color_write_mode;
+  ColorBlendAttrib::Mode _color_blend_mode;
+  TransparencyAttrib::Mode _transparency_mode;
 
 public:
   // Statistics

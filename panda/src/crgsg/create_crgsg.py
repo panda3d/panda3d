@@ -18,7 +18,6 @@ files=(
     "%(n)sTextureContext.cxx",
     "%(n)sTextureContext.h",
     "%(n)sext.h",
-    "%(n)sgsg_composite.cxx",
     "%(n)sgsg_composite1.cxx",
     #"Sources.pp",
 )

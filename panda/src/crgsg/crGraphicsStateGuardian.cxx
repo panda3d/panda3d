@@ -3205,6 +3205,11 @@ issue_texture_apply(const TextureApplyAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void CRGraphicsStateGuardian::
 issue_color_write(const ColorWriteAttrib *attrib) {
+  // If we did not override this function, the default implementation
+  // would achieve turning off color writes by changing the blend mode
+  // in set_blend_mode().  However, since GL does support an easy way
+  // to disable writes to the color buffer, we can take advantage of
+  // it here.
   ColorWriteAttrib::Mode mode = attrib->get_mode();
   if (mode == ColorWriteAttrib::M_off) {
     chromium.ColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -3268,71 +3273,9 @@ issue_cull_face(const CullFaceAttrib *attrib) {
     chromium.Enable(GL_CULL_FACE);
     chromium.CullFace(GL_FRONT);
     break;
-  case CullFaceAttrib::M_cull_all:
-    chromium.Enable(GL_CULL_FACE);
-    chromium.CullFace(GL_FRONT_AND_BACK);
-    break;
   default:
     crgsg_cat.error()
       << "invalid cull face mode " << (int)mode << endl;
-    break;
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::issue_transparency
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CRGraphicsStateGuardian::
-issue_transparency(const TransparencyAttrib *attrib) {
-  TransparencyAttrib::Mode mode = attrib->get_mode();
-
-  switch (mode) {
-  case TransparencyAttrib::M_none:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(false);
-    enable_alpha_test(false);
-    break;
-  case TransparencyAttrib::M_alpha:
-  case TransparencyAttrib::M_alpha_sorted:
-    // Should we really have an "alpha" and an "alpha_sorted" mode,
-    // like Performer does?  (The difference is that "alpha" is with
-    // the write to the depth buffer disabled.)  Or should we just use
-    // the separate depth write transition to control this?  Doing it
-    // implicitly requires a bit more logic here and in the state
-    // management; for now we require the user to explicitly turn off
-    // the depth write.
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    enable_alpha_test(false);
-    call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    break;
-  case TransparencyAttrib::M_multisample:
-    enable_multisample_alpha_one(true);
-    enable_multisample_alpha_mask(true);
-    enable_blend(false);
-    enable_alpha_test(false);
-    break;
-  case TransparencyAttrib::M_multisample_mask:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(true);
-    enable_blend(false);
-    enable_alpha_test(false);
-    break;
-  case TransparencyAttrib::M_binary:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(false);
-    enable_alpha_test(true);
-    call_glAlphaFunc(GL_EQUAL, 1);
-    break;
-  default:
-    crgsg_cat.error()
-      << "invalid transparency mode " << (int)mode << endl;
     break;
   }
   report_errors();
@@ -4624,6 +4567,122 @@ void CRGraphicsStateGuardian::
 end_bind_lights() {
   chromium.MatrixMode(GL_MODELVIEW);
   chromium.PopMatrix();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::set_blend_mode
+//       Access: Protected, Virtual
+//  Description: Called after any of these three blending states have
+//               changed; this function is responsible for setting the
+//               appropriate color blending mode based on the given
+//               properties.
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
+               ColorBlendAttrib::Mode color_blend_mode,
+               TransparencyAttrib::Mode transparency_mode) {
+  // If color_write_mode is off, we disable writing to the color using
+  // blending.  This case is only used if we can't use chromium.ColorMask to
+  // disable the color writing for some reason (usually a driver
+  // problem).
+  if (color_write_mode == ColorWriteAttrib::M_off) {
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_glBlendFunc(GL_ZERO, GL_ONE);
+    return;
+  }
+
+  // Is there a color blend set?
+  switch (color_blend_mode) {
+  case ColorBlendAttrib::M_none:
+    break;
+
+  case ColorBlendAttrib::M_multiply:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_glBlendFunc(GL_DST_COLOR, GL_ZERO);
+    return;
+
+  case ColorBlendAttrib::M_add:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_glBlendFunc(GL_ONE, GL_ONE);
+    return;
+
+  case ColorBlendAttrib::M_multiply_add:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_glBlendFunc(GL_DST_COLOR, GL_ONE);
+    return;
+
+  default:
+    crgsg_cat.error()
+      << "Unknown color blend mode " << (int)color_blend_mode << endl;
+    break;
+  }
+
+  // No color blend; is there a transparency set?
+  switch (transparency_mode) {
+  case TransparencyAttrib::M_none:
+    break;
+
+  case TransparencyAttrib::M_alpha:
+  case TransparencyAttrib::M_alpha_sorted:
+    // Should we really have an "alpha" and an "alpha_sorted" mode,
+    // like Performer does?  (The difference is that "alpha" is with
+    // the write to the depth buffer disabled.)  Or should we just use
+    // the separate depth write transition to control this?  Doing it
+    // implicitly requires a bit more logic here and in the state
+    // management; for now we require the user to explicitly turn off
+    // the depth write.
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    return;
+
+  case TransparencyAttrib::M_multisample:
+    enable_multisample_alpha_one(true);
+    enable_multisample_alpha_mask(true);
+    enable_blend(false);
+    enable_alpha_test(false);
+    return;
+
+  case TransparencyAttrib::M_multisample_mask:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(true);
+    enable_blend(false);
+    enable_alpha_test(false);
+    return;
+
+  case TransparencyAttrib::M_binary:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(false);
+    enable_alpha_test(true);
+    call_glAlphaFunc(GL_EQUAL, 1);
+    return;
+
+  default:
+    crgsg_cat.error()
+      << "invalid transparency mode " << (int)transparency_mode << endl;
+    break;
+  }
+
+  // Nothing's set, so disable blending.
+  enable_multisample_alpha_one(false);
+  enable_multisample_alpha_mask(false);
+  enable_blend(false);
+  enable_alpha_test(false);
 }
 
 ////////////////////////////////////////////////////////////////////

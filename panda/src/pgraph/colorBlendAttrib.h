@@ -1,5 +1,5 @@
-// Filename: cullFaceAttrib.h
-// Created by:  drose (27Feb02)
+// Filename: colorBlendAttrib.h
+// Created by:  drose (29Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,28 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CULLFACEATTRIB_H
-#define CULLFACEATTRIB_H
+#ifndef COLORBLENDATTRIB_H
+#define COLORBLENDATTRIB_H
 
 #include "pandabase.h"
 
 #include "renderAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CullFaceAttrib
-// Description : Indicates which faces should be culled based on their
-//               vertex ordering.
+//       Class : ColorBlendAttrib
+// Description : This specifies how colors are blended into the frame
+//               buffer, for special effects.  This overrides
+//               transparency if transparency is also specified.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullFaceAttrib : public RenderAttrib {
+class EXPCL_PANDA ColorBlendAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
-    M_cull_none,                // Cull no polygons
-    M_cull_clockwise,           // Cull clockwise-oriented polygons
-    M_cull_counter_clockwise,   // Cull counter-clockwise-oriented polygons
+    M_none,             // Blending is disabled
+    M_multiply,         // color already in fbuffer * incoming color
+    M_add,              // color already in fbuffer + incoming color
+    M_multiply_add,     // color already in fbuffer * incoming color +
+                        //   color already in fbuffer
   };
 
 private:
-  INLINE CullFaceAttrib(Mode mode = M_cull_clockwise);
+  INLINE ColorBlendAttrib(Mode mode = M_none);
 
 PUBLISHED:
   static CPT(RenderAttrib) make(Mode mode);
@@ -69,7 +72,7 @@ public:
   }
   static void init_type() {
     RenderAttrib::init_type();
-    register_type(_type_handle, "CullFaceAttrib",
+    register_type(_type_handle, "ColorBlendAttrib",
                   RenderAttrib::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -81,7 +84,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "cullFaceAttrib.I"
+#include "colorBlendAttrib.I"
 
 #endif
 
