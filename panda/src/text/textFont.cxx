@@ -40,6 +40,7 @@ isblank(char ch) {
 ////////////////////////////////////////////////////////////////////
 TextFont::
 TextFont() {
+  _is_valid = false;
   _line_height = 1.0;
 }
 
@@ -59,7 +60,7 @@ TextFont::
 //               or 0.0 if the character is not known.
 ////////////////////////////////////////////////////////////////////
 float TextFont::
-calc_width(int ch) const {
+calc_width(int ch) {
   if (ch == ' ') {
     // A space is a special case.
     return 0.25;
@@ -82,7 +83,7 @@ calc_width(int ch) const {
 //               character.
 ////////////////////////////////////////////////////////////////////
 float TextFont::
-calc_width(const string &line) const {
+calc_width(const string &line) {
   float width = 0.0;
 
   string::const_iterator si;
@@ -104,7 +105,7 @@ calc_width(const string &line) const {
 ////////////////////////////////////////////////////////////////////
 string TextFont::
 wordwrap_to(const string &text, float wordwrap_width, 
-            bool preserve_trailing_whitespace) const {
+            bool preserve_trailing_whitespace) {
   string output_text;
 
   size_t p = 0;

@@ -47,7 +47,29 @@ END_PUBLISH
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextNode
-// Description :
+// Description : The primary interface to this module.  This class
+//               does basic text assembly; given a string of text and
+//               a TextFont object, it creates a piece of geometry
+//               that may be placed in the 3-d or 2-d world to
+//               represent the indicated text.
+//
+//               The TextNode may be used in one of two ways.
+//               Naively, it may be parented to the scene graph
+//               directly; used in this way, you can optionally call
+//               freeze() and thaw() between changing many parameters
+//               in the text at once, to avoid unnecessary expensive
+//               regeneration with each parameter change.  However, it
+//               will work, if slowly, even if you never call freeze()
+//               and thaw().
+//
+//               The second way TextNode may be used is as a text
+//               generator.  To use it in this way, call freeze() once
+//               on the TextNode when you create it, and never call
+//               thaw().  Do not parent the TextNode to the scene
+//               graph; instea, set the properties of the text and
+//               call generate() to return a node which you may parent
+//               wherever you like.  Each time you call generate() a
+//               new node is returned.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TextNode : public NamedNode {
 PUBLISHED:

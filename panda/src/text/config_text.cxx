@@ -18,6 +18,8 @@
 
 #include "config_text.h"
 #include "staticTextFont.h"
+#include "dynamicTextFont.h"
+#include "dynamicTextPage.h"
 #include "textFont.h"
 #include "textNode.h"
 
@@ -28,6 +30,8 @@ NotifyCategoryDef(text, "");
 
 ConfigureFn(config_text) {
   StaticTextFont::init_type();
+  DynamicTextFont::init_type();
+  DynamicTextPage::init_type();
   TextFont::init_type();
   TextNode::init_type();
 }

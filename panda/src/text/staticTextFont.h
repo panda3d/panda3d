@@ -19,17 +19,12 @@
 #ifndef STATICTEXTFONT_H
 #define STATICTEXTFONT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "config_text.h"
 #include "textFont.h"
 #include "textGlyph.h"
-
-#include <typedReferenceCount.h>
-#include <namable.h>
-#include <pt_Node.h>
-#include <allTransitionsWrapper.h>
-
+#include "pt_Node.h"
 #include "pmap.h"
 
 class Node;
@@ -47,19 +42,18 @@ class GeomPoint;
 class EXPCL_PANDA StaticTextFont : public TextFont {
 PUBLISHED:
   StaticTextFont(Node *font_def);
-  virtual ~StaticTextFont();
 
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  virtual const TextGlyph *get_glyph(int character) const;
+  virtual const TextGlyph *get_glyph(int character);
 
 private:
   bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
                             AllTransitionsWrapper &trans);
   void find_characters(Node *root);
 
-  typedef pmap<int, TextGlyph> Glyphs;
+  typedef pmap<int, PT(TextGlyph)> Glyphs;
   Glyphs _glyphs;
   float _font_height;
   PT_Node _font;
@@ -80,8 +74,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class TextNode;
 };
 
 #include "staticTextFont.I"

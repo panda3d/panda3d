@@ -46,19 +46,21 @@ public:
 PUBLISHED:
   virtual ~TextFont();
 
+  INLINE bool is_valid() const;
   INLINE float get_line_height() const;
 
-  float calc_width(int ch) const;
-  float calc_width(const string &line) const;
+  float calc_width(int ch);
+  float calc_width(const string &line);
   string wordwrap_to(const string &text, float wordwrap_width,
-                     bool preserve_trailing_whitespace) const;
+                     bool preserve_trailing_whitespace);
 
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  virtual const TextGlyph *get_glyph(int character) const=0;
+  virtual const TextGlyph *get_glyph(int character)=0;
 
 protected:
+  bool _is_valid;
   float _line_height;
 
 public:

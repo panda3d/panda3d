@@ -21,8 +21,10 @@
 
 #include "pandabase.h"
 #include "allTransitionsWrapper.h"
+#include "referenceCount.h"
+#include "geom.h"
+#include "pointerTo.h"
 
-class Geom;
 class TextGlyph;
 
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +33,7 @@ class TextGlyph;
 //               font.  This is a piece of renderable geometry of some
 //               kind.
 ////////////////////////////////////////////////////////////////////
-class TextGlyph {
+class TextGlyph : public ReferenceCount {
 public:
   INLINE TextGlyph();
   INLINE TextGlyph(Geom *geom, const AllTransitionsWrapper &trans, float advance);
@@ -42,8 +44,8 @@ public:
   INLINE const AllTransitionsWrapper &get_trans() const;
   INLINE float get_advance() const;
 
-private:
-  Geom *_geom;
+protected:
+  PT(Geom) _geom;
   AllTransitionsWrapper _trans;
   float _advance;
 };

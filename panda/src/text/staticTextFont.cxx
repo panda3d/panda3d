@@ -41,22 +41,13 @@ StaticTextFont(Node *font_def) {
   _glyphs.clear();
 
   find_characters(font_def);
+  _is_valid = !_glyphs.empty();
 
   if (_font->is_of_type(NamedNode::get_class_type())) {
     NamedNode *named_node = DCAST(NamedNode, _font);
     set_name(named_node->get_name());
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-StaticTextFont::
-~StaticTextFont() {
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StaticTextFont::write
@@ -167,13 +158,13 @@ write(ostream &out, int indent_level) const {
 //               code, or NULL if there is no such glyph.
 ////////////////////////////////////////////////////////////////////
 const TextGlyph *StaticTextFont::
-get_glyph(int character) const {
+get_glyph(int character) {
   Glyphs::const_iterator gi = _glyphs.find(character);
   if (gi == _glyphs.end()) {
     // No definition for this character.
     return (TextGlyph *)NULL;
   } else {
-    return &(*gi).second;
+    return (*gi).second;
   }
 }
 
@@ -262,7 +253,7 @@ find_characters(Node *root) {
         width = alist[ilist[0]][0];
       }
 
-      _glyphs[character] = TextGlyph(ch, trans, width);
+      _glyphs[character] = new TextGlyph(ch, trans, width);
     }
 
   } else if (name == "ds") {

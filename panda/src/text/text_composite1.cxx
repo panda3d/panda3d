@@ -1,4 +1,7 @@
 #include "config_text.cxx"
+#include "dynamicTextFont.cxx"
+#include "dynamicTextGlyph.cxx"
+#include "dynamicTextPage.cxx"
 #include "staticTextFont.cxx"
 #include "textFont.cxx"
 #include "textGlyph.cxx"

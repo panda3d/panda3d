@@ -1,0 +1,54 @@
+// Filename: dynamicTextGlyph.I
+// Created by:  drose (09Feb02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::Constructor
+//       Access: Publiic
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DynamicTextGlyph::
+DynamicTextGlyph(DynamicTextPage *page, int x, int y,
+                 int x_size, int y_size, int margin) :
+  _page(page),
+  _x(x), _y(y),
+  _x_size(x_size), _y_size(y_size),
+  _margin(margin)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::intersects
+//       Access: Public
+//  Description: Returns true if the particular position this glyph
+//               has been assigned to overlaps the rectangle whose
+//               top left corner is at x, y and whose size is given by
+//               x_size, y_size, or false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool DynamicTextGlyph::
+intersects(int x, int y, int x_size, int y_size) const {
+  int hright = x + x_size;
+  int hbot = y + y_size;
+
+  int mright = _x + _x_size;
+  int mbot = _y + _y_size;
+
+  return !(x >= mright || hright <= _x ||
+           y >= mbot || hbot <= _y);
+}
