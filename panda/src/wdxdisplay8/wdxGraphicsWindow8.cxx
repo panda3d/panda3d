@@ -815,6 +815,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             return 0;
 
         case WM_CLOSE:
+            #ifdef _DEBUG
+              wdxdisplay_cat.spam()  << "WM_CLOSE received\n";
+            #endif
          // close_window();
           delete _pParentWindowGroup;
 
@@ -2597,6 +2600,7 @@ void wdxGraphicsWindow::init_resized_window(void) {
     _dxgsg->dx_init(_pParentWindowGroup->_hMouseCursor);
     // do not SetDXReady() yet since caller may want to do more work before letting rendering proceed
 
+    SetCursor(_pParentWindowGroup->_hMouseCursor);
     set_cursor_visibility(true);
 }
 
