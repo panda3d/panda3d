@@ -20,6 +20,7 @@
 #include "dcFile.h"
 #include "dcClass.h"
 #include "dcTypedef.h"
+#include "memoryUsage.h"
 
 #ifndef HAVE_GETOPT
 #include "gnu_getopt.h"
@@ -125,6 +126,16 @@ main(int argc, char *argv[]) {
   } else {
     long hash = file.get_hash();
     cerr << "File hash is " << hash << "\n";
+  }
+
+  if (MemoryUsage::is_tracking()) {
+    file.clear();
+    MemoryUsage::show_current_types();
+    for (int i = 1; i < argc; i++) {
+      file.read(argv[i]);
+    }
+    file.clear();
+    MemoryUsage::show_current_types();
   }
 
   return (0);
