@@ -217,6 +217,10 @@ class ShowBase:
         """
         self.render = NodePath('render')
         self.render.setTwoSided(0)
+        self.backfaceCullingEnabled = 1
+        self.textureEnabled = 1
+        self.wireframeEnabled = 0
+
 
     def setupRender2d(self):
         """setupRender2d(self)
@@ -566,37 +570,49 @@ class ShowBase:
         self.eventMgr.shutdown()
 
     def toggleBackface(self):
-        return toggleBackface(self.render.arc())
+        if self.backfaceCullingEnabled:
+            self.backfaceCullingOff()
+        else:
+            self.backfaceCullingOn()
 
     def backfaceCullingOn(self):
-        if self.toggleBackface():
-            self.toggleBackface()
+        self.render.setTwoSided(self.wireframeEnabled)
+        self.backfaceCullingEnabled = 1
 
     def backfaceCullingOff(self):
-        if not self.toggleBackface():
-            self.toggleBackface()
+        if not self.wireframeEnabled:
+            self.render.setTwoSided(0)
+        self.backfaceCullingEnabled = 0
 
     def toggleTexture(self):
-        return toggleTexture(self.render.arc())
+        if self.textureEnabled:
+            self.textureOff()
+        else:
+            self.textureOn()
 
     def textureOn(self):
-        if not self.toggleTexture():
-            self.toggleTexture()
+        self.render.clearTexture()
+        self.textureEnabled = 1
 
     def textureOff(self):
-        if self.toggleTexture():
-            self.toggleTexture()
+        self.render.setTextureOff(100)
+        self.textureEnabled = 0
 
     def toggleWireframe(self):
-        return toggleWireframe(self.render.arc())
+        if self.wireframeEnabled:
+            self.wireframeOff()
+        else:
+            self.wireframeOn()
 
     def wireframeOn(self):
-        if not self.toggleWireframe():
-            self.toggleWireframe()
+        self.render.setRenderModeWireframe(100);
+        self.render.setTwoSided(1);
+        self.wireframeEnabled = 1
 
     def wireframeOff(self):
-        if self.toggleWireframe():
-            self.toggleWireframe()
+        self.render.clearRenderMode()
+        render.setTwoSided(not self.backfaceCullingEnabled)
+        self.wireframeEnabled = 0
 
     def disableMouse(self):
         """
