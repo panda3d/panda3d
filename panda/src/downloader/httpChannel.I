@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 is_valid() const {
-  return (_state != S_failure && (_status_code / 100) == 2 &&
+  return (_state != S_failure && (get_status_code() / 100) == 2 &&
           (_server_response_has_no_body || !_source.is_null()));
 }
 
@@ -115,19 +115,7 @@ get_http_version_string() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int HTTPChannel::
 get_status_code() const {
-  return _status_code;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_status_string
-//       Access: Published
-//  Description: Returns the string as returned by the server
-//               describing the status code for humans.  This may or
-//               may not be meaningful.
-////////////////////////////////////////////////////////////////////
-INLINE const string &HTTPChannel::
-get_status_string() const {
-  return _status_string;
+  return _status_entry._status_code;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -640,53 +640,55 @@ load_client_certificate() {
       }
     }
 
-    // Create an in-memory BIO to read the "file" from the memory
-    // buffer, and call the low-level routines to read the
-    // keys from the BIO.
-    BIO *mbio = BIO_new_mem_buf((void *)_client_certificate_pem.data(), 
-                                _client_certificate_pem.length());
-
-    ERR_clear_error();
-    _client_certificate_priv = 
-      PEM_read_bio_PrivateKey(mbio, NULL, NULL, 
-                              (char *)_client_certificate_passphrase.c_str());
-
-    // Rewind the "file" to the beginning in order to read the public
-    // key (which might appear first in the file).
-    BIO_reset(mbio);
-
-    ERR_clear_error();
-    _client_certificate_pub = 
-      PEM_read_bio_X509(mbio, NULL, NULL, NULL);
-
-    BIO_free(mbio);
-
-    
-    NotifySeverity sev = NS_debug;
-    string source = "memory";
-    if (!_client_certificate_filename.empty()) {
-      // Only report status to "info" severity if we have read the
-      // certificate from a file.  If it came from an in-memory image,
-      // a failure will presumably be handled by whoever set the
-      // image.
-      sev = NS_info;
-      source = _client_certificate_filename;
-    }
-
-    if (_client_certificate_priv != (EVP_PKEY *)NULL &&
-        _client_certificate_pub != (X509 *)NULL) {
-      downloader_cat.out(sev) 
-        << "Read client certificate from " << source << "\n";
-
-    } else {
-      if (_client_certificate_priv == (EVP_PKEY *)NULL) {
-        downloader_cat.out(sev)
-          << "Could not read private key from " << source << "\n";
+    if (!_client_certificate_pem.empty()) {
+      // Create an in-memory BIO to read the "file" from the memory
+      // buffer, and call the low-level routines to read the
+      // keys from the BIO.
+      BIO *mbio = BIO_new_mem_buf((void *)_client_certificate_pem.data(), 
+                                  _client_certificate_pem.length());
+      
+      ERR_clear_error();
+      _client_certificate_priv = 
+        PEM_read_bio_PrivateKey(mbio, NULL, NULL, 
+                                (char *)_client_certificate_passphrase.c_str());
+      
+      // Rewind the "file" to the beginning in order to read the public
+      // key (which might appear first in the file).
+      BIO_reset(mbio);
+      
+      ERR_clear_error();
+      _client_certificate_pub = 
+        PEM_read_bio_X509(mbio, NULL, NULL, NULL);
+      
+      BIO_free(mbio);
+      
+      
+      NotifySeverity sev = NS_debug;
+      string source = "memory";
+      if (!_client_certificate_filename.empty()) {
+        // Only report status to "info" severity if we have read the
+        // certificate from a file.  If it came from an in-memory image,
+        // a failure will presumably be handled by whoever set the
+        // image.
+        sev = NS_info;
+        source = _client_certificate_filename;
       }
       
-      if (_client_certificate_pub == (X509 *)NULL) {
-        downloader_cat.out(sev)
-          << "Could not read public key from " << source << "\n";
+      if (_client_certificate_priv != (EVP_PKEY *)NULL &&
+          _client_certificate_pub != (X509 *)NULL) {
+        downloader_cat.out(sev) 
+          << "Read client certificate from " << source << "\n";
+        
+      } else {
+        if (_client_certificate_priv == (EVP_PKEY *)NULL) {
+          downloader_cat.out(sev)
+            << "Could not read private key from " << source << "\n";
+        }
+        
+        if (_client_certificate_pub == (X509 *)NULL) {
+          downloader_cat.out(sev)
+            << "Could not read public key from " << source << "\n";
+        }
       }
     }
   }

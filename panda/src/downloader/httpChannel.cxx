@@ -77,8 +77,7 @@ HTTPChannel(HTTPClient *client) :
   _got_transfer_file_size = false;
   _bytes_downloaded = 0;
   _bytes_requested = 0;
-  _status_code = 0;
-  _status_string = string();
+  _status_entry = StatusEntry();
   _response_type = RT_none;
   _http_version = _client->get_http_version();
   _http_version_string = _client->get_http_version_string();
@@ -174,6 +173,72 @@ will_close_connection() const {
 istream *HTTPChannel::
 open_read_file() const {
   return ((HTTPChannel *)this)->read_body();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_status_string
+//       Access: Published
+//  Description: Returns the string as returned by the server
+//               describing the status code for humans.  This may or
+//               may not be meaningful.
+////////////////////////////////////////////////////////////////////
+string HTTPChannel::
+get_status_string() const {
+  switch (_status_entry._status_code) {
+  case SC_incomplete:
+    return "Connection in progress";
+
+  case SC_internal_error:
+    return "Internal error";
+
+  case SC_no_connection:
+    return "No connection";
+
+  case SC_timeout:
+    return "Timeout on connection";
+
+  case SC_lost_connection:
+    return "Lost connection";
+
+  case SC_non_http_response:
+    return "Non-HTTP response";
+
+  case SC_invalid_http:
+    return "Could not understand HTTP response";
+
+  case SC_socks_invalid_version:
+    return "Unsupported SOCKS version";
+
+  case SC_socks_no_acceptable_login_method:
+    return "No acceptable SOCKS login method";
+
+  case SC_socks_refused:
+    return "SOCKS proxy refused connection";
+
+  case SC_socks_no_connection:
+    return "SOCKS proxy unable to connect";
+
+  case SC_ssl_internal_failure:
+    return "SSL internal failure";
+
+  case SC_ssl_no_handshake:
+    return "No SSL handshake";
+
+  case SC_http_error_watermark:
+    // This shouldn't be triggered.
+    return "Internal error";
+
+  case SC_ssl_invalid_server_certificate:
+    return "SSL invalid server certificate";
+
+  case SC_ssl_unexpected_server:
+    return "Unexpected SSL server";
+
+  case SC_download_write_error:
+    return "Error writing to disk";
+  }
+
+  return _status_entry._status_string;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -310,6 +375,7 @@ run() {
         // consecutive lost connections.
         downloader_cat.warning()
           << "Too many lost connections, giving up.\n";
+        _status_entry._status_code = SC_lost_connection;
         _state = S_failure;
         return false;
       }
@@ -328,6 +394,10 @@ run() {
       if (_connect_count > 0) {
         downloader_cat.info()
           << "Reconnecting to " << _bio->get_server_name() << ":" 
+          << _bio->get_port() << "\n";
+      } else {
+        downloader_cat.info()
+          << "Connecting to " << _bio->get_server_name() << ":" 
           << _bio->get_port() << "\n";
       }
       
@@ -669,7 +739,29 @@ reached_done_state() {
       << ", _done_state = " << _done_state << "\n";
   }
 
-  if (_state == S_failure || _download_dest == DD_none) {
+  if (_state == S_failure) {
+    // We had to give up.  Each proxy we tried, in sequence, failed.
+    // But maybe the last attempt didn't give us the most informative
+    // response; go back and find the best one.
+    if (!_status_list.empty()) {
+      _status_list.push_back(_status_entry);
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
+          << "Reexamining failure responses.\n";
+      }
+      size_t best_i = 0;
+      for (size_t i = 1; i < _status_list.size(); i++) {
+        if (more_useful_status_code(_status_list[i]._status_code, 
+                                    _status_list[best_i]._status_code)) {
+          best_i = i;
+        }
+      }
+      _status_entry = _status_list[best_i];
+    }
+
+    return false;
+
+  } else if (_download_dest == DD_none) {
     // All done.
     return false;
     
@@ -702,13 +794,19 @@ reached_done_state() {
 bool HTTPChannel::
 run_try_next_proxy() {
   if (_proxy_next_index < _proxies.size()) {
-    // Try the next proxy in sequence.
+    // Record the previous proxy's status entry, so we can come back
+    // to it later if we get nonsense from the remaining proxies.
+    _status_list.push_back(_status_entry);
+    _status_entry = StatusEntry();
+
+    // Now try the next proxy in sequence.
     _proxy = _proxies[_proxy_next_index];
     _proxy_auth = (HTTPAuthorization *)NULL;
     _proxy_next_index++;
     close_connection();
     reconsider_proxy();
     _state = S_connecting;
+    nassertr(_status_list.size() == _proxy_next_index - 1, false);
     return false;
   }
 
@@ -725,8 +823,7 @@ run_try_next_proxy() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_connecting() {
-  _status_code = 0;
-  _status_string = string();
+  _status_entry = StatusEntry();
 
   if (BIO_do_connect(*_bio) <= 0) {
     if (BIO_should_retry(*_bio)) {
@@ -739,6 +836,7 @@ run_connecting() {
 #ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
+    _status_entry._status_code = SC_no_connection;
     _state = S_try_next_proxy;
     return false;
   }
@@ -776,6 +874,8 @@ run_connecting_wait() {
   if (fd < 0) {
     downloader_cat.warning()
       << "nonblocking socket BIO has no file descriptor.\n";
+    // This shouldn't be possible.
+    _status_entry._status_code = SC_internal_error;
     _state = S_try_next_proxy;
     return false;
   }
@@ -802,6 +902,8 @@ run_connecting_wait() {
   if (errcode < 0) {
     downloader_cat.warning()
       << "Error in select.\n";
+    // This shouldn't be possible.
+    _status_entry._status_code = SC_internal_error;
     _state = S_try_next_proxy;
     return false;
   }
@@ -815,6 +917,7 @@ run_connecting_wait() {
       downloader_cat.info()
         << "Timeout connecting to " 
         << _request.get_url().get_server_and_port() << ".\n";
+      _status_entry._status_code = SC_timeout;
       _state = S_try_next_proxy;
       return false;
     }
@@ -926,7 +1029,7 @@ run_http_proxy_reading_header() {
     // differentiate them from similar status codes the destination
     // server might have returned.
     if (get_status_code() != 407) {
-      _status_code += 1000;
+      _status_entry._status_code += 1000;
     }
 
     _state = S_try_next_proxy;
@@ -987,6 +1090,7 @@ run_socks_proxy_greet_reply() {
     // We only speak Socks5.
     downloader_cat.info()
       << "Rejecting Socks version " << (int)reply[0] << "\n";
+    _status_entry._status_code = SC_socks_invalid_version;
     _state = S_try_next_proxy;
     return false;
   }
@@ -994,10 +1098,7 @@ run_socks_proxy_greet_reply() {
   if (reply[1] == (char)0xff) {
     downloader_cat.info()
       << "Socks server does not accept our available login methods.\n";
-    // We plug in the phony status code of 407 here, which is the HTTP
-    // status code that indicates the proxy didn't like our
-    // authentication.  It's a close enough approximation.
-    _status_code = 407;
+    _status_entry._status_code = SC_socks_no_acceptable_login_method;
     _state = S_try_next_proxy;
     return false;
   }
@@ -1013,6 +1114,7 @@ run_socks_proxy_greet_reply() {
   downloader_cat.info()
     << "Socks server accepted unrequested login method "
     << (int)reply[1] << "\n";
+  _status_entry._status_code = SC_socks_no_acceptable_login_method;
   _state = S_try_next_proxy;
   return false;
 }
@@ -1077,6 +1179,7 @@ run_socks_proxy_connect_reply() {
     downloader_cat.info()
       << "Rejecting Socks version " << (int)reply[0] << "\n";
     close_connection();  // connection is now bad.
+    _status_entry._status_code = SC_socks_invalid_version;
     _state = S_try_next_proxy;
     return false;
   }
@@ -1098,6 +1201,19 @@ run_socks_proxy_connect_reply() {
              o  X'09' to X'FF' unassigned
     */
 
+    switch (reply[1]) {
+    case 0x03:
+    case 0x04:
+    case 0x05:
+      // These generally mean the same thing: the SOCKS proxy tried,
+      // but couldn't reach the host.
+      _status_entry._status_code = SC_socks_no_connection;
+      break;
+
+    default:
+      _status_entry._status_code = SC_socks_refused;
+    }
+    
     close_connection();  // connection is now bad.
     _state = S_try_next_proxy;
     return false;
@@ -1124,6 +1240,7 @@ run_socks_proxy_connect_reply() {
   default:
     downloader_cat.info()
       << "Unsupported SOCKS address type: " << (int)reply[3] << "\n";
+    _status_entry._status_code = SC_socks_invalid_version;
     _state = S_try_next_proxy;
     return false;
   }
@@ -1195,6 +1312,7 @@ run_setup_ssl() {
 #ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
+    _status_entry._status_code = SC_ssl_internal_failure;
     _state = S_failure;
     return false;
   }
@@ -1260,6 +1378,7 @@ run_ssl_handshake() {
 #endif
     // It seems to be an error to free sbio at this point; perhaps
     // it's already been freed?
+    _status_entry._status_code = SC_ssl_no_handshake;
     _state = S_failure;
     return false;
   }
@@ -1294,6 +1413,7 @@ run_ssl_handshake() {
     downloader_cat.info()
       << "Expired certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
+      _status_entry._status_code = SC_ssl_invalid_server_certificate;
       _state = S_failure;
       return false;
     }
@@ -1302,6 +1422,7 @@ run_ssl_handshake() {
     downloader_cat.info()
       << "Premature certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
+      _status_entry._status_code = SC_ssl_invalid_server_certificate;
       _state = S_failure;
       return false;
     }
@@ -1311,6 +1432,7 @@ run_ssl_handshake() {
       << "Unable to verify identity of " << _request.get_url().get_server_and_port()
       << ", verify error code " << verify_result << "\n";
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
+      _status_entry._status_code = SC_ssl_invalid_server_certificate;
       _state = S_failure;
       return false;
     }
@@ -1320,8 +1442,10 @@ run_ssl_handshake() {
   if (cert == (X509 *)NULL) {
     downloader_cat.info()
       << "No certificate was presented by server.\n";
+    // This shouldn't be possible, per the SSL specs.
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify ||
         !_client->_expected_servers.empty()) {
+      _status_entry._status_code = SC_ssl_invalid_server_certificate;
       _state = S_failure;
       return false;
     }
@@ -1352,6 +1476,7 @@ run_ssl_handshake() {
       if (!verify_server(subject)) {
         downloader_cat.info()
           << "Server does not match any expected server.\n";
+        _status_entry._status_code = SC_ssl_unexpected_server;
         _state = S_failure;
         return false;
       }
@@ -1435,6 +1560,7 @@ run_reading_header() {
         << "Connection lost while reading HTTP response.\n";
       if (_response_type == RT_http_hangup) {
         // This was our second hangup in a row.  Give up.
+        _status_entry._status_code = SC_lost_connection;
         _state = S_try_next_proxy;
         
       } else {
@@ -1453,6 +1579,7 @@ run_reading_header() {
           << _request.get_url().get_server_and_port() 
           << " in run_reading_header (" << elapsed 
           << " seconds elapsed).\n";
+        _status_entry._status_code = SC_timeout;
         _state = S_try_next_proxy;
       }
     }
@@ -1476,6 +1603,7 @@ run_reading_header() {
     if (content_range.empty()) {
       downloader_cat.warning()
         << "Got 206 response without Content-Range header!\n";
+      _status_entry._status_code = SC_invalid_http;
       _state = S_failure;
       return false;
 
@@ -1483,6 +1611,7 @@ run_reading_header() {
       if (!parse_content_range(content_range)) {
         downloader_cat.warning()
           << "Couldn't parse Content-Range: " << content_range << "\n";
+        _status_entry._status_code = SC_invalid_http;
         _state = S_failure;
         return false;
       }
@@ -1507,6 +1636,7 @@ run_reading_header() {
   // In case we've got a download in effect, reset the download
   // position to match our starting byte.
   if (!reset_download_position(_first_byte_delivered)) {
+    _status_entry._status_code = SC_invalid_http;
     _state = S_failure;
     return false;
   }
@@ -1841,6 +1971,7 @@ run_download_to_file() {
   if (_download_to_file.fail()) {
     downloader_cat.warning()
       << "Error writing to " << _download_to_filename << "\n";
+    _status_entry._status_code = SC_download_write_error;
     _state = S_failure;
     _download_to_file.close();
     return false;
@@ -2036,7 +2167,11 @@ reconsider_proxy() {
 void HTTPChannel::
 reset_for_new_request() {
   reset_download_to();
+
   _last_status_code = 0;
+  _status_entry = StatusEntry();
+  _status_list.clear();
+
   _response_type = RT_none;
   _redirect_trail.clear();
   _bytes_downloaded = 0;
@@ -2191,6 +2326,7 @@ server_getline_failsafe(string &str) {
       // Huh, the server hung up on us as soon as we tried to connect.
       if (_response_type == RT_hangup) {
         // This was our second immediate hangup in a row.  Give up.
+        _status_entry._status_code = SC_lost_connection;
         _state = S_try_next_proxy;
         
       } else {
@@ -2209,6 +2345,7 @@ server_getline_failsafe(string &str) {
           << _request.get_url().get_server_and_port() 
           << " in server_getline_failsafe (" << elapsed 
           << " seconds elapsed).\n";
+        _status_entry._status_code = SC_timeout;
         _state = S_try_next_proxy;
       }
     }
@@ -2262,6 +2399,7 @@ server_get_failsafe(string &str, size_t num_bytes) {
       // Huh, the server hung up on us as soon as we tried to connect.
       if (_response_type == RT_hangup) {
         // This was our second immediate hangup in a row.  Give up.
+        _status_entry._status_code = SC_lost_connection;
         _state = S_try_next_proxy;
         
       } else {
@@ -2280,6 +2418,7 @@ server_get_failsafe(string &str, size_t num_bytes) {
           << _request.get_url().get_server_and_port() 
           << " in server_get_failsafe (" << elapsed 
           << " seconds elapsed).\n";
+        _status_entry._status_code = SC_timeout;
         _state = S_try_next_proxy;
       }
     }
@@ -2358,8 +2497,7 @@ parse_http_response(const string &line) {
   // result code.
   if (line.length() < 5 || line.substr(0, 5) != string("HTTP/")) {
     // Not an HTTP response.
-    _status_code = 0;
-    _status_string = "Not an HTTP response";
+    _status_entry._status_code = SC_non_http_response;
     if (_response_type == RT_non_http) {
       // This was our second non-HTTP response in a row.  Give up.
       _state = S_try_next_proxy;
@@ -2389,12 +2527,12 @@ parse_http_response(const string &line) {
     q++;
   }
   string status_code = line.substr(p, q - p);
-  _status_code = atoi(status_code.c_str());
+  _status_entry._status_code = atoi(status_code.c_str());
 
   while (q < line.length() && isspace(line[q])) {
     q++;
   }
-  _status_string = line.substr(q, line.length() - q);
+  _status_entry._status_string = line.substr(q, line.length() - q);
 
   return true;
 }
@@ -3139,6 +3277,52 @@ close_connection() {
   _working_get = string();
   _sent_so_far = 0;
   _read_index++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::more_useful_status_code
+//       Access: Private, Static
+//  Description: Returns true if status code a is a more useful value
+//               (that is, it represents a more-nearly successfully
+//               connection attempt, or contains more information)
+//               than b, or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+more_useful_status_code(int a, int b) {
+  if (a >= 100 && b >= 100) {
+    // Both represent HTTP responses.  Responses from a server (<
+    // 1000) are better than those from a proxy; we take advantage of
+    // the fact that we have already added 1000 to proxy responses.
+    // Except for 407, so let's fix that now.
+    if (a == 407) { 
+      a += 1000;
+    }
+    if (b == 407) { 
+      b += 1000;
+    }
+
+    // Now just check the series.
+    int series_a = (a / 100);
+    int series_b = (b / 100);
+
+    // In general, a lower series is a closer success.
+    return (series_a < series_b);
+  }
+
+  if (a < 100 && b < 100) {
+    // Both represent non-HTTP responses.  Here a larger number is
+    // better.
+    return (a > b);
+  }
+
+  if (a < 100) {
+    // a is a non-HTTP response, while b is an HTTP response.  HTTP is
+    // generally, better, unless we exceeded SC_http_error_watermark.
+    return (a > SC_http_error_watermark);
+  }
+
+  // Exactly the opposite case as above.
+  return (b < SC_http_error_watermark);
 }
 
 

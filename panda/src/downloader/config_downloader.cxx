@@ -120,8 +120,8 @@ config_downloader.GetInt("http-max-connect-count", 10);
 // connection-specific certificate may also be specified at runtime on
 // the HTTPClient object, but this will require having a different
 // HTTPClient object for each differently-certificated connection.
-const string http_client_certificate_filename =
-config_downloader.GetString("http-client-certificate-filename", "");
+const Filename http_client_certificate_filename =
+Filename::expand_from(config_downloader.GetString("http-client-certificate-filename", ""));
 const string http_client_certificate_passphrase =
 config_downloader.GetString("http-client-certificate-passphrase", "");
 

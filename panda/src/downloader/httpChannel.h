@@ -75,6 +75,33 @@ public:
   bool will_close_connection() const;
 
 PUBLISHED:
+  // get_status_code() will either return an HTTP-style status code >=
+  // 100 (e.g. 404), or one of the following values.  In general,
+  // these are ordered from less-successful to more-successful.
+  enum StatusCode {
+    SC_incomplete = 0,
+    SC_internal_error,
+    SC_no_connection,
+    SC_timeout,
+    SC_lost_connection,
+    SC_non_http_response,
+    SC_invalid_http,
+    SC_socks_invalid_version,
+    SC_socks_no_acceptable_login_method,
+    SC_socks_refused,
+    SC_socks_no_connection,
+    SC_ssl_internal_failure,
+    SC_ssl_no_handshake,
+
+    // No one returns this code, but StatusCode values higher than
+    // this are deemed more successful than any generic HTTP response.
+    SC_http_error_watermark,
+
+    SC_ssl_invalid_server_certificate,
+    SC_ssl_unexpected_server,
+    SC_download_write_error,
+  };
+
   INLINE bool is_valid() const;
   INLINE bool is_connection_ready() const;
   INLINE const URLSpec &get_url() const;
@@ -82,7 +109,7 @@ PUBLISHED:
   INLINE HTTPEnum::HTTPVersion get_http_version() const;
   INLINE const string &get_http_version_string() const;
   INLINE int get_status_code() const;
-  INLINE const string &get_status_string() const;
+  string get_status_string() const;
   INLINE const string &get_www_realm() const;
   INLINE const string &get_proxy_realm() const;
   INLINE const URLSpec &get_redirect() const;
@@ -220,6 +247,8 @@ private:
   void reset_to_new();
   void close_connection();
 
+  static bool more_useful_status_code(int a, int b);
+
 public:
   // This is declared public solely so we can make an ostream operator
   // for it.
@@ -249,11 +278,18 @@ public:
   };
 
 private:
+  class StatusEntry {
+  public:
+    int _status_code;
+    string _status_string;
+  };
   typedef pvector<URLSpec> Proxies;
+  typedef pvector<StatusEntry> StatusList;
 
   HTTPClient *_client;
   Proxies _proxies;
   size_t _proxy_next_index;
+  StatusList _status_list;
   URLSpec _proxy;
   PT(BioPtr) _bio;
   PT(BioStreamPtr) _source;
@@ -302,8 +338,7 @@ private:
 
   HTTPEnum::HTTPVersion _http_version;
   string _http_version_string;
-  int _status_code;
-  string _status_string;
+  StatusEntry _status_entry;
   URLSpec _redirect;
 
   string _proxy_realm;
