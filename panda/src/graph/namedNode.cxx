@@ -75,10 +75,14 @@ combine_with(Node *other) {
     }
     // The other node is also a NamedNode, or better, so it wins.
     return other;
+
+  } else if (other->is_exact_type(get_class_type())) {
+    // We're not an ordinary NamedNode, but the other one is.
+    return this;
   }
 
   // We're something other than an ordinary NamedNode.  Don't combine.
-  return (Node *)NULL;
+  return Node::combine_with(other);
 }
 
 ////////////////////////////////////////////////////////////////////

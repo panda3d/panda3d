@@ -136,7 +136,7 @@ combine_with(Node *other) {
     return this;
   }
 
-  return (Node *)NULL;
+  return NamedNode::combine_with(other);
 }
 
 ////////////////////////////////////////////////////////////////////

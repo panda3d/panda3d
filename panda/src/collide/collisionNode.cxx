@@ -153,9 +153,12 @@ combine_with(Node *other) {
       mark_bound_stale();
       return this;
     }
+
+    // Two CollisionNodes with different names can't combine.
+    return (Node *)NULL;
   }
 
-  return (Node *)NULL;
+  return NamedNode::combine_with(other);
 }
 
 ////////////////////////////////////////////////////////////////////

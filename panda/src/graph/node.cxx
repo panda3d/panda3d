@@ -208,6 +208,10 @@ combine_with(Node *other) {
   if (is_exact_type(get_class_type())) {
     // No, we're an ordinary Node.
     return other;
+
+  } else if (other->is_exact_type(get_class_type())) {
+    // We're not an ordinary Node, but the other one is.
+    return this;
   }
 
   // We're something other than an ordinary Node.  Don't combine.
