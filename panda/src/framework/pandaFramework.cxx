@@ -279,9 +279,56 @@ get_default_window_props(WindowProperties &props) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::open_window
 //       Access: Public
-//  Description: Opens a new window, using the default parameters.
-//               Returns the new WindowFramework if successful, or
-//               NULL if not.
+//  Description: Opens a window on the default graphics pipe.  If the
+//               default graphics pipe can't open a window for some
+//               reason, automatically fails over to the next
+//               available graphics pipe, and updates _default_pipe
+//               accordingly.  Returns NULL only if all graphics pipes
+//               fail.
+////////////////////////////////////////////////////////////////////
+WindowFramework *PandaFramework::
+open_window() {
+  GraphicsPipe *pipe = get_default_pipe();
+  if (pipe == (GraphicsPipe *)NULL) {
+    // Can't get a pipe.
+    return NULL;
+  }
+
+  WindowFramework *wf = open_window(pipe, NULL);
+  if (wf == (WindowFramework *)NULL) {
+    // Ok, the default graphics pipe failed; try a little harder.
+    GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
+    selection->load_aux_modules();
+
+    int num_pipe_types = selection->get_num_pipe_types();
+    for (int i = 0; i < num_pipe_types; i++) {
+      TypeHandle pipe_type = selection->get_pipe_type(i);
+      if (pipe_type != _default_pipe->get_type()) {
+        PT(GraphicsPipe) new_pipe = selection->make_pipe(pipe_type);
+        if (new_pipe != (GraphicsPipe *)NULL) {
+          wf = open_window(new_pipe, NULL);
+          if (wf != (WindowFramework *)NULL) {
+            // Here's the winner!
+            _default_pipe = new_pipe;
+            return wf;
+          }
+        }
+      }
+    }
+
+    // Too bad; none of the pipes could open a window.  Fall through
+    // and return NULL.
+  }
+
+  return wf;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::open_window
+//       Access: Public
+//  Description: Opens a new window on the indicated pipe, using the
+//               default parameters.  Returns the new WindowFramework
+//               if successful, or NULL if not.
 ////////////////////////////////////////////////////////////////////
 WindowFramework *PandaFramework::
 open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
@@ -324,6 +371,14 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe,
 
   GraphicsWindow *win = wf->open_window(props, get_graphics_engine(), 
                                         pipe, gsg);
+  _engine->open_windows();
+  if (win != (GraphicsWindow *)NULL && !win->is_valid()) {
+    // The window won't open.
+    _engine->remove_window(win);
+    wf->close_window();
+    win = NULL;
+  }
+
   if (win == (GraphicsWindow *)NULL) {
     // Oops, couldn't make an actual window.
     framework_cat.error()

@@ -62,7 +62,8 @@ public:
   INLINE void set_window_title(const string &title);
   virtual void get_default_window_props(WindowProperties &props);
 
-  WindowFramework *open_window(GraphicsPipe *pipe = NULL,
+  WindowFramework *open_window();
+  WindowFramework *open_window(GraphicsPipe *pipe,
                                GraphicsStateGuardian *gsg = NULL);
   WindowFramework *open_window(const WindowProperties &props,
                                GraphicsPipe *pipe = NULL,
