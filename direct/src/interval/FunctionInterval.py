@@ -1,8 +1,8 @@
 """FunctionInterval module: contains the FunctionInterval class"""
 
 from PandaModules import *
-from Interval import *
 from MessengerGlobal import *
+import Interval
 import types
 
 #############################################################
@@ -11,7 +11,7 @@ import types
 ###                                                       ###
 #############################################################
 
-class FunctionInterval(Interval):
+class FunctionInterval(Interval.Interval):
     # Name counter
     functionIntervalNum = 1
 
@@ -36,9 +36,9 @@ class FunctionInterval(Interval):
         # function to be called.  If false, IVAL_INIT calls have no effect
         # Event, Accept, Ignore intervals default to fOpenEnded = 0
         # Parent, Pos, Hpr, etc intervals default to fOpenEnded = 1
-        Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
+        Interval.Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
     
-    def updateFunc(self, t, event = IVAL_NONE):
+    def updateFunc(self, t, event = Interval.IVAL_NONE):
         """ updateFunc(t, event)
             Go to time t
         """

@@ -1,7 +1,6 @@
 """Interval module: contains the Interval class"""
 
 from DirectObject import *
-from IntervalGlobal import *
 from PandaModules import *
 import Task
 

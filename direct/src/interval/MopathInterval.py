@@ -1,10 +1,10 @@
 """MopathInterval module: contains the MopathInterval class"""
 
-from Interval import *
+import Interval
 
 # import Mopath
 
-class MopathInterval(Interval):
+class MopathInterval(Interval.Interval):
     # Name counter
     mopathNum = 1
     # create MopathInterval DirectNotify category
@@ -22,9 +22,9 @@ class MopathInterval(Interval):
         # Compute duration
         duration = self.mopath.getMaxT()
         # Initialize superclass
-        Interval.__init__(self, name, duration)
+        Interval.Interval.__init__(self, name, duration)
 
-    def updateFunc(self, t, event = IVAL_NONE):
+    def updateFunc(self, t, event = Interval.IVAL_NONE):
         """ updateFunc(t, event)
             Go to time t
         """

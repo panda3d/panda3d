@@ -1,9 +1,9 @@
 """SoundInterval module: contains the SoundInterval class"""
 
 from PandaModules import *
-from Interval import *
+import Interval
 
-class SoundInterval(Interval):
+class SoundInterval(Interval.Interval):
     # Name counter
     soundNum = 1
     # create SoundInterval DirectNotify category
@@ -42,12 +42,12 @@ class SoundInterval(Interval):
         if (name == None):
             name = id
         # Initialize superclass
-        Interval.__init__(self, name, duration)
+        Interval.Interval.__init__(self, name, duration)
         # Update stopEvent
         self.stopEvent = id + '_stopEvent'
         self.stopEventList = [self.stopEvent]
 
-    def updateFunc(self, t, event = IVAL_NONE):
+    def updateFunc(self, t, event = Interval.IVAL_NONE):
         """ updateFunc(t, event)
         Go to time t
         """
@@ -57,7 +57,7 @@ class SoundInterval(Interval):
             if self.sound:
                 self.sound.stop()
             self.ignore(self.stopEvent)
-        elif (event == IVAL_INIT):
+        elif (event == Interval.IVAL_INIT):
             # IVAL_INIT event, start new sound
             # If its within a 10th of a second of the start,
             # start at the beginning

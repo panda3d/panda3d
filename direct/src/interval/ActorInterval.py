@@ -1,12 +1,12 @@
 """ActorInterval module: contains the ActorInterval class"""
 
 from PandaModules import *
-from Interval import *
+import Interval
 import math
 
 import DirectNotifyGlobal
 
-class ActorInterval(Interval):
+class ActorInterval(Interval.Interval):
 
     # create ActorInterval DirectNotify category
     notify = directNotify.newCategory('ActorInterval')
@@ -59,7 +59,7 @@ class ActorInterval(Interval):
             reverse = 1
 
         # Initialize superclass
-        Interval.__init__(self, name, duration, reverse=reverse)
+        Interval.Interval.__init__(self, name, duration, reverse=reverse)
         # Update stopEvent
         self.stopEvent = id + '_stopEvent'
         if self.loopAnim:
@@ -92,7 +92,7 @@ class ActorInterval(Interval):
                           (self.name,frame))
         return frame
 
-    def updateFunc(self, t, event=IVAL_NONE):
+    def updateFunc(self, t, event=Interval.IVAL_NONE):
         """ updateFunc(t, event)
             Go to time t
         """
@@ -111,7 +111,7 @@ class ActorInterval(Interval):
                 'updateFunc() - %s stoping at frame: ' % self.name +
                 '%d Num frames: %d' % (frame, self.numFrames))
         elif self.loopAnim == 1:
-            if event == IVAL_INIT:
+            if event == Interval.IVAL_INIT:
                 # Pose anim
                 self.goToT(t)
                 # And start loop, restart flag says continue from current frame

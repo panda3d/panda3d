@@ -1,11 +1,11 @@
 """ParticleInterval module: contains the ParticleInterval class"""
 
 from PandaModules import *
-from Interval import *
+import Interval
 
 import ParticleEffect
 
-class ParticleInterval(Interval):
+class ParticleInterval(Interval.Interval):
     # Name counter
     particleNum = 1
     # create ParticleInterval DirectNotify category
@@ -27,13 +27,13 @@ class ParticleInterval(Interval):
         self.loop = loop
         assert(duration > 0.0 or loop == 1)
         # Initialize superclass
-        Interval.__init__(self, name, duration)
+        Interval.Interval.__init__(self, name, duration)
         # Update stopEvent
         self.stopEvent = id + '_stopEvent'
         self.stopEventList = [self.stopEvent]
         self.cleanedUp = 0
 
-    def updateFunc(self, t, event=IVAL_NONE):
+    def updateFunc(self, t, event=Interval.IVAL_NONE):
         """ updateFunc(t, event)
         Go to time t
         """
@@ -46,7 +46,7 @@ class ParticleInterval(Interval):
             ParticleEffect.cleanupParticleEffect(self.particleEffect)
             self.ignore(self.stopEvent)
             self.cleanedUp = 1
-        elif (event == IVAL_INIT):
+        elif (event == Interval.IVAL_INIT):
             # IVAL_INIT event, start new particle effect
             ParticleEffect.startParticleEffect(self.particleEffect,
                                                 self.parent, self.worldRelative)

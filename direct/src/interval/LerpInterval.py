@@ -1,11 +1,10 @@
 """LerpInterval module: contains the LerpInterval class"""
 
-from Interval import *
 from PandaModules import *
-
+import Interval
 import LerpBlendHelpers
 
-class LerpInterval(Interval):
+class LerpInterval(Interval.Interval):
     # create LerpInterval DirectNotify category
     notify = directNotify.newCategory('LerpInterval')
     # Class methods
@@ -17,13 +16,13 @@ class LerpInterval(Interval):
         self.functorFunc = functorFunc
         self.blendType = self.getBlend(blendType)
         # Initialize superclass
-        Interval.__init__(self, name, duration)
+        Interval.Interval.__init__(self, name, duration)
 
-    def updateFunc(self, t, event = IVAL_NONE):
+    def updateFunc(self, t, event = Interval.IVAL_NONE):
         """ updateFunc(t, event)
         """
         # Check to see if we need to create the lerp
-        if (event == IVAL_INIT):
+        if (event == Interval.IVAL_INIT):
             self.lerp = Lerp(self.functorFunc(), self.duration, 
                                   self.blendType)
         # Make sure lerp exists
@@ -319,9 +318,9 @@ class LerpFunctionInterval(Interval):
                     LerpFunctionInterval.lerpFunctionIntervalNum)
             LerpFunctionInterval.lerpFunctionIntervalNum += 1
         # Initialize superclass
-        Interval.__init__(self, name, duration)
+        Interval.Interval.__init__(self, name, duration)
 
-    def updateFunc(self, t, event = IVAL_NONE):
+    def updateFunc(self, t, event = Interval.IVAL_NONE):
         """ updateFunc(t, event)
         """
         # Evaluate the function
