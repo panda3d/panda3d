@@ -575,6 +575,17 @@ is_ownsend() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::is_airecv
+//       Access: Public
+//  Description: Returns true if the "airecv" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::
+is_airecv() const {
+  return (_flags & F_airecv) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::Constructor
 //       Access: Public
 //  Description:
@@ -631,6 +642,9 @@ write(ostream &out, bool brief, int indent_level) const {
   }
   if ((_flags & F_ownsend) != 0) {
     out << " ownsend";
+  }
+  if ((_flags & F_airecv) != 0) {
+    out << " airecv";
   }
 
   out << ";";

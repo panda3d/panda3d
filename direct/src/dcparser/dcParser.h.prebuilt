@@ -1,116 +1,43 @@
-/* A Bison parser, made by GNU Bison 1.875.  */
+#ifndef BISON_Y_TAB_H
+# define BISON_Y_TAB_H
 
-/* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002 Free Software Foundation, Inc.
+# define	INTEGER	257
+# define	REAL	258
+# define	STRING	259
+# define	HEX_STRING	260
+# define	IDENTIFIER	261
+# define	KW_DCLASS	262
+# define	KW_INT8	263
+# define	KW_INT16	264
+# define	KW_INT32	265
+# define	KW_INT64	266
+# define	KW_UINT8	267
+# define	KW_UINT16	268
+# define	KW_UINT32	269
+# define	KW_UINT64	270
+# define	KW_FLOAT64	271
+# define	KW_STRING	272
+# define	KW_BLOB	273
+# define	KW_BLOB32	274
+# define	KW_INT8ARRAY	275
+# define	KW_INT16ARRAY	276
+# define	KW_INT32ARRAY	277
+# define	KW_UINT8ARRAY	278
+# define	KW_UINT16ARRAY	279
+# define	KW_UINT32ARRAY	280
+# define	KW_UINT32UINT8ARRAY	281
+# define	KW_MOL	282
+# define	KW_REQUIRED	283
+# define	KW_BROADCAST	284
+# define	KW_P2P	285
+# define	KW_RAM	286
+# define	KW_DB	287
+# define	KW_CLSEND	288
+# define	KW_CLRECV	289
+# define	KW_OWNSEND	290
+# define	KW_AIRECV	291
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
-
-/* As a special exception, when this file is copied by Bison into a
-   Bison output file, you may use that output file without restriction.
-   This special exception was added by the Free Software Foundation
-   in version 1.24 of Bison.  */
-
-/* Tokens.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
-      know about them.  */
-   enum yytokentype {
-     INTEGER = 258,
-     REAL = 259,
-     STRING = 260,
-     HEX_STRING = 261,
-     IDENTIFIER = 262,
-     KW_DCLASS = 263,
-     KW_INT8 = 264,
-     KW_INT16 = 265,
-     KW_INT32 = 266,
-     KW_INT64 = 267,
-     KW_UINT8 = 268,
-     KW_UINT16 = 269,
-     KW_UINT32 = 270,
-     KW_UINT64 = 271,
-     KW_FLOAT64 = 272,
-     KW_STRING = 273,
-     KW_BLOB = 274,
-     KW_BLOB32 = 275,
-     KW_INT8ARRAY = 276,
-     KW_INT16ARRAY = 277,
-     KW_INT32ARRAY = 278,
-     KW_UINT8ARRAY = 279,
-     KW_UINT16ARRAY = 280,
-     KW_UINT32ARRAY = 281,
-     KW_UINT32UINT8ARRAY = 282,
-     KW_MOL = 283,
-     KW_REQUIRED = 284,
-     KW_BROADCAST = 285,
-     KW_P2P = 286,
-     KW_RAM = 287,
-     KW_DB = 288,
-     KW_CLSEND = 289,
-     KW_CLRECV = 290,
-     KW_OWNSEND = 291
-   };
-#endif
-#define INTEGER 258
-#define REAL 259
-#define STRING 260
-#define HEX_STRING 261
-#define IDENTIFIER 262
-#define KW_DCLASS 263
-#define KW_INT8 264
-#define KW_INT16 265
-#define KW_INT32 266
-#define KW_INT64 267
-#define KW_UINT8 268
-#define KW_UINT16 269
-#define KW_UINT32 270
-#define KW_UINT64 271
-#define KW_FLOAT64 272
-#define KW_STRING 273
-#define KW_BLOB 274
-#define KW_BLOB32 275
-#define KW_INT8ARRAY 276
-#define KW_INT16ARRAY 277
-#define KW_INT32ARRAY 278
-#define KW_UINT8ARRAY 279
-#define KW_UINT16ARRAY 280
-#define KW_UINT32ARRAY 281
-#define KW_UINT32UINT8ARRAY 282
-#define KW_MOL 283
-#define KW_REQUIRED 284
-#define KW_BROADCAST 285
-#define KW_P2P 286
-#define KW_RAM 287
-#define KW_DB 288
-#define KW_CLSEND 289
-#define KW_CLRECV 290
-#define KW_OWNSEND 291
-
-
-
-
-#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-typedef int YYSTYPE;
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
-# define YYSTYPE_IS_DECLARED 1
-# define YYSTYPE_IS_TRIVIAL 1
-#endif
 
 extern YYSTYPE dcyylval;
 
-
-
+#endif /* not BISON_Y_TAB_H */

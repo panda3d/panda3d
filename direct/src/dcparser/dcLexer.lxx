@@ -476,6 +476,11 @@ mol[0-9]+ {
   return KW_OWNSEND;
 }
 
+"airecv" {
+  accept();
+  return KW_AIRECV;
+}
+
 {INTEGERNUM} { 
   // An integer number.
   accept(); 
