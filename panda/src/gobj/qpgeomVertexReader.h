@@ -91,6 +91,9 @@ PUBLISHED:
   INLINE const LVecBase4f &get_data4f();
 
   INLINE int get_data1i();
+  INLINE const int *get_data2i();
+  INLINE const int *get_data3i();
+  INLINE const int *get_data4i();
 
 private:
   class Reader;
@@ -124,6 +127,9 @@ private:
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual int get_data1i(const unsigned char *pointer);
+    virtual const int *get_data2i(const unsigned char *pointer);
+    virtual const int *get_data3i(const unsigned char *pointer);
+    virtual const int *get_data4i(const unsigned char *pointer);
 
     INLINE float maybe_scale_color(unsigned int value);
     INLINE void maybe_scale_color(unsigned int a, unsigned int b);
@@ -136,6 +142,7 @@ private:
     LVecBase2f _v2;
     LVecBase3f _v3;
     LVecBase4f _v4;
+    int _i[4];
   };
 
   // This is a specialization on the generic Reader that handles

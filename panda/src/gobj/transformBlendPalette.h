@@ -64,10 +64,14 @@ PUBLISHED:
   void remove_blend(int n);
   int add_blend(const TransformBlend &blend);
 
+  INLINE int get_num_transforms() const;
+  INLINE int get_max_simultaneous_transforms() const;
+
   void write(ostream &out, int indent_level) const;
 
 private:
   void clear_index();
+  INLINE void consider_rebuild_index() const;
   void rebuild_index();
 
 private:
@@ -84,6 +88,8 @@ private:
   // invalidating all the pointers into it).
   typedef pmap<const TransformBlend *, int, IndirectLess<TransformBlend> > BlendIndex;
   BlendIndex _blend_index;
+  int _num_transforms;
+  int _max_simultaneous_transforms;
 
   // Even though we don't store the actual blend palette data in a
   // CycleData structure, we do need to keep a local cache of the

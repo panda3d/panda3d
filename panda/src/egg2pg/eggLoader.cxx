@@ -1960,6 +1960,13 @@ make_vertex_data(const EggRenderState *render_state,
     // maybe a SliderTable, and additional columns in the vertex data:
     // one that indexes into the blend palette per vertex, and also
     // one for each different type of morph delta.
+
+    // Tell the format that we're setting it up for Panda-based
+    // animation.
+    qpGeomVertexAnimationSpec animation;
+    animation.set_panda();
+    temp_format->set_animation(animation);
+
     blend_palette = new TransformBlendPalette;
 
     PT(qpGeomVertexArrayFormat) anim_array_format = new qpGeomVertexArrayFormat;

@@ -47,9 +47,52 @@ DXVertexBufferContext8(qpGeomVertexArrayData *data) :
   
   if (n < num_data_types && 
       array_format->get_data_type(n)->get_name() == InternalName::get_vertex()) {
-    _fvf |= D3DFVF_XYZ;
     ++n;
+
+    int num_blend_values = 0;
+
+    if (n < num_data_types &&
+        array_format->get_data_type(n)->get_name() == InternalName::get_transform_weight()) {
+      // We have hardware vertex animation.
+      num_blend_values = array_format->get_data_type(n)->get_num_values();
+      ++n;
+      
+      if (n < num_data_types &&
+          array_format->get_data_type(n)->get_name() == InternalName::get_transform_index()) {
+        // Furthermore, it's indexed vertex animation.
+        _fvf |= D3DFVF_LASTBETA_UBYTE4;
+        ++num_blend_values;
+        ++n;
+      }
+    }
+
+    switch (num_blend_values) {
+    case 0:
+      _fvf |= D3DFVF_XYZ;
+      break;
+
+    case 1:
+      _fvf |= D3DFVF_XYZB1;
+      break;
+
+    case 2:
+      _fvf |= D3DFVF_XYZB2;
+      break;
+
+    case 3:
+      _fvf |= D3DFVF_XYZB3;
+      break;
+
+    case 4:
+      _fvf |= D3DFVF_XYZB4;
+      break;
+
+    case 5:
+      _fvf |= D3DFVF_XYZB5;
+      break;
+    }
   }
+
   if (n < num_data_types && 
       array_format->get_data_type(n)->get_name() == InternalName::get_normal()) {
     _fvf |= D3DFVF_NORMAL;
@@ -95,6 +138,11 @@ DXVertexBufferContext8(qpGeomVertexArrayData *data) :
 DXVertexBufferContext8::
 ~DXVertexBufferContext8() {
   if (_vbuffer != NULL) {
+    if (dxgsg8_cat.is_debug()) {
+      dxgsg8_cat.debug()
+        << "deleting vertex buffer " << _vbuffer << "\n";
+    }
+
     RELEASE(_vbuffer, dxgsg8, "vertex buffer", RELEASE_ONCE);
     _vbuffer = NULL;
   }
@@ -136,6 +184,12 @@ upload_data() {
   nassertv(_vbuffer != NULL);
 
   int data_size = get_data()->get_data_size_bytes();
+  
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "copying " << data_size
+      << " bytes into vertex buffer " << _vbuffer << "\n";
+  }
 
   BYTE *local_pointer;
   HRESULT hr = _vbuffer->Lock(0, data_size, &local_pointer, 0);

@@ -202,6 +202,47 @@ set_array(int i, const qpGeomVertexArrayData *array) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::modify_transform_palette
+//       Access: Published
+//  Description: Returns a modifiable pointer to the current
+//               TransformPalette on this vertex data, if any, or
+//               NULL if there is not a TransformPalette.  See
+//               get_transform_palette().
+////////////////////////////////////////////////////////////////////
+TransformPalette *qpGeomVertexData::
+modify_transform_palette() {
+  // Perform copy-on-write: if the reference count on the palette is
+  // greater than 1, assume some other GeomVertexData has the same
+  // pointer, so make a copy of it first.
+  CDWriter cdata(_cycler);
+
+  if (cdata->_transform_palette->get_ref_count() > 1) {
+    cdata->_transform_palette = new TransformPalette(*cdata->_transform_palette);
+  }
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_animated_vertices_modified = UpdateSeq();
+
+  return cdata->_transform_palette;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_transform_palette
+//       Access: Published
+//  Description: Replaces the TransformPalette on this vertex
+//               data with the indicated palette.  The length of this
+//               palette should be consistent with the maximum palette
+//               index assigned to the vertices under the
+//               "transform_index" name.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+set_transform_palette(const TransformPalette *palette) {
+  CDWriter cdata(_cycler);
+  cdata->_transform_palette = (TransformPalette *)palette;
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_animated_vertices_modified = UpdateSeq();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::modify_transform_blend_palette
 //       Access: Published
 //  Description: Returns a modifiable pointer to the current
@@ -439,6 +480,65 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
             to.set_data4f(from.get_data4f());
           }
         }
+      }
+    }
+  }
+
+    // Also convert the animation tables as necessary.
+  const qpGeomVertexAnimationSpec &source_animation = source_format->get_animation();
+  const qpGeomVertexAnimationSpec &dest_animation = dest_format->get_animation();
+  if (source_animation != dest_animation) {
+    if (dest_animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware) {
+      // Convert Panda-style animation tables to hardware-style
+      // animation tables.
+      CPT(TransformBlendPalette) blend_palette = source.get_transform_blend_palette();
+      if (blend_palette != (TransformBlendPalette *)NULL) {
+        PT(TransformPalette) transform_palette = new TransformPalette;
+        TransformMap already_added;
+
+        if (dest_animation.get_indexed_transforms()) {
+          // Build an indexed transform array.  This is easier; this
+          // means we can put the blends in any order.
+          qpGeomVertexWriter weight(this, InternalName::get_transform_weight());
+          qpGeomVertexWriter index(this, InternalName::get_transform_index());
+          qpGeomVertexReader from(&source, InternalName::get_transform_blend());
+        
+          while (!from.is_at_end()) {
+            const TransformBlend &blend = blend_palette->get_blend(from.get_data1i());
+            LVecBase4f weights = LVecBase4f::zero();
+            int indices[4] = {0, 0, 0, 0};
+            nassertv(blend.get_num_transforms() <= 4);
+            
+            for (int i = 0; i < blend.get_num_transforms(); i++) {
+              weights[i] = blend.get_weight(i);
+              indices[i] = add_transform(transform_palette, blend.get_transform(i),
+                                         already_added);
+            }
+            weight.set_data4f(weights);
+            index.set_data4i(indices[3], indices[2], indices[1], indices[0]);
+          }
+        } else {
+          // Build a nonindexed transform array.  This means we have to
+          // use the same n transforms, in the same order, for each vertex.
+          qpGeomVertexWriter weight(this, InternalName::get_transform_weight());
+          qpGeomVertexReader from(&source, InternalName::get_transform_blend());
+        
+          while (!from.is_at_end()) {
+            const TransformBlend &blend = blend_palette->get_blend(from.get_data1i());
+            LVecBase4f weights = LVecBase4f::zero();
+            
+            for (int i = 0; i < blend.get_num_transforms(); i++) {
+              int index = add_transform(transform_palette, blend.get_transform(i),
+                                        already_added);
+              nassertv(index <= 4);
+              weights[index] = blend.get_weight(i);
+            }
+            weight.set_data4f(weights);
+          }
+        }
+        
+        clear_transform_blend_palette();
+        set_transform_palette(transform_palette);
       }
     }
   }
@@ -724,6 +824,11 @@ get_array_info(const InternalName *name,
 CPT(qpGeomVertexData) qpGeomVertexData::
 do_animate_vertices(bool from_app) const {
   CDReader cdata(_cycler);
+
+  if (_format->get_animation().get_animation_type() !=
+      qpGeomVertexAnimationSpec::AT_panda) {
+    return this;
+  }
 
   UpdateSeq modified;
   if (cdata->_transform_blend_palette != (TransformBlendPalette *)NULL) {

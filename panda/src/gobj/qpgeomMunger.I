@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::is_registered
-//       Access: Published
+//       Access: Public
 //  Description: Returns true if this munger has been registered,
 //               false if it has not.  It may not be used for a Geom
 //               until it has been registered, but once registered, it
@@ -32,7 +32,7 @@ is_registered() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::register_munger
-//       Access: Published, Static
+//       Access: Public, Static
 //  Description: Adds the indicated munger to the registry, if there
 //               is not an equivalent munger already there; in either
 //               case, returns the pointer to the equivalent munger
@@ -100,13 +100,19 @@ geom_compare_to(const qpGeomMunger &other) const {
 //       Access: Public
 //  Description: Given a source GeomVertexFormat, converts it if
 //               necessary to the appropriate format for rendering.
+//
+//               If the GeomVertexAnimationSpec so indicates, then the
+//               format will be chosen to convert CPU-based animation
+//               tables to HW-based animation tables, reserving space
+//               for the specified number of transforms per vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(qpGeomVertexFormat) qpGeomMunger::
-munge_format(const qpGeomVertexFormat *format) const {
+munge_format(const qpGeomVertexFormat *format,
+             const qpGeomVertexAnimationSpec &animation) const {
   // We cast away the const pointer, because do_munge_format() needs
   // to update caches and stuff, but we trust it not to change any
   // user-definable parameters.
-  return ((qpGeomMunger *)this)->do_munge_format(format);
+  return ((qpGeomMunger *)this)->do_munge_format(format, animation);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,6 +130,22 @@ munge_data(const qpGeomVertexData *data) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::operator new
+//       Access: Public
+//  Description: This implementation of operator new isn't really
+//               supposed to be called, but it's provided in case
+//               someone screws up and doesn't define a more
+//               appropriate operator new (that passes up a valid
+//               _deleted_chain) for a derived class.  Having this
+//               operator new that passes NULL for _deleted_chain will
+//               at least allow us to detect the error.
+////////////////////////////////////////////////////////////////////
+INLINE void *qpGeomMunger::
+operator new(size_t size) {
+  return do_operator_new(size, NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::operator delete
 //       Access: Public
 //  Description: This balances do_operator_new(), below, and adds the
@@ -133,7 +155,14 @@ munge_data(const qpGeomVertexData *data) const {
 INLINE void qpGeomMunger::
 operator delete(void *ptr) {
   qpGeomMunger *obj = (qpGeomMunger *)ptr;
-  nassertv(obj->_deleted_chain != (qpGeomMunger **)NULL);
+
+#ifndef NDEBUG
+  nassertd(obj->_deleted_chain != (qpGeomMunger **)NULL) {
+    delete obj;
+    return;
+  }
+#endif
+
   nassertv(obj->_next == (qpGeomMunger *)NULL);
   obj->_next = (*obj->_deleted_chain);
   (*obj->_deleted_chain) = obj;
@@ -153,15 +182,24 @@ operator delete(void *ptr) {
 //               there when it is deleted.
 ////////////////////////////////////////////////////////////////////
 INLINE void *qpGeomMunger::
-do_operator_new(size_t size, qpGeomMunger *&deleted_chain) {
+do_operator_new(size_t size, qpGeomMunger **deleted_chain) {
   qpGeomMunger *obj;
-  if (deleted_chain != (qpGeomMunger *)NULL) {
-    obj = deleted_chain;
-    deleted_chain = deleted_chain->_next;
+
+#ifndef NDEBUG
+  nassertd(deleted_chain != (qpGeomMunger **)NULL) {
+    obj = (qpGeomMunger *)::operator new(size);
+    obj->_deleted_chain = NULL;
+    return obj;
+  }
+#endif
+    
+  if ((*deleted_chain) != (qpGeomMunger *)NULL) {
+    obj = (*deleted_chain);
+    (*deleted_chain) = (*deleted_chain)->_next;
   } else {
     obj = (qpGeomMunger *)::operator new(size);
   }
-  obj->_deleted_chain = &deleted_chain;
+  obj->_deleted_chain = deleted_chain;
 
   return obj;
 }

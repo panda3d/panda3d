@@ -424,6 +424,215 @@ get_data1i(const unsigned char *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::Reader::get_data2i
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const int *qpGeomVertexReader::Reader::
+get_data2i(const unsigned char *pointer) {
+  switch (_data_type->get_num_values()) {
+  case 1:
+    _i[0] = get_data1i(pointer);
+    _i[1] = 0;
+    return _i;
+
+  default:
+    switch (_data_type->get_numeric_type()) {
+    case qpGeomVertexDataType::NT_uint8:
+      _i[0] = pointer[0];
+      _i[1] = pointer[1];
+      return _i;
+      
+    case qpGeomVertexDataType::NT_uint16:
+      {
+        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _i[0] = pi[0];
+        _i[1] = pi[1];
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_packed_8888:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
+          _i[0] = qpGeomVertexData::unpack_8888_b(dword);
+          _i[1] = qpGeomVertexData::unpack_8888_c(dword);
+        } else {
+          _i[0] = qpGeomVertexData::unpack_8888_a(dword);
+          _i[1] = qpGeomVertexData::unpack_8888_b(dword);
+        }
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_float32:
+      {
+        const PN_float32 *pi = (const PN_float32 *)pointer;
+        _i[0] = (int)pi[0];
+        _i[1] = (int)pi[1];
+      }
+      return _i;
+    }
+  }
+
+  return _i;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::Reader::get_data3i
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const int *qpGeomVertexReader::Reader::
+get_data3i(const unsigned char *pointer) {
+  switch (_data_type->get_num_values()) {
+  case 1:
+    _i[0] = get_data1i(pointer);
+    _i[1] = 0;
+    _i[2] = 0;
+    return _i;
+
+  case 2:
+    {
+      const int *i = get_data2i(pointer);
+      _i[0] = i[0];
+      _i[1] = i[1];
+      _i[2] = 0;
+    }
+    return _i;
+
+  default:
+    switch (_data_type->get_numeric_type()) {
+    case qpGeomVertexDataType::NT_uint8:
+      _i[0] = pointer[0];
+      _i[1] = pointer[1];
+      _i[2] = pointer[2];
+      return _i;
+      
+    case qpGeomVertexDataType::NT_uint16:
+      {
+        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _i[0] = pi[0];
+        _i[1] = pi[1];
+        _i[2] = pi[2];
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_packed_8888:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
+          _i[0] = qpGeomVertexData::unpack_8888_b(dword);
+          _i[1] = qpGeomVertexData::unpack_8888_c(dword);
+          _i[2] = qpGeomVertexData::unpack_8888_d(dword);
+        } else {
+          _i[0] = qpGeomVertexData::unpack_8888_a(dword);
+          _i[1] = qpGeomVertexData::unpack_8888_b(dword);
+          _i[2] = qpGeomVertexData::unpack_8888_c(dword);
+        }
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_float32:
+      {
+        const PN_float32 *pi = (const PN_float32 *)pointer;
+        _i[0] = (int)pi[0];
+        _i[1] = (int)pi[1];
+        _i[2] = (int)pi[2];
+      }
+      return _i;
+    }
+  }
+
+  return _i;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::Reader::get_data4i
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const int *qpGeomVertexReader::Reader::
+get_data4i(const unsigned char *pointer) {
+  switch (_data_type->get_num_values()) {
+  case 1:
+    _i[0] = get_data1i(pointer);
+    _i[1] = 0;
+    _i[2] = 0;
+    _i[3] = 0;
+    return _i;
+
+  case 2:
+    {
+      const int *i = get_data2i(pointer);
+      _i[0] = i[0];
+      _i[1] = i[1];
+      _i[2] = 0;
+      _i[3] = 0;
+    }
+    return _i;
+
+  case 3:
+    {
+      const int *i = get_data3i(pointer);
+      _i[0] = i[0];
+      _i[1] = i[1];
+      _i[2] = i[2];
+      _i[3] = 0;
+    }
+    return _i;
+
+  default:
+    switch (_data_type->get_numeric_type()) {
+    case qpGeomVertexDataType::NT_uint8:
+      _i[0] = pointer[0];
+      _i[1] = pointer[1];
+      _i[2] = pointer[2];
+      _i[3] = pointer[3];
+      return _i;
+      
+    case qpGeomVertexDataType::NT_uint16:
+      {
+        const PN_uint16 *pi = (const PN_uint16 *)pointer;
+        _i[0] = pi[0];
+        _i[1] = pi[1];
+        _i[2] = pi[2];
+        _i[3] = pi[3];
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_packed_8888:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
+          _i[0] = qpGeomVertexData::unpack_8888_b(dword);
+          _i[1] = qpGeomVertexData::unpack_8888_c(dword);
+          _i[2] = qpGeomVertexData::unpack_8888_d(dword);
+          _i[3] = qpGeomVertexData::unpack_8888_a(dword);
+        } else {
+          _i[0] = qpGeomVertexData::unpack_8888_a(dword);
+          _i[1] = qpGeomVertexData::unpack_8888_b(dword);
+          _i[2] = qpGeomVertexData::unpack_8888_c(dword);
+          _i[3] = qpGeomVertexData::unpack_8888_d(dword);
+        }
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_float32:
+      {
+        const PN_float32 *pi = (const PN_float32 *)pointer;
+        _i[0] = (int)pi[0];
+        _i[1] = (int)pi[1];
+        _i[2] = (int)pi[2];
+        _i[3] = (int)pi[3];
+      }
+      return _i;
+    }
+  }
+
+  return _i;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::Reader_point::get_data1f
 //       Access: Public, Virtual
 //  Description: 

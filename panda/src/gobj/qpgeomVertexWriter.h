@@ -106,6 +106,12 @@ PUBLISHED:
   INLINE void set_data4f(const LVecBase4f &data);
 
   INLINE void set_data1i(int data);
+  INLINE void set_data2i(int a, int b);
+  INLINE void set_data2i(const int data[2]);
+  INLINE void set_data3i(int a, int b, int c);
+  INLINE void set_data3i(const int data[3]);
+  INLINE void set_data4i(int a, int b, int c, int d);
+  INLINE void set_data4i(const int data[4]);
 
   INLINE void add_data1f(float data);
   INLINE void add_data2f(float x, float y);
@@ -116,6 +122,12 @@ PUBLISHED:
   INLINE void add_data4f(const LVecBase4f &data);
 
   INLINE void add_data1i(int data);
+  INLINE void add_data2i(int a, int b);
+  INLINE void add_data2i(const int data[2]);
+  INLINE void add_data3i(int a, int b, int c);
+  INLINE void add_data3i(const int data[3]);
+  INLINE void add_data4i(int a, int b, int c, int d);
+  INLINE void add_data4i(const int data[4]);
 
 private:
   class Writer;
@@ -150,7 +162,10 @@ private:
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &data);
     
-    virtual void set_data1i(unsigned char *pointer, int data);
+    virtual void set_data1i(unsigned char *pointer, int a);
+    virtual void set_data2i(unsigned char *pointer, int a, int b);
+    virtual void set_data3i(unsigned char *pointer, int a, int b, int c);
+    virtual void set_data4i(unsigned char *pointer, int a, int b, int c, int d);
 
     INLINE unsigned int maybe_scale_color(float data);
     INLINE void maybe_scale_color(const LVecBase2f &data);

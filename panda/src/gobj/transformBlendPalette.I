@@ -59,6 +59,49 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendPalette::get_num_transforms
+//       Access: Published
+//  Description: Returns the number of unique VertexTransform objects
+//               represented in the palette.  This will correspond to
+//               the size of the TransformPalette object that would
+//               represent the same table.  This is also the same
+//               limit reflected by
+//               GraphicsStateGuardian::get_max_vertex_transform_indices().
+////////////////////////////////////////////////////////////////////
+INLINE int TransformBlendPalette::
+get_num_transforms() const {
+  consider_rebuild_index();
+  return _num_transforms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendPalette::get_max_simultaneous_transforms
+//       Access: Published
+//  Description: Returns the maximum number of unique VertexTransform
+//               objects that are applied to any one vertex
+//               simultaneously.  This is the same limit reflected by
+//               GraphicsStateGuardian::get_max_vertex_transforms().
+////////////////////////////////////////////////////////////////////
+INLINE int TransformBlendPalette::
+get_max_simultaneous_transforms() const {
+  consider_rebuild_index();
+  return _max_simultaneous_transforms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendPalette::consider_rebuild_index
+//       Access: Private
+//  Description: Calls rebuild_index() if the index needs to be
+//               rebuilt.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlendPalette::
+consider_rebuild_index() const {
+  if (_blend_index.empty()) {
+    ((TransformBlendPalette *)this)->rebuild_index();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformBlendPalette::CData::Constructor
 //       Access: Public
 //  Description:

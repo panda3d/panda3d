@@ -76,36 +76,7 @@ qpGeomMunger::
   if (is_registered()) {
     get_registry()->unregister_munger(this);
   }
-  nassertv(_formats.empty());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomMunger::remove_format
-//       Access: Public
-//  Description: Removes a prepared GeomVertexFormat from the cache.
-////////////////////////////////////////////////////////////////////
-void qpGeomMunger::
-remove_format(const qpGeomVertexFormat *format) {
-  // If this assertion is triggered, maybe we accidentally deleted a
-  // GeomVertexFormat while we were in the process of unregistering,
-  // causing a recursive re-entry.
-  nassertv(_is_registered);
-
-  Formats::iterator fi;
-  fi = _formats.find(format);
-  nassertv(fi != _formats.end());
-
-  // We can't save this in a CPT, because it might be the same pointer
-  // as format, which might be in the middle of its destructor.
-  // Putting it in a CPT would bump up its reference count again, and
-  // end up calling the destructor twice.
-  const qpGeomVertexFormat *derived_format = (*fi).second;
-  _formats.erase(fi);
-
-  // We need to unref the derived format, if we reffed it earlier.
-  if (derived_format != format) {
-    unref_delete(derived_format);
-  }
+  nassertv(_formats_by_animation.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,42 +99,28 @@ remove_data(const qpGeomVertexData *data) {
 //               exists just to cast away the const pointer.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexFormat) qpGeomMunger::
-do_munge_format(const qpGeomVertexFormat *format) {
+do_munge_format(const qpGeomVertexFormat *format, 
+                const qpGeomVertexAnimationSpec &animation) {
   nassertr(_is_registered, NULL);
   nassertr(format->is_registered(), NULL);
 
+  Formats &formats = _formats_by_animation[animation];
+
   Formats::iterator fi;
-  fi = _formats.find(format);
-  if (fi != _formats.end()) {
+  fi = formats.find(format);
+  if (fi != formats.end()) {
     // This format was previously munged, so the answer will be the
     // same.
     return (*fi).second;
   }
 
   // We have to munge this format for the first time.
-  CPT(qpGeomVertexFormat) derived_format = munge_format_impl(format);
+  CPT(qpGeomVertexFormat) derived_format = munge_format_impl(format, animation);
   nassertr(derived_format->is_registered(), NULL);
 
   // Store the answer in the map, so we can quickly get it next time.
-  bool inserted = _formats.insert(Formats::value_type(format, derived_format)).second;
+  bool inserted = formats.insert(Formats::value_type(format, derived_format)).second;
   nassertr(inserted, NULL);
-
-  // Tell the source format that we have its pointer.
-  {
-    qpGeomVertexFormat *f = (qpGeomVertexFormat *)format;
-    MutexHolder holder(f->_cache_lock);
-    nassertr(f->is_registered(), NULL);
-    inserted = f->_mungers.insert(this).second;
-    nassertr(inserted, NULL);
-  }
-
-  // We also want to keep a reference count on the derived format, but
-  // only if it is actually a different pointer from the original
-  // format--otherwise it would cause a self-referential reference
-  // count.
-  if (derived_format != format) {
-    derived_format->ref();
-  }
 
   return derived_format;
 }
@@ -175,7 +132,7 @@ do_munge_format(const qpGeomVertexFormat *format) {
 //               necessary to the appropriate format for rendering.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexFormat) qpGeomMunger::
-munge_format_impl(const qpGeomVertexFormat *orig) {
+munge_format_impl(const qpGeomVertexFormat *orig, const qpGeomVertexAnimationSpec &) {
   return orig;
 }
 
@@ -190,7 +147,8 @@ munge_data_impl(const qpGeomVertexData *data) {
   nassertr(_is_registered, NULL);
 
   CPT(qpGeomVertexFormat) orig_format = data->get_format();
-  CPT(qpGeomVertexFormat) new_format = munge_format(orig_format);
+  CPT(qpGeomVertexFormat) new_format = 
+    munge_format(orig_format, orig_format->get_animation());
 
   if (new_format == orig_format) {
     // Trivial case.
@@ -208,7 +166,7 @@ munge_data_impl(const qpGeomVertexData *data) {
 void qpGeomMunger::
 munge_geom_impl(CPT(qpGeom) &, CPT(qpGeomVertexData) &) {
   // The default implementation does nothing (the work has already
-  // been done in munge_format_impl).
+  // been done in munge_format_impl() and munge_data_impl()).
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,7 +219,7 @@ do_register() {
       << "GeomMunger::do_register(): " << (void *)this << "\n";
   }
   nassertv(!_is_registered);
-  nassertv(_formats.empty());
+  nassertv(_formats_by_animation.empty());
 
   // Tell the cache manager to hang on to this new GeomMunger, so we
   // don't waste our time re-registering the same GeomMunger over and
@@ -288,22 +246,7 @@ do_unregister() {
   _is_registered = false;
 
   // Unregistering means we should blow away the cache.
-  Formats::iterator fi;
-  for (fi = _formats.begin(); fi != _formats.end(); ++fi) {
-    qpGeomVertexFormat *format = (qpGeomVertexFormat *)(*fi).first;
-    CPT(qpGeomVertexFormat) derived_format = (*fi).second;
-
-    {
-      MutexHolder holder(format->_cache_lock);
-      size_t num_erased = format->_mungers.erase(this);
-      nassertv(num_erased == 1);
-    }
-
-    if (derived_format != format) {
-      derived_format->unref();
-    }
-  }
-  _formats.clear();
+  _formats_by_animation.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -373,6 +373,93 @@ set_data1i(int data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::set_data2i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 2-component
+//               value, and advances the write vertex.
+//
+//               It is an error for the write vertex to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+set_data2i(int a, int b) {
+  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  _writer->set_data2i(inc_pointer(), a, b);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::set_data2i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 2-component
+//               value, and advances the write vertex.
+//
+//               It is an error for the write vertex to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+set_data2i(const int data[2]) {
+  set_data2i(data[0], data[1]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::set_data3i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 3-component
+//               value, and advances the write vertex.
+//
+//               It is an error for the write vertex to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+set_data3i(int a, int b, int c) {
+  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  _writer->set_data3i(inc_pointer(), a, b, c);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::set_data3i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 3-component
+//               value, and advances the write vertex.
+//
+//               It is an error for the write vertex to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+set_data3i(const int data[3]) {
+  set_data3i(data[0], data[1], data[2]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::set_data4i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 4-component
+//               value, and advances the write vertex.
+//
+//               It is an error for the write vertex to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+set_data4i(int a, int b, int c, int d) {
+  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  _writer->set_data4i(inc_pointer(), a, b, c, d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::set_data4i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 4-component
+//               value, and advances the write vertex.
+//
+//               It is an error for the write vertex to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+set_data4i(const int data[4]) {
+  set_data4i(data[0], data[1], data[2], data[3]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexWriter::add_data1f
 //       Access: Published
 //  Description: Sets the write vertex to a particular 1-component
@@ -487,6 +574,93 @@ INLINE void qpGeomVertexWriter::
 add_data1i(int data) {
   nassertv(_data_type != (qpGeomVertexDataType *)NULL);
   _writer->set_data1i(inc_add_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::add_data2i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 2-component
+//               value, and advances the write vertex.
+//
+//               If the write vertex advances past the end of data,
+//               implicitly adds a new vertex to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+add_data2i(int a, int b) {
+  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  _writer->set_data2i(inc_add_pointer(), a, b);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::add_data2i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 2-component
+//               value, and advances the write vertex.
+//
+//               If the write vertex advances past the end of data,
+//               implicitly adds a new vertex to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+add_data2i(const int data[2]) {
+  add_data2i(data[0], data[1]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::add_data3i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 3-component
+//               value, and advances the write vertex.
+//
+//               If the write vertex advances past the end of data,
+//               implicitly adds a new vertex to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+add_data3i(int a, int b, int c) {
+  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  _writer->set_data3i(inc_add_pointer(), a, b, c);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::add_data3i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 3-component
+//               value, and advances the write vertex.
+//
+//               If the write vertex advances past the end of data,
+//               implicitly adds a new vertex to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+add_data3i(const int data[3]) {
+  add_data3i(data[0], data[1], data[2]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::add_data4i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 4-component
+//               value, and advances the write vertex.
+//
+//               If the write vertex advances past the end of data,
+//               implicitly adds a new vertex to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+add_data4i(int a, int b, int c, int d) {
+  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  _writer->set_data4i(inc_add_pointer(), a, b, c, d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::add_data4i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 4-component
+//               value, and advances the write vertex.
+//
+//               If the write vertex advances past the end of data,
+//               implicitly adds a new vertex to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexWriter::
+add_data4i(const int data[4]) {
+  add_data4i(data[0], data[1], data[2], data[3]);
 }
 
 ////////////////////////////////////////////////////////////////////

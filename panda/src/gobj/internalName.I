@@ -192,6 +192,32 @@ get_transform_blend() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_transform_weight
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "transform_weight".
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_transform_weight() {
+  if (_transform_weight == (InternalName *)NULL) {
+    _transform_weight = InternalName::make("transform_weight");
+  }
+  return _transform_weight;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_transform_index
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "transform_index".
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_transform_index() {
+  if (_transform_index == (InternalName *)NULL) {
+    _transform_index = InternalName::make("transform_index");
+  }
+  return _transform_index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalName::get_morph
 //       Access: Published, Static
 //  Description: Returns an InternalName suitable for defining the

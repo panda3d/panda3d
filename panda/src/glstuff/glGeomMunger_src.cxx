@@ -44,33 +44,33 @@ CLP(GeomMunger)::
 //               necessary to the appropriate format for rendering.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexFormat) CLP(GeomMunger)::
-munge_format_impl(const qpGeomVertexFormat *orig) {
-  CPT(qpGeomVertexFormat) format = orig;
+munge_format_impl(const qpGeomVertexFormat *orig,
+                  const qpGeomVertexAnimationSpec &animation) {
+  PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*orig);
+  new_format->set_animation(animation);
 
   const qpGeomVertexDataType *color_type = 
-    format->get_data_type(InternalName::get_color());
+    orig->get_data_type(InternalName::get_color());
   if (color_type != (qpGeomVertexDataType *)NULL &&
       (color_type->get_numeric_type() == qpGeomVertexDataType::NT_packed_8888 ||
        color_type->get_contents() != qpGeomVertexDataType::C_rgba)) {
     // We need to convert the color format; OpenGL doesn't support the
     // byte order of DirectX's packed ARGB format.
-    int color_array = format->get_array_with(InternalName::get_color());
+    int color_array = orig->get_array_with(InternalName::get_color());
 
-    PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*format);
     PT(qpGeomVertexArrayFormat) new_array_format = new_format->modify_array(color_array);
 
     // Replace the existing color format with the new format.
     new_array_format->add_data_type
       (InternalName::get_color(), 4, qpGeomVertexDataType::NT_uint8,
        qpGeomVertexDataType::C_rgba, color_type->get_start());
-
-    format = qpGeomVertexFormat::register_format(new_format);
   }
 
   /*
   if (true) {
     // Split out the interleaved array into n parallel arrays.
-    PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat;
+    CPT(qpGeomVertexFormat) format = new_format;
+    new_format = new qpGeomVertexFormat;
     for (int i = 0; i < format->get_num_data_types(); i++) {
       const qpGeomVertexDataType *data_type = format->get_data_type(i);
       PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
@@ -78,11 +78,10 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
                                       data_type->get_numeric_type());
       new_format->add_array(new_array_format);
     }
-    format = qpGeomVertexFormat::register_format(new_format);
   }
   */
 
-  return format;
+  return qpGeomVertexFormat::register_format(new_format);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +102,7 @@ compare_to_impl(const qpGeomMunger *other) const {
     return _tex_gen < om->_tex_gen ? -1 : 1;
   }
 
-  return ColorMunger::compare_to_impl(other);
+  return StandardMunger::compare_to_impl(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,5 +118,5 @@ geom_compare_to_impl(const qpGeomMunger *other) const {
   // We don't consider _texture and _tex_gen for this purpose; they
   // affect only whether the GL display list should be regenerated or
   // not, and don't require reconverting the vertices.
-  return ColorMunger::geom_compare_to_impl(other);
+  return StandardMunger::geom_compare_to_impl(other);
 }

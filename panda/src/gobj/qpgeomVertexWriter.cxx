@@ -185,14 +185,7 @@ set_data1f(unsigned char *pointer, float data) {
       break;
       
     case qpGeomVertexDataType::NT_packed_8888:
-      {
-        maybe_scale_color(data);
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(0, _a, 0, 0);
-        } else {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, 0, 0, 0);
-        }
-      }
+      nassertv(false);
       break;
       
     case qpGeomVertexDataType::NT_float32:
@@ -243,14 +236,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
       break;
       
     case qpGeomVertexDataType::NT_packed_8888:
-      {
-        maybe_scale_color(data);
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(0, _a, _b, 0);
-        } else {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, _b, 0, 0);
-        }
-      }
+      nassertv(false);
       break;
       
     case qpGeomVertexDataType::NT_float32:
@@ -308,14 +294,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       break;
       
     case qpGeomVertexDataType::NT_packed_8888:
-      {
-        maybe_scale_color(data);
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(0, _a, _b, _c);
-        } else {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, _b, _c, 0);
-        }
-      }
+      nassertv(false);
       break;
       
     case qpGeomVertexDataType::NT_float32:
@@ -406,28 +385,206 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
-set_data1i(unsigned char *pointer, int data) {
-  switch (_data_type->get_numeric_type()) {
-  case qpGeomVertexDataType::NT_uint8:
-    *pointer = data;
-    break;
-
-  case qpGeomVertexDataType::NT_uint16:
-    *(PN_uint16 *)pointer = data;
-    break;
-
-  case qpGeomVertexDataType::NT_packed_8888:
-    {
-      if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-        *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(0, data, 0, 0);
-      } else {
-        *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, data, 0, 0);
-      }
+set_data1i(unsigned char *pointer, int a) {
+  switch (_data_type->get_num_values()) {
+  case 1:
+    switch (_data_type->get_numeric_type()) {
+    case qpGeomVertexDataType::NT_uint8:
+      *pointer = a;
+      break;
+      
+    case qpGeomVertexDataType::NT_uint16:
+      *(PN_uint16 *)pointer = a;
+      break;
+      
+    case qpGeomVertexDataType::NT_packed_8888:
+      nassertv(false);
+      break;
+      
+    case qpGeomVertexDataType::NT_float32:
+      *(PN_float32 *)pointer = (float)a;
+      break;
     }
     break;
 
-  case qpGeomVertexDataType::NT_float32:
-    *(PN_float32 *)pointer = (float)data;
+  case 2:
+    set_data2i(pointer, a, 0);
+    break;
+
+  case 3:
+    set_data3i(pointer, a, 0, 0);
+    break;
+
+  default:
+    set_data4i(pointer, a, 0, 0, 0);
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::Writer::set_data2i
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexWriter::Writer::
+set_data2i(unsigned char *pointer, int a, int b) {
+  switch (_data_type->get_num_values()) {
+  case 1:
+    set_data1i(pointer, a);
+    break;
+
+  case 2:
+    switch (_data_type->get_numeric_type()) {
+    case qpGeomVertexDataType::NT_uint8:
+      pointer[0] = a;
+      pointer[1] = b;
+      break;
+
+    case qpGeomVertexDataType::NT_uint16:
+      {
+        PN_uint16 *pi = (PN_uint16 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+      }
+      break;
+      
+    case qpGeomVertexDataType::NT_packed_8888:
+      nassertv(false);
+      break;
+      
+    case qpGeomVertexDataType::NT_float32:
+      {
+        PN_float32 *pi = (PN_float32 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+      }
+      break;
+    }
+    break;
+
+  case 3:
+    set_data3i(pointer, a, b, 0);
+    break;
+
+  default:
+    set_data4i(pointer, a, b, 0, 0);
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::Writer::set_data3i
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexWriter::Writer::
+set_data3i(unsigned char *pointer, int a, int b, int c) {
+  switch (_data_type->get_num_values()) {
+  case 1:
+    set_data1i(pointer, a);
+    break;
+
+  case 2:
+    set_data2i(pointer, a, b);
+    break;
+
+  case 3:
+    switch (_data_type->get_numeric_type()) {
+    case qpGeomVertexDataType::NT_uint8:
+      pointer[0] = a;
+      pointer[1] = b;
+      pointer[2] = c;
+      break;
+
+    case qpGeomVertexDataType::NT_uint16:
+      {
+        PN_uint16 *pi = (PN_uint16 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+        pi[2] = c;
+      }
+      break;
+      
+    case qpGeomVertexDataType::NT_packed_8888:
+      nassertv(false);
+      break;
+      
+    case qpGeomVertexDataType::NT_float32:
+      {
+        PN_float32 *pi = (PN_float32 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+        pi[2] = c;
+      }
+      break;
+    }
+    break;
+
+  default:
+    set_data4i(pointer, a, b, c, 0);
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexWriter::Writer::set_data4i
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexWriter::Writer::
+set_data4i(unsigned char *pointer, int a, int b, int c, int d) {
+  switch (_data_type->get_num_values()) {
+  case 1:
+    set_data1i(pointer, a);
+    break;
+
+  case 2:
+    set_data2i(pointer, a, b);
+    break;
+
+  case 3:
+    set_data3i(pointer, a, b, c);
+    break;
+
+  default:
+    switch (_data_type->get_numeric_type()) {
+    case qpGeomVertexDataType::NT_uint8:
+      pointer[0] = a;
+      pointer[1] = b;
+      pointer[2] = c;
+      pointer[3] = d;
+      break;
+
+    case qpGeomVertexDataType::NT_uint16:
+      {
+        PN_uint16 *pi = (PN_uint16 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+        pi[2] = c;
+        pi[3] = d;
+      }
+      break;
+      
+    case qpGeomVertexDataType::NT_packed_8888:
+      {
+        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(d, a, b, c);
+        } else {
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(a, b, c, d);
+        }
+      }
+      break;
+      
+    case qpGeomVertexDataType::NT_float32:
+      {
+        PN_float32 *pi = (PN_float32 *)pointer;
+        pi[0] = a;
+        pi[1] = b;
+        pi[2] = c;
+        pi[3] = d;
+      }
+      break;
+    }
     break;
   }
 }

@@ -51,10 +51,14 @@ PUBLISHED:
   INLINE const CharacterJoint *get_joint() const;
 
   virtual void get_matrix(LMatrix4f &matrix) const;
+  virtual void mult_matrix(LMatrix4f &result, const LMatrix4f &previous) const;
+  virtual void accumulate_matrix(LMatrix4f &accum, float weight) const;
 
   virtual void output(ostream &out) const;
 
 private:
+  INLINE void check_matrix() const;
+
   PT(CharacterJoint) _joint;
 
   LMatrix4f _matrix;

@@ -88,6 +88,9 @@ PUBLISHED:
   INLINE int get_max_3d_texture_dimension() const;
   INLINE int get_max_cube_map_dimension() const;
 
+  INLINE int get_max_vertex_transforms() const;
+  INLINE int get_max_vertex_transform_indices() const;
+
   INLINE bool get_copy_texture_inverted() const;
   virtual bool get_supports_multisample() const;
   INLINE bool get_supports_generate_mipmap() const;
@@ -313,6 +316,9 @@ protected:
   int _max_texture_dimension;
   int _max_3d_texture_dimension;
   int _max_cube_map_dimension;
+
+  int _max_vertex_transforms;
+  int _max_vertex_transform_indices;
 
   bool _copy_texture_inverted;
   bool _supports_multisample;

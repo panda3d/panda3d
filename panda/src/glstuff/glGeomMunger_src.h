@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#include "colorMunger.h"
+#include "standardMunger.h"
 #include "graphicsStateGuardian.h"
 #include "textureAttrib.h"
 #include "texGenAttrib.h"
@@ -31,7 +31,7 @@ class CLP(GeomContext);
 //               for OpenGL rendering.  In particular, it makes sure
 //               colors aren't stored in DirectX's packed_argb format.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_GL CLP(GeomMunger) : public ColorMunger {
+class EXPCL_GL CLP(GeomMunger) : public StandardMunger {
 public:
   INLINE CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
   virtual ~CLP(GeomMunger)();
@@ -39,7 +39,8 @@ public:
   INLINE GraphicsStateGuardian *get_gsg() const;
 
 protected:
-  virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig);
+  virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig,
+                                                    const qpGeomVertexAnimationSpec &animation);
   virtual int compare_to_impl(const qpGeomMunger *other) const;
   virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
 
@@ -61,9 +62,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    ColorMunger::init_type();
+    StandardMunger::init_type();
     register_type(_type_handle, CLASSPREFIX_QUOTED "GeomMunger",
-                  ColorMunger::get_class_type());
+                  StandardMunger::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

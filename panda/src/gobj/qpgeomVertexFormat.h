@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
+#include "qpgeomVertexAnimationSpec.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "internalName.h"
 #include "luse.h"
@@ -65,6 +66,9 @@ PUBLISHED:
   INLINE bool is_registered() const;
   INLINE static CPT(qpGeomVertexFormat) register_format(qpGeomVertexFormat *format);
   INLINE static CPT(qpGeomVertexFormat) register_format(qpGeomVertexArrayFormat *format);
+
+  INLINE const qpGeomVertexAnimationSpec &get_animation() const;
+  INLINE void set_animation(const qpGeomVertexAnimationSpec &animation);
 
   INLINE int get_num_arrays() const;
   INLINE const qpGeomVertexArrayFormat *get_array(int array) const;
@@ -140,6 +144,8 @@ private:
 
   bool _is_registered;
 
+  qpGeomVertexAnimationSpec _animation;
+
   typedef pvector< PT(qpGeomVertexArrayFormat) > Arrays;
   Arrays _arrays;
 
@@ -160,12 +166,6 @@ private:
   };
   typedef pvector<MorphRecord> Morphs;
   Morphs _morphs;
-
-  // This set keeps track of things that need to be told when we
-  // destruct, and it is protected by the mutex.
-  Mutex _cache_lock;
-  typedef pset<qpGeomMunger *> Mungers;
-  Mungers _mungers;
 
   // This is the global registry of all currently-in-use formats.
   typedef pset<qpGeomVertexFormat *, IndirectCompareTo<qpGeomVertexFormat> > Formats;

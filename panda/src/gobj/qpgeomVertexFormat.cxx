@@ -58,6 +58,7 @@ qpGeomVertexFormat(qpGeomVertexArrayFormat *array_format) :
 qpGeomVertexFormat::
 qpGeomVertexFormat(const qpGeomVertexFormat &copy) :
   _is_registered(false),
+  _animation(copy._animation),
   _arrays(copy._arrays)
 {
 }
@@ -71,6 +72,7 @@ void qpGeomVertexFormat::
 operator = (const qpGeomVertexFormat &copy) {
   nassertv(!_is_registered);
 
+  _animation = copy._animation;
   _arrays = copy._arrays;
 }
 
@@ -84,8 +86,6 @@ qpGeomVertexFormat::
   if (is_registered()) {
     get_registry()->unregister_format(this);
   }
-
-  nassertv(_mungers.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,6 +379,10 @@ output(ostream &out) const {
       ++ai;
     }
   }
+
+  if (_animation.get_animation_type() != qpGeomVertexAnimationSpec::AT_none) {
+    out << ", anim " << _animation;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -446,6 +450,11 @@ get_array_info(const InternalName *name, int &array_index,
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexFormat::
 compare_to(const qpGeomVertexFormat &other) const {
+  int compare = _animation.compare_to(other._animation);
+  if (compare != 0) {
+    return compare;
+  }
+
   if (_arrays.size() != other._arrays.size()) {
     return (int)_arrays.size() - (int)other._arrays.size();
   }
@@ -481,7 +490,6 @@ void qpGeomVertexFormat::
 do_register() {
   nassertv(!_is_registered);
   nassertv(_data_types_by_name.empty());
-  nassertv(_mungers.empty());
 
   for (int array = 0; array < (int)_arrays.size(); ++array) {
     const qpGeomVertexArrayFormat *array_format = _arrays[array];
@@ -556,13 +564,6 @@ do_unregister() {
   _is_registered = false;
 
   _data_types_by_name.clear();
-
-  MutexHolder holder(_cache_lock);
-  Mungers::iterator mi;
-  for (mi = _mungers.begin(); mi != _mungers.end(); ++mi) {
-    (*mi)->remove_format(this);
-  }
-  _mungers.clear();  
 }
 
 ////////////////////////////////////////////////////////////////////

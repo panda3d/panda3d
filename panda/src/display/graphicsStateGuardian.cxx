@@ -104,6 +104,10 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   _max_3d_texture_dimension = 0;
   _max_cube_map_dimension = 0;
 
+  // Assume no vertex blending capability.
+  _max_vertex_transforms = 0;
+  _max_vertex_transform_indices = 0;
+
   // Initially, we set this to false; a GSG that knows it has this
   // property should set it to true.
   _copy_texture_inverted = false;

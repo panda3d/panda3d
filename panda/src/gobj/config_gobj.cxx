@@ -113,9 +113,21 @@ ConfigVariableBool display_lists
           "rendering static geometry.  On some systems, this can result "
           "in a performance improvement over vertex buffers alone; on "
           "other systems (particularly low-end systems) it makes little to "
-          "no difference.  This has no effect on DirectX rendering.  If "
-          "vertex-buffers is also enabled, then OpenGL buffer objects "
-          "will also be created for dynamic geometry."));
+          "no difference.  On some systems, using display lists can actually "
+          "reduce performance.  This has no effect on DirectX rendering or "
+          "on dynamic geometry (e.g. soft-skinned animation)."));
+
+ConfigVariableBool hardware_animated_vertices
+("hardware-animated-vertices", false,
+ PRC_DESC("Set this true to allow the transforming of soft-skinned "
+          "animated vertices via hardware, if supported, or false always "
+          "to perform the vertex animation via software within Panda.  "
+          "If you have a card that supports this, and your scene does "
+          "not contain too many vertices already, this can provide a "
+          "performance boost by offloading some work from your CPU onto "
+          "your graphics card.  It may also help by reducing the bandwidth "
+          "necessary on your computer's bus.  However, in some cases it "
+          "may actually reduce performance."));
 
 ConfigVariableBool use_qpgeom
 ("use-qpgeom", false,

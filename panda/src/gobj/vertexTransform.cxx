@@ -48,6 +48,24 @@ VertexTransform::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexTransform::mult_matrix
+//       Access: Published, Virtual
+//  Description: Premultiplies this transform's matrix with the
+//               indicated previous matrix, so that the result is the
+//               net composition of the given transform with this
+//               transform.  The result is stored in the parameter
+//               "result", which should not be the same matrix as
+//               previous.
+////////////////////////////////////////////////////////////////////
+void VertexTransform::
+mult_matrix(LMatrix4f &result, const LMatrix4f &previous) const {
+  nassertv(&result != &previous);
+  LMatrix4f me;
+  get_matrix(me);
+  result.multiply(me, previous);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexTransform::accumulate_matrix
 //       Access: Published, Virtual
 //  Description: Adds the value of this transform's matrix, modified

@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
-  ColorMunger(gsg, state, 4, qpGeomVertexDataType::NT_uint8,
+  StandardMunger(gsg, state, 4, qpGeomVertexDataType::NT_uint8,
               qpGeomVertexDataType::C_rgba),
   _gsg(gsg),
   _texture(state->get_texture()),
@@ -52,5 +52,5 @@ get_gsg() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void *CLP(GeomMunger)::
 operator new(size_t size) {
-  return do_operator_new(size, _deleted_chain);
+  return do_operator_new(size, &_deleted_chain);
 }

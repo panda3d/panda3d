@@ -32,6 +32,7 @@
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
     qpgeomCacheEntry.h qpgeomCacheEntry.I \
     qpgeomCacheManager.h qpgeomCacheManager.I \
+    qpgeomVertexAnimationSpec.h qpgeomVertexAnimationSpec.I \
     qpgeomVertexData.h qpgeomVertexData.I \
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
@@ -82,6 +83,7 @@
     qpgeomVertexArrayFormat.cxx \
     qpgeomCacheEntry.cxx \
     qpgeomCacheManager.cxx \
+    qpgeomVertexAnimationSpec.cxx \
     qpgeomVertexData.cxx \
     qpgeomVertexDataType.cxx \
     qpgeomVertexFormat.cxx \
@@ -131,6 +133,7 @@
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
     qpgeomCacheEntry.h qpgeomCacheEntry.I \
     qpgeomCacheManager.h qpgeomCacheManager.I \
+    qpgeomVertexAnimationSpec.h qpgeomVertexAnimationSpec.I \
     qpgeomVertexData.h qpgeomVertexData.I \
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \

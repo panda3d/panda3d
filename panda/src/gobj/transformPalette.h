@@ -58,9 +58,9 @@ PUBLISHED:
   INLINE const VertexTransform *get_transform(int n) const;
   INLINE UpdateSeq get_modified() const;
 
-  void set_transform(int n, VertexTransform *transform);
+  void set_transform(int n, const VertexTransform *transform);
   void remove_transform(int n);
-  int add_transform(VertexTransform *transform);
+  int add_transform(const VertexTransform *transform);
 
   void write(ostream &out) const;
 
@@ -72,7 +72,7 @@ private:
 private:
   bool _is_registered;
 
-  typedef pvector< PT(VertexTransform) > Transforms;
+  typedef pvector< CPT(VertexTransform) > Transforms;
   Transforms _transforms;
 
   // This is the data that must be cycled between pipeline stages.

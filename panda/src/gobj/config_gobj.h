@@ -53,6 +53,7 @@ extern EXPCL_PANDA ConfigVariableBool keep_geom_ram;
 extern EXPCL_PANDA ConfigVariableBool retained_mode;
 extern EXPCL_PANDA ConfigVariableBool vertex_buffers;
 extern EXPCL_PANDA ConfigVariableBool display_lists;
+extern EXPCL_PANDA ConfigVariableBool hardware_animated_vertices;
 
 extern EXPCL_PANDA ConfigVariableBool use_qpgeom;
 

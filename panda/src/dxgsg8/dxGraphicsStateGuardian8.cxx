@@ -196,6 +196,7 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
     _pD3DDevice = NULL;
     
     _bDXisReady = false;
+    _transform_stale = false;
     _overlay_windows_supported = false;
 
     _pFvfBufBasePtr = NULL;
@@ -287,10 +288,16 @@ free_d3d_device(void) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 free_nondx_resources() {
-    // this must not release any objects associated with D3D/DX!
-    // those should be released in free_dxgsg_objects instead
+  // this must not release any objects associated with D3D/DX!
+  // those should be released in free_dxgsg_objects instead
+  if (_index_buf != NULL) {
     SAFE_DELETE_ARRAY(_index_buf);
+    _index_buf = NULL;
+  }
+  if (_pFvfBufBasePtr != NULL) {
     SAFE_DELETE_ARRAY(_pFvfBufBasePtr);
+    _pFvfBufBasePtr = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -309,6 +316,34 @@ dx_init(void) {
 
     assert(_pScrn->pD3D8!=NULL);
     assert(_pD3DDevice!=NULL);
+
+    D3DCAPS8 d3dCaps;
+    _pD3DDevice->GetDeviceCaps(&d3dCaps);
+
+    if (dxgsg8_cat.is_debug()) {
+      dxgsg8_cat.debug()
+        << "\nHwTransformAndLight = " << ((d3dCaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
+        << "\nMaxTextureWidth = " << d3dCaps.MaxTextureWidth
+        << "\nMaxTextureHeight = " << d3dCaps.MaxTextureHeight
+        << "\nMaxVolumeExtent = " << d3dCaps.MaxVolumeExtent
+        << "\nMaxTextureAspectRatio = " << d3dCaps.MaxTextureAspectRatio
+        << "\nTexCoordCount = " << (d3dCaps.FVFCaps & D3DFVFCAPS_TEXCOORDCOUNTMASK)
+        << "\nMaxTextureBlendStages = " << d3dCaps.MaxTextureBlendStages
+        << "\nMaxSimultaneousTextures = " << d3dCaps.MaxSimultaneousTextures
+        << "\nMaxActiveLights = " << d3dCaps.MaxActiveLights
+        << "\nMaxUserClipPlanes = " << d3dCaps.MaxUserClipPlanes
+        << "\nMaxVertexBlendMatrices = " << d3dCaps.MaxVertexBlendMatrices
+        << "\nMaxVertexBlendMatrixIndex = " << d3dCaps.MaxVertexBlendMatrixIndex
+        << "\nMaxPointSize = " << d3dCaps.MaxPointSize
+        << "\nMaxPrimitiveCount = " << d3dCaps.MaxPrimitiveCount
+        << "\nMaxVertexIndex = " << d3dCaps.MaxVertexIndex
+        << "\nMaxStreams = " << d3dCaps.MaxStreams
+        << "\nMaxStreamStride = " << d3dCaps.MaxStreamStride
+        << "\n";
+    }
+
+    _max_vertex_transforms = d3dCaps.MaxVertexBlendMatrices;
+    _max_vertex_transform_indices = d3dCaps.MaxVertexBlendMatrixIndex;
 
     ZeroMemory(&_lmodel_ambient,sizeof(Colorf));
     _pD3DDevice->SetRenderState(D3DRS_AMBIENT, 0x0);
@@ -2616,13 +2651,63 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
   const qpGeomVertexFormat *format = _vertex_data->get_format();
 
-  // The munger should have put the "vertex" data at the beginning of
-  // the first array.
+  // The munger should have put the FVF data in the first array.
   const qpGeomVertexArrayData *data = _vertex_data->get_array(0);
 
   VertexBufferContext *vbc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
   apply_vertex_buffer(vbc);
+
+  const qpGeomVertexAnimationSpec &animation = 
+    vertex_data->get_format()->get_animation();
+  if (animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware) {
+    // Set up vertex blending.
+    switch (animation.get_num_transforms()) {
+    case 1:
+      _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_0WEIGHTS);
+      break;
+    case 2:
+      _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_1WEIGHTS);
+      break;
+    case 3:
+      _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_2WEIGHTS);
+      break;
+    case 4:
+      _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_3WEIGHTS);
+      break;
+    }
+
+    if (animation.get_indexed_transforms()) {
+      // Set up indexed vertex blending.
+      _pD3DDevice->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, TRUE);
+    } else {
+      _pD3DDevice->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+    }
+    
+    const TransformPalette *palette = vertex_data->get_transform_palette();
+    if (palette != (TransformPalette *)NULL) {
+      for (int i = 0; i < palette->get_num_transforms(); i++) {
+        LMatrix4f mat;
+        palette->get_transform(i)->mult_matrix(mat, _transform->get_mat());
+        const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();
+        _pD3DDevice->SetTransform(D3DTS_WORLDMATRIX(i), d3d_mat);
+      }
+
+      // Setting the palette transforms steps on the world matrix, so
+      // we have to set a flag to reload the world matrix later.
+      _transform_stale = true;
+    }
+    
+  } else {
+    // We're not using vertex blending.
+    _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
+
+    if (_transform_stale) {
+      const D3DMATRIX *d3d_mat = (const D3DMATRIX *)_transform->get_mat().get_data();
+      _pD3DDevice->SetTransform(D3DTS_WORLD, d3d_mat);
+    }
+  }
+
 
   return true;
 }
@@ -2938,16 +3023,18 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *DXGraphicsStateGuardian8::
 prepare_vertex_buffer(qpGeomVertexArrayData *data) {
-  if (dxgsg8_cat.is_debug()) {
-    dxgsg8_cat.debug()
-      << "prepare_vertex_buffer(" << (void *)data << ")\n";
-  }
-
   DXVertexBufferContext8 *dvbc = new DXVertexBufferContext8(data);
 
   if (vertex_buffers) {
     dvbc->create_vbuffer(*_pScrn);
     dvbc->mark_loaded();
+
+    if (dxgsg8_cat.is_debug()) {
+      dxgsg8_cat.debug()
+        << "creating vertex buffer " << dvbc->_vbuffer << ": "
+        << data->get_num_vertices() << " vertices " 
+        << *data->get_array_format() << "\n";
+    }
   }
 
   return dvbc;
@@ -2967,10 +3054,6 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
     add_to_vertex_buffer_record(dvbc);
   
     if (dvbc->was_modified()) {
-      if (dxgsg8_cat.is_debug()) {
-        dxgsg8_cat.debug()
-          << "apply_vertex_buffer(" << (void *)vbc->get_data() << ")\n";
-      }
       if (dvbc->changed_size()) {
         // Here we have to destroy the old vertex buffer and create a
         // new one.
@@ -3005,11 +3088,6 @@ apply_vertex_buffer(VertexBufferContext *vbc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 release_vertex_buffer(VertexBufferContext *vbc) {
-  if (dxgsg8_cat.is_debug()) {
-    dxgsg8_cat.debug()
-      << "release_vertex_buffer(" << (void *)vbc->get_data() << ")\n";
-  }
-
   DXVertexBufferContext8 *dvbc = DCAST(DXVertexBufferContext8, vbc);
   delete dvbc;
 }
@@ -3029,15 +3107,15 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *DXGraphicsStateGuardian8::
 prepare_index_buffer(qpGeomPrimitive *data) {
-  if (dxgsg8_cat.is_debug()) {
-    dxgsg8_cat.debug()
-      << "prepare_index_buffer(" << (void *)data << ")\n";
-  }
-
   DXIndexBufferContext8 *dibc = new DXIndexBufferContext8(data);
 
   dibc->create_ibuffer(*_pScrn);
   dibc->mark_loaded();
+
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "creating index buffer " << dibc->_ibuffer << "\n";
+  }
 
   return dibc;
 }
@@ -3056,10 +3134,6 @@ apply_index_buffer(IndexBufferContext *ibc) {
     add_to_index_buffer_record(dibc);
   
     if (dibc->was_modified()) {
-      if (dxgsg8_cat.is_debug()) {
-        dxgsg8_cat.debug()
-          << "apply_index_buffer(" << (void *)ibc->get_data() << ")\n";
-      }
       if (dibc->changed_size()) {
         // Here we have to destroy the old index buffer and create a
         // new one.
@@ -3092,11 +3166,6 @@ apply_index_buffer(IndexBufferContext *ibc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 release_index_buffer(IndexBufferContext *ibc) {
-  if (dxgsg8_cat.is_debug()) {
-    dxgsg8_cat.debug()
-      << "release_index_buffer(" << (void *)ibc->get_data() << ")\n";
-  }
-
   DXIndexBufferContext8 *dibc = DCAST(DXIndexBufferContext8, ibc);
   delete dibc;
 }
@@ -3419,9 +3488,9 @@ void DXGraphicsStateGuardian8::
 issue_transform(const TransformState *transform) {
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
 
-  // if we're using ONLY vertex shaders, could get avoid calling SetTrans
-  D3DMATRIX *pMat = (D3DMATRIX*)transform->get_mat().get_data();
-  _pD3DDevice->SetTransform(D3DTS_WORLD,pMat);
+  const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
+  _pD3DDevice->SetTransform(D3DTS_WORLD, d3d_mat);
+  _transform_stale = false;
 
   _transform = transform;
   if (_auto_rescale_normal) {

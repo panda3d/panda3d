@@ -119,6 +119,40 @@ get_array(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_transform_palette
+//       Access: Published
+//  Description: Returns a const pointer to the TransformPalette
+//               assigned to this data.  Vertices within the table
+//               will index into this palette to indicate their
+//               dynamic skinning information; this table is used when
+//               the vertex animation is to be performed by the
+//               graphics hardware (but also see
+//               get_transform_blend_palette()).
+//
+//               This will return NULL if the vertex data does not
+//               have a TransformPalette assigned (which implies the
+//               vertices will not be animated by the graphics
+//               hardware).
+////////////////////////////////////////////////////////////////////
+INLINE const TransformPalette *qpGeomVertexData::
+get_transform_palette() const {
+  CDReader cdata(_cycler);
+  return cdata->_transform_palette;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::clear_transform_palette
+//       Access: Published
+//  Description: Sets the TransformPalette pointer to NULL,
+//               removing the palette from the vertex data.  This
+//               disables hardware-driven vertex animation.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexData::
+clear_transform_palette() {
+  set_transform_palette(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::get_transform_blend_palette
 //       Access: Published
 //  Description: Returns a const pointer to the TransformBlendPalette
@@ -286,6 +320,24 @@ unpack_8888_c(PN_uint32 data) {
 INLINE unsigned int qpGeomVertexData::
 unpack_8888_d(PN_uint32 data) {
   return data & 0xff;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::add_transform
+//       Access: Private, Static
+//  Description: Adds the indicated transform to the palette, if it is
+//               not already there, and returns its index number.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexData::
+add_transform(TransformPalette *palette, const VertexTransform *transform,
+              TransformMap &already_added) {
+  pair<TransformMap::iterator, bool> result = already_added.insert(TransformMap::value_type(transform, palette->get_num_transforms()));
+  
+  if (result.second) {
+    palette->add_transform(transform);
+  }
+
+  return (*(result.first)).second;
 }
 
 ////////////////////////////////////////////////////////////////////

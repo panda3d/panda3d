@@ -25,6 +25,7 @@
 #include "qpgeomVertexDataType.h"
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomUsageHint.h"
+#include "transformPalette.h"
 #include "transformBlendPalette.h"
 #include "sliderTable.h"
 #include "internalName.h"
@@ -86,6 +87,11 @@ PUBLISHED:
   INLINE const qpGeomVertexArrayData *get_array(int i) const;
   qpGeomVertexArrayData *modify_array(int i);
   void set_array(int i, const qpGeomVertexArrayData *array);
+
+  INLINE const TransformPalette *get_transform_palette() const;
+  TransformPalette *modify_transform_palette();
+  void set_transform_palette(const TransformPalette *palette);
+  INLINE void clear_transform_palette();
 
   INLINE const TransformBlendPalette *get_transform_blend_palette() const;
   TransformBlendPalette *modify_transform_blend_palette();
@@ -154,6 +160,11 @@ private:
   uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
                             const unsigned char *from, int from_stride,
                             int num_records);
+
+  typedef pmap<const VertexTransform *, int> TransformMap;
+  INLINE static int 
+  add_transform(TransformPalette *palette, const VertexTransform *transform,
+                TransformMap &already_added);
   
 private:
   string _name;
@@ -173,6 +184,7 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Arrays _arrays;
+    PT(TransformPalette) _transform_palette;
     PT(TransformBlendPalette) _transform_blend_palette;
     PT(SliderTable) _slider_table;
     PT(qpGeomVertexData) _animated_vertices;

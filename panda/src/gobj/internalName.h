@@ -72,6 +72,8 @@ PUBLISHED:
   INLINE static PT(InternalName) get_texcoord_name(const string &name);
   INLINE static PT(InternalName) get_color();
   INLINE static PT(InternalName) get_transform_blend();
+  INLINE static PT(InternalName) get_transform_weight();
+  INLINE static PT(InternalName) get_transform_index();
   INLINE static PT(InternalName) get_morph(InternalName *data_type, const string &slider);
 
 private:
@@ -91,6 +93,8 @@ private:
   static PT(InternalName) _texcoord;
   static PT(InternalName) _color;
   static PT(InternalName) _transform_blend;
+  static PT(InternalName) _transform_weight;
+  static PT(InternalName) _transform_index;
   
 public:
   // Datagram stuff

@@ -33,6 +33,8 @@ PT(InternalName) InternalName::_binormal;
 PT(InternalName) InternalName::_texcoord;
 PT(InternalName) InternalName::_color;
 PT(InternalName) InternalName::_transform_blend;
+PT(InternalName) InternalName::_transform_weight;
+PT(InternalName) InternalName::_transform_index;
 
 TypeHandle InternalName::_type_handle;
 TypeHandle InternalName::_texcoord_type_handle;

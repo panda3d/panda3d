@@ -70,14 +70,57 @@ JointVertexTransform::
 ////////////////////////////////////////////////////////////////////
 void JointVertexTransform::
 get_matrix(LMatrix4f &matrix) const {
-  if (_matrix_stale) {
-    ((JointVertexTransform *)this)->_matrix = 
-      _joint->_initial_net_transform_inverse *
-      _joint->_net_transform;
-    ((JointVertexTransform *)this)->_matrix_stale = false;
-  }
-  
+  check_matrix();
   matrix = _matrix;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: JointVertexTransform::mult_matrix
+//       Access: Published, Virtual
+//  Description: Premultiplies this transform's matrix with the
+//               indicated previous matrix, so that the result is the
+//               net composition of the given transform with this
+//               transform.  The result is stored in the parameter
+//               "result", which should not be the same matrix as
+//               previous.
+////////////////////////////////////////////////////////////////////
+void JointVertexTransform::
+mult_matrix(LMatrix4f &result, const LMatrix4f &previous) const {
+  check_matrix();
+  result.multiply(_matrix, previous);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: JointVertexTransform::accumulate_matrix
+//       Access: Published, Virtual
+//  Description: Adds the value of this transform's matrix, modified
+//               by the indicated weight, into the indicated
+//               accumulation matrix.  This is used to compute the
+//               result of several blended transforms.
+////////////////////////////////////////////////////////////////////
+void JointVertexTransform::
+accumulate_matrix(LMatrix4f &accum, float weight) const {
+  check_matrix();
+
+  accum._m.m._00 += _matrix._m.m._00 * weight;
+  accum._m.m._01 += _matrix._m.m._01 * weight;
+  accum._m.m._02 += _matrix._m.m._02 * weight;
+  accum._m.m._03 += _matrix._m.m._03 * weight;
+  
+  accum._m.m._10 += _matrix._m.m._10 * weight;
+  accum._m.m._11 += _matrix._m.m._11 * weight;
+  accum._m.m._12 += _matrix._m.m._12 * weight;
+  accum._m.m._13 += _matrix._m.m._13 * weight;
+  
+  accum._m.m._20 += _matrix._m.m._20 * weight;
+  accum._m.m._21 += _matrix._m.m._21 * weight;
+  accum._m.m._22 += _matrix._m.m._22 * weight;
+  accum._m.m._23 += _matrix._m.m._23 * weight;
+  
+  accum._m.m._30 += _matrix._m.m._30 * weight;
+  accum._m.m._31 += _matrix._m.m._31 * weight;
+  accum._m.m._32 += _matrix._m.m._32 * weight;
+  accum._m.m._33 += _matrix._m.m._33 * weight;
 }
 
 ////////////////////////////////////////////////////////////////////

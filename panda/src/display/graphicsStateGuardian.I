@@ -202,6 +202,44 @@ get_max_cube_map_dimension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_vertex_transforms
+//       Access: Published
+//  Description: Returns the maximum number of transform matrices that
+//               may be simultaneously used to transform any one
+//               vertex by the graphics hardware.  If this number is
+//               0, then the hardware (or the graphics backend)
+//               doesn't support soft-skinned vertices (in which case
+//               Panda will animate the vertices in software).
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_vertex_transforms() const {
+  return _max_vertex_transforms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_vertex_transform_indices
+//       Access: Published
+//  Description: Returns the maximum number of transforms there may be
+//               in a single TransformPalette for this graphics
+//               hardware.  If this number is 0 (but
+//               get_max_transforms() is nonzero), then the graphics
+//               hardware (or API) doesn't support indexed transforms,
+//               but can support direct transform references.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_vertex_transform_indices() const {
+  return _max_vertex_transform_indices;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_copy_texture_inverted
 //       Access: Published
 //  Description: Returns true if this particular GSG has the property

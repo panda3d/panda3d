@@ -24,6 +24,7 @@
 #include "qpgeomVertexArrayFormat.cxx"
 #include "qpgeomCacheEntry.cxx"
 #include "qpgeomCacheManager.cxx"
+#include "qpgeomVertexAnimationSpec.cxx"
 #include "qpgeomVertexData.cxx"
 #include "qpgeomVertexDataType.cxx"
 #include "qpgeomVertexFormat.cxx"

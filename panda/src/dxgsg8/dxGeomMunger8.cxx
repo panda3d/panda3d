@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dxGeomMunger8.h"
+#include "qpgeomVertexReader.h"
+#include "qpgeomVertexWriter.h"
+#include "config_dxgsg8.h"
 
 qpGeomMunger *DXGeomMunger8::_deleted_chain = NULL;
 TypeHandle DXGeomMunger8::_type_handle;
@@ -28,11 +31,19 @@ TypeHandle DXGeomMunger8::_type_handle;
 //               necessary to the appropriate format for rendering.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexFormat) DXGeomMunger8::
-munge_format_impl(const qpGeomVertexFormat *orig) {
+munge_format_impl(const qpGeomVertexFormat *orig,
+                  const qpGeomVertexAnimationSpec &animation) {
+  if (dxgsg8_cat.is_debug()) {
+    if (animation.get_animation_type() != qpGeomVertexAnimationSpec::AT_none) {
+      dxgsg8_cat.debug()
+        << "preparing animation type " << animation << "\n";
+    }
+  }
   // We have to build a completely new format that includes only the
   // appropriate components, in the appropriate order, in just one
   // array.
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*orig);
+  new_format->set_animation(animation);
   PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
 
   const qpGeomVertexDataType *vertex_type = 
@@ -52,6 +63,23 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
   } else {
     // If we don't have a vertex type, not much we can do.
     return orig;
+  }
+
+  if (animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_hardware &&
+      animation.get_num_transforms() > 0) {
+    // If we want hardware animation, we need to reserve space for the
+    // blend weights.
+    new_array_format->add_data_type
+      (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
+       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_other);
+
+    if (animation.get_indexed_transforms()) {
+      // Also, if we'll be indexing into the transfom palette, reserve
+      // space for the index.
+      new_array_format->add_data_type
+        (InternalName::get_transform_index(), 1,
+         qpGeomVertexDataType::NT_packed_8888, qpGeomVertexDataType::C_index);
+    }                                    
   }
 
   if (normal_type != (const qpGeomVertexDataType *)NULL) {
@@ -88,28 +116,4 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
   // the list.
   new_format->insert_array(0, new_array_format);
   return qpGeomVertexFormat::register_format(new_format);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger8::munge_geom_impl
-//       Access: Protected, Virtual
-//  Description: Converts a Geom and/or its data as necessary.
-////////////////////////////////////////////////////////////////////
-void DXGeomMunger8::
-munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger8::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
-////////////////////////////////////////////////////////////////////
-int DXGeomMunger8::
-compare_to_impl(const qpGeomMunger *other) const {
-  //  const DXGeomMunger8 *om = DCAST(DXGeomMunger8, other);
-
-  return ColorMunger::compare_to_impl(other);
 }

@@ -185,8 +185,7 @@ protected:
   HRESULT               _last_testcooplevel_result;
   DXTextureContext8  *_pCurTexContext;
 
-  bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
-  D3DMATRIX         _SavedTransform;
+  bool _transform_stale;
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
   bool _auto_rescale_normal;

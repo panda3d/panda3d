@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "typedReferenceCount.h"
+#include "qpgeomVertexAnimationSpec.h"
 #include "qpgeomVertexFormat.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomCacheEntry.h"
@@ -67,8 +68,8 @@ public:
   INLINE bool is_registered() const;
   INLINE static CPT(qpGeomMunger) register_munger(qpGeomMunger *munger);
 
-  INLINE CPT(qpGeomVertexFormat) munge_format(const qpGeomVertexFormat *format) const;
-  void remove_format(const qpGeomVertexFormat *format);
+  INLINE CPT(qpGeomVertexFormat) munge_format(const qpGeomVertexFormat *format,
+                                              const qpGeomVertexAnimationSpec &animation) const;
 
   INLINE CPT(qpGeomVertexData) munge_data(const qpGeomVertexData *data) const;
   void remove_data(const qpGeomVertexData *data);
@@ -80,9 +81,11 @@ public:
   INLINE int geom_compare_to(const qpGeomMunger &other) const;
 
 protected:
-  CPT(qpGeomVertexFormat) do_munge_format(const qpGeomVertexFormat *format);
+  CPT(qpGeomVertexFormat) do_munge_format(const qpGeomVertexFormat *format,
+                                          const qpGeomVertexAnimationSpec &animation);
 
-  virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig);
+  virtual CPT(qpGeomVertexFormat) munge_format_impl(const qpGeomVertexFormat *orig,
+                                                    const qpGeomVertexAnimationSpec &animation);
   virtual CPT(qpGeomVertexData) munge_data_impl(const qpGeomVertexData *data);
   virtual void munge_geom_impl(CPT(qpGeom) &geom, CPT(qpGeomVertexData) &data);
   virtual int compare_to_impl(const qpGeomMunger *other) const;
@@ -93,10 +96,11 @@ public:
   // and delete using their own deleted_chain.  This is the base class
   // implementation, which requires a pointer to deleted_chain be
   // stored on each instance.
+  INLINE void *operator new(size_t size);
   INLINE void operator delete(void *ptr);
 
 protected:
-  INLINE static void *do_operator_new(size_t size, qpGeomMunger *&_deleted_chain);
+  INLINE static void *do_operator_new(size_t size, qpGeomMunger **_deleted_chain);
 
 private:
   qpGeomMunger **_deleted_chain;
@@ -120,8 +124,9 @@ private:
     PT(qpGeomMunger) _munger;
   };
 
-  typedef pmap<const qpGeomVertexFormat *, const qpGeomVertexFormat *> Formats;
-  Formats _formats;
+  typedef pmap<CPT(qpGeomVertexFormat), CPT(qpGeomVertexFormat) > Formats;
+  typedef pmap<qpGeomVertexAnimationSpec, Formats> FormatsByAnimation;
+  FormatsByAnimation _formats_by_animation;
 
   bool _is_registered;
   typedef pset<qpGeomMunger *, IndirectCompareTo<qpGeomMunger> > Mungers;

@@ -27,3 +27,18 @@ INLINE const CharacterJoint *JointVertexTransform::
 get_joint() const {
   return _joint;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: JointVertexTransform::check_matrix
+//       Access: Private
+//  Description: Recomputes _matrix if it needs it.
+////////////////////////////////////////////////////////////////////
+INLINE void JointVertexTransform::
+check_matrix() const {
+  if (_matrix_stale) {
+    ((JointVertexTransform *)this)->_matrix = 
+      _joint->_initial_net_transform_inverse *
+      _joint->_net_transform;
+    ((JointVertexTransform *)this)->_matrix_stale = false;
+  }
+}

@@ -95,9 +95,7 @@ remove_blend(int n) {
 ////////////////////////////////////////////////////////////////////
 int TransformBlendPalette::
 add_blend(const TransformBlend &blend) {
-  if (_blend_index.empty()) {
-    rebuild_index();
-  }
+  consider_rebuild_index();
 
   BlendIndex::iterator bi;
   bi = _blend_index.find(&blend);
@@ -148,9 +146,25 @@ void TransformBlendPalette::
 rebuild_index() {
   _blend_index.clear();
 
-  for (int i = 0; i < (int)_blends.size(); i++) {
-    _blend_index[&_blends[i]] = i;
+  // We'll also count up these two statistics while we rebuild the
+  // index.
+  _num_transforms = 0;
+  _max_simultaneous_transforms = 0;
+
+  pset<const VertexTransform *> transforms;
+
+  for (int i = 0; i < (int)_blends.size(); ++i) {
+    const TransformBlend &blend = _blends[i];
+    _blend_index[&blend] = i;
+
+    for (int ti = 0; ti < blend.get_num_transforms(); ++ti) {
+      transforms.insert(blend.get_transform(ti));
+    }
+    _max_simultaneous_transforms = max(_max_simultaneous_transforms,
+                                       blend.get_num_transforms());
   }
+
+  _num_transforms = transforms.size();
 }
 
 ////////////////////////////////////////////////////////////////////

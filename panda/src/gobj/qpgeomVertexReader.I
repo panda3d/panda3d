@@ -321,6 +321,45 @@ get_data1i() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::get_data2i
+//       Access: Published
+//  Description: Returns the data associated with the read vertex,
+//               expressed as a 2-component value, and advances the
+//               read vertex.
+////////////////////////////////////////////////////////////////////
+INLINE const int *qpGeomVertexReader::
+get_data2i() {
+  nassertr(_data_type != (qpGeomVertexDataType *)NULL, 0);
+  return _reader->get_data2i(inc_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::get_data3i
+//       Access: Published
+//  Description: Returns the data associated with the read vertex,
+//               expressed as a 3-component value, and advances the
+//               read vertex.
+////////////////////////////////////////////////////////////////////
+INLINE const int *qpGeomVertexReader::
+get_data3i() {
+  nassertr(_data_type != (qpGeomVertexDataType *)NULL, 0);
+  return _reader->get_data3i(inc_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::get_data4i
+//       Access: Published
+//  Description: Returns the data associated with the read vertex,
+//               expressed as a 4-component value, and advances the
+//               read vertex.
+////////////////////////////////////////////////////////////////////
+INLINE const int *qpGeomVertexReader::
+get_data4i() {
+  nassertr(_data_type != (qpGeomVertexDataType *)NULL, 0);
+  return _reader->get_data4i(inc_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::set_pointer
 //       Access: Private
 //  Description: Sets up the internal write pointer, etc. to use the

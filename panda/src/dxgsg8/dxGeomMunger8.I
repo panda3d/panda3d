@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE DXGeomMunger8::
 DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state) :
-  ColorMunger(gsg, state, 1, qpGeomVertexDataType::NT_packed_8888,
+  StandardMunger(gsg, state, 1, qpGeomVertexDataType::NT_packed_8888,
               qpGeomVertexDataType::C_argb)
 {
 }
@@ -38,5 +38,5 @@ DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state) :
 ////////////////////////////////////////////////////////////////////
 INLINE void *DXGeomMunger8::
 operator new(size_t size) {
-  return do_operator_new(size, _deleted_chain);
+  return do_operator_new(size, &_deleted_chain);
 }

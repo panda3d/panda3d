@@ -75,7 +75,7 @@ TransformPalette::
 //               unregistered palettes.
 ////////////////////////////////////////////////////////////////////
 void TransformPalette::
-set_transform(int n, VertexTransform *transform) {
+set_transform(int n, const VertexTransform *transform) {
   nassertv(!_is_registered);
   nassertv(n >= 0 && n < (int)_transforms.size());
   _transforms[n] = transform;
@@ -102,7 +102,7 @@ remove_transform(int n) {
 //               unregistered palettes.
 ////////////////////////////////////////////////////////////////////
 int TransformPalette::
-add_transform(VertexTransform *transform) {
+add_transform(const VertexTransform *transform) {
   nassertr(!_is_registered, -1);
   int new_index = (int)_transforms.size();
   _transforms.push_back(transform);
@@ -132,7 +132,8 @@ do_register() {
 
   Transforms::iterator ti;
   for (ti = _transforms.begin(); ti != _transforms.end(); ++ti) {
-    bool inserted = (*ti)->_palettes.insert(this).second;
+    VertexTransform *transform = (VertexTransform *)(*ti).p();
+    bool inserted = transform->_palettes.insert(this).second;
     nassertv(inserted);
   }
   _is_registered = true;
@@ -150,7 +151,8 @@ do_unregister() {
 
   Transforms::iterator ti;
   for (ti = _transforms.begin(); ti != _transforms.end(); ++ti) {
-    (*ti)->_palettes.erase(this);
+    VertexTransform *transform = (VertexTransform *)(*ti).p();
+    transform->_palettes.erase(this);
   }
   _is_registered = false;
 }

@@ -1,4 +1,4 @@
-// Filename: colorMunger.cxx
+// Filename: standardMunger.cxx
 // Created by:  drose (21Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,47 +16,53 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "colorMunger.h"
+#include "standardMunger.h"
 #include "renderState.h"
+#include "graphicsStateGuardian.h"
 #include "dcast.h"
+#include "config_gobj.h"
 
-TypeHandle ColorMunger::_type_handle;
+TypeHandle StandardMunger::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ColorMunger::Constructor
+//     Function: StandardMunger::Constructor
 //       Access: Public
-//  Description: 
+//  Description: The StandardMunger constructor accepts additional
+//               parameters that specify the GSG's preferred color
+//               format (since we might be munging the color anyway,
+//               we might as well convert it as we munge).
 ////////////////////////////////////////////////////////////////////
-ColorMunger::
-ColorMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
-            int num_components,
-            qpGeomVertexDataType::NumericType numeric_type,
-            qpGeomVertexDataType::Contents contents) :
+StandardMunger::
+StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
+               int num_components,
+               qpGeomVertexDataType::NumericType numeric_type,
+               qpGeomVertexDataType::Contents contents) :
   qpGeomMunger(gsg, state),
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents)
 {
+  _gsg = DCAST(GraphicsStateGuardian, gsg);
   _color = state->get_color();
   _color_scale = state->get_color_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ColorMunger::Destructor
+//     Function: StandardMunger::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-ColorMunger::
-~ColorMunger() {
+StandardMunger::
+~StandardMunger() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ColorMunger::munge_data_impl
+//     Function: StandardMunger::munge_data_impl
 //       Access: Protected, Virtual
 //  Description: Given a source GeomVertexData, converts it as
 //               necessary for rendering.
 ////////////////////////////////////////////////////////////////////
-CPT(qpGeomVertexData) ColorMunger::
+CPT(qpGeomVertexData) StandardMunger::
 munge_data_impl(const qpGeomVertexData *data) {
   CPT(qpGeomVertexData) new_data = data;
 
@@ -81,20 +87,62 @@ munge_data_impl(const qpGeomVertexData *data) {
                                      _contents);
   }
 
-  return qpGeomMunger::munge_data_impl(new_data);
+  qpGeomVertexAnimationSpec animation = data->get_format()->get_animation();
+  if (hardware_animated_vertices &&
+      animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_panda &&
+      data->get_slider_table() == (SliderTable *)NULL) {
+    // Maybe we can animate the vertices with hardware.
+    const TransformBlendPalette *palette = data->get_transform_blend_palette();
+    if (palette != (TransformBlendPalette *)NULL &&
+        palette->get_max_simultaneous_transforms() <= 
+        _gsg->get_max_vertex_transforms()) {
+      if (palette->get_num_transforms() <= 
+          _gsg->get_max_vertex_transform_indices()) {
+
+        if (palette->get_num_transforms() == palette->get_max_simultaneous_transforms()) {
+          // We can support an indexed palette, but since that won't
+          // save us any per-vertex blends, go ahead and do a plain
+          // old nonindexed palette instead.
+          animation.set_hardware(palette->get_num_transforms(), false);
+
+        } else {
+          // We can support an indexed palette, and that means we can
+          // reduce the number of blends we have to specify for each
+          // vertex.
+          animation.set_hardware(palette->get_max_simultaneous_transforms(), true);
+        }
+
+      } else if (palette->get_num_transforms() <=
+                 _gsg->get_max_vertex_transforms()) {
+        // We can't support an indexed palette, but we have few enough
+        // transforms that we can do a nonindexed palette.
+        animation.set_hardware(palette->get_num_transforms(), false);
+      }
+    }
+  }
+  
+  CPT(qpGeomVertexFormat) orig_format = data->get_format();
+  CPT(qpGeomVertexFormat) new_format = munge_format(orig_format, animation);
+
+  if (new_format == orig_format) {
+    // Trivial case.
+    return data;
+  }
+
+  return data->convert_to(new_format);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ColorMunger::compare_to_impl
+//     Function: StandardMunger::compare_to_impl
 //       Access: Protected, Virtual
 //  Description: Called to compare two GeomMungers who are known to be
 //               of the same type, for an apples-to-apples comparison.
 //               This will never be called on two pointers of a
 //               different type.
 ////////////////////////////////////////////////////////////////////
-int ColorMunger::
+int StandardMunger::
 compare_to_impl(const qpGeomMunger *other) const {
-  const ColorMunger *om = DCAST(ColorMunger, other);
+  const StandardMunger *om = DCAST(StandardMunger, other);
   if (_color != om->_color) {
     return _color < om->_color ? -1 : 1;
   }
@@ -106,16 +154,16 @@ compare_to_impl(const qpGeomMunger *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ColorMunger::geom_compare_to_impl
+//     Function: StandardMunger::geom_compare_to_impl
 //       Access: Protected, Virtual
 //  Description: Called to compare two GeomMungers who are known to be
 //               of the same type, for an apples-to-apples comparison.
 //               This will never be called on two pointers of a
 //               different type.
 ////////////////////////////////////////////////////////////////////
-int ColorMunger::
+int StandardMunger::
 geom_compare_to_impl(const qpGeomMunger *other) const {
-  const ColorMunger *om = DCAST(ColorMunger, other);
+  const StandardMunger *om = DCAST(StandardMunger, other);
   if (_color != om->_color) {
     return _color < om->_color ? -1 : 1;
   }

@@ -1,4 +1,4 @@
-// Filename: colorMunger.h
+// Filename: standardMunger.h
 // Created by:  drose (21Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,29 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef COLORMUNGER_H
-#define COLORMUNGER_H
+#ifndef STANDARDMUNGER_H
+#define STANDARDMUNGER_H
 
 #include "pandabase.h"
 #include "qpgeomMunger.h"
+#include "graphicsStateGuardian.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ColorMunger
-// Description : Applies ColorAttrib and ColorScaleAttrib by munging
-//               the vertex data.
+//       Class : StandardMunger
+// Description : Performs some generic munging that is appropriate for
+//               all GSG types; for instance, applies ColorAttrib and
+//               ColorScaleAttrib to the vertices, and checks for
+//               hardware-accelerated animation capabilities.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ColorMunger : public qpGeomMunger {
+class EXPCL_PANDA StandardMunger : public qpGeomMunger {
 public:
-  ColorMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
-              int num_components,
-              qpGeomVertexDataType::NumericType numeric_type,
-              qpGeomVertexDataType::Contents contents);
-  virtual ~ColorMunger();
+  StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
+                 int num_components,
+                 qpGeomVertexDataType::NumericType numeric_type,
+                 qpGeomVertexDataType::Contents contents);
+  virtual ~StandardMunger();
 
 protected:
   virtual CPT(qpGeomVertexData) munge_data_impl(const qpGeomVertexData *data);
@@ -49,6 +52,7 @@ private:
   int _num_components;
   qpGeomVertexDataType::NumericType _numeric_type;
   qpGeomVertexDataType::Contents _contents;
+  CPT(GraphicsStateGuardian) _gsg;
   CPT(ColorAttrib) _color;
   CPT(ColorScaleAttrib) _color_scale;
 
@@ -58,7 +62,7 @@ public:
   }
   static void init_type() {
     qpGeomMunger::init_type();
-    register_type(_type_handle, "ColorMunger",
+    register_type(_type_handle, "StandardMunger",
                   qpGeomMunger::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -70,7 +74,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "colorMunger.I"
+#include "standardMunger.I"
 
 #endif
 

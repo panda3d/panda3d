@@ -43,6 +43,11 @@ DXIndexBufferContext8(qpGeomPrimitive *data) :
 DXIndexBufferContext8::
 ~DXIndexBufferContext8() {
   if (_ibuffer != NULL) {
+    if (dxgsg8_cat.is_debug()) {
+      dxgsg8_cat.debug()
+        << "deleting index buffer " << _ibuffer << "\n";
+    }
+
     RELEASE(_ibuffer, dxgsg8, "index buffer", RELEASE_ONCE);
     _ibuffer = NULL;
   }
@@ -84,6 +89,12 @@ upload_data() {
   nassertv(_ibuffer != NULL);
 
   int data_size = get_data()->get_data_size_bytes();
+  
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "copying " << data_size
+      << " bytes into index buffer " << _ibuffer << "\n";
+  }
 
   BYTE *local_pointer;
   HRESULT hr = _ibuffer->Lock(0, data_size, &local_pointer, 0);

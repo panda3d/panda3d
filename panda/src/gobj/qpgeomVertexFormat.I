@@ -68,6 +68,34 @@ register_format(qpGeomVertexArrayFormat *format) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_animation
+//       Access: Published
+//  Description: Returns the GeomVertexAnimationSpec that indicates
+//               how this format's vertices are set up for animation.
+////////////////////////////////////////////////////////////////////
+INLINE const qpGeomVertexAnimationSpec &qpGeomVertexFormat::
+get_animation() const {
+  return _animation;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::set_animation
+//       Access: Published
+//  Description: Resets the GeomVertexAnimationSpec that indicates
+//               how this format's vertices are set up for animation.
+//               You should also, of course, change the columns in the
+//               tables accordingly.
+//
+//               This may not be called once the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexFormat::
+set_animation(const qpGeomVertexAnimationSpec &animation) {
+  nassertv(!_is_registered);
+  _animation = animation;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_num_arrays
 //       Access: Published
 //  Description: Returns the number of individual arrays required by
