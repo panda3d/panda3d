@@ -6,6 +6,7 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDA
+#define USE_NET yes
 
 #define LOCAL_LIBS \
     pstatclient grutil chan chancfg \
