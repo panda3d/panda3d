@@ -5,11 +5,6 @@ import GravityWalker
 class BattleWalker(GravityWalker.GravityWalker):
     def __init__(self):
         GravityWalker.GravityWalker.__init__(self)
-        self.targetNp = None
-        
-    def setTarget(self, nodepath):
-        # Set target that movement will be relative to
-        self.targetNp = nodepath
 
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
@@ -20,6 +15,15 @@ class BattleWalker(GravityWalker.GravityWalker):
         """
         Check on the arrow keys and update the avatar.
         """
+
+        # If targetNp is not available, revert back to GravityWalker.handleAvatarControls.
+        # This situation occurs when the target dies, but we aren't switched out of
+        # battle walker control mode.
+
+        targetNp = self.avatarNodePath.currentTarget
+        if targetNp == None or targetNp.isEmpty():
+            return GravityWalker.GravityWalker.handleAvatarControls(self, task)
+        
         # get the button states:
         run = inputState.isSet("run")
         forward = inputState.isSet("forward")
@@ -84,7 +88,7 @@ class BattleWalker(GravityWalker.GravityWalker):
 
         # Before we do anything with position or orientation, make the avatar
         # face it's target
-        self.avatarNodePath.headsUp(self.targetNp)
+        self.avatarNodePath.headsUp(targetNp)
 
         # Check to see if we're moving at all:
         self.moving = self.speed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())
