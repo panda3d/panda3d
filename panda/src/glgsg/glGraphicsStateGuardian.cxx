@@ -71,8 +71,15 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"
+#include "texMatrixAttrib.h"
+#include "materialAttrib.h"
+#include "renderModeAttrib.h"
+#include "fogAttrib.h"
+#include "depthOffsetAttrib.h"
+#include "qpfog.h"
 #include "clockObject.h"
 #include "string_utils.h"
+#include "qpnodePath.h"
 #include "dcast.h"
 #include "pvector.h"
 
@@ -2498,6 +2505,37 @@ apply_fog(Fog *fog) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::apply_fog
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+apply_fog(qpFog *fog) {
+  qpFog::Mode fmode = fog->get_mode();
+  call_glFogMode(get_fog_mode_type((Fog::Mode)fmode));
+
+  if (fmode == qpFog::M_linear) {
+    // Linear fog may be world-relative or camera-relative.  The fog
+    // object knows how to decode its parameters into camera-relative
+    // properties.
+    float onset, opaque;
+    fog->compute_linear_range(onset, opaque, 
+                              qpNodePath(),
+                              // _current_camera,
+                              _coordinate_system);
+    call_glFogStart(onset);
+    call_glFogEnd(opaque);
+
+  } else {
+    // Exponential fog is always camera-relative.
+    call_glFogDensity(fog->get_exp_density());
+  }
+
+  call_glFogColor(fog->get_color());
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_light
 //       Access: Public, Virtual
 //  Description:
@@ -3438,6 +3476,18 @@ issue_transform(const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_tex_matrix
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_tex_matrix(const TexMatrixAttrib *attrib) {
+  glMatrixMode(GL_TEXTURE);
+  glLoadMatrixf(attrib->get_mat().get_data());
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_texture
 //       Access: Public, Virtual
 //  Description:
@@ -3456,6 +3506,46 @@ issue_texture(const TextureAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_material
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_material(const MaterialAttrib *attrib) {
+  const Material *material = attrib->get_material();
+  if (material != (const Material *)NULL) {
+    apply_material(material);
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_render_mode
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_render_mode(const RenderModeAttrib *attrib) {
+  RenderModeAttrib::Mode mode = attrib->get_mode();
+
+  switch (mode) {
+  case RenderModeAttrib::M_filled:
+    call_glPolygonMode(GL_FILL);
+    break;
+
+  case RenderModeAttrib::M_wireframe:
+    call_glLineWidth(attrib->get_line_width());
+    call_glPolygonMode(GL_LINE);
+    break;
+
+  default:
+    glgsg_cat.error()
+      << "Unknown render mode " << (int)mode << endl;
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_texture_apply
 //       Access: Public, Virtual
 //  Description:
@@ -3464,6 +3554,55 @@ void GLGraphicsStateGuardian::
 issue_texture_apply(const TextureApplyAttrib *attrib) {
   GLint glmode = get_texture_apply_mode_type(attrib->get_mode());
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_color_write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_color_write(const ColorWriteAttrib *attrib) {
+  ColorWriteAttrib::Mode mode = attrib->get_mode();
+  if (mode == ColorWriteAttrib::M_off) {
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+  } else {
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_depth_test
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_depth_test(const DepthTestAttrib *attrib) {
+  DepthTestAttrib::Mode mode = attrib->get_mode();
+  if (mode == DepthTestAttrib::M_none) {
+    enable_depth_test(false);
+  } else {
+    enable_depth_test(true);
+    glDepthFunc(get_depth_func_type(mode));
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_depth_write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_depth_write(const DepthWriteAttrib *attrib) {
+  DepthWriteAttrib::Mode mode = attrib->get_mode();
+  if (mode == DepthWriteAttrib::M_off) {
+    glDepthMask(GL_FALSE);
+  } else {
+    glDepthMask(GL_TRUE);
+  }
   report_errors();
 }
 
@@ -3559,51 +3698,42 @@ issue_transparency(const TransparencyAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_color_write
+//     Function: GLGraphicsStateGuardian::issue_fog
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_color_write(const ColorWriteAttrib *attrib) {
-  ColorWriteAttrib::Mode mode = attrib->get_mode();
-  if (mode == ColorWriteAttrib::M_off) {
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+issue_fog(const FogAttrib *attrib) {
+  if (!attrib->is_off()) {
+    enable_fog(true);
+    qpFog *fog = attrib->get_fog();
+    nassertv(fog != (qpFog *)NULL);
+    apply_fog(fog);
   } else {
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    enable_fog(false);
   }
   report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_test
+//     Function: GLGraphicsStateGuardian::issue_depth_offset
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_depth_test(const DepthTestAttrib *attrib) {
-  DepthTestAttrib::Mode mode = attrib->get_mode();
-  if (mode == DepthTestAttrib::M_none) {
-    enable_depth_test(false);
-  } else {
-    enable_depth_test(true);
-    glDepthFunc(get_depth_func_type(mode));
-  }
-  report_errors();
-}
+issue_depth_offset(const DepthOffsetAttrib *attrib) {
+  int offset = attrib->get_offset();
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_depth_write(const DepthWriteAttrib *attrib) {
-  DepthWriteAttrib::Mode mode = attrib->get_mode();
-  if (mode == DepthWriteAttrib::M_off) {
-    glDepthMask(GL_FALSE);
+  if (offset != 0) {
+    GLfloat newfactor = 1.0f;
+    GLfloat newunits = (GLfloat)offset;
+    glPolygonOffset(newfactor, newunits);
+    enable_polygon_offset(true);
+
   } else {
-    glDepthMask(GL_TRUE);
+    enable_polygon_offset(false);
   }
+
   report_errors();
 }
 

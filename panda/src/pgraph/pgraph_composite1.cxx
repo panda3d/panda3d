@@ -2,6 +2,7 @@
 #include "binCullHandler.cxx"
 #include "qpcamera.cxx"
 #include "colorAttrib.cxx"
+#include "colorScaleAttrib.cxx"
 #include "colorWriteAttrib.cxx"
 #include "config_pgraph.cxx"
 #include "cullBin.cxx"
@@ -15,4 +16,8 @@
 #include "qpcullTraverser.cxx"
 #include "cullTraverserData.cxx"
 #include "cullableObject.cxx"
-
+#include "decalEffect.cxx"
+#include "depthOffsetAttrib.cxx"
+#include "depthTestAttrib.cxx"
+#include "depthWriteAttrib.cxx"
+#include "drawCullHandler.cxx"

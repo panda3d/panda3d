@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "typeHandle.h"
 #include "pvector.h"
 
 class PandaNode;

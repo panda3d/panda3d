@@ -281,6 +281,9 @@ setup_initial_bins() {
   if (find_bin("fixed") == -1) {
     add_bin("fixed", BT_fixed, 40);
   }
+  if (find_bin("unsorted") == -1) {
+    add_bin("unsorted", BT_unsorted, 50);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

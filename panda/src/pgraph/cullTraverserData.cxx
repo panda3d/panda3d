@@ -22,6 +22,7 @@
 #include "pandaNode.h"
 #include "colorAttrib.h"
 #include "textureAttrib.h"
+#include "renderModeAttrib.h"
 #include "billboardEffect.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -153,6 +154,7 @@ get_fake_view_frustum_cull_effect() {
     effect = RenderState::make
       (ColorAttrib::make_flat(Colorf(1.0f, 0.0f, 0.0f, 1.0f)),
        TextureAttrib::make_off(),
+       RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        1000);
   }
   return effect;

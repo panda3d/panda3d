@@ -23,9 +23,12 @@
 #include "qpfindApproxLevel.h"
 #include "config_pgraph.h"
 #include "colorAttrib.h"
+#include "colorScaleAttrib.h"
 #include "cullBinAttrib.h"
 #include "textureAttrib.h"
 #include "materialAttrib.h"
+#include "fogAttrib.h"
+#include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
 #include "billboardEffect.h"
 #include "transparencyAttrib.h"
@@ -677,21 +680,30 @@ set_mat(const LMatrix4f &mat) {
 //               leaving translation and rotation untouched.
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
-set_color_scale(const LVecBase4f &sv4) {
-  nassertv(false);
+set_color_scale(const LVecBase4f &scale) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(ColorScaleAttrib::make(scale));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::get_color_scale
 //       Access: Published
-//  Description: Returns the complete transform vector that has been
-//               applied to the bottom node, or the all 1's if no
-//               scale has been applied
+//  Description: Returns the complete color scale vector that has been
+//               applied to the bottom node, or all 1's (identity) if
+//               no scale has been applied.
 ////////////////////////////////////////////////////////////////////
-LVecBase4f qpNodePath::
+const LVecBase4f &qpNodePath::
 get_color_scale() const {
-  nassertr(false, LVecBase4f(1.0f,1.0f,1.0f,1.0f));
-  return LVecBase4f(1.0f,1.0f,1.0f,1.0f);
+  static const LVecBase4f ident_scale(1.0f, 1.0f, 1.0f, 1.0f);
+  nassertr(!is_empty(), ident_scale);
+  const RenderAttrib *attrib =
+    node()->get_attrib(ColorScaleAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+    return csa->get_scale();
+  }
+
+  return ident_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1664,8 +1676,9 @@ get_material() const {
 //               using the indicated fog.
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
-set_fog(Fog *fog, int priority) {
-  nassertv(false);
+set_fog(qpFog *fog, int priority) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(FogAttrib::make(fog), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1680,7 +1693,8 @@ set_fog(Fog *fog, int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_fog_off(int priority) {
-  nassertv(false);
+  nassertv_always(!is_empty());
+  node()->set_attrib(FogAttrib::make_off(), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1694,7 +1708,8 @@ set_fog_off(int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_fog() {
-  nassertv(false);
+  nassertv(!is_empty());
+  node()->clear_attrib(FogAttrib::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1709,7 +1724,14 @@ clear_fog() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_fog() const {
-  nassertr(false, false);
+  nassertr(!is_empty(), false);
+  const RenderAttrib *attrib =
+    node()->get_attrib(FogAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const FogAttrib *fa = DCAST(FogAttrib, attrib);
+    return !fa->is_off();
+  }
+
   return false;
 }
 
@@ -1725,7 +1747,14 @@ has_fog() const {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_fog_off() const {
-  nassertr(false, false);
+  nassertr(!is_empty(), false);
+  const RenderAttrib *attrib =
+    node()->get_attrib(FogAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const FogAttrib *fa = DCAST(FogAttrib, attrib);
+    return fa->is_off();
+  }
+
   return false;
 }
 
@@ -1739,9 +1768,16 @@ has_fog_off() const {
 //               another fog at a higher or lower level may
 //               override.
 ////////////////////////////////////////////////////////////////////
-Fog *qpNodePath::
+qpFog *qpNodePath::
 get_fog() const {
-  nassertr(false, NULL);
+  nassertr(!is_empty(), NULL);
+  const RenderAttrib *attrib =
+    node()->get_attrib(FogAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const FogAttrib *fa = DCAST(FogAttrib, attrib);
+    return fa->get_fog();
+  }
+
   return NULL;
 }
 
@@ -1753,7 +1789,8 @@ get_fog() const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_render_mode_wireframe(int priority) {
-  nassertv(false);
+  nassertv_always(!is_empty());
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_wireframe), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1765,7 +1802,8 @@ set_render_mode_wireframe(int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_render_mode_filled(int priority) {
-  nassertv(false);
+  nassertv_always(!is_empty());
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1778,7 +1816,8 @@ set_render_mode_filled(int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_render_mode() {
-  nassertv(false);
+  nassertv(!is_empty());
+  node()->clear_attrib(RenderModeAttrib::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1791,8 +1830,8 @@ clear_render_mode() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_render_mode() const {
-  nassertr(false, false);
-  return false;
+  nassertr(!is_empty(), false);
+  return node()->has_attrib(RenderModeAttrib::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

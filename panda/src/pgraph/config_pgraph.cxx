@@ -21,6 +21,7 @@
 #include "billboardEffect.h"
 #include "qpcamera.h"
 #include "colorAttrib.h"
+#include "colorScaleAttrib.h"
 #include "colorWriteAttrib.h"
 #include "cullFaceAttrib.h"
 #include "cullBin.h"
@@ -30,8 +31,11 @@
 #include "qpcullTraverser.h"
 #include "cullableObject.h"
 #include "decalEffect.h"
+#include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "qpfog.h"
+#include "fogAttrib.h"
 #include "qpgeomNode.h"
 #include "qplensNode.h"
 #include "qplodNode.h"
@@ -42,9 +46,11 @@
 #include "renderAttrib.h"
 #include "renderEffect.h"
 #include "renderEffects.h"
+#include "renderModeAttrib.h"
 #include "renderState.h"
 #include "selectiveChildNode.h"
 #include "qpsequenceNode.h"
+#include "texMatrixAttrib.h"
 #include "textureApplyAttrib.h"
 #include "textureAttrib.h"
 #include "transformState.h"
@@ -84,6 +90,7 @@ init_libpgraph() {
   BillboardEffect::init_type();
   qpCamera::init_type();
   ColorAttrib::init_type();
+  ColorScaleAttrib::init_type();
   ColorWriteAttrib::init_type();
   CullFaceAttrib::init_type();
   CullBin::init_type();
@@ -93,8 +100,11 @@ init_libpgraph() {
   qpCullTraverser::init_type();
   CullableObject::init_type();
   DecalEffect::init_type();
+  DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
+  qpFog::init_type();
+  FogAttrib::init_type();
   qpGeomNode::init_type();
   qpLensNode::init_type();
   qpLODNode::init_type();
@@ -105,9 +115,11 @@ init_libpgraph() {
   RenderAttrib::init_type();
   RenderEffect::init_type();
   RenderEffects::init_type();
+  RenderModeAttrib::init_type();
   RenderState::init_type();
   SelectiveChildNode::init_type();
   qpSequenceNode::init_type();
+  TexMatrixAttrib::init_type();
   TextureApplyAttrib::init_type();
   TextureAttrib::init_type();
   TransformState::init_type();
@@ -116,20 +128,26 @@ init_libpgraph() {
   BillboardEffect::register_with_read_factory();
   qpCamera::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
+  ColorScaleAttrib::register_with_read_factory();
   ColorWriteAttrib::register_with_read_factory();
   CullBinAttrib::register_with_read_factory();
   CullFaceAttrib::register_with_read_factory();
   DecalEffect::register_with_read_factory();
+  DepthOffsetAttrib::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
+  qpFog::register_with_read_factory();
+  FogAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
   qpLensNode::register_with_read_factory();
   qpLODNode::register_with_read_factory();
   MaterialAttrib::register_with_read_factory();
   PandaNode::register_with_read_factory();
   RenderEffects::register_with_read_factory();
+  RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();
   qpSequenceNode::register_with_read_factory();
+  TexMatrixAttrib::register_with_read_factory();
   TextureApplyAttrib::register_with_read_factory();
   TextureAttrib::register_with_read_factory();
   TransformState::register_with_read_factory();

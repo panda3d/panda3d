@@ -179,6 +179,7 @@ public:
   INLINE void clear_cached_state(void) { _state.clear(); };  
 
   virtual void issue_transform(const TransformState *transform);
+  virtual void issue_color_scale(const ColorScaleAttrib *attrib);
   virtual void issue_color(const ColorAttrib *attrib);
 
 protected:

@@ -1,5 +1,5 @@
-// Filename: materialAttrib.I
-// Created by:  drose (04Mar02)
+// Filename: fogAttrib.I
+// Created by:  drose (14Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,35 +18,34 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaterialAttrib::Constructor
+//     Function: FogAttrib::Constructor
 //       Access: Private
-//  Description: Use MaterialAttrib::make() to construct a new
-//               MaterialAttrib object.
+//  Description: Use FogAttrib::make() to construct a new FogAttrib
+//               object.
 ////////////////////////////////////////////////////////////////////
-INLINE MaterialAttrib::
-MaterialAttrib() {
+INLINE FogAttrib::
+FogAttrib() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaterialAttrib::is_off
+//     Function: FogAttrib::is_off
 //       Access: Published
-//  Description: Returns true if the MaterialAttrib is an 'off'
-//               MaterialAttrib, indicating that it should disable
-//               the use of materials.
+//  Description: Returns true if the FogAttrib is an 'off' FogAttrib,
+//               indicating that it should disable fog.
 ////////////////////////////////////////////////////////////////////
-INLINE bool MaterialAttrib::
+INLINE bool FogAttrib::
 is_off() const {
-  return _material == (const Material *)NULL;
+  return _fog == (const qpFog *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaterialAttrib::get_material
+//     Function: FogAttrib::get_fog
 //       Access: Published
-//  Description: If the MaterialAttrib is not an 'off' MaterialAttrib,
-//               returns the material that is associated.  Otherwise,
+//  Description: If the FogAttrib is not an 'off' FogAttrib,
+//               returns the fog that is associated.  Otherwise,
 //               return NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE const Material *MaterialAttrib::
-get_material() const {
-  return _material;
+INLINE qpFog *FogAttrib::
+get_fog() const {
+  return _fog;
 }

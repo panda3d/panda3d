@@ -6,48 +6,54 @@
   #define TARGET pgraph
   
   #define SOURCES \
-    billboardEffect.h billboardEffect.I \
-    binCullHandler.h binCullHandler.I \
-    qpcamera.h qpcamera.I \
-    colorAttrib.h colorAttrib.I \
-    colorWriteAttrib.h colorWriteAttrib.I \
+    billboardEffect.I billboardEffect.h \
+    binCullHandler.I binCullHandler.h \
+    qpcamera.I qpcamera.h \
+    colorAttrib.I colorAttrib.h \
+    colorScaleAttrib.I colorScaleAttrib.h \
+    colorWriteAttrib.I colorWriteAttrib.h \
     config_pgraph.h \
-    cullBin.h cullBin.I \
-    cullBinAttrib.h cullBinAttrib.I \
-    cullBinBackToFront.h cullBinBackToFront.I \
-    cullBinManager.h cullBinManager.I \
-    cullBinUnsorted.h cullBinUnsorted.I \
-    cullFaceAttrib.h cullFaceAttrib.I \
-    cullHandler.h cullHandler.I \
-    cullResult.h cullResult.I \
-    qpcullTraverser.h qpcullTraverser.I \
-    cullTraverserData.h cullTraverserData.I \
-    cullableObject.h cullableObject.I \
-    decalEffect.h decalEffect.I \
-    depthTestAttrib.h depthTestAttrib.I \
-    depthWriteAttrib.h depthWriteAttrib.I \
-    drawCullHandler.h drawCullHandler.I \
+    cullBin.I cullBin.h \
+    cullBinAttrib.I cullBinAttrib.h \
+    cullBinBackToFront.I cullBinBackToFront.h \
+    cullBinManager.I cullBinManager.h \
+    cullBinUnsorted.I cullBinUnsorted.h \
+    cullFaceAttrib.I cullFaceAttrib.h \
+    cullHandler.I cullHandler.h \
+    cullResult.I cullResult.h \
+    qpcullTraverser.I qpcullTraverser.h \
+    cullTraverserData.I cullTraverserData.h \
+    cullableObject.I cullableObject.h \
+    decalEffect.I decalEffect.h \
+    depthOffsetAttrib.I depthOffsetAttrib.h \
+    depthTestAttrib.I depthTestAttrib.h \
+    depthWriteAttrib.I depthWriteAttrib.h \
+    drawCullHandler.I drawCullHandler.h \
     qpfindApproxLevel.I qpfindApproxLevel.h \
     qpfindApproxLevelEntry.I qpfindApproxLevelEntry.h \
     qpfindApproxPath.I qpfindApproxPath.h \
-    qpgeomNode.h qpgeomNode.I \
-    qplensNode.h qplensNode.I \
-    qplodNode.h qplodNode.I \
-    materialAttrib.h materialAttrib.I \
-    qpnodePath.h qpnodePath.I \
-    qpnodePathCollection.h qpnodePathCollection.I \
-    qpnodePathComponent.h qpnodePathComponent.I \
-    pandaNode.h pandaNode.I \
-    renderAttrib.h renderAttrib.I \
-    renderEffect.h renderEffect.I \
-    renderEffects.h renderEffects.I \
-    renderState.h renderState.I \
-    selectiveChildNode.h selectiveChildNode.I \
-    qpsequenceNode.h qpsequenceNode.I \
-    textureApplyAttrib.h textureApplyAttrib.I \
-    textureAttrib.h textureAttrib.I \
-    transformState.h transformState.I \
-    transparencyAttrib.h transparencyAttrib.I
+    qpfog.I qpfog.h \
+    fogAttrib.I fogAttrib.h \
+    qpgeomNode.I qpgeomNode.h \
+    qplensNode.I qplensNode.h \
+    qplodNode.I qplodNode.h \
+    materialAttrib.I materialAttrib.h \
+    qpnodePath.I qpnodePath.h \
+    qpnodePathCollection.I qpnodePathCollection.h \
+    qpnodePathComponent.I qpnodePathComponent.h \
+    pandaNode.I pandaNode.h \
+    renderAttrib.I renderAttrib.h \
+    renderEffect.I renderEffect.h \
+    renderEffects.I renderEffects.h \
+    renderModeAttrib.I renderModeAttrib.h \
+    renderState.I renderState.h \
+    selectiveChildNode.I selectiveChildNode.h \
+    qpsequenceNode.I qpsequenceNode.h \
+    texMatrixAttrib.I texMatrixAttrib.h \
+    textureApplyAttrib.I textureApplyAttrib.h \
+    textureAttrib.I textureAttrib.h \
+    transformState.I transformState.h \
+    transparencyAttrib.I transparencyAttrib.h
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
   #define INCLUDED_SOURCES \
@@ -55,6 +61,7 @@
     binCullHandler.cxx \
     qpcamera.cxx \
     colorAttrib.cxx \
+    colorScaleAttrib.cxx \
     colorWriteAttrib.cxx \
     config_pgraph.cxx \
     cullBin.cxx \
@@ -69,12 +76,15 @@
     cullTraverserData.cxx \
     cullableObject.cxx \
     decalEffect.cxx \
+    depthOffsetAttrib.cxx \
     depthTestAttrib.cxx \
     depthWriteAttrib.cxx \
     drawCullHandler.cxx \
     qpfindApproxLevel.cxx \
     qpfindApproxLevelEntry.cxx \
     qpfindApproxPath.cxx \
+    qpfog.cxx \
+    fogAttrib.cxx \
     qpgeomNode.cxx \
     qplensNode.cxx \
     qplodNode.cxx \
@@ -86,9 +96,11 @@
     renderAttrib.cxx \
     renderEffect.cxx \
     renderEffects.cxx \
+    renderModeAttrib.cxx \
     renderState.cxx \
     selectiveChildNode.cxx \
     qpsequenceNode.cxx \
+    texMatrixAttrib.cxx \
     textureApplyAttrib.cxx \
     textureAttrib.cxx \
     transformState.cxx \
@@ -101,45 +113,51 @@
   #endif
 
   #define INSTALL_HEADERS \
-    billboardEffect.h billboardEffect.I \
-    binCullHandler.h binCullHandler.I \
-    qpcamera.h qpcamera.I \
-    colorAttrib.h colorAttrib.I \
-    colorWriteAttrib.h colorWriteAttrib.I \
+    billboardEffect.I billboardEffect.h \
+    binCullHandler.I binCullHandler.h \
+    qpcamera.I qpcamera.h \
+    colorAttrib.I colorAttrib.h \
+    colorScaleAttrib.I colorScaleAttrib.h \
+    colorWriteAttrib.I colorWriteAttrib.h \
     config_pgraph.h \
-    cullBin.h cullBin.I \
-    cullBinAttrib.h cullBinAttrib.I \
-    cullBinBackToFront.h cullBinBackToFront.I \
-    cullBinManager.h cullBinManager.I \
-    cullBinUnsorted.h cullBinUnsorted.I \
-    cullFaceAttrib.h cullFaceAttrib.I \
-    cullHandler.h cullHandler.I \
-    cullResult.h cullResult.I \
-    qpcullTraverser.h qpcullTraverser.I \
-    cullTraverserData.h cullTraverserData.I \
-    cullableObject.h cullableObject.I \
-    decalEffect.h decalEffect.I \
-    depthTestAttrib.h depthTestAttrib.I \
-    depthWriteAttrib.h depthWriteAttrib.I \
-    drawCullHandler.h drawCullHandler.I \
-    qpgeomNode.h qpgeomNode.I \
-    qplensNode.h qplensNode.I \
-    qplodNode.h qplodNode.I \
-    materialAttrib.h materialAttrib.I \
-    qpnodePath.h qpnodePath.I \
-    qpnodePathCollection.h qpnodePathCollection.I \
-    qpnodePathComponent.h qpnodePathComponent.I \
-    pandaNode.h pandaNode.I \
-    renderAttrib.h renderAttrib.I \
-    renderEffect.h renderEffect.I \
-    renderEffects.h renderEffects.I \
-    renderState.h renderState.I \
-    selectiveChildNode.h selectiveChildNode.I \
-    qpsequenceNode.h qpsequenceNode.I \
-    textureApplyAttrib.h textureApplyAttrib.I \
-    textureAttrib.h textureAttrib.I \
-    transformState.h transformState.I \
-    transparencyAttrib.h transparencyAttrib.I
+    cullBin.I cullBin.h \
+    cullBinAttrib.I cullBinAttrib.h \
+    cullBinBackToFront.I cullBinBackToFront.h \
+    cullBinManager.I cullBinManager.h \
+    cullBinUnsorted.I cullBinUnsorted.h \
+    cullFaceAttrib.I cullFaceAttrib.h \
+    cullHandler.I cullHandler.h \
+    cullResult.I cullResult.h \
+    qpcullTraverser.I qpcullTraverser.h \
+    cullTraverserData.I cullTraverserData.h \
+    cullableObject.I cullableObject.h \
+    decalEffect.I decalEffect.h \
+    depthOffsetAttrib.I depthOffsetAttrib.h \
+    depthTestAttrib.I depthTestAttrib.h \
+    depthWriteAttrib.I depthWriteAttrib.h \
+    drawCullHandler.I drawCullHandler.h \
+    qpfog.I qpfog.h \
+    fogAttrib.I fogAttrib.h \
+    qpgeomNode.I qpgeomNode.h \
+    qplensNode.I qplensNode.h \
+    qplodNode.I qplodNode.h \
+    materialAttrib.I materialAttrib.h \
+    qpnodePath.I qpnodePath.h \
+    qpnodePathCollection.I qpnodePathCollection.h \
+    qpnodePathComponent.I qpnodePathComponent.h \
+    pandaNode.I pandaNode.h \
+    renderAttrib.I renderAttrib.h \
+    renderEffect.I renderEffect.h \
+    renderEffects.I renderEffects.h \
+    renderModeAttrib.I renderModeAttrib.h \
+    renderState.I renderState.h \
+    selectiveChildNode.I selectiveChildNode.h \
+    qpsequenceNode.I qpsequenceNode.h \
+    texMatrixAttrib.I texMatrixAttrib.h \
+    textureApplyAttrib.I textureApplyAttrib.h \
+    textureAttrib.I textureAttrib.h \
+    transformState.I transformState.h \
+    transparencyAttrib.I transparencyAttrib.h
 
 // No need to install these.
 //    qpfindApproxLevel.I qpfindApproxLevel.h \

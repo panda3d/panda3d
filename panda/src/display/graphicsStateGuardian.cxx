@@ -22,6 +22,7 @@
 #include "textureContext.h"
 #include "renderBuffer.h"
 #include "colorAttrib.h"
+#include "colorScaleAttrib.h"
 #include "renderState.h"
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"
@@ -1016,6 +1017,39 @@ get_internal_coordinate_system() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 issue_transform(const TransformState *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_color_scale
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_color_scale(const ColorScaleAttrib *attrib) {
+  const LVecBase4f &scale = attrib->get_scale();
+
+  // For now, we set a full-featured matrix, even though we only use
+  // the scale part of it.  Soon we will strip this down.
+  LVecBase3f color_scale(scale[0], scale[1], scale[2]);
+  float alpha_scale = scale[3];
+
+  _current_color_mat = LMatrix4f::scale_mat(color_scale);
+  _current_alpha_offset= 0.0f;
+  _current_alpha_scale = alpha_scale;
+
+  if (color_scale == LVecBase3f(1.0f, 1.0f, 1.0f)) {
+    _color_transform_enabled = false;
+  } else {
+    _color_transform_enabled = true;
+  }
+
+  if (_current_alpha_scale == 1.0f) {
+    _alpha_transform_enabled = false;
+  } else {
+    _alpha_transform_enabled = true;
+  }
+
+  _issued_color_stale = _has_scene_graph_color;
 }
 
 ////////////////////////////////////////////////////////////////////

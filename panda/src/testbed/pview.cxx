@@ -61,9 +61,14 @@ static const int win_height = config_pview.GetInt("win-height", 480);
 // As long as this is true, the main loop will continue running.
 bool run_flag = true;
 
+// These are referenced in both event_w() and in event_b().
+bool wireframe = false;
+bool two_sided = false;
+
+
 // These are used by report_frame_rate().
-static double start_time = 0.0;
-static int start_frame_count = 0;
+double start_time = 0.0;
+int start_frame_count = 0;
 
 // A priority number high enough to override any model file settings.
 static const int override_priority = 100;
@@ -286,21 +291,38 @@ event_t(CPT_Event) {
 void
 event_w(CPT_Event) {
   // 'w' : toggle wireframe.
-  static bool wireframe = false;
-
   wireframe = !wireframe;
   if (wireframe) {
     nout << "Setting wireframe mode.\n";
     render.set_render_mode_wireframe(override_priority);
+    render.set_two_sided(true, override_priority);
   } else {
     nout << "Clearing wireframe mode.\n";
     render.clear_render_mode();
+    if (!two_sided) {
+      render.clear_two_sided();
+    }
+  }
+}
+
+void
+event_b(CPT_Event) {
+  // 'b' : toggle backfacing.
+  two_sided = !two_sided;
+  if (two_sided) {
+    nout << "Showing back-facing polygons.\n";
+    render.set_two_sided(true, override_priority);
+  } else {
+    nout << "Hiding back-facing polygons.\n";
+    if (!wireframe) {
+      render.clear_two_sided();
+    }
   }
 }
 
 void
 event_s(CPT_Event) {
-  // 's' : toggle state sorting by putting everything into an 'unsorted' bin.
+  // 's' : toggle state sorting by putting everything into the 'unsorted' bin.
   static bool sorting_off = false;
 
   sorting_off = !sorting_off;
@@ -356,10 +378,6 @@ main(int argc, char *argv[]) {
   render.attach_new_node(camera);
   camera->set_scene(render);
 
-  // We will take advantage of this bin if the user toggles state
-  // sorting, above, in event_s().
-  CullBinManager::get_global_ptr()->add_bin("unsorted", CullBinManager::BT_unsorted, 0);
-
   // Set up a data graph for tracking user input.
   PT(PandaNode) data_root = new PandaNode("data_root");
   PandaNode *mouse = setup_mouse(data_root, window);
@@ -373,6 +391,7 @@ main(int argc, char *argv[]) {
   event_handler.add_hook("f", event_f);
   event_handler.add_hook("t", event_t);
   event_handler.add_hook("w", event_w);
+  event_handler.add_hook("b", event_b);
   event_handler.add_hook("s", event_s);
   event_handler.add_hook("shift-s", event_S);
   event_handler.add_hook("shift-a", event_A);

@@ -36,7 +36,7 @@ class qpFindApproxLevel;
 class qpFindApproxPath;
 class Texture;
 class Material;
-class Fog;
+class qpFog;
 
 //
 // A NodePath is the fundamental unit of high-level interaction with
@@ -275,14 +275,14 @@ PUBLISHED:
   INLINE bool has_color_scale() const;
   INLINE void clear_color_scale();
 
-  void set_color_scale(const LVecBase4f &sv4);
+  void set_color_scale(const LVecBase4f &scale);
   INLINE void set_color_scale(float sx, float sy, float sz, float sa);
   INLINE void set_sr(float sr);
   INLINE void set_sg(float sg);
   INLINE void set_sb(float sb);
   INLINE void set_sa(float sa);
 
-  LVecBase4f get_color_scale() const;
+  const LVecBase4f &get_color_scale() const;
   INLINE float get_sr() const;
   INLINE float get_sg() const;
   INLINE float get_sb() const;
@@ -413,12 +413,12 @@ PUBLISHED:
   bool has_material() const;
   PT(Material) get_material() const;
 
-  void set_fog(Fog *fog, int priority = 0);
+  void set_fog(qpFog *fog, int priority = 0);
   void set_fog_off(int priority = 0);
   void clear_fog();
   bool has_fog() const;
   bool has_fog_off() const;
-  Fog *get_fog() const;
+  qpFog *get_fog() const;
 
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
