@@ -72,6 +72,9 @@ public:
   INLINE int height_to_pixel(float value) const;
   INLINE float pixel_to_height(int y) const;
 
+  string get_title_text();
+  bool is_title_unknown() const;
+
 protected:
   class ColorData {
   public:
@@ -117,6 +120,7 @@ private:
   float _time_width;
   float _start_time;
   float _value_height;
+  bool _title_unknown;
 };
 
 #include "pStatStripChart.I"

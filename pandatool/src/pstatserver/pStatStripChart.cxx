@@ -50,6 +50,7 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
   _start_time = 0.0;
 
   _level_index = 0;
+  _title_unknown = true;
 
   const PStatClientData *client_data = _monitor->get_client_data();
   if (client_data->has_collector(_collector_index)) {
@@ -235,6 +236,59 @@ get_collector_under_pixel(int xpoint, int ypoint) {
 
   return -1;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::get_title_text
+//       Access: Private
+//  Description: Returns the text suitable for the title label on the
+//               top line.
+////////////////////////////////////////////////////////////////////
+string PStatStripChart::
+get_title_text() {
+  string text;
+
+  _title_unknown = false;
+  bool _show_level = false;
+  int _thread_index = 0;
+
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data->has_collector(_collector_index)) {
+    const PStatCollectorDef &def = client_data->get_collector_def(_collector_index);
+    if (_show_level) {
+      if (def._level_units.empty()) {
+        text = def._name;
+      } else {
+        text = def._name + " (" + def._level_units + ")";
+      }
+    } else {
+      text = def._name + " time";
+    }
+  } else {
+    _title_unknown = true;
+  }
+
+  if (_thread_index != 0) {
+    if (client_data->has_thread(_thread_index)) {
+      text += "(" + client_data->get_thread_name(_thread_index) + " thread)";
+    } else {
+      _title_unknown = true;
+    }
+  }
+
+  return text;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::is_title_unknown
+//       Access: Public
+//  Description: Returns true if get_title_text() has never yet
+//               returned an answer, false if it has.
+////////////////////////////////////////////////////////////////////
+bool PStatStripChart::
+is_title_unknown() const {
+  return _title_unknown;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatStripChart::get_frame_data
