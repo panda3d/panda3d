@@ -41,7 +41,8 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             if parent and isinstance(parent, NodePath):
                 if self.getParent() != parent:
                     print "generate: reparenting %s to %s" % (self, parent)
-                    self.wrtReparentTo(parent)
+                    # Comment out for now - JAY
+                    # self.wrtReparentTo(parent)
             
 
     def __cmp__(self, other):
@@ -162,4 +163,3 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
     # setPosHpr provided by NodePath
     def d_setPosHpr(self, x, y, z, h, p, r):
         self.sendUpdate("setPosHpr", [x, y, z, h, p, r])
-
