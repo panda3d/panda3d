@@ -6163,9 +6163,9 @@ CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/S
 if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
     ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
     if (sys.platform=="win32"):
-        oscmd(PREFIX+"/bin/genpycode.exe -s")
+        oscmd(PREFIX+"/bin/genpycode.exe")
     else:
-        oscmd(PREFIX+"/bin/genpycode -s")
+        oscmd(PREFIX+"/bin/genpycode")
     updatefiledate(PREFIX+'/pandac/PandaModules.pyz')
 
 ########################################################################
