@@ -205,6 +205,8 @@ class ShowBase(DirectObject.DirectObject):
         fDirect = (self.config.GetBool('want-directtools', 0) or
                    (base.config.GetString("cluster-mode", '') != ''))
         self.startDirect(fDirect)
+        # Start IGLOOP
+        self.restart()
 
     def exitfunc(self):
         """exitfunc(self)
