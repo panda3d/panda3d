@@ -5,6 +5,7 @@ from LoggerGlobal import *
 import time
 
 class Notifier:
+    serverDelta = 0
 
     def __init__(self, name, logger=None):
         """__init__(self, string, Logger=None)
@@ -24,6 +25,26 @@ class Notifier:
         self.__debug = 0
         self.__logging = 0
 
+    def setServerDelta(self, delta, timezone):
+        """
+        Call this method on any Notify object to globally change the
+        timestamp printed for each line of all Notify objects.
+
+        This synchronizes the timestamp with the server's known time
+        of day, and also switches into the server's timezone.
+        """
+        delta = int(round(delta))
+        Notifier.serverDelta = delta + timezone - time.timezone
+
+        import NotifyCategory
+        # Temporary try .. except for old Panda.
+        try:
+            NotifyCategory.NotifyCategory.setServerDelta(self.serverDelta)
+        except:
+            pass
+            
+        self.info("Notify clock adjusted by %s seconds (and timezone adjusted by %s hours) to synchronize with server." % (delta, (timezone - time.timezone) / 3600))
+
     def getTime(self):
         """
         Return the time as a string suitable for printing at the
@@ -32,7 +53,7 @@ class Notifier:
 
         # for some strange reason, time.time() updates only once/minute if
         # the task is out of focus on win32.  time.clock doesnt have this prob
-        return time.strftime(":%m-%d-%Y %H:%M:%S ", time.localtime(time.time()))
+        return time.strftime(":%m-%d-%Y %H:%M:%S ", time.localtime(time.time() + self.serverDelta))
 
     def __str__(self):
         """__str__(self)
