@@ -147,7 +147,7 @@
   #define SOURCES \
     deadrec_rec.cxx
 
-  #define LOCAL_LIBS $[LOCAL_LIBS] net
+  #define LOCAL_LIBS $[LOCAL_LIBS] net gui
 #end test_bin_target
 
 #begin test_bin_target
@@ -156,5 +156,5 @@
   #define SOURCES \
     deadrec_send.cxx
 
-  #define LOCAL_LIBS $[LOCAL_LIBS] net lerp
+  #define LOCAL_LIBS $[LOCAL_LIBS] net lerp gui
 #end test_bin_target
