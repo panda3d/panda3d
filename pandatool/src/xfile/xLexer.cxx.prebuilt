@@ -1342,7 +1342,7 @@ YY_RULE_SETUP
   // An integer as part of a semicolon-delimited list.
   accept();
   xyylval.int_list = parse_int_list(xyytext, ";");
-  xyylval.u.separator_token = TOKEN_SEMICOLON;
+  xyylval.u.separator = ';';
 
   return TOKEN_INTEGER_LIST;
 }
@@ -1354,7 +1354,7 @@ YY_RULE_SETUP
   // A floating-point number as part of a semicolon-delimited list.
   accept(); 
   xyylval.double_list = parse_double_list(xyytext, ";");
-  xyylval.u.separator_token = TOKEN_SEMICOLON;
+  xyylval.u.separator = ';';
 
   return TOKEN_REALNUM_LIST;
 }
@@ -1366,7 +1366,7 @@ YY_RULE_SETUP
   // An integer as part of a semicolon-delimited list.
   accept();
   xyylval.int_list = parse_int_list(xyytext, ",");
-  xyylval.u.separator_token = TOKEN_COMMA;
+  xyylval.u.separator = ',';
 
   return TOKEN_INTEGER_LIST;
 }
@@ -1378,7 +1378,7 @@ YY_RULE_SETUP
   // A floating-point number as part of a semicolon-delimited list.
   accept(); 
   xyylval.double_list = parse_double_list(xyytext, ",");
-  xyylval.u.separator_token = TOKEN_COMMA;
+  xyylval.u.separator = ',';
 
   return TOKEN_REALNUM_LIST;
 }
