@@ -1,4 +1,6 @@
 from PandaObject import *
+from ParticleManagerGlobal import *
+from PhysicsManagerGlobal import *
 
 import ParticleSystem
 import BaseParticleFactory
@@ -29,15 +31,26 @@ SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE = 1
 
 class Particles(ParticleSystem.ParticleSystem):
 
-    def __init__(self, name, poolSize = 1024):
-	"""__init__(self)"""
+    particleNum = 1
 
-	self.name = name
+    def __init__(self, name = None, poolSize = 1024):
+	"""__init__(self, name, poolSize)"""
+
+	if (name == None):
+	    self.name = 'particles-%d' % particleNum
+	    particleNum = particleNum + 1
+	else:
+	    self.name = name
 	ParticleSystem.ParticleSystem.__init__(self, poolSize)
 	self.setBirthRate(0.02)
 	self.setLitterSize(10)
 	self.setLitterSpread(0)
-	self.setRenderParent(render.node())
+
+	# Set up a physical node
+	self.node = PhysicalNode.PhysicalNode(self.name)
+	self.nodePath = hidden.attachNewNode(self.node)
+	self.setRenderParent(self.node)
+	self.node.addPhysical(self)
 
 	self.factory = None 
 	self.factoryType = "undefined"
@@ -48,6 +61,16 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.emitter = None 
 	self.emitterType = "undefined"
 	self.setEmitter("SphereVolumeEmitter")
+
+    def enable(self):
+	"""enable(self)"""
+	physicsMgr.attachPhysical(self.node)
+	particleMgr.attachParticlesystem(self)
+
+    def disable(self):
+	"""disable(self)"""
+	physicsMgr.removePhysical(self.node)
+	particleMgr.removeParticlesystem(self)
 
     def setFactory(self, type):
 	"""setFactory(self, type)"""
@@ -170,6 +193,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	    targ = 'p'
 	    file.write('from Particles import *\n')
 	    file.write('p = Particles(\'' + self.name + '\')\n')
+	    file.write('self.enable()\n')
 	file.write('# Particles parameters\n')
 	file.write(targ + '.setFactory(\"' + self.factoryType + '\")\n')
 	file.write(targ + '.setRenderer(\"' + self.rendererType + '\")\n')

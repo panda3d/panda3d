@@ -7,11 +7,15 @@ from EventManagerGlobal import *
 from PythonUtil import *
 from ParticleManagerGlobal import *
 from PhysicsManagerGlobal import *
+
 import Task
 import EventManager
 import math
 import sys
 import LinearEulerIntegrator
+import ClockObject
+
+globalClock = ClockObject.ClockObject.getGlobalClock()
 
 class ShowBase:
 
@@ -106,17 +110,40 @@ class ShowBase:
 
         self.taskMgr = taskMgr
 
+	# Particle manager
 	self.particleMgr = particleMgr
 	self.particleMgr.setFrameStepping(1)
+	self.particleMgrEnabled = 0 
+
+	# Physics manager
 	self.physicsMgr = physicsMgr
 	self.integrator = LinearEulerIntegrator.LinearEulerIntegrator()
 	self.physicsMgr.attachLinearIntegrator(self.integrator)
+	self.physicsMgrEnabled = 0
+
+	# Spawn the update managers task
+	self.taskMgr.spawnTaskNamed(Task.Task(self.__updateManagers),
+					'manager-update')
 
         self.createAudioManager()
         self.createRootPanel()
         self.createStats()
 
         self.restart()
+
+    def enableParticles(self, flag = 1):
+	"""enableParticles(self, flag)"""
+	self.particleMgrEnabled = flag
+	self.physicsMgrEnabled = flag
+
+    def __updateManagers(self, state):
+	"""__updateManagers(self)"""
+	dt = min(globalClock.getDt(), 0.1)
+	if (self.particleMgrEnabled == 1):
+	    self.particleMgr.doParticles(dt)
+	if (self.physicsMgrEnabled == 1):
+	    self.physicsMgr.doPhysics(dt)	
+	return Task.cont
 
     def createStats(self):
         # You must specify a pstats-host in your configrc

@@ -675,9 +675,9 @@ class ParticlePanel(AppShell):
         self.getWidget('System', 'Litter Spread').set(litterSpread, 0)
         systemLifespan = self.particles.getSystemLifespan()
         self.getWidget('System', 'Lifespan').set(systemLifespan, 0)
-        pos = self.particleEffect.physicalNodePath.getPos()
+        pos = self.particles.nodePath.getPos()
         self.getWidget('System', 'Pos').set([pos[0], pos[1], pos[2]], 0)
-        hpr = self.particleEffect.physicalNodePath.getHpr()
+        hpr = self.particles.nodePath.getHpr()
         self.getWidget('System', 'Hpr').set([hpr[0], hpr[1], hpr[2]], 0)
         self.systemLocalVelocity.set(self.particles.getLocalVelocityFlag())
         self.systemGrowsOlder.set(self.particles.getSystemGrowsOlderFlag())
@@ -696,9 +696,9 @@ class ParticlePanel(AppShell):
     def toggleSystemGrowsOlder(self):
 	self.particles.setSystemGrowsOlderFlag(self.systemGrowsOlder.get())
     def setSystemPos(self, pos):
-	self.particleEffect.physicalNodePath.setPos(Vec3(pos[0], pos[1], pos[2]))
+	self.particles.nodePath.setPos(Vec3(pos[0], pos[1], pos[2]))
     def setSystemHpr(self, pos):
-	self.particleEffect.physicalNodePath.setHpr(Vec3(pos[0], pos[1], pos[2]))
+	self.particles.nodePath.setHpr(Vec3(pos[0], pos[1], pos[2]))
 
     ## FACTORY PAGE ##
     def selectFactoryType(self, type):
