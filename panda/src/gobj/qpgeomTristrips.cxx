@@ -113,6 +113,8 @@ decompose_impl() {
     }
   }
 
+  triangles->write(cerr, 0);
+
   return triangles.p();
 }
 

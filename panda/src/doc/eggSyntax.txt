@@ -10,9 +10,9 @@ for Panda tools.  A number of utilities are provided that read and
 write egg files, for instance to convert to or from some other
 modeling format, or to apply a transform or optimize vertices.  The
 egg file philosophy is to describe objects in an abstract way that
-facilitates easy manipulation; thus, the format doesn't include
-information such as polygon connectivity or triangle meshes.  Egg
-files are furthermore designed to be human-readable to help a
+facilitates easy manipulation; thus, the format doesn't (usually)
+include information such as polygon connectivity or triangle meshes.
+Egg files are furthermore designed to be human-readable to help a
 developer diagnose (and sometimes repair) problems.  Also, the egg
 syntax is always intended to be backward compatible with previous
 versions, so that as the egg syntax is extended, old egg files will
@@ -715,6 +715,59 @@ GEOMETRY ENTRIES
   closed; if you wish to represent a loop, you must repeat vertex 0 at
   the end.  As with a PointLight, normals, textures, colors,
   draw_order, and the "thick" attribute are all valid.
+
+
+<TriangleStrip> name { 
+    [attributes] 
+    <VertexRef> { 
+        indices 
+        <Ref> { pool-name } 
+    }
+    [component attributes]
+}
+
+  A triangle strip is only rarely encountered in an egg file; it is
+  normally generated automatically only during load time, when
+  connected triangles are automatically meshed for loading, and even
+  then it exists only momentarily.  Since a triangle strip is a
+  rendering optimization only and adds no useful scene information
+  over a loose collection of triangles, its usage is contrary to the
+  general egg philosophy of representing a scene in the abstract.
+  Nevertheless, the syntax exists, primarily to allow inspection of
+  the meshing results when needed.  You can also add custom
+  TriangleStrip entries to force a particular mesh arrangement.
+
+  A triangle strip is defined as a series of connected triangles.
+  After the first three vertices, which define the first triangle,
+  each new vertex defines one additional triangle, by alternating up
+  and down.
+
+  It is possible for the individual triangles of a triangle strip to
+  have a separate normal and/or color.  If so, a <Component> entry
+  should be given for each so-modified triangle:
+  
+  <Component> index {
+    <RGBA> { r g b a [morph-list] }
+    <Normal> { x y z [morph-list] }
+  }
+
+  Where index ranges from 0 to the number of components defined by the
+  triangle strip (less 1).  Note that the component attribute list
+  must always follow the vertex list.
+
+
+<TriangleFan> name { 
+    [attributes] 
+    <VertexRef> { 
+        indices 
+        <Ref> { pool-name } 
+    }
+    [component attributes]
+}
+
+  A triangle fan is similar to a triangle strip, except all of the
+  connected triangles share the same vertex, which is the first
+  vertex.  See <TriangleStrip>, above.
 
 
 

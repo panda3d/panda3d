@@ -196,7 +196,7 @@ write(ostream &out, int indent_level) const {
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    (*pi)->write(out, cdata->_data, indent_level);
+    (*pi)->write(out, indent_level);
   }
 }
 

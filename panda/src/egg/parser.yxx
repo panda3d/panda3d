@@ -15,6 +15,8 @@
 #include "eggVertexPool.h"
 #include "eggVertexUV.h"
 #include "eggPolygon.h"
+#include "eggCompositePrimitive.h"
+#include "eggTriangleStrip.h"
 #include "eggPoint.h"
 #include "eggLine.h"
 #include "eggNurbsSurface.h"
@@ -144,7 +146,7 @@ egg_cleanup_parser() {
 %token <_string> STRING
 
 %token BEZIERCURVE BFACE BILLBOARD BILLBOARDCENTER BUNDLE CLOSED
-%token COLLIDE COMMENT
+%token COLLIDE COMMENT COMPONENT
 %token COORDSYSTEM CV DART
 %token DNORMAL DRGBA DUV DXYZ DCS DISTANCE DTREF
 %token DYNAMICVERTEXPOOL EXTERNAL_FILE
@@ -155,7 +157,8 @@ egg_cleanup_parser() {
 %token OUTTANGENT POINTLIGHT POLYGON REF RGBA ROTATE ROTX ROTY ROTZ
 %token SANIM SCALAR SCALE SEQUENCE SHADING SWITCH SWITCHCONDITION
 %token TABLE TABLE_V TAG TEXLIST TEXTURE TLENGTHS TRANSFORM TRANSLATE
-%token TREF TRIM TXT UKNOTS UV VKNOTS VERTEX VERTEXANIM
+%token TREF TRIANGLEFAN TRIANGLESTRIP 
+%token TRIM TXT UKNOTS UV VKNOTS VERTEX VERTEXANIM
 %token VERTEXPOOL VERTEXREF
 %token XFMANIM XFMSANIM
 
@@ -179,6 +182,7 @@ egg_cleanup_parser() {
 %type <_egg> joint
 %type <_egg> line
 %type <_egg> polygon
+%type <_egg> trianglestrip
 %type <_egg> point_light
 %type <_egg> nurbs_surface
 %type <_egg> nurbs_curve
@@ -247,6 +251,7 @@ node:
         | joint 
         | instance
         | polygon
+        | trianglestrip
         | point_light
         | line
         | nurbs_surface
@@ -1591,6 +1596,25 @@ polygon:
         ;
 
 /*
+ * trianglestrip
+ *
+ * enter:
+ * exit: returns a new EggTriangleStrip.
+ *
+ */
+trianglestrip:
+        TRIANGLESTRIP optional_name
+{
+  egg_stack.push_back(new EggTriangleStrip($2));
+}
+        '{' primitive_body '}'
+{
+  $$ = egg_stack.back();
+  egg_stack.pop_back();
+}
+        ;
+
+/*
  * point_light
  *
  * enter:
@@ -1668,6 +1692,19 @@ nurbs_curve:
 
 
 /*
+ * primitive_component_body
+ *
+ * enter: TOS is EggPrimitive.
+ * exit: primitive attributes and vertices have been filled.
+ *
+ */
+primitive_component_body:
+        empty
+        | primitive_component_body NORMAL '{' primitive_normal_body '}'
+        | primitive_component_body RGBA '{' primitive_color_body '}'
+        ;
+
+/*
  * primitive_body
  *
  * enter: TOS is EggPrimitive.
@@ -1676,6 +1713,28 @@ nurbs_curve:
  */
 primitive_body:
         empty
+        | primitive_body COMPONENT '{' primitive_component_body '}'
+        | primitive_body COMPONENT integer '{' 
+{
+  if (!egg_stack.back()->is_of_type(EggCompositePrimitive::get_class_type())) {
+    eggyyerror("Not a composite primitive; components are not allowed here.");
+  } else {
+    PT(EggCompositePrimitive) comp = DCAST(EggCompositePrimitive, egg_stack.back());
+    if ($3 < 0 || $3 >= comp->get_num_components()) {
+      eggyyerror("Invalid component number");
+    }
+    // We temporarily add an EggPolygon to the stack, just to receive
+    // the component attributes.
+    egg_stack.push_back(new EggPolygon);
+  }
+}
+ 	primitive_component_body '}'
+{
+  PT(EggPrimitive) prim = DCAST(EggPrimitive, egg_stack.back());
+  egg_stack.pop_back();
+  PT(EggCompositePrimitive) comp = DCAST(EggCompositePrimitive, egg_stack.back());
+  comp->set_component($3, prim);
+}
         | primitive_body TREF '{' primitive_tref_body '}'
         | primitive_body TEXTURE '{' primitive_texture_body '}'
         | primitive_body MREF '{' primitive_material_body '}'

@@ -17,10 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPolygon::
@@ -29,7 +28,7 @@ EggPolygon(const string &name) : EggPrimitive(name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::Copy constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPolygon::
@@ -38,7 +37,7 @@ EggPolygon(const EggPolygon &copy) : EggPrimitive(copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::Copy assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPolygon &EggPolygon::
@@ -49,7 +48,7 @@ operator = (const EggPolygon &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::recompute_polygon_normal
-//       Access: Public
+//       Access: Published
 //  Description: Recalculates the normal according to the order of the
 //               vertices, and sets it.  Returns true if the normal is
 //               computed correctly, or false if the polygon is
@@ -68,7 +67,7 @@ recompute_polygon_normal(CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPolygon::triangulate_into
-//       Access: Public
+//       Access: Published
 //  Description: Subdivides the polygon into triangles and adds each
 //               one to the indicated container.  If the polygon is
 //               already a triangle, adds an exact copy of the polygon

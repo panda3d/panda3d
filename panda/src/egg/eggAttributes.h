@@ -56,7 +56,8 @@ PUBLISHED:
   INLINE void clear_color();
 
   void write(ostream &out, int indent_level) const;
-  bool sorts_less_than(const EggAttributes &other) const;
+  INLINE bool sorts_less_than(const EggAttributes &other) const;
+  int compare_to(const EggAttributes &other) const;
 
   void transform(const LMatrix4d &mat);
 

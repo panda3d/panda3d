@@ -23,6 +23,7 @@
 #include "eggBin.h"
 #include "eggBinMaker.h"
 #include "eggComment.h"
+#include "eggCompositePrimitive.h"
 #include "eggCoordinateSystem.h"
 #include "eggCurve.h"
 #include "eggExternalReference.h"
@@ -46,6 +47,7 @@
 #include "eggSwitchCondition.h"
 #include "eggTable.h"
 #include "eggTexture.h"
+#include "eggTriangleStrip.h"
 #include "eggUserData.h"
 #include "eggVertex.h"
 #include "eggVertexPool.h"
@@ -64,13 +66,36 @@ ConfigureFn(config_egg) {
 
 ConfigVariableSearchPath egg_path
 ("egg-path", 
- "The search path along which only egg files are searched.  Generally, you "
- "should use model-path instead of egg-path.");
+ PRC_DESC("The search path along which only egg files are searched.  Generally, you "
+          "should use model-path instead of egg-path."));
 
 ConfigVariableBool egg_support_old_anims
 ("egg-support-old-anims", true,
- "Set this true to support loading of old character animation files, which "
- "had the convention that the order \"phr\" implied a reversed roll.");
+ PRC_DESC("Set this true to support loading of old character animation files, which "
+          "had the convention that the order \"phr\" implied a reversed roll."));
+
+ConfigVariableBool egg_mesh
+("egg-mesh", true);
+ConfigVariableBool egg_retesselate_coplanar
+("egg-retesselate-coplanar", true);
+ConfigVariableBool egg_unroll_fans
+("egg-unroll-fans", true);
+ConfigVariableBool egg_show_tstrips
+("egg-show-tstrips", false);
+ConfigVariableBool egg_show_qsheets
+("egg-show-qsheets", false);
+ConfigVariableBool egg_show_quads
+("egg-show-quads", false);
+ConfigVariableBool egg_subdivide_polys
+("egg-subdivide-polys", true);
+ConfigVariableBool egg_consider_fans
+("egg-consider-fans", true);
+ConfigVariableDouble egg_max_tfan_angle
+("egg-max-tfan-angle", 40.0);
+ConfigVariableInt egg_min_tfan_tris
+("egg-min-tfan-tris", 4);
+ConfigVariableDouble egg_coplanar_threshold
+("egg-coplanar-threshold", 0.01);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libegg
@@ -94,6 +119,7 @@ init_libegg() {
   EggBin::init_type();
   EggBinMaker::init_type();
   EggComment::init_type();
+  EggCompositePrimitive::init_type();
   EggCoordinateSystem::init_type();
   EggCurve::init_type();
   EggData::init_type();
@@ -119,6 +145,7 @@ init_libegg() {
   EggSwitchConditionDistance::init_type();
   EggTable::init_type();
   EggTexture::init_type();
+  EggTriangleStrip::init_type();
   EggUserData::init_type();
   EggVertex::init_type();
   EggVertexPool::init_type();

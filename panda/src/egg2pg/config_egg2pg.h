@@ -33,20 +33,8 @@
 ConfigureDecl(config_egg2pg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 NotifyCategoryDecl(egg2pg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 
-extern EXPCL_PANDAEGG ConfigVariableBool egg_mesh;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_retesselate_coplanar;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_unroll_fans;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_show_tstrips;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_show_qsheets;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_show_quads;
-#define egg_false_color (egg_show_tstrips | egg_show_qsheets | egg_show_quads)
-extern EXPCL_PANDAEGG ConfigVariableBool egg_show_normals;
 extern EXPCL_PANDAEGG ConfigVariableDouble egg_normal_scale;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_subdivide_polys;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_consider_fans;
-extern EXPCL_PANDAEGG ConfigVariableDouble egg_max_tfan_angle;
-extern EXPCL_PANDAEGG ConfigVariableInt egg_min_tfan_tris;
-extern EXPCL_PANDAEGG ConfigVariableDouble egg_coplanar_threshold;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_show_normals;
 extern EXPCL_PANDAEGG ConfigVariableEnum<CoordinateSystem> egg_coordinate_system;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_mipmaps;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_filters;

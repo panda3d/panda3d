@@ -412,7 +412,7 @@ decompose() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
-output(ostream &out, const qpGeomVertexData *vertex_data) const {
+output(ostream &out) const {
   out << get_type() << ", " << get_num_primitives()
       << ", " << get_num_vertices();
 }
@@ -423,8 +423,7 @@ output(ostream &out, const qpGeomVertexData *vertex_data) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
-write(ostream &out, const qpGeomVertexData *vertex_data,
-      int indent_level) const {
+write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_type() << ":\n";
   int num_primitives = get_num_primitives();

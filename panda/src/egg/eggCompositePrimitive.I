@@ -1,5 +1,5 @@
-// Filename: eggAttributes.I
-// Created by:  drose (16Jan99)
+// Filename: eggCompositePrimitive.I
+// Created by:  drose (13Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,101 +18,89 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::has_normal
+//     Function: EggCompositePrimitive::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool EggAttributes::
-has_normal() const {
-  return (_flags & F_has_normal) != 0;
+INLINE EggCompositePrimitive::
+EggCompositePrimitive(const string &name) : EggPrimitive(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::get_normal
+//     Function: EggCompositePrimitive::Copy constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const Normald &EggAttributes::
-get_normal() const {
-  nassertr(has_normal(), _normal);
-  return _normal;
+INLINE EggCompositePrimitive::
+EggCompositePrimitive(const EggCompositePrimitive &copy) : EggPrimitive(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::set_normal
+//     Function: EggCompositePrimitive::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void EggAttributes::
-set_normal(const Normald &normal) {
-  _normal = normal;
-  _flags |= F_has_normal;
+INLINE EggCompositePrimitive::
+~EggCompositePrimitive() {
+  clear();
+  nassertv(_components.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::clear_normal
+//     Function: EggCompositePrimitive::Copy assignment operator
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void EggAttributes::
-clear_normal() {
-  _flags &= ~F_has_normal;
+INLINE EggCompositePrimitive &EggCompositePrimitive::
+operator = (const EggCompositePrimitive &copy) {
+  EggPrimitive::operator = (copy);
+  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::has_color
+//     Function: EggCompositePrimitive::get_num_components
 //       Access: Published
-//  Description:
+//  Description: Returns the number of individual component triangles
+//               within the composite.  Each one of these might have a
+//               different set of attributes.
 ////////////////////////////////////////////////////////////////////
-INLINE bool EggAttributes::
-has_color() const {
-  return (_flags & F_has_color) != 0;
+INLINE int EggCompositePrimitive::
+get_num_components() const {
+  return _components.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::get_color
+//     Function: EggCompositePrimitive::get_component
 //       Access: Published
-//  Description: Returns the color set on this particular attribute.
-//               If there is no color set, returns white.
+//  Description: Returns the attributes for the nth component
+//               triangle.
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf EggAttributes::
-get_color() const {
-  if (has_color()) {
-    return _color;
-  } else {
-    return Colorf(1.0, 1.0, 1.0, 1.0);
-  }
+INLINE const EggAttributes *EggCompositePrimitive::
+get_component(int i) const {
+  nassertr(i >= 0 && i < (int)_components.size(), NULL);
+  return _components[i];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::
+//     Function: EggCompositePrimitive::get_component
 //       Access: Published
-//  Description:
+//  Description: Returns the attributes for the nth component
+//               triangle.
 ////////////////////////////////////////////////////////////////////
-INLINE void EggAttributes::
-set_color(const Colorf &color) {
-  _color = color;
-  _flags |= F_has_color;
+INLINE EggAttributes *EggCompositePrimitive::
+get_component(int i) {
+  nassertr(i >= 0 && i < (int)_components.size(), NULL);
+  return _components[i];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::
+//     Function: EggCompositePrimitive::set_component
 //       Access: Published
-//  Description:
+//  Description: Changes the attributes for the nth component
+//               triangle.
 ////////////////////////////////////////////////////////////////////
-INLINE void EggAttributes::
-clear_color() {
-  _flags &= ~F_has_color;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::sorts_less_than
-//       Access: Published
-//  Description: An ordering operator to compare two vertices for
-//               sorting order.  This imposes an arbitrary ordering
-//               useful to identify unique vertices.
-////////////////////////////////////////////////////////////////////
-INLINE bool EggAttributes::
-sorts_less_than(const EggAttributes &other) const {
-  return compare_to(other) < 0;
+INLINE void EggCompositePrimitive::
+set_component(int i, const EggAttributes *attrib) {
+  nassertv(i >= 0 && i < (int)_components.size());
+  _components[i] = new EggAttributes(*attrib);
 }

@@ -40,6 +40,7 @@ public:
   bool _collapse_equivalent_textures;
   bool _remove_invalid_primitives;
   bool _triangulate_polygons;
+  bool _mesh_triangles;
   bool _standardize_names;
 };
 

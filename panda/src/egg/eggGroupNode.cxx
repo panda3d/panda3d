@@ -23,6 +23,8 @@
 #include "eggExternalReference.h"
 #include "eggPrimitive.h"
 #include "eggPolygon.h"
+#include "eggCompositePrimitive.h"
+#include "eggMesher.h"
 #include "eggVertexPool.h"
 #include "eggVertex.h"
 #include "eggTextureCollection.h"
@@ -699,13 +701,13 @@ strip_normals() {
 //               the total number of new triangles produced, less
 //               degenerate polygons removed.
 //
-//               If convex_also is true, both concave and convex
+//               If flags contains T_convex, both concave and convex
 //               polygons will be subdivided into triangles;
 //               otherwise, only concave polygons will be subdivided,
 //               and convex polygons will be largely unchanged.
 ////////////////////////////////////////////////////////////////////
 int EggGroupNode::
-triangulate_polygons(bool convex_also) {
+triangulate_polygons(int flags) {
   int num_produced = 0;
 
   Children children_copy = _children;
@@ -718,10 +720,16 @@ triangulate_polygons(bool convex_also) {
 
     if (child->is_of_type(EggPolygon::get_class_type())) {
       EggPolygon *poly = DCAST(EggPolygon, child);
-      poly->triangulate_in_place(convex_also);
+      poly->triangulate_in_place((flags & T_convex) != 0);
+
+    } else if (child->is_of_type(EggCompositePrimitive::get_class_type())) {
+      EggCompositePrimitive *comp = DCAST(EggCompositePrimitive, child);
+      comp->triangulate_in_place();
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      num_produced += DCAST(EggGroupNode, child)->triangulate_polygons(convex_also);
+      if (flags & T_recurse) {
+        num_produced += DCAST(EggGroupNode, child)->triangulate_polygons(flags);
+      }
     }
   }
 
@@ -729,6 +737,27 @@ triangulate_polygons(bool convex_also) {
   return num_produced;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::mesh_triangles
+//       Access: Published
+//  Description: Combine triangles together into triangle strips, at
+//               this group and below.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+mesh_triangles(int flags) {
+  EggMesher mesher;
+  mesher.mesh(this);
+
+  if (flags & T_recurse) {
+    EggGroupNode::iterator ci;
+    for (ci = begin(); ci != end(); ++ci) {
+      if ((*ci)->is_of_type(EggGroupNode::get_class_type())) {
+        EggGroupNode *group_child = DCAST(EggGroupNode, *ci);
+        group_child->mesh_triangles(flags);
+      }
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::remove_unused_vertices

@@ -91,9 +91,8 @@ PUBLISHED:
 
   PT(qpGeomPrimitive) decompose();
 
-  virtual void output(ostream &out, const qpGeomVertexData *vertex_data) const;
-  virtual void write(ostream &out, const qpGeomVertexData *vertex_data, 
-                     int indent_level) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level) const;
 
   void clear_cache();
 

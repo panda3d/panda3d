@@ -13,24 +13,32 @@
   #define SOURCES \
      config_egg.h eggAnimData.I eggAnimData.h eggAttributes.I  \
      eggAttributes.h eggBin.h eggBinMaker.h eggComment.I  \
-     eggComment.h eggCoordinateSystem.I eggCoordinateSystem.h  \
+     eggComment.h \
+     eggCompositePrimitive.I eggCompositePrimitive.h \
+     eggCoordinateSystem.I eggCoordinateSystem.h  \
      eggCurve.I eggCurve.h eggData.I eggData.h  \
      eggExternalReference.I eggExternalReference.h  \
      eggFilenameNode.I eggFilenameNode.h eggGroup.I eggGroup.h  \
      eggGroupNode.I eggGroupNode.h eggGroupUniquifier.h  \
      eggLine.I eggLine.h \
      eggMaterial.I eggMaterial.h eggMaterialCollection.I  \
-     eggMaterialCollection.h eggMiscFuncs.I eggMiscFuncs.h  \
+     eggMaterialCollection.h \
+     eggMesher.h eggMesher.I \
+     eggMesherEdge.h eggMesherEdge.I \
+     eggMesherStrip.h eggMesherStrip.I \
+     eggMiscFuncs.I eggMiscFuncs.h  \
      eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h  \
      eggNamedObject.I eggNamedObject.h eggNameUniquifier.h  \
      eggNode.I eggNode.h eggNurbsCurve.I eggNurbsCurve.h  \
      eggNurbsSurface.I eggNurbsSurface.h eggObject.I eggObject.h  \
      eggParameters.h eggPoint.I eggPoint.h eggPolygon.I  \
-     eggPolygon.h eggPolysetMaker.h eggPoolUniquifier.h eggPrimitive.I  \
-     eggPrimitive.h eggRenderMode.I eggRenderMode.h  \
+     eggPolygon.h eggPolysetMaker.h eggPoolUniquifier.h \
+     eggPrimitive.I eggPrimitive.h \
+     eggRenderMode.I eggRenderMode.h  \
      eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h  \
      eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I  \
      eggTexture.h eggTextureCollection.I eggTextureCollection.h  \
+     eggTriangleStrip.I eggTriangleStrip.h \
      eggTransform3d.I eggTransform3d.h \
      eggUserData.I eggUserData.h \
      eggUtilities.I eggUtilities.h \
@@ -44,11 +52,17 @@
 
   #define INCLUDED_SOURCES \
      config_egg.cxx eggAnimData.cxx eggAttributes.cxx eggBin.cxx  \
-     eggBinMaker.cxx eggComment.cxx eggCoordinateSystem.cxx  \
+     eggBinMaker.cxx eggComment.cxx \
+     eggCompositePrimitive.cxx \
+     eggCoordinateSystem.cxx  \
      eggCurve.cxx eggData.cxx eggExternalReference.cxx  \
      eggFilenameNode.cxx eggGroup.cxx eggGroupNode.cxx  \
      eggGroupUniquifier.cxx eggLine.cxx eggMaterial.cxx  \
-     eggMaterialCollection.cxx eggMiscFuncs.cxx eggMorphList.cxx  \
+     eggMaterialCollection.cxx \
+     eggMesher.cxx \
+     eggMesherEdge.cxx \
+     eggMesherStrip.cxx \
+     eggMiscFuncs.cxx eggMorphList.cxx  \
      eggNamedObject.cxx eggNameUniquifier.cxx eggNode.cxx  \
      eggNurbsCurve.cxx eggNurbsSurface.cxx eggObject.cxx  \
      eggParameters.cxx eggPoint.cxx eggPolygon.cxx eggPolysetMaker.cxx  \
@@ -56,6 +70,7 @@
      eggSAnimData.cxx eggSurface.cxx eggSwitchCondition.cxx  \
      eggTable.cxx eggTexture.cxx eggTextureCollection.cxx  \
      eggTransform3d.cxx \
+     eggTriangleStrip.cxx \
      eggUserData.cxx \
      eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx eggVertexUV.cxx \
      eggXfmAnimData.cxx eggXfmSAnim.cxx xx xx pt_EggMaterial.cxx  \
@@ -66,7 +81,9 @@
   #define INSTALL_HEADERS \
     eggAnimData.I eggAnimData.h \
     eggAttributes.I eggAttributes.h eggBin.h eggBinMaker.h eggComment.I \
-    eggComment.h eggCoordinateSystem.I eggCoordinateSystem.h eggCurve.I \
+    eggComment.h \
+    eggCompositePrimitive.I eggCompositePrimitive.h \
+    eggCoordinateSystem.I eggCoordinateSystem.h eggCurve.I \
     eggCurve.h eggData.I eggData.h eggExternalReference.I \
     eggExternalReference.h eggFilenameNode.I eggFilenameNode.h \
     eggGroup.I eggGroup.h eggGroupNode.I eggGroupNode.h \
@@ -84,6 +101,7 @@
     eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I \
     eggTexture.h eggTextureCollection.I eggTextureCollection.h \
     eggTransform3d.I eggTransform3d.h \
+    eggTriangleStrip.I eggTriangleStrip.h \
     eggUserData.I eggUserData.h \
     eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h \
     eggVertexPool.I eggVertexPool.h \

@@ -129,7 +129,14 @@ PUBLISHED:
   void recompute_polygon_normals(CoordinateSystem cs = CS_default);
   void strip_normals();
 
-  int triangulate_polygons(bool convex_also);
+  enum TriangulateFlags {
+    T_convex    = 0x001,
+    T_composite = 0x002,
+    T_recurse   = 0x004
+  };
+
+  int triangulate_polygons(int flags);
+  void mesh_triangles(int flags);
 
   int remove_unused_vertices();
   int remove_invalid_primitives();

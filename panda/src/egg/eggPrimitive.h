@@ -96,6 +96,7 @@ PUBLISHED:
   INLINE void set_bface_flag(bool flag);
   INLINE bool get_bface_flag() const;
 
+  void copy_attributes(const EggAttributes &other);
   void copy_attributes(const EggPrimitive &other);
 
   bool has_vertex_normal() const;
@@ -166,14 +167,14 @@ PUBLISHED:
   void test_vref_integrity() const { }
 #endif  // NDEBUG
 
-private:
+protected:
   Vertices _vertices;
 
   // Don't try to use these private functions.  User code should add
   // and remove vertices via add_vertex()/remove_vertex(), or via the
   // STL-like push_back()/pop_back() or insert()/erase(), above.
-  void prepare_add_vertex(EggVertex *vertex);
-  void prepare_remove_vertex(EggVertex *vertex);
+  virtual void prepare_add_vertex(EggVertex *vertex, int i, int n);
+  virtual void prepare_remove_vertex(EggVertex *vertex, int i, int n);
 
 
 protected:

@@ -326,7 +326,7 @@ operator [] (int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::iterator EggPrimitive::
 insert(iterator position, EggVertex *x) {
-  prepare_add_vertex(x);
+  prepare_add_vertex(x, position - _vertices.begin(), _vertices.size() + 1);
   iterator i = _vertices.insert((Vertices::iterator &)position, x);
   x->test_pref_integrity();
   test_vref_integrity();
@@ -340,7 +340,7 @@ insert(iterator position, EggVertex *x) {
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::iterator EggPrimitive::
 erase(iterator position) {
-  prepare_remove_vertex(*position);
+  prepare_remove_vertex(*position, position - _vertices.begin(), _vertices.size());
   iterator i = _vertices.erase((Vertices::iterator &)position);
   test_vref_integrity();
   return i;
@@ -357,8 +357,10 @@ INLINE void EggPrimitive::
 replace(iterator position, EggVertex *x) {
   nassertv(position != end());
 
-  prepare_remove_vertex(*position);
-  prepare_add_vertex(x);
+  // We pass -1 for i and n so that EggCompositePrimitive won't try to
+  // adjust its _components list.
+  prepare_remove_vertex(*position, -1, -1);
+  prepare_add_vertex(x, -1, -1);
   *(Vertices::iterator &)position = x;
 
   x->test_pref_integrity();

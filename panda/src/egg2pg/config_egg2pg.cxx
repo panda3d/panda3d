@@ -28,32 +28,10 @@
 ConfigureDef(config_egg2pg);
 NotifyCategoryDef(egg2pg, "");
 
-ConfigVariableBool egg_mesh
-("egg-mesh", true);
-ConfigVariableBool egg_retesselate_coplanar
-("egg-retesselate-coplanar", true);
-ConfigVariableBool egg_unroll_fans
-("egg-unroll-fans", true);
-ConfigVariableBool egg_show_tstrips
-("egg-show-tstrips", false);
-ConfigVariableBool egg_show_qsheets
-("egg-show-qsheets", false);
-ConfigVariableBool egg_show_quads
-("egg-show-quads", false);
-ConfigVariableBool egg_show_normals
-("egg-show-normals", false);
 ConfigVariableDouble egg_normal_scale
 ("egg-normal-scale", 1.0);
-ConfigVariableBool egg_subdivide_polys
-("egg-subdivide-polys", true);
-ConfigVariableBool egg_consider_fans
-("egg-consider-fans", true);
-ConfigVariableDouble egg_max_tfan_angle
-("egg-max-tfan-angle", 40.0);
-ConfigVariableInt egg_min_tfan_tris
-("egg-min-tfan-tris", 4);
-ConfigVariableDouble egg_coplanar_threshold
-("egg-coplanar-threshold", 0.01);
+ConfigVariableBool egg_show_normals
+("egg-show-normals", false);
 
 ConfigVariableEnum<CoordinateSystem> egg_coordinate_system
 ("egg-coordinate-system", CS_default);

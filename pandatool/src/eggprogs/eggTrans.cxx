@@ -64,6 +64,16 @@ EggTrans() {
      &EggTrans::dispatch_none, &_triangulate_polygons);
 
   add_option
+    ("mesh", "", 0,
+     "Mesh triangles into triangle strips.  This is mainly useful as a "
+     "tool to visualize the work that the mesher will do, since triangles "
+     "are automatically meshed whenever an egg file is loaded.  Note that, "
+     "unlike the automatic meshing at load time, you are must ensure that "
+     "you do not start out with multiple triangles with different attributes "
+     "(e.g. texture) together in the same group.",
+     &EggTrans::dispatch_none, &_mesh_triangles);
+
+  add_option
     ("N", "", 0,
      "Standardize and uniquify group names.",
      &EggTrans::dispatch_none, &_standardize_names);
@@ -86,8 +96,13 @@ run() {
 
   if (_triangulate_polygons) {
     nout << "Triangulating polygons.\n";
-    int num_produced = _data.triangulate_polygons(true);
+    int num_produced = _data.triangulate_polygons(~0);
     nout << "  (" << num_produced << " triangles produced.)\n";
+  }
+
+  if (_mesh_triangles) {
+    nout << "Meshing triangles.\n";
+    _data.mesh_triangles(~0);
   }
 
   if (_apply_texmats) {

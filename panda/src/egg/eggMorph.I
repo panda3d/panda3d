@@ -88,6 +88,23 @@ operator != (const EggMorph<Parameter> &other) const {
   return !operator == (other);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggMorph::compare_to
+//       Access: Public
+//  Description: compare_to() compares a different space than the
+//               operator methods, which only check the name.
+//               compare_to() compares the name and the value as well.
+////////////////////////////////////////////////////////////////////
+template<class Parameter>
+INLINE int EggMorph<Parameter>::
+compare_to(const EggMorph<Parameter> &other) const {
+  int compare = strcmp(get_name().c_str(), other.get_name().c_str());
+  if (compare != 0) {
+    return compare;
+  }
+  return _offset.compare_to(other._offset);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphVertex output operator

@@ -22,6 +22,7 @@
 #include "eggRenderState.h"
 #include "egg_parametrics.h"
 #include "config_egg2pg.h"
+#include "config_egg.h"
 #include "nodePath.h"
 #include "renderState.h"
 #include "transformState.h"
@@ -38,6 +39,7 @@
 #include "qpgeomVertexIterator.h"
 #include "qpgeom.h"
 #include "qpgeomTriangles.h"
+#include "qpgeomTristrips.h"
 #include "sequenceNode.h"
 #include "switchNode.h"
 #include "portalNode.h"
@@ -55,6 +57,7 @@
 #include "eggGroupNode.h"
 #include "eggGroup.h"
 #include "eggPolygon.h"
+#include "eggTriangleStrip.h"
 #include "eggBin.h"
 #include "eggTable.h"
 #include "eggBinner.h"
@@ -1442,8 +1445,16 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
   PT(qpGeom) geom = new qpGeom;
   geom->set_vertex_data(vertex_data);
 
-  // Automatically triangulate any higher-order polygons we might have.
-  egg_bin->triangulate_polygons(true);
+  if (egg_mesh) {
+    // If we're using the mesher, mesh now.
+    egg_bin->mesh_triangles(0);
+    egg_bin->write(cerr, 0);
+
+  } else {
+    // If we're not using the mesher, at least triangulate any
+    // higher-order polygons we might have.
+    egg_bin->triangulate_polygons(EggGroupNode::T_convex);
+  }
 
   // Now create a handful of GeomPrimitives corresponding to the
   // various types of primitives we have.
@@ -1461,6 +1472,8 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
       qpGeomPrimitive *primitive = (*pi).second;
       geom->add_primitive(primitive);
     }
+
+    geom->write(cerr);
     
     // Now, is our parent node a GeomNode, or just an ordinary
     // PandaNode?  If it's a GeomNode, we can add the new Geom directly
@@ -1940,6 +1953,8 @@ make_primitive(EggPrimitive *egg_prim, EggLoader::Primitives &primitives) {
     if (egg_prim->size() == 3) {
       primitive = new qpGeomTriangles;
     }
+  } else if (egg_prim->is_of_type(EggTriangleStrip::get_class_type())) {
+    primitive = new qpGeomTristrips;
   }
 
   if (primitive == NULL) {

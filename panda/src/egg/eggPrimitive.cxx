@@ -197,6 +197,17 @@ determine_bin() {
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void EggPrimitive::
+copy_attributes(const EggAttributes &other) {
+  EggAttributes::operator = (other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::copy_attributes
+//       Access: Published
+//  Description: Copies the rendering attributes from the indicated
+//               primitive.
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
 copy_attributes(const EggPrimitive &other) {
   EggAttributes::operator = (other);
   _textures = other._textures;
@@ -292,6 +303,7 @@ remove_doubled_verts(bool closed) {
     Vertices::iterator vi, vlast;
     vi = _vertices.begin();
     new_vertices.push_back(*vi);
+    int num_removed = 0;
 
     vlast = vi;
     ++vi;
@@ -299,7 +311,9 @@ remove_doubled_verts(bool closed) {
       if ((*vi) != (*vlast)) {
         new_vertices.push_back(*vi);
       } else {
-        prepare_remove_vertex(*vi);
+        prepare_remove_vertex(*vi, vi - _vertices.begin() - num_removed, 
+                              _vertices.size() - num_removed);
+        num_removed++;
       }
       vlast = vi;
       ++vi;
@@ -312,7 +326,8 @@ remove_doubled_verts(bool closed) {
     // remove the vertex from the end if it's a repeat of the
     // beginning.
     while (_vertices.size() > 1 && _vertices.back() == _vertices.front()) {
-      prepare_remove_vertex(_vertices.back());
+      prepare_remove_vertex(_vertices.back(), _vertices.size() - 1, 
+                            _vertices.size());
       _vertices.pop_back();
     }
   }
@@ -331,6 +346,7 @@ void EggPrimitive::
 remove_nonunique_verts() {
   Vertices::iterator vi, vj;
   Vertices new_vertices;
+  int num_removed = 0;
 
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
     bool okflag = true;
@@ -340,7 +356,9 @@ remove_nonunique_verts() {
     if (okflag) {
       new_vertices.push_back(*vi);
     } else {
-      prepare_remove_vertex(*vi);
+      prepare_remove_vertex(*vi, vi - _vertices.begin() - num_removed,
+                            _vertices.size() - num_removed);
+      num_removed++;
     }
   }
 
@@ -405,8 +423,11 @@ has_normals() const {
 EggPrimitive::iterator EggPrimitive::
 erase(iterator first, iterator last) {
   iterator i;
+  int num_removed = 0;
   for (i = first; i != last; ++i) {
-    prepare_remove_vertex(*i);
+    prepare_remove_vertex(*i, first - _vertices.begin(), 
+                          _vertices.size() - num_removed);
+    num_removed++;
   }
   iterator result = _vertices.erase((Vertices::iterator &)first,
                                     (Vertices::iterator &)last);
@@ -423,7 +444,7 @@ erase(iterator first, iterator last) {
 ////////////////////////////////////////////////////////////////////
 EggVertex *EggPrimitive::
 add_vertex(EggVertex *vertex) {
-  prepare_add_vertex(vertex);
+  prepare_add_vertex(vertex, _vertices.size(), _vertices.size() + 1);
   _vertices.push_back(vertex);
 
   vertex->test_pref_integrity();
@@ -528,14 +549,18 @@ test_vref_integrity() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::prepare_add_vertex
-//       Access: Private
+//       Access: Protected, Virtual
 //  Description: Marks the vertex as belonging to the primitive.  This
 //               is an internal function called by the STL-like
 //               functions push_back() and insert(), in preparation
 //               for actually adding the vertex.
+//
+//               i indicates the new position of the vertex in the
+//               list; n indicates the new number of vertices after
+//               the operation has completed.
 ////////////////////////////////////////////////////////////////////
 void EggPrimitive::
-prepare_add_vertex(EggVertex *vertex) {
+prepare_add_vertex(EggVertex *vertex, int i, int n) {
   // We can't test integrity within this function, because it might be
   // called when the primitive is in an incomplete state.
 
@@ -554,17 +579,21 @@ prepare_add_vertex(EggVertex *vertex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::prepare_remove_vertex
-//       Access: Private
+//       Access: Protected, Virtual
 //  Description: Marks the vertex as removed from the primitive.  This
 //               is an internal function called by the STL-like
 //               functions pop_back() and erase(), in preparation for
 //               actually doing the removal.
 //
+//               i indicates the former position of the vertex in the
+//               list; n indicates the current number of vertices
+//               before the operation has completed.
+//
 //               It is an error to attempt to remove a vertex that is
 //               not already a vertex of this primitive.
 ////////////////////////////////////////////////////////////////////
 void EggPrimitive::
-prepare_remove_vertex(EggVertex *vertex) {
+prepare_remove_vertex(EggVertex *vertex, int i, int n) {
   // We can't test integrity within this function, because it might be
   // called when the primitive is in an incomplete state.
 
