@@ -1,5 +1,5 @@
 from ShowBaseGlobal import *
-from GuiGlobals import *
+import GuiGlobals
 import PandaObject
 import Button
 import Label
@@ -58,10 +58,10 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
     def makePanel(self,
                   rect = (-0.5, 0.5, -0.5, 0.5),
                   bg = (1, 1, 1, 1),
-                  geom = getDefaultPanel(),
+                  geom = GuiGlobals.getDefaultPanel(),
                   geomRect = (-0.5, 0.5, -0.5, 0.5),
                   drawOrder = 0,
-                  font = getDefaultFont(),
+                  font = GuiGlobals.getDefaultFont(),
                   support3d = 0):
         """makePanel()
 

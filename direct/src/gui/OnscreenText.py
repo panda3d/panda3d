@@ -1,7 +1,7 @@
 """OnscreenText module: contains the OnscreenText class"""
 
 from PandaObject import *
-from GuiGlobals import *
+import GuiGlobals
 import types
 
 ## These are the styles of text we might commonly see.  They set the
@@ -26,8 +26,8 @@ class OnscreenText(PandaObject, NodePath):
                  frame = None,
                  align = None,
                  wordwrap = None,
-                 drawOrder = getDefaultDrawOrder(),
-                 font = getDefaultFont(),
+                 drawOrder = GuiGlobals.getDefaultDrawOrder(),
+                 font = GuiGlobals.getDefaultFont(),
                  parent = aspect2d):
         """__init__(self, ...)
 
