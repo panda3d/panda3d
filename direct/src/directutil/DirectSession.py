@@ -101,7 +101,7 @@ class DirectSession(PandaObject):
 	bboxLines create: bboxLines lineNode.! !
         """
 
-class Line(LineSegs):
+class Line(NodePath, LineSegs):
     def __init__(self):
         LineSegs.__init__(self)
 

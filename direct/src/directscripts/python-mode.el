@@ -466,7 +466,9 @@ Currently-active file is at the head of the list.")
   ;; subprocess commands
   (define-key py-mode-map "\C-c\C-c"  'py-execute-buffer)
   (define-key py-mode-map "\C-c\C-m"  'py-execute-import-or-reload)
-  (define-key py-mode-map "\C-c\C-s"  'py-execute-string)
+  ;; (define-key py-mode-map "\C-c\C-s"  'py-execute-string)
+  ;; VR STUDIO ENHANCEMENT
+  (define-key py-mode-map "\C-c\C-s"  'pyd-shell)
   (define-key py-mode-map "\C-c|"     'py-execute-region)
   (define-key py-mode-map "\e\C-x"    'py-execute-def-or-class)
   (define-key py-mode-map "\C-c!"     'py-shell)
@@ -554,6 +556,7 @@ Currently-active file is at the head of the list.")
   ;; VR STUDIO ENHANCEMENTS
   (define-key py-shell-map "\C-d"  'delete-char)
   (define-key py-shell-map "\C-c\C-r" 'python-resume)
+  (define-key py-shell-map "\C-c\C-s" 'pyd-shell)
   )
 
 (defvar py-mode-syntax-table nil
@@ -3146,6 +3149,9 @@ These are Python temporary files awaiting execution."
 ;; Function to try to resume panda mainloop
 (defun python-resume ()
   (interactive)
+  (end-of-buffer)
+  (insert "run()")
+  (newline 1)
   (py-execute-string "try:\n\trun()\nexcept:\n\tpass"))
 
 (provide 'python-mode)
