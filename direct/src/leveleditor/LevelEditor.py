@@ -216,6 +216,7 @@ except NameError:
     # Load the generic storage files
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_5/dna/storage_town.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_5.5/dna/storage_estate.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
     if 'TT' in hoods:
         loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
@@ -680,6 +681,9 @@ class LevelEditor(NodePath, PandaObject):
         # Update scene graph explorer
         if fUpdateExplorer:
             self.panel.sceneGraphExplorer.update()
+            
+        self.outputFile = None        
+        self.panel["title"] = 'Level Editor: No file loaded'
 
     def deleteToplevel(self):
         # Destory old toplevel node path and DNA
@@ -2506,6 +2510,7 @@ class LevelEditor(NodePath, PandaObject):
         if dnaFilename:
             self.loadDNAFromFile(dnaFilename)
             self.outputFile = dnaFilename
+        print "Finished Load: ", dnaFilename
 
     def saveToSpecifiedDNAFile(self):
         path = dnaDirectory.toOsSpecific()
