@@ -26,6 +26,11 @@
                 retVal = self.getString()
             elif subatomicType == STBlob:
                 retVal = self.getString()
+            elif subatomicType == STInt8array:
+                len = self.getUint8() >> 1
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getInt8())
             elif subatomicType == STInt16array:
                 len = self.getUint16() >> 1
                 retVal = []
@@ -36,6 +41,11 @@
                 retVal = []
                 for i in range(len):
                     retVal.append(self.getInt32())
+            elif subatomicType == STUint8array:
+                len = self.getUint8() >> 1
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getUint8())
             elif subatomicType == STUint16array:
                 len = self.getUint16() >> 1
                 retVal = []
@@ -72,6 +82,11 @@
                 retVal = self.getString()
             elif subatomicType == STBlob:
                 retVal = self.getString()
+            elif subatomicType == STInt8array:
+                len = self.getUint8() >> 1
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getInt8()/float(divisor))
             elif subatomicType == STInt16array:
                 len = self.getUint16() >> 1
                 retVal = []
@@ -82,6 +97,11 @@
                 retVal = []
                 for i in range(len):
                     retVal.append(self.getInt32()/float(divisor))
+            elif subatomicType == STUint8array:
+                len = self.getUint8() >> 1
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getUint8()/float(divisor))
             elif subatomicType == STUint16array:
                 len = self.getUint16() >> 1
                 retVal = []
