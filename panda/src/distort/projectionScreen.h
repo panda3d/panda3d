@@ -23,8 +23,8 @@
 
 #include "namedNode.h"
 #include "lensNode.h"
+#include "geomNode.h"
 
-class GeomNode;
 class Geom;
 
 ////////////////////////////////////////////////////////////////////
