@@ -1,4 +1,4 @@
-from DirectSessionGlobal import *
+from ShowBaseGlobal import *
 
 import ParticleEffect
 import ParticlePanel

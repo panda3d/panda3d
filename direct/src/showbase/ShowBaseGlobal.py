@@ -20,6 +20,15 @@ __builtin__.messenger = base.messenger
 __builtin__.config = base.config
 __builtin__.directNotify = directNotify
 
+# Initialize DIRECT
+if base.wantDIRECT:
+    from DirectSession import *
+    __builtin__.direct = base.direct = DirectSession()
+    direct.enable()
+else:
+    # Otherwise set the values to None
+    __builtin__.direct = base.direct = None
+
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
 

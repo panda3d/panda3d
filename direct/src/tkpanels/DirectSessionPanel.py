@@ -22,7 +22,7 @@ taskMgr page
 class DirectSessionPanel(AppShell):
     # Override class variables here
     appname = 'Direct Session Panel'
-    frameWidth      = 550
+    frameWidth      = 600
     frameHeight     = 502
     usecommandarea = 1
     usestatusarea  = 0
@@ -67,15 +67,16 @@ class DirectSessionPanel(AppShell):
         self.jbNodePathNames = ['camera', 'selected', 'none']
 
         # Set up event hooks
-        self.actionEvents = [('undo', self.undoHook),
-                             ('pushUndo', self.pushUndoHook),
-                             ('undoListEmpty', self.undoListEmptyHook),
-                             ('redo', self.redoHook),
-                             ('pushRedo', self.pushRedoHook),
-                             ('redoListEmpty', self.redoListEmptyHook),
-                             ('selectedNodePath', self.selectedNodePathHook),
-                             ('DirectLights_addLight', self.addLight),
-                             ]
+        self.actionEvents = [
+            ('DIRECT_undo', self.undoHook),
+            ('DIRECT_pushUndo', self.pushUndoHook),
+            ('DIRECT_undoListEmpty', self.undoListEmptyHook),
+            ('DIRECT_redo', self.redoHook),
+            ('DIRECT_pushRedo', self.pushRedoHook),
+            ('DIRECT_redoListEmpty', self.redoListEmptyHook),
+            ('DIRECT_selectedNodePath',self.selectedNodePathHook),
+            ('DIRECT_addLight', self.addLight),
+            ]
         for event, method in self.actionEvents:
             self.accept(event, method)
 
@@ -139,20 +140,21 @@ class DirectSessionPanel(AppShell):
         # The master frame for the dials
 	mainFrame = Frame(interior)
 
+        # Paned widget for dividing two halves
+        framePane = Pmw.PanedWidget(mainFrame, orient = HORIZONTAL)
+        sgeFrame = framePane.add('left', min = 250)
+        notebookFrame = framePane.add('right', min = 300)
+
         # Scene Graph Explorer
-        sgeFrame = Frame(mainFrame)
-        self.sgeUpdate = Button(sgeFrame, text = 'Update Explorer')
-        self.sgeUpdate.pack(fill = X, expand = 0)
         self.SGE = SceneGraphExplorer.SceneGraphExplorer(
             sgeFrame, nodePath = render,
-            scrolledCanvas_hull_width = 200,
+            scrolledCanvas_hull_width = 250,
             scrolledCanvas_hull_height = 400)
         self.SGE.pack(fill = BOTH, expand = 0)
-        self.sgeUpdate['command'] = self.SGE.update
         sgeFrame.pack(side = LEFT, fill = 'both', expand = 0)
 
         # Create the notebook pages
-        notebook = Pmw.NoteBook(mainFrame)
+        notebook = Pmw.NoteBook(notebookFrame)
         notebook.pack(fill = BOTH, expand = 1)
         envPage = notebook.add('Environment')
         lightsPage = notebook.add('Lights')
@@ -562,9 +564,9 @@ class DirectSessionPanel(AppShell):
             self.jbHprSF.pack(fill = X, expand = 0)
             self.bind(self.jbHprSF, 'Set joybox HPR speed multiplier')
 
-
         notebook.setnaturalsize()
-        
+
+        framePane.pack(expand = 1, fill = BOTH)
         mainFrame.pack(fill = 'both', expand = 1)
 
         # Create some buttons in the bottom tray

@@ -153,16 +153,17 @@ class MopathRecorder(AppShell, PandaObject):
         self.iRay = SelectionRay(self.iRayCS)
         # Set up event hooks
         self.actionEvents = [
-            ('undo', self.undoHook),
-            ('pushUndo', self.pushUndoHook),
-            ('undoListEmpty', self.undoListEmptyHook),
-            ('redo', self.redoHook),
-            ('pushRedo', self.pushRedoHook),
-            ('redoListEmpty', self.redoListEmptyHook),
-            ('selectedNodePath', self.selectedNodePathHook),
-            ('deselectedNodePath', self.deselectedNodePathHook),
-            ('manipulateObjectStart', self.manipulateObjectStartHook),
-            ('manipulateObjectCleanup', self.manipulateObjectCleanupHook),
+            ('DIRECT_undo', self.undoHook),
+            ('DIRECT_pushUndo', self.pushUndoHook),
+            ('DIRECT_undoListEmpty', self.undoListEmptyHook),
+            ('DIRECT_redo', self.redoHook),
+            ('DIRECT_pushRedo', self.pushRedoHook),
+            ('DIRECT_redoListEmpty', self.redoListEmptyHook),
+            ('DIRECT_selectedNodePath', self.selectedNodePathHook),
+            ('DIRECT_deselectedNodePath', self.deselectedNodePathHook),
+            ('DIRECT_manipulateObjectStart', self.manipulateObjectStartHook),
+            ('DIRECT_manipulateObjectCleanup',
+             self.manipulateObjectCleanupHook),
             ]
         for event, method in self.actionEvents:
             self.accept(event, method)

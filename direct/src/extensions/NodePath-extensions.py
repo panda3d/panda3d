@@ -776,11 +776,40 @@
     def place(self):
         base.wantDIRECT = 1
         base.wantTk = 1
-        from TkGlobal import *
-        from DirectSessionGlobal import *
+        from ShowBaseGlobal import *
+        import TkGlobal
         import Placer
         Placer.place(self)
 
+    def explore(self):
+        base.wantDIRECT = 1
+        base.wantTk = 1
+        from ShowBaseGlobal import *
+        import TkGlobal
+        import SceneGraphExplorer
+        SceneGraphExplorer.explore(self)
+
+    def rgbPanel(self, cb = None):
+        base.wantDIRECT = 1
+        base.wantTk = 1
+        from ShowBaseGlobal import *
+        import TkGlobal
+        import EntryScale
+        EntryScale.rgbPanel(self, cb)
+
+    def select(self):
+        base.wantDIRECT = 1
+        base.wantTk = 1
+        from ShowBaseGlobal import *
+        import TkGlobal
+        direct.select(self)
+
+    def deselect(self):
+        base.wantDIRECT = 1
+        base.wantTk = 1
+        from ShowBaseGlobal import *
+        import TkGlobal
+        direct.deselect(self)
 
 
 

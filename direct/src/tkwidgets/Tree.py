@@ -45,16 +45,21 @@ class TreeNode:
         self.menuVar.set(0)
         self._popupMenu = None
         if self.menuList:
+            if self.menuList[-1] == 'Separator':
+                self.menuList = self.menuList[:-1]
             self._popupMenu = Menu(self.canvas, tearoff = 0)
             for i in range(len(self.menuList)):
                 item = self.menuList[i]
-                self._popupMenu.add_radiobutton(
-                    label = item,
-                    variable = self.menuVar,
-                    value = i,
-                    indicatoron = 0,
-                    command = self.popupMenuCommand)
-
+                if item == 'Separator':
+                    self._popupMenu.add_separator()
+                else:
+                    self._popupMenu.add_radiobutton(
+                        label = item,
+                        variable = self.menuVar,
+                        value = i,
+                        indicatoron = 0,
+                        command = self.popupMenuCommand)
+                    
     def destroy(self):
         for key in self.kidKeys:
             c = self.children[key]
@@ -120,8 +125,11 @@ class TreeNode:
             return "break"
 
     def popupMenuCommand(self):
-        self.item.MenuCommand(self.menuList[self.menuVar.get()])
-        self.parent.update()
+        command = self.menuList[self.menuVar.get()]
+        self.item.MenuCommand(command)
+        if self.parent and (command != 'Update Explorer'):
+            # Update parent to try to keep explorer up to date
+            self.parent.update()
 
     def expand(self, event=None):
         if not self.item.IsExpandable():

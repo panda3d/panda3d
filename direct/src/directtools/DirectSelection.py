@@ -107,7 +107,7 @@ class SelectedNodePaths(PandaObject):
             # And keep track of it in the deselected dictionary
             self.deselectedDict[id] = dnp
             # Send a message
-            messenger.send('deselectedNodePath', [dnp])
+            messenger.send('DIRECT_deselectedNodePath', [dnp])
         return dnp
 
     def getSelectedAsList(self):

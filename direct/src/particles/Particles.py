@@ -179,6 +179,9 @@ class Particles(ParticleSystem.ParticleSystem):
 	else:
 	    self.removeAngularForce(force)
 
+    def setRenderNodePath(self, nodePath):
+        self.setRenderParent(nodePath.node())
+
     ## Getters ##
     def getName(self):
         """getName()"""

@@ -20,14 +20,13 @@ else:
 
 print "Loading LevelEditor for hoods: ", hoods
 
-from DirectSessionGlobal import *
+from ShowBaseGlobal import *
 from PandaObject import *
 from PieMenu import *
 from GuiGlobals import *
 from Tkinter import *
 from DirectGeometry import *
 from SceneGraphExplorer import *
-from tkSimpleDialog import askstring
 from tkMessageBox import showinfo
 from tkFileDialog import *
 from whrandom import *
@@ -39,7 +38,6 @@ import os
 import __builtin__
 import whrandom
 import Floater
-import EntryScale
 
 # Colors used by all color menus
 DEFAULT_COLORS = [
@@ -418,19 +416,19 @@ class LevelEditor(NodePath, PandaObject):
         
         # The list of events the level editor responds to
         self.actionEvents = [
-            # Actions in response to DIRECT operations
-            ('selectedNodePath', self.selectedNodePathHook),
-            ('deselectedNodePath', self.deselectedNodePathHook),
+            # Node path events
             ('preRemoveNodePath', self.removeNodePathHook),
-            ('manipulateObjectCleanup', self.updateSelectedPose),
-            
+            # Actions in response to DIRECT operations
+            ('DIRECT_selectedNodePath', self.selectedNodePathHook),
+            ('DIRECT_deselectedNodePath', self.deselectedNodePathHook),
+            ('DIRECT_manipulateObjectCleanup', self.updateSelectedPose),
+            ('DIRECT_nodePathSetName', self.setName),
+            ('DIRECT_activeParent', self.setActiveParent),
+            ('DIRECT_reparent', self.reparent),
+            ('RGBPanel_setColor', self.setColor),
             # Actions in response to Level Editor Panel operations
-            ('SGENodePath_Set Name', self.getAndSetName),
-            ('SGENodePath_Set Parent', self.setActiveParent),
-            ('SGENodePath_Reparent', self.reparent),
-            ('SGENodePath_Add Group', self.addGroup),
-            ('SGENodePath_Add Vis Group', self.addVisGroup),
-            ('SGENodePath_Set Color', self.setNPColor),
+            ('SGE_Add Group', self.addGroup),
+            ('SGE_Add Vis Group', self.addVisGroup),
             # Actions in response to Pie Menu interaction
             ('select_building_style', self.setBuildingStyle),
             ('select_building_type', self.setBuildingType),
@@ -515,6 +513,7 @@ class LevelEditor(NodePath, PandaObject):
 
         # BATTLE CELLS
         self.battleCellMarker = loader.loadModel('models/misc/sphere')
+        self.battleCellMarker.setName('battleCellMarker')
         self.battleCellMarker.setScale(1)
         self.currentBattleCellType = "20w 20l"
 
@@ -676,19 +675,22 @@ class LevelEditor(NodePath, PandaObject):
         # Turn off player camera control
         base.disableMouse()
         # Handle mouse events for pie menus
-        self.accept('handleMouse3',self.levelHandleMouse3)
-        self.accept('handleMouse3Up',self.levelHandleMouse3Up)
+        self.accept('DIRECT_mouse3',self.levelHandleMouse3)
+        self.accept('DIRECT_mouse3Up',self.levelHandleMouse3Up)
 
     def disableMouse(self):
         """ Disable Pie Menu interaction """
         # Disable handling of mouse events
-        self.ignore('handleMouse3')
-        self.ignore('handleMouse3Up')
+        self.ignore('DIRECT_mouse3')
+        self.ignore('DIRECT_mouse3Up')
 
     # LEVEL OBJECT MANAGEMENT FUNCTIONS
     def findDNANode(self, nodePath):
         """ Find node path's DNA Object in DNAStorage (if any) """
-        return DNASTORE.findDNAGroup(nodePath.id())
+        if nodePath:
+            return DNASTORE.findDNAGroup(nodePath.id())
+        else:
+            return None
 
     def replaceSelected(self):
         if self.replaceSelectedEnabled:
@@ -735,40 +737,35 @@ class LevelEditor(NodePath, PandaObject):
             nodePath.removeNode()
 
     def removeNodePathHook(self, nodePath):
-        if nodePath:
-            dnaNode = self.findDNANode(nodePath)
-            # Does the node path correspond to a DNA Object
-            if dnaNode:
-                for i in self.removeHookList:
-                    i(dnaNode, nodePath)
-                # Get DNANode's parent
-                parentDNANode = dnaNode.getParent()
-                if parentDNANode:
-                    # Remove DNANode from its parent
-                    parentDNANode.remove(dnaNode)
-                # Delete DNA and associated Node Relations from DNA Store
-                DNASTORE.removeDNAGroup(dnaNode)
+        dnaNode = self.findDNANode(nodePath)
+        # Does the node path correspond to a DNA Object
+        if dnaNode:
+            for i in self.removeHookList:
+                i(dnaNode, nodePath)
+            # Get DNANode's parent
+            parentDNANode = dnaNode.getParent()
+            if parentDNANode:
+                # Remove DNANode from its parent
+                parentDNANode.remove(dnaNode)
+            # Delete DNA and associated Node Relations from DNA Store
+            DNASTORE.removeDNAGroup(dnaNode)
 
-    def reparent(self, nodePath):
+    def reparent(self, nodePath, oldParent, newParent):
         """ Move node path (and its DNA) to active parent """
-        # Do we have a node path?
-        if nodePath:
-            dnaNode = self.findDNANode(nodePath)
-            # Does the node path correspond to a DNA Object
-            if dnaNode:
-                # Yes, get its parent and see if it has a DNA Object
-                parent = nodePath.getParent()
-                parentDNAObject = self.findDNANode(parent)
-                if parentDNAObject:
-                    # Yes it does, move node path (and DNA)
-                    # to new parent (if active parent set)
-                    if ((self.NPParent != None) and
-                        (self.DNAParent != None)):
-                        nodePath.reparentTo(self.NPParent)
-                        parentDNAObject.remove(dnaNode)
-                        self.DNAParent.add(dnaNode)
-                        # Update scene graph explorer to reflect change
-                        # self.panel.sceneGraphExplorer.update()
+        # Does the node path correspond to a DNA Object
+        dnaNode = self.findDNANode(nodePath)
+        if dnaNode:
+            # Find old parent DNA
+            oldParentDNANode = self.findDNANode(oldParent)
+            # Remove DNA from old parent
+            if oldParentDNANode:
+                oldParentDNANode.remove(dnaNode)
+            if newParent:
+                # Update active parent just to be safe
+                self.setActiveParent(newParent)
+                # Move DNA to new parent (if active parent set)
+                if self.DNAParent != None:
+                    self.DNAParent.add(dnaNode)
 
     def reparentSelected(self):
         for nodePath in direct.selected:
@@ -776,9 +773,6 @@ class LevelEditor(NodePath, PandaObject):
 
     def setActiveParent(self, nodePath = None):
         """ Set NPParent and DNAParent to node path and its DNA """
-        # If nothing passed in, try currently selected node path
-        if not nodePath:
-            nodePath = direct.selected.last
         # If we've got a valid node path
         if nodePath:
             # See if this is in the DNA database
@@ -791,17 +785,9 @@ class LevelEditor(NodePath, PandaObject):
         else:
             print 'LevelEditor.setActiveParent: nodePath == None'
 
-    def getAndSetName(self, nodePath):
-        """ Prompt user for new node path name """
-        newName = askstring('Node Path', 'Enter new name:')
-        if newName:
-            self.setName(nodePath, newName)
-
     def setName(self, nodePath, newName):
-        """ Set name of a node path and its DNA (if it exists) """
-        # First, set name of the node path
-        nodePath.setName(newName)
-        # Now find the DNA that corresponds to this node path
+        """ Set name of nodePath's DNA (if it exists) """
+        # Find the DNA that corresponds to this node path
         dnaNode = self.findDNANode(nodePath)
         if dnaNode:
             # If it exists, set the name of the DNA Node
@@ -834,30 +820,34 @@ class LevelEditor(NodePath, PandaObject):
                     # Update DNA
                     self.updatePose(dnaObject, selectedNode)
             else:
-                possiblePoint = self.findSuitPointMarker(selectedNode)
-                if possiblePoint:
-                    point = self.getSuitPointFromNodePath(possiblePoint)
-                    if point:
-                        print "Found suit point!", point
-                        # First snap selected node path to grid
-                        pos = selectedNode.getPos(direct.grid)
-                        snapPos = direct.grid.computeSnapPoint(pos)
-                        if self.panel.fPlaneSnap.get():
-                            zheight = 0
-                        else:
-                            zheight = snapPos[2]
-                        selectedNode.setPos(direct.grid,
-                                            snapPos[0], snapPos[1], zheight)
-                        newPos = selectedNode.getPos(self.NPToplevel)
-                        point.setPos(newPos)
+                pointOrCell, type = self.findPointOrCell(selectedNode)
+                if pointOrCell and type:
+                    # First snap selected node path to grid
+                    pos = selectedNode.getPos(direct.grid)
+                    snapPos = direct.grid.computeSnapPoint(pos)
+                    if self.panel.fPlaneSnap.get():
+                        zheight = 0
+                    else:
+                        zheight = snapPos[2]
+                    selectedNode.setPos(
+                        direct.grid,
+                        snapPos[0], snapPos[1], zheight)
+                    newPos = selectedNode.getPos(self.NPToplevel)
+                    # Update DNA
+                    pointOrCell.setPos(newPos)
+                    if (type == 'suitPointMarker'):
+                        print "Found suit point!", pointOrCell
                         # Ok, now update all the lines into that node
-                        for edge in self.point2edgeDict[point]:
+                        for edge in self.point2edgeDict[pointOrCell]:
                             oldEdgeLine = self.edgeDict[edge]
                             del self.edgeDict[edge]
                             oldEdgeLine.reset()
                             del oldEdgeLine
-                            newEdgeLine = self.drawSuitEdge(edge, self.NPParent)
+                            newEdgeLine = self.drawSuitEdge(
+                                edge, self.NPParent)
                             self.edgeDict[edge] = newEdgeLine
+                    elif (type == 'battleCellMarker'):
+                        print "Found battle cell!", pointOrCell
 
     def updatePose(self, dnaObject, nodePath):
         """
@@ -1013,14 +1003,14 @@ class LevelEditor(NodePath, PandaObject):
     def addGroup(self, nodePath):
         """ Add a new DNA Node Group to the specified Node Path """
         # Set the node path as the current parent
-        self.setActiveParent(nodePath)
+        direct.setActiveParent(nodePath)
         # Add a new group to the selected parent
         self.createNewGroup()
 
     def addVisGroup(self, nodePath):
         """ Add a new DNA Group to the specified Node Path """
         # Set the node path as the current parent
-        self.setActiveParent(nodePath)
+        direct.setActiveParent(nodePath)
         # Add a new group to the selected parent
         self.createNewGroup(type = 'vis')
 
@@ -1473,13 +1463,23 @@ class LevelEditor(NodePath, PandaObject):
                 self.DNATarget.getHeight())
             self.replaceSelected()
     
-    def setNPColor(self, nodePath):
+    def setColor(self, nodePath, r,g,b,a):
         """ This is used to set color of dnaNode subparts """
-        def updateDNANodeColor(color, s = self, np = nodePath):
-            # Update node color in DNASTORE here
-            # dnaNode = s.findDNANode(np)
-            pass
-        esg = EntryScale.setColor(nodePath, updateDNANodeColor)
+        dnaNode = self.findDNANode(nodePath)
+        if dnaNode:
+            objClass = DNAGetClassType(dnaNode)
+            if ((objClass.eq(DNA_WALL)) or
+                (objClass.eq(DNA_WINDOWS)) or
+                (objClass.eq(DNA_DOOR)) or
+                (objClass.eq(DNA_CORNICE)) or
+                (objClass.eq(DNA_PROP)) or
+                (objClass.eq(DNA_SIGN)) or
+                (objClass.eq(DNA_SIGN_BASELINE)) or
+                (objClass.eq(DNA_SIGN_TEXT)) or
+                (objClass.eq(DNA_SIGN_GRAPHIC))
+                ):
+                # Update dna information
+                dnaNode.setColor(VBase4(r/255.0, g/255.0, b/255.0, a/255.0))
     
     # SELECTION FUNCTIONS
     def selectedNodePathHook(self, nodePath):
@@ -1527,15 +1527,12 @@ class LevelEditor(NodePath, PandaObject):
             if DNAClassEqual(dnaNode, DNA_STREET):
                 self.snapList = OBJECT_SNAP_POINTS[dnaNode.getCode()]
         else:
-            possiblePoint = self.findSuitPointMarker(nodePath)
-            if possiblePoint:
-                point = self.getSuitPointFromNodePath(possiblePoint)
-                if point:
-                    print "Found suit point!", point
-                else:
-                    pass
-            else:
-                pass
+            pointOrCell, type = self.findPointOrCell(nodePath)
+            if pointOrCell and (type == 'suitPointMarker'):
+                print "Found suit point!", pointOrCell
+            if pointOrCell and (type == 'battleCellMarker'):
+                print "Found battle cell!", pointOrCell
+
         # Let others know that something new may be selected:
         for i in self.selectedNodePathHookHooks:
                 i()
@@ -1577,20 +1574,29 @@ class LevelEditor(NodePath, PandaObject):
                 return self.findDNARoot(nodePath.getParent())
 
 
-    def findSuitPointMarker(self, nodePath):
-        """ Walk up a node path's ancestry looking for its DNA Root """
+    def findPointOrCell(self, nodePath):
+        """
+        Walk up a node path's ancestry to see if its a suit point marker
+        or a battle cell marker
+        """
         # Check current node's name for root marker
         if (nodePath.getName() == 'suitPointMarker'):
-            # Its a root!
-            return nodePath
+            # Its a suit point marker!
+            # See if point is in pointDict
+            point = self.getSuitPointFromNodePath(nodePath)
+            return point, 'suitPointMarker'
+        elif (nodePath.getName() == 'battleCellMarker'):
+            # Its a battle cell marker
+            # See if cell is in cell Dict
+            cell = self.getBattleCellFromNodePath(nodePath)
+            return cell, 'battleCellMarker'
         else:
             # If reached the top: fail
             if not nodePath.hasParent():
-                return None
+                return None, None
             else:
                 # Try parent
-                return self.findSuitPointMarker(nodePath.getParent())
-
+                return self.findPointOrCell(nodePath.getParent())
 
     # MANIPULATION FUNCTIONS
     def keyboardRotateSelected(self, arrowDirection):
@@ -2252,15 +2258,17 @@ class LevelEditor(NodePath, PandaObject):
 
     def placeSuitPoint(self):
         v = self.getGridSnapIntersectionPoint()
-        # get the absolute pos relative to the top level. That is what gets stored in the point
+        # get the absolute pos relative to the top level.
+        # That is what gets stored in the point
         mat = direct.grid.getMat(self.NPToplevel)
         absPos = Point3(mat.xformPoint(v))
         print 'Suit point: ' + `absPos`
-        # Store the point in the DNA. If this point is already in there, it returns
-        # the existing point
+        # Store the point in the DNA. If this point is already in there,
+        # it returns the existing point
         suitPoint = DNASTORE.storeSuitPoint(self.currentSuitPointType, absPos)
         if not self.pointDict.has_key(suitPoint):
-            marker = self.drawSuitPoint(absPos, self.currentSuitPointType, self.NPToplevel)
+            marker = self.drawSuitPoint(
+                absPos, self.currentSuitPointType, self.NPToplevel)
             self.pointDict[suitPoint] = marker
         self.currentSuitPointIndex = suitPoint.getIndex()
 
@@ -2269,9 +2277,10 @@ class LevelEditor(NodePath, PandaObject):
             # Make a new dna edge
             if DNAClassEqual(self.DNAParent, DNA_VIS_GROUP):
                 zoneId = self.DNAParent.getName()
-                suitEdge = DNASuitEdge(self.startSuitPoint, self.endSuitPoint, zoneId)
+                suitEdge = DNASuitEdge(
+                    self.startSuitPoint, self.endSuitPoint, zoneId)
                 DNASTORE.storeSuitEdge(suitEdge)
-                # Add the edge to the current vis group so it can be written out
+                # Add edge to the current vis group so it can be written out
                 self.DNAParent.addSuitEdge(suitEdge)
                 # Draw a line to represent the edge
                 edgeLine = self.drawSuitEdge(suitEdge, self.NPParent)
@@ -2338,7 +2347,8 @@ class LevelEditor(NodePath, PandaObject):
         numPoints = DNASTORE.getNumSuitPoints()
         for i in range(numPoints):
             point = DNASTORE.getSuitPoint(i)
-            marker = self.drawSuitPoint(point.getPos(), point.getPointType(), self.NPToplevel)
+            marker = self.drawSuitPoint(
+                point.getPos(), point.getPointType(), self.NPToplevel)
             self.pointDict[point] = marker
 
         # Edges
@@ -2358,7 +2368,6 @@ class LevelEditor(NodePath, PandaObject):
                         self.point2edgeDict[point].append(edge)
                     else:
                         self.point2edgeDict[point] = [edge]
-
 
     def getSuitPointFromNodePath(self, nodePath):
         """
@@ -2421,6 +2430,18 @@ class LevelEditor(NodePath, PandaObject):
         for cell, marker in self.cellDict.items():
             marker.show()
     
+    def getBattleCellFromNodePath(self, nodePath):
+        """
+        Given a node path, attempt to find the battle cell, nodePath pair
+        in the cellDict. If it is there, return the cell. If we
+        cannot find it, return None.
+        TODO: a reverse lookup cellDict would speed this up quite a bit
+        """
+        for cell, marker in self.cellDict.items():
+            if marker.eq(nodePath):
+                return cell
+        return None
+
     def colorZones(self):
         # Give each zone a random color to see them better
         visGroups = self.getDNAVisGroups(self.NPToplevel)
@@ -3728,13 +3749,14 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.fUpdateSelected = 1
         # Handle to the toplevels hull
         hull = self.component('hull')
-
+        hull.geometry('400x575')
+        
         balloon = self.balloon = Pmw.Balloon(hull)
         # Start with balloon help disabled
         self.balloon.configure(state = 'none')
         
         menuFrame = Frame(hull, relief = GROOVE, bd = 2)
-        menuFrame.pack(fill = X, expand = 1)
+        menuFrame.pack(fill = X)
 
         menuBar = Pmw.MenuBar(menuFrame, hotkeys = 1, balloon = balloon)
         menuBar.pack(side = LEFT, expand = 1, fill = X)
@@ -3809,7 +3831,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         self.editMenu = Pmw.ComboBox(
             menuFrame, labelpos = W,
-            label_text = 'Edit Mode:', entry_width = 12,
+            label_text = 'Edit Mode:', entry_width = 18,
             selectioncommand = self.levelEditor.setEditMode, history = 0,
             scrolledlist_items = NEIGHBORHOODS)
         self.editMenu.selectitem(NEIGHBORHOODS[0])
@@ -4181,50 +4203,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       variable = self.fGrid,
                                       command = self.toggleGrid)
         direct.gridButton.pack(side = 'left', expand = 1, fill = 'x')
-
-        buttonFrame.pack(expand = 1, fill = 'x')
-
-        buttonFrame2 = Frame(hull)
-        self.groupButton = Button(
-            buttonFrame2,
-            text = 'New Group',
-            command = self.levelEditor.createNewGroup)
-        self.groupButton.pack(side = 'left', expand = 1, fill = 'x')
-        
-        self.visGroupButton = Button(
-            buttonFrame2,
-            text = 'New Vis Group',
-            command = self.createNewVisGroup)
-        self.visGroupButton.pack(side = 'left', expand = 1, fill = 'x')
-        
-        self.setParentButton = Button(
-            buttonFrame2,
-            text = 'Set Parent',
-            command = self.levelEditor.setActiveParent)
-        self.setParentButton.pack(side = 'left', expand = 1, fill = 'x')
-
-        self.reparentButton = Button(
-            buttonFrame2,
-            text = 'Re Parent',
-            command = self.levelEditor.reparentSelected)
-        self.reparentButton.pack(side = 'left', expand = 1, fill = 'x')
-
-        buttonFrame2.pack(fill = 'x')
-
-        buttonFrame3 = Frame(hull)
-        self.isolateButton = Button(
-            buttonFrame3,
-            text = 'Isolate Selected',
-            command = direct.isolate)
-        self.isolateButton.pack(side = 'left', expand = 1, fill = 'x')
-
-        self.showAllButton = Button(
-            buttonFrame3,
-            text = 'Show All',
-            command = self.showAll)
-        self.showAllButton.pack(side = 'left', expand = 1, fill = 'x')
-
-        buttonFrame3.pack(fill = 'x')
+        buttonFrame.pack(fill = X)
 
         buttonFrame4 = Frame(hull)
         self.driveMode = IntVar()
@@ -4243,14 +4222,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             variable = self.driveMode,
             command = self.levelEditor.useDirectFly)
         directModeButton.pack(side = 'left', expand = 1, fill = 'x')
-        buttonFrame4.pack(fill = 'x')
+        buttonFrame4.pack(fill = X)
 
         self.sceneGraphExplorer = SceneGraphExplorer(
             parent = sceneGraphPage,
-            menuItems = ['Set Parent', 'Reparent', 'Add Group',
-                         'Add Vis Group', 'Set Color',
-                         'Set Name'])
-        self.sceneGraphExplorer.pack(expand = 1, fill = 'both')
+            nodePath = self.levelEditor,
+            menuItems = ['Add Group', 'Add Vis Group', 'Set Color'])
+        self.sceneGraphExplorer.pack(expand = 1, fill = BOTH)
         
         # Make sure input variables processed 
         self.initialiseoptions(LevelEditorPanel)
@@ -4286,12 +4264,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def toggleMapVis(self):
         self.levelEditor.toggleMapVis(self.fMapVis.get())
 
-    def showAll(self):
-        direct.showAll(self.levelEditor.NPToplevel)
-
-    def createNewVisGroup(self):
-        self.levelEditor.createNewGroup(type = 'vis')
-        
     def setStreetModuleType(self,name):
         self.streetModuleType = 'street_' + name
         self.levelEditor.setCurrent('street_texture', self.streetModuleType)
@@ -4699,8 +4671,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                     (objClass.eq(DNA_PROP)) or
                     (objClass.eq(DNA_SIGN)) or
                     (objClass.eq(DNA_SIGN_BASELINE)) or
-                    (objClass.eq(DNA_SIGN_BASELINE_TEXT)) or
-                    (objClass.eq(DNA_SIGN_BASELINE_GRAPHIC))
+                    (objClass.eq(DNA_SIGN_TEXT)) or
+                    (objClass.eq(DNA_SIGN_GRAPHIC))
                     ):
                     self.levelEditor.setDNATargetColor(
                         VBase4((color[0]/255.0),

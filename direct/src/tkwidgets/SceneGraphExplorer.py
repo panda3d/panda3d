@@ -3,11 +3,19 @@ from Tkinter import *
 from Tree import *
 import Pmw
 
-DEFAULT_MENU_ITEMS = ['Select', 'Deselect', 'Flash', 
-                      'Isolate', 'Toggle Vis', 'Show All',
-                      'Fit', 'Place', 'Delete']
+DEFAULT_MENU_ITEMS = [
+    'Update Explorer',
+    'Separator',
+    'Select', 'Deselect', 'Set Parent', 'Reparent', 'Set Name',
+    'Separator',
+    'Delete',
+    'Separator',
+    'Fit', 'Flash', 'Isolate', 'Toggle Vis', 'Show All',
+    'Separator',
+    'Place', 'Set Color',
+    'Separator']
 
-class SceneGraphExplorer(Pmw.MegaWidget):
+class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
     "Graphical display of a scene graph"
     def __init__(self, parent = None, nodePath = render, **kw):
         # Define the megawidget options.
@@ -52,6 +60,24 @@ class SceneGraphExplorer(Pmw.MegaWidget):
         self._node = TreeNode(self._canvas, None, self._treeItem,
                               DEFAULT_MENU_ITEMS + self['menuItems'])
         self._node.expand()
+
+        self._parentFrame = Frame(interior)
+        self._label = self.createcomponent(
+            'parentLabel',
+            (), None,
+            Label, (interior,),
+            text = 'Active Parent: ',
+            anchor = W, justify = LEFT)
+        self._label.pack(expand = 1, fill = X)
+
+        # Add update parent label
+        def updateLabel(nodePath = None, s = self):
+            s._label['text'] = 'Active Parent: ' + nodePath.getName()
+        self.accept('DIRECT_activeParent', updateLabel)
+
+        # Add update hook
+        self.accept('SGE_Update Explorer',
+                    lambda np, s = self: s.update())
 
         # Check keywords and initialise options based on input values.
         self.initialiseoptions(SceneGraphExplorer)
@@ -118,10 +144,10 @@ class SceneGraphExplorerItem(TreeItem):
         return sublist
 
     def OnSelect(self):
-        messenger.send('SGENodePath_Flash', [self.nodePath])
+        messenger.send('SGE_Flash', [self.nodePath])
 
     def MenuCommand(self, command):
-        messenger.send('SGENodePath_' + command, [self.nodePath])
+        messenger.send('SGE_' + command, [self.nodePath])
 
 
 def explore(nodePath = render):

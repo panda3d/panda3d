@@ -67,12 +67,12 @@ class Placer(AppShell):
         self.posOffset = Vec3(0)
 
         # Set up event hooks
-        self.undoEvents = [('undo', self.undoHook),
-                           ('pushUndo', self.pushUndoHook),
-                           ('undoListEmpty', self.undoListEmptyHook),
-                           ('redo', self.redoHook),
-                           ('pushRedo', self.pushRedoHook),
-                           ('redoListEmpty', self.redoListEmptyHook)]
+        self.undoEvents = [('DIRECT_undo', self.undoHook),
+                           ('DIRECT_pushUndo', self.pushUndoHook),
+                           ('DIRECT_undoListEmpty', self.undoListEmptyHook),
+                           ('DIRECT_redo', self.redoHook),
+                           ('DIRECT_pushRedo', self.pushRedoHook),
+                           ('DIRECT_redoListEmpty', self.redoListEmptyHook)]
         for event, method in self.undoEvents:
             self.accept(event, method)
 
@@ -610,7 +610,7 @@ class Placer(AppShell):
         
     def xformStop(self, data):
         # Throw event to signal manipulation done
-        messenger.send('manipulateObjectCleanup')
+        messenger.send('DIRECT_manipulateObjectCleanup')
         # Update placer to reflect new state
         self.updatePlacer()
         # If moving widget restart follow task

@@ -7,7 +7,9 @@ from DirectGrid import *
 from DirectGeometry import *
 from DirectLights import *
 from DirectSessionPanel import *
+from tkSimpleDialog import askstring
 import Placer
+import EntryScale
 import OnscreenText
 import types
 import __builtin__
@@ -44,6 +46,7 @@ class DirectSession(PandaObject):
         # Ancestry of currently selected object
         self.ancestry = []
         self.ancestryIndex = 0
+        self.activeParent = None
 
         self.readout = OnscreenText.OnscreenText( pos = (0.1, -0.95), bg=Vec4(1,1,1,1))
         # Make sure readout is never lit or drawn in wireframe
@@ -90,15 +93,19 @@ class DirectSession(PandaObject):
             ['highlightAll', self.selected.highlightAll],
             ['preRemoveNodePath', self.deselect],
             # Scene graph explorer functions
-            ['SGENodePath_Select', self.select],
-            ['SGENodePath_Deselect', self.deselect],
-            ['SGENodePath_Flash', self.flash],
-            ['SGENodePath_Isolate', self.isolate],
-            ['SGENodePath_Toggle Vis', self.toggleVis],
-            ['SGENodePath_Show All', self.showAllDescendants],
-            ['SGENodePath_Fit', self.fitOnNodePath],
-            ['SGENodePath_Place', Placer.place],
-            ['SGENodePath_Delete', self.removeNodePath],
+            ['SGE_Select', self.select],
+            ['SGE_Deselect', self.deselect],
+            ['SGE_Set Parent', self.setActiveParent],
+            ['SGE_Reparent', self.reparent],
+            ['SGE_Flash', self.flash],
+            ['SGE_Isolate', self.isolate],
+            ['SGE_Toggle Vis', self.toggleVis],
+            ['SGE_Show All', self.showAllDescendants],
+            ['SGE_Fit', self.fitOnNodePath],
+            ['SGE_Place', Placer.place],
+            ['SGE_Set Color', EntryScale.rgbPanel],
+            ['SGE_Delete', self.removeNodePath],
+            ['SGE_Set Name', self.getAndSetName],
             ]
         self.keyEvents = ['escape', 'delete', 'control', 'control-up',
                           'shift', 'shift-up', 'alt', 'alt-up',
@@ -195,17 +202,17 @@ class DirectSession(PandaObject):
     def inputHandler(self, input):
         # Deal with keyboard and mouse input
         if input == 'mouse1':
-            messenger.send('handleMouse1')
+            messenger.send('DIRECT_mouse1')
         elif input == 'mouse1-up':
-            messenger.send('handleMouse1Up')
+            messenger.send('DIRECT_mouse1Up')
         elif input == 'mouse2': 
-            messenger.send('handleMouse2')
+            messenger.send('DIRECT_mouse2')
         elif input == 'mouse2-up':
-            messenger.send('handleMouse2Up')
+            messenger.send('DIRECT_mouse2Up')
         elif input == 'mouse3': 
-            messenger.send('handleMouse3')
+            messenger.send('DIRECT_mouse3')
         elif input == 'mouse3-up':
-            messenger.send('handleMouse3Up')
+            messenger.send('DIRECT_mouse3Up')
         elif input == 'shift':
             self.fShift = 1
         elif input == 'shift-up':
@@ -249,7 +256,7 @@ class DirectSession(PandaObject):
     def select(self, nodePath, fMultiSelect = 0, fResetAncestry = 1):
         dnp = self.selected.select(nodePath, fMultiSelect)
         if dnp:
-            messenger.send('preSelectNodePath', [dnp])
+            messenger.send('DIRECT_preSelectNodePath', [dnp])
             if fResetAncestry:
                 # Update ancestry
                 self.ancestry = dnp.getAncestry()
@@ -276,7 +283,7 @@ class DirectSession(PandaObject):
             t.dnp = dnp
             taskMgr.spawnTaskNamed(t, 'followSelectedNodePath')
             # Send an message marking the event
-            messenger.send('selectedNodePath', [dnp])
+            messenger.send('DIRECT_selectedNodePath', [dnp])
 
     def followSelectedNodePathTask(self, state):
         mCoa2Render = state.dnp.mCoa2Dnp * state.dnp.getMat(render)
@@ -296,7 +303,7 @@ class DirectSession(PandaObject):
             taskMgr.removeTasksNamed('followSelectedNodePath')
             self.ancestry = []
             # Send an message marking the event
-            messenger.send('deselectedNodePath', [dnp])
+            messenger.send('DIRECT_deselectedNodePath', [dnp])
 
     def deselectAll(self):
         self.selected.deselectAll()
@@ -306,6 +313,20 @@ class DirectSession(PandaObject):
         self.readout.setText(' ')
         taskMgr.removeTasksNamed('followSelectedNodePath')
 
+    def setActiveParent(self, nodePath = None):
+        # Record new parent
+        self.activeParent = nodePath
+        # Alert everyone else
+        messenger.send('DIRECT_activeParent', [self.activeParent])
+        
+    def reparent(self, nodePath = None):
+        if nodePath and self.activeParent:
+            oldParent = nodePath.getParent()
+            nodePath.reparentTo(self.activeParent)
+            # Alert everyone else
+            messenger.send('DIRECT_reparent',
+                           [nodePath, oldParent, self.activeParent])
+        
     def flash(self, nodePath = 'None Given'):
         """ Highlight an object by setting it red for a few seconds """
         # Clean up any existing task
@@ -421,6 +442,14 @@ class DirectSession(PandaObject):
                     self.select(np, 0, 0)
                     self.flash(np)
 
+    def getAndSetName(self, nodePath):
+        """ Prompt user for new node path name """
+        newName = askstring('Node Path: ' + nodePath.getName(),
+                            'Enter new name:')
+        if newName:
+            nodePath.setName(newName)
+            messenger.send('DIRECT_nodePathSetName', [nodePath, newName])
+
     # UNDO REDO FUNCTIONS
     def pushUndo(self, nodePathList, fResetRedo = 1):
         # Assemble group of changes
@@ -435,10 +464,10 @@ class DirectSession(PandaObject):
         # Truncate list
         self.undoList = self.undoList[-25:]
         # Alert anyone who cares
-        messenger.send('pushUndo')
+        messenger.send('DIRECT_pushUndo')
         if fResetRedo and (nodePathList != []):
             self.redoList = []
-            messenger.send('redoListEmpty')
+            messenger.send('DIRECT_redoListEmpty')
 
     def popUndoGroup(self):
         # Get last item
@@ -447,7 +476,7 @@ class DirectSession(PandaObject):
         self.undoList = self.undoList[:-1]
         # Update state of undo button
         if not self.undoList:
-            messenger.send('undoListEmpty')
+            messenger.send('DIRECT_undoListEmpty')
         # Return last item
         return undoGroup
         
@@ -464,7 +493,7 @@ class DirectSession(PandaObject):
         # Truncate list
         self.redoList = self.redoList[-25:]
         # Alert anyone who cares
-        messenger.send('pushRedo')
+        messenger.send('DIRECT_pushRedo')
 
     def popRedoGroup(self):
         # Get last item
@@ -473,7 +502,7 @@ class DirectSession(PandaObject):
         self.redoList = self.redoList[:-1]
         # Update state of redo button
         if not self.redoList:
-            messenger.send('redoListEmpty')
+            messenger.send('DIRECT_redoListEmpty')
         # Return last item
         return redoGroup
         
@@ -489,7 +518,7 @@ class DirectSession(PandaObject):
                 # Undo xform
                 pose[0].setPosHprScale(pose[1], pose[2], pose[3])
             # Alert anyone who cares
-            messenger.send('undo')
+            messenger.send('DIRECT_undo')
 
     def redo(self):
         if self.redoList:
@@ -502,7 +531,7 @@ class DirectSession(PandaObject):
             for pose in redoGroup:
                 pose[0].setPosHprScale(pose[1], pose[2], pose[3])
             # Alert anyone who cares
-            messenger.send('redo')
+            messenger.send('DIRECT_redo')
 
     # UTILITY FUNCTIONS
     def useObjectHandles(self):

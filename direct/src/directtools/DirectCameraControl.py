@@ -21,8 +21,8 @@ class DirectCameraControl(PandaObject):
 	self.camManipRef = direct.group.attachNewNode('camManipRef')
         t = CAM_MOVE_DURATION
         self.actionEvents = [
-            ['handleMouse2', self.mouseFlyStart],
-            ['handleMouse2Up', self.mouseFlyStop],
+            ['DIRECT_mouse2', self.mouseFlyStart],
+            ['DIRECT_mouse2Up', self.mouseFlyStop],
             ['c', self.centerCamIn, 0.5],
             ['f', self.fitOnWidget],
             ['h', self.homeCam],
@@ -259,7 +259,10 @@ class DirectCameraControl(PandaObject):
         angle = getCrankAngle(state.coaCenter)
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
-        self.camManipRef.setHpr(self.camManipRef, 0, 0, -deltaAngle)
+        if base.config.GetBool('temp-hpr-fix',0):
+            self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
+        else:
+            self.camManipRef.setHpr(self.camManipRef, 0, 0, -deltaAngle)
         direct.camera.setMat(self.camManipRef, wrtMat)
         return Task.cont
 

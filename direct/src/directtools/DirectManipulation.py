@@ -24,8 +24,8 @@ class DirectManipulationControl(PandaObject):
         self.fScaling = 0
         self.mode = None
         self.actionEvents = [
-            ['handleMouse1', self.manipulationStart],
-            ['handleMouse1Up', self.manipulationStop],
+            ['DIRECT_mouse1', self.manipulationStart],
+            ['DIRECT_mouse1Up', self.manipulationStop],
             ['tab', self.toggleObjectHandlesMode],
             ['.', self.objectHandles.multiplyScalingFactorBy, 2.0],
             ['>', self.objectHandles.multiplyScalingFactorBy, 2.0],
@@ -111,7 +111,7 @@ class DirectManipulationControl(PandaObject):
         self.objectHandles.hideGuides()
         # Restart followSelectedNodePath task
         self.spawnFollowSelectedNodePathTask()
-        messenger.send('manipulateObjectCleanup')
+        messenger.send('DIRECT_manipulateObjectCleanup')
 
     def spawnFollowSelectedNodePathTask(self):
         # If nothing selected, just return
@@ -177,7 +177,7 @@ class DirectManipulationControl(PandaObject):
             # hide the bbox of the selected objects during interaction
             direct.selected.dehighlightAll()
             # Send event to signal start of manipulation
-            messenger.send('manipulateObjectStart')
+            messenger.send('DIRECT_manipulateObjectStart')
             # Manipulate the real object with the constraint
             # The constraint is passed as the name of the node 
             self.spawnManipulateObjectTask()
@@ -304,7 +304,10 @@ class DirectManipulationControl(PandaObject):
         elif self.rotateAxis == 'y':
             direct.widget.setR(direct.widget, -deltaAngle)
         elif self.rotateAxis == 'z':
-            direct.widget.setH(direct.widget, deltaAngle)
+            if base.config.GetBool('temp-hpr-fix',0):
+                direct.widget.setH(direct.widget, -deltaAngle)
+            else:
+                direct.widget.setH(direct.widget, deltaAngle)
         # Record crank angle for next time around
         self.lastCrankAngle = newAngle
 
@@ -416,7 +419,10 @@ class DirectManipulationControl(PandaObject):
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
         # Mouse motion edge to edge of display region results in one full turn
-        relHpr(direct.widget, direct.camera, 0, 0, deltaAngle)
+        if base.config.GetBool('temp-hpr-fix',0):
+            relHpr(direct.widget, direct.camera, 0, 0, -deltaAngle)
+        else:
+            relHpr(direct.widget, direct.camera, 0, 0, deltaAngle)
 
     def scale3D(self, state):
         # Scale the selected node based upon up down mouse motion
@@ -461,7 +467,7 @@ class DirectManipulationControl(PandaObject):
             # Move the objects with the widget
             direct.selected.moveWrtWidgetAll()
             # Let everyone know that something was moved
-            messenger.send('manipulateObjectCleanup')
+            messenger.send('DIRECT_manipulateObjectCleanup')
 
 class ObjectHandles(NodePath,PandaObject):
     def __init__(self):

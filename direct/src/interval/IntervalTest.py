@@ -1,5 +1,5 @@
 from PandaModules import *
-from DirectSessionGlobal import *
+from ShowBaseGlobal import *
 from IntervalGlobal import *
 from Actor import *
 

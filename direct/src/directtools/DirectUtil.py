@@ -1,4 +1,11 @@
 from PandaObject import *
+from EntryScale import EntryScale
+
+def adjust(command = None, min = 0.0, max = 1.0, text = 'Adjust'):
+    tl = Toplevel()
+    tl.title('Parameter Adjust')
+    es = EntryScale(tl, command = command, min = min, max = max, text = text)
+    es.pack(expand = 1, fill = X)
 
 ## Background Color ##
 def setBackgroundColor(r,g,b):

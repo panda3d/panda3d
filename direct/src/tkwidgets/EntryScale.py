@@ -22,7 +22,7 @@ class EntryScale(Pmw.MegaWidget):
             ('initialValue',        0.0,           Pmw.INITOPT),
             ('resolution',          0.001,         None),
             ('command',             None,          None),
-            ('callbackData',        [],       None),
+            ('callbackData',        [],            None),
             ('min',                 0.0,           self._updateValidate),
             ('max',                 100.0,         self._updateValidate),
             ('text',                'EntryScale',  self._updateLabelText),
@@ -328,6 +328,12 @@ class EntryScaleGroup(Pmw.MegaToplevel):
                 text = self['labels'][index])
             # Do this separately so command doesn't get executed during construction
             f['command'] = lambda val, s=self, i=index: s._entryScaleSetAt(i, val)
+            f['callbackData'] = [self]
+            # Callbacks
+            f.onReturn = self.__onReturn
+            f.onReturnRelease = self.__onReturnRelease
+            f.onPress = self.__onPress
+            f.onRelease = self.__onRelease
             f.pack(side = self['side'], expand = 1, fill = X)
             self.entryScaleList.append(f)
 
@@ -376,15 +382,80 @@ class EntryScaleGroup(Pmw.MegaToplevel):
     def reset(self):
         self.set(self['initialValue'])
 
+    def __onReturn(self, esg):
+        # Execute onReturn callback
+        apply(self.onReturn, esg.get())
 
-def setColor(nodePath, callback = None):
+    def onReturn(self, *args):
+        """ User redefinable callback executed on button press """
+        pass
+
+    def __onReturnRelease(self, esg):
+        # Execute onReturnRelease callback
+        apply(self.onReturnRelease, esg.get())
+
+    def onReturnRelease(self, *args):
+        """ User redefinable callback executed on button press """
+        pass
+
+    def __onPress(self, esg):
+        # Execute onPress callback
+        apply(self.onPress, esg.get())
+
+    def onPress(self, *args):
+        """ User redefinable callback executed on button press """
+        pass
+
+    def __onRelease(self, esg):
+        # Execute onRelease callback
+        apply(self.onRelease, esg.get())
+
+    def onRelease(self, *args):
+        """ User redefinable callback executed on button release """
+        pass
+
+def rgbPanel(nodePath, callback = None):
     def setNodePathColor(color, np = nodePath, cb = callback):
         np.setColor(color[0]/255.0, color[1]/255.0,
                     color[2]/255.0, color[3]/255.0)
         # Execute callback to pass along color info
         if cb:
             cb(color)
-    def popupColorPicker():
+    # Check init color
+    if nodePath.hasColor():
+        initColor = nodePath.getColor() * 255.0
+    else:
+        initColor = Vec4(255)
+    # Create entry scale group
+    esg = EntryScaleGroup(title = 'RGBA Panel: ' + nodePath.getName(),
+                          dim = 4,
+                          labels = ['R','G','B','A'],
+                          initialValue = [int(initColor[0]),
+                                          int(initColor[1]),
+                                          int(initColor[2]),
+                                          int(initColor[3])],
+                          Valuator_max = 255,
+                          Valuator_resolution = 1,
+                          # Destroy not withdraw panel on dismiss
+                          fDestroy = 1,
+                          command = setNodePathColor)
+    # Update menu button
+    esg.component('menubar').component('EntryScale Group-button')['text'] = (
+        'RGBA Panel')
+    # Update menu
+    menu = esg.component('menubar').component('EntryScale Group-menu')
+    # Some helper functions
+    # Clear color
+    menu.insert_command(index = 1, label = 'Clear Color',
+                        command = lambda np = nodePath: np.clearColor())
+    # Set Clear Transparency
+    menu.insert_command(index = 2, label = 'Set Transparency',
+                        command = lambda np = nodePath: np.setTransparency(1))
+    menu.insert_command(
+        index = 3, label = 'Clear Transparency',
+        command = lambda np = nodePath: np.clearTransparency())
+    # System color picker
+    def popupColorPicker(esg = esg):
         # Can pass in current color with: color = (255, 0, 0)
         color = tkColorChooser.askcolor(
             parent = esg.interior(),
@@ -392,26 +463,13 @@ def setColor(nodePath, callback = None):
             initialcolor = tuple(esg.get()[:3]))[0]
         if color:
             esg.set((color[0], color[1], color[2], esg.getAt(3)))
-    if isinstance(nodePath, NodePath):
-        if nodePath.hasColor():
-            initColor = nodePath.getColor() * 255.0
-        else:
-            initColor = Vec4(255)
-        esg = EntryScaleGroup(title = 'RGBA Panel',
-                              dim = 4,
-                              labels = ['R','G','B','A'],
-                              initialValue = [int(initColor[0]),
-                                              int(initColor[1]),
-                                              int(initColor[2]),
-                                              int(initColor[3])],
-                              Valuator_max = 255,
-                              Valuator_resolution = 1,
-                              # Destroy not withdraw panel on dismiss
-                              fDestroy = 1,
-                              command = setNodePathColor)
-        menu = esg.component('menubar').component('EntryScale Group-menu')
-        menu.insert_command(index = 1, label = 'Popup Color Picker',
-                            command = popupColorPicker)
+    menu.insert_command(index = 4, label = 'Popup Color Picker',
+                        command = popupColorPicker)
+    
+    # Set callback
+    def onRelease(r,g,b,a, nodePath = nodePath):
+        messenger.send('RGBPanel_setColor', [nodePath, r,g,b,a])
+    esg.onRelease = onRelease
     return esg
 
 ## SAMPLE CODE

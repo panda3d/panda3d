@@ -89,7 +89,7 @@ class DirectLights(NodePath):
         # Turn it on as a default
         self.setOn(directLight)
         # Send an event to all watching objects
-        messenger.send('DirectLights_addLight', [directLight])
+        messenger.send('DIRECT_addLight', [directLight])
         # Return the new light
         return directLight
 
@@ -101,6 +101,8 @@ class DirectLights(NodePath):
         """ Turn on all DIRECT lights """
         base.initialState.setAttribute(LightTransition.getClassType(),
                                        self.la)
+        # Make sure there is a default material
+        render.setMaterial(Material())
 
     def allOff(self):
         """ Turn off all DIRECT lights """
