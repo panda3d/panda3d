@@ -444,7 +444,7 @@ class LevelEditor(NodePath, PandaObject):
             ('C', self.placeBattleCell),
             ('o', self.addToLandmarkBlock),
             ('O', self.toggleShowLandmarkBlock),
-            ('5', self.pdbBreak),
+            ('%', self.pdbBreak),
             ]
                 
         # Initialize state
@@ -1158,6 +1158,10 @@ class LevelEditor(NodePath, PandaObject):
             self.DNATarget = dnaObject
             if direct.fControl:
                 menuMode = 'prop_color'
+            if direct.fShift:
+                menuMode = 'sign_texture'
+                self.DNATarget = DNAGetChildOfClass(dnaObject, DNA_SIGN)
+                self.DNATargetParent = dnaObject
             else:
                 menuMode = 'prop_texture'
         elif DNAClassEqual(dnaObject, DNA_LANDMARK_BUILDING):
@@ -4188,7 +4192,9 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         dnaRoot=self.levelEditor.selectedDNARoot
         if not dnaRoot:
             return
-        if (DNAGetClassType(dnaRoot).eq(DNA_LANDMARK_BUILDING)):
+        objClass=DNAGetClassType(dnaRoot)
+        if (objClass.eq(DNA_LANDMARK_BUILDING)
+                or objClass.eq(DNA_PROP)):
             target=DNAGetChildRecursive(dnaRoot, DNA_SIGN)
             return target
         
