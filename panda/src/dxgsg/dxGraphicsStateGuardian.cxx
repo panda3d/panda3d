@@ -6542,9 +6542,10 @@ prepare_geom_node(GeomNode *node) {
   }
 
   assert(pVertData!=NULL);
+  _pCurrentGeomContext = dx_gnc;
   _pCurrentGeomContext->_pEndofVertData=(BYTE*)pVertData;
   _bDrawPrimDoSetupVertexBuffer = true;
-  _pCurrentGeomContext = dx_gnc;
+
 
   for (i = 0; (i < num_geoms); i++) {
     dDrawable *drawable1 = node->get_geom(i);
@@ -6557,13 +6558,14 @@ prepare_geom_node(GeomNode *node) {
     if(geom->is_dynamic()) {
       dx_gnc->_other_geoms.push_back(geom);
     } else {
+       dx_gnc->_cached_geoms.push_back(geom);
        node->get_geom(i)->draw(this);
     }
   }
 
   _bDrawPrimDoSetupVertexBuffer = false;
-  _pCurrentGeomContext = NULL;
   _pCurrentGeomContext->_pEndofVertData=NULL;  
+  _pCurrentGeomContext = NULL;
 
   hr=dx_gnc->_pVB->Unlock();
   if(FAILED(hr)) {
@@ -6654,22 +6656,22 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
       }
   }
 
+  // need to tell draw_prims to use DrawPrimitiveVB with current vertex buffer
 
-  for (i = 0; i < num_geoms; i++) {
-      node->get_geom(i)->draw(this);
+  for (i = 0; i < dx_gnc->_cached_geoms.size(); i++) {
+      dx_gnc->_cached_geoms[i]->draw(this);
+  }
+  // unset the flag above
+
+  // Also draw all the dynamic Geoms.
+  for (i = 0; i < dx_gnc->_other_geoms.size(); i++) {
+      dx_gnc->_other_geoms[i]->draw(this);
   }
 
 #if 0 //def DO_PSTATS
     DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
     _vertices_display_list_pcollector.add_level(dx_gnc->_num_verts);
 #endif
-
-
-  // Also draw all the dynamic Geoms.
-  for (i = 0; i < num_geoms; i++) {
-      dx_gnc->_other_geoms[i]->draw(this);
-  }
-
 }
 
 ////////////////////////////////////////////////////////////////////

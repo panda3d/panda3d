@@ -52,7 +52,7 @@ public:
   // A list of the dynamic Geoms within the GeomNode; these aren't
   // part of the above display list and must be drawn separately
   typedef pvector<PT(dDrawable) > Geoms;
-  Geoms _other_geoms;
+  Geoms _cached_geoms,_other_geoms;
 
   // VB's are already reference-counted by D3D, no need to make separate panda object to do that
   // but we will want a way to know if VB has already been xformed by ProcessVerts this frame
