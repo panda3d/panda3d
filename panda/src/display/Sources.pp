@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-				   
+                   
 #begin lib_target
   #define TARGET display
   #define LOCAL_LIBS \
@@ -38,6 +38,8 @@
     noninteractiveGraphicsPipe.h pipeSpec.I pipeSpec.h renderBuffer.h \
     savedFrameBuffer.I savedFrameBuffer.h textureContext.I \
     textureContext.h
+
+  #define PRECOMPILED_HEADER display_headers.h  
 
   #define IGATESCAN all
 

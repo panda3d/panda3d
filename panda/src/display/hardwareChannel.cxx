@@ -15,8 +15,16 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "display_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "hardwareChannel.h"
 #include "config_display.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

@@ -1,5 +1,5 @@
-// Filename: savedFrameBuffer.cxx
-// Created by:  drose (06Oct99)
+// Filename: xxx_headers.h
+// Created by:  georges (30May01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,14 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "display_headers.h"
-#endif
+#include <keyboardButton.h>
+#include <mouseButton.h>
+
+#include "config_display.h"
+#include "graphicsChannel.h"
+#include "graphicsLayer.h"
+#include "graphicsPipe.h"
+#include "graphicsStateGuardian.h"
+#include "graphicsWindow.h"
+#include "hardwareChannel.h"
+#include "interactiveGraphicsPipe.h"
+#include "noninteractiveGraphicsPipe.h"
+#include "savedFrameBuffer.h"
+#include "textureContext.h"
+
+#include <algorithm>
+#include <map>
 
 #pragma hdrstop
 
-#if !defined(WIN32_VC) || defined(NO_PCH)
-#include "savedFrameBuffer.h"
-#endif
-
-TypeHandle SavedFrameBuffer::_type_handle;

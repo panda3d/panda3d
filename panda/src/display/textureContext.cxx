@@ -16,10 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "textureContext.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "display_headers.h"
+#endif
 
-#include <texture.h>
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "textureContext.h"
+#endif
+
 #include <pixelBuffer.h>
+#include <texture.h>
 
 TypeHandle TextureContext::_type_handle;
 
