@@ -13,6 +13,9 @@
 #include "fltTransformScale.h"
 #include "fltTransformTranslate.h"
 #include "fltTransformRotateScale.h"
+#include "config_flt.h"
+
+#include <assert.h>
 
 TypeHandle FltBead::_type_handle;
 
@@ -356,6 +359,7 @@ write_transform(FltRecordWriter &writer) const {
   Transforms::const_iterator ti;
   for (ti = _transform_steps.begin(); ti != _transform_steps.end(); ++ti) {
     if (!(*ti)->build_record(writer)) {
+      assert(!flt_error_abort);
       return FE_invalid_record;
     }
     FltError result = writer.advance();

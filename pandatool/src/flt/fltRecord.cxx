@@ -16,8 +16,11 @@
 #include "fltInstanceRef.h"
 #include "fltUnsupportedRecord.h"
 #include "fltExternalReference.h"
+#include "config_flt.h"
 
 #include <indent.h>
+
+#include <assert.h>
 
 TypeHandle FltRecord::_type_handle;
 
@@ -44,8 +47,8 @@ FltRecord::
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecord::get_num_children
 //       Access: Public
-//  Description: Returns the number of child records of this record.  This
-//               reflects the normal scene graph hierarchy.
+//  Description: Returns the number of child records of this record.
+//               This reflects the normal scene graph hierarchy.
 ////////////////////////////////////////////////////////////////////
 int FltRecord::
 get_num_children() const {
@@ -430,6 +433,7 @@ FltError FltRecord::
 read_record_and_children(FltRecordReader &reader) {
   if (!extract_record(reader)) {
     nout << "Could not extract record for " << *this << "\n";
+    assert(!flt_error_abort);
     return FE_invalid_record;
   }
   FltError result = reader.advance();
@@ -468,6 +472,7 @@ read_record_and_children(FltRecordReader &reader) {
 	}
 
 	if (reader.eof() || reader.error()) {
+	  assert(!flt_error_abort);
 	  return FE_end_of_file;
 	}
       }
@@ -487,6 +492,7 @@ read_record_and_children(FltRecordReader &reader) {
 	}
 	add_subface(subface);
 	if (reader.eof() || reader.error()) {
+	  assert(!flt_error_abort);
 	  return FE_end_of_file;
 	}
       }
@@ -555,6 +561,7 @@ FltError FltRecord::
 write_record_and_children(FltRecordWriter &writer) const {
   // First, write the record.
   if (!build_record(writer)) {
+    assert(!flt_error_abort);
     return FE_bad_data;
   }
 
@@ -571,6 +578,7 @@ write_record_and_children(FltRecordWriter &writer) const {
   Records::const_iterator ci;
   for (ci = _ancillary.begin(); ci != _ancillary.end(); ++ci) {
     if (!(*ci)->build_record(writer)) {
+      assert(!flt_error_abort);
       return FE_bad_data;
     }
     result = writer.advance();

@@ -286,13 +286,6 @@ prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
     if (result != (CVSSourceDirectory *)NULL) {
       return result;
     }
-
-  } else { // dirs.empty()
-    nassertr(dirs.empty(), (CVSSourceDirectory *)NULL);
-    // The file does not already exist.
-    if (!interactive) {
-      return suggested_dir;
-    }
   }
 
   // The file does not already exist, or the user declined to replace

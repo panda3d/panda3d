@@ -6,8 +6,11 @@
 #include "fltRecordWriter.h"
 #include "fltInstanceDefinition.h"
 #include "fltHeader.h"
+#include "config_flt.h"
 
 #include <datagram.h>
+
+#include <assert.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecordWriter::Constructor
@@ -86,12 +89,14 @@ advance() {
 
   _out.write(dg.get_message().data(), dg.get_length());
   if (_out.fail()) {
+    assert(!flt_error_abort);
     return FE_write_error;
   }
 
   // Now write the rest of the record.
   _out.write(_datagram.get_message().data(), _datagram.get_length());
   if (_out.fail()) {
+    assert(!flt_error_abort);
     return FE_write_error;
   }
 
@@ -133,6 +138,7 @@ write_instance_def(FltHeader *header, int instance_index) {
 
   FltInstanceDefinition *instance = header->get_instance(instance_index);
   if (instance == (FltInstanceDefinition *)NULL) {
+    assert(!flt_error_abort);
     return FE_undefined_instance;
   }
 

@@ -34,6 +34,13 @@
 
 Configure(config_flt);
 
+// Set this true to trigger an assertion failure (and core dump)
+// immediately when an error is detected on reading or writing a flt
+// file.  This is primarily useful for debugging the flt reader
+// itself, to generate a stack trace to determine precisely at what
+// point a flt file failed.
+const bool flt_error_abort = config_flt.GetBool("flt-error-abort", false);
+
 ConfigureFn(config_flt) {
   FltRecord::init_type();
   FltBead::init_type();
@@ -61,3 +68,4 @@ ConfigureFn(config_flt) {
   FltTransformRotateScale::init_type();
   FltExternalReference::init_type();
 }
+

@@ -6,6 +6,6 @@
 #ifndef CONFIG_FLT_H
 #define CONFIG_FLT_H
 
-// No configure variables.
+extern const bool flt_error_abort;
 
 #endif

@@ -7,6 +7,9 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 #include "fltUnsupportedRecord.h"
+#include "config_flt.h"
+
+#include <assert.h>
 
 TypeHandle FltHeader::_type_handle;
 
@@ -76,6 +79,7 @@ read_flt(Filename filename) {
 
   ifstream in;
   if (!filename.open_read(in)) {
+    assert(!flt_error_abort);
     return FE_could_not_open;
   }
 
@@ -101,6 +105,7 @@ read_flt(istream &in) {
   FltRecordReader reader(in);
   FltError result = reader.advance();
   if (result == FE_end_of_file) {
+    assert(!flt_error_abort);
     return FE_empty_file;
   } else if (result != FE_ok) {
     return result;
@@ -112,6 +117,7 @@ read_flt(istream &in) {
   }
 
   if (!reader.eof()) {
+    assert(!flt_error_abort);
     return FE_extra_data;
   }
 
@@ -132,6 +138,7 @@ write_flt(Filename filename) {
 
   ofstream out;
   if (!filename.open_write(out)) {
+    assert(!flt_error_abort);
     return FE_could_not_open;
   }
 
@@ -151,6 +158,7 @@ write_flt(ostream &out) {
   FltError result = write_record_and_children(writer);
 
   if (out.fail()) {
+    assert(!flt_error_abort);
     return FE_write_error;
   }
   return result;
@@ -1455,6 +1463,7 @@ write_color_palette(FltRecordWriter &writer) const {
   Colors::const_iterator ci;
   for (ci = _colors.begin(); num_colors > 0 && ci != _colors.end(); ++ci) {
     if (!(*ci).build_record(writer)) {
+      assert(!flt_error_abort);
       return FE_invalid_record;
     }
     num_colors--;
@@ -1466,6 +1475,7 @@ write_color_palette(FltRecordWriter &writer) const {
     FltPackedColor empty;
     while (num_colors > 0) {
       if (!empty.build_record(writer)) {
+	assert(!flt_error_abort);
 	return FE_invalid_record;
       }
       num_colors--;
@@ -1573,6 +1583,7 @@ write_eyepoint_palette(FltRecordWriter &writer) const {
   int num_eyepoints = get_num_eyepoints();
   for (i = 0; i < num_eyepoints; i++) {
     if (!_eyepoints[i].build_record(writer)) {
+      assert(!flt_error_abort);
       return FE_bad_data;
     }
   }
@@ -1580,6 +1591,7 @@ write_eyepoint_palette(FltRecordWriter &writer) const {
   int num_trackplanes = get_num_trackplanes();
   for (i = 0; i < num_trackplanes; i++) {
     if (!_trackplanes[i].build_record(writer)) {
+      assert(!flt_error_abort);
       return FE_bad_data;
     }
   }

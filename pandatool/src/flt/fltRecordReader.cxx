@@ -4,8 +4,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "fltRecordReader.h"
+#include "config_flt.h"
 
 #include <datagramIterator.h>
+
+#include <assert.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecordReader::Constructor
@@ -95,9 +98,11 @@ get_record_length() const {
 FltError FltRecordReader::
 advance() {
   if (_state == S_eof) {
+    assert(!flt_error_abort);
     return FE_end_of_file;
   }
   if (_state == S_error) {
+    assert(!flt_error_abort);
     return FE_read_error;
   }
   if (_iterator != (DatagramIterator *)NULL) {
@@ -113,10 +118,12 @@ advance() {
 
   if (_in.eof()) {
     _state = S_eof;
+    assert(!flt_error_abort);
     return FE_end_of_file;
 
   } else if (_in.fail()) {
     _state = S_error;
+    assert(!flt_error_abort);
     return FE_read_error;
   }
 
@@ -137,11 +144,13 @@ advance() {
 
   if (_in.eof()) {
     _state = S_eof;
+    assert(!flt_error_abort);
     return FE_end_of_file;
   }
 
   if (_in.fail()) {
     _state = S_error;
+    assert(!flt_error_abort);
     return FE_read_error;
   }
 
