@@ -5,7 +5,7 @@
 ##
 ## This script builds the panda source tarball and zip-file
 ##
-##    usage: maketarball [version]
+##    usage: maketarball [version] [more options]
 ##
 ## The source tarball contains most of what is in CVS, but some of the
 ## control files (like the CVS directories themselves) are stripped out.
@@ -61,7 +61,7 @@ os.chdir(PANDASOURCE)
 def printUsage():
     sys.exit("usage: maketarball [version]")
 
-if (len(sys.argv)==2):
+if (len(sys.argv)>=2):
     VERSION = sys.argv[1]
     if (len(VERSION.split(".")) != 3): printUsage()
 elif (len(sys.argv)==1):
@@ -77,7 +77,6 @@ elif (len(sys.argv)==1):
         f.close()
     except: sys.exit("Cannot read version number from dtool/PandaVersion.pp")
 else: printUsage()
-    
 
 ########################################################################
 ##
@@ -98,7 +97,7 @@ The Panda3D engine.
 %prep
 %setup -q
 %build
-makepanda/makepanda.py --version VERSION --everything
+makepanda/makepanda.py --version VERSION --everything MOREARGUMENTS
 %install
 PYTHONV=`cat built/tmp/pythonversion`
 rm -rf $RPM_BUILD_ROOT
@@ -110,7 +109,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/lib/$PYTHONV/lib-dynload
 mkdir -p $RPM_BUILD_ROOT/etc/ld.so.conf.d
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 
-sed -e 's@$THIS_PRC_DIR/[.]@/usr/share/panda3d@' < doc/Config.prc > $RPM_BUILD_ROOT/etc/Config.prc
+sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < doc/Config.prc > $RPM_BUILD_ROOT/etc/Config.prc
 
 cp --recursive built/lib     $RPM_BUILD_ROOT/usr/lib/panda3d
 cp --recursive built/include $RPM_BUILD_ROOT/usr/include/panda3d
@@ -144,13 +143,19 @@ done
 rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
+/etc/Config.prc
 /usr/share/panda3d
 /etc/ld.so.conf.d/panda3d.conf
 /usr/bin
+/usr/lib
+/usr/include/panda3d
 """
 
+MORE=''
+for x in sys.argv[2:]: MORE=MORE+x+' '
 SPEC=SPEC.replace("VERSION",str(VERSION))
-
+SPEC=SPEC.replace("MOREARGUMENTS",MORE)
+                  
 ########################################################################
 ##
 ## Build the Zip-file and Tar-File
