@@ -6087,10 +6087,6 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
         } else {
            // seems wrong to release to zero, since it might be being used somewhere else?
 
-           // BUGBUG: running w/fpsmeter font surface seems to cause releasing d3ddevice to release fewer
-           // references to IDDraw7, which leaves IDDraw with a >0 refcnt after our release.  Havent figured
-           // out why, but doesnt seem to cause a problem now since we're exiting...
-
            RELEASE(_pDD,dxgsg,"IDirectDraw7 _pDD", false);  
            if(refcnt>0) {
               if(dxgsg_cat.is_spam())
