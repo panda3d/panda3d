@@ -183,14 +183,12 @@ operator < (const TransformState &other) const {
 size_t TransformState::
 get_hash() const {
   size_t hash = 0;
-  int_hash ihasher;
-  pointer_hash phasher;
 
   static const int significant_flags = 
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given);
 
   int flags = (_flags & significant_flags);
-  hash = ihasher.add_hash(hash, flags);
+  hash = int_hash::add_hash(hash, flags);
 
   if ((_flags & (F_is_invalid | F_is_identity)) == 0) {
     // Only bother to put the rest of the stuff in the hash if the
@@ -216,7 +214,7 @@ get_hash() const {
       // matrix-based TransformStates are considered to be different,
       // even if their matrices have the same values.
 
-      hash = phasher.add_hash(hash, this);
+      hash = pointer_hash::add_hash(hash, this);
     }
   }
   
