@@ -64,6 +64,7 @@ class DirectFrame(DirectGuiWidget):
                 if text == None:
                     return
                 else:
+                    from OnscreenText import OnscreenText
                     self.createcomponent(
                         component, (), 'text',
                         OnscreenText,

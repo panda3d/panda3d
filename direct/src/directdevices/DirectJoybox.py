@@ -42,7 +42,7 @@ class DirectJoybox(PandaObject):
         self.analogs = direct.deviceManager.createAnalogs(self.device)
         self.buttons = direct.deviceManager.createButtons(self.device)
         self.aList = [0,0,0,0,0,0,0,0]
-        self.bList = [0,0,0,0,0,0,0,0]
+        self.bList = [0,0,0,0,0,0,0,0,0,0,0,0]
         # For joybox fly mode
         # Default is joe mode
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,

@@ -1,21 +1,28 @@
 """ Class used to create and control vrpn devices """
-from PandaObject import *
-from DirectGeometry import CLAMP
+
+from DirectObject import *
+from PandaModules import *
 
 ANALOG_MIN = -0.95
 ANALOG_MAX = 0.95
 ANALOG_RANGE = ANALOG_MAX - ANALOG_MIN
 ANALOG_DEADBAND = 0.075
 
-class DirectDeviceManager(VrpnClient, PandaObject):
+try:
+    myBase = base
+except:
+    myBase = simbase
+
+class DirectDeviceManager(VrpnClient, DirectObject):
     def __init__(self, server = None):
+
         # Determine which server to use
         if server != None:
             # One give as constructor argument
             self.server = server
         else:
             # Check config file, if that fails, use default
-            self.server = base.config.GetString('vrpn-server', 'spacedyne')
+            self.server = myBase.config.GetString('vrpn-server', 'spacedyne')
         
         # Create a vrpn client
         VrpnClient.__init__(self, self.server)
@@ -35,7 +42,7 @@ class DirectDeviceManager(VrpnClient, PandaObject):
     def createTimecodeReader(self, device):
         return DirectTimecodeReader(self, device)
 
-class DirectButtons(ButtonNode, PandaObject):
+class DirectButtons(ButtonNode, DirectObject):
     buttonCount = 0
     def __init__(self, vrpnClient, device):
         # Keep track of number of buttons created
@@ -45,7 +52,7 @@ class DirectButtons(ButtonNode, PandaObject):
         # Create a new button node for the given device
         ButtonNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
-        self.nodePath = base.dataRoot.attachNewNode(self)
+        self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
         if (index < 0) or (index > self.getNumButtons()):
@@ -56,10 +63,10 @@ class DirectButtons(ButtonNode, PandaObject):
         return self.getNumButtons()
     
     def enable(self):
-        self.nodePath.reparentTo(base.dataRoot)
+        self.nodePath.reparentTo(myBase.dataRoot)
     
     def disable(self):
-        self.nodePath.reparentTo(base.dataUnused)
+        self.nodePath.reparentTo(myBase.dataUnused)
     
     def getName(self):
         return self.name
@@ -73,7 +80,7 @@ class DirectButtons(ButtonNode, PandaObject):
             str = str + '%d' % val + ' '
         return str
 
-class DirectAnalogs(AnalogNode, PandaObject):
+class DirectAnalogs(AnalogNode, DirectObject):
     analogCount = 0
     def __init__(self, vrpnClient, device):
         # Keep track of number of analogs created
@@ -83,7 +90,7 @@ class DirectAnalogs(AnalogNode, PandaObject):
         # Create a new analog node for the given device
         AnalogNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
-        self.nodePath = base.dataRoot.attachNewNode(self)
+        self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
         if (index < 0) or (index > self.getNumControls()):
@@ -94,10 +101,10 @@ class DirectAnalogs(AnalogNode, PandaObject):
         return self.getNumControls()
     
     def enable(self):
-        self.nodePath.reparentTo(base.dataRoot)
+        self.nodePath.reparentTo(myBase.dataRoot)
     
     def disable(self):
-        self.nodePath.reparentTo(base.dataUnused)
+        self.nodePath.reparentTo(myBase.dataUnused)
     
     def normalize(self, val, minVal = -1, maxVal = 1):
         # First record sign
@@ -108,7 +115,8 @@ class DirectAnalogs(AnalogNode, PandaObject):
         # Zero out values in deadband
         val = sign * max(abs(val) - ANALOG_DEADBAND, 0.0)
         # Now clamp value between minVal and maxVal
-        val = CLAMP(val, ANALOG_MIN, ANALOG_MAX)
+        val = min( max( val, ANALOG_MIN ), ANALOG_MAX )
+#        val = CLAMP(val, ANALOG_MIN, ANALOG_MAX)
         return (((maxVal - minVal) * ((val - ANALOG_MIN) / ANALOG_RANGE))
                 + minVal)
     
@@ -134,7 +142,7 @@ class DirectAnalogs(AnalogNode, PandaObject):
             str = str + '%.3f' % val + ' '
         return str
 
-class DirectTracker(TrackerNode, PandaObject):
+class DirectTracker(TrackerNode, DirectObject):
     trackerCount = 0
     def __init__(self, vrpnClient, device):
         # Keep track of number of trackers created
@@ -144,13 +152,13 @@ class DirectTracker(TrackerNode, PandaObject):
         # Create a new tracker node for the given device
         TrackerNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
-        self.nodePath = base.dataRoot.attachNewNode(self)
+        self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def enable(self):
-        self.nodePath.reparentTo(base.dataRoot)
+        self.nodePath.reparentTo(myBase.dataRoot)
     
     def disable(self):
-        self.nodePath.reparentTo(base.dataUnused)
+        self.nodePath.reparentTo(myBase.dataUnused)
     
     def getName(self):
         return self.name
@@ -164,7 +172,7 @@ class DirectTracker(TrackerNode, PandaObject):
             str = str + '%.3f' % val + ' '
         return str
 
-class DirectDials(DialNode, PandaObject):
+class DirectDials(DialNode, DirectObject):
     dialCount = 0
     def __init__(self, vrpnClient, device):
         # Keep track of number of dials created
@@ -174,7 +182,7 @@ class DirectDials(DialNode, PandaObject):
         # Create a new dial node for the given device
         DialNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
-        self.nodePath = base.dataRoot.attachNewNode(self)
+        self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
         if (index < 0) or (index > self.getNumDials()):
@@ -185,10 +193,10 @@ class DirectDials(DialNode, PandaObject):
         return self.getNumDials()
     
     def enable(self):
-        self.nodePath.reparentTo(base.dataRoot)
+        self.nodePath.reparentTo(myBase.dataRoot)
     
     def disable(self):
-        self.nodePath.reparentTo(base.dataUnused)
+        self.nodePath.reparentTo(myBase.dataUnused)
     
     def getName(self):
         return self.name
@@ -202,7 +210,7 @@ class DirectDials(DialNode, PandaObject):
             str = str + '%.3f' % val + ' '
         return str
 
-class DirectTimecodeReader(AnalogNode, PandaObject):
+class DirectTimecodeReader(AnalogNode, DirectObject):
     timecodeReaderCount = 0
     def __init__(self, vrpnClient, device):
         # Keep track of number of timecodeReader created
@@ -218,13 +226,13 @@ class DirectTimecodeReader(AnalogNode, PandaObject):
         # Create a new dial node for the given device
         AnalogNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
-        self.nodePath = base.dataRoot.attachNewNode(self)
+        self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def enable(self):
-        self.nodePath.reparentTo(base.dataRoot)
+        self.nodePath.reparentTo(myBase.dataRoot)
     
     def disable(self):
-        self.nodePath.reparentTo(base.dataUnused)
+        self.nodePath.reparentTo(myBase.dataUnused)
     
     def getName(self):
         return self.name
@@ -253,3 +261,18 @@ class DirectTimecodeReader(AnalogNode, PandaObject):
     def __repr__(self):
         str = ('%s: %d:%d:%d:%d' % ((self.name,) + self.getTime()[:-1]))
         return str
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
