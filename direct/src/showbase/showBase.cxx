@@ -279,11 +279,8 @@ void take_snapshot(GraphicsWindow *win, const string &name) {
   GraphicsStateGuardian* gsg = win->get_gsg();
   const RenderBuffer& rb = gsg->get_render_buffer(RenderBuffer::T_front);
 
-  //  p.set_xsize(win->get_width());
-  //  p.set_ysize(win->get_height());
-  //  p._image = PTA_uchar(win->get_width() * win->get_height() * 3);
-
-  CPT(DisplayRegion) dr = gsg->get_current_display_region();
+  //  CPT(DisplayRegion) dr = gsg->get_current_display_region();
+  CPT(DisplayRegion) dr = win->get_channel(0)->get_layer(0)->get_dr(0);
   nassertv(dr != (DisplayRegion *)NULL);
 
   int width = dr->get_pixel_width();
