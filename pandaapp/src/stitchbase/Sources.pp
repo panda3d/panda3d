@@ -3,7 +3,7 @@
 
 #begin ss_lib_target
   #define TARGET stitchbase
-  #define LOCAL_LIBS
+  #define LOCAL_LIBS pandaappbase
   #define OTHER_LIBS \
     progbase \
     putil:c express:c mathutil:c linmath:c pnmimage:c pnm:c panda:m
@@ -24,7 +24,11 @@
     stitchPerspectiveLens.h stitchPoint.cxx stitchPoint.h stitcher.cxx \
     stitcher.h triangle.cxx triangle.h triangleRasterizer.cxx \
     triangleRasterizer.h \
-    stitchParserDefs.h stitchParser.yxx stitchLexerDefs.h stitchLexer.lxx
+    stitchParserDefs.h stitchParser.yxx stitchLexerDefs.h stitchLexer.lxx \
+    stitchCylindricalScreen.cxx stitchCylindricalScreen.h \
+    stitchFlatScreen.cxx stitchFlatScreen.h \
+    stitchMultiScreen.cxx stitchMultiScreen.h \
+    stitchScreen.cxx stitchScreen.h
 
   #define INSTALL_HEADERS \
     config_stitch.h fixedPoint.h layeredImage.h morphGrid.h stitchCommand.h \
@@ -33,6 +37,11 @@
     stitchImageOutputter.h stitchImageRasterizer.h stitchLens.h \
     stitchLexerDefs.h stitchPSphereLens.h stitchParser.h \
     stitchParserDefs.h stitchPerspectiveLens.h stitchPoint.h \
-    stitcher.h triangle.h triangleRasterizer.h
+    stitcher.h triangle.h triangleRasterizer.h \
+    stitchCylindricalScreen.h \
+    stitchFlatScreen.h \
+    stitchMultiScreen.h \
+    stitchScreen.h
+
 
 #end ss_lib_target

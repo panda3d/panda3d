@@ -19,10 +19,34 @@
 #include "stitchImageOutputter.h"
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageOutputter::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 StitchImageOutputter::
 StitchImageOutputter() {
+  _screen = new StitchMultiScreen;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageOutputter::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 StitchImageOutputter::
 ~StitchImageOutputter() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageOutputter::add_screen
+//       Access: Public
+//  Description: Adds a screen to the list of screens projected onto.
+//               If there are no screens, the default is to project
+//               the images to infinity; otherwise, the screens are
+//               used.
+////////////////////////////////////////////////////////////////////
+void StitchImageOutputter::
+add_screen(StitchScreen *screen) {
+  _screen->add_screen(screen);
 }

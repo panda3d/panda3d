@@ -20,8 +20,8 @@
 #include "stitchLens.h"
 #include "layeredImage.h"
 
-#include <compose_matrix.h>
-#include <rotate_to.h>
+#include "compose_matrix.h"
+#include "rotate_to.h"
 
 StitchImage::
 StitchImage(const string &name, const string &filename,
@@ -32,13 +32,15 @@ StitchImage(const string &name, const string &filename,
   _size_pixels(size_pixels),
   _pixels_per_mm(pixels_per_mm),
   _film_offset_mm(film_offset_mm),
-  _rotate(LMatrix3d::ident_mat()),
-  _inv_rotate(LMatrix3d::ident_mat()),
+  _transform(LMatrix4d::ident_mat()),
+  _inv_transform(LMatrix4d::ident_mat()),
   _filename(filename),
   _name(name)
 {
   _size_mm.set((_size_pixels[0] - 1.0) / _pixels_per_mm[0],
                (_size_pixels[1] - 1.0) / _pixels_per_mm[1]);
+  _orig_size_pixels = _size_pixels;
+  _orig_pixels_per_mm = _pixels_per_mm;
 
   // There are several coordinate systems to talk about points on the
   // image.
@@ -54,16 +56,6 @@ StitchImage(const string &name, const string &filename,
   // at film_offset_mm at the center, and range from
   // film_offset_mm-size_mm at the lower-left, to
   // film_offset_mm+size_mm at the upper-right.
-
-  LVector2d pixels_per_uv(_size_pixels[0] - 1.0, _size_pixels[1] - 1.0);
-
-  _pixels_to_uv =
-    LMatrix3d::translate_mat(LVector2d(0.0, -pixels_per_uv[1])) *
-    LMatrix3d::scale_mat(1.0 / pixels_per_uv[0], -1.0 / pixels_per_uv[1]);
-
-  _uv_to_pixels =
-    LMatrix3d::scale_mat(pixels_per_uv[0], -pixels_per_uv[1]) *
-    LMatrix3d::translate_mat(LVector2d(0.0, pixels_per_uv[1]));
 
   /*
   nout << "_pixels_to_uv * _uv_to_pixels is\n"
@@ -88,8 +80,7 @@ StitchImage(const string &name, const string &filename,
     LMatrix3d::scale_mat(1.0 / mm_per_uv[0], 1.0 / mm_per_uv[1]) *
     LMatrix3d::translate_mat(LVector2d(0.5, 0.5) + _film_offset_mm);
 
-  _pixels_to_mm = _pixels_to_uv * _uv_to_mm;
-  _mm_to_pixels = _mm_to_uv * _uv_to_pixels;
+  setup_pixel_scales();
 
   _show_points = false;
   setup_grid(2, 2);
@@ -98,6 +89,9 @@ StitchImage(const string &name, const string &filename,
   _untextured_color.set(1.0, 1.0, 1.0, 1.0);
   _index = 0;
   _hpr_set = false;
+  _pos_set = false;
+  _hpr.set(0.0, 0.0, 0.0);
+  _pos.set(0.0, 0.0, 0.0);
   _layered_type = LT_flat;
   _layer_index = 0;
   _layered_image = NULL;
@@ -194,6 +188,7 @@ close_layer(bool nonempty) {
         _layer_index++;
         sprintf(buff, _filename.c_str(), _layer_index);
         nout << "Writing layer " << _layer_name << " as " << buff << "\n";
+        resize_data();
         result = _data->write(buff);
       }
     }
@@ -204,6 +199,7 @@ close_layer(bool nonempty) {
       result = false;
     } else {
       if (nonempty) {
+        resize_data();
         _layered_image->add_layer(_layer_name, LVector2d(0.0, 0.0),
                                   _data);
         _data = NULL;
@@ -232,6 +228,7 @@ close_output_file() {
       result = false;
     } else {
       nout << "Writing " << _filename << "\n";
+      resize_data();
       result = _data->write(_filename);
     }
   }
@@ -242,23 +239,49 @@ close_output_file() {
 
 void StitchImage::
 clear_transform() {
-  _rotate = LMatrix3d::ident_mat();
-  _inv_rotate = LMatrix3d::ident_mat();
+  _transform = LMatrix3d::ident_mat();
+  _inv_transform = LMatrix3d::ident_mat();
+  _hpr_set = false;
+  _pos_set = false;
+  _hpr.set(0.0, 0.0, 0.0);
+  _pos.set(0.0, 0.0, 0.0);
   _morph.clear();
 }
 
 void StitchImage::
-set_transform(const LMatrix3d &rot) {
-  _rotate = rot;
-  _inv_rotate = invert(rot);
+set_transform(const LMatrix4d &trans) {
+  _transform = trans;
+  _inv_transform = invert(trans);
+  LVecBase3d scale;
+  decompose_matrix(_transform, scale, _hpr, _pos);
+  _hpr_set = false;
+  _pos_set = false;
 }
 
 void StitchImage::
 set_hpr(const LVecBase3d &hpr) {
-  compose_matrix(_rotate, LVecBase3d(1.0, 1.0, 1.0), hpr);
-  _inv_rotate = invert(_rotate);
+  compose_matrix(_transform, LVecBase3d(1.0, 1.0, 1.0), hpr, _pos);
+  _inv_transform.invert_from(_transform);
   _hpr_set = true;
   _hpr = hpr;
+}
+
+void StitchImage::
+set_pos(const LPoint3d &pos) {
+  compose_matrix(_transform, LVecBase3d(1.0, 1.0, 1.0), _hpr, pos);
+  _inv_transform.invert_from(_transform);
+  _pos_set = true;
+  _pos = pos;
+}
+
+const LVecBase3d &StitchImage::
+get_hpr() const {
+  return _hpr;
+}
+
+const LPoint3d &StitchImage::
+get_pos() const {
+  return _pos;
 }
 
 void StitchImage::
@@ -314,12 +337,12 @@ get_size_mm() const {
 LVector3d StitchImage::
 extrude(const LPoint2d &point_uv) const {
   LPoint2d p = _morph.morph_out(point_uv);
-  return _lens->extrude(p * _uv_to_mm, _size_mm[0]) * _rotate;
+  return _lens->extrude(p * _uv_to_mm, _size_mm[0]) * _transform;
 }
 
 LPoint2d StitchImage::
 project(const LVector3d &vec) const {
-  LPoint2d m = _lens->project(vec * _inv_rotate, _size_mm[0]);
+  LPoint2d m = _lens->project(vec * _inv_transform, _size_mm[0]);
   return _morph.morph_in(m * _mm_to_uv);
 }
 
@@ -342,12 +365,32 @@ draw_triangle(TriangleRasterizer &rast, const RasterizerVertex *v0,
 void StitchImage::
 pick_up_singularity(TriangleRasterizer &rast, StitchImage *input) {
   _lens->pick_up_singularity(rast, _mm_to_pixels, _pixels_to_mm,
-                             _rotate, _size_mm[0], input);
+                             _transform.get_upper_3(), _size_mm[0], input);
 }
 
 void StitchImage::
 add_point(const string &name, const LPoint2d &pixel) {
   _points[name] = pixel * _pixels_to_uv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImage::set_output_scale_factor
+//       Access: Private
+//  Description: Sets up the image to inflate its output image by the
+//               given factor in each dimension during rasterization,
+//               and then reduce it back to its original size just
+//               before writing it out, as a poor man's pixel filter.
+//
+//               This may only be called before open_output_file() has
+//               been called.
+////////////////////////////////////////////////////////////////////
+void StitchImage::
+set_output_scale_factor(double factor) {
+  assert(_data == (PNMImage *)NULL);
+
+  _size_pixels = _orig_size_pixels * factor;
+  _pixels_per_mm = _orig_pixels_per_mm * factor;
+  setup_pixel_scales();
 }
 
 
@@ -357,12 +400,65 @@ output(ostream &out) const {
       << get_size_pixels() << " pixels, or " << get_size_mm()
       << " mm\n";
 
-  LVecBase3d scale, hpr;
-  if (decompose_matrix(_rotate, scale, hpr)) {
-    out << "rotate " << hpr << "\n";
+  LVecBase3d scale, hpr, trans;
+  if (decompose_matrix(_transform, scale, hpr, trans)) {
+    if (!scale.almost_equal(LVecBase3d(1.0, 1.0, 1.0))) {
+      out << "scale " << scale << "\n";
+    }
+    out << "hpr " << hpr << "\n";
+    if (!trans.almost_equal(LVecBase3d::zero())) {
+      out << "translate " << trans << "\n";
+    }
   } else {
-    out << "Invalid rotation transform:\n";
-    _rotate.write(out);
+    out << "Invalid transform:\n";
+    _transform.write(out);
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImage::setup_pixel_scales
+//       Access: Private
+//  Description: Sets up the pixel-based transform matrices, according
+//               to _pixel_size and _pixels_per_mm.
+////////////////////////////////////////////////////////////////////
+void StitchImage::
+setup_pixel_scales() {
+  LVector2d pixels_per_uv(_size_pixels[0] - 1.0, _size_pixels[1] - 1.0);
+
+  _pixels_to_uv =
+    LMatrix3d::translate_mat(LVector2d(0.0, -pixels_per_uv[1])) *
+    LMatrix3d::scale_mat(1.0 / pixels_per_uv[0], -1.0 / pixels_per_uv[1]);
+
+  _uv_to_pixels =
+    LMatrix3d::scale_mat(pixels_per_uv[0], -pixels_per_uv[1]) *
+    LMatrix3d::translate_mat(LVector2d(0.0, pixels_per_uv[1]));
+
+  _pixels_to_mm = _pixels_to_uv * _uv_to_mm;
+  _mm_to_pixels = _mm_to_uv * _uv_to_pixels;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImage::resize_data
+//       Access: Private
+//  Description: Resizes the image generated in _data back to
+//               _orig_size_pixels, if it has been generated larger,
+//               int preparation to writing it out.
+////////////////////////////////////////////////////////////////////
+void StitchImage::
+resize_data() {
+  assert(_data != (PNMImage *)NULL);
+  if (_orig_size_pixels == _size_pixels) {
+    return;
+  }
+
+  PNMImage *small = 
+    new PNMImage(_orig_size_pixels[0], _orig_size_pixels[1], 
+                 _data->get_color_type());
+
+  cerr << "Filtering to " << small->get_x_size() << " by " 
+       << small->get_y_size() << "\n";
+
+  small->box_filter_from(1.0, *_data);
+  delete _data;
+  _data = small;
+}

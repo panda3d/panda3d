@@ -29,7 +29,7 @@ stitch_init_parser(istream &in, const string &filename,
 
 %}
 
-%token <number> NUMBER
+%token <number> NUMBER NUMBER_FEET NUMBER_INCHES
 %token <str> IDENTIFIER
 %token <str> STRING
 
@@ -54,12 +54,18 @@ stitch_init_parser(istream &in, const string &filename,
 %token KW_GRID
 %token KW_UNTEXTURED_COLOR
 %token KW_HPR
+%token KW_POS
+%token KW_RADIUS
+%token KW_ANGLE
+%token KW_HEIGHT
 %token KW_LAYERS
 %token KW_STITCH
+%token KW_SCREEN
 %token KW_POINTS
 %token KW_USING
 %token KW_IN
 %token KW_MM
+%token KW_FT
 %token KW_CM
 %token KW_P
 
@@ -74,6 +80,7 @@ stitch_init_parser(istream &in, const string &filename,
 %type <vec> vec2
 %type <vec> vec3
 %type <vec> length_pair
+%type <vec> length_triple
 %type <vec> color
 %type <str> name
 %type <str> optional_name
@@ -138,6 +145,11 @@ group_command:
         | KW_STITCH optional_name
 {
   $$ = new StitchCommand(parent, StitchCommand::C_stitch);
+  $$->set_name($2);
+}
+        | KW_SCREEN optional_name
+{
+  $$ = new StitchCommand(parent, StitchCommand::C_screen);
   $$->set_name($2);
 }
         | KW_USING
@@ -240,6 +252,26 @@ simple_command:
   $$ = new StitchCommand(parent, StitchCommand::C_hpr);
   $$->set_point3d((const LPoint3d &)$2);
 }
+        | KW_POS length_triple
+{
+  $$ = new StitchCommand(parent, StitchCommand::C_pos);
+  $$->set_point3d((const LPoint3d &)$2);
+}
+        | KW_RADIUS length
+{
+  $$ = new StitchCommand(parent, StitchCommand::C_radius);
+  $$->set_number($2);
+}
+        | KW_ANGLE vec2
+{
+  $$ = new StitchCommand(parent, StitchCommand::C_angle);
+  $$->set_point2d((const LPoint2d &)$2);
+}
+        | KW_HEIGHT length_pair
+{
+  $$ = new StitchCommand(parent, StitchCommand::C_height);
+  $$->set_point2d((const LPoint2d &)$2);
+}
         | KW_LAYERS
 {
   $$ = new StitchCommand(parent, StitchCommand::C_layers);
@@ -289,9 +321,30 @@ points_list:
 length:
         NUMBER length_units
 {
-  $$ = $1 * $2;   // convert to mm
+  $$ = $1 * $2
+}
+        | NUMBER_FEET
+{
+  $$ = $1 * 304.8;  // ft to mm
+}
+        | NUMBER_INCHES
+{
+  $$ = $1 * 25.4;  // in to mm
+}
+        | NUMBER_FEET NUMBER_INCHES
+{
+  if ($1 < 0.0) {
+    $$ = $1 * 304.8 - $2 * 25.4;
+  } else {
+    $$ = $1 * 304.8 + $2 * 25.4;
+  }
+}
+        | NUMBER
+{
+  $$ = $1;   // implicitly mm
 }
         ;
+
 
 length_units:
         KW_IN
@@ -305,6 +358,10 @@ length_units:
         | KW_MM
 {
   $$ = 1.0;
+}
+        | KW_FT
+{
+  $$ = 304.8;  // ft to mm
 }
         ;
 
@@ -372,15 +429,18 @@ vec3:   '(' NUMBER NUMBER NUMBER ')'
         ;
 
 length_pair:
-        '(' length length ')'
-{
-  $$.set($2, $3, 0.0, 0.0);
-  $<num_components>$ = 2;
-}
-        | '(' length ',' length ')'
+	'(' length ',' length ')'
 {
   $$.set($2, $4, 0.0, 0.0);
   $<num_components>$ = 2;
+}
+        ;
+
+length_triple:
+        '(' length ',' length ',' length ')'
+{
+  $$.set($2, $4, $6, 0.0);
+  $<num_components>$ = 3;
 }
         ;
 

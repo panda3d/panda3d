@@ -284,6 +284,22 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return NUMBER; 
 }
 
+{NUMERIC}['] { 
+  // An integer or floating-point number followed by feet symbol.
+  accept(); 
+  stitchyylval.number = atof(stitchyytext); 
+  stitchyylval.str = yytext;
+  return NUMBER_FEET; 
+}
+
+{NUMERIC}["] { 
+  // An integer or floating-point number followed by inches symbol.
+  accept(); 
+  stitchyylval.number = atof(stitchyytext); 
+  stitchyylval.str = yytext;
+  return NUMBER_INCHES; 
+}
+
 ["] {
   // Quoted string.
   accept();
@@ -339,10 +355,20 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
     return KW_UNTEXTURED_COLOR;
   } else if (cmp_nocase_uh(str, "hpr") == 0) {
     return KW_HPR;
+  } else if (cmp_nocase_uh(str, "pos") == 0) {
+    return KW_POS;
+  } else if (cmp_nocase_uh(str, "radius") == 0) {
+    return KW_RADIUS;
+  } else if (cmp_nocase_uh(str, "angle") == 0) {
+    return KW_ANGLE;
+  } else if (cmp_nocase_uh(str, "height") == 0) {
+    return KW_HEIGHT;
   } else if (cmp_nocase_uh(str, "layers") == 0) {
     return KW_LAYERS;
   } else if (cmp_nocase_uh(str, "stitch") == 0) {
     return KW_STITCH;
+  } else if (cmp_nocase_uh(str, "screen") == 0) {
+    return KW_SCREEN;
   } else if (cmp_nocase_uh(str, "points") == 0) {
     return KW_POINTS;
   } else if (cmp_nocase_uh(str, "using") == 0) {
@@ -353,6 +379,8 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
     return KW_MM;
   } else if (cmp_nocase_uh(str, "cm") == 0) {
     return KW_CM;
+  } else if (cmp_nocase_uh(str, "ft") == 0) {
+    return KW_FT;
   } else if (cmp_nocase_uh(str, "p") == 0) {
     return KW_P;
   }

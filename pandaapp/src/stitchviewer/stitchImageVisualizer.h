@@ -82,7 +82,6 @@ protected:
   PT(GraphicsWindow) _main_win;
   NodeAttributes _initial_state;
   PT(NamedNode) _render;
-  PT(NamedNode) _cameras;
   PT(NamedNode) _data_root;
   PT(MouseAndKeyboard) _mak;
   PT(Trackball) _trackball;

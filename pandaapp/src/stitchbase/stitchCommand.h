@@ -19,15 +19,16 @@
 #ifndef STITCHCOMMAND_H
 #define STITCHCOMMAND_H
 
-#include <pandatoolbase.h>
+#include "pandaappbase.h"
+#include "stitchScreen.h"
 
-#include <luse.h>
-
-#include <vector>
-#include <map>
+#include "luse.h"
+#include "pointerTo.h"
+#include "pvector.h"
 
 class StitchLens;
 class StitchImage;
+class StitchScreen;
 class StitchImageOutputter;
 class StitchFile;
 class Stitcher;
@@ -58,8 +59,13 @@ public:
     C_grid,
     C_untextured_color,
     C_hpr,
+    C_pos,
+    C_radius,
+    C_angle,
+    C_height,
     C_layers,
     C_stitch,
+    C_screen,
     C_using,
     C_user_command,
   };
@@ -90,6 +96,13 @@ public:
   Colord get_color() const;
   string get_str() const;
 
+  bool has_name() const;
+  bool has_number() const;
+  bool has_point2d() const;
+  bool has_point3d() const;
+  bool has_color() const;
+  bool has_str() const;
+
   StitchCommand *find_definition(const string &name);
 
   void process(StitchImageOutputter &outputter, Stitcher *stitcher,
@@ -110,6 +123,7 @@ private:
   LVecBase2d find_parameter(Command command, const LVecBase2d &dflt);
 
   StitchImage *create_image();
+  PT(StitchScreen) create_screen();
 
 
   StitchCommand *_parent;
@@ -139,7 +153,7 @@ private:
   // This will only get filled in by make_lens().
   StitchLens *_lens;
 
-  typedef vector<StitchCommand *> Commands;
+  typedef pvector<StitchCommand *> Commands;
   Commands _using;
   Commands _nested;
 };

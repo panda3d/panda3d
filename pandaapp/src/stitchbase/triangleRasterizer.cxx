@@ -57,6 +57,11 @@ draw_triangle(const RasterizerVertex *v0,
     // to draw it.
     return;
   }
+  if (v0->_visibility < 0 || v1->_visibility < 0 || v2->_visibility < 0) {
+    // At least one vertex is totally bogus, so throw up our hands on
+    // the triangle.
+    return;
+  }
 
   assert(_output != NULL);
   if (!_read_input) {

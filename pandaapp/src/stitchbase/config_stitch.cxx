@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_stitch.h"
+#include "stitchScreen.h"
 
 #include <dconfig.h>
 
 Configure(config_stitch);
 
 ConfigureFn(config_stitch) {
+  StitchScreen::init_type();
 }
 
 string chan_cfg = config_stitch.GetString("chan-config", "single");

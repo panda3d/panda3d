@@ -36,7 +36,7 @@ public:
 
   virtual void execute();
 
-  bool _filter_output;
+  double _filter_factor;
 
 protected:
   void draw_points(StitchImage *output, StitchImage *input,

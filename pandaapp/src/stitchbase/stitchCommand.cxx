@@ -24,6 +24,8 @@
 #include "stitchCylindricalLens.h"
 #include "stitchPSphereLens.h"
 #include "stitchImageOutputter.h"
+#include "stitchCylindricalScreen.h"
+#include "stitchFlatScreen.h"
 #include "stitcher.h"
 
 #include <indent.h>
@@ -121,12 +123,32 @@ operator << (ostream &out, StitchCommand::Command c) {
     return out << "hpr";
     break;
 
+  case StitchCommand::C_pos:
+    return out << "pos";
+    break;
+
+  case StitchCommand::C_radius:
+    return out << "radius";
+    break;
+
+  case StitchCommand::C_angle:
+    return out << "angle";
+    break;
+
+  case StitchCommand::C_height:
+    return out << "height";
+    break;
+
   case StitchCommand::C_layers:
     return out << "layers";
     break;
 
   case StitchCommand::C_stitch:
     return out << "stitch";
+    break;
+
+  case StitchCommand::C_screen:
+    return out << "screen";
     break;
 
   case StitchCommand::C_using:
@@ -289,6 +311,36 @@ get_str() const {
   return _str;
 }
 
+bool StitchCommand::
+has_name() const {
+  return (_params & P_name) != 0;
+}
+
+bool StitchCommand::
+has_number() const {
+  return (_params & P_number) != 0;
+}
+
+bool StitchCommand::
+has_point2d() const {
+  return (_params & P_point2d) != 0;
+}
+
+bool StitchCommand::
+has_point3d() const {
+  return (_params & P_point3d) != 0;
+}
+
+bool StitchCommand::
+has_color() const {
+  return (_params & P_color) != 0;
+}
+
+bool StitchCommand::
+has_str() const {
+  return (_params & P_str) != 0;
+}
+
 void StitchCommand::
 process(StitchImageOutputter &outputter, Stitcher *stitcher,
         StitchFile &file) {
@@ -321,6 +373,10 @@ process(StitchImageOutputter &outputter, Stitcher *stitcher,
       outputter.add_input_image(*ii);
     }
     outputter.add_stitcher(new_stitcher);
+
+  } else if (_command == C_screen) {
+    PT(StitchScreen) screen = create_screen();
+    outputter.add_screen(screen);
 
   } else if (_command == C_point3d) {
     if (stitcher != NULL) {
@@ -636,6 +692,10 @@ create_image() {
       image->set_hpr((*ci)->get_point3d());
       break;
 
+    case C_pos:
+      image->set_pos((*ci)->get_point3d());
+      break;
+
     case C_layers:
       image->_layered_type = StitchImage::LT_separate;
       break;
@@ -650,5 +710,56 @@ create_image() {
   }
 
   return image;
+}
+
+
+PT(StitchScreen) StitchCommand::
+create_screen() {
+  PT(StitchScreen) screen;
+
+  StitchCommand *cmd;
+  if (find_command(C_cylindrical) != NULL) {
+    StitchCylindricalScreen *cscreen = new StitchCylindricalScreen();
+    screen = cscreen;
+
+    cmd = find_command(C_radius);
+    if (cmd != NULL) {
+      cscreen->set_radius(cmd->get_number());
+    }
+    cmd = find_command(C_height);
+    if (cmd != NULL) {
+      LPoint2d p = cmd->get_point2d();
+      cscreen->set_height(p[0], p[1]);
+    }
+    cmd = find_command(C_angle);
+    if (cmd != NULL) {
+      LPoint2d p = cmd->get_point2d();
+      cscreen->set_angle(p[0], p[1]);
+    }
+    
+  } else {
+    screen = new StitchFlatScreen();
+  }
+
+  screen->set_name(get_name());
+
+  // Also look for pos and hpr and stuff.
+  Commands::const_iterator ci;
+  for (ci = _nested.begin(); ci != _nested.end(); ++ci) {
+    switch ((*ci)->_command) {
+    case C_hpr:
+      screen->set_hpr((*ci)->get_point3d());
+      break;
+
+    case C_pos:
+      screen->set_pos((*ci)->get_point3d());
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  return screen;
 }
 

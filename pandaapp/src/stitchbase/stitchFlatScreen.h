@@ -1,5 +1,5 @@
-// Filename: stitchCommandReader.h
-// Created by:  drose (16Mar00)
+// Filename: stitchFlatScreen.h
+// Created by:  drose (16Jul01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,30 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef STITCHCOMMANDREADER_H
-#define STITCHCOMMANDREADER_H
+#ifndef STITCHFLATSCREEN_H
+#define STITCHFLATSCREEN_H
 
-#include "pandaappbase.h"
-
-#include "stitchFile.h"
-
-#include <programBase.h>
+#include "stitchScreen.h"
+#include "plane.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : StitchCommandReader
-// Description : This specialization of ProgramBase is intended for
-//               programs in this directory that read and process a
-//               stitch command file.
-//////////////////////////////////////////////////////////////////////
-class StitchCommandReader : public ProgramBase {
+//       Class : StitchFlatScreen
+// Description : A simple flat screen.  This is really an infinite
+//               plane.
+////////////////////////////////////////////////////////////////////
+class StitchFlatScreen : public StitchScreen {
 public:
-  StitchCommandReader();
+  StitchFlatScreen();
+
+  void set_plane(const Planed &plane);
 
 protected:
-  virtual bool handle_args(Args &args);
+  virtual double compute_intersect(const LPoint3d &origin, 
+                                   const LVector3d &direction) const;
 
-protected:
-  StitchFile _command_file;
+private:
+  Planed _plane;
 };
 
 #endif

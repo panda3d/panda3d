@@ -19,7 +19,7 @@
 #ifndef CONFIG_STITCH_H
 #define CONFIG_STITCH_H
 
-#include <pandatoolbase.h>
+#include "pandaappbase.h"
 
 extern string chan_cfg;
 

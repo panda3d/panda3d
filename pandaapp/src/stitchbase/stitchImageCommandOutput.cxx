@@ -96,9 +96,11 @@ fill_image_cmd(StitchCommand *image_cmd, StitchImage *image) {
 
   image->_lens->make_lens_command(image_cmd);
 
-  LVecBase3d scale, hpr;
-  if (decompose_matrix(image->_rotate, scale, hpr)) {
+  LVecBase3d scale, hpr, trans;
+  if (decompose_matrix(image->_transform, scale, hpr, trans)) {
     cmd = new StitchCommand(image_cmd, StitchCommand::C_hpr);
     cmd->set_point3d(hpr);
+
+    //**** Do something with translate here.
   }
 }

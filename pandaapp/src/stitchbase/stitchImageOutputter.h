@@ -19,11 +19,30 @@
 #ifndef STITCHIMAGEOUTPUTTER_H
 #define STITCHIMAGEOUTPUTTER_H
 
+#include "pandaappbase.h"
+
+#include "stitchMultiScreen.h"
+#include "luse.h"
+#include "pointerTo.h"
+
 class StitchImage;
 class Stitcher;
 
-#include <luse.h>
-
+////////////////////////////////////////////////////////////////////
+//       Class : StitchImageOutputter
+// Description : This is an abstract base class defining the interface
+//               to accept a number of input images and process them,
+//               possibly stitching them together based on their
+//               points in common, and then generating a number of
+//               output images.
+//
+//               This is the highest level of interaction with this
+//               module; it corresponds to the action performed by a
+//               stitch-image, stitch-viewer, or stitch-command
+//               program (and the distinction between the three
+//               programs is primarily a question of which
+//               specialization of StitchImageOutputter they use).
+////////////////////////////////////////////////////////////////////
 class StitchImageOutputter {
 public:
   StitchImageOutputter();
@@ -32,8 +51,12 @@ public:
   virtual void add_input_image(StitchImage *image)=0;
   virtual void add_output_image(StitchImage *image)=0;
   virtual void add_stitcher(Stitcher *stitcher)=0;
+  void add_screen(StitchScreen *screen);
 
   virtual void execute()=0;
+
+protected:
+  PT(StitchMultiScreen) _screen;
 };
 
 #endif

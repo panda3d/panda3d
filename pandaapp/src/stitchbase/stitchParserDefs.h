@@ -19,7 +19,7 @@
 #ifndef STITCHPARSERDEFS_H
 #define STITCHPARSERDEFS_H
 
-#include <pandatoolbase.h>
+#include "pandaappbase.h"
 
 #include <luse.h>
 

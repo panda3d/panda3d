@@ -19,7 +19,7 @@
 #ifndef STITCHLEXERDEFS_H
 #define STITCHLEXERDEFS_H
 
-#include <pandatoolbase.h>
+#include "pandaappbase.h"
 
 void stitch_init_lexer(istream &in, const string &filename);
 int stitch_error_count();

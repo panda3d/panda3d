@@ -35,9 +35,18 @@ StitchImageProgram() {
      "algorithm (no graphics hardware is used).");
 
   add_option
-    ("f", "", 0,
-     "Apply a very simple filter in an attempt to smooth the results.",
-     &StitchImageProgram::dispatch_none, &_filter_output);
+    ("f", "factor", 0,
+     "Scale the output images internally by the indicated factor in each "
+     "dimension while generating them, and then reduce them to their final "
+     "size on output.  This provides a simple mechanism for filtering "
+     "the result.  The default is 1.0, or unfiltered, which runs relatively "
+     "quickly but can give highly aliased results; specifying a larger number "
+     "increases quality but also increases runtime and memory requirements "
+     "roughly by the square of factor.  Usually 2 or 3 provide satisfactory "
+     "results.",
+     &StitchImageProgram::dispatch_double, NULL, &_filter_factor);
+
+  _filter_factor = 1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +57,7 @@ StitchImageProgram() {
 void StitchImageProgram::
 run() {
   StitchImageRasterizer outputter;
-  outputter._filter_output = _filter_output;
+  outputter._filter_factor = _filter_factor;
   _command_file.process(outputter);
 }
 

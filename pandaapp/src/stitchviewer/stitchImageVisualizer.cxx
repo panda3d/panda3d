@@ -186,12 +186,20 @@ setup() {
   // Create the render node
   _render = new NamedNode("render");
 
-  // make a node for the cameras to live under
-  _cameras = new NamedNode("cameras");
-  RenderRelation *cam_trans = new RenderRelation(_render, _cameras);
-
-  _main_win = ChanConfig(_main_pipe, chan_cfg, _cameras, _render, override);
+  ChanConfig chanConfig(_main_pipe, chan_cfg, _render, override);
+  _main_win = chanConfig.get_win();
   assert(_main_win != (GraphicsWindow*)0L);
+  PT_NamedNode cameras = chanConfig.get_group_node(0);
+  cameras->set_name("cameras");
+  for(int group_node_index = 1;
+      group_node_index < chanConfig.get_num_groups();
+      group_node_index++) {
+    DisplayRegion *dr = chanConfig.get_dr(group_node_index);
+    dr->get_camera()->set_near_far(1.0, 10000.0);
+    new RenderRelation(_render, chanConfig.get_group_node(group_node_index));
+    
+  }
+  NodeRelation *cam_trans = new RenderRelation(_render, cameras);
 
   // Turn on backface culling.
   CullFaceAttribute *cfa = new CullFaceAttribute;
@@ -261,27 +269,51 @@ toggle_viz(StitchImageVisualizer::Image &im) {
 
 void StitchImageVisualizer::
 create_image_geometry(StitchImageVisualizer::Image &im) {
-  /*
   int x_verts = im._image->get_x_verts();
   int y_verts = im._image->get_y_verts();
-  */
+  /*
   int x_verts = 2;
   int y_verts = 2;
+  */
   TriangleMesh mesh(x_verts, y_verts);
 
   StitchLens *lens = im._image->_lens;
-  LVector3d center =
-    lens->extrude(LPoint2d(0.0, 0.0), im._image->_size_mm[0]);
-  double scale = 10.0 / length(center);
 
-  for (int xi = 0; xi < x_verts; xi++) {
-    for (int yi = 0; yi < y_verts; yi++) {
-      LPoint2d uv = LPoint2d((double)xi / (double)(x_verts - 1),
-                             1.0 - (double)yi / (double)(y_verts - 1));
-      LVector3d p = im._image->extrude(uv);
-
-      mesh._coords.push_back(LCAST(float, p) * scale);
-      mesh._texcoords.push_back(LCAST(float, uv));
+  if (_screen->is_empty()) {
+    // If we have no screens, draw the image geometry by extruding an
+    // arbitrary distance from each camera's origin.
+    LVector3d center =
+      lens->extrude(LPoint2d(0.0, 0.0), im._image->_size_mm[0]);
+    double scale = 10.0 / length(center);
+    
+    for (int xi = 0; xi < x_verts; xi++) {
+      for (int yi = 0; yi < y_verts; yi++) {
+        LPoint2d uv = LPoint2d((double)xi / (double)(x_verts - 1),
+                               1.0 - (double)yi / (double)(y_verts - 1));
+        LVector3d p = im._image->extrude(uv);
+        
+        mesh._coords.push_back(LCAST(float, p) * scale);
+        mesh._texcoords.push_back(LCAST(float, uv));
+      }
+    }
+  } else {
+    // Otherwise, if we do have screens, draw the image geometry by
+    // projecting its vertices on to the screen(s).
+    
+    for (int xi = 0; xi < x_verts; xi++) {
+      for (int yi = 0; yi < y_verts; yi++) {
+        LPoint2d uv = LPoint2d((double)xi / (double)(x_verts - 1),
+                               1.0 - (double)yi / (double)(y_verts - 1));
+        LVector3d space = im._image->extrude(uv);
+        LPoint3d p;
+        if (_screen->intersect(p, im._image->get_pos(), space)) {
+          mesh._coords.push_back(LCAST(float, p));
+        } else {
+          // No intersection.
+          mesh._coords.push_back(Vertexf(0.0, 0.0, 0.0));
+        }
+        mesh._texcoords.push_back(LCAST(float, uv));
+      }
     }
   }
 

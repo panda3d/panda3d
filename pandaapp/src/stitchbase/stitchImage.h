@@ -19,7 +19,7 @@
 #ifndef STITCHIMAGE_H
 #define STITCHIMAGE_H
 
-#include <pandatoolbase.h>
+#include "pandaappbase.h"
 
 #include "stitchPoint.h"
 #include "morphGrid.h"
@@ -67,8 +67,11 @@ public:
   bool close_output_file();
 
   void clear_transform();
-  void set_transform(const LMatrix3d &rot);
+  void set_transform(const LMatrix4d &transform);
   void set_hpr(const LVecBase3d &hpr);
+  void set_pos(const LPoint3d &pos);
+  const LVecBase3d &get_hpr() const;
+  const LPoint3d &get_pos() const;
 
   void show_points(double radius, const Colord &color);
   void setup_grid(int x_verts, int y_verts);
@@ -106,6 +109,7 @@ public:
                            StitchImage *input);
 
   void add_point(const string &name, const LPoint2d &pixel);
+  void set_output_scale_factor(double factor);
 
   void output(ostream &out) const;
 
@@ -119,6 +123,8 @@ public:
   LMatrix3d _pixels_to_uv, _uv_to_pixels;
   bool _hpr_set;
   LVecBase3d _hpr;
+  bool _pos_set;
+  LPoint3d _pos;
 
   enum LayeredType {
     LT_flat,        // One flat image--no layers.
@@ -134,13 +140,17 @@ public:
 
   typedef map<string, LPoint2d> Points;
   Points _points;
-  LMatrix3d _rotate, _inv_rotate;
+  LMatrix4d _transform, _inv_transform;
   MorphGrid _morph;
 
   // This index number is filled in by the Stitcher.  It allows us to
   // sort the images in order as they are specified in the command
   // file.
   int _index;
+
+private:
+  void setup_pixel_scales();
+  void resize_data();
 
 private:
   Filename _filename;
@@ -150,6 +160,8 @@ private:
   int _layer_index;
   string _layer_name;
   LayeredImage *_layered_image;
+  LVecBase2d _orig_size_pixels;
+  LVecBase2d _orig_pixels_per_mm;
 };
 
 inline ostream &operator << (ostream &out, const StitchImage &i) {

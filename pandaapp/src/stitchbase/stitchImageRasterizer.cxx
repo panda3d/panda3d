@@ -25,7 +25,7 @@
 
 StitchImageRasterizer::
 StitchImageRasterizer() {
-  _filter_output = true;
+  _filter_factor = 1.0;
 }
 
 
@@ -36,6 +36,7 @@ add_input_image(StitchImage *image) {
 
 void StitchImageRasterizer::
 add_output_image(StitchImage *image) {
+  image->set_output_scale_factor(_filter_factor);
   _output_images.push_back(image);
 }
 
@@ -119,7 +120,7 @@ draw_image(StitchImage *output, StitchImage *input) {
   TriangleRasterizer rast;
   rast._output = output->_data;
   rast._input = input;
-  rast._filter_output = _filter_output;
+  rast._filter_output = false;
   rast._untextured_color = input->_untextured_color;
 
   int x_verts = input->get_x_verts();
@@ -128,37 +129,54 @@ draw_image(StitchImage *output, StitchImage *input) {
   // Build up the table of verts.
   typedef vector<RasterizerVertex> VRow;
   typedef vector<VRow> VTable;
-  VTable _table(x_verts, VRow());
+  VTable table(x_verts, VRow());
 
   int xi, yi;
   for (xi = 0; xi < x_verts; xi++) {
-    _table[xi] = VRow(y_verts, RasterizerVertex());
+    table[xi] = VRow(y_verts, RasterizerVertex());
 
     for (yi = 0; yi < y_verts; yi++) {
       LVector3d space = input->get_grid_vector(xi, yi);
       double alpha = input->get_grid_alpha(xi, yi);
-      LPoint2d to = output->project(space);
-      LPoint2d from = input->get_grid_uv(xi, yi);
+      LPoint3d point;
+      if (!_screen->intersect(point, input->get_pos(), space)) {
+        // No intersection with the screen.  What should we do now?
+        LPoint2d from = input->get_grid_uv(xi, yi);
 
-      _table[xi][yi]._p = to * output->_uv_to_pixels;
-      _table[xi][yi]._uv = from;
-      _table[xi][yi]._space = space * output->_inv_rotate;
-      _table[xi][yi]._alpha = alpha;
+        table[xi][yi]._p.set(0.0, 0.0);
+        table[xi][yi]._uv = from;
+        table[xi][yi]._space = point * output->_inv_transform;
+        table[xi][yi]._alpha = alpha;
+        
+        table[xi][yi]._space = normalize(table[xi][yi]._space);
 
-      _table[xi][yi]._space = normalize(_table[xi][yi]._space);
+        // Tag any triangle including this vertex as totally invalid.
+        table[xi][yi]._visibility = -1;
 
-      // We assign one bit for each quadrant the vertex may be out of
-      // bounds.  If all three vertices of a triangle are out in the
-      // same quadrant, then the entire triangle is out of bounds.
-      _table[xi][yi]._visibility =
-        ((to[0] < 0.0) |
-         ((to[0] > 1.0) << 1) |
-         ((to[1] < 0.0) << 2) |
-         ((to[1] > 1.0) << 3) |
-         ((from[0] < 0.0) << 4) |
-         ((from[0] > 1.0) << 5) |
-         ((from[1] < 0.0) << 6) |
-         ((from[1] > 1.0) << 7));
+      } else {
+        LPoint2d to = output->project(point - output->get_pos());
+        LPoint2d from = input->get_grid_uv(xi, yi);
+        
+        table[xi][yi]._p = to * output->_uv_to_pixels;
+        table[xi][yi]._uv = from;
+        table[xi][yi]._space = point * output->_inv_transform;
+        table[xi][yi]._alpha = alpha;
+        
+        table[xi][yi]._space = normalize(table[xi][yi]._space);
+
+        // We assign one bit for each quadrant the vertex may be out of
+        // bounds.  If all three vertices of a triangle are out in the
+        // same quadrant, then the entire triangle is out of bounds.
+        table[xi][yi]._visibility =
+          ((to[0] < 0.0) |
+           ((to[0] > 1.0) << 1) |
+           ((to[1] < 0.0) << 2) |
+           ((to[1] > 1.0) << 3) |
+           ((from[0] < 0.0) << 4) |
+           ((from[0] > 1.0) << 5) |
+           ((from[1] < 0.0) << 6) |
+           ((from[1] > 1.0) << 7));
+      }
     }
   }
 
@@ -168,13 +186,13 @@ draw_image(StitchImage *output, StitchImage *input) {
   for (yi = 0; yi < y_verts - 1; yi++) {
     for (xi = 0; xi < x_verts - 1; xi++) {
       output->draw_triangle(rast,
-                            &_table[xi][yi],
-                            &_table[xi][yi + 1],
-                            &_table[xi + 1][yi + 1]);
+                            &table[xi][yi],
+                            &table[xi][yi + 1],
+                            &table[xi + 1][yi + 1]);
       output->draw_triangle(rast,
-                            &_table[xi][yi],
-                            &_table[xi + 1][yi + 1],
-                            &_table[xi + 1][yi]);
+                            &table[xi][yi],
+                            &table[xi + 1][yi + 1],
+                            &table[xi + 1][yi]);
     }
   }
   output->pick_up_singularity(rast, input);

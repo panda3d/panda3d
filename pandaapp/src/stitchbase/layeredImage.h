@@ -19,7 +19,7 @@
 #ifndef LAYEREDIMAGE_H
 #define LAYEREDIMAGE_H
 
-#include <pandatoolbase.h>
+#include "pandaappbase.h"
 
 #include <luse.h>
 #include <filename.h>

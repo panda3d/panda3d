@@ -36,7 +36,7 @@ public:
   void run();
 
 private:
-  bool _filter_output;
+  double _filter_factor;
 };
 
 #endif

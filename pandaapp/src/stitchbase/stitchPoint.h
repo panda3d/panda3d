@@ -19,6 +19,8 @@
 #ifndef STITCHPOINT_H
 #define STITCHPOINT_H
 
+#include "pandaappbase.h"
+
 #include <luse.h>
 
 #include <string>
