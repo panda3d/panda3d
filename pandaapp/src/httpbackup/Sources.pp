@@ -1,3 +1,5 @@
+#define BUILD_DIRECTORY $[HAVE_SSL]
+
 #begin bin_target
   #define TARGET httpbackup
   #define LOCAL_LIBS pandaappbase
