@@ -63,6 +63,9 @@ PUBLISHED:
 
   INLINE_LINMATH bool normalize();
 
+  INLINE_LINMATH bool invert_from(const FLOATNAME(LQuaternion) &other);
+  INLINE_LINMATH bool invert_in_place();
+
   INLINE_LINMATH static const FLOATNAME(LQuaternion) &ident_quat();
 
 private:
@@ -82,6 +85,8 @@ INLINE_LINMATH ostream& operator<<(ostream& os, const FLOATNAME(LQuaternion)& q)
   q.output(os);
   return os;
 }
+
+INLINE_LINMATH FLOATNAME(LQuaternion) invert(const FLOATNAME(LQuaternion) &a);
 
 BEGIN_PUBLISH
 INLINE_LINMATH FLOATNAME(LMatrix3)

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::Default Constructor
+//     Function: LQuaternion::Default Constructor
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ FLOATNAME(LQuaternion)() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::Copy Constructor
+//     Function: LQuaternion::Copy Constructor
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ FLOATNAME(LQuaternion)(const FLOATNAME(LQuaternion) &c) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::Constructor
+//     Function: LQuaternion::Constructor
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ FLOATNAME(LQuaternion)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::multiply
+//     Function: LQuaternion::multiply
 //       Access: protected
 //  Description: actual multiply call (non virtual)
 ////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ multiply(const FLOATNAME(LQuaternion)& rhs) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::Multiply Operator
+//     Function: LQuaternion::Multiply Operator
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ operator *(const FLOATNAME(LQuaternion)& c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::Multiply Assignment Operator
+//     Function: LQuaternion::Multiply Assignment Operator
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ operator *=(const FLOATNAME(LQuaternion)& c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::Multiply Operator
+//     Function: LQuaternion::Multiply Operator
 //       Access: public
 //  Description: Quat * Matrix = matrix
 ////////////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ operator *(const FLOATNAME(LMatrix3) &m) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::Multiply Operator
+//     Function: LQuaternion::Multiply Operator
 //       Access: public
 //  Description: Quat * Matrix = matrix
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ operator *(const FLOATNAME(LMatrix4) &m) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::almost_equal
+//     Function: LQuaternion::almost_equal
 //       Access: public
 //  Description: Returns true if two quaternions are memberwise equal
 //               within a specified tolerance.
@@ -128,7 +128,7 @@ almost_equal(const FLOATNAME(LQuaternion)& c, FLOATTYPE threshold) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::almost_equal
+//     Function: LQuaternion::almost_equal
 //       Access: public
 //  Description: Returns true if two quaternions are memberwise equal
 //               within a default tolerance based on the numeric type.
@@ -139,7 +139,7 @@ almost_equal(const FLOATNAME(LQuaternion)& c) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::output
+//     Function: LQuaternion::output
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -152,7 +152,17 @@ output(ostream& os) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::get_r
+//     Function: LQuaternion::set_from_matrix
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LQuaternion)::
+set_from_matrix(const FLOATNAME(LMatrix4) &m) {
+  set_from_matrix(m.get_upper_3());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::get_r
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -162,7 +172,7 @@ get_r() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::get_i
+//     Function: LQuaternion::get_i
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -172,7 +182,7 @@ get_i() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::get_j
+//     Function: LQuaternion::get_j
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -182,7 +192,7 @@ get_j() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::get_k
+//     Function: LQuaternion::get_k
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -192,7 +202,7 @@ get_k() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::set_r
+//     Function: LQuaternion::set_r
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -202,7 +212,7 @@ set_r(FLOATTYPE r) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::set_i
+//     Function: LQuaternion::set_i
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -212,7 +222,7 @@ set_i(FLOATTYPE i) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::set_j
+//     Function: LQuaternion::set_j
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -222,7 +232,7 @@ set_j(FLOATTYPE j) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::set_k
+//     Function: LQuaternion::set_k
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +242,7 @@ set_k(FLOATTYPE k) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::normalize
+//     Function: LQuaternion::normalize
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -251,13 +261,71 @@ normalize() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_from_matrix
-//       Access: public
-//  Description:
+//     Function: LQuaternion::invert_from
+//       Access: Public
+//  Description: Computes the inverse of the other quat, and stores
+//               the result in this quat.  This is a fully general
+//               operation and makes no assumptions about the type of
+//               transform represented by the quat.
+//
+//               The other quat must be a different object than this
+//               quat.  However, if you need to invert a quat in
+//               place, see invert_in_place.
+//
+//               The return value is true if the quat was
+//               successfully inverted, false if there was a
+//               singularity.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LQuaternion)::
-set_from_matrix(const FLOATNAME(LMatrix4) &m) {
-  set_from_matrix(m.get_upper_3());
+INLINE_LINMATH bool FLOATNAME(LQuaternion)::
+invert_from(const FLOATNAME(LQuaternion) &other) {
+  FLOATTYPE norm = 1.0f / (other.dot(other));
+  set(other[0] * norm,
+      -other[1] * norm,
+      -other[2] * norm,
+      -other[3] * norm);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::invert_in_place
+//       Access: Public
+//  Description: Inverts the current quat.  Returns true if the
+//               inverse is successful, false if the quat was
+//               singular.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LQuaternion)::
+invert_in_place() {
+  FLOATTYPE norm = 1.0f / ((*this).dot(*this));
+  set((*this)[0] * norm,
+      -(*this)[1] * norm,
+      -(*this)[2] * norm,
+      -(*this)[3] * norm);
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::ident_quat
+//       Access: Public, Static
+//  Description: Returns an identity quaternion.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH const FLOATNAME(LQuaternion) &FLOATNAME(LQuaternion)::
+ident_quat() {
+  return _ident_quat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: invert
+//  Description: Inverts the given quat and returns it.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LQuaternion)
+invert(const FLOATNAME(LQuaternion) &a) {
+  FLOATNAME(LQuaternion) result;
+  bool nonsingular = result.invert_from(a);
+  nassertr(nonsingular, FLOATNAME(LQuaternion)::ident_quat());
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -292,15 +360,4 @@ INLINE_LINMATH FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &m,
   q_matrix.set_col(3, m_col3);
 
   return q_matrix;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::ident_quat
-//       Access: Public, Static
-//  Description: Returns an identity quaternion.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH const FLOATNAME(LQuaternion) &FLOATNAME(LQuaternion)::
-ident_quat() {
-  return _ident_quat;
 }

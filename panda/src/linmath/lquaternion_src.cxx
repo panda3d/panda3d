@@ -22,7 +22,7 @@ const FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::_ident_quat =
   FLOATNAME(LQuaternion)(1.0f, 0.0f, 0.0f, 0.0f);
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FLOATNAME(LQuaternion)::pure_imaginary_quat
+//     Function: LQuaternion::pure_imaginary_quat
 //       Access: public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ pure_imaginary(const FLOATNAME(LVector3) &v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: extract_to_matrix (LMatrix3)
+//     Function: LQuaternion::extract_to_matrix (LMatrix3)
 //       Access: Public
 //  Description: Based on the quat lib from VRPN.
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: extract_to_matrix (LMatrix4)
+//     Function: LQuaternion::extract_to_matrix (LMatrix4)
 //       Access: Public
 //  Description: Based on the quat lib from VRPN.
 ////////////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_hpr
+//     Function: LQuaternion::set_hpr
 //       Access: public
 //  Description: Sets the quaternion as the unit quaternion that
 //               is equivalent to these Euler angles.
@@ -105,7 +105,7 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_hpr
+//     Function: LQuaternion::get_hpr
 //       Access: public
 //  Description: Extracts the equivalent Euler angles from the unit
 //               quaternion.
@@ -156,7 +156,7 @@ get_hpr() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_from_matrix
+//     Function: LQuaternion::set_from_matrix
 //       Access: public
 //  Description: Sets the quaternion according to the rotation
 //               represented by the matrix.  Originally we tried an
