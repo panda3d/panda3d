@@ -10,8 +10,13 @@
 
 #include <lwoSurface.h>
 #include <luse.h>
+#include <eggTexture.h>
 
+#include <map>
+
+class CLwoSurfaceBlock;
 class LwoToEggConverter;
+class LwoSurfaceBlock;
 class EggPrimitive;
 
 ////////////////////////////////////////////////////////////////////
@@ -23,10 +28,12 @@ class EggPrimitive;
 class CLwoSurface {
 public:
   CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface);
+  ~CLwoSurface();
 
   INLINE const string &get_name() const;
 
   void apply_properties(EggPrimitive *egg_prim, float &smooth_angle);
+  bool check_texture();
 
   enum Flags {
     F_color        = 0x0001,
@@ -53,6 +60,11 @@ public:
 
   LwoToEggConverter *_converter;
   CPT(LwoSurface) _surface;
+
+  bool _checked_texture;
+  PT(EggTexture) _egg_texture;
+
+  CLwoSurfaceBlock *_block;
 };
 
 #include "cLwoSurface.I"

@@ -49,6 +49,13 @@ public:
   virtual bool convert_file(const Filename &filename)=0;
 
 protected:
+  static Filename convert_path(const Filename &orig_filename,
+			       const Filename &as_found,
+			       const Filename &rel_dir,
+			       PathConvert path_convert);
+
+
+protected:
   PathConvert _tpc;
   Filename _tpc_directory;
   PathConvert _mpc;

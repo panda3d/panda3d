@@ -12,6 +12,7 @@
 #include <eggData.h>
 #include <lwoHeader.h>
 #include <lwoLayer.h>
+#include <lwoClip.h>
 #include <lwoPoints.h>
 #include <lwoPolygons.h>
 #include <lwoVertexMap.h>
@@ -173,6 +174,20 @@ get_layer(int number) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::get_clip
+//       Access: Public
+//  Description: Returns a pointer to the clip with the given index
+//               number, or NULL if there is no such clip.
+////////////////////////////////////////////////////////////////////
+const LwoClip *LwoToEggConverter::
+get_clip(int number) const {
+  if (number >= 0 && number < (int)_clips.size()) {
+    return _clips[number];
+  }
+  return (const LwoClip *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::get_surface
 //       Access: Public
 //  Description: Returns a pointer to the surface definition with the
@@ -219,6 +234,16 @@ collect_lwo() {
       last_layer = layer;
       last_points = (CLwoPoints *)NULL;
       last_polygons = (CLwoPolygons *)NULL;
+
+    } else if (chunk->is_of_type(LwoClip::get_class_type())) {
+      const LwoClip *lwo_clip = DCAST(LwoClip, chunk);
+      int index = lwo_clip->_index;
+      slot_clip(index);
+
+      if (_clips[index] != (LwoClip *)NULL) {
+	nout << "Warning: multiple clips with index " << index << "\n";
+      }
+      _clips[index] = lwo_clip;
 
     } else if (chunk->is_of_type(LwoPoints::get_class_type())) {
       if (last_layer == (CLwoLayer *)NULL) {
@@ -352,10 +377,26 @@ connect_egg() {
 ////////////////////////////////////////////////////////////////////
 void LwoToEggConverter::
 slot_layer(int number) {
+  nassertv(number - (int)_layers.size() < 1000);
   while (number >= (int)_layers.size()) {
     _layers.push_back((CLwoLayer *)NULL);
   }
   nassertv(number >= 0 && number < (int)_layers.size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::slot_clip
+//       Access: Private
+//  Description: Ensures that there is space in the _clips array to
+//               store an element at position number.
+////////////////////////////////////////////////////////////////////
+void LwoToEggConverter::
+slot_clip(int number) {
+  nassertv(number - (int)_clips.size() < 1000);
+  while (number >= (int)_clips.size()) {
+    _clips.push_back((LwoClip *)NULL);
+  }
+  nassertv(number >= 0 && number < (int)_clips.size());
 }
 
 ////////////////////////////////////////////////////////////////////

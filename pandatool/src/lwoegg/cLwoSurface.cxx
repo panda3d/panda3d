@@ -4,12 +4,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cLwoSurface.h"
+#include "cLwoSurfaceBlock.h"
 #include "lwoToEggConverter.h"
 
 #include <lwoSurfaceColor.h>
 #include <lwoSurfaceParameter.h>
 #include <lwoSurfaceSmoothingAngle.h>
 #include <lwoSurfaceSidedness.h>
+#include <lwoSurfaceBlock.h>
 #include <eggPrimitive.h>
 
 
@@ -24,6 +26,8 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   _surface(surface)
 {
   _flags = 0;
+  _checked_texture = false;
+  _block = (CLwoSurfaceBlock *)NULL;
 
   // Walk through the chunk list, looking for some basic properties.
   int num_chunks = _surface->get_num_chunks();
@@ -73,7 +77,46 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
       const LwoSurfaceSidedness *sn = DCAST(LwoSurfaceSidedness, chunk);
       _flags |= F_backface;
       _backface = (sn->_sidedness == LwoSurfaceSidedness::S_front_and_back);
+
+    } else if (chunk->is_of_type(LwoSurfaceBlock::get_class_type())) {
+      const LwoSurfaceBlock *lwo_block = DCAST(LwoSurfaceBlock, chunk);
+      // One of possibly several blocks in the texture that define
+      // additional fancy rendering properties.
+
+      CLwoSurfaceBlock *block = new CLwoSurfaceBlock(_converter, lwo_block);
+
+      // We only consider enabled "IMAP" type blocks that affect "COLR".
+      if (block->_block_type == IffId("IMAP") &&
+	  block->_channel_id == IffId("COLR") &&
+	  block->_enabled) {
+	// Now save the block with the lowest ordinal.
+	if (_block == (CLwoSurfaceBlock *)NULL) {
+	  _block = block;
+
+	} else if (block->_ordinal < _block->_ordinal) {
+	  delete _block;
+	  _block = block;
+
+	} else {
+	  delete block;
+	}
+
+      } else {
+	delete block;
+      }
     }      
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CLwoSurface::
+~CLwoSurface() {
+  if (_block != (CLwoSurfaceBlock *)NULL) {
+    delete _block;
   }
 }
 
@@ -131,4 +174,31 @@ apply_properties(EggPrimitive *egg_prim, float &smooth_angle) {
   if ((_flags & F_smooth_angle) != 0) {
     smooth_angle = max(smooth_angle, _smooth_angle);
   }
+
+  check_texture();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::check_texture
+//       Access: Public
+//  Description: Checks whether the surface demands a texture or not.
+//               Returns true if so, false otherwise.
+//
+//               If the surface demands a texture, this also sets up
+//               _egg_texture and _compute_uvs as appropriate for the
+//               texture.
+////////////////////////////////////////////////////////////////////
+bool CLwoSurface::
+check_texture() {
+  if (_checked_texture) {
+    return (_egg_texture != (EggTexture *)NULL);
+  }
+  _checked_texture = true;
+
+  /*
+  cerr << "Got texture:\n";
+  _block->_block->write(cerr, 2);
+  */
+
+  return true;
 }

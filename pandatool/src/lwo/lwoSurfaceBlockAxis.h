@@ -20,9 +20,9 @@
 class LwoSurfaceBlockAxis : public LwoChunk {
 public:
   enum Axis {
-    M_x        = 0,
-    M_y        = 1,
-    M_z        = 2
+    A_x        = 0,
+    A_y        = 1,
+    A_z        = 2
   };
   Axis _axis;
 

@@ -9,6 +9,7 @@
 #include <pandatoolbase.h>
 
 #include "lwoGroupChunk.h"
+#include "lwoSurfaceBlockHeader.h"
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : LwoSurfaceBlock
@@ -23,6 +24,8 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
   virtual IffChunk *make_new_chunk(IffInputFile *in, IffId id);
+
+  PT(LwoSurfaceBlockHeader) _header;
 
 private:
   static TypeHandle _type_handle;

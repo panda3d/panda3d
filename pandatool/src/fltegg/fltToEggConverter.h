@@ -74,11 +74,6 @@ private:
   bool parse_comment(const string &comment, const string &name,
 		     EggNode *egg_node);
 
-  static Filename convert_path(const Filename &orig_filename,
-			       const Filename &as_found,
-			       const Filename &rel_dir,
-			       PathConvert path_convert);
-
   PT(EggVertex) make_egg_vertex(const FltVertex *flt_vertex);
   PT(EggTexture) make_egg_texture(const FltTexture *flt_texture);
 

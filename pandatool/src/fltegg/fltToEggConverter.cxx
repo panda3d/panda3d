@@ -654,58 +654,6 @@ parse_comment(const string &comment, const string &name,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_path
-//       Access: Private, Static
-//  Description: Converts the pathname reference by the flt file as
-//               requested.  This may either make it absolute,
-//               relative, or leave it alone.
-//
-//               orig_filename is the filename as it actually appeared
-//               in the flt file; as_found is the full pathname to the
-//               file as it actually exists on disk, assuming it was
-//               found on the search path.  rel_dir is the directory
-//               to make the pathname relative to in the case of
-//               PC_relative or PC_rel_abs.
-////////////////////////////////////////////////////////////////////
-Filename FltToEggConverter::
-convert_path(const Filename &orig_filename, const Filename &as_found,
-	     const Filename &rel_dir, PathConvert path_convert) {
-  Filename result;
-
-  switch (path_convert) {
-  case PC_relative:
-    result = as_found;
-    result.make_relative_to(rel_dir);
-    return result;
-
-  case PC_absolute:
-    result = as_found;
-    if (as_found.is_local()) {
-      nout << "Warning: file " << as_found << " not found; cannot make absolute.\n";
-      return result;
-    }
-    result.make_absolute();
-    return result;
-
-  case PC_rel_abs:
-    result = as_found;
-    result.make_relative_to(rel_dir);
-    result = Filename(rel_dir, result);
-    return result;
-
-  case PC_strip:
-    return orig_filename.get_basename();
-
-  case PC_unchanged:
-    return orig_filename;
-  }
-
-  // Error case.
-  nout << "Invalid PathConvert type: " << (int)path_convert << "\n";
-  return orig_filename;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::make_egg_vertex
 //       Access: Private
 //  Description: Makes a new EggVertex for the indicated FltVertex.

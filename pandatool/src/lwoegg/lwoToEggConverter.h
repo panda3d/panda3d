@@ -19,6 +19,7 @@ class CLwoLayer;
 class CLwoPoints;
 class CLwoPolygons;
 class CLwoSurface;
+class LwoClip;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : LwoToEggConverter
@@ -39,6 +40,7 @@ public:
   bool convert_lwo(const LwoHeader *lwo_header);
 
   CLwoLayer *get_layer(int number) const;
+  const LwoClip *get_clip(int number) const;
 
   CLwoSurface *get_surface(const string &name) const;
 
@@ -48,6 +50,7 @@ private:
   void connect_egg();
 
   void slot_layer(int number);
+  void slot_clip(int number);
   CLwoLayer *make_generic_layer();
 
   CPT(LwoHeader) _lwo_header;
@@ -55,6 +58,9 @@ private:
   CLwoLayer *_generic_layer;
   typedef vector<CLwoLayer *> Layers;
   Layers _layers;
+
+  typedef vector<const LwoClip *> Clips;
+  Clips _clips;
 
   typedef vector<CLwoPoints *> Points;
   Points _points;
