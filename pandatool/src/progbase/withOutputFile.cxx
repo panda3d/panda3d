@@ -126,7 +126,7 @@ bool WithOutputFile::
 check_last_arg(ProgramBase::Args &args, int minimum_args) {
   if (_allow_last_param && !_got_output_filename &&
       (int)args.size() > minimum_args) {
-    Filename filename = args.back();
+    Filename filename = Filename::from_os_specific(args.back());
 
     if (!_preferred_extension.empty() &&
         ("." + filename.get_extension()) != _preferred_extension) {

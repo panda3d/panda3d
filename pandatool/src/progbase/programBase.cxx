@@ -1009,7 +1009,7 @@ dispatch_filename(const string &opt, const string &arg, void *var) {
   }
 
   Filename *ip = (Filename *)var;
-  (*ip) = arg;
+  (*ip) = Filename::from_os_specific(arg);
 
   return true;
 }
@@ -1019,10 +1019,10 @@ dispatch_filename(const string &opt, const string &arg, void *var) {
 //       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
 //               one parameter, which is to be interpreted as a
-//               colon-delimited search path.  The data pointer is to
-//               a DSearchPath variable.  This kind of option may
-//               appear multiple times on the command line; each time,
-//               the new search paths are appended.
+//               single directory name to add to a search path.  The
+//               data pointer is to a DSearchPath variable.  This kind
+//               of option may appear multiple times on the command
+//               line; each time, the new directory is appended.
 ////////////////////////////////////////////////////////////////////
 bool ProgramBase::
 dispatch_search_path(const string &opt, const string &arg, void *var) {
@@ -1032,7 +1032,7 @@ dispatch_search_path(const string &opt, const string &arg, void *var) {
   }
 
   DSearchPath *ip = (DSearchPath *)var;
-  ip->append_path(arg);
+  ip->append_directory(Filename::from_os_specific(arg));
 
   return true;
 }

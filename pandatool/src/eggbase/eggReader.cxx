@@ -160,11 +160,11 @@ handle_args(ProgramBase::Args &args) {
   // get implicitly loaded up into one big egg file.
 
   if (!args.empty()) {
-    _data.set_egg_filename(args[0]);
+    _data.set_egg_filename(Filename::from_os_specific(args[0]));
   }
   Args::const_iterator ai;
   for (ai = args.begin(); ai != args.end(); ++ai) {
-    Filename filename = *ai;
+    Filename filename = Filename::from_os_specific(*ai);
 
     EggData file_data;
     if (!file_data.read(filename)) {

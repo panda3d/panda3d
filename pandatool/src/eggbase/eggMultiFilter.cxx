@@ -115,7 +115,7 @@ handle_args(ProgramBase::Args &args) {
 
   Args::const_iterator ai;
   for (ai = args.begin(); ai != args.end(); ++ai) {
-    PT(EggData) data = read_egg(*ai);
+    PT(EggData) data = read_egg(Filename::from_os_specific(*ai));
     if (data == (EggData *)NULL) {
       // Rather than returning false, we simply exit here, so the
       // ProgramBase won't try to tell the user how to run the program

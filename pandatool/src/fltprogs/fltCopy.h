@@ -72,8 +72,6 @@ private:
   typedef pset< PT(FltTexture) > Textures;
 
   void scan_flt(FltRecord *record, Refs &refs, Textures &textures);
-
-  DSearchPath _search_path;
 };
 
 #endif

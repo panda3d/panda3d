@@ -107,7 +107,7 @@ handle_args(ProgramBase::Args &args) {
            << "the last parameter on the command line.\n";
       return false;
     }
-    _output_filename = args[0];
+    _output_filename = Filename::from_os_specific(args[0]);
     _got_output_filename = true;
 
   } else {

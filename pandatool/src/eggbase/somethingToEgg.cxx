@@ -233,7 +233,7 @@ bool SomethingToEgg::
 handle_args(Args &args) {
   if (_allow_last_param && !_got_output_filename && args.size() > 1) {
     _got_output_filename = true;
-    _output_filename = args.back();
+    _output_filename = Filename::from_os_specific(args.back());
     args.pop_back();
 
     if (!(_output_filename.get_extension() == "egg")) {
@@ -266,7 +266,7 @@ handle_args(Args &args) {
     return false;
   }
 
-  _input_filename = args[0];
+  _input_filename = Filename::from_os_specific(args[0]);
 
   if (!_input_filename.exists()) {
     nout << "Cannot find input file " << _input_filename << "\n";
