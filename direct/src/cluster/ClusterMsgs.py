@@ -26,6 +26,7 @@ CLUSTER_DAEMON_PORT = 8001
 SERVER_STARTUP_STRING = (
     '!bash ppython -c ' + 
     '"import __builtin__; ' +
+    '__builtin__.clusterMode = \'server\';' +
     '__builtin__.clusterServerPort = %s;' +
     '__builtin__.clusterSyncFlag = %d;' +
     '__builtin__.clusterDaemonClient = \'%s\';' +

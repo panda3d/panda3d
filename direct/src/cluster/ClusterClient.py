@@ -39,10 +39,10 @@ class ClusterClient(DirectObject.DirectObject):
             self.daemon.tellServer(serverConfig.serverName,
                                    clusterDaemonPort,
                                    serverCommand)
-        print 'blah'
+        print 'Begin waitForServers'
         if not self.daemon.waitForServers(len(configList)):
             print 'Cluster Client, no response from servers'
-        print 'post blah'
+        print 'End waitForServers'
         self.qcm=QueuedConnectionManager()
         self.serverList = []
         self.msgHandler = ClusterMsgHandler(ClusterClient.MGR_NUM, self.notify)
