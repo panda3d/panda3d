@@ -17,7 +17,7 @@ sub CTProjPkg {
     $CTPPtmp  =~ tr/a-z/A-Z/ ;
     $CTPPret =~ s/$ENV{ $CTPPtmp }// ;
     $CTPPret =~ s/\/src\/// ;
-    $CTPPret =~ s/\/metalib\/// ;
+    $CTPPret =~ s/\/metalibs\/// ;
     $CTPPret ;
 }
 
