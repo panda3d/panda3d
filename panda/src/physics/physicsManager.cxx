@@ -104,12 +104,9 @@ remove_physical(Physical *p) {
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 do_physics(float dt) {
-  pvector< Physical * >::iterator p_cur;
-
   // now, run through each physics object in the set.
-  p_cur = _physicals.begin();
-
-  for (; p_cur != _physicals.end(); p_cur++) {
+  pvector< Physical * >::iterator p_cur = _physicals.begin();
+  for (; p_cur != _physicals.end(); ++p_cur) {
     Physical *physical = *p_cur;
 
     // do linear
@@ -124,7 +121,7 @@ do_physics(float dt) {
 
     // if it's an actor node, tell it to update itself.
     PhysicalNode *pn = physical->get_physical_node();
-    if (pn->is_of_type(ActorNode::get_class_type())) {
+    if (pn && pn->is_of_type(ActorNode::get_class_type())) {
       ActorNode *an = (ActorNode *) pn;
       an->update_transform();
     }
