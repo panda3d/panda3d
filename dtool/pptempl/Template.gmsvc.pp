@@ -174,7 +174,7 @@
 // files into 1 in order to speed the build of our heavily templated source
 #forscopes lib_target bin_target static_lib_target
 #if $[and $[eq $[NUMBER_OF_PROCESSORS],1], $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]
-#output $[TARGET]_composite.cxx
+#output $[TARGET]_composite.cxx notouch
 #format collapse
 /* Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
 /* ################################# DO NOT EDIT ########################### */
