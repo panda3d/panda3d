@@ -39,6 +39,8 @@ PUBLISHED:
 
   bool decompress(Filename &source_file);
 
+  INLINE float get_progress(void) const;
+
 private:
   void init(PT(Buffer) buffer);
 
@@ -56,5 +58,7 @@ private:
   int _source_buffer_length;
   ZDecompressor *_decompressor;
 };
+
+#include "decompressor.I"
 
 #endif

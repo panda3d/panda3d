@@ -1,0 +1,15 @@
+// Filename: extractor.I
+// Created by:  mike (09Jan97)
+//
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: Extractor::get_progress
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE float Extractor::
+get_progress(void) const {
+  nassertr(_source_file_length > 0, 0.0);
+  return ((float)_total_bytes_read / (float)_source_file_length);
+}

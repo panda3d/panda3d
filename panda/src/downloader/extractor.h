@@ -37,6 +37,8 @@ PUBLISHED:
 
   bool extract(Filename &source_file, const Filename &rel_path = "");
 
+  INLINE float get_progress(void) const;
+
 private:
   void init(PT(Buffer) buffer);
 
@@ -52,5 +54,7 @@ private:
   Filename _source_file;
   Filename _rel_path;
 };
+
+#include "extractor.I"
 
 #endif
