@@ -220,18 +220,27 @@ operator < (const TransformState &other) const {
     return 0;
   }
 
-  if ((_flags & (F_components_given | F_hpr_given)) == 
-      (F_components_given | F_hpr_given)) {
+  if ((_flags & (F_components_given | F_hpr_given | F_quat_given)) == 
+      (F_components_given | F_hpr_given | F_quat_given)) {
     // If the transform was specified componentwise, compare them
     // componentwise.
     int c = _pos.compare_to(other._pos);
     if (c != 0) {
       return c < 0;
     }
-    c = _hpr.compare_to(other._hpr);
-    if (c != 0) {
-      return c < 0;
+
+    if ((_flags & F_hpr_given) != 0) {
+      c = _hpr.compare_to(other._hpr);
+      if (c != 0) {
+        return c < 0;
+      }
+    } else if ((_flags & F_quat_given) != 0) {
+      c = _quat.compare_to(other._quat);
+      if (c != 0) {
+        return c < 0;
+      }
     }
+
     c = _scale.compare_to(other._scale);
     return c < 0;
   }
