@@ -10,7 +10,18 @@
 #include <notify.h>
 #include <stdlib.h>
 
+void test() {
+  LMatrix4f x = LMatrix4f::ident_mat();
+  LMatrix4f y = LMatrix4f::ident_mat();
+
+  LMatrix4f z = x * y;
+}
+
 int main(int argc, char *argv[]) {
+  test();
+
+  /*
+
   LOrientationf orientation; // = LQuaternionf::ident_quat();
   orientation.set(LMatrix4f::rotate_mat(-45.0f, LVector3f(0, 0, 1)));
   LRotationf rotation(LMatrix4f::rotate_mat(45.0f, LVector3f(0, 0, 1)));
@@ -31,6 +42,7 @@ int main(int argc, char *argv[]) {
   cout << "Rotation => Matrix: " << m << endl;
   cout << "Point: " << p << endl;
   cout << "Matrix * Point: " << m * p << endl;
+  */
 
   /*
   LMatrix4d x = LMatrix4d::ident_mat();

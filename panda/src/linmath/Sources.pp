@@ -50,6 +50,7 @@
   #define TARGET test_math
   #define LOCAL_LIBS \
     linmath
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_math.cxx
