@@ -74,6 +74,8 @@ PUBLISHED:
                      const string &value_blob);
   void direct_update(PyObject *distobj, const string &field_name, 
                      const Datagram &datagram);
+  bool pack_required_field(Datagram &datagram, PyObject *distobj, 
+                           const DCField *field) const;
   bool pack_required_field(DCPacker &packer, PyObject *distobj, 
                            const DCField *field) const;
 

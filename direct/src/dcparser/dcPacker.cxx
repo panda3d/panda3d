@@ -1033,7 +1033,7 @@ enquote_string(ostream &out, char quote_mark, const string &str) {
 
     } else if (!isprint(*pi)) {
       char buffer[10];
-      sprintf(buffer, "%02x", (unsigned int)(*pi));
+      sprintf(buffer, "%02x", (unsigned char)(*pi));
       out << "\\x" << buffer;
 
     } else {
@@ -1055,7 +1055,7 @@ output_hex_string(ostream &out, const string &str) {
        pi != str.end();
        ++pi) {
     char buffer[10];
-    sprintf(buffer, "%02x", (unsigned int)(*pi));
+    sprintf(buffer, "%02x", (unsigned char)(*pi));
     out << buffer;
   }
   out << '>';

@@ -459,6 +459,34 @@ direct_update(PyObject *distobj, const string &field_name,
 }
 #endif  // HAVE_PYTHON
 
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::pack_required_field
+//       Access: Published
+//  Description: Looks up the current value of the indicated field by
+//               calling the appropriate get*() function, then packs
+//               that value into the datagram.  This field is
+//               presumably either a required field or a specified
+//               optional field, and we are building up a datagram for
+//               the generate-with-required message.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCClass::
+pack_required_field(Datagram &datagram, PyObject *distobj, 
+                    const DCField *field) const {
+  DCPacker packer;
+  packer.begin_pack(field);
+  if (!pack_required_field(packer, distobj, field)) {
+    return false;
+  }
+  if (!packer.end_pack()) {
+    return false;
+  }
+
+  datagram.append_data(packer.get_data(), packer.get_length());
+  return true;
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::pack_required_field

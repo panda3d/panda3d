@@ -482,9 +482,8 @@ receive_update(DCPacker &packer, PyObject *distobj) const {
       PyObject *result = PyObject_CallObject(func, args);
       Py_XDECREF(result);
       Py_DECREF(func);
+      Py_DECREF(args);
     }
-    
-    Py_DECREF(args);
   }
 }
 #endif  // HAVE_PYTHON
