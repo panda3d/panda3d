@@ -478,7 +478,11 @@
       #define depend_metalib $[module $[TARGET],$[depend]]
       #if $[ne $[depend_metalib],]
         // This dependent library is on a metalib.
-        #set depend_libs $[depend_libs] $[depend_metalib]
+        #if $[eq $[depend_metalib],$[TARGET]]
+          #print Warning: $[TARGET] circularly depends on $[depend].
+        #else
+          #set depend_libs $[depend_libs] $[depend_metalib]
+        #endif
       #else
         // This dependent library is not in any metalib.
         #set depend_libs $[depend_libs] $[depend]
