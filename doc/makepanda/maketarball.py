@@ -188,7 +188,6 @@ writefile(TARDIR+'/panda3d.spec',SPEC)
 oscmd("tar --exclude CVS -chzf "+TARDIR+".tar.gz "+TARDIR)
 oscmd("rm -rf "+TARDIR)
 
-TARDIR="panda3d-"+VERSION.replace(".","-")
 oscmd("rm -rf "+TARDIR)
 oscmd("mkdir -p "+TARDIR)
 oscmd("mkdir -p "+TARDIR+"/thirdparty")
