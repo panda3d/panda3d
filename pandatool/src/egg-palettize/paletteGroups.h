@@ -43,6 +43,7 @@ public:
   void make_complete(const PaletteGroups &a);
   void make_union(const PaletteGroups &a, const PaletteGroups &b);
   void make_intersection(const PaletteGroups &a, const PaletteGroups &b);
+  void clear();
 
   bool empty() const;
   size_type size() const;

@@ -12,6 +12,7 @@
 #include "textureProperties.h"
 #include "imageFile.h"
 #include "sourceTextureImage.h"
+#include "destTextureImage.h"
 #include "textureImage.h"
 #include "paletteImage.h"
 #include "texturePlacement.h"
@@ -31,6 +32,7 @@ ConfigureFn(config_egg_palettize) {
   TextureProperties::init_type();
   ImageFile::init_type();
   SourceTextureImage::init_type();
+  DestTextureImage::init_type();
   TextureImage::init_type();
   PaletteImage::init_type();
   TexturePlacement::init_type();
@@ -46,6 +48,7 @@ ConfigureFn(config_egg_palettize) {
   TextureReference::register_with_read_factory();
   TextureProperties::register_with_read_factory();
   SourceTextureImage::register_with_read_factory();
+  DestTextureImage::register_with_read_factory();
   TextureImage::register_with_read_factory();
   PaletteImage::register_with_read_factory();
   TexturePlacement::register_with_read_factory();

@@ -20,6 +20,7 @@
 #include <set>
 
 class SourceTextureImage;
+class DestTextureImage;
 class TexturePlacement;
 class EggFile;
 
@@ -55,15 +56,17 @@ public:
   bool get_omit() const;
   double get_repeat_threshold() const;
   int get_margin() const;
-
+  bool is_surprise() const;
 
   SourceTextureImage *get_source(const Filename &filename, 
 				 const Filename &alpha_filename);
 
   SourceTextureImage *get_preferred_source();
-  bool get_size();
+
+  void copy_unplaced();
 
   const PNMImage &read_source_image();
+  const PNMImage &get_dest_image();
 
   void write_source_pathnames(ostream &out, int indent_level = 0) const;
   void write_scale_info(ostream &out, int indent_level = 0);
@@ -71,6 +74,8 @@ public:
 private:
   typedef set<EggFile *> EggFiles;
   typedef vector<EggFile *> WorkingEggs;
+  typedef map<string, SourceTextureImage *> Sources;
+  typedef map<string, DestTextureImage *> Dests;
 
   static int compute_egg_count(PaletteGroup *group, 
 			       const WorkingEggs &egg_files);
@@ -78,9 +83,14 @@ private:
   void assign_to_groups(const PaletteGroups &groups);
   void consider_grayscale();
 
+  void remove_old_dests(const Dests &a, const Dests &b);
+  void copy_new_dests(const Dests &a, const Dests &b);
+
+private:
   TextureRequest _request;
   TextureProperties _pre_txa_properties;
   SourceTextureImage *_preferred_source;
+  bool _is_surprise;
 
   PaletteGroups _explicitly_assigned_groups;
   PaletteGroups _actual_assigned_groups;
@@ -90,11 +100,13 @@ private:
   typedef map<PaletteGroup *, TexturePlacement *> Placement;
   Placement _placement;
 
-  typedef map<string, SourceTextureImage *> Sources;
   Sources _sources;
+  Dests _dests;
 
   bool _read_source_image;
   PNMImage _source_image;
+  bool _got_dest_image;
+  PNMImage _dest_image;
 
 
   // The TypedWriteable interface follows.
@@ -113,6 +125,7 @@ private:
   // don't use them otherwise.
   int _num_placement;
   int _num_sources;
+  int _num_dests;
 
 public:
   static TypeHandle get_class_type() {

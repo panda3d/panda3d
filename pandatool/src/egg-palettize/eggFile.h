@@ -40,15 +40,29 @@ public:
   void scan_textures();
   void get_textures(set<TextureImage *> &result) const;
 
+  void pre_txa_file();
+  void match_txa_groups(const PaletteGroups &groups);
   void post_txa_file();
 
-  const PaletteGroups &get_groups() const;
+  const PaletteGroups &get_explicit_groups() const;
+  PaletteGroup *get_default_group() const;
+  const PaletteGroups &get_complete_groups() const;
+  void clear_surprise();
+  bool is_surprise() const;
+
+  void mark_stale();
+  bool is_stale() const;
 
   void build_cross_links();
   void choose_placements();
 
+  bool has_data() const;
+  
   void update_egg();
+  bool read_egg();
+  bool write_egg();
 
+  void write_description(ostream &out, int indent_level = 0) const;
   void write_texture_refs(ostream &out, int indent_level = 0) const;
 
 private:
@@ -59,7 +73,12 @@ private:
   typedef vector<TextureReference *> Textures;
   Textures _textures;
 
-  PaletteGroups _assigned_groups;
+  bool _first_txa_match;
+  PaletteGroups _explicitly_assigned_groups;
+  PaletteGroup *_default_group;
+  PaletteGroups _complete_groups;
+  bool _is_surprise;
+  bool _is_stale;
 
 
   // The TypedWriteable interface follows.
@@ -95,8 +114,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class TxaLine;
 };
 
 #endif

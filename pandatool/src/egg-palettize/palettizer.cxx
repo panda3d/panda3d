@@ -8,6 +8,7 @@
 #include "textureImage.h"
 #include "string_utils.h"
 #include "paletteGroup.h"
+#include "filenameUnifier.h"
 
 #include <pnmImage.h>
 #include <pnmFileTypeRegistry.h>
@@ -36,6 +37,7 @@ Palettizer() {
   // version number for all bam and boo files anywhere in the world.
   _pi_version = 0;
 
+  _map_dirname = "%g";
   _margin = 2;
   _repeat_threshold = 250.0;
   _aggressively_clean_mapdir = true;
@@ -61,6 +63,9 @@ void Palettizer::
 report_pi() const {
   cout 
     << "\nparams\n"
+    << "  map directory: " << _map_dirname << "\n"
+    << "  egg relative directory: " 
+    << FilenameUnifier::make_user_filename(_rel_dirname) << "\n"
     << "  palettize size: " << _pal_x_size << " by " << _pal_y_size << "\n"
     << "  margin: " << _margin << "\n"
     << "  repeat threshold: " << _repeat_threshold << "%\n"
@@ -108,8 +113,7 @@ report_pi() const {
   EggFiles::const_iterator ei;
   for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
     EggFile *egg_file = (*ei).second;
-    cout << "  " << egg_file->get_name() << ": " 
-	 << egg_file->get_groups() << "\n";
+    egg_file->write_description(cout, 2);
     egg_file->write_texture_refs(cout, 4);
   }
 
@@ -117,35 +121,82 @@ report_pi() const {
   Groups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     PaletteGroup *group = (*gi).second;
+    if (gi != _groups.begin()) {
+      cout << "\n";
+    }
     cout << "  " << group->get_name() << ": "
 	 << group->get_groups() << "\n";
     group->write_image_info(cout, 4);
-    cout << "\n";
   }
 
-  cout << "textures\n";
+  cout << "\ntextures\n";
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
     texture->write_scale_info(cout, 2);
   }
 
+  cout << "\nsurprises\n";
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureImage *texture = (*ti).second;
+    if (texture->is_surprise()) {
+      cout << "  " << texture->get_name() << "\n";
+    }
+  }
+  for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
+    EggFile *egg_file = (*ei).second;
+    if (egg_file->is_surprise()) {
+      cout << "  " << egg_file->get_name() << "\n";
+    }
+  }
+
   cout << "\n";
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::run
+//     Function: Palettizer::read_txa_file
 //       Access: Public
-//  Description:
+//  Description: Reads in the .txa file and keeps it ready for
+//               matching textures and egg files.
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-run(const TxaFile &txa_file) {
+read_txa_file(const Filename &txa_filename) {
+  // Clear out the group dependencies, in preparation for reading them
+  // again from the .txa file.
+  Groups::iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    PaletteGroup *group = (*gi).second;
+    group->clear_depends();
+  }
+
+  if (!_txa_file.read(txa_filename)) {
+    exit(1);
+  }
+
   if (_color_type == (PNMFileType *)NULL) {
-    nout << "No valid output image file type available, cannot run.\n"
+    nout << "No valid output image file type available; cannot run.\n"
 	 << "Use :imagetype command in .txa file.\n";
     exit(1);
   }
 
-  set<TextureImage *> command_line_textures;
+  // Compute the correct dependency level for each group.  This will
+  // help us when we assign the textures to their groups.
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    PaletteGroup *group = (*gi).second;
+    group->set_dependency_level(1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::process_command_line_eggs
+//       Access: Public
+//  Description: Processes all the textures named in the
+//               _command_line_eggs, placing them on the appropriate
+//               palettes or whatever needs to be done with them.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+process_command_line_eggs() {
+  _command_line_textures.clear();
 
   // Start by scanning all the egg files we read up on the command
   // line.
@@ -156,23 +207,23 @@ run(const TxaFile &txa_file) {
     EggFile *egg_file = (*ei);
 
     egg_file->scan_textures();
-    egg_file->get_textures(command_line_textures);
+    egg_file->get_textures(_command_line_textures);
 
-    txa_file.match_egg(egg_file);
-
+    egg_file->pre_txa_file();
+    _txa_file.match_egg(egg_file);
     egg_file->post_txa_file();
   }
 
   // Now match each of the textures mentioned in those egg files
   // against a line in the .txa file.
-  set<TextureImage *>::iterator ti;
-  for (ti = command_line_textures.begin(); 
-       ti != command_line_textures.end();
+  CommandLineTextures::iterator ti;
+  for (ti = _command_line_textures.begin(); 
+       ti != _command_line_textures.end();
        ++ti) {
     TextureImage *texture = *ti;
 
     texture->pre_txa_file();
-    txa_file.match_texture(texture);
+    _txa_file.match_texture(texture);
     texture->post_txa_file();
   }
 
@@ -185,8 +236,8 @@ run(const TxaFile &txa_file) {
 
   // And now, assign each of the current set of textures to an
   // appropriate group or groups.
-  for (ti = command_line_textures.begin(); 
-       ti != command_line_textures.end();
+  for (ti = _command_line_textures.begin(); 
+       ti != _command_line_textures.end();
        ++ti) {
     TextureImage *texture = *ti;
     texture->assign_groups();
@@ -202,8 +253,8 @@ run(const TxaFile &txa_file) {
 
   // Now that *that's* done, we need to make sure the various
   // TexturePlacements require the right size for their textures.
-  for (ti = command_line_textures.begin(); 
-       ti != command_line_textures.end();
+  for (ti = _command_line_textures.begin(); 
+       ti != _command_line_textures.end();
        ++ti) {
     TextureImage *texture = *ti;
     texture->determine_placement_size();
@@ -216,20 +267,158 @@ run(const TxaFile &txa_file) {
     PaletteGroup *group = (*gi).second;
     group->place_all();
   }
+}
 
-  // Finally, generate all the images.
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::process_all
+//       Access: Public
+//  Description: Reprocesses all textures known.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+process_all() {
+  // If there *were* any egg files on the command line, deal with
+  // them.
+  CommandLineEggs::const_iterator ei;
+  for (ei = _command_line_eggs.begin();
+       ei != _command_line_eggs.end();
+       ++ei) {
+    EggFile *egg_file = (*ei);
+
+    egg_file->scan_textures();
+    egg_file->get_textures(_command_line_textures);
+  }
+
+  // Then match up all the egg files we know about with the .txa file.
+  EggFiles::const_iterator efi;
+  for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
+    EggFile *egg_file = (*efi).second;
+
+    egg_file->pre_txa_file();
+    _txa_file.match_egg(egg_file);
+    egg_file->post_txa_file();
+  }
+
+  // Now match each of the textures in the world against a line in the
+  // .txa file.
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureImage *texture = (*ti).second;
+
+    texture->pre_txa_file();
+    _txa_file.match_texture(texture);
+    texture->post_txa_file();
+  }
+
+  // Now that all of our data is read in, build in all the cross links
+  // and back pointers and stuff.
+  for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
+    (*efi).second->build_cross_links();
+  }
+
+  // And now, assign each texture to an appropriate group or groups.
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureImage *texture = (*ti).second;
+    texture->assign_groups();
+  }
+
+  // And then the egg files need to sign up for a particular
+  // TexturePlacement, so we can determine some more properties about
+  // how the textures are placed (for instance, how big the UV range
+  // is for a particular TexturePlacement).
+  for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
+    (*efi).second->choose_placements();
+  }
+
+  // Now that *that's* done, we need to make sure the various
+  // TexturePlacements require the right size for their textures.
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureImage *texture = (*ti).second;
+    texture->determine_placement_size();
+  }
+
+  // Now that each texture has been assigned to a suitable group,
+  // make sure the textures are placed on specific PaletteImages.
+  Groups::iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    PaletteGroup *group = (*gi).second;
+    group->place_all();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::generate_images
+//       Access: Public
+//  Description: Actually generates the appropriate palette and
+//               unplaced texture images into the map directories.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+generate_images() {
+  Groups::iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     PaletteGroup *group = (*gi).second;
     group->update_images();
   }
 
-  // And now we can adjust all the egg files.
-  for (ei = _command_line_eggs.begin();
-       ei != _command_line_eggs.end();
-       ++ei) {
-    EggFile *egg_file = (*ei);
-    egg_file->update_egg();
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureImage *texture = (*ti).second;
+    texture->copy_unplaced();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::read_stale_eggs
+//       Access: Public
+//  Description: Reads in any egg file that is known to be stale, even
+//               if it was not listed on the command line, so that it
+//               may be updated and written out when write_eggs() is
+//               called.  Returns true if successful, or false if
+//               there was some error.
+////////////////////////////////////////////////////////////////////
+bool Palettizer::
+read_stale_eggs() {
+  bool okflag = true;
+
+  EggFiles::iterator ei;
+  for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
+    EggFile *egg_file = (*ei).second;
+    if (!egg_file->has_data() && egg_file->is_stale()) {
+      if (!egg_file->read_egg()) {
+	okflag = false;
+
+      } else {
+	egg_file->scan_textures();
+	egg_file->choose_placements();
+      }
+    }
+  }
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::write_eggs
+//       Access: Public
+//  Description: Adjusts the egg files to reference the newly
+//               generated textures, and writes them out.  Returns
+//               true if successful, or false if there was some error.
+////////////////////////////////////////////////////////////////////
+bool Palettizer::
+write_eggs() {
+  bool okflag = true;
+
+  EggFiles::iterator ei;
+  for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
+    EggFile *egg_file = (*ei).second;
+    if (egg_file->has_data()) {
+      egg_file->update_egg();
+      if (!egg_file->write_egg()) {
+	okflag = false;
+      }
+    }
+  }
+
+  return okflag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -298,7 +487,11 @@ test_palette_group(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 PaletteGroup *Palettizer::
 get_default_group() {
-  return get_palette_group(_default_groupname);
+  PaletteGroup *default_group = get_palette_group(_default_groupname);
+  if (!_default_groupdir.empty() && !default_group->has_dirname()) {
+    default_group->set_dirname(_default_groupdir);
+  }
+  return default_group;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,7 +512,7 @@ get_texture(const string &name) {
 
   TextureImage *image = new TextureImage;
   image->set_name(name);
-  image->set_filename(name);
+  //  image->set_filename(name);
   _textures.insert(Textures::value_type(name, image));
   return image;
 }
@@ -358,9 +551,7 @@ void Palettizer::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32(_pi_version);
   datagram.add_string(_map_dirname);
-  datagram.add_string(_rel_dirname);
-  datagram.add_string(_default_groupname);
-  datagram.add_string(_default_groupdir);
+  datagram.add_string(FilenameUnifier::make_bam_filename(_rel_dirname));
   datagram.add_int32(_pal_x_size);
   datagram.add_int32(_pal_y_size);
   datagram.add_int32(_margin);
@@ -477,9 +668,8 @@ void Palettizer::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _pi_version = scan.get_int32();
   _map_dirname = scan.get_string();
-  _rel_dirname = scan.get_string();
-  _default_groupname = scan.get_string();
-  _default_groupdir = scan.get_string();
+  _rel_dirname = FilenameUnifier::get_bam_filename(scan.get_string());
+  FilenameUnifier::set_rel_dirname(_rel_dirname);
   _pal_x_size = scan.get_int32();
   _pal_y_size = scan.get_int32();
   _margin = scan.get_int32();

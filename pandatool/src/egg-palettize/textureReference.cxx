@@ -7,8 +7,10 @@
 #include "textureImage.h"
 #include "paletteImage.h"
 #include "sourceTextureImage.h"
+#include "destTextureImage.h"
 #include "texturePlacement.h"
 #include "palettizer.h"
+#include "eggFile.h"
 
 #include <indent.h>
 #include <eggTexture.h>
@@ -32,6 +34,7 @@ TypeHandle TextureReference::_type_handle;
 ////////////////////////////////////////////////////////////////////
 TextureReference::
 TextureReference() {
+  _egg_file = (EggFile *)NULL;
   _egg_tex = (EggTexture *)NULL;
   _tex_mat = LMatrix3d::ident_mat();
   _inv_tex_mat = LMatrix3d::ident_mat();
@@ -62,7 +65,8 @@ TextureReference::
 //               extracted from an egg file.
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
-from_egg(EggData *data, EggTexture *egg_tex) {
+from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
+  _egg_file = egg_file;
   _egg_tex = egg_tex;
   _egg_data = data;
 
@@ -110,6 +114,16 @@ from_egg(EggData *data, EggTexture *egg_tex) {
 
   _wrap_u = egg_tex->determine_wrap_u();
   _wrap_v = egg_tex->determine_wrap_v();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::get_egg_file
+//       Access: Public
+//  Description: Returns the EggFile that references this texture.
+////////////////////////////////////////////////////////////////////
+EggFile *TextureReference::
+get_egg_file() const {
+  return _egg_file;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -238,6 +252,19 @@ get_placement() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::mark_egg_stale
+//       Access: Public
+//  Description: Marks the egg file that shares this reference as
+//               stale.
+////////////////////////////////////////////////////////////////////
+void TextureReference::
+mark_egg_stale() {
+  if (_egg_file != (EggFile *)NULL) {
+    _egg_file->mark_stale();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::update_egg
 //       Access: Public
 //  Description: Updates the egg file with all the relevant
@@ -261,9 +288,9 @@ update_egg() {
     // The texture does not appear on a palette.  This is the easy
     // case; we simply have to update the texture reference to the new
     // texture location.
-    TextureImage *texture = _placement->get_texture();
-    nassertv(texture != (TextureImage *)NULL);
-    texture->update_egg_tex(_egg_tex);
+    DestTextureImage *dest = _placement->get_dest();
+    nassertv(dest != (DestTextureImage *)NULL);
+    dest->update_egg_tex(_egg_tex);
     return;
   }
 
@@ -601,6 +628,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   // We don't write _egg_tex, _egg_data, or _tex_mat; that's specific
   // to the session.
 
+  writer->write_pointer(datagram, _egg_file);
   writer->write_pointer(datagram, _source_texture);
   writer->write_pointer(datagram, _placement);
 
@@ -626,8 +654,13 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int TextureReference::
 complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
-  nassertr((int)plist.size() >= 2, 0);
+  nassertr((int)plist.size() >= 3, 0);
   int index = 0;
+
+  if (plist[index] != (TypedWriteable *)NULL) {
+    DCAST_INTO_R(_egg_file, plist[index], index);
+  }
+  index++;
 
   if (plist[index] != (TypedWriteable *)NULL) {
     DCAST_INTO_R(_source_texture, plist[index], index);
@@ -672,6 +705,7 @@ make_TextureReference(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  manager->read_pointer(scan, this);  // _egg_file
   manager->read_pointer(scan, this);  // _source_texture
   manager->read_pointer(scan, this);  // _placement
 

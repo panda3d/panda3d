@@ -13,6 +13,7 @@
 #include <typedWriteable.h>
 
 #include <vector>
+#include <set>
 #include <map>
 
 class PNMFileType;
@@ -33,7 +34,12 @@ public:
   Palettizer();
 
   void report_pi() const;
-  void run(const TxaFile &txa_file);
+  void read_txa_file(const Filename &txa_filename);
+  void process_command_line_eggs();
+  void process_all();
+  void generate_images();
+  bool read_stale_eggs();
+  bool write_eggs();
 
   EggFile *get_egg_file(const string &name);
   PaletteGroup *get_palette_group(const string &name);
@@ -53,13 +59,17 @@ public:
     RU_poly
   };
 
-  // The following parameter values specifically relate to textures
-  // and palettes.  These values are stored in the .pi file for future
-  // reference.
-  Filename _map_dirname;
-  Filename _rel_dirname;
+  // These values are not stored in the bam file, but are specific to
+  // each session.
+  TxaFile _txa_file;
   string _default_groupname;
   string _default_groupdir;
+
+  // The following parameter values specifically relate to textures
+  // and palettes.  These values are stored in the bam file for future
+  // reference.
+  string _map_dirname;
+  Filename _rel_dirname;
   int _pal_x_size, _pal_y_size;
   int _margin;
   double _repeat_threshold;
@@ -79,6 +89,9 @@ private:
   typedef vector<EggFile *> CommandLineEggs;
   CommandLineEggs _command_line_eggs;
 
+  typedef set<TextureImage *> CommandLineTextures;
+  CommandLineTextures _command_line_textures;
+  
   typedef map<string, PaletteGroup *> Groups;
   Groups _groups;
 

@@ -15,6 +15,7 @@
 
 class PNMImage;
 class EggTexture;
+class PaletteGroup;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : ImageFile
@@ -36,7 +37,7 @@ public:
   const TextureProperties &get_properties() const;
   void update_properties(const TextureProperties &properties);
 
-  void set_filename(const string &basename);
+  void set_filename(PaletteGroup *group, const string &basename);
   const Filename &get_filename() const;
   const Filename &get_alpha_filename() const;
   bool exists() const;

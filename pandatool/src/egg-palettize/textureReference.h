@@ -16,6 +16,7 @@
 class TextureImage;
 class SourceTextureImage;
 class Filename;
+class EggFile;
 class EggData;
 class EggTexture;
 class EggGroupNode;
@@ -34,8 +35,9 @@ public:
   TextureReference();
   ~TextureReference();
 
-  void from_egg(EggData *data, EggTexture *egg_tex);
+  void from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex);
 
+  EggFile *get_egg_file() const;
   SourceTextureImage *get_source() const;
   TextureImage *get_texture() const;
 
@@ -50,6 +52,7 @@ public:
   void clear_placement();
   TexturePlacement *get_placement() const;
 
+  void mark_egg_stale();
   void update_egg();
 
   void output(ostream &out) const;
@@ -68,8 +71,10 @@ private:
   static LVector2d translate_uv(const TexCoordd &min_uv,
 				const TexCoordd &max_uv);
 
+  EggFile *_egg_file;
   EggTexture *_egg_tex;
   EggData *_egg_data;
+
   LMatrix3d _tex_mat, _inv_tex_mat;
   SourceTextureImage *_source_texture;
   TexturePlacement *_placement;

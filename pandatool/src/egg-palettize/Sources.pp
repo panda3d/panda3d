@@ -9,7 +9,9 @@
 
   #define SOURCES \
     config_egg_palettize.cxx config_egg_palettize.h \
+    destTextureImage.cxx destTextureImage.h \
     eggFile.cxx eggFile.h eggPalettize.cxx eggPalettize.h \
+    filenameUnifier.cxx filenameUnifier.h \
     imageFile.cxx imageFile.h omitReason.cxx omitReason.h \
     paletteGroup.h paletteGroup.cxx \
     paletteGroups.h paletteGroups.cxx paletteImage.h paletteImage.cxx \

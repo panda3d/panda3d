@@ -121,19 +121,6 @@ read_header() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void SourceTextureImage::
-output(ostream &out) const {
-  out << _filename;
-  if (!_alpha_filename.empty()) {
-    out << " (" << _alpha_filename << ")";
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SourceTextureImage::register_with_read_factory
 //       Access: Public, Static
 //  Description: Registers the current object as something that can be

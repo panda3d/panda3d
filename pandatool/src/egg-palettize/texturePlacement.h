@@ -16,8 +16,8 @@
 
 #include <set>
 
-
 class TextureImage;
+class DestTextureImage;
 class PaletteGroup;
 class PaletteImage;
 class PalettePage;
@@ -47,6 +47,10 @@ public:
 
   void add_egg(TextureReference *reference);
   void remove_egg(TextureReference *reference);
+  void mark_eggs_stale();
+
+  void set_dest(DestTextureImage *dest);
+  DestTextureImage *get_dest() const;
 
   bool determine_size();
   OmitReason get_omit_reason() const;
@@ -83,6 +87,7 @@ private:
   TextureImage *_texture;
   PaletteGroup *_group;
   PaletteImage *_image;
+  DestTextureImage *_dest;
 
   bool _has_uvs;
   bool _size_known;

@@ -39,7 +39,8 @@ public:
 
 private:
   typedef vector<GlobPattern> Patterns;
-  Patterns _patterns;
+  Patterns _texture_patterns;
+  Patterns _egg_patterns;
 
   enum SizeType {
     ST_none,

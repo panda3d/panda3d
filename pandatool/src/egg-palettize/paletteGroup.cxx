@@ -24,6 +24,7 @@ TypeHandle PaletteGroup::_type_handle;
 PaletteGroup::
 PaletteGroup() {
   _egg_count = 0;
+  _dependency_level = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,6 +38,41 @@ PaletteGroup() {
 void PaletteGroup::
 set_dirname(const string &dirname) {
   _dirname = dirname;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::has_dirname
+//       Access: Public
+//  Description: Returns true if the directory name has been
+//               explicitly set for this group.  If it has not,
+//               get_dirname() returns an empty string.
+////////////////////////////////////////////////////////////////////
+bool PaletteGroup::
+has_dirname() const {
+  return !_dirname.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_dirname
+//       Access: Public
+//  Description: Returns the directory name associated with the
+//               palette group.  See set_dirname().
+////////////////////////////////////////////////////////////////////
+const string &PaletteGroup::
+get_dirname() const {
+  return _dirname;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::clear_depends
+//       Access: Public
+//  Description: Eliminates all the dependency information for this
+//               group.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+clear_depends() {
+  _dependent.clear();
+  _dependency_level = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,6 +100,55 @@ group_with(PaletteGroup *other) {
 const PaletteGroups &PaletteGroup::
 get_groups() const {
   return _dependent;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::set_dependency_level
+//       Access: Public
+//  Description: Sets the dependency level of this group to the
+//               indicated level, provided that level is not lower
+//               than the level that was set previously.  Also
+//               cascades to all dependent groups.  See
+//               get_dependency_level().
+//
+//               This call recurses to correctly set the dependency
+//               level of all PaletteGroups in the hierarchy.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+set_dependency_level(int level) {
+  if (level > _dependency_level) {
+    _dependency_level = level;
+    PaletteGroups::iterator gi;
+    for (gi = _dependent.begin(); gi != _dependent.end(); ++gi) {
+      (*gi)->set_dependency_level(level + 1);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_dependency_level
+//       Access: Public
+//  Description: Returns the dependency level of this group.  This is
+//               a measure of how specific the group is; the lower the
+//               dependency level, the more specific the group.
+//
+//               Groups depend on other groups in a hierarchical
+//               relationship.  In general, if group a depends on
+//               group b, then b->get_dependency_level() >
+//               a->get_dependency_level().
+//
+//               Thus, groups that lots of other groups depend on have
+//               a higher dependency level; groups that no one else
+//               depends on have a low dependency level.  This is
+//               important when deciding which groups are best suited
+//               for assigning a texture to; in general, the texture
+//               should be assigned to the most specific suitable
+//               group (i.e. the one with the lowest dependency
+//               level).
+////////////////////////////////////////////////////////////////////
+int PaletteGroup::
+get_dependency_level() const {
+  return _dependency_level;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -260,6 +345,9 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_string(get_name());
   datagram.add_string(_dirname);
   _dependent.write_datagram(writer, datagram);
+
+  // We don't write out _dependency_level.  It's best to recompute
+  // that each time.
 
   datagram.add_uint32(_placements.size());
   Placements::const_iterator pli;

@@ -102,11 +102,13 @@ write_data(xel *array, xelval *) {
    */
   cinfo.image_width = _x_size;      /* image width and height, in pixels */
   cinfo.image_height = _y_size;
-  if (is_grayscale())
+  if (is_grayscale()) {
     cinfo.input_components = 1;
-  else
+    cinfo.in_color_space = JCS_GRAYSCALE;
+  } else {
     cinfo.input_components = 3;
-  cinfo.in_color_space = JCS_RGB;       /* colorspace of input image */
+    cinfo.in_color_space = JCS_RGB;
+  }
   /* Now use the library's routine to set default compression parameters.
    * (You must set at least cinfo.in_color_space before calling this,
    * since the defaults depend on the source color space.)

@@ -56,10 +56,21 @@ parse(const string &line) {
 
   vector_string::iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
-    _patterns.push_back(GlobPattern(*wi));
+    const string &word = (*wi);
+
+    // If the pattern ends in the string ".egg", and only if it ends
+    // in this string, it is deemed an egg pattern and will only be
+    // tested against egg files.  If it ends in anything else, it is
+    // deemed a texture pattern and will only be tested against
+    // textures.
+    if (word.length() > 4 && word.substr(word.length() - 4) == ".egg") {
+      _egg_patterns.push_back(GlobPattern(word));
+    } else {
+      _texture_patterns.push_back(GlobPattern(*wi));
+    }
   }
 
-  if (_patterns.empty()) {
+  if (_egg_patterns.empty() && _texture_patterns.empty()) {
     nout << "No texture or egg filenames given.\n";
     return false;
   }
@@ -229,8 +240,8 @@ match_egg(EggFile *egg_file) const {
 
   bool matched_any = false;
   Patterns::const_iterator pi;
-  for (pi = _patterns.begin(); 
-       pi != _patterns.end() && !matched_any;
+  for (pi = _egg_patterns.begin(); 
+       pi != _egg_patterns.end() && !matched_any;
        ++pi) {
     matched_any = (*pi).matches(name);
   }
@@ -259,8 +270,7 @@ match_egg(EggFile *egg_file) const {
     }
   }
 
-  egg_file->_assigned_groups.make_union
-    (egg_file->_assigned_groups, _palette_groups);
+  egg_file->match_txa_groups(_palette_groups);
 
   if (got_cont) {
     // If we have the "cont" keyword, we should keep scanning for
@@ -270,6 +280,8 @@ match_egg(EggFile *egg_file) const {
 
   // Otherwise, in the normal case, a match ends the search for
   // matches.
+  egg_file->clear_surprise();
+
   return true;
 }
 
@@ -290,8 +302,8 @@ match_texture(TextureImage *texture) const {
 
   bool matched_any = false;
   Patterns::const_iterator pi;
-  for (pi = _patterns.begin(); 
-       pi != _patterns.end() && !matched_any;
+  for (pi = _texture_patterns.begin(); 
+       pi != _texture_patterns.end() && !matched_any;
        ++pi) {
     matched_any = (*pi).matches(name);
   }
@@ -387,6 +399,8 @@ match_texture(TextureImage *texture) const {
 
   // Otherwise, in the normal case, a match ends the search for
   // matches.
+  texture->_is_surprise = false;
+
   return true;
 }
 
@@ -398,7 +412,10 @@ match_texture(TextureImage *texture) const {
 void TxaLine::
 output(ostream &out) const {
   Patterns::const_iterator pi;
-  for (pi = _patterns.begin(); pi != _patterns.end(); ++pi) {
+  for (pi = _texture_patterns.begin(); pi != _texture_patterns.end(); ++pi) {
+    out << (*pi) << " ";
+  }
+  for (pi = _egg_patterns.begin(); pi != _egg_patterns.end(); ++pi) {
     out << (*pi) << " ";
   }
   out << ":";

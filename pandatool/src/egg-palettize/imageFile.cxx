@@ -4,6 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "imageFile.h"
+#include "palettizer.h"
+#include "filenameUnifier.h"
+#include "paletteGroup.h"
 
 #include <pnmImage.h>
 #include <pnmFileType.h>
@@ -118,8 +121,33 @@ update_properties(const TextureProperties &properties) {
 //               automatically applied.
 ////////////////////////////////////////////////////////////////////
 void ImageFile::
-set_filename(const string &basename) {
-  _filename = basename;
+set_filename(PaletteGroup *group, const string &basename) {
+  // Synthesize the directory name based on the map_dirname set to the
+  // palettizer, and the group's dirname.
+  string dirname;
+  string::iterator pi;
+  pi = pal->_map_dirname.begin();
+  while (pi != pal->_map_dirname.end()) {
+    if (*pi == '%') {
+      ++pi;
+      switch (*pi) {
+      case '%':
+	dirname += '%';
+	break;
+
+      case 'g':
+	if (group != (PaletteGroup *)NULL) {
+	  dirname += group->get_dirname();
+	}
+	break;
+      }
+    } else {
+      dirname += *pi;
+    }
+    ++pi;
+  }
+
+  _filename = Filename(dirname, basename);
 
   if (_properties._color_type != (PNMFileType *)NULL) {
     _filename.set_extension
@@ -189,17 +217,17 @@ read(PNMImage &image) const {
   nassertr(!_filename.empty(), false);
 
   image.set_type(_properties._color_type);
-  nout << "Reading " << _filename << "\n";
+  nout << "Reading " << FilenameUnifier::make_user_filename(_filename) << "\n";
   if (!image.read(_filename)) {
     nout << "Unable to read.\n";
     return false;
   }
 
-  if (!_alpha_filename.empty()) {
+  if (!_alpha_filename.empty() && _alpha_filename.exists()) {
     // Read in a separate color image and an alpha channel image.
     PNMImage alpha_image;
     alpha_image.set_type(_properties._alpha_type);
-    nout << "Reading " << _alpha_filename << "\n";
+    nout << "Reading " << FilenameUnifier::make_user_filename(_alpha_filename) << "\n";
     if (!alpha_image.read(_alpha_filename)) {
       nout << "Unable to read.\n";
       return false;
@@ -236,9 +264,11 @@ write(PNMImage &image) const {
   if (!image.has_alpha() || 
       _properties._alpha_type == (PNMFileType *)NULL) {
     if (!_alpha_filename.empty() && _alpha_filename.exists()) {
+      nout << "Deleting " << FilenameUnifier::make_user_filename(_alpha_filename) << "\n";
       _alpha_filename.unlink();
     }
-    nout << "Writing " << _filename << "\n";
+    nout << "Writing " << FilenameUnifier::make_user_filename(_filename) << "\n";
+    _filename.make_dir();
     if (!image.write(_filename, _properties._color_type)) {
       nout << "Unable to write.\n";
       return false;
@@ -256,12 +286,14 @@ write(PNMImage &image) const {
   }
 
   image.remove_alpha();
-  nout << "Writing " << _filename << "\n";
+  nout << "Writing " << FilenameUnifier::make_user_filename(_filename) << "\n";
+  _filename.make_dir();
   if (!image.write(_filename, _properties._color_type)) {
     nout << "Unable to write.\n";
     return false;
   }
-  nout << "Writing " << _alpha_filename << "\n";
+  nout << "Writing " << FilenameUnifier::make_user_filename(_alpha_filename) << "\n";
+  _alpha_filename.make_dir();
   if (!alpha_image.write(_alpha_filename, _properties._alpha_type)) {
     nout << "Unable to write.\n";
     return false;
@@ -277,11 +309,11 @@ write(PNMImage &image) const {
 void ImageFile::
 unlink() {
   if (!_filename.empty() && _filename.exists()) {
-    nout << "Deleting " << _filename << "\n";
+    nout << "Deleting " << FilenameUnifier::make_user_filename(_filename) << "\n";
     _filename.unlink();
   }
   if (!_alpha_filename.empty() && _alpha_filename.exists()) {
-    nout << "Deleting " << _alpha_filename << "\n";
+    nout << "Deleting " << FilenameUnifier::make_user_filename(_alpha_filename) << "\n";
     _alpha_filename.unlink();
   }
 }
@@ -298,6 +330,7 @@ update_egg_tex(EggTexture *egg_tex) const {
   egg_tex->set_filename(_filename);
 
   if (_properties._alpha_type != (PNMFileType *)NULL &&
+      _properties.uses_alpha() &&
       !_alpha_filename.empty()) {
     egg_tex->set_alpha_file(_alpha_filename);
   } else {
@@ -315,10 +348,11 @@ update_egg_tex(EggTexture *egg_tex) const {
 ////////////////////////////////////////////////////////////////////
 void ImageFile::
 output_filename(ostream &out) const {
-  out << _filename;
+  out << FilenameUnifier::make_user_filename(_filename);
   if (_properties._alpha_type != (PNMFileType *)NULL &&
+      _properties.uses_alpha() &&
       !_alpha_filename.empty()) {
-    out << " " << _alpha_filename;
+    out << " " << FilenameUnifier::make_user_filename(_alpha_filename);
   }
 }
 
@@ -332,8 +366,8 @@ output_filename(ostream &out) const {
 void ImageFile::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   _properties.write_datagram(writer, datagram);
-  datagram.add_string(_filename);
-  datagram.add_string(_alpha_filename);
+  datagram.add_string(FilenameUnifier::make_bam_filename(_filename));
+  datagram.add_string(FilenameUnifier::make_bam_filename(_alpha_filename));
   datagram.add_bool(_size_known);
   datagram.add_int32(_x_size);
   datagram.add_int32(_y_size);
@@ -349,8 +383,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 void ImageFile::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _properties.fillin(scan, manager);
-  _filename = scan.get_string();
-  _alpha_filename = scan.get_string();
+  _filename = FilenameUnifier::get_bam_filename(scan.get_string());
+  _alpha_filename = FilenameUnifier::get_bam_filename(scan.get_string());
   _size_known = scan.get_bool();
   _x_size = scan.get_int32();
   _y_size = scan.get_int32();

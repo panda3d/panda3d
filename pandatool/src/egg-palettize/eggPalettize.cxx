@@ -7,6 +7,7 @@
 #include "palettizer.h"
 #include "eggFile.h"
 #include "string_utils.h"
+#include "filenameUnifier.h"
 
 #include <eggData.h>
 #include <bamFile.h>
@@ -76,7 +77,7 @@ EggPalettize() : EggMultiFilter(true) {
     ("dm", "dirname", 0, 
      "The directory in which to place all maps: generated palettes, "
      "as well as images which were not placed on palettes "
-     "(but may have been resized).  If this contains the string %s, "
+     "(but may have been resized).  If this contains the string %g, "
      "this will be replaced with the \"dir\" string associated with a "
      "palette group.",
      &EggPalettize::dispatch_string, &_got_map_dirname, &_map_dirname);
@@ -97,7 +98,13 @@ EggPalettize() : EggMultiFilter(true) {
      &EggPalettize::dispatch_string, &_got_default_groupdir, &_default_groupdir);
   
   add_option
-    ("f", "", 0, 
+    ("all", "", 0, 
+     "Consider all the textures referenced in all egg files that have "
+     "ever been palettized, not just the egg files that appear on "
+     "the command line.",
+     &EggPalettize::dispatch_none, &_all_textures);
+  add_option
+    ("opt", "", 0, 
      "Force an optimal packing.  By default, textures are added to "
      "existing palettes without disturbing them, which can lead to "
      "suboptimal packing.  Including this switch forces the palettes "
@@ -105,7 +112,7 @@ EggPalettize() : EggMultiFilter(true) {
      "may invalidate other egg files which share this palette.",
      &EggPalettize::dispatch_none, &_force_optimal);
   add_option
-    ("F", "", 0, 
+    ("redo", "", 0, 
      "Force a redo of everything.  This is useful in case something "
      "has gotten out of sync and the old palettes are just bad.",
      &EggPalettize::dispatch_none, &_force_redo_all);
@@ -114,12 +121,10 @@ EggPalettize() : EggMultiFilter(true) {
      "Resize mostly-empty palettes to their minimal size.",
      &EggPalettize::dispatch_none, &_optimal_resize);
   add_option
-    ("t", "", 0, 
-     "Touch any additional egg files that share this palette and will "
-     "need to be refreshed, but were not included on the command "
-     "line.  Presumably a future make pass will cause them to be run "
-     "through egg-palettize again.",
-     &EggPalettize::dispatch_none, &_touch_eggs);
+    ("egg", "", 0, 
+     "Regenerate all egg files that need modification, even those that "
+     "aren't named on the command line.",
+     &EggPalettize::dispatch_none, &_redo_eggs);
 
   add_option
     ("nolock", "", 0, 
@@ -244,38 +249,40 @@ run() {
     exit(1);
   }
 
-  Filename pi_filename = _txa_filename;
-  pi_filename.set_extension("boo");
+  FilenameUnifier::set_txa_filename(_txa_filename);
 
-  BamFile pi_file;
+  Filename state_filename = _txa_filename;
+  state_filename.set_extension("boo");
 
-  if (!pi_filename.exists()) {
-    nout << pi_filename << " does not exist; starting palettization from scratch.\n";
+  BamFile state_file;
+
+  if (!state_filename.exists()) {
+    nout << state_filename << " does not exist; starting palettization from scratch.\n";
     pal = new Palettizer;
 
   } else {
     // Read the Palettizer object from the Bam file written
     // previously.  This will recover all of the state saved from the
     // past session.
-    if (!pi_file.open_read(pi_filename)) {
-      nout << pi_filename << " exists, but cannot be read.  Perhaps you should remove it so a new one can be created.\n";
+    if (!state_file.open_read(state_filename)) {
+      nout << state_filename << " exists, but cannot be read.  Perhaps you should remove it so a new one can be created.\n";
       exit(1);
     }
 
-    TypedWriteable *obj = pi_file.read_object();
-    if (obj == (TypedWriteable *)NULL || !pi_file.resolve()) {
-      nout << pi_filename << " exists, but appears to be corrupt.  Perhaps you should remove it so a new one can be created.\n";
+    TypedWriteable *obj = state_file.read_object();
+    if (obj == (TypedWriteable *)NULL || !state_file.resolve()) {
+      nout << state_filename << " exists, but appears to be corrupt.  Perhaps you should remove it so a new one can be created.\n";
       exit(1);
     }
 
     if (!obj->is_of_type(Palettizer::get_class_type())) {
-      nout << pi_filename << " exists, but does not appear to be "
+      nout << state_filename << " exists, but does not appear to be "
 	   << "an egg-palettize output file.  Perhaps you "
 	   << "should remove it so a new one can be created.\n";
       exit(1);
     }
 
-    pi_file.close();
+    state_file.close();
 
     pal = DCAST(Palettizer, obj);
   }
@@ -285,15 +292,26 @@ run() {
     exit(0);
   }
 
+  bool okflag = true;
+
+  pal->read_txa_file(_txa_filename);
+
   if (_got_default_groupname) {
     pal->_default_groupname = _default_groupname;
   } else {
     pal->_default_groupname = _txa_filename.get_basename_wo_extension();
   }
 
-  TxaFile txa_file;
-  if (!txa_file.read(_txa_filename)) {
-    exit(1);
+  if (_got_default_groupdir) {
+    pal->_default_groupdir = _default_groupdir;
+  }
+
+  if (_got_map_dirname) {
+    pal->_map_dirname = _map_dirname;
+  }
+  if (_got_rel_dirname) {
+    pal->_rel_dirname = _rel_dirname;
+    FilenameUnifier::set_rel_dirname(_rel_dirname);
   }
 
   Eggs::const_iterator ei;
@@ -309,18 +327,36 @@ run() {
     pal->_command_line_eggs.push_back(egg_file);
   }
 
-  pal->run(txa_file);
+  if (_all_textures) {
+    pal->process_all();
+  } else {
+    pal->process_command_line_eggs();
+  }
 
-  if (!pi_file.open_write(pi_filename) ||
-      !pi_file.write_object(pal)) {
-    nout << "Unable to write palettization information to " << pi_filename
+  if (_redo_eggs) {
+    if (!pal->read_stale_eggs()) {
+      okflag = false;
+    }
+  }
+
+  pal->generate_images();
+
+  if (!pal->write_eggs()) {
+    okflag = false;
+  }
+
+  if (!state_file.open_write(state_filename) ||
+      !state_file.write_object(pal)) {
+    nout << "Unable to write palettization information to " << state_filename
 	 << "\n";
     exit(1);
   }
 
-  pi_file.close();
+  state_file.close();
 
-  write_eggs();
+  if (!okflag) {
+    exit(1);
+  }
 }
 
 int 

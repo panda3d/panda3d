@@ -5,6 +5,7 @@
 
 #include "textureImage.h"
 #include "sourceTextureImage.h"
+#include "destTextureImage.h"
 #include "eggFile.h"
 #include "paletteGroup.h"
 #include "texturePlacement.h"
@@ -26,6 +27,8 @@ TextureImage::
 TextureImage() {
   _preferred_source = (SourceTextureImage *)NULL;
   _read_source_image = false;
+  _got_dest_image = false;
+  _is_surprise = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,7 +41,7 @@ TextureImage() {
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
 note_egg_file(EggFile *egg_file) {
-  nassertv(!egg_file->get_groups().empty());
+  nassertv(!egg_file->get_complete_groups().empty());
   _egg_files.insert(egg_file);
 }
 
@@ -73,7 +76,7 @@ assign_groups() {
     EggFiles::const_iterator ei;
     for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
       PaletteGroups intersect;
-      intersect.make_intersection(_explicitly_assigned_groups, (*ei)->get_groups());
+      intersect.make_intersection(_explicitly_assigned_groups, (*ei)->get_complete_groups());
       if (!intersect.empty()) {
 	// This egg file is satisfied by one of the texture's explicit
 	// assignments.
@@ -100,12 +103,13 @@ assign_groups() {
     PaletteGroups total;
     WorkingEggs::const_iterator ei;
     for (ei = needed_eggs.begin(); ei != needed_eggs.end(); ++ei) {
-      total.make_union(total, (*ei)->get_groups());
+      total.make_union(total, (*ei)->get_complete_groups());
     }
     
-    // Now, find the group that will satisfy the most egg files.  If two
-    // groups satisfy the same number of egg files, choose the one that
-    // has the fewest egg files sharing it.
+    // Now, find the group that will satisfy the most egg files.  If
+    // two groups satisfy the same number of egg files, choose (a) the
+    // most specific one, i.e. with the lowest dependency_level value,
+    // and (b) the one that has the fewest egg files sharing it.
     nassertv(!total.empty());
     PaletteGroups::iterator gi = total.begin();
     PaletteGroup *best = (*gi);
@@ -113,10 +117,22 @@ assign_groups() {
     ++gi;
     while (gi != total.end()) {
       PaletteGroup *group = (*gi);
+
+      // Do we prefer this group to our current 'best'?
+      bool prefer_group = false;
       int group_egg_count = compute_egg_count(group, needed_eggs);
-      if (group_egg_count > best_egg_count ||
-	  (group_egg_count == best_egg_count &&
-	   group->get_egg_count() < best->get_egg_count())) {
+      if (group_egg_count != best_egg_count) {
+	prefer_group = (group_egg_count > best_egg_count);
+
+      } else if (group->get_dependency_level() != best->get_dependency_level()){ 
+	prefer_group = 
+	  (group->get_dependency_level() < best->get_dependency_level());
+
+      } else {
+	prefer_group = (group->get_egg_count() < best->get_egg_count());
+      }
+
+      if (prefer_group) {
 	best = group;
 	best_egg_count = group_egg_count;
       }
@@ -129,7 +145,7 @@ assign_groups() {
     
     WorkingEggs next_needed_eggs;
     for (ei = needed_eggs.begin(); ei != needed_eggs.end(); ++ei) {
-      if ((*ei)->get_groups().count(best) == 0) {
+      if ((*ei)->get_complete_groups().count(best) == 0) {
 	// This one wasn't eliminated.
 	next_needed_eggs.push_back(*ei);
       }
@@ -209,6 +225,7 @@ pre_txa_file() {
   }
 
   _request.pre_txa_file();
+  _is_surprise = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -332,6 +349,19 @@ get_margin() const {
   return _request._margin;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::is_surprise
+//       Access: Public
+//  Description: Returns true if this particular texture is a
+//               'surprise', i.e. it wasn't matched by a line in the
+//               .txa file that didn't include the keyword 'cont'.
+////////////////////////////////////////////////////////////////////
+bool TextureImage::
+is_surprise() const {
+  return _is_surprise;
+}
+
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::get_source
@@ -359,6 +389,7 @@ get_source(const Filename &filename, const Filename &alpha_filename) {
   // next time someone asks.
   _preferred_source = (SourceTextureImage *)NULL;
   _read_source_image = false;
+  _got_dest_image = false;
 
   return source;
 }
@@ -388,6 +419,62 @@ get_preferred_source() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::copy_unplaced
+//       Access: Public
+//  Description: Copies the texture to whichever destination
+//               directories are appropriate for the groups in which
+//               it has been unplaced.  Also removes the old filenames
+//               for previous sessions where it was unplaced, but is
+//               no longer.
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+copy_unplaced() {
+  // First, we need to build up the set of DestTextureImages that
+  // represents the files we need to generate.
+  Dests generate;
+
+  // Go through all the TexturePlacements and note the ones for which
+  // we're unplaced.  We check get_omit_reason() and not is_placed(),
+  // because we want to consider solitary images to be unplaced in
+  // this case.
+  Placement::iterator pi;
+  for (pi = _placement.begin(); pi != _placement.end(); ++pi) {
+    TexturePlacement *placement = (*pi).second;
+    if (placement->get_omit_reason() != OR_none) {
+      DestTextureImage *dest = new DestTextureImage(placement);
+      Filename filename = dest->get_filename();
+      filename.make_canonical();
+
+      pair<Dests::iterator, bool> insert_result = generate.insert
+	(Dests::value_type(filename, dest));
+      if (!insert_result.second) {
+	// At least two DestTextureImages map to the same filename, no
+	// sweat.
+	delete dest;
+	dest = (*insert_result.first).second;
+      }
+
+      placement->set_dest(dest);
+    }
+  }
+
+  // Now remove the old files that we previously generated, but we
+  // don't need any more.
+  remove_old_dests(generate, _dests);
+
+  // And then copy in the new ones.
+  copy_new_dests(generate, _dests);
+
+  // Clean up the old set.
+  Dests::iterator di;
+  for (di = _dests.begin(); di != _dests.end(); ++di) {
+    delete (*di).second;
+  }
+
+  _dests.swap(generate);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::read_source_image
 //       Access: Public
 //  Description: Reads in the original image, if it has not already
@@ -404,6 +491,27 @@ read_source_image() {
   }
 
   return _source_image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::get_dest_image
+//       Access: Public
+//  Description: Returns the image appropriate for writing to the
+//               destination directory, having been resized and
+//               everything.
+////////////////////////////////////////////////////////////////////
+const PNMImage &TextureImage::
+get_dest_image() {
+  if (!_got_dest_image) {
+    const PNMImage &source_image = read_source_image();
+    _dest_image.clear(get_x_size(), get_y_size(), get_num_channels(),
+		      source_image.get_maxval());
+    _dest_image.quick_filter_from(source_image);
+
+    _got_dest_image = true;
+  }
+
+  return _dest_image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -464,7 +572,7 @@ write_scale_info(ostream &out, int indent_level) {
     double scale = 
       100.0 * (((double)get_x_size() / (double)source->get_x_size()) +
 	       ((double)get_y_size() / (double)source->get_y_size())) / 2.0;
-    out << " " << scale << "%";
+    out << " scale " << scale << "%";
   }
   out << "\n";
 }
@@ -483,7 +591,7 @@ compute_egg_count(PaletteGroup *group,
 
   WorkingEggs::const_iterator ei;
   for (ei = egg_files.begin(); ei != egg_files.end(); ++ei) {
-    if ((*ei)->get_groups().count(group) != 0) {
+    if ((*ei)->get_complete_groups().count(group) != 0) {
       count++;
     }
   }
@@ -590,6 +698,88 @@ consider_grayscale() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::remove_old_dests
+//       Access: Private
+//  Description: Removes all of the filenames named in b that are not
+//               also named in a.
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+remove_old_dests(const TextureImage::Dests &a, const TextureImage::Dests &b) {
+  Dests::const_iterator ai = a.begin();
+  Dests::const_iterator bi = b.begin();
+
+  while (ai != a.end() && bi != b.end()) {
+    const string &astr = (*ai).first;
+    const string &bstr = (*bi).first;
+
+    if (astr < bstr) {
+      // Here's a filename in a, not in b.
+      ++ai;
+
+    } else if (bstr < astr) {
+      // Here's a filename in b, not in a.
+      (*bi).second->unlink();
+      ++bi;
+
+    } else { // bstr == astr
+      // Here's a filename in both a and b.
+      ++ai;
+      ++bi;
+    }
+  }
+
+  while (bi != b.end()) {
+    // Here's a filename in b, not in a.
+    (*bi).second->unlink();
+    ++bi;
+  }
+
+  while (ai != a.end()) {
+    ++ai;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::copy_new_dests
+//       Access: Private
+//  Description: Copies a resized texture into each filename named in
+//               a that is not also listed in b, or whose
+//               corresponding listing in b is out of date.
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+copy_new_dests(const TextureImage::Dests &a, const TextureImage::Dests &b) {
+  Dests::const_iterator ai = a.begin();
+  Dests::const_iterator bi = b.begin();
+
+  while (ai != a.end() && bi != b.end()) {
+    const string &astr = (*ai).first;
+    const string &bstr = (*bi).first;
+
+    if (astr < bstr) {
+      // Here's a filename in a, not in b.
+      (*ai).second->copy(this);
+      ++ai;
+
+    } else if (bstr < astr) {
+      // Here's a filename in b, not in a.
+      ++bi;
+
+    } else { // bstr == astr
+      // Here's a filename in both a and b.
+      (*ai).second->copy_if_stale((*bi).second, this);
+      ++ai;
+      ++bi;
+    }
+  }
+
+  while (ai != a.end()) {
+    // Here's a filename in a, not in b.
+    (*ai).second->copy(this);
+    ++ai;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::register_with_read_factory
 //       Access: Public, Static
 //  Description: Registers the current object as something that can be
@@ -621,6 +811,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   // We don't write out _preferred_source; this is redetermined each
   // session.
 
+  datagram.add_bool(_is_surprise);
+
   // We don't write out _explicitly_assigned_groups; this is re-read
   // from the .txa file each time.
 
@@ -641,8 +833,15 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
     writer->write_pointer(datagram, (*si).second);
   }
 
-  // We don't write out _read_source_image or _source_image; this must
-  // be reread each session.
+  datagram.add_uint32(_dests.size());
+  Dests::const_iterator di;
+  for (di = _dests.begin(); di != _dests.end(); ++di) {
+    writer->write_pointer(datagram, (*di).second);
+  }
+
+  // We don't write out _read_source_image, _source_image,
+  // _got_dest_image, or _dest_image; these must be reread each
+  // session.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -656,7 +855,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int TextureImage::
 complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
-  nassertr((int)plist.size() >= _num_placement * 2 + _num_sources, 0);
+  nassertr((int)plist.size() >= _num_placement * 2 + _num_sources + _num_dests, 0);
   int index = 0;
 
   int i;
@@ -677,6 +876,13 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
       source->get_alpha_filename().get_fullpath();
 
     _sources.insert(Sources::value_type(key, source));
+    index++;
+  }
+
+  for (i = 0; i < _num_dests; i++) {
+    DestTextureImage *dest;
+    DCAST_INTO_R(dest, plist[index], index);
+    _dests.insert(Dests::value_type(dest->get_filename(), dest));
     index++;
   }
 
@@ -716,6 +922,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   ImageFile::fillin(scan, manager);
   set_name(scan.get_string());
 
+  _is_surprise = scan.get_bool();
+
   _actual_assigned_groups.fillin(scan, manager);
 
   _num_placement = scan.get_uint32();
@@ -723,4 +931,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _num_sources = scan.get_uint32();
   manager->read_pointers(scan, this, _num_sources);
+  _num_dests = scan.get_uint32();
+  manager->read_pointers(scan, this, _num_dests);
 }

@@ -37,9 +37,15 @@ public:
   PaletteGroup();
 
   void set_dirname(const string &dirname);
+  bool has_dirname() const;
+  const string &get_dirname() const;
 
+  void clear_depends();
   void group_with(PaletteGroup *other);
   const PaletteGroups &get_groups() const;
+
+  void set_dependency_level(int level);
+  int get_dependency_level() const;
 
   void increment_egg_count();
   int get_egg_count() const;
@@ -59,6 +65,7 @@ private:
   string _dirname;
   int _egg_count;
   PaletteGroups _dependent;
+  int _dependency_level;
 
   typedef set<TexturePlacement *> Placements;
   Placements _placements;

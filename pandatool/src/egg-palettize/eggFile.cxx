@@ -8,6 +8,7 @@
 #include "paletteGroup.h"
 #include "texturePlacement.h"
 #include "palettizer.h"
+#include "filenameUnifier.h"
 
 #include <eggData.h>
 #include <eggTextureCollection.h>
@@ -26,6 +27,10 @@ TypeHandle EggFile::_type_handle;
 EggFile::
 EggFile() {
   _data = (EggData *)NULL;
+  _default_group = (PaletteGroup *)NULL;
+  _is_surprise = true;
+  _is_stale = true;
+  _first_txa_match = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,6 +46,11 @@ from_command_line(EggData *data,
   _data = data;
   _source_filename = source_filename;
   _dest_filename = dest_filename;
+
+  // We save the default PaletteGroup at this point, because the egg
+  // file inherits the default group that was in effect when it was
+  // specified on the command line.
+  _default_group = pal->get_default_group();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +80,7 @@ scan_textures() {
     EggTexture *egg_tex = (*eti);
 
     TextureReference *ref = new TextureReference;
-    ref->from_egg(_data, egg_tex);
+    ref->from_egg(this, _data, egg_tex);
 
     _textures.push_back(ref);
   }
@@ -94,6 +104,39 @@ get_textures(set<TextureImage *> &result) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggFile::pre_txa_file
+//       Access: Public
+//  Description: Does some processing prior to scanning the .txa file.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+pre_txa_file() {
+  _is_surprise = true;
+  _first_txa_match = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::match_txa_groups
+//       Access: Public
+//  Description: Adds the indicated set of groups, read from the .txa
+//               file, to the set of groups to which the egg file is
+//               assigned.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+match_txa_groups(const PaletteGroups &groups) {
+  if (_first_txa_match) {
+    // If this is the first line we matched in the .txa file, clear
+    // the set of groups we'd matched from before.  We don't clear
+    // until we match a line in the .txa file, because if we don't
+    // match any lines we still want to remember what groups we used
+    // to be assigned to.
+    _explicitly_assigned_groups.clear();
+    _first_txa_match = false;
+  }
+
+  _explicitly_assigned_groups.make_union(_explicitly_assigned_groups, groups);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggFile::post_txa_file
 //       Access: Public
 //  Description: Once the egg file has been matched against all of the
@@ -102,22 +145,90 @@ get_textures(set<TextureImage *> &result) const {
 ////////////////////////////////////////////////////////////////////
 void EggFile::
 post_txa_file() {
-  if (_assigned_groups.empty()) {
-    // If the egg file has been assigned to no groups, we have to
-    // assign it to something.
-    _assigned_groups.insert(pal->get_default_group());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggFile::get_groups
+//     Function: EggFile::get_explicit_groups
 //       Access: Public
 //  Description: Returns the set of PaletteGroups that the egg file
 //               has been explicitly assigned to in the .txa file.
 ////////////////////////////////////////////////////////////////////
 const PaletteGroups &EggFile::
-get_groups() const {
-  return _assigned_groups;
+get_explicit_groups() const {
+  return _explicitly_assigned_groups;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::get_default_group
+//       Access: Public
+//  Description: Returns the PaletteGroup that was specified as the
+//               default group on the command line at the time the egg
+//               file last appeared on the command line.
+////////////////////////////////////////////////////////////////////
+PaletteGroup *EggFile::
+get_default_group() const {
+  return _default_group;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::get_complete_groups
+//       Access: Public
+//  Description: Returns the complete set of PaletteGroups that the
+//               egg file is assigned to.  This is the set of all the
+//               groups it is explicitly assigned to, plus all the
+//               groups that these groups depend on.
+////////////////////////////////////////////////////////////////////
+const PaletteGroups &EggFile::
+get_complete_groups() const {
+  return _complete_groups;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::clear_surprise
+//       Access: Public
+//  Description: Removes the 'surprise' flag; this file has been
+//               successfully matched against a line in the .txa file.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+clear_surprise() {
+  _is_surprise = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::is_surprise
+//       Access: Public
+//  Description: Returns true if this particular egg file is a
+//               'surprise', i.e. it wasn't matched by a line in the
+//               .txa file that didn't include the keyword 'cont'.
+////////////////////////////////////////////////////////////////////
+bool EggFile::
+is_surprise() const {
+  return _is_surprise;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::mark_stale
+//       Access: Public
+//  Description: Marks this particular egg file as stale, meaning that
+//               something has changed, such as the location of a
+//               texture within its palette, which causes the egg file
+//               to need to be regenerated.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+mark_stale() {
+  _is_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::is_stale
+//       Access: Public
+//  Description: Returns true if the egg file needs to be updated,
+//               i.e. some palettizations have changed affecting it,
+//               or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggFile::
+is_stale() const {
+  return _is_stale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,16 +243,25 @@ get_groups() const {
 ////////////////////////////////////////////////////////////////////
 void EggFile::
 build_cross_links() {
+  if (_explicitly_assigned_groups.empty()) {
+    // If the egg file has been assigned to no groups, we have to
+    // assign it to something.
+    _complete_groups.clear();
+    _complete_groups.insert(_default_group);
+    _complete_groups.make_complete(_complete_groups);
+
+  } else {
+    _complete_groups.make_complete(_explicitly_assigned_groups);
+  }
+
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     (*ti)->get_texture()->note_egg_file(this);
   }
 
-  _assigned_groups.make_complete(_assigned_groups);
-
   PaletteGroups::const_iterator gi;
-  for (gi = _assigned_groups.begin();
-       gi != _assigned_groups.end();
+  for (gi = _complete_groups.begin();
+       gi != _complete_groups.end();
        ++gi) {
     (*gi)->increment_egg_count();
   }
@@ -174,7 +294,7 @@ choose_placements() {
     } else {
       // We need to select a new TexturePlacement.
       PaletteGroups groups;
-      groups.make_intersection(get_groups(), texture->get_groups());
+      groups.make_intersection(get_complete_groups(), texture->get_groups());
       
       // Now groups is the set of groups that the egg file requires,
       // which also happen to include the texture.  It better not be
@@ -196,6 +316,17 @@ choose_placements() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggFile::has_data
+//       Access: Public
+//  Description: Returns true if the EggData for this EggFile has ever
+//               been loaded.
+////////////////////////////////////////////////////////////////////
+bool EggFile::
+has_data() const {
+  return (_data != (EggData *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggFile::update_egg
 //       Access: Public
 //  Description: Once all textures have been placed appropriately,
@@ -209,6 +340,88 @@ update_egg() {
     TextureReference *reference = (*ti);
     reference->update_egg();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::read_egg
+//       Access: Public
+//  Description: Reads in the egg file from its _source_filename.  It
+//               is only valid to call this if it has not already been
+//               read in, e.g. from the command line.  Returns true if
+//               successful, false if there is an error.
+////////////////////////////////////////////////////////////////////
+bool EggFile::
+read_egg() {
+  nassertr(_data == (EggData *)NULL, false);
+  nassertr(!_source_filename.empty(), false);
+
+  if (!_source_filename.exists()) {
+    nout << _source_filename << " does not exist.\n";
+    return false;
+  }
+
+  EggData *data = new EggData;
+  if (!data->read(_source_filename)) {
+    // Failure reading.
+    delete data;
+    return false;
+  }
+
+  if (!data->resolve_externals()) {
+    // Failure reading an external.
+    delete data;
+    return false;
+  }
+
+  _data = data;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::write_egg
+//       Access: Public
+//  Description: Writes out the egg file to its _dest_filename.
+//               Returns true if successful, false if there is an
+//               error.
+////////////////////////////////////////////////////////////////////
+bool EggFile::
+write_egg() {
+  nassertr(_data != (EggData *)NULL, false);
+  nassertr(!_dest_filename.empty(), false);
+
+  _dest_filename.make_dir();
+  nout << "Writing " << _dest_filename << "\n";
+  if (!_data->write_egg(_dest_filename)) {
+    // Some error while writing.  Most unusual.
+    _is_stale = true;
+    return false;
+  }
+
+  _is_stale = false;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::write_description
+//       Access: Public
+//  Description: Writes a one-line description of the egg file and its
+//               group assignments to the indicated output stream.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+write_description(ostream &out, int indent_level) const {
+  indent(out, indent_level) << get_name() << ": ";
+  if (_explicitly_assigned_groups.empty()) {
+    if (_default_group != (PaletteGroup *)NULL) {
+      out << _default_group->get_name();
+    }
+  } else {
+    out << _explicitly_assigned_groups;
+  }
+
+  if (is_stale()) {
+    out << " (needs update)";
+  }
+  out << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -251,8 +464,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 
   // We don't write out _data; that needs to be reread each session.
 
-  datagram.add_string(_source_filename);
-  datagram.add_string(_dest_filename);
+  datagram.add_string(FilenameUnifier::make_bam_filename(_source_filename));
+  datagram.add_string(FilenameUnifier::make_bam_filename(_dest_filename));
 
   datagram.add_uint32(_textures.size());
   Textures::iterator ti;
@@ -260,7 +473,14 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
     writer->write_pointer(datagram, (*ti));
   }
 
-  _assigned_groups.write_datagram(writer, datagram);
+  _explicitly_assigned_groups.write_datagram(writer, datagram);
+  writer->write_pointer(datagram, _default_group);
+
+  // We don't write out _complete_groups; that is recomputed each
+  // session.
+
+  datagram.add_bool(_is_surprise);
+  datagram.add_bool(_is_stale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,7 +494,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int EggFile::
 complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
-  nassertr((int)plist.size() >= _num_textures, 0);
+  nassertr((int)plist.size() >= _num_textures + 1, 0);
   int index = 0;
 
   int i;
@@ -285,6 +505,11 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
     _textures.push_back(texture);
     index++;
   }
+
+  if (plist[index] != (TypedWriteable *)NULL) {
+    DCAST_INTO_R(_default_group, plist[index], index);
+  }
+  index++;
 
   return index;
 }
@@ -320,11 +545,15 @@ make_EggFile(const FactoryParams &params) {
 void EggFile::
 fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
-  _source_filename = scan.get_string();
-  _dest_filename = scan.get_string();
+  _source_filename = FilenameUnifier::get_bam_filename(scan.get_string());
+  _dest_filename = FilenameUnifier::get_bam_filename(scan.get_string());
 
   _num_textures = scan.get_uint32();
   manager->read_pointers(scan, this, _num_textures);
 
-  _assigned_groups.fillin(scan, manager);
+  _explicitly_assigned_groups.fillin(scan, manager);
+  manager->read_pointer(scan, this);  // _default_group
+
+  _is_surprise = scan.get_bool();
+  _is_stale = scan.get_bool();
 }

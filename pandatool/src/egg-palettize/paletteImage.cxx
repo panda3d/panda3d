@@ -163,7 +163,7 @@ PaletteImage(PalettePage *page, int index) :
   name << page->get_group()->get_name() << "_palette_" 
        << page->get_name() << "_" << index + 1;
 
-  set_filename(name.str());
+  set_filename(page->get_group(), name.str());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -465,9 +465,10 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 
   writer->write_pointer(datagram, _page);
   datagram.add_uint32(_index);
+  datagram.add_bool(_new_image);
 
-  // We don't write _new_image, _got_image, or _image.  These are all
-  // loaded per-session.
+  // We don't write _got_image or _image.  These are loaded
+  // per-session.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -546,4 +547,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan, this);  // _page
 
   _index = scan.get_uint32();
+  _new_image = scan.get_bool();
 }

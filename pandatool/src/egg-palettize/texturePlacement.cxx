@@ -9,6 +9,7 @@
 #include "paletteGroup.h"
 #include "paletteImage.h"
 #include "palettizer.h"
+#include "eggFile.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -30,6 +31,7 @@ TexturePlacement() {
   _texture = (TextureImage *)NULL;
   _group = (PaletteGroup *)NULL;
   _image = (PaletteImage *)NULL;
+  _dest = (DestTextureImage *)NULL;
   _has_uvs = false;
   _size_known = false;
   _is_filled = true;
@@ -55,6 +57,7 @@ TexturePlacement(TextureImage *texture, PaletteGroup *group) :
   }
 
   _image = (PaletteImage *)NULL;
+  _dest = (DestTextureImage *)NULL;
   _has_uvs = false;
   _size_known = false;
   _is_filled = false;
@@ -119,8 +122,11 @@ get_group() const {
 ////////////////////////////////////////////////////////////////////
 void TexturePlacement::
 add_egg(TextureReference *reference) {
+  reference->mark_egg_stale();
+  /*
   _has_uvs = false;
   _size_known = false;
+  */
   _references.insert(reference);
 }
 
@@ -132,9 +138,51 @@ add_egg(TextureReference *reference) {
 ////////////////////////////////////////////////////////////////////
 void TexturePlacement::
 remove_egg(TextureReference *reference) {
-  _has_uvs = false;
-  _size_known = false;
+  reference->mark_egg_stale();
+  /*
+    _has_uvs = false;
+    _size_known = false;
+  */
   _references.erase(reference);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePlacement::mark_eggs_stale
+//       Access: Public
+//  Description: Marks all the egg files that reference this placement
+//               stale.  Presumably this is called after moving the
+//               texture around in the palette or something.
+////////////////////////////////////////////////////////////////////
+void TexturePlacement::
+mark_eggs_stale() {
+  References::iterator ri;
+  for (ri = _references.begin(); ri != _references.end(); ++ri) {
+    TextureReference *reference = (*ri);
+
+    reference->mark_egg_stale();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePlacement::set_dest
+//       Access: Public
+//  Description: Sets the DestTextureImage that corresponds to this
+//               texture as it was copied to the install directory.
+////////////////////////////////////////////////////////////////////
+void TexturePlacement::
+set_dest(DestTextureImage *dest) {
+  _dest = dest;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePlacement::get_dest
+//       Access: Public
+//  Description: Returns the DestTextureImage that corresponds to this
+//               texture as it was copied to the install directory.
+////////////////////////////////////////////////////////////////////
+DestTextureImage *TexturePlacement::
+get_dest() const {
+  return _dest;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -358,7 +406,9 @@ get_y_size() const {
 ////////////////////////////////////////////////////////////////////
 double TexturePlacement::
 get_uv_area() const {
-  nassertr(_has_uvs, 0.0);
+  if (!_has_uvs) {
+    return 0.0;
+  }
 
   TexCoordd range = _position._max_uv - _position._min_uv;
   return range[0] * range[1];
@@ -462,8 +512,7 @@ get_placed_y_size() const {
 ////////////////////////////////////////////////////////////////////
 double TexturePlacement::
 get_placed_uv_area() const {
-  nassertr(_has_uvs, 0.0);
-
+  nassertr(is_placed(), 0);
   TexCoordd range = _placed._max_uv - _placed._min_uv;
   return range[0] * range[1];
 }
@@ -502,8 +551,9 @@ force_replace() {
   if (_image != (PaletteImage *)NULL) {
     _image->unplace(this);
     _image = (PaletteImage *)NULL;
-    _omit_reason = OR_working;
   }
+  _omit_reason = OR_working;
+  mark_eggs_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -519,7 +569,10 @@ force_replace() {
 void TexturePlacement::
 omit_solitary() {
   nassertv(is_placed());
-  _omit_reason = OR_solitary;
+  if (_omit_reason != OR_solitary) {
+    mark_eggs_stale();
+    _omit_reason = OR_solitary;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -531,7 +584,10 @@ omit_solitary() {
 void TexturePlacement::
 not_solitary() {
   nassertv(is_placed());
-  _omit_reason = OR_none;
+  if (_omit_reason != OR_none) {
+    mark_eggs_stale();
+    _omit_reason = OR_none;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -807,6 +863,9 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   writer->write_pointer(datagram, _texture);
   writer->write_pointer(datagram, _group);
   writer->write_pointer(datagram, _image);
+
+  // We don't write _dest.  That can safely be redetermined each
+  // session.
   
   datagram.add_bool(_has_uvs);
   datagram.add_bool(_size_known);

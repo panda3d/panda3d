@@ -30,8 +30,6 @@ public:
   bool get_size();
   bool read_header();
 
-  void output(ostream &out) const;
-
 private:
   bool _read_header;
   bool _successfully_read_header;
@@ -67,7 +65,7 @@ private:
 
 INLINE ostream &
 operator << (ostream &out, const SourceTextureImage &source) {
-  source.output(out);
+  source.output_filename(out);
   return out;
 }
 

@@ -144,6 +144,16 @@ make_intersection(const PaletteGroups &a, const PaletteGroups &b) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroups::clear
+//       Access: Public
+//  Description: Empties the set.
+////////////////////////////////////////////////////////////////////
+void PaletteGroups::
+clear() {
+  _groups.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroups::empty
 //       Access: Public
 //  Description: Returns true if the set is empty, false otherwise.

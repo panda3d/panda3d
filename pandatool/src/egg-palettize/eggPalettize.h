@@ -43,10 +43,11 @@ private:
   // They're not saved for future sessions.
   bool _report_pi;
   bool _statistics_only;
+  bool _all_textures; 
   bool _force_optimal;
   bool _force_redo_all;
   bool _optimal_resize;
-  bool _touch_eggs;
+  bool _redo_eggs;
   bool _dont_lock_pi;
 
   bool _describe_input_file;
