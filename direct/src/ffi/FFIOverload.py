@@ -223,10 +223,10 @@ class FFIMethodArgumentTreeCollection:
         # Global functions do not need static versions
         if (self.methodSpecList[0].isStatic() and 
             (not self.methodSpecList[0].isConstructor())):
-            indent(file, nesting+1, 'def ' +
+            indent(file, nesting, 'def ' +
                    self.methodSpecList[0].name + '(*_args):\n')
         else:
-            indent(file, nesting+1, 'def ' +
+            indent(file, nesting, 'def ' +
                    self.methodSpecList[0].name + '(self, *_args):\n')
         self.methodSpecList[0].outputCFunctionComment(file, nesting+2)
         indent(file, nesting+2, 'numArgs = len(_args)\n')
@@ -239,17 +239,25 @@ class FFIMethodArgumentTreeCollection:
         # Constructors are not treated as static. They are special because
         # they are not really constructors, they are instance methods that fill
         # in the this pointer.
+        methodName = self.methodSpecList[0].name
 
         if (self.methodSpecList[0].isStatic() and
             (not self.methodSpecList[0].isConstructor()) and
             (not isinstance(self.methodSpecList[0], FFISpecs.GlobalFunctionSpecification))):
                 self.outputOverloadedStaticFooter(file, nesting)
+        else:
+            if self.classTypeDesc :
+                indent(file, nesting,   "FFIExternalObject.funcToMethod("+methodName+','+ self.classTypeDesc.foreignTypeName+ ",'"+methodName+"')\n")
+                indent(file, nesting,   'del '+methodName+'\n')
+                indent(file, nesting, ' \n')
+             
         indent(file, nesting+1, '\n')
 
     def outputOverloadedStaticFooter(self, file, nesting):
         # foo = staticmethod(foo)
         methodName = self.methodSpecList[0].name
-        indent(file, nesting+1, methodName + ' = staticmethod(' + methodName + ')\n')
+        indent(file, nesting, self.classTypeDesc.foreignTypeName + '.' + methodName + ' = staticmethod(' + methodName + ')\n')
+        indent(file, nesting,'del ' +methodName+' \n\n')
     
     def setup(self):
         for method in self.methodSpecList:

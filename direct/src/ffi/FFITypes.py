@@ -507,18 +507,27 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         passed in.
         """
         fileName = self.foreignTypeName + '.py'
+        fileName1 = self.foreignTypeName + '1.py'
         file = open(os.path.join(dir, fileName), 'w')
         indent(file, 0, FFIConstants.generatedHeader)
         self.outputBaseImports(file)
-        self.generateCode(file, 0)
+        self.generateCode1(file, 0,extensionsDir)
+        file.close()
+        
+        file = open(os.path.join(dir, fileName1), 'w')
+        indent(file, 0, FFIConstants.generatedHeader)
+        #self.outputBaseImports(file)
+        self.generateCode2(file, 0,extensionsDir,self.foreignTypeName)
+        file.close()
 
+        
         # Copy in any extensions we may have
-        self.copyExtensions(extensionsDir, file, 0)
-        self.outputClassFooter(file)
+        #self.copyExtensions(extensionsDir, file, 0)
+        #self.outputClassFooter(file)
         file.close()
 
 
-    def generateCode(self, file, nesting):
+    def generateCode(self, file, nesting, extensionsDir=None):
 
         self.recordOverloadedMethods()
         self.cullOverloadedMethods()        
@@ -550,6 +559,115 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         if self.destructor:
             self.destructor.generateDestructorCode(self, file, nesting)
         # If you have no destructor, inherit one
+            
+        ##########################
+        ## Extension methods moved up locally
+        if extensionsDir :
+            self.copyExtensions(extensionsDir, file, 0)                    
+            
+        ##########################
+        ## import return types
+        returnTypeModules = self.getReturnTypeModules()
+        if len(returnTypeModules):
+            for moduleName in returnTypeModules:
+                indent(file, nesting, 'import ' + moduleName + '\n')       
+        
+        ################################
+        
+            
+        if len(self.staticMethods):
+            indent(file, nesting+1, '\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '#  Static Methods                                #\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '\n')
+            for method in self.staticMethods:
+                method.generateStaticCode(self, file, nesting)
+
+        if len(self.instanceMethods):
+            indent(file, nesting+1, '\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '#  Instance methods                              #\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '\n')
+            for method in self.instanceMethods:
+                method.generateMethodCode(self, file, nesting)
+
+        if len(self.upcastMethods):
+            indent(file, nesting+1, '\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '#  Upcast methods                                #\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '\n')
+            for method in self.upcastMethods:
+                method.generateUpcastMethodCode(self, file, nesting)
+
+        if len(self.downcastMethods):
+            indent(file, nesting+1, '\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '#  Downcast methods                              #\n')
+            indent(file, nesting+1, '##################################################\n')
+            indent(file, nesting+1, '\n')
+            for method in self.downcastMethods:
+                method.generateDowncastMethodCode(self, file, nesting)
+
+        # Copy in all our parent nodes (only does work if we are an MI node)
+        self.copyParentMethods(file, nesting)
+        
+        self.generateOverloadedMethods(file, nesting)
+
+    def generateCode1(self, file, nesting, extensionsDir=None):
+
+        self.recordOverloadedMethods()
+        self.cullOverloadedMethods()        
+        self.outputImports(file, nesting)
+        self.outputClassHeader(file, nesting)
+        self.outputClassComment(file, nesting)
+        self.outputClassCModules(file, nesting)
+
+        self.outputNestedTypes(file, nesting)
+
+        indent(file, nesting+1, '\n')
+        indent(file, nesting+1, '##################################################\n')
+        indent(file, nesting+1, '#  Constructors                                  #\n')
+        indent(file, nesting+1, '##################################################\n')
+        indent(file, nesting+1, '\n')
+        self.outputBaseConstructor(file, nesting)
+        if self.constructors:
+            for method in self.constructors:
+                method.generateConstructorCode(self, file, nesting)
+        else:
+            self.outputEmptyConstructor(file, nesting)
+
+        indent(file, nesting+1, '\n')
+        indent(file, nesting+1, '##################################################\n')
+        indent(file, nesting+1, '#  Destructor                                    #\n')
+        indent(file, nesting+1, '##################################################\n')
+        indent(file, nesting+1, '\n')
+        self.outputBaseDestructor(file, nesting)
+        if self.destructor:
+            self.destructor.generateDestructorCode(self, file, nesting)
+        # If you have no destructor, inherit one            
+        ##########################
+        ## Extension methods moved up locally
+        if extensionsDir :
+            self.copyExtensions(extensionsDir, file, 0)                    
+            
+
+
+    def generateCode2(self, file, nesting, extensionsDir, file1module):
+    
+        indent(file, nesting, 'from  ' + file1module + ' import *\n')               
+
+        ##########################
+        ## import return types
+        returnTypeModules = self.getReturnTypeModules()
+        if len(returnTypeModules):
+            for moduleName in returnTypeModules:
+                indent(file, nesting, 'import ' + moduleName + '\n')       
+        
+        ################################
+        
             
         if len(self.staticMethods):
             indent(file, nesting+1, '\n')
@@ -632,6 +750,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, 0, '# CMODULE [' + self.moduleName + ']\n')
         # Everybody imports types for type checking
         indent(file, 0, 'from types import IntType, LongType, FloatType, NoneType, StringType\n')
+        indent(file, 0, 'from direct.ffi import FFIExternalObject\n')
         indent(file, 0, '\n')
 
         indent(file, 0, '# Import all the C modules this class uses\n')
@@ -641,6 +760,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                 indent(file, 0, 'import ' + moduleName + 'Downcasts\n')
         indent(file, 0, '\n')
         indent(file, 0, 'from direct.ffi import FFIExternalObject\n')
+        
 
 
     def outputImportsRecursively(self, parent, file, nesting):
@@ -750,10 +870,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         # Store the class C modules for the class so they do not
         # get garbage collected before we do
         # TODO: this did not appear to work so I'm taking it out
-        # indent(file, nesting+1, '__CModules__ = [')
-        # for moduleName in self.getCModules():
+        #indent(file, nesting+1, '__CModules__ = [')
+        #for moduleName in self.getCModules():
         #     file.write(moduleName + ',')
-        # file.write(']\n')
+        #file.write(']\n')
 
         # Store the downcast function modules so the FFIExternalObject
         # can index into them to find the downcast functions
@@ -780,14 +900,18 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
 
         indent(file, nesting+1, 'def __init__(self, *_args):\n')
-        indent(file, nesting+2, '# Initialize the super class\n')
-        indent(file, nesting+2, 'FFIExternalObject.FFIExternalObject.__init__(self)\n')
-        indent(file, nesting+2, '# If you want an empty shadow object, pass in None\n')
-        indent(file, nesting+2, 'if ((len(_args) == 1) and (_args[0] == None)):\n')
-        indent(file, nesting+3, 'return\n')
-        indent(file, nesting+2, '# Otherwise, call the C constructor\n')
+        indent(file, nesting+2, '# Do Not Initialize the super class it is inlined\n')
+        #indent(file, nesting+2, '# Initialize the super class\n')
+        #indent(file, nesting+2, 'FFIExternalObject.FFIExternalObject.__init__(self)\n')
+        ## this is not the right way to do this any more..
+        indent(file, nesting+2, '# If you want an empty shadow object use the FFIInstance(class) function\n')
+        #indent(file, nesting+2, 'if ((len(_args) == 1) and (_args[0] == None)):\n')
+        #indent(file, nesting+3, 'return\n')
+        #indent(file, nesting+2, '# Otherwise, call the C constructor\n')
         indent(file, nesting+2, 'self.constructor(*_args)\n')
-        indent(file, nesting+2, '\n')
+        indent(file, nesting, '\n')
+
+
 
 
     def outputEmptyConstructor(self, file, nesting):
@@ -806,20 +930,24 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         Python object is garbage collected. We are going to overwrite
         it with special cleanup for Panda.
         """
-        indent(file, nesting+1, 'def __del__(self):\n')
+        if self.destructor:        
+            indent(file, nesting+1, 'def __del__(self):\n')
 
-        # Reference counting is now handled in the C++ code
-        # indent(file, nesting+2, 'if isinstance(self, ReferenceCount):\n')
-        # indent(file, nesting+3, 'self.unref()\n')
-        # indent(file, nesting+3, 'if (self.getCount() == 0):\n')
-        # indent(file, nesting+4, 'self.destructor()\n')
+            # Reference counting is now handled in the C++ code
+            # indent(file, nesting+2, 'if isinstance(self, ReferenceCount):\n')
+            # indent(file, nesting+3, 'self.unref()\n')
+            # indent(file, nesting+3, 'if (self.getCount() == 0):\n')
+            # indent(file, nesting+4, 'self.destructor()\n')
 
-        # If the scripting language owns the memory for this object,
-        # we need to call the C++ destructor when Python frees the
-        # shadow object, but only if the userManagesMemory flag is set.
-        # Also make sure we are not destructing a null pointer
-        indent(file, nesting+2, 'if (self.userManagesMemory and (self.this != 0)):\n')
-        indent(file, nesting+3, 'self.destructor()\n')
+            # If the scripting language owns the memory for this object,
+            # we need to call the C++ destructor when Python frees the
+            # shadow object, but only if the userManagesMemory flag is set.
+            # Also make sure we are not destructing a null pointer
+            indent(file, nesting+2, 'if (self.userManagesMemory and (self.this != 0)):\n')       
+            self.destructor.outputDestructorBody(self, file, nesting+1)
+            indent(file, nesting, '\n')            
+        
+            #indent(file, nesting+3, 'self.destructor()\n')
 
 
     def outputEmptyDestructor(self, file, nesting):
@@ -839,27 +967,41 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         class destructor with None as the only parameter to get an
         empty shadow object.
         """
-        if classTypeDesc != self:
-            indent(file, nesting, 'import ' + self.foreignTypeName + '\n')
-        indent(file, nesting, 'returnObject = ')
+        #if classTypeDesc != self:
+        #    indent(file, nesting, 'import ' + self.foreignTypeName + '\n')
+        indent(file,nesting, 'if returnValue == 0: return None\n')       
         # Do not put Class.Class if this file is the file that defines Class
         # Also check for nested classes. They do not need the module name either
         typeName = FFIOverload.getTypeName(classTypeDesc, self)
-        file.write(typeName)
-        file.write('(None)\n')
-        indent(file, nesting, 'returnObject.this = returnValue\n')
+        #file.write(typeName + '(None)\n')        
+        ### inline the old constructers
+        
+        #indent(file, nesting, 'returnObject = ')
+        #file.write('FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')
+        #indent(file,nesting, 'returnObject.this = 0\n');
+        #indent(file,nesting, 'returnObject.userManagesMemory = 0\n');        
+        
+        ##
+        #indent(file, nesting, 'returnObject.this = returnValue\n')
         # Zero this pointers get returned as the Python None object
-        indent(file, nesting, 'if (returnObject.this == 0): return None\n')
-        if userManagesMemory:
-            indent(file, nesting, 'returnObject.userManagesMemory = 1\n')
+        #indent(file, nesting, 'if (returnObject.this == 0): return None\n')
+        #if userManagesMemory:
+        #    indent(file, nesting, 'returnObject.userManagesMemory = 1\n')
+        #else:
+        #    indent(file, nesting, 'returnObject.userManagesMemory = 0\n')
+                    
         if needsDowncast:
+            #indent(file, nesting, 'returnObject = FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')
             if (FFIOverload.inheritsFrom(self, TypedObjectDescriptor) or
                 self == TypedObjectDescriptor):
-                indent(file, nesting, 'return returnObject.setPointer()\n')
+                #indent(file, nesting, 'return returnObject.setPointer()\n')
+                indent(file, nesting, 'return FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+').setPointer()\n')              
             else:
-                indent(file, nesting, 'return returnObject\n')
+                indent(file, nesting,'return FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')        
+                #indent(file, nesting, 'return returnObject\n')
         else:
-            indent(file, nesting, 'return returnObject\n')
+            indent(file, nesting,'return FFIExternalObject.FFIInstance('+ typeName + ',returnValue,'+str(userManagesMemory)+')\n')        
+            #indent(file, nesting, 'return returnObject\n')
             
 
 

@@ -52,6 +52,8 @@ def outputGlobalFileImports(file, methodList, CModuleName):
 
     # Import Python's builtin types
     file.write('from types import IntType, LongType, FloatType, NoneType, StringType\n')
+    file.write('from direct.ffi import FFIExternalObject\n')
+
 
     # Import the C modules
     CModuleList = []
@@ -88,6 +90,7 @@ def outputGlobalFileImports(file, methodList, CModuleName):
     for moduleName in moduleList:
         if moduleName:
             file.write('import ' + moduleName + '\n')
+            file.write('import ' + moduleName + '1\n')
     
     file.write('\n')
 
@@ -139,6 +142,13 @@ def outputImportFileImports(file, typeList, CModuleName):
         if moduleName:
             file.write('import ' + moduleName + '\n')    
     file.write('\n')
+
+    file.write('# Import classes2\n')
+    for moduleName in moduleList:
+        if moduleName:
+            file.write('import ' + moduleName + '1\n')    
+    file.write('\n')
+
 
     file.write('# Import the global module file into our name space\n')
     file.write('from ' + CModuleName + 'Globals import *\n')

@@ -1,4 +1,4 @@
-
+from new import instance
 import FFIConstants
 
 WrapperClassMap = {}
@@ -25,6 +25,23 @@ def registerInTypeMap(pythonClass):
         WrapperClassMap[typeIndex] = pythonClass
 
 
+def funcToMethod(func,clas,method_name=None):
+    """Adds func to class so it is an accessible method; use method_name to specify the name to be used for calling the method.
+    The new method is accessible to any instance immediately."""
+    func.im_class=clas
+    func.im_func=func
+    func.im_self=None
+    if not method_name: 
+        clas.__dict__[method_name]=func
+    else:
+        clas.__dict__[func.__name__]=func
+    
+
+def FFIInstance(classdef, this = 0, userManagesMemory = 0 ):
+    answer = instance(classdef)
+    answer.this = this
+    answer.userManagesMemory = userManagesMemory
+    return answer
 
 class FFIExternalObject:
     def __init__(self, *_args):
@@ -130,7 +147,8 @@ class FFIExternalObject:
         # We do not need to downcast if we already have the same class
         if (exactWrapperClass and (exactWrapperClass != self.__class__)):
             # Create a new wrapper class instance
-            exactObject = exactWrapperClass(None)
+            #exactObject = exactWrapperClass(None)
+            exactObject = FFIInstance(exactWrapperClass)
             # Get the downcast pointer that has had all the downcast
             # funcs called
             downcastObject = self.downcast(exactWrapperClass)

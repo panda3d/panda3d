@@ -21,4 +21,4 @@ InterrogateModuleName = None
 wantComments = 1
 
 # Should FFI output type assertions?
-wantTypeChecking = 1
+wantTypeChecking = 0

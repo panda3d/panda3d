@@ -18,7 +18,7 @@ class IntervalManager(CIntervalManager):
         # CIntervalManager object.
 
         if globalPtr:
-            CIntervalManager.__init__(self, None)
+            #CIntervalManager.__init__(self, None)            
             cObj = CIntervalManager.getGlobalPtr()
             self.this = cObj.this
             self.userManagesMemory = 0

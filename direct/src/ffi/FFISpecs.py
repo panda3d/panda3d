@@ -86,7 +86,7 @@ class FunctionSpecification:
         So "getChild(int)" becomes "overloaded_getChild_int(int)"
         """
         if self.overloaded:
-            name = '__overloaded_' + self.name
+            name = 'private__overloaded_' + self.name
             for methodArgSpec in self.typeDescriptor.argumentTypes:
                 name = name + '_' + methodArgSpec.typeDescriptor.foreignTypeName
             return name
@@ -186,6 +186,8 @@ class GlobalFunctionSpecification(FunctionSpecification):
             if (i < (len(argTypes)-1)):
                 file.write(', ')
         file.write(')\n')
+        #indent(file,1, 'if returnValue is None:\n')
+        #indent(file,2, 'return None\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
         returnType.generateReturnValueWrapper(None, file,
                                               self.typeDescriptor.userManagesMemory,
@@ -199,7 +201,7 @@ class GlobalFunctionSpecification(FunctionSpecification):
     ##################################################
     def outputMethodHeader(self, methodClass, file, nesting):
         argTypes = self.typeDescriptor.argumentTypes
-        indent(file, nesting+1, 'def ' + self.getFinalName() + '(')
+        indent(file, nesting, 'def ' + self.getFinalName() + '(')
         for i in range(len(argTypes)):
             # Instead of the first argument, put self
             if (i == 0):
@@ -229,6 +231,9 @@ class GlobalFunctionSpecification(FunctionSpecification):
             if (i < (len(argTypes)-1)):
                 file.write(', ')
         file.write(')\n')
+        indent(file,1, 'if returnValue is None:\n')
+        indent(file,2, 'return None\n')
+        
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
         returnType.generateReturnValueWrapper(methodClass, file,
                                               self.typeDescriptor.userManagesMemory,
@@ -288,12 +293,13 @@ class MethodSpecification(FunctionSpecification):
                 if (i < (len(thislessArgTypes)-1)):
                     file.write(', ')
         file.write('):\n')
+        self.outputCFunctionComment(file, nesting+2)
+        
 
     def outputConstructorBody(self, methodClass, file, nesting):
         # The method body will look something like
         #     self.this = panda.Class_constructor(arg)
         #     self.userManagesMemory = 1  (optional)
-        self.outputCFunctionComment(file, nesting+2)
         argTypes = self.typeDescriptor.argumentTypes
         thislessArgTypes = self.typeDescriptor.thislessArgTypes()
         self.outputTypeChecking(methodClass, thislessArgTypes, file, nesting+2)
@@ -327,11 +333,11 @@ class MethodSpecification(FunctionSpecification):
                 if (i < (len(thislessArgTypes)-1)):
                     file.write(', ')
         file.write('):\n')
+        self.outputCFunctionComment(file, nesting+2)    
 
     def outputDestructorBody(self, methodClass, file, nesting):
         # The method body will look something like
         #     panda.Class_destructor(self.this)
-        self.outputCFunctionComment(file, nesting+2)
         functionName = (self.typeDescriptor.moduleName + '.'
                         + self.typeDescriptor.wrapperName)
         # Make sure the module and function have not been deleted first
@@ -349,7 +355,7 @@ class MethodSpecification(FunctionSpecification):
     def outputMethodHeader(self, methodClass, file, nesting):
         argTypes = self.typeDescriptor.argumentTypes
         thislessArgTypes = self.typeDescriptor.thislessArgTypes()
-        indent(file, nesting+1, 'def ' + self.getFinalName() + '(self')
+        indent(file, nesting, 'def ' + self.getFinalName() + '(self')
         if (len(thislessArgTypes) > 0):
             file.write(', ')
             for i in range(len(thislessArgTypes)):
@@ -376,7 +382,7 @@ class MethodSpecification(FunctionSpecification):
                 file.write(thislessArgTypes[i].passName())
                 if (i < (len(thislessArgTypes)-1)):
                     file.write(', ')
-        file.write(')\n')
+        file.write(')\n')       
         # If this is an augmented assignment operator like +=, we have special rules
         # In this case we simply call the C++ function, make sure we got the same
         # return value back, then return self. Otherwise if you let it go through the
@@ -392,6 +398,12 @@ class MethodSpecification(FunctionSpecification):
                                                   needsDowncast, nesting+2)
  
     def outputMethodFooter(self, methodClass, file, nesting):
+        indent(file, nesting,  'FFIExternalObject.funcToMethod(' +self.getFinalName()+ ',' + methodClass.foreignTypeName + ",'" +self.getFinalName() +"')\n")
+        indent(file, nesting,  'del ' + self.getFinalName()+' \n')
+        indent(file, nesting+1,'\n')   
+        #indent(file, nesting,methodClass.foreignTypeName +'.'+  self.getFinalName() + ' = staticmethod(' + self.getFinalName() + ')\n')
+        #indent(file, nesting,'del ' + self.getFinalName()+' \n')
+        #indent(file, nesting+1, '\n')    
         indent(file, nesting+1, '\n')
         
 
@@ -400,12 +412,13 @@ class MethodSpecification(FunctionSpecification):
     ##################################################
     def outputStaticHeader(self, methodClass, file, nesting):
         argTypes = self.typeDescriptor.argumentTypes
-        indent(file, nesting+1, 'def ' + self.getFinalName() + '(')
+        indent(file, nesting, 'def ' + self.getFinalName() + '(')
         for i in range(len(argTypes)):
             file.write(argTypes[i].name)
             if (i < (len(argTypes)-1)):
                     file.write(', ')
-        file.write('):\n')
+        file.write('):\n')        
+        
 
     def outputStaticBody(self, methodClass, file, nesting):
         # The method body will look something like
@@ -431,7 +444,8 @@ class MethodSpecification(FunctionSpecification):
                                               1, nesting+2)
 
     def outputStaticFooter(self, methodClass, file, nesting):
-        indent(file, nesting+1, self.getFinalName() + ' = staticmethod(' + self.getFinalName() + ')\n')
+        indent(file, nesting,methodClass.foreignTypeName +'.'+  self.getFinalName() + ' = staticmethod(' + self.getFinalName() + ')\n')
+        indent(file, nesting,'del ' + self.getFinalName()+' \n')
         indent(file, nesting+1, '\n')
 
     ##################################################
@@ -440,7 +454,7 @@ class MethodSpecification(FunctionSpecification):
     def outputInheritedMethodHeader(self, methodClass, parentList, file, nesting, needsDowncast):
         argTypes = self.typeDescriptor.argumentTypes
         thislessArgTypes = self.typeDescriptor.thislessArgTypes()
-        indent(file, nesting+1, 'def ' + self.getFinalName() + '(self')
+        indent(file, nesting, 'def ' + self.getFinalName() + '(self')
         if (len(thislessArgTypes) > 0):
             file.write(', ')
             for i in range(len(thislessArgTypes)):
@@ -492,7 +506,9 @@ class MethodSpecification(FunctionSpecification):
                                               needsDowncast, nesting+2)
 
     def outputInheritedMethodFooter(self, methodClass, parentList, file, nesting, needsDowncast):
-        indent(file, nesting+1, '\n')
+        indent(file, nesting,  'FFIExternalObject.funcToMethod(' +self.getFinalName()+ ',' + methodClass.foreignTypeName + ",'" +self.getFinalName() +"')\n")
+        indent(file, nesting,  'del ' + self.getFinalName()+' \n')
+        indent(file, nesting+1,'\n')
 
 
 class GlobalValueSpecification:
