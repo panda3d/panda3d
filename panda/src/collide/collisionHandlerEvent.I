@@ -58,8 +58,23 @@ operator = (const CollisionHandlerEvent::SortEntries &) {
 //
 //                  %fn  - the name of the "from" object's node
 //                  %in  - the name of the "into" object's node
-//                  %ft  - 't' if "from" is tangible, 'i' if intangible
-//                  %it  - 't' if "into" is tangible, 'i' if intangible
+//                  %fs  - 't' if "from" is tangible, 'i' if intangible
+//                  %is  - 't' if "into" is tangible, 'i' if intangible
+//                  %ig  - 'c' if the collision is into a
+//                          CollisionNode, 'g' if it is a geom.
+//
+//                  %(tag)fh - '1' if "from" has the indicated tag,
+//                          '0' if it does not.
+//                  %(tag)ih - '1' if "into" has the indicated tag,
+//                          '0' if it does not.
+//                  %(tag)iH - '1' if "into" has the indicated net tag,
+//                          '0' if it does not.
+//                  %(tag)ft - the indicated tag value of the "from" node.
+//                  %(tag)it - the indicated tag value of the "to" node.
+//                  %(tag)iT - the indicated net tag value of the "to" node.
+//
+//               Parentheses in the above are literal and should be
+//               included in the actual pattern.
 //
 //               The event name will be based on the in_pattern
 //               string specified here, with all occurrences of the

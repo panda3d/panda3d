@@ -178,19 +178,33 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
   string event;
   for (size_t p = 0; p < pattern.size(); ++p) {
     if (pattern[p] == '%') {
+      string key;
+      if (p + 1 < pattern.size() && pattern[p + 1] == '(') {
+        // Extract out the key--the name up until the closing paren.
+        size_t close = pattern.find(')', p + 2);
+        if (close != string::npos) {
+          key = pattern.substr(p + 2, close - (p + 2));
+          p = close;
+        }
+      }
+
+      // Get out the command--the two characters following the percent
+      // sign (or the key).
       string cmd = pattern.substr(p + 1, 2);
       p += 2;
       if (cmd == "fn") {
         event += entry->get_from_node()->get_name();
 
       } else if (cmd == "in") {
-        event += entry->get_into_node()->get_name();
+        if (entry->has_into()) {
+          event += entry->get_into_node()->get_name();
+        }
 
-      } else if (cmd == "ft") {
+      } else if (cmd == "fs") {
         event +=
           (!entry->get_from()->is_tangible() ? 'i' : 't');
 
-      } else if (cmd == "it") {
+      } else if (cmd == "is") {
         event +=
           (entry->has_into() && !entry->get_into()->is_tangible() ? 'i' : 't');
 
@@ -198,6 +212,32 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
         event +=
           (entry->has_into() ? 'c' : 'g');
 
+      } else if (cmd == "fh") {
+        event += (entry->get_from_node()->has_tag(key) ? '1' : '0');
+
+      } else if (cmd == "ih") {
+        if (entry->has_into()) {
+          event += (entry->get_into_node()->has_tag(key) ? '1' : '0');
+        }
+
+      } else if (cmd == "iH") {
+        if (entry->has_into()) {
+          event += (entry->get_into_node_path().has_net_tag(key) ? '1' : '0');
+        }
+
+      } else if (cmd == "ft") {
+        event += entry->get_from_node()->get_tag(key);
+
+      } else if (cmd == "it") {
+        if (entry->has_into()) {
+          event += entry->get_into_node()->get_tag(key);
+        }
+
+      } else if (cmd == "iT") {
+        if (entry->has_into()) {
+          event += entry->get_into_node_path().get_net_tag(key);
+        }
+        
       } else {
         collide_cat.error()
           << "Invalid symbol in event_pattern: %" << cmd << "\n";
@@ -206,7 +246,7 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
       event += pattern[p];
     }
   }
-
+  
   if (!event.empty()) {
     throw_event(event, EventParameter(entry));
   }
