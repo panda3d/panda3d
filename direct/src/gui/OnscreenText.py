@@ -32,8 +32,7 @@ class OnscreenText(PandaObject, NodePath):
                  parent = None,
                  sort = 0,
                  mayChange = 0):
-        """__init__(self, ...)
-
+        """
         Make a text node from string, put it into the 2d sg and set it
         up with all the indicated parameters.
 
@@ -88,7 +87,6 @@ class OnscreenText(PandaObject, NodePath):
           mayChange: pass true if the text or its properties may need
               to be changed at runtime, false if it is static once
               created (which leads to better memory optimization).
-        
         """
         if parent == None:
             parent = aspect2d
@@ -110,7 +108,6 @@ class OnscreenText(PandaObject, NodePath):
             frame = frame or (0, 0, 0, 0)
             if align == None:
                 align = TextNode.ACenter
-
         elif style == ScreenTitle:
             scale = scale or 0.15
             fg = fg or (1, 0.2, 0.2, 1)
@@ -119,7 +116,6 @@ class OnscreenText(PandaObject, NodePath):
             frame = frame or (0, 0, 0, 0)
             if align == None:
                 align = TextNode.ACenter
-
         elif style == ScreenPrompt:
             scale = scale or 0.1
             fg = fg or (1, 1, 0, 1)
@@ -128,7 +124,6 @@ class OnscreenText(PandaObject, NodePath):
             frame = frame or (0, 0, 0, 0)
             if align == None:
                 align = TextNode.ACenter
-
         elif style == NameConfirm:
             scale = scale or 0.1
             fg = fg or (0, 1, 0, 1)
@@ -137,7 +132,6 @@ class OnscreenText(PandaObject, NodePath):
             frame = frame or (0, 0, 0, 0)
             if align == None:
                 align = TextNode.ACenter
-
         elif style == BlackOnWhite:
             scale = scale or 0.1
             fg = fg or (0, 0, 0, 1)
@@ -146,7 +140,6 @@ class OnscreenText(PandaObject, NodePath):
             frame = frame or (0, 0, 0, 0)
             if align == None:
                 align = TextNode.ACenter
-
         else:
             raise ValueError
 
@@ -223,8 +216,6 @@ class OnscreenText(PandaObject, NodePath):
         self.assign(parent.attachNewNode(self.textNode, sort))
     
     def cleanup(self):
-        """cleanup(self)
-        """
         self.textNode = None
         if self.isClean == 0:
             self.isClean = 1
@@ -256,8 +247,14 @@ class OnscreenText(PandaObject, NodePath):
     def getFont(self):
         return self.textNode.getFont()
 
+    def clearText(self):
+        self.textNode.clearText()
+
     def setText(self, text):
         self.textNode.setText(text)
+
+    def appendText(self, text):
+        self.textNode.appendText(text)
 
     def getText(self):
         return self.textNode.getText()
