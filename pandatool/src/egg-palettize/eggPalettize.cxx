@@ -278,7 +278,8 @@ run() {
     // previously.  This will recover all of the state saved from the
     // past session.
     if (!state_file.open_read(state_filename)) {
-      nout << state_filename << " exists, but cannot be read.  Perhaps you should remove it so a new one can be created.\n";
+      nout << FilenameUnifier::make_user_filename(state_filename)
+	   << " exists, but cannot be read.  Perhaps you should remove it so a new one can be created.\n";
       exit(1);
     }
 
