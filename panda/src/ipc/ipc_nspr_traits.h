@@ -236,7 +236,7 @@ public:
 
            char* temp = new char[numBytes];
            int numRead = PR_Read(_fhandle, temp, numBytes);
-           if(numRead<=0) {
+           if(numRead < 0) {
                 cerr << "PR_Read() in libnspr failed!\n";
                 delete temp;
                 return 0;
