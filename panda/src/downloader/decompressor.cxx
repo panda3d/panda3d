@@ -24,6 +24,7 @@
 #include "filename.h"
 #include "buffer.h"
 #include "zStream.h"
+#include "config_express.h"
 
 #include "decompressor.h"
 
@@ -173,7 +174,9 @@ run() {
 
   // All done!
   cleanup();
-  _source_filename.unlink();
+  if (!keep_temporary_files) {
+    _source_filename.unlink();
+  }
   return EU_success;
 }
 
@@ -197,7 +200,9 @@ decompress(const Filename &source_file) {
   }
 
   cleanup();
-  _source_filename.unlink();
+  if (!keep_temporary_files) {
+    _source_filename.unlink();
+  }
   return true;
 }
 
