@@ -8,7 +8,7 @@
 #define UNIX_SYS_LIBS m
 
 #begin bin_target
-  #define TARGET egg-optchar-new
+  #define TARGET egg-optchar
 
   #define SOURCES \
     config_egg_optchar.cxx config_egg_optchar.h \
