@@ -36,11 +36,8 @@ PUBLISHED:
   //   my_sound = MySoundEffects.get_sound("neatSfx.mp3");
   //   my_music = MyMusicManager.get_sound("introTheme.mid");
 
-  // bOneAtATime: if true, turn off any currently-playing sounds before playing
-  //              a new one (useful for midi songs)
-static PT(AudioManager) create_AudioManager(/*bool bOneAtATime*/);
+  static PT(AudioManager) create_AudioManager();
   virtual ~AudioManager() {}
-  
   virtual bool is_valid() = 0;
   
   // Get a sound:
@@ -55,6 +52,10 @@ static PT(AudioManager) create_AudioManager(/*bool bOneAtATime*/);
   virtual void clear_cache() = 0;
   virtual void set_cache_limit(int count) = 0;
   virtual int get_cache_limit() = 0;
+
+  // if set, turn off any currently-playing sounds before playing
+  // a new one (useful for midi songs)
+  void set_mutually_exclusive(bool bExclusive);
 
   // Control volume:
   // FYI:
@@ -81,6 +82,7 @@ public:
 
 protected:
   static Create_AudioManager_proc* _create_AudioManager;
+  bool _bExclusive;
 
   AudioManager() {
     // intentionally blank.

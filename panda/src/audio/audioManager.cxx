@@ -41,6 +41,7 @@ register_AudioManager_creator(Create_AudioManager_proc* proc) {
 }
 
 
+
 // Factory method for getting a platform specific AudioManager:
 PT(AudioManager) AudioManager::
 create_AudioManager() {
@@ -78,7 +79,13 @@ create_AudioManager() {
   if (!am->is_valid()) {
     am = create_NullAudioManger();
   }
+  am->_bExclusive = false;
   return am;
+}
+
+void AudioManager::
+set_mutually_exclusive(bool bExclusive) {
+  _bExclusive = bExclusive;
 }
 
 
