@@ -160,10 +160,10 @@ except NameError:
     # Load the generic storage file
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
-    #loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
-    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
-    #loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
@@ -3675,7 +3675,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.fontMenu.selectitem(0)
         self.fontMenu.grid(row=1, column=3, columnspan=3)
 
-        graphicList = self.styleManager.getCatalogCodes('door')
+        graphicList = self.styleManager.getCatalogCodes('graphic')
         self.graphicMenu = Pmw.ComboBox(
             gridFrame, labelpos = W,
             label_text = 'Add Graphic:', entry_width = 24,
