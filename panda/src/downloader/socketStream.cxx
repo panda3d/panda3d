@@ -85,8 +85,8 @@ bool OSocketStream::
 send_datagram(const Datagram &dg) {
   Datagram header;
   header.add_uint16(dg.get_length());
-  write(header.get_data(), header.get_length());
-  write(dg.get_data(), dg.get_length());
+  write((const char *)header.get_data(), header.get_length());
+  write((const char *)dg.get_data(), dg.get_length());
   flush();
 
   return !is_closed();
@@ -157,8 +157,8 @@ bool SocketStream::
 send_datagram(const Datagram &dg) {
   Datagram header;
   header.add_uint16(dg.get_length());
-  write(header.get_data(), header.get_length());
-  write(dg.get_data(), dg.get_length());
+  write((const char *)header.get_data(), header.get_length());
+  write((const char *)dg.get_data(), dg.get_length()); 
   flush();
 
   return !is_closed();
