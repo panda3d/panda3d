@@ -71,6 +71,15 @@ GraphicsStateGuardian(GraphicsWindow *win) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GraphicsStateGuardian::
+~GraphicsStateGuardian() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::release_all_textures
 //       Access: Public
 //  Description: Frees the resources for all textures associated with
