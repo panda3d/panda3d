@@ -72,6 +72,7 @@ cmp_nocase_uh(const string &s, const string &s2) {
 string
 downcase(const string &s) {
   string result;
+  result.reserve(s.size());
   string::const_iterator p;
   for (p = s.begin(); p != s.end(); ++p) {
     result += tolower(*p);
@@ -87,6 +88,7 @@ downcase(const string &s) {
 string
 upcase(const string &s) {
   string result;
+  result.reserve(s.size());
   string::const_iterator p;
   for (p = s.begin(); p != s.end(); ++p) {
     result += toupper(*p);
