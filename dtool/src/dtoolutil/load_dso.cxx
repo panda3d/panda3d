@@ -165,7 +165,7 @@ load_dso_error() {
 void *
 load_dso(const Filename &filename) {
   string os_specific = filename.to_os_specific();
-  return dlopen(os_specific.c_str(), RTLD_NOW);
+  return dlopen(os_specific.c_str(), RTLD_NOW | RTLD_GLOBAL);
 }
 
 bool
