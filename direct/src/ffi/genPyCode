@@ -17,7 +17,7 @@ fi
 
 if [ "$1" = "win-release" ]; then
     cd $DIRECT/bin
-    exec ppython -i generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect libtoontown
+    exec ppython generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect libtoontown
     exit 1
 fi
 

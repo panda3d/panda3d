@@ -13,11 +13,11 @@ class EXPCL_PANDA LerpBlendType : public TypedReferenceCount {
 PUBLISHED:
   LerpBlendType(void) {}
   virtual ~LerpBlendType(void);
+  virtual float operator()(float) = 0;
 
 public:
   LerpBlendType(const LerpBlendType&);
   LerpBlendType& operator=(const LerpBlendType&);
-  virtual float operator()(float) = 0;
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -43,11 +43,11 @@ class EXPCL_PANDA EaseInBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInBlendType(void) {}
   virtual ~EaseInBlendType(void);
+  virtual float operator()(float);
 
 public:
   EaseInBlendType(const EaseInBlendType&);
   EaseInBlendType& operator=(const EaseInBlendType&);
-  virtual float operator()(float);
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -73,11 +73,11 @@ class EXPCL_PANDA EaseOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseOutBlendType(void) {}
   virtual ~EaseOutBlendType(void);
+  virtual float operator()(float);
 
 public:
   EaseOutBlendType(const EaseOutBlendType&);
   EaseOutBlendType& operator=(const EaseOutBlendType&);
-  virtual float operator()(float);
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -103,10 +103,10 @@ class EXPCL_PANDA EaseInOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInOutBlendType(void) {}
   virtual ~EaseInOutBlendType(void);
+  virtual float operator()(float);
 public:
   EaseInOutBlendType(const EaseInOutBlendType&);
   EaseInOutBlendType& operator=(const EaseInOutBlendType&);
-  virtual float operator()(float);
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -132,10 +132,10 @@ class EXPCL_PANDA NoBlendType : public LerpBlendType {
 PUBLISHED:
   NoBlendType(void) {}
   virtual ~NoBlendType(void);
+  virtual float operator()(float);
 public:
   NoBlendType(const NoBlendType&);
   NoBlendType& operator=(const NoBlendType&);
-  virtual float operator()(float);
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
