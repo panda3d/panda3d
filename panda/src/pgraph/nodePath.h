@@ -315,11 +315,15 @@ PUBLISHED:
                           float h, float p, float r);
   void set_pos_hpr(const LVecBase3f &pos,
                    const LVecBase3f &hpr);
+  void set_pos_quat(const LVecBase3f &pos,
+                    const LQuaternionf &quat);
 
   INLINE void set_hpr_scale(float h, float p, float r,
                             float sx, float sy, float sz);
   void set_hpr_scale(const LVecBase3f &hpr,
                      const LVecBase3f &scale);
+  void set_quat_scale(const LQuaternionf &quat,
+                      const LVecBase3f &scale);
   INLINE void set_pos_hpr_scale(float x, float y, float z,
                                 float h, float p, float r,
                                 float sx, float sy, float sz);
@@ -408,12 +412,18 @@ PUBLISHED:
   void set_pos_hpr(const NodePath &other,
                    const LVecBase3f &pos,
                    const LVecBase3f &hpr);
+  void set_pos_quat(const NodePath &other,
+                    const LVecBase3f &pos,
+                    const LQuaternionf &quat);
   INLINE void set_hpr_scale(const NodePath &other,
-                float h, float p, float r,
-                float sx, float sy, float sz);
+                            float h, float p, float r,
+                            float sx, float sy, float sz);
   void set_hpr_scale(const NodePath &other,
-             const LVecBase3f &hpr,
-             const LVecBase3f &scale);
+                     const LVecBase3f &hpr,
+                     const LVecBase3f &scale);
+  void set_quat_scale(const NodePath &other,
+                      const LQuaternionf &quat,
+                      const LVecBase3f &scale);
   INLINE void set_pos_hpr_scale(const NodePath &other,
                                 float x, float y, float z,
                                 float h, float p, float r,
