@@ -846,17 +846,18 @@ You should see a graphics window come up, very similar to the one you
 saw when you ran pview.  To load a particular model file into the
 scene, try something like this:
 
-  >>> m = loader.loadModel('/c/Panda3d/models/teapot.egg')
+  >>> m = loader.loadModel('/c/Panda3d/models/smiley.egg')
   >>> m.reparentTo(render)
+  >>> run()
 
 Note that Panda expects a forward-slash convention for pathnames, with
 no leading drive letter, even on a Windows system.  See the full
 description of how Panda maps these pathnames to Windows pathnames in
 HOW TO BUILD PANDA ON A WINDOWS SYSTEM, USING CYGWIN, above.
 
-You can now move the teapot around with the mouse, just as in pview
-(you may need to pull the camera back with the right mouse button in
-order to see the teapot).
+You can now move the scene around with the mouse, just as in pview
+(you may need to pull the camera back by dragging upwards while
+holding down the right mouse button in order to see the model).
 
 Congratulations!  Panda 3D is now successfully installed.  See the
 online documentation available at http://www.etc.cmu.edu/panda3d/ for
