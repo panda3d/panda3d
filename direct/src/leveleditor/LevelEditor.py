@@ -862,10 +862,13 @@ class LevelEditor(NodePath, PandaObject):
 	return newDNACornice
 
     def createDoor(self):
-	newDNADoor = DNADoor('door')
-	newDNADoor.setCode(self.getCurrent('door_texture'))
-	newDNADoor.setColor(self.getCurrent('door_color'))
-	return newDNADoor
+        if not (self.getCurrent('door_texture')):
+            defaultDoorStyle = self.styleManager.attributeDictionary['door_texture'].getList()[0]
+            self.setCurrent('door_texture', defaultDoorStyle)
+        newDNADoor = DNADoor('door')
+        newDNADoor.setCode(self.getCurrent('door_texture'))
+        newDNADoor.setColor(self.getCurrent('door_color'))
+        return newDNADoor
 
     def createWindows(self):
 	newDNAWindows = DNAWindows()
@@ -1083,7 +1086,7 @@ class LevelEditor(NodePath, PandaObject):
                 self.removeCornice(self.DNATarget, self.DNATargetParent)
             elif (type == 'landmark_door'):
                 self.removeLandmarkDoor(self.DNATarget, self.DNATargetParent)
-            elif (type == 'doorToBeImplemented'):
+            elif (type == 'door'):
                 self.removeDoor(self.DNATarget, self.DNATargetParent)
             elif (type == 'windows'):
                 self.removeWindows(self.DNATarget, self.DNATargetParent)
