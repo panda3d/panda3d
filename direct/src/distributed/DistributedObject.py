@@ -10,10 +10,20 @@ class DistributedObject(PandaObject):
         except:
             self.DistributedObject_initialized = 1
             self.cr = cr
-            # A few objects will set neverDisable to 1... Examples are localToon, and anything
-            # that lives in the UberZone. This keeps them from being disabled when you change
-            # zones, even to the quiet zone.
+
+            # A few objects will set neverDisable to 1... Examples are
+            # localToon, and anything that lives in the UberZone. This
+            # keeps them from being disabled when you change zones,
+            # even to the quiet zone.
             self.setNeverDisable(0)
+
+            # Most DistributedObjects are simple and require no real
+            # effort to load.  Some, particularly actors, may take
+            # some significant time to load; these we can optimize by
+            # caching them when they go away instead of necessarily
+            # deleting them.  The object should set cacheable to 1 if
+            # it needs to be optimized in this way.
+            self.setCacheable(0)
 
             # This flag tells whether the object can be deleted right away,
             # or not.
@@ -30,6 +40,14 @@ class DistributedObject(PandaObject):
 
     def getNeverDisable(self):
         return self.neverDisable
+
+    def setCacheable(self, bool):
+        assert((bool == 1) or (bool == 0))
+        self.cacheable = bool
+        return None
+
+    def getCacheable(self):
+        return self.cacheable
 
     def deleteOrDelay(self):
         if self.delayDeleteFlag:

@@ -12,6 +12,11 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
         except:
             self.DistributedActor_initialized = 1
             DistributedNode.DistributedNode.__init__(self, cr)
+
+            # Since actors are probably fairly heavyweight, we'd
+            # rather cache them than delete them if possible.
+            self.setCacheable(1)
+            
         return None
 
         

@@ -227,8 +227,14 @@ class ClientRepository(DirectObject.DirectObject):
             del(self.doId2do[doId])
             del(self.doId2cdc[doId])
             assert(len(self.doId2do) == len(self.doId2cdc))
-            # cache the object
-            self.cache.cache(distObj)
+
+            # Only cache the object if it is a "cacheable" type
+            # object; this way we don't clutter up the caches with
+            # trivial objects that don't benefit from caching.
+            if distObj.getCacheable():
+                self.cache.cache(distObj)
+            else:
+                distObj.deleteOrDelay()
         else:
             ClientRepository.notify.warning("Disable failed. DistObj " +
                                             str(doId) +
