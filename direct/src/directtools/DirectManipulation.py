@@ -40,6 +40,7 @@ class DirectManipulationControl(PandaObject):
         self.mode = 'select'
         # Check for a widget hit point
         node, hitPt, hitPtDist = direct.iRay.pickWidget()
+        print node, hitPt, hitPtDist
         # Did we hit a widget?
         if node:
             # Yes!
