@@ -19,7 +19,7 @@
 #ifndef LINESTREAM_H
 #define LINESTREAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "lineStreamBuf.h"
 

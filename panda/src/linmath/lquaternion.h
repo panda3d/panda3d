@@ -27,7 +27,7 @@
 #include "deg_2_rad.h"
 #include "compose_matrix.h"
 
-#include <notify.h>
+#include "notify.h"
 
 #include "fltnames.h"
 #include "lquaternion_src.h"

@@ -27,7 +27,7 @@
 //  Description : constructor
 ////////////////////////////////////////////////////////////////////
 AngularEulerIntegrator::
-AngularEulerIntegrator(void) {
+AngularEulerIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ AngularEulerIntegrator(void) {
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 AngularEulerIntegrator::
-~AngularEulerIntegrator(void) {
+~AngularEulerIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ AngularEulerIntegrator::
 ////////////////////////////////////////////////////////////////////
 void AngularEulerIntegrator::
 child_integrate(Physical *physical,
-                pvector< PT(AngularForce) >& forces,
+                AngularForceVector& forces,
                 float dt) {
   // perform the precomputation.  Note that the vector returned by
   // get_precomputed_matrices() has the matrices loaded in order of force
@@ -65,26 +65,27 @@ child_integrate(Physical *physical,
   // velocity of each physicsobject in the set.  Accordingly, we have
   // to grunt our way through each one.  wrt caching of the xform matrix
   // should help.
-  pvector< PT(PhysicsObject) >::const_iterator current_object_iter;
+  PhysicsObject::Vector::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
-
   for (; current_object_iter != physical->get_object_vector().end();
        ++current_object_iter) {
     PhysicsObject *current_object = *current_object_iter;
 
     // bail out if this object doesn't exist or doesn't want to be
     // processed.
-    if (current_object == (PhysicsObject *) NULL)
+    if (current_object == (PhysicsObject *) NULL) {
       continue;
+    }
 
-    if (current_object->get_active() == false)
+    if (current_object->get_active() == false) {
       continue;
+    }
 
     LVector3f accum_vec(0, 0, 0);
 
     // set up the traversal stuff.
     ForceNode *force_node;
-    pvector< PT(AngularForce) >::const_iterator f_cur;
+    AngularForceVector::const_iterator f_cur;
 
     LVector3f f;
 
@@ -95,8 +96,9 @@ child_integrate(Physical *physical,
       AngularForce *cur_force = *f_cur;
 
       // make sure the force is turned on.
-      if (cur_force->get_active() == false)
+      if (cur_force->get_active() == false) {
         continue;
+      }
 
       force_node = cur_force->get_force_node();
 
@@ -113,8 +115,9 @@ child_integrate(Physical *physical,
       AngularForce *cur_force = *f_cur;
 
       // make sure the force is turned on.
-      if (cur_force->get_active() == false)
+      if (cur_force->get_active() == false) {
         continue;
+      }
 
       force_node = cur_force->get_force_node();
 

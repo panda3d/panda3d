@@ -21,7 +21,7 @@
 //   Access : protected
 ////////////////////////////////////////////////////////////////////
 INLINE const pvector< LMatrix4f > &BaseIntegrator::
-get_precomputed_linear_matrices(void) const {
+get_precomputed_linear_matrices() const {
   return _precomputed_linear_matrices;
 }
 
@@ -30,6 +30,6 @@ get_precomputed_linear_matrices(void) const {
 //   Access : protected
 ////////////////////////////////////////////////////////////////////
 INLINE const pvector< LMatrix4f > &BaseIntegrator::
-get_precomputed_angular_matrices(void) const {
+get_precomputed_angular_matrices() const {
   return _precomputed_angular_matrices;
 }
