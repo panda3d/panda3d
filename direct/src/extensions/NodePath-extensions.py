@@ -991,3 +991,36 @@
     def colorScaleInterval(self, *args, **kw):
         import LerpInterval
         return LerpInterval.LerpColorScaleInterval(self, *args, **kw)
+
+    def attachCollisionSphere(self, name, cx,cy,cz,r, fromCollide, intoCollide):
+        import CollisionSphere
+        import CollisionNode
+        coll = CollisionSphere.CollisionSphere(cx,cy,cz,r)
+        collNode = CollisionNode.CollisionNode(name)
+        collNode.addSolid(coll)
+        collNode.setFromCollideMask(fromCollide)
+        collNode.setIntoCollideMask(intoCollide)
+        collNodePath = self.attachNewNode(collNode)
+        return collNodePath
+
+    def attachCollisionSegment(self, name, ax,ay,az, bx,by,bz, fromCollide, intoCollide):
+        import CollisionSegment
+        import CollisionNode
+        coll = CollisionSegment.CollisionSegment(ax,ay,az, bx,by,bz)
+        collNode = CollisionNode.CollisionNode(name)
+        collNode.addSolid(coll)
+        collNode.setFromCollideMask(fromCollide)
+        collNode.setIntoCollideMask(intoCollide)
+        collNodePath = self.attachNewNode(collNode)
+        return collNodePath
+
+    def attachCollisionRay(self, name, ox,oy,oz, dx,dy,dz, fromCollide, intoCollide):
+        import CollisionRay
+        import CollisionNode
+        coll = CollisionRay.CollisionRay(ox,oy,oz, dx,dy,dz)
+        collNode = CollisionNode.CollisionNode(name)
+        collNode.addSolid(coll)
+        collNode.setFromCollideMask(fromCollide)
+        collNode.setIntoCollideMask(intoCollide)
+        collNodePath = self.attachNewNode(collNode)
+        return collNodePath
