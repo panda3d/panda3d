@@ -98,7 +98,7 @@ INLINE int WindowItem::getCameraGroup(int display_region) const {
 }
 INLINE int WindowItem::getNumCameraGroups(void) const {
  int largestIndex=0;
- for(int j=0;j<_camera_group.size();j++)
+ for(size_t j=0;j<_camera_group.size();j++)
   if(_camera_group[j]>largestIndex)largestIndex=_camera_group[j];
  return largestIndex+1;
 }

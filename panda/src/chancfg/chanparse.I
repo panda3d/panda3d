@@ -19,7 +19,7 @@
 #include <notify.h>
 
 INLINE void ChanEatFrontWhite(std::string& S) {
-  int i = S.find_first_not_of(" \t\r\f\n");
+  size_t i = S.find_first_not_of(" \t\r\f\n");
   if ((i != std::string::npos) && (i != 0))
     S.erase(0, i);
 }

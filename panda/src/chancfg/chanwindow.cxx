@@ -82,7 +82,7 @@ void WindowParseFunctor::operator()(std::string S) {
            //0 based.  We don't know yet how much room we actually need
            //as the information is in the un-analyzed layout.  cameraGroup
            //and sv are handled the same in this manner.
-           while(sv.size()<region_number+1) {
+           while((int)sv.size() < region_number+1) {
              sv.push_back("");
              cameraGroup.push_back(0);
            }

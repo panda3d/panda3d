@@ -141,7 +141,7 @@ void SetupParseFunctor::operator()(std::string S) {
                      << qf.getVert() << endl;
         break;
       default:
-        chancfg_cat->debug() << "  FOV is of an unknown type (" << qf.getType()
+        chancfg_cat->debug() << "  FOV is of an unknown type (" << (int)qf.getType()
                  << ")" << endl;
     }
     switch (s.getOrientation()) {
@@ -159,7 +159,7 @@ void SetupParseFunctor::operator()(std::string S) {
         break;
       default:
         chancfg_cat->debug() << "  setup has an unknown orientation ("
-                    << s.getOrientation() << ")" << endl;
+                    << (int)s.getOrientation() << ")" << endl;
     }
   }
   (*SetupDB)[sym] = s;

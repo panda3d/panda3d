@@ -403,7 +403,7 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
   ChanViewport V(0., 1., 0., 1.);
   chan_eval(win, W, L, S, V, W.getChanOffset()+1, sizeX, sizeY, 
             render, want_cameras);
-  for(int dr_index=0; dr_index<_display_region.size(); dr_index++)
+  for(size_t dr_index=0; dr_index<_display_region.size(); dr_index++)
     _group_membership.push_back(W.getCameraGroup(dr_index));
 
   // sanity check
