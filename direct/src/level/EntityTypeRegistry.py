@@ -1,5 +1,6 @@
 """EntityTypeRegistry module: contains the EntityTypeRegistry class"""
 
+from PandaModules import *
 import DirectNotifyGlobal
 import types
 import AttribDesc
@@ -12,6 +13,19 @@ class EntityTypeRegistry:
     def __init__(self, entityTypeModule):
         """pass in a module that contains EntityTypeDesc classes"""
         self.entTypeModule = entityTypeModule
+
+        # compute the hash of the source modules as of the time of creation
+        hv = HashVal()
+        import EntityTypes
+        reload(EntityTypes)
+        reload(self.entTypeModule)
+        hv.hashFile(Filename.fromOsSpecific(EntityTypes.__file__))
+        s = str(hv.asHex())
+        s += '.'
+        hv.hashFile(Filename.fromOsSpecific(self.entTypeModule.__file__))
+        s += str(hv.asHex())
+        self.hashStr = s
+
         # get a list of the EntityTypeDesc classes in the type module
         classes = []
         for key, value in entityTypeModule.__dict__.items():
@@ -92,7 +106,12 @@ class EntityTypeRegistry:
     def getPermanentTypeNames(self):
         return self.permanentTypeNames
 
+    def getHashStr(self):
+        return self.hashStr
+
     def __hash__(self):
+        # THIS IS NOT GUARANTEED TO PRODUCE THE SAME VALUE ACROSS DIFFERENT
+        # MACHINES; use getHashStr instead
         return hash(repr(self))
     def __repr__(self):
         # this is used to produce a hash value

@@ -136,7 +136,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.candidateSpec = levelSpec
             self.sendUpdate('requestCurrentLevelSpec',
                             [hash(levelSpec),
-                             hash(levelSpec.entTypeReg)])
+                             levelSpec.entTypeReg.getHashStr()])
         else:
             self.privGotSpec(levelSpec)
 

@@ -180,10 +180,14 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         def requestCurrentLevelSpec(self, specHash, entTypeRegHash):
             senderId = self.air.msgSender
 
+            self.notify.info('av %s: specHash %s, entTypeRegHash %s' %
+                             (senderId, specHash, entTypeRegHash))
+
             # first check the typeReg hash -- if it doesn't match, the
             # client should not be connecting. Their entityTypeRegistry
             # is different from ours.
-            srvHash = hash(self.levelSpec.entTypeReg)
+            srvHash = self.levelSpec.entTypeReg.getHashStr()
+            self.notify.info('srv entTypeRegHash %s' % srvHash)
             if srvHash != entTypeRegHash:
                 self.sendUpdateToAvatarId(
                     senderId, 'setSpecDeny',
