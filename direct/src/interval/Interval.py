@@ -78,6 +78,7 @@ class Interval(DirectObject):
             	self.setT(te)
             return Task.cont
         else:
+		self.setT(self.playDuration)
             return Task.done
 
     def printParams(self, indent=0):

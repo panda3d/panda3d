@@ -96,7 +96,7 @@ class Track(Interval):
 	    if (self.ilist[i][0] == interval):
 		return (self.__computeDuration(i+1) - interval.getDuration())
 	Interval.notify.warning(
-		'Track.__getIntervalStartTime(): Interval not found')
+		'Track.getIntervalStartTime(): Interval not found')
 	return 0.0
 
     def getIntervalEndTime(self, name):
