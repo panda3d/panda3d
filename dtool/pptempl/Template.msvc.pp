@@ -733,6 +733,7 @@ $[TAB] copy $[target_header] $[target_header].prebuilt
 #define source $[target].prebuilt
 $[target] : $[source]
 $[TAB] copy $[source] $[target]
+#define source $[target_header].prebuilt
 $[target_header] : $[source]
 $[TAB] copy $[source] $[target_header]
 #endif // HAVE_BISON
