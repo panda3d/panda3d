@@ -483,7 +483,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     for(i = 0; i < _num_local_nodes; i++) {
       manager->read_pointer(scan);
     }
-    cerr << "read " << _num_net_nodes << " net transforms\n";
   }
 
   _initial_net_transform_inverse.read_datagram(scan);
