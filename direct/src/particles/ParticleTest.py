@@ -1,5 +1,7 @@
-from direct.showbase.ShowBaseGlobal import *
+from direct.directbase.DirectStart import *
 
+from pandac.LinearVectorForce import LinearVectorForce
+from pandac.Vec3 import Vec3
 import ParticleEffect
 from direct.tkpanels import ParticlePanel
 import ForceGroup
