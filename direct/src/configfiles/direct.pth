@@ -2,6 +2,7 @@ lib
 lib/py
 src/actor
 src/cluster
+src/directbase
 src/directtools
 src/directdevices
 src/directnotify
