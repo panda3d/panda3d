@@ -70,6 +70,9 @@ PUBLISHED:
   INLINE int get_bytes_requested(void) const;
   INLINE float get_bytes_per_second(void) const;
 
+  void cleanup(void);
+
+
 private:
   class DownloadStatus {
   public:
@@ -103,8 +106,6 @@ private:
   int write_to_disk(DownloadStatus *status);
   int run_to_ram(void);
   int write_to_ram(DownloadStatus *status);
-
-  void cleanup(void);
 
 private:
   bool _connected;
