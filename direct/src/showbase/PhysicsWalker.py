@@ -23,7 +23,6 @@ import math
 
 #import LineStream
 
-
 class PhysicsWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
@@ -710,6 +709,19 @@ class PhysicsWalker(DirectObject.DirectObject):
         if __debug__:
             self.ignore("control-f3") #*#
             self.ignore("f3")
+
+    def enableAvatarJump(self):
+        """
+        Force the ctrl key to return 0's
+        """
+        inputState.unforce("jump")
+
+    def disableAvatarJump(self):
+        """
+        Stop forcing the ctrl key to return 0's
+        """
+        inputState.force("jump", 0)
+
     
     if __debug__:
         def debugPrint(self, message):
