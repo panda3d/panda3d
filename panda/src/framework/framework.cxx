@@ -821,6 +821,40 @@ void event_D(CPT_Event) {
   }
 }
 
+void event_p(CPT_Event) {
+  // "p" key pressed: print pos, hpr
+  LPoint3f xyz;
+  LPoint3f hpr;
+
+  if (current_trackball == trackball) {
+	  xyz = trackball->get_pos();
+	  hpr = trackball->get_hpr();
+  } else if (current_trackball == drive_interface) {
+		xyz = drive_interface->get_pos();
+		hpr = drive_interface->get_hpr();
+  }
+
+  printf("current pos, hpr:  %f %f %f    %f %f %f\n",xyz[0],xyz[1],xyz[2],hpr[0],hpr[1],hpr[2]);
+}
+
+void event_P(CPT_Event) {
+  // "P" key pressed: set pos, hpr
+  LPoint3f xyz;
+  LPoint3f hpr;
+
+  printf("input new pos, hpr in fmt:   f f f  f f f\n");
+  scanf("%f %f %f %f %f %f",&xyz[0],&xyz[1],&xyz[2],&hpr[0],&hpr[1],&hpr[2]);
+
+  if (current_trackball == trackball) {
+	  trackball->set_pos(xyz);
+	  trackball->set_hpr(hpr);
+  } else if (current_trackball == drive_interface) {
+		drive_interface->set_pos(xyz);
+		drive_interface->set_hpr(hpr);
+
+  }
+}
+
 void event_g(CPT_Event) {
   // "g" key pressed: toggle fog.
   static bool fog_mode = false;
@@ -1151,6 +1185,8 @@ int framework_main(int argc, char *argv[]) {
   event_handler.add_hook("N", event_N);
   event_handler.add_hook("S", event_S);
   event_handler.add_hook("A", event_A);
+  event_handler.add_hook("p", event_p);
+  event_handler.add_hook("P", event_P);
 
 #ifdef USE_IPC
   event_handler.add_hook("x", event_x);
