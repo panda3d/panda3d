@@ -140,6 +140,7 @@ class ParticleEffect(NodePath):
 	    f.write('self.addParticles(%s)\n' % target)
 
 	# Save all the forces to file
+	f.write('self.forceGroupDict = {}\n')
 	num = 0
 	for fg in self.forceGroupDict.values():
 	    target = 'f%d' % num
