@@ -718,12 +718,12 @@ class DisplayRegionContext:
         self.far = self.camNode.getFar()
         self.fovH = self.camNode.getHfov()
         self.fovV = self.camNode.getVfov()
-        self.nearWidth = math.tan(deg2Rad(self.fovH / 2.0)) * self.near * 2.0
-        self.nearHeight = math.tan(deg2Rad(self.fovV / 2.0)) * self.near * 2.0
-        self.left = -self.nearWidth/2.0
-        self.right = self.nearWidth/2.0
-        self.top = self.nearHeight/2.0
-        self.bottom = -self.nearHeight/2.0
+        self.nearWidth = math.tan(deg2Rad(self.fovH * 0.5)) * self.near * 2.0
+        self.nearHeight = math.tan(deg2Rad(self.fovV * 0.5)) * self.near * 2.0
+        self.left = -self.nearWidth * 0.5
+        self.right = self.nearWidth * 0.5
+        self.top = self.nearHeight * 0.5
+        self.bottom = -self.nearHeight * 0.5
         # Mouse Data
         # Last frame
         self.mouseLastX = self.mouseX
@@ -736,9 +736,9 @@ class DisplayRegionContext:
         # Delta percent of window the mouse moved
         self.mouseDeltaX = self.mouseX - self.mouseLastX
         self.mouseDeltaY = self.mouseY - self.mouseLastY
-        self.nearVec.set((self.nearWidth/2.0) * self.mouseX,
+        self.nearVec.set((self.nearWidth*0.5) * self.mouseX,
                          self.near,
-                         (self.nearHeight/2.0) * self.mouseY)
+                         (self.nearHeight*0.5) * self.mouseY)
         # Continue the task
         return Task.cont
 
