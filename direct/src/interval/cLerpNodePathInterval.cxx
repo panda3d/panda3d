@@ -619,6 +619,7 @@ setup_slerp() {
     _slerp = &CLerpNodePathInterval::slerp_basic;
   }
 
+  nassertv(_slerp_denom != 0.0f);
   _flags |= F_slerp_setup;
 }
 
@@ -631,9 +632,17 @@ setup_slerp() {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 slerp_basic(LQuaternionf &result, float t) const {
+  nassertv(_slerp_denom != 0.0f);
   float ti = 1.0f - t;
   float ta = t * _slerp_angle;
   float tia = ti * _slerp_angle;
+
+  if (interval_cat.is_spam()) {
+    interval_cat.spam()
+      << "slerp_basic, (t = " << t << "), angle = " << _slerp_angle << "\n"
+      << "_start_quat = " << _start_quat << ", _end_quat = "
+      << _end_quat << ", denom = " << _slerp_denom << "\n";
+  }
 
   result = (csin(tia) * _start_quat + csin(ta) * _end_quat) / _slerp_denom;
 }
@@ -647,9 +656,17 @@ slerp_basic(LQuaternionf &result, float t) const {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 slerp_angle_0(LQuaternionf &result, float t) const {
+  nassertv(_slerp_denom != 0.0f);
   float ti = 1.0f - t;
   float ta = t * _slerp_angle;
   float tia = ti * _slerp_angle;
+
+  if (interval_cat.is_spam()) {
+    interval_cat.spam()
+      << "slerp_angle_0, (t = " << t << "), angle = " << _slerp_angle
+      << "\n_start_quat = " << _start_quat << ", _end_quat = "
+      << _end_quat << ", denom = " << _slerp_denom << "\n";
+  }
 
   result = (csin_over_x(tia) * ti * _start_quat + csin_over_x(ta) * t * _end_quat) / _slerp_denom;
 }
@@ -664,6 +681,7 @@ slerp_angle_0(LQuaternionf &result, float t) const {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 slerp_angle_180(LQuaternionf &result, float t) const {
+  nassertv(_slerp_denom != 0.0f);
   if (t < 0.5) {
     // The first half of the lerp: _start_quat to _slerp_c.
 
@@ -672,6 +690,14 @@ slerp_angle_180(LQuaternionf &result, float t) const {
     float ti = 1.0f - t;
     float ta = t * _slerp_angle;
     float tia = ti * _slerp_angle;
+
+    if (interval_cat.is_spam()) {
+      interval_cat.spam()
+        << "slerp_angle_180, first half (t = " << t << "), angle = "
+        << _slerp_angle << "\n_start_quat = " << _start_quat
+        << ", _slerp_c = " << _slerp_c << ", denom = " 
+        << _slerp_denom << "\n";
+    }
     
     result = (csin(tia) * _start_quat + csin(ta) * _slerp_c) / _slerp_denom;
 
@@ -682,6 +708,14 @@ slerp_angle_180(LQuaternionf &result, float t) const {
     float ti = 1.0f - t;
     float ta = t * _slerp_angle;
     float tia = ti * _slerp_angle;
+
+    if (interval_cat.is_spam()) {
+      interval_cat.spam()
+        << "slerp_angle_180, second half (t = " << t << "), angle = "
+        << _slerp_angle << "\n_slerp_c = " << _slerp_c
+        << ", _end_quat = " << _end_quat << ", denom = " 
+        << _slerp_denom << "\n";
+    }
     
     result = (csin(tia) * _slerp_c + csin(ta) * _end_quat) / _slerp_denom;
   }
