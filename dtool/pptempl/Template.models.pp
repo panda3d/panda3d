@@ -392,6 +392,14 @@ fix-pal :
 pi :
 	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -pi
 
+#
+# pal-stats : report palettization statistics to standard output for the
+# user's perusal.
+#
+pal-stats :
+	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -s
+stats-pal : pal-stats
+
 // Somehow, something in the cttools confuses some shells, so that
 // when we are attached, 'cd foo' doesn't work, but 'cd ./foo' does.
 // Weird.  We get around this by putting a ./ in front of each cd

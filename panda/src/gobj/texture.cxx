@@ -24,6 +24,78 @@
 ////////////////////////////////////////////////////////////////////
 TypeHandle Texture::_type_handle;
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: up_to_power_2
+//  Description: Returns the smallest power of 2 greater than or equal
+//               to value.
+////////////////////////////////////////////////////////////////////
+static int
+up_to_power_2(int value) {
+  int x = 1;
+  while (x < value) {
+    x = (x << 1);
+  }
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: down_to_power_2
+//  Description: Returns the largest power of 2 less than or equal
+//               to value.
+////////////////////////////////////////////////////////////////////
+static int
+down_to_power_2(int value) {
+  int x = 1;
+  while ((x << 1) <= value) {
+    x = (x << 1);
+  }
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: consider_rescale
+//  Description: Scales the PNMImage according to the whims of the
+//               Configrc file.
+////////////////////////////////////////////////////////////////////
+static void
+consider_rescale(PNMImage &pnmimage, const string &name) {
+  int new_x_size = pnmimage.get_x_size();
+  int new_y_size = pnmimage.get_y_size();
+
+  if (textures_down_power_2) {
+    new_x_size = down_to_power_2(new_x_size);
+    new_y_size = down_to_power_2(new_y_size);
+  } else if (textures_up_power_2) {
+    new_x_size = up_to_power_2(new_x_size);
+    new_y_size = up_to_power_2(new_y_size);
+  }
+
+  if (textures_down_square) {
+    new_x_size = new_y_size = min(new_x_size, new_y_size);
+  } else if (textures_up_square) {
+    new_x_size = new_y_size = max(new_x_size, new_y_size);
+  }
+
+  if (max_texture_dimension > 0) {
+    new_x_size = min(new_x_size, max_texture_dimension);
+    new_y_size = min(new_y_size, max_texture_dimension);
+  }
+
+  if (pnmimage.get_x_size() != new_x_size ||
+      pnmimage.get_y_size() != new_y_size) {
+    gobj_cat.info()
+      << "Automatically rescaling " << name << " from " 
+      << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
+      << new_x_size << " by " << new_y_size << "\n";
+
+    PNMImage scaled(new_x_size, new_y_size, pnmimage.get_num_channels(),
+		    pnmimage.get_maxval(), pnmimage.get_type());
+    scaled.quick_filter_from(pnmimage);
+    pnmimage = scaled;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Constructor
 //       Access:
@@ -56,8 +128,8 @@ Texture::
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool Texture::read(const string& name)
-{
+bool Texture::
+read(const string& name) {
   PNMImage pnmimage;
 
   if (!pnmimage.read(name)) {
@@ -66,21 +138,8 @@ bool Texture::read(const string& name)
     return false;
   }
 
-  if (max_texture_dimension > 0 &&
-      (pnmimage.get_x_size() > max_texture_dimension ||
-       pnmimage.get_y_size() > max_texture_dimension)) {
-    int new_xsize = min(pnmimage.get_x_size(), max_texture_dimension);
-    int new_ysize = min(pnmimage.get_y_size(), max_texture_dimension);
-    gobj_cat.info()
-      << "Automatically rescaling " << name << " from " 
-      << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
-      << new_xsize << " by " << new_ysize << "\n";
-
-    PNMImage scaled(new_xsize, new_ysize, pnmimage.get_num_channels(),
-		    pnmimage.get_maxval(), pnmimage.get_type());
-    scaled.gaussian_filter_from(0.5, pnmimage);
-    pnmimage = scaled;
-  }
+  // Check to see if we need to scale it.
+  consider_rescale(pnmimage, name);
 
   set_name(name);
   clear_alpha_name();
@@ -93,7 +152,8 @@ bool Texture::read(const string& name)
 //  Description: Combine a 3-component image with a grayscale image
 //		 to get a 4-component image
 ////////////////////////////////////////////////////////////////////
-bool Texture::read(const string &name, const string &gray) {
+bool Texture::
+read(const string &name, const string &gray) {
   PNMImage pnmimage;
   if (!pnmimage.read(name)) {
     gobj_cat.error()
@@ -108,56 +168,28 @@ bool Texture::read(const string &name, const string &gray) {
     return false;
   }
 
-  if (max_texture_dimension > 0 &&
-      (pnmimage.get_x_size() > max_texture_dimension ||
-       pnmimage.get_y_size() > max_texture_dimension)) {
-    int new_xsize = min(pnmimage.get_x_size(), max_texture_dimension);
-    int new_ysize = min(pnmimage.get_y_size(), max_texture_dimension);
-    gobj_cat.info()
-      << "Automatically rescaling " << name << " from " 
-      << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
-      << new_xsize << " by " << new_ysize << "\n";
+  consider_rescale(pnmimage, name);
 
-    PNMImage scaled(new_xsize, new_ysize, pnmimage.get_num_channels(),
-		    pnmimage.get_maxval(), pnmimage.get_type());
-    scaled.gaussian_filter_from(0.5, pnmimage);
-    pnmimage = scaled;
-  }
-
-  // Now do the same for the grayscale image
-  if (max_texture_dimension > 0 &&
-      (grayimage.get_x_size() > max_texture_dimension ||
-       grayimage.get_y_size() > max_texture_dimension)) {
-    int new_xsize = min(grayimage.get_x_size(), max_texture_dimension);
-    int new_ysize = min(grayimage.get_y_size(), max_texture_dimension);
+  // The grayscale (alpha channel) image must be the same size as the
+  // main image.
+  if (pnmimage.get_x_size() != grayimage.get_x_size() ||
+      pnmimage.get_y_size() != grayimage.get_y_size()) {
     gobj_cat.info()
       << "Automatically rescaling " << gray << " from " 
       << grayimage.get_x_size() << " by " << grayimage.get_y_size() << " to "
-      << new_xsize << " by " << new_ysize << "\n";
+      << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << "\n";
 
-    PNMImage scaled(new_xsize, new_ysize, pnmimage.get_num_channels(),
-		    pnmimage.get_maxval(), pnmimage.get_type());
-    scaled.gaussian_filter_from(0.5, pnmimage);
-    pnmimage = scaled;
-  }
-
-  // Make sure the 2 images are the same size
-  int xsize = pnmimage.get_x_size();
-  int ysize = pnmimage.get_y_size();
-  int gxsize = grayimage.get_x_size();
-  int gysize = grayimage.get_y_size();
-  if ((xsize != gxsize) || (ysize != gysize)) {
-    gobj_cat.error()
-      << "Texture::read() - grayscale image not the same size as original - "
-      << "orig = " << xsize << "x" << ysize << " - gray = " << gxsize
-      << "x" << gysize << endl;
-    return false;
+    PNMImage scaled(pnmimage.get_x_size(), pnmimage.get_y_size(), 
+		    grayimage.get_num_channels(),
+		    grayimage.get_maxval(), grayimage.get_type());
+    scaled.quick_filter_from(grayimage);
+    grayimage = scaled;
   }
   
   // Make the original image a 4-component image
   pnmimage.add_alpha();
-  for (int x = 0; x < xsize; x++) {
-    for (int y = 0; y < ysize; y++) { 
+  for (int x = 0; x < pnmimage.get_x_size(); x++) {
+    for (int y = 0; y < pnmimage.get_y_size(); y++) { 
       pnmimage.set_alpha(x, y, grayimage.get_gray(x, y));
     }
   }

@@ -10,6 +10,7 @@
 #include "config_downloader.h"
 
 #include <filename.h>
+#include <errno.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines

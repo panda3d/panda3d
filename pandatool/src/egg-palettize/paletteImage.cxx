@@ -636,7 +636,8 @@ get_image() {
     }
   }
 
-  nout << "Generating new " << FilenameUnifier::make_user_filename(get_filename()) << "\n";
+  nout << "Generating new "
+       << FilenameUnifier::make_user_filename(get_filename()) << "\n";
 
   // We won't be using this any more.
   _cleared_regions.clear();

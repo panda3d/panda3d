@@ -13,6 +13,10 @@ NotifyCategoryDecl(gobj, EXPCL_PANDA, EXPTP_PANDA);
 
 // Configure variables for gobj package.
 extern EXPCL_PANDA const int max_texture_dimension;
+extern EXPCL_PANDA bool textures_up_power_2;
+extern EXPCL_PANDA bool textures_down_power_2;
+extern EXPCL_PANDA bool textures_up_square;
+extern EXPCL_PANDA bool textures_down_square;
 
 enum BamTextureMode {
   BTM_fullpath,

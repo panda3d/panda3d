@@ -18,6 +18,7 @@
 #include "texture.h"
 
 #include <dconfig.h>
+#include <string_utils.h>
 
 Configure(config_gobj);
 NotifyCategoryDef(gobj, "");
@@ -29,6 +30,27 @@ NotifyCategoryDef(gobj, "");
 // loaded from a file) will be automatically scaled down, if
 // necessary, so that neither dimension is larger than this value.
 const int max_texture_dimension = config_gobj.GetInt("max-texture-dimension", -1);
+
+// Set textures-power-2 to force texture dimensions to a power of two.
+// If this is "up" or "down", the textures will be scaled up or down
+// to the next power of two, as indicated; otherwise, if this is #t,
+// the textures will be scaled down.  If this is #f or unspecified,
+// the textures will be left at whatever size they are.
+
+// These are filled in by the ConfigureFn block, below.
+bool textures_up_power_2 = false;
+bool textures_down_power_2 = false;
+
+// Set textures-square to force texture dimensions to a square aspect
+// ratio.  This works similarly to textures-power-2, above.  If this
+// is "up" or "down", the textures will be scaled up or down to the
+// containing square or the inscribed square, respectively; otherwise,
+// if this is #t, the textures will be scaled down.  If this is #f or
+// unspecified, the textures will be left at whatever size they are.
+
+// These are filled in by the ConfigureFn block, below.
+bool textures_up_square = false;
+bool textures_down_square = false;
 
 // Set this to specify how textures should be written into Bam files.
 // Currently, the options are:
@@ -59,6 +81,34 @@ parse_texture_mode(const string &mode) {
 ConfigureFn(config_gobj) {
   string texture_mode = config_util.GetString("bam-texture-mode", "relative");
   bam_texture_mode = parse_texture_mode(texture_mode);
+
+  string textures_power_2 = config_gobj.GetString("textures-power-2", "");
+  if (cmp_nocase(textures_power_2, "up") == 0) {
+    textures_up_power_2 = true;
+    textures_down_power_2 = false;
+
+  } else if (cmp_nocase(textures_power_2, "down") == 0) {
+    textures_up_power_2 = false;
+    textures_down_power_2 = true;
+
+  } else {
+    textures_up_power_2 = false;
+    textures_down_power_2 = config_gobj.GetBool("textures-power-2", false);
+  }
+
+  string textures_square = config_gobj.GetString("textures-square", "");
+  if (cmp_nocase(textures_square, "up") == 0) {
+    textures_up_square = true;
+    textures_down_square = false;
+
+  } else if (cmp_nocase(textures_square, "down") == 0) {
+    textures_up_square = false;
+    textures_down_square = true;
+
+  } else {
+    textures_up_square = false;
+    textures_down_square = config_gobj.GetBool("textures-square", false);
+  }
   
   Fog::init_type();
   Geom::init_type();

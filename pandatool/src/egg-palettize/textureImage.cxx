@@ -530,6 +530,9 @@ copy_unplaced(bool redo_all) {
       }
 
       placement->set_dest(dest);
+
+    } else {
+      placement->set_dest((DestTextureImage *)NULL);
     }
   }
 
@@ -643,15 +646,17 @@ write_scale_info(ostream &out, int indent_level) {
 	<< " " << source->get_num_channels();
   }
 
-  out << " new " << get_x_size() << " " << get_y_size()
-      << " " << get_num_channels();
+  if (!_placement.empty()) {
+    out << " new " << get_x_size() << " " << get_y_size()
+	<< " " << get_num_channels();
 
-  if (source != (SourceTextureImage *)NULL &&
-      source->is_size_known()) {
-    double scale = 
-      100.0 * (((double)get_x_size() / (double)source->get_x_size()) +
-	       ((double)get_y_size() / (double)source->get_y_size())) / 2.0;
-    out << " scale " << scale << "%";
+    if (source != (SourceTextureImage *)NULL &&
+	source->is_size_known()) {
+      double scale = 
+	100.0 * (((double)get_x_size() / (double)source->get_x_size()) +
+		 ((double)get_y_size() / (double)source->get_y_size())) / 2.0;
+      out << " scale " << scale << "%";
+    }
   }
   out << "\n";
 
