@@ -258,6 +258,7 @@ end_flip() {
     //    wdxdisplay8_cat.debug() << "current swapchain from end_flip is " << _wcontext.pSwapChain << "\n";
     _dxgsg->show_frame();
   }
+  GraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////

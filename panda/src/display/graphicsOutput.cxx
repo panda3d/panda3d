@@ -51,6 +51,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _has_size = false;
   _is_valid = false;
   _copy_texture = false;
+  _flip_ready = false;
   _sort = 0;
 
   int mode = gsg->get_properties().get_frame_buffer_mode();
@@ -542,6 +543,11 @@ end_frame() {
     TextureContext *tc = get_texture()->prepare_now(_gsg->get_prepared_objects(), _gsg);
     _gsg->copy_texture(tc, &dr, buffer);
   }
+
+  // If we're not single-buffered, we're now ready to flip.
+  if (!_gsg->get_properties().is_single_buffered()) {
+    _flip_ready = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -599,6 +605,7 @@ begin_flip() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 end_flip() {
+  _flip_ready = false;
 }
 
 ////////////////////////////////////////////////////////////////////

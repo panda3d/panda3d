@@ -147,7 +147,7 @@ begin_flip() {
     // context is current before flipping the windows, and insisting
     // on doing so can be a significant performance hit.
 
-    //    make_current();
+    //make_current();
 
     glXSwapBuffers(_display, _xwindow);
   }

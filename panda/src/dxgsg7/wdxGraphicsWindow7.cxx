@@ -219,6 +219,7 @@ end_flip() {
   if (_dxgsg != (DXGraphicsStateGuardian7 *)NULL && is_active()) {
     _dxgsg->show_frame();
   }
+  GraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////

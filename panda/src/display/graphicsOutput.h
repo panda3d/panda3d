@@ -80,6 +80,7 @@ PUBLISHED:
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
   INLINE bool is_valid() const;
+  INLINE bool flip_ready() const;
 
   virtual bool is_active() const;
 
@@ -149,6 +150,7 @@ protected:
   string _name;
   PT(Texture) _texture;
   bool _copy_texture;
+  bool _flip_ready;
 
 private:
   INLINE void determine_display_regions() const;

@@ -161,6 +161,17 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::flip_ready
+//       Access: Published
+//  Description: Returns true if a frame has been rendered and needs
+//               to be flipped, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+flip_ready() const {
+  return _flip_ready;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_sort
 //       Access: Published
 //  Description: Returns the sorting order of this particular
