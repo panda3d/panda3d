@@ -144,7 +144,8 @@ void ConfigTable::ReadConfigFile(void) {
     int i = configpath.find_first_of(" ");
     ConfigString stmp = configpath.substr(0, i);
     if (ExecutionEnvironment::has_environment_variable(stmp)) {
-      config_search.append_path(ExecutionEnvironment::get_environment_variable(stmp));
+      Filename next_path = Filename::from_os_specific(ExecutionEnvironment::get_environment_variable(stmp));
+      config_search.append_path(next_path);
     }
     configpath.erase(0, i);
     CropString(configpath);
