@@ -334,7 +334,9 @@
 #elif $[eq $[PLATFORM], Linux]
   #define USE_COMPILER GCC
 #elif $[eq $[PLATFORM], Win32]
+#if $[eq $[USE_COMPILER],]
   #define USE_COMPILER MSVC
+#endif  
 #endif
 
 ///////////////////////////////////////////////////////////////////////
