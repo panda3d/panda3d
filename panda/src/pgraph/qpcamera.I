@@ -48,7 +48,7 @@ is_active() const {
 //               represent the root of any subgraph.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpCamera::
-set_scene(const NodeChain &scene) {
+set_scene(const qpNodePath &scene) {
   _scene = scene;
 }
 
@@ -58,7 +58,7 @@ set_scene(const NodeChain &scene) {
 //  Description: Returns the scene that will be rendered by the
 //               camera.  See set_scene().
 ////////////////////////////////////////////////////////////////////
-INLINE const NodeChain &qpCamera::
+INLINE const qpNodePath &qpCamera::
 get_scene() const {
   return _scene;
 }

@@ -80,10 +80,17 @@ PUBLISHED:
   INLINE bool is_identity() const;
   INLINE bool is_singular() const;
   INLINE bool has_components() const;
+  INLINE bool has_pos() const;
+  INLINE bool has_hpr() const;
+  INLINE bool has_scale() const;
   INLINE const LVecBase3f &get_pos() const;
   INLINE const LVecBase3f &get_hpr() const;
   INLINE const LVecBase3f &get_scale() const;
   INLINE const LMatrix4f &get_mat() const;
+
+  CPT(TransformState) set_pos(const LVecBase3f &pos) const;
+  CPT(TransformState) set_hpr(const LVecBase3f &hpr) const;
+  CPT(TransformState) set_scale(const LVecBase3f &scale) const;
 
   CPT(TransformState) compose(const TransformState *other) const;
   CPT(TransformState) invert_compose(const TransformState *other) const;

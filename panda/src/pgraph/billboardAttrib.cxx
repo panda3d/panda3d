@@ -33,7 +33,7 @@ TypeHandle BillboardAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) BillboardAttrib::
 make(const LVector3f &up_vector, bool eye_relative,
-     bool axial_rotate, float offset, const NodeChain &look_at,
+     bool axial_rotate, float offset, const qpNodePath &look_at,
      const LPoint3f &look_at_point) {
   BillboardAttrib *attrib = new BillboardAttrib;
   attrib->_up_vector = up_vector;
@@ -228,7 +228,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_float32(_offset);
   _look_at_point.write_datagram(dg);
 
-  // *** We don't write out the _look_at NodeChain right now.  Maybe
+  // *** We don't write out the _look_at qpNodePath right now.  Maybe
   // we should.
 }
 

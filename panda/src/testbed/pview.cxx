@@ -144,7 +144,7 @@ make_camera(GraphicsWindow *window) {
   PT(Lens) lens = new PerspectiveLens;
   lens->set_film_size(win_width, win_height);
   camera->set_lens(lens);
-  dr->set_qpcamera(NodeChain(camera));
+  dr->set_qpcamera(qpNodePath(camera));
 
   return camera;
 }
@@ -216,7 +216,7 @@ get_models(PandaNode *parent, int argc, char *argv[]) {
         cerr << "Unable to load " << filename << "\n";
 
       } else {
-        node->ls();
+        node->ls(cerr, 0);
         parent->add_child(node);
       }
     }
@@ -277,7 +277,7 @@ main(int argc, char *argv[]) {
   // Now we just need to make a scene graph for the camera to render.
   PT(PandaNode) render = new PandaNode("render");
   render->add_child(camera);
-  camera->set_scene(NodeChain(render));
+  camera->set_scene(qpNodePath(render));
 
   // Set up a data graph for tracking user input.  For now, this uses
   // the old-style graph interface.

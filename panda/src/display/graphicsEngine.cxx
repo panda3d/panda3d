@@ -197,7 +197,7 @@ cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr) {
 //  Description: Fires off a cull traversal using the indicated camera.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-do_cull(CullHandler *cull_handler, const NodeChain &camera,
+do_cull(CullHandler *cull_handler, const qpNodePath &camera,
         GraphicsStateGuardian *gsg) {
   if (camera.is_empty()) {
     // No camera, no draw.
@@ -218,7 +218,7 @@ do_cull(CullHandler *cull_handler, const NodeChain &camera,
     return;
   }
 
-  NodeChain scene = camera_node->get_scene();
+  qpNodePath scene = camera_node->get_scene();
   if (scene.is_empty()) {
     // No scene, no draw.
     return;
@@ -298,7 +298,7 @@ do_draw(CullResult *cull_result, GraphicsStateGuardian *gsg,
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
 set_gsg_lens(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
-  const NodeChain &camera = dr->get_qpcamera();
+  const qpNodePath &camera = dr->get_qpcamera();
   if (camera.is_empty()) {
     // No camera, no draw.
     return false;

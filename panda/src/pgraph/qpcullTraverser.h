@@ -29,6 +29,7 @@
 class PandaNode;
 class CullHandler;
 class CullTraverserData;
+class CullableObject;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullTraverser

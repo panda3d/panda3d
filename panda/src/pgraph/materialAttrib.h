@@ -36,7 +36,7 @@ private:
   INLINE MaterialAttrib();
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(const Material *tex);
+  static CPT(RenderAttrib) make(const Material *material);
   static CPT(RenderAttrib) make_off();
 
   INLINE bool is_off() const;

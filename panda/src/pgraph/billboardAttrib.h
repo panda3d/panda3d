@@ -23,7 +23,7 @@
 
 #include "renderAttrib.h"
 #include "luse.h"
-#include "nodeChain.h"
+#include "qpnodePath.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BillboardAttrib
@@ -40,7 +40,7 @@ PUBLISHED:
                                 bool eye_relative,
                                 bool axial_rotate,
                                 float offset,
-                                const NodeChain &look_at,
+                                const qpNodePath &look_at,
                                 const LPoint3f &look_at_point);
   INLINE static CPT(RenderAttrib) make_axis();
   INLINE static CPT(RenderAttrib) make_point_eye();
@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE bool get_eye_relative() const;
   INLINE bool get_axial_rotate() const;
   INLINE float get_offset() const;
-  INLINE const NodeChain &get_look_at() const;
+  INLINE const qpNodePath &get_look_at() const;
   INLINE const LPoint3f &get_look_at_point() const;
 
 public:
@@ -70,7 +70,7 @@ private:
   bool _eye_relative;
   bool _axial_rotate;
   float _offset;
-  NodeChain _look_at;
+  qpNodePath _look_at;
   LPoint3f _look_at_point;
 
 public:

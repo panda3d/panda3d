@@ -239,6 +239,54 @@ make_mat(const LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_pos
+//       Access: Published
+//  Description: Returns a new TransformState object that represents the
+//               original TransformState with its pos component
+//               replaced with the indicated value.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+set_pos(const LVecBase3f &pos) const {
+  if ((_flags & F_components_given) != 0) {
+    // If we started with a componentwise transform, we keep it that
+    // way.
+    return make_pos_hpr_scale(pos, get_hpr(), get_scale());
+
+  } else {
+    // Otherwise, we have a matrix transform, and we keep it that way.
+    LMatrix4f mat = get_mat();
+    mat.set_row(3, pos);
+    return make_mat(mat);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_hpr
+//       Access: Published
+//  Description: Returns a new TransformState object that represents the
+//               original TransformState with its hpr component
+//               replaced with the indicated value, if possible.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+set_hpr(const LVecBase3f &hpr) const {
+  nassertr(has_components(), this);
+  return make_pos_hpr_scale(get_pos(), hpr, get_scale());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_scale
+//       Access: Published
+//  Description: Returns a new TransformState object that represents the
+//               original TransformState with its scale component
+//               replaced with the indicated value, if possible.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+set_scale(const LVecBase3f &scale) const {
+  nassertr(has_components(), this);
+  return make_pos_hpr_scale(get_pos(), get_scale(), get_hpr());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::compose
 //       Access: Published
 //  Description: Returns a new TransformState object that represents the
@@ -532,10 +580,14 @@ calc_components() {
     // other explanation is that we were constructed via a matrix.
     nassertv((_flags & F_mat_known) != 0);
 
-    bool possible = decompose_matrix(get_mat(), _scale, _hpr, _pos);
+    const LMatrix4f &mat = get_mat();
+    bool possible = decompose_matrix(mat, _scale, _hpr, _pos);
     if (possible) {
       // Some matrices can't be decomposed into scale, hpr, pos.
       _flags |= F_has_components;
+
+      // However, we can always get at least the pos.
+      mat.get_row3(_pos, 3);
     }
   }
 

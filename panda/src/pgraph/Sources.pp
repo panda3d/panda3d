@@ -31,8 +31,9 @@
     qplensNode.h qplensNode.I \
     qplodNode.h qplodNode.I \
     materialAttrib.h materialAttrib.I \
-    nodeChain.h nodeChain.I \
-    nodeChainComponent.h nodeChainComponent.I \
+    qpnodePath.h qpnodePath.I \
+    qpnodePathCollection.h qpnodePathCollection.I \
+    qpnodePathComponent.h qpnodePathComponent.I \
     pandaNode.h pandaNode.I \
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
@@ -70,8 +71,9 @@
     qplensNode.cxx \
     qplodNode.cxx \
     materialAttrib.cxx \
-    nodeChain.cxx \
-    nodeChainComponent.cxx \
+    qpnodePath.cxx \
+    qpnodePathCollection.cxx \
+    qpnodePathComponent.cxx \
     pandaNode.cxx \
     renderAttrib.cxx \
     renderState.cxx \
@@ -114,8 +116,9 @@
     qplensNode.h qplensNode.I \
     qplodNode.h qplodNode.I \
     materialAttrib.h materialAttrib.I \
-    nodeChain.h nodeChain.I \
-    nodeChainComponent.h nodeChainComponent.I \
+    qpnodePath.h qpnodePath.I \
+    qpnodePathCollection.h qpnodePathCollection.I \
+    qpnodePathComponent.h qpnodePathComponent.I \
     pandaNode.h pandaNode.I \
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \

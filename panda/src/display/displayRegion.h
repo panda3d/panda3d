@@ -22,7 +22,7 @@
 
 #include "referenceCount.h"
 #include "camera.h"
-#include "nodeChain.h"
+#include "qpnodePath.h"
 #include "cullResult.h"
 #include "pointerTo.h"
 
@@ -69,8 +69,8 @@ PUBLISHED:
   void set_camera(Camera *camera);
   INLINE Camera *get_camera() const;
 
-  void set_qpcamera(const NodeChain &camera);
-  INLINE const NodeChain &get_qpcamera() const;
+  void set_qpcamera(const qpNodePath &camera);
+  INLINE const qpNodePath &get_qpcamera() const;
 
   INLINE void set_cull_frustum(LensNode *cull_frustum);
   INLINE LensNode *get_cull_frustum() const;
@@ -104,7 +104,7 @@ protected:
 
   GraphicsLayer *_layer;
   PT(Camera) _camera;
-  NodeChain _qpcamera;
+  qpNodePath _qpcamera;
   qpCamera *_camera_node;
   PT(LensNode) _cull_frustum;
 

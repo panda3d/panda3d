@@ -108,7 +108,7 @@ get_camera() const {
 //  Description: Returns the camera associated with this
 //               DisplayRegion, or NULL if no camera is associated.
 ////////////////////////////////////////////////////////////////////
-INLINE const NodeChain &DisplayRegion::
+INLINE const qpNodePath &DisplayRegion::
 get_qpcamera() const {
   return _qpcamera;
 }

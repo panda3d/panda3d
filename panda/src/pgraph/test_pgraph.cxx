@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandaNode.h"
-#include "nodeChain.h"
+#include "qpnodePath.h"
 #include "textureAttrib.h"
 #include "colorAttrib.h"
 #include "transformState.h"
@@ -74,20 +74,20 @@ main(int argc, char *argv[]) {
   cerr << "\n";
   list_hierarchy(root, 0);
 
-  NodeChain ch_g1(g1);
+  qpNodePath ch_g1(g1);
   cerr << ch_g1 << "\n";
 
-  NodeChain ch_g2(g2);
+  qpNodePath ch_g2(g2);
   cerr << ch_g2 << "\n";
 
-  cerr << *ch_g1.get_rel_transform(ch_g2) << "\n";
-  cerr << *ch_g2.get_rel_transform(ch_g1) << "\n";
+  cerr << *ch_g1.get_transform(ch_g2) << "\n";
+  cerr << *ch_g2.get_transform(ch_g1) << "\n";
 
-  cerr << *ch_g1.get_rel_state(ch_g2) << "\n";
-  cerr << *ch_g2.get_rel_state(ch_g1) << "\n";
+  cerr << *ch_g1.get_state(ch_g2) << "\n";
+  cerr << *ch_g2.get_state(ch_g1) << "\n";
 
-  cerr << *ch_g2.get_rel_transform(ch_g2) << "\n";
-  cerr << *ch_g2.get_rel_state(ch_g2) << "\n";
+  cerr << *ch_g2.get_transform(ch_g2) << "\n";
+  cerr << *ch_g2.get_state(ch_g2) << "\n";
 
   cerr << "\n";
   return 0;

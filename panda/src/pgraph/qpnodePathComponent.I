@@ -1,4 +1,4 @@
-// Filename: nodeChainComponent.I
+// Filename: qpnodePathComponent.I
 // Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,36 +18,36 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::CData::Constructor
+//     Function: qpNodePathComponent::CData::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE NodeChainComponent::CData::
+INLINE qpNodePathComponent::CData::
 CData() {
   _length = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::CData::Copy Constructor
+//     Function: qpNodePathComponent::CData::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE NodeChainComponent::CData::
-CData(const NodeChainComponent::CData &copy) :
+INLINE qpNodePathComponent::CData::
+CData(const qpNodePathComponent::CData &copy) :
   _next(copy._next),
   _length(copy._length)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::Constructor
+//     Function: qpNodePathComponent::Constructor
 //       Access: Private
-//  Description: Constructs a new NodeChainComponent from the
+//  Description: Constructs a new qpNodePathComponent from the
 //               indicated node.  Don't try to call this directly; ask
 //               the PandaNode to do it for you.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeChainComponent::
-NodeChainComponent(PandaNode *node, NodeChainComponent *next) :
+INLINE qpNodePathComponent::
+qpNodePathComponent(PandaNode *node, qpNodePathComponent *next) :
   _node(node)
 {
 #ifdef DO_MEMORY_USAGE
@@ -56,85 +56,85 @@ NodeChainComponent(PandaNode *node, NodeChainComponent *next) :
   CDWriter cdata(_cycler);
   cdata->_next = next;
 
-  if (next != (NodeChainComponent *)NULL) {
+  if (next != (qpNodePathComponent *)NULL) {
     cdata->_length = next->get_length() + 1;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::Copy Constructor
+//     Function: qpNodePathComponent::Copy Constructor
 //       Access: Private
-//  Description: NodeChainComponents should not be copied.
+//  Description: qpNodePathComponents should not be copied.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeChainComponent::
-NodeChainComponent(const NodeChainComponent &copy) {
+INLINE qpNodePathComponent::
+qpNodePathComponent(const qpNodePathComponent &copy) {
   nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::Copy Assignment Operator
+//     Function: qpNodePathComponent::Copy Assignment Operator
 //       Access: Private
-//  Description: NodeChainComponents should not be copied.
+//  Description: qpNodePathComponents should not be copied.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeChainComponent::
-operator = (const NodeChainComponent &copy) {
+INLINE void qpNodePathComponent::
+operator = (const qpNodePathComponent &copy) {
   nassertv(false);
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::Destructor
+//     Function: qpNodePathComponent::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE NodeChainComponent::
-~NodeChainComponent() {
+INLINE qpNodePathComponent::
+~qpNodePathComponent() {
   nassertv(_node != (PandaNode *)NULL);
   _node->delete_component(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::get_node
+//     Function: qpNodePathComponent::get_node
 //       Access: Public
 //  Description: Returns the node referenced by this component.
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *NodeChainComponent::
+INLINE PandaNode *qpNodePathComponent::
 get_node() const {
   return _node;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::is_top_node
+//     Function: qpNodePathComponent::is_top_node
 //       Access: Public
 //  Description: Returns true if this component represents the top
 //               node in the chain.
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeChainComponent::
+INLINE bool qpNodePathComponent::
 is_top_node() const {
   CDReader cdata(_cycler);
-  return (cdata->_next == (NodeChainComponent *)NULL);
+  return (cdata->_next == (qpNodePathComponent *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::is_collapsed
+//     Function: qpNodePathComponent::is_collapsed
 //       Access: Public
 //  Description: Returns true if this component has been collapsed
 //               with another component.  In this case, the component
 //               itself is invalid, and the collapsed component should
 //               be used instead.
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeChainComponent::
+INLINE bool qpNodePathComponent::
 is_collapsed() const {
   CDReader cdata(_cycler);
   return (cdata->_length == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::get_length
+//     Function: qpNodePathComponent::get_length
 //       Access: Public
 //  Description: Returns the length of the chain.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeChainComponent::
+INLINE int qpNodePathComponent::
 get_length() const {
   CDReader cdata(_cycler);
   nassertr(!is_collapsed(), 0);
@@ -142,59 +142,59 @@ get_length() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::get_collapsed
+//     Function: qpNodePathComponent::get_collapsed
 //       Access: Public
 //  Description: If is_collapsed() returns true, this is the component
 //               that this one has been collapsed with, and should be
 //               replaced with.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeChainComponent *NodeChainComponent::
+INLINE qpNodePathComponent *qpNodePathComponent::
 get_collapsed() const {
   CDReader cdata(_cycler);
-  nassertr(is_collapsed(), (NodeChainComponent *)NULL);
+  nassertr(is_collapsed(), (qpNodePathComponent *)NULL);
   return cdata->_next;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::set_next
+//     Function: qpNodePathComponent::set_next
 //       Access: Private
 //  Description: Sets the next pointer in the chain.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeChainComponent::
-set_next(NodeChainComponent *next) {
+INLINE void qpNodePathComponent::
+set_next(qpNodePathComponent *next) {
   CDWriter cdata(_cycler);
   nassertv(!is_collapsed());
-  nassertv(next != (NodeChainComponent *)NULL);
+  nassertv(next != (qpNodePathComponent *)NULL);
   cdata->_next = next;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::set_top_node
+//     Function: qpNodePathComponent::set_top_node
 //       Access: Private
 //  Description: Severs any connection to the next pointer in the
 //               chain and makes this component a top node.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeChainComponent::
+INLINE void qpNodePathComponent::
 set_top_node() {
   CDWriter cdata(_cycler);
   nassertv(!is_collapsed());
-  cdata->_next = (NodeChainComponent *)NULL;
+  cdata->_next = (qpNodePathComponent *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::collapse_with
+//     Function: qpNodePathComponent::collapse_with
 //       Access: Private
 //  Description: Indicates that this component pointer is no longer
 //               valid, and that the indicated component should be
 //               used instead.  This is done whenever two
-//               NodeChainComponents have been collapsed together due
+//               qpNodePathComponents have been collapsed together due
 //               to an instance being removed higher up in the graph.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeChainComponent::
-collapse_with(NodeChainComponent *next) {
+INLINE void qpNodePathComponent::
+collapse_with(qpNodePathComponent *next) {
   CDWriter cdata(_cycler);
   nassertv(!is_collapsed());
-  nassertv(next != (NodeChainComponent *)NULL);
+  nassertv(next != (qpNodePathComponent *)NULL);
   cdata->_next = next;
   cdata->_length = 0;
 

@@ -1,4 +1,4 @@
-// Filename: nodeChainComponent.cxx
+// Filename: qpnodePathComponent.cxx
 // Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,54 +16,54 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "nodeChainComponent.h"
+#include "qpnodePathComponent.h"
 
-TypeHandle NodeChainComponent::_type_handle;
+TypeHandle qpNodePathComponent::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::CData::make_copy
+//     Function: qpNodePathComponent::CData::make_copy
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CycleData *NodeChainComponent::CData::
+CycleData *qpNodePathComponent::CData::
 make_copy() const {
   return new CData(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::get_next
+//     Function: qpNodePathComponent::get_next
 //       Access: Public
 //  Description: Returns the next component in the chain.
 ////////////////////////////////////////////////////////////////////
-NodeChainComponent *NodeChainComponent::
+qpNodePathComponent *qpNodePathComponent::
 get_next() const {
   CDReader cdata(_cycler);
-  nassertr(!is_collapsed(), (NodeChainComponent *)NULL);
+  nassertr(!is_collapsed(), (qpNodePathComponent *)NULL);
 
-  NodeChainComponent *next = cdata->_next;
+  qpNodePathComponent *next = cdata->_next;
 
   // If the next component has been collapsed, transparently update
   // the pointer to get the actual node, and store the new pointer,
   // before we return.  Collapsing can happen at any time to any
   // component in the chain and we have to deal with it.
-  if (next != (NodeChainComponent *)NULL && next->is_collapsed()) {
+  if (next != (qpNodePathComponent *)NULL && next->is_collapsed()) {
     next = next->uncollapse();
-    ((NodeChainComponent *)this)->set_next(next);
+    ((qpNodePathComponent *)this)->set_next(next);
   }
 
   return next;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::fix_length
+//     Function: qpNodePathComponent::fix_length
 //       Access: Public
 //  Description: Checks that the length indicated by the component is
 //               one more than the length of its predecessor.  If this
 //               is broken, fixes it and returns true indicating the
 //               component has been changed; otherwise, returns false.
 ////////////////////////////////////////////////////////////////////
-bool NodeChainComponent::
+bool qpNodePathComponent::
 fix_length() {
   int length_should_be = 1;
   if (!is_top_node()) {
@@ -79,7 +79,7 @@ fix_length() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeChainComponent::uncollapse
+//     Function: qpNodePathComponent::uncollapse
 //       Access: Public
 //  Description: Returns this component pointer if the component is
 //               not collapsed; or if it has been collapsed, returns
@@ -90,9 +90,9 @@ fix_length() {
 //               when a node is removed further up the chain that
 //               results in two instances becoming the same thing.
 ////////////////////////////////////////////////////////////////////
-NodeChainComponent *NodeChainComponent::
+qpNodePathComponent *qpNodePathComponent::
 uncollapse() {
-  NodeChainComponent *comp = this;
+  qpNodePathComponent *comp = this;
 
   while (comp->is_collapsed()) {
     comp = comp->get_collapsed();

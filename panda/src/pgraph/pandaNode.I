@@ -272,6 +272,20 @@ get_attrib(TypeHandle type) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_attrib
+//       Access: Published
+//  Description: Returns true if there is a render attribute of the
+//               indicated type defined on this node, or false if
+//               there is not.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+has_attrib(TypeHandle type) const {
+  CDReader cdata(_cycler);
+  int index = cdata->_state->find_attrib(type);
+  return (index >= 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::clear_attrib
 //       Access: Published
 //  Description: Removes the render attribute of the given type from
@@ -368,17 +382,6 @@ INLINE void PandaNode::
 clear_transform() {
   CDWriter cdata(_cycler);
   cdata->_transform = TransformState::make_identity();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::ls
-//       Access: Published
-//  Description: Lists all the nodes at and below the current path
-//               hierarchically.
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-ls() const {
-  ls(nout);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -57,7 +57,7 @@ private:
   void cull_bin_draw();
   void cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr);
 
-  void do_cull(CullHandler *cull_handler, const NodeChain &camera,
+  void do_cull(CullHandler *cull_handler, const qpNodePath &camera,
                GraphicsStateGuardian *gsg);
   void do_draw(CullResult *cull_result, GraphicsStateGuardian *gsg,
                DisplayRegion *dr);

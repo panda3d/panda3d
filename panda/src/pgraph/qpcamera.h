@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "qplensNode.h"
-#include "nodeChain.h"
+#include "qpnodePath.h"
 
 class DisplayRegion;
 
@@ -49,8 +49,8 @@ PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
 
-  INLINE void set_scene(const NodeChain &scene);
-  INLINE const NodeChain &get_scene() const;
+  INLINE void set_scene(const qpNodePath &scene);
+  INLINE const qpNodePath &get_scene() const;
 
   INLINE int get_num_display_regions() const;
   INLINE DisplayRegion *get_display_region(int n) const;
@@ -60,7 +60,7 @@ private:
   void remove_display_region(DisplayRegion *display_region);
 
   bool _active;
-  NodeChain _scene;
+  qpNodePath _scene;
 
   typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;

@@ -18,7 +18,7 @@
 
 #include "pandaNode.h"
 #include "config_pgraph.h"
-#include "nodeChainComponent.h"
+#include "qpnodePathComponent.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "indent.h"
@@ -369,7 +369,7 @@ add_child(PandaNode *child_node, int sort) {
   cdata->_down.insert(DownConnection(child_node, sort));
   cdata_child->_up.insert(UpConnection(this));
 
-  // We also have to adjust any NodeChainComponents the child might
+  // We also have to adjust any qpNodePathComponents the child might
   // have that reference the child as a top node.  Any other
   // components we can leave alone, because we are making a new
   // instance of the child.
@@ -402,24 +402,24 @@ remove_child(int n) {
   int num_erased = cdata_child->_up.erase(UpConnection(this));
   nassertv(num_erased == 1);
 
-  // Now sever any NodeChainComponents on the child that reference
+  // Now sever any qpNodePathComponents on the child that reference
   // this node.  If we have multiple of these, we have to collapse
   // them together.
-  NodeChainComponent *collapsed = (NodeChainComponent *)NULL;
+  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
   Chains::iterator ci;
   ci = cdata_child->_chains.begin();
   while (ci != cdata_child->_chains.end()) {
     Chains::iterator cnext = ci;
     ++cnext;
     if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-      if (collapsed == (NodeChainComponent *)NULL) {
+      if (collapsed == (qpNodePathComponent *)NULL) {
         (*ci)->set_top_node();
         collapsed = (*ci);
       } else {
         // This is a different component that used to reference a
         // different instance, but now it's all just the same topnode.
         // We have to collapse this and the previous one together.
-        // However, there might be some NodeChains out there that
+        // However, there might be some qpNodePaths out there that
         // still keep a pointer to this one, so we can't remove it
         // altogether.
         (*ci)->collapse_with(collapsed);
@@ -453,17 +453,17 @@ remove_child(PandaNode *child_node) {
     return false;
   }
 
-  // Now sever any NodeChainComponents on the child that reference
+  // Now sever any qpNodePathComponents on the child that reference
   // this node.  If we have multiple of these, we have to collapse
   // them together (see above).
-  NodeChainComponent *collapsed = (NodeChainComponent *)NULL;
+  qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
   Chains::iterator ci;
   ci = cdata_child->_chains.begin();
   while (ci != cdata_child->_chains.end()) {
     Chains::iterator cnext = ci;
     ++cnext;
     if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-      if (collapsed == (NodeChainComponent *)NULL) {
+      if (collapsed == (qpNodePathComponent *)NULL) {
         (*ci)->set_top_node();
         collapsed = (*ci);
       } else {
@@ -506,17 +506,17 @@ remove_all_children() {
     CDWriter cdata_child(child_node->_cycler);
     cdata_child->_up.erase(UpConnection(this));
 
-    // Now sever any NodeChainComponents on the child that reference
+    // Now sever any qpNodePathComponents on the child that reference
     // this node.  If we have multiple of these, we have to collapse
     // them together (see above).
-    NodeChainComponent *collapsed = (NodeChainComponent *)NULL;
+    qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
     Chains::iterator ci;
     ci = cdata_child->_chains.begin();
     while (ci != cdata_child->_chains.end()) {
       Chains::iterator cnext = ci;
       ++cnext;
       if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-        if (collapsed == (NodeChainComponent *)NULL) {
+        if (collapsed == (qpNodePathComponent *)NULL) {
           (*ci)->set_top_node();
           collapsed = (*ci);
         } else {
@@ -675,19 +675,19 @@ recompute_internal_bound() {
 //     Function: PandaNode::attach
 //       Access: Private, Static
 //  Description: Creates a new parent-child relationship, and returns
-//               the new NodeChainComponent.  If the child was already
+//               the new qpNodePathComponent.  If the child was already
 //               attached to the indicated parent, repositions it and
-//               returns the original NodeChainComponent.
+//               returns the original qpNodePathComponent.
 ////////////////////////////////////////////////////////////////////
-PT(NodeChainComponent) PandaNode::
-attach(NodeChainComponent *parent, PandaNode *child_node, int sort) {
-  nassertr(parent != (NodeChainComponent *)NULL, (NodeChainComponent *)NULL);
+PT(qpNodePathComponent) PandaNode::
+attach(qpNodePathComponent *parent, PandaNode *child_node, int sort) {
+  nassertr(parent != (qpNodePathComponent *)NULL, (qpNodePathComponent *)NULL);
 
   // See if the child was already attached to the parent.  If it was,
-  // we'll use that same NodeChainComponent.
-  PT(NodeChainComponent) child = get_component(parent, child_node);
+  // we'll use that same qpNodePathComponent.
+  PT(qpNodePathComponent) child = get_component(parent, child_node);
 
-  if (child == (NodeChainComponent *)NULL) {
+  if (child == (qpNodePathComponent *)NULL) {
     // The child was not already attached to the parent, so get a new
     // component.
     child = get_top_component(child_node);
@@ -703,13 +703,13 @@ attach(NodeChainComponent *parent, PandaNode *child_node, int sort) {
 //  Description: Breaks a parent-child relationship.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-detach(NodeChainComponent *child) {
-  nassertv(child != (NodeChainComponent *)NULL);
+detach(qpNodePathComponent *child) {
+  nassertv(child != (qpNodePathComponent *)NULL);
   nassertv(!child->is_top_node());
   PandaNode *child_node = child->get_node();
   PandaNode *parent_node = child->get_next()->get_node();
 
-  // Break the NodeChainComponent connection.
+  // Break the qpNodePathComponent connection.
   child->set_top_node();
 
   CDWriter cdata_child(child_node->_cycler);
@@ -762,15 +762,15 @@ detach(NodeChainComponent *child) {
 //  Description: Switches a node from one parent to another.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-reparent(NodeChainComponent *new_parent, NodeChainComponent *child, int sort) {
-  nassertv(new_parent != (NodeChainComponent *)NULL);
-  nassertv(child != (NodeChainComponent *)NULL);
+reparent(qpNodePathComponent *new_parent, qpNodePathComponent *child, int sort) {
+  nassertv(new_parent != (qpNodePathComponent *)NULL);
+  nassertv(child != (qpNodePathComponent *)NULL);
 
   if (!child->is_top_node()) {
     detach(child);
   }
 
-  // Adjust the NodeChainComponents.
+  // Adjust the qpNodePathComponents.
   child->set_next(new_parent);
 
   PandaNode *child_node = child->get_node();
@@ -790,19 +790,19 @@ reparent(NodeChainComponent *new_parent, NodeChainComponent *child, int sort) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_component
 //       Access: Private, Static
-//  Description: Returns the NodeChainComponent based on the indicated
+//  Description: Returns the qpNodePathComponent based on the indicated
 //               child of the given parent, or NULL if there is no
 //               such parent-child relationship.
 ////////////////////////////////////////////////////////////////////
-PT(NodeChainComponent) PandaNode::
-get_component(NodeChainComponent *parent, PandaNode *child_node) {
-  nassertr(parent != (NodeChainComponent *)NULL, (NodeChainComponent *)NULL);
+PT(qpNodePathComponent) PandaNode::
+get_component(qpNodePathComponent *parent, PandaNode *child_node) {
+  nassertr(parent != (qpNodePathComponent *)NULL, (qpNodePathComponent *)NULL);
   PandaNode *parent_node = parent->get_node();
 
   {
     CDReader cdata_child(child_node->_cycler);
 
-    // First, walk through the list of NodeChainComponents we already
+    // First, walk through the list of qpNodePathComponents we already
     // have on the child, looking for one that already exists,
     // referencing the indicated parent component.
     Chains::const_iterator ci;
@@ -816,13 +816,13 @@ get_component(NodeChainComponent *parent, PandaNode *child_node) {
     }
   }
     
-  // We don't already have a NodeChainComponent referring to this
+  // We don't already have a qpNodePathComponent referring to this
   // parent-child relationship.  Are they actually related?
   int child_index = child_node->find_parent(parent_node);
   if (child_index >= 0) {
     // They are.  Create and return a new one.
-    PT(NodeChainComponent) child = 
-      new NodeChainComponent(child_node, parent);
+    PT(qpNodePathComponent) child = 
+      new qpNodePathComponent(child_node, parent);
     CDWriter cdata_child(child_node->_cycler);
     cdata_child->_chains.insert(child);
     return child;
@@ -835,18 +835,18 @@ get_component(NodeChainComponent *parent, PandaNode *child_node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_top_component
 //       Access: Private, Static
-//  Description: Returns a NodeChainComponent referencing the
+//  Description: Returns a qpNodePathComponent referencing the
 //               indicated node as a singleton.  It is invalid to call
 //               this for a node that has parents, unless you are
 //               about to create a new instance (and immediately
-//               reconnect the NodeChainComponent elsewhere).
+//               reconnect the qpNodePathComponent elsewhere).
 ////////////////////////////////////////////////////////////////////
-PT(NodeChainComponent) PandaNode::
+PT(qpNodePathComponent) PandaNode::
 get_top_component(PandaNode *child_node) {
   {
     CDReader cdata_child(child_node->_cycler);
 
-    // Walk through the list of NodeChainComponents we already have on
+    // Walk through the list of qpNodePathComponents we already have on
     // the child, looking for one that already exists as a top node.
     Chains::const_iterator ci;
     for (ci = cdata_child->_chains.begin(); 
@@ -859,10 +859,10 @@ get_top_component(PandaNode *child_node) {
     }
   }
 
-  // We don't already have such a NodeChainComponent; create and
+  // We don't already have such a qpNodePathComponent; create and
   // return a new one.
-  PT(NodeChainComponent) child = 
-    new NodeChainComponent(child_node, (NodeChainComponent *)NULL);
+  PT(qpNodePathComponent) child = 
+    new qpNodePathComponent(child_node, (qpNodePathComponent *)NULL);
   CDWriter cdata_child(child_node->_cycler);
   cdata_child->_chains.insert(child);
 
@@ -872,13 +872,13 @@ get_top_component(PandaNode *child_node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_generic_component
 //       Access: Private
-//  Description: Returns a NodeChainComponent referencing this node as
+//  Description: Returns a qpNodePathComponent referencing this node as
 //               a chain from the root.  It is only valid to call this
 //               if there is an unambiguous path from the root;
 //               otherwise, a warning will be issued and one path will
 //               be chosen arbitrarily.
 ////////////////////////////////////////////////////////////////////
-PT(NodeChainComponent) PandaNode::
+PT(qpNodePathComponent) PandaNode::
 get_generic_component() {
   int num_parents = get_num_parents();
   if (num_parents == 0) {
@@ -890,7 +890,7 @@ get_generic_component() {
         << *this << " has " << num_parents
         << " parents; choosing arbitrary path to root.\n";
     }
-    PT(NodeChainComponent) parent = get_parent(0)->get_generic_component();
+    PT(qpNodePathComponent) parent = get_parent(0)->get_generic_component();
     return get_component(parent, this);
   }
 }
@@ -898,12 +898,12 @@ get_generic_component() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::delete_component
 //       Access: Private
-//  Description: Removes a NodeChainComponent from the set prior to
+//  Description: Removes a qpNodePathComponent from the set prior to
 //               its deletion.  This should only be called by the
-//               NodeChainComponent destructor.
+//               qpNodePathComponent destructor.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-delete_component(NodeChainComponent *component) {
+delete_component(qpNodePathComponent *component) {
   // We have to remove the component from all of the pipeline stages,
   // not just the current one.
   int max_num_erased = 0;
@@ -924,7 +924,7 @@ delete_component(NodeChainComponent *component) {
 //     Function: PandaNode::fix_chain_lengths
 //       Access: Private
 //  Description: Recursively fixes the _length member of each
-//               NodeChainComponent at this level and below, after an
+//               qpNodePathComponent at this level and below, after an
 //               add or delete child operation that might have messed
 //               these up.
 ////////////////////////////////////////////////////////////////////

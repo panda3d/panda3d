@@ -1,4 +1,4 @@
-// Filename: nodeChainComponent.h
+// Filename: qpnodePathComponent.h
 // Created by:  drose (25Feb02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef NODECHAINCOMPONENT_H
-#define NODECHAINCOMPONENT_H
+#ifndef qpNODEPATHCOMPONENT_H
+#define qpNODEPATHCOMPONENT_H
 
 #include "pandabase.h"
 
@@ -29,45 +29,45 @@
 #include "cycleDataWriter.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : NodeChainComponent
-// Description : This is one component of a NodeChain.  These are
+//       Class : qpNodePathComponent
+// Description : This is one component of a NodePath.  These are
 //               stored on each PandaNode, as many as one for each of
 //               the possible instances of the node (but they only
 //               exist when they are requested, to minimize memory
-//               waste).  A NodeChain represents a singly-linked list
+//               waste).  A NodePath represents a singly-linked list
 //               of these from an arbitrary component in the graph to
 //               the root.
 //
-//               This whole NodeChain system is used to disambiguate
+//               This whole NodePath system is used to disambiguate
 //               instances in the scene graph, and the
-//               NodeChainComponents are stored in the nodes
-//               themselves to allow the nodes to keep these up to
-//               date as the scene graph is manipulated.
+//               NodePathComponents are stored in the nodes themselves
+//               to allow the nodes to keep these up to date as the
+//               scene graph is manipulated.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodeChainComponent : public ReferenceCount {
+class EXPCL_PANDA qpNodePathComponent : public ReferenceCount {
 private:
-  INLINE NodeChainComponent(PandaNode *node, NodeChainComponent *next = NULL);
-  INLINE NodeChainComponent(const NodeChainComponent &copy);
-  INLINE void operator = (const NodeChainComponent &copy);
+  INLINE qpNodePathComponent(PandaNode *node, qpNodePathComponent *next = NULL);
+  INLINE qpNodePathComponent(const qpNodePathComponent &copy);
+  INLINE void operator = (const qpNodePathComponent &copy);
 
 public:
-  INLINE ~NodeChainComponent();
+  INLINE ~qpNodePathComponent();
   
   INLINE PandaNode *get_node() const;
   INLINE bool is_top_node() const;
   INLINE bool is_collapsed() const;
   
-  NodeChainComponent *get_next() const;
+  qpNodePathComponent *get_next() const;
   INLINE int get_length() const;
-  INLINE NodeChainComponent *get_collapsed() const;
+  INLINE qpNodePathComponent *get_collapsed() const;
 
   bool fix_length();
-  NodeChainComponent *uncollapse();
+  qpNodePathComponent *uncollapse();
   
 private:
-  INLINE void set_next(NodeChainComponent *next);
+  INLINE void set_next(qpNodePathComponent *next);
   INLINE void set_top_node();
-  INLINE void collapse_with(NodeChainComponent *next);
+  INLINE void collapse_with(qpNodePathComponent *next);
 
   PT(PandaNode) _node;
 
@@ -78,7 +78,7 @@ private:
     CData(const CData &copy);
     virtual CycleData *make_copy() const;
 
-    PT(NodeChainComponent) _next;
+    PT(qpNodePathComponent) _next;
     int _length;
   };
 
@@ -92,7 +92,7 @@ public:
   }
   static void init_type() {
     ReferenceCount::init_type();
-    register_type(_type_handle, "NodeChainComponent",
+    register_type(_type_handle, "qpNodePathComponent",
                   ReferenceCount::get_class_type());
   }
   
@@ -101,6 +101,6 @@ private:
   friend class PandaNode;
 };
 
-#include "nodeChainComponent.I"
+#include "qpnodePathComponent.I"
 
 #endif

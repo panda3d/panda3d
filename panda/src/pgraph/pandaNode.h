@@ -37,7 +37,7 @@
 #include "pointerTo.h"
 #include "notify.h"
 
-class NodeChainComponent;
+class qpNodePathComponent;
 class CullTraverserData;
 
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +98,7 @@ PUBLISHED:
 
   INLINE void set_attrib(const RenderAttrib *attrib, int override = 0);
   INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
+  INLINE bool has_attrib(TypeHandle type) const;
   INLINE void clear_attrib(TypeHandle type);
 
   INLINE void set_state(const RenderState *state);
@@ -111,8 +112,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
-  INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level = 0) const;
+  INLINE void ls(ostream &out, int indent_level) const;
 
   // A node has two bounding volumes: the BoundedObject it inherits
   // from is the "external" bound and represnts the node and all of
@@ -149,18 +149,18 @@ protected:
   BoundedObject _internal_bound;
 
 private:
-  // parent-child manipulation for NodeChain support.  Don't try to
+  // parent-child manipulation for qpNodePath support.  Don't try to
   // call these directly.
-  static PT(NodeChainComponent) attach(NodeChainComponent *parent, 
+  static PT(qpNodePathComponent) attach(qpNodePathComponent *parent, 
                                        PandaNode *child, int sort);
-  static void detach(NodeChainComponent *child);
-  static void reparent(NodeChainComponent *new_parent,
-                       NodeChainComponent *child, int sort);
-  static PT(NodeChainComponent) get_component(NodeChainComponent *parent,
+  static void detach(qpNodePathComponent *child);
+  static void reparent(qpNodePathComponent *new_parent,
+                       qpNodePathComponent *child, int sort);
+  static PT(qpNodePathComponent) get_component(qpNodePathComponent *parent,
                                               PandaNode *child);
-  static PT(NodeChainComponent) get_top_component(PandaNode *child);
-  PT(NodeChainComponent) get_generic_component();
-  void delete_component(NodeChainComponent *component);
+  static PT(qpNodePathComponent) get_top_component(PandaNode *child);
+  PT(qpNodePathComponent) get_generic_component();
+  void delete_component(qpNodePathComponent *component);
   void fix_chain_lengths();
   void r_list_descendants(ostream &out, int indent_level) const;
 
@@ -194,12 +194,12 @@ private:
   };
   typedef ov_set<UpConnection> Up;
 
-  // We also maintain a set of NodeChainComponents in the node.  This
+  // We also maintain a set of qpNodePathComponents in the node.  This
   // represents the set of instances of this node that we have
-  // requested a NodeChain for.  We don't keep reference counts; when
-  // each NodeChainComponent destructs, it removes itself from this
+  // requested a qpNodePath for.  We don't keep reference counts; when
+  // each qpNodePathComponent destructs, it removes itself from this
   // set.
-  typedef pset<NodeChainComponent *> Chains;
+  typedef pset<qpNodePathComponent *> Chains;
   
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -271,8 +271,8 @@ private:
   static TypeHandle _type_handle;
 
   friend class PandaNode::Children;
-  friend class NodeChain;
-  friend class NodeChainComponent;
+  friend class qpNodePath;
+  friend class qpNodePathComponent;
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {

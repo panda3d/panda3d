@@ -129,16 +129,51 @@ has_components() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_pos
+//       Access: Published
+//  Description: Returns true if the transform's pos component can be
+//               extracted out separately.  This is generally always
+//               true.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_pos() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_hpr
+//       Access: Published
+//  Description: Returns true if the transform's rotation component
+//               can be extracted out separately and described as a
+//               set of Euler angles.  This is generally true only
+//               when has_components() is true.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_hpr() const {
+  return has_components();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_scale
+//       Access: Published
+//  Description: Returns true if the transform's scale component
+//               can be extracted out separately.  This is generally
+//               true only when has_components() is true.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_scale() const {
+  return has_components();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::get_pos
 //       Access: Published
 //  Description: Returns the pos component of the transform.  It is an
-//               error to call this if has_components() returned
-//               false.
+//               error to call this if has_pos() returned false.
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase3f &TransformState::
 get_pos() const {
   check_components();
-  nassertr(has_components(), _pos);
   return _pos;
 }
 
@@ -152,7 +187,7 @@ get_pos() const {
 INLINE const LVecBase3f &TransformState::
 get_hpr() const {
   check_components();
-  nassertr(has_components(), _hpr);
+  nassertr(has_hpr(), _hpr);
   return _hpr;
 }
 
@@ -166,7 +201,7 @@ get_hpr() const {
 INLINE const LVecBase3f &TransformState::
 get_scale() const {
   check_components();
-  nassertr(has_components(), _scale);
+  nassertr(has_scale(), _scale);
   return _scale;
 }
 

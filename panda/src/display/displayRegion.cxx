@@ -98,7 +98,7 @@ operator = (const DisplayRegion&) {
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 ~DisplayRegion() {
-  set_qpcamera(NodeChain());
+  set_qpcamera(qpNodePath());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,12 +193,12 @@ set_camera(Camera *camera) {
 //               was already associated with a different
 //               DisplayRegion, that association is removed.
 //
-//               The camera is actually set via a NodeChain, which
+//               The camera is actually set via a qpNodePath, which
 //               clarifies which instance of the camera (if there
 //               happen to be multiple instances) we should use.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-set_qpcamera(const NodeChain &camera) {
+set_qpcamera(const qpNodePath &camera) {
   qpCamera *camera_node = (qpCamera *)NULL;
   if (!camera.is_empty()) {
     DCAST_INTO_V(camera_node, camera.node());

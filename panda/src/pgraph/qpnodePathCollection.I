@@ -1,0 +1,38 @@
+// Filename: qpnodePathCollection.I
+// Created by:  drose (06Mar02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathCollection::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE qpNodePathCollection::
+~qpNodePathCollection() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathCollection::ls
+//       Access: Published
+//  Description: Lists all the nodes at and below each node in the
+//               collection hierarchically.
+////////////////////////////////////////////////////////////////////
+INLINE void qpNodePathCollection::
+ls() const {
+  ls(nout);
+}

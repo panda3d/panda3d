@@ -37,7 +37,7 @@ BillboardAttrib() {
 INLINE CPT(RenderAttrib) BillboardAttrib::
 make_axis() {
   return make(LVector3f::up(), false, true, 
-              0.0f, NodeChain(), LPoint3f(0.0f, 0.0f, 0.0f));
+              0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ make_axis() {
 INLINE CPT(RenderAttrib) BillboardAttrib::
 make_point_eye() {
   return make(LVector3f::up(), true, false,
-              0.0f, NodeChain(), LPoint3f(0.0f, 0.0f, 0.0f));
+              0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ make_point_eye() {
 INLINE CPT(RenderAttrib) BillboardAttrib::
 make_point_world() {
   return make(LVector3f::up(), false, false,
-              0.0f, NodeChain(), LPoint3f(0.0f, 0.0f, 0.0f));
+              0.0f, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ make_point_world() {
 //               particularly useful and isn't normally created or
 //               stored in the graph; it might be implicitly
 //               discovered as the result of a
-//               NodeChain::get_rel_state().
+//               qpNodePath::get_rel_state().
 ////////////////////////////////////////////////////////////////////
 INLINE bool BillboardAttrib::
 is_off() const {
@@ -135,7 +135,7 @@ get_offset() const {
 //               will rotate towards the current camera node, wherever
 //               that might be.
 ////////////////////////////////////////////////////////////////////
-INLINE const NodeChain &BillboardAttrib::
+INLINE const qpNodePath &BillboardAttrib::
 get_look_at() const {
   return _look_at;
 }
