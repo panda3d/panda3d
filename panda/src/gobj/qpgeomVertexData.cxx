@@ -327,19 +327,62 @@ convert_to(const qpGeomVertexFormat *new_format) const {
       int new_i = new_format->get_array_with(data_type->get_name());
       if (new_i >= 0 && done_arrays.count(new_i) == 0) {
         // The data type exists in the new format; we have to copy it.
-        PTA_uchar new_array_data = 
-          new_data->modify_array(new_i)->modify_data();
-
         const qpGeomVertexArrayFormat *new_array_format = 
           new_format->get_array(new_i);
         const qpGeomVertexDataType *new_data_type = 
           new_array_format->get_data_type(data_type->get_name());
 
-        new_data_type->copy_records
-          (new_array_data + new_data_type->get_start(), 
-           new_array_format->get_stride(),
-           array_data + data_type->get_start(), array_format->get_stride(),
-           data_type, num_vertices);
+        if (new_data_type->is_bytewise_equivalent(*data_type)) {
+          // We can do a quick bytewise copy.
+          PTA_uchar new_array_data = 
+            new_data->modify_array(new_i)->modify_data();
+
+          bytewise_copy(new_array_data + new_data_type->get_start(), 
+                        new_array_format->get_stride(),
+                        array_data + data_type->get_start(), array_format->get_stride(),
+                        data_type, num_vertices);
+
+        } else if (new_data_type->is_packed_argb() && 
+                   data_type->is_uint8_rgba()) {
+          // A common special case: OpenGL color to DirectX color.
+          PTA_uchar new_array_data = 
+            new_data->modify_array(new_i)->modify_data();
+
+          uint8_rgba_to_packed_argb
+            (new_array_data + new_data_type->get_start(), 
+             new_array_format->get_stride(),
+             array_data + data_type->get_start(), array_format->get_stride(),
+             num_vertices);
+
+        } else if (new_data_type->is_uint8_rgba() && 
+                   data_type->is_packed_argb()) {
+          // Another common special case: DirectX color to OpenGL
+          // color.
+          PTA_uchar new_array_data = 
+            new_data->modify_array(new_i)->modify_data();
+
+          packed_argb_to_uint8_rgba
+            (new_array_data + new_data_type->get_start(), 
+             new_array_format->get_stride(),
+             array_data + data_type->get_start(), array_format->get_stride(),
+             num_vertices);
+
+        } else {
+          // A generic copy.
+          if (gobj_cat.is_debug()) {
+            gobj_cat.debug()
+              << "generic copy " << *new_data_type << " from " 
+              << *data_type << "\n";
+          }
+          qpGeomVertexReader from(this);
+          from.set_data_type(i, data_type);
+          qpGeomVertexWriter to(new_data);
+          to.set_data_type(new_i, new_data_type);
+
+          while (!from.is_at_end()) {
+            to.set_data4f(from.get_data4f());
+          }
+        }
       }
     }
   }
@@ -628,6 +671,110 @@ get_array_info(const InternalName *name,
     return true;
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::bytewise_copy
+//       Access: Private, Static
+//  Description: Quickly copies data without the need to convert it.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+bytewise_copy(unsigned char *to, int to_stride,
+              const unsigned char *from, int from_stride,
+              const qpGeomVertexDataType *from_type,
+              int num_records) {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "bytewise_copy(" << (void *)to << ", " << to_stride
+      << ", " << (const void *)from << ", " << from_stride
+      << ", " << *from_type << ", " << num_records << ")\n";
+  }
+  if (to_stride == from_type->get_total_bytes() && 
+      from_stride == from_type->get_total_bytes()) {
+    // Fantastic!  It's just a linear array of this one data type.
+    // Copy the whole thing all at once.
+    memcpy(to, from, num_records * from_type->get_total_bytes());
+
+  } else {
+    // Ok, it's interleaved in with other data.  Copy them one record
+    // at a time.
+    while (num_records > 0) {
+      memcpy(to, from, from_type->get_total_bytes());
+      to += to_stride;
+      from += from_stride;
+      num_records--;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::packed_argb_to_uint8_rgba
+//       Access: Private, Static
+//  Description: Quickly converts DirectX-style color to OpenGL-style
+//               color.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+packed_argb_to_uint8_rgba(unsigned char *to, int to_stride,
+                          const unsigned char *from, int from_stride,
+                          int num_records) {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "packed_argb_to_uint8_rgba(" << (void *)to << ", " << to_stride
+      << ", " << (const void *)from << ", " << from_stride
+      << ", " << num_records << ")\n";
+  }
+  typedef union {
+    unsigned char _b[4];
+    PN_uint32 _i;
+  } packed_8888;
+
+  while (num_records > 0) {
+    packed_8888 dword;
+    dword._i = *(const PN_uint32 *)from;
+    to[0] = dword._b[1];
+    to[1] = dword._b[2];
+    to[2] = dword._b[3];
+    to[3] = dword._b[0];
+
+    to += to_stride;
+    from += from_stride;
+    num_records--;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::uint8_rgba_to_packed_argb
+//       Access: Private, Static
+//  Description: Quickly converts OpenGL-style color to DirectX-style
+//               color.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
+                          const unsigned char *from, int from_stride,
+                          int num_records) {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "uint8_rgba_to_packed_argb(" << (void *)to << ", " << to_stride
+      << ", " << (const void *)from << ", " << from_stride
+      << ", " << num_records << ")\n";
+  }
+  typedef union {
+    unsigned char _b[4];
+    PN_uint32 _i;
+  } packed_8888;
+
+  while (num_records > 0) {
+    packed_8888 dword;
+    dword._b[0] = from[3];
+    dword._b[1] = from[0];
+    dword._b[2] = from[1];
+    dword._b[3] = from[2];
+    *(PN_uint32 *)to = dword._i;
+
+    to += to_stride;
+    from += from_stride;
+    num_records--;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -165,6 +165,50 @@ overlaps_with(int start_byte, int num_bytes) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexDataType::is_bytewise_equivalent
+//       Access: Published
+//  Description: Returns true if the data store of this data type is
+//               exactly the same as that of the other, irrespective
+//               of name or start position within the record.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexDataType::
+is_bytewise_equivalent(const qpGeomVertexDataType &other) const {
+  // The _contents are relevant, because they specify such things as
+  // the difference between C_rgba and C_argb.
+  return (_num_components == other._num_components &&
+          _numeric_type == other._numeric_type &&
+          _contents == other._contents);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexDataType::is_packed_argb
+//       Access: Public
+//  Description: Returns true if this data type is the standard
+//               DirectX representation of 4-component color: C_argb,
+//               in NT_packed_8888, with 1 component (4 values).
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexDataType::
+is_packed_argb() const {
+  return (_num_components == 1 &&
+          _numeric_type == NT_packed_8888 &&
+          _contents == C_argb);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexDataType::is_uint8_rgba
+//       Access: Public
+//  Description: Returns true if this data type is the standard
+//               OpenGL representation of 4-component color: C_rgba,
+//               in NT_uint8, with 4 components.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexDataType::
+is_uint8_rgba() const {
+  return (_num_components == 4 &&
+          _numeric_type == NT_uint8 &&
+          _contents == C_rgba);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexDataType::compare_to
 //       Access: Public
 //  Description: This is used to unquify data types, and hence

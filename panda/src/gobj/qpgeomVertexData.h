@@ -124,6 +124,20 @@ public:
                       int &start, int &stride) const;
 
 private:
+  static void bytewise_copy(unsigned char *to, int to_stride,
+                            const unsigned char *from, int from_stride,
+                            const qpGeomVertexDataType *from_type,
+                            int num_records);
+  static void
+  packed_argb_to_uint8_rgba(unsigned char *to, int to_stride,
+                            const unsigned char *from, int from_stride,
+                            int num_records);
+  static void
+  uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
+                            const unsigned char *from, int from_stride,
+                            int num_records);
+  
+private:
   string _name;
   CPT(qpGeomVertexFormat) _format;
   qpGeomUsageHint::UsageHint _usage_hint;

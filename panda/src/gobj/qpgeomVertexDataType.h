@@ -37,7 +37,7 @@ PUBLISHED:
   enum NumericType {
     NT_uint8,        // An integer 0..255
     NT_uint16,       // An integer 0..65535
-    NT_packed_8888,  // DirectX style, four byte values packed in a dword
+    NT_packed_8888,  // DirectX style, four byte values packed in a uint32
     NT_float32,      // A floating-point number
   };
 
@@ -69,41 +69,18 @@ PUBLISHED:
   INLINE int get_total_bytes() const;
 
   INLINE bool overlaps_with(int start_byte, int num_bytes) const;
+  INLINE bool is_bytewise_equivalent(const qpGeomVertexDataType &other) const;
 
   void output(ostream &out) const;
 
 public:
+  INLINE bool is_packed_argb() const;
+  INLINE bool is_uint8_rgba() const;
+
   INLINE int compare_to(const qpGeomVertexDataType &other) const;
   INLINE bool operator == (const qpGeomVertexDataType &other) const;
   INLINE bool operator != (const qpGeomVertexDataType &other) const;
   INLINE bool operator < (const qpGeomVertexDataType &other) const;
-
-  void copy_records(unsigned char *to, int to_stride,
-                    const unsigned char *from, int from_stride,
-                    const qpGeomVertexDataType *from_type,
-                    int num_records) const;
-
-private:
-  void copy_no_convert(unsigned char *to, int to_stride,
-                       const unsigned char *from, int from_stride,
-                       const qpGeomVertexDataType *from_type,
-                       int num_records) const;
-  void copy_argb_to_uint8(unsigned char *to, int to_stride,
-                          const unsigned char *from, int from_stride,
-                          const qpGeomVertexDataType *from_type,
-                          int num_records) const;
-  void copy_uint8_to_argb(unsigned char *to, int to_stride,
-                          const unsigned char *from, int from_stride,
-                          const qpGeomVertexDataType *from_type,
-                          int num_records) const;
-
-  void copy_generic(unsigned char *to, int to_stride,
-                    const unsigned char *from, int from_stride,
-                    const qpGeomVertexDataType *from_type,
-                    int num_records) const;
-
-  float get_value(const unsigned char *data, int n) const;
-  void set_value(unsigned char *data, int n, float value) const;
 
 private:
   CPT(InternalName) _name;
