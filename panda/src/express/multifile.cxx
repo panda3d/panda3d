@@ -19,8 +19,10 @@
 #include <pandabase.h>
 #include "multifile.h"
 #include "config_express.h"
-#include <algorithm>
 #include "error_utils.h"
+
+#include <algorithm>
+#include <errno.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines
