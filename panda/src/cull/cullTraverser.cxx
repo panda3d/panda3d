@@ -8,6 +8,7 @@
 #include "geomBinAttribute.h"
 #include "cullStateSubtree.h"
 #include "geomBinNormal.h"
+#include "geomBinFixed.h"
 #include "directRenderTransition.h"
 #include "config_cull.h"
 
@@ -42,7 +43,15 @@ CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
 	      const ArcChain &arc_chain) :
   RenderTraverser(gsg, graph_type, arc_chain)
 {
-  _default_bin = new GeomBinNormal("default", this);
+  GeomBinNormal *default_bin = new GeomBinNormal("default");
+  GeomBinFixed *fixed = new GeomBinFixed("fixed");
+  fixed->set_sort(30);
+
+  default_bin->set_traverser(this);
+  fixed->set_traverser(this);
+
+  _default_bin = default_bin;
+
   _nested_count = 0;
 }
 
@@ -56,12 +65,14 @@ CullTraverser::
   // We should detach each of our associated bins when we destruct.
   // We can't just run a for loop, because this is a self-modifying
   // operation.
-  while (!_bins.empty()) {
-    GeomBin *bin = (*_bins.begin());
+  while (!_toplevel_bins.empty()) {
+    GeomBin *bin = (*_toplevel_bins.begin()).second;
     nassertv(bin != (GeomBin *)NULL);
     nassertv(bin->get_traverser() == this);
-    bin->detach();
+    bin->clear_traverser();
   }
+
+  nassertv(_sub_bins.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,7 +97,8 @@ traverse(Node *root,
       << *root << "\n";
   }
 
-  nassertv(!_bins.empty());
+  nassertv(!_toplevel_bins.empty());
+  nassertv(!_sub_bins.empty());
 
   bool is_initial = (_nested_count == 0);
   if (is_initial) {
@@ -184,9 +196,9 @@ write(ostream &out, int indent_level) const {
   }
   */
 
-  Bins::const_iterator bi;
-  for (bi = _bins.begin(); bi != _bins.end(); ++bi) {
-    (*bi)->write(out, indent_level);
+  ToplevelBins::const_iterator tbi;
+  for (tbi = _toplevel_bins.begin(); tbi != _toplevel_bins.end(); ++tbi) {
+    (*tbi).second->write(out, indent_level);
   }
   _lookup.write(out, indent_level);
 }
@@ -215,9 +227,9 @@ draw() {
       << " nonempty states of " << _states.size() << " total.\n";
   }
 
-  Bins::iterator bi;
-  for (bi = _bins.begin(); bi != _bins.end(); ++bi) {
-    (*bi)->clear_current_states();
+  SubBins::const_iterator sbi;
+  for (sbi = _sub_bins.begin(); sbi != _sub_bins.end(); ++sbi) {
+    (*sbi).second->clear_current_states();
   }
 
   States::iterator si;
@@ -233,7 +245,7 @@ draw() {
       const GeomBinAttribute *bin_attrib;
       if (get_attribute_into(bin_attrib, cs->get_attributes(),
 			     GeomBinTransition::get_class_type())) {
-	requested_bin = bin_attrib->get_bin();
+	requested_bin = get_bin(bin_attrib->get_bin());
 	draw_order = bin_attrib->get_draw_order();
       }
 
@@ -244,10 +256,10 @@ draw() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     if (cull_cat.is_debug()) {
       cull_cat.debug()
-	<< "Drawing " << _bins.size() << " bins.\n";
+	<< "Drawing " << _sub_bins.size() << " bins.\n";
     }
-    for (bi = _bins.begin(); bi != _bins.end(); ++bi) {
-      (*bi)->draw(this);
+    for (sbi = _sub_bins.begin(); sbi != _sub_bins.end(); ++sbi) {
+      (*sbi).second->draw(this);
     }
   }
 }
@@ -394,7 +406,6 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   bool is_geom = node->is_of_type(GeomNode::get_class_type());
   bool node_has_sub_render = node->has_sub_render();
   int arc_num_sub_render = arc->get_num_sub_render_trans();
-  bool has_direct_render = arc->has_transition(DirectRenderTransition::get_class_type());
   bool has_decal = arc->has_transition(DecalTransition::get_class_type());
 
   if (has_decal) {
@@ -402,6 +413,9 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     // to be a sub_render transition.
     arc_num_sub_render--;
   }
+
+  bool has_direct_render = 
+    arc->has_transition(DirectRenderTransition::get_class_type());
 
 #ifndef NDEBUG
   if (support_decals != SD_on) {
@@ -532,4 +546,108 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 #endif
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::attach_toplevel_bin
+//       Access: Private
+//  Description: This is intended to be called only by
+//               GeomBin::attach().  It stores the bin in the
+//               appropriate structures within the traverser, as a
+//               toplevel bin, e.g. a bin that may be referenced by
+//               name from outside the traverser, or one that geometry
+//               may be explicitly assigned to by name.
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+attach_toplevel_bin(GeomBin *bin) {
+  if (cull_cat.is_debug()) {
+    cull_cat.debug()
+      << "Attaching toplevel bin " << *bin << "\n";
+  }
+
+  // Insert the new bin by name.
+  bool inserted = 
+    _toplevel_bins.insert(ToplevelBins::value_type(bin->get_name(), bin)).second;
+
+  // If this assertion fails, there was already a bin by the same name
+  // in this traverser, an error condition.
+  nassertv(inserted);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::attach_sub_bin
+//       Access: Private
+//  Description: This is intended to be called only by
+//               GeomBin::attach().  It stores the bin in the
+//               appropriate structures within the traverser, as a
+//               sub bin, e.g. a bin that may have geometry assigned
+//               to it, and may therefore be rendered.
+//
+//               In most cases, a toplevel bin is the same as a sub
+//               bin, except in the case of a GeomBinGroup, which is a
+//               toplevel bin that contains a number of sub bins.
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+attach_sub_bin(GeomBin *bin) {
+  if (cull_cat.is_debug()) {
+    cull_cat.debug()
+      << "Attaching sub bin " << *bin << "\n";
+  }
+
+  _sub_bins.insert(SubBins::value_type(bin->get_sort(), bin));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::detach_toplevel_bin
+//       Access: Private
+//  Description: This is intended to be called only by
+//               GeomBin::detach().  It removes the bin from the
+//               appropriate structures within the traverser, as a
+//               toplevel bin.  See attach_toplevel_bin().
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+detach_toplevel_bin(GeomBin *bin) {
+  if (cull_cat.is_debug()) {
+    cull_cat.debug()
+      << "Detaching toplevel bin " << *bin << "\n";
+  }
+
+  ToplevelBins::iterator tbi = _toplevel_bins.find(bin->get_name());
+  nassertv(tbi != _toplevel_bins.end());
+  _toplevel_bins.erase(tbi);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::detach_sub_bin
+//       Access: Private
+//  Description: This is intended to be called only by
+//               GeomBin::detach().  It removes the bin from the
+//               appropriate structures within the traverser, as a
+//               sub bin.  See attach_sub_bin().
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+detach_sub_bin(GeomBin *bin) {
+  if (cull_cat.is_debug()) {
+    cull_cat.debug()
+      << "Detaching sub bin " << *bin << "\n";
+  }
+
+  // Remove the bin from its place in the sort order list.  This will
+  // be one of the (possibly several) entries in the multimap with the
+  // same sort value.
+  pair<SubBins::iterator, SubBins::iterator> range;
+  range = _sub_bins.equal_range(bin->get_sort());
+
+  SubBins::iterator sbi;
+  for (sbi = range.first; sbi != range.second; ++sbi) {
+    GeomBin *consider_bin = (*sbi).second;
+    nassertv(consider_bin->get_sort() == bin->get_sort());
+
+    if (consider_bin == bin) {
+      // Here's the position!
+      _sub_bins.erase(sbi);
+      return;
+    }
+  }
+  nassertv(false);
 }

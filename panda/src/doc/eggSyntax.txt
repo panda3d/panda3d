@@ -174,11 +174,18 @@ appear before they are referenced.
     is any of the other options, it specifies the type of transparency
     to be enabled.
 
+  <Scalar> bin { bin-name }
+
+    This specifies the bin name order of all polygons with this
+    texture applied, in the absence of a bin name specified on the
+    polygon itself.  See the description for bin under polygon
+    attributes.
+
   <Scalar> draw_order { number }
 
     This specifies the fixed drawing order of all polygons with this
     texture applied, in the absence of a drawing order specified on
-    the polygon itself.  See the description for draw-order under
+    the polygon itself.  See the description for draw_order under
     polygon attributes.
 
   <Transform> { transform-definition }
@@ -404,22 +411,39 @@ GEOMETRY ENTRIES
     it to be viewed from either side.
     
 
+  <Scalar> bin { bin-name }
+
+    It is sometimes important to control the order in which objects
+    are rendered, particularly when transparency is in use.  In Panda,
+    this is achieved via the use of named bins and, within certain
+    kinds of bins, sometimes an explicit draw_order is also used (see
+    below).
+
+    In the normal (state-sorting) mode, Panda renders its geometry by
+    first grouping into one or more named bins, and then rendering the
+    bins in a specified order.  The programmer is free to define any
+    number of bins, named whatever he/she desires.
+
+    This scalar specifies which bin this particular polygon is to be
+    rendered within.  If no bin scalar is given, or if the name given
+    does not match any of the known bins, the polygon will be assigned
+    to the default bin, which renders all opaque geometry sorted by
+    state, followed by all transparent geometry sorted back-to-front.
+
+    See also draw_order, below.
+
+
   <Scalar> draw_order { number }
 
-    This defines the fixed drawing order of this polygon.  Drawing
-    order is very important when using certain kinds of transparency.
-    Normally, Performer will draw all opaque objects first, then all
-    transparent objects from back to front.  Sometimes the
-    back-to-front sorting can fail, especially in the case of a small
-    polygon immediately in front of a large polygon.  In this case, it
-    may be necessary to explicitly give the order in which the
-    polygons should be drawn.
+    This works in conjunction with bin, above, to further refine the
+    order in which this polygon is drawn, relative to other geometry
+    in the same bin.  If (and only if) the bin type named in the bin
+    scalar is a GeomBinFixed, this draw_order is used to define the
+    fixed order that all geometry in the same will be rendered, from
+    smaller numbers to larger numbers.
 
-    All objects with a given draw-order will be drawn before all
-    objects with a higher draw-order.  Objects with a zero or
-    unspecified draw-order will be drawn first if they are opaque, and
-    in order from back to front if they are transparent.  A negative
-    draw-order is not allowed.
+    If no bin scalar is specified, the default is a bin named "fixed",
+    which is a GeomBinFixed object that always exists by default.
 
 
 <PointLight> name { 
@@ -797,11 +821,17 @@ GROUPING ENTRIES
     affected by fog.  It will be created with the appropriate GeoState
     to have fog disabled.
 
+  <Scalar> bin { bin-name }
+
+    This specifies the bin name for all polygons at or below this node
+    that do not explicitly set their own bin.  See the description of
+    bin for geometry attributes, above.
+
   <Scalar> draw_order { number }
 
     This specifies the drawing order for all polygons at or below this
     node that do not explicitly set their own drawing order.  See the
-    description of draw-order for geometry attributes, above.
+    description of draw_order for geometry attributes, above.
 
   <Scalar> write_through { boolean-value }
 

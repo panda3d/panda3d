@@ -51,6 +51,10 @@ public:
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
   INLINE ~EggPrimitive();
 
+  virtual EggAlphaMode *determine_alpha_mode();
+  virtual EggAlphaMode *determine_draw_order();
+  virtual EggAlphaMode *determine_bin();
+
   INLINE void set_texture(PT(EggTexture) texture);
   INLINE void clear_texture();
   INLINE PT(EggTexture) get_texture() const;

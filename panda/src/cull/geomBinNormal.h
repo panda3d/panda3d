@@ -22,10 +22,10 @@
 //               back-to-front.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomBinNormal : public GeomBinGroup {
-public:
-  GeomBinNormal(const string &name, CullTraverser *traverser = NULL,
-		int sort = 0);
+PUBLISHED:
+  GeomBinNormal(const string &name);
 
+public:
   virtual int choose_bin(CullState *cs) const;
 
 public:

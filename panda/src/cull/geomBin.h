@@ -35,16 +35,29 @@ class CullTraverser;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomBin : public TypedReferenceCount, public Namable {
 public:
-  INLINE GeomBin(const string &name, CullTraverser *traverser = NULL, 
-		 int sort = 0);
+  INLINE GeomBin(const string &name);
   virtual ~GeomBin();
 
-  void attach_to(CullTraverser *traverser, int sort = 0);
-  PT(GeomBin) detach();
+PUBLISHED:
+  void set_name(const string &name);
+  void clear_name();
 
-  INLINE CullTraverser *get_traverser() const;
   INLINE int get_sort() const;
-  INLINE void set_sort(int sort);
+  void set_sort(int sort);
+
+  void set_traverser(CullTraverser *traverser);
+  INLINE bool has_traverser() const;
+  INLINE CullTraverser *get_traverser() const;
+  PT(GeomBin) clear_traverser();
+
+  INLINE bool has_parent() const;
+  INLINE GeomBin *get_parent() const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
+
+public:
+  INLINE bool is_attached() const;
 
   virtual void clear_current_states()=0;
   virtual void record_current_state(GraphicsStateGuardian *gsg,
@@ -54,15 +67,17 @@ public:
 
   virtual void draw(CullTraverser *trav)=0;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
-
 protected:
   INLINE void claim_cull_state(CullState *cs);
   INLINE void disclaim_cull_state(CullState *cs);
 
+  virtual void attach();
+  virtual PT(GeomBin) detach();
+
   CullTraverser *_traverser;
+  bool _is_attached;
   int _sort;
+  GeomBin *_parent;
 
 public:
   static TypeHandle get_class_type() {
@@ -82,6 +97,8 @@ public:
  
 private:
   static TypeHandle _type_handle;
+
+  friend class GeomBinGroup;
 };
 
 INLINE ostream &operator << (ostream &out, const GeomBin &bin) {

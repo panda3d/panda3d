@@ -9,6 +9,8 @@
 #include <graphicsStateGuardianBase.h>
 #include <indent.h>
 
+#include <string.h>
+
 TypeHandle GeomBinAttribute::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +58,7 @@ set_value_from(const OnOffTransition *other) {
   DCAST_INTO_V(ot, other);
   _value = ot->_value;
   _draw_order = ot->_draw_order;
-  nassertv(_value != (GeomBin *)NULL);
+  nassertv(!_value.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +71,7 @@ compare_values(const OnOffAttribute *other) const {
   const GeomBinAttribute *ot;
   DCAST_INTO_R(ot, other, false);
   if (_value != ot->_value) {
-    return (int)(_value - ot->_value);
+    return strcmp(_value.c_str(), ot->_value.c_str());
   }
   return _draw_order - ot->_draw_order;
 }
@@ -81,8 +83,7 @@ compare_values(const OnOffAttribute *other) const {
 ////////////////////////////////////////////////////////////////////
 void GeomBinAttribute::
 output_value(ostream &out) const {
-  nassertv(_value != (GeomBin *)NULL);
-  out << *_value << ":" << _draw_order;
+  out << _value << ":" << _draw_order;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,6 +94,5 @@ output_value(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void GeomBinAttribute::
 write_value(ostream &out, int indent_level) const {
-  nassertv(_value != (GeomBin *)NULL);
-  indent(out, indent_level) << *_value << ":" << _draw_order << "\n";
+  indent(out, indent_level) << _value << ":" << _draw_order << "\n";
 }

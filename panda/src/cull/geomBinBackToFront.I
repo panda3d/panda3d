@@ -77,7 +77,7 @@ draw(CullTraverser *trav) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinBackToFront::
-GeomBinBackToFront(const string &name, CullTraverser *traverser, int sort) :
-  GeomBin(name, traverser, sort) 
+GeomBinBackToFront(const string &name) :
+  GeomBin(name) 
 {
 }

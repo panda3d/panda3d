@@ -24,6 +24,15 @@ public:
   virtual NodeAttribute *make_attrib() const;
 
 public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+
+  static TypedWriteable *make_DepthWriteTransition(const FactoryParams &params);
+
+protected:
+  void fillin(DatagramIterator& scan, BamReader* manager);
+
+public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }

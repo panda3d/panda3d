@@ -23,11 +23,11 @@
 //               order.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomBinUnsorted : public GeomBin {
-public:
-  INLINE GeomBinUnsorted(const string &name, CullTraverser *traverser = NULL,
-			 int sort = 0);
+PUBLISHED:
+  INLINE GeomBinUnsorted(const string &name);
   virtual ~GeomBinUnsorted();
 
+public:
   virtual void clear_current_states();
   virtual void record_current_state(GraphicsStateGuardian *gsg,
 				    CullState *cs, int draw_order,

@@ -21,11 +21,10 @@
 //               specified at each GeomBinTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomBinFixed : public GeomBin {
-public:
-  INLINE GeomBinFixed(const string &name, 
-		      CullTraverser *traverser = NULL,
-		      int sort = 0);
+PUBLISHED:
+  INLINE GeomBinFixed(const string &name);
 
+public:
   virtual void clear_current_states();
   virtual void record_current_state(GraphicsStateGuardian *gsg,
 				    CullState *cs, int draw_order,

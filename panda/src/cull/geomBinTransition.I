@@ -18,7 +18,7 @@ GeomBinTransition() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinTransition::
-GeomBinTransition(GeomBin *bin, int draw_order) : 
+GeomBinTransition(const string &bin, int draw_order) : 
   OnOffTransition(TD_on),
   _value(bin),
   _draw_order(draw_order)
@@ -44,8 +44,8 @@ off() {
 //               bin.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomBinTransition::
-set_on(GeomBin *bin, int draw_order) {
-  nassertv(bin != (GeomBin *)NULL);
+set_on(const string &bin, int draw_order) {
+  nassertv(!bin.empty());
   _value = bin;
   _draw_order = draw_order;
   OnOffTransition::set_on();
@@ -54,13 +54,13 @@ set_on(GeomBin *bin, int draw_order) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinTransition::get_bin
 //       Access: Public
-//  Description: Returns the bin that the GeomBinTransition
+//  Description: Returns the bin name that the GeomBinTransition
 //               represents.  It is only valid to call this if is_on()
 //               has returned true.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(GeomBin) GeomBinTransition::
+INLINE string GeomBinTransition::
 get_bin() const {
-  nassertr(is_on(), NULL);
+  nassertr(is_on(), string());
   return _value;
 }
 

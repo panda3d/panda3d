@@ -384,7 +384,10 @@ texture_body:
     }
 
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
-    texture->set_draw_order(value);
+    texture->set_draw_order((int)value);
+
+  } else if (cmp_nocase_uh(name, "bin") == 0) {
+    texture->set_bin(strval);
 
   } else if (cmp_nocase_uh(name, "alpha_file") == 0) {
     texture->set_alpha_file(strval);
@@ -811,7 +814,9 @@ group_body:
       group->set_alpha_mode(a);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
-    group->set_draw_order(value);
+    group->set_draw_order((int)value);
+  } else if (cmp_nocase_uh(name, "bin") == 0) {
+    group->set_bin(strval);
   } else if (cmp_nocase_uh(name, "collide_mask") == 0) {
     group->set_collide_mask(value);
   } else if (cmp_nocase_uh(name, "from_collide_mask") == 0) {
@@ -1325,7 +1330,9 @@ primitive_body:
       primitive->set_alpha_mode(a);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
-    primitive->set_draw_order(value);
+    primitive->set_draw_order((int)value);
+  } else if (cmp_nocase_uh(name, "bin") == 0) {
+    primitive->set_bin(strval);
   } else {
     eggyywarning("Unknown scalar " + name);
   }
@@ -1373,7 +1380,9 @@ nurbs_surface_body:
       primitive->set_alpha_mode(a);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
-    primitive->set_draw_order(value);
+    primitive->set_draw_order((int)value);
+  } else if (cmp_nocase_uh(name, "bin") == 0) {
+    primitive->set_bin(strval);
   } else if (cmp_nocase_uh(name, "u_subdiv") == 0) {
     primitive->set_u_subdiv(value);
   } else if (cmp_nocase_uh(name, "v_subdiv") == 0) {
@@ -1418,7 +1427,9 @@ nurbs_curve_body:
       primitive->set_alpha_mode(a);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
-    primitive->set_draw_order(value);
+    primitive->set_draw_order((int)value);
+  } else if (cmp_nocase_uh(name, "bin") == 0) {
+    primitive->set_bin(strval);
   } else if (cmp_nocase_uh(name, "subdiv") == 0) {
     primitive->set_subdiv(value);
   } else if (cmp_nocase_uh(name, "type") == 0) {

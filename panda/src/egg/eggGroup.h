@@ -77,6 +77,10 @@ public:
   virtual void write(ostream &out, int indent_level) const;
   bool parse_egg(const string &egg_syntax);
 
+  virtual EggAlphaMode *determine_alpha_mode();
+  virtual EggAlphaMode *determine_draw_order();
+  virtual EggAlphaMode *determine_bin();
+
   void set_group_type(GroupType type);
   INLINE GroupType get_group_type() const;
 

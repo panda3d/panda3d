@@ -266,6 +266,57 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::determine_alpha_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this group that has an alpha_mode other than
+//               AM_unspecified.  Returns a valid EggAlphaMode pointer
+//               if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggAlphaMode *EggGroup::
+determine_alpha_mode() {
+  if (get_alpha_mode() != AM_unspecified) {
+    return this;
+  }
+  return EggGroupNode::determine_alpha_mode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::determine_draw_order
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this group that has a draw_order specified.
+//               Returns a valid EggAlphaMode pointer if one is found,
+//               or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggAlphaMode *EggGroup::
+determine_draw_order() {
+  if (has_draw_order()) {
+    return this;
+  }
+  return EggGroupNode::determine_draw_order();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::determine_bin
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this group that has a bin specified.  Returns a
+//               valid EggAlphaMode pointer if one is found, or NULL
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+EggAlphaMode *EggGroup::
+determine_bin() {
+  if (has_bin()) {
+    return this;
+  }
+  return EggGroupNode::determine_bin();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::parse_egg
 //       Access: Public
 //  Description: Parses the egg syntax given in the indicate string as

@@ -26,6 +26,10 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level)
       << "<Scalar> draw-order { " << get_draw_order() << " }\n";
   }
+  if (has_bin()) {
+    indent(out, indent_level)
+      << "<Scalar> bin { " << get_bin() << " }\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +48,10 @@ operator == (const EggAlphaMode &other) const {
     if (_draw_order != other._draw_order) {
       return false;
     }
+  }
+
+  if (_bin != other._bin) {
+    return false;
   }
 
   return true;
@@ -68,6 +76,10 @@ operator < (const EggAlphaMode &other) const {
     if (_draw_order != other._draw_order) {
       return _draw_order < other._draw_order;
     }
+  }
+
+  if (_bin != other._bin) {
+    return _bin < other._bin;
   }
 
   return false;

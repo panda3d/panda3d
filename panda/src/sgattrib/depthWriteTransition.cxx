@@ -6,6 +6,11 @@
 #include "depthWriteTransition.h"
 #include "depthWriteAttribute.h"
 
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+
 TypeHandle DepthWriteTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -27,4 +32,56 @@ make_copy() const {
 NodeAttribute *DepthWriteTransition::
 make_attrib() const {
   return new DepthWriteAttribute;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteTransition::register_with_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a DepthWriteTransition object
+////////////////////////////////////////////////////////////////////
+void DepthWriteTransition::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_DepthWriteTransition);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteTransition::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void DepthWriteTransition::
+write_datagram(BamWriter *manager, Datagram &me) {
+  OnOffTransition::write_datagram(manager, me);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteTransition::make_DepthWriteTransition
+//       Access: Public
+//  Description: Factory method to generate a DepthWriteTransition object
+////////////////////////////////////////////////////////////////////
+TypedWriteable *DepthWriteTransition::
+make_DepthWriteTransition(const FactoryParams &params) {
+  DepthWriteTransition *me = new DepthWriteTransition;
+  BamReader *manager;
+  Datagram packet;
+
+  parse_params(params, manager, packet);
+  DatagramIterator scan(packet);
+
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteTransition::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void DepthWriteTransition::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  OnOffTransition::fillin(scan, manager);
 }

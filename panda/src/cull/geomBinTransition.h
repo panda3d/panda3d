@@ -16,15 +16,16 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomBinTransition : public OnOffTransition {
-public:
+PUBLISHED:
   INLINE GeomBinTransition();
-  INLINE GeomBinTransition(GeomBin *bin, int draw_order = 0);
+  INLINE GeomBinTransition(const string &bin, int draw_order);
   INLINE static GeomBinTransition off();
 
-  INLINE void set_on(GeomBin *bin, int draw_order = 0);
-  INLINE PT(GeomBin) get_bin() const;
+  INLINE void set_on(const string &bin, int draw_order);
+  INLINE string get_bin() const;
   INLINE int get_draw_order() const;
-  
+
+public:  
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 
@@ -34,8 +35,17 @@ protected:
   virtual void output_value(ostream &out) const;
   virtual void write_value(ostream &out, int indent_level) const;
 
-  PT(GeomBin) _value;
+  string _value;
   int _draw_order;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+
+  static TypedWriteable *make_GeomBinTransition(const FactoryParams &params);
+
+protected:
+  void fillin(DatagramIterator& scan, BamReader* manager);
 
 public:
   virtual TypeHandle get_type() const {

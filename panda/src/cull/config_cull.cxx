@@ -31,6 +31,10 @@ ConfigureFn(config_cull) {
   GeomBinAttribute::init_type();
   GeomBinFixed::init_type();
   DirectRenderTransition::init_type();
+
+  //Registration of writeable object's creation
+  //functions with BamReader's factory
+  GeomBinTransition::register_with_read_factory();
 }
 
 // Set this true to force all of the caching to blow itself away every

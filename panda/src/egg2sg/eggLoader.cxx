@@ -40,6 +40,7 @@
 #include <decalTransition.h>
 #include <directRenderTransition.h>
 #include <pruneTransition.h>
+#include <depthWriteTransition.h>
 #include <animBundleNode.h>
 #include <character.h>
 #include <notify.h>
@@ -49,6 +50,7 @@
 #include <collisionPlane.h>
 #include <collisionSphere.h>
 #include <dftraverser.h>
+#include <geomBinTransition.h>
 
 #include <ctype.h>
 #include <algorithm>
@@ -895,17 +897,39 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
   }
 
   // Assign the appropriate properties to the bucket.
-  EggAlphaMode::AlphaMode am = egg_prim->get_alpha_mode();
+
+  // The three "alpha mode"-associated properties--alpha mode, draw
+  // order, and bin--can be defined directly at the primitive, at a
+  // group above the primitive, or an a texture applied to the
+  // primitive.  The EggNode::determine_*() functions can find the
+  // right pointer to the level at which this is actually defined for
+  // a given primitive.
+  EggAlphaMode::AlphaMode am = EggAlphaMode::AM_unspecified;
   bool implicit_alpha = false;
+  bool has_draw_order = false;
+  int draw_order = 0;
+  bool has_bin = false;
+  string bin;
+
+  EggAlphaMode *egg_alpha;
+  egg_alpha = egg_prim->determine_alpha_mode();
+  if (egg_alpha != (EggAlphaMode *)NULL) {
+    am = egg_alpha->get_alpha_mode();
+  }
+  egg_alpha = egg_prim->determine_draw_order();
+  if (egg_alpha != (EggAlphaMode *)NULL) {
+    has_draw_order = true;
+    draw_order = egg_alpha->get_draw_order();
+  }
+  egg_alpha = egg_prim->determine_bin();
+  if (egg_alpha != (EggAlphaMode *)NULL) {
+    has_bin = true;
+    bin = egg_alpha->get_bin();
+  }
 
   bucket._trans.set_transition(new TextureTransition(TextureTransition::off()));
   if (egg_prim->has_texture()) {
     PT(EggTexture) egg_tex = egg_prim->get_texture();
-    // If the primitive didn't specify an alpha mode, allow the
-    // texture to specify one.
-    if (am == EggAlphaMode::AM_unspecified) {
-      am = egg_tex->get_alpha_mode();
-    }
     
     const TextureDef &def = _textures[egg_tex];
     if (def._texture != (TextureTransition *)NULL) {
@@ -957,7 +981,8 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
     break;
 
   case EggAlphaMode::AM_blend_no_occlude:
-    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_alpha_sorted));
+    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
+    bucket._trans.set_transition(new DepthWriteTransition(DepthWriteTransition::off()));
     break;
 
   case EggAlphaMode::AM_ms:
@@ -971,6 +996,13 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
   default:
     //    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_none));
     break;
+  }
+
+  if (has_bin) {
+    bucket._trans.set_transition(new GeomBinTransition(bin, draw_order));
+
+  } else if (has_draw_order) {
+    bucket._trans.set_transition(new GeomBinTransition("fixed", draw_order));
   }
 
   if (egg_prim->get_bface_flag()) {

@@ -20,7 +20,8 @@
 INLINE void CullTraverser::
 set_default_bin(GeomBin *bin) {
   nassertv(bin != (GeomBin *)NULL);
-  bin->attach_to(this, bin->get_sort());
+  nassertv(bin->is_attached());
+  nassertv(bin->get_traverser() == this);
   _default_bin = bin;
 }
 
@@ -34,6 +35,35 @@ set_default_bin(GeomBin *bin) {
 INLINE GeomBin *CullTraverser::
 get_default_bin() const {
   return _default_bin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::has_bin
+//       Access: Public
+//  Description: Returns true if a bin by the given name has been
+//               attached to the CullTraverser, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullTraverser::
+has_bin(const string &name) const {
+  return (_toplevel_bins.count(name) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::get_bin
+//       Access: Public
+//  Description: Returns the GeomBin that was previously attached to
+//               the CullTraverser that shares the indicated name, or
+//               the default bin if no GeomBin with a matching name
+//               was added.
+////////////////////////////////////////////////////////////////////
+INLINE GeomBin *CullTraverser::
+get_bin(const string &name) const {
+  ToplevelBins::const_iterator tbi;
+  tbi = _toplevel_bins.find(name);
+  if (tbi == _toplevel_bins.end()) {
+    return get_default_bin();
+  }
+  return (*tbi).second;
 }
 
 ////////////////////////////////////////////////////////////////////

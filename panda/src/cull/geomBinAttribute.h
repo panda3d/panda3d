@@ -19,10 +19,10 @@
 class EXPCL_PANDA GeomBinAttribute : public OnOffAttribute {
 public:
   INLINE GeomBinAttribute();
-  INLINE GeomBinAttribute(GeomBin *bin, int draw_order = 0);
+  INLINE GeomBinAttribute(const string &bin, int draw_order = 0);
 
-  INLINE void set_on(GeomBin *bin, int draw_order = 0);
-  INLINE PT(GeomBin) get_bin() const;
+  INLINE void set_on(const string &bin, int draw_order = 0);
+  INLINE string get_bin() const;
   INLINE int get_draw_order() const;
 
   virtual TypeHandle get_handle() const;
@@ -35,7 +35,7 @@ protected:
   virtual void output_value(ostream &out) const;
   virtual void write_value(ostream &out, int indent_level) const;
 
-  PT(GeomBin) _value;
+  string _value;
   int _draw_order;
 
 public:

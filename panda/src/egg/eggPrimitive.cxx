@@ -14,6 +14,66 @@ TypeHandle EggPrimitive::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::determine_alpha_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggPrimitive
+//               or EggPrimitive or some such object at this level or
+//               above this primitive that has an alpha_mode other than
+//               AM_unspecified.  Returns a valid EggAlphaMode pointer
+//               if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggAlphaMode *EggPrimitive::
+determine_alpha_mode() {
+  if (get_alpha_mode() != AM_unspecified) {
+    return this;
+  }
+  if (has_texture() && get_texture()->get_alpha_mode() != AM_unspecified) {
+    return get_texture();
+  }
+  return EggNode::determine_alpha_mode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::determine_draw_order
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggPrimitive
+//               or EggPrimitive or some such object at this level or
+//               above this primitive that has a draw_order specified.
+//               Returns a valid EggAlphaMode pointer if one is found,
+//               or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggAlphaMode *EggPrimitive::
+determine_draw_order() {
+  if (has_draw_order()) {
+    return this;
+  }
+  if (has_texture() && get_texture()->has_draw_order()) {
+    return get_texture();
+  }
+  return EggNode::determine_draw_order();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::determine_bin
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggPrimitive
+//               or EggPrimitive or some such object at this level or
+//               above this primitive that has a bin specified.  Returns a
+//               valid EggAlphaMode pointer if one is found, or NULL
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+EggAlphaMode *EggPrimitive::
+determine_bin() {
+  if (has_bin()) {
+    return this;
+  }
+  if (has_texture() && get_texture()->has_bin()) {
+    return get_texture();
+  }
+  return EggNode::determine_bin();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::reverse_vertex_ordering
 //       Access: Public, Virtual
 //  Description: Reverses the ordering of the vertices in this

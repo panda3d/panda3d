@@ -9,21 +9,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinGroup::
-GeomBinGroup(const string &name, CullTraverser *traverser, int sort) :
-  GeomBin(name, traverser, sort) 
+GeomBinGroup(const string &name) :
+  GeomBin(name) 
 {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomBinGroup::add_sub_bin
-//       Access: Public
-//  Description: Appends the indicated bin to the end of the sub_bin
-//               list, and returns the new index.
-////////////////////////////////////////////////////////////////////
-INLINE int GeomBinGroup::
-add_sub_bin(GeomBin *sub_bin) {
-  _sub_bins.push_back(sub_bin);
-  return _sub_bins.size() - 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,20 +33,4 @@ INLINE GeomBin *GeomBinGroup::
 get_bin(int n) {
   nassertr(n >= 0 && n < (int)_sub_bins.size(), NULL);
   return _sub_bins[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomBinGroup::remove_bin
-//       Access: Public
-//  Description: Removes the nth bin.  All subsequent index numbers
-//               shift down by one.  The return value is the
-//               just-removed bin, which may be deleted if it is not
-//               immediately saved.
-////////////////////////////////////////////////////////////////////
-INLINE PT(GeomBin) GeomBinGroup::
-remove_bin(int n) {
-  nassertr(n >= 0 && n < (int)_sub_bins.size(), NULL);
-  PT(GeomBin) keep = get_bin(n);
-  _sub_bins.erase(_sub_bins.begin() + n);
-  return keep;
 }

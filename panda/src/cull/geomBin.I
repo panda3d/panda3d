@@ -9,24 +9,13 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBin::
-GeomBin(const string &name, CullTraverser *traverser, int sort) :
+GeomBin(const string &name) :
   Namable(name) 
 {
   _traverser = (CullTraverser *)NULL;
-  if (traverser != (CullTraverser *)NULL) {
-    attach_to(traverser, sort);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomBin::get_traverser
-//       Access: Public
-//  Description: Returns a pointer to the CullTraverser this bin is
-//               currently attached to, or NULL if it is not attached.
-////////////////////////////////////////////////////////////////////
-INLINE CullTraverser *GeomBin::
-get_traverser() const {
-  return _traverser;
+  _is_attached = false;
+  _sort = 0;
+  _parent = (GeomBin *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,19 +31,65 @@ get_sort() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomBin::set_sort
+//     Function: GeomBin::has_traverser
 //       Access: Public
-//  Description: Changes the sort index associated with this
-//               particular bin.  The CullTraverser will render bins
-//               in order according to their sort index.
+//  Description: Returns true if the GeomBin is currently attached to
+//               a traverser, false otherwise.  If this is false, and
+//               the bin is not attached to a parent bin
+//               (i.e. has_parent() is also false), don't expect the
+//               bin to be rendered.
 ////////////////////////////////////////////////////////////////////
-INLINE void GeomBin::
-set_sort(int sort) {
-  if (_traverser != (CullTraverser *)NULL) {
-    attach_to(_traverser, sort);
-  } else {
-    _sort = sort;
-  }
+INLINE bool GeomBin::
+has_traverser() const {
+  return (_traverser != (CullTraverser *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBin::get_traverser
+//       Access: Public
+//  Description: Returns a pointer to the CullTraverser this bin is
+//               currently attached to, or NULL if it is not attached.
+////////////////////////////////////////////////////////////////////
+INLINE CullTraverser *GeomBin::
+get_traverser() const {
+  return _traverser;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBin::has_parent
+//       Access: Public
+//  Description: Returns true if the bin is a child of some
+//               GeomBinGroup, false if it is a toplevel bin in its
+//               own right.  See GeomBinGroup.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomBin::
+has_parent() const {
+  return _parent != (GeomBin *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBin::get_parent
+//       Access: Public
+//  Description: Returns the parent pointer of the GeomBin if the bin
+//               is a child of some GeomBinGropu, or NULL if the bin
+//               does not have a parent.  See GeomBinGroup.
+////////////////////////////////////////////////////////////////////
+INLINE GeomBin *GeomBin::
+get_parent() const {
+  return _parent;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBin::is_attached
+//       Access: Public
+//  Description: Returns true if the bin is currently attached to a
+//               CullTraverser, false otherwise.  This should always
+//               be tree if has_traverser() is true, and false if
+//               has_traverser() is false.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomBin::
+is_attached() const {
+  return _is_attached;
 }
 
 ////////////////////////////////////////////////////////////////////

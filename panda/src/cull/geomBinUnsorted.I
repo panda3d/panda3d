@@ -9,7 +9,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinUnsorted::
-GeomBinUnsorted(const string &name, CullTraverser *traverser, int sort) :
-  GeomBin(name, traverser, sort) 
+GeomBinUnsorted(const string &name) :
+  GeomBin(name) 
 {
 }

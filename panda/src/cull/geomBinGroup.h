@@ -23,15 +23,16 @@
 //               a given CullState should be assigned to.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomBinGroup : public GeomBin {
-public:
-  INLINE GeomBinGroup(const string &name, CullTraverser *traverser = NULL,
-		      int sort = 0);
+PUBLISHED:
+  INLINE GeomBinGroup(const string &name);
+  virtual ~GeomBinGroup();
 
-  INLINE int add_sub_bin(GeomBin *sub_bin);
+  int add_sub_bin(GeomBin *sub_bin);
   INLINE int get_num_bins() const;
   INLINE GeomBin *get_bin(int n);
-  INLINE PT(GeomBin) remove_bin(int n);
+  PT(GeomBin) remove_bin(int n);
 
+public:
   virtual int choose_bin(CullState *cs) const=0;
 
   virtual void clear_current_states();
@@ -43,6 +44,10 @@ public:
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
+
+protected:
+  virtual void attach();
+  virtual PT(GeomBin) detach();
 
 private:
   typedef vector<PT(GeomBin)> SubBins;

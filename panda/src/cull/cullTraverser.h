@@ -43,6 +43,8 @@ public:
 
   INLINE void set_default_bin(GeomBin *bin);
   INLINE GeomBin *get_default_bin() const;
+  INLINE bool has_bin(const string &name) const;
+  INLINE GeomBin *get_bin(const string &name) const;
 
   virtual void traverse(Node *root, 
 			const AllAttributesWrapper &initial_state,
@@ -92,10 +94,17 @@ public:
 	       const CullLevelState &level_state);
 
 private:
+  void attach_toplevel_bin(GeomBin *bin);
+  void attach_sub_bin(GeomBin *bin);
+  void detach_toplevel_bin(GeomBin *bin);
+  void detach_sub_bin(GeomBin *bin);
+
   AllAttributesWrapper _initial_state;
 
-  typedef set<PT(GeomBin)> Bins;
-  Bins _bins;
+  typedef map<string, PT(GeomBin)> ToplevelBins;
+  typedef multimap<int, PT(GeomBin)> SubBins;
+  ToplevelBins _toplevel_bins;
+  SubBins _sub_bins;
   PT(GeomBin) _default_bin;
 
   typedef set<PT(CullState), IndirectCompareTo<CullState> > States;
@@ -128,7 +137,8 @@ public:
 private:
   static TypeHandle _type_handle;
 
-friend class GeomBin;
+  friend class GeomBin;
+  friend class GeomBinGroup;
 };
 
 #include "cullTraverser.I"

@@ -78,7 +78,7 @@ draw(CullTraverser *trav) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinFixed::
-GeomBinFixed(const string &name, CullTraverser *traverser, int sort) :
-  GeomBin(name, traverser, sort) 
+GeomBinFixed(const string &name) :
+  GeomBin(name) 
 {
 }

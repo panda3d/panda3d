@@ -186,15 +186,16 @@ ConfigureFn(config_sgattrib) {
 
   //Registration of writeable object's creation
   //functions with BamReader's factory
-  RenderRelation::register_with_read_factory();
-  TransformTransition::register_with_read_factory();
-  TextureTransition::register_with_read_factory();
-  TextureApplyTransition::register_with_read_factory();
-  TransparencyTransition::register_with_read_factory();
-  CullFaceTransition::register_with_read_factory();
-  DecalTransition::register_with_read_factory();
-  PruneTransition::register_with_read_factory();
   BillboardTransition::register_with_read_factory();
   ColorMatrixTransition::register_with_read_factory();
+  CullFaceTransition::register_with_read_factory();
+  DecalTransition::register_with_read_factory();
+  DepthWriteTransition::register_with_read_factory();
+  PruneTransition::register_with_read_factory();
+  RenderRelation::register_with_read_factory();
+  TextureApplyTransition::register_with_read_factory();
+  TextureTransition::register_with_read_factory();
+  TransformTransition::register_with_read_factory();
+  TransparencyTransition::register_with_read_factory();
 }
 

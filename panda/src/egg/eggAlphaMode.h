@@ -40,10 +40,15 @@ public:
   INLINE void set_alpha_mode(AlphaMode mode);
   INLINE AlphaMode get_alpha_mode() const;
 
-  INLINE void set_draw_order(double order);
-  INLINE double get_draw_order() const;
+  INLINE void set_draw_order(int order);
+  INLINE int get_draw_order() const;
   INLINE bool has_draw_order() const;
   INLINE void clear_draw_order();
+
+  INLINE void set_bin(const string &bin);
+  INLINE string get_bin() const;
+  INLINE bool has_bin() const;
+  INLINE void clear_bin();
 
   // Comparison operators are handy.
   bool operator == (const EggAlphaMode &other) const;
@@ -54,8 +59,9 @@ public:
 
 private:
   AlphaMode _alpha_mode;
-  double _draw_order;
+  int _draw_order;
   bool _has_draw_order;
+  string _bin;
 
 
 public:

@@ -24,11 +24,10 @@
 //               without a Z-buffer.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomBinBackToFront : public GeomBin {
-public:
-  INLINE GeomBinBackToFront(const string &name, 
-			    CullTraverser *traverser = NULL,
-			    int sort = 0);
+PUBLISHED:
+  INLINE GeomBinBackToFront(const string &name);
 
+public:
   virtual void clear_current_states();
   virtual void record_current_state(GraphicsStateGuardian *gsg,
 				    CullState *cs, int draw_order,

@@ -8,6 +8,8 @@
 
 #include <indent.h>
 
+#include <string.h>
+
 TypeHandle GeomBinTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -43,7 +45,7 @@ set_value_from(const OnOffTransition *other) {
   DCAST_INTO_V(ot, other);
   _value = ot->_value;
   _draw_order = ot->_draw_order; 
-  nassertv(_value != (GeomBin *)NULL);
+  nassertv(!_value.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +58,7 @@ compare_values(const OnOffTransition *other) const {
   const GeomBinTransition *ot;
   DCAST_INTO_R(ot, other, false);
   if (_value != ot->_value) {
-    return (int)(_value - ot->_value);
+    return strcmp(_value.c_str(), ot->_value.c_str());
   }
   return _draw_order - ot->_draw_order;
 }
@@ -68,8 +70,7 @@ compare_values(const OnOffTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 void GeomBinTransition::
 output_value(ostream &out) const {
-  nassertv(_value != (GeomBin *)NULL);
-  out << *_value << ":" << _draw_order;
+  out << _value << ":" << _draw_order;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,6 +81,61 @@ output_value(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void GeomBinTransition::
 write_value(ostream &out, int indent_level) const {
-  nassertv(_value != (GeomBin *)NULL);
-  indent(out, indent_level) << *_value << ":" << _draw_order << "\n";
+  indent(out, indent_level) << _value << ":" << _draw_order << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBinTransition::register_with_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a GeomBinTransition object
+////////////////////////////////////////////////////////////////////
+void GeomBinTransition::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_GeomBinTransition);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBinTransition::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void GeomBinTransition::
+write_datagram(BamWriter *manager, Datagram &me) {
+  OnOffTransition::write_datagram(manager, me);
+  me.add_string(_value);
+  me.add_int32(_draw_order);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBinTransition::make_GeomBinTransition
+//       Access: Public
+//  Description: Factory method to generate a GeomBinTransition object
+////////////////////////////////////////////////////////////////////
+TypedWriteable *GeomBinTransition::
+make_GeomBinTransition(const FactoryParams &params) {
+  GeomBinTransition *me = new GeomBinTransition;
+  BamReader *manager;
+  Datagram packet;
+
+  parse_params(params, manager, packet);
+  DatagramIterator scan(packet);
+
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBinTransition::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void GeomBinTransition::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  OnOffTransition::fillin(scan, manager);
+  _value = scan.get_string();
+  _draw_order = scan.get_int32();
 }

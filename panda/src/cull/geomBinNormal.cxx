@@ -19,16 +19,21 @@ TypeHandle GeomBinNormal::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 GeomBinNormal::
-GeomBinNormal(const string &name, CullTraverser *traverser, int sort) :
-  GeomBinGroup(name, traverser, sort) 
+GeomBinNormal(const string &name) :
+  GeomBinGroup(name) 
 {
-  add_sub_bin(new GeomBinUnsorted("opaque"));
-  add_sub_bin(new GeomBinBackToFront("transparent"));
+  GeomBinUnsorted *opaque = new GeomBinUnsorted("opaque");
+  GeomBinBackToFront *transparent = new GeomBinBackToFront("transparent");
+  opaque->set_sort(10);
+  transparent->set_sort(20);
+
+  add_sub_bin(opaque);
+  add_sub_bin(transparent);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinNormal::Constructor
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Identifies the particular sub-bin the indicated
 //               CullState should be assigned to.
 ////////////////////////////////////////////////////////////////////
