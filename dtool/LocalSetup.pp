@@ -9,40 +9,12 @@
 // configure.
 //
 
-#if $[ne $[BUILD_TYPE],autoconf]
-
 #output dtool_config.h notouch
 #format straight
 /* dtool_config.h.  Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
 
-/* Define if your processor stores words with the most significant
-   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
-$[cdefine WORDS_BIGENDIAN]
-
-/* Define if the C++ compiler uses namespaces.  */
-$[cdefine HAVE_NAMESPACE]
-
-/* Define if the C++ iostream library supports ios::binary.  */
-$[cdefine HAVE_IOS_BINARY]
-
-/* Define if we can trust the compiler not to insert extra bytes in
-   structs between base structs and derived structs. */
-$[cdefine SIMPLE_STRUCT_POINTERS]
-
-/* Define if we have Dinkumware STL installed.  */
-$[cdefine HAVE_DINKUM]
-
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]
-
-/* Define if we want to track callbacks from within the show code.  */
-$[cdefine TRACK_IN_INTERPRETER]
-
-/* Define if we want to enable track-memory-usage.  */
-$[cdefine DO_MEMORY_USAGE]
-
-/* Define if we want to compile in support for pipelining.  */
-$[cdefine DO_PIPELINING]
 
 /* Define if we have RAD game tools, Miles Sound System installed.  */
 $[cdefine HAVE_RAD_MSS]
@@ -78,21 +50,10 @@ $[cdefine HAVE_NURBSPP]
 $[cdefine HAVE_VRPN]
 
 /* Define if we have zlib installed.  */
-/* $[ZLIB_LPATH] */
 $[cdefine HAVE_ZLIB]
-
-/* Define if we have sox libst installed.  */
-$[cdefine HAVE_SOXST]
 
 /* Define if we have OpenGL installed and want to build for GL.  */
 $[cdefine HAVE_GL]
-
-/* Define if we have Chromium OpenGL installed and want to build for GL.  */
-/* $[CHROMIUM_LPATH] */
-$[cdefine HAVE_CHROMIUM]
-
-/* Define if we have Chromium installed and want to run it in Windows.  */
-$[cdefine HAVE_WCR]
 
 /* Define if we want to build with SGI OpenGL extensions.  */
 $[cdefine HAVE_SGIGL]
@@ -109,8 +70,17 @@ $[cdefine HAVE_GLUT]
 /* Define if we have DirectX installed and want to build for DX.  */
 $[cdefine HAVE_DX]
 
+/* Define if we have Chromium OpenGL installed and want to build for GL.  */
+$[cdefine HAVE_CHROMIUM]
+
+/* Define if we have Chromium installed and want to run it in Windows.  */
+$[cdefine HAVE_WCR]
+
 /* Define if we want to build the Renderman interface.  */
 $[cdefine HAVE_RIB]
+
+/* Define if we have sox libst installed.  */
+$[cdefine HAVE_SOXST]
 
 /* Define if we want to use mikmod for audio.  */
 $[cdefine HAVE_MIKMOD]
@@ -121,28 +91,54 @@ $[cdefine HAVE_IPC]
 /* Define if we want to compile the net code.  */
 $[cdefine HAVE_NET]
 
+/* Define if we want to compile the audio code.  */
+$[cdefine HAVE_AUDIO]
+
+/* Define if we have bison and flex available. */
+$[cdefine HAVE_BISON]
+
 /* Define if we want to use PStats.  */
 $[cdefine DO_PSTATS]
+
+/* Define if we want to track callbacks from within the show code.  */
+$[cdefine TRACK_IN_INTERPRETER]
+
+/* Define if we want to enable track-memory-usage.  */
+$[cdefine DO_MEMORY_USAGE]
+
+/* Define if we want to compile in support for pipelining.  */
+$[cdefine DO_PIPELINING]
 
 /* Define if we want to keep Notify debug messages around, or undefine 
    to compile them out.  */
 $[cdefine NOTIFY_DEBUG]
 
-/* Define if we want to compile the audio code.  */
-$[cdefine HAVE_AUDIO]
-
 /* Define if we want to export template classes from the DLL.  Only
    makes sense to MSVC++. */
 $[cdefine EXPORT_TEMPLATES]
-
-/* Define if we have bison and flex available. */
-$[cdefine HAVE_BISON]
 
 /* Define if we are linking PANDAGL in with PANDA. */
 $[cdefine LINK_IN_GL]
 
 /* Define if we are linking PANDAPHYSICS in with PANDA. */
 $[cdefine LINK_IN_PHYSICS]
+
+/* Define if your processor stores words with the most significant
+   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
+$[cdefine WORDS_BIGENDIAN]
+
+/* Define if the C++ compiler uses namespaces.  */
+$[cdefine HAVE_NAMESPACE]
+
+/* Define if the C++ iostream library supports ios::binary.  */
+$[cdefine HAVE_IOS_BINARY]
+
+/* Define if we can trust the compiler not to insert extra bytes in
+   structs between base structs and derived structs. */
+$[cdefine SIMPLE_STRUCT_POINTERS]
+
+/* Define if we have Dinkumware STL installed.  */
+$[cdefine HAVE_DINKUM]
 
 /* Define if we have a gettimeofday() function. */
 $[cdefine HAVE_GETTIMEOFDAY]
@@ -256,5 +252,3 @@ $[cdefine MODERN_STYLE_ALLOCATOR]
 $[cdefine NO_STYLE_ALLOCATOR]
 
 #end dtool_config.h
-
-#endif   // BUILD_TYPE
