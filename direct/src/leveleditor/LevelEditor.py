@@ -3353,6 +3353,36 @@ class LevelStyleManager:
                 attribute.setList(styleLists[type])
                 # Store them according to neighborhood
                 attrDict[type][neighborhood] = attribute
+            
+        # Now create attribute entries sorted according to number of walls
+        attrDict = {}
+        # Create an attribute dictionary entry for each building height type
+        for i in range(1,4):
+            key = 'building_style_' + `i` + '_wall'
+            attrDict[i] = self.attributeDictionary[key] = {}
+        # For each neighborhood create attribute for each height type
+        for neighborhood in NEIGHBORHOODS:
+            # Temp lists to accumulate neighborhood styles
+            # sorted by height type
+            styleLists = {}
+            for i in range(1,4):
+                styleLists[i] = []
+                
+            # Sort through the styles and store in separate lists
+            for style in styleDict[neighborhood].getList():
+                # Put in code for number of walls into building styles
+                heightType = string.strip(string.split(style.name, ':')[1])
+                heightList = map(string.atof, string.split(heightType, '_'))
+                numWalls = len(heightList)
+                if styleLists.has_key(numWalls):
+                    styleLists[numWalls].append(style)
+                
+            # Now put these lists in appropriate neighborhood attribute
+            for i in range(1,4):
+                attribute = LevelAttribute('building_style_' + `i` + '_wall')
+                attribute.setList(styleLists[i])
+                # Store them according to neighborhood
+                attrDict[i][neighborhood] = attribute
     
     def createBuildingStyleDictionary(self, neighborhood):
         """
