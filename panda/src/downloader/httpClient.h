@@ -68,6 +68,7 @@ private:
   BIO *get_http_proxy(const URLSpec &url, const string &body);
   BIO *get_https_proxy(const URLSpec &url, const string &body);
 
+  BIO *make_https_connection(BIO *bio, const URLSpec &url) const;
   void send_get_request(BIO *bio, 
                         const string &path, const string &server, 
                         const string &body) const;

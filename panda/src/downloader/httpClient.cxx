@@ -63,6 +63,10 @@ load_certificates(const Filename &filename) {
     return false;
   }
 
+  downloader_cat.info()
+    << "Appending " << result << " SSL certificates from "
+    << filename << "\n";
+
   return true;
 }
 
@@ -118,8 +122,8 @@ make_ctx() {
   }
 #endif
 
-  // By default, insist on verifying servers.
-  set_verify_ssl(true);
+  // Insist on verifying servers if we are configured to.
+  set_verify_ssl(verify_ssl);
 
   // Load in any default certificates listed in the Configrc file.
   Config::ConfigTable::Symbol cert_files;
@@ -134,10 +138,7 @@ make_ctx() {
     string cert_file = (*si).Val();
     if (already_read.insert(cert_file).second) {
       Filename filename = Filename::from_os_specific(ExecutionEnvironment::expand_string(cert_file));
-      if (load_certificates(filename)) {
-        downloader_cat.info()
-          << "Appending SSL certificates from " << cert_file << "\n";
-      }
+      load_certificates(filename);
     }
   }
 }
@@ -281,28 +282,11 @@ get_https(const URLSpec &url, const string &body) {
     return NULL;
   }
 
-  BIO *sbio = BIO_new_ssl(_ssl_ctx, true);
-  BIO_push(sbio, bio);
+  BIO *sbio = make_https_connection(bio, url);
 
-  SSL *ssl;
-  BIO_get_ssl(sbio, &ssl);
-  nassertr(ssl != (SSL *)NULL, NULL);
-  SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
-
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
-      << "performing SSL handshake\n";
+  if (sbio != (BIO *)NULL) {
+    send_get_request(sbio, url.get_path(), url.get_server(), body);
   }
-  if (BIO_do_handshake(sbio) <= 0) {
-    downloader_cat.info()
-      << "Could not establish SSL handshake with " << server_str << "\n";
-#ifndef NDEBUG
-    ERR_print_errors_fp(stderr);
-#endif
-    return NULL;
-  }
-
-  send_get_request(sbio, url.get_path(), url.get_server(), body);
   return sbio;
 }
 
@@ -417,7 +401,24 @@ get_https_proxy(const URLSpec &url, const string &body) {
 
   // Ok, we now have a connection to our actual server, so start
   // speaking SSL and then ask for the document we really want.
+  BIO *sbio = make_https_connection(bio, url);
 
+  if (sbio != (BIO *)NULL) {
+    send_get_request(sbio, url.get_path(), url.get_server(), body);
+  }
+  return sbio;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::make_https_connection
+//       Access: Private
+//  Description: Starts speaking SSL over the opened connection and
+//               returns the appropriately modified bio.  Returns NULL
+//               if the connection cannot be established for some
+//               reason.
+////////////////////////////////////////////////////////////////////
+BIO *HTTPClient::
+make_https_connection(BIO *bio, const URLSpec &url) const {
   BIO *sbio = BIO_new_ssl(_ssl_ctx, true);
   BIO_push(sbio, bio);
 
@@ -440,9 +441,208 @@ get_https_proxy(const URLSpec &url, const string &body) {
     return NULL;
   }
 
-  send_get_request(sbio, url.get_path(), url.get_server(), body);
+  long verify_result = SSL_get_verify_result(ssl);
+  if (verify_result != X509_V_OK) {
+    downloader_cat.warning()
+      << "Unable to verify identity of " << url.get_server() << ":" 
+      << url.get_port() << ", verify error code " << verify_result << "\n";
+  }
+
+  X509 *cert = SSL_get_peer_certificate(ssl);
+  if (cert == (X509 *)NULL) {
+    downloader_cat.info()
+      << "No certificate was presented by server.\n";
+
+  } else {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "Received certificate from server:\n" << flush;
+      X509_print_fp(stderr, cert);
+      fflush(stderr);
+    }
+      
+    X509_free(cert);
+  }
+
   return sbio;
 }
+
+
+/*
+   Certificate verify error codes:
+
+0 X509_V_OK: ok
+
+    the operation was successful.
+
+2 X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT: unable to get issuer certificate
+
+    the issuer certificate could not be found: this occurs if the
+    issuer certificate of an untrusted certificate cannot be found.
+
+3 X509_V_ERR_UNABLE_TO_GET_CRL unable to get certificate CRL
+
+    the CRL of a certificate could not be found. Unused.
+
+4 X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE: unable to decrypt
+certificate's signature
+
+    the certificate signature could not be decrypted. This means that
+    the actual signature value could not be determined rather than it
+    not matching the expected value, this is only meaningful for RSA
+    keys.
+
+5 X509_V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE: unable to decrypt CRL's signature
+
+    the CRL signature could not be decrypted: this means that the
+    actual signature value could not be determined rather than it not
+    matching the expected value. Unused.
+
+6 X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY: unable to decode
+issuer public key
+
+    the public key in the certificate SubjectPublicKeyInfo could not
+    be read.
+
+7 X509_V_ERR_CERT_SIGNATURE_FAILURE: certificate signature failure
+
+    the signature of the certificate is invalid.
+
+8 X509_V_ERR_CRL_SIGNATURE_FAILURE: CRL signature failure
+
+    the signature of the certificate is invalid. Unused.
+
+9 X509_V_ERR_CERT_NOT_YET_VALID: certificate is not yet valid
+
+    the certificate is not yet valid: the notBefore date is after the
+    current time.
+
+10 X509_V_ERR_CERT_HAS_EXPIRED: certificate has expired
+
+    the certificate has expired: that is the notAfter date is before
+    the current time.
+
+11 X509_V_ERR_CRL_NOT_YET_VALID: CRL is not yet valid
+
+    the CRL is not yet valid. Unused.
+
+12 X509_V_ERR_CRL_HAS_EXPIRED: CRL has expired
+
+    the CRL has expired. Unused.
+
+13 X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD: format error in
+certificate's notBefore field
+
+    the certificate notBefore field contains an invalid time.
+
+14 X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD: format error in
+certificate's notAfter field
+
+    the certificate notAfter field contains an invalid time.
+
+15 X509_V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD: format error in CRL's
+lastUpdate field
+
+    the CRL lastUpdate field contains an invalid time. Unused.
+
+16 X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD: format error in CRL's
+nextUpdate field
+
+    the CRL nextUpdate field contains an invalid time. Unused.
+
+17 X509_V_ERR_OUT_OF_MEM: out of memory
+
+    an error occurred trying to allocate memory. This should never
+    happen.
+
+18 X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT: self signed certificate
+
+    the passed certificate is self signed and the same certificate
+    cannot be found in the list of trusted certificates.
+
+19 X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN: self signed certificate in
+certificate chain
+
+    the certificate chain could be built up using the untrusted
+    certificates but the root could not be found locally.
+
+20 X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY: unable to get local
+issuer certificate
+
+    the issuer certificate of a locally looked up certificate could
+    not be found. This normally means the list of trusted certificates
+    is not complete.
+
+21 X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE: unable to verify the
+first certificate
+
+    no signatures could be verified because the chain contains only
+    one certificate and it is not self signed.
+
+22 X509_V_ERR_CERT_CHAIN_TOO_LONG: certificate chain too long
+
+    the certificate chain length is greater than the supplied maximum
+    depth. Unused.
+
+23 X509_V_ERR_CERT_REVOKED: certificate revoked
+
+    the certificate has been revoked. Unused.
+
+24 X509_V_ERR_INVALID_CA: invalid CA certificate
+
+    a CA certificate is invalid. Either it is not a CA or its
+    extensions are not consistent with the supplied purpose.
+
+25 X509_V_ERR_PATH_LENGTH_EXCEEDED: path length constraint exceeded
+
+    the basicConstraints pathlength parameter has been exceeded.
+
+26 X509_V_ERR_INVALID_PURPOSE: unsupported certificate purpose
+
+    the supplied certificate cannot be used for the specified purpose.
+
+27 X509_V_ERR_CERT_UNTRUSTED: certificate not trusted
+
+    the root CA is not marked as trusted for the specified purpose.
+
+28 X509_V_ERR_CERT_REJECTED: certificate rejected
+
+    the root CA is marked to reject the specified purpose.
+
+29 X509_V_ERR_SUBJECT_ISSUER_MISMATCH: subject issuer mismatch
+
+    the current candidate issuer certificate was rejected because its
+    subject name did not match the issuer name of the current
+    certificate. Only displayed when the -issuer_checks option is set.
+
+30 X509_V_ERR_AKID_SKID_MISMATCH: authority and subject key identifier
+mismatch
+
+    the current candidate issuer certificate was rejected because its
+    subject key identifier was present and did not match the authority
+    key identifier current certificate. Only displayed when the
+    -issuer_checks option is set.
+
+31 X509_V_ERR_AKID_ISSUER_SERIAL_MISMATCH: authority and issuer serial
+number mismatch
+
+    the current candidate issuer certificate was rejected because its
+    issuer name and serial number was present and did not match the
+    authority key identifier of the current certificate. Only
+    displayed when the -issuer_checks option is set.
+
+32 X509_V_ERR_KEYUSAGE_NO_CERTSIGN:key usage does not include
+certificate signing
+
+    the current candidate issuer certificate was rejected because its
+    keyUsage extension does not permit certificate signing.
+
+50 X509_V_ERR_APPLICATION_VERIFICATION: application verification failure
+
+    an application specific error. Unused.
+
+*/
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::send_get_request

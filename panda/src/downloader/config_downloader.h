@@ -39,5 +39,6 @@ extern const float extractor_frequency;
 extern const int patcher_buffer_size;
 
 extern const bool early_random_seed;
+extern const bool verify_ssl;
 
 #endif

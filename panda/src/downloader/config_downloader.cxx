@@ -68,7 +68,15 @@ const int patcher_buffer_size =
 // needed, causing a delay the first time a https connection is
 // attempted.
 const bool early_random_seed =
-config_downloader.GetBool("early-random-seed", 1);
+config_downloader.GetBool("early-random-seed", true);
+
+// Configure this true (the default) to insist on verifying all SSL
+// (e.g. https) servers against a known certificate, or false to allow
+// an unverified connection.  This controls the default behavior; the
+// specific behavior for a particular HTTPClient can be adjusted at
+// runtime with set_verify_ssl().
+const bool verify_ssl =
+config_downloader.GetBool("verify-ssl", true);
 
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL
