@@ -154,6 +154,7 @@ private:
   WindowFramework::BackgroundType _background_type;
 
   NodePath _highlight;
+  NodePath _highlight_wireframe;
 
   bool _default_keys_enabled;
 

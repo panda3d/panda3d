@@ -24,6 +24,7 @@
 #include "collisionNode.h"
 #include "config_framework.h"
 #include "graphicsPipeSelection.h"
+#include "nodePathCollection.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::Constructor
@@ -45,6 +46,9 @@ PandaFramework() :
   _two_sided_enabled = false;
   _lighting_enabled = false;
   _background_type = WindowFramework::BT_gray;
+  _highlight_wireframe = NodePath("wireframe");
+  _highlight_wireframe.set_render_mode_wireframe(1);
+  _highlight_wireframe.set_color(1.0f, 0.0f, 0.0f, 1.0f, 1);
   _default_keys_enabled = false;
   _exit_flag = false;
 }
@@ -503,6 +507,13 @@ set_highlight(const NodePath &node) {
   if (!_highlight.is_empty()) {
     framework_cat.info(false) << _highlight << "\n";
     _highlight.show_bounds();
+
+    // Also create a new instance of the highlighted geometry, as a
+    // sibling of itself, under the special highlight property.
+    if (_highlight.has_parent()) {
+      _highlight_wireframe.reparent_to(_highlight.get_parent());
+      _highlight.instance_to(_highlight_wireframe);
+    }
   }
 }
 
@@ -516,6 +527,10 @@ clear_highlight() {
   if (!_highlight.is_empty()) {
     _highlight.hide_bounds();
     _highlight = NodePath();
+
+    // Clean up the special highlight instance.
+    _highlight_wireframe.detach_node();
+    _highlight_wireframe.get_children().detach();
   }
 }
 
@@ -897,6 +912,13 @@ event_arrow_left(CPT_Event, void *data) {
       int index = parent.node()->find_child(node.node());
       nassertv(index >= 0);
       int sibling = index - 1;
+
+      if (sibling >= 0 && 
+          parent.node()->get_child(sibling) == self->_highlight_wireframe.node()) {
+        // Skip over the special highlight node.
+        sibling--;
+      }
+
       if (sibling >= 0) {
         self->set_highlight(NodePath(parent, parent.node()->get_child(sibling)));
       }
@@ -923,6 +945,13 @@ event_arrow_right(CPT_Event, void *data) {
       nassertv(index >= 0);
       int num_children = parent.node()->get_num_children();
       int sibling = index + 1;
+
+      if (sibling < num_children && 
+          parent.node()->get_child(sibling) == self->_highlight_wireframe.node()) {
+        // Skip over the special highlight node.
+        sibling++;
+      }
+      
       if (sibling < num_children) {
         self->set_highlight(NodePath(parent, parent.node()->get_child(sibling)));
       }
