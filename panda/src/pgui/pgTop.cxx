@@ -35,6 +35,7 @@ PGTop(const string &name) :
   PandaNode(name)
 {
   _watcher_group = (PGMouseWatcherGroup *)NULL;
+  _start_sort = 0;
 
   // A PGTop node normally has an infinite bounding volume.  Screw
   // culling.
@@ -115,6 +116,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // PGTop node, for the convenience of PGItems to register themselves
   // as they are drawn.
   PGCullTraverser pg_trav(this, trav);
+  pg_trav._sort_index = _start_sort;
   pg_trav.traverse_below(data);
 
   // We've taken care of the traversal, thank you.

@@ -688,7 +688,10 @@ class ShowBase(DirectObject.DirectObject):
         # ratio.
         
         aspectRatio = self.getAspectRatio()
-        self.aspect2dp = self.render2dp.attachNewNode(PGTop("aspect2d"))
+        self.aspect2dp = self.render2dp.attachNewNode(PGTop("aspect2dp"))
+        # Temporary test for old panda.
+        if hasattr(PGTop, 'setStartSort'):
+            self.aspect2dp.node().setStartSort(16384)
         self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
 
         # It's important to know the bounds of the aspect2d screen.

@@ -61,6 +61,9 @@ PUBLISHED:
   void set_mouse_watcher(MouseWatcher *watcher);
   INLINE MouseWatcher *get_mouse_watcher() const;
 
+  INLINE void set_start_sort(int start_sort);
+  INLINE int get_start_sort() const;
+
 public:
   // These methods duplicate the functionality of MouseWatcherGroup.
   INLINE bool add_region(MouseWatcherRegion *region);
@@ -69,6 +72,7 @@ public:
 private:
   PT(MouseWatcher) _watcher;
   PGMouseWatcherGroup *_watcher_group;
+  int _start_sort;
   
 public:
   static TypeHandle get_class_type() {
