@@ -19,7 +19,7 @@
 #ifndef NOTIFYCATEGORYPROXY_H
 #define NOTIFYCATEGORYPROXY_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "notifyCategory.h"
 #include "notifySeverity.h"

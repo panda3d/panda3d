@@ -19,7 +19,7 @@
 #ifndef __SERIALIZATION_H__
 #define __SERIALIZATION_H__
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "config_setup.h"
 

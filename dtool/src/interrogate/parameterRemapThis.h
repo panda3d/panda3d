@@ -19,7 +19,7 @@
 #ifndef PARAMETERREMAPTHIS_H
 #define PARAMETERREMAPTHIS_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "parameterRemap.h"
 

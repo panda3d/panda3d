@@ -19,7 +19,7 @@
 #ifndef CPPTEMPLATESCOPE_H
 #define CPPTEMPLATESCOPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppScope.h"
 #include "cppTemplateParameterList.h"

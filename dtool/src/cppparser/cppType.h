@@ -19,7 +19,7 @@
 #ifndef CPPTYPE_H
 #define CPPTYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppDeclaration.h"
 

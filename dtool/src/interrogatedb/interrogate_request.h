@@ -19,7 +19,7 @@
 #ifndef INTERROGATE_REQUEST
 #define INTERROGATE_REQUEST
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 /*
  * The functions here are simple functions that are intended to be

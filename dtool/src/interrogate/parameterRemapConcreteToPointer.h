@@ -19,7 +19,7 @@
 #ifndef PARAMETERREMAPCONCRETETOPOINTER_H
 #define PARAMETERREMAPCONCRETETOPOINTER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "parameterRemap.h"
 

@@ -13,7 +13,7 @@
    GNU General Public License for more details.  */
 
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #ifndef HAVE_GETOPT_LONG_ONLY
 

@@ -19,7 +19,7 @@
 #ifndef CPPTOKEN_H
 #define CPPTOKEN_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppBisonDefs.h"
 

@@ -19,7 +19,7 @@
 #ifndef PARAMETERREMAPCHARSTARTOSTRING_H
 #define PARAMETERREMAPCHARSTARTOSTRING_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "parameterRemapToString.h"
 

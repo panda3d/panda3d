@@ -19,7 +19,7 @@
 #ifndef CPPPREPROCESSOR_H
 #define CPPPREPROCESSOR_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppManifest.h"
 #include "cppToken.h"

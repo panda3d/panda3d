@@ -19,7 +19,7 @@
 #ifndef PARAMETERREMAPTOSTRING_H
 #define PARAMETERREMAPTOSTRING_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "parameterRemap.h"
 

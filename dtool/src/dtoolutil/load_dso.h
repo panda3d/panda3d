@@ -19,7 +19,7 @@
 #ifndef LOAD_DSO_H
 #define LOAD_DSO_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "filename.h"
 

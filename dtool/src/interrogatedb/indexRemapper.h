@@ -19,7 +19,7 @@
 #ifndef INDEXREMAPPER_H
 #define INDEXREMAPPER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include <map>
 

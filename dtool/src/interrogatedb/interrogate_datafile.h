@@ -22,7 +22,7 @@
 // This file defines some convenience functions for reading and
 // writing the interrogate database files.
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 #include <vector>
 
 void idf_output_string(ostream &out, const string &str, char whitespace = ' ');

@@ -19,7 +19,7 @@
 #ifndef CPPREFERENCETYPE_H
 #define CPPREFERENCETYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppType.h"
 

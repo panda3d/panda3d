@@ -19,7 +19,7 @@
 #ifndef CPPVISIBILITY_H
 #define CPPVISIBILITY_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 enum CPPVisibility {
   V_published,

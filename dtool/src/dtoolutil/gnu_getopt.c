@@ -17,7 +17,7 @@
    GNU General Public License for more details.  */
 
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #if !defined(HAVE_GETOPT) || !defined(HAVE_GETOPT_LONG_ONLY)
 

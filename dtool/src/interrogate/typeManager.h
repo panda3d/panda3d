@@ -19,7 +19,7 @@
 #ifndef TYPEMANAGER_H
 #define TYPEMANAGER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 class CPPFunctionGroup;
 class CPPInstance;

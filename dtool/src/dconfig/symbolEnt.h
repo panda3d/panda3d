@@ -19,7 +19,7 @@
 #ifndef SYMBOLENT_H
 #define SYMBOLENT_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "config_setup.h"
 #include "pvector.h"

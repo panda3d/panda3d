@@ -19,7 +19,7 @@
 #ifndef CPPTYPEDECLARATION_H
 #define CPPTYPEDECLARATION_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppInstance.h"
 

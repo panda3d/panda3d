@@ -19,9 +19,9 @@
 #ifndef CONFIG_INTERROGATEDB_H
 #define CONFIG_INTERROGATEDB_H
 
-#include <dtoolbase.h>
-#include <notifyCategoryProxy.h>
-#include <dSearchPath.h>
+#include "dtoolbase.h"
+#include "notifyCategoryProxy.h"
+#include "dSearchPath.h"
 
 NotifyCategoryDecl(interrogatedb, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
 

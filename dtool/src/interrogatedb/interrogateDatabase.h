@@ -19,7 +19,7 @@
 #ifndef INTERROGATEDATABASE_H
 #define INTERROGATEDATABASE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "interrogate_interface.h"
 #include "interrogateType.h"

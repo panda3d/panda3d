@@ -19,7 +19,7 @@
 #ifndef INTERROGATEFUNCTIONWRAPPER_H
 #define INTERROGATEFUNCTIONWRAPPER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "interrogateComponent.h"
 

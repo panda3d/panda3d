@@ -80,9 +80,9 @@ upcase_string(const string &str) {
 
 int
 write_python_table(ostream &out) {
-  out << "\n#include <dtoolbase.h>\n"
-      << "#include <interrogate_request.h>\n\n"
-      << "#include <Python.h>\n\n";
+  out << "\n#include \"dtoolbase.h\"\n"
+      << "#include \"interrogate_request.h\"\n\n"
+      << "#include \"Python.h\"\n\n";
 
   int count = 0;
 

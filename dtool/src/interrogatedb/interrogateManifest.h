@@ -19,7 +19,7 @@
 #ifndef INTERROGATEMANIFEST_H
 #define INTERROGATEMANIFEST_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "interrogateComponent.h"
 

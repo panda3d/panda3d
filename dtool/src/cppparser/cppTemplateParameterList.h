@@ -19,7 +19,7 @@
 #ifndef CPPTEMPLATEPARAMETERLIST_H
 #define CPPTEMPLATEPARAMETERLIST_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppDeclaration.h"
 

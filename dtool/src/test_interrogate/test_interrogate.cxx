@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
-#include <interrogate_interface.h>
-#include <interrogate_request.h>
-#include <load_dso.h>
-#include <filename.h>
-#include <pystub.h>
+#include "interrogate_interface.h"
+#include "interrogate_request.h"
+#include "load_dso.h"
+#include "filename.h"
+#include "pystub.h"
 
 #include <stdlib.h>
 

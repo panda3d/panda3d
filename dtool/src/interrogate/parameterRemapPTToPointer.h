@@ -19,7 +19,7 @@
 #ifndef PARAMETERREMAPPTTOPOINTER_H
 #define PARAMETERREMAPPTTOPOINTER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "parameterRemap.h"
 

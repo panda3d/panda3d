@@ -6,10 +6,10 @@
 
 
 #include "interrogate_interface.h"
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #undef HAVE_LONG_LONG
-#include <Python.h>
+#include "Python.h"
 
 extern "C" {
 

@@ -19,7 +19,7 @@
 #ifndef INTERROGATECOMPONENT_H
 #define INTERROGATECOMPONENT_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "interrogate_interface.h"
 #include "interrogate_request.h"

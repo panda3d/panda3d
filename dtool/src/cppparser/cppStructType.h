@@ -19,7 +19,7 @@
 #ifndef CPPSTRUCTTYPE_H
 #define CPPSTRUCTTYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppExtensionType.h"
 #include "cppVisibility.h"

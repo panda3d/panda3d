@@ -19,7 +19,7 @@
 #ifndef __PFSTREAMBUF_H__
 #define __PFSTREAMBUF_H__
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 #include <string>
 #include <stdio.h>
 

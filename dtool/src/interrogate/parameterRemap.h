@@ -19,9 +19,9 @@
 #ifndef PARAMETERREMAP_H
 #define PARAMETERREMAP_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
-#include <interrogate_interface.h>
+#include "interrogate_interface.h"
 
 class CPPType;
 class CPPExpression;

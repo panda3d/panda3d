@@ -19,7 +19,7 @@
 #ifndef PYSTUB_H
 #define PYSTUB_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 // The sole purpose of this header file is to allow a program other
 // than Python to load in a module that includes Python wrappers.

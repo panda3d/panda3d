@@ -19,7 +19,7 @@
 #ifndef CPPTBDTYPE_H
 #define CPPTBDTYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppType.h"
 

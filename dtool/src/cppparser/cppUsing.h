@@ -19,7 +19,7 @@
 #ifndef CPPUSING_H
 #define CPPUSING_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppDeclaration.h"
 

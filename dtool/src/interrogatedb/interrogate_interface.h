@@ -19,7 +19,7 @@
 #ifndef INTERROGATE_INTERFACE_H
 #define INTERROGATE_INTERFACE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #ifdef __cplusplus
 extern "C" {

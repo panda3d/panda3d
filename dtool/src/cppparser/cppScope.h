@@ -19,7 +19,7 @@
 #ifndef CPPSCOPE_H
 #define CPPSCOPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppVisibility.h"
 #include "cppTemplateParameterList.h"

@@ -19,7 +19,7 @@
 #ifndef PARAMETERREMAPENUMTOINT_H
 #define PARAMETERREMAPENUMTOINT_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "parameterRemap.h"
 

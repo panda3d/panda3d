@@ -19,7 +19,7 @@
 #ifndef CPPPOINTERTYPE_H
 #define CPPPOINTERTYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppType.h"
 

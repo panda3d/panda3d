@@ -19,7 +19,7 @@
 #ifndef CPPSIMPLETYPE_H
 #define CPPSIMPLETYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppType.h"
 

@@ -19,7 +19,7 @@
 #ifndef CPPTYPEPROXY_H
 #define CPPTYPEPROXY_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppType.h"
 
