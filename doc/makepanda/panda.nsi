@@ -99,9 +99,9 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR\include
             File /r /x *.exp ${PANDA}\include\*
             SetOutPath $INSTDIR\SceneEditor
-            File /r /x CVS ${PSOURCE}\SceneEditor
+            File /r /x CVS ${PSOURCE}\SceneEditor\*.py
             SetOutPath $INSTDIR\Pmw
-            File /r /x CVS ${PANDA}\Pmw
+            File /r /x CVS ${PANDA}\Pmw\*.py
             SetOutPath $INSTDIR
             File /r /x CVS ${PSOURCE}\doc\ReleaseNotes
 
