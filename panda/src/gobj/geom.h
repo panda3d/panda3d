@@ -182,6 +182,8 @@ public:
   virtual int get_num_more_vertices_than_components() const=0;
   virtual bool uses_components() const=0;
 
+  int get_num_vertices() const;
+
   // Returns the length of the indicated primitive.  Often this is the
   // same for all primitives in the Geom.  However, geoms which use
   // the lengths array will redefine this appropriately.

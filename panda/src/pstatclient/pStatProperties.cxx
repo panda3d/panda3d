@@ -64,10 +64,15 @@ static TimeCollectorProperties time_properties[] = {
 };
 
 static LevelCollectorProperties level_properties[] = {
-  { "Texture usage",                    { 1.0, 0.0, 0.0 },  "MB", 8.0 },
+  { "Texture usage",                    { 1.0, 0.0, 0.0 },  "MB", 12.0 },
   { "Texture usage:Active",             { 1.0, 1.0, 0.0 } },
-  { "Texture memory",                   { 0.0, 0.0, 1.0 },  "MB", 8.0 },
+  { "Texture memory",                   { 0.0, 0.0, 1.0 },  "MB", 12.0 },
   { "Texture memory:In use",            { 0.0, 1.0, 1.0 } },
+  { "Vertices",                         { 0.5, 0.2, 0.0 },  "", 10000.0 },
+  { "Vertices:Other",                   { 0.2, 0.2, 0.2 } },
+  { "Vertices:Triangles",               { 0.8, 0.8, 0.8 } },
+  { "Vertices:Triangle fans",           { 0.8, 0.5, 0.2 } },
+  { "Vertices:Triangle strips",         { 0.2, 0.5, 0.8 } },
   { NULL }
 };
 

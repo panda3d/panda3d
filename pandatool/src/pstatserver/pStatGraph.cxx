@@ -180,12 +180,9 @@ public:
     _client_data(client_data) {
   }
   bool operator () (int a, int b) const {
-    // By casting the sort numbers to unsigned ints, we cheat and make
-    // -1 appear to be a very large positive integer, thus placing
-    // collectors with a -1 sort value at the very end.
     return 
-      (unsigned int)_client_data->get_collector_def(a)._sort <
-      (unsigned int)_client_data->get_collector_def(b)._sort;
+      _client_data->get_collector_def(a)._sort >
+      _client_data->get_collector_def(b)._sort;
   }
   const PStatClientData *_client_data;
 };

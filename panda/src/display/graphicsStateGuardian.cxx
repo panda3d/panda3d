@@ -19,6 +19,11 @@ PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage"
 PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
 PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory");
 PStatCollector GraphicsStateGuardian::_used_texmem_pcollector("Texture memory:In use");
+PStatCollector GraphicsStateGuardian::_vertices_pcollector("Vertices");
+PStatCollector GraphicsStateGuardian::_vertices_tristrip_pcollector("Vertices:Triangle strips");
+PStatCollector GraphicsStateGuardian::_vertices_trifan_pcollector("Vertices:Triangle fans");
+PStatCollector GraphicsStateGuardian::_vertices_tri_pcollector("Vertices:Triangles");
+PStatCollector GraphicsStateGuardian::_vertices_other_pcollector("Vertices:Other");
 #endif
 
 TypeHandle GraphicsStateGuardian::_type_handle;

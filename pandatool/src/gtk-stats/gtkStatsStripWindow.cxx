@@ -66,25 +66,45 @@ mark_dead() {
 void GtkStatsStripWindow::
 new_collector() {
   const PStatClientData *client_data = _monitor->get_client_data();
-  _levels_menu->items().clear();
+
+  // Determine the set of collectors that display level data.  We'll
+  // want to put these on the "Levels" pull-down menu.
+
+  set<int> levels;
 
   int num_collectors = client_data->get_num_collectors();
   for (int i = 0; i < num_collectors; i++) {
     if (client_data->has_collector(i) &&
         client_data->get_collector_has_level(i)) {
+      // We only put top-level entries on the menu.  Thus, walk up
+      // from this collector to its top level (the one below Frame).
+      int collector_index = i;
       const PStatCollectorDef &def =
-        client_data->get_collector_def(i);
+        client_data->get_collector_def(collector_index);
+      int parent_index = def._parent_index;
 
-      // Normally, we only put top-level entries on the menu.  The
-      // lower entries can take care of themselves.
-      if (def._parent_index == 0) {
-        _levels_menu->items().push_back
-          (MenuElem(client_data->get_collector_name(i),
-                    bind(slot(this, &GtkStatsStripWindow::menu_show_levels), i)));
+      while (parent_index != 0) {
+        collector_index = parent_index;
+        const PStatCollectorDef &def =
+          client_data->get_collector_def(collector_index);
+        parent_index = def._parent_index;
       }
+
+      levels.insert(collector_index);
     }
   }
 
+  // Now put the collectors we found on the menu.
+  _levels_menu->items().clear();
+  set<int>::const_iterator li;
+  for (li = levels.begin(); li != levels.end(); ++li) {
+    int collector_index = (*li);
+    _levels_menu->items().push_back
+      (MenuElem(client_data->get_collector_name(collector_index),
+                bind(slot(this, &GtkStatsStripWindow::menu_show_levels), collector_index)));
+  }
+
+  // Also re-set-up the scale menu, in case the properties have changed.
   setup_scale_menu();
 }
 

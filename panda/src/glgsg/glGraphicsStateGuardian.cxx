@@ -485,6 +485,12 @@ render_frame(const AllAttributesWrapper &initial_state) {
   NodeAttributes state;
   state.set_attribute(TextureTransition::get_class_type(), new TextureAttribute);
   set_state(state, false);
+
+  // Also clear out our vertex counters while we're here.
+  _vertices_tristrip_pcollector.set_level(0);
+  _vertices_trifan_pcollector.set_level(0);
+  _vertices_tri_pcollector.set_level(0);
+  _vertices_other_pcollector.set_level(0);
 #endif
 
   if (_clear_buffer_type != 0) {
@@ -717,6 +723,7 @@ draw_point(const GeomPoint *geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_point()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glPointSize(geom->get_size());
 
@@ -775,6 +782,7 @@ draw_line(const GeomLine* geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_line()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
   
   call_glLineWidth(geom->get_width());
  
@@ -835,6 +843,7 @@ draw_linestrip(const GeomLinestrip* geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_linestrip()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   call_glLineWidth(geom->get_width());
 
@@ -945,6 +954,7 @@ draw_sprite(const GeomSprite *geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   Texture *tex = geom->get_texture();
   nassertv(tex != (Texture *) NULL);
@@ -1219,6 +1229,7 @@ draw_polygon(const GeomPolygon *geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   int nprims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
@@ -1291,6 +1302,7 @@ draw_tri(const GeomTri *geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tri()" << endl;
 #endif
+  _vertices_tri_pcollector.add_level(geom->get_num_vertices());
 
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
@@ -1358,6 +1370,7 @@ draw_quad(const GeomQuad *geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_quad()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
@@ -1425,6 +1438,7 @@ draw_tristrip(const GeomTristrip *geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
+  _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
 
   int nprims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
@@ -1514,6 +1528,7 @@ draw_trifan(const GeomTrifan *geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
+  _vertices_trifan_pcollector.add_level(geom->get_num_vertices());
 
   int nprims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
@@ -1604,6 +1619,7 @@ draw_sphere(const GeomSphere *geom) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
  
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();

@@ -307,6 +307,26 @@ get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_num_vertices
+//       Access: Public
+//  Description: Returns the number of vertices required by all all
+//               the prims in the Geom.
+////////////////////////////////////////////////////////////////////
+int Geom::
+get_num_vertices() const {
+  if (!uses_components()) {
+    return get_num_vertices_per_prim() * get_num_prims();
+  }
+
+  int total = 0;
+  for (int i = 0; i < get_num_prims(); i++) {
+    total += _primlengths[i];
+  }
+
+  return total;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::explode
 //       Access: Public, Virtual
 //  Description: If the Geom is a composite type such as a tristrip,

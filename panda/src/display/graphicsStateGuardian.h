@@ -175,6 +175,11 @@ protected:
   static PStatCollector _active_texusage_pcollector;
   static PStatCollector _total_texmem_pcollector;
   static PStatCollector _used_texmem_pcollector;
+  static PStatCollector _vertices_pcollector;
+  static PStatCollector _vertices_tristrip_pcollector;
+  static PStatCollector _vertices_trifan_pcollector;
+  static PStatCollector _vertices_tri_pcollector;
+  static PStatCollector _vertices_other_pcollector;
 
 private:
   typedef set<TextureContext *> Textures;
