@@ -264,7 +264,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
     static const double max_range_8 = 127.0;
 
     double scale_factor = get_scale_factor(i, length);
-    double num = floor(half_complex[i] / scale_factor + 0.5);
+    double num = cfloor(half_complex[i] / scale_factor + 0.5);
 
     // How many bits do we need to encode this integer?
     double a = fabs(num);

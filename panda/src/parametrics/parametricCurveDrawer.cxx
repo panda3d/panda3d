@@ -327,7 +327,7 @@ draw() {
   // Make sure the curve(s) are fresh.
   _curves->recompute();
 
-  int total_segs = (int)floor(_curves->get_max_t() * _num_segs + 0.5);
+  int total_segs = (int)cfloor(_curves->get_max_t() * _num_segs + 0.5);
 
   float max_t = xyz_curve->get_max_t();
   float scale = max_t / (float)(total_segs-1);
@@ -358,7 +358,7 @@ draw() {
 
   // Now draw the time tick marks.
   if (_num_ticks > 0.0f) {
-    int total_ticks = (int)floor(max_t * _num_ticks + 0.5);
+    int total_ticks = (int)cfloor(max_t * _num_ticks + 0.5);
     ParametricCurve *xyz_curve = _curves->get_default_curve();
     ParametricCurve *hpr_curve = _curves->get_hpr_curve();
 

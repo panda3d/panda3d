@@ -337,7 +337,7 @@ make_even(float max_t, float segments_per_unit) {
   // approximately the same length as all the others.
   CurveFitter fitter;
 
-  int num_segments = max(1, (int)floor(segments_per_unit * xyz_curve->get_max_t() + 0.5f));
+  int num_segments = max(1, (int)cfloor(segments_per_unit * xyz_curve->get_max_t() + 0.5f));
 
   if (parametrics_cat.is_debug()) {
     parametrics_cat.debug()
@@ -426,7 +426,7 @@ face_forward(float segments_per_unit) {
   CurveFitter fitter;
 
   float max_t = get_max_t();
-  int num_segments = (int)floor(segments_per_unit * max_t + 0.5);
+  int num_segments = (int)cfloor(segments_per_unit * max_t + 0.5);
 
   LVecBase3f hpr(0.0f, 0.0f, 0.0f);
 

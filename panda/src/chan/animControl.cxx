@@ -387,7 +387,7 @@ advance_time(double time) {
           // anyway (no need to convert to integer format and back
           // again), and because we need correct behavior when the
           // frame number is negative.
-          _frame = _frame - floor(_frame / num_frames) * num_frames;
+          _frame = _frame - cfloor(_frame / num_frames) * num_frames;
           new_frame = get_frame();
           do_actions_backward(get_num_frames(), new_frame);
         }
@@ -404,7 +404,7 @@ advance_time(double time) {
           // anyway (no need to convert to integer format and back
           // again), and because we need correct behavior when the
           // frame number is negative.
-          _frame = _frame - floor(_frame / num_frames) * num_frames;
+          _frame = _frame - cfloor(_frame / num_frames) * num_frames;
           new_frame = get_frame();
           do_actions_forward(0, new_frame);
         }

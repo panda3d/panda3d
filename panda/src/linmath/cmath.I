@@ -96,6 +96,38 @@ INLINE_LINMATH float catan2(float y, float x) {
   return atan2f(y, x);
 }
 
+#ifdef __INTEL_COMPILER
+// see float.h
+#define FPU_CONTROLWORD_WRITEMASK    0xFFFFF        // if you look at defn of _CW_DEFAULT, all settings fall within 0xFFFFF
+#define FPU_CONTROLWORD_NEW_SETTING  _CW_DEFAULT
+#endif  
+
+INLINE_LINMATH double cfloor(double f) {
+  #ifdef __INTEL_COMPILER
+    // intel floor doesnt work right if fpu mode is not double, so make double-prec mode is on
+    unsigned int saved_fpu_control_word=_controlfp(0x0,0x0);
+    _controlfp(FPU_CONTROLWORD_NEW_SETTING,FPU_CONTROLWORD_WRITEMASK);
+    double retval=floor(f);
+    _controlfp(saved_fpu_control_word,FPU_CONTROLWORD_WRITEMASK);
+    return retval;
+  #else
+    return floor(f);  
+  #endif
+}
+
+INLINE_LINMATH double cceil(double f) {
+  #ifdef __INTEL_COMPILER
+    // intel ceil doesnt work right if fpu mode is not double, so make double-prec mode is on
+    unsigned int saved_fpu_control_word=_controlfp(0x0,0x0);
+    _controlfp(FPU_CONTROLWORD_NEW_SETTING,FPU_CONTROLWORD_WRITEMASK);
+    double retval=ceil(f);
+    _controlfp(saved_fpu_control_word,FPU_CONTROLWORD_WRITEMASK);
+    return retval;
+  #else
+    return ceil(f);  
+  #endif
+}
+
 INLINE_LINMATH double csqrt(double v) {
   return sqrt(v);
 }

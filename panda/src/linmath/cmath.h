@@ -37,7 +37,11 @@ INLINE_LINMATH void  csincos(float v, float *pSinResult, float *pCosResult);  //
 INLINE_LINMATH float cabs(float v);
 INLINE_LINMATH float catan(float v);
 INLINE_LINMATH float catan2(float y, float x);
+//INLINE_LINMATH float cfloor(float f);
+//INLINE_LINMATH float cceil(float f);
 
+INLINE_LINMATH double cfloor(double f);
+INLINE_LINMATH double cceil(double f);
 INLINE_LINMATH double csqrt(double v);
 INLINE_LINMATH double csin(double v);
 INLINE_LINMATH double ccos(double v);

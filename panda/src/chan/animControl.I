@@ -75,7 +75,7 @@ get_frame() const {
   // We have to use floor() here instead of simply casting the number
   // to an integer, becase the frame number might have become
   // negative.
-  return (int)floor(_frame + 0.0001);
+  return (int)cfloor(_frame + 0.0001);
 }
 
 ////////////////////////////////////////////////////////////////////

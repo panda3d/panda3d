@@ -29,7 +29,7 @@
 #include <referenceCount.h>
 #include <event.h>
 #include <pt_Event.h>
-
+#include <cmath.h>
 #include <string>
 #include "pmap.h"
 

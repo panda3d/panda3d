@@ -1,11 +1,13 @@
 #define OTHER_LIBS dtoolconfig dtool
-#define LOCAL_LIBS pandabase
+#define LOCAL_LIBS pandabase linmath
 
 #begin lib_target
   #define TARGET tiff
+  
+   // Note: tif_aux.c switched to tif_aux.cxx, so cmath.h can be included for our fixed floor()
 
    #define SHARED_SRCS \
-     tif_aux.c tif_close.c tif_codec.c tif_compress.c tif_dir.c  \
+     tif_aux.cxx tif_close.c tif_codec.c tif_compress.c tif_dir.c  \
      tif_dirinfo.c tif_dirread.c tif_dirwrite.c tif_dumpmode.c  \
      tif_error.c tif_fax3.c tif_flush.c tif_jpeg.c tif_luv.c  \
      tif_lzw.c tif_next.c tif_open.c tif_packbits.c  \

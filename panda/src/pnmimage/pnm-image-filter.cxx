@@ -37,8 +37,8 @@
 // each channel in the image.
 
 #include <pandabase.h>
-
 #include <math.h>
+#include <cmath.h>
 
 #include "pnmImage.h"
 
@@ -123,7 +123,7 @@ filter_row(StoreType dest[], int dest_len,
   // Similarly, if we are expanding the row, we want to start the new row at
   // the far left edge of the original pixel, not in the center.  So we will
   // have a non-zero offset.
-  int offset = (int)floor(iscale*0.5);
+  int offset = (int)cfloor(iscale*0.5);
 
   for (int dest_x=0; dest_x<dest_len; dest_x++) {
     double center = (dest_x-offset)/scale;
@@ -131,12 +131,12 @@ filter_row(StoreType dest[], int dest_len,
     // left and right are the starting and ending ranges of the radius of
     // interest of the filter function.  We need to apply the filter to each
     // value in this range.
-    int left = max((int)floor(center - filter_width), 0);
-    int right = min((int)ceil(center + filter_width), source_len-1);
+    int left = max((int)cfloor(center - filter_width), 0);
+    int right = min((int)cceil(center + filter_width), source_len-1);
 
     // right_center is the point just to the right of the center.  This
     // allows us to flip the sign of the offset when we cross the center point.
-    int right_center = (int)ceil(center);
+    int right_center = (int)cceil(center);
 
     WorkType net_weight = 0;
     WorkType net_value = 0;
@@ -197,7 +197,7 @@ box_filter_impl(double scale, double width,
     fscale = scale;
   }
   filter_width = width;
-  int actual_width = (int)ceil((filter_width+1) * fscale);
+  int actual_width = (int)cceil((filter_width+1) * fscale);
 
   filter = new WorkType[actual_width];
 
@@ -224,7 +224,7 @@ gaussian_filter_impl(double scale, double width,
   }
   double sigma = width/2;
   filter_width = 3.0 * sigma;
-  int actual_width = (int)ceil((filter_width+1) * fscale);
+  int actual_width = (int)cceil((filter_width+1) * fscale);
 
   // G(x, y) = (1/(2 pi sigma^2)) * exp( - (x^2 + y^2) / (2 sigma^2))
 

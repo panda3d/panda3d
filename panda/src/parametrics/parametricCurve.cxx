@@ -251,7 +251,7 @@ find_length(float start_t, float length_offset) const {
 
   // Start with a segment for each unit of t.
   float max_t = get_max_t();
-  int num_segs = (int)floor(max_t - start_t + 1);
+  int num_segs = (int)cfloor(max_t - start_t + 1);
   t2 = start_t;
   get_point(t2, p2);
   float net = 0.0f;

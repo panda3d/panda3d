@@ -163,7 +163,7 @@ write_datagram(BamWriter *manager, Datagram &me)
     for (i = 0;
          i < (int)_table.size() && (int)index.size() <= max_values;
          i++) {
-      int value = (int)floor(_table[i] * scale + 0.5f);
+      int value = (int)cfloor(_table[i] * scale + 0.5f);
       index.insert(pmap<int, int>::value_type(value, index.size()));
     }
     int index_length = index.size();
@@ -200,8 +200,8 @@ write_datagram(BamWriter *manager, Datagram &me)
 
         } else {
           for (i = 0; i < table_length - 1; i+= 2) {
-            int value1 = (int)floor(_table[i] * scale + 0.5f);
-            int value2 = (int)floor(_table[i + 1] * scale + 0.5f);
+            int value1 = (int)cfloor(_table[i] * scale + 0.5f);
+            int value2 = (int)cfloor(_table[i + 1] * scale + 0.5f);
             int i1 = index[value1];
             int i2 = index[value2];
 
@@ -210,7 +210,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 
           // There might be one odd value.
           if (i < table_length) {
-            int value1 = (int)floor(_table[i] * scale + 0.5f);
+            int value1 = (int)cfloor(_table[i] * scale + 0.5f);
             int i1 = index[value1];
 
             me.add_uint8(i1 << 4);
