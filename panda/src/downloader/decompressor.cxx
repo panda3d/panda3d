@@ -104,10 +104,12 @@ request_decompress(const Filename &source_file, const string &event_name) {
   string extension = source_file.get_extension();
   if (extension == "pz")
     dest_file = source_file.get_fullpath_wo_extension();
-  else
-    downloader_cat.debug()
-      << "Decompressor::request_decompress() - Unknown file extension: ."
-      << extension << endl; 
+  else {
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Decompressor::request_decompress() - Unknown file extension: ."
+        << extension << endl; 
+  }
   return request_decompress(source_file, dest_file, event_name);
 }
 
@@ -229,9 +231,10 @@ decompress(Filename &source_file) {
   if (extension == "pz")
     dest_file = source_file.get_fullpath_wo_extension();
   else {
-    downloader_cat.debug()
-      << "Decompressor::request_decompress() - Unknown file extension: ."
-      << extension << endl;
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Decompressor::request_decompress() - Unknown file extension: ."
+        << extension << endl;
     return false;
   }
   return decompress(source_file, dest_file);

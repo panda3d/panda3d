@@ -106,13 +106,11 @@ bool Texture::read(const string &name, const string &gray) {
     return false;
   }
 
-  int new_xsize, new_ysize;
-  int new_gxsize, new_gysize;
   if (max_texture_dimension > 0 &&
       (pnmimage.get_x_size() > max_texture_dimension ||
        pnmimage.get_y_size() > max_texture_dimension)) {
-    new_xsize = min(pnmimage.get_x_size(), max_texture_dimension);
-    new_ysize = min(pnmimage.get_y_size(), max_texture_dimension);
+    int new_xsize = min(pnmimage.get_x_size(), max_texture_dimension);
+    int new_ysize = min(pnmimage.get_y_size(), max_texture_dimension);
     gobj_cat.info()
       << "Automatically rescaling " << name << " from " 
       << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
@@ -128,8 +126,8 @@ bool Texture::read(const string &name, const string &gray) {
   if (max_texture_dimension > 0 &&
       (grayimage.get_x_size() > max_texture_dimension ||
        grayimage.get_y_size() > max_texture_dimension)) {
-    new_gxsize = min(grayimage.get_x_size(), max_texture_dimension);
-    new_gysize = min(grayimage.get_y_size(), max_texture_dimension);
+    int new_xsize = min(grayimage.get_x_size(), max_texture_dimension);
+    int new_ysize = min(grayimage.get_y_size(), max_texture_dimension);
     gobj_cat.info()
       << "Automatically rescaling " << gray << " from " 
       << grayimage.get_x_size() << " by " << grayimage.get_y_size() << " to "
@@ -142,17 +140,22 @@ bool Texture::read(const string &name, const string &gray) {
   }
 
   // Make sure the 2 images are the same size
-  if ((new_xsize != new_gxsize) || (new_ysize != new_gysize)) {
+  int xsize = pnmimage.get_x_size();
+  int ysize = pnmimage.get_y_size();
+  int gxsize = grayimage.get_x_size();
+  int gysize = grayimage.get_y_size();
+  if ((xsize != gxsize) || (ysize != gysize)) {
     gobj_cat.error()
-      << "Texture::read() - grayscale image not the same size as original"
-      << endl;
+      << "Texture::read() - grayscale image not the same size as original - "
+      << "orig = " << xsize << "x" << ysize << " - gray = " << gxsize
+      << "x" << gysize << endl;
     return false;
   }
   
   // Make the original image a 4-component image
   pnmimage.add_alpha();
-  for (int x = 0; x < new_xsize; x++) {
-    for (int y = 0; y < new_ysize; y++) { 
+  for (int x = 0; x < xsize; x++) {
+    for (int y = 0; y < ysize; y++) { 
       pnmimage.set_alpha(x, y, grayimage.get_gray(x, y));
     }
   }

@@ -44,6 +44,20 @@ load_texture(const string &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::load_texture
+//       Access: Public, Static
+//  Description: Loads the given filename up into a texture, if it has
+//               not already been loaded, and returns the new texture.
+//               If a texture with the same filename was previously
+//               loaded, returns that one instead.  If the texture
+//               file cannot be found, returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TexturePool::
+load_texture(const string &filename, const string &grayfilename) {
+  return get_ptr()->ns_load_texture(filename, grayfilename);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::add_texture
 //       Access: Public, Static
 //  Description: Adds the indicated already-loaded texture to the

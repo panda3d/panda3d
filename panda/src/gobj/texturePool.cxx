@@ -62,6 +62,37 @@ ns_load_texture(Filename filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_load_texture
+//       Access: Private
+//  Description: The nonstatic implementation of load_texture().
+////////////////////////////////////////////////////////////////////
+Texture *TexturePool::
+ns_load_texture(Filename filename, Filename grayfilename) {
+  filename.resolve_filename(get_texture_path());
+  filename.resolve_filename(get_model_path());
+
+  Textures::const_iterator ti;
+  ti = _textures.find(filename);
+  if (ti != _textures.end()) {
+    // This texture was previously loaded.
+    return (*ti).second;
+  }
+
+  gobj_cat.info()
+    << "Loading texture " << filename << " and grayscale texture "
+    << grayfilename << endl;
+  PT(Texture) tex = new Texture;
+  if (!tex->read(filename, grayfilename)) {
+    // This texture was not found.
+    gobj_cat.error() << "Unable to read texture " << filename << "\n";
+    return NULL;
+  }
+
+  _textures[filename] = tex;
+  return tex;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::ns_add_texture
 //       Access: Private
 //  Description: The nonstatic implementation of add_texture().

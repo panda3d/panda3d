@@ -753,6 +753,10 @@ write_to_disk(DownloadStatus &status) {
     _buffer_lock.lock();
 #endif
 
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+	<< "Downloader::write_to_buffer() - resizing buffer to: "
+	<< _new_buffer_size << endl;
     _buffer.clear();
     _buffer = new Buffer(_new_buffer_size);
     _buffer_size = _new_buffer_size;
