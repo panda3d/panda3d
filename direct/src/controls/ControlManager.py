@@ -121,7 +121,7 @@ class ControlManager:
             #    print "Controls are already", name
         else:
             print "Unkown controls:", name
-    
+
     def setSpeeds(self, forwardSpeed, jumpForce,
             reverseSpeed, rotateSpeed):
         assert self.notify.debugCall(id(self))

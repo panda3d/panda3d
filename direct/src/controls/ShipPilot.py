@@ -810,7 +810,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.ignore("control-f3") #*#
             self.ignore("f3")
 
-    
     if __debug__:
         def setupAvatarPhysicsIndicator(self):
             if self.wantDebugIndicator:
