@@ -831,8 +831,8 @@ class LevelEditor(NodePath, PandaObject):
         self.cTrav = CollisionTraverser()
 
         # activate the collider with the traverser and pusher
-        self.pusher.addCollider(self.cSphereNode, base.camera, base.drive.node())
-        self.lifter.addCollider(self.cRayNode, base.camera, base.drive.node())
+        self.pusher.addCollider(self.cSphereNodePath, base.camera, base.drive.node())
+        self.lifter.addCollider(self.cRayNodePath, base.camera, base.drive.node())
         # A map of zone ID's to a list of nodes that are visible from
         # that zone.
         self.nodeDict = {}
