@@ -77,10 +77,5 @@ write_datagram(BamWriter *, Datagram &me)
 void ImageBuffer::
 fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
-
-  if (manager->get_file_minor_ver() >= 3) {
-    set_alpha_name(scan.get_string());
-  } else {
-    clear_alpha_name();
-  }
+  set_alpha_name(scan.get_string());
 }

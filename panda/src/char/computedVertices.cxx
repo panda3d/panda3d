@@ -77,7 +77,7 @@ write_datagram(Datagram &dest)
 {
   int i;
   dest.add_int16(_joint_index);
-  dest.add_float64(_effect);
+  dest.add_float32(_effect);
   dest.add_uint16(_vindex.size());
   for(i = 0; i < (int)_vindex.size(); i++)
   {
@@ -100,7 +100,7 @@ read_datagram(DatagramIterator &source)
 {
   int i;
   _joint_index = source.get_int16();
-  _effect = source.get_float64();
+  _effect = source.get_float32();
   int vsize = source.get_uint16();
   for(i = 0; i < vsize; i++)
   {

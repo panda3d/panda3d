@@ -423,11 +423,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _magfiltercolor = (enum FilterType) scan.get_uint8();
   _magfilteralpha = (enum FilterType) scan.get_uint8();
 
-  if (manager->get_file_minor_ver() >= 4) {
-    _anisotropic_degree = scan.get_int16();
-  } else {
-    _anisotropic_degree = 1;
-  }
+  _anisotropic_degree = scan.get_int16();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -451,10 +447,7 @@ make_Texture(const FactoryParams &params)
   DatagramIterator scan(packet);
 
   string name = scan.get_string();
-  string alpha_name;
-  if (manager->get_file_minor_ver() >= 3) {
-    alpha_name = scan.get_string();
-  }
+  string alpha_name = scan.get_string();
 
   PT(Texture) me;
 

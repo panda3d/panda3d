@@ -676,10 +676,10 @@ init_type() {
 template<class NumType>
 void LVecBase4<NumType>::
 write_datagram(Datagram &destination) const {
-  destination.add_float64(_data[0]);
-  destination.add_float64(_data[1]);
-  destination.add_float64(_data[2]);
-  destination.add_float64(_data[3]);
+  destination.add_float32(_data[0]);
+  destination.add_float32(_data[1]);
+  destination.add_float32(_data[2]);
+  destination.add_float32(_data[3]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -690,10 +690,10 @@ write_datagram(Datagram &destination) const {
 template<class NumType>
 void LVecBase4<NumType>::
 read_datagram(DatagramIterator &source) {
-  _data[0] = source.get_float64();
-  _data[1] = source.get_float64();
-  _data[2] = source.get_float64();
-  _data[3] = source.get_float64();
+  _data[0] = source.get_float32();
+  _data[1] = source.get_float32();
+  _data[2] = source.get_float32();
+  _data[3] = source.get_float32();
 }
 
 

@@ -94,11 +94,11 @@ public:
   static const char *get_part_type_name() { return "MovingPart<float>"; }
   static void write_datagram(Datagram &dest, ValueType& me)
   {
-    dest.add_float64(me); 
+    dest.add_float32(me); 
   }
   static void read_datagram(DatagramIterator &source, ValueType& me)
   {
-    me = source.get_float64();
+    me = source.get_float32();
   }
 };
 

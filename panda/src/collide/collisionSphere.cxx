@@ -285,7 +285,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 {
   CollisionSolid::write_datagram(manager, me);
   _center.write_datagram(me);
-  me.add_float64(_radius);
+  me.add_float32(_radius);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -301,7 +301,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 {
   CollisionSolid::fillin(scan, manager);
   _center.read_datagram(scan);
-  _radius = scan.get_float64();
+  _radius = scan.get_float32();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1043,7 +1043,7 @@ write_datagram(Datagram &destination) const
   {
     for(int j = 0; j < 3; j++)
     {
-      destination.add_float64(get_cell(i,j));
+      destination.add_float32(get_cell(i,j));
     }
   }
 }
@@ -1060,7 +1060,7 @@ read_datagram(DatagramIterator &scan)
   {
     for(int j = 0; j < 3; j++)
     {
-      set_cell(i, j, scan.get_float64());
+      set_cell(i, j, scan.get_float32());
     }
   }
 }

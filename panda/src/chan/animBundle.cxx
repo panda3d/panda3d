@@ -34,7 +34,7 @@ void AnimBundle::
 write_datagram(BamWriter *manager, Datagram &me)
 {
   AnimGroup::write_datagram(manager, me);
-  me.add_float64(_fps);
+  me.add_float32(_fps);
   me.add_uint16(_num_frames);
 }
 
@@ -50,7 +50,7 @@ void AnimBundle::
 fillin(DatagramIterator& scan, BamReader* manager)
 {
   AnimGroup::fillin(scan, manager);
-  _fps = scan.get_float64();
+  _fps = scan.get_float32();
   _num_frames = scan.get_uint16();
 }
 

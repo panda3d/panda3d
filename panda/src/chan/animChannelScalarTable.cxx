@@ -118,12 +118,12 @@ write_datagram(BamWriter *manager, Datagram &me)
 {
   AnimChannelScalar::write_datagram(manager, me);
 
-  me.add_uint8(quantize_bam_channels);
+  me.add_bool(quantize_bam_channels);
   if (!quantize_bam_channels) {
     // Write out everything the old way, as floats.
     me.add_uint16(_table.size());
     for(int i = 0; i < (int)_table.size(); i++) {
-      me.add_float64(_table[i]);
+      me.add_float32(_table[i]);
     }
 
   } else {
@@ -150,18 +150,14 @@ fillin(DatagramIterator& scan, BamReader* manager)
 {
   AnimChannelScalar::fillin(scan, manager);
 
-  bool wrote_quantized = false;
-  if (manager->get_file_minor_ver() >= 1) {
-    // Version 1 and later: we might have quantized channels.
-    wrote_quantized = (bool)scan.get_uint8();
-  }
+  bool wrote_quantized = scan.get_bool();
 
   if (!wrote_quantized) {
     // Regular floats.
     int size = scan.get_uint16();
     PTA_float temp_table;
     for(int i = 0; i < size; i++) {
-      temp_table.push_back(scan.get_float64());
+      temp_table.push_back(scan.get_float32());
     }
     _table = temp_table;
 

@@ -197,7 +197,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 
   me.add_uint32(_from_collide_mask.get_word());
   me.add_uint32(_into_collide_mask.get_word());
-  me.add_uint8(_collide_geom);
+  me.add_bool(_collide_geom);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,12 +224,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 
   _from_collide_mask.set_word(scan.get_uint32());
   _into_collide_mask.set_word(scan.get_uint32());
-
-  if (manager->get_file_minor_ver() >= 2) {
-    _collide_geom = (scan.get_uint8() != 0);
-  } else {
-    _collide_geom = false;
-  }
+  _collide_geom = scan.get_bool();
 }
 
 ////////////////////////////////////////////////////////////////////

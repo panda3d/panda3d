@@ -121,8 +121,8 @@ operator < (const LODSwitch &) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void LODSwitch::
 write_datagram(Datagram &destination) const {
-  destination.add_float64(_in);
-  destination.add_float64(_out);
+  destination.add_float32(_in);
+  destination.add_float32(_out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,6 +134,6 @@ write_datagram(Datagram &destination) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void LODSwitch::
 read_datagram(DatagramIterator &source) {
-  _in = source.get_float64();
-  _out = source.get_float64();
+  _in = source.get_float32();
+  _out = source.get_float32();
 }

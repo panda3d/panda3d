@@ -283,10 +283,10 @@ template<class NumType>
 void Plane<NumType>::
 write_datagram(Datagram &dest) 
 {
-  dest.add_float64(_a);
-  dest.add_float64(_b);
-  dest.add_float64(_c);
-  dest.add_float64(_d);
+  dest.add_float32(_a);
+  dest.add_float32(_b);
+  dest.add_float32(_c);
+  dest.add_float32(_d);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -298,8 +298,8 @@ template<class NumType>
 void Plane<NumType>::
 read_datagram(DatagramIterator &source) 
 {
-  _a = source.get_float64();
-  _b = source.get_float64();
-  _c = source.get_float64();
-  _d = source.get_float64();
+  _a = source.get_float32();
+  _b = source.get_float32();
+  _c = source.get_float32();
+  _d = source.get_float32();
 }

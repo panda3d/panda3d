@@ -19,7 +19,7 @@ write_datagram(Datagram &dest, CPTA_float array)
 {
   dest.add_uint32(array.size());
   for (int i = 0; i < (int)array.size(); i++) {
-    dest.add_float64(array[i]);
+    dest.add_float32(array[i]);
   }
 }
 
@@ -35,7 +35,7 @@ read_datagram(DatagramIterator &source)
 
   int size = source.get_uint32();
   for (int i = 0; i < size; i++) {
-    array.push_back(source.get_float64());
+    array.push_back(source.get_float32());
   }
 
   return array;

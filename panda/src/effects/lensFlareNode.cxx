@@ -413,10 +413,10 @@ write_datagram(BamWriter *manager, Datagram &me) {
     WRITE_PTA(manager, me, IPD_Colorf::write_datagram, _flare_colors[i])
   }
 
-  me.add_float64(_global_scale);
-  me.add_float64(_texel_scale);
-  me.add_float64(_blind_fall_off);
-  me.add_float64(_flare_fall_off);
+  me.add_float32(_global_scale);
+  me.add_float32(_texel_scale);
+  me.add_float32(_blind_fall_off);
+  me.add_float32(_flare_fall_off);
 
   manager->write_pointer(me, _light_node);
 }
@@ -481,10 +481,10 @@ fillin(DatagramIterator &scan, BamReader *manager)
     _flare_colors.push_back(temp);
   }
 
-  _global_scale = scan.get_float64();
-  _texel_scale = scan.get_float64();
-  _blind_fall_off = scan.get_float64();
-  _flare_fall_off = scan.get_float64();
+  _global_scale = scan.get_float32();
+  _texel_scale = scan.get_float32();
+  _blind_fall_off = scan.get_float32();
+  _flare_fall_off = scan.get_float32();
 
   manager->read_pointer(scan, this);
 }
