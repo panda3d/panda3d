@@ -275,6 +275,19 @@ void toggle_texture(NodeAttributes &initial_state) {
   }
 }
 
+void take_snapshot(GraphicsWindow *win, const string &name) {
+  PixelBuffer p;
+  GraphicsStateGuardian* g = win->get_gsg();
+  const RenderBuffer& r = g->get_render_buffer(RenderBuffer::T_front);
+
+  p.set_xsize(win->get_width());
+  p.set_ysize(win->get_height());
+  p._image = PTA_uchar(win->get_width() * win->get_height() + 3);
+
+  p.copy(g, g->get_current_display_region(), r);
+  p.write(name.c_str());
+}
+
 // Returns the configure object for accessing config variables from a
 // scripting language.
 ConfigShowbase &

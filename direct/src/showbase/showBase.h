@@ -45,6 +45,8 @@ EXPCL_DIRECT void toggle_wireframe(NodeAttributes &initial_state);
 EXPCL_DIRECT void toggle_texture(NodeAttributes &initial_state);
 EXPCL_DIRECT void toggle_backface(NodeAttributes &initial_state);
 
+EXPCL_DIRECT void take_snapshot(GraphicsWindow *win, const string &name);
+
 EXPCL_DIRECT ConfigShowbase &get_config_showbase();
 
 END_PUBLISH
