@@ -158,12 +158,13 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
   FLOATTYPE m21 = m(2, 1);
   FLOATTYPE m22 = m(2, 2);
 
-  FLOATTYPE T = m00 + m11 + m22 + 1.0f;
+  FLOATTYPE T = m00 + m11 + m22;
 
   if (T > 0.0f) {
     // The easy case.
-    FLOATTYPE S = 0.5 / csqrt(T);
-    _v.data[0] = 0.25 / S;
+    FLOATTYPE S = csqrt(T + 1.0f);
+    _v.data[0] = S * 0.5f;
+    S = 0.5f / S;
     _v.data[1] = (m21 - m12) * S;
     _v.data[2] = (m02 - m20) * S;
     _v.data[3] = (m10 - m01) * S;
@@ -181,7 +182,7 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
     // whose actual value--not absolute value--is greater than those
     // of the other two.
 
-    // We already know that m00 + m11 + m22 <= -1 (because we are here
+    // We already know that m00 + m11 + m22 <= 0 (because we are here
     // in the harder case).
 
     if (m00 > m11 && m00 > m22) {
@@ -191,9 +192,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
       S = csqrt(S);
       _v.data[1] = S * 0.5f;
       S = 0.5f / S;
-      _v.data[2] = (m01 + m10) * S;
-      _v.data[3] = (m02 + m20) * S;
-      _v.data[0] = (m12 - m21) * S;
+      _v.data[2] = (m10 + m01) * S;
+      _v.data[3] = (m20 + m02) * S;
+      _v.data[0] = (m21 - m12) * S;
 
     } else if (m11 > m22) {
       // m11 is larger than m00 and m22.
@@ -202,9 +203,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
       S = csqrt(S);
       _v.data[2] = S * 0.5f;
       S = 0.5f / S;
-      _v.data[3] = (m12 + m21) * S;
-      _v.data[1] = (m10 + m01) * S;
-      _v.data[0] = (m20 - m02) * S;
+      _v.data[3] = (m21 + m12) * S;
+      _v.data[1] = (m01 + m10) * S;
+      _v.data[0] = (m02 - m20) * S;
 
     } else {
       // m22 is larger than m00 and m11.
@@ -213,9 +214,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
       S = csqrt(S);
       _v.data[3] = S * 0.5f;
       S = 0.5f / S;
-      _v.data[1] = (m20 + m02) * S;
-      _v.data[2] = (m21 + m12) * S;
-      _v.data[0] = (m01 - m10) * S;
+      _v.data[1] = (m02 + m20) * S;
+      _v.data[2] = (m12 + m21) * S;
+      _v.data[0] = (m10 - m01) * S;
     }
   }
 }
