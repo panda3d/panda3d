@@ -79,6 +79,10 @@ class ClockDelta(DirectObject.DirectObject):
         if now == None:
             now = self.globalClock.getRealTime()
 
+        # Are we in non-real-time mode (i.e. filming a movie)?  Just return now
+        if self.globalClock.getMode() == ClockObject.MNonRealTime:
+            return now
+
         # First, determine what network time we have for 'now'.
         ntime = int(math.floor((now - self.delta) * NetworkTimePrecision + 0.5))
 
