@@ -864,6 +864,8 @@ ai_format_generate(PyObject *distobj, int do_id,
         return Datagram();
       }
 
+      packer.raw_pack_uint16(field->get_number());
+
       packer.begin_pack(field);
       if (!pack_required_field(packer, distobj, field)) {
         return Datagram();
