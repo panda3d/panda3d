@@ -19,7 +19,7 @@
 #ifndef CPPENUMTYPE_H
 #define CPPENUMTYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppExtensionType.h"
 

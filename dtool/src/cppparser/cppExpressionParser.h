@@ -19,7 +19,7 @@
 #ifndef CPPEXPRESSIONPARSER_H
 #define CPPEXPRESSIONPARSER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppPreprocessor.h"
 

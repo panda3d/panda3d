@@ -19,8 +19,8 @@
 #ifndef CPPFILE_H
 #define CPPFILE_H
 
-#include <dtoolbase.h>
-#include <filename.h>
+#include "dtoolbase.h"
+#include "filename.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CPPFile

@@ -19,7 +19,7 @@
 #ifndef CPPMANIFEST_H
 #define CPPMANIFEST_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppFile.h"
 #include "cppVisibility.h"

@@ -19,7 +19,7 @@
 #ifndef CPPINSTANCEIDENTIFIER_H
 #define CPPINSTANCEIDENTIFIER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include <vector>
 #include <string>

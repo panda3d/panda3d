@@ -19,7 +19,7 @@
 #ifndef CPPCOMMENTBLOCK_H
 #define CPPCOMMENTBLOCK_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppFile.h"
 

@@ -19,8 +19,8 @@
 #ifndef __CORRECTION_H__
 #define __CORRECTION_H__
 
-#include <directbase.h>
-#include <luse.h>
+#include "directbase.h"
+#include "luse.h"
 
 class Correction {
 protected:

@@ -19,7 +19,7 @@
 #ifndef CPPNAMESPACE_H
 #define CPPNAMESPACE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppDeclaration.h"
 

@@ -19,7 +19,7 @@
 #ifndef CPPFUNCTIONGROUP_H
 #define CPPFUNCTIONGROUP_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppDeclaration.h"
 

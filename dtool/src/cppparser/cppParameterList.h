@@ -19,7 +19,7 @@
 #ifndef CPPPARAMETERLIST_H
 #define CPPPARAMETERLIST_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppDeclaration.h"
 

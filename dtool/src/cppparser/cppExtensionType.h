@@ -19,7 +19,7 @@
 #ifndef CPPEXTENSIONTYPE_H
 #define CPPEXTENSIONTYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppType.h"
 #include "cppInstance.h"

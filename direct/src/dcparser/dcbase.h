@@ -30,10 +30,10 @@
 // On the other hand, if WITHIN_PANDA is defined, we *are* safely
 // within the Panda environment.
 
-#include <directbase.h>
-#include <notify.h>
-#include <filename.h>
-#include <numeric_types.h>
+#include "directbase.h"
+#include "notify.h"
+#include "filename.h"
+#include "numeric_types.h"
 #include "pvector.h"
 #include "pmap.h"
 

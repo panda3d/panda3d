@@ -23,7 +23,7 @@
 #ifndef DIRECTBASE_H
 #define DIRECTBASE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "directsymbols.h"
 
 #endif

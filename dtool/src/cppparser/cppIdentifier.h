@@ -19,7 +19,7 @@
 #ifndef CPPIDENTIFIER_H
 #define CPPIDENTIFIER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppDeclaration.h"
 #include "cppNameComponent.h"

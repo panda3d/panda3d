@@ -19,7 +19,7 @@
 #ifndef CPPFUNCTIONTYPE_H
 #define CPPFUNCTIONTYPE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppType.h"
 

@@ -24,7 +24,7 @@
 // to be used directly; they're defined here strictly to be used by
 // the CPPParser and CPPExpressionParser classes.
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include <string>
 

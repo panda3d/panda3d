@@ -19,7 +19,7 @@
 #ifndef CPPDECLARATION_H
 #define CPPDECLARATION_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppVisibility.h"
 #include "cppFile.h"

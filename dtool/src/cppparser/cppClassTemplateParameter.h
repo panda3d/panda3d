@@ -19,7 +19,7 @@
 #ifndef CPPCLASSTEMPLATEPARAMETER_H
 #define CPPCLASSTEMPLATEPARAMETER_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppType.h"
 

@@ -19,8 +19,8 @@
 #ifndef __PREDICTION_H__
 #define __PREDICTION_H__
 
-#include <directbase.h>
-#include <luse.h>
+#include "directbase.h"
+#include "luse.h"
 
 class Prediction {
 protected:

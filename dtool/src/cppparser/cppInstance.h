@@ -19,7 +19,7 @@
 #ifndef CPPINSTANCE_H
 #define CPPINSTANCE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "cppDeclaration.h"
 #include "cppType.h"

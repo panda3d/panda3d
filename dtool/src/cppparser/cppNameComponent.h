@@ -19,7 +19,7 @@
 #ifndef CPPNAMECOMPONENT_H
 #define CPPNAMECOMPONENT_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include <string>
 
