@@ -91,34 +91,21 @@ release_gsg() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::begin_flip
+//     Function: glxGraphicsBuffer::end_frame
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
+//               after rendering is completed for a given frame.  It
+//               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsBuffer::
-begin_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    make_current();
-
-    if (has_texture()) {
-      // Use glCopyTexImage2D to copy the framebuffer to the texture.
-      // This appears to be the only way to "render to a texture" in
-      // OpenGL; there's no interface to make the offscreen buffer
-      // itself be a texture.
-      DisplayRegion dr(_x_size, _y_size);
-      get_texture()->copy(_gsg, &dr, _gsg->get_render_buffer(RenderBuffer::T_back));
-    }
-
-    glXSwapBuffers(_display, _pbuffer);
+end_frame() {
+  if (has_texture()) {
+    // Use glCopyTexImage2D to copy the framebuffer to the texture.
+    // This appears to be the only way to "render to a texture" in
+    // OpenGL; there's no interface to make the offscreen buffer
+    // itself be a texture.
+    DisplayRegion dr(_x_size, _y_size);
+    get_texture()->copy(_gsg, &dr, _gsg->get_render_buffer(RenderBuffer::T_back));
   }
 }
 
@@ -185,4 +172,18 @@ open_buffer() {
 
   _is_valid = true;
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsBuffer::get_screenshot_buffer
+//       Access: Protected, Virtual
+//  Description: Returns the RenderBuffer that should be used for
+//               capturing screenshots from this particular
+//               GraphicsOutput.
+////////////////////////////////////////////////////////////////////
+RenderBuffer glxGraphicsBuffer::
+get_screenshot_buffer() {
+  // Since the pbuffer never gets flipped, we get screenshots from the
+  // back buffer only.
+  return _gsg->get_render_buffer(RenderBuffer::T_back);
 }

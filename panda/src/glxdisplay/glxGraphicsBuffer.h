@@ -39,11 +39,13 @@ public:
   virtual void make_current();
   virtual void release_gsg();
 
-  virtual void begin_flip();
+  virtual void end_frame();
 
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();
+
+  virtual RenderBuffer get_screenshot_buffer();
 
 private:
   Display *_display;

@@ -392,8 +392,7 @@ get_screenshot(PNMImage &image) {
                 PixelBuffer::F_rgb);
 
   DisplayRegion dr(_x_size, _y_size);
-  RenderBuffer rb = _gsg->get_render_buffer(RenderBuffer::T_front);
-  if (!p.copy(_gsg, &dr, rb)) {
+  if (!p.copy(_gsg, &dr, get_screenshot_buffer())) {
     return false;
   }
 
@@ -628,6 +627,19 @@ declare_channel(int index, GraphicsChannel *chan) {
 
   nassertv(index < (int)_channels.size());
   _channels[index] = chan;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_screenshot_buffer
+//       Access: Protected, Virtual
+//  Description: Returns the RenderBuffer that should be used for
+//               capturing screenshots from this particular
+//               GraphicsOutput.
+////////////////////////////////////////////////////////////////////
+RenderBuffer GraphicsOutput::
+get_screenshot_buffer() {
+  // By default, this is the front buffer.
+  return _gsg->get_render_buffer(RenderBuffer::T_front);
 }
 
 ////////////////////////////////////////////////////////////////////

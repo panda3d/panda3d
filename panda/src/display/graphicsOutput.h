@@ -26,6 +26,7 @@
 #include "displayRegion.h"
 #include "graphicsStateGuardian.h"
 #include "clearableRegion.h"
+#include "renderBuffer.h"
 
 #include "typedWritableReferenceCount.h"
 #include "pStatCollector.h"
@@ -129,6 +130,7 @@ public:
 
 protected:
   void declare_channel(int index, GraphicsChannel *chan);
+  virtual RenderBuffer get_screenshot_buffer();
   
 protected:
   PT(GraphicsStateGuardian) _gsg;
