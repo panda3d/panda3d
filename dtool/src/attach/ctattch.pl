@@ -239,11 +239,7 @@ sub CTAttachCompute {
       local( $loop ) ;
       local( $looptmp ) ;
       local( *INITFILE ) ;
-      if ( -x $init ) {
-          open( INITFILE, "$init $_[0] $_[1] $root |" ) ;
-      } else {
-          open( INITFILE, "< $init" ) ;
-      }
+      open( INITFILE, "< $init" ) ;
       while ( <INITFILE> ) {
           s/\n$// ;
           @linesplit = split( /\#/ ) ;
