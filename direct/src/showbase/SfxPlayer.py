@@ -7,7 +7,7 @@ class SfxPlayer:
     Play sound effects, potentially localized.
     """
 
-    UseInverseSquare = 1
+    UseInverseSquare = 0
 
     def __init__(self):
         # Distance at which sounds can no longer be heard
@@ -43,10 +43,10 @@ class SfxPlayer:
             if SfxPlayer.UseInverseSquare:
                 sd = d*self.distanceScale
                 volume = min(1, 1 / (sd*sd or 1))
-                #print d, sd, volume
+                print d, sd, volume
             else:
                 volume = 1 - (d / (self.cutoffDistance or 1))
-                #print d, volume
+                print d, volume
         return volume
 
     def playSfx(self, sfx, looping = 0, interrupt = 1, volume = None, time = 0.0, node=None):
