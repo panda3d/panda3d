@@ -139,6 +139,11 @@ class ClientRepository(DirectObject.DirectObject):
             # run out of servers).
             
             ch = self.http.makeChannel(0)
+            # Temporary try..except for old Pandas.
+            try:
+                ch.setAllowProxy(allowProxy)
+            except:
+                pass
             self.httpConnectCallback(ch, serverList, 0, hasProxy,
                                      successCallback, successArgs,
                                      failureCallback, failureArgs)
