@@ -32,6 +32,7 @@
 class EXPCL_PANDA KeyboardButton {
 PUBLISHED:
   static ButtonHandle ascii_key(char ascii_equivalent);
+  static ButtonHandle ascii_key(const string &ascii_equivalent);
 
   static ButtonHandle space();
   static ButtonHandle backspace();
