@@ -20,6 +20,9 @@ class DistributedObjectAI(DirectObject.DirectObject):
             self.accountName=''
             # Record the repository
             self.air = air
+            # Record our parentId and zoneId
+            self.__location = None
+            
             # Record our distributed class
             className = self.__class__.__name__
             self.dclass = self.air.dclassesByName[className]
@@ -140,9 +143,13 @@ class DistributedObjectAI(DirectObject.DirectObject):
             self.air.addInterest(self.getDoId(), zoneId, note, event)
 
         def setLocation(self, parentId, zoneId):
-            # The store must run first so we know the old location
-            self.air.sendSetLocation(self, parentId, zoneId)
-            self.__location = (parentId, zoneId)
+            if self.__location:
+                # Make sure our parentId and/or zoneId are actually changing before doing any work
+                oldParentId, oldZoneId = self.__location
+                if oldParentId != parentId or oldZoneId != zoneId:
+                    # The store must run first so we know the old location
+                    self.air.sendSetLocation(self, parentId, zoneId)
+                    self.__location = (parentId, zoneId)
 
         def getLocation(self):
             return self.__location
