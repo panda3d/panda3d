@@ -45,9 +45,9 @@ EggToBam() :
   remove_option("f");
 
   add_option
-    ("p", "", 0,
-     "Writes a pgraph-style bam file, with the new scene graph code, "
-     "suitable for loading in pview (but won't work in demo).  This is "
+    ("s", "", 0,
+     "Writes an old-style bam file, with the old scene graph code, "
+     "suitable for loading in demo (but won't work in pview).  This is "
      "a temporary hack.",
      &EggToBam::dispatch_none, &_pgraph_style);
 
@@ -145,7 +145,7 @@ run() {
     _data.set_coordinate_system(CS_zup_right);
   }
 
-  if (_pgraph_style) {
+  if (!_pgraph_style) {
     // New style scene graph.
 
     PT(PandaNode) root = qpload_egg_data(_data);
