@@ -23,6 +23,7 @@
 #include "mathNumbers.h"
 
 NodePath bogus_scene;
+NodePath old_bogus_scene;
 
 void
 event_T(CPT_Event, void *data) {
@@ -36,7 +37,9 @@ event_T(CPT_Event, void *data) {
 
   if (!bogus_scene.is_empty()) {
     // We are undoing a previous shift-t.
-    bogus_scene.remove_node();
+    old_bogus_scene = bogus_scene;
+    old_bogus_scene.detach_node();
+    bogus_scene = NodePath();
     models.show();
     return;
   }
