@@ -340,8 +340,21 @@ class FSM(DirectObject.DirectObject):
         self.oldState = self.state
         self.newState = newState
         self.state = None
-        self.__callTransitionFunc("exit" + self.oldState)
-        self.__callTransitionFunc("enter" + self.newState, *args)
+
+        try:
+            self.__callTransitionFunc("exit" + self.oldState)
+            self.__callTransitionFunc("enter" + self.newState, *args)
+        except:
+            # If we got an exception during the enter or exit methods,
+            # return to the previous state and raise up the exception.
+            # This might leave things a little unclean since we've
+            # partially transitioned, but what can you do?
+            
+            self.state = self.oldState
+            del self.oldState
+            del self.newState
+            raise
+        
         self.state = newState
         del self.oldState
         del self.newState
