@@ -203,6 +203,10 @@
 // Define this nonempty if your version of OpenSSL is 0.9.7 or better.
 #define SSL_097
 
+// Define this true to include the OpenSSL code to report verbose
+// error messages when they occur.
+#defer REPORT_OPENSSL_ERRORS $[< $[OPTIMIZE], 4]
+
 // Is Crypto++ installed, and where?
 #define CRYPTO_IPATH /usr/include/crypto++
 #define CRYPTO_LPATH /usr/lib

@@ -37,6 +37,7 @@ $[cdefine HAVE_NSPR]
 /* Define if we have OpenSSL installed.  */
 $[cdefine HAVE_SSL]
 $[cdefine SSL_097]
+$[cdefine REPORT_OPENSSL_ERRORS]
 
 /* Define if we have crypto++ installed.  */
 $[cdefine HAVE_CRYPTO]
