@@ -8,19 +8,8 @@
         """Returns a unique id identifying the NodePath instance"""
         return self.getKey()
 
-    def getName(self):
-        """Returns the name of the bottom node if it exists, or <noname>"""
-        node = self.node()
-        if hasattr(node, "getName"):
-            return node.getName()
-
-        return '<noname>'
-
-    def setName(self, name = '<noname>'):
-        """Sets the name of the bottom node if it can be set."""
-        node = self.node()
-        if hasattr(node, "setName"):
-            node.setName(name)
+    def __hash__(self):
+        return self.getKey()
 
     # For iterating over children
     def getChildrenAsList(self):
