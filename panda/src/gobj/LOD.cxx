@@ -27,6 +27,7 @@
 #define NAME LODSwitchVector
 
 #include <vector_src.cxx>
+#include "config_gobj.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
