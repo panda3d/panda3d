@@ -2,3 +2,34 @@
 // Created by:  cary (01Nov00)
 // 
 ////////////////////////////////////////////////////////////////////
+
+INLINE GuiItem::GuiItem(void) : Namable("fubar"), _left(-1.), _right(1.),
+				_bottom(-1.), _top(1.) {}
+
+INLINE float GuiItem::get_scale(void) const {
+  return _scale;
+}
+
+INLINE LVector3f GuiItem::get_pos(void) const {
+  return _pos;
+}
+
+INLINE float GuiItem::get_left(void) const {
+  return _left;
+}
+
+INLINE float GuiItem::get_right(void) const {
+  return _right;
+}
+
+INLINE float GuiItem::get_bottom(void) const {
+  return _bottom;
+}
+
+INLINE float GuiItem::get_top(void) const {
+  return _top;
+}
+
+INLINE LVector4f GuiItem::get_frame(void) const {
+  return LVector4f(_left, _right, _bottom, _top);
+}

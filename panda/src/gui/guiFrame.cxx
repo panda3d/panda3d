@@ -2,3 +2,188 @@
 // Created by:  cary (01Nov00)
 // 
 ////////////////////////////////////////////////////////////////////
+
+#include "guiFrame.h"
+
+GuiFrame::Boxes::iterator GuiFrame::find_box(GuiItem* item) {
+  bool found = false;
+  Boxes::iterator ret;
+  Boxes::iterator i;
+  for (i=_items.begin(); (!found)&&(i!=_items.end()); ++i)
+    if ((*i).get_item() == item) {
+      found = true;
+      ret = i;
+    }
+  if (!found)
+    ret = _items.end();
+  return ret;
+}
+
+void GuiFrame::recompute_frame(void) {
+  GuiItem::recompute_frame();
+  Boxes::iterator i;
+  // go thru and make sure everything is packed correctly.  This is a stupid
+  // and brute-force algorithm.  Hopefully it will be replaced with something
+  // more ellegant later
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    int n = (*i).get_num_links();
+    if (n > 0) {
+      GuiItem* here = (*i).get_item();
+      LVector4f ext_h = here->get_frame();
+      float x_h = (ext_h[0] + ext_h[1]) / 2.;
+      float y_h = (ext_h[2] + ext_h[3]) / 2.;
+      for (int j=0; j<n; ++j) {
+	Packing pack = (*i).get_nth_packing(j);
+	if (pack == NONE)
+	  continue;
+	GuiItem* to = (*i).get_nth_to(j);
+	LVector4f ext_t = to->get_frame();
+	float x_t = (ext_t[0] + ext_h[1]) / 2.;
+	float y_t = (ext_t[2] + ext_h[3]) / 2.;
+	switch (pack) {
+	case ABOVE:
+	  {
+	    // to(top) - here(bottom)
+	    float diff = ext_t[3] - ext_h[2];
+	    y_h += diff;
+	    here->set_pos(LVector3f::rfu(x_h, 0., y_h));
+	    ext_h = here->get_frame();
+	  }
+	  break;
+	case UNDER:
+	  {
+	    // to(bottom) - here(top)
+	    float diff = ext_t[2] - ext_h[3];
+	    y_h += diff;
+	    here->set_pos(LVector3f::rfu(x_h, 0., y_h));
+	    ext_h = here->get_frame();
+	  }
+	  break;
+	case LEFT:
+	  {
+	    // to(left) - here(right)
+	    float diff = ext_t[0] - ext_h[1];
+	    x_h += diff;
+	    here->set_pos(LVector3f::rfu(x_h, 0., y_h));
+	    ext_h = here->get_frame();
+	  }
+	  break;
+	case RIGHT:
+	  {
+	    // to(right) - here(left)
+	    float diff = ext_t[1] - ext_h[0];
+	    x_h += diff;
+	    here->set_pos(LVector3f::rfu(x_h, 0., y_h));
+	    ext_h = here->get_frame();
+	  }
+	  break;
+	default:
+	  gui_cat->warning() << "unknown packing type (" << pack << ")"
+			     << endl;
+	}
+      }
+    }
+  }
+  // these should be exactly opposite the max, so they will (hopefully) be
+  // overwritten
+  _left = _bottom = 10000000.;
+  _right = _top = -10000000.;
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    float tmp = (*i).get_item()->get_left();
+    _left = (_left<tmp)?_left:tmp;
+    tmp = (*i).get_item()->get_right();
+    _right = (_right<tmp)?tmp:_right;
+    tmp = (*i).get_item()->get_bottom();
+    _bottom = (_bottom<tmp)?_bottom:tmp;
+    tmp = (*i).get_item()->get_top();
+    _top = (_top<tmp)?tmp:_top;
+  }
+  // now put it at the position it is supposed to be
+  float x = (_left + _right) / 2.;
+  float y = (_bottom + _top) / 2.;
+  LVector3f pos = LVector3f::rfu(x, 0., y);
+  LVector3f delta = _pos - pos;
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    GuiItem* foo = (*i).get_item();
+    foo->set_pos(foo->get_pos() + delta);
+  }
+  // lastly, get the finial bounds
+  _left = _bottom = 10000000.;
+  _right = _top = -10000000.;
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    float tmp = (*i).get_item()->get_left();
+    _left = (_left<tmp)?_left:tmp;
+    tmp = (*i).get_item()->get_right();
+    _right = (_right<tmp)?tmp:_right;
+    tmp = (*i).get_item()->get_bottom();
+    _bottom = (_bottom<tmp)?_bottom:tmp;
+    tmp = (*i).get_item()->get_top();
+    _top = (_top<tmp)?tmp:_top;
+  }
+}
+
+GuiFrame::GuiFrame(const string& name) : GuiItem(name) {
+}
+
+GuiFrame::~GuiFrame(void) {
+}
+
+void GuiFrame::add_item(GuiItem* item) {
+  bool found = false;
+  for (Boxes::iterator i=_items.begin(); (!found)&&(i!=_items.end()); ++i)
+    if ((*i).get_item() == item)
+      found = true;
+  if (!found) {
+    _items.push_back(Box(item));
+    this->recompute_frame();
+  }
+}
+
+void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to) {
+  Boxes::iterator box = find_box(item);
+  if (box == _items.end()) {
+    gui_cat->warning() << "tried to pack an item we don't have yet" << endl;
+    return;
+  }
+  Boxes::iterator tobox = find_box(to);
+  if (tobox == _items.end()) {
+    gui_cat->warning()
+      << "tried to pack an item relative to something we don't have" << endl;
+    return;
+  }
+  (*box).add_link(Connection(rel, (*tobox).get_item()));
+  this->recompute_frame();
+}
+
+void GuiFrame::manage(GuiManager* mgr, EventHandler& eh) {
+  if (!_added_hooks) {
+    _added_hooks = true;
+  }
+  if (_mgr == (GuiManager*)0L) {
+    for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+      (*i).get_item()->manage(mgr, eh);
+    GuiItem::manage(mgr, eh);
+  } else
+    gui_cat->warning() << "tried to manage frame (0x" << (void*)this
+		       << ") that is already managed" << endl;
+}
+
+void GuiFrame::unmanage(void) {
+  for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i).get_item()->unmanage();
+  GuiItem::unmanage();
+}
+
+void GuiFrame::set_scale(float f) {
+  for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i).get_item()->set_scale(f);
+  GuiItem::set_scale(f);
+  this->recompute_frame();
+}
+
+void GuiFrame::set_pos(const LVector3f& p) {
+  for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i).get_item()->set_pos(p);
+  GuiItem::set_pos(p);
+  this->recompute_frame();
+}

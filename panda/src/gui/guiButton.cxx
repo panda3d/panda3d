@@ -156,25 +156,22 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 }
 
 void GuiButton::recompute_frame(void) {
-  float left, right, bottom, top;
-
-  GetExtents(_up, _down, _up_rollover, _down_rollover, _inactive, left, right,
-	     bottom, top);
-  _rgn->set_region(left, right, bottom, top);
+  GuiItem::recompute_frame();
+  GetExtents(_up, _down, _up_rollover, _down_rollover, _inactive, _left,
+	     _right, _bottom, _top);
+  _rgn->set_region(_left, _right, _bottom, _top);
 }
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
 		     GuiLabel* down, GuiLabel* down_roll, GuiLabel* inactive)
-  : Namable(name), _up(up), _up_rollover(up_roll), _down(down),
+  : GuiItem(name), _up(up), _up_rollover(up_roll), _down(down),
     _down_rollover(down_roll), _inactive(inactive), _state(GuiButton::NONE),
-    _added_hooks(false), _mgr((GuiManager*)0L), _up_event(name + "-up"),
-    _up_rollover_event(name + "-up-rollover"), _down_event(name +"-down"),
-    _down_rollover_event(name + "-down-rollover"),
+    _up_event(name + "-up"), _up_rollover_event(name + "-up-rollover"),
+    _down_event(name +"-down"), _down_rollover_event(name + "-down-rollover"),
     _inactive_event(name + "-inactive") {
-  float left, right, bottom, top;
-
-  GetExtents(up, down, up_roll, down_roll, inactive, left, right, bottom, top);
-  _rgn = new GuiRegion("button-" + name, left, right, bottom, top, true);
+  GetExtents(up, down, up_roll, down_roll, inactive, _left, _right, _bottom,
+	     _top);
+  _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
   buttons["gui-in-button-" + name] = this;
   buttons["gui-out-button-" + name] = this;
   buttons["gui-button-" + name + "-mouse1"] = this;
@@ -196,7 +193,7 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
   }
   if (_mgr == (GuiManager*)0L) {
     mgr->add_region(_rgn);
-    _mgr = mgr;
+    GuiItem::manage(mgr, eh);
     switch_state(UP);
   } else
     gui_cat->warning() << "tried to manage button (0x" << (void*)this
@@ -206,5 +203,31 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
 void GuiButton::unmanage(void) {
   _mgr->remove_region(_rgn);
   switch_state(NONE);
-  _mgr = (GuiManager*)0L;
+  GuiItem::unmanage();
+}
+
+void GuiButton::set_scale(float f) {
+  _up->set_scale(f);
+  _down->set_scale(f);
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->set_scale(f);
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->set_scale(f);
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->set_scale(f);
+  GuiItem::set_scale(f);
+  this->recompute_frame();
+}
+
+void GuiButton::set_pos(const LVector3f& p) {
+  _up->set_pos(p);
+  _down->set_pos(p);
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->set_pos(p);
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->set_pos(p);
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->set_pos(p);
+  GuiItem::set_pos(p);
+  this->recompute_frame();
 }

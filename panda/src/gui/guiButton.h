@@ -6,13 +6,12 @@
 #ifndef __GUIBUTTON_H__
 #define __GUIBUTTON_H__
 
+#include "guiItem.h"
 #include "guiRegion.h"
 #include "guiLabel.h"
 #include "guiManager.h"
 
-#include <eventHandler.h>
-
-class EXPCL_PANDA GuiButton : public Namable {
+class EXPCL_PANDA GuiButton : public GuiItem {
 private:
   GuiLabel* _up;
   GuiLabel* _up_rollover;
@@ -26,21 +25,17 @@ private:
   enum States { NONE, UP, UP_ROLLOVER, DOWN, DOWN_ROLLOVER, INACTIVE,
 		INACTIVE_ROLLOVER };
   States _state;
-  bool _added_hooks;
-  float _scale;
-  LVector3f _pos;
-  GuiManager* _mgr;
 
   INLINE GuiButton(void);
   void switch_state(States);
-  void recompute_frame(void);
+  virtual void recompute_frame(void);
 public:
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*, GuiLabel*,
 	    GuiLabel*);
   ~GuiButton(void);
 
-  void manage(GuiManager*, EventHandler&);
-  void unmanage(void);
+  virtual void manage(GuiManager*, EventHandler&);
+  virtual void unmanage(void);
   INLINE void enter(void);
   INLINE void exit(void);
   INLINE void up(void);
@@ -64,11 +59,8 @@ public:
   INLINE const string& get_down_rollover_event(void) const;
   INLINE const string& get_inactive_event(void) const;
 
-  INLINE void set_scale(float);
-  INLINE void set_pos(const LVector3f&);
-
-  INLINE float get_scale(void) const;
-  INLINE LVector3f get_pos(void) const;
+  virtual void set_scale(float);
+  virtual void set_pos(const LVector3f&);
 };
 
 #include "guiButton.I"

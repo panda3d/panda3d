@@ -33,21 +33,18 @@ static void exit_rollover(CPT_Event e) {
 }
 
 void GuiRollover::recompute_frame(void) {
-  float left, right, bottom, top;
-
-  GetExtents(_off, _on, left, right, bottom, top);
-  _rgn->set_region(left, right, bottom, top);
+  GuiItem::recompute_frame();
+  GetExtents(_off, _on, _left, _right, _bottom, _top);
+  _rgn->set_region(_left, _right, _bottom, _top);
 }
 
 GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
-  : Namable(name), _off(off), _on(on), _state(false), _added_hooks(false) {
-  float left, right, bottom, top;
-
-  GetExtents(off, on, left, right, bottom, top);
-  _rgn = new GuiRegion("rollover-" + name, left, right, bottom, top, false);
+  : GuiItem(name), _off(off), _on(on), _state(false) {
+  GetExtents(off, on, _left, _right, _bottom, _top);
+  _rgn = new GuiRegion("rollover-" + name, _left, _right, _bottom, _top,
+		       false);
   rollovers["gui-in-rollover-" + name] = this;
   rollovers["gui-out-rollover-" + name] = this;
-  _mgr = (GuiManager*)0L;
 }
 
 GuiRollover::~GuiRollover(void) {
@@ -63,7 +60,7 @@ void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {
     mgr->add_region(_rgn);
     _state = false;
     mgr->add_label(_off);
-    _mgr = mgr;
+    GuiItem::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage rollover (0x" << (void*)this
 		       << ") that is already managed" << endl;
@@ -73,5 +70,19 @@ void GuiRollover::unmanage(void) {
   _mgr->remove_region(_rgn);
   _mgr->remove_label(_off);
   _mgr->remove_label(_on);
-  _mgr = (GuiManager*)0L;
+  GuiItem::unmanage();
+}
+
+void GuiRollover::set_scale(float f) {
+  _on->set_scale(f);
+  _off->set_scale(f);
+  GuiItem::set_scale(f);
+  recompute_frame();
+}
+
+void GuiRollover::set_pos(const LVector3f& p) {
+  _on->set_pos(p);
+  _off->set_pos(p);
+  GuiItem::set_pos(p);
+  recompute_frame();
 }

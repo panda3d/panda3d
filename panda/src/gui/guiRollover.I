@@ -33,25 +33,3 @@ INLINE void GuiRollover::exit(void) {
 INLINE bool GuiRollover::is_over(void) const {
   return _state;
 }
-
-INLINE void GuiRollover::set_scale(float f) {
-  _on->set_scale(f);
-  _off->set_scale(f);
-  recompute_frame();
-  _scale = f;
-}
-
-INLINE void GuiRollover::set_pos(const LVector3f& p) {
-  _on->set_pos(p);
-  _off->set_pos(p);
-  recompute_frame();
-  _pos = p;
-}
-
-INLINE float GuiRollover::get_scale(void) const {
-  return _scale;
-}
-
-INLINE LVector3f GuiRollover::get_pos(void) const {
-  return _pos;
-}
