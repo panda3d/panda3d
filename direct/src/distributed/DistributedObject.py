@@ -10,7 +10,19 @@ class DistributedObject(PandaObject):
         except:
             self.DistributedObject_initialized = 1
             self.cr = cr
+            # A few objects will set neverDisable to 1... Examples are localToon, and anything
+            # that lives in the UberZone. This keeps them from being disabled when you change
+            # zones, even to the quiet zone.
+            self.setNeverDisable(0)
         return None
+
+    def setNeverDisable(self, bool):
+        assert((bool == 1) or (bool == 0))
+        self.neverDisable = bool
+        return None
+
+    def getNeverDisable(self):
+        return self.neverDisable
 
     def disable(self):
         """disable(self)
