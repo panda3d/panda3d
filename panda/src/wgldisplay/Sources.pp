@@ -1,5 +1,4 @@
-#define DIRECTORY_IF_GL yes
-#define DIRECTORY_IF_WGL yes
+#define BUILD_DIRECTORY $[HAVE_WGL]
 
 #define USE_GL yes
 

@@ -1,5 +1,4 @@
-#define DIRECTORY_IF_WCR yes
-#define DIRECTORY_IF_CHROMIUM yes
+#define BUILD_DIRECTORY $[HAVE_WCR]
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m

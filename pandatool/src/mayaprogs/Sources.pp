@@ -1,4 +1,4 @@
-#define DIRECTORY_IF_MAYA yes
+#define BUILD_DIRECTORY $[HAVE_MAYA]
 
 #define binary_name maya2egg
 

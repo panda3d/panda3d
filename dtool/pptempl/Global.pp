@@ -241,72 +241,27 @@
   #define chromium_libs $[CHROMIUM_LIBS]
 #endif
 
+// We define these two variables true here in the global scope; a
+// particular Sources.pp file can redefine these to be false to
+// prevent a particular directory or target from being built in
+// certain circumstances.
+#define BUILD_DIRECTORY 1
+#define BUILD_TARGET 1
+
 // This variable, when evaluated in the scope of a particular directory,
 // will indicate true (i.e. nonempty) when the directory is truly built,
 // or false (empty) when the directory is not to be built.
-#defer build_directory \
- $[and \
-     $[or $[not $[DIRECTORY_IF_WINDOWS]],$[WINDOWS_PLATFORM]], \
-     $[or $[not $[DIRECTORY_IF_UNIX]],$[UNIX_PLATFORM]], \
-     $[or $[not $[DIRECTORY_IF_PYTHON]],$[HAVE_PYTHON]], \
-     $[or $[not $[DIRECTORY_IF_NSPR]],$[HAVE_NSPR]], \
-     $[or $[not $[DIRECTORY_IF_CRYPTO]],$[HAVE_CRYPTO]], \
-     $[or $[not $[DIRECTORY_IF_ZLIB]],$[HAVE_ZLIB]], \
-     $[or $[not $[DIRECTORY_IF_SOXST]],$[HAVE_SOXST]], \
-     $[or $[not $[DIRECTORY_IF_GL]],$[HAVE_GL]], \
-     $[or $[not $[DIRECTORY_IF_CHROMIUM]],$[HAVE_CHROMIUM]], \
-     $[or $[not $[DIRECTORY_IF_DX]],$[HAVE_DX]], \
-     $[or $[not $[DIRECTORY_IF_GLX]],$[HAVE_GLX]], \
-     $[or $[not $[DIRECTORY_IF_GLUT]],$[HAVE_GLUT]], \
-     $[or $[not $[DIRECTORY_IF_WGL]],$[HAVE_WGL]], \
-     $[or $[not $[DIRECTORY_IF_RIB]],$[HAVE_RIB]], \
-     $[or $[not $[DIRECTORY_IF_PS2]],$[HAVE_PS2]], \
-     $[or $[not $[DIRECTORY_IF_SGIGL]],$[HAVE_SGIGL]], \
-     $[or $[not $[DIRECTORY_IF_JPEG]],$[HAVE_JPEG]], \
-     $[or $[not $[DIRECTORY_IF_JPEG2000]],$[HAVE_JPEG2000]], \
-     $[or $[not $[DIRECTORY_IF_TIFF]],$[HAVE_TIFF]], \
-     $[or $[not $[DIRECTORY_IF_FFTW]],$[HAVE_FFTW]], \
-     $[or $[not $[DIRECTORY_IF_VRPN]],$[HAVE_VRPN]], \
-     $[or $[not $[DIRECTORY_IF_GTKMM]],$[HAVE_GTKMM]], \
-     $[or $[not $[DIRECTORY_IF_MAYA]],$[HAVE_MAYA]], \
-     $[or $[not $[DIRECTORY_IF_IPC]],$[HAVE_IPC]], \
-     $[or $[not $[DIRECTORY_IF_NET]],$[HAVE_NET]], \
-     $[or $[not $[DIRECTORY_IF_AUDIO]],$[HAVE_AUDIO]], \
-     $[or $[not $[DIRECTORY_IF_INTERROGATE]],$[HAVE_INTERROGATE]], \
-      1 ]
+#defer build_directory $[BUILD_DIRECTORY]
+// It maps to a direct evaluation of the user-set variable,
+// BUILD_DIRECTORY, for historical reasons.  This also allows us to
+// reserve the right to extend this variable to test other conditions
+// as well, should the need arise.
 
 // This variable, when evaluated in the scope of a particular target,
 // will indicated true when the target should be built, or false when
 // the target is not to be built.
-#defer build_target \
- $[and \
-     $[or $[not $[TARGET_IF_WINDOWS]],$[WINDOWS_PLATFORM]], \
-     $[or $[not $[TARGET_IF_UNIX]],$[UNIX_PLATFORM]], \
-     $[or $[not $[TARGET_IF_PYTHON]],$[HAVE_PYTHON]], \
-     $[or $[not $[TARGET_IF_NSPR]],$[HAVE_NSPR]], \
-     $[or $[not $[TARGET_IF_CRYPTO]],$[HAVE_CRYPTO]], \
-     $[or $[not $[TARGET_IF_ZLIB]],$[HAVE_ZLIB]], \
-     $[or $[not $[TARGET_IF_SOXST]],$[HAVE_SOXST]], \
-     $[or $[not $[TARGET_IF_GL]],$[HAVE_GL]], \
-     $[or $[not $[TARGET_IF_CHROMIUM]],$[HAVE_CHROMIUM]], \
-     $[or $[not $[TARGET_IF_DX]],$[HAVE_DX]], \
-     $[or $[not $[TARGET_IF_GLX]],$[HAVE_GLX]], \
-     $[or $[not $[TARGET_IF_GLUT]],$[HAVE_GLUT]], \
-     $[or $[not $[TARGET_IF_WGL]],$[HAVE_WGL]], \
-     $[or $[not $[TARGET_IF_RIB]],$[HAVE_RIB]], \
-     $[or $[not $[TARGET_IF_PS2]],$[HAVE_PS2]], \
-     $[or $[not $[TARGET_IF_SGIGL]],$[HAVE_SGIGL]], \
-     $[or $[not $[TARGET_IF_JPEG]],$[HAVE_JPEG]], \
-     $[or $[not $[TARGET_IF_JPEG2000]],$[HAVE_JPEG2000]], \
-     $[or $[not $[TARGET_IF_TIFF]],$[HAVE_TIFF]], \
-     $[or $[not $[TARGET_IF_FFTW]],$[HAVE_FFTW]], \
-     $[or $[not $[TARGET_IF_VRPN]],$[HAVE_VRPN]], \
-     $[or $[not $[TARGET_IF_GTKMM]],$[HAVE_GTKMM]], \
-     $[or $[not $[TARGET_IF_MAYA]],$[HAVE_MAYA]], \
-     $[or $[not $[TARGET_IF_IPC]],$[HAVE_IPC]], \
-     $[or $[not $[TARGET_IF_NET]],$[HAVE_NET]], \
-     $[or $[not $[TARGET_IF_RAD_MSS]],$[HAVE_RAD_MSS]], \
-      1 ]
+#defer build_target $[BUILD_TARGET]
+
 
 // This takes advantage of the above two variables to get the actual
 // list of local libraries we are to link with, eliminating those that

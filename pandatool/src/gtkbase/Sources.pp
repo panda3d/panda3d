@@ -1,4 +1,4 @@
-#define DIRECTORY_IF_GTKMM yes
+#define BUILD_DIRECTORY $[HAVE_GTKMM]
 #define USE_GTKMM yes
 
 #begin ss_lib_target

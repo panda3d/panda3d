@@ -1,5 +1,4 @@
-#define DIRECTORY_IF_GL yes
-#define DIRECTORY_IF_GLX yes
+#define BUILD_DIRECTORY $[HAVE_GLX]
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m

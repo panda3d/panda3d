@@ -6,7 +6,7 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDAGL
-#define DIRECTORY_IF_GL yes
+#define BUILD_DIRECTORY $[HAVE_GL]
 
 #if $[eq $[LINK_IN_GL],]
   // We don't have any components if we're linking the GL library

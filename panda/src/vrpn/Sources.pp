@@ -1,4 +1,4 @@
-#define DIRECTORY_IF_VRPN yes
+#define BUILD_DIRECTORY $[HAVE_VRPN]
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m

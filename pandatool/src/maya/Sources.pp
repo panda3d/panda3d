@@ -1,4 +1,4 @@
-#define DIRECTORY_IF_MAYA yes
+#define BUILD_DIRECTORY $[HAVE_MAYA]
 
 #begin ss_lib_target
   #define USE_MAYA yes

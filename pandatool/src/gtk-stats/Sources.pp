@@ -1,6 +1,5 @@
-#define DIRECTORY_IF_GTKMM yes
+#define BUILD_DIRECTORY $[and $[HAVE_GTKMM],$[HAVE_NET]]
 #define USE_GTKMM yes
-#define DIRECTORY_IF_NET yes
 #define USE_NET yes
 
 #begin bin_target

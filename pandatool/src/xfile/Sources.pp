@@ -1,4 +1,7 @@
-#define DIRECTORY_IF_DX yes
+
+// This package is temporarily disabled.
+#define BUILD_DIRECTORY
+//#define BUILD_DIRECTORY $[HAVE_DX]
 #define USE_DX yes
 
 #begin ss_lib_target

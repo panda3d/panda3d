@@ -6,7 +6,7 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDACR
-#define DIRECTORY_IF_CHROMIUM yes
+#define BUILD_DIRECTORY $[HAVE_CHROMIUM]
 
 //#define USE_CHROMIUM yes
 

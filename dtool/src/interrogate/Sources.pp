@@ -1,4 +1,4 @@
-#define DIRECTORY_IF_INTERROGATE yes
+#define BUILD_DIRECTORY $[HAVE_INTERROGATE]
 
 #define LOCAL_LIBS cppParser pystub interrogatedb dconfig dtoolutil dtoolbase
 

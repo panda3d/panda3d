@@ -1,4 +1,4 @@
-#define DIRECTORY_IF_INTERROGATE yes
+#define BUILD_DIRECTORY $[HAVE_INTERROGATE]
 
 #define LOCAL_LIBS dtoolutil dtoolbase
 #define YACC_PREFIX cppyy
@@ -39,18 +39,5 @@
      cppToken.cxx cppType.cxx cppTypeDeclaration.cxx  \
      cppTypeParser.cxx cppTypeProxy.cxx cppTypedef.cxx  \
      cppUsing.cxx cppVisibility.cxx indent.cxx 
-
-// These are temporary; they need not be installed in the future.  These are
-// necessary only when using template stopgap.
-  #define INSTALL_HEADERS \
-    cppDeclaration.h cppExtensionType.h cppIdentifier.h cppInstance.h \
-    cppManifest.h cppPreprocessor.h cppScope.h cppToken.h cppType.h \
-    cppVisibility.h cppBisonDefs.h cppParser.h cppInstanceIdentifier.h \
-    cppFunctionType.h cppSimpleType.h cppParameterList.h cppTypedef.h \
-    cppTypeDeclaration.h \
-    cppPointerType.h cppReferenceType.h cppConstType.h cppArrayType.h \
-    cppEnumType.h cppStructType.h cppFile.h cppTemplateParameterList.h \
-    cppFunctionGroup.h cppNameComponent.h cppTypeProxy.h cppTBDType.h \
-    cppExpressionParser.h cppExpression.h cppGlobals.h cppCommentBlock.h
 
 #end static_lib_target

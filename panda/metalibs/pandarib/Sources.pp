@@ -1,4 +1,4 @@
-#define DIRECTORY_IF_RIB yes
+#define BUILD_DIRECTORY $[HAVE_RIB]
 
 // DIR_TYPE "metalib" indicates we are building a shared library that
 // consists mostly of references to other shared libraries.  Under

@@ -2,11 +2,11 @@
                    dtoolutil:c dtoolbase:c dtool:m pystub
 #define LOCAL_LIBS downloader express event ipc
 #define USE_IPC yes
-#define DIRECTORY_IF_IPC yes
+#define BUILD_DIRECTORY $[HAVE_IPC]
 
 #begin bin_target
   #define TARGET apply_patch
-  #define TARGET_IF_CRYPTO yes
+  #define BUILD_TARGET $[HAVE_CRYPTO]
 
   #define SOURCES \
     apply_patch.cxx
@@ -17,7 +17,7 @@
 
 #begin bin_target
   #define TARGET build_patch
-  #define TARGET_IF_CRYPTO yes
+  #define BUILD_TARGET $[HAVE_CRYPTO]
 
   #define SOURCES \
     build_patch.cxx
@@ -26,7 +26,7 @@
 
 #begin bin_target
   #define TARGET check_adler
-  #define TARGET_IF_ZLIB yes
+  #define BUILD_TARGET $[HAVE_ZLIB]
   #define USE_ZLIB yes
 
   #define SOURCES \
@@ -36,7 +36,7 @@
 
 #begin bin_target
   #define TARGET check_crc
-  #define TARGET_IF_ZLIB yes
+  #define BUILD_TARGET $[HAVE_ZLIB]
   #define USE_ZLIB yes
 
   #define SOURCES \
@@ -46,7 +46,7 @@
 
 #begin bin_target
   #define TARGET check_md5
-  #define TARGET_IF_CRYPTO yes
+  #define BUILD_TARGET $[HAVE_CRYPTO]
   #define USE_CRYPTO yes
 
   #define SOURCES \
@@ -64,7 +64,7 @@
 
 #begin bin_target
   #define TARGET pcompress
-  #define TARGET_IF_ZLIB yes
+  #define BUILD_TARGET $[HAVE_ZLIB]
   #define USE_ZLIB yes
 
   #define SOURCES \
@@ -74,7 +74,7 @@
 
 #begin bin_target
   #define TARGET pdecompress
-  #define TARGET_IF_ZLIB yes
+  #define BUILD_TARGET $[HAVE_ZLIB]
   #define USE_ZLIB yes
 
   #define SOURCES \
@@ -84,7 +84,7 @@
 
 #begin bin_target
   #define TARGET test_downloader
-  #define TARGET_IF_ZLIB yes
+  #define BUILD_TARGET $[HAVE_ZLIB]
   #define USE_ZLIB yes
 
   #define SOURCES \

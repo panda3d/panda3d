@@ -3,7 +3,7 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define USE_NSPR yes
 #define USE_IPC yes
-#define DIRECTORY_IF_IPC yes
+#define BUILD_DIRECTORY $[HAVE_IPC]
 
 #begin lib_target
   #define TARGET ipc

@@ -1,7 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define DIRECTORY_IF_NET yes
-#define DIRECTORY_IF_NSPR yes
+#define BUILD_DIRECTORY $[and $[HAVE_NET],$[HAVE_NSPR]]
 #define USE_NET yes
 #define USE_NSPR yes
 

@@ -1,5 +1,4 @@
-#define DIRECTORY_IF_SGIGL yes
-#define DIRECTORY_IF_GLUT yes
+#define BUILD_DIRECTORY $[and $[HAVE_SGIGL],$[HAVE_GLUT]]
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m

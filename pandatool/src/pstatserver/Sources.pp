@@ -1,5 +1,4 @@
-#define DIRECTORY_IF_NET yes
-#define USE_NET yes
+#define BUILD_DIRECTORY $[HAVE_NET]
 
 #begin ss_lib_target
   #define TARGET pstatserver

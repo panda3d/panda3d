@@ -1,5 +1,5 @@
 #define OTHER_LIBS dtoolconfig dtool
-#define DIRECTORY_IF_AUDIO yes
+#define BUILD_DIRECTORY $[HAVE_AUDIO]
 
 #begin lib_target
   #define TARGET audio
