@@ -11,10 +11,12 @@ def ToggleStrafe():
 class BattleWalker(GravityWalker.GravityWalker):
     def __init__(self):
         GravityWalker.GravityWalker.__init__(self)
-
+        self.slideSpeed = 0
+        self.advanceSpeed = 0
+        
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
-        return (self.speed, self.rotationSpeed, self.slideSpeed)
+        return (self.speed, self.rotationSpeed, self.slideSpeed, self.advanceSpeed)
 
 
     def handleAvatarControls(self, task):
@@ -39,22 +41,23 @@ class BattleWalker(GravityWalker.GravityWalker):
         slide = 0 #hack -- was: inputState.isSet("slide")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        self.speed=(forward and self.avatarControlForwardSpeed or 
-                    reverse and -self.avatarControlReverseSpeed)
-        if run and self.speed>0.0:
-            self.speed*=2.0 #*#
+        self.advanceSpeed=(forward and self.avatarControlForwardSpeed or 
+                           reverse and -self.avatarControlReverseSpeed)
+        if run and self.advanceSpeed>0.0:
+            self.advanceSpeed*=2.0 #*#
         # Should fSlide be renamed slideButton?
         self.slideSpeed=.15*(turnLeft and -self.avatarControlForwardSpeed or 
                             turnRight and self.avatarControlForwardSpeed)
         self.rotationSpeed=0
+        self.speed=0
         
         if __debug__:
             debugRunning = inputState.isSet("debugRunning")
             if debugRunning:
-                self.speed*=4.0
+                self.advanceSpeed*=4.0
                 self.slideSpeed*=4.0
                 self.rotationSpeed*=1.25
-
+                
         if self.needToDeltaPos:
             self.setPriorParentVector()
             self.needToDeltaPos = 0
@@ -95,30 +98,29 @@ class BattleWalker(GravityWalker.GravityWalker):
         # Before we do anything with position or orientation, make the avatar
         # face it's target.  Only allow rMax degrees rotation per frame, so
         # we don't get an unnatural spinning effect
-        oldH = self.avatarNodePath.getH()
+        curH = self.avatarNodePath.getH()
         self.avatarNodePath.headsUp(targetNp)
         newH = self.avatarNodePath.getH()
-        delH = newH-oldH
+        delH = reduceAngle(newH-curH)
         rMax = 10
-        if delH > rMax:
-            self.avatarNodePath.setH(oldH+rMax)
-            self.rotationSpeed=self.avatarControlRotateSpeed
-
-        elif delH < -rMax:
-            self.avatarNodePath.setH(oldH-rMax)
+        if delH < -rMax:
+            self.avatarNodePath.setH(curH-rMax)
             self.rotationSpeed=-self.avatarControlRotateSpeed
-
+        elif delH > rMax:
+            self.avatarNodePath.setH(curH+rMax)
+            self.rotationSpeed=self.avatarControlRotateSpeed
+            
         # Check to see if we're moving at all:
-        self.moving = self.speed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())
+        self.moving = self.advanceSpeed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())
         if self.moving:
-            distance = dt * self.speed
+            distance = dt * self.advanceSpeed
             slideDistance = dt * self.slideSpeed
             rotation = dt * self.rotationSpeed
 
             # Prevent avatar from getting too close to target
             d = self.avatarNodePath.getPos(targetNp)
             # TODO:  make min distance adjust for current weapon
-            if (d[0]*d[0]+d[1]*d[1] < 6.0):
+            if (d[0]*d[0]+d[1]*d[1] < 6.0 and distance > 0):
                 # move the avatar sideways instead of forward
                 slideDistance += .2
                 distance = 0
