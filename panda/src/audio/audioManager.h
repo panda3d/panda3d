@@ -23,10 +23,10 @@
 #include "config_audio.h"
 #include "audioSound.h"
 
-typedef AudioManager* Create_AudioManager_proc();
+typedef PT(AudioManager) Create_AudioManager_proc();
 
 
-class EXPCL_PANDA AudioManager {
+class EXPCL_PANDA AudioManager : public TypedReferenceCount {
 PUBLISHED:
   // Create an AudioManager for each category of sounds you have.
   // E.g.
@@ -39,12 +39,12 @@ PUBLISHED:
   // You own the AudioManager*, please delete it when you're done with it.
   // Do not delete the AudioManager (i.e. you're not done with it), until
   // you have deleted all the associated AudioSounds.
-  static AudioManager* create_AudioManager();
+  static PT(AudioManager) create_AudioManager();
   virtual ~AudioManager() {}
   
   // Get a sound:
   // You own this sound.  Be sure to delete it when you're done.
-  virtual AudioSound* get_sound(const string& file_name) = 0;
+  virtual PT(AudioSound) get_sound(const string& file_name) = 0;
   // Tell the AudioManager there is no need to keep this one cached.
   virtual void drop_sound(const string& file_name) = 0;
 
@@ -74,6 +74,26 @@ protected:
   AudioManager() {
     // intentionally blank.
   }
+
+public:
+  // type stuff
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "AudioManager",
+        TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "audioManager.I"

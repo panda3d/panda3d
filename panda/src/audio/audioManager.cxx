@@ -24,8 +24,10 @@
 
 #include "load_dso.h"
 
+TypeHandle AudioManager::_type_handle;
+
 namespace {
-  AudioManager* create_NullAudioManger() {
+  PT(AudioManager) create_NullAudioManger() {
     audio_debug("create_NullAudioManger()");
     return new NullAudioManager();
   }
@@ -41,7 +43,7 @@ register_AudioManager_creator(Create_AudioManager_proc* proc) {
 
 
 // Factory method for getting a platform specific AudioManager:
-AudioManager* AudioManager::
+PT(AudioManager) AudioManager::
 create_AudioManager() {
   audio_debug("create_AudioManager()\n  audio_library_name=\""
       <<*audio_library_name<<"\"");
@@ -59,7 +61,7 @@ create_AudioManager() {
         nassertr(_create_AudioManager==create_NullAudioManger, 0);
       } else {
         // ...the library will register itself with the AudioManager.
-        #if defined(WIN32) && !defined(NDEBUG) //[
+        #if defined(DWORD) && defined(WIN32) && !defined(NDEBUG) //[
           const int bufLen=256;
           char path[bufLen];
           DWORD count = GetModuleFileName((HMODULE)lib, path, bufLen);

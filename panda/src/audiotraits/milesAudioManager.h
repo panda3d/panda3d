@@ -31,7 +31,7 @@ public:
   MilesAudioManager();
   ~MilesAudioManager();
 
-  AudioSound* get_sound(const string& file_name);
+  PT(AudioSound) get_sound(const string& file_name);
   void drop_sound(const string& file_name);
 
   void set_volume(float volume);
@@ -58,7 +58,7 @@ private:
   friend MilesAudioSound;
 };
 
-EXPCL_MILES_AUDIO AudioManager* Create_AudioManager();
+EXPCL_MILES_AUDIO PT(AudioManager) Create_AudioManager();
 
 
 #endif //]

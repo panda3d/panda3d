@@ -27,7 +27,7 @@
 int MilesAudioManager::_active_managers;
 HDLSFILEID MilesAudioManager::_dls_field;
 
-AudioManager* Create_AudioManager() {
+PT(AudioManager) Create_AudioManager() {
   audio_debug("Create_AudioManger()");
   return new MilesAudioManager();
 }
@@ -143,9 +143,9 @@ load(Filename file_name) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-AudioSound* MilesAudioManager::
+PT(AudioSound) MilesAudioManager::
 get_sound(const string& file_name) {
-  audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\"");
+  audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
   Filename path = file_name;
   path.resolve_filename(get_sound_path());
   audio_debug("  resolved file_name is '"<<path<<"'");
@@ -177,7 +177,7 @@ get_sound(const string& file_name) {
     }
   }
   // Create an AudioSound from the sound:
-  AudioSound* audioSound = 0;
+  PT(AudioSound) audioSound = 0;
   if (audio) {
     MilesAudioSound* milesAudioSound
         =new MilesAudioSound(*this, audio, (*si).first);
@@ -198,7 +198,7 @@ get_sound(const string& file_name) {
 void MilesAudioManager::
 drop_sound(const string& file_name) {
   audio_debug("MilesAudioManager::drop_sound(file_name=\""
-      <<file_name<<"\"");
+      <<file_name<<"\")");
   Filename path = file_name;
   path.resolve_filename(get_sound_path());
   audio_debug("  path=\""<<path<<"\"");
@@ -217,7 +217,7 @@ drop_sound(const string& file_name) {
 void MilesAudioManager::
 release_sound(MilesAudioSound* audioSound) {
   audio_debug("MilesAudioManager::release_sound(audioSound=\""
-      <<audioSound->get_name()<<"\"");
+      <<audioSound->get_name()<<"\")");
   _soundsOnLoan.erase(audioSound);
 }
 
