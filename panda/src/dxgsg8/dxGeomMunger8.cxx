@@ -94,5 +94,5 @@ int DXGeomMunger8::
 compare_to_impl(const qpGeomMunger *other) const {
   //  const DXGeomMunger8 *om = DCAST(DXGeomMunger8, other);
 
-  return 0;
+  return ColorMunger::compare_to_impl(other);
 }

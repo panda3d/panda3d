@@ -20,7 +20,7 @@
 #define DXGEOMMUNGER8_H
 
 #include "pandabase.h"
-#include "qpgeomMunger.h"
+#include "colorMunger.h"
 #include "graphicsStateGuardian.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@
 //               and that all relevant components are packed into a
 //               single array, in the correct order.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDADX DXGeomMunger8 : public qpGeomMunger {
+class EXPCL_PANDADX DXGeomMunger8 : public ColorMunger {
 public:
   INLINE DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state);
 
@@ -45,9 +45,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    qpGeomMunger::init_type();
+    ColorMunger::init_type();
     register_type(_type_handle, "DXGeomMunger8",
-                  qpGeomMunger::get_class_type());
+                  ColorMunger::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
