@@ -18,6 +18,7 @@
 
 #include "pathReplace.h"
 #include "config_util.h"
+#include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PathReplace::Constructor
@@ -53,57 +54,42 @@ match_path(const Filename &orig_filename,
   Filename match;
   bool got_match = false;
 
-  if (_entries.empty()) {
-    // If we have no entries, still look up the file on the search
-    // path (unless _path_store is PS_keep).
-    if (_path_store != PS_keep) {
-      Filename new_filename = orig_filename;
-      if (new_filename.resolve_filename(_path) ||
-          new_filename.resolve_filename(additional_path) ||
-          new_filename.resolve_filename(get_model_path())) {
-        // Found it!
-        return new_filename;
-      }
-    }
-
-  } else {
-    Entries::const_iterator ei;
-    for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
-      const Entry &entry = (*ei);
-      Filename new_filename;
-      if (entry.try_match(orig_filename, new_filename)) {
-        // The prefix matches.  Save the resulting filename for
-        // posterity.
-        got_match = true;
-        match = new_filename;
-        
-        if (new_filename.is_fully_qualified()) {
-          // If the resulting filename is fully qualified, it's a match
-          // if and only if it exists.
-          if (new_filename.exists()) {
-            return new_filename;
-          }
-          
-        } else {
-          // Otherwise, if it's a relative filename, attempt to look it
-          // up on the search path.
-          if (new_filename.resolve_filename(_path) ||
-              new_filename.resolve_filename(additional_path) ||
-              new_filename.resolve_filename(get_model_path())) {
-            // Found it!
-            if (_path_store == PS_keep) {
-              // If we asked to "keep" the pathname, we return the
-              // matched path, but not the found path.
-              return match;
-            } else {
-              // Otherwise, we return the actual, found path.
-              return new_filename;
-            }
-          }
+  Entries::const_iterator ei;
+  for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
+    const Entry &entry = (*ei);
+    Filename new_filename;
+    if (entry.try_match(orig_filename, new_filename)) {
+      // The prefix matches.  Save the resulting filename for
+      // posterity.
+      got_match = true;
+      match = new_filename;
+      
+      if (new_filename.is_fully_qualified()) {
+        // If the resulting filename is fully qualified, it's a match
+        // if and only if it exists.
+        if (new_filename.exists()) {
+          return new_filename;
         }
         
-        // The prefix matched, but it didn't exist.  Keep looking.
+      } else {
+        // Otherwise, if it's a relative filename, attempt to look it
+        // up on the search path.
+        if (new_filename.resolve_filename(_path) ||
+            new_filename.resolve_filename(additional_path) ||
+            new_filename.resolve_filename(get_model_path())) {
+          // Found it!
+          if (_path_store == PS_keep) {
+            // If we asked to "keep" the pathname, we return the
+            // matched path, but not the found path.
+            return match;
+          } else {
+            // Otherwise, we return the actual, found path.
+            return new_filename;
+          }
+        }
       }
+      
+      // The prefix matched, but it didn't exist.  Keep looking.
     }
   }
 
@@ -111,6 +97,18 @@ match_path(const Filename &orig_filename,
   // prefix match?
   if (got_match) {
     return match;
+  }
+
+  // Well, we still haven't found it; look it up on the search path as
+  // is.
+  if (_path_store != PS_keep) {
+    Filename new_filename = orig_filename;
+    if (new_filename.resolve_filename(_path) ||
+        new_filename.resolve_filename(additional_path) ||
+        new_filename.resolve_filename(get_model_path())) {
+      // Found it!
+      return new_filename;
+    }
   }
 
   // Nope, couldn't find anything.  Just return the original filename.
@@ -159,6 +157,39 @@ store_path(const Filename &orig_filename) {
   }
 
   return filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PathReplace::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PathReplace::
+write(ostream &out, int indent_level) const {
+  Entries::const_iterator ei;
+  for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
+    indent(out, indent_level)
+      << "-pr " << (*ei)._orig_prefix << "=" 
+      << (*ei)._replacement_prefix << "\n";
+  }
+  int num_directories = _path.get_num_directories();
+  for (int i = 0; i < num_directories; i++) {
+    indent(out, indent_level)
+      << "-pp " << _path.get_directory(i) << "\n";
+  }
+  indent(out, indent_level)
+    << "-ps " << _path_store << "\n";
+
+  // The path directory is only relevant if _path_store is rel or rel_abs.
+  switch (_path_store) {
+  case PS_relative:
+  case PS_rel_abs:
+    indent(out, indent_level)
+      << "-pd " << _path_directory << "\n";
+
+  default:
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -61,6 +61,8 @@ public:
   INLINE Filename convert_path(const Filename &orig_filename,
                                const DSearchPath &additional_path = DSearchPath());
 
+  void write(ostream &out, int indent_level = 0) const;
+
 public:
   // This is used (along with _entries) to support match_path().
   DSearchPath _path;
