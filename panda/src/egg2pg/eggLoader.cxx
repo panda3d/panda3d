@@ -2567,11 +2567,17 @@ find_collision_geometry(EggGroup *egg_group) {
 CollisionPlane *EggLoader::
 create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
   if (!egg_poly->cleanup()) {
-    egg2pg_cat.error()
-      << "Degenerate collision plane in " << parent_group->get_name()
+    egg2pg_cat.info()
+      << "Ignoring degenerate collision plane in " << parent_group->get_name()
       << "\n";
-    _error = true;
     return NULL;
+  }
+
+  if (!egg_poly->is_planar()) {
+    egg2pg_cat.warning()
+      << "Non-planar polygon defining collision plane in "
+      << parent_group->get_name()
+      << "\n";
   }
 
   LMatrix4d mat = egg_poly->get_vertex_to_node();
@@ -2620,18 +2626,18 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
   PT(EggGroup) group = new EggGroup;
 
   if (!egg_poly->triangulate_into(group, false)) {
-    egg2pg_cat.error()
-      << "Degenerate collision polygon in " << parent_group->get_name()
+    egg2pg_cat.info()
+      << "Ignoring degenerate collision polygon in "
+      << parent_group->get_name()
       << "\n";
-    _error = true;
     return;
   }
 
   if (group->size() != 1) {
-    egg2pg_cat.error()
-      << "Concave collision polygon in " << parent_group->get_name()
+    egg2pg_cat.info()
+      << "Triangulating concave or non-planar collision polygon in "
+      << parent_group->get_name()
       << "\n";
-    _error = true;
   }
 
   EggGroup::iterator ci;
