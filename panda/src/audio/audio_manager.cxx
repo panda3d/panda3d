@@ -16,6 +16,16 @@ bool* AudioManager::_quit = (bool*)0L;
 thread* AudioManager::_spawned = (thread*)0L;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::destructor
+//       Access: Public
+//  Description: delete the AudioManager singleton
+////////////////////////////////////////////////////////////////////
+AudioManager::~AudioManager(void) {
+  shutdown();
+  _global_ptr = (AudioManager*)0L;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::set_update_func
 //       Access: Public, Static
 //  Description: register a function that will maintain the buffers

@@ -36,6 +36,8 @@ private:
   static bool* _quit;
   static thread* _spawned;
 public:
+  virtual ~AudioManager(void);
+
   static void set_update_func(UpdateFunc*);
   static void set_shutdown_func(ShutdownFunc*);
 
