@@ -4381,13 +4381,10 @@ void DXGraphicsStateGuardian::
 set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                ColorBlendAttrib::Mode color_blend_mode,
                TransparencyAttrib::Mode transparency_mode) {
-  // If color_write_mode is off, we disable writing to the color using
-  // blending.  I don't know if it is possible in DX to disable color
-  // outside of a blend mode.
+  // If color_write_mode is off, we disable writing to the colorbuffer.
   if (color_write_mode == ColorWriteAttrib::M_off) {
-    enable_blend(true);
     enable_alpha_test(false);
-    call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
+    set_color_writemask(0x0);
     return;
   }
 
