@@ -111,9 +111,11 @@ public:
   INLINE void set_xorg(int org);
   INLINE void set_yorg(int org);
   INLINE void set_size(int x_org, int y_org, int x_size, int y_size);
+  INLINE void set_border(int border); 
   INLINE void set_num_components(int num_components);
   INLINE void set_component_width(int component_width);
   INLINE void set_format(Format format);
+  INLINE void set_image_type(Type type);
   INLINE void set_loaded();
 
   INLINE int get_xsize() const;

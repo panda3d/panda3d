@@ -871,6 +871,11 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
         _pbuffer->set_ysize(scan.get_int32());
         _pbuffer->set_xorg(scan.get_int32());
         _pbuffer->set_yorg(scan.get_int32());
+        _pbuffer->set_border(scan.get_uint8());
+        _pbuffer->set_image_type((PixelBuffer::Type)scan.get_uint8());
+        _pbuffer->set_num_components(scan.get_uint8());
+        _pbuffer->set_component_width(scan.get_uint8());
+
         _pbuffer->set_loaded();
         PN_uint32 u_size = scan.get_uint32();
 
@@ -923,6 +928,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_int32(_pbuffer->get_ysize());
     me.add_int32(_pbuffer->get_xorg());
     me.add_int32(_pbuffer->get_yorg());
+    me.add_uint8(_pbuffer->get_border());
+    me.add_uint8(_pbuffer->get_image_type());
+    me.add_uint8(_pbuffer->get_num_components());
+    me.add_uint8(_pbuffer->get_component_width());
+
     me.add_uint32(_pbuffer->_image.size());
     me.append_data(_pbuffer->_image, _pbuffer->_image.size());
   }

@@ -142,6 +142,19 @@ set_size(int x_org, int y_org, int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_border
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+set_border(int border) {
+  if (_border != border) {
+    _border = border;
+    make_dirty();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PixelBuffer::set_num_components
 //       Access: Public
 //  Description:
@@ -181,12 +194,25 @@ set_format(PixelBuffer::Format format) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PixelBuffer::set_loaded
-//       Access:
+//     Function: PixelBuffer::set_image_type
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void PixelBuffer::set_loaded()
-{
+INLINE void PixelBuffer::
+set_image_type(PixelBuffer::Type type) {
+  if (_type != type) {
+    _type = type;
+    make_dirty();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_loaded
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+set_loaded() {
   _loaded = true;
 }
 

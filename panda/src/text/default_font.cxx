@@ -49,12 +49,25 @@
 
 // If we don't have FreeType, we have to include the bam font, which
 // is kind of bulky but at least we can compress it if we have zlib.
+
+// Regenerate this file with (cmss12.egg can be loaded from the models tree):
+
+// egg2bam -rawtex -o cmss12.bam cmss12.egg
+// pcompress cmss12.bam
+// bin2c -n default_font_data -o cmss12.bam.pz.c cmss12.bam.pz
+
 #include "cmss12.bam.pz.c"
 
 #else
 
 // If we don't even have zlib, just include the whole uncompressed bam
 // file.
+
+// Regenerate this file with (cmss12.egg can be loaded from the models tree):
+
+// egg2bam -rawtex -o cmss12.bam cmss12.egg
+// bin2c -n default_font_data -o cmss12.bam.c cmss12.bam
+
 #include "cmss12.bam.c"
 
 #endif
