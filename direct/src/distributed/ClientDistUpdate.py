@@ -42,6 +42,7 @@ class ClientDistUpdate:
         #assert(aClass.__dict__.has_key(self.name))
         #func = aClass.__dict__[self.name]
         func = eval(cdc.name + "." + cdc.name + "." + self.name)
+        print("Calling: " + cdc.name + "." + cdc.name + "." + self.name)
         # Get the arguments into a list
         args = self.extractArgs(di)
         # Apply the function to the object with the arguments
