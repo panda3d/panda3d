@@ -50,15 +50,28 @@ void ConfigTable::CropString(ConfigString& S) {
     S.erase(0, ConfigString::npos);
 }
 
+void ConfigTable::DeComment(ConfigString& S) {
+  // If the comment delimiter appears in the line followed by
+  // whitespace, strip that part of the line out.
+
+  size_t i = S.find(configcmt);
+  while (i != ConfigString::npos) {
+    if (i + configcmt.length() < S.length() && 
+        isspace(S[i + configcmt.length()])) {
+      // Here's a comment.
+      S.erase(i, ConfigString::npos);
+      return;
+    }
+
+    i = S.find(configcmt, i + 1);
+  }
+}
+
 bool ConfigTable::IsComment(const ConfigString& S)
 {
-  if (!S.empty()) {
-    for (ConfigString::iterator i=configcmt.begin();
-         i!=configcmt.end(); ++i)
-      if (S[0] == (*i))
-        return true;
-  }
-  return false;
+  // Returns true if the line begins with the comment delimiter,
+  // whether or not the delimiter is followed by whitespace.
+  return (S.substr(0, configcmt.length()) == configcmt);
 }
 
 void ConfigTable::UpCase(ConfigString& S)
@@ -89,6 +102,7 @@ void ConfigTable::ParseConfigFile(istream& is, const ConfigString& Filename)
       if (microconfig_cat->is_spam())
          microconfig_cat->spam() << "read from " << Filename << ": '" << line
                                  << "'" << endl;
+      DeComment(line);
       CropString(line);
       if (microconfig_cat->is_spam())
          microconfig_cat->spam() << "cropped line to: '" << line << "'"

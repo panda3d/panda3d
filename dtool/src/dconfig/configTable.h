@@ -56,6 +56,7 @@ class EXPCL_DTOOLCONFIG ConfigTable {
       ConfigString commandstub;
 
       static void CropString(ConfigString& S);
+      void DeComment(ConfigString& S);
       bool IsComment(const ConfigString&);
       static void UpCase(ConfigString&);
       ConfigString NextWord(const ConfigString& S);
