@@ -80,7 +80,7 @@ MilesAudioManager() {
           AIL_quick_shutdown();
           if (!AIL_quick_startup(use_digital, 1, audio_output_rate, 
               audio_output_bits, audio_output_channels)) {
-            audio_error("  startup failed, "<<AIL_last_error());
+            audio_error("  midi hardware startup failed, "<<AIL_last_error());
             _is_valid = false;
           }
         } else {
@@ -320,16 +320,22 @@ get_registry_entry(HKEY base, const char* subKeyName, const char* keyName,
       DWORD type;
       // Read the value at keyName:
       r=RegQueryValueEx(key, keyName, 0, &type, (unsigned char*)src, &len);
-      if (r==ERROR_SUCCESS && type==REG_EXPAND_SZ) {
-        // Find the size of the expanded string:
-        DWORD destSize=ExpandEnvironmentStrings(src, 0, 0);
-        // Get a destination buffer of that size:
-        char* dest = new char[destSize];
-        // Do the expansion:
-        ExpandEnvironmentStrings(src, dest, destSize);
-        // Propagate the result:
-        result=dest;
-        delete [] dest;
+      if (r==ERROR_SUCCESS) {
+        if (type==REG_EXPAND_SZ) {
+          // Find the size of the expanded string:
+          DWORD destSize=ExpandEnvironmentStrings(src, 0, 0);
+          // Get a destination buffer of that size:
+          char* dest = new char[destSize];
+          // Do the expansion:
+          ExpandEnvironmentStrings(src, dest, destSize);
+          // Propagate the result:
+          result=dest;
+          delete [] dest;
+        } else if (type==REG_SZ) {
+          result=src;
+        } else {
+          audio_error("MilesAudioManager::get_gm_file_path() Unknown reg key type.");
+        }
       }
       delete [] src;
     }
