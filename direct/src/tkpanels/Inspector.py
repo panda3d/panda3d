@@ -409,7 +409,7 @@ class InspectorWindow:
             return
         part = self.topInspector().partNumber(partNumber)
         print part
-        from PandaModules import *
+        from PandaModules import NodePath
         import FSM
         popupMenu = None
         if isinstance(part, NodePath):
