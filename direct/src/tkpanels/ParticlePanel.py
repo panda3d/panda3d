@@ -304,7 +304,7 @@ class ParticlePanel(AppShell):
         self.createOptionMenu(sparklePage, 'Life scale:',
                               'Does particle scale over its lifetime?',
                               ('NO_SCALE', 'SCALE'),
-                              self.setRendererSparkleBlendMethod)
+                              self.setRendererSparkleLifeScale)
         # Sprite #
         spritePage = self.rendererNotebook.add('Sprite')
         f = Frame(spritePage)
@@ -569,8 +569,8 @@ class ParticlePanel(AppShell):
         print 'Renderer Sparkle birth radius:', radius
     def setRendererSparkleDeathRadius(self, radius):
         print 'Renderer Sparkle death radius:', radius
-    def setRendererSparkleBlendMethod(self, method):
-        print 'Renderer Sparkle blend method:', method
+    def setRendererSparkleLifeScale(self, method):
+        print 'Renderer Sparkle life scale:', method
     # Sprite #
     def setRendererSpriteTexture(self, event):
         print 'Sprite texture:', self.rendererSpriteTexture.get()
