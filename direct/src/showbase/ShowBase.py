@@ -635,6 +635,39 @@ class ShowBase:
         self.notify.info("Taking screenshot: " + imageName)
         takeSnapshot(self.win, imageName)
 
+    def movie(self, namePrefix = 'movie', duration = 1.0, fps = 30,
+              format = 'rgb', sd = 4):
+        """
+        movie(namePrefix = 'movie', duration=1.0, fps=30, format='rgb', sd=4)
+
+        Spawn a task to capture a movie using the takeSnapshot function.
+        - namePrefix will be used to form output file names (can include
+          path information (e.g. 'I:/beta/frames/myMovie')
+        - duration is the length of the movie in seconds
+        - fps is the frame rate of the resulting movie
+        - format specifies output file format (e.g. rgb, bmp)
+        - sd specifies number of significant digits for frame count in the
+          output file name (e.g. if sd = 4, movie_0001.rgb)
+        """
+        globalClock.setMode(ClockObject.MNonRealTime)
+        globalClock.setDt(1.0/float(fps))
+        t = taskMgr.spawnMethodNamed(self._movieTask, namePrefix + '_task')
+        t.endT = globalClock.getFrameTime() + duration
+        t.frameIndex = 1
+        t.outputString = namePrefix + '_%0' + `sd` + 'd.' + format
+        t.uponDeath = lambda state: globalClock.setMode(ClockObject.MNormal)
+
+    def _movieTask(self, state):
+        currT = globalClock.getFrameTime()
+        if currT >= state.endT:
+            return Task.done
+        else:
+            frameName = state.outputString % state.frameIndex
+            self.notify.info("Capturing frame: " + frameName)
+            takeSnapshot(self.win, frameName )
+            state.frameIndex += 1
+            return Task.cont
+
     def DisableAudio(self):
         if self.wantSfx:
             self.sfxManager.setActive(0)
