@@ -696,16 +696,12 @@ $[TAB] $[LINK_BIN_C]
 
 
 
-
 /////////////////////////////////////////////////////////////////////
-// Finally, we put in the rules to compile each source file into a .obj
-// file.
+// Rules to run bison and/or flex as needed.
 /////////////////////////////////////////////////////////////////////
-
-#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 
 // Rules to generate a C++ file from a Bison input file.
-#foreach file $[sort $[yxx_sources]]
+#foreach file $[sort $[yxx_st_sources]]
 #define target $[patsubst %.yxx,%.cxx,$[file]]
 #define target_header $[patsubst %.yxx,%.h,$[file]]
 #if $[HAVE_BISON]
@@ -731,7 +727,7 @@ $[TAB] cp $[source] $[target_header]
 #end file
 
 // Rules to generate a C++ file from a Flex input file.
-#foreach file $[sort $[lxx_sources]]
+#foreach file $[sort $[lxx_st_sources]]
 #define target $[patsubst %.lxx,%.cxx,$[file]]
 #if $[HAVE_BISON]
 #define source $[file]
@@ -750,6 +746,14 @@ $[TAB] cp $[source] $[target]
 #endif // HAVE_BISON
 
 #end file
+
+
+/////////////////////////////////////////////////////////////////////
+// Finally, we put in the rules to compile each source file into a .obj
+// file.
+/////////////////////////////////////////////////////////////////////
+
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 
 // Rules to compile ordinary C files.
 #foreach file $[sort $[c_sources]]
