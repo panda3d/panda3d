@@ -1,6 +1,6 @@
 // Filename: discEmitter.h
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef DISCEMITTER_H
@@ -16,6 +16,8 @@
 class EXPCL_PANDAPHYSICS DiscEmitter : public BaseParticleEmitter {
 private:
   float _radius;
+
+  // CUSTOM EMISSION PARAMETERS
   float _outer_aoe, _inner_aoe;
   float _outer_magnitude, _inner_magnitude;
   bool _cubic_lerping;

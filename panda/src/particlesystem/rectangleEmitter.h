@@ -1,6 +1,6 @@
 // Filename: rectangleEmitter.h
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef RECTANGLEEMITTER_H
@@ -16,6 +16,9 @@
 class EXPCL_PANDAPHYSICS RectangleEmitter : public BaseParticleEmitter {
 private:
   LPoint2f _vmin, _vmax;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
 
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);

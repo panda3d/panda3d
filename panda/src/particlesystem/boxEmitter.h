@@ -1,6 +1,6 @@
 // Filename: boxEmitter.h
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef BOXEMITTER_H
@@ -10,12 +10,15 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BoxEmitter
-// Description : Describes a voluminous box region in which 
+// Description : Describes a voluminous box region in which
 //               particles are generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BoxEmitter : public BaseParticleEmitter {
 private:
   LPoint3f _vmin, _vmax;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
 
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);

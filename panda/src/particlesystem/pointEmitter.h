@@ -1,6 +1,6 @@
 // Filename: pointEmitter.h
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef POINTEMITTER_H
@@ -17,9 +17,12 @@ class EXPCL_PANDAPHYSICS PointEmitter : public BaseParticleEmitter {
 private:
   LPoint3f _location;
 
+  // CUSTOM EMISSION PARAMETERS
+  // none
+
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
- 
+
 PUBLISHED:
   PointEmitter(void);
   PointEmitter(const PointEmitter &copy);

@@ -1,6 +1,6 @@
 // Filename: lineEmitter.h
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef LINEEMITTER_H
@@ -16,6 +16,9 @@
 class EXPCL_PANDAPHYSICS LineEmitter : public BaseParticleEmitter {
 private:
   LPoint3f _endpoint1, _endpoint2;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
 
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);

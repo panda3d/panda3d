@@ -1,6 +1,6 @@
 // Filename: ringEmitter.h
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef RINGEMITTER_H
@@ -16,8 +16,9 @@
 class EXPCL_PANDAPHYSICS RingEmitter : public BaseParticleEmitter {
 private:
   float _radius;
+
+  // CUSTOM EMISSION PARAMETERS
   float _aoe;  // angle of elevation
-  float _mag;
 
   ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc

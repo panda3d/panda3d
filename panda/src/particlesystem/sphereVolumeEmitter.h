@@ -1,6 +1,6 @@
 // Filename: sphereVolumeEmitter.h
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef SPHEREVOLUMEEMITTER_H
@@ -16,6 +16,9 @@
 class EXPCL_PANDAPHYSICS SphereVolumeEmitter : public BaseParticleEmitter {
 private:
   float _radius;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
 
   ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc

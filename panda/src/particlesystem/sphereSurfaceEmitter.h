@@ -1,6 +1,6 @@
 // Filename: sphereSurfaceEmitter.h
 // Created by:  charles (22Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef SPHERESURFACEEMITTER_H
@@ -16,6 +16,9 @@
 class EXPCL_PANDAPHYSICS SphereSurfaceEmitter : public BaseParticleEmitter {
 private:
   float _radius;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
 
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);

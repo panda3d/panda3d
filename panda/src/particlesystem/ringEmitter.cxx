@@ -50,7 +50,7 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : DiscEmitter::assign_initial_position
+//    Function : RingEmitter::assign_initial_position
 //      Access : Public
 // Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ assign_initial_position(LPoint3f& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : DiscEmitter::assign_initial_velocity
+//    Function : RingEmitter::assign_initial_velocity
 //      Access : Public
 // Description : Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
