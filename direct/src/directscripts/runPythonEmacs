@@ -55,26 +55,6 @@ if [ "$PIRATES" ]; then
     PIRATES=`cygpath -w $PIRATES`
     export PIRATES
 fi
-if [ "$TOONTAG" ]; then
-    if [ "$debug" ]; then echo "TOONTAG   $TOONTAG"; fi
-    TOONTAG=`cygpath -w $TOONTAG`
-    export TOONTAG
-fi
-if [ "$BARTOP" ]; then
-    if [ "$debug" ]; then echo "BARTOP    $BARTOP"; fi
-    BARTOP=`cygpath -w $BARTOP`
-    export BARTOP
-fi
-if [ "$TTRADER" ]; then
-    if [ "$debug" ]; then echo "TTRADER   $TTRADER"; fi
-    TTRADER=`cygpath -w $TTRADER`
-    export TTRADER
-fi
-if [ "$VRIDE" ]; then
-    if [ "$debug" ]; then echo "VRIDE     $VRIDE"; fi
-    VRIDE=`cygpath -w $VRIDE`
-    export VRIDE
-fi
 if [ "$FOURD" ]; then
     if [ "$debug" ]; then echo "FOURD   $FOURD"; fi
     FOURD=`cygpath -w $FOURD`
@@ -85,15 +65,15 @@ if [ "$MRM" ]; then
     MRM=`cygpath -w $MRM`
     export MRM
 fi
-if [ "$PARALLAX" ]; then
-    if [ "$debug" ]; then echo "PARALLAX   $PARALLAX"; fi
-    PARALLAX=`cygpath -w $PARALLAX`
-    export PARALLAX
-fi
 if [ "$KUKA" ]; then
     if [ "$debug" ]; then echo "KUKA   $KUKA"; fi
     KUKA=`cygpath -w $KUKA`
     export KUKA
+fi
+if [ "$PARALLAX" ]; then
+    if [ "$debug" ]; then echo "PARALLAX   $PARALLAX"; fi
+    PARALLAX=`cygpath -w $PARALLAX`
+    export PARALLAX
 fi
 if [ "$WINTOOLS" ]; then
     if [ "$debug" ]; then echo "WINTOOLS  $WINTOOLS"; fi
@@ -130,13 +110,6 @@ if [ "$PMOCKUP" ]; then
     PMOCKUP=`cygpath -w $PMOCKUP`
     export PMOCKUP
 fi
-
-if [ "$BARMODELS" ]; then
-    if [ "$debug" ]; then echo "BARMODELS $BARMODELS"; fi
-    BARMODELS=`cygpath -w $BARMODELS`
-    export BARMODELS
-fi
-
 
 # Export the proper home environment variable
 HOME=`cygpath -w $HOME`
