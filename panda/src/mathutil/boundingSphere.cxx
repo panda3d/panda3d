@@ -312,7 +312,7 @@ around_finite(const BoundingVolume **first,
   }
 
   // Now take the center of the bounding box as the center of the sphere.
-  _center = (min_box + max_box) / 2.0;
+  _center = (min_box + max_box) * 0.5;
 
   if (any_unknown) {
     // If we have any volumes in the list that we don't know what to
