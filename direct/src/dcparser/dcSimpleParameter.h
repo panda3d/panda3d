@@ -35,6 +35,7 @@
 class EXPCL_DIRECT DCSimpleParameter : public DCParameter {
 public:
   DCSimpleParameter(DCSubatomicType type, int divisor = 1);
+  DCSimpleParameter(const DCSimpleParameter &copy);
 
 PUBLISHED:
   virtual DCSimpleParameter *as_simple_parameter();
@@ -42,16 +43,13 @@ PUBLISHED:
 
   DCSubatomicType get_type() const;
   int get_divisor() const;
-  void set_divisor(int divisor);
 
 public:
-  virtual bool has_nested_fields() const;
-  virtual int get_num_nested_fields() const;
-  virtual int get_num_nested_fields(size_t length_bytes) const;
-  virtual DCPackerInterface *get_nested_field(int n) const;
-  virtual size_t get_length_bytes() const;
+  bool set_divisor(int divisor);
 
-  virtual DCPackType get_pack_type() const;
+  virtual int calc_num_nested_fields(size_t length_bytes) const;
+  virtual DCPackerInterface *get_nested_field(int n) const;
+
   virtual bool pack_double(DCPackData &pack_data, double value) const;
   virtual bool pack_int(DCPackData &pack_data, int value) const;
   virtual bool pack_int64(DCPackData &pack_data, PN_int64 value) const;
@@ -62,7 +60,8 @@ public:
   virtual bool unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const;
   virtual bool unpack_string(const char *data, size_t length, size_t &p, string &value) const;
 
-  virtual void output(ostream &out, bool brief) const;
+  virtual void output_instance(ostream &out, const string &prename, 
+                               const string &name, const string &postname) const;
   virtual void generate_hash(HashGenerator &hash) const;
 
 private:
@@ -73,8 +72,6 @@ private:
   DCSubatomicType _type;
   int _divisor;
 
-  DCPackType _pack_type;
-  bool _is_array;
   DCSubatomicType _nested_type;
   DCPackerInterface *_nested_field;
   size_t _bytes_per_element;
@@ -89,10 +86,7 @@ private:
   class Uint32Uint8Type : public DCPackerInterface {
   public:
     Uint32Uint8Type();
-    virtual bool has_nested_fields() const;
-    virtual int get_num_nested_fields() const;
     virtual DCPackerInterface *get_nested_field(int n) const;
-    virtual DCPackType get_pack_type() const;
 
     DCSimpleParameter *_uint32_type;
     DCSimpleParameter *_uint8_type;

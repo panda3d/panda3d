@@ -640,3 +640,16 @@ void DCClass::
 add_parent(DCClass *parent) {
   _parents.push_back(parent);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::set_number
+//       Access: Public
+//  Description: Assigns the unique number to this class.  This is
+//               normally called only by the DCFile interface as the
+//               class is added.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+set_number(int number) {
+  _number = number;
+}
+

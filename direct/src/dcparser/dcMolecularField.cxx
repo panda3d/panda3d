@@ -81,10 +81,12 @@ void DCMolecularField::
 add_atomic(DCAtomicField *atomic) {
   _fields.push_back(atomic);
 
-  int num_nested_fields = atomic->get_num_nested_fields();
-  for (int i = 0; i < num_nested_fields; i++) {
+  int num_atomic_fields = atomic->get_num_nested_fields();
+  for (int i = 0; i < num_atomic_fields; i++) {
     _nested_fields.push_back(atomic->get_nested_field(i));
   }
+
+  _num_nested_fields = _nested_fields.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,19 +132,6 @@ generate_hash(HashGenerator &hashgen) const {
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     (*fi)->generate_hash(hashgen);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCMolecularField::get_num_nested_fields
-//       Access: Public, Virtual
-//  Description: Returns the number of nested fields required by this
-//               field type.  These may be array elements or structure
-//               elements.  The return value may be -1 to indicate the
-//               number of nested fields is variable.
-////////////////////////////////////////////////////////////////////
-int DCMolecularField::
-get_num_nested_fields() const {
-  return _nested_fields.size();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -59,17 +59,16 @@ PUBLISHED:
   bool is_ownsend() const;
   bool is_airecv() const;
 
+  bool compare_flags(const DCAtomicField &other) const;
+  
 public:
   DCAtomicField(const string &name);
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hash) const;
 
-  virtual int get_num_nested_fields() const;
   virtual DCPackerInterface *get_nested_field(int n) const;
 
 public:
-  // These members define the primary interface to the atomic field
-  // definition as read from the file.
   class ElementType {
   public:
     ElementType(DCParameter *param);
@@ -86,9 +85,6 @@ public:
     bool _has_default_value;
   };
 
-  typedef pvector<ElementType> Elements;
-  Elements _elements;
-
   enum Flags {
     F_required        = 0x0001,
     F_broadcast       = 0x0002,
@@ -100,6 +96,13 @@ public:
     F_ownsend         = 0x0080,
     F_airecv          = 0x0100,
   };
+
+  void add_element(const ElementType &element);
+  void add_flag(enum Flags flag);
+
+private:
+  typedef pvector<ElementType> Elements;
+  Elements _elements;
 
   int _flags;  // A bitmask union of any of the above values.
 };

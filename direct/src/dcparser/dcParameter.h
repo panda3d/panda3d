@@ -22,21 +22,10 @@
 #include "dcbase.h"
 #include "dcPackerInterface.h"
 
-#ifdef HAVE_PYTHON
-
-#undef HAVE_LONG_LONG  // NSPR and Python both define this.
-#include <Python.h>
-
-// We only need these headers if we are also building a Python interface.
-#include "datagram.h"
-#include "datagramIterator.h"
-
-#endif  // HAVE_PYTHON
-
 class DCSimpleParameter;
 class DCClassParameter;
 class DCArrayParameter;
-class DCTypedefParameter;
+class DCTypedef;
 class HashGenerator;
 
 ////////////////////////////////////////////////////////////////////
@@ -53,6 +42,7 @@ class HashGenerator;
 class EXPCL_DIRECT DCParameter : public DCPackerInterface {
 protected:
   DCParameter();
+  DCParameter(const DCParameter &copy);
 public:
   virtual ~DCParameter();
 
@@ -60,13 +50,23 @@ PUBLISHED:
   virtual DCSimpleParameter *as_simple_parameter();
   virtual DCClassParameter *as_class_parameter();
   virtual DCArrayParameter *as_array_parameter();
-  virtual DCTypedefParameter *as_typedef_parameter();
 
   virtual DCParameter *make_copy() const=0;
 
+  const DCTypedef *get_typedef() const;
+
 public:
-  virtual void output(ostream &out, bool brief) const=0;
+  void set_typedef(const DCTypedef *dtypedef);
+
+  void output(ostream &out, bool brief) const;
+  virtual void output_instance(ostream &out, const string &prename, 
+                               const string &name, const string &postname) const=0;
+  void output_typedef_name(ostream &out, const string &prename, 
+                           const string &name, const string &postname) const;
   virtual void generate_hash(HashGenerator &hash) const;
+
+private:
+  const DCTypedef *_typedef;
 };
 
 #endif

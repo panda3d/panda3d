@@ -27,6 +27,29 @@ DCPackerInterface::
 DCPackerInterface(const string &name) :
   _name(name)
 {
+  _has_fixed_byte_size = false;
+  _fixed_byte_size = 0;
+  _num_length_bytes = 0;
+  _has_nested_fields = false;
+  _num_nested_fields = -1;
+  _pack_type = PT_invalid;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCPackerInterface::
+DCPackerInterface(const DCPackerInterface &copy) :
+  _name(copy._name),
+  _has_fixed_byte_size(copy._has_fixed_byte_size),
+  _fixed_byte_size(copy._fixed_byte_size),
+  _num_length_bytes(copy._num_length_bytes),
+  _has_nested_fields(copy._has_nested_fields),
+  _num_nested_fields(copy._num_nested_fields),
+  _pack_type(copy._pack_type)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,8 +83,44 @@ set_name(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::has_fixed_byte_size
+//       Access: Public
+//  Description: Returns true if this field type always packs to the
+//               same number of bytes, false if it is variable.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+has_fixed_byte_size() const {
+  return _has_fixed_byte_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_fixed_byte_size
+//       Access: Public
+//  Description: If has_fixed_byte_size() returns true, this returns
+//               the number of bytes this field type will use.
+////////////////////////////////////////////////////////////////////
+size_t DCPackerInterface::
+get_fixed_byte_size() const {
+  return _fixed_byte_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_num_length_bytes
+//       Access: Public
+//  Description: Returns the number of bytes that should be written
+//               into the stream on a push() to record the number of
+//               bytes in the record up until the next pop().  This is
+//               only meaningful if _has_nested_fields is true.
+////////////////////////////////////////////////////////////////////
+size_t DCPackerInterface::
+get_num_length_bytes() const {
+  return _num_length_bytes;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::has_nested_fields
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Returns true if this field type has any nested fields
 //               (and thus expects a push() .. pop() interface to the
 //               DCPacker), or false otherwise.  If this returns true,
@@ -70,12 +129,12 @@ set_name(const string &name) {
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
 has_nested_fields() const {
-  return false;
+  return _has_nested_fields;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::get_num_nested_fields
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Returns the number of nested fields required by this
 //               field type.  These may be array elements or structure
 //               elements.  The return value may be -1 to indicate the
@@ -83,21 +142,21 @@ has_nested_fields() const {
 ////////////////////////////////////////////////////////////////////
 int DCPackerInterface::
 get_num_nested_fields() const {
-  return 0;
+  return _num_nested_fields;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::get_num_nested_fields
+//     Function: DCPackerInterface::calc_num_nested_fields
 //       Access: Public, Virtual
 //  Description: This flavor of get_num_nested_fields is used during
 //               unpacking.  It returns the number of nested fields to
 //               expect, given a certain length in bytes (as read from
-//               the get_length_bytes() stored in the stream on the
-//               pack).  This will only be called if
-//               get_length_bytes() returns nonzero.
+//               the _num_length_bytes stored in the stream on the
+//               push).  This will only be called if _num_length_bytes
+//               is nonzero.
 ////////////////////////////////////////////////////////////////////
 int DCPackerInterface::
-get_num_nested_fields(size_t length_bytes) const {
+calc_num_nested_fields(size_t length_bytes) const {
   return 0;
 }
 
@@ -115,27 +174,13 @@ get_nested_field(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::get_length_bytes
-//       Access: Public, Virtual
-//  Description: If has_nested_fields() returns true, this should
-//               return either 0, 2, or 4, indicating the number of
-//               bytes this field's data should be prefixed with to
-//               record its length.  This is respected by push() and
-//               pop().
-////////////////////////////////////////////////////////////////////
-size_t DCPackerInterface::
-get_length_bytes() const {
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::get_pack_type
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Returns the type of value expected by this field.
 ////////////////////////////////////////////////////////////////////
 DCPackType DCPackerInterface::
 get_pack_type() const {
-  return PT_invalid;
+  return _pack_type;
 }
 
 ////////////////////////////////////////////////////////////////////

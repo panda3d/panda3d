@@ -18,6 +18,7 @@
 
 #include "dcSimpleParameter.h"
 #include "dcPackData.h"
+#include "dcTypedef.h"
 #include "hashGenerator.h"
 
 DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
@@ -31,8 +32,14 @@ DCSimpleParameter::Uint32Uint8Type *DCSimpleParameter::_uint32uint8_type = NULL;
 DCSimpleParameter::
 DCSimpleParameter(DCSubatomicType type, int divisor) :
   _type(type),
-  _divisor(divisor)
+  _divisor(1)
 {
+  _pack_type = PT_invalid;
+  _nested_type = ST_invalid;
+  _has_nested_fields = false;
+  _bytes_per_element = 0;
+  _num_length_bytes = 2;
+
   // Check for one of the built-in array types.  For these types, we
   // must present a packing interface that has a variable number of
   // nested fields of the appropriate type.
@@ -40,134 +47,126 @@ DCSimpleParameter(DCSubatomicType type, int divisor) :
   case ST_int8array:
     _pack_type = PT_array;
     _nested_type = ST_int8;
-    _is_array = true;
+    _has_nested_fields = true;
     _bytes_per_element = 1;
     break;
 
   case ST_int16array:
     _pack_type = PT_array;
     _nested_type = ST_int16;
-    _is_array = true;
+    _has_nested_fields = true;
     _bytes_per_element = 2;
     break;
 
   case ST_int32array:
     _pack_type = PT_array;
     _nested_type = ST_int32;
-    _is_array = true;
+    _has_nested_fields = true;
     _bytes_per_element = 4;
     break;
 
   case ST_uint8array:
     _pack_type = PT_array;
     _nested_type = ST_uint8;
-    _is_array = true;
+    _has_nested_fields = true;
     _bytes_per_element = 1;
     break;
 
   case ST_uint16array:
     _pack_type = PT_array;
     _nested_type = ST_uint16;
-    _is_array = true;
+    _has_nested_fields = true;
     _bytes_per_element = 2;
     break;
 
   case ST_uint32array:
     _pack_type = PT_array;
     _nested_type = ST_uint32;
-    _is_array = true;
+    _has_nested_fields = true;
     _bytes_per_element = 4;
     break;
 
   case ST_uint32uint8array:
     _pack_type = PT_array;
-    _nested_type = ST_invalid;
-    _is_array = true;
+    _has_nested_fields = true;
     _bytes_per_element = 5;
     break;
 
-  case ST_blob:
   case ST_blob32:
+    _num_length_bytes = 4;
+    // fall through
+
+  case ST_blob:
   case ST_string: 
     // For these types, we will present an array interface as an array
     // of uint8, but we will also accept a set_value() with a string
     // parameter.
     _pack_type = PT_string;
     _nested_type = ST_uint8;
-    _is_array = true;
+    _has_nested_fields = true;
     _bytes_per_element = 1;
     break;
 
     // The simple types can be packed directly.
   case ST_int8:
     _pack_type = PT_int;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 1;
     break;
 
   case ST_int16:
     _pack_type = PT_int;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 2;
     break;
 
   case ST_int32:
     _pack_type = PT_int;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 4;
     break;
 
   case ST_int64:
     _pack_type = PT_int64;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 8;
     break;
 
   case ST_uint8:
     _pack_type = PT_int;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 1;
     break;
 
   case ST_uint16:
     _pack_type = PT_int;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 2;
     break;
 
   case ST_uint32:
     _pack_type = PT_int;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 4;
     break;
 
   case ST_uint64:
     _pack_type = PT_int64;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 8;
     break;
 
   case ST_float64:
     _pack_type = PT_double;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 8;
     break;
 
   case ST_invalid:
-    _pack_type = PT_invalid;
-    _nested_type = ST_invalid;
-    _is_array = false;
-    _bytes_per_element = 0;
+    break;
   }
+
+  set_divisor(divisor);
 
   if (_nested_type != ST_invalid) {
     _nested_field = create_nested_field(_nested_type, _divisor);
@@ -181,6 +180,21 @@ DCSimpleParameter(DCSubatomicType type, int divisor) :
   } else {
     _nested_field = NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCSimpleParameter::
+DCSimpleParameter(const DCSimpleParameter &copy) :
+  DCParameter(copy),
+  _type(copy._type),
+  _divisor(copy._divisor),
+  _nested_field(copy._nested_field),
+  _bytes_per_element(copy._bytes_per_element)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -231,57 +245,39 @@ get_divisor() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::set_divisor
-//       Access: Published
-//  Description: See get_divisor().
-////////////////////////////////////////////////////////////////////
-void DCSimpleParameter::
-set_divisor(int divisor) {
-  _divisor = divisor;
-  if (_pack_type == PT_int || _pack_type == PT_int64) {
-    _pack_type = PT_double;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::has_nested_fields
-//       Access: Public, Virtual
-//  Description: Returns true if this field type has any nested fields
-//               (and thus expects a push() .. pop() interface to the
-//               DCPacker), or false otherwise.  If this returns true,
-//               get_num_nested_fields() may be called to determine
-//               how many nested fields are expected.
+//       Access: Public
+//  Description: Assigns the indicated divisor to the simple type.
+//               Returns true if assigned, false if this type cannot
+//               accept a divisor.
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
-has_nested_fields() const {
-  return _is_array;
+set_divisor(int divisor) {
+  if (_pack_type == PT_string || divisor == 0) {
+    return false;
+  }
+
+  _divisor = divisor;
+  if ((_divisor != 1) &&
+      (_pack_type == PT_int || _pack_type == PT_int64)) {
+    _pack_type = PT_double;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::get_num_nested_fields
-//       Access: Public, Virtual
-//  Description: Returns the number of nested fields required by this
-//               field type.  These may be array elements or structure
-//               elements.  The return value may be -1 to indicate the
-//               number of nested fields is variable.
-////////////////////////////////////////////////////////////////////
-int DCSimpleParameter::
-get_num_nested_fields() const {
-  return _is_array ? -1 : 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::get_num_nested_fields
+//     Function: DCSimpleParameter::calc_num_nested_fields
 //       Access: Public, Virtual
 //  Description: This flavor of get_num_nested_fields is used during
 //               unpacking.  It returns the number of nested fields to
 //               expect, given a certain length in bytes (as read from
-//               the get_length_bytes() stored in the stream on the
-//               pack).  This will only be called if
-//               get_length_bytes() returns nonzero.
+//               the _num_length_bytes stored in the stream on the
+//               push).  This will only be called if _num_length_bytes
+//               is nonzero.
 ////////////////////////////////////////////////////////////////////
 int DCSimpleParameter::
-get_num_nested_fields(size_t length_bytes) const {
-  if (_is_array) {
+calc_num_nested_fields(size_t length_bytes) const {
+  if (_bytes_per_element != 0) {
     return length_bytes / _bytes_per_element;
   }
   return 0;
@@ -296,32 +292,8 @@ get_num_nested_fields(size_t length_bytes) const {
 //               the range 0 <= n < get_num_nested_fields()).
 ////////////////////////////////////////////////////////////////////
 DCPackerInterface *DCSimpleParameter::
-get_nested_field(int n) const {
+get_nested_field(int) const {
   return _nested_field;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::get_length_bytes
-//       Access: Public, Virtual
-//  Description: If has_nested_fields() returns true, this should
-//               return either 0, 2, or 4, indicating the number of
-//               bytes this field's data should be prefixed with to
-//               record its length.  This is respected by push() and
-//               pop().
-////////////////////////////////////////////////////////////////////
-size_t DCSimpleParameter::
-get_length_bytes() const {
-  return _type == ST_blob32 ? 4 : 2;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::get_pack_type
-//       Access: Public, Virtual
-//  Description: Returns the type of value expected by this field.
-////////////////////////////////////////////////////////////////////
-DCPackType DCSimpleParameter::
-get_pack_type() const {
-  return _pack_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1020,18 +992,25 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::output
+//     Function: DCSimpleParameter::output_instance
 //       Access: Public, Virtual
-//  Description: 
+//  Description: Formats the parameter in the C++-like dc syntax as a
+//               typename and identifier.
 ////////////////////////////////////////////////////////////////////
 void DCSimpleParameter::
-output(ostream &out, bool brief) const {
-  out << _type;
-  if (_divisor != 1) {
-    out << " / " << _divisor;
+output_instance(ostream &out, const string &prename, const string &name, 
+                const string &postname) const {
+  if (get_typedef() != (DCTypedef *)NULL) {
+    out << get_typedef()->get_name();
+  } else {
+    out << _type;
   }
-  if (!brief && !_name.empty()) {
-    out << " " << _name;
+  if (_divisor != 1) {
+    out << "/" << _divisor;
+  }
+
+  if (!prename.empty() || !name.empty() || !postname.empty()) {
+    out << " " << prename << name << postname;
   }
 }
 
@@ -1096,26 +1075,9 @@ DCSimpleParameter::Uint32Uint8Type::
 Uint32Uint8Type() {
   _uint32_type = new DCSimpleParameter(ST_uint32);
   _uint8_type = new DCSimpleParameter(ST_uint8);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::Uint32Uint8Type::has_nested_fields
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool DCSimpleParameter::Uint32Uint8Type::
-has_nested_fields() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::Uint32Uint8Type::get_num_nested_fields
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-int DCSimpleParameter::Uint32Uint8Type::
-get_num_nested_fields() const {
-  return 2;
+  _has_nested_fields = true;
+  _num_nested_fields = 2;
+  _pack_type = PT_struct;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1135,14 +1097,4 @@ get_nested_field(int n) const {
   default:
     return NULL;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::Uint32Uint8Type::get_pack_type
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-DCPackType DCSimpleParameter::Uint32Uint8Type::
-get_pack_type() const {
-  return PT_struct;
 }

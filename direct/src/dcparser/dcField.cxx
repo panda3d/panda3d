@@ -254,6 +254,9 @@ ai_format_update(int do_id, int to_id, int from_id, PyObject *args) const {
 DCField::
 DCField(const string &name) : DCPackerInterface(name) {
   _number = 0;
+  _has_nested_fields = true;
+  _num_nested_fields = 0;
+  _pack_type = PT_field;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,28 +281,4 @@ generate_hash(HashGenerator &hashgen) const {
   // field with the other fields, so adding it explicitly will be
   // redundant.  However, the field name is significant.
   hashgen.add_string(_name);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::has_nested_fields
-//       Access: Public, Virtual
-//  Description: Returns true if this field type has any nested fields
-//               (and thus expects a push() .. pop() interface to the
-//               DCPacker), or false otherwise.  If this returns true,
-//               get_num_nested_fields() may be called to determine
-//               how many nested fields are expected.
-////////////////////////////////////////////////////////////////////
-bool DCField::
-has_nested_fields() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCField::get_pack_type
-//       Access: Public, Virtual
-//  Description: Returns the type of value expected by this field.
-////////////////////////////////////////////////////////////////////
-DCPackType DCField::
-get_pack_type() const {
-  return PT_field;
 }

@@ -10,7 +10,9 @@
 #include "dcClass.h"
 #include "dcAtomicField.h"
 #include "dcMolecularField.h"
+#include "dcArrayParameter.h"
 #include "dcSimpleParameter.h"
+#include "dcTypedef.h"
 #include "dcPacker.h"
 
 // Because our token type contains objects of type string, which
@@ -63,6 +65,7 @@ dc_cleanup_parser() {
 %token KW_DCLASS 
 %token KW_FROM 
 %token KW_IMPORT 
+%token KW_TYPEDEF 
 
 %token KW_INT8
 %token KW_INT16
@@ -105,7 +108,10 @@ dc_cleanup_parser() {
 %type <u.dclass> dclass_name
 %type <u.atomic> atomic_name
 %type <u.subatomic> type_token
+%type <u.parameter> type_name
+%type <u.parameter> type_definition
 %type <u.parameter> parameter
+%type <u.parameter> parameter_definition
 %type <str> import_identifier
 %type <str> slash_identifier
 
@@ -121,6 +127,7 @@ dc:
         | dc ';'
         | dc dclass
         | dc import
+        | dc typedef_decl
         ;
 
 dclass:
@@ -142,14 +149,13 @@ dclass:
 dclass_name:
         IDENTIFIER
 {
-  DCFile::ClassesByName::const_iterator ni;
-  ni = dc_file->_classes_by_name.find($1);
-  if (ni == dc_file->_classes_by_name.end()) {
-    $$ = new DCClass($1, true);
-    dc_file->add_class($$);
-  } else {
-    $$ = (*ni).second;
+  DCClass *dclass = dc_file->get_class_by_name($1);
+  if (dclass == (DCClass *)NULL) {
+    dclass = new DCClass($1, true);
+    dc_file->add_class(dclass);
   }
+  
+  $$ = dclass;
 }
 	;
 
@@ -197,6 +203,13 @@ import_symbol_list:
 	| import_symbol_list ',' slash_identifier
 {
   dc_file->add_import_symbol($3);
+}
+	;
+
+typedef_decl:
+        KW_TYPEDEF parameter
+{
+  dc_file->add_typedef(new DCTypedef($2));
 }
 	;
 
@@ -268,7 +281,7 @@ atomic_element:
         parameter
 {
   atomic_element = DCAtomicField::ElementType($1);
-  current_atomic->_elements.push_back(atomic_element);
+  current_atomic->add_element(atomic_element);
 }
 	| parameter '=' 
 {
@@ -283,36 +296,90 @@ atomic_element:
   } else {
     atomic_element = DCAtomicField::ElementType($1);
     atomic_element.set_default_value(current_packer->get_string());
-    current_atomic->_elements.push_back(atomic_element);
+    current_atomic->add_element(atomic_element);
   }
 }
 	;
 
 parameter:
-        type_token 
+        type_definition
 {
-  current_parameter = new DCSimpleParameter($1);
+  current_parameter = $1;
 }
         parameter_definition
 {
-  $$ = current_parameter;
+  $$ = $3;
 }
+        | type_definition
         ;
 
-parameter_definition:
-        empty
-        | parameter_definition '/' INTEGER
+type_name:
+        type_token
 {
-  if (current_parameter->as_simple_parameter() == NULL) {
-    yyerror("Invalid divisor on complex type");
+  $$ = new DCSimpleParameter($1);
+}
+        | type_token '/' INTEGER
+{
+  DCSimpleParameter *simple_param = new DCSimpleParameter($1);
+  if ($3 == 0) {
+    yyerror("Invalid divisor.");
+
+  } else if (!simple_param->set_divisor($3)) {
+    yyerror("A divisor is only valid on a numeric type.");
+  }
+  $$ = simple_param;
+}
+	| IDENTIFIER
+{
+  DCTypedef *dtypedef = dc_file->get_typedef_by_name($1);
+  if (dtypedef == (DCTypedef *)NULL) {
+    yyerror("Invalid type name");
 
   } else {
-    current_parameter->as_simple_parameter()->set_divisor($3);
+    $$ = dtypedef->make_new_parameter();
   }
 }
-        | parameter_definition IDENTIFIER
+	;
+
+type_definition:
+        type_name
+	| type_definition '[' ']'
 {
-  current_parameter->set_name($2);
+  $$ = new DCArrayParameter($1);
+}
+	| type_definition '[' INTEGER ']'
+{
+  $$ = new DCArrayParameter($1, $3);
+}
+	;
+
+parameter_definition:
+        IDENTIFIER
+{
+  current_parameter->set_name($1);
+  $$ = current_parameter;
+}
+        | parameter_definition '/' INTEGER
+{
+  if ($3 == 0) {
+    yyerror("Invalid divisor.");
+
+  } else if ($1->as_simple_parameter() == NULL || $1->get_typedef() != (DCTypedef *)NULL) {
+    yyerror("A divisor is only allowed on a primitive type.");
+
+  } else {
+    if (!$1->as_simple_parameter()->set_divisor($3)) {
+      yyerror("A divisor is only valid on a numeric type.");
+    }
+  }
+}
+	| parameter_definition '[' ']'
+{
+  $$ = new DCArrayParameter($1);
+}
+	| parameter_definition '[' INTEGER ']'
+{
+  $$ = new DCArrayParameter($1, $3);
 }
 	;
 
@@ -475,39 +542,39 @@ atomic_flags:
         empty
         | atomic_flags KW_REQUIRED
 {
-  current_atomic->_flags |= DCAtomicField::F_required;
+  current_atomic->add_flag(DCAtomicField::F_required);
 }
         | atomic_flags KW_BROADCAST
 {
-  current_atomic->_flags |= DCAtomicField::F_broadcast;
+  current_atomic->add_flag(DCAtomicField::F_broadcast);
 }
         | atomic_flags KW_P2P
 {
-  current_atomic->_flags |= DCAtomicField::F_p2p;
+  current_atomic->add_flag(DCAtomicField::F_p2p);
 }
         | atomic_flags KW_RAM
 {
-  current_atomic->_flags |= DCAtomicField::F_ram;
+  current_atomic->add_flag(DCAtomicField::F_ram);
 }
         | atomic_flags KW_DB
 {
-  current_atomic->_flags |= DCAtomicField::F_db;
+  current_atomic->add_flag(DCAtomicField::F_db);
 }
         | atomic_flags KW_CLSEND
 {
-  current_atomic->_flags |= DCAtomicField::F_clsend;
+  current_atomic->add_flag(DCAtomicField::F_clsend);
 }
         | atomic_flags KW_CLRECV
 {
-  current_atomic->_flags |= DCAtomicField::F_clrecv;
+  current_atomic->add_flag(DCAtomicField::F_clrecv);
 }
         | atomic_flags KW_OWNSEND
 {
-  current_atomic->_flags |= DCAtomicField::F_ownsend;
+  current_atomic->add_flag(DCAtomicField::F_ownsend);
 }
         | atomic_flags KW_AIRECV
 {
-  current_atomic->_flags |= DCAtomicField::F_airecv;
+  current_atomic->add_flag(DCAtomicField::F_airecv);
 }
         ;
 
@@ -533,7 +600,7 @@ molecular_atom_list:
 {
   if ($3 != (DCAtomicField *)NULL) {
     current_molecular->add_atomic($3);
-    if (current_molecular->get_atomic(0)->_flags != $3->_flags) {
+    if (!current_molecular->get_atomic(0)->compare_flags(*$3)) {
       yyerror("Mismatched flags in molecule between " + 
               current_molecular->get_atomic(0)->get_name() + " and " +
               $3->get_name());

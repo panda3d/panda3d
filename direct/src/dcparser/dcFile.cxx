@@ -19,6 +19,7 @@
 #include "dcFile.h"
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
+#include "dcTypedef.h"
 #include "hashGenerator.h"
 
 #ifdef WITHIN_PANDA
@@ -212,24 +213,34 @@ write(Filename filename, bool brief) const {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 write(ostream &out, bool brief) const {
-  Imports::const_iterator ii;
-  for (ii = _imports.begin(); ii != _imports.end(); ++ii) {
-    const Import &import = (*ii);
-    if (import._symbols.empty()) {
-      out << "import " << import._module << "\n";
-    } else {
-      out << "from " << import._module << " import ";
-      ImportSymbols::const_iterator si = import._symbols.begin();
-      out << *si;
-      ++si;
-      while (si != import._symbols.end()) {
-        out << ", " << *si;
+  if (!_imports.empty()) {
+    Imports::const_iterator ii;
+    for (ii = _imports.begin(); ii != _imports.end(); ++ii) {
+      const Import &import = (*ii);
+      if (import._symbols.empty()) {
+        out << "import " << import._module << "\n";
+      } else {
+        out << "from " << import._module << " import ";
+        ImportSymbols::const_iterator si = import._symbols.begin();
+        out << *si;
         ++si;
+        while (si != import._symbols.end()) {
+          out << ", " << *si;
+        ++si;
+        }
+        out << "\n";
       }
-      out << "\n";
     }
+    out << "\n";
   }
-  out << "\n";
+
+  if (!_typedefs.empty()) {
+    Typedefs::const_iterator ti;
+    for (ti = _typedefs.begin(); ti != _typedefs.end(); ++ti) {
+      (*ti)->write(out, brief, 0);
+    }
+    out << "\n";
+  }
 
   Classes::const_iterator ci;
   for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
@@ -249,7 +260,7 @@ write(ostream &out, bool brief) const {
 //               file(s).
 ////////////////////////////////////////////////////////////////////
 int DCFile::
-get_num_classes() {
+get_num_classes() const {
   return _classes.size();
 }
 
@@ -259,7 +270,7 @@ get_num_classes() {
 //  Description: Returns the nth class read from the .dc file(s).
 ////////////////////////////////////////////////////////////////////
 DCClass *DCFile::
-get_class(int n) {
+get_class(int n) const {
   nassertr(n >= 0 && n < (int)_classes.size(), NULL);
   return _classes[n];
 }
@@ -271,7 +282,7 @@ get_class(int n) {
 //               NULL if there is no such class.
 ////////////////////////////////////////////////////////////////////
 DCClass *DCFile::
-get_class_by_name(const string &name) {
+get_class_by_name(const string &name) const {
   ClassesByName::const_iterator ni;
   ni = _classes_by_name.find(name);
   if (ni != _classes_by_name.end()) {
@@ -345,6 +356,45 @@ get_import_symbol(int n, int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_num_typedefs
+//       Access: Published
+//  Description: Returns the number of typedefs read from the .dc
+//               file(s).
+////////////////////////////////////////////////////////////////////
+int DCFile::
+get_num_typedefs() const {
+  return _typedefs.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_typedef
+//       Access: Published
+//  Description: Returns the nth typedef read from the .dc file(s).
+////////////////////////////////////////////////////////////////////
+DCTypedef *DCFile::
+get_typedef(int n) const {
+  nassertr(n >= 0 && n < (int)_typedefs.size(), NULL);
+  return _typedefs[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_typedef_by_name
+//       Access: Published
+//  Description: Returns the typedef that has the indicated name, or
+//               NULL if there is no such typedef name.
+////////////////////////////////////////////////////////////////////
+DCTypedef *DCFile::
+get_typedef_by_name(const string &name) const {
+  TypedefsByName::const_iterator ni;
+  ni = _typedefs_by_name.find(name);
+  if (ni != _typedefs_by_name.end()) {
+    return (*ni).second;
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCFile::get_hash
 //       Access: Published
 //  Description: Returns a 32-bit hash index associated with this
@@ -387,13 +437,13 @@ generate_hash(HashGenerator &hashgen) const {
 bool DCFile::
 add_class(DCClass *dclass) {
   bool inserted = _classes_by_name.insert
-    (ClassesByName::value_type(dclass->_name, dclass)).second;
+    (ClassesByName::value_type(dclass->get_name(), dclass)).second;
 
   if (!inserted) {
     return false;
   }
 
-  dclass->_number = get_num_classes();
+  dclass->set_number(get_num_classes());
   _classes.push_back(dclass);
 
   if (dclass->is_bogus_class()) {
@@ -431,4 +481,28 @@ void DCFile::
 add_import_symbol(const string &import_symbol) {
   nassertv(!_imports.empty());
   _imports.back()._symbols.push_back(import_symbol);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::add_typedef
+//       Access: Public
+//  Description: Adds the newly-allocated distributed typedef definition
+//               to the file.  The DCFile becomes the owner of the
+//               pointer and will delete it when it destructs.
+//               Returns true if the typedef is successfully added, or
+//               false if there was a name conflict.
+////////////////////////////////////////////////////////////////////
+bool DCFile::
+add_typedef(DCTypedef *dtypedef) {
+  bool inserted = _typedefs_by_name.insert
+    (TypedefsByName::value_type(dtypedef->get_name(), dtypedef)).second;
+
+  if (!inserted) {
+    return false;
+  }
+
+  dtypedef->set_number(get_num_typedefs());
+  _typedefs.push_back(dtypedef);
+
+  return true;
 }

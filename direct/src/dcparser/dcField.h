@@ -68,9 +68,6 @@ public:
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hash) const;
 
-  virtual bool has_nested_fields() const;
-  virtual DCPackType get_pack_type() const;
-
 protected:
   int _number;
 

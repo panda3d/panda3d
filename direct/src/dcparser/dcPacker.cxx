@@ -189,7 +189,7 @@ push() {
     // Now deal with the length prefix that might or might not be
     // before a sequence of nested fields.
     int num_nested_fields = _current_parent->get_num_nested_fields();
-    size_t length_bytes = _current_parent->get_length_bytes();
+    size_t length_bytes = _current_parent->get_num_length_bytes();
     
     if (_mode == M_pack) {
       // Reserve length_bytes for when we figure out what the length
@@ -224,7 +224,11 @@ push() {
         
           // The explicit length trumps the number of nested fields
           // reported by get_num_nested_fields().
-          num_nested_fields = _current_parent->get_num_nested_fields(length);
+          if (length == 0) {
+            num_nested_fields = 0;
+          } else {
+            num_nested_fields = _current_parent->calc_num_nested_fields(length);
+          }
         }
       }
     }
@@ -273,7 +277,7 @@ pop() {
 
   } else {
     if (_mode == M_pack) {
-      size_t length_bytes = _current_parent->get_length_bytes();
+      size_t length_bytes = _current_parent->get_num_length_bytes();
       if (length_bytes != 0) {
         // Now go back and fill in the length of the array.
         char buffer[4];
@@ -478,28 +482,24 @@ unpack_and_format(ostream &out) {
   DCPackType pack_type = get_pack_type();
 
   switch (pack_type) {
+  case PT_invalid:
+    out << "<invalid>";
+    break;
+
   case PT_double:
-    {
-      out << unpack_double();
-    }
+    out << unpack_double();
     break;
       
   case PT_int:
-    {
-      out << unpack_int();
-    }
+    out << unpack_int();
     break;
       
   case PT_int64:
-    {
-      out << unpack_int64();
-    }
+    out << unpack_int64();
     break;
 
   case PT_string:
-    {
-      out << '"' << unpack_string() << '"';
-    }
+    out << '"' << unpack_string() << '"';
     break;
 
   default:
@@ -516,6 +516,7 @@ unpack_and_format(ostream &out) {
       case PT_struct:
       default:
         out << '{';
+        abort();
         break;
       }
 

@@ -80,11 +80,9 @@ public:
 
   bool add_field(DCField *field);
   void add_parent(DCClass *parent);
+  void set_number(int number);
 
 private:
-
-  // These members define the primary interface to the distributed
-  // class as read from the file.
   bool _bogus_class;
   int _number;
 
@@ -94,17 +92,12 @@ private:
   typedef pvector<DCField *> Fields;
   Fields _fields;
 
-#ifdef HAVE_PYTHON
-  PyObject *_class_def;
-#endif
-
-public:
-  // These members are built up during parsing for the convenience of
-  // the parser.
   typedef pmap<string, DCField *> FieldsByName;
   FieldsByName _fields_by_name;
 
-  friend class DCFile;
+#ifdef HAVE_PYTHON
+  PyObject *_class_def;
+#endif
 };
 
 #endif

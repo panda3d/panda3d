@@ -104,7 +104,7 @@ output(ostream &out, bool brief) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::as_atomic_field
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the same field pointer converted to an atomic
 //               field pointer, if this is in fact an atomic field;
 //               otherwise, returns NULL.
@@ -116,7 +116,7 @@ as_atomic_field() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_num_elements
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of elements (parameters) of the
 //               atomic field.
 ////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ get_num_elements() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_element
-//       Access: Public
+//       Access: Published
 //  Description: Returns the parameter object describing the
 //               nth element.
 ////////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ get_element(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_element_default
-//       Access: Public
+//       Access: Published
 //  Description: Returns the pre-formatted default value associated
 //               with the nth element of the field.  This is only
 //               valid if has_element_default() returns true, in which
@@ -160,7 +160,7 @@ get_element_default(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::has_element_default
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the nth element of the field has a
 //               default value specified, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -172,7 +172,7 @@ has_element_default(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_element_name
-//       Access: Public
+//       Access: Published
 //  Description: Returns the name of the nth element of the field.
 //               This name is strictly for documentary purposes; it
 //               does not generally affect operation.  If a name is
@@ -189,7 +189,7 @@ get_element_name(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_element_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns the numeric type of the nth element of the
 //               field.  This method is deprecated; use
 //               get_element() instead.
@@ -204,7 +204,7 @@ get_element_type(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_element_divisor
-//       Access: Public
+//       Access: Published
 //  Description: Returns the divisor associated with the nth element
 //               of the field.  This implements an implicit
 //               fixed-point system; floating-point values are to be
@@ -224,7 +224,7 @@ get_element_divisor(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_required
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "required" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +235,7 @@ is_required() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_broadcast
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "broadcast" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -246,7 +246,7 @@ is_broadcast() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_p2p
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "p2p" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -257,7 +257,7 @@ is_p2p() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_ram
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "ram" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@ is_ram() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_db
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "db" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -279,7 +279,7 @@ is_db() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_clsend
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "clsend" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -290,7 +290,7 @@ is_clsend() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_clrecv
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "clrecv" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -301,7 +301,7 @@ is_clrecv() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_ownsend
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "ownsend" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -312,13 +312,25 @@ is_ownsend() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::is_airecv
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "airecv" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool DCAtomicField::
 is_airecv() const {
   return (_flags & F_airecv) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::compare_flags
+//       Access: Published
+//  Description: Returns true if this field has the same flags
+//               settings as the other field, false if some flags
+//               differ.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::
+compare_flags(const DCAtomicField &other) const {
+  return _flags == other._flags;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -409,19 +421,6 @@ generate_hash(HashGenerator &hashgen) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::get_num_nested_fields
-//       Access: Public, Virtual
-//  Description: Returns the number of nested fields required by this
-//               field type.  These may be array elements or structure
-//               elements.  The return value may be -1 to indicate the
-//               number of nested fields is variable.
-////////////////////////////////////////////////////////////////////
-int DCAtomicField::
-get_num_nested_fields() const {
-  return _elements.size();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_nested_field
 //       Access: Public, Virtual
 //  Description: Returns the DCPackerInterface object that represents
@@ -433,4 +432,26 @@ DCPackerInterface *DCAtomicField::
 get_nested_field(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), NULL);
   return _elements[n]._param;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::add_element
+//       Access: Public
+//  Description: Adds a new element (parameter) to the field.
+//               Normally this is called only during parsing.
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::
+add_element(const DCAtomicField::ElementType &element) {
+  _elements.push_back(element);
+  _num_nested_fields = (int)_elements.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::add_flag
+//       Access: Public
+//  Description: Adds a new flag to the field.
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::
+add_flag(enum Flags flag) {
+  _flags |= flag;
 }

@@ -46,7 +46,6 @@ public:
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hash) const;
 
-  virtual int get_num_nested_fields() const;
   virtual DCPackerInterface *get_nested_field(int n) const;
 
 private:

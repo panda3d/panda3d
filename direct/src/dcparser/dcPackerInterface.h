@@ -61,6 +61,7 @@ END_PUBLISH
 class EXPCL_DIRECT DCPackerInterface {
 public:
   DCPackerInterface(const string &name = string());
+  DCPackerInterface(const DCPackerInterface &copy);
   virtual ~DCPackerInterface();
 
 PUBLISHED:
@@ -68,13 +69,17 @@ PUBLISHED:
   void set_name(const string &name);
 
 public:
-  virtual bool has_nested_fields() const;
-  virtual int get_num_nested_fields() const;
-  virtual int get_num_nested_fields(size_t length_bytes) const;
-  virtual DCPackerInterface *get_nested_field(int n) const;
-  virtual size_t get_length_bytes() const;
+  bool has_fixed_byte_size() const;
+  size_t get_fixed_byte_size() const;
+  size_t get_num_length_bytes() const;
 
-  virtual DCPackType get_pack_type() const;
+  bool has_nested_fields() const;
+  int get_num_nested_fields() const;
+  virtual int calc_num_nested_fields(size_t length_bytes) const;
+  virtual DCPackerInterface *get_nested_field(int n) const;
+
+  DCPackType get_pack_type() const;
+
   virtual bool pack_double(DCPackData &pack_data, double value) const;
   virtual bool pack_int(DCPackData &pack_data, int value) const;
   virtual bool pack_int64(DCPackData &pack_data, PN_int64 value) const;
@@ -87,6 +92,12 @@ public:
 
 protected:
   string _name;
+  bool _has_fixed_byte_size;
+  size_t _fixed_byte_size;
+  size_t _num_length_bytes;
+  bool _has_nested_fields;
+  int _num_nested_fields;
+  DCPackType _pack_type;
 };
 
 #endif

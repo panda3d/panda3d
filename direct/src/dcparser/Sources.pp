@@ -21,7 +21,8 @@
      dcPackData.h dcPackData.I \
      dcPacker.h dcPacker.I \
      dcPackerInterface.h \
-     dcParameter.h dcSimpleParameter.h \
+     dcParameter.h dcArrayParameter.h dcSimpleParameter.h \
+     dcTypedef.h \
      dcbase.h dcindent.h hashGenerator.h  \
      primeNumberGenerator.h  
 
@@ -31,7 +32,8 @@
      dcPackData.cxx \
      dcPacker.cxx \
      dcPackerInterface.cxx \
-     dcParameter.cxx dcSimpleParameter.cxx \
+     dcParameter.cxx dcArrayParameter.cxx dcSimpleParameter.cxx \
+     dcTypedef.cxx \
      dcindent.cxx  \
      hashGenerator.cxx primeNumberGenerator.cxx 
 
