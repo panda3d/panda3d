@@ -19,7 +19,7 @@ class CRCache:
         assert(self.checkCache())
         CRCache.notify.debug("Flushing the cache")
         for distObj in self.dict.values():
-            distObj.delete()
+            distObj.deleteOrDelay()
         # Null out all references to the objects so they will get gcd
         self.dict = {}
         self.fifo = []
@@ -48,7 +48,7 @@ class CRCache:
                 # and remove it from the dictionary
                 del(self.dict[oldestDistObj.getDoId()])
                 # and delete it
-                oldestDistObj.delete()
+                oldestDistObj.deleteOrDelay()
                 
         # Make sure that the fifo and the dictionary are sane
         assert(len(self.dict) == len(self.fifo))
@@ -81,7 +81,7 @@ class CRCache:
         del(self.dict[doId])
         self.fifo.remove(distObj)
         # and delete it
-        distObj.delete()
+        distObj.deleteOrDelay()
         
     def checkCache(self):
         # For debugging; this verifies that the cache is sensible and

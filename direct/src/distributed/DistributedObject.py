@@ -123,9 +123,10 @@ class DistributedObject(PandaObject):
         # a normal, nondisabled state; and *then* the disable function
         # can properly disable it (for instance, by parenting it to
         # hidden).
-        self.activeState = ESDisabling
-        messenger.send(self.uniqueName("disable"))
-        self.disable()
+        if self.activeState != ESDisabled:
+            self.activeState = ESDisabling
+            messenger.send(self.uniqueName("disable"))
+            self.disable()
         return None
 
     def announceGenerate(self):
