@@ -12,6 +12,7 @@ if __debug__:
 
 from direct.directutil import Verify
 
+ScalarTypes = (types.FloatType, types.IntType, types.LongType)
 
 # NOTE: ifAbsentPut has been replaced with Python's dictionary's builtin setdefault
 # before:
