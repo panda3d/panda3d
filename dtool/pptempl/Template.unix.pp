@@ -783,6 +783,10 @@ $[TAB] @ppremake -D $[DEPENDENCY_CACHE_FILENAME]
 #endif
 #end */
 
+#if $[PYTHON_PACKAGE]
+#include $[THISDIRPREFIX]PythonPackageInit.pp
+#endif
+
 #output Makefile
 #format makefile
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
