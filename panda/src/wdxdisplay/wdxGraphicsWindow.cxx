@@ -902,8 +902,15 @@ void wdxGraphicsWindow::config(void) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
 
-        // loads a .cur fmt file
-        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+        DWORD load_flags = LR_LOADFROMFILE;
+
+        if(dx_full_screen) {
+            // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
+            // since they are not going to be used on the desktop
+            load_flags |= LR_CREATEDIBSECTION;
+        }
+        // loads a .cur fmt file. 
+        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
 
         if(_hMouseCursor==NULL) {
             wdxdisplay_cat.warning() << "windows cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
@@ -1232,8 +1239,16 @@ check_for_color_cursor_support(void) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
 
-        // loads a .cur fmt file
-        HCURSOR hNewMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+        DWORD load_flags = LR_LOADFROMFILE;
+
+        if(dx_full_screen) {
+            // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
+            // since they are not going to be used on the desktop
+            load_flags |= LR_CREATEDIBSECTION;
+        }
+
+        // loads a .cur fmt file. 
+        HCURSOR hNewMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags );
 
         if(hNewMouseCursor==NULL) {
             wdxdisplay_cat.warning() << "windows color cursor filename '" << windows_color_cursor_filename << "' not found!!\n";
