@@ -19,6 +19,8 @@
 #include "config_xfile.h"
 #include "xFile.h"
 #include "xFileDataDef.h"
+#include "xFileDataObject.h"
+#include "xFileDataObjectTemplate.h"
 #include "xFileNode.h"
 #include "xFileTemplate.h"
 
@@ -55,6 +57,8 @@ init_libxfile() {
 
   XFile::init_type();
   XFileDataDef::init_type();
+  XFileDataObject::init_type();
+  XFileDataObjectTemplate::init_type();
   XFileNode::init_type();
   XFileTemplate::init_type();
 }

@@ -1,5 +1,5 @@
-// Filename: xFileNode.I
-// Created by:  drose (03Oct04)
+// Filename: standard_templates.h
+// Created by:  drose (04Oct04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,3 +15,18 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+
+#ifndef STANDARD_TEMPLATES_H
+#define STANDARD_TEMPLATES_H
+
+#include "pandatoolbase.h"
+
+#ifndef CPPPARSER
+
+extern const unsigned char standard_templates_data[];
+extern const int standard_templates_data_len;
+
+#endif  // CPPPARSER
+
+#endif
+

@@ -1,4 +1,4 @@
-// Filename: xFileTemplate.h
+// Filename: xFileDataObject.h
 // Created by:  drose (03Oct04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,43 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILETEMPLATE_H
-#define XFILETEMPLATE_H
+#ifndef XFILEDATAOBJECT_H
+#define XFILEDATAOBJECT_H
 
 #include "pandatoolbase.h"
 #include "xFileNode.h"
-#include "windowsGuid.h"
-
-class XFileDataDef;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileTemplate
-// Description : A template definition in the X file.  This defines
-//               the data structures that may be subsequently read.
+//       Class : XFileDataObject
+// Description : The abstract base class for a number of different
+//               types of data elements that may be stored in the X
+//               file.
 ////////////////////////////////////////////////////////////////////
-class XFileTemplate : public XFileNode {
+class XFileDataObject : public XFileNode {
 public:
-  XFileTemplate(const string &name, const WindowsGuid &guid);
-  virtual ~XFileTemplate();
-
-  INLINE const WindowsGuid &get_guid() const;
-
-  virtual void clear();
-  virtual void write_text(ostream &out, int indent_level) const;
-
-  INLINE void set_open(bool open);
-  INLINE bool get_open() const;
-
-  INLINE void add_restriction(XFileTemplate *restriction);
-  INLINE int get_num_restrictions() const;
-  INLINE XFileTemplate *get_restriction(int n) const;
-  
-private:
-  WindowsGuid _guid;
-  bool _open;
-
-  typedef pvector< PT(XFileTemplate) > Restrictions;
-  Restrictions _restrictions;
+  INLINE XFileDataObject(const string &name);
   
 public:
   static TypeHandle get_class_type() {
@@ -60,7 +38,7 @@ public:
   }
   static void init_type() {
     XFileNode::init_type();
-    register_type(_type_handle, "XFileTemplate",
+    register_type(_type_handle, "XFileDataObject",
                   XFileNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -72,7 +50,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "xFileTemplate.I"
+#include "xFileDataObject.I"
 
 #endif
   

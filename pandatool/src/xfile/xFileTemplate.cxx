@@ -29,8 +29,31 @@ TypeHandle XFileTemplate::_type_handle;
 XFileTemplate::
 XFileTemplate(const string &name, const WindowsGuid &guid) : 
   XFileNode(name),
-  _guid(guid)
+  _guid(guid),
+  _open(false)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileTemplate::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+XFileTemplate::
+~XFileTemplate() {
+  clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileTemplate::clear
+//       Access: Public, Virtual
+//  Description: Removes all children from the node, and otherwise
+//               resets it to its initial state.
+////////////////////////////////////////////////////////////////////
+void XFileTemplate::
+clear() {
+  XFileNode::clear();
+  _restrictions.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,6 +70,27 @@ write_text(ostream &out, int indent_level) const {
     << "<" << _guid << ">\n";
 
   XFileNode::write_text(out, indent_level + 2);
+
+  if (get_open()) {
+    // An open template
+    indent(out, indent_level + 2)
+      << "[ ... ]\n";
+
+  } else if (!_restrictions.empty()) {
+    // A restricted template
+    indent(out, indent_level + 2);
+
+    char delimiter = '[';
+    Restrictions::const_iterator ri;
+    for (ri = _restrictions.begin(); ri != _restrictions.end(); ++ri) {
+      XFileTemplate *restriction = (*ri);
+      out << delimiter << " " 
+          << restriction->get_name() << " <" << restriction->get_guid()
+          << ">";
+      delimiter = ',';
+    }
+    out << " ]\n";
+  }
 
   indent(out, indent_level)
     << "}\n";

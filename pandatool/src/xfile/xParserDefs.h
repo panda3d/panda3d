@@ -25,7 +25,6 @@
 
 class XFile;
 class XFileNode;
-class XFileDataDef;
 
 void x_init_parser(istream &in, const string &filename, XFile &file);
 void x_cleanup_parser();
@@ -44,7 +43,6 @@ public:
     int s_int;
     double real;
     XFileNode *node;
-    XFileDataDef *data_def;
   } u;
   string str;
   WindowsGuid guid;

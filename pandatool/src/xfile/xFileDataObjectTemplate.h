@@ -1,4 +1,4 @@
-// Filename: xFileTemplate.h
+// Filename: xFileDataObjectTemplate.h
 // Created by:  drose (03Oct04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,52 +16,41 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILETEMPLATE_H
-#define XFILETEMPLATE_H
+#ifndef XFILEDATAOBJECTTEMPLATE_H
+#define XFILEDATAOBJECTTEMPLATE_H
 
 #include "pandatoolbase.h"
-#include "xFileNode.h"
-#include "windowsGuid.h"
-
-class XFileDataDef;
+#include "xFileDataObject.h"
+#include "xFileTemplate.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileTemplate
-// Description : A template definition in the X file.  This defines
-//               the data structures that may be subsequently read.
+//       Class : XFileDataObjectTemplate
+// Description : A data element that represents a combination of
+//               multiple data elements as defined by a template.  The
+//               individual data elements of the template may be
+//               obtained by walking through the children of this
+//               object.
 ////////////////////////////////////////////////////////////////////
-class XFileTemplate : public XFileNode {
+class XFileDataObjectTemplate : public XFileDataObject {
 public:
-  XFileTemplate(const string &name, const WindowsGuid &guid);
-  virtual ~XFileTemplate();
+  XFileDataObjectTemplate(XFileTemplate *xtemplate, const string &name);
 
-  INLINE const WindowsGuid &get_guid() const;
+  INLINE XFileTemplate *get_template() const;
 
-  virtual void clear();
   virtual void write_text(ostream &out, int indent_level) const;
 
-  INLINE void set_open(bool open);
-  INLINE bool get_open() const;
-
-  INLINE void add_restriction(XFileTemplate *restriction);
-  INLINE int get_num_restrictions() const;
-  INLINE XFileTemplate *get_restriction(int n) const;
-  
 private:
-  WindowsGuid _guid;
-  bool _open;
-
-  typedef pvector< PT(XFileTemplate) > Restrictions;
-  Restrictions _restrictions;
+  PT(XFileTemplate) _template;
   
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    XFileNode::init_type();
-    register_type(_type_handle, "XFileTemplate",
-                  XFileNode::get_class_type());
+    XFileDataObject::init_type();
+    register_type(_type_handle, "XFileDataObjectTemplate",
+                  XFileDataObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -72,9 +61,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "xFileTemplate.I"
+#include "xFileDataObjectTemplate.I"
 
 #endif
   
+
 
 

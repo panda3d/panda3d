@@ -1,4 +1,4 @@
-// Filename: xFileNode.I
+// Filename: xFileDataObject.cxx
 // Created by:  drose (03Oct04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -15,3 +15,7 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+
+#include "xFileDataObject.h"
+
+TypeHandle XFileDataObject::_type_handle;

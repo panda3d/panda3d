@@ -394,6 +394,11 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_ARRAY;
 }
 
+"binary" {
+  accept();
+  return KW_BINARY;
+}
+
 "byte" {
   accept();
   return KW_BYTE;
@@ -447,11 +452,6 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 "word" {
   accept();
   return KW_WORD;
-}
-
-[.][.][.] {
-  accept();
-  return ELLIPSIS;
 }
 
 {INTEGERNUM} { 

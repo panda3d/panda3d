@@ -10,6 +10,8 @@
 #include "xFileTemplate.h"
 #include "xFileDataDef.h"
 #include "xFileArrayDef.h"
+#include "xFileDataObjectTemplate.h"
+#include "pointerTo.h"
 #include "dcast.h"
 
 // Because our token type contains objects of type string, which
@@ -22,7 +24,7 @@
 
 static XFile *x_file = (XFile *)NULL;
 static XFileNode *current_node = (XFileNode *)NULL;
-static XFileDataDef *current_data_def = (XFileDataDef *)NULL;
+static PT(XFileDataDef) current_data_def = (XFileDataDef *)NULL;
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
@@ -49,6 +51,7 @@ x_cleanup_parser() {
 %token <guid> WINDOWS_GUID
 
 %token KW_ARRAY 
+%token KW_BINARY
 %token KW_BYTE
 %token KW_CHAR
 %token KW_CSTRING
@@ -60,12 +63,10 @@ x_cleanup_parser() {
 %token KW_UCHAR
 %token KW_UNICODE
 %token KW_WORD
-%token ELLIPSIS
 
 %type <u.node> xtemplate
-%type <u.data_def> data_def
+%type <u.node> data_object
 %type <str> optional_identifier
-%type <guid> optional_guid
 
 %%
 
@@ -97,61 +98,69 @@ template_members:
 
 template_member:
         data_def
-{
-  current_node->add_child($1);
-}
-        | KW_ARRAY data_def
-{
-  current_node->add_child($2);
-  current_data_def = $2;
-}
-	array_dimensions
+        | KW_ARRAY data_def array_dimensions
 	;
 
 data_def:
         KW_WORD optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_word, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_word, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_DWORD optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_dword, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_dword, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_FLOAT optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_float, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_float, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_DOUBLE optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_double, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_double, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_CHAR optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_char, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_char, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_UCHAR optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_uchar, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_uchar, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_BYTE optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_byte, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_byte, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_STRING optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_string, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_string, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_CSTRING optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_cstring, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_cstring, $2);
+  current_node->add_child(current_data_def);
 }
 	| KW_UNICODE optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_unicode, $2);
+  current_data_def = new XFileDataDef(XFileDataDef::T_unicode, $2);
+  current_node->add_child(current_data_def);
 }
 	| IDENTIFIER optional_identifier
 {
-  $$ = new XFileDataDef(XFileDataDef::T_word, $2);
+  XFileTemplate *xtemplate = x_file->find_template($1);
+  if (xtemplate == (XFileTemplate *)NULL) {
+    yyerror("Unknown template: " + $1);
+  } else {
+    current_data_def = new XFileDataDef(XFileDataDef::T_template, $2, xtemplate);
+    current_node->add_child(current_data_def);
+  }
 }
 	;
 
@@ -178,25 +187,66 @@ array_level:
 
 template_restrictions:
 	empty
-	| '[' ELLIPSIS ']'
-        | '[' template_list ']'
+	| '[' '.' '.' '.' ']'
+{
+  DCAST(XFileTemplate, current_node)->set_open(true);
+}
+        | '[' template_restriction_list ']'
 	;
 
-template_list:
-        IDENTIFIER optional_guid
+template_restriction_list:
+        template_restriction_element
 {
 }
-	| template_list ',' IDENTIFIER optional_guid
+	| template_restriction_list ',' template_restriction_element
 {
+}
+	;
+
+template_restriction_element:
+	IDENTIFIER
+{
+  XFileTemplate *xtemplate = x_file->find_template($1);
+  if (xtemplate == (XFileTemplate *)NULL) {
+    yyerror("Unknown template: " + $1);
+  } else {
+    DCAST(XFileTemplate, current_node)->add_restriction(xtemplate);
+  }
+}
+	| IDENTIFIER WINDOWS_GUID
+{
+  XFileTemplate *xtemplate = x_file->find_template($2);
+  if (xtemplate == (XFileTemplate *)NULL) {
+    yyerror("Unknown template: " + $1);
+  } else {
+    if (xtemplate->get_name() != $1) {
+      xyywarning("GUID identifies template " + xtemplate->get_name() +
+                 ", not " + $1);
+    }
+    DCAST(XFileTemplate, current_node)->add_restriction(xtemplate);
+  }
 }
 	;
 
 data_object:
 	IDENTIFIER optional_identifier '{'
 {
+  XFileTemplate *xtemplate = x_file->find_template($1);
+  $$ = current_node;
+  
+  if (xtemplate == (XFileTemplate *)NULL) {
+    yyerror("Unknown template: " + $1);
+  } else {
+    XFileDataObjectTemplate *templ = 
+      new XFileDataObjectTemplate(xtemplate, $2);
+    current_node->add_child(templ);
+    current_node = templ;
+  }
 }
 	data_object_members '}'
 {
+  $$ = current_node;
+  current_node = $<u.node>4;
 }
 	;
 
@@ -240,14 +290,6 @@ optional_identifier:
   $$ = string();
 }
 	| IDENTIFIER
-	;
-
-optional_guid:
-	empty
-{
-  $$ = WindowsGuid();
-}
-	| WINDOWS_GUID
 	;
 
 empty:

@@ -21,8 +21,12 @@
 
 #include "pandatoolbase.h"
 #include "xFileNode.h"
-
+#include "windowsGuid.h"
 #include "filename.h"
+#include "pmap.h"
+#include "pointerTo.h"
+
+class XFileTemplate;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFile
@@ -44,6 +48,9 @@ public:
   bool write(Filename filename) const;
   bool write(ostream &out) const;
 
+  XFileTemplate *find_template(const string &name) const;
+  XFileTemplate *find_template(const WindowsGuid &guid) const;
+
   virtual void write_text(ostream &out, int indent_level) const;
 
   enum FormatType {
@@ -59,10 +66,17 @@ public:
 private:
   bool read_header(istream &in);
   bool write_header(ostream &out) const;
+  
+  static const XFile *get_standard_templates();
 
   int _major_version, _minor_version;
   FormatType _format_type;
   FloatSize _float_size;
+
+  typedef pmap<WindowsGuid, XFileTemplate *> TemplatesByGuid;
+  TemplatesByGuid _templates_by_guid;
+
+  static PT(XFile) _standard_templates;
   
 public:
   static TypeHandle get_class_type() {

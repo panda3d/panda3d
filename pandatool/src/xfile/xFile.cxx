@@ -19,11 +19,16 @@
 #include "xFile.h"
 #include "xParserDefs.h"
 #include "xLexerDefs.h"
+#include "xFileTemplate.h"
 #include "config_xfile.h"
+#include "standard_templates.h"
+#include "zStream.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
+#include "dcast.h"
 
 TypeHandle XFile::_type_handle;
+PT(XFile) XFile::_standard_templates;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFile::Constructor
@@ -31,9 +36,9 @@ TypeHandle XFile::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFile::
-XFile() : XFileNode("xfile") {
-  _major_version = 1;
-  _minor_version = 1;
+XFile() : XFileNode("") {
+  _major_version = 3;
+  _minor_version = 2;
   _format_type = FT_text;
   _float_size = FS_64;
 }
@@ -56,6 +61,11 @@ XFile::
 void XFile::
 add_child(XFileNode *node) {
   XFileNode::add_child(node);
+
+  if (node->is_of_type(XFileTemplate::get_class_type())) {
+    XFileTemplate *xtemplate = DCAST(XFileTemplate, node);
+    _templates_by_guid[xtemplate->get_guid()] = xtemplate;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,6 +151,11 @@ read(istream &in, const string &filename) {
     return false;
   }
 
+  // We must call this first so the standard templates file will be
+  // parsed and available by the time we need it--it's tricky to
+  // invoke the parser from within another parser instance.
+  get_standard_templates();
+
   x_init_parser(in, filename, *this);
   xyyparse();
   x_cleanup_parser();
@@ -194,6 +209,50 @@ write(ostream &out) const {
   write_text(out, 0);
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFile::find_template
+//       Access: Public
+//  Description: Returns the template associated with the indicated
+//               name, if any, or NULL if none.
+////////////////////////////////////////////////////////////////////
+XFileTemplate *XFile::
+find_template(const string &name) const {
+  XFileNode *child = find_child(name);
+  if (child != (XFileNode *)NULL &&
+      child->is_of_type(XFileTemplate::get_class_type())) {
+    return DCAST(XFileTemplate, child);
+  }
+
+  const XFile *standard_templates = get_standard_templates();
+  if (standard_templates != this) {
+    return standard_templates->find_template(name);
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFile::find_template
+//       Access: Public
+//  Description: Returns the template associated with the indicated
+//               GUID, if any, or NULL if none.
+////////////////////////////////////////////////////////////////////
+XFileTemplate *XFile::
+find_template(const WindowsGuid &guid) const {
+  TemplatesByGuid::const_iterator gi;
+  gi = _templates_by_guid.find(guid);
+  if (gi != _templates_by_guid.end()) {
+    return (*gi).second;
+  }
+
+  const XFile *standard_templates = get_standard_templates();
+  if (standard_templates != this) {
+    return standard_templates->find_template(guid);
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -358,4 +417,39 @@ write_header(ostream &out) const {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFile::get_standard_templates
+//       Access: Private, Static
+//  Description: Returns a global XFile object that contains the
+//               standard list of Direct3D template definitions that
+//               may be assumed to be at the head of every file.
+////////////////////////////////////////////////////////////////////
+const XFile *XFile::
+get_standard_templates() {
+  if (_standard_templates == (XFile *)NULL) {
+    // The standardTemplates.x file has been compiled into this
+    // binary.  Extract it out.
+
+    string data((const char *)standard_templates_data, standard_templates_data_len);
+
+#ifdef HAVE_ZLIB
+    // The data is stored compressed; decompress it on-the-fly.
+    istringstream inz(data);
+    IDecompressStream in(&inz, false);
+    
+#else
+    // The data is stored uncompressed, so just load it.
+    istringstream in(data);
+#endif  // HAVE_ZLIB
+    
+    _standard_templates = new XFile;
+    if (!_standard_templates->read(in, "standardTemplates.x")) {
+      xfile_cat.error()
+        << "Internal error: Unable to parse built-in standardTemplates.x!\n";
+    }
+  }
+  
+  return _standard_templates;
 }

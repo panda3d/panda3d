@@ -66,7 +66,7 @@ void XFileNode::
 add_child(XFileNode *node) {
   _children.push_back(node);
   if (node->has_name()) {
-    _children_by_name.insert(ChildrenByName::value_type(node->get_name(), node));
+    _children_by_name[node->get_name()] = node;
   }
 }
 
@@ -79,6 +79,7 @@ add_child(XFileNode *node) {
 void XFileNode::
 clear() {
   _children.clear();
+  _children_by_name.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
