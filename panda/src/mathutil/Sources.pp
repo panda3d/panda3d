@@ -16,11 +16,11 @@
     config_mathutil.h \
     fftCompressor.cxx fftCompressor.h \
     finiteBoundingVolume.cxx finiteBoundingVolume.h \
-    frustum.I frustum.h \
+    frustum.I frustum.h frustum.N plane.N\
     geometricBoundingVolume.I geometricBoundingVolume.cxx \
-    geometricBoundingVolume.h look_at.I look_at.cxx look_at.h \
+    geometricBoundingVolume.h look_at.I look_at.cxx look_at.h look_at_src.I\
     omniBoundingVolume.I omniBoundingVolume.cxx omniBoundingVolume.h \
-    plane.I plane.N plane.cxx plane.h rotate_to.cxx rotate_to.h
+    plane.I plane.cxx plane.h rotate_to.cxx rotate_to_src.I rotate_to.h
 
   #define INSTALL_HEADERS \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I \

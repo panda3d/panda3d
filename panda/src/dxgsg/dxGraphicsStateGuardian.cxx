@@ -1499,7 +1499,7 @@ draw_sprite(const GeomSprite *geom) {
 	for (pSpr=SpriteArray,i = 0; i < nprims; i++,pSpr++) {
 
 		source_vert = geom->get_next_vertex(vi);
-		cameraspace_vert = modelview_mat * source_vert;
+		cameraspace_vert = source_vert * modelview_mat;
 
 		pSpr->_v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
 
@@ -1596,10 +1596,10 @@ draw_sprite(const GeomSprite *geom) {
 			LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) *   
 								  LMatrix3f::scale_mat(scaled_width, scaled_height);
 
-			ur = (xform_mat * LVector3f(1, 1, 0)) + pSpr->_v;
-			ul = (xform_mat * LVector3f(-1, 1, 0)) + pSpr->_v;
-			lr = (xform_mat * LVector3f(1, -1, 0)) + pSpr->_v;
-			ll = (xform_mat * LVector3f(-1, -1, 0)) + pSpr->_v;
+			ur = (LVector3f( 1,  1, 0) * xform_mat) + pSpr->_v;
+			ul = (LVector3f(-1,  1, 0) * xform_mat) + pSpr->_v;
+			lr = (LVector3f( 1, -1, 0) * xform_mat) + pSpr->_v;
+			ll = (LVector3f(-1, -1, 0) * xform_mat) + pSpr->_v;
 		} else {
 			// create points for unrotated rect sprites
 			float x,y,negx,negy,z;

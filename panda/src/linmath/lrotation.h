@@ -12,40 +12,13 @@
 
 #include <notify.h>
 
-////////////////////////////////////////////////////////////////////////
-//       Class : LRotation
-// Description : This is a unit quaternion representing a rotation.
-////////////////////////////////////////////////////////////////////////
-template <class NumType>
-class LRotation : public LQuaternionBase<NumType> {
-PUBLISHED:
-  INLINE LRotation();
-  INLINE LRotation(const LQuaternionBase<NumType>&);
-  INLINE LRotation(NumType, NumType, NumType, NumType);
-  INLINE LRotation(const LVector3<NumType> &, NumType);
-  INLINE LRotation(const LMatrix3<NumType> &);
-  INLINE LRotation(const LMatrix4<NumType> &);
-  INLINE LRotation(NumType, NumType, NumType);
-  virtual ~LRotation();
-
-  INLINE LRotation<NumType>
-  operator*(const LRotation<NumType>& other) const;
-
-  INLINE LQuaternionBase<NumType>
-  operator*(const LQuaternionBase<NumType>& other) const;
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type();
-private:
-  static TypeHandle _type_handle;
-};
-
+#include "fltnames.I"
 #include "lrotation.I"
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, LRotation<float>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, LRotation<double>)
+#include "dblnames.I"
+#include "lrotation.I"
+
+
+
 
 #endif /* __LROTATION_H__ */

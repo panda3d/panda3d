@@ -1,0 +1,123 @@
+// Filename: lmatrix3.I
+// Created by:  drose (29Jan99)
+// 
+////////////////////////////////////////////////////////////////////
+
+TypeHandle FLOATNAME(LMatrix3)::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::fill
+//       Access: Public
+//  Description: Sets each element of the matrix to the indicated
+//               fill_value.  This is of questionable value, but is
+//               sometimes useful when initializing to zero.
+////////////////////////////////////////////////////////////////////
+
+void FLOATNAME(LMatrix3)::
+fill(FLOATTYPE1 fill_value) {
+  set(fill_value, fill_value, fill_value,
+      fill_value, fill_value, fill_value,
+      fill_value, fill_value, fill_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Equality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+
+bool FLOATNAME(LMatrix3)::
+operator == (const FLOATNAME(LMatrix3) &other) const {
+  return ((*this)(0, 0) == other(0, 0) &&
+	  (*this)(0, 1) == other(0, 1) &&
+	  (*this)(0, 2) == other(0, 2) &&
+	  (*this)(1, 0) == other(1, 0) &&
+	  (*this)(1, 1) == other(1, 1) &&
+	  (*this)(1, 2) == other(1, 2) &&
+	  (*this)(2, 0) == other(2, 0) &&
+	  (*this)(2, 1) == other(2, 1) &&
+	  (*this)(2, 2) == other(2, 2));
+}
+
+int FLOATNAME(LMatrix3)::
+compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE1 threshold) const {
+  for (int i = 0; i < 9; i++) {
+    if (!IS_THRESHOLD_EQUAL(_data[i], other._data[i], threshold)) {
+      return (_data[i] < other._data[i]) ? -1 : 1;
+    }
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::almost_equal
+//       Access: Public
+//  Description: Returns true if two matrices are memberwise equal
+//               within a specified tolerance.
+////////////////////////////////////////////////////////////////////
+
+bool FLOATNAME(LMatrix3)::
+almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE1 threshold) const {
+  return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(1, 0), other(1, 0), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(1, 1), other(1, 1), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(1, 2), other(1, 2), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(2, 0), other(2, 0), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(2, 1), other(2, 1), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(2, 2), other(2, 2), threshold));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::init_type
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+
+void FLOATNAME(LMatrix3)::
+init_type() {
+  if (_type_handle == TypeHandle::none()) {
+    // Format a string to describe the type.
+    do_init_type(FLOATTYPE1);
+    string name =
+      "LMatrix3<" + get_type_handle(FLOATTYPE1).get_name() + ">";
+    register_type(_type_handle, name);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::write_datagram
+//  Description: Writes the matrix to the datagram
+////////////////////////////////////////////////////////////////////
+
+void FLOATNAME(LMatrix3)::
+write_datagram(Datagram &destination) const
+{
+  for(int i = 0; i < 3; i++)
+  {
+    for(int j = 0; j < 3; j++)
+    {
+      destination.add_float32(get_cell(i,j));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::read_datagram
+//  Description: Reads itself out of the datagram
+////////////////////////////////////////////////////////////////////
+
+void FLOATNAME(LMatrix3)::
+read_datagram(DatagramIterator &scan) 
+{
+  for(int i = 0; i < 3; i++)
+  {
+    for(int j = 0; j < 3; j++)
+    {
+      set_cell(i, j, scan.get_float32());
+    }
+  }
+}
+

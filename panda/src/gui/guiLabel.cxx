@@ -369,8 +369,8 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
 							  _scale_z)) *
 	LMatrix4f::scale_mat(_scale) *
 	LMatrix4f::translate_mat(_pos);
-      ul = mat * ul;
-      lr = mat * lr;
+      ul = ul * mat;
+      lr = lr * mat;
       l = ul.dot(ul.right());
       r = lr.dot(lr.right());
       b = lr.dot(lr.up());

@@ -3,19 +3,56 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "cmath.h"
+////////////////////////////////////////////////////////////////////
+// 	 Class : LVector2
+// Description : This is a two-component vector offset.
+////////////////////////////////////////////////////////////////////
 
-template<class NumType>
-TypeHandle LVector2<NumType>::_type_handle;
+class EXPCL_PANDA FLOATNAME(LVector2) : public FLOATNAME(LVecBase2) {
+PUBLISHED:
+  INLINE FLOATNAME(LVector2)();
+  INLINE FLOATNAME(LVector2)(const FLOATNAME(LVecBase2) &copy);
+  INLINE FLOATNAME(LVector2) &operator = (const FLOATNAME(LVecBase2) &copy);
+  INLINE FLOATNAME(LVector2) &operator = (FLOATTYPE1 fill_value);
+  INLINE FLOATNAME(LVector2)(FLOATTYPE1 fill_value);
+  INLINE FLOATNAME(LVector2)(FLOATTYPE1 x, FLOATTYPE1 y);
+
+  INLINE static FLOATNAME(LVector2) zero();
+  INLINE static FLOATNAME(LVector2) unit_x();
+  INLINE static FLOATNAME(LVector2) unit_y();
+
+  INLINE FLOATNAME(LVector2) operator - () const;
+
+  INLINE FLOATNAME(LVecBase2)operator + (const FLOATNAME(LVecBase2) &other) const;
+  INLINE FLOATNAME(LVector2) operator + (const FLOATNAME(LVector2) &other) const;
+
+  INLINE FLOATNAME(LVecBase2) operator - (const FLOATNAME(LVecBase2) &other) const;
+  INLINE FLOATNAME(LVector2) operator - (const FLOATNAME(LVector2) &other) const;
+
+  INLINE FLOATTYPE1 length() const;
+  INLINE FLOATTYPE1 length_squared() const;
+  INLINE bool normalize();
+  INLINE FLOATNAME(LVector2) operator * (FLOATTYPE1 scalar) const;
+  INLINE FLOATNAME(LVector2) operator / (FLOATTYPE1 scalar) const;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type();
+ 
+private:
+  static TypeHandle _type_handle;
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector2::Default Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType>::
-LVector2() {
+
+INLINE FLOATNAME(LVector2)::
+FLOATNAME(LVector2)() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -23,9 +60,9 @@ LVector2() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType>::
-LVector2(const LVecBase2<NumType> &copy) : LVecBase2<NumType>(copy) {
+
+INLINE FLOATNAME(LVector2)::
+FLOATNAME(LVector2)(const FLOATNAME(LVecBase2) &copy) : FLOATNAME(LVecBase2)(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,10 +70,10 @@ LVector2(const LVecBase2<NumType> &copy) : LVecBase2<NumType>(copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> &LVector2<NumType>::
-operator = (const LVecBase2<NumType> &copy) {
-  LVecBase2<NumType>::operator = (copy);
+
+INLINE FLOATNAME(LVector2) &FLOATNAME(LVector2)::
+operator = (const FLOATNAME(LVecBase2) &copy) {
+  FLOATNAME(LVecBase2)::operator = (copy);
   return *this;
 }
 
@@ -45,10 +82,10 @@ operator = (const LVecBase2<NumType> &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> &LVector2<NumType>::
-operator = (NumType fill_value) {
-  LVecBase2<NumType>::operator = (fill_value);
+
+INLINE FLOATNAME(LVector2) &FLOATNAME(LVector2)::
+operator = (FLOATTYPE1 fill_value) {
+  FLOATNAME(LVecBase2)::operator = (fill_value);
   return *this;
 }
 
@@ -57,10 +94,10 @@ operator = (NumType fill_value) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType>::
-LVector2(NumType fill_value) :
-  LVecBase2<NumType>(fill_value) 
+
+INLINE FLOATNAME(LVector2)::
+FLOATNAME(LVector2)(FLOATTYPE1 fill_value) :
+  FLOATNAME(LVecBase2)(fill_value) 
 {
 }
 
@@ -69,10 +106,10 @@ LVector2(NumType fill_value) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType>::
-LVector2(NumType x, NumType y) : 
-  LVecBase2<NumType>(x, y) 
+
+INLINE FLOATNAME(LVector2)::
+FLOATNAME(LVector2)(FLOATTYPE1 x, FLOATTYPE1 y) : 
+  FLOATNAME(LVecBase2)(x, y) 
 {
 }
 
@@ -81,10 +118,10 @@ LVector2(NumType x, NumType y) :
 //       Access: Public
 //  Description: Returns a zero-length vector.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> LVector2<NumType>::
+
+INLINE FLOATNAME(LVector2) FLOATNAME(LVector2)::
 zero() {
-  return LVector2<NumType>(0.0, 0.0);
+  return FLOATNAME(LVector2)(0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,10 +129,10 @@ zero() {
 //       Access: Public
 //  Description: Returns a unit X vector.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> LVector2<NumType>::
+
+INLINE FLOATNAME(LVector2) FLOATNAME(LVector2)::
 unit_x() {
-  return LVector2<NumType>(1.0, 0.0);
+  return FLOATNAME(LVector2)(1.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,10 +140,10 @@ unit_x() {
 //       Access: Public
 //  Description: Returns a unit Y vector.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> LVector2<NumType>::
+
+INLINE FLOATNAME(LVector2) FLOATNAME(LVector2)::
 unit_y() {
-  return LVector2<NumType>(0.0, 1.0);
+  return FLOATNAME(LVector2)(0.0, 1.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,10 +151,10 @@ unit_y() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> LVector2<NumType>::
+
+INLINE FLOATNAME(LVector2) FLOATNAME(LVector2)::
 operator - () const {
-  return LVecBase2<NumType>::operator - ();
+  return FLOATNAME(LVecBase2)::operator - ();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,10 +162,10 @@ operator - () const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVecBase2<NumType> LVector2<NumType>::
-operator + (const LVecBase2<NumType> &other) const {
-  return LVecBase2<NumType>::operator + (other);
+
+INLINE FLOATNAME(LVecBase2) FLOATNAME(LVector2)::
+operator + (const FLOATNAME(LVecBase2) &other) const {
+  return FLOATNAME(LVecBase2)::operator + (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,10 +173,10 @@ operator + (const LVecBase2<NumType> &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> LVector2<NumType>::
-operator + (const LVector2<NumType> &other) const {
-  return LVecBase2<NumType>::operator + (other);
+
+INLINE FLOATNAME(LVector2) FLOATNAME(LVector2)::
+operator + (const FLOATNAME(LVector2) &other) const {
+  return FLOATNAME(LVecBase2)::operator + (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,10 +184,10 @@ operator + (const LVector2<NumType> &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVecBase2<NumType> LVector2<NumType>::
-operator - (const LVecBase2<NumType> &other) const {
-  return LVecBase2<NumType>::operator - (other);
+
+INLINE FLOATNAME(LVecBase2) FLOATNAME(LVector2)::
+operator - (const FLOATNAME(LVecBase2) &other) const {
+  return FLOATNAME(LVecBase2)::operator - (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,10 +195,10 @@ operator - (const LVecBase2<NumType> &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> LVector2<NumType>::
-operator - (const LVector2<NumType> &other) const {
-  return LVecBase2<NumType>::operator - (other);
+
+INLINE FLOATNAME(LVector2) FLOATNAME(LVector2)::
+operator - (const FLOATNAME(LVector2) &other) const {
+  return FLOATNAME(LVecBase2)::operator - (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,8 +207,8 @@ operator - (const LVector2<NumType> &other) const {
 //  Description: Returns the length of the vector, by the Pythagorean
 //               theorem.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE NumType LVector2<NumType>::
+
+INLINE FLOATTYPE1 FLOATNAME(LVector2)::
 length() const {
   return csqrt((*this).dot(*this));
 }
@@ -182,8 +219,8 @@ length() const {
 //  Description: Returns the square of the vector's length, cheap and
 //               easy.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE NumType LVector2<NumType>::
+
+INLINE FLOATTYPE1 FLOATNAME(LVector2)::
 length_squared() const {
   return (*this).dot(*this);
 }
@@ -195,15 +232,15 @@ length_squared() const {
 //               vector was normalized, false if it was a zero-length
 //               vector.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE bool LVector2<NumType>::
+
+INLINE bool FLOATNAME(LVector2)::
 normalize() {
-  NumType l2 = length_squared();
-  if (l2 == (NumType)0.0) {
+  FLOATTYPE1 l2 = length_squared();
+  if (l2 == (FLOATTYPE1)0.0) {
     set(0.0, 0.0);
     return false;
 
-  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0, NEARLY_ZERO(NumType) * NEARLY_ZERO(NumType))) {
+  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0, NEARLY_ZERO(FLOATTYPE1) * NEARLY_ZERO(FLOATTYPE1))) {
     (*this) /= csqrt(l2);
   }
 
@@ -215,10 +252,10 @@ normalize() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> LVector2<NumType>::
-operator * (NumType scalar) const {
-  return LVector2<NumType>(LVecBase2<NumType>::operator * (scalar));
+
+INLINE FLOATNAME(LVector2) FLOATNAME(LVector2)::
+operator * (FLOATTYPE1 scalar) const {
+  return FLOATNAME(LVector2)(FLOATNAME(LVecBase2)::operator * (scalar));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,37 +263,9 @@ operator * (NumType scalar) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType> LVector2<NumType>::
-operator / (NumType scalar) const {
-  return LVector2<NumType>(LVecBase2<NumType>::operator / (scalar));
+
+INLINE FLOATNAME(LVector2) FLOATNAME(LVector2)::
+operator / (FLOATTYPE1 scalar) const {
+  return FLOATNAME(LVector2)(FLOATNAME(LVecBase2)::operator / (scalar));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVector2::init_type
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-void LVector2<NumType>::
-init_type() {
-  if (_type_handle == TypeHandle::none()) {
-    LVecBase2<NumType>::init_type();
-    string name =
-      "LVector2<" + get_type_handle(NumType).get_name() + ">";
-    register_type(_type_handle, name, 
-		  LVecBase2<NumType>::get_class_type());
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: lcast_to
-//  Description: Converts a vector from one numeric representation to
-//               another one.  This is usually invoked using the macro
-//               LCAST.
-////////////////////////////////////////////////////////////////////
-template<class NumType, class NumType2>
-INLINE LVector2<NumType2> 
-lcast_to(NumType2 *, const LVector2<NumType> &source) {
-  return LVector2<NumType2>(source[0], source[1]);
-}

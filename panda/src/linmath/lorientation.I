@@ -3,20 +3,43 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "lorientation.h"
-#include <notify.h>
+////////////////////////////////////////////////////////////////////////
+//       Class : LOrientation
+// Description : This is a unit quaternion representing an orientation.
+////////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA FLOATNAME(LOrientation) : public FLOATNAME(LQuaternionBase) {
+public:
+  INLINE FLOATNAME(LOrientation)();
+  INLINE FLOATNAME(LOrientation)(const FLOATNAME(LQuaternionBase)&);
+  INLINE FLOATNAME(LOrientation)(FLOATTYPE1, FLOATTYPE1, FLOATTYPE1, FLOATTYPE1);
+  INLINE FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &, float);
+  INLINE FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &);
+  INLINE FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &);
+  virtual ~FLOATNAME(LOrientation)();
 
-template<class NumType>
-TypeHandle LOrientation<NumType>::_type_handle;
+  INLINE FLOATNAME(LOrientation) 
+  operator *(const FLOATNAME(LQuaternionBase)& other) const;
+
+  INLINE FLOATNAME(LOrientation)
+  operator *(const FLOATNAME(LOrientation)& other) const;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type();
+private:
+  static TypeHandle _type_handle;
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Default Constructor
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LOrientation<NumType>::
-LOrientation() {
+
+INLINE FLOATNAME(LOrientation)::
+FLOATNAME(LOrientation)() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -24,10 +47,10 @@ LOrientation() {
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LOrientation<NumType>::
-LOrientation(const LQuaternionBase<NumType>& c) :
-  LQuaternionBase<NumType>(c) {
+
+INLINE FLOATNAME(LOrientation)::
+FLOATNAME(LOrientation)(const FLOATNAME(LQuaternionBase)& c) :
+  FLOATNAME(LQuaternionBase)(c) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,10 +58,10 @@ LOrientation(const LQuaternionBase<NumType>& c) :
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LOrientation<NumType>::
-LOrientation(NumType r, NumType i, NumType j, NumType k) :
-  LQuaternionBase<NumType>(r, i, j, k) {
+
+INLINE FLOATNAME(LOrientation)::
+FLOATNAME(LOrientation)(FLOATTYPE1 r, FLOATTYPE1 i, FLOATTYPE1 j, FLOATTYPE1 k) :
+  FLOATNAME(LQuaternionBase)(r, i, j, k) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,9 +69,9 @@ LOrientation(NumType r, NumType i, NumType j, NumType k) :
 //       Access: public
 //  Description: vector + twist
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LOrientation<NumType>::
-LOrientation(const LVector3<NumType> &point_at, float twist) {
+
+INLINE FLOATNAME(LOrientation)::
+FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, float twist) {
   float radians = twist * ((float) MathNumbers::pi / 180.0f);
   float theta_over_2 = radians / 2.0f;
   float sin_to2 = sinf(theta_over_2);
@@ -64,9 +87,9 @@ LOrientation(const LVector3<NumType> &point_at, float twist) {
 //       Access: public
 //  Description: matrix3
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LOrientation<NumType>::
-LOrientation(const LMatrix3<NumType> &m) {
+
+INLINE FLOATNAME(LOrientation)::
+FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &m) {
   set(m);
 }
 
@@ -75,20 +98,10 @@ LOrientation(const LMatrix3<NumType> &m) {
 //       Access: public
 //  Description: matrix4
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LOrientation<NumType>::
-LOrientation(const LMatrix4<NumType> &m) {
-  set(m);
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: LOrientation::Destructor
-//       Access: public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-LOrientation<NumType>::
-~LOrientation() {
+INLINE FLOATNAME(LOrientation)::
+FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &m) {
+  set(m);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,9 +110,9 @@ LOrientation<NumType>::
 //  Description: Orientation * rotation = Orientation
 //               Applies an rotation to an orientation.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LOrientation<NumType> LOrientation<NumType>::
-operator *(const LQuaternionBase<NumType>& other) const {
+
+INLINE FLOATNAME(LOrientation) FLOATNAME(LOrientation)::
+operator *(const FLOATNAME(LQuaternionBase)& other) const {
   return multiply(other);
 }
 
@@ -110,25 +123,8 @@ operator *(const LQuaternionBase<NumType>& other) const {
 //               This is a meaningless operation, and will always
 //               simply return the rhs.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LOrientation<NumType> LOrientation<NumType>::
-operator *(const LOrientation<NumType>& other) const {
-  return other;
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: LOrientation::init_type
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-void LOrientation<NumType>::
-init_type() {
-  if (_type_handle == TypeHandle::none()) {
-    // Format a string to describe the type.
-    do_init_type(NumType);
-    string name =
-      "LOrientation<" + get_type_handle(NumType).get_name() + ">";
-    register_type(_type_handle, name);
-  }
+INLINE FLOATNAME(LOrientation) FLOATNAME(LOrientation)::
+operator *(const FLOATNAME(LOrientation)& other) const {
+  return other;
 }

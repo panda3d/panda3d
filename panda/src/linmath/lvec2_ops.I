@@ -3,17 +3,49 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include <math.h>
+// When possible, operators have been defined within the classes.
+// This file defines operator functions outside of classes where
+// necessary.  It also defines some convenient out-of-class wrappers
+// around in-class functions (like dot, length, normalize).
 
-#include "nearly_zero.h"
+
+// scalar * vec (vec * scalar is defined in class)
+
+INLINE FLOATNAME(LVecBase2) 
+operator * (FLOATTYPE2 scalar, const FLOATNAME(LVecBase2) &a);
+
+
+INLINE FLOATNAME(LPoint2) 
+operator * (FLOATTYPE2 scalar, const FLOATNAME(LPoint2) &a);
+
+
+INLINE FLOATNAME(LVector2) 
+operator * (FLOATTYPE2 scalar, const FLOATNAME(LVector2) &a);
+
+
+// dot product
+
+INLINE FLOATTYPE1
+dot(const FLOATNAME(LVecBase2) &a, const FLOATNAME(LVecBase2) &b);
+
+
+// Length of a vector.
+
+INLINE FLOATTYPE1
+length(const FLOATNAME(LVector2) &a);
+
+
+// A normalized vector.
+
+INLINE FLOATNAME(LVector2)
+normalize(const FLOATNAME(LVector2) &v);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: scalar * LVecBase2
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType, class NumType2>
-INLINE LVecBase2<NumType> 
-operator * (NumType2 scalar, const LVecBase2<NumType> &a) {
+INLINE FLOATNAME(LVecBase2) 
+operator * (FLOATTYPE2 scalar, const FLOATNAME(LVecBase2) &a) {
   return a * scalar;
 }
 
@@ -21,9 +53,8 @@ operator * (NumType2 scalar, const LVecBase2<NumType> &a) {
 //     Function: scalar * LPoint2
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType, class NumType2>
-INLINE LPoint2<NumType> 
-operator * (NumType2 scalar, const LPoint2<NumType> &a) {
+INLINE FLOATNAME(LPoint2) 
+operator * (FLOATTYPE2 scalar, const FLOATNAME(LPoint2) &a) {
   return a * scalar;
 }
 
@@ -31,9 +62,8 @@ operator * (NumType2 scalar, const LPoint2<NumType> &a) {
 //     Function: scalar * LVector2
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType, class NumType2>
-INLINE LVector2<NumType> 
-operator * (NumType2 scalar, const LVector2<NumType> &a) {
+INLINE FLOATNAME(LVector2) 
+operator * (FLOATTYPE2 scalar, const FLOATNAME(LVector2) &a) {
   return a * scalar;
 }
 
@@ -41,39 +71,19 @@ operator * (NumType2 scalar, const LVector2<NumType> &a) {
 //     Function: dot product of LVecBase2
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE NumType
-dot(const LVecBase2<NumType> &a, const LVecBase2<NumType> &b) {
+
+INLINE FLOATTYPE1
+dot(const FLOATNAME(LVecBase2) &a, const FLOATNAME(LVecBase2) &b) {
   return a.dot(b);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: cross product of LVecBase2
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVecBase2<NumType>
-cross(const LVecBase2<NumType> &a, const LVecBase2<NumType> &b) {
-  return a.cross(b);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: cross product of LVector2
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType>
-cross(const LVector2<NumType> &a, const LVector2<NumType> &b) {
-  return LVector2<NumType>(a.cross(b));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: length of a vector
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE NumType
-length(const LVector2<NumType> &a) {
+
+INLINE FLOATTYPE1
+length(const FLOATNAME(LVector2) &a) {
   return a.length();
 }
 
@@ -82,10 +92,10 @@ length(const LVector2<NumType> &a) {
 //     Function: normalize
 //  Description: Returns a normalized vector from the given vector.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVector2<NumType>
-normalize(const LVector2<NumType> &v) {
-  LVector2<NumType> v1 = v;
+
+INLINE FLOATNAME(LVector2)
+normalize(const FLOATNAME(LVector2) &v) {
+  FLOATNAME(LVector2) v1 = v;
   v1.normalize();
   return v1;
 }

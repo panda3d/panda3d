@@ -957,7 +957,7 @@ convex_quad(Edge *common_edge, MesherStrip &front, MesherStrip &back,
     }
   }
 
-  LVecBase2<float> a2, b2, c2, d2;
+  LVecBase2f a2, b2, c2, d2;
   a2.set(a3[xi], a3[yi]);
   b2.set(b3[xi], b3[yi]);
   c2.set(c3[xi], c3[yi]);

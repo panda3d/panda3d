@@ -12,13 +12,22 @@
     coordinateSystem.h deg_2_rad.h \
     ioPtaDatagramLinMath.I ioPtaDatagramLinMath.cxx \
     ioPtaDatagramLinMath.h lmatrix.cxx lmatrix.h \
-    lmatrix3.I lmatrix3.h lmatrix4.I lmatrix4.h \
-    luse.I luse.N luse.cxx \
-    luse.h lquaternion.I lquaternion.h lrotation.I lrotation.h \
-    lvec2_ops.I lvec2_ops.h lvec3_ops.I lvec3_ops.h lvec4_ops.I \
-    lvec4_ops.h lvecBase2.I lvecBase2.h lvecBase3.I lvecBase3.h \
-    lvecBase4.I lvecBase4.h lvector2.I lvector2.h lvector3.I lvector3.h \
-    lvector4.I lvector4.h \
+    lmatrix3.I lmatrix3.h lmatrix3.cxx lmatrix3_src.I \
+    lmatrix4.I lmatrix4.h lmatrix4.cxx lmatrix4_src.I \
+    luse.I luse.cxx \
+    luse.h lquaternion.I lquaternion.h lquaternion.cxx lquaternion_src.I \
+    lrotation.I lrotation.h lrotation.cxx lrotation_src.I \
+    lorientation.I lorientation.h lorientation.cxx lorientation_src.I \
+    lpoint2.I lpoint2.h lpoint2.cxx lpoint2_src.I \
+    lpoint3.I lpoint3.h lpoint3.cxx lpoint3_src.I \
+    lpoint4.I lpoint4.h lpoint4.cxx lpoint4_src.I \
+    lvec2_ops.I lvec2_ops.h lvec3_ops.I lvec3_ops.h lvec4_ops.I lvec4_ops.h \
+    lvecBase2.I lvecBase2.h lvecBase2.cxx lvecBase2_src.I \
+    lvecBase3.I lvecBase3.h lvecBase3.cxx lvecBase3_src.I \
+    lvecBase4.I lvecBase4.h lvecBase4.cxx lvecBase4_src.I \        
+    lvector2.I lvector2.h lvector2.cxx lvector2_src.I \
+    lvector3.I lvector3.h lvector3.cxx lvector3_src.I \
+    lvector4.I lvector4.h lvector4.cxx lvector4_src.I luse.N\        
     mathNumbers.cxx mathNumbers.h nearly_zero.h \
     pta_Colorf.cxx pta_Colorf.h \
     pta_Normalf.cxx pta_Normalf.h pta_TexCoordf.cxx pta_TexCoordf.h \
@@ -34,7 +43,8 @@
     ioPtaDatagramLinMath.h lmat_ops.I lmat_ops.h lmatrix.h lmatrix3.I \
     lmatrix3.h lmatrix4.I lmatrix4.h lorientation.I lorientation.h \
     lpoint2.I lpoint2.h lpoint3.I lpoint3.h lpoint4.I lpoint4.h \
-    lquaternion.I lquaternion.h lrotation.I lrotation.h luse.I luse.h \
+    lquaternion.I lquaternion.h \
+    lrotation.I lrotation.h luse.I luse.h \
     lvec2_ops.I lvec2_ops.h lvec3_ops.I lvec3_ops.h lvec4_ops.I \
     lvec4_ops.h lvecBase2.I lvecBase2.h lvecBase3.I lvecBase3.h \
     lvecBase4.I lvecBase4.h lvector2.I lvector2.h lvector3.I lvector3.h \
@@ -42,7 +52,8 @@
     pta_Normalf.h pta_TexCoordf.h pta_Vertexf.h vector_Colorf.h \
     vector_LPoint2f.h vector_LVecBase3f.h \
     vector_Normalf.h vector_TexCoordf.h \
-    vector_Vertexf.h
+    vector_Vertexf.h \
+    fltnames.I dblnames.I
 
   #define IGATESCAN all
 

@@ -3,82 +3,127 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-template<class NumType>
-TypeHandle LQuaternionBase<NumType>::_type_handle;
+////////////////////////////////////////////////////////////////////
+//       Class : FLOATNAME(LQuaternionBase)
+// Description : This is the base quaternion class
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA FLOATNAME(LQuaternionBase)  {
+protected:
+  INLINE FLOATNAME(LQuaternionBase) 
+    multiply(const FLOATNAME(LQuaternionBase)&) const;
+
+PUBLISHED:
+  INLINE FLOATNAME(LQuaternionBase)(void);
+  INLINE FLOATNAME(LQuaternionBase)(const FLOATNAME(LQuaternionBase) &);
+  INLINE FLOATNAME(LQuaternionBase)(FLOATTYPE1, FLOATTYPE1, FLOATTYPE1, FLOATTYPE1);
+  virtual ~FLOATNAME(LQuaternionBase)(void);
+
+  static FLOATNAME(LQuaternionBase) pure_imaginary(const FLOATNAME(LVector3) &);
+
+  INLINE FLOATNAME(LQuaternionBase)& operator =(const FLOATNAME(LQuaternionBase) &);
+  INLINE bool operator ==(const FLOATNAME(LQuaternionBase) &) const;
+  INLINE bool operator !=(const FLOATNAME(LQuaternionBase) &) const;
+
+  INLINE FLOATNAME(LQuaternionBase) operator *(const FLOATNAME(LQuaternionBase) &);
+  INLINE FLOATNAME(LQuaternionBase)& operator *=(const FLOATNAME(LQuaternionBase) &);
+
+  INLINE FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &);
+  INLINE FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &);
+
+  INLINE bool almost_equal(const FLOATNAME(LQuaternionBase) &, FLOATTYPE1) const;
+  INLINE bool almost_equal(const FLOATNAME(LQuaternionBase) &) const;
+
+  INLINE void output(ostream&) const;
+
+  INLINE void set(FLOATTYPE1, FLOATTYPE1, FLOATTYPE1, FLOATTYPE1);
+
+  void set(const FLOATNAME(LMatrix3) &m);
+  INLINE void set(const FLOATNAME(LMatrix4) &m);
+
+  INLINE void extract_to_matrix(FLOATNAME(LMatrix3) &m) const;
+  INLINE void extract_to_matrix(FLOATNAME(LMatrix4) &m) const;
+
+  INLINE void set_hpr(const FLOATNAME(LVecBase3) &hpr);
+  INLINE FLOATNAME(LVecBase3) get_hpr() const;
+
+  INLINE FLOATTYPE1 get_r(void) const;
+  INLINE FLOATTYPE1 get_i(void) const;
+  INLINE FLOATTYPE1 get_j(void) const;
+  INLINE FLOATTYPE1 get_k(void) const;
+
+  INLINE void set_r(FLOATTYPE1 r);
+  INLINE void set_i(FLOATTYPE1 i);
+  INLINE void set_j(FLOATTYPE1 j);
+  INLINE void set_k(FLOATTYPE1 k);
+
+  INLINE void normalize(void);
+
+  static const FLOATNAME(LQuaternionBase) &ident_quat(void);
+
+private:
+  FLOATTYPE1 _r, _i, _j, _k;
+public:
+  static TypeHandle get_class_type(void) {
+    return _type_handle;
+  }
+  static void init_type(void);
+private:
+  static TypeHandle _type_handle;
+};
+
+
+INLINE ostream& operator<<(ostream& os, const FLOATNAME(LQuaternionBase)& q) {
+  q.output(os);
+  return os;
+}
+
+BEGIN_PUBLISH
+INLINE FLOATNAME(LMatrix3)
+operator * (const FLOATNAME(LMatrix3) &m, const FLOATNAME(LQuaternionBase) &q);
+INLINE FLOATNAME(LMatrix4)
+operator * (const FLOATNAME(LMatrix4) &m, const FLOATNAME(LQuaternionBase) &q);
+END_PUBLISH
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Default Constructor
+//     Function: FLOATNAME(LQuaternionBase)::Default Constructor
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LQuaternionBase<NumType>::
-LQuaternionBase(void) {
+
+INLINE FLOATNAME(LQuaternionBase)::
+FLOATNAME(LQuaternionBase)(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Copy Constructor
+//     Function: FLOATNAME(LQuaternionBase)::Copy Constructor
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LQuaternionBase<NumType>::
-LQuaternionBase(const LQuaternionBase<NumType>& c) : 
+
+INLINE FLOATNAME(LQuaternionBase)::
+FLOATNAME(LQuaternionBase)(const FLOATNAME(LQuaternionBase)& c) : 
   _r(c._r), _i(c._i), _j(c._j), _k(c._k) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Constructor
+//     Function: FLOATNAME(LQuaternionBase)::Constructor
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LQuaternionBase<NumType>::
-LQuaternionBase(NumType r, NumType i, NumType j, NumType k) {
+
+INLINE FLOATNAME(LQuaternionBase)::
+FLOATNAME(LQuaternionBase)(FLOATTYPE1 r, FLOATTYPE1 i, FLOATTYPE1 j, FLOATTYPE1 k) {
   set(r, i, j, k);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Destructor
-//       Access: public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-LQuaternionBase<NumType>::
-~LQuaternionBase() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::pure_imaginary_quat
-//       Access: public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-LQuaternionBase<NumType> LQuaternionBase<NumType>::
-pure_imaginary(const LVector3<NumType> &v) {
-  return LQuaternionBase<NumType>(0, v[0], v[1], v[2]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::ident_quat
-//       Access: public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-const LQuaternionBase<NumType> &LQuaternionBase<NumType>::
-ident_quat(void) {
-  static LQuaternionBase<NumType> q(1, 0, 0, 0);
-  return q;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::set
+//     Function: FLOATNAME(LQuaternionBase)::set
 //       Access: public
 //  Description: assignment
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
-set(NumType r, NumType i, NumType j, NumType k) {
+
+INLINE void FLOATNAME(LQuaternionBase)::
+set(FLOATTYPE1 r, FLOATTYPE1 i, FLOATTYPE1 j, FLOATTYPE1 k) {
   _r = r;
   _i = i;
   _j = j;
@@ -86,13 +131,13 @@ set(NumType r, NumType i, NumType j, NumType k) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Assignment Operator
+//     Function: FLOATNAME(LQuaternionBase)::Assignment Operator
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LQuaternionBase<NumType>& LQuaternionBase<NumType>::
-operator =(const LQuaternionBase<NumType>& c) {
+
+INLINE FLOATNAME(LQuaternionBase)& FLOATNAME(LQuaternionBase)::
+operator =(const FLOATNAME(LQuaternionBase)& c) {
   _r = c._r;
   _i = c._i;
   _j = c._j;
@@ -102,13 +147,13 @@ operator =(const LQuaternionBase<NumType>& c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Equality Operator
+//     Function: FLOATNAME(LQuaternionBase)::Equality Operator
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE bool LQuaternionBase<NumType>::
-operator ==(const LQuaternionBase<NumType>& c) const {
+
+INLINE bool FLOATNAME(LQuaternionBase)::
+operator ==(const FLOATNAME(LQuaternionBase)& c) const {
   return (_r == c._r &&
 	  _i == c._i &&
 	  _j == c._j &&
@@ -116,81 +161,81 @@ operator ==(const LQuaternionBase<NumType>& c) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Inequality Operator
+//     Function: FLOATNAME(LQuaternionBase)::Inequality Operator
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE bool LQuaternionBase<NumType>::
-operator !=(const LQuaternionBase<NumType>& c) const {
+
+INLINE bool FLOATNAME(LQuaternionBase)::
+operator !=(const FLOATNAME(LQuaternionBase)& c) const {
   return !operator==(c);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::multiply
+//     Function: FLOATNAME(LQuaternionBase)::multiply
 //       Access: protected
 //  Description: actual multiply call (non virtual)
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LQuaternionBase<NumType> LQuaternionBase<NumType>::
-multiply(const LQuaternionBase<NumType>& rhs) const {
-  NumType r = (_r * rhs._r) - (_i * rhs._i) - (_j * rhs._j) - (_k * rhs._k);
-  NumType i = (_i * rhs._r) + (_r * rhs._i) - (_k * rhs._j) + (_j * rhs._k);
-  NumType j = (_j * rhs._r) + (_k * rhs._i) + (_r * rhs._j) - (_i * rhs._k);
-  NumType k = (_k * rhs._r) - (_j * rhs._i) + (_i * rhs._j) + (_r * rhs._k);
 
-  return LQuaternionBase<NumType>(r, i , j, k);
+INLINE FLOATNAME(LQuaternionBase) FLOATNAME(LQuaternionBase)::
+multiply(const FLOATNAME(LQuaternionBase)& rhs) const {
+  FLOATTYPE1 r = (_r * rhs._r) - (_i * rhs._i) - (_j * rhs._j) - (_k * rhs._k);
+  FLOATTYPE1 i = (_i * rhs._r) + (_r * rhs._i) - (_k * rhs._j) + (_j * rhs._k);
+  FLOATTYPE1 j = (_j * rhs._r) + (_k * rhs._i) + (_r * rhs._j) - (_i * rhs._k);
+  FLOATTYPE1 k = (_k * rhs._r) - (_j * rhs._i) + (_i * rhs._j) + (_r * rhs._k);
+
+  return FLOATNAME(LQuaternionBase)(r, i , j, k);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Multiply Operator
+//     Function: FLOATNAME(LQuaternionBase)::Multiply Operator
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LQuaternionBase<NumType> LQuaternionBase<NumType>::
-operator *(const LQuaternionBase<NumType>& c) {
+
+INLINE FLOATNAME(LQuaternionBase) FLOATNAME(LQuaternionBase)::
+operator *(const FLOATNAME(LQuaternionBase)& c) {
   return multiply(c);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Multiply Assignment Operator
+//     Function: FLOATNAME(LQuaternionBase)::Multiply Assignment Operator
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LQuaternionBase<NumType>& LQuaternionBase<NumType>::
-operator *=(const LQuaternionBase<NumType>& c) {
+
+INLINE FLOATNAME(LQuaternionBase)& FLOATNAME(LQuaternionBase)::
+operator *=(const FLOATNAME(LQuaternionBase)& c) {
   (*this) = operator*(c);
   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Multiply Operator
+//     Function: FLOATNAME(LQuaternionBase)::Multiply Operator
 //       Access: public
 //  Description: Quat * Matrix = matrix
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LMatrix3<NumType> LQuaternionBase<NumType>::
-operator *(const LMatrix3<NumType> &m) {  
-  LMatrix3<NumType> result;
+
+INLINE FLOATNAME(LMatrix3) FLOATNAME(LQuaternionBase)::
+operator *(const FLOATNAME(LMatrix3) &m) {  
+  FLOATNAME(LMatrix3) result;
   extract_to_matrix(result);
   return result * m;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::Multiply Operator
+//     Function: FLOATNAME(LQuaternionBase)::Multiply Operator
 //       Access: public
 //  Description: Quat * Matrix = matrix
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LMatrix4<NumType> LQuaternionBase<NumType>::
-operator *(const LMatrix4<NumType> &m) {
-  LMatrix3<NumType> m_upper_3 = m.get_upper_3();
-  LMatrix3<NumType> this_quat;
+
+INLINE FLOATNAME(LMatrix4) FLOATNAME(LQuaternionBase)::
+operator *(const FLOATNAME(LMatrix4) &m) {
+  FLOATNAME(LMatrix3) m_upper_3 = m.get_upper_3();
+  FLOATNAME(LMatrix3) this_quat;
   extract_to_matrix(this_quat);
 
-  LMatrix4<NumType> result;
+  FLOATNAME(LMatrix4) result;
   result.set_upper_3(this_quat * m_upper_3);
   result.set_row(3, m.get_row(3));
   result.set_col(3, m.get_col(3));
@@ -199,14 +244,14 @@ operator *(const LMatrix4<NumType> &m) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::almost_equal
+//     Function: FLOATNAME(LQuaternionBase)::almost_equal
 //       Access: public
 //  Description: Returns true if two quaternions are memberwise equal
 //               within a specified tolerance.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE bool LQuaternionBase<NumType>::
-almost_equal(const LQuaternionBase<NumType>& c, NumType threshold) const {
+
+INLINE bool FLOATNAME(LQuaternionBase)::
+almost_equal(const FLOATNAME(LQuaternionBase)& c, FLOATTYPE1 threshold) const {
   return (IS_THRESHOLD_EQUAL(_r, c._r, threshold) &&
 	  IS_THRESHOLD_EQUAL(_i, c._i, threshold) &&
 	  IS_THRESHOLD_EQUAL(_j, c._j, threshold) &&
@@ -214,24 +259,24 @@ almost_equal(const LQuaternionBase<NumType>& c, NumType threshold) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::almost_equal
+//     Function: FLOATNAME(LQuaternionBase)::almost_equal
 //       Access: public
 //  Description: Returns true if two quaternions are memberwise equal
 //               within a default tolerance based on the numeric type.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE bool LQuaternionBase<NumType>::
-almost_equal(const LQuaternionBase<NumType>& c) const {
-  return almost_equal(c, NEARLY_ZERO(NumType));
+
+INLINE bool FLOATNAME(LQuaternionBase)::
+almost_equal(const FLOATNAME(LQuaternionBase)& c) const {
+  return almost_equal(c, NEARLY_ZERO(FLOATTYPE1));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::output
+//     Function: FLOATNAME(LQuaternionBase)::output
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
+
+INLINE void FLOATNAME(LQuaternionBase)::
 output(ostream& os) const {
   os << MAYBE_ZERO(_r) << " + "
      << MAYBE_ZERO(_i) << "i + "
@@ -240,102 +285,102 @@ output(ostream& os) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::get_r
+//     Function: FLOATNAME(LQuaternionBase)::get_r
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE NumType LQuaternionBase<NumType>::
+
+INLINE FLOATTYPE1 FLOATNAME(LQuaternionBase)::
 get_r(void) const {
   return _r;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::get_i
+//     Function: FLOATNAME(LQuaternionBase)::get_i
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE NumType LQuaternionBase<NumType>::
+
+INLINE FLOATTYPE1 FLOATNAME(LQuaternionBase)::
 get_i(void) const {
   return _i;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::get_j
+//     Function: FLOATNAME(LQuaternionBase)::get_j
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE NumType LQuaternionBase<NumType>::
+
+INLINE FLOATTYPE1 FLOATNAME(LQuaternionBase)::
 get_j(void) const {
   return _j;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::get_k
+//     Function: FLOATNAME(LQuaternionBase)::get_k
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE NumType LQuaternionBase<NumType>::
+
+INLINE FLOATTYPE1 FLOATNAME(LQuaternionBase)::
 get_k(void) const {
   return _k;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::set_r
+//     Function: FLOATNAME(LQuaternionBase)::set_r
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
-set_r(NumType r) {
+
+INLINE void FLOATNAME(LQuaternionBase)::
+set_r(FLOATTYPE1 r) {
   _r = r;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::set_i
+//     Function: FLOATNAME(LQuaternionBase)::set_i
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
-set_i(NumType i) {
+
+INLINE void FLOATNAME(LQuaternionBase)::
+set_i(FLOATTYPE1 i) {
   _i = i;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::set_j
+//     Function: FLOATNAME(LQuaternionBase)::set_j
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
-set_j(NumType j) {
+
+INLINE void FLOATNAME(LQuaternionBase)::
+set_j(FLOATTYPE1 j) {
   _j = j;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::set_k
+//     Function: FLOATNAME(LQuaternionBase)::set_k
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
-set_k(NumType k) {
+
+INLINE void FLOATNAME(LQuaternionBase)::
+set_k(FLOATTYPE1 k) {
   _k = k;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::normalize
+//     Function: FLOATNAME(LQuaternionBase)::normalize
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
+
+INLINE void FLOATNAME(LQuaternionBase)::
 normalize(void) {
-  NumType l = csqrt((_r*_r)+(_i*_i)+(_j*_j)+(_k*_k));
+  FLOATTYPE1 l = csqrt((_r*_r)+(_i*_i)+(_j*_j)+(_k*_k));
 
   if (l == 0.0) {
     _r = 0.;
@@ -354,79 +399,11 @@ normalize(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: set
 //       Access: public
-//  Description: Do-While Jones.
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-void LQuaternionBase<NumType>::
-set(const LMatrix3<NumType> &m) {
-  NumType m00 = m.get_cell(0, 0);
-  NumType m01 = m.get_cell(0, 1);
-  NumType m02 = m.get_cell(0, 2);
-  NumType m10 = m.get_cell(1, 0);
-  NumType m11 = m.get_cell(1, 1);
-  NumType m12 = m.get_cell(1, 2);
-  NumType m20 = m.get_cell(2, 0);
-  NumType m21 = m.get_cell(2, 1);
-  NumType m22 = m.get_cell(2, 2);
-
-  NumType T = m00 + m11 + m22 + 1.;
-
-  if (T > 0.) {
-    // the easy case
-    NumType S = 0.5 / csqrt(T);
-    _r = 0.25 / S;
-    _i = (m21 - m12) * S;
-    _j = (m02 - m20) * S;
-    _k = (m10 - m01) * S;
-  } else {
-    // figure out which column to take as root
-    int c = 0;
-    if (cabs(m00) > cabs(m11)) {
-      if (cabs(m00) > cabs(m22))
-	c = 0;
-      else
-	c = 2;
-    } else if (cabs(m11) > cabs(m22))
-      c = 1;
-    else
-      c = 2;
-
-    NumType S;
-
-    switch (c) {
-    case 0:
-      S = csqrt(1. + m00 - m11 - m22) * 2.;
-      _r = (m12 + m21) / S;
-      _i = 0.5 / S;
-      _j = (m01 + m10) / S;
-      _k = (m02 + m20) / S;
-      break;
-    case 1:
-      S = csqrt(1. + m11 - m00 - m22) * 2.;
-      _r = (m02 + m20) / S;
-      _i = (m01 + m10) / S;
-      _j = 0.5 / S;
-      _k = (m12 + m21) / S;
-      break;
-    case 2:
-      S = csqrt(1. + m22 - m00 - m11) * 2.;
-      _r = (m01 + m10) / S;
-      _i = (m02 + m20) / S;
-      _j = (m12 + m21) / S;
-      _k = 0.5 / S;
-      break;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: set
-//       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
-set(const LMatrix4<NumType> &m) {
+
+INLINE void FLOATNAME(LQuaternionBase)::
+set(const FLOATNAME(LMatrix4) &m) {
   set(m.get_upper_3());
 }
 
@@ -435,19 +412,19 @@ set(const LMatrix4<NumType> &m) {
 //       Access: public
 //  Description: Do-While Jones paper from cary.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-void LQuaternionBase<NumType>::
-extract_to_matrix(LMatrix3<NumType> &m) const {
-  NumType N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
-  NumType s = (N == 0.) ? 0. : (2. / N);
-  NumType xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
+
+INLINE void FLOATNAME(LQuaternionBase)::
+extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
+  FLOATTYPE1 N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
+  FLOATTYPE1 s = (N == 0.) ? 0. : (2. / N);
+  FLOATTYPE1 xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
   xs = _i * s;   ys = _j * s;   zs = _k * s;
   wx = _r * xs;  wy = _r * ys;  wz = _r * zs;
   xx = _i * xs;  xy = _i * ys;  xz = _i * zs;
   yy = _j * ys;  yz = _j * zs;  zz = _k * zs;
 
-  m = LMatrix3<NumType>((1. - (yy + zz)), (xy - wz), (xz + wy),
+  m = FLOATNAME(LMatrix3)((1. - (yy + zz)), (xy - wz), (xz + wy),
 			(xy + wz), (1. - (xx + zz)), (yz - wx),
 			(xz - wy), (yz + wx), (1. - (xx + yy)));
 }
@@ -457,19 +434,19 @@ extract_to_matrix(LMatrix3<NumType> &m) const {
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-void LQuaternionBase<NumType>::
-extract_to_matrix(LMatrix4<NumType> &m) const {
-  NumType N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
-  NumType s = (N == 0.) ? 0. : (2. / N);
-  NumType xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
+
+INLINE void FLOATNAME(LQuaternionBase)::
+extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
+  FLOATTYPE1 N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
+  FLOATTYPE1 s = (N == 0.) ? 0. : (2. / N);
+  FLOATTYPE1 xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
   xs = _i * s;   ys = _j * s;   zs = _k * s;
   wx = _r * xs;  wy = _r * ys;  wz = _r * zs;
   xx = _i * xs;  xy = _i * ys;  xz = _i * zs;
   yy = _j * ys;  yz = _j * zs;  zz = _k * zs;
 
-  m = LMatrix4<NumType>((1. - (yy + zz)), (xy - wz), (xz + wy), 0.,
+  m = FLOATNAME(LMatrix4)((1. - (yy + zz)), (xy - wz), (xz + wy), 0.,
 			(xy + wz), (1. - (xx + zz)), (yz - wx), 0.,
 			(xz - wy), (yz + wx), (1. - (xx + yy)), 0.,
 			0., 0., 0., 1.);
@@ -482,23 +459,23 @@ extract_to_matrix(LMatrix4<NumType> &m) const {
 //               is equivalent to these Euler angles.
 //               (from Real-time Rendering, p.49)
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE void LQuaternionBase<NumType>::
-set_hpr(const LVecBase3<NumType> &hpr) {
-  LQuaternionBase<NumType> quat_h, quat_p, quat_r;
 
-  LVector3<NumType> v = LVector3<NumType>::up();
-  NumType a = deg_2_rad(hpr[0] * 0.5);
-  NumType s,c;
+INLINE void FLOATNAME(LQuaternionBase)::
+set_hpr(const FLOATNAME(LVecBase3) &hpr) {
+  FLOATNAME(LQuaternionBase) quat_h, quat_p, quat_r;
+
+  FLOATNAME(LVector3) v = FLOATNAME(LVector3)::up();
+  FLOATTYPE1 a = deg_2_rad(hpr[0] * 0.5);
+  FLOATTYPE1 s,c;
 
   csincos(a,&s,&c);
   quat_h.set(c, v[0] * s, v[1] * s, v[2] * s);
-  v = LVector3<NumType>::right();
+  v = FLOATNAME(LVector3)::right();
   a = deg_2_rad(hpr[1] * 0.5);
   csincos(a,&s,&c);
   s = csin(a);
   quat_p.set(c, v[0] * s, v[1] * s, v[2] * s);
-  v = LVector3<NumType>::forward();
+  v = FLOATNAME(LVector3)::forward();
   a = deg_2_rad(hpr[2] * 0.5);
   csincos(a,&s,&c);
   quat_r.set(c, v[0] * s, v[1] * s, v[2] * s);
@@ -512,14 +489,14 @@ set_hpr(const LVecBase3<NumType> &hpr) {
 //  Description: Extracts the equivalent Euler angles from the unit
 //               quaternion.
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-INLINE LVecBase3<NumType> LQuaternionBase<NumType>::
+
+INLINE FLOATNAME(LVecBase3) FLOATNAME(LQuaternionBase)::
 get_hpr() const {
-  NumType heading, pitch, roll;
-  NumType N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
-  NumType s = (N == 0.) ? 0. : (2. / N);
-  NumType xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
-  NumType cr, sr, cp, sp, ch, sh;
+  FLOATTYPE1 heading, pitch, roll;
+  FLOATTYPE1 N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
+  FLOATTYPE1 s = (N == 0.) ? 0. : (2. / N);
+  FLOATTYPE1 xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
+  FLOATTYPE1 cr, sr, cp, sp, ch, sh;
 
   xs = _i * s;   ys = _j * s;   zs = _k * s;
   wx = _r * xs;  wy = _r * ys;  wz = _r * zs;
@@ -555,7 +532,75 @@ get_hpr() const {
   heading = rad_2_deg(catan2(sh, ch));
   pitch = rad_2_deg(catan2(sp, cp));
 
-  return LVecBase3<NumType>(heading, pitch, roll);
+  return FLOATNAME(LVecBase3)(heading, pitch, roll);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set
+//       Access: public
+//  Description: Do-While Jones.
+////////////////////////////////////////////////////////////////////
+
+INLINE void FLOATNAME(LQuaternionBase)::
+set(const FLOATNAME(LMatrix3) &m) {
+  FLOATTYPE1 m00 = m.get_cell(0, 0);
+  FLOATTYPE1 m01 = m.get_cell(0, 1);
+  FLOATTYPE1 m02 = m.get_cell(0, 2);
+  FLOATTYPE1 m10 = m.get_cell(1, 0);
+  FLOATTYPE1 m11 = m.get_cell(1, 1);
+  FLOATTYPE1 m12 = m.get_cell(1, 2);
+  FLOATTYPE1 m20 = m.get_cell(2, 0);
+  FLOATTYPE1 m21 = m.get_cell(2, 1);
+  FLOATTYPE1 m22 = m.get_cell(2, 2);
+
+  FLOATTYPE1 T = m00 + m11 + m22 + 1.;
+
+  if (T > 0.) {
+    // the easy case
+    FLOATTYPE1 S = 0.5 / csqrt(T);
+    _r = 0.25 / S;
+    _i = (m21 - m12) * S;
+    _j = (m02 - m20) * S;
+    _k = (m10 - m01) * S;
+  } else {
+    // figure out which column to take as root
+    int c = 0;
+    if (cabs(m00) > cabs(m11)) {
+      if (cabs(m00) > cabs(m22))
+	c = 0;
+      else
+	c = 2;
+    } else if (cabs(m11) > cabs(m22))
+      c = 1;
+    else
+      c = 2;
+
+    FLOATTYPE1 S;
+
+    switch (c) {
+    case 0:
+      S = csqrt(1. + m00 - m11 - m22) * 2.;
+      _r = (m12 + m21) / S;
+      _i = 0.5 / S;
+      _j = (m01 + m10) / S;
+      _k = (m02 + m20) / S;
+      break;
+    case 1:
+      S = csqrt(1. + m11 - m00 - m22) * 2.;
+      _r = (m02 + m20) / S;
+      _i = (m01 + m10) / S;
+      _j = 0.5 / S;
+      _k = (m12 + m21) / S;
+      break;
+    case 2:
+      S = csqrt(1. + m22 - m00 - m11) * 2.;
+      _r = (m01 + m10) / S;
+      _i = (m02 + m20) / S;
+      _j = (m12 + m21) / S;
+      _k = 0.5 / S;
+      break;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -563,10 +608,10 @@ get_hpr() const {
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-LMatrix3<NumType> operator *(const LMatrix3<NumType> &m,
-			     const LQuaternionBase<NumType> &q) {
-  LMatrix3<NumType> q_matrix;
+
+FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &m,
+			     const FLOATNAME(LQuaternionBase) &q) {
+  FLOATNAME(LMatrix3) q_matrix;
   q.extract_to_matrix(q_matrix);
 
   return m * q_matrix;
@@ -577,15 +622,15 @@ LMatrix3<NumType> operator *(const LMatrix3<NumType> &m,
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-template<class NumType>
-LMatrix4<NumType> operator *(const LMatrix4<NumType> &m,
-			     const LQuaternionBase<NumType> &q) {
-  LMatrix4<NumType> q_matrix;
+
+FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &m,
+			     const FLOATNAME(LQuaternionBase) &q) {
+  FLOATNAME(LMatrix4) q_matrix;
   q.extract_to_matrix(q_matrix);
 
   // preserve the homogeneous coords and the translate
-  LVector4<NumType> m_row3 = m.get_row(3);
-  LVector4<NumType> m_col3 = m.get_col(3);
+  FLOATNAME(LVector4) m_row3 = m.get_row(3);
+  FLOATNAME(LVector4) m_col3 = m.get_col(3);
 
   q_matrix = m * q_matrix;
   q_matrix.set_row(3, m_row3);
@@ -594,30 +639,3 @@ LMatrix4<NumType> operator *(const LMatrix4<NumType> &m,
   return q_matrix;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionBase::init_type
-//       Access: public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class NumType>
-void LQuaternionBase<NumType>::
-init_type(void) {
-  if (_type_handle == TypeHandle::none()) {
-    do_init_type(NumType);
-    string name = "LQuaternionBase<" + get_type_handle(NumType).get_name()
-                  + ">";
-    register_type(_type_handle, name);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: lcast_to
-//  Description: Converts a quaternion from one numeric representation
-//               to another one.  This is usually invoked using the
-//               macro LCAST.
-////////////////////////////////////////////////////////////////////
-template<class NumType, class NumType2>
-INLINE LQuaternionBase<NumType2>
-lcast_to(NumType2 *, const LQuaternionBase<NumType>& c) {
-  return LQuaternionBase<NumType2>(c.get_r(), c.get_i(), c.get_j(), c.get_k());
-}

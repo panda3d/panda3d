@@ -1,2 +1,4 @@
-forcetype Frustum<float>
-forcetype Frustum<double>
+forcetype Frustumf
+renametype Frustumf Frustumf
+forcetype Frustumd
+renametype Frustumd Frustumd

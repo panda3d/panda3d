@@ -1067,7 +1067,7 @@ draw_sprite(const GeomSprite *geom) {
     source_vert = geom->get_next_vertex(vi);
 
     // this mult converts to y-up cameraspace.
-    cameraspace_vert = modelview_mat * source_vert;
+    cameraspace_vert = source_vert * modelview_mat;
 
   #ifdef DO_CHARLES_PROJECTION_MAT
     float x,y,z;
@@ -1137,13 +1137,12 @@ draw_sprite(const GeomSprite *geom) {
     theta = cur_image._theta;
 
       // create the rotated points
-      LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) * 
-    LMatrix3f::scale_mat(scaled_width, scaled_height);
+      LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) * LMatrix3f::scale_mat(scaled_width, scaled_height);
 
-      ur = (xform_mat * LVector3f(1, 1, 0)) + cur_image._v;
-      ul = (xform_mat * LVector3f(-1, 1, 0)) + cur_image._v;
-      lr = (xform_mat * LVector3f(1, -1, 0)) + cur_image._v;
-      ll = (xform_mat * LVector3f(-1, -1, 0)) + cur_image._v;
+	  ur = (LVector3f( 1,  1, 0) * xform_mat) + cur_image._v;
+	  ul = (LVector3f(-1,  1, 0) * xform_mat) + cur_image._v;
+	  lr = (LVector3f( 1, -1, 0) * xform_mat) + cur_image._v;
+	  ll = (LVector3f(-1, -1, 0) * xform_mat) + cur_image._v;
     }
     else {
       // create the normal points

@@ -98,7 +98,7 @@ child_integrate(Physical *physical,
       force_node = cur_force->get_force_node();
 
       // now we go from force space to our object's space.
-      f = matrices[index++] * cur_force->get_vector(current_object);
+      f = cur_force->get_vector(current_object) * matrices[index++];
 
       // tally it into the accum vectors.
       if (cur_force->get_mass_dependent() == true)
@@ -119,7 +119,7 @@ child_integrate(Physical *physical,
       force_node = cur_force->get_force_node();
 
       // go from force space to object space
-      f = matrices[index++] * cur_force->get_vector(current_object);
+      f = cur_force->get_vector(current_object) * matrices[index++];
 
       // tally it into the accum vectors
       if (cur_force->get_mass_dependent() == true)

@@ -286,7 +286,7 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
     bprim.set_normal(LCAST(float, egg_prim->get_normal() * mat));
   }
   if (egg_prim->has_color() && !egg_false_color) {
-    bprim.set_color(LCAST(float, egg_prim->get_color()));
+    bprim.set_color(egg_prim->get_color());
   }
 
   bool has_vert_color = true;
@@ -299,7 +299,7 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
       bvert.set_normal(LCAST(float, egg_vert->get_normal() * mat));
     }
     if (egg_vert->has_color() && !egg_false_color) {
-      bvert.set_color(LCAST(float, egg_vert->get_color()));
+      bvert.set_color(egg_vert->get_color());
     } else {
       // If any vertex doesn't have a color, we can't use any of the
       // vertex colors.

@@ -91,7 +91,7 @@ child_integrate(Physical *physical,
       force_node = cur_force->get_force_node();
 
       // now we go from force space to our object's space.
-      f = matrices[index++] * cur_force->get_vector(current_object);
+      f = cur_force->get_vector(current_object) * matrices[index++];
 
       // tally it into the accum vector, applying the inertial tensor.
       accum_vec += f;
@@ -109,7 +109,7 @@ child_integrate(Physical *physical,
       force_node = cur_force->get_force_node();
 
       // go from force space to object space
-      f = matrices[index++] * cur_force->get_vector(current_object);
+      f = cur_force->get_vector(current_object) * matrices[index++];
 
       // tally it into the accum vectors				  
       accum_vec += f;
@@ -118,7 +118,7 @@ child_integrate(Physical *physical,
     // apply the accumulated torque vector to the object's inertial tensor.
     // this matrix represents how much force the object 'wants' applied to it
     // in any direction, among other things.
-    accum_vec = current_object->get_inertial_tensor() * accum_vec;
+    accum_vec =  accum_vec * current_object->get_inertial_tensor();
 
     // derive this into the angular velocity vector.
     LVector3f rot_vec = current_object->get_rotation();
