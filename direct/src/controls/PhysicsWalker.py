@@ -215,7 +215,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     def setupPhysics(self, avatarNodePath):
         assert(self.debugPrint("setupPhysics()"))
         # Connect to Physics Manager:
-        self.actorNode=ActorNode("physicsActor")
+        self.actorNode=ActorNode("PW physicsActor")
         self.actorNode.getPhysicsObject().setOriented(1)
         self.actorNode.getPhysical(0).setViscosity(0.1)
         physicsActor=NodePath(self.actorNode)
