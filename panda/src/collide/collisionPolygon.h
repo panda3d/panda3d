@@ -22,8 +22,11 @@
 #include "pandabase.h"
 
 #include "collisionPlane.h"
+#include "clipPlaneAttrib.h"
 
 #include "vector_LPoint2f.h"
+
+class GeomNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionPolygon
@@ -55,6 +58,8 @@ public:
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
+  virtual PT(PandaNode) get_viz(const CullTraverserData &data) const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
@@ -71,15 +76,26 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  bool is_inside(const LPoint2f &p) const;
+  typedef vector_LPoint2f Points;
+
+  void draw_polygon(GeomNode *geom_node, const Points &points) const;
+
+  bool point_is_inside(const LPoint2f &p, const Points &points) const;
+  bool circle_is_inside(const LPoint2f &center, float radius,
+                        const CollisionPolygon::Points &points,
+                        const LPoint2f &median) const;
   bool is_concave() const;
 
   void setup_points(const LPoint3f *begin, const LPoint3f *end);
-  LPoint2f to_2d(const LPoint3f &point3d) const;
-  LPoint3f to_3d(const LPoint2f &point2d) const;
+  LPoint2f to_2d(const LVecBase3f &point3d) const;
+  LPoint3f to_3d(const LVecBase2f &point2d) const;
+
+  bool clip_polygon(Points &new_points, const Points &source_points,
+                    const Planef &plane) const;
+  bool apply_clip_plane(Points &new_points, const ClipPlaneAttrib *cpa,
+                        const TransformState *net_transform) const;
 
 private:
-  typedef vector_LPoint2f Points;
   Points _points;
   LPoint2f _median;
 

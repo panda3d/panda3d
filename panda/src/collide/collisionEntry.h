@@ -32,6 +32,7 @@
 #include "pointerTo.h"
 #include "pandaNode.h"
 #include "nodePath.h"
+#include "clipPlaneAttrib.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionEntry
@@ -111,12 +112,12 @@ public:
   INLINE const LMatrix4f &get_inv_wrt_mat() const;
   INLINE const LMatrix4f &get_wrt_prev_mat() const;
 
-
+  INLINE const ClipPlaneAttrib *get_into_clip_planes() const;
 
 private:
   INLINE void test_intersection(CollisionHandler *record, 
                                 const CollisionTraverser *trav) const;
-  void compute_from_surface_normal();
+  void check_clip_planes();
 
   CPT(CollisionSolid) _from;
   CPT(CollisionSolid) _into;
@@ -125,12 +126,14 @@ private:
   PT(PandaNode) _into_node;
   NodePath _from_node_path;
   NodePath _into_node_path;
+  CPT(ClipPlaneAttrib) _into_clip_planes;
 
   enum Flags {
     F_has_surface_point       = 0x0001,
     F_has_surface_normal      = 0x0002,
     F_has_interior_point      = 0x0004,
     F_respect_prev_transform  = 0x0008,
+    F_checked_clip_planes     = 0x0010,
   };
 
   int _flags;

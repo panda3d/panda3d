@@ -458,6 +458,21 @@ get_wrt_prev_mat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_into_clip_planes
+//       Access: Public
+//  Description: Returns the ClipPlaneAttrib, if any, that is applied
+//               to the into_node_path, or NULL if there is no clip
+//               plane in effect.
+////////////////////////////////////////////////////////////////////
+INLINE const ClipPlaneAttrib *CollisionEntry::
+get_into_clip_planes() const {
+  if ((_flags & F_checked_clip_planes) == 0) {
+    ((CollisionEntry *)this)->check_clip_planes();
+  }
+  return _into_clip_planes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::test_intersection
 //       Access: Private
 //  Description: This is intended to be called only by the

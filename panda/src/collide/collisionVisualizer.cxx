@@ -124,26 +124,31 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     const VizInfo &viz_info = (*di).second;
 
     CullTraverserData xform_data(data);
-
-    // We don't want to inherit the transform state!  We ignore
+    
+    // We don't want to inherit the transform from above!  We ignore
     // whatever transforms were above the CollisionVisualizer node; it
     // always renders its objects according to their appropriate net
     // transform.
     xform_data._net_transform = TransformState::make_identity();
     xform_data._render_transform = trav->get_render_transform();
-    xform_data.apply_transform_and_state(trav, net_transform,
+    xform_data.apply_transform_and_state(trav, net_transform, 
                                          RenderState::make_empty(),
                                          RenderEffects::make_empty());
 
     // Draw all the collision solids.
     Solids::const_iterator si;
     for (si = viz_info._solids.begin(); si != viz_info._solids.end(); ++si) {
+      // Note that we don't preserve the clip plane attribute from the
+      // collision solid.  We always draw the whole polygon (or
+      // whatever) in the CollisionVisualizer.  This is a deliberate
+      // decision; clipping the polygons may obscure many collision
+      // tests that are being made.
       const CollisionSolid *solid = (*si).first;
       const SolidInfo &solid_info = (*si).second;
-      PandaNode *node = solid->get_viz();
-
+      PT(PandaNode) node = solid->get_viz(xform_data);
+        
       CullTraverserData next_data(xform_data, node);
-
+        
       // We don't want to inherit the render state from above for
       // these guys.  Instead, we choose the state according to
       // whether a collision was detected or not.
@@ -152,22 +157,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       } else {
         next_data._state = get_tested_state();
       }
-
+        
       trav->traverse(next_data);
     }
 
     // Now draw all of the detected points.
     if (!viz_info._points.empty()) {
       CPT(RenderState) empty_state = RenderState::make_empty();
-
+        
       PTA_Colorf colors;
       colors.push_back(Colorf(1.0f, 0.0f, 0.0f, 1.0f));
       colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-
+        
       Points::const_iterator pi;
       for (pi = viz_info._points.begin(); pi != viz_info._points.end(); ++pi) {
         const CollisionPoint &point = (*pi);
-
+          
         // Draw a small red sphere at the surface point, and a smaller
         // white sphere at the interior point.
         {
@@ -179,14 +184,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           sphere->set_coords(verts);
           sphere->set_colors(colors, G_PER_PRIM);
           sphere->set_num_prims(1);
-          
+            
           if (point._interior_point != point._surface_point) {
             verts.push_back(point._interior_point);
             verts.push_back(point._interior_point + 
                             LVector3f(0.05f * _viz_scale, 0.0f, 0.0f));
             sphere->set_num_prims(2);
           }
-
+            
           CullableObject *object = 
             new CullableObject(sphere, empty_state, xform_data._render_transform);
           
@@ -212,7 +217,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         }
       }
     }
-
   }
 
   // Now carry on to render our child nodes.
@@ -261,7 +265,10 @@ void CollisionVisualizer::
 collision_tested(const CollisionEntry &entry, bool detected) {
   CollisionRecorder::collision_tested(entry, detected);
 
-  VizInfo &viz_info = _data[entry.get_into_node_path().get_net_transform()];
+  NodePath node_path = entry.get_into_node_path();
+  CPT(TransformState) net_transform = node_path.get_net_transform();
+
+  VizInfo &viz_info = _data[net_transform];
   if (detected) {
     viz_info._solids[entry.get_into()]._detected_count++;
 

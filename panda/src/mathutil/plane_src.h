@@ -18,7 +18,8 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Plane
-// Description :
+// Description : An abstract mathematical description of a plane.  A
+//               plane is defined by the equation Ax + By + Cz + D = 0.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(Plane) {
 PUBLISHED:
@@ -49,6 +50,10 @@ PUBLISHED:
   INLINE_MATHUTIL bool intersects_line(FLOATTYPE &t,
                               const FLOATNAME(LPoint3) &from,
                               const FLOATNAME(LVector3) &delta) const;
+
+  bool intersects_plane(FLOATNAME(LPoint3) &from,
+                        FLOATNAME(LVector3) &delta,
+                        const FLOATNAME(Plane) &other) const;
 
   INLINE_MATHUTIL const FLOATTYPE *get_data() const;
   INLINE_MATHUTIL int get_num_components() const;

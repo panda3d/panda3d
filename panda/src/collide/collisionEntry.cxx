@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionEntry.h"
+#include "dcast.h"
 
 TypeHandle CollisionEntry::_type_handle;
 
@@ -33,6 +34,7 @@ CollisionEntry(const CollisionEntry &copy) :
   _into_node(copy._into_node),
   _from_node_path(copy._from_node_path),
   _into_node_path(copy._into_node_path),
+  _into_clip_planes(copy._into_clip_planes),
   _flags(copy._flags),
   _surface_point(copy._surface_point),
   _surface_normal(copy._surface_normal),
@@ -53,6 +55,7 @@ operator = (const CollisionEntry &copy) {
   _into_node = copy._into_node;
   _from_node_path = copy._from_node_path;
   _into_node_path = copy._into_node_path;
+  _into_clip_planes = copy._into_clip_planes;
   _flags = copy._flags;
   _surface_point = copy._surface_point;
   _surface_normal = copy._surface_normal;
@@ -150,4 +153,20 @@ get_all(const NodePath &space, LPoint3f &surface_point,
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::check_clip_planes
+//       Access: Private
+//  Description: Checks whether the into_node_path has a
+//               ClipPlaneAttrib defined.
+////////////////////////////////////////////////////////////////////
+void CollisionEntry::
+check_clip_planes() {
+  const RenderAttrib *cpa_attrib =
+    _into_node_path.get_net_state()->get_attrib(ClipPlaneAttrib::get_class_type());
+  if (cpa_attrib != (const RenderAttrib *)NULL) {
+    _into_clip_planes = DCAST(ClipPlaneAttrib, cpa_attrib);
+  }
+  _flags |= F_checked_clip_planes;
 }

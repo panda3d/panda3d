@@ -207,13 +207,15 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   Solids::iterator si;
   for (si = _solids.begin(); si != _solids.end(); ++si) {
     CollisionSolid *solid = (*si);
-    PandaNode *node = solid->get_viz();
-    CullTraverserData next_data(data, node);
+    PT(PandaNode) node = solid->get_viz(data);
+    if (node != (PandaNode *)NULL) {
+      CullTraverserData next_data(data, node);
 
-    // We don't want to inherit the render state from above for these
-    // guys.
-    next_data._state = RenderState::make_empty();
-    trav->traverse(next_data);
+      // We don't want to inherit the render state from above for these
+      // guys.
+      next_data._state = RenderState::make_empty();
+      trav->traverse(next_data);
+    }
   }
 
   // Determine the previous frame's position, relative to the
@@ -227,13 +229,15 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
     for (si = _solids.begin(); si != _solids.end(); ++si) {
       CollisionSolid *solid = (*si);
-      PandaNode *node = solid->get_viz();
-      CullTraverserData next_data(data, node);
+      PT(PandaNode) node = solid->get_viz(data);
+      if (node != (PandaNode *)NULL) {
+        CullTraverserData next_data(data, node);
 
-      next_data._render_transform = 
-        next_data._render_transform->compose(transform);
-      next_data._state = get_last_pos_state();
-      trav->traverse(next_data);
+        next_data._render_transform = 
+          next_data._render_transform->compose(transform);
+        next_data._state = get_last_pos_state();
+        trav->traverse(next_data);
+      }
     }
   }
 

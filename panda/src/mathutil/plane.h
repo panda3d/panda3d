@@ -19,12 +19,12 @@
 #ifndef PLANE_H
 #define PLANE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <luse.h>
-#include <indent.h>
-#include <nearly_zero.h>
-#include <cmath.h>
+#include "luse.h"
+#include "indent.h"
+#include "nearly_zero.h"
+#include "cmath.h"
 
 class Datagram;
 class DatagramIterator;

@@ -18,7 +18,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Creates a default plane.  This plane happens to
 //               intersect the origin, perpendicular to the Z axis.
 //               It's not clear how useful a default plane is.
@@ -33,7 +33,7 @@ FLOATNAME(Plane)(void) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
@@ -47,7 +47,7 @@ FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Constructs a plane given three counter-clockwise
 //               points, as seen from the front of the plane (that is,
 //               viewed from the end of the normal vector, looking
@@ -68,7 +68,7 @@ FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Constructs a plane given a surface normal vector and
 //               a point within the plane.
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Constructs a plane given the four terms of the plane
 //               equation.
 ////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ FLOATNAME(Plane)(FLOATTYPE a, FLOATTYPE b, FLOATTYPE c, FLOATTYPE d) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Operator =
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)& FLOATNAME(Plane)::
@@ -114,7 +114,7 @@ operator = (const FLOATNAME(Plane)& p) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Operator * LMatrix3
-//       Access: Public
+//       Access: Published
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
@@ -126,7 +126,7 @@ operator * (const FLOATNAME(LMatrix3) &mat) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Operator * LMatrix4
-//       Access: Public
+//       Access: Published
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
@@ -138,7 +138,7 @@ operator * (const FLOATNAME(LMatrix4) &mat) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::get_normal
-//       Access: Public
+//       Access: Published
 //  Description: Returns the surface normal of the plane.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(LVector3) FLOATNAME(Plane)::
@@ -148,7 +148,7 @@ get_normal() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::dist_to_plane
-//       Access: Public
+//       Access: Published
 //  Description: Returns the straight-line shortest distance from the
 //               point to the plane.  The returned value is positive
 //               if the point is in front of the plane (on the side
@@ -163,7 +163,7 @@ dist_to_plane(const FLOATNAME(LPoint3) &point) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::intersects_line
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the plane intersects the infinite
 //               line passing through points p1 and p2, false if the
 //               line is parallel.  The points p1 and p2 are used only
@@ -185,7 +185,7 @@ intersects_line(FLOATNAME(LPoint3) &intersection_point,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::intersects_line
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of intersects_line() returns a bit more
 //               information about the nature of the intersecting
 //               point.  The line is defined via the parametric
@@ -215,7 +215,7 @@ intersects_line(FLOATTYPE &t,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::get_data
-//       Access: Public
+//       Access: Published
 //  Description: Returns the address of the first of the four data
 //               elements in the plane equation.  The remaining
 //               elements occupy the next positions consecutively in
@@ -228,7 +228,7 @@ get_data() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::get_num_components
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of elements in the plane equation,
 //               four.
 ////////////////////////////////////////////////////////////////////
@@ -239,7 +239,7 @@ get_num_components() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Plane)::
@@ -249,7 +249,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::write
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Plane)::

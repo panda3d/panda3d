@@ -86,14 +86,14 @@ test_intersection(const CollisionEntry &) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::get_viz
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Returns a GeomNode that may be rendered to visualize
 //               the CollisionSolid.  This is used during the cull
 //               traversal to render the CollisionNodes that have been
 //               made visible.
 ////////////////////////////////////////////////////////////////////
-GeomNode *CollisionSolid::
-get_viz() const {
+PT(PandaNode) CollisionSolid::
+get_viz(const CullTraverserData &) const {
   if (_viz_geom_stale) {
     if (_viz_geom == (GeomNode *)NULL) {
       ((CollisionSolid *)this)->_viz_geom = new GeomNode("viz");
@@ -103,7 +103,7 @@ get_viz() const {
     ((CollisionSolid *)this)->fill_viz_geom();
     ((CollisionSolid *)this)->_viz_geom_stale = false;
   }
-  return _viz_geom;
+  return _viz_geom.p();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -51,6 +51,7 @@
   #define TARGET test_mathutil
   #define LOCAL_LIBS \
     mathutil
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_mathutil.cxx

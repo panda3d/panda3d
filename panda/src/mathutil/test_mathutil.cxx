@@ -16,13 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <luse.h>
+#include "luse.h"
 #include "rotate_to.h"
 #include "boundingLine.h"
 #include "boundingSphere.h"
+#include "plane.h"
+
 
 int
 main() {
+  Planef p1(LVector3f(1, 0, 0), LPoint3f(1, 0, 0));
+  Planef p2(LVector3f(0, 0, 1), LPoint3f(1, 0, 0));
+
+  LPoint3f from;
+  LVector3f delta;
+
+  if (p1.intersects_plane(from, delta, p2)) {
+    nout << "intersects, " << from << " to " << delta << "\n";
+  } else {
+    nout << "no intersect\n";
+  }
+
   /*
   LVector3d a(1.0f, 0.0f, 0.0f);
   LVector3d b = normalize(LVector3d(0.5, 0.5, 0.0f));
@@ -43,6 +57,7 @@ main() {
        << " length " << length(a * invert(rot)) << "\n";
   */
 
+  /*
   BoundingLine line(LPoint3f(0, 0, 1), LPoint3f(0, 0, 0));
 
   BoundingSphere s1(LPoint3f(0, 0, 10), 1);
@@ -54,6 +69,7 @@ main() {
   line.contains(&s2);
   line.contains(&s3);
   line.contains(&s4);
+  */
 
   /*
   s1.contains(LPoint3f(0, 0, 1), LPoint3f(0, 0, 0));

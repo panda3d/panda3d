@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::get_reflection_mat
-//       Access: Public
+//       Access: Published
 //  Description: This computes a transform matrix that performs the
 //               perspective transform defined by the frustum,
 //               accordinate to the indicated coordinate system.
@@ -39,7 +39,7 @@ get_reflection_mat(void) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::get_point
-//       Access: Public
+//       Access: Published
 //  Description: Returns an arbitrary point in the plane.  This can be
 //               used along with the normal returned by get_normal()
 //               to reconstruct the plane.
@@ -57,4 +57,43 @@ get_point() const {
     nassertr(_c != 0.0f, FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f));
     return FLOATNAME(LPoint3)(0.0f, 0.0f, -_d / _c);
   }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Plane::intersects_plane
+//       Access: Published
+//  Description: Returns true if the two planes intersect, false if
+//               they do not.  If they do intersect, then from and
+//               delta are filled in with the parametric
+//               representation of the line of intersection: that is,
+//               from is a point on that line, and delta is a vector
+//               showing the direction of the line.
+////////////////////////////////////////////////////////////////////
+bool FLOATNAME(Plane)::
+intersects_plane(FLOATNAME(LPoint3) &from,
+                 FLOATNAME(LVector3) &delta,
+                 const FLOATNAME(Plane) &other) const {
+  FLOATNAME(LVector3) n1 = get_normal();
+  FLOATNAME(LVector3) n2 = other.get_normal();
+
+  // The delta will be the cross product of the planes' normals.
+  delta = cross(n1, n2);
+
+  // If the delta came out to zero, the planes were parallel and do
+  // not intersect.
+  if (delta.almost_equal(FLOATNAME(LVector3)::zero())) {
+    return false;
+  }
+
+  FLOATTYPE n1n1 = dot(n1, n1);
+  FLOATTYPE n2n2 = dot(n2, n2);
+  FLOATTYPE n1n2 = dot(n1, n2);
+ 
+  FLOATTYPE determinant_inv = 1.0f / (n1n1 * n2n2 - n1n2 * n1n2);
+  FLOATTYPE c1 = (other._d * n1n2 - _d * n2n2) * determinant_inv;
+  FLOATTYPE c2 = (_d * n1n2 - other._d * n1n1) * determinant_inv;
+  from = n1 * c1 + n2 * c2;
+
+  return true;
 }

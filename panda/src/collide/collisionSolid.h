@@ -33,6 +33,7 @@ class CollisionEntry;
 class CollisionSphere;
 class GeomNode;
 class CollisionNode;
+class CullTraverserData;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionSolid
@@ -67,7 +68,7 @@ public:
 
   virtual void xform(const LMatrix4f &mat)=0;
 
-  GeomNode *get_viz() const;
+  virtual PT(PandaNode) get_viz(const CullTraverserData &data) const;
 
 PUBLISHED:
   virtual void output(ostream &out) const;

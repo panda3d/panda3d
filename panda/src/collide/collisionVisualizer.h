@@ -23,6 +23,7 @@
 #include "pandaNode.h"
 #include "collisionRecorder.h"
 #include "nodePath.h"
+#include "pmap.h"
 
 #ifdef DO_COLLISION_RECORDING
 
@@ -84,7 +85,7 @@ private:
     Points _points;
   };
 
-  typedef map<CPT(TransformState), VizInfo> Data;
+  typedef pmap<CPT(TransformState), VizInfo> Data;
   Data _data;
 
   float _viz_scale;

@@ -24,6 +24,7 @@
 #include "collisionSegment.h"
 #include "config_collide.h"
 
+#include "cullTraverserData.h"
 #include "boundingSphere.h"
 #include "pointerToArray.h"
 #include "geomNode.h"
@@ -34,6 +35,7 @@
 #include "bamWriter.h"
 #include "geomPolygon.h"
 #include "transformState.h"
+#include "clipPlaneAttrib.h"
 
 #include <algorithm>
 
@@ -184,6 +186,50 @@ xform(const LMatrix4f &mat) {
 LPoint3f CollisionPolygon::
 get_collision_origin() const {
   return to_3d(_median);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::get_viz
+//       Access: Public, Virtual
+//  Description: Returns a GeomNode that may be rendered to visualize
+//               the CollisionSolid.  This is used during the cull
+//               traversal to render the CollisionNodes that have been
+//               made visible.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) CollisionPolygon::
+get_viz(const CullTraverserData &data) const {
+  const RenderAttrib *cpa_attrib =
+    data._state->get_attrib(ClipPlaneAttrib::get_class_type());
+  if (cpa_attrib == (const RenderAttrib *)NULL) {
+    // Fortunately, the polygon is not clipped.  This is the normal,
+    // easy case.
+    return CollisionSolid::get_viz(data);
+  }
+
+  // The polygon is clipped.  We need to render it clipped.  We could
+  // just turn on the ClipPlaneAttrib state and render the full
+  // polygon, letting the hardware do the clipping, but we get fancy
+  // and clip it by hand instead, just to prove that our clipping
+  // algorithm works properly.  This does require some more dynamic
+  // work.
+  const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, cpa_attrib);
+  Points new_points;
+  if (apply_clip_plane(new_points, cpa, data._net_transform)) {
+    // All points are behind the clip plane; just draw the original
+    // polygon.
+    return CollisionSolid::get_viz(data);
+  }
+
+  if (new_points.empty()) {
+    // All points are in front of the clip plane; draw nothing.
+    return NULL;
+  }
+
+  // Draw the clipped polygon.
+  PT(GeomNode) geom_node = new GeomNode("viz");
+  draw_polygon(geom_node, new_points);
+
+  return geom_node.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,56 +389,37 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   LPoint2f p = to_2d(plane_point);
 
-  // Now we have found a point on the polygon's plane that corresponds
-  // to the point tangent to our collision sphere where it first
-  // touches the plane.  We want to decide whether the sphere itself
-  // will intersect the polygon.  We can approximate this by testing
-  // whether a circle of the given radius centered around this tangent
-  // point, in the plane of the polygon, would intersect.
+  const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
+  if (cpa != (ClipPlaneAttrib *)NULL) {
+    // We have a clip plane; apply it.
+    Points new_points;
+    if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
+      // All points are behind the clip plane; just do the default
+      // test.
+      if (!circle_is_inside(p, from_radius, _points, _median)) {
+        return NULL;
+      }
 
-  // But even this approximate test is too difficult.  To approximate
-  // the approximation, we'll test two points: (1) the center itself.
-  // If this is inside the polygon, then certainly the circle
-  // intersects the polygon, and the sphere collides.  (2) a point on
-  // the outside of the circle, nearest to the center of the polygon.
-  // If _this_ point is inside the polygon, then again the circle, and
-  // hence the sphere, intersects.  If neither point is inside the
-  // polygon, chances are reasonably good the sphere doesn't intersect
-  // the polygon after all.
+    } else if (new_points.empty()) {
+      // The polygon is completely clipped.
+      return NULL;
 
-  if (is_inside(p)) {
-    // The circle's center is inside the polygon; we have a collision!
+    } else {
+      // Test against the clipped polygon.
+      LPoint2f new_median = new_points[0];
+      for (int n = 1; n < (int)new_points.size(); n++) {
+        new_median += new_points[n];
+      }
+      new_median /= new_points.size();
+      if (!circle_is_inside(p, from_radius, new_points, new_median)) {
+        return NULL;
+      }
+    }
 
   } else {
-
-    if (from_radius > 0.0f) {
-      // Now find the point on the rim of the circle nearest the
-      // polygon's center.
-
-      // First, get a vector from the center of the circle to the center
-      // of the polygon.
-      LVector2f rim = _median - p;
-      float rim_length = length(rim);
-
-      if (rim_length <= from_radius) {
-        // Here's a surprise: the center of the polygon is within the
-        // circle!  Since the center is guaranteed to be interior to the
-        // polygon (the polygon is convex), it follows that the circle
-        // intersects the polygon.
-
-      } else {
-        // Now scale this vector to length radius, and get the new point.
-        rim = (rim * from_radius / rim_length) + p;
-
-        // Is the new point within the polygon?
-        if (is_inside(rim)) {
-          // It sure is!  The circle intersects!
-
-        } else {
-          // No intersection.
-          return NULL;
-        }
-      }
+    // No clip plane is in effect.  Do the default test.
+    if (!circle_is_inside(p, from_radius, _points, _median)) {
+      return NULL;
     }
   }
 
@@ -451,9 +478,25 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
 
   LPoint3f plane_point = from_origin + t * from_direction;
-  if (!is_inside(to_2d(plane_point))) {
-    // Outside the polygon's perimeter.
-    return NULL;
+  LPoint2f p = to_2d(plane_point);
+
+  const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
+  if (cpa != (ClipPlaneAttrib *)NULL) {
+    // We have a clip plane; apply it.
+    Points new_points;
+    apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform());
+    if (new_points.size() < 3) {
+      return NULL;
+    }
+    if (!point_is_inside(p, new_points)) {
+      return NULL;
+    }
+
+  } else {
+    // No clip plane is in effect.  Do the default test.
+    if (!point_is_inside(p, _points)) {
+      return NULL;
+    }
   }
 
   if (collide_cat.is_debug()) {
@@ -504,9 +547,25 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
 
   LPoint3f plane_point = from_a + t * from_direction;
-  if (!is_inside(to_2d(plane_point))) {
-    // Outside the polygon's perimeter.
-    return NULL;
+  LPoint2f p = to_2d(plane_point);
+
+  const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
+  if (cpa != (ClipPlaneAttrib *)NULL) {
+    // We have a clip plane; apply it.
+    Points new_points;
+    apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform());
+    if (new_points.size() < 3) {
+      return NULL;
+    }
+    if (!point_is_inside(p, new_points)) {
+      return NULL;
+    }
+
+  } else {
+    // No clip plane is in effect.  Do the default test.
+    if (!point_is_inside(p, _points)) {
+      return NULL;
+    }
   }
 
   if (collide_cat.is_debug()) {
@@ -534,8 +593,19 @@ fill_viz_geom() {
     collide_cat.debug()
       << "Recomputing viz for " << *this << "\n";
   }
+  draw_polygon(_viz_geom, _points);
+}
 
-  if (_points.size() < 3) {
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::draw_polygon
+//       Access: Private
+//  Description: Fills up the indicated GeomNode with the Geoms to
+//               draw the polygon indicated with the given set of 2-d
+//               points.
+////////////////////////////////////////////////////////////////////
+void CollisionPolygon::
+draw_polygon(GeomNode *geom_node, const CollisionPolygon::Points &points) const {
+  if (points.size() < 3) {
     if (collide_cat.is_debug()) {
       collide_cat.debug()
         << "(Degenerate poly, ignoring.)\n";
@@ -545,7 +615,7 @@ fill_viz_geom() {
 
   PTA_Vertexf verts;
   Points::const_iterator pi;
-  for (pi = _points.begin(); pi != _points.end(); ++pi) {
+  for (pi = points.begin(); pi != points.end(); ++pi) {
     verts.push_back(to_3d(*pi));
   }
   if (_reversed) {
@@ -553,42 +623,109 @@ fill_viz_geom() {
   }
 
   PTA_int lengths;
-  lengths.push_back(_points.size());
+  lengths.push_back(points.size());
 
   GeomPolygon *polygon = new GeomPolygon;
   polygon->set_coords(verts);
   polygon->set_num_prims(1);
   polygon->set_lengths(lengths);
 
-  _viz_geom->add_geom(polygon, get_solid_viz_state());
-  _viz_geom->add_geom(polygon, get_wireframe_viz_state());
+  geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_viz_state());
+  geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_viz_state());
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::is_inside
+//     Function: CollisionPolygon::point_is_inside
 //       Access: Private
-//  Description:
+//  Description: Returns true if the indicated point is within the
+//               polygon's 2-d space, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionPolygon::
-is_inside(const LPoint2f &p) const {
+point_is_inside(const LPoint2f &p, const CollisionPolygon::Points &points) const {
   // We insist that the polygon be convex.  This makes things a bit simpler.
 
   // In the case of a convex polygon, defined with points in counterclockwise
   // order, a point is interior to the polygon iff the point is not right of
   // each of the edges.
-
-  for (int i = 0; i < (int)_points.size() - 1; i++) {
-    if (is_right(p - _points[i], _points[i+1] - _points[i])) {
+  for (int i = 0; i < (int)points.size() - 1; i++) {
+    if (is_right(p - points[i], points[i+1] - points[i])) {
       return false;
     }
   }
-  if (is_right(p - _points[_points.size() - 1],
-               _points[0] - _points[_points.size() - 1])) {
+  if (is_right(p - points[points.size() - 1],
+               points[0] - points[points.size() - 1])) {
     return false;
   }
 
   return true;
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::circle_is_inside
+//       Access: Private
+//  Description: Returns true if the circle with the indicated center
+//               and radius intersects the polygon in its 2-d space,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CollisionPolygon::
+circle_is_inside(const LPoint2f &center, float radius,
+                 const CollisionPolygon::Points &points,
+                 const LPoint2f &median) const {
+  // Now we have found a point on the polygon's plane that corresponds
+  // to the point tangent to our collision sphere where it first
+  // touches the plane.  We want to decide whether the sphere itself
+  // will intersect the polygon.  We can approximate this by testing
+  // whether a circle of the given radius centered around this tangent
+  // point, in the plane of the polygon, would intersect.
+
+  // But even this approximate test is too difficult.  To approximate
+  // the approximation, we'll test two points: (1) the center itself.
+  // If this is inside the polygon, then certainly the circle
+  // intersects the polygon, and the sphere collides.  (2) a point on
+  // the outside of the circle, nearest to the center of the polygon.
+  // If _this_ point is inside the polygon, then again the circle, and
+  // hence the sphere, intersects.  If neither point is inside the
+  // polygon, chances are reasonably good the sphere doesn't intersect
+  // the polygon after all.
+
+  if (point_is_inside(center, points)) {
+    // The circle's center is inside the polygon; we have a collision!
+
+  } else {
+
+    if (radius > 0.0f) {
+      // Now find the point on the rim of the circle nearest the
+      // polygon's center.
+
+      // First, get a vector from the center of the circle to the center
+      // of the polygon.
+      LVector2f rim = median - center;
+      float rim_length = length(rim);
+
+      if (rim_length <= radius) {
+        // Here's a surprise: the center of the polygon is within the
+        // circle!  Since the center is guaranteed to be interior to the
+        // polygon (the polygon is convex), it follows that the circle
+        // intersects the polygon.
+
+      } else {
+        // Now scale this vector to length radius, and get the new point.
+        rim = (rim * radius / rim_length) + center;
+
+        // Is the new point within the polygon?
+        if (point_is_inside(rim, points)) {
+          // It sure is!  The circle intersects!
+
+        } else {
+          // No intersection.
+          return false;
+        }
+      }
+    }
+  }
+  
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -776,7 +913,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 //               in the polygon's 2-d definition space.
 ////////////////////////////////////////////////////////////////////
 LPoint2f CollisionPolygon::
-to_2d(const LPoint3f &point3d) const {
+to_2d(const LVecBase3f &point3d) const {
   nassertr(!point3d.is_nan(), LPoint2f(0.0f, 0.0f));
 
   // Project the point of intersection with the plane onto the
@@ -804,7 +941,7 @@ to_2d(const LPoint3f &point3d) const {
 //               definition space back into 3-d coordinates.
 ////////////////////////////////////////////////////////////////////
 LPoint3f CollisionPolygon::
-to_3d(const LPoint2f &point2d) const {
+to_3d(const LVecBase2f &point2d) const {
   nassertr(!point2d.is_nan(), LPoint3f(0.0f, 0.0f, 0.0f));
 
   LVector3f normal = get_normal();
@@ -830,6 +967,140 @@ to_3d(const LPoint2f &point2d) const {
 
   nassertr(false, LPoint3f(0.0f, 0.0f, 0.0f));
   return LPoint3f(0.0f, 0.0f, 0.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::clip_polygon
+//       Access: Private
+//  Description: Clips the source_points of the polygon by the
+//               indicated clipping plane, and modifies new_points to
+//               reflect the new set of clipped points.
+//
+//               The return value is true if the set of points is
+//               unmodified (all points are behind the clip plane), or
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CollisionPolygon::
+clip_polygon(CollisionPolygon::Points &new_points, 
+             const CollisionPolygon::Points &source_points,
+             const Planef &plane) const {
+  new_points.clear();
+  if (source_points.empty()) {
+    return true;
+  }
+
+  LPoint3f from3d;
+  LVector3f delta3d;
+  if (!plane.intersects_plane(from3d, delta3d, get_plane())) {
+    // The clipping plane is parallel to the polygon.  The polygon is
+    // either all in or all out.
+    if (plane.dist_to_plane(get_plane().get_point()) < 0.0) {
+      // A point within the polygon is behind the clipping plane: the
+      // polygon is all in.
+      new_points = source_points;
+      return true;
+    }
+    return false;
+  }
+
+  // Project the line of intersection into the 2-d plane.  Now we have
+  // a 2-d clipping line.
+  LPoint2f from2d = to_2d(from3d);
+  LVector2f delta2d = to_2d(delta3d);
+  if (_reversed) {
+    delta2d = -delta2d;
+  }
+
+  float a = -delta2d[1];
+  float b = delta2d[0];
+  float c = from2d[0] * delta2d[1] - from2d[1] * delta2d[0];
+
+  // Now walk through the points.  Any point on the left of our line
+  // gets removed, and the line segment clipped at the point of
+  // intersection.
+
+  // We might increase the number of vertices by as many as 1, if the
+  // plane clips off exactly one corner.  (We might also decrease the
+  // number of vertices, or keep them the same number.)
+  new_points.reserve(source_points.size() + 1);
+
+  LPoint2f last_point = source_points.back();
+  bool last_is_in = !is_right(last_point - from2d, delta2d);
+  bool all_in = last_is_in;
+  Points::const_iterator pi;
+  for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
+    const LPoint2f &this_point = (*pi);
+    bool this_is_in = !is_right(this_point - from2d, delta2d);
+
+    if (this_is_in != last_is_in) {
+      // We have just crossed over the clipping line.  Find the point
+      // of intersection.
+      LVector2f d = this_point - last_point;
+      float t = -(a * last_point[0] + b * last_point[1] + c) / (a * d[0] + b * d[1]);
+      LPoint2f p = last_point + t * d;
+
+      new_points.push_back(p);
+      last_is_in = this_is_in;
+    } 
+
+    if (this_is_in) {
+      // We are behind the clipping line.  Keep the point.
+      new_points.push_back(this_point);
+    } else {
+      all_in = false;
+    }
+
+    last_point = this_point;
+  }
+
+  return all_in;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::apply_clip_plane
+//       Access: Private
+//  Description: Clips the polygon by all of the clip planes named in
+//               the clip plane attribute and fills new_points up with
+//               the resulting points.
+//
+//               The return value is true if the set of points is
+//               unmodified (all points are behind all the clip
+//               planes), or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CollisionPolygon::
+apply_clip_plane(CollisionPolygon::Points &new_points, 
+                 const ClipPlaneAttrib *cpa,
+                 const TransformState *net_transform) const {
+  bool all_in = true;
+
+  int num_planes = cpa->get_num_planes();
+  if (num_planes > 0) {
+    PlaneNode *plane_node = cpa->get_plane(0);
+    NodePath plane_path(plane_node);
+    CPT(TransformState) new_transform = 
+      net_transform->invert_compose(plane_path.get_net_transform());
+    
+    Planef plane = plane_node->get_plane() * new_transform->get_mat();
+    if (!clip_polygon(new_points, _points, plane)) {
+      all_in = false;
+    }
+
+    for (int i = 1; i < num_planes; i++) {
+      PlaneNode *plane_node = cpa->get_plane(i);
+      NodePath plane_path(plane_node);
+      CPT(TransformState) new_transform = 
+        net_transform->invert_compose(plane_path.get_net_transform());
+      
+      Planef plane = plane_node->get_plane() * new_transform->get_mat();
+      Points last_points;
+      last_points.swap(new_points);
+      if (!clip_polygon(new_points, last_points, plane)) {
+        all_in = false;
+      }
+    }
+  }
+
+  return all_in;
 }
 
 ////////////////////////////////////////////////////////////////////
