@@ -439,6 +439,30 @@ get_bytes_downloaded() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_bytes_requested
+//       Access: Published
+//  Description: When download throttling is in effect
+//               (set_download_throttle() has been set to true) and
+//               non-blocking I/O methods (like begin_get_document())
+//               are used, this returns the number of bytes
+//               "requested" from the server so far: that is, the
+//               theoretical maximum value for get_bytes_downloaded(),
+//               if the server has been keeping up with our demand.
+//
+//               If this number is less than get_bytes_downloaded(),
+//               then the server has not been supplying bytes fast
+//               enough to meet our own download throttle rate.
+//
+//               When download throttling is not in effect, or when
+//               the blocking I/O methods (like get_document(), etc.)
+//               are used, this returns 0.
+////////////////////////////////////////////////////////////////////
+INLINE size_t HTTPChannel::
+get_bytes_requested() const {
+  return _bytes_requested;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::is_download_complete
 //       Access: Published
 //  Description: Returns true when a download_to() or
@@ -446,6 +470,14 @@ get_bytes_downloaded() const {
 //               fully downloaded.  If this still returns false after
 //               processing has completed, there was an error in
 //               transmission.
+//
+//               Note that simply testing is_download_complete() does
+//               not prove that the requested document was succesfully
+//               retrieved--you might have just downloaded the "404
+//               not found" stub (for instance) that a server would
+//               provide in response to some error condition.  You
+//               should also check is_valid() to prove that the file
+//               you expected has been successfully retrieved.
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 is_download_complete() const {

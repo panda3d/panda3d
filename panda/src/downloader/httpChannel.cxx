@@ -61,6 +61,7 @@ HTTPChannel(HTTPClient *client) :
   _read_index = 0;
   _file_size = 0;
   _bytes_downloaded = 0;
+  _bytes_requested = 0;
   _status_code = 0;
   _status_string = string();
   _proxy = _client->get_proxy();
@@ -221,6 +222,7 @@ run() {
         // Come back later.
         return true;
       }
+      _bytes_requested += _bytes_per_update;
     }
     switch (_download_dest) {
     case DD_none:
@@ -1142,7 +1144,7 @@ run_download_to_file() {
   while (!_body_stream->eof() && !_body_stream->fail()) {
     _download_to_file.put(ch);
     _bytes_downloaded++;
-    if (do_throttle && (++count > _bytes_per_update)) {
+    if (do_throttle && (++count >= _bytes_per_update)) {
       // That's enough for now.
       return true;
     }
@@ -1186,7 +1188,7 @@ run_download_to_ram() {
   while (!_body_stream->eof() && !_body_stream->fail()) {
     _download_to_ramfile->_data += (char)ch;
     _bytes_downloaded++;
-    if (do_throttle && (++count > _bytes_per_update)) {
+    if (do_throttle && (++count >= _bytes_per_update)) {
       // That's enough for now.
       return true;
     }
@@ -1285,6 +1287,7 @@ reset_for_new_request() {
   _last_status_code = 0;
   _file_size = 0;
   _bytes_downloaded = 0;
+  _bytes_requested = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

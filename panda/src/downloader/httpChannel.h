@@ -119,6 +119,7 @@ PUBLISHED:
   bool download_to_ram(Ramfile *ramfile);
 
   INLINE size_t get_bytes_downloaded() const;
+  INLINE size_t get_bytes_requested() const;
   INLINE bool is_download_complete() const;
 
 private:
@@ -222,6 +223,7 @@ private:
 
   size_t _file_size;
   size_t _bytes_downloaded;
+  size_t _bytes_requested;
 
   // These members are used to maintain the current state while
   // communicating with the server.  We need to store everything in

@@ -110,9 +110,11 @@ HTTPClient::
   // Before we can free the context, we must remove the X509_STORE
   // pointer from it, so it won't be destroyed along with it (this
   // object is shared among all contexts).
-  nassertv(_ssl_ctx->cert_store == _x509_store);
-  _ssl_ctx->cert_store = NULL;
-  SSL_CTX_free(_ssl_ctx);
+  if (_ssl_ctx != (SSL_CTX *)NULL) {
+    nassertv(_ssl_ctx->cert_store == _x509_store);
+    _ssl_ctx->cert_store = NULL;
+    SSL_CTX_free(_ssl_ctx);
+  }
 
   // Free all of the expected server definitions.
   clear_expected_servers();
