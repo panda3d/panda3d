@@ -185,85 +185,91 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         if avatarNodePath is None:
             return
         assert not avatarNodePath.isEmpty()
-        # Connect to Physics Manager:
-        self.actorNode=ActorNode("ship physicsActor")
-        self.actorNode.getPhysicsObject().setOriented(1)
-        self.actorNode.getPhysical(0).setViscosity(0.1)
-        physicsActor=render.attachNewNode(self.actorNode)
-        physicsActor.setPos(avatarNodePath, Vec3(0))
-        physicsActor.setHpr(avatarNodePath, Vec3(0))
-        avatarNodePath.reparentTo(physicsActor)
-        avatarNodePath.setPos(Vec3(0))
-        avatarNodePath.setHpr(Vec3(0))
-        avatarNodePath.assign(physicsActor)
-        self.phys=PhysicsManager.PhysicsManager()
 
-        fn=ForceNode("ship gravity")
-        fnp=NodePath(fn)
-        #fnp.reparentTo(physicsActor)
-        fnp.reparentTo(render)
-        gravity=LinearVectorForce(0.0, 0.0, self.__gravity)
-        fn.addForce(gravity)
-        self.phys.addLinearForce(gravity)
-        self.gravity = gravity
-
-        fn=ForceNode("ship keel")
-        fnp=NodePath(fn)
-        #fnp.reparentTo(physicsActor)
-        fnp.reparentTo(render)
-        self.keel=AngularVectorForce(0.0, 0.0, 80.0)
-        fn.addForce(self.keel)
-        self.phys.addAngularForce(self.keel)
-
-        fn=ForceNode("ship priorParent")
-        fnp=NodePath(fn)
-        fnp.reparentTo(render)
-        priorParent=LinearVectorForce(0.0, 0.0, 0.0)
-        fn.addForce(priorParent)
-        self.phys.addLinearForce(priorParent)
-        self.priorParentNp = fnp
-        self.priorParent = priorParent
-
-        if 1:
-            fn=ForceNode("ship viscosity")
+        if not hasattr(self,'actorNode'):
+            
+            # Connect to Physics Manager:
+            self.actorNode=ActorNode("ship physicsActor")
+            self.actorNode.getPhysicsObject().setOriented(1)
+            self.actorNode.getPhysical(0).setViscosity(0.1)
+            physicsActor=render.attachNewNode(self.actorNode)
+            physicsActor.setPos(avatarNodePath, Vec3(0))
+            physicsActor.setHpr(avatarNodePath, Vec3(0))
+            avatarNodePath.reparentTo(physicsActor)
+            avatarNodePath.setPos(Vec3(0))
+            avatarNodePath.setHpr(Vec3(0))
+            avatarNodePath.assign(physicsActor)
+            self.phys=PhysicsManager.PhysicsManager()
+            
+            fn=ForceNode("ship gravity")
             fnp=NodePath(fn)
             #fnp.reparentTo(physicsActor)
             fnp.reparentTo(render)
-            self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
-            #self.avatarViscosity.setCoef(0.9)
-            fn.addForce(self.avatarViscosity)
-            self.phys.addLinearForce(self.avatarViscosity)
+            gravity=LinearVectorForce(0.0, 0.0, self.__gravity)
+            fn.addForce(gravity)
+            self.phys.addLinearForce(gravity)
+            self.gravity = gravity
+            
+            fn=ForceNode("ship keel")
+            fnp=NodePath(fn)
+            #fnp.reparentTo(physicsActor)
+            fnp.reparentTo(render)
+            self.keel=AngularVectorForce(0.0, 0.0, 80.0)
+            fn.addForce(self.keel)
+            self.phys.addAngularForce(self.keel)
+            
+            fn=ForceNode("ship priorParent")
+            fnp=NodePath(fn)
+            fnp.reparentTo(render)
+            priorParent=LinearVectorForce(0.0, 0.0, 0.0)
+            fn.addForce(priorParent)
+            self.phys.addLinearForce(priorParent)
+            self.priorParentNp = fnp
+            self.priorParent = priorParent
 
-        self.phys.attachLinearIntegrator(LinearEulerIntegrator())
-        #*#self.phys.attachAngularIntegrator(AngularEulerIntegrator())
-        self.phys.attachPhysicalnode(physicsActor.node())
+            if 1:
+                fn=ForceNode("ship viscosity")
+                fnp=NodePath(fn)
+                #fnp.reparentTo(physicsActor)
+                fnp.reparentTo(render)
+                self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
+                #self.avatarViscosity.setCoef(0.9)
+                fn.addForce(self.avatarViscosity)
+                self.phys.addLinearForce(self.avatarViscosity)
 
-        self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
-        fn=ForceNode("ship momentum")
-        fnp=NodePath(fn)
-        fnp.reparentTo(render)
-        fn.addForce(self.momentumForce)
-        self.phys.addLinearForce(self.momentumForce)
+            self.phys.attachLinearIntegrator(LinearEulerIntegrator())
+            #*#self.phys.attachAngularIntegrator(AngularEulerIntegrator())
+            self.phys.attachPhysicalnode(physicsActor.node())
 
-        self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
-        fn=ForceNode("ship avatarControls")
-        fnp=NodePath(fn)
-        fnp.reparentTo(render)
-        fn.addForce(self.acForce)
-        self.phys.addLinearForce(self.acForce)
-        #self.phys.removeLinearForce(self.acForce)
-        #fnp.remove()
+            self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
+            fn=ForceNode("ship momentum")
+            fnp=NodePath(fn)
+            fnp.reparentTo(render)
+            fn.addForce(self.momentumForce)
+            self.phys.addLinearForce(self.momentumForce)
+            
+            self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
+            fn=ForceNode("ship avatarControls")
+            fnp=NodePath(fn)
+            fnp.reparentTo(render)
+            fn.addForce(self.acForce)
+            self.phys.addLinearForce(self.acForce)
+            #self.phys.removeLinearForce(self.acForce)
+            #fnp.remove()
+
+            if 0 or self.useHeightRay:
+                #self.setupRay(self.floorBitmask, self.avatarRadius)
+                self.setupRay(self.floorBitmask, 0.0)
+
 
         #avatarNodePath.reparentTo(render)
         self.avatarNodePath = avatarNodePath
         #self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         #self.actorNode.updateTransform()
+        self.setupSphere(self.wallBitmask|self.floorBitmask, self.avatarRadius)
+
 
         assert not avatarNodePath.isEmpty()
-        if 0 or self.useHeightRay:
-            #self.setupRay(self.floorBitmask, self.avatarRadius)
-            self.setupRay(self.floorBitmask, 0.0)
-        self.setupSphere(self.wallBitmask|self.floorBitmask, self.avatarRadius)
 
         self.setCollisionsActive(1)
 
