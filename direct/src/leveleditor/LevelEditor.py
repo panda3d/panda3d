@@ -48,7 +48,7 @@ class LevelEditor(NodePath, PandaObject):
 
 	# DNAStorage instance for storing level DNA info
 	self.dnaStore = DNAStorage()
-	loadDNAFile(self.dnaStore, 'dna/storage.dna', CSDefault)
+	loadDNAFile(self.dnaStore, 'phase_3/dna/storage.dna', CSDefault)
 	# Top level DNA Data Object
 	self.groupParentDNA = self.levelObjectsDNA = DNAData('LevelObjects')
 	# Create top level node
@@ -63,30 +63,31 @@ class LevelEditor(NodePath, PandaObject):
 
         self.dnaOutputDir = 'ToontownCentral'
         self.dnaOutputFile = 'toontown_working.dna'
-
-
+        self.stylePathPrefix = base.config.GetString('style-path-prefix', '')
+                            
         # Get a handle to the grid
 	self.grid = self.direct.grid
         self.showGrid(0)
 
         self.levelMap = hidden.attachNewNode(NamedNode('level-map'))
 
-	map = loader.loadModel('level_editor/toontown_central_layout')
+	map = loader.loadModel('models/level_editor/toontown_central_layout')
 	map.getBottomArc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
         self.mapDictionary['toontownCentral'] = map
 
-	map = loader.loadModel('level_editor/donalds_dock_layout')
+	map = loader.loadModel('models/level_editor/donalds_dock_layout')
 	map.getBottomArc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
         self.mapDictionary['donaldsDock'] = map
 
-	map = loader.loadModel('level_editor/minnies_melody_land_layout')
+	map = loader.loadModel(
+            'models/level_editor/minnies_melody_land_layout')
 	map.getBottomArc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
         self.mapDictionary['minniesMelodyLand'] = map
 
-	map = loader.loadModel('level_editor/the_burrrgh_layout')
+	map = loader.loadModel('models/level_editor/the_burrrgh_layout')
 	map.getBottomArc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
         self.mapDictionary['theBurrrgh'] = map
@@ -1076,8 +1077,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.colorPaletteDictionary[menuName] = adjustedColorArray
 
     def createColorMenusFromFile(self, prefix):
-        dict = self.createColorDictionaryFromFile(
-            'level_editor/' + prefix + 'Colors.txt')
+        dict = self.createColorDictionaryFromFile(prefix + 'Colors.txt')
         self.colorPaletteDictionary[prefix + 'Colors'] = dict
         self.createColorMenu(prefix + 'WallColors', dict['wallColors'])
         self.createColorMenu(prefix + 'WindowColors', dict['windowColors'])
@@ -1087,8 +1087,9 @@ class LevelEditor(NodePath, PandaObject):
 
     def createColorDictionaryFromFile(self, filename):
         print 'Loading Color Palettes from: ' + filename
-        fname = Filename(os.path.join(os.expandVars('$TTMODELS/src'), filename))
-        f = open(f.toOsSpecific(), 'r')
+        fname = Filename(self.stylePathPrefix +
+                         '/alpha/DIRECT/LevelEditor/StyleFiles/' + filename)
+        f = open(fname.toOsSpecific(), 'r')
         rawData = f.readlines()
         f.close()
         dict = {}
@@ -1137,9 +1138,11 @@ class LevelEditor(NodePath, PandaObject):
             else:
                 return
             # Valid type, add color to file
-            filename = 'level_editor/' + self.editMode + 'Colors.txt'
-            fname = Filename(os.path.join(os.expandVars('$TTMODELS/src'), filename))
-            f = open(f.toOsSpecific(), 'a')
+            filename = self.editMode + 'Colors.txt'
+            fname = Filename(self.stylePathPrefix +
+                             '/alpha/DIRECT/LevelEditor/StyleFiles/' +
+                             filename)
+            f = open(fname.toOsSpecific(), 'a')
             f.write('%s Vec4(%.2f, %.2f, %.2f, 1.0)\n' %
                     (tag,
                      color[0]/255.0,
@@ -1544,7 +1547,10 @@ class LevelEditor(NodePath, PandaObject):
         return styleDictionary
 
     def getStyleData(self, filename):
-        fname = Filename(os.path.join(os.expandVars('$TTMODELS/src'), filename))
+        
+        fname = Filename(self.stylePathPrefix +
+                         '/alpha/DIRECT/LevelEditor/StyleFiles/' +
+                         filename)
         f = open(fname.toOsSpecific(), 'r')
         rawData = f.readlines()
         f.close()
@@ -1671,25 +1677,25 @@ class LevelEditor(NodePath, PandaObject):
     def initializeStyleDictionary(self):
         # Create a dictionary for toontownCentral
 	dictionary = self.createStyleDictionaryFromFile(
-            'level_editor/toontownCentralStyles.txt')
+            'toontownCentralStyles.txt')
 	# Store this dictionary in the self.attributeDictionary
 	self.attributeDictionary['toontownCentralStyleDictionary'] = dictionary
         
         # Create a dictionary for donaldsDock
 	dictionary = self.createStyleDictionaryFromFile(
-            'level_editor/donaldsDockStyles.txt')
+            'donaldsDockStyles.txt')
 	# Store this dictionary in the self.attributeDictionary
 	self.attributeDictionary['donaldsDockStyleDictionary'] = dictionary
         
         # Create a dictionary for theBurrrgh
 	dictionary = self.createStyleDictionaryFromFile(
-            'level_editor/theBurrrghStyles.txt')
+            'theBurrrghStyles.txt')
 	# Store this dictionary in the self.attributeDictionary
 	self.attributeDictionary['theBurrrghStyleDictionary'] = dictionary
         
         # Create a dictionary for minniesMelodyLand
 	dictionary = self.createStyleDictionaryFromFile(
-            'level_editor/minniesMelodyLandStyles.txt')
+            'minniesMelodyLandStyles.txt')
 	# Store this dictionary in the self.attributeDictionary
 	self.attributeDictionary['minniesMelodyLandStyleDictionary'] = (
             dictionary)
@@ -2184,11 +2190,9 @@ class LevelEditor(NodePath, PandaObject):
         self.initDNAGroupWithParentType(newDNAGroup, self.groupParent, type)
 
     def loadSpecifiedDNAFile(self):
-        f = Filename('/alpha/DIRECT/LevelEditor/DNAFiles')
+        f = Filename(self.stylePathPrefix +
+                     '/alpha/DIRECT/LevelEditor/DNAFiles')
         path = os.path.join(f.toOsSpecific(), self.dnaOutputDir)
-        #f = Filename('dna')
-        #f.resolveFilename(getModelPath())
-        #path = f.toOsSpecific()
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid default DNA directory!'
             print 'Using: C:\\'
@@ -2203,7 +2207,8 @@ class LevelEditor(NodePath, PandaObject):
             self.loadDNAFromFile(dnaFilename)
 
     def saveToSpecifiedDNAFile(self):
-        f = Filename('/alpha/DIRECT/LevelEditor/DNAFiles')
+        f = Filename(self.stylePathPrefix +
+                     '/alpha/DIRECT/LevelEditor/DNAFiles')
         path = os.path.join(f.toOsSpecific(), self.dnaOutputDir)
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid DNA save directory!'
@@ -2273,7 +2278,8 @@ class LevelEditor(NodePath, PandaObject):
 	self.createNewLevelGroup()
 
     def outputDNADefaultFile(self):
-        f = Filename('/alpha/DIRECT/LevelEditor/DNAFiles')
+        f = Filename(self.stylePathPrefix +
+                     '/alpha/DIRECT/LevelEditor/DNAFiles')
         file = os.path.join(f.toOsSpecific(), self.dnaOutputDir,
                             self.dnaOutputFile)
         self.outputDNA(file)
