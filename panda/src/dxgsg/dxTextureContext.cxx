@@ -1628,14 +1628,14 @@ FillDDSurfTexturePixels(void) {
 			hr = pCurDDSurf->GetAttachedSurface(&ddsCaps, &pMipLevel_DDSurf);
 			if(FAILED(hr)) {
 				dxgsg_cat.error() << "CreateTexture failed creating mipmaps: GetAttachedSurf hr = " << ConvD3DErrorToString(hr) << "\n";
-				delete pMipMapPixBufSpace;
+				delete [] pMipMapPixBufSpace;
 				pCurDDSurf->Release();
 				return hr;
 			}
 
 			hr = ConvertPixBuftoDDSurf((ConversionType)_PixBufConversionType,pLastMipLevelStart,pMipLevel_DDSurf);
 			if(FAILED(hr)) {
-				delete pMipMapPixBufSpace;
+				delete [] pMipMapPixBufSpace;
 				pCurDDSurf->Release();
 				return hr;
 			}
@@ -1648,7 +1648,7 @@ FillDDSurfTexturePixels(void) {
 		//   double elapsed_time  = (double)(finish1 - start1) / CLOCKS_PER_SEC;
 		//   cerr <<  "mipmap gen takes " << elapsed_time << " secs for this texture\n";
 
-		delete pMipMapPixBufSpace;
+		delete [] pMipMapPixBufSpace;
 		pCurDDSurf->Release(); 
 
 #ifdef _DEBUG

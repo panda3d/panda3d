@@ -1651,7 +1651,7 @@ draw_sprite(const GeomSprite *geom) {
 	_d3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, p_flags, _pFvfBufBasePtr, 4*nprims, _index_buf,QUADVERTLISTLEN*nprims,NULL);
 
 	_pCurFvfBufPtr = NULL;
-	delete SpriteArray;
+	delete [] SpriteArray;
 
 	// restore the matrices
 	_d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
@@ -5032,7 +5032,7 @@ free_pointers() {
 	}
 
 	if (_pTexPixFmts != NULL) {
-		delete _pTexPixFmts;
+		delete [] _pTexPixFmts;
 		_pTexPixFmts = NULL;
 	}
 }
