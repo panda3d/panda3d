@@ -7,7 +7,6 @@
 #define __PFSTREAMBUF_H__
 
 #include <dtoolbase.h>
-#include <iostream>
 #include <string>
 #include <stdio.h>
 
