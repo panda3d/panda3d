@@ -12,7 +12,8 @@
     m
 
   // If we've got Maya, link in the Maya libraries.
-  #define USE_PACKAGES maya
+  // On second thought, don't.  It takes forever to load.
+  //#define USE_PACKAGES maya
 
   #define SOURCES \
     config_ptloader.cxx config_ptloader.h \

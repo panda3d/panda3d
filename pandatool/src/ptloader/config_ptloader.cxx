@@ -31,10 +31,12 @@
 #endif
 */
 
+/*
 #ifdef HAVE_MAYA
 #include "config_mayaegg.h"
 #include "mayaToEggConverter.h"
 #endif
+*/
 
 #include "dconfig.h"
 #include "loaderFileTypeRegistry.h"
@@ -82,9 +84,11 @@ init_libptloader() {
 #endif
   */
 
+  /*
 #ifdef HAVE_MAYA
   init_libmayaegg();
   MayaToEggConverter *maya = new MayaToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(maya));
 #endif
+  */
 }
