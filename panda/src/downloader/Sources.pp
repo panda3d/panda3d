@@ -17,7 +17,8 @@
     multiplexStream.I multiplexStream.cxx multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.cxx multiplexStreamBuf.h \
     patcher.cxx								\
-    patcher.h
+    patcher.h								\
+    download.I download.cxx download.h
 
   #define IF_ZLIB_SOURCES						\
     decompressor.cxx decompressor.h zcompressor.I zcompressor.cxx	\
