@@ -42,8 +42,10 @@ class EXPCL_PANDA NurbsPPCurve : public ParametricCurve, public NurbsCurveInterf
 PUBLISHED:
   NurbsPPCurve();
   NurbsPPCurve(const ParametricCurve &pc);
+public:
   NurbsPPCurve(int order, int num_cvs,
                const float knots[], const LVecBase4f cvs[]);
+PUBLISHED:
   virtual ~NurbsPPCurve();
 
 public:

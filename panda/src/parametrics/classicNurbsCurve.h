@@ -52,8 +52,10 @@ class EXPCL_PANDA ClassicNurbsCurve : public PiecewiseCurve, public NurbsCurveIn
 PUBLISHED:
   ClassicNurbsCurve();
   ClassicNurbsCurve(const ParametricCurve &pc);
+public:
   ClassicNurbsCurve(int order, int num_cvs,
                     const float knots[], const LVecBase4f cvs[]);
+PUBLISHED:
   virtual ~ClassicNurbsCurve();
 
 public:
