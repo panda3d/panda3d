@@ -1,52 +1,19 @@
 from ToontownGlobals import *
 import DirectNotifyGlobal
 import BasicEntities
+import GoonPathData
 
 class PathEntity(BasicEntities.NodePathEntity):
-    pathData = [
-        [Vec3(10, 0, 0),
-         Vec3(10, 10,0),
-         Vec3(-10, 10, 0),
-         Vec3(-10, 0, 0),
-         ],
-        [Vec3(10, 5, 0),
-         Vec3(10, 0,0),
-         Vec3(-10, -5, 0),
-         ],
-        [Vec3(-40.967, -24.943, 0),
-         Vec3(-36.065, -23.418, 0),
-         Vec3(-33.874, -3.373, 0),
-         Vec3(42.227, -3.036, 0),
-         Vec3(38.220,  2.783, 0),
-         Vec3(-35.8, 4.158, 0),
-         ],
-        [Vec3(-47.9110107422,-6.86798095703,0.0),
-         Vec3(27.691986084,-5.68200683594,0.0),
-         Vec3(34.049987793,3.55303955078,0.0),
-         Vec3(-39.983001709,3.68499755859,0.0)
-         ],
-        [Vec3(1.25,21,0),
-         Vec3(-.2,7.9,0),
-         Vec3(-22.2,-12.1,0),
-         Vec3(-5.2,1.4,0),
-         ],
-        [Vec3(12.70, -51.9, 0.0),
-         Vec3(12.4, -33.0, 0.0),
-         Vec3(-1.16, -18.6, 0.0),
-         Vec3(9.27, -34.3, 0.0),
-         ],
-        ]
-    
     def __init__(self, level, entId):
         BasicEntities.NodePathEntity.__init__(self, level, entId)
-        self.path = self.pathData[self.pathIndex]
+        self.path = GoonPathData.Paths[self.pathIndex]
             
     def destroy(self):
         BasicEntities.NodePathEntity.destroy(self)
 
     def setPathIndex(self, pathIndex):
         self.pathIndex = pathIndex
-        self.path = self.pathData[self.pathIndex]
+        self.path = GoonPathData.Paths[self.pathIndex]
     
     
         
