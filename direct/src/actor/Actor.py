@@ -73,6 +73,13 @@ class Actor(PandaObject, NodePath):
             
         """
 
+        try:
+            self.__initialized
+            return
+        
+        except:
+            self.__initialized = 1
+
         # initialize our NodePath essence
         NodePath.__init__(self)
 
