@@ -23,7 +23,9 @@
 #include <pandabase.h>
 
 class Node;
- 
+
+BEGIN_PUBLISH
+
 ////////////////////////////////////////////////////////////////////
 //     Function: traverse_data_graph
 //  Description: Initiates a traversal of the data graph given the
@@ -32,5 +34,7 @@ class Node;
 //               downwards.
 ////////////////////////////////////////////////////////////////////
 void EXPCL_PANDA traverse_data_graph(Node *root);
+
+END_PUBLISH
 
 #endif
