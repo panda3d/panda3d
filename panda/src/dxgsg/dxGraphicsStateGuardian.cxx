@@ -380,9 +380,18 @@ init_dx(  LPDIRECTDRAW7		context,
 
   if((dx_decal_type==GDT_offset) && !(D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
 #ifdef _DEBUG
+      // dx7 doesnt support PLANEMASK renderstate
+      #if(DIRECT3D_VERSION < 0x700)
           dxgsg_cat.error() << "dx-decal-type 'offset' not supported by hardware, switching to decal masking\n";
+      #else
+          dxgsg_cat.error() << "dx-decal-type 'offset' not supported by hardware, switching to decal blend-based masking\n";      
+      #endif
 #endif
+      #if(DIRECT3D_VERSION < 0x700)
           dx_decal_type = GDT_mask;
+      #else
+          dx_decal_type = GDT_blend;      
+      #endif
   } 
 
   if((dx_decal_type==GDT_mask) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKPLANES)) {
@@ -392,8 +401,9 @@ init_dx(  LPDIRECTDRAW7		context,
           dx_decal_type = GDT_blend;
   }
 
-  if(((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ))
+  if(((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ)) {
          dxgsg_cat.error() << "dx-decal-type mask impossible to implement, no hardware support for Z-masking, decals will not appear correctly\n";
+  }
 
 //#define REQUIRED_BLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE|D3DPBLENDCAPS_SRCCOLOR|D3DPBLENDCAPS_INVSRCCOLOR| \
 //                            D3DPBLENDCAPS_SRCALPHA|D3DPBLENDCAPS_INVSRCALPHA | D3DPBLENDCAPS_DESTALPHA|D3DPBLENDCAPS_INVDESTALPHA|D3DPBLENDCAPS_DESTCOLOR|D3DPBLENDCAPS_INVDESTCOLOR)
@@ -3779,10 +3789,12 @@ end_decal(GeomNode *base_geom) {
 			enable_blend(true);
 			call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
       }
- 	  else {
+  #if(DIRECT3D_VERSION < 0x700)
+ 	  else {  // dx7 doesn't support planemask rstate
         // note: not saving current planemask val, assumes this is always all 1's.  should be ok
         _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
       }
+  #endif
 
       // No need to have texturing on for this.
       enable_texturing(false);
@@ -3811,9 +3823,12 @@ end_decal(GeomNode *base_geom) {
     	  enable_blend(was_blend);
     	  if (was_blend)
     			call_dxBlendFunc(old_blend_source_func, old_blend_dest_func);
-       } else {
+       } 
+  #if(DIRECT3D_VERSION < 0x700)           
+         else {
           _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0xFFFFFFFF);
        }
+  #endif
 
        enable_texturing(was_textured);
    	  _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled); 
