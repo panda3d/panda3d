@@ -54,7 +54,7 @@
 // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
 // list of binaries that are to be built only when specifically asked
 // for.
-#define lib_targets $[patsubst %,$[so_dir]/lib%.dll,$[TARGET(metalib_target noinst_lib_target) $[real_lib_targets]]]
+#define lib_targets $[patsubst %,$[so_dir]/lib%.dll,$[TARGET(metalib_target noinst_lib_target)] $[real_lib_targets]]
 #define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]/lib%.lib]
 #define bin_targets $[TARGET(bin_target noinst_bin_target sed_bin_target):%=$[st_dir]/%]
 #define test_bin_targets $[TARGET(test_bin_target):%=$[st_dir]/%]

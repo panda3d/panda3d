@@ -328,8 +328,8 @@
 // compiler.  Comment this bit out (or redefine the variables
 // yourself) if you'd rather use gcc or some other compiler.
 #if $[eq $[PLATFORM],Irix]
-  #defer CC cc -n32
-  #defer CXX CC -n32
+  #defer CC cc -n32 -mips3
+  #defer CXX CC -n32 -mips3
     
   // Turn off a few annoying warning messages.
   // 1174 - function 'blah' was declared but never used

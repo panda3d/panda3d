@@ -393,6 +393,71 @@
 #end get_ld
 
 
+// This function determines the set of libraries our various targets
+// depend on.  This is a complicated definition.  It is the union of
+// all of our targets' dependencies, except:
+
+// If a target is part of a metalib, it depends (a) directly on all of
+// its normal library dependencies that are part of the same metalib,
+// and (b) indirectly on all of the metalibs that every other library
+// dependency is part of.  If a target is not part of a metalib, it is
+// the same as case (b) above.
+#defun get_depend_libs
+  #define depend_libs
+  #forscopes lib_target noinst_lib_target
+    #define metalib $[module $[TARGET],$[TARGET]]
+    #if $[ne $[metalib],]
+      // This library is included on a metalib.
+      #foreach depend $[LOCAL_LIBS]
+        #define depend_metalib $[module $[TARGET],$[depend]]
+        #if $[eq $[depend_metalib],$[metalib]]
+          // Here's a dependent library in the *same* metalib.
+          #set depend_libs $[depend_libs] $[depend]
+        #elif $[ne $[depend_metalib],]
+          // This dependent library is in a *different* metalib.
+          #set depend_libs $[depend_libs] $[depend_metalib]
+        #else
+          // This dependent library is not in any metalib.
+          #set depend_libs $[depend_libs] $[depend]
+        #endif
+      #end depend
+    #else
+      // This library is *not* included on a metalib.
+      #foreach depend $[LOCAL_LIBS]
+        #define depend_metalib $[module $[TARGET],$[depend]]
+        #if $[ne $[depend_metalib],]
+          // This dependent library is on a metalib.
+          #set depend_libs $[depend_libs] $[depend_metalib]
+        #else
+          // This dependent library is not in any metalib.
+          #set depend_libs $[depend_libs] $[depend]
+        #endif
+      #end depend
+    #endif
+  #end lib_target noinst_lib_target
+  
+  // These will never be part of a metalib.
+  #forscopes static_lib_target bin_target noinst_bin_target metalib_target
+    #foreach depend $[LOCAL_LIBS]
+      #define depend_metalib $[module $[TARGET],$[depend]]
+      #if $[ne $[depend_metalib],]
+        // This dependent library is on a metalib.
+        #set depend_libs $[depend_libs] $[depend_metalib]
+      #else
+        // This dependent library is not in any metalib.
+        #set depend_libs $[depend_libs] $[depend]
+      #endif
+    #end depend
+  #end static_lib_target bin_target noinst_bin_target metalib_target
+
+  // In case we're defining any metalibs, these depend directly on
+  // their components as well.
+  #set depend_libs $[depend_libs] $[COMPONENT_LIBS(metalib_target)]
+
+  $[depend_libs]
+#end get_depend_libs
+
+
 // Define a few directories that will be useful.
 
 #define so_dir $[ODIR_SHARED]

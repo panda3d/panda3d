@@ -8,9 +8,6 @@
 
 #if $[or $[eq $[DIR_TYPE], src], $[eq $[DIR_TYPE], metalib]]
 #if $[eq $[DEPEND_DIRS],]
-  // Allow the user to define additional EXTRA_DEPENDS targets in each
-  // Sources.pp.
-  #define DEPEND_DIRS $[EXTRA_DEPENDS]
   #define DEPENDABLE_HEADERS
 
   #forscopes metalib_target static_lib_target lib_target noinst_lib_target bin_target noinst_bin_target
@@ -31,12 +28,13 @@
 Warning: Lib(s) $[nonexisting], referenced in $[DIRNAME]/$[TARGET], not found.
     #endif
 
-    #set DEPEND_DIRS $[DEPEND_DIRS] $[all_libs $[DIRNAME],$[LOCAL_LIBS] $[COMPONENT_LIBS]] $[LOCAL_INCS]
     #set DEPENDABLE_HEADERS $[DEPENDABLE_HEADERS] $[filter %.h %.I,$[SOURCES]]
-
   #end metalib_target static_lib_target lib_target noinst_lib_target bin_target noinst_bin_target
 
-  #set DEPEND_DIRS $[sort $[DEPEND_DIRS]]
+  // Allow the user to define additional EXTRA_DEPENDS targets in each
+  // Sources.pp.
+  #define DEPEND_DIRS \
+    $[sort $[EXTRA_DEPENDS] $[all_libs $[DIRNAME],$[get_depend_libs]]]
   #set DEPENDABLE_HEADERS $[sort $[DEPENDABLE_HEADERS]]
 #endif
 
