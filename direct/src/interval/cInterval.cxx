@@ -53,6 +53,25 @@ CInterval(const string &name, double duration, bool open_ended) :
   _play_rate = 1.0;
   _do_loop = false;
   _loop_count = 0;
+
+  if (interval_cat.is_spam()) {
+    interval_cat.spam()
+      << "Constructing interval " << (void *)this << ", duration = "
+      << _duration << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CInterval::
+~CInterval() {
+  if (interval_cat.is_spam()) {
+    interval_cat.spam()
+      << "Destructing interval " << (void *)this << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -42,6 +42,7 @@ class CIntervalManager;
 class EXPCL_DIRECT CInterval : public TypedReferenceCount {
 public:
   CInterval(const string &name, double duration, bool open_ended);
+  virtual ~CInterval();
 
 PUBLISHED:
   INLINE const string &get_name() const;
