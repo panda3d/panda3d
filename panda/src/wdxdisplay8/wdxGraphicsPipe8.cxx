@@ -62,7 +62,7 @@ TypeHandle wdxGraphicsPipe::get_class_type(void) {
     return _type_handle;
 }
 
-const char *pipe_type_name="wdxGraphicsPipe";
+const char *pipe_type_name="wdxGraphicsPipe8";
 
 void wdxGraphicsPipe::init_type(void) {
     InteractiveGraphicsPipe::init_type();
