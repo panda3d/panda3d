@@ -39,6 +39,7 @@ class NetMessenger(Messenger):
         air is the AI Repository.
         channels is a list of channel IDs (uint32 values)
         """
+        assert self.notify.debugCall()
         Messenger.__init__(self)
         self.air=air
         self.channels=channels
@@ -46,6 +47,7 @@ class NetMessenger(Messenger):
             self.air.registerForChannel(i)
 
     def clear(self):
+        assert self.notify.debugCall()
         for i in self.channels:
             self.air.unRegisterChannel(i)
         del self.air
@@ -56,6 +58,7 @@ class NetMessenger(Messenger):
         """
         Send message to All AI and Uber Dog servers.
         """
+        assert self.notify.debugCall()
         datagram = PyDatagram()
         # To:
         datagram.addChannel(self.channels[0])
@@ -79,6 +82,7 @@ class NetMessenger(Messenger):
         The internal data in pickleData should have a tuple of
         (messageString, sendArgsList).
         """
+        assert self.notify.debugCall()
         messageType=self.air.getMsgType()
         if messageType:
             message=MESSAGE_TYPES[messageType-1]
