@@ -128,9 +128,8 @@ end_frame() {
     // supports that right now).
     nassertv(has_texture());
 
-    DisplayRegion dr(this, _x_size, _y_size);
     RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
-    _gsg->copy_texture(get_texture(), &dr, buffer);
+    _gsg->copy_texture(get_texture(), _default_display_region, buffer);
   }
 }
 
