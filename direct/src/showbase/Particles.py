@@ -261,7 +261,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	elif (self.rendererType == "SpriteParticleRenderer"):
 	    print "# Sprite parameters"
 	    tex = self.renderer.getTexture()
-	    print 'renderer.setTexture(' + tex.getName() + ')'
+	    print 'renderer.setTexture(loader.loadTexture(' + tex.getName() + '))'
 	    sColor = self.renderer.getColor()
 	    print ('renderer.setColor(Colorf(%f, %f, %f, %f))' % (sColor[0], sColor[1], sColor[2], sColor[3]))
 	    print 'renderer.setXScaleFlag(%d)' % self.renderer.getXScaleFlag()
