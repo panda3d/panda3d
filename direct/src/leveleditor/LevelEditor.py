@@ -1,4 +1,3 @@
-
 from ShowBaseGlobal import *
 from PandaObject import *
 from PieMenu import *
@@ -40,6 +39,8 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   '4_21', '3_22', '4_13_8', '3_13_9', '10',
                   '12_8', '13_9_8'
                   ]
+BUILDING_HEIGHTS = [10, 20, 25, 30]
+NUM_WALLS = [1,2,3]
 
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
@@ -450,7 +451,7 @@ class LevelEditor(NodePath, PandaObject):
             ('SGE_Add Group', self.addGroup),
             ('SGE_Add Vis Group', self.addVisGroup),
             # Actions in response to Pie Menu interaction
-            ('select_building_style', self.setBuildingStyle),
+            ('select_building_style_all', self.setBuildingStyle),
             ('select_building_type', self.setBuildingType),
             ('select_building_width', self.setBuildingWidth),
             ('select_cornice_color', self.setDNATargetColor),
@@ -522,8 +523,6 @@ class LevelEditor(NodePath, PandaObject):
         self.vgpanel = None
         # Start off enabled
         self.enable()
-        # Editing the first hood id on the list
-        self.setEditMode(NEIGHBORHOODS[0])
 
         # SUIT POINTS
         # Create a sphere model to show suit points
@@ -541,6 +540,20 @@ class LevelEditor(NodePath, PandaObject):
         self.battleCellMarker.setScale(1)
         self.currentBattleCellType = "20w 20l"
 
+        # Update panel
+        # Editing the first hood id on the list
+        self.setEditMode(NEIGHBORHOODS[0])
+        # Start of with first item in lists
+        self.panel.streetSelector.selectitem(0)
+        self.panel.streetSelector.invoke()
+        self.panel.toonBuildingSelector.selectitem(0)
+        self.panel.toonBuildingSelector.invoke()
+        self.panel.landmarkBuildingSelector.selectitem(0)
+        self.panel.landmarkBuildingSelector.invoke()
+        self.panel.propSelector.selectitem(0)
+        self.panel.propSelector.invoke()
+        # Start off with 20 foot buildings
+        self.panel.twentyFootButton.invoke()
         # Update scene graph explorer
         self.panel.sceneGraphExplorer.update()
 
@@ -1215,50 +1228,102 @@ class LevelEditor(NodePath, PandaObject):
         self.accept('space', self.initNodePath, [dnaNode, 'space'])
         self.accept('insert', self.initNodePath, [dnaNode, 'insert'])
 
-    def getRandomBuildingType(self, buildingType):
-        # Select a list of wall heights
-        chance = randint(1,100)
-        if buildingType == 'random20':
-            if chance <= 35:
-                return '10_10'
-            elif chance <= 70:
-                return '12_8'
-            else:
-                return '20'
-        elif buildingType == 'random25':
-            if chance <= 25:
-                return '4_21'
-            elif chance <= 50:
-                return '3_22'
-            elif chance <= 75:
-                return '4_13_8'
-            else:
-                return '3_13_9'
-        elif buildingType == 'random30':
-            if chance <= 40:
-                return '10_20'
-            elif (chance > 80):
-                return '10_10_10'
-            else:
-                return '20_10'
-        else:
-            return buildingType
-
     def setRandomBuildingStyle(self, dnaNode, name = 'building'):
         """ Initialize a new DNA Flat building to a random building style """
-        randomBuildingType = self.getCurrent('building_type')
-        # Select a list of wall heights
-        dict = {}
-        while not dict:
-            buildingType = self.getRandomBuildingType(randomBuildingType)
-            buildingStyle = 'building_style_' + buildingType
+        # What is the current building type?
+        buildingType = self.getCurrent('building_type')
+        # If random
+        if buildingType == 'random':
+            # Generate height list based on current building height
+            buildingHeight = self.getCurrent('building_height')
+            heightList = self.getRandomHeightList(buildingHeight)
+            # Convert height list to building type
+            buildingType = createHeightCode(heightList)
+        else:
+            # Use specified height list
+            heightList = map(string.atof, string.split(buildingType, '_'))
+            height = calcHeight(heightList)
+            # Is this a never before seen height list?  If so, record it.
+            try:
+                attr = self.getAttribute(`height` + '_ft_wall_heights')
+                if heightList not in attr.getList():
+                    print 'Adding new height list entry'
+                    attr.add(heightList)
+            except KeyError:
+                print 'Non standard height building'
+
+        # See if this building type corresponds to existing style dict
+        try:
+            dict = self.getDict(buildingType + '_styles')
+        except KeyError:
+            # Nope
+            dict = {}
             
-            # The building_style attribute dictionary for this number of stories
-            dict = self.getAttribute(buildingStyle).getDict()
+        # No specific dict or empty dict, try to pick a dict
+        # based on number of walls
+        if not dict:
+            # How many walls?
+            numWalls = len(heightList)
+            # Get the building_style attribute dictionary for
+            # this number of walls
+            dict = self.getDict(`numWalls` + '_wall_styles')
             
-        style = self.getRandomDictionaryEntry(dict)
+        if not dict:
+            # Still no dict, create new random style using height list
+            styleList = []
+            # Build up wall styles
+            for height in heightList:
+                wallStyle = self.getRandomDictionaryEntry(
+                    self.getDict('wall_style'))
+                styleList.append((wallStyle, height))
+            # Create new random flat building style
+            style = DNAFlatBuildingStyle(styleList = styleList)
+        else:
+            # Pick a style
+            style = self.getRandomDictionaryEntry(dict)
+            
+        # Set style....finally
         self.styleManager.setDNAFlatBuildingStyle(
-            dnaNode, style, width = self.getRandomWallWidth(), name = name)
+            dnaNode, style, width = self.getRandomWallWidth(),
+            heightList = heightList, name = name)
+
+    def getRandomHeightList(self, buildingHeight):
+        # Select a list of wall heights
+        heightLists = self.getList(`buildingHeight` + '_ft_wall_heights')
+        l = len(heightLists) 
+        if l > 0:
+            # If a list exists for this building height, pick randomly
+            return heightLists[randint(0,l - 1)]
+        else:
+            # No height lists exists for this building height, generate
+            chance = randint(0,100)
+            if buildingHeight <= 10:
+                return [buildingHeight]
+            elif buildingHeight <= 20:
+                if chance <= 30:
+                    return [20]
+                elif chance <= 80:
+                    return [10, 10]
+                else:
+                    return [12, 8]
+            elif buildingHeight <= 25:
+                if chance <= 25:
+                    return [3, 22]
+                elif chance <= 50:
+                    return [4, 21]
+                elif chance <= 75:
+                    return [3, 13, 9]
+                else:
+                    return [4, 13, 8]
+            else:
+                if chance <= 20:
+                    return [10, 20]
+                elif chance <= 35:
+                    return [20, 10]
+                elif chance <= 75:
+                    return [10, 10, 10]
+                else:
+                    return [13, 9, 8]
 
     def getRandomWallWidth(self):
         chance = randint(0,100)
@@ -1588,17 +1653,18 @@ class LevelEditor(NodePath, PandaObject):
                 self.panel.setResetColor(state)
             elif string.find(menuMode, 'orientation') >= 0:
                 state = self.DNATarget.getCode()[-2:]
-            elif menuMode == 'building_width' >= 0:
+            elif menuMode == 'building_width':
                 state = self.DNATarget.getWidth()
-            elif menuMode == 'window_count' >= 0:
+            elif menuMode == 'window_count':
                 state = self.DNATarget.getWindowCount()
-            elif menuMode == 'building_style' >= 0:
+            elif menuMode == 'building_style_all':
                 # Extract the building style from the current building
                 state = DNAFlatBuildingStyle(building = self.DNATarget)
-            elif menuMode == 'baseline_style' >= 0:
+            elif menuMode == 'baseline_style':
                 # Extract the baseline style
-                state = DNABaselineStyle(baseline = self.panel.currentBaselineDNA)
-            elif menuMode == 'wall_style' >= 0:
+                state = DNABaselineStyle(
+                    baseline = self.panel.currentBaselineDNA)
+            elif menuMode == 'wall_style':
                 # Extract the wall style from the current wall
                 state = DNAWallStyle(wall = self.DNATarget)
         self.activeMenu.setInitialState(state)
@@ -1635,12 +1701,15 @@ class LevelEditor(NodePath, PandaObject):
         wallNum = self.computeWallNum(dnaObject, hitPt)
         if wallNum < 0:
             # Do building related operations
+            """
             if direct.fShift:
                 menuMode = 'building_type'
             elif direct.fAlt:
+            """
+            if direct.fAlt:
                 menuMode = 'building_width'
             else:
-                menuMode = 'building_style'
+                menuMode = 'building_style_all'
         else:
             # Otherwise, do wall specific operations
             # Figure out where you are hitting on the wall
@@ -2520,6 +2589,7 @@ class LevelEditor(NodePath, PandaObject):
             self.outputDir = 'DonaldsDreamland'
         self.panel.editMenu.selectitem(neighborhood)
         self.styleManager.setEditMode(neighborhood)
+        self.panel.updateHeightList(self.getCurrent('building_height'))
         self.selectMap(neighborhood)
         
     def getEditMode(self):
@@ -2951,14 +3021,14 @@ class LevelEditor(NodePath, PandaObject):
                 highest=block
         # Make a list of flat building names, outside of the
         # recursive function:
-        self.flatNames=['random20', 'random25', 'random30']+BUILDING_TYPES
+        self.flatNames=['random'] + BUILDING_TYPES
         self.flatNames=map(lambda n: n+'_DNARoot', self.flatNames)
         # Search/recurse the dna:
         newHighest=self.convertToLandmarkBlocks(highest, dnaRoot)
         # Get rid of the list of flat building names:
         del self.flatNames
         
-        needToTraverse=highest!=newHighest
+        needToTraverse = (highest!=newHighest)
         return (newHighest, needToTraverse)
 
     def convertToLandmarkBlocks(self, block, dnaRoot):
@@ -3336,79 +3406,102 @@ class LevelStyleManager:
         """
         Create a buildingStyle entry in the attribute dictionary
         This will be a dictionary of style attributes, one per neighborhood
+        This information is sorted and stored by num walls, building height,
+        and building type (e.g. 10_20, or 10_10_10).
         """
-        # First create an empty dictionary
-        styleDict = self.attributeDictionary['building_style'] = {}
-        # Create an attribute object of all styles for each neighborhood
+        # First create an attribute which holds one dictionary per
+        # neighborhood which stores all of the styles for each neighborhood.
+        styleDict = self.attributeDictionary['building_style_all'] = {}
+        # Keep track of all building types
+        typeDict = {}
+        masterTypeList = []
         for neighborhood in NEIGHBORHOODS:
-            attribute = LevelAttribute('building_style')
+            attribute = LevelAttribute('building_style_all')
+            # Create a building style dictionary for each neighborhood
             attribute.setDict(
-                # Create a wall style dictionary for each neighborhood
                 self.createBuildingStyleDictionary(neighborhood))
-            # Using this dictionary, create color pie menus
+            # Using this dictionary, create building style pie menus
             attribute.setMenu(
                 self.createBuildingStyleMenu(neighborhood,
                                              attribute.getDict()))
+            # Store attribute in dictionary keyed by neighborhood
             styleDict[neighborhood] = attribute
-            
-        # Now create attribute entries sorted according to building
-        # height styles
-        attrDict = {}
-        # Create an attribute dictionary entry for each building height type
-        for type in BUILDING_TYPES:
-            key = 'building_style_' + type
-            attrDict[type] = self.attributeDictionary[key] = {}
-        # For each neighborhood create attribute for each height type
-        for neighborhood in NEIGHBORHOODS:
-            # Temp lists to accumulate neighborhood styles
-            # sorted by height type
-            styleLists = {}
-            for type in BUILDING_TYPES:
-                styleLists[type] = []
-                
-            # Sort through the styles and store in separate lists
-            for style in styleDict[neighborhood].getList():
+            # Generate a list of building types for this neighborhood
+            # and a list of building types for all neighborhoods,
+            # to be used in creating attribute dicts below
+            typeList = typeDict[neighborhood] = []
+            for style in attribute.getList():
                 heightType = string.strip(string.split(style.name, ':')[1])
-                if styleLists.has_key(heightType):
-                    styleLists[heightType].append(style)
-                
-            # Now put these lists in appropriate neighborhood attribute
-            for type in BUILDING_TYPES:
-                attribute = LevelAttribute('building_style_' + type)
-                attribute.setList(styleLists[type])
-                # Store them according to neighborhood
-                attrDict[type][neighborhood] = attribute
-            
-        # Now create attribute entries sorted according to number of walls
-        attrDict = {}
-        # Create an attribute dictionary entry for each building height type
-        for i in range(1,4):
-            key = 'building_style_' + `i` + '_wall'
-            attrDict[i] = self.attributeDictionary[key] = {}
-        # For each neighborhood create attribute for each height type
+                if heightType not in typeList:
+                    typeList.append(heightType)
+                if heightType not in masterTypeList:
+                    masterTypeList.append(heightType)
+
+        # Now sort styles according to the building type and number of walls
+        # in the building style.  Each of these attributes is also sorted by
+        # neighborhood
+        for i in masterTypeList:
+            typeKey = i + '_styles'
+            self.attributeDictionary[typeKey] = {}
+        for i in NUM_WALLS:
+            numWallKey = `i` + '_wall_styles'
+            self.attributeDictionary[numWallKey] = {}
+        # Also sort height lists according to total height of the building
+        for i in BUILDING_HEIGHTS:
+            heightKey = `i` + '_ft_wall_heights'
+            self.attributeDictionary[heightKey] = {}
+        # Now distribute data for each neighborhood
         for neighborhood in NEIGHBORHOODS:
-            # Temp lists to accumulate neighborhood styles
-            # sorted by height type
-            styleLists = {}
-            for i in range(1,4):
-                styleLists[i] = []
-                
+            # Create temp dicts to accumulate styles and heights for that 
+            # neighborhood
+            typeAttributes = {}
+            numWallsAttributes = {}
+            heightAttributes = {}
+            # Store atributes for the different categories
+            # Building type
+            for i in typeDict[neighborhood]:
+                typeAttrName = neighborhood + '_' + i + '_styles'
+                typeAttributes[i] = LevelAttribute(typeAttrName)
+            # Number of walls
+            for i in NUM_WALLS:
+                styleAttrName = neighborhood + '_' + `i` + '_wall_styles'
+                numWallsAttributes[i] = LevelAttribute(styleAttrName)
+            # Building height
+            for i in BUILDING_HEIGHTS:
+                heightAttrName = neighborhood + '_' + `i` + '_ft_wall_heights'
+                heightAttributes[i] = LevelAttribute(heightAttrName)
             # Sort through the styles and store in separate lists
             for style in styleDict[neighborhood].getList():
                 # Put in code for number of walls into building styles
                 heightType = string.strip(string.split(style.name, ':')[1])
                 heightList = map(string.atof, string.split(heightType, '_'))
                 numWalls = len(heightList)
-                if styleLists.has_key(numWalls):
-                    styleLists[numWalls].append(style)
-                
-            # Now put these lists in appropriate neighborhood attribute
-            for i in range(1,4):
-                attribute = LevelAttribute('building_style_' + `i` + '_wall')
-                attribute.setList(styleLists[i])
-                # Store them according to neighborhood
-                attrDict[i][neighborhood] = attribute
-    
+                # This one stores styles sorted by type
+                typeAttributes[heightType].add(style)
+                # This one stores styles sorted by number of walls
+                numWallsAttributes[numWalls].add(style)
+                # A record of all the unique height lists
+                height = calcHeight(heightList)
+                if heightList not in heightAttributes[height].getList():
+                    heightAttributes[height].add(heightList)
+            # Now store these sorted style and height attributes
+            # in the appropriate top-level attribute dictionary
+            for i in typeDict[neighborhood]:
+                # Styles
+                typeKey = i + '_styles'
+                self.attributeDictionary[typeKey][neighborhood] = (
+                    typeAttributes[i])
+            for i in NUM_WALLS:
+                # Styles
+                numWallKey = `i` + '_wall_styles'
+                self.attributeDictionary[numWallKey][neighborhood] = (
+                    numWallsAttributes[i])
+            for i in BUILDING_HEIGHTS:
+                # Heights
+                heightKey = `i` + '_ft_wall_heights'
+                self.attributeDictionary[heightKey][neighborhood] = (
+                    heightAttributes[i])
+        
     def createBuildingStyleDictionary(self, neighborhood):
         """
         Create a dictionary of wall styles for a neighborhood
@@ -3510,7 +3603,7 @@ class LevelStyleManager:
         return bldg.traverse(hidden, DNASTORE, 1)
     
     def setDNAFlatBuildingStyle(self, fb, bldgStyle, width = 10.0,
-                                name = 'building'):
+                                heightList = None, name = 'building'):
         """ Set DNAFlatBuilding style. """
         # Remove flat building's children
         DNARemoveChildren(fb)
@@ -3518,7 +3611,9 @@ class LevelStyleManager:
         fb.setName(name)
         # Create the walls
         styleList = bldgStyle.styleList
-        heightList = bldgStyle.heightList
+        # Height list not specified, use styles default heights
+        if not heightList:
+            heightList = bldgStyle.heightList
         for i in range(len(styleList)):
             wallStyle = styleList[i]
             # Get Style
@@ -3532,13 +3627,14 @@ class LevelStyleManager:
                 wallHeight = 10.0
             # Create wall accordingly
             wall = DNAWall()
-            self.setDNAWallStyle(wall, wallStyle, wallHeight)
+            self.setDNAWallStyle(wall, wallStyle, wallHeight,
+                                 width = width)
             # Add it to building DNA
             fb.add(wall)
         # Set the buildings width
         fb.setWidth(width)
 
-    def setDNAWallStyle(self, wall, style, height = 10.0):
+    def setDNAWallStyle(self, wall, style, height = 10.0, width = None):
         """ Set DNAWall to input style. """
         # Remove wall's children
         DNARemoveChildren(wall)
@@ -3549,7 +3645,11 @@ class LevelStyleManager:
         # Add windows if necessary
         if style['window_texture']:
             windows = DNAWindows()
-            windows.setWindowCount(style['window_count'])
+            windowCount = style['window_count']
+            if width:
+                if (width < 15.0):
+                    windowCount = min(1, windowCount)
+            windows.setWindowCount(windowCount)
             # Set window's attributes
             windows.setCode(style['window_texture'])
             windows.setColor(style['window_color'])
@@ -3830,6 +3930,8 @@ class LevelStyleManager:
         self.createMiscAttribute('building_width',[5,10,15,15.6,20,20.7,25])
         # Building types
         self.createMiscAttribute('building_type', BUILDING_TYPES)
+        # Building heights
+        self.createMiscAttribute('building_height', [10,20,25,30])
         # MRM: Need offset on these menus
         # Wall orientation menu
         self.createMiscAttribute('wall_orientation', ['ur','ul','dl','dr'])
@@ -3935,8 +4037,9 @@ class LevelAttribute:
         # Pie menu used to pick an option
         self._menu = None
         # Dictionary of available options
-        self._dict = None
+        self._dict = {}
         self._list = []
+        self.count = 0
         # Currently selected option
         self._current = None
     def setCurrent(self, newValue, fEvent = 1):
@@ -3951,6 +4054,8 @@ class LevelAttribute:
         self._dict = dict
         # Create a list from the dictionary
         self._list = dict.values()
+        # Update count
+        self.count = len(self._list)
         # Initialize current to first item
         if (len(self._list) > 0):
             self._current = self._list[0]
@@ -3958,13 +4063,17 @@ class LevelAttribute:
         self._list = list
         # Create a dictionary from the list
         self._dict = {}
-        count = 0
+        self.count = 0
         for item in list:
-            self._dict[count] = item
-            count = count + 1
+            self._dict[self.count] = item
+            self.count += 1
         # Initialize current to first item
-        if (len(self._list) > 0):
+        if (self.count > 0):
             self._current = self._list[0]
+    def add(self,item):
+        self._dict[self.count] = item
+        self._list.append(item)
+        self.count += 1
     def getCurrent(self):
         return self._current
     def getMenu(self):
@@ -3973,6 +4082,8 @@ class LevelAttribute:
         return self._dict
     def getList(self):
         return self._list
+    def getCount(self):
+        return self.count
 
 class DNAFlatBuildingStyle:
     """Class to hold attributes of a building style"""
@@ -3985,37 +4096,50 @@ class DNAFlatBuildingStyle:
             # Passed in a list of style-height pairs
             self.styleList = []
             self.heightList = []
+            self.numWalls = 0
             for pair in styleList:
                 self.add(pair[0], pair[1])
         else:
             # Use default style/height
             self.styleList = [DNAWallStyle()]
             self.heightList = [10]
+            self.numWalls = 1
 
     def add(self, style, height):
         self.styleList.append(style)
         self.heightList.append(height)
+        self.numWalls += 1
             
     def copy(self, building):
         self.styleList = []
         self.heightList = DNAGetWallHeights(building)[0]
+        self.numWalls = 0
         for i in range(building.getNumChildren()):
             child = building.at(i)
             if DNAClassEqual(child, DNA_WALL):
                 wallStyle = DNAWallStyle(wall = child)
                 self.styleList.append(wallStyle)
+                self.numWalls += 1
 
     def output(self, file = sys.stdout):
-        def createHeightCode(s = self):
-            def joinHeights(h1,h2):
-                return '%s_%s' % (h1, h2)
-            hl = map(ROUND_INT, s.heightList)
-            return reduce(joinHeights, hl)
-        file.write('buildingStyle: %s\n' % createHeightCode())
+        file.write('buildingStyle: %s\n' % createHeightCode(self.heightList))
         for style in self.styleList:
             style.output(file)
         file.write('endBuildingStyle\n')
 
+def createHeightCode(heightList):
+    def joinHeights(h1,h2):
+        return '%s_%s' % (h1, h2)
+    hl = map(ROUND_INT, heightList)
+    if len(hl) == 1:
+        return `hl[0]`
+    return reduce(joinHeights, hl)
+
+def calcHeight(heightList):
+    height = 0
+    for h in heightList:
+        height = height + h
+    return int(height)
 
 class DNABaselineStyle:
     """Class to hold attributes of a baseline style (wiggle, colors, etc)"""
@@ -4407,21 +4531,49 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             labelpos = W,
             label_width = 12,
             label_anchor = W,
-            label_text = 'Toon bldg type:',
+            label_text = 'Bldg type:',
             entry_width = 30,
             selectioncommand = self.setFlatBuildingType,
-            scrolledlist_items = ['random20', 'random25', 'random30'] + BUILDING_TYPES
+            scrolledlist_items = (['random'] + BUILDING_TYPES)
             )
-        self.toonBuildingType = 'random20'
+        bf = Frame(toonBuildingsPage)
+        Label(bf, text = 'Building Height:').pack(side = LEFT, expand = 0)
+        self.heightMode = IntVar()
+        self.heightMode.set(20)
+        self.tenFootButton = Radiobutton(
+            bf,
+            text = '10 ft',
+            value = 10,
+            variable = self.heightMode,
+            command = self.setFlatBuildingHeight)
+        self.tenFootButton.pack(side = LEFT, expand = 1, fill = X)
+        self.twentyFootButton = Radiobutton(
+            bf,
+            text = '20 ft',
+            value = 20,
+            variable = self.heightMode,
+            command = self.setFlatBuildingHeight)
+        self.twentyFootButton.pack(side = LEFT, expand = 1, fill = X)
+        self.twentyFiveFootButton = Radiobutton(
+            bf,
+            text = '25 ft',
+            value = 25,
+            variable = self.heightMode,
+            command = self.setFlatBuildingHeight)
+        self.twentyFiveFootButton.pack(side = LEFT, expand = 1, fill = X)
+        self.thirtyFootButton = Radiobutton(
+            bf,
+            text = '30 ft',
+            value = 30,
+            variable = self.heightMode,
+            command = self.setFlatBuildingHeight)
+        self.thirtyFootButton.pack(side = LEFT, expand = 1, fill = X)
+        bf.pack(fill = X)
+        
+        self.toonBuildingType = 'random'
         self.toonBuildingSelector.selectitem(self.toonBuildingType)
         self.toonBuildingSelector.pack(expand = 1, fill = BOTH)
         
-        #self.toonBuildingWidthScale = EntryScale.EntryScale(
-        #toonBuildingsPage, min = 1.0, max = 30.0,
-        #   resolution = 0.01, text = 'Wall Width',
-        #   command = self.updateSelectedWallWidth)
-        #self.toonBuildingWidthScale.pack(fill = X)
-
         # LANDMARK BUILDINGS
         Label(landmarkBuildingsPage, text = 'Landmark Buildings',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
@@ -4437,7 +4589,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             labelpos = W,
             label_width = 12,
             label_anchor = W,
-            label_text = 'Landmark Building type:',
+            label_text = 'Bldg type:',
             entry_width = 30,
             selectioncommand = self.setLandmarkType,
             scrolledlist_items = map(lambda s: s[14:],
@@ -4884,6 +5036,19 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def setFlatBuildingType(self,name):
         self.toonBuildingType = name
         self.levelEditor.setCurrent('building_type', self.toonBuildingType)
+        
+    def setFlatBuildingHeight(self):
+        height = self.heightMode.get()
+        self.levelEditor.setCurrent('building_height', height)
+        self.updateHeightList(height)
+
+    def updateHeightList(self, height):
+        # Update combo box
+        heightList = self.levelEditor.getList(`height` + '_ft_wall_heights')
+        self.toonBuildingSelector.setlist(
+            ['random'] + map(createHeightCode,heightList))
+        self.toonBuildingSelector.selectitem(0)
+        self.toonBuildingSelector.invoke()
         
     def addFlatBuilding(self):
         self.levelEditor.addFlatBuilding(self.toonBuildingType)
