@@ -31,11 +31,7 @@ class ClusterClient(DirectObject.DirectObject):
                                           serverConfig.filmOffset)
                 self.serverList.append(server)
         self.startMoveCamTask()
-
-    def moveCamera(self, xyz, hpr):
-        self.notify.debug('moving unsynced camera')
-        for server in self.serverList:
-            server.sendMoveCam(xyz,hpr)
+        self.startMoveSelectedTask()
 
     def startMoveCamTask(self):
         taskMgr.add(self.moveCameraTask, "moveCamTask", 49)
@@ -45,7 +41,27 @@ class ClusterClient(DirectObject.DirectObject):
             base.camera.getPos(render),
             base.camera.getHpr(render))
         return Task.cont
-        
+
+    def moveCamera(self, xyz, hpr):
+        self.notify.debug('moving unsynced camera')
+        for server in self.serverList:
+            server.sendMoveCam(xyz,hpr)
+
+    def startMoveSelectedTask(self):
+        taskMgr.add(self.moveSelectedTask, "moveSelectedTask", 48)
+
+    def moveSelectedTask(self, state):
+        # Update cluster if current display is a cluster client
+        if (last is not None):
+            self.notify.debug('moving selected node path')
+            xyz = Point3(0)
+            hpr = VBase3(0)
+            scale = VBase3(1)
+            decomposeMatrix(last.getMat(), scale, hpr, xyz)
+            for server in self.serverList:
+                server.sendMoveSelected(xyz,hpr)
+        return Task.cont
+
     def getNodePathFindCmd(self, nodePath):
         import string
         pathString = `nodePath`
@@ -163,6 +179,15 @@ class DisplayConnection:
              (self.msgHandler.packetNumber,xyz[0],xyz[1],xyz[2],
              hpr[0],hpr[1],hpr[2])) )
         datagram = self.msgHandler.makeCamMovementDatagram(xyz, hpr)
+        self.cw.send(datagram, self.tcpConn)
+
+    def sendMoveSelected(self,xyz,hpr):
+        ClusterClient.notify.debug("send move selected...")
+        ClusterClient.notify.debug("packet %d xyz,hpr=%f %f %f %f %f %f" %
+                                   (self.msgHandler.packetNumber,
+                                    xyz[0],xyz[1],xyz[2],
+                                    hpr[0],hpr[1],hpr[2]))
+        datagram = self.msgHandler.makeSelectedMovementDatagram(xyz, hpr)
         self.cw.send(datagram, self.tcpConn)
 
     # the following should only be called by a synchronized cluster manger

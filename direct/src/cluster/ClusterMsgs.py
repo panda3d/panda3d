@@ -15,6 +15,7 @@ CLUSTER_CAM_MOVEMENT = 3
 CLUSTER_SWAP_READY = 4
 CLUSTER_SWAP_NOW   = 5
 CLUSTER_COMMAND_STRING = 6
+CLUSTER_SELECTED_MOVEMENT = 7
 CLUSTER_EXIT = 100
 
 #Port number for cluster rendering
@@ -141,6 +142,30 @@ class ClusterMsgHandler:
         r=dgi.getFloat32()
         self.notify.debug(('  new position=%f %f %f  %f %f %f' %
                            (x,y,z,h,p,r)))
+        return (x,y,z,h,p,r)
+
+    def makeSelectedMovementDatagram(self,xyz,hpr):
+        datagram = Datagram.Datagram()
+        datagram.addUint32(self.packetNumber)
+        self.packetNumber = self.packetNumber + 1
+        datagram.addUint8(CLUSTER_SELECTED_MOVEMENT)
+        datagram.addFloat32(xyz[0])
+        datagram.addFloat32(xyz[1])
+        datagram.addFloat32(xyz[2])
+        datagram.addFloat32(hpr[0])
+        datagram.addFloat32(hpr[1])
+        datagram.addFloat32(hpr[2])
+        return datagram
+
+    def parseSelectedMovementDatagram(self, dgi):
+        x=dgi.getFloat32()
+        y=dgi.getFloat32()
+        z=dgi.getFloat32()
+        h=dgi.getFloat32()
+        p=dgi.getFloat32()
+        r=dgi.getFloat32()
+        self.notify.debug('  new position=%f %f %f  %f %f %f' %
+                          (x,y,z,h,p,r))
         return (x,y,z,h,p,r)
 
     def makeCommandStringDatagram(self, commandString):

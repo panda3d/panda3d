@@ -86,6 +86,8 @@ class ClusterServer(DirectObject.DirectObject):
             self.handleCamFrustum(dgi)
         elif (type == CLUSTER_CAM_MOVEMENT):
             self.handleCamMovement(dgi)
+        elif (type == CLUSTER_SELECTED_MOVEMENT):
+            self.handleSelectedMovement(dgi)
         elif (type == CLUSTER_COMMAND_STRING):
             self.handleCommandString(dgi)
         elif (type == CLUSTER_SWAP_READY):
@@ -116,6 +118,12 @@ class ClusterServer(DirectObject.DirectObject):
         (x,y,z,h,p,r) = self.msgHandler.parseCamMovementDatagram(dgi)
         self.cameraJig.setPosHpr(render,x,y,z,h,p,r)
         self.fPosReceived = 1
+
+    def handleSelectedMovement(self,dgi):
+        """ Update cameraJig position to reflect latest position """
+        (x,y,z,h,p,r) = self.msgHandler.parseSelectedMovementDatagram(dgi)
+        if last:
+            last.setPosHpr(x,y,z,h,p,r)
 
     def handleCommandString(self, dgi):
         """ Handle arbitrary command string from client """
