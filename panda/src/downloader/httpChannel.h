@@ -150,6 +150,7 @@ public:
 
 private:
   bool reached_done_state();
+  bool run_try_next_proxy();
   bool run_connecting();
   bool run_connecting_wait();
   bool run_proxy_ready();
@@ -204,7 +205,11 @@ private:
   void reset_to_new();
   void close_connection();
 
+  typedef pvector<URLSpec> Proxies;
+
   HTTPClient *_client;
+  Proxies _proxies;
+  size_t _proxy_next_index;
   URLSpec _proxy;
   PT(BioPtr) _bio;
   PT(BioStreamPtr) _source;
@@ -286,6 +291,7 @@ private:
   // off.
   enum State {
     S_new,
+    S_try_next_proxy,
     S_connecting,
     S_connecting_wait,
     S_proxy_ready,

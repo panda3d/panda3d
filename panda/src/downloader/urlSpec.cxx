@@ -447,7 +447,19 @@ set_query(const string &query) {
 ////////////////////////////////////////////////////////////////////
 void URLSpec::
 set_url(const string &url, bool server_name_expected) {
-  _url = url;
+  size_t p, q;
+
+  // Omit leading and trailing whitespace.
+  p = 0;
+  while (p < url.length() && isspace(url[p])) {
+    p++;
+  }
+  q = url.length();
+  while (q > p && isspace(url[q - 1])) {
+    q--;
+  }
+
+  _url = url.substr(p, q - p);
   _flags = 0;
 
   if (url.empty()) {
@@ -457,7 +469,6 @@ set_url(const string &url, bool server_name_expected) {
 
   // First, replace backslashes with forward slashes, since this is a
   // common mistake among Windows users.
-  size_t p;
   for (p = 0; p < _url.length(); p++) {
     if (_url[p] == '\\') {
       _url[p] = '/';

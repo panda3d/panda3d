@@ -32,6 +32,9 @@
 #include "httpAuthorization.h"
 #include "httpEnum.h"
 #include "pointerTo.h"
+#include "pvector.h"
+#include "pmap.h"
+#include "vector_string.h"
 
 #include <openssl/ssl.h>
 
@@ -59,8 +62,22 @@ PUBLISHED:
   void operator = (const HTTPClient &copy);
   ~HTTPClient();
 
-  INLINE void set_proxy(const URLSpec &proxy);
-  INLINE const URLSpec &get_proxy() const;
+  void set_proxy(const URLSpec &proxy);
+  URLSpec get_proxy() const;
+
+  void set_proxy_spec(const string &proxy_spec);
+  string get_proxy_spec() const;
+
+  void set_direct_host_spec(const string &direct_host_spec);
+  string get_direct_host_spec() const;
+
+  void clear_proxy();
+  void add_proxy(const string &scheme, const URLSpec &proxy);
+  void clear_direct_host();
+  void add_direct_host(const string &hostname);
+
+  void get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const;
+  string get_proxies_for_url(const URLSpec &url) const;
 
   void set_username(const string &server, const string &realm, const string &username);
   string get_username(const string &server, const string &realm) const;
@@ -93,6 +110,9 @@ public:
   SSL_CTX *get_ssl_ctx();
 
 private:
+  bool get_proxies_for_scheme(const string &scheme, 
+                              pvector<URLSpec> &proxies) const;
+
   void add_http_username(const string &http_username);
   string select_username(const URLSpec &url, bool is_proxy, 
                          const string &realm) const;
@@ -113,7 +133,11 @@ private:
                                void *arg);
 #endif
 
-  URLSpec _proxy;
+  typedef pvector<URLSpec> Proxies;
+  typedef pmap<string, Proxies> ProxiesByScheme;
+  ProxiesByScheme _proxies_by_scheme;
+  vector_string _direct_hosts;
+
   HTTPEnum::HTTPVersion _http_version;
   VerifySSL _verify_ssl;
 

@@ -41,6 +41,7 @@ HTTPChannel::
 HTTPChannel(HTTPClient *client) :
   _client(client)
 {
+  _proxy_next_index = 0;
   _persistent_connection = false;
   _connect_timeout = connect_timeout;
   _http_timeout = http_timeout;
@@ -62,7 +63,6 @@ HTTPChannel(HTTPClient *client) :
   _status_code = 0;
   _status_string = string();
   _response_type = RT_none;
-  _proxy = _client->get_proxy();
   _http_version = _client->get_http_version();
   _http_version_string = _client->get_http_version_string();
   _state = S_new;
@@ -254,7 +254,10 @@ run() {
 
   bool repeat_later;
   do {
-    if (_bio.is_null()) {
+    // If we're in a state that expects to have a connection already
+    // (that is, any state other that S_try_next_proxy), then
+    // reestablish the connection if it has been dropped.
+    if (_bio.is_null() && _state != S_try_next_proxy) {
       if (_connect_count > http_max_connect_count) {
         // Too many connection attempts, just give up.  We should
         // never trigger this failsafe, since the code in each
@@ -267,8 +270,6 @@ run() {
       }
 
       // No connection.  Attempt to establish one.
-      _proxy = _client->get_proxy();
-      
       if (_proxy.empty()) {
         _bio = new BioPtr(_request.get_url());
       } else {
@@ -297,6 +298,10 @@ run() {
     }
 
     switch (_state) {
+    case S_try_next_proxy:
+      repeat_later = run_try_next_proxy();
+      break;
+
     case S_connecting:
       repeat_later = run_connecting();
       break;
@@ -627,6 +632,32 @@ reached_done_state() {
 }
   
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_try_next_proxy
+//       Access: Private
+//  Description: This state is reached when a previous connection
+//               attempt fails.  If we have multiple proxies in line
+//               to try, it sets us up for the next proxy and tries to
+//               connect again; otherwise, it sets the state to
+//               S_failure.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_try_next_proxy() {
+  if (_proxy_next_index < _proxies.size()) {
+    // Try the next proxy in sequence.
+    _proxy = _proxies[_proxy_next_index];
+    _proxy_auth = (HTTPAuthorization *)NULL;
+    _proxy_next_index++;
+    close_connection();
+    _state = S_connecting;
+    return false;
+  }
+
+  // No more proxies to try, or we're not using a proxy.
+  _state = S_failure;
+  return false;
+}
+  
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::run_connecting
 //       Access: Private
 //  Description: In this state, we have not yet established a
@@ -647,7 +678,7 @@ run_connecting() {
 #ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
-    _state = S_failure;
+    _state = S_try_next_proxy;
     return false;
   }
 
@@ -680,7 +711,7 @@ run_connecting_wait() {
   if (fd < 0) {
     downloader_cat.warning()
       << "nonblocking socket BIO has no file descriptor.\n";
-    _state = S_failure;
+    _state = S_try_next_proxy;
     return false;
   }
 
@@ -706,7 +737,7 @@ run_connecting_wait() {
   if (errcode < 0) {
     downloader_cat.warning()
       << "Error in select.\n";
-    _state = S_failure;
+    _state = S_try_next_proxy;
     return false;
   }
   
@@ -719,7 +750,7 @@ run_connecting_wait() {
       downloader_cat.info()
         << "Timeout connecting to " 
         << _request.get_url().get_server_and_port() << ".\n";
-      _state = S_failure;
+      _state = S_try_next_proxy;
       return false;
     }
     return true;
@@ -778,7 +809,7 @@ run_proxy_request_sent() {
       // Huh, the proxy hung up on us as soon as we tried to connect.
       if (_response_type == RT_hangup) {
         // This was our second immediate hangup in a row.  Give up.
-        _state = S_failure;
+        _state = S_try_next_proxy;
         
       } else {
         // Try again, once.
@@ -851,7 +882,7 @@ run_proxy_reading_header() {
       _status_code += 1000;
     }
 
-    _state = S_failure;
+    _state = S_try_next_proxy;
     return false;
   }
 
@@ -1038,7 +1069,7 @@ run_request_sent() {
       // Huh, the server hung up on us as soon as we tried to connect.
       if (_response_type == RT_hangup) {
         // This was our second immediate hangup in a row.  Give up.
-        _state = S_failure;
+        _state = S_try_next_proxy;
         
       } else {
         // Try again, once.
@@ -1050,7 +1081,7 @@ run_request_sent() {
       // Time to give up.
       downloader_cat.info()
         << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
-      _state = S_failure;
+      _state = S_try_next_proxy;
     }
 
     return true;
@@ -1085,7 +1116,7 @@ run_reading_header() {
         << "Connection lost while reading HTTP response.\n";
       if (_response_type == RT_http_hangup) {
         // This was our second hangup in a row.  Give up.
-        _state = S_failure;
+        _state = S_try_next_proxy;
         
       } else {
         // Try again, once.
@@ -1097,7 +1128,7 @@ run_reading_header() {
       // Time to give up.
       downloader_cat.info()
         << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
-      _state = S_failure;
+      _state = S_try_next_proxy;
     }
     return true;
   }
@@ -1250,6 +1281,19 @@ run_reading_header() {
     }
   }
 
+  if (_state == S_read_header && 
+      ((get_status_code() / 100) == 5 || get_status_code() == 407) &&
+      !_proxy.empty() && !_proxy_tunnel && _proxy_next_index < _proxies.size()) {
+    // If we were using a proxy (but not tunneling through the proxy)
+    // and we got some kind of a server error, try the next proxy in
+    // sequence (if we have one).  This handles the case of a working
+    // proxy that cannot see the host (and so returns 504 or something
+    // along those lines).
+    _state = S_try_next_proxy;
+    return false;
+  }
+
+  // Otherwise, we're good to go.
   return false;
 }
 
@@ -1534,13 +1578,37 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
               size_t first_byte, size_t last_byte) {
   reset_for_new_request();
 
-  // Changing the proxy, or the nonblocking state, is grounds for
-  // dropping the old connection, if any.
-  if (_proxy != _client->get_proxy()) {
-    _proxy = _client->get_proxy();
+  // Get the set of proxies that are appropriate for this URL.
+  _proxies.clear();
+  _proxy_next_index = 0;
+  _client->get_proxies_for_url(url.get_url(), _proxies);
+
+  // If we still have a live connection to a proxy that is on the
+  // list, that proxy should be moved immediately to the front of the
+  // list (to minimize restarting connections unnecessarily).
+  if (!_bio.is_null() && !_proxies.empty() && !_proxy.empty()) {
+    Proxies::iterator pi = find(_proxies.begin(), _proxies.end(), _proxy);
+    if (pi != _proxies.end()) {
+      _proxies.erase(pi);
+      _proxies.insert(_proxies.begin(), _proxy);
+    }
+  }
+
+  URLSpec new_proxy;
+  if (_proxy_next_index < _proxies.size()) {
+    new_proxy = _proxies[_proxy_next_index];
+    _proxy_next_index++;
+  }
+
+  // Changing the proxy is grounds for dropping the old connection, if
+  // any.
+  if (_proxy != new_proxy) {
+    _proxy = new_proxy;
+    _proxy_auth = (HTTPAuthorization *)NULL;
     reset_to_new();
   }
 
+  // Ditto with changing the nonblocking state.
   if (_nonblocking != nonblocking) {
     _nonblocking = nonblocking;
     reset_to_new();
@@ -1818,7 +1886,7 @@ parse_http_response(const string &line) {
     _status_string = "Not an HTTP response";
     if (_response_type == RT_non_http) {
       // This was our second non-HTTP response in a row.  Give up.
-      _state = S_failure;
+      _state = S_try_next_proxy;
 
     } else {
       // Maybe we were just in some bad state.  Drop the connection

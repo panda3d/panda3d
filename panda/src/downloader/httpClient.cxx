@@ -45,6 +45,52 @@ X509_STORE *HTTPClient::_x509_store = NULL;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: trim_blanks
+//  Description:
+////////////////////////////////////////////////////////////////////
+static string
+trim_blanks(const string &str) {
+  size_t start = 0;
+  while (start < str.length() && isspace(str[start])) {
+    start++;
+  }
+
+  size_t end = str.length();
+  while (end > start && isspace(str[end - 1])) {
+    end--;
+  }
+
+  return str.substr(start, end - start);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: tokenize
+//  Description: Chops the source string up into pieces delimited by
+//               any of the characters specified in delimiters.
+//               Repeated delimiter characters represent zero-length
+//               tokens.
+//
+//               It is the user's responsibility to ensure the output
+//               vector is cleared before calling this function; the
+//               results will simply be appended to the end of the
+//               vector.
+////////////////////////////////////////////////////////////////////
+static void
+tokenize(const string &str, vector_string &words, const string &delimiters) {
+  size_t p = 0;
+  while (p < str.length()) {
+    size_t q = str.find_first_of(delimiters, p);
+    if (q == string::npos) {
+      words.push_back(str.substr(p));
+      return;
+    }
+    words.push_back(str.substr(p, q - p));
+    p = q + 1;
+  }
+  words.push_back(string());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::Constructor
 //       Access: Published
 //  Description:
@@ -55,7 +101,7 @@ HTTPClient() {
   _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
   _ssl_ctx = (SSL_CTX *)NULL;
 
-  _proxy = URLSpec(http_proxy, 1);
+  set_proxy_spec(http_proxy);
   if (!http_proxy_username.empty()) {
     set_username("*proxy", "", http_proxy_username);
   }
@@ -104,7 +150,8 @@ HTTPClient(const HTTPClient &copy) {
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 operator = (const HTTPClient &copy) {
-  _proxy = copy._proxy;
+  _proxies_by_scheme = copy._proxies_by_scheme;
+  _direct_hosts = copy._direct_hosts;
   _http_version = copy._http_version;
   _verify_ssl = copy._verify_ssl;
   _usernames = copy._usernames;
@@ -138,6 +185,328 @@ HTTPClient::
 
   // Free all of the expected server definitions.
   clear_expected_servers();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_proxy
+//       Access: Published
+//  Description: Specifies the proxy URL to handle all http and
+//               https requests.  Deprecated.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+set_proxy(const URLSpec &proxy) {
+  set_proxy_spec(proxy.get_url());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_proxy
+//       Access: Published
+//  Description: Returns the proxy URL to handle all http and
+//               https requests.  Deprecated.
+////////////////////////////////////////////////////////////////////
+URLSpec HTTPClient::
+get_proxy() const {
+  pvector<URLSpec> proxies;
+  get_proxies_for_url(URLSpec("http://"), proxies);
+  if (!proxies.empty()) {
+    return proxies[0];
+  }
+  return URLSpec();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_proxy_spec
+//       Access: Published
+//  Description: Specifies the complete set of proxies to use for all
+//               schemes.  This is either a semicolon-delimited set of
+//               hostname:ports, or a semicolon-delimited set of pairs
+//               of the form "scheme=hostname:port", or a combination.
+//               A particular scheme and/or proxy host may be listed
+//               more than once.  This is a convenience function that
+//               can be used in place of explicit calls to add_proxy()
+//               for each scheme/proxy pair.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+set_proxy_spec(const string &proxy_spec) {
+  clear_proxy();
+
+  // Tokenize the string based on the semicolons.
+  vector_string proxies;
+  tokenize(proxy_spec, proxies, ";");
+  
+  for (vector_string::const_iterator pi = proxies.begin();
+       pi != proxies.end();
+       ++pi) {
+    const string &spec = (*pi);
+
+    // Divide out the scheme and the hostname.
+    string scheme;
+    URLSpec url;
+    size_t equals = spec.find('=');
+    if (equals == string::npos) {
+      scheme = "";
+      url = URLSpec(spec, true);
+    } else {
+      scheme = trim_blanks(spec.substr(0, equals));
+      url = URLSpec(spec.substr(equals + 1), true);
+    }
+
+    if (!url.has_scheme()) {
+      // The default scheme for talking to proxies is HTTP.
+      url.set_scheme("http");
+    }
+
+    add_proxy(scheme, url);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_proxy_spec
+//       Access: Published
+//  Description: Returns the complete set of proxies to use for all
+//               schemes.  This is a string of the form specified by
+//               set_proxy_spec(), above.  Note that the string
+//               returned by this function may not be exactly the same
+//               as the string passed into set_proxy_spec(), since the
+//               string is regenerated from the internal storage
+//               structures and may therefore be reordered.
+////////////////////////////////////////////////////////////////////
+string HTTPClient::
+get_proxy_spec() const {
+  string result;
+
+  ProxiesByScheme::const_iterator si;
+  for (si = _proxies_by_scheme.begin(); si != _proxies_by_scheme.end(); ++si) {
+    const string &scheme = (*si).first;
+    const Proxies &proxies = (*si).second;
+    Proxies::const_iterator pi;
+    for (pi = proxies.begin(); pi != proxies.end(); ++pi) {
+      const URLSpec &url = (*pi);
+      if (!result.empty()) {
+        result += ";";
+      }
+      if (!scheme.empty()) {
+        result += scheme;
+        result += "=";
+      }
+      result += url.get_url();
+    }
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_direct_host_spec
+//       Access: Published
+//  Description: Specifies the set of hosts that should be connected
+//               to directly, without using a proxy.  This is a
+//               semicolon-separated list of hostnames or ip addresses,
+//               that may contain wildcard characters ("*").
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+set_direct_host_spec(const string &direct_host_spec) {
+  clear_direct_host();
+
+  // Tokenize the string based on the semicolons.
+  vector_string hosts;
+  tokenize(direct_host_spec, hosts, ";");
+  
+  for (vector_string::const_iterator hi = hosts.begin();
+       hi != hosts.end();
+       ++hi) {
+    const string &spec = (*hi);
+    add_direct_host(trim_blanks(spec));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_direct_host_spec
+//       Access: Published
+//  Description: Returns the set of hosts that should be connected
+//               to directly, without using a proxy, as a
+//               semicolon-separated list of hostnames or ip addresses,
+//               that may contain wildcard characters ("*").
+////////////////////////////////////////////////////////////////////
+string HTTPClient::
+get_direct_host_spec() const {
+  string result;
+
+  vector_string::const_iterator si;
+  for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
+    const string &host = (*si);
+
+    if (!result.empty()) {
+      result += ";";
+    }
+    result += host;
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::clear_proxy
+//       Access: Published
+//  Description: Resets the proxy spec to empty.  Subsequent calls to
+//               add_proxy() may be made to build up the set of proxy
+//               servers.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+clear_proxy() {
+  _proxies_by_scheme.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::add_proxy
+//       Access: Published
+//  Description: Adds the indicated proxy host as a proxy for
+//               communications on the given scheme.  Usually the
+//               scheme is "http" or "https".  It may be the empty
+//               string to indicate a general proxy.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+add_proxy(const string &scheme, const URLSpec &proxy) {
+  // The scheme is always converted to lowercase.
+  string lc_scheme;
+  lc_scheme.reserve(scheme.length());
+  for (string::const_iterator si = scheme.begin(); si != scheme.end(); ++si) {
+    lc_scheme += tolower(*si);
+  }
+
+  // Remove the trailing colon, if there is one.
+  if (!lc_scheme.empty() && lc_scheme[lc_scheme.length() - 1] == ':') {
+    lc_scheme = lc_scheme.substr(0, lc_scheme.length() - 1);
+  }
+
+  _proxies_by_scheme[lc_scheme].push_back(proxy);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::clear_direct_host
+//       Access: Published
+//  Description: Resets the set of direct hosts to empty.  Subsequent
+//               calls to add_direct_host() may be made to build up
+//               the list of hosts that do not require a proxy
+//               connection.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+clear_direct_host() {
+  _direct_hosts.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::add_direct_host
+//       Access: Published
+//  Description: Adds the indicated name to the set of hostnames that
+//               are connected to directly, without using a proxy.
+//               This name may be either a DNS name or an IP address,
+//               and it may include the * as a wildcard character.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+add_direct_host(const string &hostname) {
+  // The hostname is always converted to lowercase.
+  string lc_hostname;
+  lc_hostname.reserve(hostname.length());
+  for (string::const_iterator si = hostname.begin(); 
+       si != hostname.end(); 
+       ++si) {
+    lc_hostname += tolower(*si);
+  }
+
+  _direct_hosts.push_back(lc_hostname);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_proxies_for_url
+//       Access: Published
+//  Description: Fills up the indicated vector with the list of
+//               URLSpec objects, in the order in which they should be
+//               tried, that are appropriate for the indicated URL.
+//               The vector is left empty if a direct connection
+//               should be used.
+//
+//               It is the user's responsibility to empty this vector
+//               before calling this method; otherwise, the proxy
+//               URL's will simply be appended to the existing list.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
+  // First, check if the hostname matches any listed in direct_hosts.
+  string hostname = url.get_server();
+
+  // TODO: This should be a glob match, not a literal match.
+  vector_string::const_iterator si;
+  for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
+    if ((*si) == hostname) {
+      // It matches, so don't use any proxies.
+      return;
+    }
+  }
+
+  // Now choose the appropriate proxy based on the scheme.
+  string scheme = url.get_scheme();
+  bool got_any = false;
+
+  if (scheme.empty()) {
+    // An empty scheme implies we will want to make a direct
+    // connection to this host, so we will need a socks-style or
+    // https-style scheme.
+    if (get_proxies_for_scheme("socks", proxies)) {
+      got_any = true;
+    }
+    if (get_proxies_for_scheme("https", proxies)) {
+      got_any = true;
+    }
+
+  } else {
+    // Otherwise, try to match the proxy to the scheme.
+    if (get_proxies_for_scheme(scheme, proxies)) {
+      got_any = true;
+    }
+  }
+
+  // If we didn't find our scheme of choice, fall back to the default
+  // proxy type.
+  if (!got_any) {
+    if (get_proxies_for_scheme("", proxies)) {
+      got_any = true;
+    }
+  }
+
+  // And failing that, try the http proxy.
+  if (!got_any) {
+    get_proxies_for_scheme("http", proxies);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_proxies_for_url
+//       Access: Published
+//  Description: Returns a semicolon-delimited list of proxies, in the
+//               order in which they should be tried, that are
+//               appropriate for the indicated URL.  The empty string
+//               is returned if a direct connection should be used.
+////////////////////////////////////////////////////////////////////
+string HTTPClient::
+get_proxies_for_url(const URLSpec &url) const {
+  pvector<URLSpec> proxies;
+  get_proxies_for_url(url, proxies);
+
+  string result;
+  if (!proxies.empty()) {
+    pvector<URLSpec>::const_iterator pi = proxies.begin();
+    result += (*pi).get_url();
+    ++pi;
+
+    while (pi != proxies.end()) {
+      result += ";";
+      result += (*pi).get_url();
+      ++pi;
+    }
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -465,6 +834,32 @@ get_ssl_ctx() {
   }
 
   return _ssl_ctx;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_proxies_for_scheme
+//       Access: Private
+//  Description: Adds the proxy servers associated with the indicated
+//               scheme, if any, to the list.  Returns true if any
+//               were added, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+get_proxies_for_scheme(const string &scheme, pvector<URLSpec> &proxies) const {
+  ProxiesByScheme::const_iterator si = _proxies_by_scheme.find(scheme);
+  if (si == _proxies_by_scheme.end()) {
+    return false;
+  }
+  const Proxies &scheme_proxies = (*si).second;
+  if (scheme_proxies.empty()) {
+    return false;
+  }
+
+  Proxies::const_iterator pi;
+  for (pi = scheme_proxies.begin(); pi != scheme_proxies.end(); ++pi) {
+    proxies.push_back(*pi);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

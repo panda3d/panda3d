@@ -18,28 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::set_proxy
-//       Access: Published
-//  Description: Specifies the proxy URL to handle all http and
-//               https requests.
-////////////////////////////////////////////////////////////////////
-INLINE void HTTPClient::
-set_proxy(const URLSpec &proxy) {
-  _proxy = proxy;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_proxy
-//       Access: Published
-//  Description: Returns the proxy URL to handle all http and
-//               https requests.
-////////////////////////////////////////////////////////////////////
-INLINE const URLSpec &HTTPClient::
-get_proxy() const {
-  return _proxy;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::set_http_version
 //       Access: Published
 //  Description: Specifies the version of HTTP that the client uses to
