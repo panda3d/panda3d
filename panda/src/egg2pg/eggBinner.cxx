@@ -18,10 +18,9 @@
 
 #include "eggBinner.h"
 
-#include <eggSwitchCondition.h>
-#include <eggGroup.h>
-
-#include <assert.h>
+#include "eggSwitchCondition.h"
+#include "eggGroup.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBinner::get_bin_number

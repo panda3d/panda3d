@@ -19,13 +19,33 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::Constructor
 //       Access: Public
-//  Description: 
+//  Description: Creates an empty CullableObject whose pointers can be
+//               filled in later.
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
 CullableObject(CullableObject *next) :
   _next(next)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::Constructor
+//       Access: Public
+//  Description: Creates a CullableObject based on the ith Geom from
+//               the indicated GeomNode, with the render state from
+//               the indicated CullTraverserData.
+////////////////////////////////////////////////////////////////////
+INLINE CullableObject::
+CullableObject(const CullTraverserData &data,
+               qpGeomNode *geom_node, int i,
+               CullableObject *next) :
+  _geom(geom_node->get_geom(i)),
+  _state(data._state->compose(geom_node->get_geom_state(i))),
+  _transform(data._render_transform),
+  _next(next)
+{
+}
+  
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::Copy Constructor

@@ -13,13 +13,13 @@
   #define SOURCES \
      animBundleMaker.h characterMaker.h computedVerticesMaker.I  \
      computedVerticesMaker.h config_egg2sg.h  \
-     deferredArcProperty.h deferredArcTraverser.h eggBinner.h  \
+     deferredArcProperty.h deferredArcTraverser.h  \
      eggLoader.h load_egg_file.h loaderFileTypeEgg.h 
 
   #define INCLUDED_SOURCES \
      animBundleMaker.cxx characterMaker.cxx computedVerticesMaker.cxx  \
      config_egg2sg.cxx deferredArcProperty.cxx  \
-     deferredArcTraverser.cxx eggBinner.cxx eggLoader.cxx  \
+     deferredArcTraverser.cxx eggLoader.cxx  \
      load_egg_file.cxx loaderFileTypeEgg.cxx 
 
   #define INSTALL_HEADERS \

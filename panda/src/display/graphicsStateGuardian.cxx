@@ -942,8 +942,8 @@ begin_decal_base_first() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) GraphicsStateGuardian::
 begin_decal_nested() {
-  // We keep the depth buffer off during this operation, although
-  // perhaps it doesn't matter so much here.
+  // We should keep the depth buffer off during this operation, so
+  // that decals on decals will render properly.
   static CPT(RenderState) decal_nested;
   if (decal_nested == (const RenderState *)NULL) {
     decal_nested = RenderState::make

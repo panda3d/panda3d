@@ -235,6 +235,97 @@ combine_with(PandaNode *other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_cull_callback
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this node during the cull
+//               traversal.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+has_cull_callback() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.  This may include additional manipulation
+//               of render state or additional visible/invisible
+//               decisions, or any other arbitrary operation.
+//
+//               By the time this function is called, the node has
+//               already passed the bounding-volume test for the
+//               viewing frustum, and the node's transform and state
+//               have already been applied to the indicated
+//               CullTraverserData object.
+//
+//               The return value is true if this node should be
+//               visible, or false if it should be culled.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+cull_callback(CullTraverserData &) {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_selective_visibility
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if this kind of node has some restrictions on
+//               the set of children that should be rendered.  Node
+//               with this property include LODNodes, SwitchNodes, and
+//               SequenceNodes.
+//
+//               If this function returns true,
+//               get_first_visible_child() and
+//               get_next_visible_child() will be called to walk
+//               through the list of children during cull, instead of
+//               iterating through the entire list.  This method is
+//               called after cull_callback(), so cull_callback() may
+//               be responsible for the decisions as to which children
+//               are visible at the moment.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+has_selective_visibility() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_first_visible_child
+//       Access: Public, Virtual
+//  Description: Returns the index number of the first visible child
+//               of this node, or a number >= get_num_children() if
+//               there are no visible children of this node.  This is
+//               called during the cull traversal, but only if
+//               has_selective_visibility() has already returned true.
+//               See has_selective_visibility().
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+get_first_visible_child() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_next_visible_child
+//       Access: Public, Virtual
+//  Description: Returns the index number of the next visible child
+//               of this node following the indicated child, or a
+//               number >= get_num_children() if there are no more
+//               visible children of this node.  See
+//               has_selective_visibility() and
+//               get_first_visible_child().
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+get_next_visible_child(int n) const {
+  return n + 1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::find_child
 //       Access: Published
 //  Description: Returns the index of the indicated child node, if it

@@ -19,9 +19,9 @@
 #ifndef EGGBINNER_H
 #define EGGBINNER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <eggBinMaker.h>
+#include "eggBinMaker.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggBinner

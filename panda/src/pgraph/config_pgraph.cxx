@@ -33,12 +33,15 @@
 #include "depthWriteAttrib.h"
 #include "qpgeomNode.h"
 #include "qplensNode.h"
+#include "qplodNode.h"
 #include "materialAttrib.h"
 #include "nodeChain.h"
 #include "nodeChainComponent.h"
 #include "pandaNode.h"
 #include "renderAttrib.h"
 #include "renderState.h"
+#include "selectiveChildNode.h"
+#include "qpsequenceNode.h"
 #include "textureApplyAttrib.h"
 #include "textureAttrib.h"
 #include "transformState.h"
@@ -90,18 +93,22 @@ init_libpgraph() {
   DepthWriteAttrib::init_type();
   qpGeomNode::init_type();
   qpLensNode::init_type();
+  qpLODNode::init_type();
   MaterialAttrib::init_type();
   NodeChain::init_type();
   NodeChainComponent::init_type();
   PandaNode::init_type();
   RenderAttrib::init_type();
   RenderState::init_type();
+  SelectiveChildNode::init_type();
+  qpSequenceNode::init_type();
   TextureApplyAttrib::init_type();
   TextureAttrib::init_type();
   TransformState::init_type();
   TransparencyAttrib::init_type();
 
   BillboardAttrib::register_with_read_factory();
+  qpCamera::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
   ColorWriteAttrib::register_with_read_factory();
   CullBinAttrib::register_with_read_factory();
@@ -110,9 +117,12 @@ init_libpgraph() {
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
+  qpLensNode::register_with_read_factory();
+  qpLODNode::register_with_read_factory();
   MaterialAttrib::register_with_read_factory();
   PandaNode::register_with_read_factory();
   RenderState::register_with_read_factory();
+  qpSequenceNode::register_with_read_factory();
   TextureApplyAttrib::register_with_read_factory();
   TextureAttrib::register_with_read_factory();
   TransformState::register_with_read_factory();

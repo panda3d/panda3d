@@ -28,6 +28,7 @@
 
 class PandaNode;
 class CullHandler;
+class CullTraverserData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullTraverser
@@ -51,20 +52,11 @@ public:
   void traverse(PandaNode *root);
 
 private:
-  void r_traverse(PandaNode *node, const TransformState *render_transform,
-                  const TransformState *net_transform,
-                  const RenderState *state,
-                  GeometricBoundingVolume *view_frustum,
-                  GeometricBoundingVolume *guard_band);
-  void start_decal(PandaNode *node, 
-                   const TransformState *render_transform,
-                   const RenderState *state);
-  CullableObject *r_get_decals(PandaNode *node, 
-                               const TransformState *render_transform,
-                               const RenderState *state,
+  void r_traverse(PandaNode *node, const CullTraverserData &data);
+  void start_decal(PandaNode *node, const CullTraverserData &data);
+  CullableObject *r_get_decals(PandaNode *node,
+                               const CullTraverserData &data,
                                CullableObject *decals);
-
-  static CPT(RenderState) get_fake_view_frustum_cull_effect();
 
   CPT(RenderState) _initial_state;
   CPT(TransformState) _camera_transform;

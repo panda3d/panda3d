@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef QPCAMERA_H
-#define QPCAMERA_H
+#ifndef qpCAMERA_H
+#define qpCAMERA_H
 
 #include "pandabase.h"
 
@@ -64,6 +64,14 @@ private:
 
   typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

@@ -1,5 +1,5 @@
-// Filename: qplensNode.h
-// Created by:  drose (26Feb02)
+// Filename: qpsequenceNode.h
+// Created by:  drose (06Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,50 +16,60 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef qpLENSNODE_H
-#define qpLENSNODE_H
+#ifndef qpSEQUENCENODE_H
+#define qpSEQUENCENODE_H
 
 #include "pandabase.h"
 
-#include "pandaNode.h"
-#include "lens.h"
-#include "pointerTo.h"
+#include "selectiveChildNode.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : qpLensNode
-// Description : A node that contains a Lens.  The most important
-//               example of this kind of node is a Camera, but other
-//               kinds of nodes also contain a lens (for instance, a
-//               Spotlight).
+//       Class : SequenceNode
+// Description : A node that automatically cycles through rendering
+//               each one of its children according to its frame rate.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpLensNode : public PandaNode {
+class EXPCL_PANDA qpSequenceNode : public SelectiveChildNode {
 PUBLISHED:
-  INLINE qpLensNode(const string &name);
+  INLINE qpSequenceNode(float cycle_rate, const string &name);
 
 public:
-  INLINE qpLensNode(const qpLensNode &copy);
-  INLINE void operator = (const qpLensNode &copy);
-
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  qpSequenceNode(const qpSequenceNode &copy);
+  void operator = (const qpSequenceNode &copy);
 
   virtual PandaNode *make_copy() const;
 
+  virtual bool has_cull_callback() const;
+  virtual bool cull_callback(CullTraverserData &data);
+
 PUBLISHED:
-  INLINE void copy_lens(const Lens &lens);
-  INLINE void set_lens(Lens *lens);
-  INLINE Lens *get_lens();
+  INLINE void set_cycle_rate(float cycle_rate);
+  INLINE float get_cycle_rate() const;
 
-  bool is_in_view(const LPoint3f &pos);
+  INLINE int get_visible_child() const;
 
-protected:
-  PT(Lens) _lens;
+private:
+  INLINE float calc_frame(float now) const;
+  INLINE float calc_frame() const;
+
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    INLINE CData();
+    INLINE CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+
+    float _cycle_rate;
+    float _frame_offset;
+    float _start_time;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
-  virtual int complete_pointers(TypedWritable **plist,
-                                BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
@@ -70,9 +80,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    PandaNode::init_type();
-    register_type(_type_handle, "qpLensNode",
-                  PandaNode::get_class_type());
+    SelectiveChildNode::init_type();
+    register_type(_type_handle, "qpSequenceNode",
+                  SelectiveChildNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -83,6 +93,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "qplensNode.I"
+#include "qpsequenceNode.I"
 
 #endif

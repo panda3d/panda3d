@@ -35,6 +35,8 @@
 #include "materialAttrib.h"
 #include "materialPool.h"
 #include "qpgeomNode.h"
+#include "qpsequenceNode.h"
+#include "qplodNode.h"
 #include "string_utils.h"
 #include "eggPrimitive.h"
 #include "eggPoint.h"
@@ -45,41 +47,40 @@
 #include "eggPolygon.h"
 #include "eggBin.h"
 #include "eggTable.h"
+#include "eggBinner.h"
 #include "nodeChain.h"
 
 #include <ctype.h>
 #include <algorithm>
 
-/*
 // This class is used in make_node(EggBin *) to sort LOD instances in
 // order by switching distance.
 class LODInstance {
 public:
-  LODInstance(EggNode *egg_node, RenderRelation *arc);
+  LODInstance(EggNode *egg_node);
   bool operator < (const LODInstance &other) const {
     return _d->_switch_in < other._d->_switch_in;
   }
 
-  RenderRelation *_arc;
+  EggNode *_egg_node;
   const EggSwitchConditionDistance *_d;
 };
 
 LODInstance::
-LODInstance(EggNode *egg_node, RenderRelation *arc) {
-  assert(arc != NULL);
-  _arc = arc;
+LODInstance(EggNode *egg_node) {
+  nassertv(egg_node != NULL);
+  _egg_node = egg_node;
 
   // We expect this egg node to be an EggGroup with an LOD
   // specification.  That's what the EggBinner collected together,
   // after all.
   EggGroup *egg_group = DCAST(EggGroup, egg_node);
-  assert(egg_group->has_lod());
+  nassertv(egg_group->has_lod());
   const EggSwitchCondition &sw = egg_group->get_lod();
 
   // For now, this is the only kind of switch condition there is.
   _d = DCAST(EggSwitchConditionDistance, &sw);
 }
-*/
 
 
 ////////////////////////////////////////////////////////////////////
@@ -116,11 +117,9 @@ void qpEggLoader::
 build_graph() {
   //  _deferred_arcs.clear();
 
-  /*
   // First, bin up the LOD nodes.
   EggBinner binner;
   binner.make_bins(&_data);
-  */
 
   // Then load up all of the textures.
   load_textures();
@@ -1201,23 +1200,18 @@ make_node(EggPrimitive *egg_prim, PandaNode *parent) {
 ////////////////////////////////////////////////////////////////////
 PandaNode *qpEggLoader::
 make_node(EggBin *egg_bin, PandaNode *parent) {
-  return (PandaNode *)NULL;
-  /*
   // Presently, an EggBin can only mean an LOD node (i.e. a parent of
   // one or more EggGroups with LOD specifications).  Later it might
   // mean other things as well.
 
-  assert((EggBinner::BinNumber)egg_bin->get_bin_number() == EggBinner::BN_lod);
-  LODNode *lod_node = new LODNode;
-  lod_node->set_name(egg_bin->get_name());
+  nassertr((EggBinner::BinNumber)egg_bin->get_bin_number() == EggBinner::BN_lod, NULL);
+  qpLODNode *lod_node = new qpLODNode(egg_bin->get_name());
 
   pvector<LODInstance> instances;
 
   EggGroup::const_iterator ci;
   for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
-    PandaNode *arc = make_node(*ci, lod_node);
-    assert(arc != (PandaNode *)NULL);
-    LODInstance instance(*ci, arc);
+    LODInstance instance(*ci);
     instances.push_back(instance);
   }
 
@@ -1228,26 +1222,24 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
   if (!instances.empty()) {
     // Set up the LOD node's center.  All of the children should have
     // the same center, because that's how we binned them.
-    lod_node->_lod._center = LCAST(float, instances[0]._d->_center);
+    lod_node->set_center(LCAST(float, instances[0]._d->_center));
   }
 
   for (size_t i = 0; i < instances.size(); i++) {
-    // Put the children in the proper order within the scene graph.
+    // Create the children in the proper order within the scene graph.
     const LODInstance &instance = instances[i];
+    make_node(instance._egg_node, lod_node);
 
     // All of the children should have the same center, because that's
     // how we binned them.
-    assert(lod_node->_lod._center.almost_equal
-           (LCAST(float, instance._d->_center), 0.01));
-
-    instance._arc->set_sort(i);
+    nassertr(lod_node->get_center().almost_equal
+             (LCAST(float, instance._d->_center), 0.01), NULL);
 
     // Tell the LOD node about this child's switching distances.
     lod_node->add_switch(instance._d->_switch_in, instance._d->_switch_out);
   }
 
   return create_group_arc(egg_bin, parent, lod_node);
-  */
 }
 
 
@@ -1379,16 +1371,14 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
 
   } else if (egg_group->get_switch_flag() &&
              egg_group->get_switch_fps() != 0.0) {
-    /*
     // Create a sequence node.
-    node = new SequenceNode(1.0 / egg_group->get_switch_fps());
-    node->set_name(egg_group->get_name());
+    node = new qpSequenceNode(egg_group->get_switch_fps(), 
+                              egg_group->get_name());
 
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       make_node(*ci, node);
     }
-    */
 
   } else if (egg_group->get_model_flag() || egg_group->get_dcs_flag()) {
     // A model or DCS flag; create a model node.

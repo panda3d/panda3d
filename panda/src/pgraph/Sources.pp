@@ -21,6 +21,7 @@
     cullHandler.h cullHandler.I \
     cullResult.h cullResult.I \
     qpcullTraverser.h qpcullTraverser.I \
+    cullTraverserData.h cullTraverserData.I \
     cullableObject.h cullableObject.I \
     decalAttrib.h decalAttrib.I \
     depthTestAttrib.h depthTestAttrib.I \
@@ -28,12 +29,15 @@
     drawCullHandler.h drawCullHandler.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
+    qplodNode.h qplodNode.I \
     materialAttrib.h materialAttrib.I \
     nodeChain.h nodeChain.I \
     nodeChainComponent.h nodeChainComponent.I \
     pandaNode.h pandaNode.I \
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
+    selectiveChildNode.h selectiveChildNode.I \
+    qpsequenceNode.h qpsequenceNode.I \
     textureApplyAttrib.h textureApplyAttrib.I \
     textureAttrib.h textureAttrib.I \
     transformState.h transformState.I \
@@ -56,6 +60,7 @@
     cullHandler.cxx \
     cullResult.cxx \
     qpcullTraverser.cxx \
+    cullTraverserData.cxx \
     cullableObject.cxx \
     decalAttrib.cxx \
     depthTestAttrib.cxx \
@@ -63,12 +68,15 @@
     drawCullHandler.cxx \
     qpgeomNode.cxx \
     qplensNode.cxx \
+    qplodNode.cxx \
     materialAttrib.cxx \
     nodeChain.cxx \
     nodeChainComponent.cxx \
     pandaNode.cxx \
     renderAttrib.cxx \
     renderState.cxx \
+    selectiveChildNode.cxx \
+    qpsequenceNode.cxx \
     textureApplyAttrib.cxx \
     textureAttrib.cxx \
     transformState.cxx \
@@ -96,6 +104,7 @@
     cullHandler.h cullHandler.I \
     cullResult.h cullResult.I \
     qpcullTraverser.h qpcullTraverser.I \
+    cullTraverserData.h cullTraverserData.I \
     cullableObject.h cullableObject.I \
     decalAttrib.h decalAttrib.I \
     depthTestAttrib.h depthTestAttrib.I \
@@ -103,12 +112,15 @@
     drawCullHandler.h drawCullHandler.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
+    qplodNode.h qplodNode.I \
     materialAttrib.h materialAttrib.I \
     nodeChain.h nodeChain.I \
     nodeChainComponent.h nodeChainComponent.I \
     pandaNode.h pandaNode.I \
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
+    selectiveChildNode.h selectiveChildNode.I \
+    qpsequenceNode.h qpsequenceNode.I \
     textureApplyAttrib.h textureApplyAttrib.I \
     textureAttrib.h textureAttrib.I \
     transformState.h transformState.I \

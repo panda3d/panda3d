@@ -10,11 +10,13 @@
 
   #define SOURCES \
     config_egg2pg.h \
+    eggBinner.h \
     qpeggLoader.h \
     qpload_egg_file.h
 
   #define INCLUDED_SOURCES \
     config_egg2pg.cxx \
+    eggBinner.cxx \
     qpeggLoader.cxx \
     qpload_egg_file.cxx
 
@@ -26,6 +28,7 @@
 
   #define INSTALL_HEADERS \
     config_egg2pg.h \
+    eggBinner.h \
     qpeggLoader.h \
     qpload_egg_file.h
 

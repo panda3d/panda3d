@@ -480,6 +480,9 @@ do_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 do_invert_compose(const TransformState *other) const {
+  // Perhaps we should cache the inverse matrix operation separately,
+  // as a further optimization.
+
   LMatrix4f new_mat;
   new_mat.invert_from(get_mat());
   new_mat = other->get_mat() * new_mat;

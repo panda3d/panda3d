@@ -26,6 +26,8 @@
 #include "transformState.h"
 #include "pointerTo.h"
 #include "referenceCount.h"
+#include "qpgeomNode.h"
+#include "cullTraverserData.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullableObject
@@ -37,6 +39,14 @@
 class EXPCL_PANDA CullableObject {
 public:
   INLINE CullableObject(CullableObject *next = NULL);
+  INLINE CullableObject(const CullTraverserData &data,
+                        qpGeomNode *geom_node, int i,
+                        CullableObject *next = NULL);
+
+  // We will allocate and destroy hundreds or thousands of these a
+  // frame during the normal course of rendering.  As an optimization,
+  // then, we should consider implementing operator new and delete
+  // here to minimize this overhead.  Should be simple.
 
 private:
   INLINE CullableObject(const CullableObject &copy);

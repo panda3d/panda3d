@@ -38,6 +38,7 @@
 #include "notify.h"
 
 class NodeChainComponent;
+class CullTraverserData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaNode
@@ -64,6 +65,12 @@ public:
   virtual bool safe_to_combine() const;
   virtual void xform(const LMatrix4f &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
+
+  virtual bool has_cull_callback() const;
+  virtual bool cull_callback(CullTraverserData &data);
+  virtual bool has_selective_visibility() const;
+  virtual int get_first_visible_child() const;
+  virtual int get_next_visible_child(int n) const;
 
 PUBLISHED:
   INLINE int get_num_parents() const;
