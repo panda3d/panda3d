@@ -43,8 +43,10 @@
 ;;;*Public
 
 (single (layout1x1 ((0 setup-mono-plain)) (640 480) #t #t))
-(single+god (layout2x1 ((0 setup-mono-plain)(1 setup-mono-plain)) 
+(single+god (layout2x1 ((0 setup-mono-plain)(1 setup-mono-plain))
             (640 480) #t #t))
+(cave2 (layout2x1 ((0 setup-mono-plain 1 setup-mono-plain))
+                     (1280 512) #t #t))
 (cave3 (layout3x1 ((0 setup-mono-plain 1 setup-mono-plain
                     2 setup-mono-plain)) (720 320) #t #t))
 (cave3+god (layout3x2-1+3x1 ((0 setup-mono-plain 1 setup-mono-plain
