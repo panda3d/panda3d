@@ -194,6 +194,12 @@ config_express.GetBool("keep-temporary-files", false);
 // this false, except for testing or if you mistrust the new code.
 const bool use_vfs = config_express.GetBool("use-vfs", true);
 
+// Set this true to enable accumulation of several small consecutive
+// TCP datagrams into one large datagram before sending it, to reduce
+// overhead from the TCP/IP protocol.  See
+// Connection::set_collect_tcp() or SocketStream::set_collect_tcp().
+const bool collect_tcp = config_express.GetBool("collect-tcp", false);
+const double collect_tcp_interval = config_express.GetDouble("collect-tcp-interval", 0.2);
 
 // Returns the configure object for accessing config variables from a
 // scripting language.

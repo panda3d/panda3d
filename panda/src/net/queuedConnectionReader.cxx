@@ -116,11 +116,13 @@ get_data(Datagram &result) {
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionReader::
 receive_datagram(const NetDatagram &datagram) {
-  if (net_cat.is_debug()) {
-    net_cat.debug()
+  /*
+  if (net_cat.is_spam()) {
+    net_cat.spam()
       << "Received datagram of " << datagram.get_length()
       << " bytes\n";
   }
+  */
 
 #ifdef SIMULATE_NETWORK_DELAY
   delay_datagram(datagram);

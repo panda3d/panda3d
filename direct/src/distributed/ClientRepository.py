@@ -208,6 +208,14 @@ class ClientRepository(DirectObject.DirectObject):
         # to None; enforce that condition
         if not self.tcpConn:
             return 0
+
+        # Make sure any recently-sent datagrams are flushed when the
+        # time expires, if we're in collect-tcp mode.
+        # Temporary try .. except for old Pandas.
+        try:
+            self.tcpConn.considerFlush()
+        except:
+            pass
         
         if self.connectHttp:
             datagram = Datagram()

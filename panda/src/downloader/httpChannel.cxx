@@ -1755,14 +1755,17 @@ http_getline(string &str) {
 //       Access: Private
 //  Description: Sends a series of lines to the server.  Returns true
 //               if the buffer is fully sent, or false if some of it
-//               remains.
+//               remains.  If this returns false, the function must be
+//               called again later, passing in the exact same string,
+//               until the return value is true.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 http_send(const string &str) {
   nassertr(str.length() > _sent_so_far, true);
 
   // Use the underlying BIO to write to the server, instead of the
-  // BIOStream, which would insist on blocking.
+  // BIOStream, which would insist on blocking (and might furthermore
+  // delay the send due to collect-tcp mode being enabled).
   size_t bytes_to_send = str.length() - _sent_so_far;
   int write_count =
     BIO_write(*_bio, str.data() + _sent_so_far, bytes_to_send);

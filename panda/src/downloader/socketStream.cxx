@@ -159,11 +159,15 @@ bool SocketStream::
 send_datagram(const Datagram &dg) {
   Datagram header;
   header.add_uint16(dg.get_length());
+
+  // These two writes don't generate two socket calls, because the
+  // socket stream is always buffered.
   write((const char *)header.get_data(), header.get_length());
   write((const char *)dg.get_data(), dg.get_length()); 
-  flush();
 
-  return !is_closed();
+  // Now flush the buffer immediately, forcing the data to be sent
+  // (unless collect-tcp mode is in effect).
+  return consider_flush();
 }
 
 #endif  // HAVE_SSL

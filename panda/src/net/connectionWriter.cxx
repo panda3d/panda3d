@@ -109,12 +109,6 @@ send(const Datagram &datagram, const PT(Connection) &connection) {
   nassertr(connection != (Connection *)NULL, false);
   nassertr(PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_TCP, false);
 
-  if (net_cat.is_debug()) {
-    net_cat.debug()
-      << "Sending TCP datagram of " << datagram.get_length()
-      << " bytes\n";
-  }
-
   NetDatagram copy(datagram);
   copy.set_connection(connection);
 
@@ -150,12 +144,6 @@ send(const Datagram &datagram, const PT(Connection) &connection,
      const NetAddress &address) {
   nassertr(connection != (Connection *)NULL, false);
   nassertr(PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_UDP, false);
-
-  if (net_cat.is_debug()) {
-    net_cat.debug()
-      << "Sending UDP datagram of " << datagram.get_length()
-      << " bytes\n";
-  }
 
   if (PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_UDP &&
       (int)datagram.get_length() > maximum_udp_datagram) {

@@ -50,6 +50,9 @@ extern const bool keep_temporary_files;
 
 extern EXPCL_PANDAEXPRESS const bool use_vfs;
 
+extern EXPCL_PANDAEXPRESS const bool collect_tcp;
+extern EXPCL_PANDAEXPRESS const double collect_tcp_interval;
+
 // Expose the Config variable for Python access.
 BEGIN_PUBLISH
 typedef Config::Config<ConfigureGetConfig_config_express> ConfigExpress;

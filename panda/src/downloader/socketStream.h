@@ -20,6 +20,8 @@
 #define SOCKETSTREAM_H
 
 #include "pandabase.h"
+#include "clockObject.h"
+#include "config_express.h" // for collect_tcp
 
 // At the present, this module is not compiled if OpenSSL is not
 // available, since the only current use for it is to implement
@@ -68,6 +70,19 @@ PUBLISHED:
   bool send_datagram(const Datagram &dg);
 
   virtual bool is_closed() = 0;
+
+  INLINE void set_collect_tcp(bool collect_tcp);
+  INLINE bool get_collect_tcp() const;
+  INLINE void set_collect_tcp_interval(double interval);
+  INLINE double get_collect_tcp_interval() const;
+
+  INLINE bool consider_flush();
+  INLINE bool flush();
+
+private:
+  bool _collect_tcp;
+  double _collect_tcp_interval;
+  double _queued_data_start;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -85,9 +100,21 @@ PUBLISHED:
 
   virtual bool is_closed() = 0;
 
+  INLINE void set_collect_tcp(bool collect_tcp);
+  INLINE bool get_collect_tcp() const;
+  INLINE void set_collect_tcp_interval(double interval);
+  INLINE double get_collect_tcp_interval() const;
+
+  INLINE bool consider_flush();
+  INLINE bool flush();
+
 private:
   size_t _data_expected;
   string _data_so_far;
+
+  bool _collect_tcp;
+  double _collect_tcp_interval;
+  double _queued_data_start;
 };
 
 

@@ -319,8 +319,13 @@ clear_expected_servers() {
 //  Description: Returns a new HTTPChannel object that may be used
 //               for reading multiple documents using the same
 //               connection, for greater network efficiency than
-//               calling HTTPClient::get_document() repeatedly (and
-//               thus forcing a new connection for each document).
+//               calling HTTPClient::get_document() repeatedly (which
+//               would force a new connection for each document).
+//
+//               Also, HTTPChannel has some additional, less common
+//               interface methods than the basic interface methods
+//               that exist on HTTPClient; if you wish to call any of
+//               these methods you must first obtain an HTTPChannel.
 //
 //               Pass true for persistent_connection to gain this
 //               network efficiency.  If, on the other hand, your

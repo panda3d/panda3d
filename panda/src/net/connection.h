@@ -19,14 +19,13 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include <pandabase.h>
-
-#include <referenceCount.h>
-
+#include "pandabase.h"
+#include "referenceCount.h"
 #include "netAddress.h"
 
 #include <prio.h>
 #include <prlock.h>
+#include <prerror.h>
 
 class ConnectionManager;
 class NetDatagram;
@@ -46,6 +45,14 @@ PUBLISHED:
 
   PRFileDesc *get_socket() const;
 
+  void set_collect_tcp(bool collect_tcp);
+  bool get_collect_tcp() const;
+  void set_collect_tcp_interval(double interval);
+  double get_collect_tcp_interval() const;
+
+  bool consider_flush();
+  bool flush();
+
   // Socket options.
   void set_nonblock(bool flag);
   void set_linger(bool flag, double time);
@@ -61,12 +68,20 @@ PUBLISHED:
 private:
   bool send_datagram(const NetDatagram &datagram);
   bool send_raw_datagram(const NetDatagram &datagram);
+  bool do_flush();
+  bool check_send_error(PRInt32 result, PRErrorCode errcode, PRInt32 bytes_to_send);
 
   ConnectionManager *_manager;
   PRFileDesc *_socket;
   PRLock *_write_mutex;
 
-friend class ConnectionWriter;
+  bool _collect_tcp;
+  double _collect_tcp_interval;
+  double _queued_data_start;
+  string _queued_data;
+  int _queued_count;
+
+  friend class ConnectionWriter;
 };
 
 #endif
