@@ -81,23 +81,8 @@ EggToSomething(const string &format_name,
 ////////////////////////////////////////////////////////////////////
 bool EggToSomething::
 handle_args(ProgramBase::Args &args) {
-  if (_allow_last_param && !_got_output_filename && args.size() > 1) {
-    _got_output_filename = true;
-    _output_filename = args.back();
-    args.pop_back();
-
-    if (!_preferred_extension.empty() && 
-	("." + _output_filename.get_extension()) != _preferred_extension) {
-      nout << "Output filename " << _output_filename 
-	   << " does not end in " << _preferred_extension 
-	   << ".  If this is really what you intended, "
-	"use the -o output_file syntax.\n";
-      return false;
-    }
-
-    if (!verify_output_file_safe()) {
-      return false;
-    }
+  if (!check_last_arg(args, 1)) {
+    return false;
   }
 
   return EggConverter::handle_args(args);

@@ -42,7 +42,7 @@ EggFilter(bool allow_last_param, bool allow_stdout) :
 ////////////////////////////////////////////////////////////////////
 bool EggFilter::
 handle_args(ProgramBase::Args &args) {
-  if (!check_last_arg(args)) {
+  if (!check_last_arg(args, 0)) {
     return false;
   }
 

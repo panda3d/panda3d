@@ -128,6 +128,7 @@ public:
 
 public:
   double get_flt_version() const;
+  void set_flt_version(double version);
   static double min_flt_version();
   static double max_flt_version();
   bool check_version() const;

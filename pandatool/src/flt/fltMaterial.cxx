@@ -137,3 +137,34 @@ extract_14_record(int index, DatagramIterator &di) {
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltMaterial::build_14_record
+//       Access: Public
+//  Description: Fills up the current record on the FltRecordWriter
+//               with data for this record, formatted as a part of a
+//               v14 material palette.  Returns true on success, false
+//               if there is some error.
+////////////////////////////////////////////////////////////////////
+bool FltMaterial::
+build_14_record(Datagram &datagram) {
+  datagram.add_be_float32(_ambient[0]);
+  datagram.add_be_float32(_ambient[1]);
+  datagram.add_be_float32(_ambient[2]);
+  datagram.add_be_float32(_diffuse[0]);
+  datagram.add_be_float32(_diffuse[1]);
+  datagram.add_be_float32(_diffuse[2]);
+  datagram.add_be_float32(_specular[0]);
+  datagram.add_be_float32(_specular[1]);
+  datagram.add_be_float32(_specular[2]);
+  datagram.add_be_float32(_emissive[0]);
+  datagram.add_be_float32(_emissive[1]);
+  datagram.add_be_float32(_emissive[2]);
+  datagram.add_be_float32(_shininess);
+  datagram.add_be_float32(_alpha);
+  datagram.add_be_uint32(_flags);
+  datagram.add_fixed_string(_material_name, 12);
+  datagram.pad_bytes(4 * 28);
+
+  return true;
+}

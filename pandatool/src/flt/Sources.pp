@@ -54,17 +54,3 @@
     fltVertex.h fltVertexList.h
 
 #end ss_lib_target
-
-#begin test_bin_target
-  #define TARGET test_flt
-  #define LOCAL_LIBS \
-    flt
-  #define OTHER_LIBS \
-    express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
-
-  #define SOURCES \
-    test_flt.cxx
-
-#end test_bin_target
-

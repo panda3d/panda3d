@@ -231,11 +231,14 @@ build_record(FltRecordWriter &writer) const {
     return false;
   }
 
-  datagram.add_be_int16(_texture_mapping_index);
-  datagram.pad_bytes(2);
-  datagram.add_be_uint32(_color_index);
-  datagram.add_be_uint32(_alt_color_index);
-  datagram.pad_bytes(2 + 2);
+  if (_header->get_flt_version() >= 15.2) {
+    // New with 15.2
+    datagram.add_be_int16(_texture_mapping_index);
+    datagram.pad_bytes(2);
+    datagram.add_be_uint32(_color_index);
+    datagram.add_be_uint32(_alt_color_index);
+    datagram.pad_bytes(2 + 2);
+  }
 
   return true;
 }

@@ -25,7 +25,6 @@ public:
 
 protected:
   string _format_name;
-  string _preferred_extension;
 };
 
 #endif

@@ -42,6 +42,7 @@ protected:
 
 public:
   bool extract_14_record(int index, DatagramIterator &di);
+  bool build_14_record(Datagram &datagram);
 
 public:
   virtual TypeHandle get_type() const {

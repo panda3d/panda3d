@@ -10,6 +10,7 @@
 #include "config_flt.h"
 
 #include <assert.h>
+#include <math.h>
 
 TypeHandle FltHeader::_type_handle;
 
@@ -55,6 +56,8 @@ FltHeader() : FltBeadID(this) {
   _next_light_id = 1;
   _next_road_id = 1;
   _next_cat_id = 1;
+
+  // New with 15.2
   _earth_model = EM_wgs84;
 
   // New with 15.6
@@ -225,6 +228,21 @@ get_flt_version() const {
     return _format_revision_level;
   } else {
     return _format_revision_level / 100.0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::set_flt_version
+//       Access: Public
+//  Description: Changes the version number of the flt file that will
+//               be reported in the header.
+////////////////////////////////////////////////////////////////////
+void FltHeader::
+set_flt_version(double version) {
+  if (version < 14.2) {
+    _format_revision_level = (int)floor(version + 0.5);
+  } else {
+    _format_revision_level = (int)floor(version * 100.0 + 0.5);
   }
 }
 
@@ -1289,24 +1307,28 @@ build_record(FltRecordWriter &writer) const {
   datagram.pad_bytes(2);
   datagram.add_be_int16(_next_road_id);
   datagram.add_be_int16(_next_cat_id);
-  datagram.pad_bytes(2 + 2 + 2 + 2);
-  datagram.add_be_int32(_earth_model);
 
-  datagram.pad_bytes(4);    
+  if (get_flt_version() >= 15.2) {
+    // New with 15.2
+    datagram.pad_bytes(2 + 2 + 2 + 2);
+    datagram.add_be_int32(_earth_model);
 
-  if (get_flt_version() >= 15.6) {
-    // New with 15.6
-    datagram.add_be_int16(_next_adaptive_id);
-    datagram.add_be_int16(_next_curve_id);
-    datagram.pad_bytes(4);
+    datagram.pad_bytes(4);    
 
-    if (get_flt_version() >= 15.7) {
-      // New with 15.7
-      datagram.add_be_float64(_delta_z);
-      datagram.add_be_float64(_radius);
-      datagram.add_be_int16(_next_mesh_id);
-      datagram.pad_bytes(2);
+    if (get_flt_version() >= 15.6) {
+      // New with 15.6
+      datagram.add_be_int16(_next_adaptive_id);
+      datagram.add_be_int16(_next_curve_id);
       datagram.pad_bytes(4);
+      
+      if (get_flt_version() >= 15.7) {
+	// New with 15.7
+	datagram.add_be_float64(_delta_z);
+	datagram.add_be_float64(_radius);
+	datagram.add_be_int16(_next_mesh_id);
+	datagram.pad_bytes(2);
+	datagram.pad_bytes(4);
+      }
     }
   }
 
@@ -1660,10 +1682,44 @@ FltError FltHeader::
 write_material_palette(FltRecordWriter &writer) const {
   FltError result;
 
-  Materials::const_iterator mi;
-  for (mi = _materials.begin(); mi != _materials.end(); ++mi) {
-    FltMaterial *material = (*mi).second;
-    material->build_record(writer);
+  if (get_flt_version() >= 15.2) {
+    // Write a version 15 material palette.
+    Materials::const_iterator mi;
+    for (mi = _materials.begin(); mi != _materials.end(); ++mi) {
+      FltMaterial *material = (*mi).second;
+      material->build_record(writer);
+
+      result = writer.advance();
+      if (result != FE_ok) {
+	return result;
+      }
+    }
+
+  } else {
+    // Write a version 14 material palette.
+    if (_materials.empty()) {
+      // No palette is OK.
+      return FE_ok;
+    }
+    writer.set_opcode(FO_14_material_palette);
+    Datagram &datagram = writer.update_datagram();
+
+    PT(FltMaterial) dummy_material = new FltMaterial(_header);
+
+    Materials::const_iterator mi = _materials.lower_bound(0);
+    int index;
+    static const int expected_material_entries = 64;
+    for (index = 0; index < expected_material_entries; index++) {
+      if (mi == _materials.end() || index < (*mi).first) {
+	dummy_material->build_14_record(datagram);
+      } else {
+	nassertr(index == (*mi).first, FE_internal);
+	FltMaterial *material = (*mi).second;
+	material->build_14_record(datagram);
+	++mi;
+      }
+    }
+
     result = writer.advance();
     if (result != FE_ok) {
       return result;

@@ -28,9 +28,12 @@
 //               inappropriate when writing binary file formats).
 ////////////////////////////////////////////////////////////////////
 EggWriter::
-EggWriter(bool allow_last_param, bool allow_stdout) {
-  _allow_last_param = allow_last_param;
-  _allow_stdout = allow_stdout;
+EggWriter(bool allow_last_param, bool allow_stdout) :
+  WithOutputFile(allow_last_param, allow_stdout, false)
+{
+  // Indicate the extension name we expect the user to supply for
+  // output files.
+  _preferred_extension = ".egg";
 
   clear_runlines();
   if (_allow_last_param) {
@@ -76,8 +79,6 @@ EggWriter(bool allow_last_param, bool allow_stdout) {
      "Specify the coordinate system of the resulting egg file.  This may be "
      "one of 'y-up', 'z-up', 'y-up-left', or 'z-up-left'.  The default is "
      "y-up.");
-
-  _output_ptr = (ostream *)NULL;
 
   _normals_mode = NM_preserve;
   _normals_threshold = 0.0;
@@ -179,68 +180,6 @@ as_writer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::get_output
-//       Access: Public
-//  Description: Returns an output stream that corresponds to the
-//               user's intended egg file output--either stdout, or
-//               the named output file.  Normally, you should not need
-//               to call this directly, as write_egg_file() will write
-//               the egg file to the resulting stream.  Call this only
-//               if you cannot use write_egg_file() to write out the
-//               egg file for some reason.
-////////////////////////////////////////////////////////////////////
-ostream &EggWriter::
-get_output() {
-  if (_output_ptr == (ostream *)NULL) {
-    if (!_got_output_filename) {
-      // No filename given; use standard output.
-      assert(_allow_stdout);
-      _output_ptr = &cout;
-      
-    } else {
-      // Attempt to open the named file.
-      unlink(_output_filename.c_str());
-      _output_filename.make_dir();
-      _output_filename.set_text();
-      if (!_output_filename.open_write(_output_stream)) {
-	nout << "Unable to write to " << _output_filename << "\n";
-	exit(1);
-      }
-      nout << "Writing " << _output_filename << "\n";
-      _output_ptr = &_output_stream;
-    }
-  }
-  return *_output_ptr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::has_output_filename
-//       Access: Public
-//  Description: Returns true if the user specified an output
-//               filename, false otherwise (e.g. the output file is
-//               implicitly stdout).
-////////////////////////////////////////////////////////////////////
-bool EggWriter::
-has_output_filename() const {
-  return _got_output_filename;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::get_output_filename
-//       Access: Public
-//  Description: If has_output_filename() returns true, this is the
-//               filename that the user specified.  Otherwise, it
-//               returns the empty string.
-////////////////////////////////////////////////////////////////////
-Filename EggWriter::
-get_output_filename() const {
-  if (_got_output_filename) {
-    return _output_filename;
-  }
-  return Filename();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggWriter::post_process_egg_file
 //       Access: Public, Virtual
 //  Description: Performs any processing of the egg file that is
@@ -316,7 +255,7 @@ write_egg_file() {
 ////////////////////////////////////////////////////////////////////
 bool EggWriter::
 handle_args(ProgramBase::Args &args) {
-  if (!check_last_arg(args)) {
+  if (!check_last_arg(args, 0)) {
     return false;
   }
 
@@ -325,33 +264,6 @@ handle_args(ProgramBase::Args &args) {
     copy(args.begin(), args.end(), ostream_iterator<string>(nout, " "));
     nout << "\r";
     return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::check_last_arg
-//       Access: Protected
-//  Description: Checks if the last filename on the argument list is
-//               an egg file (if _allow_last_param was set true), and
-//               removes it from the argument list if it is.  Returns
-//               true if the arguments are good, false if something is
-//               invalid.
-////////////////////////////////////////////////////////////////////
-bool EggWriter::
-check_last_arg(ProgramBase::Args &args) {
-  if (_allow_last_param && !_got_output_filename && !args.empty()) {
-    Filename filename = args.back();
-    if (filename.get_extension() == "egg") {
-      _got_output_filename = true;
-      _output_filename = filename;
-      args.pop_back();
-
-      if (!verify_output_file_safe()) {
-	return false;
-      }
-    }
   }
 
   return true;
@@ -583,33 +495,5 @@ dispatch_translate(const string &opt, const string &arg, void *var) {
 
   *transform = (*transform) * LMatrix4d::translate_mat(trans);
 
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::verify_output_file_safe
-//       Access: Protected
-//  Description: This is called when the output file is given as the
-//               last parameter on the command line.  Since this is a
-//               fairly dangerous way to specify the output file (it's
-//               easy to accidentally overwrite an input file this
-//               way), the convention is to disallow this syntax if
-//               the output file already exists.
-//
-//               This function will test if the output file exists,
-//               and issue a warning message if it does, returning
-//               false.  If all is well, it will return true.
-////////////////////////////////////////////////////////////////////
-bool EggWriter::
-verify_output_file_safe() const {
-  nassertr(_got_output_filename, false);
-
-  if (_output_filename.exists()) {
-    nout << "The output filename " << _output_filename << " already exists.  "
-      "If you wish to overwrite it, you must use the -o option to specify "
-      "the output filename, instead of simply specifying it as the last "
-      "parameter.\n";
-    return false;
-  }
   return true;
 }

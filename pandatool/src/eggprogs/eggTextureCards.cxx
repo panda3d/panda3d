@@ -61,7 +61,7 @@ EggTextureCards() : EggWriter(true, true) {
 ////////////////////////////////////////////////////////////////////
 bool EggTextureCards::
 handle_args(ProgramBase::Args &args) {
-  if (!check_last_arg(args)) {
+  if (!check_last_arg(args, 0)) {
     return false;
   }
 

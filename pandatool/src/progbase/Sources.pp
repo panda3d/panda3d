@@ -6,12 +6,16 @@
     linmath:c putil:c express:c panda:m pystub dtool
 
   #define SOURCES \
-    programBase.I programBase.cxx programBase.h wordWrapStream.cxx \
+    programBase.I programBase.cxx programBase.h \
+    withOutputFile.cxx withOutputFile.h \
+    wordWrapStream.cxx \
     wordWrapStream.h wordWrapStreamBuf.I wordWrapStreamBuf.cxx \
     wordWrapStreamBuf.h
 
   #define INSTALL_HEADERS \
-    programBase.I programBase.h wordWrapStream.h wordWrapStreamBuf.I \
+    programBase.I programBase.h \
+    withOutputFile.h \
+    wordWrapStream.h wordWrapStreamBuf.I \
     wordWrapStreamBuf.h
 
 #end ss_lib_target

@@ -22,7 +22,9 @@ EggConverter(const string &format_name,
 	     bool allow_last_param,
 	     bool allow_stdout) : 
   EggFilter(allow_last_param, allow_stdout),
-  _format_name(format_name),
-  _preferred_extension(preferred_extension)
+  _format_name(format_name)
 {
+  // Indicate the extension name we expect the user to supply for
+  // output files.
+  _preferred_extension = preferred_extension;
 }

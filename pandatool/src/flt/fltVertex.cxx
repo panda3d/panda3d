@@ -59,21 +59,43 @@ get_opcode() const {
 ////////////////////////////////////////////////////////////////////
 int FltVertex::
 get_record_length() const {
-  switch (get_opcode()) {
-  case FO_vertex_c:
-    return 40;
+  if (_header->get_flt_version() < 15.2) {
+    // Version 14.2
+    switch (get_opcode()) {
+    case FO_vertex_c:
+      return 36;
+      
+    case FO_vertex_cn:
+      return 48;
+      
+    case FO_vertex_cnu:
+      return 56;
+      
+    case FO_vertex_cu:
+      return 44;
+      
+    default:
+      nassertr(false, 0);
+    }
 
-  case FO_vertex_cn:
-    return 56;
-
-  case FO_vertex_cnu:
-    return 64;
-
-  case FO_vertex_cu:
-    return 48;
-
-  default:
-    nassertr(false, 0);
+  } else {
+    // Version 15.2 and higher
+    switch (get_opcode()) {
+    case FO_vertex_c:
+      return 40;
+      
+    case FO_vertex_cn:
+      return 56;
+      
+    case FO_vertex_cnu:
+      return 64;
+      
+    case FO_vertex_cu:
+      return 48;
+      
+    default:
+      nassertr(false, 0);
+    }
   }
 
   return 0;
@@ -222,12 +244,15 @@ build_record(FltRecordWriter &writer) const {
     return false;
   }
 
-  datagram.add_be_uint32(_color_index);
+  if (_header->get_flt_version() >= 15.2) {
+    // New with 15.2
+    datagram.add_be_uint32(_color_index);
 
-  if (_has_normal) {
-    // If we added a normal, our double-word alignment is off; now we
-    // have a few extra bytes to add.
-    datagram.pad_bytes(4);
+    if (_has_normal) {
+      // If we added a normal, our double-word alignment is off; now we
+      // have a few extra bytes to add.
+      datagram.pad_bytes(4);
+    }
   }
 
   nassertr((int)datagram.get_length() == get_record_length() - 4, true);
