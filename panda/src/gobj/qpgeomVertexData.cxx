@@ -1173,7 +1173,7 @@ make_computed_vertices(qpGeomVertexData::CDWriter &cdata) {
   // array.
   cdata->_computed_vertices = replace_data_type
     (InternalName::get_transform_blend(), 0, qpGeomVertexDataType::NT_uint16,
-     qpGeomUsageHint::UH_dynamic, false);
+     min(get_usage_hint(), qpGeomUsageHint::UH_dynamic), false);
 
   // Now fill it up with the appropriate data.
   update_computed_vertices(cdata);

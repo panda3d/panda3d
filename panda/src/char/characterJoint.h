@@ -24,6 +24,8 @@
 #include "movingPartMatrix.h"
 #include "pandaNode.h"
 
+class JointVertexTransform;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterJoint
 // Description : This represents one joint of the character's
@@ -37,6 +39,7 @@ protected:
 public:
   CharacterJoint(PartGroup *parent, const string &name,
                  const LMatrix4f &initial_value);
+  virtual ~CharacterJoint();
 
   virtual PartGroup *make_copy() const;
 
@@ -55,11 +58,15 @@ PUBLISHED:
   void clear_local_transforms();
 
   void get_transform(LMatrix4f &transform) const;
+  void get_net_transform(LMatrix4f &transform) const;
 
 private:
   typedef pset< PT(PandaNode) > NodeList;
   NodeList _net_transform_nodes;
   NodeList _local_transform_nodes;
+
+  typedef pset<JointVertexTransform *> VertexTransforms;
+  VertexTransforms _vertex_transforms;
 
 public:
   static void register_with_read_factory(void);
@@ -104,6 +111,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class Character;
+  friend class JointVertexTransform;
 };
 
 #endif

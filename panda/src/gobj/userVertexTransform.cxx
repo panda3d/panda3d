@@ -36,7 +36,7 @@ UserVertexTransform(const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: UserVertexTransform::get_matrix
 //       Access: Published, Virtual
-//  Description: Stores the transform's matrix in the indicated value.
+//  Description: Stores the transform's matrix in the indicated object.
 ////////////////////////////////////////////////////////////////////
 void UserVertexTransform::
 get_matrix(LMatrix4f &matrix) const {
@@ -83,7 +83,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void UserVertexTransform::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  TypedWritable::write_datagram(manager, dg);
+  VertexTransform::write_datagram(manager, dg);
 
   manager->write_cdata(dg, _cycler);
 }
@@ -117,7 +117,7 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void UserVertexTransform::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  TypedWritable::fillin(scan, manager);
+  VertexTransform::fillin(scan, manager);
 
   manager->read_cdata(scan, _cycler);
 }

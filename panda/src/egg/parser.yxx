@@ -791,10 +791,14 @@ vertex_pool:
     if (pool->has_defined_vertices()) {
       eggyywarning("Duplicate vertex pool name " + name);
       pool = new EggVertexPool(name);
+      // The egg syntax starts counting at 1 by convention.
+      pool->set_highest_index(0);
       vertex_pools[name] = pool;
     }
   } else {
     pool = new EggVertexPool(name);
+    // The egg syntax starts counting at 1 by convention.
+    pool->set_highest_index(0);
     vertex_pools[name] = pool;
   }
 
@@ -2623,6 +2627,8 @@ vertex_pool_name:
   if (vpi == vertex_pools.end()) {
     // This will become a forward reference.
     EggVertexPool *pool = new EggVertexPool(name);
+    // The egg syntax starts counting at 1 by convention.
+    pool->set_highest_index(0);
     vertex_pools[name] = pool;
     $$ = pool;
   } else {

@@ -14,21 +14,24 @@
     characterJoint.h characterJointBundle.I  \
     characterJointBundle.h characterSlider.h computedVertices.I  \
     computedVertices.h computedVerticesMorph.I  \
-    computedVerticesMorph.h config_char.h dynamicVertices.h
+    computedVerticesMorph.h config_char.h dynamicVertices.h \
+    jointVertexTransform.I jointVertexTransform.h
     
   #define INCLUDED_SOURCES \
     character.cxx \
     characterJoint.cxx characterJointBundle.cxx  \
     characterSlider.cxx computedVertices.cxx  \
     computedVerticesMorph.cxx config_char.cxx  \
-    dynamicVertices.cxx
+    dynamicVertices.cxx \
+    jointVertexTransform.cxx
 
   #define INSTALL_HEADERS \
     character.I character.h \
     characterJoint.h characterJointBundle.I \
     characterJointBundle.h characterSlider.h computedVertices.I \
     computedVertices.h computedVerticesMorph.I computedVerticesMorph.h \
-    config_char.h dynamicVertices.h
+    config_char.h dynamicVertices.h \
+    jointVertexTransform.I jointVertexTransform.h
     
   #define IGATESCAN all
 

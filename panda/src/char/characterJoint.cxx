@@ -18,6 +18,7 @@
 
 #include "characterJoint.h"
 #include "config_char.h"
+#include "jointVertexTransform.h"
 
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -66,6 +67,16 @@ CharacterJoint(PartGroup *parent, const string &name,
   // And then compute its inverse.  This is needed for
   // ComputedVertices, during animation.
   _initial_net_transform_inverse = invert(_net_transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CharacterJoint::
+~CharacterJoint() {
+  nassertv(_vertex_transforms.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,15 +129,25 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
     }
   }
 
-  if (net_changed && !_net_transform_nodes.empty()) {
-    CPT(TransformState) t = TransformState::make_mat(_net_transform);
+  if (net_changed) {
+    if (!_net_transform_nodes.empty()) {
+      CPT(TransformState) t = TransformState::make_mat(_net_transform);
+      
+      NodeList::iterator ai;
+      ai = _net_transform_nodes.begin();
+      while (ai != _net_transform_nodes.end()) {
+        PandaNode *node = *ai;
+        node->set_transform(t);
+        ++ai;
+      }
+    }
 
-    NodeList::iterator ai;
-    ai = _net_transform_nodes.begin();
-    while (ai != _net_transform_nodes.end()) {
-      PandaNode *node = *ai;
-      node->set_transform(t);
-      ++ai;
+    // Also tell our related JointVertexTransforms that they now need
+    // to recompute themselves.
+    VertexTransforms::iterator vti;
+    for (vti = _vertex_transforms.begin(); vti != _vertex_transforms.end(); ++vti) {
+      (*vti)->_matrix_stale = true;
+      (*vti)->mark_modified();
     }
   }
 
@@ -259,6 +280,18 @@ clear_local_transforms() {
 void CharacterJoint::
 get_transform(LMatrix4f &transform) const {
   transform = _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::get_net_transform
+//       Access: Published
+//  Description: Copies the joint's current net transform (composed
+//               from the root of the character joint hierarchy) into
+//               the indicated matrix.
+////////////////////////////////////////////////////////////////////
+void CharacterJoint::
+get_net_transform(LMatrix4f &transform) const {
+  transform = _net_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
