@@ -43,6 +43,7 @@ class OnscreenImage(PandaObject, NodePath):
         if parent == None:
             parent = aspect2d
         # Assign geometry
+        self.sort = sort
         if isinstance(image, NodePath):
             self.assign(image.copyTo(parent, sort))
         elif type(image) == type(''):
@@ -102,6 +103,13 @@ class OnscreenImage(PandaObject, NodePath):
         self.removeNode()
         if isinstance(image, NodePath):
             self.assign(image.copyTo(parent))
+        elif type(image) == type(''):
+            # Assume its a file name and create a texture card
+            tex = loader.loadTexture(image)
+            cm = CardMaker('OnscreenImage')
+            cm.setFrame(-1, 1, -1, 1)
+            self.assign(parent.attachNewNode(cm.generate(), self.sort))
+            self.setTexture(tex)
         elif type(image) == type(()):
             model = loader.loadModelOnce(image[0])
             self.assign(model.find(image[1]))
