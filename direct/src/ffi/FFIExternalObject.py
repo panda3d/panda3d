@@ -69,14 +69,17 @@ class FFIExternalObject:
         # Start with an empty list of downcast functions
         downcastFunctionList = []
 
-        # If it could not find the baseClass anywhere in the lineage, return empty
+        # If it could not find the baseClass anywhere in the lineage,
+        # return empty
         if not lineage:
             return []
 
-        # Walk along the lineage looking for downcast functions from class to class+1
-        for i in range((len(lineage) - 1)):
-            toClass = lineage[i]
-            fromClass = lineage[i+1]
+        # Walk along the lineage looking for downcast functions from
+        # class to class+1.  Start at the top and work downwards.
+        top = len(lineage) - 1
+        for i in range(top):
+            toClass = lineage[top - i - 1]
+            fromClass = lineage[top - i]
             downcastFuncName = ('downcastTo' + toClass.__name__
                                 + 'From' + fromClass.__name__)
             # Look over this classes global modules dictionaries
