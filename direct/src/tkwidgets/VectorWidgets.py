@@ -31,7 +31,8 @@ class VectorEntry(Pmw.MegaWidget):
             ('min',                 None,           self._updateValidate),
             ('max',                 None,           self._updateValidate),
             ('significantDigits',   2,              self._setSigDigits),
-            ('valuatorType',        VALUATOR,       None)
+            ('valuatorType',        VALUATOR,       None),
+            ('state',               'normal',       self._setState),
             )
         self.defineoptions(kw, optiondefs)
 
@@ -104,6 +105,9 @@ class VectorEntry(Pmw.MegaWidget):
         # Make sure entries are updated
         self.set(self['initialValue'])
 
+        # Record entry color
+        self.entryBackground = self.cget('Entry_entry_background')
+        
         # Make sure input variables processed 
         self.initialiseoptions(VectorEntry)
 
@@ -221,6 +225,32 @@ class VectorEntry(Pmw.MegaWidget):
     def popupSliders(self):
         self._floaters.set(self.get()[:])
         self._floaters.show()
+
+    def _setState(self):
+        if self['state'] == 'disabled':
+            # Disable entry
+            self.configure(Entry_entry_state = 'disabled')
+            self.configure(Entry_entry_background = '#C0C0C0')
+            # Disable floater Group scale
+            self.component('fGroup').configure(
+                Valuator_scale_state = 'disabled')
+            # Disable floater group entry
+            self.component('fGroup').configure(
+                Valuator_entry_state = 'disabled')
+            self.component('fGroup').configure(
+                Valuator_entry_background = '#C0C0C0')
+        else:
+            # Disable entry
+            self.configure(Entry_entry_state = 'normal')
+            self.configure(Entry_entry_background = self.entryBackground)
+            # Disable floater Group scale
+            self.component('fGroup').configure(
+                Valuator_scale_state = 'normal')
+            # Disable floater group entry
+            self.component('fGroup').configure(
+                Valuator_entry_state = 'normal')
+            self.component('fGroup').configure(
+                Valuator_entry_background = self.entryBackground)
 
 class Vector2Entry(VectorEntry):
     def __init__(self, parent = None, **kw):

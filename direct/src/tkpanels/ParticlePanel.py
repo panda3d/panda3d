@@ -73,6 +73,7 @@ class ParticlePanel(AppShell):
         factoryPage = self.mainNotebook.add('Factory')
         emitterPage = self.mainNotebook.add('Emitter')
         rendererPage = self.mainNotebook.add('Renderer')
+        forcePage = self.mainNotebook.add('Force')
         # Put this here so it isn't called right away
         self.mainNotebook['raisecommand'] = self.updateInfo
 
@@ -196,8 +197,8 @@ class ParticlePanel(AppShell):
             self.selectEmitterType)
 
         # Emitter modes
-        self.emissionType = StringVar()
-        self.emissionType.set('ETCUSTOM')
+        self.emissionType = IntVar()
+        self.emissionType.set(BaseParticleEmitter.ETRADIATE)
         emissionFrame = Frame(emitterPage)
         self.createRadiobutton(
             emissionFrame, 'left',
@@ -263,22 +264,25 @@ class ParticlePanel(AppShell):
                            'Radius of disc',
                            command = self.setEmitterDiscRadius,
                            min = 0.01)
-        self.createAngleDial(discPage, 'Disc Emitter', 'Inner Angle',
+        customPage = self.discCustomFrame = Frame(discPage)
+        self.createAngleDial(customPage, 'Disc Emitter', 'Inner Angle',
                              'Particle launch angle at center of disc',
                              command = self.setEmitterDiscInnerAngle)
-        self.createFloater(discPage, 'Disc Emitter', 'Inner Velocity',
+        self.createFloater(customPage, 'Disc Emitter', 'Inner Velocity',
                            'Launch velocity multiplier at center of disc',
                            command = self.setEmitterDiscInnerVelocity)
-        self.createAngleDial(discPage, 'Disc Emitter', 'Outer Angle',
+        self.createAngleDial(customPage, 'Disc Emitter', 'Outer Angle',
                              'Particle launch angle at outer edge of disc',
                              command = self.setEmitterDiscOuterAngle)
-        self.createFloater(discPage, 'Disc Emitter', 'Outer Velocity',
+        self.createFloater(customPage, 'Disc Emitter', 'Outer Velocity',
                            'Launch velocity multiplier at edge of disc',
                            command = self.setEmitterDiscOuterVelocity)
         self.emitterDiscCubicLerping = self.createCheckbutton(
-            discPage, 'Disc Emitter', 'Cubic Lerping',
+            customPage, 'Disc Emitter', 'Cubic Lerping',
             'On: magnitude/angle interpolation from center',
             self.toggleEmitterDiscCubicLerping, 0)
+        customPage.pack(fill = BOTH, expand = 1)
+        
         # Line page #
         linePage = self.emitterNotebook.add('LineEmitter')
         self.createVector3Entry(linePage, 'Line Emitter', 'Min',
@@ -309,9 +313,12 @@ class ParticlePanel(AppShell):
                            'Radius of ring',
                            command = self.setEmitterRingRadius,
                            min = 0.01)
-        self.createAngleDial(ringPage, 'Ring Emitter', 'Angle',
+        self.ringCustomFrame = Frame(ringPage)
+        self.createAngleDial(self.ringCustomFrame, 'Ring Emitter', 'Angle',
                              'Particle launch angle',
                              command = self.setEmitterRingLaunchAngle)
+        self.ringCustomFrame.pack(fill = BOTH, expand = 1)
+        
         # Sphere volume #
         sphereVolumePage = self.emitterNotebook.add('SphereVolumeEmitter')
         self.createFloater(sphereVolumePage, 'Sphere Volume Emitter', 'Radius',
@@ -481,6 +488,14 @@ class ParticlePanel(AppShell):
             'On: alpha blending is disabled',
             self.toggleRendererSpriteAlphaDisable, 0)
         self.rendererNotebook.pack(fill = X)
+
+        ## FORCE PAGE ##
+        # fn = ForceNode()
+        # lvf = LinearVectorForce()
+        # lvf.setVector(0,0,-4)
+        # fn.addForce(lvf)
+        # physicsMgr.addLinearForce(lvf)
+        # render.attachNewNode(fn)
         
         self.factoryNotebook.setnaturalsize()
         self.emitterNotebook.setnaturalsize()
@@ -743,7 +758,7 @@ class ParticlePanel(AppShell):
         
     def updateEmitterWidgets(self):
         emitter = self.particles.emitter
-        self.emissionType.set(self.particles.emitter.getEmissionType())
+        self.setEmissionType(self.particles.emitter.getEmissionType())
         amp = emitter.getAmplitude()
         self.getWidget('Emitter', 'Velocity Multiplier').set(amp)
         spread = emitter.getAmplitudeSpread()
@@ -812,9 +827,43 @@ class ParticlePanel(AppShell):
             radius = emitter.getRadius()
             self.getWidget('Tangent Ring Emitter', 'Radius').set(radius, 0)
     # All #
-    def setEmissionType(self):
-        self.particles.emitter.setEmissionType(
-            int(self.emissionType.get()))
+    def setEmissionType(self, newType = None):
+        if newType:
+            type = newType
+            self.emissionType.set(type)
+        else:
+            type = self.emissionType.get()
+        self.particles.emitter.setEmissionType(type)
+        if type == BaseParticleEmitter.ETEXPLICIT:
+            self.getWidget(
+                'Emitter', 'Radiate Origin')['state'] = 'disabled'
+            self.getWidget(
+                'Emitter', 'Explicit Velocity')['state'] = 'normal'
+            # Hide custom widgets
+            if isinstance(self.particles.emitter, DiscEmitter):
+                self.discCustomFrame.pack_forget()
+            elif isinstance(self.particles.emitter, RingEmitter):
+                self.ringCustomFrame.pack_forget()
+        elif type == BaseParticleEmitter.ETRADIATE:
+            self.getWidget(
+                'Emitter', 'Radiate Origin')['state'] = 'normal'
+            self.getWidget(
+                'Emitter', 'Explicit Velocity')['state'] = 'disabled'
+            # Hide custom widgets
+            if isinstance(self.particles.emitter, DiscEmitter):
+                self.discCustomFrame.pack_forget()
+            elif isinstance(self.particles.emitter, RingEmitter):
+                self.ringCustomFrame.pack_forget()
+        elif type == BaseParticleEmitter.ETCUSTOM:
+            self.getWidget(
+                'Emitter', 'Radiate Origin')['state'] = 'disabled'
+            self.getWidget(
+                'Emitter', 'Explicit Velocity')['state'] = 'disabled'
+            # Show custom widgets
+            if isinstance(self.particles.emitter, DiscEmitter):
+                self.discCustomFrame.pack(fill = BOTH, expand = 1)
+            elif isinstance(self.particles.emitter, RingEmitter):
+                self.ringCustomFrame.pack(fill = BOTH, expand = 1)
 
     def setEmitterAmplitude(self, value):
         self.particles.emitter.setAmplitude(value)
