@@ -19,11 +19,9 @@ class ServerRepository:
         self.startListenerPollTask()
         self.startReaderPollTask()
         self.startResetPollTask()
-        return None
 
     def startListenerPollTask(self):
         taskMgr.add(self.listenerPoll, "serverListenerPollTask")
-        return None
 
     def listenerPoll(self, task):
         if self.qcl.newConnectionAvailable():
@@ -46,7 +44,6 @@ class ServerRepository:
 
     def startReaderPollTask(self):
         taskMgr.add(self.readerPollUntilEmpty, "serverReaderPollTask")
-        return None
 
     def readerPollUntilEmpty(self, task):
         while self.readerPollOnce():
@@ -76,7 +73,6 @@ class ServerRepository:
         newDatagram.addUint16(LOGIN_RESPONSE)
         newDatagram.addUint8(ord('s'))
         self.cw.send(newDatagram, self.lastConnection)
-        return None
 
     def sendAvatarGenerate(self):
         datagram = Datagram()
