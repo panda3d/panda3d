@@ -4,6 +4,9 @@
    reported to be about 20x faster. In 2.4 they reimplemented heapq in C so
    it should be comparable to this. At this time though, Python 2.4 is
    still in alpha.
+   
+   Note: This code has been bastardized to only work on Tasks temporarily.
+
 */
 
 #include <Python.h>
@@ -122,7 +125,7 @@ heapify(PyObject *self, PyObject *args) {
 static int
 _siftdown(PyObject *list, int startpos, int pos) {
     PyObject *newitem, *parent;
-    int parentpos, cmp;
+    int parentpos;
 
     newitem = PySequence_GetItem(list,pos);
 
@@ -150,10 +153,7 @@ _siftdown(PyObject *list, int startpos, int pos) {
 
         if (parentCTask->get_wake_time() <= newitemCTask->get_wake_time()) {
           break;
-        } else {
-          return -1;
         }
-
 
         Py_INCREF(parent);
         PyList_SetItem(list,pos,parent);
@@ -168,7 +168,6 @@ _siftup(PyObject *list, int pos) {
     PyObject *newitem, *right, *child;
     int endpos, rightpos, childpos;
     int startpos = pos;
-    int cmp;
     
     endpos = PyList_Size(list);
     newitem = PySequence_GetItem(list,pos);
@@ -202,8 +201,6 @@ _siftup(PyObject *list, int pos) {
 
             if (rightCTask->get_wake_time() <= childCTask->get_wake_time()) {
               childpos = rightpos;
-            } else {
-              return -1;
             }
         }
         child = PySequence_GetItem(list,childpos);

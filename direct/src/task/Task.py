@@ -86,28 +86,28 @@ class Task(CTask):
             self.pstats = None
         self.extraArgs = None
 
-    # Used for putting into the doLaterList
-    # the heapq calls __cmp__ via the rich compare function
-    def __cmp__(self, other):
-        if isinstance(other, Task):
-            if self.getWakeTime() < other.getWakeTime():
-                return -1
-            elif self.getWakeTime() > other.getWakeTime():
-                return 1
-            # If the wakeTimes happen to be the same, just
-            # sort them based on id
-            else:
-                return cmp(id(self), id(other))
-        # This is important for people doing a (task != None) and such.
-        else:
-            return cmp(id(self), id(other))
+#     # Used for putting into the doLaterList
+#     # the heapq calls __cmp__ via the rich compare function
+#     def __cmp__(self, other):
+#         if isinstance(other, Task):
+#             if self.getWakeTime() < other.getWakeTime():
+#                 return -1
+#             elif self.getWakeTime() > other.getWakeTime():
+#                 return 1
+#             # If the wakeTimes happen to be the same, just
+#             # sort them based on id
+#             else:
+#                 return cmp(id(self), id(other))
+#         # This is important for people doing a (task != None) and such.
+#         else:
+#             return cmp(id(self), id(other))
 
-    # According to the Python manual (3.3.1), if you define a cmp operator
-    # you should also define a hash operator or your objects will not be
-    # usable in dictionaries. Since no two task objects are unique, we can
-    # just return the unique id.
-    def __hash__(self):
-        return self.id
+#     # According to the Python manual (3.3.1), if you define a cmp operator
+#     # you should also define a hash operator or your objects will not be
+#     # usable in dictionaries. Since no two task objects are unique, we can
+#     # just return the unique id.
+#     def __hash__(self):
+#         return self.id
 
     def remove(self):
         if not self.__removed:
