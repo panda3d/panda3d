@@ -1065,9 +1065,9 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 #endif
     }
 
-    BOOL bShrinkOriginal;
+    bool bShrinkOriginal;
 
-    bShrinkOriginal=FALSE;
+    bShrinkOriginal=false;
     if((dwOrigWidth>devDesc.dwMaxTextureWidth)||(dwOrigHeight>devDesc.dwMaxTextureHeight)) {
 #ifdef _DEBUG
         dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !!\n"
@@ -1078,12 +1078,10 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
             ddsd.dwWidth=devDesc.dwMaxTextureWidth;
         if(dwOrigHeight>devDesc.dwMaxTextureHeight)
             ddsd.dwHeight=devDesc.dwMaxTextureHeight;
-        bShrinkOriginal=TRUE;
+        bShrinkOriginal=true;
     }
 
-#if 0
-    // checks for SQUARE reqmt
-    //riva128 seems to handle non-sq fine.  is it wasting mem to do this?  do I care or should I shrink to be sure we save mem?
+    // checks for SQUARE reqmt (nvidia riva128 needs this)
     if((ddsd.dwWidth != ddsd.dwHeight) && (devDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY )) {
 
         // assume pow2 textures.   sum exponents, divide by 2 rounding down to get sq size
@@ -1091,14 +1089,12 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         for(i=ddsd.dwWidth,width_exp=0;i>1;width_exp++,i>>=1);
         for(i=ddsd.dwHeight,height_exp=0;i>1;height_exp++,i>>=1);
         ddsd.dwHeight = ddsd.dwWidth = 1<<((width_exp+height_exp)>>1);
-        bShrinkOriginal=TRUE;
+        bShrinkOriginal=true;
 
 #ifdef _DEBUG
         dxgsg_cat.debug() << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<< ddsd.dwWidth<<"," << ddsd.dwHeight << ") to meet HW square texture reqmt\n";
 #endif
-
     }
-#endif
 
     if(bShrinkOriginal) {
         // need 2 add checks for errors
