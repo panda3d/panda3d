@@ -12,7 +12,8 @@ INLINE void IPipeStream::flush(void) {
   _psb.flush();
 }
 
-INLINE IPipeStream::IPipeStream(void) : _psb(PipeStreamBuf::Input) {
+INLINE IPipeStream::IPipeStream(void)
+  : istream(&_psb), _psb(PipeStreamBuf::Input) {
   cerr << "should never call default constructor of IPipeStream" << endl;
 }
 
@@ -25,6 +26,7 @@ INLINE void OPipeStream::flush(void) {
   _psb.flush();
 }
 
-INLINE OPipeStream::OPipeStream(void) : _psb(PipeStreamBuf::Output) {
+INLINE OPipeStream::OPipeStream(void)
+  : ostream(&_psb), _psb(PipeStreamBuf::Output) {
   cerr << "should never call default constructor of OPipeStream" << endl;
 }
