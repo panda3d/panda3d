@@ -71,6 +71,7 @@ private:
   public:
     LPoint3f _point;
     LVector3f _normal;
+    float _depth;
   };
   typedef pvector<CollisionPoint> Points;
 

@@ -89,12 +89,16 @@ private:
   bool sphere_intersects_line(double &t1, double &t2, float center_y,
                               const LPoint3f &from, const LVector3f &delta,
                               float inflate_radius) const;
+  void set_intersection_point(CollisionEntry *new_entry, 
+                              const LPoint3f &into_intersection_point, 
+                              double extra_radius) const;
 
 private:
   LPoint3f _a, _b;
   float _radius;
 
   // These are derived from the above.
+  LMatrix4f _mat;
   LMatrix4f _inv_mat;
   float _length;
 

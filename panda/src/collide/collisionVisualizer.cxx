@@ -197,6 +197,25 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             new CullableObject(line, empty_state, xform_data._render_transform);
           
           trav->get_cull_handler()->record_object(object);
+
+          // Also draw the depth vector.
+          if (point._depth != 0.0) {
+            PT(GeomLine) line = new GeomLine;
+            
+            PTA_Vertexf verts;
+            verts.push_back(point._point);
+            verts.push_back(point._point - point._normal * point._depth);
+            PTA_Colorf colors;
+            colors.push_back(Colorf(0.0f, 0.0f, 1.0f, 1.0f));
+
+            line->set_coords(verts);
+            line->set_colors(colors, G_OVERALL);
+            line->set_num_prims(1);
+            
+            CullableObject *object = 
+              new CullableObject(line, empty_state, xform_data._render_transform);
+            trav->get_cull_handler()->record_object(object);
+          }
         }
       }
     }
@@ -260,6 +279,10 @@ collision_tested(const CollisionEntry &entry, bool detected) {
         p._normal = entry.get_into_surface_normal();
       } else {
         p._normal = LVector3f::zero();
+        p._depth = 0.0;
+      }
+      if (entry.has_into_depth()) {
+        p._depth = entry.get_into_depth();
       }
       viz_info._points.push_back(p);
     }

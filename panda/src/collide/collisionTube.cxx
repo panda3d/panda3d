@@ -171,7 +171,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     // tube or beyond it.  The first intersection point is at t1.
     into_intersection_point = from_a + t1 * from_direction;
   }
-  new_entry->set_into_intersection_point(into_intersection_point);
+  set_intersection_point(new_entry, into_intersection_point, from_radius);
 
   return new_entry;
 }
@@ -217,7 +217,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     // at t1.
     into_intersection_point = from_origin + t1 * from_direction;
   }
-  new_entry->set_into_intersection_point(into_intersection_point);
+  set_intersection_point(new_entry, into_intersection_point, 0.0);
 
   return new_entry;
 }
@@ -265,7 +265,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
     // tube or beyond it.  The first intersection point is at t1.
     into_intersection_point = from_a + t1 * from_direction;
   }
-  new_entry->set_into_intersection_point(into_intersection_point);
+  set_intersection_point(new_entry, into_intersection_point, 0.0);
 
   return new_entry;
 }
@@ -336,7 +336,7 @@ fill_viz_geom() {
   tube->set_lengths(lengths);
 
   _viz_geom->add_geom(tube, get_solid_viz_state());
-  _viz_geom->add_geom(tube, get_wireframe_viz_state());
+  //_viz_geom->add_geom(tube, get_wireframe_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -351,10 +351,9 @@ recalc_internals() {
   LVector3f direction = (_b - _a);
   _length = direction.length();
 
-  LMatrix4f mat;
-  look_at(mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
-  mat.set_row(3, _a);
-  _inv_mat.invert_from(mat);
+  look_at(_mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
+  _mat.set_row(3, _a);
+  _inv_mat.invert_from(_mat);
 
   mark_viz_stale();
   mark_bound_stale();
@@ -627,6 +626,70 @@ sphere_intersects_line(double &t1, double &t2, float center_y,
   t2 = ( -B + sqrt_radical ) * reciprocal_2A;
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTube::set_intersection_point
+//       Access: Private
+//  Description: After an intersection has been detected, record the
+//               computed intersection point in the CollisionEntry,
+//               and also compute the relevant normal based on that
+//               point.
+////////////////////////////////////////////////////////////////////
+void CollisionTube::
+set_intersection_point(CollisionEntry *new_entry, 
+                       const LPoint3f &into_intersection_point, 
+                       double extra_radius) const {
+  // Convert the point into our canonical space for analysis.
+  LPoint3f point = into_intersection_point * _inv_mat;
+  LVector3f normal;
+
+  if (point[1] <= 0.0) {
+    // The point is on the first endcap.
+    normal = point;
+    if (!normal.normalize()) {
+      normal.set(0.0, -1.0, 0.0);
+    }
+    point = normal * _radius;
+
+  } else if (point[1] >= _length) {
+    // The point is on the second endcap.
+    normal.set(point[0], point[1] - _length, point[2]);
+    if (!normal.normalize()) {
+      normal.set(0.0, 1.0, 0.0);
+    }
+    point = normal * _radius;
+    point[1] += _length;
+
+  } else {
+    // The point is within the cylinder part.
+    LVector2d normal2d(point[0], point[2]);
+    if (!normal2d.normalize()) {
+      normal2d.set(0.0, 1.0);
+    }
+    normal.set(normal2d[0], 0.0, normal2d[1]);
+    point.set(normal[0] * _radius, point[1], normal[2] * _radius);
+  }
+
+  // Now convert the point and normal back into real space.
+  point = point * _mat;
+  normal = normal * _mat;
+
+  // Also adjust the original point into the tube by the amount of
+  // extra_radius, which should put it on the surface of the tube if
+  // our collision was tangential.
+  LPoint3f orig_point = into_intersection_point - normal * extra_radius;
+
+  // And the difference between point and orig_point is the depth to
+  // which the object has intersected the tube.
+  float depth = (point - orig_point).length();
+
+  new_entry->set_into_intersection_point(point);
+  new_entry->set_into_surface_normal(normal);
+  new_entry->set_into_depth(depth);
+
+  LVector3f from_depth_vec = (normal * depth) * new_entry->get_inv_wrt_space();
+  new_entry->set_from_depth(from_depth_vec.length());
 }
 
 ////////////////////////////////////////////////////////////////////
