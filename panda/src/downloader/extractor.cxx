@@ -158,13 +158,13 @@ step() {
     }
 
     _subfile_index = _requests[_request_index];
-    Filename subfile_filename(_extract_dir, 
-                              _multifile.get_subfile_name(_subfile_index));
-    subfile_filename.set_binary();
-    subfile_filename.make_dir();
-    if (!subfile_filename.open_write(_write)) {
+    _subfile_filename = Filename(_extract_dir, 
+                                 _multifile.get_subfile_name(_subfile_index));
+    _subfile_filename.set_binary();
+    _subfile_filename.make_dir();
+    if (!_subfile_filename.open_write(_write)) {
       downloader_cat.error()
-        << "Unable to write to " << subfile_filename << ".\n";
+        << "Unable to write to " << _subfile_filename << ".\n";
       reset();
       return EU_error_abort;
     }
@@ -201,6 +201,12 @@ step() {
         return EU_error_abort;
       }
       _write.put(byte);
+    }
+    if (!_write) {
+      downloader_cat.error()
+        << "Error writing to " << _subfile_filename << ".\n";
+      reset();
+      return EU_error_abort;
     }
     _subfile_pos += max_bytes;
   }

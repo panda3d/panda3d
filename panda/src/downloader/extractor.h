@@ -73,6 +73,7 @@ private:
   size_t _subfile_length;
   istream *_read;
   ofstream _write;
+  Filename _subfile_filename;
 };
 
 #include "extractor.I"
