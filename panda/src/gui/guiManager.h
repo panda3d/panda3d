@@ -17,7 +17,7 @@
 #include "guiLabel.h"
 #include "config_gui.h"
 
-class GuiManager {
+class EXPCL_PANDA GuiManager {
 private:
   typedef map<GraphicsWindow*, GuiManager*> GuiMap;
   static GuiMap* _map;

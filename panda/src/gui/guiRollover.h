@@ -12,7 +12,7 @@
 
 #include <eventHandler.h>
 
-class GuiRollover : public Namable {
+class EXPCL_PANDA GuiRollover : public Namable {
 private:
   GuiLabel* _off;
   GuiLabel* _on;

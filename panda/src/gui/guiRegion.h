@@ -14,7 +14,7 @@
 
 class GuiManager;
 
-class GuiRegion : public Namable {
+class EXPCL_PANDA GuiRegion : public Namable {
 private:
   float _left, _right, _bottom, _top;
   PT(MouseWatcherRegion) _region;

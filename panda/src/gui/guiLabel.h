@@ -17,7 +17,7 @@
 
 class GuiManager;
 
-class GuiLabel {
+class EXPCL_PANDA GuiLabel {
 private:
   enum LabelType { NONE, SIMPLE_TEXTURE, SIMPLE_TEXT };
   LabelType _type;
