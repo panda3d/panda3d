@@ -1,5 +1,5 @@
-// Filename: config_pgui.h
-// Created by:  drose (02Jul01)
+// Filename: quickRenderTraverser.I
+// Created by:  drose (24Jul01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,17 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_PGUI_H
-#define CONFIG_PGUI_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
-
-NotifyCategoryDecl(pgui, EXPCL_PANDA, EXPTP_PANDA);
-
-// Configure variables for pgui package.
-extern const bool pgui_quick;
-
-extern EXPCL_PANDA void init_libpgui();
-
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: QuickRenderTraverser::backward_arc
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void QuickRenderTraverser::
+backward_arc(NodeRelation *arc, NullTransitionWrapper &,
+             NullAttributeWrapper &, NullAttributeWrapper &,
+             const QuickRenderLevelState &) {
+  mark_backward_arc(arc);
+}

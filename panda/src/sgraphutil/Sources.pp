@@ -13,19 +13,25 @@
      appTraverser.I appTraverser.h config_sgraphutil.h  \
      directRenderTraverser.I directRenderTraverser.h  \
      frustumCullTraverser.I frustumCullTraverser.h get_rel_pos.I  \
-     get_rel_pos.h sceneGraphAnalyzer.h sceneGraphReducer.I  \
-     sceneGraphReducer.h
+     get_rel_pos.h \
+     quickRenderLevelState.h \
+     quickRenderTraverser.I quickRenderTraverser.h \
+     sceneGraphAnalyzer.h \
+     sceneGraphReducer.I sceneGraphReducer.h
 
   #define INCLUDED_SOURCES  \
      appTraverser.cxx config_sgraphutil.cxx directRenderTraverser.cxx  \
-     frustumCullTraverser.cxx get_rel_pos.cxx sceneGraphAnalyzer.cxx \
-     sceneGraphReducer.cxx
+     frustumCullTraverser.cxx get_rel_pos.cxx \
+     quickRenderTraverser.cxx \
+     sceneGraphAnalyzer.cxx sceneGraphReducer.cxx
 
   #define INSTALL_HEADERS \
     appTraverser.I appTraverser.h config_sgraphutil.h \
     directRenderLevelState.h directRenderTraverser.I \
     directRenderTraverser.h frustumCullTraverser.I \
     frustumCullTraverser.h get_rel_pos.I get_rel_pos.h \
+    quickRenderLevelState.h \
+    quickRenderTraverser.I quickRenderTraverser.h \
     sceneGraphAnalyzer.h sceneGraphReducer.I sceneGraphReducer.h
 
   #define IGATESCAN all

@@ -32,6 +32,28 @@ Configure(config_pgui);
 NotifyCategoryDef(pgui, "");
 
 ConfigureFn(config_pgui) {
+  init_libpgui();
+}
+
+const bool pgui_quick = config_pgui.GetBool("pgui-quick", false);
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libpgui
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libpgui() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   PGButton::init_type();
   PGEntry::init_type();
   PGMouseWatcherParameter::init_type();

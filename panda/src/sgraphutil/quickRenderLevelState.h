@@ -1,5 +1,5 @@
-// Filename: config_pgui.h
-// Created by:  drose (02Jul01)
+// Filename: quickRenderLevelState.h
+// Created by:  drose (24Jul01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,17 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_PGUI_H
-#define CONFIG_PGUI_H
+#ifndef QUICKRENDERLEVELSTATE_H
+#define QUICKRENDERLEVELSTATE_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
 
-NotifyCategoryDecl(pgui, EXPCL_PANDA, EXPTP_PANDA);
+#include "updateSeq.h"
 
-// Configure variables for pgui package.
-extern const bool pgui_quick;
-
-extern EXPCL_PANDA void init_libpgui();
+////////////////////////////////////////////////////////////////////
+//       Class : QuickRenderLevelState
+// Description : This is the state information the
+//               QuickRenderTraverser retains for each level during
+//               traversal.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA QuickRenderLevelState {
+public:
+  UpdateSeq _as_of;
+};
 
 #endif
+

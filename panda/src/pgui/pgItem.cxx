@@ -19,6 +19,7 @@
 #include "pgTop.h"
 #include "pgItem.h"
 #include "pgMouseWatcherParameter.h"
+#include "config_pgui.h"
 
 #include "namedNode.h"
 #include "throw_event.h"
@@ -27,7 +28,9 @@
 #include "transformTransition.h"
 #include "sceneGraphReducer.h"
 #include "directRenderTraverser.h"
+#include "quickRenderTraverser.h"
 #include "allTransitionsWrapper.h"
+#include "graphicsStateGuardian.h"
 
 #ifdef HAVE_AUDIO
 #include "audioSound.h"
@@ -202,12 +205,18 @@ draw_item(PGTop *top, GraphicsStateGuardian *gsg,
     // This item has a current state definition that we should use
     // to render the item.
     Node *def = get_state_def(get_state());
-    
-    // We'll use a normal DirectRenderTraverser to do the rendering
-    // of the subgraph.
-    DirectRenderTraverser drt(gsg, RenderRelation::get_class_type());
-    drt.set_view_frustum_cull(false);
-    drt.traverse(def, attrib, AllTransitionsWrapper());
+
+    if (!pgui_quick) {
+      // We'll use a normal DirectRenderTraverser to do the rendering
+      // of the subgraph.
+      DirectRenderTraverser drt(gsg, RenderRelation::get_class_type());
+      drt.set_view_frustum_cull(false);
+      drt.traverse(def, attrib, AllTransitionsWrapper());
+
+    } else {
+      QuickRenderTraverser qrt(gsg, RenderRelation::get_class_type());
+      qrt.traverse(def, attrib, AllTransitionsWrapper());
+    }
   }
 }
 

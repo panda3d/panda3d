@@ -45,7 +45,7 @@
 TypeHandle DirectRenderTraverser::_type_handle;
 
 #ifndef CPPPARSER
-PStatCollector DirectRenderTraverser::_draw_pcollector("Draw");
+PStatCollector DirectRenderTraverser::_draw_pcollector("Draw:Direct");
 #endif
 
 ////////////////////////////////////////////////////////////////////

@@ -47,7 +47,7 @@ TypeHandle CullTraverser::_type_handle;
 
 #ifndef CPPPARSER
 PStatCollector CullTraverser::_cull_pcollector("Cull");
-PStatCollector CullTraverser::_draw_pcollector("Draw");
+PStatCollector CullTraverser::_draw_pcollector("Draw:Cull");
 PStatCollector CullTraverser::_cull_traverse_pcollector("Cull:Traverse");
 PStatCollector CullTraverser::_cull_geom_node_pcollector("Cull:Geom node");
 PStatCollector CullTraverser::_cull_direct_node_pcollector("Cull:Direct node");
