@@ -192,23 +192,8 @@ help() {
     "      Display this help text.\n\n";
 }
 
-void dofoo(int foo[2]) {
-}
-
-void dofoo2(int foo[][2]) {
-}
-
 int
 main(int argc, char *argv[]) {
-  int foo[3][2] = { { 0, 1 }, { 2, 3 }, { 4, 5 } };
-  int *xfoo = (int *)foo;
-  for (int i = 0; i < 6; i++) {
-    cerr << xfoo[i] << " ";
-  }
-  cerr << "\n";
-  dofoo(foo[0]);
-  dofoo2(foo);
-
   framework.open_framework(argc, argv);
   framework.set_window_title("Panda Viewer");
 
