@@ -160,28 +160,28 @@ class Placer(AppShell):
         self.bind(self.redoButton, 'Redo last operation')
 
         # The master frame for the dials
-	dialFrame = Frame(interior)
+        dialFrame = Frame(interior)
         dialFrame.pack(fill = 'both', expand = 1)
         
-	# Create and pack the Pos Controls
-	posGroup = Pmw.Group(dialFrame,
+        # Create and pack the Pos Controls
+        posGroup = Pmw.Group(dialFrame,
                              tag_pyclass = Menubutton,
                              tag_text = 'Position',
                              tag_font=('MSSansSerif', 14, 'bold'),
                              tag_activebackground = '#909090',
                              ring_relief = 'flat')
-	posMenubutton = posGroup.component('tag')
+        posMenubutton = posGroup.component('tag')
         self.bind(posMenubutton, 'Position menu operations')
-	posMenu = Menu(posMenubutton)
-	posMenu.add_command(label = 'Set to zero', command = self.zeroPos)
-	posMenu.add_command(label = 'Reset initial',
+        posMenu = Menu(posMenubutton)
+        posMenu.add_command(label = 'Set to zero', command = self.zeroPos)
+        posMenu.add_command(label = 'Reset initial',
                             command = self.resetPos)
-	posMenubutton['menu'] = posMenu
-	posGroup.pack(side='left', fill = 'both', expand = 1)
+        posMenubutton['menu'] = posMenu
+        posGroup.pack(side='left', fill = 'both', expand = 1)
         posInterior = posGroup.interior()
 
         # Create the dials
-	self.posX = self.createcomponent('posX', (), None,
+        self.posX = self.createcomponent('posX', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'X',
                                          initialValue = 0.0,
@@ -195,7 +195,7 @@ class Placer(AppShell):
         self.posX.onRelease = self.xformStop
         self.posX.pack(expand=1,fill='both')
         
-	self.posY = self.createcomponent('posY', (), None,
+        self.posY = self.createcomponent('posY', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Y',
                                          initialValue = 0.0,
@@ -209,7 +209,7 @@ class Placer(AppShell):
         self.posY.onRelease = self.xformStop
         self.posY.pack(expand=1,fill='both')
         
-	self.posZ = self.createcomponent('posZ', (), None,
+        self.posZ = self.createcomponent('posZ', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Z',
                                          initialValue = 0.0,
@@ -223,24 +223,24 @@ class Placer(AppShell):
         self.posZ.onRelease = self.xformStop
         self.posZ.pack(expand=1,fill='both')
 
-	# Create and pack the Hpr Controls
-	hprGroup = Pmw.Group(dialFrame,
+        # Create and pack the Hpr Controls
+        hprGroup = Pmw.Group(dialFrame,
                              tag_pyclass = Menubutton,
                              tag_text = 'Orientation',
                              tag_font=('MSSansSerif', 14, 'bold'),
                              tag_activebackground = '#909090',
                              ring_relief = 'flat')
-	hprMenubutton = hprGroup.component('tag')
+        hprMenubutton = hprGroup.component('tag')
         self.bind(hprMenubutton, 'Orientation menu operations')
-	hprMenu = Menu(hprMenubutton)
-	hprMenu.add_command(label = 'Set to zero', command = self.zeroHpr)
-	hprMenu.add_command(label = 'Reset initial', command = self.resetHpr)
-	hprMenubutton['menu'] = hprMenu
-	hprGroup.pack(side='left',fill = 'both', expand = 1)
+        hprMenu = Menu(hprMenubutton)
+        hprMenu.add_command(label = 'Set to zero', command = self.zeroHpr)
+        hprMenu.add_command(label = 'Reset initial', command = self.resetHpr)
+        hprMenubutton['menu'] = hprMenu
+        hprGroup.pack(side='left',fill = 'both', expand = 1)
         hprInterior = hprGroup.interior()
         
-	# Create the dials
-	self.hprH = self.createcomponent('hprH', (), None,
+        # Create the dials
+        self.hprH = self.createcomponent('hprH', (), None,
                                          Dial.Dial, (hprInterior,),
                                          text = 'H', fRollover = 0,
                                          max = 360.0, numTicks = 12,
@@ -255,7 +255,7 @@ class Placer(AppShell):
         self.hprH.onRelease = self.xformStop
         self.hprH.pack(expand=1,fill='both')
         
-	self.hprP = self.createcomponent('hprP', (), None,
+        self.hprP = self.createcomponent('hprP', (), None,
                                          Dial.Dial, (hprInterior,),
                                          text = 'P', fRollover = 0,
                                          max = 360.0, numTicks = 12,
@@ -270,7 +270,7 @@ class Placer(AppShell):
         self.hprP.onRelease = self.xformStop
         self.hprP.pack(expand=1,fill='both')
         
-	self.hprR = self.createcomponent('hprR', (), None,
+        self.hprR = self.createcomponent('hprR', (), None,
                                          Dial.Dial, (hprInterior,),
                                          text = 'R', fRollover = 0,
                                          max = 360.0, numTicks = 12,
@@ -286,39 +286,39 @@ class Placer(AppShell):
         self.hprR.pack(expand=1,fill='both')
 
         # Create and pack the Scale Controls
-	# The available scaling modes
-	self.scalingMode = StringVar()
-	self.scalingMode.set('Scale Uniform')
+        # The available scaling modes
+        self.scalingMode = StringVar()
+        self.scalingMode.set('Scale Uniform')
         # The scaling widgets
-	scaleGroup = Pmw.Group(dialFrame,
+        scaleGroup = Pmw.Group(dialFrame,
                                tag_text = 'Scale Uniform',
                                tag_pyclass = Menubutton,
                                tag_font=('MSSansSerif', 14, 'bold'),
                                tag_activebackground = '#909090',
                                ring_relief = 'flat')
-	self.scaleMenubutton = scaleGroup.component('tag')
+        self.scaleMenubutton = scaleGroup.component('tag')
         self.bind(self.scaleMenubutton, 'Scale menu operations')
         self.scaleMenubutton['textvariable'] = self.scalingMode
-	
-	# Scaling menu
-	scaleMenu = Menu(self.scaleMenubutton)
-	scaleMenu.add_command(label = 'Set to unity',
+
+        # Scaling menu
+        scaleMenu = Menu(self.scaleMenubutton)
+        scaleMenu.add_command(label = 'Set to unity',
                               command = self.unitScale)
-	scaleMenu.add_command(label = 'Reset initial',
+        scaleMenu.add_command(label = 'Reset initial',
                               command = self.resetScale)
-	scaleMenu.add_radiobutton(label = 'Scale Free',
+        scaleMenu.add_radiobutton(label = 'Scale Free',
                                       variable = self.scalingMode)
-	scaleMenu.add_radiobutton(label = 'Scale Uniform',
+        scaleMenu.add_radiobutton(label = 'Scale Uniform',
                                       variable = self.scalingMode)
-	scaleMenu.add_radiobutton(label = 'Scale Proportional',
+        scaleMenu.add_radiobutton(label = 'Scale Proportional',
                                       variable = self.scalingMode)
-	self.scaleMenubutton['menu'] = scaleMenu
+        self.scaleMenubutton['menu'] = scaleMenu
         # Pack group widgets
-	scaleGroup.pack(side='left',fill = 'both', expand = 1)
+        scaleGroup.pack(side='left',fill = 'both', expand = 1)
         scaleInterior = scaleGroup.interior()
         
-	# Create the dials
-	self.scaleX = self.createcomponent('scaleX', (), None,
+        # Create the dials
+        self.scaleX = self.createcomponent('scaleX', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'X Scale',
                                            initialValue = 1.0,
@@ -332,7 +332,7 @@ class Placer(AppShell):
         self.scaleX.onRelease = self.xformStop
         self.scaleX.pack(expand=1,fill='both')
         
-	self.scaleY = self.createcomponent('scaleY', (), None,
+        self.scaleY = self.createcomponent('scaleY', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'Y Scale',
                                            initialValue = 1.0,
@@ -346,7 +346,7 @@ class Placer(AppShell):
         self.scaleY.onRelease = self.xformStop
         self.scaleY.pack(expand=1,fill='both')
         
-	self.scaleZ = self.createcomponent('scaleZ', (), None,
+        self.scaleZ = self.createcomponent('scaleZ', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'Z Scale',
                                            initialValue = 1.0,
@@ -674,7 +674,7 @@ class Placer(AppShell):
                     sf = value/scale[0]
                 elif axis == 'sy':
                     sf = value/scale[1]
-		elif axis == 'sz':
+                elif axis == 'sz':
                     sf = value/scale[2]
                 scale = scale * sf
             self['nodePath'].setScale(scale)

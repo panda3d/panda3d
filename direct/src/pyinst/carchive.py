@@ -38,7 +38,7 @@ class CTOC:
     entrylen = struct.calcsize(self.ENTRYSTRUCT)
     rslt = []
     for (dpos, dlen, ulen, flag, typcd, nm) in self.data:
-      nmlen = len(nm) + 1	# add 1 for a '\0'
+      nmlen = len(nm) + 1       # add 1 for a '\0'
       rslt.append(struct.pack(self.ENTRYSTRUCT+`nmlen`+'s',
         nmlen+entrylen, dpos, dlen, ulen, flag, typcd, nm+'\0'))
     return string.join(rslt, '')
@@ -104,10 +104,10 @@ class CArchive(archive.Archive):
     else:
       self.lib.seek(-self.TRLLEN, 2)
     (magic, totallen, tocpos, toclen) = struct.unpack(self.TRLSTRUCT, 
-						self.lib.read(self.TRLLEN))
+                                                self.lib.read(self.TRLLEN))
     if magic != self.MAGIC:
       raise RuntimeError, "%s is not a valid %s archive file" \
-		% (self.path, self.__class__.__name__)
+                % (self.path, self.__class__.__name__)
     self.pkgstart = filelen - totallen
     if self.len:
       if totallen != self.len or self.pkgstart != self.start:

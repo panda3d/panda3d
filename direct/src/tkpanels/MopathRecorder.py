@@ -81,9 +81,9 @@ class MopathRecorder(AppShell, PandaObject):
         self.tangentMarker.setColor(1,0,1,1)
         self.tangentMarker.setName('Tangent Marker')
         self.tangentLines = LineNodePath(self.tangentGroup)
-	self.tangentLines.setColor(VBase4(1,0,1,1))
-	self.tangentLines.setThickness(1)
-	self.tangentLines.moveTo(0,0,0)
+        self.tangentLines.setColor(VBase4(1,0,1,1))
+        self.tangentLines.setThickness(1)
+        self.tangentLines.moveTo(0,0,0)
         self.tangentLines.drawTo(0,0,0)
         self.tangentLines.create()
         # Active node path dictionary
@@ -169,7 +169,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.accept(event, method)
 
     def createInterface(self):
-	interior = self.interior()
+        interior = self.interior()
         # FILE MENU
         # Get a handle on the file menu so commands can be inserted
         # before quit item
@@ -546,27 +546,27 @@ class MopathRecorder(AppShell, PandaObject):
             initialValue = 5.0,
             command = self.setTickScale, side = TOP)
         widget.component('hull')['relief'] = RIDGE
-	self.createColorEntry(
+        self.createColorEntry(
             sfFrame, 'Style', 'Path Color',
             'Color of curve',
             command = self.setPathColor,
             initialValue = [255.0,255.0,255.0,255.0])
-	self.createColorEntry(
+        self.createColorEntry(
             sfFrame, 'Style', 'Knot Color',
             'Color of knots',
             command = self.setKnotColor,
             initialValue = [0,0,255.0,255.0])
-	self.createColorEntry(
+        self.createColorEntry(
             sfFrame, 'Style', 'CV Color',
             'Color of CVs',
             command = self.setCvColor,
             initialValue = [255.0,0,0,255.0])
-	self.createColorEntry(
+        self.createColorEntry(
             sfFrame, 'Style', 'Tick Color',
             'Color of Ticks',
             command = self.setTickColor,
             initialValue = [255.0,0,0,255.0])
-	self.createColorEntry(
+        self.createColorEntry(
             sfFrame, 'Style', 'Hull Color',
             'Color of Hull',
             command = self.setHullColor,

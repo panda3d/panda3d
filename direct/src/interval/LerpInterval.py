@@ -14,21 +14,21 @@ class LerpInterval(Interval):
         """
         # Record instance variables
         self.lerp = None
-	self.functorFunc = functorFunc
-	self.blendType = self.getBlend(blendType)
+        self.functorFunc = functorFunc
+        self.blendType = self.getBlend(blendType)
         # Initialize superclass
-	Interval.__init__(self, name, duration)
+        Interval.__init__(self, name, duration)
 
     def updateFunc(self, t, event = IVAL_NONE):
-	""" updateFunc(t, event)
-	"""
+        """ updateFunc(t, event)
+        """
         # Check to see if we need to create the lerp
         if (event == IVAL_INIT):
-	    self.lerp = Lerp(self.functorFunc(), self.duration, 
+            self.lerp = Lerp(self.functorFunc(), self.duration, 
                                   self.blendType)
         # Make sure lerp exists
-	if (not self.lerp):
-	    self.lerp = Lerp(self.functorFunc(), self.duration, 
+        if (not self.lerp):
+            self.lerp = Lerp(self.functorFunc(), self.duration, 
                                   self.blendType)
         # Evaluate the lerp
         self.lerp.setT(t)
@@ -49,71 +49,71 @@ class LerpInterval(Interval):
             return LerpBlendHelpers.noBlend
         else:
             raise Exception(
-		'Error: LerpInterval.__getBlend: Unknown blend type')
+                'Error: LerpInterval.__getBlend: Unknown blend type')
 
 class LerpPosInterval(LerpInterval):
     # Name counter
     lerpPosNum = 1
     # Class methods
     def __init__(self, node, duration, pos, startPos=None,
-				other=None, blendType='noBlend', name=None):
-	""" __init__(node, duration, pos, startPos, other, blendType, name)
-	"""
-	def functorFunc(node=node, pos=pos, startPos=startPos,
-			other=other):
-	    assert(not node.isEmpty())
+                                other=None, blendType='noBlend', name=None):
+        """ __init__(node, duration, pos, startPos, other, blendType, name)
+        """
+        def functorFunc(node=node, pos=pos, startPos=startPos,
+                        other=other):
+            assert(not node.isEmpty())
             if callable(pos):
                 # This may be a thunk that returns a point.
                 pos = pos()
             if (other != None):
-            	# lerp wrt other
-	    	if (startPos == None):
+                # lerp wrt other
+                if (startPos == None):
                     startPos = node.getPos(other)
-            	functor = PosLerpFunctor(node, startPos, pos, other)
+                functor = PosLerpFunctor(node, startPos, pos, other)
             else:
-	    	if (startPos == None):
-            	    startPos = node.getPos()
-            	functor = PosLerpFunctor(node, startPos, pos)
-	    return functor
+                if (startPos == None):
+                    startPos = node.getPos()
+                functor = PosLerpFunctor(node, startPos, pos)
+            return functor
 
         # Generate unique name if necessary
-	if (name == None):
-	    name = 'LerpPosInterval-%d' % LerpPosInterval.lerpPosNum
-	    LerpPosInterval.lerpPosNum += 1
+        if (name == None):
+            name = 'LerpPosInterval-%d' % LerpPosInterval.lerpPosNum
+            LerpPosInterval.lerpPosNum += 1
         # Initialize superclass
-	LerpInterval.__init__(self, name, duration, functorFunc, blendType) 
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType) 
 
 class LerpHprInterval(LerpInterval):
     # Name counter
     lerpHprNum = 1
     # Class methods
     def __init__(self, node, duration, hpr, startHpr=None,
-				other=None, blendType='noBlend', name=None):
-	""" __init__(node, duration, hpr, startHpr, other, blendType, name)
-	"""
-	def functorFunc(node=node, hpr=hpr, startHpr=startHpr,
-			other=other):
-	    assert(not node.isEmpty())
+                                other=None, blendType='noBlend', name=None):
+        """ __init__(node, duration, hpr, startHpr, other, blendType, name)
+        """
+        def functorFunc(node=node, hpr=hpr, startHpr=startHpr,
+                        other=other):
+            assert(not node.isEmpty())
             if callable(hpr):
                 # This may be a thunk that returns a point.
                 hpr = hpr()
             if (other != None):
-            	# lerp wrt other
-	    	if (startHpr == None):
+                # lerp wrt other
+                if (startHpr == None):
                     startHpr = node.getHpr(other)
-            	functor = HprLerpFunctor(node, startHpr, hpr, other)
+                functor = HprLerpFunctor(node, startHpr, hpr, other)
             else:
-	    	if (startHpr == None):
-            	    startHpr = node.getHpr()
-            	functor = HprLerpFunctor(node, startHpr, hpr)
-	    return functor
+                if (startHpr == None):
+                    startHpr = node.getHpr()
+                functor = HprLerpFunctor(node, startHpr, hpr)
+            return functor
 
         # Generate unique name if necessary
-	if (name == None):
-	    name = 'LerpHprInterval-%d' % LerpHprInterval.lerpHprNum
-	    LerpHprInterval.lerpHprNum += 1
+        if (name == None):
+            name = 'LerpHprInterval-%d' % LerpHprInterval.lerpHprNum
+            LerpHprInterval.lerpHprNum += 1
         # Initialize superclass
-	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
 class LerpScaleInterval(LerpInterval):
 
@@ -121,32 +121,32 @@ class LerpScaleInterval(LerpInterval):
     lerpScaleNum = 1
     # Class methods
     def __init__(self, node, duration, scale, startScale=None,
-				other=None, blendType='noBlend', name=None):
-	""" __init__(node, duration, scale, startScale, other, blendType, name)
-	"""
-	def functorFunc(node=node, scale=scale,
+                                other=None, blendType='noBlend', name=None):
+        """ __init__(node, duration, scale, startScale, other, blendType, name)
+        """
+        def functorFunc(node=node, scale=scale,
                         startScale=startScale, other=other):
-	    assert(not node.isEmpty())
+            assert(not node.isEmpty())
             if callable(scale):
                 # This may be a thunk that returns a point.
                 scale = scale()
             if (other != None):
-            	# lerp wrt other
-	    	if (startScale == None):
+                # lerp wrt other
+                if (startScale == None):
                     startScale = node.getScale(other)
-            	functor = ScaleLerpFunctor(node, startScale, scale, other)
+                functor = ScaleLerpFunctor(node, startScale, scale, other)
             else:
-	    	if (startScale == None):
-            	    startScale = node.getScale()
-            	functor = ScaleLerpFunctor(node, startScale, scale)
-	    return functor
+                if (startScale == None):
+                    startScale = node.getScale()
+                functor = ScaleLerpFunctor(node, startScale, scale)
+            return functor
 
         # Generate unique name if necessary
-	if (name == None):
-	    name = 'LerpScaleInterval-%d' % LerpScaleInterval.lerpScaleNum
-	    LerpScaleInterval.lerpScaleNum += 1
+        if (name == None):
+            name = 'LerpScaleInterval-%d' % LerpScaleInterval.lerpScaleNum
+            LerpScaleInterval.lerpScaleNum += 1
         # Initialize superclass
-	LerpInterval.__init__(self, name, duration, functorFunc, blendType) 
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType) 
 
 class LerpPosHprInterval(LerpInterval):
     # Interval counter
@@ -154,13 +154,13 @@ class LerpPosHprInterval(LerpInterval):
     lerpPosHprNum = 1
 
     def __init__(self, node, duration, pos, hpr, startPos=None,
-		startHpr=None, other=None, blendType='noBlend', name=None): 
-	""" __init__(node, duration, pos, hpr, startPos, startHpr,
-						other, blendType, name)
-	"""
-	def functorFunc(node=node, pos=pos, hpr=hpr, 
-			startPos=startPos, startHpr=startHpr, other=other):
-	    assert(not node.isEmpty())
+                startHpr=None, other=None, blendType='noBlend', name=None): 
+        """ __init__(node, duration, pos, hpr, startPos, startHpr,
+                                                other, blendType, name)
+        """
+        def functorFunc(node=node, pos=pos, hpr=hpr, 
+                        startPos=startPos, startHpr=startHpr, other=other):
+            assert(not node.isEmpty())
             if callable(pos):
                 # This may be a thunk that returns a point.
                 pos = pos()
@@ -168,30 +168,30 @@ class LerpPosHprInterval(LerpInterval):
                 # This may be a thunk that returns a point.
                 hpr = hpr()
             if (other != None):
-            	# lerp wrt other
-	    	if (startPos == None):
-            	    startPos = node.getPos(other)
-	    	if (startHpr == None):
-            	    startHpr = node.getHpr(other)
-            	functor = PosHprLerpFunctor(
+                # lerp wrt other
+                if (startPos == None):
+                    startPos = node.getPos(other)
+                if (startHpr == None):
+                    startHpr = node.getHpr(other)
+                functor = PosHprLerpFunctor(
                     node, startPos, pos,
                     startHpr, hpr, other)
             else:
-	    	if (startPos == None):
-            	    startPos = node.getPos()
-	    	if (startHpr == None):
-            	    startHpr = node.getHpr()
-            	functor = PosHprLerpFunctor(
+                if (startPos == None):
+                    startPos = node.getPos()
+                if (startHpr == None):
+                    startHpr = node.getHpr()
+                functor = PosHprLerpFunctor(
                     node, startPos, pos,
                     startHpr, hpr)
-	    return functor
+            return functor
 
         # Generate unique name if necessary
-	if (name == None):
-	    name = 'LerpPosHpr-%d' % LerpPosHprInterval.lerpPosHprNum
-	    LerpPosHprInterval.lerpPosHprNum += 1
+        if (name == None):
+            name = 'LerpPosHpr-%d' % LerpPosHprInterval.lerpPosHprNum
+            LerpPosHprInterval.lerpPosHprNum += 1
         # Initialize superclass
-	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
 class LerpPosHprScaleInterval(LerpInterval):
     # Interval counter
@@ -200,14 +200,14 @@ class LerpPosHprScaleInterval(LerpInterval):
     def __init__(self, node, duration, pos, hpr, scale,
                  startPos=None, startHpr=None, startScale=None,
                  other=None, blendType='noBlend', name=None): 
-	""" __init__(node, duration, pos, hpr, scale,
+        """ __init__(node, duration, pos, hpr, scale,
                      startPos, startHpr, startScale, 
                      other, blendType, name)
-	"""
-	def functorFunc(node=node, pos=pos, hpr=hpr, scale=scale,
-			startPos=startPos, startHpr=startHpr,
+        """
+        def functorFunc(node=node, pos=pos, hpr=hpr, scale=scale,
+                        startPos=startPos, startHpr=startHpr,
                         startScale=startScale, other=other):
-	    assert(not node.isEmpty())
+            assert(not node.isEmpty())
             if callable(pos):
                 # This may be a thunk that returns a point.
                 pos = pos()
@@ -218,34 +218,34 @@ class LerpPosHprScaleInterval(LerpInterval):
                 # This may be a thunk that returns a point.
                 scale = scale()
             if (other != None):
-            	# lerp wrt other
-	    	if (startPos == None):
-            	    startPos = node.getPos(other)
-	    	if (startHpr == None):
-            	    startHpr = node.getHpr(other)
-	    	if (startScale == None):
-            	    startScale = node.getScale(other)
-            	functor = PosHprScaleLerpFunctor(
+                # lerp wrt other
+                if (startPos == None):
+                    startPos = node.getPos(other)
+                if (startHpr == None):
+                    startHpr = node.getHpr(other)
+                if (startScale == None):
+                    startScale = node.getScale(other)
+                functor = PosHprScaleLerpFunctor(
                     node, startPos, pos, startHpr, hpr,
                     startScale, scale, other)
             else:
-	    	if (startPos == None):
-            	    startPos = node.getPos()
-	    	if (startHpr == None):
-            	    startHpr = node.getHpr()
-	    	if (startScale == None):
-            	    startScale = node.getScale()
-            	functor = PosHprScaleLerpFunctor(
+                if (startPos == None):
+                    startPos = node.getPos()
+                if (startHpr == None):
+                    startHpr = node.getHpr()
+                if (startScale == None):
+                    startScale = node.getScale()
+                functor = PosHprScaleLerpFunctor(
                     node, startPos, pos, startHpr, hpr, startScale, scale)
-	    return functor
+            return functor
 
         # Generate unique name if necessary
-	if (name == None):
-	    name = ('LerpPosHprScale-%d' %
+        if (name == None):
+            name = ('LerpPosHprScale-%d' %
                     LerpPosHprScaleInterval.lerpPosHprScaleNum)
-	    LerpPosHprScaleInterval.lerpPosHprScaleNum += 1
+            LerpPosHprScaleInterval.lerpPosHprScaleNum += 1
         # Initialize superclass
-	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
 # Class used to execute a function over time.  Function can access fromData
 # and toData to perform blend.  If fromData and toData not specified, will
@@ -261,26 +261,26 @@ class LerpFunctionInterval(Interval):
         """__init__(function, duration, fromData, toData, name)
         """
         # Record instance variables
-	self.function = function
+        self.function = function
         self.fromData = fromData
         self.toData = toData
-	self.blendType = self.getBlend(blendType)
+        self.blendType = self.getBlend(blendType)
         self.extraArgs = extraArgs
         # Generate unique name if necessary
-	if (name == None):
-	    name = ('LerpFunctionInterval-%d' %
+        if (name == None):
+            name = ('LerpFunctionInterval-%d' %
                     LerpFunctionInterval.lerpFunctionIntervalNum)
             LerpFunctionInterval.lerpFunctionIntervalNum += 1
         # Initialize superclass
-	Interval.__init__(self, name, duration)
+        Interval.__init__(self, name, duration)
 
     def updateFunc(self, t, event = IVAL_NONE):
-	""" updateFunc(t, event)
-	"""
+        """ updateFunc(t, event)
+        """
         # Evaluate the function
         if (t >= self.duration):
             # Set to end value
-	    apply(self.function, [self.toData] + self.extraArgs)
+            apply(self.function, [self.toData] + self.extraArgs)
         elif self.duration == 0.0:
             # Zero duration, just use endpoint
             apply(self.function, [self.toData] + self.extraArgs)
@@ -308,5 +308,5 @@ class LerpFunctionInterval(Interval):
             return LerpBlendHelpers.noBlend
         else:
             raise Exception(
-		'Error: LerpInterval.__getBlend: Unknown blend type')
+                'Error: LerpInterval.__getBlend: Unknown blend type')
 

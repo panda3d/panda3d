@@ -110,7 +110,7 @@ class OnscreenImage(PandaObject, NodePath):
         return self
     
     def configure(self, option=None, **kw):
-	for option, value in kw.items():
+        for option, value in kw.items():
             # Use option string to access setter function
             try:
                 setter = eval('self.set' +
@@ -131,7 +131,7 @@ class OnscreenImage(PandaObject, NodePath):
         apply(self.configure, (), {key: value})
         
     def cget(self, option):
-	# Get current configuration setting.
+        # Get current configuration setting.
         # This is for compatability with DirectGui functions
         getter = eval('self.get' + string.upper(option[0]) + option[1:])
         return getter()

@@ -22,11 +22,11 @@ class FunctionInterval(Interval):
         """__init__(function, name = None)
         """
         # Record instance variables
-	self.function = function
+        self.function = function
         # Create a unique name for the interval if necessary
-	if (name == None):
-	    name = 'FunctionInterval-%d' % FunctionInterval.functionIntervalNum
-	    FunctionInterval.functionIntervalNum += 1
+        if (name == None):
+            name = 'FunctionInterval-%d' % FunctionInterval.functionIntervalNum
+            FunctionInterval.functionIntervalNum += 1
         # Record any arguments
         self.extraArgs = extraArgs
         # Initialize superclass
@@ -34,12 +34,12 @@ class FunctionInterval(Interval):
         # function to be called.  If false, IVAL_INIT calls have no effect
         # Event, Accept, Ignore intervals default to fOpenEnded = 0
         # Parent, Pos, Hpr, etc intervals default to fOpenEnded = 1
-	Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
+        Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
     
     def updateFunc(self, t, event = IVAL_NONE):
-	""" updateFunc(t, event)
-	    Go to time t
-	"""
+        """ updateFunc(t, event)
+            Go to time t
+        """
         # Evaluate the function
         apply(self.function, self.extraArgs)
         # Print debug information
@@ -55,7 +55,7 @@ class EventInterval(FunctionInterval):
         def sendFunc(event = event, sentArgs = sentArgs):
             messenger.send(event, sentArgs)
         # Create function interval
-	FunctionInterval.__init__(self, sendFunc, name = event,
+        FunctionInterval.__init__(self, sendFunc, name = event,
                                   openEnded = 0)
 
 ### FunctionInterval subclass for accepting hooks ###
@@ -70,7 +70,7 @@ class AcceptInterval(FunctionInterval):
         if (name == None):
             name = 'Accept-' + event
         # Create function interval
-	FunctionInterval.__init__(self, acceptFunc, name = name,
+        FunctionInterval.__init__(self, acceptFunc, name = name,
                                   openEnded = 0)
 
 ### FunctionInterval subclass for ignoring events ###
@@ -82,10 +82,10 @@ class IgnoreInterval(FunctionInterval):
         def ignoreFunc(dirObj = dirObj, event = event):
             dirObj.ignore(event)
         # Determine name
-	if (name == None):
-	    name = 'Ignore-' + event
+        if (name == None):
+            name = 'Ignore-' + event
         # Create function interval
-	FunctionInterval.__init__(self, ignoreFunc, name = name,
+        FunctionInterval.__init__(self, ignoreFunc, name = name,
                                   openEnded = 0)
 
 ### Function Interval subclass for adjusting scene graph hierarchy ###
@@ -99,11 +99,11 @@ class ParentInterval(FunctionInterval):
         def reparentFunc(nodePath = nodePath, parent = parent):
             nodePath.reparentTo(parent)
         # Determine name
-	if (name == None):
-	    name = 'ParentInterval-%d' % ParentInterval.parentIntervalNum
-	    ParentInterval.parentIntervalNum += 1
+        if (name == None):
+            name = 'ParentInterval-%d' % ParentInterval.parentIntervalNum
+            ParentInterval.parentIntervalNum += 1
         # Create function interval
-	FunctionInterval.__init__(self, reparentFunc, name = name)
+        FunctionInterval.__init__(self, reparentFunc, name = name)
 
 ### Function Interval subclass for adjusting scene graph hierarchy ###
 class WrtParentInterval(FunctionInterval):
@@ -116,12 +116,12 @@ class WrtParentInterval(FunctionInterval):
         def wrtReparentFunc(nodePath = nodePath, parent = parent):
             nodePath.wrtReparentTo(parent)
         # Determine name
-	if (name == None):
-	    name = ('WrtParentInterval-%d' %
+        if (name == None):
+            name = ('WrtParentInterval-%d' %
                     WrtParentInterval.wrtParentIntervalNum)
-	    WrtParentInterval.wrtParentIntervalNum += 1
+            WrtParentInterval.wrtParentIntervalNum += 1
         # Create function interval
-	FunctionInterval.__init__(self, wrtReparentFunc, name = name)
+        FunctionInterval.__init__(self, wrtReparentFunc, name = name)
 
 ### Function Interval subclasses for instantaneous pose changes ###
 class PosInterval(FunctionInterval):
@@ -139,9 +139,9 @@ class PosInterval(FunctionInterval):
             else:
                 np.setPos(pos)
         # Determine name
-	if (name == None):
-	    name = 'PosInterval-%d' % PosInterval.posIntervalNum
-	    PosInterval.posIntervalNum += 1
+        if (name == None):
+            name = 'PosInterval-%d' % PosInterval.posIntervalNum
+            PosInterval.posIntervalNum += 1
         # Create function interval
         FunctionInterval.__init__(self, posFunc, name = name)
 
@@ -160,9 +160,9 @@ class HprInterval(FunctionInterval):
             else:
                 np.setHpr(hpr)
         # Determine name
-	if (name == None):
-	    name = 'HprInterval-%d' % HprInterval.hprIntervalNum
-	    HprInterval.hprIntervalNum += 1
+        if (name == None):
+            name = 'HprInterval-%d' % HprInterval.hprIntervalNum
+            HprInterval.hprIntervalNum += 1
         # Create function interval
         FunctionInterval.__init__(self, hprFunc, name = name)
 
@@ -181,9 +181,9 @@ class ScaleInterval(FunctionInterval):
             else:
                 np.setScale(scale)
         # Determine name
-	if (name == None):
-	    name = 'ScaleInterval-%d' % ScaleInterval.scaleIntervalNum
-	    ScaleInterval.scaleIntervalNum += 1
+        if (name == None):
+            name = 'ScaleInterval-%d' % ScaleInterval.scaleIntervalNum
+            ScaleInterval.scaleIntervalNum += 1
         # Create function interval
         FunctionInterval.__init__(self, scaleFunc, name = name)
 
@@ -202,9 +202,9 @@ class PosHprInterval(FunctionInterval):
             else:
                 np.setPosHpr(pos, hpr)
         # Determine name
-	if (name == None):
-	    name = 'PosHprInterval-%d' % PosHprInterval.posHprIntervalNum
-	    PosHprInterval.posHprIntervalNum += 1
+        if (name == None):
+            name = 'PosHprInterval-%d' % PosHprInterval.posHprIntervalNum
+            PosHprInterval.posHprIntervalNum += 1
         # Create function interval
         FunctionInterval.__init__(self, posHprFunc, name = name)
 
@@ -224,10 +224,10 @@ class PosHprScaleInterval(FunctionInterval):
             else:
                 np.setPosHprScale(pos, hpr, scale)                
         # Determine name
-	if (name == None):
-	    name = ('PosHprScale-%d' %
+        if (name == None):
+            name = ('PosHprScale-%d' %
                     PosHprScaleInterval.posHprScaleIntervalNum)
-	    PosHprScaleInterval.posHprScaleIntervalNum += 1
+            PosHprScaleInterval.posHprScaleIntervalNum += 1
         # Create function interval
         FunctionInterval.__init__(self, posHprScaleFunc, name = name)
 

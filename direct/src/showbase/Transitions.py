@@ -30,7 +30,7 @@ class Transitions:
         """
         self.noTransitions()
 
-	self.fade.reparentTo(aspect2d)
+        self.fade.reparentTo(aspect2d)
 
         if (t == 0):
             # Fade in immediately with no lerp
@@ -67,7 +67,7 @@ class Transitions:
         """
         self.noTransitions()
 
-	self.fade.reparentTo(aspect2d)
+        self.fade.reparentTo(aspect2d)
 
         if (t == 0):
             # Fade out immediately with no lerp
@@ -115,8 +115,8 @@ class Transitions:
         """
         Removes any current fade tasks and parents the fade polygon away
         """
-	taskMgr.removeTasksNamed(self.fadeTaskName)
-	self.fade.reparentTo(hidden)
+        taskMgr.removeTasksNamed(self.fadeTaskName)
+        self.fade.reparentTo(hidden)
         
     def irisInLerpDone(self, task):
         # This is a helper function to the fadeIn sequence
@@ -131,7 +131,7 @@ class Transitions:
         scale lerp is finished, it parents the iris polygon to hidden.
         If block is true, does not execute lerp, but returns the sequence.
         """
-	self.noTransitions()
+        self.noTransitions()
 
         if (t == 0):
             self.iris.reparentTo(hidden)
@@ -172,7 +172,7 @@ class Transitions:
         lerp is finished, it leaves the iris polygon covering the
         aspect2d plane until you irisIn or call noIris.
         """
-	self.noTransitions()
+        self.noTransitions()
         if (t == 0):
             self.iris.reparentTo(hidden)
         else:
@@ -212,8 +212,8 @@ class Transitions:
         """
         Removes any current iris tasks and parents the iris polygon away
         """
-	taskMgr.removeTasksNamed(self.irisTaskName)
-	self.iris.reparentTo(hidden)
+        taskMgr.removeTasksNamed(self.irisTaskName)
+        self.iris.reparentTo(hidden)
         # Actually we need to remove the fade to, because the iris effect uses it
         self.noFade()
     
@@ -222,5 +222,5 @@ class Transitions:
         """
         This call should immediately remove any and all transitions running
         """
-	self.noFade()
-	self.noIris()
+        self.noFade()
+        self.noIris()

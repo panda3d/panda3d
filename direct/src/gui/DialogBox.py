@@ -25,7 +25,7 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
     def __init__(self, message = "", doneEvent = None, style = NoButtons,
                  font = getDefaultFont(), wordwrap = 12, okButtonText = "OK",
                  cancelButtonText = "Cancel"):
-	"""___init___(self, Event, string="", int, model, int=12)"""
+        """___init___(self, Event, string="", int, model, int=12)"""
 
         # Sanity check
         if (doneEvent == None) and (style != NoButtons):
@@ -48,8 +48,8 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
                        drawOrder = 32000, font = self.font,
                        bg = (0.8, 0.8, 0.8, 1.0))
         
-	# create a message
-	self.makeText(self.message, wordwrap = self.wordwrap, scale = 0.08,
+        # create a message
+        self.makeText(self.message, wordwrap = self.wordwrap, scale = 0.08,
                       pos = (0.0, 0.25))
 
         if (self.style == TwoChoice):
@@ -75,39 +75,39 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
             "Sanity check"
             self.notify.error("No such style as: " + str(self.style))
             
-	return None
+        return None
 
     def show(self):
-	"""show(self)
-	"""
+        """show(self)
+        """
         base.transitions.fadeScreen()
         OnscreenPanel.OnscreenPanel.show(self)
         
-	return None
+        return None
 
     def hide(self):
-	"""hide(self)
-	"""
+        """hide(self)
+        """
         base.transitions.noTransitions()        
         OnscreenPanel.OnscreenPanel.hide(self)
 
-	return None
-	
+        return None
+
     def cleanup(self):
-	"""unload(self)
-	"""
-	self.hide()
+        """unload(self)
+        """
+        self.hide()
         OnscreenPanel.OnscreenPanel.cleanup(self)
 
-	return None
+        return None
 
     # def handleRollover(self):
-	# return None
+        # return None
 
     def handleOk(self, okButton, item):
         assert(self.style != NoButtons)
         if (okButton == item):
-            self.doneStatus = "ok"	
+            self.doneStatus = "ok"
             messenger.send(self.__doneEvent)
 
     def handleCancel(self, cancelButton, item):

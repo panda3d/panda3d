@@ -9,42 +9,42 @@ class DirectGrid(NodePath,PandaObject):
         # Don't wireframe or light
         useDirectRenderStyle(self)
 
-	# Load up grid parts to initialize grid object
-	# Polygon used to mark grid plane
-	self.gridBack = loader.loadModel('models/misc/gridBack')
-	self.gridBack.reparentTo(self)
-	self.gridBack.setColor(0.5,0.5,0.5,0.5)
+        # Load up grid parts to initialize grid object
+        # Polygon used to mark grid plane
+        self.gridBack = loader.loadModel('models/misc/gridBack')
+        self.gridBack.reparentTo(self)
+        self.gridBack.setColor(0.5,0.5,0.5,0.5)
 
-	# Grid Lines
+        # Grid Lines
         self.lines = self.attachNewNode('gridLines')
-	self.minorLines = LineNodePath(self.lines)
+        self.minorLines = LineNodePath(self.lines)
         self.minorLines.lineNode.setName('minorLines')
-	self.minorLines.setColor(VBase4(0.3,0.55,1,1))
-	self.minorLines.setThickness(1)
+        self.minorLines.setColor(VBase4(0.3,0.55,1,1))
+        self.minorLines.setThickness(1)
 
-	self.majorLines = LineNodePath(self.lines)
+        self.majorLines = LineNodePath(self.lines)
         self.majorLines.lineNode.setName('majorLines')
-	self.majorLines.setColor(VBase4(0.3,0.55,1,1))
-	self.majorLines.setThickness(5)
+        self.majorLines.setColor(VBase4(0.3,0.55,1,1))
+        self.majorLines.setThickness(5)
 
-	self.centerLines = LineNodePath(self.lines)
+        self.centerLines = LineNodePath(self.lines)
         self.centerLines.lineNode.setName('centerLines')
-	self.centerLines.setColor(VBase4(1,0,0,0))
-	self.centerLines.setThickness(3)
+        self.centerLines.setColor(VBase4(1,0,0,0))
+        self.centerLines.setThickness(3)
 
-	# Small marker to hilight snap-to-grid point
-	self.snapMarker = loader.loadModel('models/misc/sphere')
-	self.snapMarker.node().setName('gridSnapMarker')
-	self.snapMarker.reparentTo(self)
-	self.snapMarker.setColor(1,0,0,1)
-	self.snapMarker.setScale(0.3)
+        # Small marker to hilight snap-to-grid point
+        self.snapMarker = loader.loadModel('models/misc/sphere')
+        self.snapMarker.node().setName('gridSnapMarker')
+        self.snapMarker.reparentTo(self)
+        self.snapMarker.setColor(1,0,0,1)
+        self.snapMarker.setScale(0.3)
         self.snapPos = Point3(0)
 
-	# Initialize Grid characteristics
+        # Initialize Grid characteristics
         self.fXyzSnap = 1
         self.fHprSnap = 1
-	self.gridSize = 100.0
-	self.gridSpacing = 5.0
+        self.gridSize = 100.0
+        self.gridSpacing = 5.0
         self.snapAngle = 15.0
         self.enable()
 
@@ -67,15 +67,15 @@ class DirectGrid(NodePath,PandaObject):
         return self.fEnabled
 
     def updateGrid(self):
-	# Update grid lines based upon current grid spacing and grid size
-	# First reset existing grid lines
-	self.minorLines.reset()
-	self.majorLines.reset()
-	self.centerLines.reset()
+        # Update grid lines based upon current grid spacing and grid size
+        # First reset existing grid lines
+        self.minorLines.reset()
+        self.majorLines.reset()
+        self.centerLines.reset()
 
-	# Now redraw lines
-	numLines = math.ceil(self.gridSize/self.gridSpacing)
-	scaledSize = numLines * self.gridSpacing
+        # Now redraw lines
+        numLines = math.ceil(self.gridSize/self.gridSpacing)
+        scaledSize = numLines * self.gridSpacing
  
         center = self.centerLines
         minor = self.minorLines
@@ -125,11 +125,11 @@ class DirectGrid(NodePath,PandaObject):
                 ROUND_TO(self.snapPos[1], self.gridSpacing),
                 ROUND_TO(self.snapPos[2], self.gridSpacing))
             
-	# Move snap marker to this point
-	self.snapMarker.setPos(self.snapPos)
-	
-	# Return the hit point
-	return self.snapPos
+        # Move snap marker to this point
+        self.snapMarker.setPos(self.snapPos)
+
+        # Return the hit point
+        return self.snapPos
 
     def computeSnapAngle(self, angle):
         return ROUND_TO(angle, self.snapAngle)
@@ -148,9 +148,9 @@ class DirectGrid(NodePath,PandaObject):
         return self.gridSpacing
 
     def setGridSize(self, size):
-	# Set size of grid back and redraw lines
+        # Set size of grid back and redraw lines
         self.gridSize = size
-	self.updateGrid()
+        self.updateGrid()
 
     def getGridSize(self):
         return self.gridSize

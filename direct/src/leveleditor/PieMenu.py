@@ -36,30 +36,30 @@ class PieMenu(NodePath, PandaObject):
 
     def removePieMenuTask(self):
         taskMgr.removeTasksNamed('pieMenuTask')
-	self.reparentTo(hidden)
-	self.lines.reset()
+        self.reparentTo(hidden)
+        self.lines.reset()
 
     def spawnPieMenuTask(self):
-	# Make sure no errant tasks lying around
-	taskMgr.removeTasksNamed('pieMenuTask')
+        # Make sure no errant tasks lying around
+        taskMgr.removeTasksNamed('pieMenuTask')
 
-	# Where did the user press the button?
-	self.originX = direct.dr.mouseX
-	self.originY = direct.dr.mouseY
+        # Where did the user press the button?
+        self.originX = direct.dr.mouseX
+        self.originY = direct.dr.mouseY
 
-	# Pop up menu
-	self.reparentTo(render2d)
-	self.setPos(self.originX,0.0,self.originY)
+        # Pop up menu
+        self.reparentTo(render2d)
+        self.setPos(self.originX,0.0,self.originY)
         # Compensate for window aspect ratio
         self.setScale(1.0, 1.0,1.0)
         #direct.dr.width/float(direct.dr.height))
-	# Start drawing the selection line
-	self.lines.reset()
-	self.lines.moveTo(0,0,0)
-	self.lines.drawTo(0,0,0)
-	self.lines.create()
+        # Start drawing the selection line
+        self.lines.reset()
+        self.lines.moveTo(0,0,0)
+        self.lines.drawTo(0,0,0)
+        self.lines.create()
 
-	# Spawn task to update line and select new texture
+        # Spawn task to update line and select new texture
         self.currItem = -1
         t = Task.Task(self.pieMenuTask)
         taskMgr.spawnTaskNamed(t, 'pieMenuTask')
@@ -104,14 +104,14 @@ class PieMenu(NodePath, PandaObject):
         return Task.cont
 
     def setInitialState(self,state):
-	self.initialState = state
+        self.initialState = state
 
     def getInitialState(self):
         return self.initialState
 
     def setItemOffset(self,newOffset):
-	self.itemOffset = newOffset
+        self.itemOffset = newOffset
 
     def setUpdateOnlyOnChange(self,flag):
-	self.fUpdateOnlyOnChange = flag
+        self.fUpdateOnlyOnChange = flag
 

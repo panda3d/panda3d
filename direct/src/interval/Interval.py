@@ -24,25 +24,25 @@ class Interval(DirectObject):
     def __init__(self, name, duration, openEnded=1, reverse=0):
         """__init__(name, duration, openEnded, reverse)
         """
-	self.name = name
-	self.duration = duration
-	self.curr_t = 0.0
-	self.prev_t = 0.0
+        self.name = name
+        self.duration = duration
+        self.curr_t = 0.0
+        self.prev_t = 0.0
         self.stopEventList = []
         self.setTHooks = []
         # Set true if interval responds to setT(t): t>duration
         self.fOpenEnded = openEnded
-	self.reverse = reverse
+        self.reverse = reverse
 
     def getName(self):
-	""" getName()
-	"""
-	return self.name
+        """ getName()
+        """
+        return self.name
 
     def getDuration(self):
-	""" getDuration()
-	"""
-	return self.duration
+        """ getDuration()
+        """
+        return self.duration
 
     def setfOpenEnded(self, openEnded):
         """ setfOpenEnded(openEnded)
@@ -55,11 +55,11 @@ class Interval(DirectObject):
         return self.fOpenEnded
 
     def setT(self, t, event = IVAL_NONE):
-	""" setT(t, event)
-	    Go to time t
-	"""
+        """ setT(t, event)
+            Go to time t
+        """
         # Update current time
-	self.curr_t = t
+        self.curr_t = t
         # Perform interval actions
         self.updateFunc(t, event)
         # Call setT Hook
@@ -79,9 +79,9 @@ class Interval(DirectObject):
         pass
 
     def setFinalT(self):
-	""" setFinalT()
-	"""
-	self.setT(self.getDuration(), event=IVAL_DONE)
+        """ setFinalT()
+        """
+        self.setT(self.getDuration(), event=IVAL_DONE)
 
     def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
@@ -93,18 +93,18 @@ class Interval(DirectObject):
         # Kill ongoing play task
         taskMgr.removeTasksNamed(self.name + '-play')
         # Start new one
-	self.offset = t0
+        self.offset = t0
         self.startT = self.clock.getFrameTime()
-	assert(scale > 0.0)
-	self.scale = scale
-	self.firstTime = 1
+        assert(scale > 0.0)
+        self.scale = scale
+        self.firstTime = 1
         if (duration == 0.0):
             # If no play duration specified, use duration of Interval
             self.endTime = self.duration
         else:
             # Otherwise use min of interval duration and offset + play duration
             self.endTime = min(self.duration, self.offset + duration)
-	assert(t0 <= self.endTime)
+        assert(t0 <= self.endTime)
 
         # Spawn task
         taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
@@ -125,10 +125,10 @@ class Interval(DirectObject):
         taskMgr.removeTasksNamed(self.name + '-play')
         # No more looping.
         self.ignore(self.name + '-loop')
-	return self.curr_t
+        return self.curr_t
 
     def isPlaying(self):
-	return taskMgr.hasTaskNamed(self.name + '-play')
+        return taskMgr.hasTaskNamed(self.name + '-play')
 
     def __playTask(self, task):
         """ __playTask(task)
@@ -155,12 +155,12 @@ class Interval(DirectObject):
             return Task.done
 
     def __repr__(self, indent=0):
-	""" __repr__(indent)
-	"""
-	space = ''
-	for l in range(indent):
-	    space = space + ' '
-	return (space + self.name + ' dur: %.2f' % self.duration)
+        """ __repr__(indent)
+        """
+        space = ''
+        for l in range(indent):
+            space = space + ' '
+        return (space + self.name + ' dur: %.2f' % self.duration)
 
     def popupControls(self, tl = None):
         """ popupControls()

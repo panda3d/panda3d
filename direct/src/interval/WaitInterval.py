@@ -11,8 +11,8 @@ class WaitInterval(Interval):
         """__init__(duration, name)
         """
         # Generate unique name if necessary
-	if (name == None):
-	    name = 'Wait-%d' % WaitInterval.waitNum
-	    WaitInterval.waitNum += 1
+        if (name == None):
+            name = 'Wait-%d' % WaitInterval.waitNum
+            WaitInterval.waitNum += 1
         # Initialize superclass
-	Interval.__init__(self, name, duration)
+        Interval.__init__(self, name, duration)

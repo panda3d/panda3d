@@ -60,12 +60,12 @@ class SelectedNodePaths(PandaObject):
 
     def select(self, nodePath, fMultiSelect = 0):
         """ Select the specified node path.  Multiselect as required """
-	# Do nothing if nothing selected
+        # Do nothing if nothing selected
         if not nodePath:
             print 'Nothing selected!!'
             return None
         
-	# Reset selected objects and highlight if multiSelect is false
+        # Reset selected objects and highlight if multiSelect is false
         if not fMultiSelect:
             self.deselectAll()
         
@@ -208,17 +208,17 @@ class SelectedNodePaths(PandaObject):
         self.forEachSelectedNodePathDo(DirectNodePath.dehighlight)
 
     def removeSelected(self):
-	selected = self.last
+        selected = self.last
         if selected:
             selected.remove()
         __builtin__.last = self.last = None
         
     def removeAll(self):
-	# Remove all selected nodePaths from the Scene Graph
+        # Remove all selected nodePaths from the Scene Graph
         self.forEachSelectedNodePathDo(NodePath.remove)
 
     def toggleVisSelected(self):
-	selected = self.last
+        selected = self.last
         # Toggle visibility of selected node paths
         if selected:
             selected.toggleVis()
@@ -228,7 +228,7 @@ class SelectedNodePaths(PandaObject):
         self.forEachSelectedNodePathDo(NodePath.toggleVis)
 
     def isolateSelected(self):
-	selected = self.last
+        selected = self.last
         if selected:
             selected.isolate()
 
@@ -271,7 +271,7 @@ class DirectBoundingBox:
         lines = LineNodePath(hidden)
         lines.node().setName('bboxLines')
         lines.setColor( VBase4( 1., 0., 0., 1. ) )
-	lines.setThickness( 0.5 )
+        lines.setThickness( 0.5 )
 
         minX = self.min[0]
         minY = self.min[1]
@@ -281,29 +281,29 @@ class DirectBoundingBox:
         maxZ = self.max[2]
         
         # Bottom face
-	lines.moveTo( minX, minY, minZ )
-	lines.drawTo( maxX, minY, minZ )
-	lines.drawTo( maxX, maxY, minZ )
-	lines.drawTo( minX, maxY, minZ )
-	lines.drawTo( minX, minY, minZ )
+        lines.moveTo( minX, minY, minZ )
+        lines.drawTo( maxX, minY, minZ )
+        lines.drawTo( maxX, maxY, minZ )
+        lines.drawTo( minX, maxY, minZ )
+        lines.drawTo( minX, minY, minZ )
 
-	# Front Edge/Top face
-	lines.drawTo( minX, minY, maxZ )
-	lines.drawTo( maxX, minY, maxZ )
-	lines.drawTo( maxX, maxY, maxZ )
-	lines.drawTo( minX, maxY, maxZ )
-	lines.drawTo( minX, minY, maxZ )
+        # Front Edge/Top face
+        lines.drawTo( minX, minY, maxZ )
+        lines.drawTo( maxX, minY, maxZ )
+        lines.drawTo( maxX, maxY, maxZ )
+        lines.drawTo( minX, maxY, maxZ )
+        lines.drawTo( minX, minY, maxZ )
 
-	# Three remaining edges
-	lines.moveTo( maxX, minY, minZ )
-	lines.drawTo( maxX, minY, maxZ )
-	lines.moveTo( maxX, maxY, minZ )
-	lines.drawTo( maxX, maxY, maxZ )
-	lines.moveTo( minX, maxY, minZ )
-	lines.drawTo( minX, maxY, maxZ )
+        # Three remaining edges
+        lines.moveTo( maxX, minY, minZ )
+        lines.drawTo( maxX, minY, maxZ )
+        lines.moveTo( maxX, maxY, minZ )
+        lines.drawTo( maxX, maxY, maxZ )
+        lines.moveTo( minX, maxY, minZ )
+        lines.drawTo( minX, maxY, maxZ )
 
         # Create and return bbox lines
-	lines.create()
+        lines.create()
         
         # Make sure bbox is never lit or drawn in wireframe
         useDirectRenderStyle(lines)
@@ -321,26 +321,26 @@ class DirectBoundingBox:
         maxZ = self.max[2]
         
         # Bottom face
-	ls.setVertex( 0, minX, minY, minZ )
-	ls.setVertex( 1, maxX, minY, minZ )
-	ls.setVertex( 2, maxX, maxY, minZ )
-	ls.setVertex( 3, minX, maxY, minZ )
-	ls.setVertex( 4, minX, minY, minZ )
+        ls.setVertex( 0, minX, minY, minZ )
+        ls.setVertex( 1, maxX, minY, minZ )
+        ls.setVertex( 2, maxX, maxY, minZ )
+        ls.setVertex( 3, minX, maxY, minZ )
+        ls.setVertex( 4, minX, minY, minZ )
 
-	# Front Edge/Top face
-	ls.setVertex( 5, minX, minY, maxZ )
-	ls.setVertex( 6, maxX, minY, maxZ )
-	ls.setVertex( 7, maxX, maxY, maxZ )
-	ls.setVertex( 8, minX, maxY, maxZ )
-	ls.setVertex( 9, minX, minY, maxZ )
+        # Front Edge/Top face
+        ls.setVertex( 5, minX, minY, maxZ )
+        ls.setVertex( 6, maxX, minY, maxZ )
+        ls.setVertex( 7, maxX, maxY, maxZ )
+        ls.setVertex( 8, minX, maxY, maxZ )
+        ls.setVertex( 9, minX, minY, maxZ )
 
-	# Three remaining edges
-	ls.setVertex( 10, maxX, minY, minZ )
-	ls.setVertex( 11, maxX, minY, maxZ )
-	ls.setVertex( 12, maxX, maxY, minZ )
-	ls.setVertex( 13, maxX, maxY, maxZ )
-	ls.setVertex( 14, minX, maxY, minZ )
-	ls.setVertex( 15, minX, maxY, maxZ )
+        # Three remaining edges
+        ls.setVertex( 10, maxX, minY, minZ )
+        ls.setVertex( 11, maxX, minY, maxZ )
+        ls.setVertex( 12, maxX, maxY, minZ )
+        ls.setVertex( 13, maxX, maxY, maxZ )
+        ls.setVertex( 14, minX, maxY, minZ )
+        ls.setVertex( 15, minX, maxY, maxZ )
 
     def getBounds(self):
         # Get a node path's bounds

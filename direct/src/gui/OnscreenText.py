@@ -202,17 +202,17 @@ class OnscreenText(PandaObject, NodePath):
             # Otherwise, we can throw it away.
             self.textNode = textNode.generate()
         
-	self.isClean = 0
+        self.isClean = 0
 
         # Set ourselves up as the NodePath that points to this node.
         self.assign(parent.attachNewNode(self.textNode, sort))
     
     def cleanup(self):
-	"""cleanup(self)
-	"""
-	self.textNode = None
-	if self.isClean == 0:
-	    self.isClean = 1
+        """cleanup(self)
+        """
+        self.textNode = None
+        if self.isClean == 0:
+            self.isClean = 1
             if self.hasArcs():
                 self.removeNode()
 
@@ -333,7 +333,7 @@ class OnscreenText(PandaObject, NodePath):
             return
         # Freeze text node prior to making changes
         self.freeze()
-	for option, value in kw.items():
+        for option, value in kw.items():
             # Use option string to access setter function
             try:
                 setter = eval('self.set' +
@@ -351,7 +351,7 @@ class OnscreenText(PandaObject, NodePath):
         apply(self.configure, (), {key: value})
         
     def cget(self, option):
-	# Get current configuration setting.
+        # Get current configuration setting.
         # This is for compatability with DirectGui functions
         getter = eval('self.get' + string.upper(option[0]) + option[1:])
         return getter()

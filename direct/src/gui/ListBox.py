@@ -47,7 +47,7 @@ class ListBox(DirectObject):
 
         self.items = []
 
-	return None
+        return None
 
     def addItem(self, item, label, event = None, param = None):
         if event:
@@ -85,7 +85,7 @@ class ListBox(DirectObject):
         self.up.cleanup()
         self.down.cleanup()
         self.listBox = None
-	return None
+        return None
         
     def __str__(self):
         return "ListBox: %s" % (self.name)

@@ -403,14 +403,14 @@ class Actor(PandaObject, NodePath):
         return self.__hasLOD
 
     def update(self, lod=0):
-	""" update(lod)
-	"""
-	if (lod < len(self.__partBundleDict.values())):
-	    partBundles = self.__partBundleDict.values()[lod].values()
-	    for partBundle in partBundles:
-	    	partBundle.node().update()
-	else:
-	    self.notify.warning('update() - no lod: %d' % lod)
+        """ update(lod)
+        """
+        if (lod < len(self.__partBundleDict.values())):
+            partBundles = self.__partBundleDict.values()[lod].values()
+            for partBundle in partBundles:
+                partBundle.node().update()
+        else:
+            self.notify.warning('update() - no lod: %d' % lod)
     
     def getFrameRate(self, animName=None, partName=None):
         """getFrameRate(self, string, string=None)
@@ -507,21 +507,21 @@ class Actor(PandaObject, NodePath):
         return None
 
     def getNumFrames(self, animName=None, partName=None):
-	""" getNumFrames(animName, partName)
-	"""
-	lodName = self.__animControlDict.keys()[0]
-	if (partName == None):
-	    partName = self.__animControlDict[lodName].keys()[0]
-	if (animName == None):
-	    animName = self.getCurrentAnim(partName)
-	if (self.__animControlDict[lodName].has_key(partName)):
-	    animControl = self.getAnimControl(animName, partName, lodName)
-	    if (animControl != None):
-		return animControl.getNumFrames()
-	    else:
-		Actor.notify.error('no anim control!')
-	else:
-	    Actor.notify.warning('no part named: %s' % (partName))
+        """ getNumFrames(animName, partName)
+        """
+        lodName = self.__animControlDict.keys()[0]
+        if (partName == None):
+            partName = self.__animControlDict[lodName].keys()[0]
+        if (animName == None):
+            animName = self.getCurrentAnim(partName)
+        if (self.__animControlDict[lodName].has_key(partName)):
+            animControl = self.getAnimControl(animName, partName, lodName)
+            if (animControl != None):
+                return animControl.getNumFrames()
+            else:
+                Actor.notify.error('no anim control!')
+        else:
+            Actor.notify.warning('no part named: %s' % (partName))
         
     def getCurrentAnim(self, partName=None):
         """getCurrentAnim(self, string=None)
@@ -930,19 +930,19 @@ class Actor(PandaObject, NodePath):
                     animControl = self.getAnimControl(animName, thisPart,
                                                         thisLod)
                     if (animControl != None):
-			if (fromFrame == None):
+                        if (fromFrame == None):
                             animControl.play()
-			else:
-			    animControl.play(fromFrame, toFrame)
+                        else:
+                            animControl.play(fromFrame, toFrame)
 
             else:
                 animControl = self.getAnimControl(animName, partName,
                                                     thisLod)
                 if (animControl != None):
-		    if (fromFrame == None):
-                    	animControl.play()
-		    else:
-                    	animControl.play(fromFrame, toFrame)
+                    if (fromFrame == None):
+                        animControl.play()
+                    else:
+                        animControl.play(fromFrame, toFrame)
 
 
     def loop(self, animName, restart=1, partName=None):
@@ -981,7 +981,7 @@ class Actor(PandaObject, NodePath):
                     animControl = self.getAnimControl(animName, thisPart,
                                                         thisLod)
                     if (animControl != None):
-		    	animControl.pingpong(restart, fromFrame, toFrame)
+                        animControl.pingpong(restart, fromFrame, toFrame)
             else:
                 # loop a specific part
                 animControl = self.getAnimControl(animName, partName,

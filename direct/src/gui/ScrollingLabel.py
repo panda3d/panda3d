@@ -111,15 +111,15 @@ class ScrollingLabel(PandaObject.PandaObject):
         
         # refresh the frame
         self.frame.recompute()
-	return None
+        return None
 
     def cleanup(self):
-	"""cleanup(self)
-	"""
+        """cleanup(self)
+        """
         # ignore events
         self.ignore("left-button")
         self.ignore("right-button")
-	self.ignore(self.eventName + "-rollover")
+        self.ignore(self.eventName + "-rollover")
         self.setKeyFocus(0)
 
         # remove gui items
@@ -127,16 +127,16 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.frame = None
         self.items = None
 
-	self.label = None
+        self.label = None
         self.title.cleanup()
-	self.title = None
+        self.title = None
         self.itemSign.cleanup()
-	self.itemSign = None
+        self.itemSign = None
         self.leftButton.cleanup()
-	self.leftButton = None
+        self.leftButton = None
         self.rightButton.cleanup()
-	self.rightButton = None
-	return None
+        self.rightButton = None
+        return None
 
     # accessing
     def getTitle(self):
@@ -218,7 +218,7 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.leftButton.startBehavior()
         self.rightButton.startBehavior()
 
-	return None
+        return None
 
     def unmanage(self):
         # ignore keyboard hits
@@ -228,12 +228,12 @@ class ScrollingLabel(PandaObject.PandaObject):
         # ignore events
         self.ignore("left-button")
         self.ignore("right-button")
-	self.ignore(self.eventName + "-rollover")
+        self.ignore(self.eventName + "-rollover")
         self.setKeyFocus(0)
 
         self.frame.unmanage()
 
-	return None
+        return None
         
     def handleLeftButton(self, item):
         # update the current item and the scroll label

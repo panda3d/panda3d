@@ -404,7 +404,7 @@ class InstallTarget(FullExeTarget):
                                    f.write(txt)
             f.close()
         
-dispatch = { 	
+dispatch = { 
                 'PYZ': PYZTarget,
                 'CARCHIVE': ArchiveTarget,
                 'COLLECT': CollectTarget,
@@ -417,22 +417,22 @@ dispatch = {
 def makeTarget(cfg, section):
     return dispatch[cfg.get(section, 'type')](cfg, section, optcnvrts)
 
-optdefaults = {	'type':'PYZ',
-		'script':'',		# INSTALL (opt) & STANDALONE (required)
-		'zlib':'',		# INSTALL, STANDALONE, COLLECT
-		'bindepends':'', 	# INSTALL, COLLECT
-		'misc':'',		# INSTALL. COLLECT
-		'includetk': '0',	# INSTALL, COLLECT
+optdefaults = { 'type':'PYZ',
+                'script':'',            # INSTALL (opt) & STANDALONE (required)
+                'zlib':'',              # INSTALL, STANDALONE, COLLECT
+                'bindepends':'',        # INSTALL, COLLECT
+                'misc':'',              # INSTALL. COLLECT
+                'includetk': '0',       # INSTALL, COLLECT
         'userunw': '0',         # STANDALONE
-		'dependencies':'',	# PYZ
-		'directories':'',	# PYZ
-		'excludes':'',		# PYZ, INSTALL, COLLECT
-		'expatterns': '',
+                'dependencies':'',      # PYZ
+                'directories':'',       # PYZ
+                'excludes':'',          # PYZ, INSTALL, COLLECT
+                'expatterns': '',
                 'exstdlib' : '0',
                 'extypes' : '',
-		'includes':'',		# PYZ 
-		'packages':'',		# PYZ
-                'destdir':'',		# COLLECT
+                'includes':'',          # PYZ 
+                'packages':'',          # PYZ
+                'destdir':'',           # COLLECT
                 'pathprefix' : '',
                 'trees' : '',
                 'debug' : '0',

@@ -211,9 +211,9 @@ class AppShell(Pmw.MegaWidget, PandaObject):
         return None
        
     def toggleBalloon(self):
-	if self.toggleBalloonVar.get():
+        if self.toggleBalloonVar.get():
             self.__balloon.configure(state = 'both')
-	else:
+        else:
             self.__balloon.configure(state = 'status')
 
     def showAbout(self):
@@ -274,7 +274,7 @@ class AppShell(Pmw.MegaWidget, PandaObject):
 
     def messageBar(self):
         # Retieve the message bar
-	return self.__messageBar
+        return self.__messageBar
 
     # Utility functions
     def buttonAdd(self, buttonName, helpMessage=None,

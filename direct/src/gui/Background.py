@@ -12,15 +12,15 @@ class Background(DirectObject):
         self.background = GuiBackground.GuiBackground(name, self.item,
                                                       self.label)
         self.managed = 0
-	return None
+        return None
 
     def cleanup(self):
-	"""cleanup(self)
-	"""
+        """cleanup(self)
+        """
         if (self.managed):
             self.unmanage()
         self.background = None
-	return None
+        return None
 
     def __str__(self):
         return "Background: %s behind %s" % (self.name, self.item )

@@ -175,7 +175,7 @@ def subclass(type1, type2):
     """
     # If the types are the same, return 0
     if type1 == type2:
-	return 0
+        return 0
     # If you have no args, sort you first
     elif (type1 == 0):
         return 1
@@ -183,7 +183,7 @@ def subclass(type1, type2):
         return -1
     # If class1 inherits from class2 return 1
     elif inheritsFrom(type1, type2):
-	return 1
+        return 1
     # If class2 inherits from class1 return -1
     elif inheritsFrom(type2, type1):
         return -1

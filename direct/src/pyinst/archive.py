@@ -52,10 +52,10 @@ class Archive:
         Check to see if the file object self.lib actually has a file
         we understand.
     """
-    self.lib.seek(self.start)	#default - magic is at start of file
+    self.lib.seek(self.start)   #default - magic is at start of file
     if self.lib.read(len(self.MAGIC)) != self.MAGIC:
       raise RuntimeError, "%s is not a valid %s archive file" \
-		% (self.path, self.__class__.__name__)
+                % (self.path, self.__class__.__name__)
     if self.lib.read(len(self.pymagic)) != self.pymagic:
       raise RuntimeError, "%s has version mismatch to dll" % (self.path)
 
@@ -171,7 +171,7 @@ class Archive:
     ispkg = self.os.path.splitext(self.os.path.basename(pth))[0] == '__init__'
     self.toc[nm] = (ispkg, self.lib.tell())
     f = open(entry[1], 'rb')
-    f.seek(8)	#skip magic and timestamp
+    f.seek(8)   #skip magic and timestamp
     self.lib.write(f.read())
 
   def save_toc(self, tocpos):
@@ -239,7 +239,7 @@ class ZlibArchive(Archive):
     pth = entry[1]
     ispkg = self.os.path.splitext(self.os.path.basename(pth))[0] == '__init__'
     f = open(pth, 'rb')
-    f.seek(8)	#skip magic and timestamp
+    f.seek(8)   #skip magic and timestamp
     obj = zlib.compress(f.read(), self.LEVEL)
     self.toc[nm] = (ispkg, self.lib.tell(), len(obj))
     self.lib.write(obj)

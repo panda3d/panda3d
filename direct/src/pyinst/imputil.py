@@ -16,7 +16,7 @@ __version__ = '0.3'
 import imp
 import sys
 import strop
-import __builtin__	### why this instead of just using __builtins__ ??
+import __builtin__      ### why this instead of just using __builtins__ ??
 
 # for the DirectoryImporter
 import struct

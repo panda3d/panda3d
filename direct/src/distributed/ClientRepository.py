@@ -177,7 +177,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.doId2do.has_key(doId):
             # If so, just update it.
             distObj = self.doId2do[doId]
-	    distObj.generate()
+            distObj.generate()
             distObj.updateRequiredFields(cdc, di)
             distObj.announceGenerate()
 
@@ -190,7 +190,7 @@ class ClientRepository(DirectObject.DirectObject):
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
             # and update it.
-	    distObj.generate()
+            distObj.generate()
             distObj.updateRequiredFields(cdc, di)
             distObj.announceGenerate()
 
@@ -205,7 +205,7 @@ class ClientRepository(DirectObject.DirectObject):
             self.doId2cdc[doId] = cdc
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
-	    distObj.generate()
+            distObj.generate()
             distObj.updateRequiredFields(cdc, di)
             distObj.announceGenerate()
             
@@ -216,7 +216,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.doId2do.has_key(doId):
             # If so, just update it.
             distObj = self.doId2do[doId]
-	    distObj.generate()
+            distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
             distObj.announceGenerate()
 
@@ -229,7 +229,7 @@ class ClientRepository(DirectObject.DirectObject):
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
             # and update it.
-	    distObj.generate()
+            distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
             distObj.announceGenerate()
 
@@ -244,7 +244,7 @@ class ClientRepository(DirectObject.DirectObject):
             self.doId2cdc[doId] = cdc
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
-	    distObj.generate()
+            distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
             distObj.announceGenerate()
             

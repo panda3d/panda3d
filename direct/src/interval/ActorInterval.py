@@ -31,52 +31,52 @@ class ActorInterval(Interval):
         id = 'Actor-%d' % ActorInterval.animNum
         ActorInterval.animNum += 1
         # Record class specific variables
-	self.actor = actor
-	self.animName = animName
+        self.actor = actor
+        self.animName = animName
         self.loop = loop
         self.frameRate = self.actor.getFrameRate(self.animName)
-	self.numFrames = self.actor.getNumFrames(self.animName)
+        self.numFrames = self.actor.getNumFrames(self.animName)
         # Compute start time
         self.startTime = startTime
         # If no name specified, use id as name
-	if (name == None):
-	    name = id
+        if (name == None):
+            name = id
         # Compute duration if no duration specified
-	reverse = 0
+        reverse = 0
         if duration == 0.0:
-	    if (endTime == None):
-	    	duration = max(self.actor.getDuration(self.animName) - \
-				startTime, 0.0)
-	    else:
-		duration = endTime - startTime
-		if (duration < 0.0):
-	    	    duration = -duration
-	if (endTime == None):
-	    self.finishTime = self.startTime + duration
-	else:
-	    self.finishTime = endTime
-	if (self.startTime > self.finishTime):
-	    reverse = 1
-		
+            if (endTime == None):
+                duration = max(self.actor.getDuration(self.animName) - \
+                                startTime, 0.0)
+            else:
+                duration = endTime - startTime
+                if (duration < 0.0):
+                    duration = -duration
+        if (endTime == None):
+            self.finishTime = self.startTime + duration
+        else:
+            self.finishTime = endTime
+        if (self.startTime > self.finishTime):
+            reverse = 1
+
         # Initialize superclass
-	Interval.__init__(self, name, duration, reverse=reverse)
+        Interval.__init__(self, name, duration, reverse=reverse)
         # Update stopEvent
         self.stopEvent = id + '_stopEvent'
         if self.loop:
             self.stopEventList = [self.stopEvent]
 
     def calcFrame(self, t):
-	segmentLength = abs(self.finishTime - self.startTime)
-	offset = t % segmentLength
-	# Handle boundary case where we want to set the final frame
-	if (t == self.getDuration() and offset < 0.0001):
-	    offset = segmentLength
+        segmentLength = abs(self.finishTime - self.startTime)
+        offset = t % segmentLength
+        # Handle boundary case where we want to set the final frame
+        if (t == self.getDuration() and offset < 0.0001):
+            offset = segmentLength
         # Compute current frame based upon current time
-	if (self.reverse == 0):
+        if (self.reverse == 0):
             floatFrame = self.frameRate * (self.startTime + offset)
-	else:
-	    negOffset = (self.startTime - self.finishTime) - offset
-	    floatFrame = self.frameRate * (self.finishTime + negOffset)
+        else:
+            negOffset = (self.startTime - self.finishTime) - offset
+            floatFrame = self.frameRate * (self.finishTime + negOffset)
         # Need max to avoid frame = -1 when t = 0
         frame = max(0, int(math.ceil(floatFrame)) - 1)
         # Modulo in case of looping anim
@@ -93,21 +93,21 @@ class ActorInterval(Interval):
         return frame
 
     def updateFunc(self, t, event=IVAL_NONE):
-	""" updateFunc(t, event)
-	    Go to time t
-	"""
-	if (self.actor.isEmpty()):
-	    self.notify.warning('updateFunc() - %s empty actor!' % self.name)
-	    return
+        """ updateFunc(t, event)
+            Go to time t
+        """
+        if (self.actor.isEmpty()):
+            self.notify.warning('updateFunc() - %s empty actor!' % self.name)
+            return
         # Update animation based upon current time
         # Pose or stop anim
-	if (t >= self.getDuration()):
+        if (t >= self.getDuration()):
             self.actor.stop()
             frame = self.goToT(self.getDuration())
             if self.loop:
                 self.ignore(self.stopEvent)
             # Print debug information
-	    self.notify.debug(
+            self.notify.debug(
                 'updateFunc() - %s stoping at frame: ' % self.name +
                 '%d Num frames: %d' % (frame, self.numFrames))
         elif self.loop == 1:

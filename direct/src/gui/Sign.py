@@ -29,15 +29,15 @@ class Sign(DirectObject):
 
         self.sign = GuiSign.GuiSign(self.name, self.label)
         self.managed = 0
-	return None
+        return None
 
     def cleanup(self):
-	"""cleanup(self)
-	"""
+        """cleanup(self)
+        """
         if (self.managed):
             self.unmanage()
         self.sign = None
-	return None
+        return None
 
     def __str__(self):
         return "sign: %s contains label: %s" % (self.name, self.label)

@@ -13,15 +13,15 @@ class Frame(DirectObject):
         self.offset = 0
         self.frame = GuiFrame.GuiFrame(name)
         self.items = []
-	return None
+        return None
 
     def cleanup(self):
-	"""cleanup(self)
-	"""
+        """cleanup(self)
+        """
         if (self.managed):
             self.frame.unmanage()
         self.frame = None
-	return None
+        return None
         
     def __str__(self):
         return "Frame: %s = %s" % (self.name, self.items)

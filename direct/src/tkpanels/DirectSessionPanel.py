@@ -139,7 +139,7 @@ class DirectSessionPanel(AppShell):
         self.bind(self.redoButton, 'Redo last operation')
 
         # The master frame for the dials
-	mainFrame = Frame(interior)
+        mainFrame = Frame(interior)
 
         # Paned widget for dividing two halves
         framePane = Pmw.PanedWidget(mainFrame, orient = HORIZONTAL)

@@ -5,7 +5,7 @@ import DirectNotifyGlobal
 import ClientDistUpdate
 
 class ClientDistClass:
-	
+
     def __init__(self, dcClass):
         self.number = dcClass.getNumber()
         self.name = dcClass.getName()

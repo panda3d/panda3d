@@ -138,12 +138,12 @@ class DirectManipulationControl(PandaObject):
         return Task.cont
 
     def enableManipulation(self):
-	# Accept events
+        # Accept events
         for event in self.actionEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
 
     def disableManipulation(self):
-	# Ignore events
+        # Ignore events
         for event in self.actionEvents:
             self.ignore(event[0])
 
@@ -276,7 +276,7 @@ class DirectManipulationControl(PandaObject):
             self.fHitInit = 0
             self.prevHit.assign(self.hitPt)
         else:
-	    offset = self.hitPt - self.prevHit
+            offset = self.hitPt - self.prevHit
             direct.widget.setPos(direct.widget, offset)
 
     def rotate1D(self, state):
@@ -466,7 +466,7 @@ class DirectManipulationControl(PandaObject):
 
     ## Utility functions ##
     def plantSelectedNodePath(self):
-	""" Move selected object to intersection point of cursor on scene """
+        """ Move selected object to intersection point of cursor on scene """
         # Check for intersection
         node, hitPt, hitPtDist = direct.iRay.pickGeom(
             fIntersectUnpickable = 1)
@@ -747,25 +747,25 @@ class ObjectHandles(NodePath,PandaObject):
     def createObjectHandleLines(self):
         # X post
         self.xPost = self.xPostGroup.attachNewNode('x-post-visible')
-	lines = LineNodePath(self.xPost)
-	lines.setColor(VBase4(1,0,0,1))
-	lines.setThickness(5)
-	lines.moveTo(0,0,0)
+        lines = LineNodePath(self.xPost)
+        lines.setColor(VBase4(1,0,0,1))
+        lines.setThickness(5)
+        lines.moveTo(0,0,0)
         lines.drawTo(1.5,0,0)
         lines.create()
-	lines = LineNodePath(self.xPost)
-	lines.setColor(VBase4(1,0,0,1))
-	lines.setThickness(1.5)
-	lines.moveTo(0,0,0)
+        lines = LineNodePath(self.xPost)
+        lines.setColor(VBase4(1,0,0,1))
+        lines.setThickness(1.5)
+        lines.moveTo(0,0,0)
         lines.drawTo(-1.5,0,0)
         lines.create()
         
-	# X ring
+        # X ring
         self.xRing = self.xRingGroup.attachNewNode('x-ring-visible')
-	lines = LineNodePath(self.xRing)
-	lines.setColor(VBase4(1,0,0,1))
-	lines.setThickness(3)
-	lines.moveTo(0,1,0)
+        lines = LineNodePath(self.xRing)
+        lines.setColor(VBase4(1,0,0,1))
+        lines.setThickness(3)
+        lines.moveTo(0,1,0)
         for ang in range(15, 370, 15):
             lines.drawTo(0,
                           math.cos(deg2Rad(ang)),
@@ -774,25 +774,25 @@ class ObjectHandles(NodePath,PandaObject):
         
         # Y post
         self.yPost = self.yPostGroup.attachNewNode('y-post-visible')
-	lines = LineNodePath(self.yPost)
-	lines.setColor(VBase4(0,1,0,1))
-	lines.setThickness(5)
-	lines.moveTo(0,0,0)
+        lines = LineNodePath(self.yPost)
+        lines.setColor(VBase4(0,1,0,1))
+        lines.setThickness(5)
+        lines.moveTo(0,0,0)
         lines.drawTo(0,1.5,0)
         lines.create()
-	lines = LineNodePath(self.yPost)
-	lines.setColor(VBase4(0,1,0,1))
-	lines.setThickness(1.5)
-	lines.moveTo(0,0,0)
+        lines = LineNodePath(self.yPost)
+        lines.setColor(VBase4(0,1,0,1))
+        lines.setThickness(1.5)
+        lines.moveTo(0,0,0)
         lines.drawTo(0,-1.5,0)
         lines.create()
         
-	# Y ring
+        # Y ring
         self.yRing = self.yRingGroup.attachNewNode('y-ring-visible')
-	lines = LineNodePath(self.yRing)
-	lines.setColor(VBase4(0,1,0,1))
-	lines.setThickness(3)
-	lines.moveTo(1,0,0)
+        lines = LineNodePath(self.yRing)
+        lines.setColor(VBase4(0,1,0,1))
+        lines.setThickness(3)
+        lines.moveTo(1,0,0)
         for ang in range(15, 370, 15):
             lines.drawTo(math.cos(deg2Rad(ang)),
                           0,
@@ -801,25 +801,25 @@ class ObjectHandles(NodePath,PandaObject):
 
         # Z post
         self.zPost = self.zPostGroup.attachNewNode('z-post-visible')
-	lines = LineNodePath(self.zPost)
-	lines.setColor(VBase4(0,0,1,1))
-	lines.setThickness(5)
-	lines.moveTo(0,0,0)
+        lines = LineNodePath(self.zPost)
+        lines.setColor(VBase4(0,0,1,1))
+        lines.setThickness(5)
+        lines.moveTo(0,0,0)
         lines.drawTo(0,0,1.5)
         lines.create()
-	lines = LineNodePath(self.zPost)
-	lines.setColor(VBase4(0,0,1,1))
-	lines.setThickness(1.5)
-	lines.moveTo(0,0,0)
+        lines = LineNodePath(self.zPost)
+        lines.setColor(VBase4(0,0,1,1))
+        lines.setThickness(1.5)
+        lines.moveTo(0,0,0)
         lines.drawTo(0,0,-1.5)
         lines.create()
         
-	# Z ring
+        # Z ring
         self.zRing = self.zRingGroup.attachNewNode('z-ring-visible')
-	lines = LineNodePath(self.zRing)
-	lines.setColor(VBase4(0,0,1,1))
-	lines.setThickness(3)
-	lines.moveTo(1,0,0)
+        lines = LineNodePath(self.zRing)
+        lines.setColor(VBase4(0,0,1,1))
+        lines.setThickness(3)
+        lines.moveTo(1,0,0)
         for ang in range(15, 370, 15):
             lines.drawTo(math.cos(deg2Rad(ang)),
                           math.sin(deg2Rad(ang)),
@@ -829,28 +829,28 @@ class ObjectHandles(NodePath,PandaObject):
     def createGuideLines(self):
         self.guideLines = self.attachNewNode('guideLines')
         # X guide lines
-	lines = LineNodePath(self.guideLines)
-	lines.setColor(VBase4(1,0,0,1))
-	lines.setThickness(0.5)
-	lines.moveTo(-500,0,0)
+        lines = LineNodePath(self.guideLines)
+        lines.setColor(VBase4(1,0,0,1))
+        lines.setThickness(0.5)
+        lines.moveTo(-500,0,0)
         lines.drawTo(500,0,0)
         lines.create()
         lines.node().setName('x-guide')
 
         # Y guide lines
-	lines = LineNodePath(self.guideLines)
-	lines.setColor(VBase4(0,1,0,1))
-	lines.setThickness(0.5)
-	lines.moveTo(0,-500,0)
+        lines = LineNodePath(self.guideLines)
+        lines.setColor(VBase4(0,1,0,1))
+        lines.setThickness(0.5)
+        lines.moveTo(0,-500,0)
         lines.drawTo(0,500,0)
         lines.create()
         lines.node().setName('y-guide')
 
         # Z guide lines
-	lines = LineNodePath(self.guideLines)
-	lines.setColor(VBase4(0,0,1,1))
-	lines.setThickness(0.5)
-	lines.moveTo(0,0,-500)
+        lines = LineNodePath(self.guideLines)
+        lines.setColor(VBase4(0,0,1,1))
+        lines.setThickness(0.5)
+        lines.moveTo(0,0,-500)
         lines.drawTo(0,0,500)
         lines.create()
         lines.node().setName('z-guide')

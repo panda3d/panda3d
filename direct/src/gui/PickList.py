@@ -29,8 +29,8 @@ class PickList(PandaObject.PandaObject):
         
         # display the menu
         self.__displayChoices(choiceList, scale, width, drawOrder, font)
-	self.isClean = 0
-	return None
+        self.isClean = 0
+        return None
 
     def owns(self, item):
         for x in self.choiceList:
@@ -39,15 +39,15 @@ class PickList(PandaObject.PandaObject):
         return None
 
     def cleanup(self):
-	"""cleanup(self)
-	"""
-	if self.isClean == 0:
-	    self.isClean = 1
+        """cleanup(self)
+        """
+        if self.isClean == 0:
+            self.isClean = 1
             self.disable()
             self.frame.unmanage()
-	    self.frame = None
-	    self.choiceList = []
-	return None
+            self.frame = None
+            self.choiceList = []
+        return None
         
     # accessing
     def getName(self):
@@ -98,19 +98,19 @@ class PickList(PandaObject.PandaObject):
         # set up the frame
         self.frame.makeVertical()
 
-	return None
+        return None
 
     def manage(self):
         self.enable()
         self.frame.manage()
         for x in self.choiceList:
             x.startBehavior()
-	return None
+        return None
 
     def unmanage(self):
         self.disable()
         self.frame.unmanage()
-	return None
+        return None
 
     def enable(self):
         # turn the buttons on
