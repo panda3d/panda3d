@@ -30,6 +30,8 @@ public:
 		     PStatView &view, int collector_index,
 		     int xsize, int ysize);
 
+  void mark_dead();
+
   Gtk::Alignment *get_labels();
   GtkStatsGuide *get_guide();
 
@@ -53,6 +55,7 @@ private:
   virtual gint button_press_event_impl(GdkEventButton *button);
 
   void pack_labels();
+  void setup_white_gc();
 
 private:
   // Backing pixmap for drawing area.
@@ -73,6 +76,7 @@ private:
   Gtk::Alignment *_label_align;
   Gtk::VBox *_label_box;
   GtkStatsGuide *_guide;
+  bool _is_dead;
 };
 
 #include "gtkStatsStripChart.I"

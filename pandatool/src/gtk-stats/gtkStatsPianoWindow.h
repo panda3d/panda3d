@@ -22,6 +22,7 @@ public:
   GtkStatsPianoWindow(GtkStatsMonitor *monitor, int thread_index, 
 		      int chart_xsize, int chart_ysize);
 
+  virtual void mark_dead();
   virtual void idle();
 
 protected:

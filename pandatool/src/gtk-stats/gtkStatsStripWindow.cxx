@@ -35,6 +35,19 @@ GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index,
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripWindow::mark_dead
+//       Access: Public, Virtual
+//  Description: Called when the client's connection has been lost,
+//               this should update the window in some obvious way to
+//               indicate that the window is no longer live.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripWindow::
+mark_dead() {
+  GtkStatsWindow::mark_dead();
+  _chart->mark_dead();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripWindow::idle
 //       Access: Public, Virtual
 //  Description: 

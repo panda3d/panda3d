@@ -59,6 +59,7 @@ private:
   Readers _readers;
   typedef vector<PStatReader *> LostReaders;
   LostReaders _lost_readers;
+  LostReaders _removed_readers;
 
   typedef deque<int> Ports;
   Ports _available_udp_ports;

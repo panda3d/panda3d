@@ -23,6 +23,7 @@ public:
   GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index, 
 		      int collector_index, int chart_xsize, int chart_ysize);
 
+  virtual void mark_dead();
   virtual void idle();
 
 protected:

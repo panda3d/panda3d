@@ -27,6 +27,19 @@ GtkStatsPianoWindow(GtkStatsMonitor *monitor, int thread_index,
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsPianoWindow::mark_dead
+//       Access: Public, Virtual
+//  Description: Called when the client's connection has been lost,
+//               this should update the window in some obvious way to
+//               indicate that the window is no longer live.
+////////////////////////////////////////////////////////////////////
+void GtkStatsPianoWindow::
+mark_dead() {
+  GtkStatsWindow::mark_dead();
+  _chart->mark_dead();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoWindow::idle
 //       Access: Public, Virtual
 //  Description: 

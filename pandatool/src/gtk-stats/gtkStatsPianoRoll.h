@@ -30,6 +30,8 @@ public:
   GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index,
 		    int xsize, int ysize);
 
+  void mark_dead();
+
   Gtk::Alignment *get_labels();
 
   Gdk_GC get_collector_gc(int collector_index);
@@ -44,6 +46,7 @@ private:
   virtual gint expose_event_impl(GdkEventExpose *event);
 
   void pack_labels();
+  void setup_white_gc();
 
 private:
   // Backing pixmap for drawing area.
@@ -67,6 +70,7 @@ private:
 
   Gtk::Alignment *_label_align;
   Gtk::VBox *_label_box;
+  bool _is_dead;
 };
 
 #include "gtkStatsPianoRoll.I"

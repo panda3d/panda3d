@@ -63,6 +63,18 @@ update_title() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsWindow::mark_dead
+//       Access: Public, Virtual
+//  Description: Called when the client's connection has been lost,
+//               this should update the window in some obvious way to
+//               indicate that the window is no longer live.
+////////////////////////////////////////////////////////////////////
+void GtkStatsWindow::
+mark_dead() {
+  update_title();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::new_collector
 //       Access: Public, Virtual
 //  Description: Called when a new collector has become known, in case
@@ -71,6 +83,7 @@ update_title() {
 void GtkStatsWindow::
 new_collector(int) {
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::new_thread
 //       Access: Public, Virtual

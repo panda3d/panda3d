@@ -87,8 +87,16 @@ void PStatServer::
 poll() {
   // Delete all the readers that we couldn't delete before.
   while (!_lost_readers.empty()) {
-    delete _lost_readers.back();
+    PStatReader *reader = _lost_readers.back();
     _lost_readers.pop_back();
+
+    reader->lost_connection();
+    delete reader;
+  }
+  while (!_removed_readers.empty()) {
+    PStatReader *reader = _removed_readers.back();
+    _removed_readers.pop_back();
+    delete reader;
   }
 
   _listener->poll();
@@ -148,7 +156,7 @@ remove_reader(Connection *connection, PStatReader *reader) {
     nout << "Attempt to remove undefined reader.\n";
   } else {
     _readers.erase(ri);
-    _lost_readers.push_back(reader);
+    _removed_readers.push_back(reader);
   }
 }
 
@@ -218,7 +226,6 @@ connection_reset(const PT(Connection) &connection) {
   ri = _readers.find(connection);
   if (ri != _readers.end()) {
     PStatReader *reader = (*ri).second;
-    reader->lost_connection();
     _readers.erase(ri);
 
     // Unfortunately, we can't delete the reader right away, because

@@ -25,6 +25,7 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, PStatView &view,
 		   int collector_index, int xsize, int ysize) :
   PStatStripChart(monitor, view, collector_index, xsize, ysize)
 {
+  _is_dead = false;
   set_events(GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK);
 
   _label_align = manage(new Gtk::Alignment(1.0, 1.0));
@@ -37,6 +38,21 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, PStatView &view,
   _guide->show();
   
   request_initial_size(*this, get_xsize(), get_ysize());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::mark_dead
+//       Access: Public
+//  Description: Called when the client's connection has been lost,
+//               this should update the window in some obvious way to
+//               indicate that the window is no longer live.
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+mark_dead() {
+  _is_dead = true;
+
+  setup_white_gc();
+  force_redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,7 +277,8 @@ configure_event_impl(GdkEventConfigure *) {
     Gdk_Colormap system_colormap = Gdk_Colormap::get_system();
     
     _white_gc = Gdk_GC(_pixmap);
-    _white_gc.set_foreground(system_colormap.white());
+    setup_white_gc();
+
     _black_gc = Gdk_GC(_pixmap);
     _black_gc.set_foreground(system_colormap.black());
     
@@ -348,3 +365,28 @@ pack_labels() {
 
   _labels_changed = false;
 }      
+
+////////////////////////////////////////////////////////////////////
+//     Function: GtkStatsStripChart::setup_white_gc
+//       Access: Private
+//  Description: Sets the color on _white_gc to be either actually
+//               white (if the chart is still alive) or a light gray
+//               (if the chart is dead).
+////////////////////////////////////////////////////////////////////
+void GtkStatsStripChart::
+setup_white_gc() {
+  Gdk_Colormap system_colormap = Gdk_Colormap::get_system();
+
+  if (_is_dead) {
+    Gdk_Color death;
+    death.set_grey_p(0.8);
+    system_colormap.alloc(death);
+    
+    _white_gc.set_foreground(death);
+
+  } else {
+    _white_gc.set_foreground(system_colormap.white());
+  }
+
+}
+

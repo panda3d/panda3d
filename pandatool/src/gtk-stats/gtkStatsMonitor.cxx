@@ -125,7 +125,7 @@ void GtkStatsMonitor::
 lost_connection() {
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    (*wi)->update_title();
+    (*wi)->mark_dead();
   }
 }
 

@@ -43,7 +43,7 @@ EggPalettize() : EggMultiFilter(true) {
      "textures.txa); a complete record of every egg file and every texture "
      "that has been referenced is kept here.  This allows the program "
      "to intelligently manage the multiple egg files that may reference "
-     "the textures in question.\n\n");
+     "the textures in question.");
 
 
   clear_runlines();
@@ -216,9 +216,10 @@ describe_input_file() {
   show_text("  margin i", 10,
 	    "This specifies the number of pixels that should be written "
 	    "around the border of the texture when it is placed in a "
-	    "palette image; i is the integer number.  The use of a margin "
-	    "helps cut down on color bleed from neighboring images.  "
-	    "If the texture does not end up placed in a palette image, the "
+	    "palette image; i is the integer number of pixels.  The "
+	    "use of a margin helps cut down on color bleed "
+	    "from neighboring images.  If the texture does "
+	    "not end up placed in a palette image, the "
 	    "margin is not used.  If not specified, the default margin is "
 	    "used, which is specified by the :margin command (see below).\n\n");
 
@@ -249,12 +250,20 @@ describe_input_file() {
 	    "formats cannot be placed together on the same palette "
 	    "images.\n\n");
 
+  show_text("  (image type)", 10,
+	    "A texture may be converted to a particular image type, for "
+	    "instance jpg or rgb, by naming the type.  If present, this "
+	    "overrides the :imagetype command, described below.  As with "
+	    ":imagetype, you may also specify two type names separated "
+	    "by a comma, to indicate that a different file should be written "
+	    "for the color and alpha components.\n\n");
+
   show_text("  (group name)", 10,
 	    "A texture may also be assigned to a specific group by naming "
 	    "the group.  The groups are defined using the :group command "
 	    "(see below).  Normally, textures are not assigned directly "
 	    "to groups; instead, it is more useful to assign the egg files "
-	    "they appear on to groups; see below.\n\n");
+	    "they are referenced in to groups; see below.\n\n");
 
   show_text("  cont", 10,
 	    "Normally, a texture file (or egg file) scans the lines in the "
@@ -274,10 +283,11 @@ describe_input_file() {
     "  plane.egg : phase_2 main\n"
     "  *.egg : phase_2\n\n"
 
-    "Any number of egg files may be named on one line, and the group of "
-    "egg files may be simultaneously assigned to one or more groups.  "
-    "The valid set of groups are defined using the :group command (see below).  "
-    "Each texture that is referenced by a given egg file will be palettized "
+    "Any number of egg files may be named on one line, and the set of "
+    "named egg files may be simultaneously assigned to one or more groups.  "
+    "Each group must have been previously defined using the :group command "
+    "(see below).  Each texture that is referenced by a given "
+    "egg file will be palettized "
     "into at least one of the groups assigned to the egg file.\n\n"
 
     "Finally, there are a number of special commands that may appear in the "
@@ -343,7 +353,9 @@ describe_input_file() {
 
 	    "The default if this is unspecified is 0.1 0.01.  That is, "
 	    "round up to the next tenth, unless within a hundredth of the "
-	    "last tenth.  To disable rounding, specify ':round no'.\n\n");
+	    "last tenth.  To disable rounding, specify ':round no'.  "
+	    "Rounding is implicitly disabled when you run with the -opt "
+	    "command line option.\n\n");
 
   show_text("  :remap (never | group | poly)", 10,
 	    "Sometimes two different parts of an egg file may reference "
@@ -352,7 +364,7 @@ describe_input_file() {
 	    "to (1,6), for a coverage of 1.0, while group B references "
 	    "values ranging from (0,2) to (1,4), for a coverage of 2.0.  "
 	    "The maximum coverage used is only 2.0, and thus the texture "
-	    "only needs to appear in the palette once, but the total range "
+	    "only needs to appear in the palette twice, but the total range "
 	    "of UV's is from (0,2) to (1,6), causing an apparent coverage "
 	    "of 4.0.\n\n"
 
@@ -360,11 +372,13 @@ describe_input_file() {
 	    "by remapping both groups of UV's so that they overlap.  This "
 	    "parameter specifies how this operation should be done.  If "
 	    "the option is 'never', remapping will not be performed; if "
-	    "'group', entire groups will be remapped as a unit, of 'poly', "
+	    "'group', entire groups will be remapped as a unit, if 'poly', "
 	    "individual polygons within a group may be remapped.  This last "
 	    "option provides the greatest minimization of UV coverage, "
 	    "but possibly at the expense of triangle strips in the resulting "
-	    "model (since some vertices can no longer be shared).\n\n");
+	    "model (since some vertices can no longer be shared).\n\n"
+
+	    "The default if this is unspecified is 'poly'.\n\n");
 
   show_text("  :imagetype type[,alpha_type]", 10,
 	    "This specifies the default type of image file that should be "
@@ -408,7 +422,7 @@ describe_input_file() {
 	    "keyword 'with' specifies any number of groups that this "
 	    "palette group depends on; if a texture has already been "
 	    "assigned to one of this group's dependent groups, it will "
-	    "be considered to be assigned to this group.\n\n");
+	    "not need to be assigned to this group.\n\n");
 
 
   nout <<
@@ -462,14 +476,16 @@ run() {
 
     if (!state_file.open_read(state_filename)) {
       nout << FilenameUnifier::make_user_filename(state_filename)
-	   << " exists, but cannot be read.  Perhaps you should remove it so a new one can be created.\n";
+	   << " exists, but cannot be read.  Perhaps you should "
+	   << "remove it so a new one can be created.\n";
       exit(1);
     }
 
     TypedWriteable *obj = state_file.read_object();
     if (obj == (TypedWriteable *)NULL || !state_file.resolve()) {
       nout << FilenameUnifier::make_user_filename(state_filename)
-	   << " exists, but appears to be corrupt.  Perhaps you should remove it so a new one can be created.\n";
+	   << " exists, but appears to be corrupt.  Perhaps you "
+	   << "should remove it so a new one can be created.\n";
       exit(1);
     }
 
@@ -584,15 +600,17 @@ run() {
 
   if (!state_file.open_write(temp_filename) ||
       !state_file.write_object(pal)) {
-    nout << "Unable to write palettization information to " << temp_filename
+    nout << "Unable to write palettization information to " 
+	 << FilenameUnifier::make_user_filename(temp_filename)
 	 << "\n";
     exit(1);
   }
 
   state_file.close();
   if (!temp_filename.rename_to(state_filename)) {
-    nout << "Unable to rename temporary file " << temp_filename << " to "
-	 << state_filename << "\n";
+    nout << "Unable to rename temporary file " 
+	 << FilenameUnifier::make_user_filename(temp_filename) << " to "
+	 << FilenameUnifier::make_user_filename(state_filename) << "\n";
     exit(1);
   }
 
