@@ -1703,7 +1703,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     // Furthermore, if _always_show_vertex_color is true, we pretend
     // that the "vertex-color" flag is always set.
     bool ignore_vertex_color = false;
-    if (shader != (MayaShader *)NULL) {
+    if ( color_def != (MayaShaderColorDef *)NULL) {
       ignore_vertex_color = color_def->_has_texture && !(egg_vertex_color || _always_show_vertex_color);
     }
 
@@ -1721,7 +1721,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     long i;
     LPoint3d centroid(0.0, 0.0, 0.0);
 
-    if (shader != (MayaShader *)NULL && color_def->has_projection()) {
+    if (color_def != (MayaShaderColorDef *)NULL && color_def->has_projection()) {
       // If the shader has a projection, we may need to compute the
       // polygon's centroid to avoid seams at the edges.
       for (i = 0; i < num_verts; i++) {
@@ -1751,7 +1751,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       }
 
       string uv_name("");
-      if (shader != (MayaShader *)NULL && color_def->_has_texture) {
+      if (color_def != (MayaShaderColorDef *)NULL && color_def->_has_texture) {
         // Go thru all the texture references for this primitive and set uvs
         mayaegg_cat.debug() << "shader->_color.size is " << shader->_color.size() << endl;
         mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
@@ -2200,12 +2200,16 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader, const MItMeshPolygon *pi) {
+
+  //mayaegg_cat.spam() << "  set_shader_attributes : begin\n";
+
   // In Maya, a polygon is either textured or colored.  The texture,
   // if present, replaces the color. Also now there could be multiple textures
-  MayaShaderColorDef *color_def;
+  MayaShaderColorDef *color_def = NULL;
   const MayaShaderColorDef &trans_def = shader._transparency;
   for (size_t i=0; i<shader._color.size(); ++i) {
     color_def = shader.get_color_def(i);
+    //mayaegg_cat.spam() << "got color_def: " << color_def << endl;
     if (color_def->_has_texture || trans_def._has_texture) {
       EggTexture tex(shader.get_name(), "");
       string uvset_name = color_def->_texture_name;
@@ -2326,7 +2330,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader, const M
 
   // The existence of a texture on either color channel completely
   // replaces the corresponding flat color.
-  if (color_def->_has_texture) {
+  if (color_def && color_def->_has_texture) {
     rgba[0] = 1.0f;
     rgba[1] = 1.0f;
     rgba[2] = 1.0f;
@@ -2336,12 +2340,16 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader, const M
   }
 
   // But the color gain always gets applied.
-  rgba[0] *= color_def->_color_gain[0];
-  rgba[1] *= color_def->_color_gain[1];
-  rgba[2] *= color_def->_color_gain[2];
-  rgba[3] *= color_def->_color_gain[3];
+  if (color_def) {
+    rgba[0] *= color_def->_color_gain[0];
+    rgba[1] *= color_def->_color_gain[1];
+    rgba[2] *= color_def->_color_gain[2];
+    rgba[3] *= color_def->_color_gain[3];
+  }
 
   primitive.set_color(rgba);
+
+  //mayaegg_cat.spam() << "  set_shader_attributes : end\n";
 }
 
 ////////////////////////////////////////////////////////////////////

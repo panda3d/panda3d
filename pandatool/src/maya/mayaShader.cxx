@@ -55,6 +55,7 @@ MayaShader(MObject engine) {
   if (!shader_plug.isNull()) {
     MPlugArray shader_pa;
     shader_plug.connectedTo(shader_pa, true, false);
+    maya_cat.spam() << "shader plug connected to: " << shader_pa.length() << endl;
     for (size_t i = 0; i < shader_pa.length() && !found_shader; i++) {
       MObject shader = shader_pa[0].node();
       found_shader = read_surface_shader(shader);
@@ -93,9 +94,11 @@ void MayaShader::
 write(ostream &out) const {
   out << "Shader " << get_name() << "\n"
       << "  color:\n";
+
   for (size_t i=0; i<_color.size(); ++i) {
     _color[i]->write(out);
   }
+
   out << "  transparency:\n";
   _transparency.write(out);
 }
@@ -108,7 +111,10 @@ write(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 MayaShaderColorDef *MayaShader::
 get_color_def(size_t idx) const {
-  return _color[idx];
+  if (_color.size() > 0)
+    return _color[idx];
+  else
+    return (MayaShaderColorDef *)NULL;
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::get_rgba
@@ -127,7 +133,7 @@ Colorf MayaShader::
 get_rgba(size_t idx) const {
   Colorf rgba(1.0f, 1.0f, 1.0f, 1.0f);
 
-  if (_color[idx]->_has_flat_color) {
+  if (_color.size() && _color[idx]->_has_flat_color) {
     rgba[0] = (float)_color[idx]->_flat_color[0];
     rgba[1] = (float)_color[idx]->_flat_color[1];
     rgba[2] = (float)_color[idx]->_flat_color[2];
