@@ -19,7 +19,7 @@ private:
   virtual LinearForce *make_copy(void);
   virtual LVector3f get_child_vector(const PhysicsObject *);
 
-public:
+PUBLISHED:
   LinearFrictionForce(float coef = 1.0f, float a = 1.0f, bool m = false);
   LinearFrictionForce(const LinearFrictionForce &copy);
   virtual ~LinearFrictionForce(void);

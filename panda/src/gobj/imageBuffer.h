@@ -29,14 +29,14 @@ class DisplayRegion;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ImageBuffer : public dDrawable, public Namable
 {
-public:
-  
+PUBLISHED:  
   ImageBuffer( void ) : dDrawable() { }
   virtual ~ImageBuffer( void ) { }
   
   virtual bool read( const string& name ) = 0;
   virtual bool write( const string& name = "" ) const = 0;
   
+public:
   virtual void config( void ) { WriteableConfigurable::config(); }
   
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;

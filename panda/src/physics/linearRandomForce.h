@@ -26,7 +26,7 @@ protected:
   virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
   virtual LinearForce *make_copy(void) = 0;
 
-public:
+PUBLISHED:
   virtual ~LinearRandomForce(void);
 
 public:

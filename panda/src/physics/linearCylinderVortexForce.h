@@ -27,7 +27,7 @@ private:
   virtual LinearForce *make_copy(void);
   virtual LVector3f get_child_vector(const PhysicsObject *po);
 
-public:
+PUBLISHED:
   LinearCylinderVortexForce(float radius = 1.0f,
 		      float length = 0.0f,
 		      float coef = 1.0f,

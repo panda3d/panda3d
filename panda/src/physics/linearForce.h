@@ -28,7 +28,7 @@ protected:
   LinearForce(float a, bool mass);
   LinearForce(const LinearForce& copy);
 
-public:
+PUBLISHED:
   ~LinearForce(void);
 
   INLINE void set_amplitude(const float a);

@@ -18,7 +18,7 @@ private:
   virtual LVector3f get_child_vector(const PhysicsObject *po);
   virtual LinearForce *make_copy(void);
 
-public:
+PUBLISHED:
   LinearJitterForce(float a = 1.0f, bool m = false);
   LinearJitterForce(const LinearJitterForce &copy);
   virtual ~LinearJitterForce(void);

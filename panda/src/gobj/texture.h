@@ -58,6 +58,7 @@ public:
     WM_repeat,
   };
 	
+PUBLISHED:
   Texture();
   ~Texture();
 
@@ -65,6 +66,7 @@ public:
   virtual bool read(const string &name, const string &gray);
   virtual bool write(const string& name = "") const;
 
+public:
   bool load( const PNMImage& pnmimage );
   bool store( PNMImage& pnmimage ) const;
 

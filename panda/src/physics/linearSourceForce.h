@@ -17,7 +17,7 @@ private:
   virtual LVector3f get_child_vector(const PhysicsObject *po);
   virtual LinearForce *make_copy(void);
 
-public:
+PUBLISHED:
   LinearSourceForce(const LPoint3f& p, FalloffType f, float r, float a = 1.0f, 
 	      bool mass = true);
   LinearSourceForce(void);

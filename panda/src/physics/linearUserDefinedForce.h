@@ -25,7 +25,7 @@ private:
   virtual LVector3f get_child_vector(const PhysicsObject *po);
   virtual LinearForce *make_copy(void);
 
-public:
+PUBLISHED:
   LinearUserDefinedForce(LVector3f (*proc)(const PhysicsObject *) = NULL,
 		   float a = 1.0f,
 		   bool md = false);

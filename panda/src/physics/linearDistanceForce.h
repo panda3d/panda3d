@@ -21,7 +21,7 @@ class BamReader;
 // Description : Pure virtual class for sinks and sources
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearDistanceForce : public LinearForce {
-public:
+PUBLISHED:
   INLINE void set_radius(float r);
   INLINE void set_falloff_type(FalloffType ft);
   INLINE void set_force_center(const LPoint3f& p);
