@@ -181,9 +181,7 @@ copy_region(int start_x, int end_x, int dest_x) {
 //               indicated level data.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
-draw_slice(int x, int w, int frame_number) {
-  const FrameData &frame = get_frame_data(frame_number);
-
+draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
   while (w > 0) {
     // Start by clearing the band first.
     _pixmap.draw_line(_white_gc, x, 0, x, get_ysize());
@@ -192,7 +190,7 @@ draw_slice(int x, int w, int frame_number) {
     int y = get_ysize();
 
     FrameData::const_iterator fi;
-    for (fi = frame.begin(); fi != frame.end(); ++fi) {
+    for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
       const ColorData &cd = (*fi);
       overall_time += cd._net_value;
 

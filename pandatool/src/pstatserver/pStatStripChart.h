@@ -67,6 +67,9 @@ public:
   INLINE void set_scroll_mode(bool scroll_mode);
   INLINE bool get_scroll_mode() const;
 
+  INLINE void set_average_mode(bool average_mode);
+  INLINE bool get_average_mode() const;
+
   int get_collector_under_pixel(int xpoint, int ypoint);
   INLINE int timestamp_to_pixel(float time) const;
   INLINE float pixel_to_timestamp(int x) const;
@@ -85,7 +88,13 @@ protected:
   typedef pvector<ColorData> FrameData;
   typedef pmap<int, FrameData> Data;
 
+  static void accumulate_frame_data(FrameData &fdata,
+                                    const FrameData &additional, float weight);
+  static void scale_frame_data(FrameData &fdata, float factor);
+
   const FrameData &get_frame_data(int frame_number);
+  void compute_average_pixel_data(PStatStripChart::FrameData &result, 
+                                  int &then_i, int &now_i, float now);
   float get_net_value(int frame_number) const;
   float get_average_net_value() const;
 
@@ -98,7 +107,7 @@ protected:
   virtual void clear_region();
   virtual void copy_region(int start_x, int end_x, int dest_x);
   virtual void begin_draw(int from_x, int to_x);
-  virtual void draw_slice(int x, int w, int frame_number);
+  virtual void draw_slice(int x, int w, const FrameData &fdata);
   virtual void draw_empty(int x, int w);
   virtual void draw_cursor(int x);
   virtual void end_draw(int from_x, int to_x);
@@ -111,6 +120,7 @@ private:
   PStatView &_view;
   int _collector_index;
   bool _scroll_mode;
+  bool _average_mode;
 
   Data _data;
 

@@ -40,6 +40,7 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
   _collector_index(collector_index)
 {
   _scroll_mode = pstats_scroll_mode;
+  _average_mode = false;
 
   _next_frame = 0;
   _first_data = true;
@@ -297,6 +298,78 @@ is_title_unknown() const {
   return _title_unknown;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::accumulate_frame_data
+//       Access: Protected, Static
+//  Description: Adds the data from additional into the data from
+//               fdata, after applying the scale weight.
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+accumulate_frame_data(FrameData &fdata, const FrameData &additional, 
+                      float weight) {
+  FrameData result;
+  FrameData::const_iterator ai, bi;
+
+  ai = fdata.begin();
+  bi = additional.begin();
+
+  while (ai != fdata.end() && bi != additional.end()) {
+    if ((*ai)._collector_index < (*bi)._collector_index) {
+      // Here's a data value that's in data, but not in additional.
+      result.push_back(*ai);
+      ++ai;
+
+    } else if ((*bi)._collector_index < (*ai)._collector_index) {
+      // Here's a data value that's in additional, but not in data.
+      ColorData scaled;
+      scaled._collector_index = (*bi)._collector_index;
+      scaled._net_value = (*bi)._net_value * weight;
+      result.push_back(scaled);
+      ++bi;
+
+    } else {
+      // Here's a data value that's in both.
+      ColorData combined;
+      combined._collector_index = (*ai)._collector_index;
+      combined._net_value = (*ai)._net_value + (*bi)._net_value * weight;
+      result.push_back(combined);
+      ++ai;
+      ++bi;
+    }
+  }
+
+  while (ai != fdata.end()) {
+    // Here's a data value that's in data, but not in additional.
+    result.push_back(*ai);
+    ++ai;
+  }
+
+  while (bi != additional.end()) {
+    // Here's a data value that's in additional, but not in data.
+    ColorData scaled;
+    scaled._collector_index = (*bi)._collector_index;
+    scaled._net_value = (*bi)._net_value * weight;
+    result.push_back(scaled);
+    ++bi;
+  }
+
+  fdata.swap(result);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::scale_frame_data
+//       Access: Protected, Static
+//  Description: Applies the indicated scale to all collector values
+//               in data.
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+scale_frame_data(FrameData &fdata, float factor) {
+  FrameData::iterator fi;
+  for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
+    (*fi)._net_value *= factor;
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatStripChart::get_frame_data
@@ -344,6 +417,67 @@ get_frame_data(int frame_number) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::compute_average_pixel_data
+//       Access: Protected
+//  Description: Fills the indicated FrameData structure with the
+//               color data for the indicated pixel, averaged over the
+//               past pstats_average_time seconds.
+//
+//               now is the timestamp for which we are computing the
+//               data; then_i and now_i are the frame numbers that
+//               bound (now - pstats_average_time) and now.  At
+//               function initialization time, these should be at or
+//               below the actual values; they will be incremented as
+//               needed by this function.  This allows the function to
+//               be called repeatedly for successive pixels.
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+compute_average_pixel_data(PStatStripChart::FrameData &result, 
+                           int &then_i, int &now_i, float now) {
+  result.clear();
+
+  const PStatThreadData *thread_data = _view.get_thread_data();
+  if (thread_data->is_empty() || thread_data->get_oldest_time() > now) {
+    // No data.
+    return;
+  }
+
+  float then = now - pstats_average_time;
+
+  while (thread_data->get_frame(then_i).get_end() < then) {
+    then_i++;
+  }
+  while (thread_data->get_frame(now_i).get_end() < now) {
+    now_i++;
+  }
+
+  // Sum up a weighted average of all of the individual frames we
+  // pass.
+
+  // We start with just the portion of frame then_i that actually
+  // does fall within our "then to now" window.
+  accumulate_frame_data(result, get_frame_data(then_i), 
+                        thread_data->get_frame(then_i).get_end() - then);
+  float last = thread_data->get_frame(then_i).get_end();
+
+  // Then we get all of each of the middle frames.
+  for (int frame_number = then_i + 1; 
+       frame_number < now_i; 
+       frame_number++) {
+    accumulate_frame_data(result, get_frame_data(frame_number),
+                          thread_data->get_frame(frame_number).get_end() - last);
+    last = thread_data->get_frame(frame_number).get_end();
+  }
+
+  // And finally, we get the remainder as now_i.
+  if (last <= now) {
+    accumulate_frame_data(result, get_frame_data(now_i), now - last);
+  }
+  
+  scale_frame_data(result, 1.0f / (now - then));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatStripChart::get_net_value
 //       Access: Protected
 //  Description: Returns the net value of the chart's collector for
@@ -377,6 +511,8 @@ get_average_net_value() const {
   if (!thread_data->get_elapsed_frames(then_i, now_i)) {
     return 0.0f;
   }
+  float now = _time_width + _start_time;
+  float then = now - pstats_average_time;
 
   int num_frames = now_i - then_i + 1;
 
@@ -397,13 +533,25 @@ get_average_net_value() const {
     // sub-frame, we have to do it the less-accurate way of summing up
     // individual frames, which might introduce errors if we are
     // missing data for some frames, but what can you do?
+
+    const PStatThreadData *thread_data = _view.get_thread_data();
     
     float net_value = 0.0f;
-    for (int frame_number = then_i; frame_number <= now_i; frame_number++) {
-      net_value += get_net_value(frame_number);
+
+    // We start with just the portion of frame then_i that actually
+    // does fall within our "then to now" window (usually some portion
+    // of it will).
+    if (thread_data->get_frame(then_i).get_end() > then) {
+      net_value += get_net_value(then_i) * (thread_data->get_frame(then_i).get_end() - then);
+    }
+    // Then we get all of each of the rest of the frames.
+    for (int frame_number = then_i + 1; 
+         frame_number <= now_i; 
+         frame_number++) {
+      net_value += get_net_value(frame_number) * thread_data->get_frame(frame_number).get_net_time();
     }
     
-    return net_value / (float)num_frames;
+    return net_value / (now - then);
   }
 }
 
@@ -509,13 +657,10 @@ begin_draw(int, int) {
 //  Description: Should be overridden by the user class to draw a
 //               single vertical slice in the strip chart at the
 //               indicated pixel, with the data for the indicated
-//               frame.  Call get_frame_data() to get the actual color
-//               data for the given frame_number.  This call will only
-//               be made between a corresponding call to begin_draw()
-//               and end_draw().
+//               frame.  
 ////////////////////////////////////////////////////////////////////
 void PStatStripChart::
-draw_slice(int, int, int) {
+draw_slice(int, int, const PStatStripChart::FrameData &fdata) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -702,31 +847,50 @@ draw_pixels(int first_pixel, int last_pixel) {
   begin_draw(first_pixel, last_pixel);
   const PStatThreadData *thread_data = _view.get_thread_data();
 
-  int frame_number = -1;
-  int x = first_pixel;
-  while (x <= last_pixel) {
-    if (x == _cursor_pixel && !_scroll_mode) {
-      draw_cursor(x);
-      x++;
-
-    } else {
-      float time = pixel_to_timestamp(x);
-      frame_number = thread_data->get_frame_number_at_time(time, frame_number);
-      int w = 1;
-      int stop_pixel = last_pixel;
-      if (!_scroll_mode) {
-        stop_pixel = min(stop_pixel, _cursor_pixel);
-      }
-      while (x + w < stop_pixel && 
-             thread_data->get_frame_number_at_time(pixel_to_timestamp(x + w), frame_number) == frame_number) {
-        w++;
-      }
-      if (thread_data->has_frame(frame_number)) {
-        draw_slice(x, w, frame_number);
+  if (_average_mode && !thread_data->is_empty()) {
+    // In average mode, we have to calculate the average value for each pixel.
+    float start_time = pixel_to_timestamp(first_pixel);
+    int then_i = thread_data->get_frame_number_at_time(start_time - pstats_average_time);
+    int now_i = thread_data->get_frame_number_at_time(start_time, then_i);
+    for (int x = first_pixel; x <= last_pixel; x++) {
+      if (x == _cursor_pixel && !_scroll_mode) {
+        draw_cursor(x);
       } else {
-        draw_empty(x, w);
+        FrameData fdata;
+        compute_average_pixel_data(fdata, then_i, now_i, pixel_to_timestamp(x));
+        draw_slice(x, 1, fdata);
       }
-      x += w;
+    }
+
+  } else {
+    // When average mode is false, we are in frame mode; just show the
+    // actual frame data.
+    int frame_number = -1;
+    int x = first_pixel;
+    while (x <= last_pixel) {
+      if (x == _cursor_pixel && !_scroll_mode) {
+        draw_cursor(x);
+        x++;
+        
+      } else {
+        float time = pixel_to_timestamp(x);
+        frame_number = thread_data->get_frame_number_at_time(time, frame_number);
+        int w = 1;
+        int stop_pixel = last_pixel;
+        if (!_scroll_mode) {
+          stop_pixel = min(stop_pixel, _cursor_pixel);
+        }
+        while (x + w < stop_pixel && 
+               thread_data->get_frame_number_at_time(pixel_to_timestamp(x + w), frame_number) == frame_number) {
+          w++;
+        }
+        if (thread_data->has_frame(frame_number)) {
+          draw_slice(x, w, get_frame_data(frame_number));
+        } else {
+          draw_empty(x, w);
+        }
+        x += w;
+      }
     }
   }
 

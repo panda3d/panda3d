@@ -124,6 +124,39 @@ get_scroll_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::set_average_mode
+//       Access: Public
+//  Description: Changes the average_mode flag.  When true, the strip
+//               chart will average out the color values over
+//               pstats_average_time seconds, which hides spikes and
+//               makes the overall trends easier to read.  When false,
+//               the strip chart shows the actual data as it is
+//               happening.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatStripChart::
+set_average_mode(bool average_mode) {
+  if (_average_mode != average_mode) {
+    _average_mode = average_mode;
+    force_reset();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::get_average_mode
+//       Access: Public
+//  Description: Returns the current state of the average_mode flag.
+//               When true, the strip chart will average out the color
+//               values over pstats_average_time seconds, which hides
+//               spikes and makes the overall trends easier to read.
+//               When false, the strip chart shows the actual data as
+//               it is happening.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatStripChart::
+get_average_mode() const {
+  return _average_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatStripChart::timestamp_to_pixel
 //       Access: Public
 //  Description: Converts a timestamp to a horizontal pixel offset.

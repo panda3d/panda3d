@@ -283,9 +283,7 @@ copy_region(int start_x, int end_x, int dest_x) {
 //               indicated level data.
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
-draw_slice(int x, int w, int frame_number) {
-  const FrameData &frame = get_frame_data(frame_number);
-
+draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
   // Start by clearing the band first.
   RECT rect = { x, 0, x + w, get_ysize() };
   FillRect(_bitmap_dc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
@@ -294,7 +292,7 @@ draw_slice(int x, int w, int frame_number) {
   int y = get_ysize();
 
   FrameData::const_iterator fi;
-  for (fi = frame.begin(); fi != frame.end(); ++fi) {
+  for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
     const ColorData &cd = (*fi);
     overall_time += cd._net_value;
     HBRUSH brush = get_collector_brush(cd._collector_index);
