@@ -39,6 +39,7 @@ CMetaInterval(const string &name) :
   _precision = interval_precision;
   _current_nesting_level = 0;
   _next_event_index = 0;
+  _processing_events = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,6 +112,8 @@ clear_intervals() {
 ////////////////////////////////////////////////////////////////////
 int CMetaInterval::
 push_level(double rel_time, RelativeStart rel_to) {
+  nassertr(_event_queue.empty() && !_processing_events, -1);
+
   _defs.push_back(IntervalDef());
   IntervalDef &def = _defs.back();
   def._type = DT_push_level;
@@ -135,6 +138,7 @@ push_level(double rel_time, RelativeStart rel_to) {
 int CMetaInterval::
 add_c_interval(CInterval *c_interval, 
                double rel_time, RelativeStart rel_to) {
+  nassertr(_event_queue.empty() && !_processing_events, -1);
   nassertr(c_interval != (CInterval *)NULL, -1);
 
   c_interval->_parents.push_back(this);
@@ -175,6 +179,8 @@ int CMetaInterval::
 add_ext_index(int ext_index, const string &name, double duration,
               bool open_ended,
               double rel_time, RelativeStart rel_to) {
+  nassertr(_event_queue.empty() && !_processing_events, -1);
+
   _defs.push_back(IntervalDef());
   IntervalDef &def = _defs.back();
   def._type = DT_ext_index;
@@ -197,6 +203,7 @@ add_ext_index(int ext_index, const string &name, double duration,
 ////////////////////////////////////////////////////////////////////
 int CMetaInterval::
 pop_level() {
+  nassertr(_event_queue.empty() && !_processing_events, -1);
   nassertr(_current_nesting_level > 0, -1);
 
   _defs.push_back(IntervalDef());
@@ -226,6 +233,7 @@ pop_level() {
 bool CMetaInterval::
 set_interval_start_time(const string &name, double rel_time,
                         CMetaInterval::RelativeStart rel_to) {
+  nassertr(_event_queue.empty() && !_processing_events, false);
   Defs::iterator di;
   for (di = _defs.begin(); di != _defs.end(); ++di) {
     IntervalDef &def = (*di);
@@ -342,6 +350,11 @@ get_interval_end_time(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 priv_initialize(double t) {
+  if (_processing_events) {
+    enqueue_self_event(ET_initialize, t);
+    return;
+  }
+
   check_stopped("priv_initialize");
   // It may be tempting to flush the event_queue here, but don't do
   // it.  Those are events that must still be serviced from some
@@ -355,16 +368,18 @@ priv_initialize(double t) {
   int now = double_to_int_time(t);
 
   // Now look for events from the beginning up to the current time.
+  _processing_events = true;
   ActiveEvents new_active;
   while (_next_event_index < _events.size() &&
          _events[_next_event_index]->_time <= now) {
     PlaybackEvent *event = _events[_next_event_index];
+    _next_event_index++;
     
     // Do the indicated event.
     do_event_forward(event, new_active, true);
-    _next_event_index++;
   }
   finish_events_forward(now, new_active);
+  _processing_events = false;
 
   _curr_t = t;
   _state = S_started;
@@ -380,12 +395,18 @@ priv_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 priv_instant() {
+  if (_processing_events) {
+    enqueue_self_event(ET_instant);
+    return;
+  }
+
   check_stopped("priv_instant");
   recompute();
   _active.clear();
 
   // Apply all of the events.  This just means we invoke "instant" for
   // any end or instant event, ignoring the begin events.
+  _processing_events = true;
   PlaybackEvents::iterator ei;
   for (ei = _events.begin(); ei != _events.end(); ++ei) {
     PlaybackEvent *event = (*ei);
@@ -393,6 +414,7 @@ priv_instant() {
       enqueue_event(event->_n, ET_instant, true, 0);
     }
   }
+  _processing_events = false;
 
   _next_event_index = _events.size();
   _curr_t = get_duration();
@@ -408,12 +430,18 @@ priv_instant() {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 priv_step(double t) {
+  if (_processing_events) {
+    enqueue_self_event(ET_step, t);
+    return;
+  }
+
   check_started("priv_step");
   int now = double_to_int_time(t);
 
   // Now look for events between the last time we ran and the current
   // time.
 
+  _processing_events = true;
   if (_next_event_index < _events.size() &&
       _events[_next_event_index]->_time <= now) {
     // The normal case: time is increasing.
@@ -421,10 +449,10 @@ priv_step(double t) {
     while (_next_event_index < _events.size() &&
            _events[_next_event_index]->_time <= now) {
       PlaybackEvent *event = _events[_next_event_index];
+      _next_event_index++;
 
       // Do the indicated event.
       do_event_forward(event, new_active, false);
-      _next_event_index++;
     }
 
     finish_events_forward(now, new_active);
@@ -436,11 +464,13 @@ priv_step(double t) {
            _events[_next_event_index - 1]->_time > now) {
       _next_event_index--;
       PlaybackEvent *event = _events[_next_event_index];
+
       do_event_reverse(event, new_active, false);
     }
 
     finish_events_reverse(now, new_active);
   }
+  _processing_events = false;
 
   _curr_t = t;
   _state = S_started;
@@ -455,21 +485,29 @@ priv_step(double t) {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 priv_finalize() {
+  if (_processing_events) {
+    enqueue_self_event(ET_finalize);
+    return;
+  }
+
   double duration = get_duration();
   if (_state == S_initial) {
     priv_initialize(duration);
   }
 
   // Do all remaining events.
+  _processing_events = true;
   ActiveEvents new_active;
   while (_next_event_index < _events.size()) {
     PlaybackEvent *event = _events[_next_event_index];
+    _next_event_index++;
+
     // Do the indicated event.
     do_event_forward(event, new_active, true);
-    _next_event_index++;
   }
-
   finish_events_forward(double_to_int_time(duration), new_active);
+  _processing_events = false;
+
   _curr_t = duration;
   _state = S_final;
 }
@@ -484,6 +522,11 @@ priv_finalize() {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 priv_reverse_initialize(double t) {
+  if (_processing_events) {
+    enqueue_self_event(ET_reverse_initialize, t);
+    return;
+  }
+
   check_stopped("priv_reverse_initialize");
   // It may be tempting to flush the event_queue here, but don't do
   // it.  Those are events that must still be serviced from some
@@ -497,6 +540,7 @@ priv_reverse_initialize(double t) {
   int now = double_to_int_time(t);
 
   // Now look for events from the end down to the current time.
+  _processing_events = true;
   ActiveEvents new_active;
   while (_next_event_index > 0 && 
          _events[_next_event_index - 1]->_time > now) {
@@ -507,6 +551,7 @@ priv_reverse_initialize(double t) {
     do_event_reverse(event, new_active, true);
   }
   finish_events_reverse(now, new_active);
+  _processing_events = false;
 
   _curr_t = t;
   _state = S_started;
@@ -523,12 +568,18 @@ priv_reverse_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 priv_reverse_instant() {
+  if (_processing_events) {
+    enqueue_self_event(ET_reverse_instant);
+    return;
+  }
+
   check_stopped("priv_reverse_instant");
   recompute();
   _active.clear();
 
   // Apply all of the events.  This just means we invoke "instant" for
   // any end or instant event, ignoring the begin events.
+  _processing_events = true;
   PlaybackEvents::reverse_iterator ei;
   for (ei = _events.rbegin(); ei != _events.rend(); ++ei) {
     PlaybackEvent *event = (*ei);
@@ -536,6 +587,7 @@ priv_reverse_instant() {
       enqueue_event(event->_n, ET_reverse_instant, true, 0);
     }
   }
+  _processing_events = false;
 
   _next_event_index = 0;
   _curr_t = 0.0;
@@ -551,20 +603,28 @@ priv_reverse_instant() {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 priv_reverse_finalize() {
+  if (_processing_events) {
+    enqueue_self_event(ET_reverse_finalize);
+    return;
+  }
+
   if (_state == S_initial) {
     priv_initialize(0.0);
   }
 
   // Do all remaining events at the beginning.
+  _processing_events = true;
   ActiveEvents new_active;
 
   while (_next_event_index > 0) {
     _next_event_index--;
     PlaybackEvent *event = _events[_next_event_index];
+
     do_event_reverse(event, new_active, true);
   }
-
   finish_events_reverse(0, new_active);
+  _processing_events = false;
+
   _curr_t = 0.0;
   _state = S_initial;
 }
@@ -585,11 +645,19 @@ priv_reverse_finalize() {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 priv_interrupt() {
+  if (_processing_events) {
+    enqueue_self_event(ET_interrupt);
+    return;
+  }
+
+  _processing_events = true;
   ActiveEvents::iterator ai;
   for (ai = _active.begin(); ai != _active.end(); ++ai) {
     PlaybackEvent *event = (*ai);
     enqueue_event(event->_n, ET_interrupt, false);
   }
+  _processing_events = false;
+
   if (_state == S_started) {
     _state = S_paused;
   }
@@ -916,6 +984,25 @@ enqueue_event(int n, CInterval::EventType event_type, bool is_initial, int time)
 
   _event_queue.push_back(EventQueueEntry(n, event_type, time));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::enqueue_self_event
+//       Access: Private
+//  Description: Enqueues a reference to *this* interval.  This is
+//               called only when the interval is recursively
+//               re-entered; the request will be serviced when the
+//               current request is done processing.
+//
+//               time is only relevant for ET_initialize,
+//               ET_reverse_initialize, and ET_step.
+////////////////////////////////////////////////////////////////////
+void CMetaInterval::
+enqueue_self_event(CInterval::EventType event_type, double t) {
+  interval_cat.info()
+    << "Recursive reentry detected into " << *this << "\n";
+  int time = double_to_int_time(t);
+  _event_queue.push_back(EventQueueEntry(-1, event_type, time));
+}
   
 ////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::service_event_queue
@@ -931,27 +1018,36 @@ enqueue_event(int n, CInterval::EventType event_type, bool is_initial, int time)
 bool CMetaInterval::
 service_event_queue() {
   while (!_event_queue.empty()) {
+    nassertr(!_processing_events, true);
     const EventQueueEntry &entry = _event_queue.front();
-    nassertr(entry._n >= 0 && entry._n < (int)_defs.size(), false);
-    const IntervalDef &def = _defs[entry._n];
-    switch (def._type) {
-    case DT_c_interval:
-      // Handle the C++ event.
-      def._c_interval->priv_do_event(int_to_double_time(entry._time), entry._event_type);
-      break;
+    if (entry._n == -1) {
+      // Index -1 is a special code for *this* interval.
+      priv_do_event(int_to_double_time(entry._time), entry._event_type);
 
-    case DT_ext_index:
-      // Here's an external event; leave it there and return.
-      return true;
-
-    default:
-      nassertr(false, false);
-      return false;
+    } else {
+      nassertr(entry._n >= 0 && entry._n < (int)_defs.size(), false);
+      const IntervalDef &def = _defs[entry._n];
+      switch (def._type) {
+      case DT_c_interval:
+        // Handle the C++ event.
+        def._c_interval->priv_do_event(int_to_double_time(entry._time), entry._event_type);
+        break;
+        
+      case DT_ext_index:
+        // Here's an external event; leave it there and return.
+        return true;
+        
+      default:
+        nassertr(false, false);
+        return false;
+      }
     }
     _event_queue.pop_front();
   }
 
   // No more events on the queue.
+  nassertr(!_processing_events, false);
+
   return false;
 }
 

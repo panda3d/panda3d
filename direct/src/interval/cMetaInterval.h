@@ -150,6 +150,7 @@ private:
 
   void enqueue_event(int n, CInterval::EventType event_type, bool is_initial,
                      int time = 0);
+  void enqueue_self_event(CInterval::EventType event_type, double t = 0.0);
   bool service_event_queue();
 
   int recompute_level(int n, int level_begin, int &level_end);
@@ -165,6 +166,7 @@ private:
   int _end_time;
 
   size_t _next_event_index;
+  bool _processing_events;
 
   // This is the queue of events that have occurred due to a recent
   // priv_initialize(), priv_step(), etc., but have not yet been serviced, due
