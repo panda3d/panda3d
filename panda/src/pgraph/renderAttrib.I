@@ -92,3 +92,18 @@ compare_to(const RenderAttrib &other) const {
   // We only call compare_to_impl() if they have the same type.
   return compare_to_impl(&other);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::always_reissue
+//       Access: Public
+//  Description: Returns true if the RenderAttrib should be reissued
+//               to the GSG with every state change, even if it is the
+//               same pointer as it was before; or false for the
+//               normal case, to reissue only when the RenderAttrib
+//               pointer changes.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderAttrib::
+always_reissue() const {
+  return _always_reissue;
+}
+

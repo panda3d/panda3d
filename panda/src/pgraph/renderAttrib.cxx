@@ -39,6 +39,8 @@ RenderAttrib() {
     _attribs = new Attribs;
   }
   _saved_entry = _attribs->end();
+
+  _always_reissue = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -110,12 +112,6 @@ issue(GraphicsStateGuardianBase *) const {
 void RenderAttrib::
 output(ostream &out) const {
   out << get_type();
-}
-
-void RenderAttrib::
-output_comparefunc(ostream &out,PandaCompareFunc fn) const {
-   static char *FuncStrs[M_always+1] = {"none","never","less","equal", "less or equal","greater","not equal","greater or equal","always"};
-   out << FuncStrs[fn];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,6 +217,53 @@ compose_impl(const RenderAttrib *other) const {
 CPT(RenderAttrib) RenderAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
   return other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::output_comparefunc
+//       Access: Protected
+//  Description: Outputs a string representation of the given
+//               PandaCompareFunc object.
+////////////////////////////////////////////////////////////////////
+void RenderAttrib::
+output_comparefunc(ostream &out, PandaCompareFunc fn) const {
+  switch (fn) {
+  case M_none:
+    out << "none";
+    break;
+
+  case M_never:
+    out << "never";
+    break;
+
+  case M_less:
+    out << "less";
+    break;
+
+  case M_equal:
+    out << "equal";
+    break;
+
+  case M_less_equal:
+    out << "less_equal";
+    break;
+
+  case M_greater:
+    out << "greater";
+    break;
+
+  case M_not_equal:
+    out << "not_equal";
+    break;
+
+  case M_greater_equal:
+    out << "greater_equal";
+    break;
+
+  case M_always:
+    out << "always";
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

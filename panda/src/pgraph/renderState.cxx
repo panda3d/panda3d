@@ -842,7 +842,11 @@ issue_delta_modify(const RenderState *other,
       if ((*ai)._attrib != (*bi)._attrib) {
         any_changed = true;
         (*bi)._attrib->issue(gsg);
+
+      } else if ((*bi)._attrib->always_reissue()) {
+        (*bi)._attrib->issue(gsg);
       }
+        
       *result = *bi;
       ++ai;
       ++bi;
@@ -910,7 +914,7 @@ issue_delta_set(const RenderState *other,
     } else {
       // Here is an attribute we have in both.  Issue the new one if
       // it's different.
-      if ((*ai)._attrib != (*bi)._attrib) {
+      if ((*ai)._attrib != (*bi)._attrib || (*bi)._attrib->always_reissue()) {
         (*bi)._attrib->issue(gsg);
       }
       ++ai;

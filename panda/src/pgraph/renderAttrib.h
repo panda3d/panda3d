@@ -71,6 +71,8 @@ public:
   INLINE int compare_to(const RenderAttrib &other) const;
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
 
+  INLINE bool always_reissue() const;
+
 PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -93,7 +95,10 @@ protected:
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const=0;
-  void output_comparefunc(ostream &out,PandaCompareFunc fn) const;
+  void output_comparefunc(ostream &out, PandaCompareFunc fn) const;
+
+protected:
+  bool _always_reissue;
 
 private:
   typedef pset<const RenderAttrib *, IndirectCompareTo<RenderAttrib> > Attribs;
