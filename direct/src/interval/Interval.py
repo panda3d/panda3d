@@ -46,7 +46,8 @@ class Interval(DirectObject):
     def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
         """
-        self.startT = self.clock.getFrameTime() - t0
+	self.offset = t0
+        self.startT = self.clock.getFrameTime()
 	assert(scale > 0.0)
 	self.scale = scale
 	self.firstTime = 1
@@ -54,6 +55,7 @@ class Interval(DirectObject):
             self.playDuration = self.duration
         else:
             self.playDuration = duration
+	assert(t0 <= self.playDuration)
         taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
 
     def stop(self):
@@ -66,7 +68,7 @@ class Interval(DirectObject):
         """ __playTask(task)
         """
         t = self.clock.getFrameTime()
-        te = (t - self.startT) * self.scale
+        te = self.offset + ((t - self.startT) * self.scale)
 	self.curr_t = te
         if (te <= self.playDuration):
 	    if (self.firstTime):
