@@ -1,5 +1,4 @@
 """PickList module: contains the PickList class"""
-
 from ShowBaseGlobal import *
 import PandaObject
 import Frame
@@ -19,11 +18,6 @@ class PickList(PandaObject.PandaObject):
         self.name = name
         self.frame = Frame.Frame(name)
         
-        # listen for keyboard events
-        #self.accept("up-up", self.__decrementChoice)
-        #self.accept("down-up", self.__incrementChoice)
-        #self.accept("enter-up", self.__makeChoice, [1])
-
         # initialization
         self.choice = -1
         self.choiceList = []
@@ -104,6 +98,9 @@ class PickList(PandaObject.PandaObject):
         self.accept("up-up", self.__decrementChoice)
         self.accept("down-up", self.__incrementChoice)
         self.accept("enter-up", self.__makeChoice, [1])
+        for button in self.choiceList:
+            self.accept("gui-button-" + button.name + "-enter",
+                        self.__makeChoice, [1])
 
         for choice in self.choiceList:
             choiceIndex = self.choiceList.index(choice)
@@ -126,6 +123,8 @@ class PickList(PandaObject.PandaObject):
         self.ignore("up-up")
         self.ignore("down-up")
         self.ignore("enter-up")
+        for button in self.choiceList:
+            self.ignore("gui-button-" + button.name + "-enter")
 
         # ignore all the buttons
         for item in self.frame.getItems():
