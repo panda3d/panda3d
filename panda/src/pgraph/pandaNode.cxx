@@ -124,7 +124,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   Up::iterator ui;
   for (ui = _up.begin(); ui != _up.end(); ++ui) {
     PT(PandaNode) parent_node = DCAST(PandaNode, p_list[pi++]);
-    (*ui) = UpConnection(parent_node);
+
+    // For some reason, VC++ won't accept UpConnection as an inline
+    // temporary constructor here ("C2226: unexpected type
+    // PandaNode::UpConnection"), so we must make this assignment
+    // using an explicit temporary variable.
+    UpConnection connection(parent_node);
+    (*ui) = connection;
   }
 
   // Get the child pointers.
