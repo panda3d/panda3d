@@ -298,6 +298,11 @@ main(int argc, char *argv[]) {
     global_scope.define_variable("PPREMAKE_CONFIG", ppremake_config);
   }
 
+  // Also, it's convenient to have a way to represent the literal tab
+  // character, without actually putting a literal tab character in
+  // the source file.
+  global_scope.define_variable("TAB", "\t");
+
   PPMain ppmain(&global_scope);
   if (!ppmain.read_source(".")) {
     exit(1);
