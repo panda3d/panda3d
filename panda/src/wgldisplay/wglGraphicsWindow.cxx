@@ -1,5 +1,5 @@
-
-// Created by:  
+// Filename: wcrGraphicsWindow.cxx
+// Created by:
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -84,17 +84,17 @@ unsigned int hardcoded_modifier_buttons[NUM_MODIFIER_KEYS]={VK_SHIFT,VK_MENU,VK_
 void PrintErrorMessage(DWORD msgID) {
    LPTSTR pMessageBuffer;
 
-   if(msgID==LAST_ERROR)
+   if (msgID==LAST_ERROR)
      msgID=GetLastError();
 
    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                 NULL,msgID,  
+                 NULL,msgID,
                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
                  (LPTSTR) &pMessageBuffer,  // the weird ptrptr->ptr cast is intentional, see FORMAT_MESSAGE_ALLOCATE_BUFFER
                  1024, NULL);
    MessageBox(GetDesktopWindow(),pMessageBuffer,_T(ERRORBOX_TITLE),MB_OK);
    wgldisplay_cat.fatal() << "System error msg: " << pMessageBuffer << endl;
-   LocalFree( pMessageBuffer ); 
+   LocalFree(pMessageBuffer);
 }
 
 // fn exists so AtExitFn can call it without refcntr blowing up since its !=0
@@ -105,22 +105,22 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
   // several GL drivers (voodoo,ATI, not nvidia) crash if we call these wgl deletion routines from
   // an atexit() fn.  Possible that GL has already unloaded itself.  So we just wont call them for now
   // for that case, we're exiting the app anyway.
-  if(!bAtExitFnCalled) {
+  if (!bAtExitFnCalled) {
       // to do gl releases, we need to have the context be current
-      if((_hdc!=NULL)&&(_context!=NULL)) {
+      if ((_hdc!=NULL)&&(_context!=NULL)) {
           // need to bypass make_current() since it checks _window_inactive which we need to ignore
           HGLRC current_context = wglGetCurrentContext();
           HDC current_dc = wglGetCurrentDC();
 
           if ((current_context != _context) || (current_dc != _hdc)) {
-              if(!wglMakeCurrent(_hdc, _context)) {
+              if (!wglMakeCurrent(_hdc, _context)) {
                   PrintErrorMessage(LAST_ERROR);
               }
           }
           report_errors();
       }
 
-      if(gl_show_fps_meter)
+      if (gl_show_fps_meter)
         glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
 
       report_errors();
@@ -132,26 +132,26 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
       // cant report errors after we set cur context to NULL
 
       HGLRC curcxt=wglGetCurrentContext();
-      if(curcxt!=NULL) 
+      if (curcxt!=NULL)
         unmake_current();
 
-      if(_context!=NULL) {
+      if (_context!=NULL) {
           wglDeleteContext(_context);
-          _context = NULL; 
+          _context = NULL;
       }
   }
 
-  if(_hdc!=NULL) {
+  if (_hdc!=NULL) {
     ReleaseDC(_mwindow,_hdc);
     _hdc = NULL;
   }
 
-  if((_hOldForegroundWindow!=NULL) && (_mwindow==GetForegroundWindow())) {
+  if ((_hOldForegroundWindow!=NULL) && (_mwindow==GetForegroundWindow())) {
       SetForegroundWindow(_hOldForegroundWindow);
   }
 
-  if(_mwindow!=NULL) {
-    if(_bLoadedCustomCursor && _hMouseCursor!=NULL)
+  if (_mwindow!=NULL) {
+    if (_bLoadedCustomCursor && _hMouseCursor!=NULL)
       DestroyCursor(_hMouseCursor);
 
     DestroyWindow(_mwindow);
@@ -159,7 +159,7 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
     _mwindow = NULL;
   }
 
-  if(_pCurrent_display_settings!=NULL) {
+  if (_pCurrent_display_settings!=NULL) {
       delete _pCurrent_display_settings;
       _pCurrent_display_settings = NULL;
   }
@@ -180,7 +180,7 @@ void wglGraphicsWindow::do_close_window() {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-wglGraphicsWindow::~wglGraphicsWindow(void) {
+wglGraphicsWindow::~wglGraphicsWindow() {
    close_window();
 }
 
@@ -189,7 +189,7 @@ void DestroyAllWindows(bool bAtExitFnCalled) {
    while(!hwnd_pandawin_map.empty()) {
      // cant use a for loop cause DestroyMe erases things out from under us, so iterator is invalid
      HWND_PANDAWIN_MAP::iterator pwin = hwnd_pandawin_map.begin();
-     if((*pwin).second != NULL) 
+     if ((*pwin).second != NULL)
          (*pwin).second->DestroyMe(bAtExitFnCalled);
    }
 }
@@ -200,7 +200,7 @@ void AtExitFn() {
 #endif
 
      restore_global_parameters();
-  
+
      DestroyAllWindows(true);
 }
 
@@ -208,40 +208,40 @@ void AtExitFn() {
 #define MY_DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
         EXTERN_C const GUID DECLSPEC_SELECTANY name \
                 = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
-                
-MY_DEFINE_GUID( IID_IDirectDraw2, 0xB3A6F3E0,0x2B43,0x11CF,0xA2,0xDE,0x00,0xAA,0x00,0xB9,0x33,0x56 );
+
+MY_DEFINE_GUID(IID_IDirectDraw2, 0xB3A6F3E0,0x2B43,0x11CF,0xA2,0xDE,0x00,0xAA,0x00,0xB9,0x33,0x56);
 
 ////////////////////////////////////////////////////////////////////
 //  Function: GetAvailVidMem
 //  Description: Uses DDraw to get available video memory
 ////////////////////////////////////////////////////////////////////
-static DWORD GetAvailVidMem(void) {
+static DWORD GetAvailVidMem() {
 
     LPDIRECTDRAW2 pDD2;
     LPDIRECTDRAW pDD;
     HRESULT hr;
 
-    typedef HRESULT (WINAPI *DIRECTDRAWCREATEPROC)(GUID FAR *lpGUID,LPDIRECTDRAW FAR *lplpDD,IUnknown FAR *pUnkOuter); 
+    typedef HRESULT (WINAPI *DIRECTDRAWCREATEPROC)(GUID FAR *lpGUID,LPDIRECTDRAW FAR *lplpDD,IUnknown FAR *pUnkOuter);
     DIRECTDRAWCREATEPROC pfnDDCreate=NULL;
 
-    HINSTANCE DDHinst = LoadLibrary( "ddraw.dll" );
-    if(DDHinst == 0) {
+    HINSTANCE DDHinst = LoadLibrary("ddraw.dll");
+    if (DDHinst == 0) {
         wgldisplay_cat.fatal() << "LoadLibrary() can't find DDRAW.DLL!" << endl;
         exit(1);
     }
 
-    pfnDDCreate = (DIRECTDRAWCREATEPROC) GetProcAddress( DDHinst, "DirectDrawCreate" );
+    pfnDDCreate = (DIRECTDRAWCREATEPROC) GetProcAddress(DDHinst, "DirectDrawCreate");
 
     // just use DX5 DD interface, since that's the minimum ver we need
-    if(NULL == pfnDDCreate) {
+    if (NULL == pfnDDCreate) {
         wgldisplay_cat.fatal() << "GetProcAddress failed on DirectDrawCreate\n";
         exit(1);
     }
 
     // Create the Direct Draw Object
     hr = (*pfnDDCreate)((GUID *)DDCREATE_HARDWAREONLY, &pDD, NULL);
-    if(hr != DD_OK) {
-        wgldisplay_cat.fatal()  
+    if (hr != DD_OK) {
+        wgldisplay_cat.fatal()
         << "DirectDrawCreate failed : result = " << ConvDDErrorToString(hr) << endl;
         exit(1);
     }
@@ -249,8 +249,8 @@ static DWORD GetAvailVidMem(void) {
     FreeLibrary(DDHinst);    //undo LoadLib above, decrement ddrawl.dll refcnt (after DDrawCreate, since dont want to unload/reload)
 
     // need DDraw2 interface for GetAvailVidMem
-    hr = pDD->QueryInterface(IID_IDirectDraw2, (LPVOID *)&pDD2); 
-    if(hr != DD_OK) {
+    hr = pDD->QueryInterface(IID_IDirectDraw2, (LPVOID *)&pDD2);
+    if (hr != DD_OK) {
         wgldisplay_cat.fatal() << "DDraw QueryInterface failed : result = " << ConvDDErrorToString(hr) << endl;
         exit(1);
      }
@@ -269,9 +269,9 @@ static DWORD GetAvailVidMem(void) {
     ZeroMemory(&ddsCaps,sizeof(DDSCAPS));
     ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
 
-    if(FAILED(hr = pDD2->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
-        if(hr==DDERR_NODIRECTDRAWHW) {
-           if(wgldisplay_cat.is_debug())
+    if (FAILED(hr = pDD2->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
+        if (hr==DDERR_NODIRECTDRAWHW) {
+           if (wgldisplay_cat.is_debug())
                wgldisplay_cat.debug() << "GetAvailableVidMem returns no-DDraw HW, assuming we have plenty of vidmem\n";
            dwTotal=dwFree=0x7FFFFFFF;
         } else {
@@ -279,10 +279,10 @@ static DWORD GetAvailVidMem(void) {
             exit(1);
         }
     } else {
-       if(wgldisplay_cat.is_debug())
+       if (wgldisplay_cat.is_debug())
            wgldisplay_cat.debug() << "before FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
-       if(dwTotal==0) {
-           if(wgldisplay_cat.is_debug())
+       if (dwTotal==0) {
+           if (wgldisplay_cat.is_debug())
                wgldisplay_cat.debug() << "GetAvailVidMem returns bogus total of 0, assuming we have plenty of vidmem\n";
            dwTotal=dwFree=0x7FFFFFFF;
        }
@@ -298,13 +298,13 @@ bool find_acceptable_display_mode(DWORD dwWidth,DWORD dwHeight,DWORD bpp,DEVMODE
 
     // look for acceptable mode
     while(1) {
-        ZeroMemory( &dm, sizeof( dm ) );
-        dm.dmSize = sizeof( dm );
+        ZeroMemory(&dm, sizeof(dm));
+        dm.dmSize = sizeof(dm);
 
-        if(!EnumDisplaySettings(NULL,modenum,&dm))
+        if (!EnumDisplaySettings(NULL,modenum,&dm))
           break;
 
-        if((dm.dmPelsWidth==dwWidth) && (dm.dmPelsHeight==dwHeight) &&
+        if ((dm.dmPelsWidth==dwWidth) && (dm.dmPelsHeight==dwHeight) &&
            (dm.dmBitsPerPel==bpp) && ACCEPTABLE_REFRESH_RATE(dm.dmDisplayFrequency)) {
            return true;
         }
@@ -319,8 +319,8 @@ bool find_acceptable_display_mode(DWORD dwWidth,DWORD dwHeight,DWORD bpp,DEVMODE
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::config(void) {
-    
+void wglGraphicsWindow::config() {
+
     GraphicsWindow::config();
 
     HINSTANCE hinstance = GetModuleHandle(NULL);
@@ -330,7 +330,7 @@ void wglGraphicsWindow::config(void) {
 
     _exiting_window = false;
     _return_control_to_app = false;
-    _bIsLowVidMemCard = false; 
+    _bIsLowVidMemCard = false;
     _active_minimized_fullscreen = false;
     _PandaPausedTimer = NULL;
     _mouse_input_enabled = false;
@@ -345,9 +345,9 @@ void wglGraphicsWindow::config(void) {
     _gsg = NULL;
     ZeroMemory(&_pixelformat,sizeof(_pixelformat));
     _hOldForegroundWindow=GetForegroundWindow();
-    
+
     WNDCLASS wc;
-    
+
     // Clear before filling in window structure!
     ZeroMemory(&wc, sizeof(WNDCLASS));
     wc.style      = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -357,14 +357,14 @@ void wglGraphicsWindow::config(void) {
     string windows_icon_filename = get_icon_filename_2().to_os_specific();
     string windows_mono_cursor_filename = get_mono_cursor_filename_2().to_os_specific();
 
-    if(!windows_icon_filename.empty()) {
+    if (!windows_icon_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
 
         // loads a .ico fmt file
         wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
 
-        if(wc.hIcon==NULL) {
+        if (wc.hIcon==NULL) {
             wgldisplay_cat.warning() << "windows icon filename '" << windows_icon_filename << "' not found!!\n";
         }
     } else {
@@ -372,13 +372,13 @@ void wglGraphicsWindow::config(void) {
     }
 
     _bLoadedCustomCursor = false;
-    if(!windows_mono_cursor_filename.empty()) {
+    if (!windows_mono_cursor_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp (because it was 'mapping' 16bpp colors to the device?)
 
         DWORD load_flags = LR_LOADFROMFILE;
 
-        if(_props._fullscreen) {
+        if (_props._fullscreen) {
           // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
           // since they are not going to be used on the desktop
           load_flags |= LR_CREATEDIBSECTION;
@@ -387,7 +387,7 @@ void wglGraphicsWindow::config(void) {
         // loads a .cur fmt file
         _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
 
-        if(_hMouseCursor==NULL) {
+        if (_hMouseCursor==NULL) {
             wgldisplay_cat.warning() << "windows cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
         }
         _bLoadedCustomCursor = true;
@@ -401,17 +401,17 @@ void wglGraphicsWindow::config(void) {
       wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
       wc.lpszMenuName   = NULL;
       wc.lpszClassName  = WGL_WINDOWCLASSNAME;
-    
-      if(!RegisterClass(&wc)) {
+
+      if (!RegisterClass(&wc)) {
         wgldisplay_cat.error() << "could not register window class!" << endl;
       }
       wc_registered = true;
     }
 
-//  from MSDN:    
-//  An OpenGL window has its own pixel format. Because of this, only device contexts retrieved 
-//  for the client area of an OpenGL window are allowed to draw into the window. As a result, an 
-//  OpenGL window should be created with the WS_CLIPCHILDREN and WS_CLIPSIBLINGS styles. Additionally, 
+//  from MSDN:
+//  An OpenGL window has its own pixel format. Because of this, only device contexts retrieved
+//  for the client area of an OpenGL window are allowed to draw into the window. As a result, an
+//  OpenGL window should be created with the WS_CLIPCHILDREN and WS_CLIPSIBLINGS styles. Additionally,
 //  the window class attribute should not include the CS_PARENTDC style.
 
     DWORD window_style = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;  // for CreateWindow
@@ -431,7 +431,7 @@ void wglGraphicsWindow::config(void) {
       DWORD dwFullScreenBitDepth=cur_bitdepth;
 
       #define LOWVIDMEMTHRESHOLD 3500000
-      if(GetAvailVidMem() < LOWVIDMEMTHRESHOLD) {
+      if (GetAvailVidMem() < LOWVIDMEMTHRESHOLD) {
           _bIsLowVidMemCard = true;
           wgldisplay_cat.debug() << "small video memory card detect, switching fullscreen to minimum 640x480x16 config\n";
           // we're going to need  640x480 at 16 bit to save enough tex vidmem
@@ -441,7 +441,7 @@ void wglGraphicsWindow::config(void) {
       }
 
       DEVMODE dm;
-      if(!find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm)) {
+      if (!find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm)) {
           wgldisplay_cat.fatal() << "Videocard has no supported display resolutions at specified res (" << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<")\n";
           exit(1);
       }
@@ -452,15 +452,15 @@ void wglGraphicsWindow::config(void) {
                 window_style,0,0,dwWidth,dwHeight,hDesktopWindow, NULL, hinstance, 0);
 
       // move window to top of zorder,
-      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);  
-    
+      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+
       ShowWindow(_mwindow, SW_SHOWNORMAL);
       ShowWindow(_mwindow, SW_SHOWNORMAL);
 
       int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
-    
-      if(chg_result!=DISP_CHANGE_SUCCESSFUL) {
-            wgldisplay_cat.fatal() << "ChangeDisplaySettings failed (error code: " << chg_result <<") for specified res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" ), " << dm.dmDisplayFrequency  << "Hz\n";
+
+      if (chg_result!=DISP_CHANGE_SUCCESSFUL) {
+            wgldisplay_cat.fatal() << "ChangeDisplaySettings failed (error code: " << chg_result <<") for specified res (" << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<"), " << dm.dmDisplayFrequency  << "Hz\n";
             exit(1);
       }
 
@@ -472,30 +472,30 @@ void wglGraphicsWindow::config(void) {
       _props._xsize = dwWidth;
       _props._ysize = dwHeight;
 
-       if(wgldisplay_cat.is_debug())
-           wgldisplay_cat.debug() << "set fullscreen mode at res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" ), " << dm.dmDisplayFrequency  << "Hz\n";
+       if (wgldisplay_cat.is_debug())
+           wgldisplay_cat.debug() << "set fullscreen mode at res (" << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<"), " << dm.dmDisplayFrequency  << "Hz\n";
   } else {
-        
+
         RECT win_rect;
         SetRect(&win_rect, _props._xorg,  _props._yorg, _props._xorg + _props._xsize,
                 _props._yorg + _props._ysize);
 
-        if(_props._border) {
+        if (_props._border) {
             window_style |= WS_OVERLAPPEDWINDOW;
         }
 
         BOOL bRes = AdjustWindowRect(&win_rect, window_style, FALSE);  //compute window size based on desired client area size
 
-        if(!bRes) {
+        if (!bRes) {
             wgldisplay_cat.fatal() << "AdjustWindowRect failed!" << endl;
             exit(1);
         }
 
         // make sure origin is on screen, slide far bounds over if necessary
-        if(win_rect.left < 0) {
+        if (win_rect.left < 0) {
             win_rect.right += abs(win_rect.left); win_rect.left = 0;
         }
-        if(win_rect.top < 0) {
+        if (win_rect.top < 0) {
             win_rect.bottom += abs(win_rect.top); win_rect.top = 0;
         }
 
@@ -504,13 +504,13 @@ void wglGraphicsWindow::config(void) {
                                 win_rect.bottom-win_rect.top,
                                 NULL, NULL, hinstance, 0);
   }
-    
-  if(!_mwindow) {
+
+  if (!_mwindow) {
         wgldisplay_cat.fatal() << "CreateWindow() failed!" << endl;
         PrintErrorMessage(LAST_ERROR);
         exit(1);
   }
-  
+
   // Determine the initial open status of the IME.
   _ime_open = false;
   HIMC hIMC = ImmGetContext(_mwindow);
@@ -521,24 +521,24 @@ void wglGraphicsWindow::config(void) {
 
   hwnd_pandawin_map[_mwindow] = this;
   global_wglwinptr = NULL;  // get rid of any reference to this obj
-    
+
   // move window to top of zorder
   SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
-    
+
   _hdc = GetDC(_mwindow);
 
   // Configure the framebuffer according to parameters specified in _props
   // Initializes _pixelformat
   int pfnum=choose_visual();
 
-  if(gl_forced_pixfmt!=0) {
-    if(wgldisplay_cat.is_debug())
+  if (gl_forced_pixfmt!=0) {
+    if (wgldisplay_cat.is_debug())
       wgldisplay_cat.debug() << "overriding pixfmt choice algorithm (" << pfnum << ") with gl-force-pixfmt("<<gl_forced_pixfmt<< ")\n";
     pfnum=gl_forced_pixfmt;
   }
 
   //  int pfnum=ChoosePixelFormat(_hdc, _pixelformat);
-  if(wgldisplay_cat.is_debug())
+  if (wgldisplay_cat.is_debug())
      wgldisplay_cat.debug() << "config() - picking pixfmt #"<< pfnum <<endl;
 
   if (!SetPixelFormat(_hdc, pfnum, &_pixelformat)) {
@@ -593,37 +593,37 @@ void wglGraphicsWindow::config(void) {
     wglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
   }
 
-  if(wglGetExtensionsStringARB!=NULL) {
+  if (wglGetExtensionsStringARB!=NULL) {
        _extensions_str += " ";
        const char *ARBextensions = wglGetExtensionsStringARB(wglGetCurrentDC());
        _extensions_str.append(ARBextensions);
   }
 
-  if(wglGetExtensionsStringEXT!=NULL) {
+  if (wglGetExtensionsStringEXT!=NULL) {
       // usually this will be the same as ARB extensions, but whatever
       _extensions_str += " ";
       const char *EXTextensions = wglGetExtensionsStringEXT();
       _extensions_str.append(EXTextensions);
   }
 
-  if(wgldisplay_cat.is_spam())
+  if (wgldisplay_cat.is_spam())
      wgldisplay_cat.spam() << "GL extensions: " << _extensions_str << endl;
 
-  if(gl_sync_video) {
+  if (gl_sync_video) {
       // set swapbuffers to swap no more than once per monitor refresh
       // note sometimes the ICD advertises this ext, but it still doesn't seem to work
-      if(_extensions_str.find("WGL_EXT_swap_control")!=_extensions_str.npos) {
+      if (_extensions_str.find("WGL_EXT_swap_control")!=_extensions_str.npos) {
            PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
            wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) wglGetProcAddress("wglSwapIntervalEXT");
-           if(wglSwapIntervalEXT!=NULL)
-               wglSwapIntervalEXT(1);   
+           if (wglSwapIntervalEXT!=NULL)
+               wglSwapIntervalEXT(1);
 
-           if(wgldisplay_cat.is_spam())
+           if (wgldisplay_cat.is_spam())
                wgldisplay_cat.spam() << "setting swapbuffer interval to 1/refresh\n";
       }
   }
 
-  if(gl_show_fps_meter) {
+  if (gl_show_fps_meter) {
 
       _start_time = timeGetTime();
       _current_fps = 0.0;
@@ -636,15 +636,15 @@ void wglGraphicsWindow::config(void) {
      wglUseFontBitmaps(_hdc, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
   }
 
-  if(wgldisplay_cat.is_info()) {
+  if (wgldisplay_cat.is_info()) {
      const char *vendStr=(const char *) glGetString(GL_VENDOR);
      const char *rendStr=(const char *) glGetString(GL_RENDERER);
      const char *versStr=(const char *) glGetString(GL_VERSION);
 
      // Note:  glGetString will never return a valid value until you do wglMakeCurrent
 
-     if(vendStr!=NULL) {
-         wgldisplay_cat.info() 
+     if (vendStr!=NULL) {
+         wgldisplay_cat.info()
               << "GL_VENDOR: " <<  vendStr
               << "  GL_RENDERER: " << ((rendStr==NULL) ? "" : rendStr)
               << "  GL_VERSION: " <<  ((versStr==NULL) ? "" : versStr) << endl;
@@ -655,39 +655,39 @@ void wglGraphicsWindow::config(void) {
 }
 
 void wglGraphicsWindow::
-check_for_color_cursor_support(void) {
+check_for_color_cursor_support() {
     // card support for non-black/white GDI cursors varies greatly.  if the cursor is not supported,
-    // it is rendered in software by GDI, which causes a flickering effect (because it's not synced 
+    // it is rendered in software by GDI, which causes a flickering effect (because it's not synced
     // with flip?).  GDI transparently masks what's happening so there is no easy way for app to detect
     // if HW cursor support exists.  alternatives are to tie cursor motion to frame rate using DDraw blts
-    // or overlays, or to have separate thread draw cursor (sync issues?).  instead we do mono cursor 
+    // or overlays, or to have separate thread draw cursor (sync issues?).  instead we do mono cursor
     // unless card is known to support 256 color cursors
 
     string windows_color_cursor_filename = get_color_cursor_filename_2().to_os_specific();
-    if(windows_color_cursor_filename.empty())
+    if (windows_color_cursor_filename.empty())
        return;
 
     bool bSupportsColorCursor=false;
     const GLubyte *vendorname=glGetString(GL_VENDOR);
-    if(vendorname==NULL) {
+    if (vendorname==NULL) {
         return;
     }
     char vendorstr[500];
     strncpy(vendorstr,(const char *)vendorname,sizeof(vendorstr));
     _strlwr(vendorstr);
-    if(strstr(vendorstr,"nvidia")!=NULL) 
-        bSupportsColorCursor=true;  
+    if (strstr(vendorstr,"nvidia")!=NULL)
+        bSupportsColorCursor=true;
 
     // for now, just assume only nvidia supports color. need to add more checks for other cards
     // like in DX l8r.
 
-    if(bSupportsColorCursor) {
+    if (bSupportsColorCursor) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp (because it was 'mapping' 16bpp colors to the device?)
 
         DWORD load_flags = LR_LOADFROMFILE;
 
-        if(_props._fullscreen) {
+        if (_props._fullscreen) {
           // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
           // since they are not going to be used on the desktop
           load_flags |= LR_CREATEDIBSECTION;
@@ -699,7 +699,7 @@ check_for_color_cursor_support(void) {
         // loads a .cur fmt file
         HCURSOR hNewMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
 
-        if(hNewMouseCursor==NULL) {
+        if (hNewMouseCursor==NULL) {
             wgldisplay_cat.warning() << "windows color cursor filename '" << windows_color_cursor_filename << "' not found!!\n";
             return;
         }
@@ -707,11 +707,11 @@ check_for_color_cursor_support(void) {
         SetClassLongPtr(_mwindow, GCLP_HCURSOR, (LONG_PTR) hNewMouseCursor);
         SetCursor(hNewMouseCursor);
 
-        if(_bLoadedCustomCursor)
+        if (_bLoadedCustomCursor)
            DestroyCursor(_hMouseCursor);
         _hMouseCursor = hNewMouseCursor;
 
-        if(wgldisplay_cat.is_spam())
+        if (wgldisplay_cat.is_spam())
             wgldisplay_cat.spam() << "loaded color cursor\n";
     }
 }
@@ -741,32 +741,32 @@ wglGraphicsWindow(GraphicsPipe* pipe, const
 void PrintPFD(PIXELFORMATDESCRIPTOR *pfd,char *msg) {
 
   OGLDriverType drvtype;
-  if((pfd->dwFlags & PFD_GENERIC_ACCELERATED) && (pfd->dwFlags & PFD_GENERIC_FORMAT))
+  if ((pfd->dwFlags & PFD_GENERIC_ACCELERATED) && (pfd->dwFlags & PFD_GENERIC_FORMAT))
       drvtype=MCD;
-   else if(!(pfd->dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd->dwFlags & PFD_GENERIC_FORMAT))
+   else if (!(pfd->dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd->dwFlags & PFD_GENERIC_FORMAT))
       drvtype=ICD;
    else {
      drvtype=Software;
-   }  
+   }
 
 #define PrintFlag(FLG) ((pfd->dwFlags &  PFD_##FLG) ? (" PFD_" #FLG "|") : "")
   wgldisplay_cat.spam() << "================================\n";
 
   wgldisplay_cat.spam() << msg << ", " << OGLDrvStrings[drvtype] << " driver\n"
                          << "PFD flags: 0x" << (void*)pfd->dwFlags << " (" <<
-                        PrintFlag(GENERIC_ACCELERATED) <<      
-                        PrintFlag(GENERIC_FORMAT) <<      
-                        PrintFlag(DOUBLEBUFFER) <<      
+                        PrintFlag(GENERIC_ACCELERATED) <<
+                        PrintFlag(GENERIC_FORMAT) <<
+                        PrintFlag(DOUBLEBUFFER) <<
                         PrintFlag(SUPPORT_OPENGL) <<
-                        PrintFlag(SUPPORT_GDI) <<      
+                        PrintFlag(SUPPORT_GDI) <<
                         PrintFlag(STEREO) <<
-                        PrintFlag(DRAW_TO_WINDOW) <<      
-                        PrintFlag(DRAW_TO_BITMAP) <<      
-                        PrintFlag(SWAP_EXCHANGE) <<      
-                        PrintFlag(SWAP_COPY) <<      
-                        PrintFlag(SWAP_LAYER_BUFFERS) <<      
-                        PrintFlag(NEED_PALETTE) <<      
-                        PrintFlag(NEED_SYSTEM_PALETTE) <<      
+                        PrintFlag(DRAW_TO_WINDOW) <<
+                        PrintFlag(DRAW_TO_BITMAP) <<
+                        PrintFlag(SWAP_EXCHANGE) <<
+                        PrintFlag(SWAP_COPY) <<
+                        PrintFlag(SWAP_LAYER_BUFFERS) <<
+                        PrintFlag(NEED_PALETTE) <<
+                        PrintFlag(NEED_SYSTEM_PALETTE) <<
                         PrintFlag(SUPPORT_DIRECTDRAW) << ")\n"
                          << "PFD iPixelType: " << ((pfd->iPixelType==PFD_TYPE_RGBA) ? "PFD_TYPE_RGBA":"PFD_TYPE_COLORINDEX") << endl
                          << "PFD cColorBits: " << (DWORD)pfd->cColorBits << "  R: " << (DWORD)pfd->cRedBits <<" G: " << (DWORD)pfd->cGreenBits <<" B: " << (DWORD)pfd->cBlueBits << endl
@@ -779,7 +779,7 @@ void PrintPFD(PIXELFORMATDESCRIPTOR *pfd,char *msg) {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int wglGraphicsWindow::choose_visual(void) {
+int wglGraphicsWindow::choose_visual() {
 
   int mask = _props._mask;
   int want_depth_bits = _props._want_depth_bits;
@@ -810,19 +810,19 @@ int wglGraphicsWindow::choose_visual(void) {
   int pfnum;
 
 #ifdef _DEBUG
-  if(wgldisplay_cat.is_debug()) {  
+  if (wgldisplay_cat.is_debug()) {
     for(pfnum=1;pfnum<=MaxPixFmtNum;pfnum++) {
       DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
-      if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
+      if ((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=MCD;
-       else if(!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
+       else if (!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=ICD;
        else {
          drvtype=Software;
          continue;  // skipping all SW fmts
        }
- 
+
        // use wglinfo.exe instead
        char msg[200];
        sprintf(msg,"GL PixelFormat[%d]",pfnum);
@@ -835,19 +835,19 @@ int wglGraphicsWindow::choose_visual(void) {
       DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
     // official, nvidia sanctioned way.  should be equiv to my algorithm
-    if ( (pfd.dwFlags & PFD_GENERIC_FORMAT ) != 0 ) {
+    if ((pfd.dwFlags & PFD_GENERIC_FORMAT) != 0) {
         drvtype = Software;
         continue;
     }
-    else if ( pfd.dwFlags & PFD_GENERIC_ACCELERATED )
+    else if (pfd.dwFlags & PFD_GENERIC_ACCELERATED)
         drvtype = MCD;
     else
         drvtype = ICD;
 
 #if MY_OLD_ALGORITHM
-      if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
+      if ((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=MCD;
-       else if(!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
+       else if (!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=ICD;
        else {
          drvtype=Software;
@@ -855,10 +855,10 @@ int wglGraphicsWindow::choose_visual(void) {
        }
 #endif
 
-      if(wgldisplay_cat.is_debug())
+      if (wgldisplay_cat.is_debug())
           wgldisplay_cat->debug() << "----------------" << endl;
 
-      if((pfd.iPixelType == PFD_TYPE_COLORINDEX) && !(mask & W_INDEX))
+      if ((pfd.iPixelType == PFD_TYPE_COLORINDEX) && !(mask & W_INDEX))
           continue;
 
        DWORD dwReqFlags=(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
@@ -881,22 +881,22 @@ int wglGraphicsWindow::choose_visual(void) {
          wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
        }
 
-       if(mask & W_DOUBLE)
+       if (mask & W_DOUBLE)
            dwReqFlags|= PFD_DOUBLEBUFFER;
-       if((mask & W_ALPHA) && (pfd.cAlphaBits==0))
+       if ((mask & W_ALPHA) && (pfd.cAlphaBits==0))
            continue;
-       if((mask & W_DEPTH) && (pfd.cDepthBits==0))
+       if ((mask & W_DEPTH) && (pfd.cDepthBits==0))
            continue;
-       if((mask & W_STENCIL) && (pfd.cStencilBits==0))
+       if ((mask & W_STENCIL) && (pfd.cStencilBits==0))
            continue;
 
-       if((pfd.dwFlags & dwReqFlags)!=dwReqFlags)
+       if ((pfd.dwFlags & dwReqFlags)!=dwReqFlags)
            continue;
 
        // now we ignore the specified want_color_bits for windowed mode
        // instead we use the current screen depth
 
-       if((pfd.cColorBits!=cur_bpp) && (!((cur_bpp==16) && (pfd.cColorBits==15)))
+       if ((pfd.cColorBits!=cur_bpp) && (!((cur_bpp==16) && (pfd.cColorBits==15)))
                                     && (!((cur_bpp==32) && (pfd.cColorBits==24))))
            continue;
        // we've passed all the tests, go ahead and pick this fmt
@@ -906,10 +906,10 @@ int wglGraphicsWindow::choose_visual(void) {
        break;
   }
 
-  if(pfnum>MaxPixFmtNum) {
+  if (pfnum>MaxPixFmtNum) {
       wgldisplay_cat.error() << "ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
       wgldisplay_cat.error() << "make sure OpenGL driver is installed, and try reducing the screen size\n";
-      if(cur_bpp>16)
+      if (cur_bpp>16)
         wgldisplay_cat.error() << "or reducing the desktop screen pixeldepth\n";
       exit(1);
   }
@@ -930,7 +930,7 @@ int wglGraphicsWindow::choose_visual(void) {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::setup_colormap(void) {
+void wglGraphicsWindow::setup_colormap() {
 
   PIXELFORMATDESCRIPTOR pfd;
   LOGPALETTE *logical;
@@ -990,14 +990,14 @@ void wglGraphicsWindow::setup_colormap(void) {
 //       Access:
 //  Description: Swaps the front and back buffers.
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::end_frame(void) {
+void wglGraphicsWindow::end_frame() {
   if (gl_show_fps_meter) {
     DO_PSTATS_STUFF(PStatTimer timer(_show_fps_pcollector);)
     DWORD now = timeGetTime();  // this is win32 fn
 
     float time_delta = (now - _start_time) * 0.001f;
 
-    if(time_delta > gl_fps_meter_update_interval) {
+    if (time_delta > gl_fps_meter_update_interval) {
       // didnt use global clock object, it wasnt working properly when
       // I tried, its probably slower due to cache faults, and I can
       // easily track all the info I need in dxgsg
@@ -1020,7 +1020,7 @@ void wglGraphicsWindow::end_frame(void) {
 
     GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
 
-    if(tex_was_on)
+    if (tex_was_on)
       glDisable(GL_TEXTURE_2D);
 
     glMatrixMode(GL_MODELVIEW);
@@ -1047,7 +1047,7 @@ void wglGraphicsWindow::end_frame(void) {
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 
-    if(tex_was_on)
+    if (tex_was_on)
       glEnable(GL_TEXTURE_2D);
 
     _cur_frame_count++;  // only used by fps meter right now
@@ -1055,7 +1055,7 @@ void wglGraphicsWindow::end_frame(void) {
 
   {
      DO_PSTATS_STUFF(PStatTimer timer(_swap_pcollector);)
-     if(_is_synced) 
+     if (_is_synced)
         glFinish();
      else SwapBuffers(_hdc);
   }
@@ -1067,8 +1067,8 @@ void wglGraphicsWindow::end_frame(void) {
 //       Access:
 //  Description: Swaps the front and back buffers explicitly.
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::swap(void) {
-  if(_is_synced)
+void wglGraphicsWindow::swap() {
+  if (_is_synced)
     SwapBuffers(_hdc);
 }
 
@@ -1091,7 +1091,7 @@ void wglGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
       // check was already done by caller, so he knows what he wants
 
       DEVMODE dm;
-      if(!find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm)) {
+      if (!find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm)) {
           wgldisplay_cat.fatal() << "window resize(" << xsize << "," << ysize << ") failed, no compatible fullscreen display mode found!\n";
           return;
       }
@@ -1100,16 +1100,16 @@ void wglGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
       SetWindowPos(_mwindow, NULL, 0,0, xsize, ysize, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
 
       int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
-    
-      if(chg_result!=DISP_CHANGE_SUCCESSFUL) {
-            wgldisplay_cat.fatal() << "resize ChangeDisplaySettings failed (error code: " << chg_result <<") for specified res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" ), " << dm.dmDisplayFrequency  << "Hz\n";
+
+      if (chg_result!=DISP_CHANGE_SUCCESSFUL) {
+            wgldisplay_cat.fatal() << "resize ChangeDisplaySettings failed (error code: " << chg_result <<") for specified res (" << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<"), " << dm.dmDisplayFrequency  << "Hz\n";
             exit(1);
       }
 
       // this assertion could be violated if we eventually allow dynamic fullscrn/windowed mode switching
       assert(_pCurrent_display_settings!=NULL);
       memcpy(_pCurrent_display_settings,&dm,sizeof(DEVMODE));
-    } 
+    }
 }
 
 unsigned int wglGraphicsWindow::
@@ -1117,12 +1117,12 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
   // see if window sizes are supported (i.e. in fullscrn mode)
   // dimen is an array containing contiguous x,y pairs specifying
   // possible display sizes, it is numsizes*2 long.  fn will zero
-  // out any invalid x,y size pairs.  return value is number of valid 
+  // out any invalid x,y size pairs.  return value is number of valid
   // sizes that were found.
-  // 
+  //
   // note: it might be better to implement some sort of query
   //       interface that returns an array of supported sizes,
-  //       but this way is somewhat simpler and will do the job 
+  //       but this way is somewhat simpler and will do the job
   //       on most cards, assuming they handle the std sizes the app
   //       knows about.
 
@@ -1137,7 +1137,7 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
   DWORD dwFullScreenBitDepth=GetDeviceCaps(scrnDC,BITSPIXEL);
   ReleaseDC(hDesktopWindow,scrnDC);
 
-  // gonna do an n^2 loop alg for simplicity.  if speed is necessary, 
+  // gonna do an n^2 loop alg for simplicity.  if speed is necessary,
   // could do linear time with some kind of STL hash container I guess
 
   DEVMODE dm;
@@ -1149,17 +1149,17 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
       DWORD dwWidth=cur_dim_pair[0];
       DWORD dwHeight=cur_dim_pair[1];
 
-      if((dwWidth==0)||(dwHeight==0)) {
+      if ((dwWidth==0)||(dwHeight==0)) {
           bIsGoodmode=false;
       } else {
-          if(_bIsLowVidMemCard) {
+          if (_bIsLowVidMemCard) {
               bIsGoodmode=((float)(dwWidth*(float)dwHeight)<=(float)(640*480));
           } else {
               bIsGoodmode = find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm);
           }
       }
 
-      if(bIsGoodmode) {
+      if (bIsGoodmode) {
          goodmodes++;
       } else {
          // zero out the bad mode
@@ -1178,9 +1178,9 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::handle_reshape() {
       RECT view_rect;
-      GetClientRect( _mwindow, &view_rect );
-      ClientToScreen( _mwindow, (POINT*)&view_rect.left );   // translates top,left pnt
-      ClientToScreen( _mwindow, (POINT*)&view_rect.right );  // translates right,bottom pnt
+      GetClientRect(_mwindow, &view_rect);
+      ClientToScreen(_mwindow, (POINT*)&view_rect.left);   // translates top,left pnt
+      ClientToScreen(_mwindow, (POINT*)&view_rect.right);  // translates right,bottom pnt
 
       // change _props xsize,ysize
       resized((view_rect.right - view_rect.left),(view_rect.bottom - view_rect.top));
@@ -1188,7 +1188,7 @@ void wglGraphicsWindow::handle_reshape() {
       _props._xorg = view_rect.left;  // _props origin should reflect upper left of view rectangle
       _props._yorg = view_rect.top;
 
-      if(wgldisplay_cat.is_spam()) {
+      if (wgldisplay_cat.is_spam()) {
           wgldisplay_cat.spam() << "reshape to origin: (" << _props._xorg << "," << _props._yorg << "), size: (" << _props._xsize << "," << _props._ysize << ")\n";
       }
 }
@@ -1238,10 +1238,10 @@ handle_keyrelease(ButtonHandle key) {
   }
 }
 
-void INLINE process_1_event(void) {
+void INLINE process_1_event() {
   MSG msg;
 
-  if(!GetMessage(&msg, NULL, 0, 0)) {
+  if (!GetMessage(&msg, NULL, 0, 0)) {
       // WM_QUIT received
       DestroyAllWindows(false);
       exit(msg.wParam);  // this will invoke AtExitFn
@@ -1253,8 +1253,8 @@ void INLINE process_1_event(void) {
   DispatchMessage(&msg);
 }
 
-void INLINE wglGraphicsWindow::process_events(void) {
-  if(_window_inactive) {
+void INLINE wglGraphicsWindow::process_events() {
+  if (_window_inactive) {
       // Get 1 msg at a time until no more are left and we block and sleep,
       // or message changes _return_control_to_app or _window_inactive status
 
@@ -1293,27 +1293,27 @@ supports_update() const {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::update(void) {
+void wglGraphicsWindow::update() {
 #ifdef DO_PSTATS
   _show_code_pcollector.stop();
 
-  if(!_window_inactive) {
+  if (!_window_inactive) {
       PStatClient::main_tick();
   }
 #endif
 
   process_events();
 
-  if(_window_inactive) {
+  if (_window_inactive) {
       // note _window_inactive must be checked after process_events is called, to avoid draw_callback being called
-      if(_idle_callback)
+      if (_idle_callback)
           call_idle_callback();
       return;
   }
 
   call_draw_callback(true);
 
-  if(_idle_callback)
+  if (_idle_callback)
     call_idle_callback();
 
 #ifdef DO_PSTATS
@@ -1353,8 +1353,8 @@ void wglGraphicsWindow::enable_mouse_passive_motion(bool val) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::make_current(void) {
-  if((_hdc==NULL)||(_context==NULL)||(_window_inactive)) {
+void wglGraphicsWindow::make_current() {
+  if ((_hdc==NULL)||(_context==NULL)||(_window_inactive)) {
       return;  // we're only allow unmake_current() to set this to NULL
   }
 
@@ -1363,7 +1363,7 @@ void wglGraphicsWindow::make_current(void) {
   HDC current_dc = wglGetCurrentDC();
 
   if ((current_context != _context) || (current_dc != _hdc)) {
-    if(!wglMakeCurrent(_hdc, _context)) {
+    if (!wglMakeCurrent(_hdc, _context)) {
         PrintErrorMessage(LAST_ERROR);
     }
   }
@@ -1376,15 +1376,15 @@ void wglGraphicsWindow::make_current(void) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::unmake_current(void) {
+void wglGraphicsWindow::unmake_current() {
   report_errors();
 
-  if(!wglMakeCurrent(NULL, NULL)) {
+  if (!wglMakeCurrent(NULL, NULL)) {
       PrintErrorMessage(LAST_ERROR);
   }
 }
 
-int wglGraphicsWindow::get_depth_bitwidth(void) {
+int wglGraphicsWindow::get_depth_bitwidth() {
     return _pixelformat.cDepthBits;
 }
 
@@ -1418,17 +1418,17 @@ make_wglGraphicsWindow(const FactoryParams &params) {
   }
 }
 
-TypeHandle wglGraphicsWindow::get_class_type(void) {
+TypeHandle wglGraphicsWindow::get_class_type() {
   return _type_handle;
 }
 
-void wglGraphicsWindow::init_type(void) {
+void wglGraphicsWindow::init_type() {
   GraphicsWindow::init_type();
   register_type(_type_handle, "wglGraphicsWindow",
         GraphicsWindow::get_class_type());
 }
 
-TypeHandle wglGraphicsWindow::get_type(void) const {
+TypeHandle wglGraphicsWindow::get_type() const {
   return get_class_type();
 }
 
@@ -1441,10 +1441,10 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
    HWND_PANDAWIN_MAP::iterator pwin;
    pwin=hwnd_pandawin_map.find(hwnd);
 
-   if(pwin!=hwnd_pandawin_map.end()) {
+   if (pwin!=hwnd_pandawin_map.end()) {
       wglGraphicsWindow *wglwinptr=(*pwin).second;
       return wglwinptr->window_proc(hwnd, msg, wparam, lparam);
-   } else if(global_wglwinptr!=NULL){
+   } else if (global_wglwinptr!=NULL){
        // this stuff should only be used during CreateWindow()
        return global_wglwinptr->window_proc(hwnd, msg, wparam, lparam);
    } else {
@@ -1453,13 +1453,13 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
    }
 }
 
-void wglGraphicsWindow::deactivate_window(void) {
+void wglGraphicsWindow::deactivate_window() {
     // current policy is to suspend minimized or deactivated fullscreen windows, but leave
     // regular windows running normally
 
-   if((!_props._fullscreen) || _exiting_window || _window_inactive || _active_minimized_fullscreen) {
+   if ((!_props._fullscreen) || _exiting_window || _window_inactive || _active_minimized_fullscreen) {
        #ifdef _DEBUG
-          if(wgldisplay_cat.is_spam())
+          if (wgldisplay_cat.is_spam())
             wgldisplay_cat.spam()  << "deactivate_window called, but ignored in current mode"  << endl;
        #endif
      return;
@@ -1467,8 +1467,8 @@ void wglGraphicsWindow::deactivate_window(void) {
 
    throw_event("PandaPaused"); // right now this is used to signal python event handler to disable audio
 
-   if(!bResponsive_minimized_fullscreen_window) {
-       if(wgldisplay_cat.is_spam())
+   if (!bResponsive_minimized_fullscreen_window) {
+       if (wgldisplay_cat.is_spam())
            wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
 
       _window_inactive = true;
@@ -1477,7 +1477,7 @@ void wglGraphicsWindow::deactivate_window(void) {
        _active_minimized_fullscreen = true;
        assert(_props._fullscreen);
 
-       if(wgldisplay_cat.is_spam())
+       if (wgldisplay_cat.is_spam())
            wgldisplay_cat.spam() << "WGL window minimized from fullscreen mode, remaining active...\n";
    }
 
@@ -1485,39 +1485,39 @@ void wglGraphicsWindow::deactivate_window(void) {
 
    WINDOWPLACEMENT wndpl;
    wndpl.length=sizeof(WINDOWPLACEMENT);
-   
-   if(!GetWindowPlacement(_mwindow,&wndpl)) {
+
+   if (!GetWindowPlacement(_mwindow,&wndpl)) {
        wgldisplay_cat.error() << "GetWindowPlacement failed!\n";
        return;
    }
 
-   if((wndpl.showCmd!=SW_MINIMIZE)&&(wndpl.showCmd!=SW_SHOWMINIMIZED)) {
+   if ((wndpl.showCmd!=SW_MINIMIZE)&&(wndpl.showCmd!=SW_SHOWMINIMIZED)) {
        ShowWindow(_mwindow, SW_MINIMIZE);
    }
 
    // revert to default display mode
    ChangeDisplaySettings(NULL,0x0);
 
-   if(!bResponsive_minimized_fullscreen_window) {
+   if (!bResponsive_minimized_fullscreen_window) {
        _PandaPausedTimer = SetTimer(_mwindow,PAUSED_TIMER_ID,1500,NULL);
-       if(_PandaPausedTimer!=PAUSED_TIMER_ID) {
+       if (_PandaPausedTimer!=PAUSED_TIMER_ID) {
            wgldisplay_cat.error() << "Error in SetTimer!\n";
        }
    }
 
-   if(_props._fullscreen) {
+   if (_props._fullscreen) {
       throw_event("PandaRestarted");  // right now this is used to signal python event handler to re-enable audio
    }
 }
 
-void wglGraphicsWindow::reactivate_window(void) {
-    if(_window_inactive ) {
-        if(wgldisplay_cat.is_spam())
+void wglGraphicsWindow::reactivate_window() {
+    if (_window_inactive) {
+        if (wgldisplay_cat.is_spam())
             wgldisplay_cat.spam() << "WGL window re-activated...\n";
 
         _window_inactive = false;
 
-        if(_PandaPausedTimer!=NULL) {
+        if (_PandaPausedTimer!=NULL) {
             KillTimer(_mwindow,_PandaPausedTimer);
             _PandaPausedTimer = NULL;
         }
@@ -1526,18 +1526,18 @@ void wglGraphicsWindow::reactivate_window(void) {
         SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
 
         ChangeDisplaySettings(_pCurrent_display_settings,CDS_FULLSCREEN);
-        
+
         GdiFlush();
         make_current();
-    } else if(_active_minimized_fullscreen) {
-        if(wgldisplay_cat.is_spam())
+    } else if (_active_minimized_fullscreen) {
+        if (wgldisplay_cat.is_spam())
             wgldisplay_cat.spam() << "redisplaying minimized fullscrn active WGL window...\n";
 
         // move window to top of zorder,
         SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
 
         ChangeDisplaySettings(_pCurrent_display_settings,CDS_FULLSCREEN);
-        
+
         GdiFlush();
         make_current();
         _active_minimized_fullscreen = false;
@@ -1564,11 +1564,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // BUGBUG:  right now there is no way to tell the panda app the graphics window is invalid or
           //          has been closed by the user, to prevent further methods from being called on the window.
           //          this needs to be added to panda for multiple windows to work.  in the meantime, just
-          //          trigger an exit here if numwindows==0, since that is the expected behavior when all 
+          //          trigger an exit here if numwindows==0, since that is the expected behavior when all
           //          windows are closed (should be done by the app though, and it assumes you only make this
           //          type of panda gfx window)
-    
-          if(hwnd_pandawin_map.size()==0) {
+
+          if (hwnd_pandawin_map.size()==0) {
               exit(0);
           }
           break;
@@ -1584,8 +1584,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             #ifdef _DEBUG
               wgldisplay_cat.spam()  << "WM_ACTIVATEAPP(" << (bool)(wparam!=0) <<") received\n";
             #endif
-            
-           if(!wparam) {
+
+           if (!wparam) {
                deactivate_window();
                return 0;
            }         // dont want to reactivate until window is actually un-minimized (see WM_SIZE)
@@ -1596,12 +1596,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             #ifdef _DEBUG
               wgldisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
             #endif
-            
+
             reactivate_window();
             handle_reshape();
             break;
 
-    case WM_ENTERSIZEMOVE: 
+    case WM_ENTERSIZEMOVE:
             break;
 
     case WM_SIZE: {
@@ -1616,13 +1616,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     ((wparam == SIZE_MAXIMIZED)? "SIZE_MAXIMIZED " : "") << endl;
                 }
             #endif
-                if(_mwindow==NULL)
+                if (_mwindow==NULL)
                     break;
 
-                if((wparam==SIZE_MAXIMIZED) || (wparam==SIZE_RESTORED)) { // old comment -- added SIZE_RESTORED to handle 3dfx case  (what does this mean?)
+                if ((wparam==SIZE_MAXIMIZED) || (wparam==SIZE_RESTORED)) { // old comment -- added SIZE_RESTORED to handle 3dfx case  (what does this mean?)
                      reactivate_window();
 
-//                  if((_props._xsize != width) || (_props._ysize != height))
+//                  if ((_props._xsize != width) || (_props._ysize != height))
                      handle_reshape();
                 }
                 break;
@@ -1633,7 +1633,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           BeginPaint(hwnd, &ps);
             // glReadBuffer(GL_BACK);  need to copy current rendering to front buffer, a la wdxdisplay?
           EndPaint(hwnd, &ps);
-          return 0;       
+          return 0;
     }
 
     case WM_IME_NOTIFY:
@@ -1649,12 +1649,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       if (lparam & GCS_RESULTSTR) {
         HIMC hIMC = ImmGetContext(hwnd);
         nassertr(hIMC != 0, 0);
-        
+
         static const int max_ime_result = 128;
         static char ime_result[max_ime_result];
 
         DWORD result_size =
-          ImmGetCompositionStringW(hIMC, GCS_RESULTSTR, 
+          ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
                                    ime_result, max_ime_result);
         ImmReleaseContext(hwnd, hIMC);
 
@@ -1696,30 +1696,30 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                handle_keypress(lookup_key(wparam), point.x, point.y);
           #else
             // handle Cntrl-V paste from clipboard
-            if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
+            if (!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
                handle_keypress(lookup_key(wparam), point.x, point.y);
             } else {
-                HGLOBAL   hglb; 
-                char    *lptstr; 
-            
-                if (!IsClipboardFormatAvailable(CF_TEXT)) 
-                   return 0; 
-            
-                if (!OpenClipboard(NULL)) 
-                   return 0; 
-             
-                hglb = GetClipboardData(CF_TEXT); 
+                HGLOBAL   hglb;
+                char    *lptstr;
+
+                if (!IsClipboardFormatAvailable(CF_TEXT))
+                   return 0;
+
+                if (!OpenClipboard(NULL))
+                   return 0;
+
+                hglb = GetClipboardData(CF_TEXT);
                 if (hglb!=NULL) {
-                    lptstr = (char *) GlobalLock(hglb); 
-                    if(lptstr != NULL)  {
+                    lptstr = (char *) GlobalLock(hglb);
+                    if (lptstr != NULL)  {
                         char *pChar;
                         for(pChar=lptstr;*pChar!=NULL;pChar++) {
                            handle_keypress(KeyboardButton::ascii_key((uchar)*pChar), point.x, point.y);
                         }
-                        GlobalUnlock(hglb); 
-                    } 
+                        GlobalUnlock(hglb);
+                    }
                 }
-                CloseClipboard(); 
+                CloseClipboard();
             }
           #endif
             break;
@@ -1744,7 +1744,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // goes beyond the upper or left side of the window
       #define SET_MOUSE_COORD(iVal,VAL) { \
             iVal = VAL;                   \
-            if(iVal & 0x8000)             \
+            if (iVal & 0x8000)             \
               iVal -= 0x10000;            \
       }
 
@@ -1765,7 +1765,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       ReleaseCapture();
       #if 0
           SET_MOUSE_COORD(x,LOWORD(lparam));
-          SET_MOUSE_COORD(y,HIWORD(lparam));      
+          SET_MOUSE_COORD(y,HIWORD(lparam));
           // make_current();  what does OGL have to do with mouse input??
       #endif
       handle_keyrelease(MouseButton::button(button));
@@ -1773,7 +1773,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     case WM_MOUSEMOVE:
         SET_MOUSE_COORD(x,LOWORD(lparam));
-        SET_MOUSE_COORD(y,HIWORD(lparam));    
+        SET_MOUSE_COORD(y,HIWORD(lparam));
 
         if (mouse_motion_enabled() &&
             (wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON))) {
@@ -1789,7 +1789,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case WM_SETFOCUS: {
             // wgldisplay_cat.info() << "got WM_SETFOCUS\n";
 
-            if(_mouse_entry_enabled) {
+            if (_mouse_entry_enabled) {
                 make_current();
                 handle_mouse_entry(MOUSE_ENTERED);
             }
@@ -1805,19 +1805,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
             int i;
             for(i=0;i<NUM_MODIFIER_KEYS;i++) {
-              if(GetKeyState(hardcoded_modifier_buttons[i]) < 0) 
+              if (GetKeyState(hardcoded_modifier_buttons[i]) < 0)
                 handle_keypress(lookup_key(hardcoded_modifier_buttons[i]),point.x,point.y);
             }
             return 0;
         }
 
     case WM_KILLFOCUS: {
-            if(_mouse_entry_enabled)
+            if (_mouse_entry_enabled)
               handle_mouse_entry(MOUSE_EXITED);
 
             int i;
             for(i=0;i<NUM_MODIFIER_KEYS;i++) {
-              if(GetKeyState(hardcoded_modifier_buttons[i]) < 0)
+              if (GetKeyState(hardcoded_modifier_buttons[i]) < 0)
                 handle_keyrelease(lookup_key(hardcoded_modifier_buttons[i]));
             }
 
@@ -1826,10 +1826,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
     case WM_TIMER:
-      if((wparam==_PandaPausedTimer) && _window_inactive) {
+      if ((wparam==_PandaPausedTimer) && _window_inactive) {
          //wgldisplay_cat.spam() << "returning control to app\n";
           _return_control_to_app = true;
-         // throw_event("PandaPaused");   
+         // throw_event("PandaPaused");
          // do we still need to do this since I return control to app periodically using timer msgs?
          // does app need to know to avoid major computation?
       }
@@ -1896,11 +1896,11 @@ lookup_key(WPARAM wparam) const {
 
         default:
             int key = MapVirtualKey(wparam, 2);
-            if(isascii(key) && key != 0) {
+            if (isascii(key) && key != 0) {
                 bool bCapsLockDown=((GetKeyState(VK_CAPITAL) & 0x1)!=0);
                 bool bShiftUp = (GetKeyState(VK_SHIFT) >= 0);
-                if(bShiftUp) {
-                    if(bCapsLockDown) 
+                if (bShiftUp) {
+                    if (bCapsLockDown)
                         key = toupper(key);
                     else key = tolower(key);
                 } else {
@@ -1928,7 +1928,7 @@ lookup_key(WPARAM wparam) const {
                         case '\\': key = '|'; break;
                         case '`': key = '~'; break;
                         default:
-                            if(bCapsLockDown) 
+                            if (bCapsLockDown)
                                 key = tolower(key);
                             else key = toupper(key);
                     }
@@ -2189,211 +2189,211 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
         case DD_OK:
             return "No error.\0";
 
-        case DDERR_ALREADYINITIALIZED     : // ( 5 )
-            return "DDERR_ALREADYINITIALIZED        ";//: // ( 5 )
-        case DDERR_CANNOTATTACHSURFACE        : // ( 10 )
-            return "DDERR_CANNOTATTACHSURFACE       ";//: // ( 10 )
-        case DDERR_CANNOTDETACHSURFACE        : // ( 20 )
-            return "DDERR_CANNOTDETACHSURFACE       ";//: // ( 20 )
-        case DDERR_CURRENTLYNOTAVAIL          : // ( 40 )
-            return "DDERR_CURRENTLYNOTAVAIL         ";//: // ( 40 )
-        case DDERR_EXCEPTION              : // ( 55 )
-            return "DDERR_EXCEPTION             ";//: // ( 55 )
-        case DDERR_HEIGHTALIGN            : // ( 90 )
-            return "DDERR_HEIGHTALIGN           ";//: // ( 90 )
-        case DDERR_INCOMPATIBLEPRIMARY        : // ( 95 )
-            return "DDERR_INCOMPATIBLEPRIMARY       ";//: // ( 95 )
-        case DDERR_INVALIDCAPS            : // ( 100 )
-            return "DDERR_INVALIDCAPS           ";//: // ( 100 )
-        case DDERR_INVALIDCLIPLIST            : // ( 110 )
-            return "DDERR_INVALIDCLIPLIST           ";//: // ( 110 )
-        case DDERR_INVALIDMODE            : // ( 120 )
-            return "DDERR_INVALIDMODE           ";//: // ( 120 )
-        case DDERR_INVALIDOBJECT          : // ( 130 )
-            return "DDERR_INVALIDOBJECT         ";//: // ( 130 )
-        case DDERR_INVALIDPIXELFORMAT     : // ( 145 )
-            return "DDERR_INVALIDPIXELFORMAT        ";//: // ( 145 )
-        case DDERR_INVALIDRECT            : // ( 150 )
-            return "DDERR_INVALIDRECT           ";//: // ( 150 )
-        case DDERR_LOCKEDSURFACES         : // ( 160 )
-            return "DDERR_LOCKEDSURFACES            ";//: // ( 160 )
-        case DDERR_NO3D               : // ( 170 )
-            return "DDERR_NO3D              ";//: // ( 170 )
-        case DDERR_NOALPHAHW              : // ( 180 )
-            return "DDERR_NOALPHAHW             ";//: // ( 180 )
-        case DDERR_NOCLIPLIST         : // ( 205 )
-            return "DDERR_NOCLIPLIST            ";//: // ( 205 )
-        case DDERR_NOCOLORCONVHW          : // ( 210 )
-            return "DDERR_NOCOLORCONVHW         ";//: // ( 210 )
-        case DDERR_NOCOOPERATIVELEVELSET      : // ( 212 )
-            return "DDERR_NOCOOPERATIVELEVELSET     ";//: // ( 212 )
-        case DDERR_NOCOLORKEY         : // ( 215 )
-            return "DDERR_NOCOLORKEY            ";//: // ( 215 )
-        case DDERR_NOCOLORKEYHW           : // ( 220 )
-            return "DDERR_NOCOLORKEYHW          ";//: // ( 220 )
-        case DDERR_NODIRECTDRAWSUPPORT        : // ( 222 )
-            return "DDERR_NODIRECTDRAWSUPPORT       ";//: // ( 222 )
-        case DDERR_NOEXCLUSIVEMODE            : // ( 225 )
-            return "DDERR_NOEXCLUSIVEMODE           ";//: // ( 225 )
-        case DDERR_NOFLIPHW               : // ( 230 )
-            return "DDERR_NOFLIPHW              ";//: // ( 230 )
-        case DDERR_NOGDI              : // ( 240 )
-            return "DDERR_NOGDI             ";//: // ( 240 )
-        case DDERR_NOMIRRORHW         : // ( 250 )
-            return "DDERR_NOMIRRORHW            ";//: // ( 250 )
-        case DDERR_NOTFOUND               : // ( 255 )
-            return "DDERR_NOTFOUND              ";//: // ( 255 )
-        case DDERR_NOOVERLAYHW            : // ( 260 )
-        return "DDERR_NOOVERLAYHW           ";//: // ( 260 )
-        case DDERR_NORASTEROPHW           : // ( 280 )
-            return "DDERR_NORASTEROPHW          ";//: // ( 280 )
-        case DDERR_NOROTATIONHW           : // ( 290 )
-            return "DDERR_NOROTATIONHW          ";//: // ( 290 )
-        case DDERR_NOSTRETCHHW            : // ( 310 )
-            return "DDERR_NOSTRETCHHW           ";//: // ( 310 )
-        case DDERR_NOT4BITCOLOR           : // ( 316 )
-            return "DDERR_NOT4BITCOLOR          ";//: // ( 316 )
-        case DDERR_NOT4BITCOLORINDEX          : // ( 317 )
-            return "DDERR_NOT4BITCOLORINDEX         ";//: // ( 317 )
-        case DDERR_NOT8BITCOLOR           : // ( 320 )
-            return "DDERR_NOT8BITCOLOR          ";//: // ( 320 )
-        case DDERR_NOTEXTUREHW            : // ( 330 )
-            return "DDERR_NOTEXTUREHW           ";//: // ( 330 )
-        case DDERR_NOVSYNCHW              : // ( 335 )
-            return "DDERR_NOVSYNCHW             ";//: // ( 335 )
-        case DDERR_NOZBUFFERHW            : // ( 340 )
-            return "DDERR_NOZBUFFERHW           ";//: // ( 340 )
-        case DDERR_NOZOVERLAYHW           : // ( 350 )
-            return "DDERR_NOZOVERLAYHW          ";//: // ( 350 )
-        case DDERR_OUTOFCAPS              : // ( 360 )
-            return "DDERR_OUTOFCAPS             ";//: // ( 360 )
-        case DDERR_OUTOFVIDEOMEMORY           : // ( 380 )
-            return "DDERR_OUTOFVIDEOMEMORY          ";//: // ( 380 )
-        case DDERR_OVERLAYCANTCLIP            : // ( 382 )
-            return "DDERR_OVERLAYCANTCLIP           ";//: // ( 382 )
-        case DDERR_OVERLAYCOLORKEYONLYONEACTIVE   : // ( 384 )
-            return "DDERR_OVERLAYCOLORKEYONLYONEACTIVE  ";//: // ( 384 )
-        case DDERR_PALETTEBUSY            : // ( 387 )
-            return "DDERR_PALETTEBUSY           ";//: // ( 387 )
-        case DDERR_COLORKEYNOTSET         : // ( 400 )
-            return "DDERR_COLORKEYNOTSET            ";//: // ( 400 )
-        case DDERR_SURFACEALREADYATTACHED     : // ( 410 )
-            return "DDERR_SURFACEALREADYATTACHED        ";//: // ( 410 )
-        case DDERR_SURFACEALREADYDEPENDENT        : // ( 420 )
-            return "DDERR_SURFACEALREADYDEPENDENT       ";//: // ( 420 )
-        case DDERR_SURFACEBUSY            : // ( 430 )
-            return "DDERR_SURFACEBUSY           ";//: // ( 430 )
-        case DDERR_CANTLOCKSURFACE                   : // ( 435 )
-            return "DDERR_CANTLOCKSURFACE";//: // ( 435 )
-        case DDERR_SURFACEISOBSCURED          : // ( 440 )
-            return "DDERR_SURFACEISOBSCURED         ";//: // ( 440 )
-        case DDERR_SURFACELOST            : // ( 450 )
-            return "DDERR_SURFACELOST           ";//: // ( 450 )
-        case DDERR_SURFACENOTATTACHED     : // ( 460 )
-            return "DDERR_SURFACENOTATTACHED        ";//: // ( 460 )
-        case DDERR_TOOBIGHEIGHT           : // ( 470 )
-            return "DDERR_TOOBIGHEIGHT          ";//: // ( 470 )
-        case DDERR_TOOBIGSIZE         : // ( 480 )
-            return "DDERR_TOOBIGSIZE            ";//: // ( 480 )
-        case DDERR_TOOBIGWIDTH            : // ( 490 )
-            return "DDERR_TOOBIGWIDTH           ";//: // ( 490 )
-        case DDERR_UNSUPPORTEDFORMAT          : // ( 510 )
-            return "DDERR_UNSUPPORTEDFORMAT         ";//: // ( 510 )
-        case DDERR_UNSUPPORTEDMASK            : // ( 520 )
-            return "DDERR_UNSUPPORTEDMASK           ";//: // ( 520 )
-        case DDERR_VERTICALBLANKINPROGRESS        : // ( 537 )
-            return "DDERR_VERTICALBLANKINPROGRESS       ";//: // ( 537 )
-        case DDERR_WASSTILLDRAWING            : // ( 540 )
-            return "DDERR_WASSTILLDRAWING           ";//: // ( 540 )
-        case DDERR_XALIGN             : // ( 560 )
-            return "DDERR_XALIGN                ";//: // ( 560 )
-        case DDERR_INVALIDDIRECTDRAWGUID      : // ( 561 )
-            return "DDERR_INVALIDDIRECTDRAWGUID     ";//: // ( 561 )
-        case DDERR_DIRECTDRAWALREADYCREATED       : // ( 562 )
-            return "DDERR_DIRECTDRAWALREADYCREATED      ";//: // ( 562 )
-        case DDERR_NODIRECTDRAWHW         : // ( 563 )
-            return "DDERR_NODIRECTDRAWHW            ";//: // ( 563 )
-        case DDERR_PRIMARYSURFACEALREADYEXISTS    : // ( 564 )
-            return "DDERR_PRIMARYSURFACEALREADYEXISTS   ";//: // ( 564 )
-        case DDERR_NOEMULATION            : // ( 565 )
-            return "DDERR_NOEMULATION           ";//: // ( 565 )
-        case DDERR_REGIONTOOSMALL         : // ( 566 )
-            return "DDERR_REGIONTOOSMALL            ";//: // ( 566 )
-        case DDERR_CLIPPERISUSINGHWND     : // ( 567 )
-            return "DDERR_CLIPPERISUSINGHWND        ";//: // ( 567 )
-        case DDERR_NOCLIPPERATTACHED          : // ( 568 )
-            return "DDERR_NOCLIPPERATTACHED         ";//: // ( 568 )
-        case DDERR_NOHWND             : // ( 569 )
-            return "DDERR_NOHWND                ";//: // ( 569 )
-        case DDERR_HWNDSUBCLASSED         : // ( 570 )
-            return "DDERR_HWNDSUBCLASSED            ";//: // ( 570 )
-        case DDERR_HWNDALREADYSET         : // ( 571 )
-            return "DDERR_HWNDALREADYSET            ";//: // ( 571 )
-        case DDERR_NOPALETTEATTACHED          : // ( 572 )
-            return "DDERR_NOPALETTEATTACHED         ";//: // ( 572 )
-        case DDERR_NOPALETTEHW            : // ( 573 )
-            return "DDERR_NOPALETTEHW           ";//: // ( 573 )
-        case DDERR_BLTFASTCANTCLIP            : // ( 574 )
-            return "DDERR_BLTFASTCANTCLIP           ";//: // ( 574 )
-        case DDERR_NOBLTHW                : // ( 575 )
-            return "DDERR_NOBLTHW               ";//: // ( 575 )
-        case DDERR_NODDROPSHW         : // ( 576 )
-            return "DDERR_NODDROPSHW            ";//: // ( 576 )
-        case DDERR_OVERLAYNOTVISIBLE          : // ( 577 )
-            return "DDERR_OVERLAYNOTVISIBLE         ";//: // ( 577 )
-        case DDERR_NOOVERLAYDEST          : // ( 578 )
-            return "DDERR_NOOVERLAYDEST         ";//: // ( 578 )
-        case DDERR_INVALIDPOSITION            : // ( 579 )
-            return "DDERR_INVALIDPOSITION           ";//: // ( 579 )
-        case DDERR_NOTAOVERLAYSURFACE     : // ( 580 )
-            return "DDERR_NOTAOVERLAYSURFACE        ";//: // ( 580 )
-        case DDERR_EXCLUSIVEMODEALREADYSET        : // ( 581 )
-            return "DDERR_EXCLUSIVEMODEALREADYSET       ";//: // ( 581 )
-        case DDERR_NOTFLIPPABLE           : // ( 582 )
-            return "DDERR_NOTFLIPPABLE          ";//: // ( 582 )
-        case DDERR_CANTDUPLICATE          : // ( 583 )
-            return "DDERR_CANTDUPLICATE         ";//: // ( 583 )
-        case DDERR_NOTLOCKED              : // ( 584 )
-            return "DDERR_NOTLOCKED             ";//: // ( 584 )
-        case DDERR_CANTCREATEDC           : // ( 585 )
-            return "DDERR_CANTCREATEDC          ";//: // ( 585 )
-        case DDERR_NODC               : // ( 586 )
-            return "DDERR_NODC              ";//: // ( 586 )
-        case DDERR_WRONGMODE              : // ( 587 )
-            return "DDERR_WRONGMODE             ";//: // ( 587 )
-        case DDERR_IMPLICITLYCREATED          : // ( 588 )
-            return "DDERR_IMPLICITLYCREATED         ";//: // ( 588 )
-        case DDERR_NOTPALETTIZED          : // ( 589 )
-            return "DDERR_NOTPALETTIZED         ";//: // ( 589 )
-        case DDERR_UNSUPPORTEDMODE            : // ( 590 )
-            return "DDERR_UNSUPPORTEDMODE           ";//: // ( 590 )
-        case DDERR_NOMIPMAPHW         : // ( 591 )
-            return "DDERR_NOMIPMAPHW            ";//: // ( 591 )
-        case DDERR_INVALIDSURFACETYPE                : // ( 592 )
-            return "DDERR_INVALIDSURFACETYPE";//: // ( 592 )
-        case DDERR_NOOPTIMIZEHW                      : // ( 600 )
-            return "DDERR_NOOPTIMIZEHW";//: // ( 600 )
-        case DDERR_NOTLOADED                         : // ( 601 )
-            return "DDERR_NOTLOADED";//: // ( 601 )
-        case DDERR_NOFOCUSWINDOW                     : // ( 602 )
-            return "DDERR_NOFOCUSWINDOW";//: // ( 602 )
-        case DDERR_DCALREADYCREATED           : // ( 620 )
-            return "DDERR_DCALREADYCREATED          ";//: // ( 620 )
-        case DDERR_NONONLOCALVIDMEM                  : // ( 630 )
-            return "DDERR_NONONLOCALVIDMEM";//: // ( 630 )
-        case DDERR_CANTPAGELOCK           : // ( 640 )
-            return "DDERR_CANTPAGELOCK          ";//: // ( 640 )
-        case DDERR_CANTPAGEUNLOCK         : // ( 660 )
-            return "DDERR_CANTPAGEUNLOCK            ";//: // ( 660 )
-        case DDERR_NOTPAGELOCKED          : // ( 680 )
-            return "DDERR_NOTPAGELOCKED         ";//: // ( 680 )
-        case DDERR_MOREDATA                   : // ( 690 )
-            return "DDERR_MOREDATA                  ";//: // ( 690 )
-        case DDERR_VIDEONOTACTIVE             : // ( 695 )
-            return "DDERR_VIDEONOTACTIVE            ";//: // ( 695 )
-        case DDERR_DEVICEDOESNTOWNSURFACE         : // ( 699 )
-            return "DDERR_DEVICEDOESNTOWNSURFACE        ";//: // ( 699 )
-  
+        case DDERR_ALREADYINITIALIZED     : // (5)
+            return "DDERR_ALREADYINITIALIZED        ";//: // (5)
+        case DDERR_CANNOTATTACHSURFACE        : // (10)
+            return "DDERR_CANNOTATTACHSURFACE       ";//: // (10)
+        case DDERR_CANNOTDETACHSURFACE        : // (20)
+            return "DDERR_CANNOTDETACHSURFACE       ";//: // (20)
+        case DDERR_CURRENTLYNOTAVAIL          : // (40)
+            return "DDERR_CURRENTLYNOTAVAIL         ";//: // (40)
+        case DDERR_EXCEPTION              : // (55)
+            return "DDERR_EXCEPTION             ";//: // (55)
+        case DDERR_HEIGHTALIGN            : // (90)
+            return "DDERR_HEIGHTALIGN           ";//: // (90)
+        case DDERR_INCOMPATIBLEPRIMARY        : // (95)
+            return "DDERR_INCOMPATIBLEPRIMARY       ";//: // (95)
+        case DDERR_INVALIDCAPS            : // (100)
+            return "DDERR_INVALIDCAPS           ";//: // (100)
+        case DDERR_INVALIDCLIPLIST            : // (110)
+            return "DDERR_INVALIDCLIPLIST           ";//: // (110)
+        case DDERR_INVALIDMODE            : // (120)
+            return "DDERR_INVALIDMODE           ";//: // (120)
+        case DDERR_INVALIDOBJECT          : // (130)
+            return "DDERR_INVALIDOBJECT         ";//: // (130)
+        case DDERR_INVALIDPIXELFORMAT     : // (145)
+            return "DDERR_INVALIDPIXELFORMAT        ";//: // (145)
+        case DDERR_INVALIDRECT            : // (150)
+            return "DDERR_INVALIDRECT           ";//: // (150)
+        case DDERR_LOCKEDSURFACES         : // (160)
+            return "DDERR_LOCKEDSURFACES            ";//: // (160)
+        case DDERR_NO3D               : // (170)
+            return "DDERR_NO3D              ";//: // (170)
+        case DDERR_NOALPHAHW              : // (180)
+            return "DDERR_NOALPHAHW             ";//: // (180)
+        case DDERR_NOCLIPLIST         : // (205)
+            return "DDERR_NOCLIPLIST            ";//: // (205)
+        case DDERR_NOCOLORCONVHW          : // (210)
+            return "DDERR_NOCOLORCONVHW         ";//: // (210)
+        case DDERR_NOCOOPERATIVELEVELSET      : // (212)
+            return "DDERR_NOCOOPERATIVELEVELSET     ";//: // (212)
+        case DDERR_NOCOLORKEY         : // (215)
+            return "DDERR_NOCOLORKEY            ";//: // (215)
+        case DDERR_NOCOLORKEYHW           : // (220)
+            return "DDERR_NOCOLORKEYHW          ";//: // (220)
+        case DDERR_NODIRECTDRAWSUPPORT        : // (222)
+            return "DDERR_NODIRECTDRAWSUPPORT       ";//: // (222)
+        case DDERR_NOEXCLUSIVEMODE            : // (225)
+            return "DDERR_NOEXCLUSIVEMODE           ";//: // (225)
+        case DDERR_NOFLIPHW               : // (230)
+            return "DDERR_NOFLIPHW              ";//: // (230)
+        case DDERR_NOGDI              : // (240)
+            return "DDERR_NOGDI             ";//: // (240)
+        case DDERR_NOMIRRORHW         : // (250)
+            return "DDERR_NOMIRRORHW            ";//: // (250)
+        case DDERR_NOTFOUND               : // (255)
+            return "DDERR_NOTFOUND              ";//: // (255)
+        case DDERR_NOOVERLAYHW            : // (260)
+        return "DDERR_NOOVERLAYHW           ";//: // (260)
+        case DDERR_NORASTEROPHW           : // (280)
+            return "DDERR_NORASTEROPHW          ";//: // (280)
+        case DDERR_NOROTATIONHW           : // (290)
+            return "DDERR_NOROTATIONHW          ";//: // (290)
+        case DDERR_NOSTRETCHHW            : // (310)
+            return "DDERR_NOSTRETCHHW           ";//: // (310)
+        case DDERR_NOT4BITCOLOR           : // (316)
+            return "DDERR_NOT4BITCOLOR          ";//: // (316)
+        case DDERR_NOT4BITCOLORINDEX          : // (317)
+            return "DDERR_NOT4BITCOLORINDEX         ";//: // (317)
+        case DDERR_NOT8BITCOLOR           : // (320)
+            return "DDERR_NOT8BITCOLOR          ";//: // (320)
+        case DDERR_NOTEXTUREHW            : // (330)
+            return "DDERR_NOTEXTUREHW           ";//: // (330)
+        case DDERR_NOVSYNCHW              : // (335)
+            return "DDERR_NOVSYNCHW             ";//: // (335)
+        case DDERR_NOZBUFFERHW            : // (340)
+            return "DDERR_NOZBUFFERHW           ";//: // (340)
+        case DDERR_NOZOVERLAYHW           : // (350)
+            return "DDERR_NOZOVERLAYHW          ";//: // (350)
+        case DDERR_OUTOFCAPS              : // (360)
+            return "DDERR_OUTOFCAPS             ";//: // (360)
+        case DDERR_OUTOFVIDEOMEMORY           : // (380)
+            return "DDERR_OUTOFVIDEOMEMORY          ";//: // (380)
+        case DDERR_OVERLAYCANTCLIP            : // (382)
+            return "DDERR_OVERLAYCANTCLIP           ";//: // (382)
+        case DDERR_OVERLAYCOLORKEYONLYONEACTIVE   : // (384)
+            return "DDERR_OVERLAYCOLORKEYONLYONEACTIVE  ";//: // (384)
+        case DDERR_PALETTEBUSY            : // (387)
+            return "DDERR_PALETTEBUSY           ";//: // (387)
+        case DDERR_COLORKEYNOTSET         : // (400)
+            return "DDERR_COLORKEYNOTSET            ";//: // (400)
+        case DDERR_SURFACEALREADYATTACHED     : // (410)
+            return "DDERR_SURFACEALREADYATTACHED        ";//: // (410)
+        case DDERR_SURFACEALREADYDEPENDENT        : // (420)
+            return "DDERR_SURFACEALREADYDEPENDENT       ";//: // (420)
+        case DDERR_SURFACEBUSY            : // (430)
+            return "DDERR_SURFACEBUSY           ";//: // (430)
+        case DDERR_CANTLOCKSURFACE                   : // (435)
+            return "DDERR_CANTLOCKSURFACE";//: // (435)
+        case DDERR_SURFACEISOBSCURED          : // (440)
+            return "DDERR_SURFACEISOBSCURED         ";//: // (440)
+        case DDERR_SURFACELOST            : // (450)
+            return "DDERR_SURFACELOST           ";//: // (450)
+        case DDERR_SURFACENOTATTACHED     : // (460)
+            return "DDERR_SURFACENOTATTACHED        ";//: // (460)
+        case DDERR_TOOBIGHEIGHT           : // (470)
+            return "DDERR_TOOBIGHEIGHT          ";//: // (470)
+        case DDERR_TOOBIGSIZE         : // (480)
+            return "DDERR_TOOBIGSIZE            ";//: // (480)
+        case DDERR_TOOBIGWIDTH            : // (490)
+            return "DDERR_TOOBIGWIDTH           ";//: // (490)
+        case DDERR_UNSUPPORTEDFORMAT          : // (510)
+            return "DDERR_UNSUPPORTEDFORMAT         ";//: // (510)
+        case DDERR_UNSUPPORTEDMASK            : // (520)
+            return "DDERR_UNSUPPORTEDMASK           ";//: // (520)
+        case DDERR_VERTICALBLANKINPROGRESS        : // (537)
+            return "DDERR_VERTICALBLANKINPROGRESS       ";//: // (537)
+        case DDERR_WASSTILLDRAWING            : // (540)
+            return "DDERR_WASSTILLDRAWING           ";//: // (540)
+        case DDERR_XALIGN             : // (560)
+            return "DDERR_XALIGN                ";//: // (560)
+        case DDERR_INVALIDDIRECTDRAWGUID      : // (561)
+            return "DDERR_INVALIDDIRECTDRAWGUID     ";//: // (561)
+        case DDERR_DIRECTDRAWALREADYCREATED       : // (562)
+            return "DDERR_DIRECTDRAWALREADYCREATED      ";//: // (562)
+        case DDERR_NODIRECTDRAWHW         : // (563)
+            return "DDERR_NODIRECTDRAWHW            ";//: // (563)
+        case DDERR_PRIMARYSURFACEALREADYEXISTS    : // (564)
+            return "DDERR_PRIMARYSURFACEALREADYEXISTS   ";//: // (564)
+        case DDERR_NOEMULATION            : // (565)
+            return "DDERR_NOEMULATION           ";//: // (565)
+        case DDERR_REGIONTOOSMALL         : // (566)
+            return "DDERR_REGIONTOOSMALL            ";//: // (566)
+        case DDERR_CLIPPERISUSINGHWND     : // (567)
+            return "DDERR_CLIPPERISUSINGHWND        ";//: // (567)
+        case DDERR_NOCLIPPERATTACHED          : // (568)
+            return "DDERR_NOCLIPPERATTACHED         ";//: // (568)
+        case DDERR_NOHWND             : // (569)
+            return "DDERR_NOHWND                ";//: // (569)
+        case DDERR_HWNDSUBCLASSED         : // (570)
+            return "DDERR_HWNDSUBCLASSED            ";//: // (570)
+        case DDERR_HWNDALREADYSET         : // (571)
+            return "DDERR_HWNDALREADYSET            ";//: // (571)
+        case DDERR_NOPALETTEATTACHED          : // (572)
+            return "DDERR_NOPALETTEATTACHED         ";//: // (572)
+        case DDERR_NOPALETTEHW            : // (573)
+            return "DDERR_NOPALETTEHW           ";//: // (573)
+        case DDERR_BLTFASTCANTCLIP            : // (574)
+            return "DDERR_BLTFASTCANTCLIP           ";//: // (574)
+        case DDERR_NOBLTHW                : // (575)
+            return "DDERR_NOBLTHW               ";//: // (575)
+        case DDERR_NODDROPSHW         : // (576)
+            return "DDERR_NODDROPSHW            ";//: // (576)
+        case DDERR_OVERLAYNOTVISIBLE          : // (577)
+            return "DDERR_OVERLAYNOTVISIBLE         ";//: // (577)
+        case DDERR_NOOVERLAYDEST          : // (578)
+            return "DDERR_NOOVERLAYDEST         ";//: // (578)
+        case DDERR_INVALIDPOSITION            : // (579)
+            return "DDERR_INVALIDPOSITION           ";//: // (579)
+        case DDERR_NOTAOVERLAYSURFACE     : // (580)
+            return "DDERR_NOTAOVERLAYSURFACE        ";//: // (580)
+        case DDERR_EXCLUSIVEMODEALREADYSET        : // (581)
+            return "DDERR_EXCLUSIVEMODEALREADYSET       ";//: // (581)
+        case DDERR_NOTFLIPPABLE           : // (582)
+            return "DDERR_NOTFLIPPABLE          ";//: // (582)
+        case DDERR_CANTDUPLICATE          : // (583)
+            return "DDERR_CANTDUPLICATE         ";//: // (583)
+        case DDERR_NOTLOCKED              : // (584)
+            return "DDERR_NOTLOCKED             ";//: // (584)
+        case DDERR_CANTCREATEDC           : // (585)
+            return "DDERR_CANTCREATEDC          ";//: // (585)
+        case DDERR_NODC               : // (586)
+            return "DDERR_NODC              ";//: // (586)
+        case DDERR_WRONGMODE              : // (587)
+            return "DDERR_WRONGMODE             ";//: // (587)
+        case DDERR_IMPLICITLYCREATED          : // (588)
+            return "DDERR_IMPLICITLYCREATED         ";//: // (588)
+        case DDERR_NOTPALETTIZED          : // (589)
+            return "DDERR_NOTPALETTIZED         ";//: // (589)
+        case DDERR_UNSUPPORTEDMODE            : // (590)
+            return "DDERR_UNSUPPORTEDMODE           ";//: // (590)
+        case DDERR_NOMIPMAPHW         : // (591)
+            return "DDERR_NOMIPMAPHW            ";//: // (591)
+        case DDERR_INVALIDSURFACETYPE                : // (592)
+            return "DDERR_INVALIDSURFACETYPE";//: // (592)
+        case DDERR_NOOPTIMIZEHW                      : // (600)
+            return "DDERR_NOOPTIMIZEHW";//: // (600)
+        case DDERR_NOTLOADED                         : // (601)
+            return "DDERR_NOTLOADED";//: // (601)
+        case DDERR_NOFOCUSWINDOW                     : // (602)
+            return "DDERR_NOFOCUSWINDOW";//: // (602)
+        case DDERR_DCALREADYCREATED           : // (620)
+            return "DDERR_DCALREADYCREATED          ";//: // (620)
+        case DDERR_NONONLOCALVIDMEM                  : // (630)
+            return "DDERR_NONONLOCALVIDMEM";//: // (630)
+        case DDERR_CANTPAGELOCK           : // (640)
+            return "DDERR_CANTPAGELOCK          ";//: // (640)
+        case DDERR_CANTPAGEUNLOCK         : // (660)
+            return "DDERR_CANTPAGEUNLOCK            ";//: // (660)
+        case DDERR_NOTPAGELOCKED          : // (680)
+            return "DDERR_NOTPAGELOCKED         ";//: // (680)
+        case DDERR_MOREDATA                   : // (690)
+            return "DDERR_MOREDATA                  ";//: // (690)
+        case DDERR_VIDEONOTACTIVE             : // (695)
+            return "DDERR_VIDEONOTACTIVE            ";//: // (695)
+        case DDERR_DEVICEDOESNTOWNSURFACE         : // (699)
+            return "DDERR_DEVICEDOESNTOWNSURFACE        ";//: // (699)
+
         case E_UNEXPECTED                     :
             return "E_UNEXPECTED                     ";
         case E_NOTIMPL                        :
@@ -3443,9 +3443,9 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
 static int iMouseTrails;
 static bool bCursorShadowOn,bMouseVanish;
 
-void set_global_parameters(void) {
+void set_global_parameters() {
   // turn off mousetrails and cursor shadow and mouse cursor vanish
-  // cursor shadow causes cursor blink and reduced frame rate due to lack of driver support for 
+  // cursor shadow causes cursor blink and reduced frame rate due to lack of driver support for
   // cursor alpha blending
 
   // this is a win2k/xp only param, could use GetVersionEx to do it just for win2k,
@@ -3462,7 +3462,7 @@ void set_global_parameters(void) {
   SystemParametersInfo(SPI_SETMOUSEVANISH,NULL,(PVOID)false,NULL);
 }
 
-void restore_global_parameters(void) {
+void restore_global_parameters() {
   SystemParametersInfo(SPI_SETCURSORSHADOW,NULL,(PVOID)bCursorShadowOn,NULL);
   SystemParametersInfo(SPI_SETMOUSETRAILS,NULL,(PVOID)iMouseTrails,NULL);
   SystemParametersInfo(SPI_SETMOUSEVANISH,NULL,(PVOID)bMouseVanish,NULL);
