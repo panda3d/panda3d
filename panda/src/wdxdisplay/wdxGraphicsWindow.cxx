@@ -601,7 +601,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         return 0;
     
     case WM_ENTERSIZEMOVE: {
-            if(_dxgsg==NULL)
+            if(_dxgsg!=NULL)
                 _dxgsg->SetDXReady(true);   // dont disable here because I want to see pic as I resize
             _WindowAdjustingType = MovingOrResizing;
         }
@@ -2491,7 +2491,7 @@ void wdxGraphicsWindow::handle_mouse_motion(int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: handle_mouse_entry
+//     Function: handle_mouse_exit
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
