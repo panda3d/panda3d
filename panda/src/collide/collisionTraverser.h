@@ -31,6 +31,7 @@
 
 class CollisionNode;
 class CollisionRecorder;
+class CollisionVisualizer;
 class Geom;
 class NodePath;
 class CollisionEntry;
@@ -77,6 +78,9 @@ PUBLISHED:
   INLINE bool has_recorder() const;
   INLINE CollisionRecorder *get_recorder() const;
   INLINE void clear_recorder();
+
+  CollisionVisualizer *show_collisions(const NodePath &root);
+  void hide_collisions();
 #endif  // DO_COLLISION_RECORDING
 
   void output(ostream &out) const;
@@ -127,6 +131,7 @@ private:
   bool _respect_prev_transform;
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder *_recorder;
+  NodePath _collision_visualizer_np;
 #endif  // DO_COLLISION_RECORDING
 
   // Statistics

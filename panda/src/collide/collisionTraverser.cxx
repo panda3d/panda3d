@@ -21,6 +21,7 @@
 #include "collisionEntry.h"
 #include "collisionPolygon.h"
 #include "collisionRecorder.h"
+#include "collisionVisualizer.h"
 #include "config_collide.h"
 
 #include "transformState.h"
@@ -358,6 +359,40 @@ set_recorder(CollisionRecorder *recorder) {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::show_collisions
+//       Access: Published
+//  Description: This is a high-level function to create a
+//               CollisionVisualizer object to render the collision
+//               tests performed by this traverser.  The supplied root
+//               should be any node in the scene graph; typically, the
+//               top node (e.g. render).  The CollisionVisualizer will
+//               be attached to this node.
+////////////////////////////////////////////////////////////////////
+CollisionVisualizer *CollisionTraverser::
+show_collisions(const NodePath &root) {
+  hide_collisions();
+  CollisionVisualizer *viz = new CollisionVisualizer("show_collisions");
+  _collision_visualizer_np = root.attach_new_node(viz);
+  set_recorder(viz);
+  return viz;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::hide_collisions
+//       Access: Published
+//  Description: Undoes the effect of a previous call to
+//               show_collisions().
+////////////////////////////////////////////////////////////////////
+void CollisionTraverser::
+hide_collisions() {
+  if (!_collision_visualizer_np.is_empty()) {
+    _collision_visualizer_np.remove_node();
+  }
+  clear_recorder();
+}
+
 #endif  // DO_COLLISION_RECORDING
 
 ////////////////////////////////////////////////////////////////////
