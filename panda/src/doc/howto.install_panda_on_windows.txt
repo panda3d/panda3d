@@ -567,7 +567,9 @@ Step 14: set up a local server (optional)
     Make sure $CVSROOT is pointed to local repository on dimbo
     
     cd ~/player
-    cvs co ttmodels/src/dna
+    cvs co -l ttmodels
+    cvs co -l ttmodels/src
+    cvs co -l ttmodels/src/dna
     cp ~/player/ttmodels/src/dna/*.dna /c/toonsrv
 
     The dna files have names with language associated with them, but the server
