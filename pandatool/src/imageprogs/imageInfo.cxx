@@ -53,7 +53,7 @@ run() {
       // Successfully read the image header.
       nout << filename << ": " << header.get_x_size() << " x "
            << header.get_y_size() << " x " << header.get_num_channels()
-           << "\n";
+           << " (maxval = " << header.get_maxval() << ")\n";
     }
   }
 }
