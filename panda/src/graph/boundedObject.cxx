@@ -42,7 +42,7 @@ BoundedObject::
 //               different from the bounding volumes on the arcs,
 //               which enclose all geometry below them.
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH const BoundingVolume &BoundedObject::
+const BoundingVolume &BoundedObject::
 get_bound() const {
   {
     CDReader cdata(_cycler);
@@ -57,8 +57,8 @@ get_bound() const {
     }
 
     // We need to recompute the bounding volume.  First, we need to
-    // release the old CDReader, so we can get a CDReader in
-    // recompute_bound().
+    // release the old CDReader, so we can make a CDWriter in
+    // recompute_bound.
   }
 
   // Now it's safe to recompute the bounds.
