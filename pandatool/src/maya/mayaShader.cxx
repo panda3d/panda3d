@@ -19,6 +19,7 @@
 #include "mayaShader.h"
 #include "maya_funcs.h"
 #include "config_maya.h"
+#include "pset.h"
 
 #include "pre_maya_include.h"
 #include <maya/MFnDependencyNode.h>
@@ -85,7 +86,7 @@ MayaShader(MObject engine) {
 //               transforms indicated by the shader.
 ////////////////////////////////////////////////////////////////////
 LMatrix3d MayaShader::
-compute_texture_matrix() {
+compute_texture_matrix() const {
   LVector2d scale(_repeat_uv[0] / _coverage[0],
                   _repeat_uv[1] / _coverage[1]);
   LVector2d trans(_offset[0] - _translate_frame[0] / _coverage[0],

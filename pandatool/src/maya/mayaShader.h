@@ -38,7 +38,7 @@ class MayaShader {
 public:
   MayaShader(MObject engine);
 
-  LMatrix3d compute_texture_matrix();
+  LMatrix3d compute_texture_matrix() const;
 
   void output(ostream &out) const;
 

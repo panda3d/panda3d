@@ -69,7 +69,6 @@
 ////////////////////////////////////////////////////////////////////
 MayaToEggConverter::
 MayaToEggConverter(const string &program_name) :
-  _shaders(this),
   _program_name(program_name)
 {
   _polygon_output = false;
@@ -84,7 +83,6 @@ MayaToEggConverter(const string &program_name) :
 ////////////////////////////////////////////////////////////////////
 MayaToEggConverter::
 MayaToEggConverter(const MayaToEggConverter &copy) :
-  _shaders(this),
   _maya(copy._maya)
 {
 }
@@ -799,7 +797,7 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
 
   MayaShader *shader = _shaders.find_shader_for_node(curve.object());
   if (shader != (MayaShader *)NULL) {
-    shader->set_attributes(*egg_curve, *this);
+    set_shader_attributes(*egg_curve, *shader);
   }
 }
 
@@ -915,11 +913,11 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       MayaShader *shader =
         _shaders.find_shader_for_shading_engine(engine);
       if (shader != (MayaShader *)NULL) {
-        shader->set_attributes(*egg_poly, *this);
+        set_shader_attributes(*egg_poly, *shader);
       }
 
     } else if (default_shader != (MayaShader *)NULL) {
-      default_shader->set_attributes(*egg_poly, *this);
+      set_shader_attributes(*egg_poly, *default_shader);
     }
 
     pi.next();
@@ -995,7 +993,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
   // if present, replaces the color.
 
   if (shader._has_texture) {
-    Filename pathname = convert_texture_path(_texture);
+    Filename pathname = convert_texture_path(shader._texture);
     EggTexture tex(shader._name, pathname);
     tex.set_wrap_u(shader._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp);
     tex.set_wrap_v(shader._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp);
