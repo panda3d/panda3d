@@ -6,6 +6,7 @@
 #include "error_utils.h"
 
 #include <errno.h>
+#include <stdio.h>
 #if defined(WIN32_VC)
   #include <winsock2.h>
 #endif
@@ -14,7 +15,7 @@
 //     Function: handle_socket_error
 //  Description:
 ////////////////////////////////////////////////////////////////////
-char*
+const char*
 handle_socket_error(void) {
 #ifndef WIN32
   return strerror(errno);
@@ -53,7 +54,9 @@ handle_socket_error(void) {
     case 10093:
       return "WSAStartup() was not called";
     default:
-      return "Unknown WSA error";
+      char errcode[128];
+      sprintf(errcode, "Unknown WSA error: %d", WSAGetLastError());
+      return errcode;
   }
 #endif
 }
@@ -62,7 +65,7 @@ handle_socket_error(void) {
 //     Function: error_to_text
 //  Description:
 ////////////////////////////////////////////////////////////////////
-char*
+const char*
 error_to_text(int err) {
   switch (err) {
     case EU_eof:
