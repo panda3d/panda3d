@@ -593,6 +593,22 @@ run_connecting() {
   _status_string = string();
   if (BIO_do_connect(*_bio) <= 0) {
     if (BIO_should_retry(*_bio)) {
+
+      /* Put a block here for now. */
+      int fd = -1;
+      BIO_get_fd(*_bio, &fd);
+      if (fd < 0) {
+        downloader_cat.warning()
+          << "nonblocking socket BIO has no file descriptor.\n";
+      } else {
+        downloader_cat.spam()
+          << "waiting to connect.\n";
+        fd_set wset;
+        FD_ZERO(&wset);
+        FD_SET(fd, &wset);
+        select(fd + 1, NULL, &wset, NULL, NULL);
+      }        
+
       return true;
     }
     downloader_cat.info()
