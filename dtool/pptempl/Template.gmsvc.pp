@@ -174,7 +174,7 @@
 // for single-processor builds, write out *_composite.cxx files that include all composite
 // files into 1 in order to speed the build of our heavily templated source
 #forscopes lib_target bin_target static_lib_target
-#if $[and $[eq $[NUMBER_OF_PROCESSORS],1], $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]
+#if $[and $[<= $[NUMBER_OF_PROCESSORS],2], $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]
 #output $[TARGET]_composite.cxx notouch
 #format collapse
 /* Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
@@ -237,7 +237,7 @@ $[TAB] rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
 $[TAB] rm -f $[DEPENDENCY_CACHE_FILENAME]
 #endif
-#if $[eq $[NUMBER_OF_PROCESSORS],1]
+#if $[<= $[NUMBER_OF_PROCESSORS],2]
 $[TAB] rm -f *_composite.cxx  // eliminate generated *_composite.cxx files for uniprocessor builds
 #endif
 

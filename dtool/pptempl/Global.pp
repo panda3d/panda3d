@@ -283,7 +283,7 @@
 // is.
 #defer active_target $[if $[build_target],$[TARGET]]
 
-#if $[and $[or $[eq $[BUILD_TYPE],msvc], $[and $[eq $[BUILD_TYPE],gmsvc], $[eq $[NUMBER_OF_PROCESSORS],1]]], $[eq $[NO_COMBINED_SOURCES],]]
+#if $[USE_SINGLE_COMPOSITE_SOURCEFILE]
  // for non-composite dirs, want to avoid returning the composite default name
 #defer get_combined_sources $[if $[ne $[COMBINED_SOURCES],], $[TARGET]_composite.cxx,]
 #else
@@ -326,7 +326,7 @@
   $[IF_IPC_SOURCES] \
   $[IF_PYTHON_SOURCES]
 
-#defer included_sources $[INCLUDED_SOURCES] $[if $[HAVE_ZLIB],$[IF_ZLIB_INCLUDED_SOURCES]] $[if $[HAVE_NET],$[IF_NET_INCLUDED_SOURCES]] $[if $[and $[eq $[NUMBER_OF_PROCESSORS],1], $[eq $[NO_COMBINED_SOURCES],]], $[COMBINED_SOURCES]]
+#defer included_sources $[INCLUDED_SOURCES] $[if $[HAVE_ZLIB],$[IF_ZLIB_INCLUDED_SOURCES]] $[if $[HAVE_NET],$[IF_NET_INCLUDED_SOURCES]] $[if $[USE_SINGLE_COMPOSITE_SOURCEFILE], $[COMBINED_SOURCES]]
   
 // This variable returns the set of sources that are to be
 // interrogated for the current target.
