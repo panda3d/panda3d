@@ -141,10 +141,24 @@ class MetaInterval(CMetaInterval):
 
     def addParallel(self, list, name, relTime, relTo, duration):
         # Adds the given list of intervals to the MetaInterval to be
-        # played simultaneously.
+        # played simultaneously; all will start at the same time.
         self.pushLevel(name, relTime, relTo)
         for ival in list:
             self.addInterval(ival, 0.0, TRACK_START)
+        self.popLevel(duration)
+
+    def addParallelEndTogether(self, list, name, relTime, relTo, duration):
+        # Adds the given list of intervals to the MetaInterval to be
+        # played simultaneously; all will end at the same time, but
+        # the longest interval will be started first to achieve this.
+
+        maxDuration = 0
+        for ival in list:
+            maxDuration = max(maxDuration, ival.getDuration())
+        
+        self.pushLevel(name, relTime, relTo)
+        for ival in list:
+            self.addInterval(ival, maxDuration - ival.getDuration(), TRACK_START)
         self.popLevel(duration)
 
     def addTrack(self, list, name, relTime, relTo, duration):
@@ -420,6 +434,11 @@ class Sequence(MetaInterval):
 class Parallel(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
         meta.addParallel(self.ivals, self.getName(),
+                         relTime, relTo, self.phonyDuration)
+
+class ParallelEndTogether(MetaInterval):
+    def applyIvals(self, meta, relTime, relTo):
+        meta.addParallelEndTogether(self.ivals, self.getName(),
                          relTime, relTo, self.phonyDuration)
 
 class Track(MetaInterval):
