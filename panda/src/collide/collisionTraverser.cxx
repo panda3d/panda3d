@@ -107,7 +107,10 @@ add_collider(const NodePath &collider, CollisionHandler *handler) {
   } else {
     // We hadn't already known about this collider.
     _colliders.insert(Colliders::value_type(collider, handler));
-    _ordered_colliders.push_back(collider);
+    OrderedColliderDef ocdef;
+    ocdef._node_path = collider;
+    ocdef._in_graph = true;
+    _ordered_colliders.push_back(ocdef);
 
     Handlers::iterator hi = _handlers.find(handler);
     if (hi == _handlers.end()) {
@@ -152,8 +155,13 @@ remove_collider(const NodePath &collider) {
 
   _colliders.erase(ci);
 
-  OrderedColliders::iterator oci =
-    find(_ordered_colliders.begin(), _ordered_colliders.end(), collider);
+  OrderedColliders::iterator oci;
+  oci = _ordered_colliders.begin();
+  while (oci != _ordered_colliders.end() &&
+         (*oci)._node_path != collider) {
+    ++oci;
+  }
+
   nassertr(oci != _ordered_colliders.end(), false);
   _ordered_colliders.erase(oci);
 
@@ -196,7 +204,7 @@ NodePath CollisionTraverser::
 get_collider(int n) const {
   nassertr(_ordered_colliders.size() == _colliders.size(), NULL);
   nassertr(n >= 0 && n < (int)_ordered_colliders.size(), NULL);
-  return _ordered_colliders[n];
+  return _ordered_colliders[n]._node_path;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -403,34 +411,36 @@ prepare_colliders(CollisionLevelState &level_state, const NodePath &root) {
   level_state.clear();
   level_state.reserve(_colliders.size());
 
-  int i = 0;
-  while (i < (int)_ordered_colliders.size()) {
-    NodePath cnode_path = _ordered_colliders[i];
-#ifndef NDEBUG
+  OrderedColliders::iterator oci;
+  for (oci = _ordered_colliders.begin(); 
+       oci != _ordered_colliders.end(); 
+       ++oci) {
+    NodePath cnode_path = (*oci)._node_path;
+
     if (!cnode_path.is_same_graph(root)) {
-      collide_cat.error()
-        << "Collider " << cnode_path
-        << " is not in scene graph.  Dropping from traverser.\n";
-      // This is safe to do while traversing the list of colliders,
-      // because we do not increment i in this case.
-      remove_collider(cnode_path);
-    } else
-#endif
-      {
-        CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
-        
-        CollisionLevelState::ColliderDef def;
-        def._node = cnode;
-        def._node_path = cnode_path;
-        
-        int num_solids = cnode->get_num_solids();
-        for (int s = 0; s < num_solids; s++) {
-          CollisionSolid *collider = cnode->get_solid(s);
-          def._collider = collider;
-          level_state.prepare_collider(def);
-        }
-        i++;
+      if ((*oci)._in_graph) {
+        // Only report this warning once.
+        collide_cat.warning()
+          << "Collider " << cnode_path
+          << " is not in scene graph.  Ignoring.\n";
+        (*oci)._in_graph = false;
       }
+
+    } else {
+      (*oci)._in_graph = true;
+      CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
+      
+      CollisionLevelState::ColliderDef def;
+      def._node = cnode;
+      def._node_path = cnode_path;
+      
+      int num_solids = cnode->get_num_solids();
+      for (int s = 0; s < num_solids; s++) {
+        CollisionSolid *collider = cnode->get_solid(s);
+        def._collider = collider;
+        level_state.prepare_collider(def);
+      }
+    }
   }
 }
 
@@ -720,8 +730,12 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
       ci = cnext;
 
       // Also remove it from the ordered list.
-      OrderedColliders::iterator oci =
-        find(_ordered_colliders.begin(), _ordered_colliders.end(), node_path);
+      OrderedColliders::iterator oci;
+      oci = _ordered_colliders.begin();
+      while (oci != _ordered_colliders.end() &&
+             (*oci)._node_path != node_path) {
+        ++oci;
+      }
       nassertr(oci != _ordered_colliders.end(), hi);
       _ordered_colliders.erase(oci);
       

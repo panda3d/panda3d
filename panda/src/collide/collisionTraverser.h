@@ -108,9 +108,15 @@ private:
   PT(CollisionHandler) _default_handler;
   TypeHandle _graph_type;
 
+  class OrderedColliderDef {
+  public:
+    NodePath _node_path;
+    bool _in_graph;
+  };
+
   typedef pmap<NodePath,  PT(CollisionHandler) > Colliders;
   Colliders _colliders;
-  typedef pvector<NodePath> OrderedColliders;
+  typedef pvector<OrderedColliderDef> OrderedColliders;
   OrderedColliders _ordered_colliders;
 
   typedef pmap<PT(CollisionHandler), int> Handlers;
