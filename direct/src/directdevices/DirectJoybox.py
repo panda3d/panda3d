@@ -1,6 +1,7 @@
 """ Class used to create and control joybox device """
 from PandaObject import *
 from DirectDeviceManager import *
+from DirectGeometry import *
 import OnscreenText
 
 """

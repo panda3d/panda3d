@@ -167,10 +167,7 @@ class DirectTracker(TrackerNode, DirectObject):
         return self.nodePath
     
     def __repr__(self):
-        str = self.name + ': '
-        for val in self:
-            str = str + '%.3f' % val + ' '
-        return str
+        return self.name
 
 class DirectDials(DialNode, DirectObject):
     dialCount = 0
