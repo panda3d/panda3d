@@ -98,6 +98,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class PandaNode;
 };
 
 #ifndef DONT_INLINE_GRAPH

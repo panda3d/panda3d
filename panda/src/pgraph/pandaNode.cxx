@@ -22,6 +22,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "indent.h"
+#include "geometricBoundingVolume.h"
 
 
 TypeHandle PandaNode::_type_handle;
@@ -37,8 +38,6 @@ CData(const PandaNode::CData &copy) :
   _down(copy._down),
   _up(copy._up),
   _chains(copy._chains),
-  _node_bounds(copy._node_bounds),
-  _subgraph_bounds(copy._subgraph_bounds),
   _state(copy._state),
   _transform(copy._transform)
 {
@@ -93,12 +92,11 @@ PandaNode(const PandaNode &copy) :
 {
   // Copying a node does not copy its children.
 
-  // Copy the other node's state and bounding volume.
+  // Copy the other node's state.
   CDReader copy_cdata(copy._cycler);
   CDWriter cdata(_cycler);
   cdata->_state = copy_cdata->_state;
   cdata->_transform = copy_cdata->_transform;
-  cdata->_node_bounds = copy_cdata->_node_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,12 +110,11 @@ operator = (const PandaNode &copy) {
   Namable::operator = (copy);
   ReferenceCount::operator = (copy);
 
-  // Copy the other node's state and bounding volume.
+  // Copy the other node's state.
   CDReader copy_cdata(copy._cycler);
   CDWriter cdata(_cycler);
   cdata->_state = copy_cdata->_state;
   cdata->_transform = copy_cdata->_transform;
-  cdata->_node_bounds = copy_cdata->_node_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -485,6 +482,102 @@ write(ostream &out, int indent_level) const {
 bool PandaNode::
 is_geom_node() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::propagate_stale_bound
+//       Access: Protected, Virtual
+//  Description: Called by BoundedObject::mark_bound_stale(), this
+//               should make sure that all bounding volumes that
+//               depend on this one are marked stale also.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+propagate_stale_bound() {
+  // Mark all of our parent nodes stale as well.
+  CDWriter cdata(_cycler);
+  Up::const_iterator ui;
+  for (ui = cdata->_up.begin(); ui != cdata->_up.end(); ++ui) {
+    PandaNode *parent = (*ui).get_parent();
+    parent->mark_bound_stale();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::recompute_bound
+//       Access: Protected, Virtual
+//  Description: Recomputes the dynamic bounding volume for this
+//               object.  The default behavior is the compute an empty
+//               bounding volume; this may be overridden to extend it
+//               to create a nonempty bounding volume.  However, after
+//               calling this function, it is guaranteed that the
+//               _bound pointer will not be shared with any other
+//               stage of the pipeline, and this new pointer is
+//               returned.
+////////////////////////////////////////////////////////////////////
+BoundingVolume *PandaNode::
+recompute_bound() {
+  // First, get ourselves a fresh, empty bounding volume.
+  BoundingVolume *bound = BoundedObject::recompute_bound();
+  nassertr(bound != (BoundingVolume*)NULL, bound);
+
+  // Now actually compute the bounding volume by putting it around all
+  // of our child bounding volumes.
+
+  pvector<const BoundingVolume *> child_volumes;
+
+  // It goes around this node's internal bounding volume . . .
+  child_volumes.push_back(&get_internal_bound());
+
+  CDReader cdata(_cycler);
+  Down::const_iterator di;
+  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
+    // . . . plus each node's external bounding volume.
+    PandaNode *child = (*di).get_child();
+    const BoundingVolume &child_bound = child->get_bound();
+    child_volumes.push_back(&child_bound);
+  }
+
+  const BoundingVolume **child_begin = &child_volumes[0];
+  const BoundingVolume **child_end = child_begin + child_volumes.size();
+
+  bool success =
+    bound->around(child_begin, child_end);
+
+#ifndef NDEBUG
+  if (!success) {
+    pgraph_cat.error()
+      << "Unable to recompute bounding volume for " << *this << ":\n"
+      << "Cannot put " << bound->get_type() << " around:\n";
+    for (int i = 0; i < (int)child_volumes.size(); i++) {
+      pgraph_cat.error(false)
+        << "  " << *child_volumes[i] << "\n";
+    }
+  }
+#endif
+
+  // Now, if we have a transform, apply it to the bounding volume we
+  // just computed.
+  const TransformState *transform = get_transform();
+  if (!transform->is_identity()) {
+    GeometricBoundingVolume *gbv;
+    DCAST_INTO_R(gbv, bound, bound);
+    gbv->xform(transform->get_mat());
+  }
+
+  return bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::recompute_internal_bound
+//       Access: Protected, Virtual
+//  Description: Called when needed to recompute the node's
+//               _internal_bound object.  Nodes that contain anything
+//               of substance should redefine this to do the right
+//               thing.
+////////////////////////////////////////////////////////////////////
+BoundingVolume *PandaNode::
+recompute_internal_bound() {
+  return _internal_bound.recompute_bound();
 }
 
 ////////////////////////////////////////////////////////////////////

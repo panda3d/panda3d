@@ -18,6 +18,7 @@
 
 #include "cullBinBackToFront.h"
 #include "graphicsStateGuardianBase.h"
+#include "geometricBoundingVolume.h"
 
 #include <algorithm>
 
@@ -33,14 +34,22 @@ TypeHandle CullBinBackToFront::_type_handle;
 void CullBinBackToFront::
 add_geom(Geom *geom, const TransformState *transform,
          const RenderState *state) {
-  // Since we don't have bounding volumes yet, for now we'll just use
-  // the origin of the node.  Only accurate for local transforms.
-  const LMatrix4f &mat = transform->get_mat();
-  const LVecBase3f &pos = mat.get_row3(3);
+  // Determine the center of the bounding volume.
+  const BoundingVolume &volume = geom->get_bound();
 
-  // Oops!  Don't have compute_distance_to() here either!
-  float dist = -pos[2];
-  _geoms.push_back(GeomData(geom, transform, state, dist));
+  if (!volume.is_empty() &&
+      volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
+    const GeometricBoundingVolume *gbv;
+    DCAST_INTO_V(gbv, &volume);
+    
+    LPoint3f center = gbv->get_approx_center();
+    center = center * transform->get_mat();
+    
+    // Oops!  Don't have compute_distance_to() here yet!
+    //    float distance = gsg->compute_distance_to(center);
+    float distance = -center[2];
+    _geoms.push_back(GeomData(geom, transform, state, distance));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

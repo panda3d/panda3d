@@ -341,6 +341,7 @@ INLINE void PandaNode::
 set_transform(const TransformState *transform) {
   CDWriter cdata(_cycler);
   cdata->_transform = transform;
+  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -389,6 +390,71 @@ ls() const {
 INLINE void PandaNode::
 ls(ostream &out, int indent_level) const {
   r_list_descendants(out, indent_level);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_bound
+//       Access: Published
+//  Description: Sets the type of the external bounding volume that is
+//               placed around this node and all of its children.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_bound(BoundingVolumeType type) {
+  BoundedObject::set_bound(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_bound
+//       Access: Published
+//  Description: Resets the internal bounding volume so that it is the
+//               indicated volume.  The external bounding volume as
+//               returned by get_bound() (which includes all of the
+//               node's children) will be adjusted to include this
+//               internal volume.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_bound(const BoundingVolume &volume) {
+  _internal_bound.set_bound(volume);
+  changed_internal_bound();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_bound
+//       Access: Published
+//  Description: Returns the node's external bounding volume.  This is
+//               the bounding volume around the node and all of its
+//               children.
+////////////////////////////////////////////////////////////////////
+INLINE const BoundingVolume &PandaNode::
+get_bound() const {
+  return BoundedObject::get_bound();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_internal_bound
+//       Access: Published
+//  Description: Returns the node's internal bounding volume.  This is
+//               the bounding volume around the node alone, without
+//               including children.
+////////////////////////////////////////////////////////////////////
+INLINE const BoundingVolume &PandaNode::
+get_internal_bound() const {
+  if (_internal_bound.is_bound_stale()) {
+    ((PandaNode *)this)->recompute_internal_bound();
+  }
+  return _internal_bound.get_bound();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::changed_internal_bound
+//       Access: Protected
+//  Description: Should be called whenever you adjust the
+//               _internal_bound member, to force the external
+//               bounding volume to be recomputed.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+changed_internal_bound() {
+  BoundedObject::mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

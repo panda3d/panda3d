@@ -46,6 +46,7 @@ class NodeChainComponent;
 //               serves as a generic node with no special properties.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PandaNode : public TypedWritable, public Namable,
+                              public BoundedObject,
                               virtual public ReferenceCount {
 PUBLISHED:
   PandaNode(const string &name);
@@ -106,8 +107,39 @@ PUBLISHED:
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level = 0) const;
 
+  // A node has two bounding volumes: the BoundedObject it inherits
+  // from is the "external" bound and represnts the node and all of
+  // its children, while the _internal_bound object is the "internal"
+  // bounds and represents only the node itself.
+
+  // We remap the inherited set_bound() and get_bound() functions so
+  // that set_bound() to a type sets the type of the external bound,
+  // while set_bound() to a specific bounding volume sets the volume
+  // of the *internal* bound.  At the same time, get_bound() returns
+  // the external bound.  Although it might seem strange and confusing
+  // to do this, this is actually the natural way the user thinks
+  // about nodes and bounding volumes.
+  INLINE void set_bound(BoundingVolumeType type);
+  INLINE void set_bound(const BoundingVolume &volume);
+  INLINE const BoundingVolume &get_bound() const;
+  INLINE const BoundingVolume &get_internal_bound() const;
+
 public:
   virtual bool is_geom_node() const;
+
+protected:
+  // Inherited from BoundedObject
+  virtual void propagate_stale_bound();
+  virtual BoundingVolume *recompute_bound();
+
+  // Local to PandaNode
+  virtual BoundingVolume *recompute_internal_bound();
+  INLINE void changed_internal_bound();
+
+  // This is the bounding volume around the contents of the node
+  // itself (without including all of the node's children).
+  // BoundedObject is itself cycled, so we don't need to protect it.
+  BoundedObject _internal_bound;
 
 private:
   // parent-child manipulation for NodeChain support.  Don't try to
@@ -173,8 +205,6 @@ private:
     Up _up;
     Chains _chains;
 
-    BoundedObject _node_bounds;
-    BoundedObject _subgraph_bounds;
     CPT(RenderState) _state;
     CPT(TransformState) _transform;
   };
@@ -216,9 +246,11 @@ public:
   }
   static void init_type() {
     TypedWritable::init_type();
+    BoundedObject::init_type();
     ReferenceCount::init_type();
     register_type(_type_handle, "PandaNode",
                   TypedWritable::get_class_type(),
+                  BoundedObject::get_class_type(),
                   ReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -19,10 +19,10 @@
 #ifndef BOUNDINGVOLUME_H
 #define BOUNDINGVOLUME_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <typedObject.h>
-#include <typedReferenceCount.h>
+#include "typedObject.h"
+#include "typedReferenceCount.h"
 
 class BoundingSphere;
 class BoundingHexahedron;

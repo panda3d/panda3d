@@ -161,6 +161,38 @@ is_geom_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::recompute_internal_bound
+//       Access: Protected, Virtual
+//  Description: Called when needed to recompute the node's
+//               _internal_bound object.  Nodes that contain anything
+//               of substance should redefine this to do the right
+//               thing.
+////////////////////////////////////////////////////////////////////
+BoundingVolume *qpGeomNode::
+recompute_internal_bound() {
+  // First, get ourselves a fresh, empty bounding volume.
+  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  nassertr(bound != (BoundingVolume *)NULL, bound);
+
+  // Now actually compute the bounding volume by putting it around all
+  // of our geoms' bounding volumes.
+  pvector<const BoundingVolume *> child_volumes;
+
+  CDReader cdata(_cycler);
+  Geoms::const_iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    const GeomEntry &entry = (*gi);
+    child_volumes.push_back(&entry._geom->get_bound());
+  }
+
+  const BoundingVolume **child_begin = &child_volumes[0];
+  const BoundingVolume **child_end = child_begin + child_volumes.size();
+
+  bound->around(child_begin, child_end);
+  return bound;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomNode::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

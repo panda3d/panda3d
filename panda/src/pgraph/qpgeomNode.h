@@ -62,6 +62,9 @@ public:
 
   virtual bool is_geom_node() const;
 
+protected:
+  virtual BoundingVolume *recompute_internal_bound();
+
 private:
   class GeomEntry {
   public:
