@@ -37,7 +37,7 @@ class ParentMgr:
         del self.pendingChildren
 
     def requestReparent(self, child, parentToken):
-        if parentToken in self.token2nodepath.keys():
+        if self.token2nodepath.has_key(parentToken):
             # this parent has registered
             self.notify.debug("performing wrtReparent of %s to '%s'" %
                               (repr(child), parentToken))
@@ -51,7 +51,7 @@ class ParentMgr:
             self.pendingChildren[parentToken].append(child)
             
     def registerParent(self, token, parent):
-        if token in self.token2nodepath.keys():
+        if self.token2nodepath.has_key(token):
             self.notify.error(
                 "token '%s' already in the table, referencing %s" %
                 (token, repr(self.token2nodepath[token])))
@@ -60,7 +60,7 @@ class ParentMgr:
         self.token2nodepath[token] = parent
 
         # if we have any pending children, add them
-        if token in self.pendingChildren.keys():
+        if self.pendingChildren.has_key(token):
             children = self.pendingChildren[token]
             for child in children:
                 # NOTE: We do a plain-old reparentTo here (non-wrt)
@@ -93,7 +93,7 @@ class ParentMgr:
             del self.pendingChildren[token]
 
     def unregisterParent(self, token):
-        if token not in self.token2nodepath.keys():
+        if not self.token2nodepath.has_key(token):
             self.notify.warning("unknown token '%s'" % token)
             return
         self.notify.debug("unregistering parent '%s'" % (token))

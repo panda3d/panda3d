@@ -606,7 +606,7 @@ class DirectGuiBase(PandaObject.PandaObject):
         return names
 
     def hascomponent(self, component):
-        return component in self.__componentInfo.keys()
+        return self.__componentInfo.has_key(component)
 
     def destroycomponent(self, name):
         # Remove a megawidget component.
