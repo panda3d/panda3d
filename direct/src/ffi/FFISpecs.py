@@ -473,9 +473,14 @@ class MethodSpecification(FunctionSpecification):
                 childClass = parentList[i-1]
                 if childClass.hasMethodNamed(methodName):
                     indent(file, nesting+2, 'upcastSelf = upcastSelf.' + methodName + '()\n')
+                else:
+                    indent(file, nesting+2, '# upcastSelf = upcastSelf.' + methodName + '()\n')
             else:
                 if methodClass.hasMethodNamed(methodName):
                     indent(file, nesting+2, 'upcastSelf = upcastSelf.' + methodName + '()\n')
+                else:
+                    indent(file, nesting+2, '# upcastSelf = upcastSelf.' + methodName + '()\n')
+                    
         indent(file, nesting+2, 'returnValue = ' + self.typeDescriptor.moduleName
                + '.' + self.typeDescriptor.wrapperName + '(upcastSelf.this')
         if (len(thislessArgTypes) > 0):

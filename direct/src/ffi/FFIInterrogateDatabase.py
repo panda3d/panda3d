@@ -490,8 +490,13 @@ class FFIInterrogateDatabase:
                 typeDescs = self.constructFunctionTypeDescriptors(funcIndex)
                 for typeDesc in typeDescs:
                     funcSpec = FFISpecs.MethodSpecification()
-                    funcSpec.name = FFIRename.methodNameFromCppName(
-                        interrogate_function_name(funcIndex))
+                    # We synthesize the upcast function name instead
+                    # of using the name supplied by interrogate, to
+                    # allow for possible renaming of types on this
+                    # side.
+                    funcSpec.name = 'upcastTo' + typeDesc.returnType.typeDescriptor.foreignTypeName
+                    #funcSpec.name = FFIRename.methodNameFromCppName(
+                    #    interrogate_function_name(funcIndex))
                     funcSpec.typeDescriptor = typeDesc
                     funcSpec.index = funcIndex
                     funcSpecs.append(funcSpec)
