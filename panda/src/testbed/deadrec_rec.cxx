@@ -443,14 +443,14 @@ inline static void predict_linear(void) {
 	B_time = telemetry_time;
 	V = B - A;
 	V *= 1. / (B_time - A_time);
-	time = 0.;
+	//	time = 0.;
       } else {
 	// is between our two samples
 	A = telemetry_pos;
 	A_time = telemetry_time;
 	V = B - A;
 	V *= 1. / (B_time - A_time);
-	time = 0.;
+	//	time = 0.;
       }
     }
     if (time <= 0.) {
