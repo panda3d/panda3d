@@ -119,22 +119,23 @@ MilesAudioManager() {
         audio_output_bits, audio_output_channels)) {
       if (audio_software_midi) {
         // Load the downloadable sounds file:
+
         HDLSDEVICE dls;
         AIL_quick_handles(0, 0, &dls);
         nassertv(audio_dls_file);
         nassertv(!_dls_field);
         if (audio_dls_file->empty()) {
-          audio_debug("  using default audio_dls_file");
           get_gm_file_path(*audio_dls_file);
+          // we need more dbg info in logs, so bumping the msgs from 'debug' status to 'info' status
+          audio_info("  using default audio_dls_file: "<< (*audio_dls_file) );
         }
 
-#if 0
         audio_debug("  audio_dls_file=\""<<*audio_dls_file<<"\"");
+
+        // note: if AIL_DLS_load_file is not done, midi fails to play on some machines.
         _dls_field=AIL_DLS_load_file(dls, audio_dls_file->c_str(), 0);
         if (!_dls_field) {
-          audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error()
-              <<"\" Switching to hardware midi");
-
+          audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error() <<"\" Switching to hardware midi");
           AIL_quick_shutdown();
           if (!AIL_quick_startup(use_digital, 1, audio_output_rate,
               audio_output_bits, audio_output_channels)) {
@@ -142,9 +143,10 @@ MilesAudioManager() {
             _is_valid = false;
           }
         } else {
-          audio_debug("  using Miles software midi");
+          audio_info("  using Miles software midi");
         }
-#endif
+      } else {
+          audio_info("  using Miles hardware midi");
       }
 
       if (use_vfs) {
