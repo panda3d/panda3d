@@ -89,6 +89,9 @@ INLINE void GuiButton::inactive(void) {
   case DOWN_ROLLOVER:
     switch_state(INACTIVE_ROLLOVER);
     break;
+  case INACTIVE:
+  case INACTIVE_ROLLOVER:
+    break;
   default:
     gui_cat->warning() << "got inactive from invalid state (" << (int)_state
 		       << "), button '" << this->get_name() << "'" << endl;
