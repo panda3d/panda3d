@@ -16,16 +16,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: QuickRenderTraverser::backward_arc
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void QuickRenderTraverser::
-backward_arc(NodeRelation *arc, NullTransitionWrapper &,
-             NullTransitionWrapper &, NullTransitionWrapper &,
-             const QuickRenderLevelState &) {
-  mark_backward_arc(arc);
-  _arc_chain.pop_back();
-}

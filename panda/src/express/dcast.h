@@ -24,18 +24,14 @@
 #include "typeHandle.h"
 #include "typedObject.h"
 
-#if defined(_DEBUG) && defined(_WIN32)
-#include <windows.h>  // for IsBadWritePtr()
-#endif
-
 // The DCAST (downcast) macro is defined as a convenience for
 // downcasting from some TypedObject pointer (or a PointerTo).  It's
 // just a normal C++-style downcast, except it first checks get_type()
 // to make sure the downcasting is safe.  If you compile with NDEBUG,
-// this check is removed.
+// or set verify-dcast to #f, this check is removed.
 
 // DCAST will return NULL if the downcasting is unsafe.  If you'd
-// rather it abort out of the function (ala nassertv/nassertr), then
+// rather it abort out of the function (a la nassertv/nassertr), then
 // see DCAST_INTO_V and DCAST_INTO_R, below.
 
 template<class WantType>
@@ -72,6 +68,12 @@ INLINE WantType *_dcast_ref(WantType *&, TypedObject *ptr);
 template<class WantType>
 INLINE const WantType *_dcast_ref(WantType *&, const TypedObject *ptr);
 
+#ifndef NDEBUG
+// _dcast_verify performs the actual verification.
+EXPCL_PANDAEXPRESS bool
+_dcast_verify(TypeHandle want_handle, size_t want_size, 
+              const TypedObject *ptr);
+#endif  // NDEBUG
 
 #define DCAST_INTO_V(to_pointer, from_pointer) \
   { \

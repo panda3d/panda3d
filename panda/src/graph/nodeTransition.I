@@ -112,37 +112,6 @@ operator >= (const NodeTransition &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeTransition::compare_to
-//       Access: Public
-//  Description: This function works like strcmp(): it compares the
-//               two transitions and returns a number less than zero
-//               if this transition sorts before the other one, equal
-//               to zero if they are equivalent, or greater than zero
-//               if this transition sorts after the other one.
-//
-//               This imposes an arbitrary sorting order across all
-//               transitions, whose sole purpose is to allow grouping
-//               of equivalent transitions together in STL structures
-//               like maps and sets.
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH int NodeTransition::
-compare_to(const NodeTransition &other) const {
-  TypeHandle my_handle = get_handle();
-  TypeHandle other_handle = other.get_handle();
-
-  if (my_handle != other_handle) {
-    return
-      (my_handle < other_handle) ? -1 : 1;
-
-  } else if (_priority != other._priority) {
-    return _priority - other._priority;
-
-  } else {
-    return internal_compare_to(&other);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::generate_hash
 //       Access: Public
 //  Description: Adds the transition to the indicated hash generator.

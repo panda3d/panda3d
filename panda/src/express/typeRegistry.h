@@ -68,7 +68,7 @@ PUBLISHED:
   TypeHandle get_child_class(TypeHandle child, int index) const;
 
   TypeHandle get_parent_towards(TypeHandle child, TypeHandle base,
-                                TypedObject *child_object) const;
+                                TypedObject *child_object);
 
   static void reregister_types();
 

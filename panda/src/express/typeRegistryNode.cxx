@@ -20,10 +20,7 @@
 
 #include <algorithm>
 
-// Define this to double-check all the inheritance derivations.
-#ifndef NDEBUG
-#define PARANOID_INHERITANCE
-#endif
+bool TypeRegistryNode::_paranoid_inheritance;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistryNode::Constructor
@@ -51,6 +48,11 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
   // code.  Therefore, we go through some pains to make this function
   // as efficient as possible.
 
+  // (Actually, it appears that the function is not called as often as
+  // I'd first thought, and it wasn't really all that expensive to
+  // begin with.  So much of this complexity is of limited usefulness.
+  // Oh well.)
+
   // First, compare the subtree tops.  If they are the same, then this
   // node and the base node are within the same single-inheritance
   // subtree, and we can use our bitmask trick to determine the
@@ -62,23 +64,25 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
     bool derives = 
       Inherit::is_derived_from(child->_inherit, base->_inherit);
 
-#ifdef PARANOID_INHERITANCE
-    bool paranoid_derives = check_derived_from(child, base);
-    if (derives != paranoid_derives) {
-      express_cat.error()
-        << "Inheritance test for " << child->_name 
-        << " from " << base->_name << " failed!\n"
-        << "Result: " << derives << " should have been: "
-        << paranoid_derives << "\n"
-        << "Classes are in the same single inheritance subtree, children of "
-        << child->_inherit._top->_name << "\n"
-        << hex
-        << child->_name << " has mask " << child->_inherit._mask
-        << " and bits " << child->_inherit._bits << "\n"
-        << base->_name << " has mask " << base->_inherit._mask
+#ifndef NDEBUG
+    if (_paranoid_inheritance) {
+      bool paranoid_derives = check_derived_from(child, base);
+      if (derives != paranoid_derives) {
+        express_cat.error()
+          << "Inheritance test for " << child->_name 
+          << " from " << base->_name << " failed!\n"
+          << "Result: " << derives << " should have been: "
+          << paranoid_derives << "\n"
+          << "Classes are in the same single inheritance subtree, children of "
+          << child->_inherit._top->_name << "\n"
+          << hex
+          << child->_name << " has mask " << child->_inherit._mask
+          << " and bits " << child->_inherit._bits << "\n"
+          << base->_name << " has mask " << base->_inherit._mask
         << " and bits " << base->_inherit._bits << "\n"
-        << dec;
-      return paranoid_derives;
+          << dec;
+        return paranoid_derives;
+      }
     }
 #endif
 
@@ -122,19 +126,21 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
     ++ti;
   }
 
-#ifdef PARANOID_INHERITANCE
-  bool paranoid_derives = check_derived_from(child, base);
-  if (derives != paranoid_derives) {
-    express_cat.error()
-      << "Inheritance test for " << child->_name 
-      << " from " << base->_name << " failed!\n"
-      << "Result: " << derives << " should have been: "
-      << paranoid_derives << "\n"
-      << child->_name << " is a descendent of "
-      << child_top->_name << "\n"
-      << base->_name << " is a descendent of "
+#ifndef NDEBUG
+  if (_paranoid_inheritance) {
+    bool paranoid_derives = check_derived_from(child, base);
+    if (derives != paranoid_derives) {
+      express_cat.error()
+        << "Inheritance test for " << child->_name 
+        << " from " << base->_name << " failed!\n"
+        << "Result: " << derives << " should have been: "
+        << paranoid_derives << "\n"
+        << child->_name << " is a descendent of "
+        << child_top->_name << "\n"
+        << base->_name << " is a descendent of "
       << base_top->_name << "\n";
-    return paranoid_derives;
+      return paranoid_derives;
+    }
   }
 #endif
 
@@ -339,6 +345,12 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
 ////////////////////////////////////////////////////////////////////
 TypeRegistryNode::TopInheritance::const_iterator TypeRegistryNode::
 find_top_inherit(const TypeRegistryNode *base) const {
+  // If the need arises, we can make this a binary search to
+  // theoretically save even more time, since the list is already
+  // sorted.  However, the lists do tend to be short, and this
+  // function doesn't get called too awful much, so a linear search is
+  // not as bad as you might think.
+
   TopInheritance::const_iterator ti;
   for (ti = _top_inheritance.begin(); ti != _top_inheritance.end(); ++ti) {
     if ((*ti)._top == base) {

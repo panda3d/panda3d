@@ -99,6 +99,30 @@ get_paranoid_clock() {
   return config_express.GetBool("paranoid-clock", false);
 }
 
+// Set this to true to double-check the test for inheritance of
+// TypeHandles, e.g. via is_of_type().  This has no effect if NDEBUG
+// is defined.
+bool
+get_paranoid_inheritance() {
+  return config_express.GetBool("paranoid-inheritance", true);
+}
+
+// Set this to true to verify that every attempted DCAST operation in
+// fact references the correct type, or false otherwise.  This has no
+// effect if NDEBUG is defined, in which case it is never tested.
+bool
+get_verify_dcast() {
+  static bool got_verify_dcast = false;
+  static bool verify_dcast;
+
+  if (!got_verify_dcast) {
+    verify_dcast = config_express.GetBool("verify-dcast", true);
+    got_verify_dcast = true;
+  }
+
+  return verify_dcast;
+}
+
 const int patchfile_window_size =
         config_express.GetInt("patchfile-window-size", 16);
 

@@ -27,6 +27,8 @@ template<class WantType>
 INLINE TypeHandle
 _dcast_get_typehandle(WantType *) {
   TypeHandle handle = WantType::get_class_type();
+
+#ifdef _DEBUG
   if (handle == TypeHandle::none()) {
     // This type handle is unregistered.  Oops!
     WantType::init_type();
@@ -34,6 +36,8 @@ _dcast_get_typehandle(WantType *) {
     express_cat->warning()
       << "Type " << handle << " was unregistered!\n";
   }
+#endif
+
   return handle;
 }
 
@@ -52,23 +56,7 @@ INLINE WantType *
 _dcast(WantType *, TypedObject *ptr) {
 #ifndef NDEBUG
   TypeHandle want_handle = _dcast_get_typehandle((WantType *)0);
- #if defined(_DEBUG) && defined(_WIN32)
-  if ((ptr == (TypedObject *)NULL) || IsBadWritePtr(ptr,sizeof(TypedObject))) {
- #else
-  if (ptr == (TypedObject *)NULL) {
- #endif
-    express_cat->warning()
-      << "Attempt to cast NULL pointer to " << want_handle << "\n";
-    return (WantType *)NULL;
-  }
-  if (!ptr->is_of_type(want_handle)) {
-    express_cat->error()
-      << "Attempt to cast pointer from " << ptr->get_type()
-      << " to " << want_handle << "\n";
-    if (ptr->get_type() == TypedObject::get_class_type()) {
-      express_cat->error(false)
-        << "Perhaps pointer was inadvertently deleted?\n";
-    }
+  if (!_dcast_verify(want_handle, sizeof(WantType), ptr)) {
     return (WantType *)NULL;
   }
 #endif
@@ -89,19 +77,7 @@ INLINE const WantType *
 _dcast(WantType *, const TypedObject *ptr) {
 #ifndef NDEBUG
   TypeHandle want_handle = _dcast_get_typehandle((WantType *)0);
-  if (ptr == (const TypedObject *)NULL) {
-    express_cat->warning()
-      << "Attempt to cast NULL pointer to " << want_handle << "\n";
-    return (const WantType *)NULL;
-  }
-  if (!ptr->is_of_type(want_handle)) {
-    express_cat->error()
-      << "Attempt to cast pointer from " << ptr->get_type()
-      << " to " << want_handle << "\n";
-    if (ptr->get_type() == TypedObject::get_class_type()) {
-      express_cat->error(false)
-        << "Perhaps pointer was inadvertently deleted?\n";
-    }
+  if (!_dcast_verify(want_handle, sizeof(WantType), ptr)) {
     return (const WantType *)NULL;
   }
 #endif

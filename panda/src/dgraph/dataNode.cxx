@@ -91,7 +91,13 @@ void
 register_data_transition(TypeHandle &type_handle, const string &name,
                          TypeHandle derived_from) {
   // Make sure the user gave us a transition type as the base.
-  nassertv(derived_from.is_derived_from(NodeTransition::get_class_type()));
+
+  // We won't do this assertion for now, since it causes the
+  // derivation tree to get rebuilt repeatedly (since this runs at
+  // static init, before the whole tree is set up).  This isn't really
+  // a problem, but it seems messy to me.
+
+  //  nassertv(derived_from.is_derived_from(NodeTransition::get_class_type()));
 
   string actual_name = name + "_" + derived_from.get_name();
   type_handle = TypeRegistry::ptr()->find_type(actual_name);

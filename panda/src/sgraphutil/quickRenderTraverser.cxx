@@ -31,6 +31,7 @@ TypeHandle QuickRenderTraverser::_type_handle;
 
 #ifndef CPPPARSER
 PStatCollector QuickRenderTraverser::_draw_pcollector("Draw:Quick");
+static PStatCollector _fooby_pcollector("Draw:Quick:Fooby");
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -77,50 +78,38 @@ traverse(Node *root, const AllTransitionsWrapper &initial_state) {
   level_state._as_of = UpdateSeq::initial();
   level_state._under_instance = false;
 
-  df_traverse(_root, *this, NullTransitionWrapper(), level_state, _graph_type);
+  const DownRelationPointers &drp =
+    _root->find_connection(_graph_type).get_down();
+
+  // Now visit each of the children in turn.
+  DownRelationPointers::const_iterator drpi;
+  for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+    NodeRelation *arc = *drpi;
+    r_traverse(DCAST(RenderRelation, arc), level_state);
+  }
 
   _root = (Node *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: QuickRenderTraverser::forward_arc
-//       Access: Public
+//     Function: QuickRenderTraverser::r_traverse
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool QuickRenderTraverser::
-forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-            NullTransitionWrapper &, NullTransitionWrapper &,
-            QuickRenderLevelState &level_state) {
+void QuickRenderTraverser::
+r_traverse(RenderRelation *arc, const QuickRenderLevelState &level_state) {
   if (arc->has_transition(PruneTransition::get_class_type())) {
-    return false;
+    return;
   }
 
+  QuickRenderLevelState next_level_state(level_state);
   Node *node = arc->get_child();
 
   if (node->get_num_parents(_graph_type) != 1) {
-    /*
-    const UpRelationPointers &urp = node->find_connection(_graph_type).get_up();
-    int num_parents = urp.size();
-
-    sgraphutil_cat.warning()
-      << "Cannot support instancing via QuickRenderTraverser; "
-      << *node << " has " << num_parents << " parents.\n"
-      << "  parents are: ";
-    nassertr(num_parents > 1, false);
-
-    NodeRelation *parent_arc = urp[0];
-    sgraphutil_cat.warning(false) << *parent_arc->get_parent();
-    for (int i = 1; i < num_parents; i++) {
-      parent_arc = urp[i];
-      sgraphutil_cat.warning(false)
-        << ", " << *parent_arc->get_parent();
-    }
-    sgraphutil_cat.warning(false) << "\n";
-
-    return false;
-    */
-    level_state._under_instance = true;
+    next_level_state._under_instance = true;
   }
+
+  _arc_chain.push_back(arc);
 
   if (implicit_app_traversal) {
     node->app_traverse(_arc_chain);
@@ -132,12 +121,9 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   UpdateSeq now = last_graph_update(_graph_type);
 
   UpdateSeq last_update = arc->get_last_update();
-  if (level_state._as_of < last_update) {
-    level_state._as_of = last_update;
+  if (next_level_state._as_of < last_update) {
+    next_level_state._as_of = last_update;
   }
-
-  mark_forward_arc(arc);
-  _arc_chain.push_back(arc);
   
   _gsg->_nodes_pcollector.add_level(1);
 
@@ -148,26 +134,16 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     GeomNode *gnode = DCAST(GeomNode, node);
     AllTransitionsWrapper trans;
 
-    if (level_state._under_instance) {
+    if (next_level_state._under_instance) {
       // If we're under an instance node, we have to use the more
       // expensive wrt() operation.
       wrt(node, begin(), end(), (Node *)NULL, trans, _graph_type);
 
     } else {
       // Otherwise, we can use wrt_subtree() to get better caching.
-
-      //Node *top_subtree = 
       wrt_subtree(arc, NULL,
-                  level_state._as_of, now,
+                  next_level_state._as_of, now,
                   trans, _graph_type);
-
-      /*
-      cerr << "top_subtree is " << (void *)top_subtree;
-      if (top_subtree != (Node *)NULL) {
-        cerr << " is " << *top_subtree;
-      }
-      cerr << "\n";
-      */
     }
 
     AllTransitionsWrapper attrib;
@@ -177,5 +153,15 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     gnode->draw(_gsg);
   }
 
-  return true;
+  const DownRelationPointers &drp =
+    node->find_connection(_graph_type).get_down();
+
+  // Now visit each of the children in turn.
+  DownRelationPointers::const_iterator drpi;
+  for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+    NodeRelation *arc = *drpi;
+    r_traverse(DCAST(RenderRelation, arc), next_level_state);
+  }
+
+  _arc_chain.pop_back();
 }

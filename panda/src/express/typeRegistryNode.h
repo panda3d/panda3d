@@ -52,6 +52,8 @@ public:
   Classes _parent_classes;
   Classes _child_classes;
 
+  static bool _paranoid_inheritance;
+
 private:
   typedef int SubtreeMaskType;
 

@@ -370,11 +370,12 @@ get_child_class(TypeHandle child, int index) const {
 ////////////////////////////////////////////////////////////////////
 TypeHandle TypeRegistry::
 get_parent_towards(TypeHandle child, TypeHandle base,
-                   TypedObject *child_object) const {
+                   TypedObject *child_object) {
   const TypeRegistryNode *child_node = look_up(child, child_object);
   const TypeRegistryNode *base_node = look_up(base, NULL);
   nassertr(child_node != (TypeRegistryNode *)NULL && 
            base_node != (TypeRegistryNode *)NULL, TypeHandle::none());
+  freshen_derivations();
   return TypeRegistryNode::get_parent_towards(child_node, base_node);
 }
 
@@ -437,6 +438,12 @@ write(ostream &out) const {
 TypeRegistry *TypeRegistry::
 ptr() {
   if (_global_pointer == NULL) {
+#ifdef NOTIFY_DEBUG
+    if (express_cat->is_spam()) {
+      express_cat->spam()
+        << "Creating global TypeRegistry\n";
+    }
+#endif
     init_global_pointer();
   }
   return _global_pointer;
@@ -468,6 +475,10 @@ TypeRegistry() {
 void TypeRegistry::
 init_global_pointer() {
   _global_pointer = new TypeRegistry;
+
+  // Now that we've created the TypeRegistry, we can assign this
+  // Config variable.
+  TypeRegistryNode::_paranoid_inheritance = get_paranoid_inheritance();
 }
 
 ////////////////////////////////////////////////////////////////////

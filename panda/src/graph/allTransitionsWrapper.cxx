@@ -96,6 +96,8 @@ output(ostream &out) const {
 void AllTransitionsWrapper::
 write(ostream &out, int indent_level) const {
   if (_cache != (NodeTransitionCache *)NULL) {
+    indent(out, indent_level)
+      << "Cache pointer is " << _cache << "\n";
     _cache->write(out, indent_level);
   }
 }

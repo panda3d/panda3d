@@ -20,8 +20,9 @@
 #include "pointerTo.h"
 #include "pointerToArray.h"
 #include "referenceCount.h"
+#include "dcast.h"
 
-#include <notify.h>
+#include "notify.h"
 
 class ThatThingie : public TypedObject, public ReferenceCount {
 public:
@@ -269,6 +270,14 @@ main() {
   //  jarray[4] = jarray[6];
 
   nout << "jarray[4] is " << jarray[4] << "\n";
+
+  cerr << "dcast thing_1: " << (void *)thing_1 << "\n";
+  ThisThingie *tt1 = DCAST(ThisThingie, thing_1);
+  cerr << "gives " << (void *)tt1 << "\n";
+
+  cerr << "dcast thing_2: " << (const void *)thing_2 << "\n";
+  const ThisThingie *tt2 = DCAST(ThisThingie, thing_2);
+  cerr << "gives " << (const void *)tt2 << "\n";
 
   return 0;
 }

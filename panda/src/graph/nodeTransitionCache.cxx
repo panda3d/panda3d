@@ -550,7 +550,9 @@ void NodeTransitionCache::
 write(ostream &out, int indent_level) const {
   Cache::const_iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
-    indent(out, indent_level) << (*ci).first << "\n";
+    indent(out, indent_level) 
+      << (*ci).first << ", ptr = "
+      << (const PT(NodeTransition) &)(*ci).second << "\n";
     (*ci).second.write(out, indent_level + 2);
   }
 }

@@ -9,6 +9,7 @@
 #include "datagramIterator.cxx"
 #include "datagramOutputFile.cxx"
 #include "datagramSink.cxx"
+#include "dcast.cxx"
 #include "get_config_path.cxx"
 #include "hashGeneratorBase.cxx"
 #include "hashVal.cxx"

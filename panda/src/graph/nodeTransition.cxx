@@ -26,6 +26,42 @@
 TypeHandle NodeTransition::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransition::compare_to
+//       Access: Public
+//  Description: This function works like strcmp(): it compares the
+//               two transitions and returns a number less than zero
+//               if this transition sorts before the other one, equal
+//               to zero if they are equivalent, or greater than zero
+//               if this transition sorts after the other one.
+//
+//               This imposes an arbitrary sorting order across all
+//               transitions, whose sole purpose is to allow grouping
+//               of equivalent transitions together in STL structures
+//               like maps and sets.
+////////////////////////////////////////////////////////////////////
+int NodeTransition::
+compare_to(const NodeTransition &other) const {
+  if (this == &other) {
+    // Same pointer, no comparison necessary.
+    return 0;
+  }
+
+  TypeHandle my_handle = get_handle();
+  TypeHandle other_handle = other.get_handle();
+
+  if (my_handle != other_handle) {
+    return
+      (my_handle < other_handle) ? -1 : 1;
+
+  } else if (_priority != other._priority) {
+    return _priority - other._priority;
+
+  } else {
+    return internal_compare_to(&other);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::get_handle
 //       Access: Public, Virtual
 //  Description: Returns the TypeHandle that is used to identify this

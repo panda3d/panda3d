@@ -73,7 +73,7 @@ public:
   INLINE_GRAPH bool operator > (const NodeTransition &other) const;
   INLINE_GRAPH bool operator >= (const NodeTransition &other) const;
 
-  INLINE_GRAPH int compare_to(const NodeTransition &other) const;
+  int compare_to(const NodeTransition &other) const;
   INLINE_GRAPH void generate_hash(GraphHashGenerator &hash) const;
 
 PUBLISHED:

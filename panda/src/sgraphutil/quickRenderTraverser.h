@@ -24,13 +24,12 @@
 #include "quickRenderLevelState.h"
 
 #include "renderTraverser.h"
-#include "traverserVisitor.h"
-#include "nullTransitionWrapper.h"
 #include "allTransitionsWrapper.h"
 #include "pStatCollector.h"
 
 class GraphicsStateGuardian;
 class AllTransitionsWrapper;
+class RenderRelation;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : QuickRenderTraverser
@@ -42,9 +41,7 @@ class AllTransitionsWrapper;
 //               However, it does not support instancing, nor
 //               view-frustum culling.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA QuickRenderTraverser :
-  public RenderTraverser,
-  public TraverserVisitor<NullTransitionWrapper, QuickRenderLevelState> {
+class EXPCL_PANDA QuickRenderTraverser : public RenderTraverser {
 public:
   QuickRenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
                        const ArcChain &arc_chain = ArcChain());
@@ -53,18 +50,8 @@ public:
   virtual void traverse(Node *root,
                         const AllTransitionsWrapper &initial_state);
 
-public:
-  // These methods, from parent class TraverserVisitor, define the
-  // behavior of the RenderTraverser as it traverses the graph.
-  // Normally you would never call these directly.
-  bool forward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-                   NullTransitionWrapper &pre, NullTransitionWrapper &post,
-                   QuickRenderLevelState &level_state);
-
-  INLINE void
-  backward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-               NullTransitionWrapper &pre, NullTransitionWrapper &post,
-               const QuickRenderLevelState &level_state);
+private:
+  void r_traverse(RenderRelation *arc, const QuickRenderLevelState &level_state);
 
 private:
   Node *_root;

@@ -45,7 +45,7 @@
      buffer.cxx checksumHashGenerator.cxx clockObject.cxx \
      config_express.cxx datagram.cxx datagramGenerator.cxx \
      datagramInputFile.cxx datagramIterator.cxx \
-     datagramOutputFile.cxx datagramSink.cxx error_utils.cxx \
+     datagramOutputFile.cxx datagramSink.cxx dcast.cxx error_utils.cxx \
      get_config_path.cxx \
      hashGeneratorBase.cxx hashVal.cxx indent.cxx \
      memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
