@@ -19,10 +19,10 @@ editUsername = config.GetString(usernameConfigVar, undefinedUsername)
 # call this to make sure things have been set up correctly
 def assertReadyToEdit():
     assert editUsername != undefinedUsername, (
-        "you must config '%s'" % usernameConfigVar)
+        "you must config '%s'; see %s.py" % (usernameConfigVar, __name__))
     # Feel free to add your name to the table if it's not in there
     assert editUsername in username2entIdBase, (
-        "unknown editor username '%s'" % username)
+        "unknown editor username '%s'; see %s.py" % (editUsername, __name__))
 
 def getEntIdAllocRange():
     """range of valid entId values for this user.
