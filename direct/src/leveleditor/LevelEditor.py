@@ -3171,8 +3171,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         suitPathPage = self.notebook.add('Paths')
         battleCellPage = self.notebook.add('Cells')
         # suitBuildingsPage = self.notebook.add('Suit Buildings')
-        signPage = self.notebook.add('Signs')
         propsPage = self.notebook.add('Props')
+        signPage = self.notebook.add('Signs')
         sceneGraphPage = self.notebook.add('SceneGraph')
         self.notebook['raisecommand'] = self.updateInfo
 
@@ -3648,6 +3648,14 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         if (index==0):
             self.currentBaselineDNA=None
             target=self.currentSignDNA
+            # Unset some ui elements:
+            self.baselineString.set('')
+            self.fontMenu.selectitem(0)
+            self.addCurveFloater.set(0)
+            self.addKernFloater.set(0)
+            self.addWiggleFloater.set(0)
+            self.addStumbleFloater.set(0)
+            self.addStompFloater.set(0)
         else:
             target=DNAGetChild(self.currentSignDNA, DNA_SIGN_BASELINE, index-1)
             if target:
