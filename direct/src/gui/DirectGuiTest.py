@@ -88,7 +88,8 @@ def printEntryText(text):
 # Here we create an entry, and specify everything up front
 # CALL de1.get() and de1.set('new text') to get and set entry contents
 de1 = DirectEntry(initialText = 'Hello, how are you?',
-                  image = 'phase_3/maps/hotel-room.jpg',
+                  image = 'phase_4/maps/middayskyB.jpg',
+                  #image = 'phase_3/maps/toowntown-logo.jpg',
                   image_pos = (4.55, 0, -1.65),
                   image_scale = (5.5, 1, 2.55),
                   command = printEntryText,

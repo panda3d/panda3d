@@ -50,7 +50,7 @@ class DirectButton(DirectFrame):
         # If specifed, add scaling to the pressed state to make it look
         # like the button is moving when you press it
         if self['pressEffect']:
-            np = self.stateNodePath[1].attachNewNode('pressEffect')
+            np = self.stateNodePath[1].attachNewNode('pressEffect', 1)
             np.setScale(0.98)
             self.stateNodePath[1] = np
             

@@ -46,7 +46,7 @@ class OnscreenImage(PandaObject, NodePath):
         elif type(image) == type(''):
             # Assume its a file name and create a texture card
             tex = loader.loadTexture(image)
-            cm = CardMaker()
+            cm = CardMaker('OnscreenImage')
             cm.setFrame(-1, 1, -1, 1)
             self.assign(parent.attachNewNode(cm.generate(), sort))
             self.setTexture(tex)
