@@ -147,6 +147,14 @@ set_shademode(D3DSHADEMODE val) {
   }
 }
 
+INLINE void DXGraphicsStateGuardian::
+enable_primitive_clipping(bool val) {
+  if (_clipping_enabled != val) {
+    _clipping_enabled = val;
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, (DWORD)val);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_fog
 //       Access:

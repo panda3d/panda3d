@@ -297,6 +297,7 @@ protected:
   INLINE D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
   INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
 
+  INLINE void enable_primitive_clipping(bool val);
   INLINE void enable_alpha_test(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_blend(bool val);
@@ -376,6 +377,7 @@ protected:
   bool _lighting_enabled;
   bool _lighting_enabled_this_frame;
   bool _texturing_enabled;
+  bool  _clipping_enabled;
   bool _dither_enabled;
   bool _stencil_test_enabled;
   bool* _clip_plane_enabled;      // bool[_max_clip_planes]

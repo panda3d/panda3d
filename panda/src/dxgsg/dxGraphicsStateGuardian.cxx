@@ -294,6 +294,9 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
         return;
     }
 
+    HFONT hfnt = (HFONT) GetStockObject(ANSI_FIXED_FONT); 
+    (void) SelectObject(hDC, hfnt);
+
     SetTextColor(hDC, RGB(255,255,128) );
     SetBkMode(hDC, TRANSPARENT );
 
@@ -488,6 +491,9 @@ dx_init(  LPDIRECTDRAW7     context,
     _clip_plane_enabled = (bool *)NULL;
     _cur_clip_plane_enabled = (bool *)NULL;
     _d3dDevice->SetRenderState(D3DRENDERSTATE_CLIPPLANEENABLE , 0x0);
+
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, true);
+    _clipping_enabled = true;
 
     _CurShadeMode =  D3DSHADE_FLAT;
     _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
@@ -1796,10 +1802,10 @@ draw_prim_setup(const Geom *geom) {
 #define GET_NEXT_COLOR() {                                                           \
     if(_color_transform_enabled || _alpha_transform_enabled) {                       \
         Colorf tempcolor = geom->get_next_color(ci);                                 \
-        transform_color(tempcolor,_curD3Dcolor);                                           \
+        transform_color(tempcolor,_curD3Dcolor);                                     \
     } else {                                                                         \
         p_color = geom->get_next_color(ci);                                          \
-        _curD3Dcolor = Colorf_to_D3DCOLOR(p_color);                                        \
+        _curD3Dcolor = Colorf_to_D3DCOLOR(p_color);                                  \
     }}
 
 ////////
@@ -1857,9 +1863,11 @@ draw_prim_setup(const Geom *geom) {
    // (note, TNT does the right thing tho).  So I guess we must do gouraud shading for all fog rendering for now
    // note that if _doFogType==None, _fog_enabled will always be false
 
-   if ((_perVertex & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0))) || _fog_enabled)
-        set_shademode(D3DSHADE_GOURAUD);
-   else set_shademode(D3DSHADE_FLAT);
+   D3DSHADEMODE needed_shademode = 
+       (((_perVertex & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0))) || _fog_enabled) ?
+        D3DSHADE_GOURAUD : D3DSHADE_FLAT);
+
+   set_shademode(needed_shademode);
 
    return vertex_size;
 }
@@ -2336,8 +2344,6 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
-    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
-
     // get the array traversal set up.
     int nprims = geom->get_num_prims();
 
@@ -2345,29 +2351,45 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
         return;
     }
 
-    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(nprims));
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
 
-    Texture *tex = geom->get_texture();
-    nassertv(tex != (Texture *) NULL);
+    DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(nprims));
 
     D3DMATRIX OldD3DWorldMatrix;
     _d3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
 
-    // ATI sez:  most applications ignore the fact that since alpha blended primitives
-    // combine the data in the frame buffer with the data in the current pixel, pixels 
-    // can be dithered multiple times and accentuate the dither pattern. This is particularly
-    // true in particle systems which rely on the cumulative visual effect of many overlapping
-    // alpha blended primitives.
-
-    bool bReEnableDither=_dither_enabled;
-    if(bReEnableDither) {
-        enable_dither(false);
-    }
+    bool bReEnableDither=false;
 
     _d3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
 
     Geom::VertexIterator vi = geom->make_vertex_iterator();
     Geom::ColorIterator ci = geom->make_color_iterator();
+
+    // note although sprite particles technically dont require a texture,
+    // the texture dimensions are used to initialize the size calculations
+    // the code in spriteParticleRenderer.cxx does not handle the no-texture case now
+
+    float tex_xsize = 1.0f;
+    float tex_ysize = 1.0f;
+
+    Texture *tex = geom->get_texture();
+    if(tex !=NULL) {
+
+        // set up the texture-rendering state
+        NodeTransitions state;
+
+        // this sets up texturing.  Could just set the renderstates directly, but this is a little cleaner
+        TextureTransition *ta = new TextureTransition(tex);
+        state.set_transition(ta);
+
+        TextureApplyTransition *taa = new TextureApplyTransition(TextureApplyProperty::M_modulate);
+        state.set_transition(taa);
+
+        modify_state(state);
+
+        tex_xsize = tex->_pbuffer->get_xsize();
+        tex_ysize = tex->_pbuffer->get_ysize();
+    }
 
     // save the modelview matrix
     LMatrix4f modelview_mat;
@@ -2392,21 +2414,9 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     float tex_bottom = geom->get_ll_uv()[1];
     float tex_top = geom->get_ur_uv()[1];
     
-    float half_width = 0.5f * (float) tex->_pbuffer->get_xsize() * fabs(tex_right - tex_left);
-    float half_height = 0.5f * (float) tex->_pbuffer->get_ysize() * fabs(tex_top - tex_bottom);
+    float half_width =  0.5f * tex_xsize * fabs(tex_right - tex_left);
+    float half_height = 0.5f * tex_ysize * fabs(tex_top - tex_bottom);
     float scaled_width, scaled_height;
-
-    // set up the texture-rendering state
-    NodeTransitions state;
-
-    // this sets up texturing.  Could just set the renderstates directly, but this is a little cleaner
-    TextureTransition *ta = new TextureTransition(tex);
-    state.set_transition(ta);
-
-    TextureApplyTransition *taa = new TextureApplyTransition(TextureApplyProperty::M_modulate);
-    state.set_transition(taa);
-
-    modify_state(state);
 
     // the user can override alpha sorting if they want
     bool alpha = false;
@@ -2521,8 +2531,19 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
         // if you want accuracy, use billboards and take the speed hit.
 
         sort(sorted_sprite_vector.begin(), sorted_sprite_vector.end(), draw_sprite_vertex_less());
-
         sorted_vec_iter = sorted_sprite_vector.begin();
+
+        // disabling dither for alpha particle-systems.
+        // ATI sez:  most applications ignore the fact that since alpha blended primitives
+        // combine the data in the frame buffer with the data in the current pixel, pixels 
+        // can be dithered multiple times and accentuate the dither pattern. This is particularly
+        // true in particle systems which rely on the cumulative visual effect of many overlapping
+        // alpha blended primitives.
+
+        if(_dither_enabled) {
+            bReEnableDither=true;
+            enable_dither(false);
+        }
     }
 
     Vertexf ul, ur, ll, lr;
@@ -7028,6 +7049,11 @@ prepare_geom_node(GeomNode *node) {
     return (GeomNodeContext *)NULL;
   }
 
+  if(cNumVerts>D3DMAXNUMVERTICES) {
+      dxgsg_cat.error() << "geom node contains more than " << D3DMAXNUMVERTICES << " vertices, cant create 1 vertex buffer\n";
+      exit(1);
+  }
+
   // Ok, we've got something; use it.
   DXGeomNodeContext *dx_gnc = new DXGeomNodeContext(node);
 
@@ -7079,7 +7105,7 @@ prepare_geom_node(GeomNode *node) {
 
   pD3D->Release();
 
-  dx_gnc->_num_verts=cNumVerts;
+  dx_gnc->_num_verts=0;
   dx_gnc->_start_index=0;   
 
   LPVOID pVertData=NULL;
@@ -7126,12 +7152,17 @@ prepare_geom_node(GeomNode *node) {
       exit(1);
   }
 
+  assert(cNumVerts==dx_gnc->_num_verts);
+
   hr=dx_gnc->_pVB->Optimize(_d3dDevice,0x0);
   if(FAILED(hr)) {
       dxgsg_cat.error() << "error optimizing vertex buffer: " << ConvD3DErrorToString(hr) << endl;
       delete dx_gnc;
       exit(1);
   }
+
+  if(dxgsg_cat.is_spam())
+      dxgsg_cat.spam() << "creating vertex buffer of size: " << cNumVerts << endl;
 
 #if 0  //DO_PSTATS
   float num_verts_after = 
@@ -7180,8 +7211,7 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
 
   #ifdef _DEBUG
      assert(dx_gnc->_pVB!=NULL);
-     if(_bIsTNLDevice) 
-        assert(dx_gnc->_pXformed_VB!=NULL);
+     assert((!_bIsTNLDevice)==(dx_gnc->_pXformed_VB!=NULL));
   #endif
   
   if(!_bIsTNLDevice) {
@@ -7197,7 +7227,7 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
         exit(1);
       }
     
-      if(VBdesc.dwFVF & D3DFVF_NORMAL) {
+      if(_lighting_enabled && (VBdesc.dwFVF & D3DFVF_NORMAL)) {
           PVOp|=D3DVOP_LIGHT;
       }
     
@@ -7206,14 +7236,38 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
         dxgsg_cat.error() << "error in ProcessVertices: " << ConvD3DErrorToString(hr) << endl;
         exit(1);
       }
+
+      // disable clipping, since VB is already xformed and clipped
+      if(_clipping_enabled)
+          _d3dDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, false);
   }
 
-  // need to tell draw_prims to use DrawPrimitiveVB with current vertex buffer
+  // assume we need gouraud for now.  we can make this more complex to select flat conditionally later
+  set_shademode(D3DSHADE_GOURAUD);
+  int cur_startvert=dx_gnc->_start_index;
 
   for (i = 0; i < dx_gnc->_cached_geoms.size(); i++) {
-      dx_gnc->_cached_geoms[i]->draw(this);
+    // I think we can just draw them directly? since cant account for issued stuff (since 
+    // its already encoded in the VB), and we can set the renderstates here (e.g. gouraud mode)
+    //      dx_gnc->_cached_geoms[i]->draw(this);
+
+     DPInfo *dpi=&dx_gnc->_PrimInfo[i];
+
+     LPDIRECT3DVERTEXBUFFER7 pVB;
+     if(_bIsTNLDevice) {
+         pVB=dx_gnc->_pVB;
+     } else {
+         pVB=dx_gnc->_pXformed_VB;
+     }
+
+     HRESULT hr = _d3dDevice->DrawPrimitiveVB(dpi->primtype,pVB,cur_startvert,dpi->nVerts,0x0);
+     TestDrawPrimFailure(DrawPrim,hr,_pDD,dpi->nVerts,0);
+
+     cur_startvert+=dpi->nVerts;
   }
-  // unset the flag above
+
+  if((!_bIsTNLDevice) && _clipping_enabled)
+      _d3dDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, true);
 
   // Also draw all the dynamic Geoms.
   for (i = 0; i < dx_gnc->_other_geoms.size(); i++) {
