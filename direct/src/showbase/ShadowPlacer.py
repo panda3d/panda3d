@@ -17,6 +17,7 @@ class ShadowPlacer(DirectObject.DirectObject):
     # special methods
     def __init__(self, cTrav, shadowNodePath, 
             wallCollideMask, floorCollideMask):
+        assert self.debugPrint("ShadowPlacer()")
         DirectObject.DirectObject.__init__(self)
         self.setup(cTrav, shadowNodePath, 
             wallCollideMask, floorCollideMask)
@@ -26,6 +27,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         """
         Set up the collisions
         """
+        assert self.debugPrint("setup()")
         assert not shadowNodePath.isEmpty()
         
         self.cTrav = cTrav
@@ -54,6 +56,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         self.lifter.addColliderNode(self.cRayNode, shadowNodePath.node())
 
     def delete(self):
+        assert self.debugPrint("delete()")
         del self.cTrav
 
         del self.shadowNodePath
@@ -66,12 +69,23 @@ class ShadowPlacer(DirectObject.DirectObject):
         del self.lifter
 
     def off(self):
+        """
+        Turn off the shadow placement.  The shadow will still be
+        there, but the z position will not be updated until a call
+        to on() is made.
+        """
+        assert self.debugPrint("off()")
         self.cTrav.removeCollider(self.cRayNode)
         # Now that we have disabled collisions, make one more pass
         # right now to ensure we aren't standing in a wall.
         self.oneTimeCollide()
 
     def on(self):
+        """
+        Turn on the shadow placement.  The shadow z position will
+        start being updated until a call to off() is made.
+        """
+        assert self.debugPrint("on()")
         self.cTrav.addCollider(self.cRayNode, self.lifter)
 
     def oneTimeCollide(self):
