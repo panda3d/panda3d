@@ -166,6 +166,12 @@ get_array_size() const {
 ////////////////////////////////////////////////////////////////////
 DCParameter *DCArrayParameter::
 append_array_specification(const DCUnsignedIntRange &size) {
+  if (get_typedef() != (DCTypedef *)NULL) {
+    // If this was a typedef, wrap it directly.
+    return new DCArrayParameter(this, size);
+  }
+
+  // Otherwise, the brackets get applied to the inner type.
   _element_type = _element_type->append_array_specification(size);
   return this;
 }
