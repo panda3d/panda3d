@@ -255,6 +255,9 @@ class NonPhysicsWalker(DirectObject.DirectObject):
     def reset(self):
         assert(self.debugPrint("reset()"))
 
+    def getVelocity(self):
+        return self.vel
+
     def enableAvatarControls(self):
         """
         Activate the arrow keys, etc.
