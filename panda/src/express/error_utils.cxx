@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "error_utils.h"
+#include "config_express.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -54,9 +55,11 @@ handle_socket_error(void) {
     case 10093:
       return "WSAStartup() was not called";
     default:
-      char errcode[128];
-      sprintf(errcode, "Unknown WSA error: %d", WSAGetLastError());
-      return errcode;
+      if (express_cat.is_debug())
+        express_cat.debug()
+	  << "handle_socket_error - unknown error: " << WSAGetLastError()
+	  << endl;
+      return "Unknown WSA error";
   }
 #endif
 }
@@ -173,6 +176,10 @@ get_network_error(void) {
     case 11002:
       return EU_error_network_remote_host_no_response;
     default:
+      if (express_cat.is_debug())
+	express_cat.debug()
+	  << "get_network_error() - unknown error: " << WSAGetLastError()
+	  << endl;
       return EU_error_abort;
   }
 #endif
