@@ -2,7 +2,7 @@
 Floater Class: Velocity style controller for floating point values with
                 a label, entry (validated), and scale
 """
-
+from PandaObject import *
 from Tkinter import *
 import Pmw
 import string
@@ -128,16 +128,15 @@ class Floater(Pmw.MegaWidget):
     def _startFloaterTask(self,event):
         self._fFloaterTask = 1
         apply(self.onPress,self['callbackData'])
-        self._floaterTask()
+        taskMgr.spawnMethodNamed(self._floaterTask, 'floaterTask')
 
-    def _floaterTask(self):
+    def _floaterTask(self, state):
         if self.velocity != 0.0:
             self.set( self.value + self.velocity )
-        if self._fFloaterTask:
-            self.after(50, self._floaterTask)
+        return Task.cont
 
     def _floaterReset(self, event):
-        self._fFloaterTask = 0
+        taskMgr.removeTasksNamed('floaterTask')
         self.velocity = 0.0
         self.scale.set(0.0)
         apply(self.onRelease, self['callbackData'])

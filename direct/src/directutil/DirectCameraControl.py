@@ -59,8 +59,6 @@ class DirectCameraControl(PandaObject):
             # And then spawn task to determine mouse mode
             numEntries = direct.iRay.pickGeom(
                 render,direct.dr.mouseX,direct.dr.mouseY)
-            # Sort intersection points
-            direct.iRay.cq.sortEntries()
             # Then filter out hidden nodes from entry list
             indexList = []
             for i in range(0,numEntries):
@@ -79,19 +77,6 @@ class DirectCameraControl(PandaObject):
                 hitPt = direct.iRay.camToHitPt(minPt)
                 coa.set(hitPt[0],hitPt[1],hitPt[2])
                 coaDist = Vec3(coa - ZERO_POINT).length()
-                """
-                # Check other intersection points, sorting them
-                # TBD: Use TBS C++ function to do this
-                if len(indexList) > 1:
-                for i in range(1,len(indexList)):
-                entryNum = indexList[i]
-                        hitPt = direct.iRay.camToHitPt(entryNum)
-                        dist = Vec3(hitPt - ZERO_POINT).length()
-                        if (dist < coaDist):
-                            coaDist = dist
-                            coa.set(hitPt[0],hitPt[1],hitPt[2])
-                            minPt = i
-                """
                 # Handle case of bad coa point (too close or too far)
                 if ((coaDist < (1.1 * direct.dr.near)) |
                     (coaDist > direct.dr.far)):
@@ -167,10 +152,10 @@ class DirectCameraControl(PandaObject):
         taskMgr.spawnMethodNamed(self.HPPanTask, 'manipulateCamera')
 
     def XZTranslateOrHPanYZoomTask(self, state):
-        if direct.fShift:
-            return self.XZTranslateTask(state)
-        else:
+        if direct.fShift | direct.fControl:
             return self.HPanYZoomTask(state)
+        else:
+            return self.XZTranslateTask(state)
 
     def XZTranslateOrHPPanTask(self, state):
         if direct.fShift:
@@ -194,14 +179,14 @@ class DirectCameraControl(PandaObject):
         return Task.cont
 
     def HPanYZoomTask(self,state):
-        if direct.fControl:
-            moveDir = Vec3(Y_AXIS)
-        else:
+        if direct.fShift:
             moveDir = Vec3(self.coaMarker.getPos(direct.camera))
             # If marker is behind camera invert vector
             if moveDir[1] < 0.0:
                 moveDir.assign(moveDir * -1)
             moveDir.normalize()
+        else:
+            moveDir = Vec3(Y_AXIS)
         moveDir.assign(moveDir * (-2.0 * direct.dr.mouseDeltaY *
                                         state.zoomSF))
         direct.camera.setPosHpr(direct.camera,

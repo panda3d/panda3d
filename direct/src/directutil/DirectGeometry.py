@@ -126,6 +126,28 @@ def getCrankAngle(center):
     y = direct.dr.mouseY - center[2]
     return (180 + rad2Deg(math.atan2(y,x)))
 
+def relHpr(nodePath, base, h, p, r):
+    # Compute nodePath2newNodePath relative to base coordinate system
+    # nodePath2base
+    mNodePath2Base = nodePath.getMat(base)
+    # delta scale, orientation, and position matrix
+    mBase2NewBase = Mat4()
+    composeMatrix(mBase2NewBase, UNIT_VEC, VBase3(h,p,r), ZERO_VEC,
+                  CSDefault)
+    # base2nodePath
+    mBase2NodePath = base.getMat(nodePath)
+    # nodePath2 Parent
+    mNodePath2Parent = nodePath.getMat()
+    # Compose the result
+    resultMat = mNodePath2Base * mBase2NewBase
+    resultMat = resultMat * mBase2NodePath
+    resultMat = resultMat * mNodePath2Parent
+    # Extract and apply the hpr
+    hpr = Vec3(0)
+    decomposeMatrix(resultMat, VBase3(), hpr, VBase3(),
+                    CSDefault)
+    nodePath.setHpr(hpr)
+
 # Set direct drawing style for an object
 # Never light object or draw in wireframe
 def useDirectRenderStyle(nodePath):

@@ -269,9 +269,9 @@ class DirectManipulationControl(PandaObject):
                 # Mouse starte in central region, xlate
                 # Mode depends on shift key
                 if direct.fShift:
-                    self.xlateCamXZ(state)
-                else:
                     self.xlateCamXY(state)
+                else:
+                    self.xlateCamXZ(state)
         if self.fSetCoa:
             # Update coa based on current widget position
             direct.selected.last.mCoa2Dnp.assign(
@@ -440,8 +440,8 @@ class DirectManipulationControl(PandaObject):
             deltaX = direct.dr.mouseDeltaX
             deltaY = direct.dr.mouseDeltaY
         # Mouse motion edge to edge of display region results in one full turn
-        self.relHpr(direct.camera, deltaX * tumbleRate,
-                    -deltaY * tumbleRate, 0)
+        relHpr(direct.widget, direct.camera, deltaX * tumbleRate,
+               -deltaY * tumbleRate, 0)
 
     def rotateAboutViewVector(self, state):
         # Reset init flag in case we switch to another mode
@@ -453,25 +453,7 @@ class DirectManipulationControl(PandaObject):
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
         # Mouse motion edge to edge of display region results in one full turn
-        self.relHpr(direct.camera, 0, 0, deltaAngle)
-
-    def relHpr(self, base, h, p, r):
-        # Compute widget2newWidget relative to base coordinate system
-        mWidget2Base = direct.widget.getMat(base)
-        mBase2NewBase = Mat4()
-        composeMatrix(mBase2NewBase, UNIT_VEC, VBase3(h,p,r), ZERO_VEC,
-                      CSDefault)
-        mBase2Widget = base.getMat(direct.widget)
-        mWidget2Parent = direct.widget.getMat()
-        # Compose the result
-        resultMat = mWidget2Base * mBase2NewBase
-        resultMat = resultMat * mBase2Widget
-        resultMat = resultMat * mWidget2Parent
-        # Extract and apply the hpr
-        hpr = Vec3(0)
-        decomposeMatrix(resultMat, VBase3(), hpr, VBase3(),
-                        CSDefault)
-        direct.widget.setHpr(hpr)
+        relHpr(direct.widget, direct.camera, 0, 0, deltaAngle)
 
     def scale3D(self, state):
         # Scale the selected node based upon up down mouse motion
