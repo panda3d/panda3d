@@ -180,10 +180,10 @@ sorts_less_than(const EggMaterial &other, int eq) const {
       return get_spec().compare_to(other.get_spec()) < 0;
     }
     if (has_shininess() && get_shininess() != other.get_shininess()) {
-      return get_shininess() < other.get_shininess() ? -1 : 1;
+      return get_shininess() < other.get_shininess();
     }
     if (has_local() && get_local() != other.get_local()) {
-      return get_local() - other.get_local();
+      return get_local() < other.get_local();
     }
   }
 
