@@ -330,6 +330,8 @@ DTOOLDEFAULTS=[
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
     ("HAVE_SSL",                       'UNDEF',                  'UNDEF'),
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
+    ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
+    ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ]
 
 DTOOLCONFIG={}
@@ -741,6 +743,10 @@ if (os.path.isdir(os.path.join(THIRDPARTY, "win-libs-vc7", "miles"))==0):
 ##########################################################################################
 
 DTOOLCONFIG["HAVE_NET"] = DTOOLCONFIG["HAVE_NSPR"]
+
+if (OMIT.count("NVIDIACG")==0):
+    DTOOLCONFIG["HAVE_CG"] = '1'
+    DTOOLCONFIG["HAVE_CGGL"] = '1'
 
 if (OPTIMIZE <= 3):
     if (DTOOLCONFIG["HAVE_NET"] != 'UNDEF'):
