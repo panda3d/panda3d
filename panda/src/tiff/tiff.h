@@ -53,7 +53,7 @@
  * strings      unsigned char*
  */
 #ifndef PROTYPES_H 
-// panda comment:  int8 already defined in with nspr\include\obsolete\protypes.h
+/* panda comment:  int8 already defined in with nspr\include\obsolete\protypes.h */
 #ifdef __STDC__
 typedef signed char int8;   /* NB: non-ANSI compilers may not grok */
 #else

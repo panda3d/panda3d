@@ -20,10 +20,14 @@ extern "C" {
 #include <stdlib.h>
 #include <fcntl.h>
 typedef double dblparam_t;
+#ifdef __GNUCC__
 #ifdef __STRICT_ANSI__
 #define	INLINE	__inline__
 #else
 #define	INLINE	inline
+#endif
+#else
+#define INLINE
 #endif
 #define GLOBALDATA(TYPE,NAME)	extern TYPE NAME
 #ifdef __cplusplus
