@@ -143,6 +143,9 @@ def printTrackStart():
     currTime = globalClock.getFrameTime()
     print 'TRACK_START %0.2f' % (currTime - startTime)
 
+def printArguments(a,b,c):
+    print 'My args were %d, %d, %d' % (a,b,c)
+
 i1 = FunctionInterval(printStart)
 # Just to take time
 i2 = LerpPosInterval(camera, 2.0, Point3(0,10,5))
@@ -154,15 +157,19 @@ i4 = LerpPosInterval(camera, 2.0, Point3(0,0,5))
 i5 = FunctionInterval(printPreviousStart)
 # This will be relative to track start
 i6 = FunctionInterval(printTrackStart)
+# This will print some arguments
+# This will be relative to track start
+i7 = FunctionInterval(printArguments, extraArgs = [1,10,100])
 # Create the track, if you don't specify offset type in tuple it defaults to
 # relative to TRACK_START (first entry below)
 t2 = Track([(0.0, i1),                 # i1 start at t = 0, duration = 0.0
-           (1.0, i2, TRACK_START),    # i2 start at t = 1, duration = 2.0
-           (2.0, i3, PREVIOUS_END),   # i3 start at t = 5, duration = 0.0
-           (1.0, i4, PREVIOUS_END),   # i4 start at t = 6, duration = 2.0
-           (3.0, i5, PREVIOUS_START), # i5 start at t = 9, duration = 0.0
-           (10.0, i6, TRACK_START)],  # i6 start at t = 10, duration = 0.0
-          name = 'startTimeDemo')
+            (1.0, i2, TRACK_START),    # i2 start at t = 1, duration = 2.0
+            (2.0, i3, PREVIOUS_END),   # i3 start at t = 5, duration = 0.0
+            (1.0, i4, PREVIOUS_END),   # i4 start at t = 6, duration = 2.0
+            (3.0, i5, PREVIOUS_START), # i5 start at t = 9, duration = 0.0
+            (10.0, i6, TRACK_START),   # i6 start at t = 10, duration = 0.0
+            (12.0, i7)],               # i7 start at t = 12, duration = 0.0
+           name = 'startTimeDemo')
 
 print(t2)
 

@@ -8,7 +8,7 @@ class FunctionInterval(Interval):
     # Name counter
     functionIntervalNum = 1
     # Class methods
-    def __init__(self, function, name = None, openEnded = 1):
+    def __init__(self, function, name = None, openEnded = 1, extraArgs = []):
         """__init__(function, name = None)
         """
         # Record instance variables
@@ -17,6 +17,8 @@ class FunctionInterval(Interval):
 	if (name == None):
 	    name = 'FunctionInterval-%d' % FunctionInterval.functionIntervalNum
 	    FunctionInterval.functionIntervalNum += 1
+        # Record any arguments
+        self.extraArgs = extraArgs
         # Initialize superclass
         # Set openEnded true if IVAL_INIT calls after end time cause interval
         # function to be called.  If false, IVAL_INIT calls have no effect
@@ -30,7 +32,7 @@ class FunctionInterval(Interval):
 	"""
         if event != IVAL_STOP:
             # Evaluate the function
-            self.function()
+            apply(self.function, self.extraArgs)
 
 ### FunctionInterval subclass for throwing events ###
 class EventInterval(FunctionInterval):
