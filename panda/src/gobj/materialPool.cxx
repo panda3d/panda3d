@@ -24,6 +24,17 @@ MaterialPool *MaterialPool::_global_ptr = (MaterialPool *)NULL;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MaterialPool::write
+//       Access: Published, Static
+//  Description: Lists the contents of the material pool to the
+//               indicated output stream.
+////////////////////////////////////////////////////////////////////
+void MaterialPool::
+write(ostream &out, unsigned int) {
+  get_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MaterialPool::ns_get_material
 //       Access: Public
 //  Description: The nonstatic implementation of get_material().
@@ -90,15 +101,4 @@ get_ptr() {
     _global_ptr = new MaterialPool;
   }
   return _global_ptr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialPool::write
-//       Access: Public, Static
-//  Description: Lists the contents of the material pool to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
-INLINE void MaterialPool::
-write(ostream &out, unsigned int) {
-  get_ptr()->ns_list_contents(out);
 }
