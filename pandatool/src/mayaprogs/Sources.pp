@@ -126,3 +126,12 @@
     config_mayaloader.cxx
 
 #end lib_target
+
+#begin test_bin_target
+  #define USE_PACKAGES maya
+  #define TARGET blend_test
+
+  #define SOURCES \
+    blend_test.cxx
+
+#end test_bin_target
