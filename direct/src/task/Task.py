@@ -519,6 +519,13 @@ class TaskManager:
                          + '\n')
         return str
 
+    def resetStats(self):
+        for task in self.taskList:
+            task.dt = 0
+            task.avgDt = 0
+            task.maxDt = 0
+            task.runningTotal = 0
+
     def popupControls(self):
         from TaskManagerPanel import *
         return TaskManagerPanel(self)
