@@ -34,6 +34,21 @@ WorkingNodePath(const NodePath &start) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE WorkingNodePath::
+WorkingNodePath(const WorkingNodePath &copy) :
+  _next(copy._next),
+  _start(copy._start),
+  _node(copy._node)
+{
+  nassertv(_next != (WorkingNodePath *)NULL ||
+           _start != (NodePathComponent *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WorkingNodePath::Constructor
 //       Access: Public
 //  Description: Creates a WorkingNodePath that is the same as the
@@ -58,6 +73,21 @@ INLINE WorkingNodePath::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void WorkingNodePath::
+operator = (const WorkingNodePath &copy) {
+  _next = copy._next;
+  _start = copy._start;
+  _node = copy._node;
+
+  nassertv(_next != (WorkingNodePath *)NULL ||
+           _start != (NodePathComponent *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WorkingNodePath::get_node_path
 //       Access: Public
 //  Description: Constructs and returns an actual NodePath that
@@ -79,4 +109,10 @@ get_node_path() const {
 INLINE PandaNode *WorkingNodePath::
 node() const {
   return _node;
+}
+
+INLINE ostream &
+operator << (ostream &out, const WorkingNodePath &node_path) {
+  node_path.output(out);
+  return out;
 }

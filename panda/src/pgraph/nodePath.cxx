@@ -3083,7 +3083,8 @@ find_matches(NodePathCollection &result, FindApproxPath &approx_path,
       << "Attempt to extend an empty NodePath by: " << approx_path << ".\n";
     return;
   }
-  FindApproxLevelEntry start(*this, approx_path);
+  FindApproxLevelEntry start(WorkingNodePath(*this), approx_path);
+  nassertv(start._node_path.is_valid());
   FindApproxLevel level;
   level.add_entry(start);
   r_find_matches(result, level, max_matches, _max_search_depth);
@@ -3114,11 +3115,11 @@ r_find_matches(NodePathCollection &result,
   for (li = level._v.begin(); li != level._v.end() && okflag; ++li) {
     const FindApproxLevelEntry &entry = (*li);
 
-    if (entry.is_solution()) {
+    if (entry.is_solution(0)) {
       // Does this entry already represent a solution?
-      result.add_path(entry._node_path);
+      result.add_path(entry._node_path.get_node_path());
     } else {
-      entry.consider_node(result, next_level, max_matches);
+      entry.consider_node(result, next_level, max_matches, 0);
     }
 
     if (max_matches > 0 && result.get_num_paths() >= max_matches) {

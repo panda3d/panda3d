@@ -49,14 +49,21 @@
 class EXPCL_PANDA WorkingNodePath {
 public:
   INLINE WorkingNodePath(const NodePath &start);
+  INLINE WorkingNodePath(const WorkingNodePath &copy);
   INLINE WorkingNodePath(const WorkingNodePath &parent, PandaNode *child);
   INLINE ~WorkingNodePath();
+
+  INLINE void operator = (const WorkingNodePath &copy);
+
+  bool is_valid() const;
 
   INLINE NodePath get_node_path() const;
   INLINE PandaNode *node() const;
 
   int get_num_nodes() const;
   PandaNode *get_node(int index) const;
+
+  void output(ostream &out) const;
 
 private:
   PT(NodePathComponent) r_get_node_path() const;
@@ -69,6 +76,8 @@ private:
 
   PandaNode *_node;
 };
+
+INLINE ostream &operator << (ostream &out, const WorkingNodePath &node_path);
 
 #include "workingNodePath.I"
 

@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "findApproxPath.h"
-#include "nodePath.h"
+#include "workingNodePath.h"
 
 class FindApproxLevel;
 class NodePathCollection;
@@ -36,25 +36,25 @@ class NodePathCollection;
 ////////////////////////////////////////////////////////////////////
 class FindApproxLevelEntry {
 public:
-  INLINE FindApproxLevelEntry(const NodePath &node_path,
+  INLINE FindApproxLevelEntry(const WorkingNodePath &node_path,
                               FindApproxPath &approx_path);
-  INLINE FindApproxLevelEntry(const FindApproxLevelEntry &copy);
+  INLINE FindApproxLevelEntry(const FindApproxLevelEntry &copy, int increment = 0);
   INLINE void operator = (const FindApproxLevelEntry &copy);
 
-  INLINE bool next_is_stashed() const;
+  INLINE bool next_is_stashed(int increment) const;
 
   void consider_node(NodePathCollection &result, FindApproxLevel &next_level,
-                     int max_matches) const;
+                     int max_matches, int increment) const;
   void consider_next_step(NodePathCollection &result,
                           PandaNode *child_node, FindApproxLevel &next_level,
-                          int max_matches) const;
-  INLINE bool is_solution() const;
+                          int max_matches, int increment) const;
+  INLINE bool is_solution(int increment) const;
 
   void output(ostream &out) const;
 
   // _node_path represents the most recent node that we have
   // previously accepted as being a partial solution.
-  NodePath _node_path;
+  WorkingNodePath _node_path;
 
   // _i represents the next component in the approx_path that must be
   // matched against all of the children of _node_path, above.  If _i

@@ -30,7 +30,7 @@
 void FindApproxLevelEntry::
 output(ostream &out) const {
   out << "(" << _node_path << "):";
-  if (is_solution()) {
+  if (is_solution(0)) {
     out << " solution!";
   } else {
     out << "(";
@@ -46,34 +46,39 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void FindApproxLevelEntry::
 consider_node(NodePathCollection &result, FindApproxLevel &next_level,
-              int max_matches) const {
-  nassertv(_i < _approx_path.get_num_components());
+              int max_matches, int increment) const {
+  nassertv(_i + increment < _approx_path.get_num_components());
 
-  if (_approx_path.is_component_match_many(_i)) {
+  if (_approx_path.is_component_match_many(_i + increment)) {
     // Match any number, zero or more, levels of nodes.  This is the
     // tricky case that requires this whole nutty breadth-first thing.
 
     // This means we must reconsider our own entry with the next path
     // entry, before we consider the next entry--this supports
     // matching zero levels of nodes.
-    FindApproxLevelEntry reconsider(*this);
-    ++reconsider._i;
 
-    if (reconsider.is_solution()) {
+    // We used to make a temporary copy of our own record, and then
+    // increment _i on that copy, but we can't do that nowadays
+    // because the WorkingNodePath object stores a pointer to each
+    // previous generation, which means we can't use any temporary
+    // FindApproxLevelEntry objects.  Instead, we pass around the
+    // increment parameter, which increments _i on the fly.
+
+    if (is_solution(increment + 1)) {
       // Does this now represent a solution?
-      result.add_path(reconsider._node_path);
-      if (max_matches > 0 && result.get_num_paths() >= max_matches) {
+      result.add_path(_node_path.get_node_path());
+      if (max_matches > 0 && result.get_num_paths() >= max_matches) { 
         return;
       }
     } else {
-      reconsider.consider_node(result, next_level, max_matches);
+      consider_node(result, next_level, max_matches, increment + 1);
     }
   }
 
   PandaNode *this_node = _node_path.node();
   nassertv(this_node != (PandaNode *)NULL);
 
-  bool stashed_only = next_is_stashed();
+  bool stashed_only = next_is_stashed(increment);
 
   if (!stashed_only) {
     // Check the normal list of children.
@@ -81,7 +86,7 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
     for (int i = 0; i < num_children; i++) {
       PandaNode *child_node = this_node->get_child(i);
       
-      consider_next_step(result, child_node, next_level, max_matches);
+      consider_next_step(result, child_node, next_level, max_matches, increment);
       if (max_matches > 0 && result.get_num_paths() >= max_matches) {
         return;
       }
@@ -94,7 +99,7 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
     for (int i = 0; i < num_stashed; i++) {
       PandaNode *stashed_node = this_node->get_stashed(i);
       
-      consider_next_step(result, stashed_node, next_level, max_matches);
+      consider_next_step(result, stashed_node, next_level, max_matches, increment);
       if (max_matches > 0 && result.get_num_paths() >= max_matches) {
         return;
       }
@@ -115,7 +120,8 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
 ////////////////////////////////////////////////////////////////////
 void FindApproxLevelEntry::
 consider_next_step(NodePathCollection &result, PandaNode *child_node,
-                   FindApproxLevel &next_level, int max_matches) const {
+                   FindApproxLevel &next_level, int max_matches,
+                   int increment) const {
   if (!_approx_path.return_hidden() &&
       child_node->get_draw_mask().is_zero()) {
     // If the approx path does not allow us to return hidden nodes,
@@ -124,25 +130,25 @@ consider_next_step(NodePathCollection &result, PandaNode *child_node,
     return;
   }
 
-  nassertv(_i < _approx_path.get_num_components());
+  nassertv(_i + increment < _approx_path.get_num_components());
 
-  if (_approx_path.is_component_match_many(_i)) {
+  if (_approx_path.is_component_match_many(_i + increment)) {
     // Match any number, zero or more, levels of nodes.  This is the
     // tricky case that requires this whole nutty breadth-first thing.
 
     // And now we just add the next entry without incrementing its
     // path entry.
 
-    FindApproxLevelEntry next(*this);
-    next._node_path = NodePath(_node_path, child_node);
+    FindApproxLevelEntry next(*this, increment);
+    next._node_path = WorkingNodePath(_node_path, child_node);
     next_level.add_entry(next);
 
   } else {
-    if (_approx_path.matches_component(_i, child_node)) {
+    if (_approx_path.matches_component(_i + increment, child_node)) {
       // That matched, and it consumes one path entry.
-      FindApproxLevelEntry next(*this);
-      ++next._i;
-      next._node_path = NodePath(_node_path, child_node);
+      FindApproxLevelEntry next(*this, increment);
+      next._i++;
+      next._node_path = WorkingNodePath(_node_path, child_node);
       next_level.add_entry(next);
     }
   }

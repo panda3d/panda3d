@@ -23,11 +23,12 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FindApproxLevelEntry::
-FindApproxLevelEntry(const NodePath &node_path, FindApproxPath &approx_path) :
+FindApproxLevelEntry(const WorkingNodePath &node_path, FindApproxPath &approx_path) :
   _node_path(node_path),
   _approx_path(approx_path)
 {
   _i = 0;
+  nassertv(_node_path.is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,11 +37,12 @@ FindApproxLevelEntry(const NodePath &node_path, FindApproxPath &approx_path) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FindApproxLevelEntry::
-FindApproxLevelEntry(const FindApproxLevelEntry &copy) :
+FindApproxLevelEntry(const FindApproxLevelEntry &copy, int increment) :
   _node_path(copy._node_path),
-  _i(copy._i),
+  _i(copy._i + increment),
   _approx_path(copy._approx_path)
 {
+  nassertv(_node_path.is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,6 +55,7 @@ operator = (const FindApproxLevelEntry &copy) {
   _node_path = copy._node_path;
   _i = copy._i;
   nassertv(&_approx_path == &copy._approx_path);
+  nassertv(_node_path.is_valid());
 }
 
 
@@ -63,8 +66,8 @@ operator = (const FindApproxLevelEntry &copy) {
 //               must be a stashed node, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool FindApproxLevelEntry::
-next_is_stashed() const {
-  return _approx_path.matches_stashed(_i);
+next_is_stashed(int increment) const {
+  return _approx_path.matches_stashed(_i + increment);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +78,6 @@ next_is_stashed() const {
 //               been successfully matched.
 ////////////////////////////////////////////////////////////////////
 INLINE bool FindApproxLevelEntry::
-is_solution() const {
-  return (_i >= _approx_path.get_num_components());
+is_solution(int increment) const {
+  return (_i + increment >= _approx_path.get_num_components());
 }
