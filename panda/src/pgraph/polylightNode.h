@@ -143,7 +143,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "PolylightNode.I"
+#include "polylightNode.I"
 
 #endif
 

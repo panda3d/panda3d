@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "PolylightNode.h"
+#include "polylightNode.h"
 #include "config_pgraph.h"
 #include "nodePath.h"
 #include "clockObject.h"

@@ -19,6 +19,7 @@
 #include "nodePathCollection.h"
 #include "findApproxPath.h"
 #include "findApproxLevelEntry.h"
+#include "colorAttrib.h"
 
 #include "indent.h"
 

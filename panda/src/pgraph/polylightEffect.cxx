@@ -20,8 +20,10 @@
 #include "polylightNode.h"
 #include "config_pgraph.h"
 #include "nodePath.h"
+#include "colorScaleAttrib.h"
 #include "pmap.h"
 #include <math.h>
+
 TypeHandle PolylightEffect::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
