@@ -239,22 +239,66 @@ check_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::get_uv
+//     Function: CLwoSurface::generate_uvs
 //       Access: Private
-//  Description: Computes or looks up the appropriate UV for the given
-//               vertex.
+//  Description: Computes all the UV's for the polygon's vertices,
+//               according to the _projection_mode defined in the
+//               block.
+////////////////////////////////////////////////////////////////////
+void CLwoSurface::
+generate_uvs(vector_PT_EggVertex &egg_vertices) {
+  // To do this properly near seams and singularities (for instance,
+  // the back seam and the poles of the spherical map), we will need
+  // to know the polygon's centroid.
+  LPoint3d centroid(0.0, 0.0, 0.0);
+  
+  vector_PT_EggVertex::const_iterator vi;
+  for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
+    EggVertex *egg_vertex = (*vi);
+    centroid += egg_vertex->get_pos3();
+  }
+
+  centroid /= (double)egg_vertices.size();
+
+  // Now go back through and actually compute the UV's.
+  for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
+    EggVertex *egg_vertex = (*vi);
+    LPoint3d pos = egg_vertex->get_pos3();
+    egg_vertex->set_uv(map_spherical(pos, centroid));
+  }
+}
+  
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::map_planar
+//       Access: Private
+//  Description: Computes a UV based on the given point in space,
+//               using a planar projection.
 ////////////////////////////////////////////////////////////////////
 LPoint2d CLwoSurface::
-get_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
-  // For now, we always compute spherical UV's.
+map_planar(const LPoint3d &pos, const LPoint3d &) const {
+  // A planar projection is about as easy as can be.  We ignore the Y
+  // axis, and project the point into the XZ plane.  Done.
+  double u = (pos[0] + 0.5);
+  double v = (pos[2] + 0.5);
 
+  return LPoint2d(u, v);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::map_spherical
+//       Access: Private
+//  Description: Computes a UV based on the given point in space,
+//               using a spherical projection.
+////////////////////////////////////////////////////////////////////
+LPoint2d CLwoSurface::
+map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const {
   // To compute the x position on the frame, we only need to consider
   // the angle of the vector about the Y axis.  Project the vector
   // into the XZ plane to do this.
 
   LVector2d xz_orig(pos[0], pos[2]);
   LVector2d xz = xz_orig;
-
   double u_offset = 0.0;
 
   if (xz == LVector2d::zero()) {
@@ -278,12 +322,12 @@ get_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
     u_offset = (xz[0] < 0.0) ? 1.0 : -1.0;
   }
 
-  // The u value is based on the longitude: the angle about the Y
+  // The U value is based on the longitude: the angle about the Y
   // axis.
   double u = 
     (atan2(xz[0], -xz[1]) / (2.0 * MathNumbers::pi) + 0.5 + u_offset) * _block->_w_repeat;
 
-  // Now rotate the vector into the YZ plane, and the v value is based
+  // Now rotate the vector into the YZ plane, and the V value is based
   // on the latitude: the angle about the X axis.
   LVector2d yz(pos[1], xz_orig.length());
   double v = 
@@ -293,32 +337,79 @@ get_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::generate_uvs
+//     Function: CLwoSurface::map_cylindrical
 //       Access: Private
-//  Description: Computes all the UV's for the polygon's vertices,
-//               according to the _projection_mode defined in the
-//               block.
+//  Description: Computes a UV based on the given point in space,
+//               using a cylindrical projection.
 ////////////////////////////////////////////////////////////////////
-void CLwoSurface::
-generate_uvs(vector_PT_EggVertex &egg_vertices) {
-  // To do this properly near seams and singularities (for instance,
-  // the back seam and the poles of the spherical map), we will need
-  // to know the polygon's centroid.
-  LPoint3d centroid(0.0, 0.0, 0.0);
-  
-  vector_PT_EggVertex::const_iterator vi;
-  for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
-    EggVertex *egg_vertex = (*vi);
-    centroid += egg_vertex->get_pos3();
+LPoint2d CLwoSurface::
+map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const {
+  // This is almost identical to the spherical projection, except for
+  // the computation of V.
+
+  LVector2d xz(pos[0], pos[2]);
+  double u_offset = 0.0;
+
+  if (xz == LVector2d::zero()) {
+    // Although a cylindrical mapping does not really have a
+    // singularity at the pole, it's still possible to put a point
+    // there, and we'd like to do the right thing with the polygon
+    // that shares that point.  So the singularity logic remains.
+    xz.set(centroid[0], centroid[2]);
+
+  } else if (xz[1] >= 0.0 && ((xz[0] < 0.0) != (centroid[0] < 0.))) {
+    // And cylinders do still have a seam at the back.
+    u_offset = (xz[0] < 0.0) ? 1.0 : -1.0;
   }
 
-  centroid /= (double)egg_vertices.size();
+  double u = 
+    (atan2(xz[0], -xz[1]) / (2.0 * MathNumbers::pi) + 0.5 + u_offset) * _block->_w_repeat;
 
-  // Now go back through and actually comput the UV's.
-  for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
-    EggVertex *egg_vertex = (*vi);
+  // For a cylindrical mapping, the V value comes almost directly from
+  // Y.  Easy.
+  double v = (pos[1] + 0.5);
 
-    egg_vertex->set_uv(get_uv(egg_vertex->get_pos3(), centroid));
-  }
+  return LPoint2d(u, v);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::map_cubic
+//       Access: Private
+//  Description: Computes a UV based on the given point in space,
+//               using a cubic projection.
+////////////////////////////////////////////////////////////////////
+LPoint2d CLwoSurface::
+map_cubic(const LPoint3d &pos, const LPoint3d &) const {
+  // A cubic projection is a planar projection, but we eliminate the
+  // dominant axis instead of arbitrarily eliminating Y.
+
+  double x = fabs(pos[0]);
+  double y = fabs(pos[1]);
+  double z = fabs(pos[2]);
+
+  double u, v;
   
+  if (x > y) {
+    if (x > z) {
+      // X is dominant.
+      u = (pos[2] + 0.5);
+      v = (pos[1] + 0.5);
+    } else {
+      // Z is dominant.
+      u = (pos[0] + 0.5);
+      v = (pos[1] + 0.5);
+    }
+  } else {
+    if (y > z) {
+      // Y is dominant.
+      u = (pos[0] + 0.5);
+      v = (pos[2] + 0.5);
+    } else {
+      // Z is dominant.
+      u = (pos[0] + 0.5);
+      v = (pos[1] + 0.5);
+    }
+  }
+
+  return LPoint2d(u, v);
+}

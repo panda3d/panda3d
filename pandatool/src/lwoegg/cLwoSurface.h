@@ -73,8 +73,15 @@ public:
   CLwoSurfaceBlock *_block;
 
 private:
-  LPoint2d get_uv(const LPoint3d &pos, const LPoint3d &centroid) const;
   void generate_uvs(vector_PT_EggVertex &egg_vertices);
+
+  LPoint2d map_planar(const LPoint3d &pos, const LPoint3d &centroid) const;
+  LPoint2d map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const;
+  LPoint2d map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const;
+  LPoint2d map_cubic(const LPoint3d &pos, const LPoint3d &centroid) const;
+
+  // Define a pointer to one of the above member functions.
+  LPoint2d (CLwoSurface::*_map_uv)(const LPoint3d &pos, const LPoint3d &centroid) const;
 };
 
 #include "cLwoSurface.I"
