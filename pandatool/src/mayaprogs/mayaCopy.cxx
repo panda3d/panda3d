@@ -155,7 +155,6 @@ copy_maya_file(const Filename &source, const Filename &dest,
     exit(1);
   }
 
-  cerr << "Maya read\n";
   if (!_maya->read(source)) {
     maya_cat.error()
       << "Unable to read " << source << "\n";
