@@ -175,7 +175,7 @@ has_local_value() const {
 //               either from a prc file or locally set, or false if
 //               variable has its default value.
 ////////////////////////////////////////////////////////////////////
-bool ConfigVariableBase::
+INLINE bool ConfigVariableBase::
 has_value() const {
   return _core->has_value();
 }
