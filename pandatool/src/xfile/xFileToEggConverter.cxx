@@ -231,9 +231,11 @@ convert_object(LPDIRECTXFILEOBJECT obj, EggGroupNode *egg_parent) {
   }
 
   // It isn't.
-  xfile_cat.error()
-    << "Ignoring object of unknown type: " << get_object_name(obj)
-    << "\n";
+  if (xfile_cat.is_debug()) {
+    xfile_cat.debug()
+      << "Ignoring object of unknown type: "
+      << get_object_name(obj) << "\n";
+  }
   return true;
 }
 
@@ -276,9 +278,11 @@ convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
     }
 
   } else {
-    xfile_cat.error()
-      << "Ignoring data object of unknown type: " << get_object_name(obj)
-      << "\n";
+    if (xfile_cat.is_debug()) {
+      xfile_cat.debug()
+        << "Ignoring data object of unknown type: "
+        << get_object_name(obj) << "\n";
+    }
   }
   
   return true;
@@ -416,9 +420,11 @@ convert_mesh_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh) {
   }
 
   // It isn't.
-  xfile_cat.error()
-    << "Ignoring object of unknown type: " << get_object_name(obj)
-    << "\n";
+  if (xfile_cat.is_debug()) {
+    xfile_cat.debug()
+      << "Ignoring mesh object of unknown type: "
+      << get_object_name(obj) << "\n";
+  }
   return true;
 }
 
@@ -462,9 +468,11 @@ convert_mesh_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
     }
 
   } else {
-    xfile_cat.error()
-      << "Ignoring data object of unknown type: " << get_object_name(obj)
-      << "\n";
+    if (xfile_cat.is_debug()) {
+      xfile_cat.debug()
+        << "Ignoring mesh data object of unknown type: "
+        << get_object_name(obj) << "\n";
+    }
   }
   
   return true;
@@ -581,6 +589,7 @@ bool XFileToEggConverter::
 convert_material_list_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh) {
   HRESULT hr;
   LPDIRECTXFILEDATA data_obj;
+  LPDIRECTXFILEDATAREFERENCE ref_obj;
 
   // See if the object is a data object.
   hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
@@ -589,10 +598,21 @@ convert_material_list_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh) {
     return convert_material_list_data_object(data_obj, mesh);
   }
 
+  // Or maybe it's a reference to a previous object.
+  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
+  if (hr == DD_OK) {
+    // It is.
+    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
+      return convert_material_list_data_object(data_obj, mesh);
+    }
+  }
+
   // It isn't.
-  xfile_cat.error()
-    << "Ignoring object of unknown type: " << get_object_name(obj)
-    << "\n";
+  if (xfile_cat.is_debug()) {
+    xfile_cat.debug()
+      << "Ignoring material list object of unknown type: "
+      << get_object_name(obj) << "\n";
+  }
   return true;
 }
 
@@ -620,9 +640,11 @@ convert_material_list_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
       return false;
     }
   } else {
-    xfile_cat.error()
-      << "Ignoring data object of unknown type: " << get_object_name(obj)
-      << "\n";
+    if (xfile_cat.is_debug()) {
+      xfile_cat.debug()
+        << "Ignoring material list data object of unknown type: "
+        << get_object_name(obj) << "\n";
+    }
   }
   
   return true;
@@ -692,9 +714,11 @@ convert_material_object(LPDIRECTXFILEOBJECT obj, XFileMaterial &material) {
   }
 
   // It isn't.
-  xfile_cat.error()
-    << "Ignoring object of unknown type: " << get_object_name(obj)
-    << "\n";
+  if (xfile_cat.is_debug()) {
+    xfile_cat.debug()
+      << "Ignoring material object of unknown type: "
+      << get_object_name(obj) << "\n";
+  }
   return true;
 }
 
@@ -722,9 +746,11 @@ convert_material_data_object(LPDIRECTXFILEDATA obj, XFileMaterial &material) {
       return false;
     }
   } else {
-    xfile_cat.error()
-      << "Ignoring data object of unknown type: " << get_object_name(obj)
-      << "\n";
+    if (xfile_cat.is_debug()) {
+      xfile_cat.debug()
+        << "Ignoring material data object of unknown type: "
+        << get_object_name(obj) << "\n";
+    }
   }
   
   return true;

@@ -2,7 +2,8 @@
   #define TARGET ptloader
   #define BUILDING_DLL BUILDING_PTLOADER
   #define LOCAL_LIBS \
-    fltegg flt lwoegg lwo dxfegg dxf vrmlegg pvrml converter pandatoolbase
+    fltegg flt lwoegg lwo dxfegg dxf vrmlegg pvrml xfile \
+    converter pandatoolbase
   #define OTHER_LIBS \
     egg2pg:c builder:c egg:c pandaegg:m \
     mathutil:c linmath:c putil:c \
@@ -16,6 +17,9 @@
     dtoolutil:c dtoolbase:c dtool:m
   #define UNIX_SYS_LIBS \
     m
+
+  #define WIN_SYS_LIBS \
+    d3dxof.lib dxguid.lib d3d8.lib d3dx8.lib dxerr8.lib
 
   #define SOURCES \
     config_ptloader.cxx config_ptloader.h \

@@ -29,11 +29,11 @@ XFileToEgg::
 XFileToEgg() :
   SomethingToEgg("DirectX", ".x")
 {
+  add_path_replace_options();
+  add_path_store_options();
+  add_units_options();
   add_normals_options();
   add_transform_options();
-  add_texture_path_options();
-  add_rel_dir_options();
-  add_search_path_options(true);
 
   set_program_description
     ("This program converts DirectX retained-mode (.x) files to egg.  This "
@@ -59,7 +59,9 @@ run() {
 
   XFileToEggConverter converter;
   converter.set_egg_data(&_data, false);
-  converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
+
+  // Copy in the path and animation parameters.
+  apply_parameters(converter);
 
   if (!converter.convert_file(_input_filename)) {
     nout << "Unable to read " << _input_filename << "\n";

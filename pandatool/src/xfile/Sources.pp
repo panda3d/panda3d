@@ -1,7 +1,8 @@
 
-// This package is temporarily disabled.
-#define BUILD_DIRECTORY
-//#define BUILD_DIRECTORY $[HAVE_DX]
+// The .x converter takes advantage of the DirectX API's; therefore,
+// it can only be built if we have DX available (and therefore it only
+// builds on Windows--sorry).
+#define BUILD_DIRECTORY $[HAVE_DX]
 #define USE_PACKAGES dx
 
 #begin ss_lib_target
@@ -14,7 +15,7 @@
     dtoolconfig dtool pystub \
 
   #define WIN_SYS_LIBS \
-    d3dxof.lib dxguid.lib
+    d3dxof.lib dxguid.lib d3d8.lib d3dx8.lib dxerr8.lib
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
     
