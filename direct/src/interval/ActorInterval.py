@@ -66,7 +66,11 @@ class ActorInterval(Interval):
             self.stopEventList = [self.stopEvent]
 
     def calcFrame(self, t):
-	offset = t % abs(self.finishTime - self.startTime)
+	segmentLength = abs(self.finishTime - self.startTime)
+	offset = t % segmentLength
+	# Handle boundary case where we want to set the final frame
+	if (t == self.getDuration() and offset < 0.0001):
+	    offset = segmentLength
         # Compute current frame based upon current time
 	if (self.reverse == 0):
             floatFrame = self.frameRate * (self.startTime + offset)
