@@ -1018,7 +1018,10 @@ is_hidden(DrawMask camera_mask) const {
 INLINE bool NodePath::
 unstash() {
   nassertr(!is_singleton(), false);
-  return get_parent().node()->unstash_child(node());
+  PandaNode *parent_node = get_parent().node();
+  PandaNode *this_node = node();
+  nassertr(parent_node != (PandaNode *)NULL && this_node != (PandaNode *)NULL, false);
+  return parent_node->unstash_child(this_node);
 }
 
 ////////////////////////////////////////////////////////////////////
