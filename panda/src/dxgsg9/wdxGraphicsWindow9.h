@@ -60,7 +60,7 @@ protected:
 
 private:
   //  bool set_to_temp_rendertarget();
-  void create_screen_buffers_and_device(DXScreenData &Display,
+  bool create_screen_buffers_and_device(DXScreenData &Display,
                                         bool force_16bpp_zbuffer);
 
   bool choose_device(void);
