@@ -403,6 +403,135 @@ unpack_literal_value() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_double
+//       Access: Public
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+unpack_double(double &value) {
+  nassertv(_mode == M_unpack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    _current_field->unpack_double(_unpack_data, _unpack_length, _unpack_p, 
+                                  value, _pack_error, _range_error);
+    advance();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_int
+//       Access: Public
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+unpack_int(int &value) {
+  nassertv(_mode == M_unpack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    _current_field->unpack_int(_unpack_data, _unpack_length, _unpack_p,
+                               value, _pack_error, _range_error);
+    advance();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_uint
+//       Access: Public
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+unpack_uint(unsigned int &value) {
+  nassertv(_mode == M_unpack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    _current_field->unpack_uint(_unpack_data, _unpack_length, _unpack_p,
+                                value, _pack_error, _range_error);
+    advance();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_int64
+//       Access: Public
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+unpack_int64(PN_int64 &value) {
+  nassertv(_mode == M_unpack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    _current_field->unpack_int64(_unpack_data, _unpack_length, _unpack_p,
+                                 value, _pack_error, _range_error);
+    advance();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_uint64
+//       Access: Public
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+unpack_uint64(PN_uint64 &value) {
+  nassertv(_mode == M_unpack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    _current_field->unpack_uint64(_unpack_data, _unpack_length, _unpack_p,
+                                  value, _pack_error, _range_error);
+    advance();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_string
+//       Access: Public
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+unpack_string(string &value) {
+  nassertv(_mode == M_unpack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    _current_field->unpack_string(_unpack_data, _unpack_length, _unpack_p,
+                                  value, _pack_error, _range_error);
+    advance();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_literal_value
+//       Access: Public
+//  Description: Returns the literal string that represents the packed
+//               value of the current field, and advances the field
+//               pointer.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+unpack_literal_value(string &value) {
+  size_t start = _unpack_p;
+  unpack_skip();
+  nassertv(_unpack_p >= start);
+  value.assign(_unpack_data + start, _unpack_p - start);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::had_pack_error
 //       Access: Published
 //  Description: Returns true if there has been an packing error

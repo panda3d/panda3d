@@ -92,6 +92,19 @@ PUBLISHED:
   void unpack_validate();
   void unpack_skip();
 
+public:
+  // The following are variants on the above unpack() calls that pass
+  // the result back by reference instead of as a return value.
+  INLINE void unpack_double(double &value);
+  INLINE void unpack_int(int &value);
+  INLINE void unpack_uint(unsigned int &value);
+  INLINE void unpack_int64(PN_int64 &value);
+  INLINE void unpack_uint64(PN_uint64 &value);
+  INLINE void unpack_string(string &value);
+  INLINE void unpack_literal_value(string &value);
+
+PUBLISHED:
+
 #ifdef HAVE_PYTHON
   void pack_object(PyObject *object);
   PyObject *unpack_object();

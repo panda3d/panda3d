@@ -1620,7 +1620,7 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
     pack_error = true;
     return;
   }
-  value = string(data + p, string_length);
+  value.assign(data + p, string_length);
   p += string_length;
 
   return;

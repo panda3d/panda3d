@@ -689,7 +689,8 @@ unpack_object() {
 
   case PT_string:
     {
-      string str = unpack_string();
+      string str;
+      unpack_string(str);
       object = PyString_FromStringAndSize(str.data(), str.size());
     }
     break;
