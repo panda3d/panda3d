@@ -1947,7 +1947,7 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
   // shorthand for.  First, look in the config file.
 
   string egg_syntax =
-    config_egg2pg.GetString("egg-object-type-" + object_type, "none");
+    config_egg2pg.GetString("egg-object-type-" + downcase(object_type), "none");
 
   if (egg_syntax == "none") {
     // It wasn't defined in a config file.  Maybe it's built in?
