@@ -16,7 +16,6 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             self.DistributedNode_initialized = 1
             self.gotStringParentToken = 0
             DistributedObject.DistributedObject.__init__(self, cr)
-        return None
 
     def disable(self):
         if self.activeState != DistributedObject.ESDisabled:
