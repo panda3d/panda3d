@@ -16,7 +16,15 @@ class Entity:
         ('comment', str, 0),
         )
 
-    def __init__(self, level, entId, attribs=None):
+    def __init__(self, level=None, entId=None, attribs=None):
+        if level is not None and entId is not None:
+            self.initializeEntity(level, entId, attribs)
+        else:
+            self.level = level
+            self.entId = entId
+            self.attribs = Entity.Attribs
+
+    def initializeEntity(self, level, entId, attribs=None):
         self.level = level
         self.entId = entId
 

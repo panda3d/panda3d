@@ -72,9 +72,9 @@ class DistributedInteractiveEntityAI(DistributedEntityAI.DistributedEntityAI):
         return [self.fsm.getCurrentState().getName(),
                 globalClockDelta.getRealNetworkTime()]
     
-    def getOwnerDoId(self):
-        assert(self.debugPrint("getOwnerDoId() returning: %s"%(self.ownerDoId,)))
-        return self.ownerDoId
+    #def getOwnerDoId(self):
+    #    assert(self.debugPrint("getOwnerDoId() returning: %s"%(self.ownerDoId,)))
+    #    return self.ownerDoId
     
     def requestInteract(self):
         assert(self.debugPrint("requestInteract()"))

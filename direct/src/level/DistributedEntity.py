@@ -8,6 +8,7 @@ class DistributedEntity(DistributedObject.DistributedObject, Entity.Entity):
 
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
+        Entity.Entity.__init__(self)
 
     def generateInit(self):
         DistributedEntity.notify.debug('generateInit')
@@ -31,7 +32,7 @@ class DistributedEntity(DistributedObject.DistributedObject, Entity.Entity):
 
         # ask our level obj for our spec data
         level = toonbase.tcr.doId2do[self.levelDoId]
-        Entity.Entity.__init__(self, level, self.entId)
+        self.initializeEntity(level, self.entId)
 
         DistributedObject.DistributedObject.announceGenerate(self)
 

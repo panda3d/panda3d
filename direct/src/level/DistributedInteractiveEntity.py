@@ -22,7 +22,7 @@ class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
         DistributedEntity.DistributedEntity.__init__(self, cr)
         assert(self.debugPrint("__init()"))
 
-        self.fsm = FSM.FSM('Distribu, levelDoId, entIdtedInteractiveEntity',
+        self.fsm = FSM.FSM('DistributedInteractiveEntity',
                            [State.State('off',
                                         self.enterOff,
                                         self.exitOff,
@@ -46,7 +46,7 @@ class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
         
     def generate(self):
         """generate(self)
-        This method is called when the DistributedEntity is reintroduced
+        This method is called when the DistributedEntity is introduced
         to the world, either for the first time or from the cache.
         """
         assert(self.debugPrint("generate()"))
