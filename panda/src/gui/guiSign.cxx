@@ -10,6 +10,7 @@ TypeHandle GuiSign::_type_handle;
 
 void GuiSign::recompute_frame(void) {
   GuiItem::recompute_frame();
+  _sign->recompute();
   _sign->get_extents(_left, _right, _bottom, _top);
 }
 

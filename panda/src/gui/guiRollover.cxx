@@ -36,6 +36,8 @@ static void exit_rollover(CPT_Event e) {
 
 void GuiRollover::recompute_frame(void) {
   GuiItem::recompute_frame();
+  _off->recompute();
+  _on->recompute();
   GetExtents(_off, _on, _left, _right, _bottom, _top);
   _rgn->set_region(_left, _right, _bottom, _top);
 }

@@ -159,6 +159,14 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 
 void GuiButton::recompute_frame(void) {
   GuiItem::recompute_frame();
+  _up->recompute();
+  _down->recompute();
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->recompute();
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->recompute();
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->recompute();
   GetExtents(_up, _down, _up_rollover, _down_rollover, _inactive, _left,
 	     _right, _bottom, _top);
   _rgn->set_region(_left, _right, _bottom, _top);

@@ -37,6 +37,8 @@ public:
   INLINE float get_top(void) const;
   INLINE LVector4f get_frame(void) const;
 
+  INLINE void recompute(void);
+
   virtual void output(ostream&) const = 0;
 public:
   // type interface

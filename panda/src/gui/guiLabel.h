@@ -74,6 +74,8 @@ public:
 
   INLINE Colorf get_foreground_color(void) const;
   INLINE Colorf get_background_color(void) const;
+
+  INLINE void recompute(void);
 public:
   // type interface
   static TypeHandle get_class_type(void) {

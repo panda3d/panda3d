@@ -28,9 +28,10 @@ void GuiFrame::recompute_frame(void) {
   // and brute-force algorithm.  Hopefully it will be replaced with something
   // more ellegant later
   for (i=_items.begin(); i!=_items.end(); ++i) {
+    GuiItem* here = (*i).get_item();
+    here->recompute();
     int n = (*i).get_num_links();
     if (n > 0) {
-      GuiItem* here = (*i).get_item();
       LVector4f ext_h = here->get_frame();
       LVector3f pos_h = here->get_pos();
       for (int j=0; j<n; ++j) {
@@ -38,12 +39,13 @@ void GuiFrame::recompute_frame(void) {
 	if (pack == NONE)
 	  continue;
 	GuiItem* to = (*i).get_nth_to(j);
+	float gap = (*i).get_nth_gap(j);
 	LVector4f ext_t = to->get_frame();
 	switch (pack) {
 	case ABOVE:
 	  {
 	    // to(top) - here(bottom)
-	    float diff = ext_t[3] - ext_h[2];
+	    float diff = ext_t[3] - ext_h[2] + gap;
 	    LVector3f move = LVector3f::rfu(0., 0., diff);
 	    here->set_pos(pos_h + move);
 	    ext_h = here->get_frame();
@@ -53,7 +55,7 @@ void GuiFrame::recompute_frame(void) {
 	case UNDER:
 	  {
 	    // to(bottom) - here(top)
-	    float diff = ext_t[2] - ext_h[3];
+	    float diff = ext_t[2] - ext_h[3] - gap;
 	    LVector3f move = LVector3f::rfu(0., 0., diff);
 	    here->set_pos(pos_h + move);
 	    ext_h = here->get_frame();
@@ -63,7 +65,7 @@ void GuiFrame::recompute_frame(void) {
 	case LEFT:
 	  {
 	    // to(left) - here(right)
-	    float diff = ext_t[0] - ext_h[1];
+	    float diff = ext_t[0] - ext_h[1] - gap;
 	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
 	    here->set_pos(pos_h + move);
 	    ext_h = here->get_frame();
@@ -73,7 +75,47 @@ void GuiFrame::recompute_frame(void) {
 	case RIGHT:
 	  {
 	    // to(right) - here(left)
-	    float diff = ext_t[1] - ext_h[0];
+	    float diff = ext_t[1] - ext_h[0] + gap;
+	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
+	    here->set_pos(pos_h + move);
+	    ext_h = here->get_frame();
+	    pos_h = here->get_pos();
+	  }
+	  break;
+	case ALIGN_ABOVE:
+	  {
+	    // to(top) - here(top)
+	    float diff = ext_t[3] - ext_h[3];
+	    LVector3f move = LVector3f::rfu(0., 0., diff);
+	    here->set_pos(pos_h + move);
+	    ext_h = here->get_frame();
+	    pos_h = here->get_pos();
+	  }
+	  break;
+	case ALIGN_UNDER:
+	  {
+	    // to(bottom) - here(bottom)
+	    float diff = ext_t[2] - ext_h[2];
+	    LVector3f move = LVector3f::rfu(0., 0., diff);
+	    here->set_pos(pos_h + move);
+	    ext_h = here->get_frame();
+	    pos_h = here->get_pos();
+	  }
+	  break;
+	case ALIGN_LEFT:
+	  {
+	    // to(left) - here(left)
+	    float diff = ext_t[0] - ext_h[0];
+	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
+	    here->set_pos(pos_h + move);
+	    ext_h = here->get_frame();
+	    pos_h = here->get_pos();
+	  }
+	  break;
+	case ALIGN_RIGHT:
+	  {
+	    // to(right) - here(right)
+	    float diff = ext_t[1] - ext_h[1];
 	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
 	    here->set_pos(pos_h + move);
 	    ext_h = here->get_frame();

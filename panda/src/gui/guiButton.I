@@ -157,3 +157,15 @@ INLINE const string& GuiButton::get_down_rollover_event(void) const {
 INLINE const string& GuiButton::get_inactive_event(void) const {
   return _inactive_event;
 }
+
+INLINE void GuiButton::set_up_rollover(GuiLabel* upr) {
+  _up_rollover = upr;
+  if (_up_rollover_event.empty())
+    _up_rollover_event = this->get_name() + "-up-rollover";
+}
+
+INLINE void GuiButton::set_down_rollover(GuiLabel* downr) {
+  _down_rollover = downr;
+  if (_down_rollover_event.empty())
+    _down_rollover_event = this->get_name() + "-down-rollover";
+}

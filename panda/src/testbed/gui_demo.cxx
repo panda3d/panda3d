@@ -51,7 +51,7 @@
 extern PT(GeomNode) geomnode;
 extern RenderRelation* first_arc;
 
-static PT(GuiFrame) global_frame;
+// static PT(GuiFrame) global_frame;
 
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
@@ -165,35 +165,127 @@ static void setup_gui(void) {
   //  f1->manage(mgr, event_handler);
   //  cerr << *f1;
   // test 5
-  GuiLabel* l1 = GuiLabel::make_simple_text_label("on", font);
-  GuiLabel* l2 = GuiLabel::make_simple_text_label("off", font);
-  GuiLabel* l3 = GuiLabel::make_simple_text_label("over", font);
-  GuiLabel* l4 = GuiLabel::make_simple_text_label("easy", font);
-  l1->set_background_color(1., 1., 1., 0.3);
-  l2->set_background_color(1., 1., 1., 0.3);
-  l3->set_background_color(1., 1., 1., 0.3);
-  l4->set_background_color(1., 1., 1., 0.3);
-  GuiRollover* r1 = new GuiRollover("r1", l1, l2);
-  GuiRollover* r2 = new GuiRollover("r2", l3, l4);
-  GuiFrame* f1 = new GuiFrame("test5");
-  f1->add_item(r1);
-  f1->add_item(r2);
-  f1->pack_item(r2, GuiFrame::UNDER, r1);
-  f1->set_scale(0.1);
-  f1->manage(mgr, event_handler);
-  float w1, w2, w3, w4, w;
-  w1 = l1->get_width();
-  w2 = l2->get_width();
-  w3 = l3->get_width();
-  w4 = l4->get_width();
+  //  GuiLabel* l1 = GuiLabel::make_simple_text_label("on", font);
+  //  GuiLabel* l2 = GuiLabel::make_simple_text_label("off", font);
+  //  GuiLabel* l3 = GuiLabel::make_simple_text_label("over", font);
+  //  GuiLabel* l4 = GuiLabel::make_simple_text_label("easy", font);
+  //  l1->set_background_color(1., 1., 1., 0.3);
+  //  l2->set_background_color(1., 1., 1., 0.3);
+  //  l3->set_background_color(1., 1., 1., 0.3);
+  //  l4->set_background_color(1., 1., 1., 0.3);
+  //  GuiRollover* r1 = new GuiRollover("r1", l1, l2);
+  //  GuiRollover* r2 = new GuiRollover("r2", l3, l4);
+  //  GuiFrame* f1 = new GuiFrame("test5");
+  //  f1->add_item(r1);
+  //  f1->add_item(r2);
+  //  f1->pack_item(r2, GuiFrame::UNDER, r1);
+  //  f1->set_scale(0.1);
+  //  f1->manage(mgr, event_handler);
+  //  float w1, w2, w3, w4, w;
+  //  w1 = l1->get_width();
+  //  w2 = l2->get_width();
+  //  w3 = l3->get_width();
+  //  w4 = l4->get_width();
+  //  w = (w1>w2)?w1:w2;
+  //  w = (w>w3)?w:w3;
+  //  w = (w>w4)?w:w4;
+  //  l1->set_width(w);
+  //  l2->set_width(w);
+  //  l3->set_width(w);
+  //  l4->set_width(w);
+  //  global_frame = f1;
+  // test 6  (the greg test)
+  GuiFrame* f1 = new GuiFrame("canids");
+  GuiLabel* b1l1 = GuiLabel::make_simple_text_label("dingo", font);
+  b1l1->set_foreground_color(0., 0., 0., 1.);
+  b1l1->set_background_color(1., 1., 1., 1.);
+  GuiLabel* b1l2 = GuiLabel::make_simple_text_label("dingo", font);
+  b1l2->set_foreground_color(0., 0., 0., 1.);
+  b1l2->set_background_color(1., 1., 0., 1.);
+  GuiLabel* b1l3 = GuiLabel::make_simple_text_label("dingo", font);
+  b1l3->set_foreground_color(1., 1., 1., 1.);
+  b1l3->set_background_color(0., 0., 0., 1.);
+  GuiButton* b1 = new GuiButton("dingo", b1l1, b1l2, b1l3, b1l3, b1l1);
+  b1->set_scale(0.1);
+  f1->add_item(b1);
+  GuiLabel* b2l1 = GuiLabel::make_simple_text_label("jackel", font);
+  b2l1->set_foreground_color(0., 0., 0., 1.);
+  b2l1->set_background_color(1., 1., 1., 1.);
+  GuiLabel* b2l2 = GuiLabel::make_simple_text_label("jackel", font);
+  b2l2->set_foreground_color(0., 0., 0., 1.);
+  b2l2->set_background_color(1., 1., 0., 1.);
+  GuiLabel* b2l3 = GuiLabel::make_simple_text_label("jackel", font);
+  b2l3->set_foreground_color(1., 1., 1., 1.);
+  b2l3->set_background_color(0., 0., 0., 1.);
+  GuiButton* b2 = new GuiButton("jackel", b2l1, b2l2, b2l3, b2l3, b2l1);
+  b2->set_scale(0.1);
+  f1->add_item(b2);
+  GuiLabel* b3l1 = GuiLabel::make_simple_text_label("hyena", font);
+  b3l1->set_foreground_color(0., 0., 0., 1.);
+  b3l1->set_background_color(1., 1., 1., 1.);
+  GuiLabel* b3l2 = GuiLabel::make_simple_text_label("hyena", font);
+  b3l2->set_foreground_color(0., 0., 0., 1.);
+  b3l2->set_background_color(1., 1., 0., 1.);
+  GuiLabel* b3l3 = GuiLabel::make_simple_text_label("hyena", font);
+  b3l3->set_foreground_color(1., 1., 1., 1.);
+  b3l3->set_background_color(0., 0., 0., 1.);
+  GuiButton* b3 = new GuiButton("hyena", b3l1, b3l2, b3l3, b3l3, b3l1);
+  b3->set_scale(0.1);
+  f1->add_item(b3);
+  GuiLabel* b4l1 = GuiLabel::make_simple_text_label("wolf", font);
+  b4l1->set_foreground_color(0., 0., 0., 1.);
+  b4l1->set_background_color(1., 1., 1., 1.);
+  GuiLabel* b4l2 = GuiLabel::make_simple_text_label("wolf", font);
+  b4l2->set_foreground_color(0., 0., 0., 1.);
+  b4l2->set_background_color(1., 1., 0., 1.);
+  GuiLabel* b4l3 = GuiLabel::make_simple_text_label("wolf", font);
+  b4l3->set_foreground_color(1., 1., 1., 1.);
+  b4l3->set_background_color(0., 0., 0., 1.);
+  GuiButton* b4 = new GuiButton("wolf", b4l1, b4l2, b4l3, b4l3, b4l1);
+  b4->set_scale(0.1);
+  f1->add_item(b4);
+  GuiLabel* b5l1 = GuiLabel::make_simple_text_label("fox", font);
+  b5l1->set_foreground_color(0., 0., 0., 1.);
+  b5l1->set_background_color(1., 1., 1., 1.);
+  GuiLabel* b5l2 = GuiLabel::make_simple_text_label("fox", font);
+  b5l2->set_foreground_color(0., 0., 0., 1.);
+  b5l2->set_background_color(1., 1., 0., 1.);
+  GuiLabel* b5l3 = GuiLabel::make_simple_text_label("fox", font);
+  b5l3->set_foreground_color(1., 1., 1., 1.);
+  b5l3->set_background_color(0., 0., 0., 1.);
+  GuiButton* b5 = new GuiButton("fox", b5l1, b5l2, b5l3, b5l3, b5l1);
+  b5->set_scale(0.1);
+  f1->add_item(b5);
+  f1->pack_item(b2, GuiFrame::UNDER, b1);
+  f1->pack_item(b3, GuiFrame::UNDER, b2);
+  f1->pack_item(b4, GuiFrame::UNDER, b3);
+  f1->pack_item(b5, GuiFrame::UNDER, b4);
+  float w, w1, w2;
+  w1 = b1l1->get_width();
+  w2 = b2l1->get_width();
   w = (w1>w2)?w1:w2;
-  w = (w>w3)?w:w3;
-  w = (w>w4)?w:w4;
-  l1->set_width(w);
-  l2->set_width(w);
-  l3->set_width(w);
-  l4->set_width(w);
-  global_frame = f1;
+  w2 = b3l1->get_width();
+  w = (w>w2)?w:w2;
+  w2 = b4l1->get_width();
+  w = (w>w2)?w:w2;
+  w2 = b5l1->get_width();
+  w = (w>w2)?w:w2;
+  b1l1->set_width(w);
+  b1l2->set_width(w);
+  b1l3->set_width(w);
+  b2l1->set_width(w);
+  b2l2->set_width(w);
+  b2l3->set_width(w);
+  b3l1->set_width(w);
+  b3l2->set_width(w);
+  b3l3->set_width(w);
+  b4l1->set_width(w);
+  b4l2->set_width(w);
+  b4l3->set_width(w);
+  b5l1->set_width(w);
+  b5l2->set_width(w);
+  b5l3->set_width(w);
+  f1->manage(mgr, event_handler);
 }
 
 static void event_2(CPT_Event) {
@@ -204,16 +296,11 @@ static void event_2(CPT_Event) {
   }
 }
 
-static void event_3(CPT_Event) {
-  global_frame = (GuiFrame*)0L;
-}
-
 void demo_keys(EventHandler&) {
   new RenderRelation( lights, dlight );
   have_dlight = true;
 
   event_handler.add_hook("2", event_2);
-  event_handler.add_hook("3", event_3);
 }
 
 int main(int argc, char *argv[]) {

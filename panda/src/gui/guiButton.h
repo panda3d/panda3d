@@ -67,6 +67,9 @@ public:
   INLINE const string& get_down_rollover_event(void) const;
   INLINE const string& get_inactive_event(void) const;
 
+  INLINE void set_up_rollover(GuiLabel*);
+  INLINE void set_down_rollover(GuiLabel*);
+
   virtual void set_scale(float);
   virtual void set_pos(const LVector3f&);
 

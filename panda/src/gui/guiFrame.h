@@ -12,7 +12,8 @@
 
 class EXPCL_PANDA GuiFrame : public GuiItem {
 public:
-  enum Packing { NONE, ABOVE, UNDER, LEFT, RIGHT };
+  enum Packing { NONE, ABOVE, UNDER, LEFT, RIGHT, ALIGN_ABOVE, ALIGN_UNDER,
+		 ALIGN_LEFT, ALIGN_RIGHT };
 private:
   class Connection {
   private:
@@ -58,6 +59,7 @@ private:
     inline int get_num_links(void) const { return _links.size(); }
     inline Packing get_nth_packing(int n) const { return _links[n].get_how(); }
     inline GuiItem* get_nth_to(int n) const { return _links[n].get_who(); }
+    inline float get_nth_gap(int n) const { return _links[n].get_gap(); }
 
     inline void erase_nth_link(int n) { _links.erase(_links.begin() + n); }
     inline void erase_all_links(void) { _links.clear(); }

@@ -34,6 +34,10 @@ INLINE LVector4f GuiItem::get_frame(void) const {
   return LVector4f(_left, _right, _bottom, _top);
 }
 
+INLINE void GuiItem::recompute(void) {
+  this->recompute_frame();
+}
+
 INLINE ostream& operator<<(ostream& os, GuiItem& item) {
   item.output(os);
   return os;

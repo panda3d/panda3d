@@ -88,3 +88,7 @@ INLINE Colorf GuiLabel::get_foreground_color(void) const {
 INLINE Colorf GuiLabel::get_background_color(void) const {
   return _background;
 }
+
+INLINE void GuiLabel::recompute(void) {
+  this->recompute_transform();
+}

@@ -43,8 +43,6 @@ void GuiLabel::set_properties(void) {
       n->set_text_color(_foreground);
       if (!_have_background) {
 	n->clear_card();
-	if (gui_cat->is_debug())
-	  gui_cat->debug() << "cleared card" << endl;
       } else {
 	n->set_card_color(_background);
 	if (_have_width || _have_height) {
@@ -52,35 +50,20 @@ void GuiLabel::set_properties(void) {
 	  float w = v[1] - v[0];
 	  float h = v[3] - v[2];
 	  if (_have_width) {
-	    gui_cat->debug() << "adjusting width: before = " << w;
 	    w = _width - w;
-	    gui_cat->debug(false) << "  diff = " << w;
 	    w *= 0.5;
 	    v[1] += w;
 	    v[0] -= w;
-	    gui_cat->debug(false) << "  after = " << (v[1] - v[0])
-				  << "  want = " << _width << endl;
 	  }
 	  if (_have_height) {
-	    gui_cat->debug() << "adjusting height: before = " << h;
 	    h = _height - h;
-	    gui_cat->debug(false) << "  diff = " << h;
 	    h *= 0.5;
 	    v[3] += h;
 	    v[2] -= h;
-	    gui_cat->debug(false) << "  after = " << (v[3] - v[2])
-				  << "  want = " << _height << endl;
 	  }
 	  n->set_card_actual(v[0], v[1], v[2], v[3]);
 	} else
 	  n->set_card_as_margin(0., 0., 0., 0.);
-	if (gui_cat->is_debug()) {
-	  gui_cat->debug() << "set card color" << endl;
-	  if (n->has_card())
-	    gui_cat->debug() << ".. and a card was made" << endl;
-	  else
-	    gui_cat->debug() << ".. but there is no card" << endl;
-	}
       }
     }
     break;
@@ -257,11 +240,5 @@ void GuiLabel::set_background_color(const Colorf& color) {
 
   _background = color;
   _have_background = (color != zero);
-  if (gui_cat->is_debug()) {
-    if (_have_background)
-      gui_cat->debug() << "setting background" << endl;
-    else
-      gui_cat->debug() << "setting no background" << endl;
-  }
   set_properties();
 }
