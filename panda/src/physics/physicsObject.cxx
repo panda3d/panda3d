@@ -137,7 +137,7 @@ void PhysicsObject::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
-  out<<""<<"PhysicsObject:\n";
+  out<<""<<"PhysicsObject "<<_name<<"\n";
   out.width(indent+2); out<<""; out<<"_position "<<_position<<"\n";
   out.width(indent+2); out<<""; out<<"_last_position "<<_last_position<<"\n";
   out.width(indent+2); out<<""; out<<"_velocity "<<_velocity<<"\n";

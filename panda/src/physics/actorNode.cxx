@@ -36,6 +36,9 @@ ActorNode(const string &name) :
   add_physical(new Physical(1, true));
   _mass_center = get_physical(0)->get_phys_body();
   _mass_center->set_active(true);
+  #ifndef NDEBUG
+    _mass_center->set_name(name);
+  #endif
   _ok_to_callback = true;
 }
 
