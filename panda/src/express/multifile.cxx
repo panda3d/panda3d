@@ -949,7 +949,7 @@ add_new_subfile(const string &subfile_name, Subfile *subfile) {
   name.standardize();
   if (name.empty() || name == "/") {
     // Invalid empty name.
-    return name;
+    return string();
   }
 
   if (name[0] == '/') {

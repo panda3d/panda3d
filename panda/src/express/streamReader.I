@@ -117,7 +117,7 @@ get_uint8() {
 INLINE PN_int16 StreamReader::
 get_int16() {
   PN_int16 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -131,7 +131,7 @@ get_int16() {
 INLINE PN_int32 StreamReader::
 get_int32() {
   PN_int32 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -145,7 +145,7 @@ get_int32() {
 INLINE PN_int64 StreamReader::
 get_int64() {
   PN_int64 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -159,7 +159,7 @@ get_int64() {
 INLINE PN_uint16 StreamReader::
 get_uint16() {
   PN_uint16 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -173,7 +173,7 @@ get_uint16() {
 INLINE PN_uint32 StreamReader::
 get_uint32() {
   PN_uint32 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -187,7 +187,7 @@ get_uint32() {
 INLINE PN_uint64 StreamReader::
 get_uint64() {
   PN_uint64 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -209,7 +209,7 @@ get_float32() {
   nassertr(sizeof(float) == 4, 0.0f);
 
   float readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -223,7 +223,7 @@ get_float32() {
 INLINE PN_float64 StreamReader::
 get_float64() {
   PN_float64 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   LittleEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -237,7 +237,7 @@ get_float64() {
 INLINE PN_int16 StreamReader::
 get_be_int16() {
   PN_int16 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -251,7 +251,7 @@ get_be_int16() {
 INLINE PN_int32 StreamReader::
 get_be_int32() {
   PN_int32 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -265,7 +265,7 @@ get_be_int32() {
 INLINE PN_int64 StreamReader::
 get_be_int64() {
   PN_int64 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -279,7 +279,7 @@ get_be_int64() {
 INLINE PN_uint16 StreamReader::
 get_be_uint16() {
   PN_uint16 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -293,7 +293,7 @@ get_be_uint16() {
 INLINE PN_uint32 StreamReader::
 get_be_uint32() {
   PN_uint32 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -307,7 +307,7 @@ get_be_uint32() {
 INLINE PN_uint64 StreamReader::
 get_be_uint64() {
   PN_uint64 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -329,7 +329,7 @@ get_be_float32() {
   nassertr(sizeof(float) == 4, 0.0f);
 
   float readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
@@ -343,7 +343,7 @@ get_be_float32() {
 INLINE PN_float64 StreamReader::
 get_be_float64() {
   PN_float64 readval, retval;
-  _in->read(&readval, sizeof(readval));
+  _in->read((char *)&readval, sizeof(readval));
   BigEndian s(&readval, 0, sizeof(readval));
   s.store_value(&retval, sizeof(retval));
   return retval;
