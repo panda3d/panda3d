@@ -11,24 +11,26 @@
 #include "imageFile.h"
 
 #include <set>
+#include <map>
 
 class Palette;
 class PNMImage;
 class AttribFile;
+class PaletteGroup;
+class TexturePacking;
+class TextureEggRef;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : PTexture
-// Description : 
+// Description : A single texture filename, as read from an egg file
+//               or from a .txa file.  This may be considered for
+//               palettization on a number of different groups, but it
+//               must have the same size in each group.
 ////////////////////////////////////////////////////////////////////
 class PTexture : public ImageFile {
 public:
-  enum OmitReason {
-    OR_none,
-    OR_size, OR_repeats, OR_omitted, OR_unused, OR_unknown,
-    OR_cmdline, OR_solitary
-  };
-
-  PTexture(AttribFile *af, const Filename &name);
+  PTexture(AttribFile *attrib_file, const Filename &name);
+  ~PTexture();
 
   Filename get_name() const;
   
@@ -37,8 +39,8 @@ public:
   virtual Filename get_filename() const;
   virtual Filename get_basename() const;
 
-  bool get_size(int &xsize, int &ysize);
-  void set_size(int xsize, int ysize);
+  bool get_size(int &xsize, int &ysize, int &zsize);
+  void set_size(int xsize, int ysize, int zsize);
 
   bool get_req(int &xsize, int &ysize);
   bool get_last_req(int &xsize, int &ysize);
@@ -51,44 +53,32 @@ public:
   int get_margin() const;
   void set_margin(int margin);
 
-  OmitReason get_omit() const;
-  void set_omit(OmitReason omit);
+  void user_omit();
 
-  bool needs_refresh();
+  TexturePacking *add_to_group(PaletteGroup *group);
+  TexturePacking *check_group(PaletteGroup *group) const;
+
   void set_changed(bool changed);
-
-  bool unused() const;
-  void set_unused(bool unused);
 
   bool matched_anything() const;
   void set_matched_anything(bool matched_anything);
-
-  bool uses_alpha() const;
-  void set_uses_alpha(bool uses_alpha);
-
-  void mark_pack_location(Palette *palette, int left, int top,
-			  int xsize, int ysize, int margin);
-  void mark_unpacked();
-  bool is_packed() const;
-  bool is_really_packed() const;
-  Palette *get_palette() const;
-  bool get_packed_location(int &left, int &top) const;
-  bool get_packed_size(int &xsize, int &ysize, int &margin) const;
-  void record_orig_state();
-  bool packing_changed() const;
+  bool is_unused() const;
 
   void write_size(ostream &out);
   void write_pathname(ostream &out) const;
-  void write_unplaced(ostream &out) const;
 
   bool transfer();
 
   PNMImage *read_image();
 
+  typedef set<TextureEggRef *> Eggs;
+  Eggs _eggs;
+
 private:  
   void check_size();
   void read_header();
-  bool read_image_header(const Filename &filename, int &xsize, int &ysize);
+  bool read_image_header(const Filename &filename, 
+			 int &xsize, int &ysize, int &zsize);
   static int to_power_2(int value);
 
   Filename _name;
@@ -100,31 +90,27 @@ private:
   Filename _filename;
   bool _file_exists;
   bool _texture_changed;
-  bool _unused;
   bool _matched_anything;
-  bool _uses_alpha;
 
   bool _got_size;
   int _xsize, _ysize;
+  int _zsize;
 
   bool _got_req;
   int _req_xsize, _req_ysize;
   bool _got_last_req;
   int _last_req_xsize, _last_req_ysize;
   int _margin;
-  OmitReason _omit;
-
-  bool _is_packed;
-  Palette *_palette;
-  int _pleft, _ptop, _pxsize, _pysize, _pmargin;
-
-  bool _orig_is_packed;
-  Filename _orig_palette_name;
-  int _opleft, _optop, _opxsize, _opysize, _opmargin;
+  bool _omit;
 
   bool _read_header;
 
   AttribFile *_attrib_file;
+
+  typedef map<PaletteGroup *, TexturePacking *> Packing;
+  Packing _packing;
+
+  friend class TexturePacking;
 };
 
 

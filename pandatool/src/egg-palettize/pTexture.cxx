@@ -4,32 +4,46 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pTexture.h"
+#include "texturePacking.h"
 #include "palette.h"
 #include "attribFile.h"
 
 #include <pnmImage.h>
 #include <pnmReader.h>
 
-
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
 PTexture::
-PTexture(AttribFile *af, const Filename &name) : 
+PTexture(AttribFile *attrib_file, const Filename &name) : 
   _name(name),
-  _attrib_file(af)
+  _attrib_file(attrib_file)
 {
   _got_filename = false;
   _file_exists = false;
   _texture_changed = false;
-  _unused = true;
   _matched_anything = false;
   _got_size = false;
   _got_req = false;
   _got_last_req = false;
   _margin = _attrib_file->_default_margin;
+  _omit = false;
   _read_header = false;
-  _omit = OR_none;
-  _uses_alpha = false;
-  _is_packed = false;
-  _palette = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PTexture::
+~PTexture() {
+  Packing::iterator pi;
+  for (pi = _packing.begin(); pi != _packing.end(); ++pi) {
+    delete (*pi).second;
+  }
 }
 
 Filename PTexture::
@@ -68,15 +82,16 @@ add_filename(const Filename &filename) {
 	read_header();
       }
 
-      int oxsize, oysize;
+      int oxsize, oysize, ozsize;
       bool got_other_size =
-	read_image_header(filename, oxsize, oysize);
+	read_image_header(filename, oxsize, oysize, ozsize);
 
       if (got_other_size) {
 	if (!_got_size || oxsize * oysize > _xsize * _ysize) {
 	  _filename = filename;
 	  _xsize = oxsize;
 	  _ysize = oysize;
+	  _zsize = ozsize;
 	  _got_size = true;
 	  _texture_changed = true;
 	  
@@ -106,7 +121,7 @@ get_basename() const {
 }
 
 bool PTexture::
-get_size(int &xsize, int &ysize) {
+get_size(int &xsize, int &ysize, int &zsize) {
   if (!_got_size) {
     read_header();
   }
@@ -117,16 +132,18 @@ get_size(int &xsize, int &ysize) {
 
   xsize = _xsize;
   ysize = _ysize;
+  zsize = _zsize;
   return true;
 }
 
 void PTexture::
-set_size(int xsize, int ysize) {
+set_size(int xsize, int ysize, int zsize) {
   // If we've already read the file header, don't let anyone tell us
   // differently.
   if (!_read_header) {
     _xsize = xsize;
     _ysize = ysize;
+    _zsize = zsize;
     _got_size = true;
   }
 }
@@ -134,7 +151,8 @@ set_size(int xsize, int ysize) {
 bool PTexture::
 get_req(int &xsize, int &ysize) {
   if (!_got_req) {
-    return get_size(xsize, ysize);
+    int zsize;
+    return get_size(xsize, ysize, zsize);
   }
   xsize = _req_xsize;
   ysize = _req_ysize;
@@ -144,7 +162,8 @@ get_req(int &xsize, int &ysize) {
 bool PTexture::
 get_last_req(int &xsize, int &ysize) {
   if (!_got_last_req) {
-    return get_size(xsize, ysize);
+    int zsize;
+    return get_size(xsize, ysize, zsize);
   }
   xsize = _last_req_xsize;
   ysize = _last_req_ysize;
@@ -187,12 +206,6 @@ void PTexture::
 clear_req() {
   _got_req = false;
   _margin = _attrib_file->_default_margin;
-
-  if (_omit != OR_cmdline) {
-    // If we previously omitted this texture from the command line,
-    // preserve that property.
-    _omit = OR_none;
-  }
 }
 
 double PTexture::
@@ -219,179 +232,127 @@ set_margin(int margin) {
   _margin = margin;
 }
 
-PTexture::OmitReason PTexture::
-get_omit() const {
-  return _omit;
-}
-
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::user_omit
+//       Access: Public
+//  Description: Omits the texture from all palettes, based on a
+//               user-supplied "omit" parameter (presumably read from
+//               the .txa file).
+////////////////////////////////////////////////////////////////////
 void PTexture::
-set_omit(OmitReason omit) {
-  _omit = omit;
+user_omit() {
+  _omit = true;
+  
+  // Also omit each of our already-packed textures.
+  Packing::iterator pi;
+  for (pi = _packing.begin(); pi != _packing.end(); ++pi) {
+    (*pi).second->set_omit(OR_omitted);
+  }
 }
 
-bool PTexture::
-needs_refresh() {
-  if (!_texture_changed) {
-    // We consider the texture to be out-of-date if it's moved around
-    // in the palette.
-    _texture_changed = packing_changed();
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::add_to_group
+//       Access: Public
+//  Description: Adds the texture to the indicated PaletteGroup, if it
+//               has not already been added.  Returns the
+//               TexturePacking pointer that represents the addition.
+////////////////////////////////////////////////////////////////////
+TexturePacking *PTexture::
+add_to_group(PaletteGroup *group) {
+  Packing::iterator pi;
+  pi = _packing.find(group);
+  if (pi != _packing.end()) {
+    return (*pi).second;
   }
 
-  if (!_texture_changed && _file_exists) {
-    // Compare the texture's timestamp to that of its palette (or
-    // resized copy).  If it's newer, it's changed and must be
-    // replaced.
-
-    Filename target_filename;
-    if (is_packed() && _omit == OR_none) {
-      // Compare to the palette file.
-      target_filename = _palette->get_filename();
-      if (_palette->new_palette()) {
-	// It's a brand new palette; don't even bother comparing
-	// timestamps.
-	_texture_changed = true;
-      }
-
-    } else {
-      // Compare to the resized file.
-      target_filename = get_filename();
-    }
-
-    if (!_texture_changed) {
-      _texture_changed = 
-	(target_filename.compare_timestamps(_filename, true, false) < 0);
-    }
-  }
-
-  return _texture_changed;
+  TexturePacking *packing = new TexturePacking(this, group);
+  _packing[group] = packing;
+  _attrib_file->_packing.push_back(packing);
+  return packing;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::check_group
+//       Access: Public
+//  Description: If the texture has already been added to the
+//               indicated PaletteGroup, returns the associated
+//               TexturePacking object.  If it is not yet been added,
+//               returns NULL.
+////////////////////////////////////////////////////////////////////
+TexturePacking *PTexture::
+check_group(PaletteGroup *group) const {
+  Packing::const_iterator pi;
+  pi = _packing.find(group);
+  if (pi != _packing.end()) {
+    return (*pi).second;
+  }
+
+  return (TexturePacking *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::set_changed
+//       Access: Public
+//  Description: Sets the state of the changed flag.  If this is true,
+//               the texture is known to have changed in some way such
+//               that files that depend on it will need to be rebuilt.
+////////////////////////////////////////////////////////////////////
 void PTexture::
 set_changed(bool changed) {
   _texture_changed = changed;
 }
 
-bool PTexture::
-unused() const {
-  return _unused;
-}
-
-void PTexture::
-set_unused(bool unused) {
-  _unused = unused;
-}
-
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::matched_anything
+//       Access: Public
+//  Description: Returns true if the texture matched at least one line
+//               in the .txa file, false otherwise.
+////////////////////////////////////////////////////////////////////
 bool PTexture::
 matched_anything() const {
   return _matched_anything;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::set_matched_anything
+//       Access: Public
+//  Description: Sets the state of the matched_anything flag.  See
+//               matched_anything().
+////////////////////////////////////////////////////////////////////
 void PTexture::
 set_matched_anything(bool matched_anything) {
   _matched_anything = matched_anything;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PTexture::is_unused
+//       Access: Public
+//  Description: Returns true if the texture is not used by any egg
+//               file in any palette group, false if it is used by at
+//               least one in at least one group.
+////////////////////////////////////////////////////////////////////
 bool PTexture::
-uses_alpha() const {
-  return _uses_alpha;
-}
-
-void PTexture::
-set_uses_alpha(bool uses_alpha) {
-  _uses_alpha = uses_alpha;
-}
-
-void PTexture::
-mark_pack_location(Palette *palette, int left, int top,
-		   int xsize, int ysize, int margin) {
-  _is_packed = true;
-  _palette = palette;
-  _pleft = left;
-  _ptop = top;
-  _pxsize = xsize;
-  _pysize = ysize;
-  _pmargin = margin;
-}
-
-void PTexture::
-mark_unpacked() {
-  _is_packed = false;
-}
-
-bool PTexture::
-is_packed() const {
-  return _is_packed;
-}
-
-// Returns the same thing as is_packed(), except it doesn't consider a
-// texture that has been left alone on a palette to be packed.
-bool PTexture::
-is_really_packed() const {
-  return _is_packed && _omit != OR_solitary;
-}
-
-Palette *PTexture::
-get_palette() const {
-  return _is_packed ? _palette : (Palette *)NULL;
-}
-
-bool PTexture::
-get_packed_location(int &left, int &top) const {
-  left = _pleft;
-  top = _ptop;
-  return _is_packed;
-}
-
-bool PTexture::
-get_packed_size(int &xsize, int &ysize, int &margin) const {
-  xsize = _pxsize;
-  ysize = _pysize;
-  margin = _pmargin;
-  return _is_packed;
-}
-
-void PTexture::
-record_orig_state() {
-  // Records the current packing state, storing it aside as the state
-  // at load time.  Later, when the packing state may have changed,
-  // packing_changed() will return true if it has or false if it
-  // has not.
-  _orig_is_packed = _is_packed;
-  if (_is_packed) {
-    _orig_palette_name = _palette->get_filename();
-    _opleft = _pleft;
-    _optop = _ptop;
-    _opxsize = _pxsize;
-    _opysize = _pysize;
-    _opmargin = _pmargin;
+is_unused() const {
+  Packing::const_iterator pi;
+  for (pi = _packing.begin(); pi != _packing.end(); ++pi) {
+    if (!(*pi).second->unused()) {
+      return false;
+    }
   }
+
+  return true;
 }
 
-bool PTexture::
-packing_changed() const {
-  if (_orig_is_packed != _is_packed) {
-    return true;
-  }
-  if (_is_packed) {
-    return _orig_palette_name != _palette->get_filename() ||
-      _opleft != _pleft ||
-      _optop != _ptop ||
-      _opxsize != _pxsize ||
-      _opysize != _pysize ||
-      _opmargin != _pmargin;
-  }
-  return false;
-}
 
 void PTexture::
 write_size(ostream &out) {
-  if (_omit != OR_unused) {
+  if (!is_unused()) {
     if (!_got_size) {
       read_header();
     }
     out << "  " << _name;
     if (_got_size) {
-      out << " orig " << _xsize << " " << _ysize;
+      out << " orig " << _xsize << " " << _ysize << " " << _zsize;
     }
     if (_got_req) {
       out << " new " << _req_xsize << " " << _req_ysize;
@@ -402,7 +363,7 @@ write_size(ostream &out) {
 
 void PTexture::
 write_pathname(ostream &out) const {
-  if (_got_filename && _omit != OR_unused) {
+  if (_got_filename && !is_unused()) {
     if (!_file_exists) {
       nout << "Warning: texture " << _filename << " does not exist.\n";
     }
@@ -420,40 +381,6 @@ write_pathname(ostream &out) const {
 	out << (*fi) << "\n";
       }
     }
-  }
-}
-
-void PTexture::
-write_unplaced(ostream &out) const {
-  if (_omit != OR_none && _omit != OR_unused) {
-    out << "unplaced " << get_name() << " because ";
-    switch (_omit) {
-    case OR_size:
-      out << "size";
-      break;
-    case OR_repeats:
-      out << "repeats";
-      break;
-    case OR_omitted:
-      out << "omitted";
-      break;
-    case OR_unused:
-      out << "unused";
-      break;
-    case OR_unknown:
-      out << "unknown";
-      break;
-    case OR_solitary:
-      out << "solitary";
-      break;
-    case OR_cmdline:
-      out << "cmdline";
-      break;
-    default:
-      nout << "Invalid type: " << (int)_omit << "\n";
-      abort();
-    }
-    out << "\n";
   }
 }
 
@@ -557,14 +484,15 @@ read_header() {
   if (_got_filename && _file_exists) {
     if (!_read_header) {
       _read_header = true;
-      _got_size = read_image_header(_filename, _xsize, _ysize);
+      _got_size = read_image_header(_filename, _xsize, _ysize, _zsize);
     }
     _read_header = true;
   }
 }
 
 bool PTexture::
-read_image_header(const Filename &filename, int &xsize, int &ysize) {
+read_image_header(const Filename &filename, int &xsize, int &ysize,
+		  int &zsize) {
   PNMImageHeader header;
   if (!header.read_header(filename)) {
     nout << "Warning: cannot read texture " << filename << "\n";
@@ -573,6 +501,7 @@ read_image_header(const Filename &filename, int &xsize, int &ysize) {
 
   xsize = header.get_x_size();
   ysize = header.get_y_size();
+  zsize = header.get_num_channels();
   return true;
 }
 

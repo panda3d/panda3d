@@ -26,11 +26,15 @@
 class EXPCL_PANDA GlobPattern {
 public:
   INLINE GlobPattern(const string &pattern = string());
+  INLINE GlobPattern(const GlobPattern &copy);
+  INLINE void operator = (const GlobPattern &copy);
 
   INLINE void set_pattern(const string &pattern);
   INLINE const string &get_pattern() const;
 
   INLINE bool matches(const string &candidate) const;
+  
+  INLINE void output(ostream &out) const;
 
 private:
   bool matches_substr(string::const_iterator pi,
@@ -44,6 +48,12 @@ private:
 
   string _pattern;
 };
+
+INLINE ostream &operator << (ostream &out, const GlobPattern &glob) {
+  glob.output(out);
+  return out;
+}
+
 
 #include "globPattern.I"
 

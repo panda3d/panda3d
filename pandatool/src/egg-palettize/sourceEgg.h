@@ -8,24 +8,28 @@
 
 #include <pandatoolbase.h>
 
+#include "paletteGroup.h"
+
 #include <eggData.h>
 #include <luse.h>
 
-
 class PTexture;
+class TexturePacking;
 class AttribFile;
 class EggPalettize;
 class EggTexture;
 class EggGroup;
+class TextureEggRef;
     
 class SourceEgg : public EggData {
 public:
-  class TextureRef;
+  SourceEgg(AttribFile *attrib_file);
 
-  SourceEgg();
-
-  TextureRef &add_texture(PTexture *texture, bool repeats, bool alpha);
-  void get_textures(AttribFile &af, EggPalettize *prog);
+  TextureEggRef *add_texture(PTexture *texture, TexturePacking *packing,
+			     bool repeats, bool alpha);
+  void get_textures(EggPalettize *prog);
+  void require_groups(PaletteGroup *preferred, const PaletteGroups &groups);
+  void all_textures_assigned();
 
   void mark_texture_flags();
   void update_trefs();
@@ -33,26 +37,22 @@ public:
   bool needs_rebuild(bool force_redo_all, 
 			bool eggs_include_images) const;
 
+  bool matched_anything() const;
+  void set_matched_anything(bool matched_anything);
+
   void write_pi(ostream &out) const;
 
 
-  class TextureRef {
-  public:
-    TextureRef(PTexture *texture, bool repeats, bool alpha);
-
-    PTexture *_texture;
-    bool _repeats;
-    bool _alpha;
-
-    EggTexture *_eggtex;
-  };
+  typedef set<TextureEggRef *> TexRefs;
+  TexRefs _texrefs;
 
 private:  
   void get_uv_range(EggGroupNode *group, EggTexture *tref,
 		    bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv);
 
-  typedef vector<TextureRef> TexRefs;
-  TexRefs _texrefs;
+
+  AttribFile *_attrib_file;
+  bool _matched_anything;
 
 public:
   static TypeHandle get_class_type() {

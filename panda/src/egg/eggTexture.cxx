@@ -323,6 +323,21 @@ sorts_less_than(const EggTexture &other, int eq) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_alpha_channel
+//       Access: Public
+//  Description: Given the number of color components (channels) in
+//               the image file as actually read from the disk, return
+//               true if this texture seems to have an alpha channel
+//               or not.  This depends on the EggTexture's format as
+//               well as the number of channels.
+////////////////////////////////////////////////////////////////////
+bool EggTexture::
+has_alpha_channel(int num_components) const {
+  return (num_components == 2 || num_components == 4 ||
+	  (num_components == 1 && _format == F_alpha));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::string_format
 //       Access: Public
 //  Description: Returns the Format value associated with the given

@@ -5,6 +5,9 @@
 
 #include "sourceEgg.h"
 #include "pTexture.h"
+#include "textureEggRef.h"
+#include "texturePacking.h"
+#include "paletteGroup.h"
 #include "eggPalettize.h"
 #include "string_utils.h"
 #include "palette.h"
@@ -14,30 +17,52 @@
 #include <eggNurbsSurface.h>
 #include <eggPrimitive.h>
 #include <eggTextureCollection.h>
+#include <eggAlphaMode.h>
+
+#include <algorithm>
 
 TypeHandle SourceEgg::_type_handle;
 
-SourceEgg::TextureRef::
-TextureRef(PTexture *texture, bool repeats, bool alpha) :
-  _texture(texture),
-  _repeats(repeats),
-  _alpha(alpha) 
-{
-  _eggtex = NULL;
-}
-
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
 SourceEgg::
-SourceEgg() {
+SourceEgg(AttribFile *attrib_file) : _attrib_file(attrib_file) {
+  _matched_anything = false;
 }
 
-SourceEgg::TextureRef &SourceEgg::
-add_texture(PTexture *texture, bool repeats, bool alpha) {
-  _texrefs.push_back(TextureRef(texture, repeats, alpha));
-  return _texrefs.back();
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::add_texture
+//       Access: Public
+//  Description: Adds a new texture to the set of textures known by
+//               the egg file.
+////////////////////////////////////////////////////////////////////
+TextureEggRef *SourceEgg::
+add_texture(PTexture *texture, TexturePacking *packing,
+	    bool repeats, bool alpha) {
+  TextureEggRef *ref = 
+    new TextureEggRef(this, texture, packing, repeats, alpha);
+  _texrefs.insert(ref);
+  texture->_eggs.insert(ref);
+  return ref;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::get_textures
+//       Access: Public
+//  Description: Examines the egg file for all of the texture
+//               references and assigns each texture to a suitable
+//               palette group.
+////////////////////////////////////////////////////////////////////
 void SourceEgg::
-get_textures(AttribFile &af, EggPalettize *prog) {
+get_textures(EggPalettize *prog) {
+  TexRefs::iterator tri;
+  for (tri = _texrefs.begin(); tri != _texrefs.end(); ++tri) {
+    TextureEggRef *texref = (*tri);
+    texref->_texture->_eggs.erase(texref);
+  }
   _texrefs.clear();
 
   EggTextureCollection tc;
@@ -48,19 +73,8 @@ get_textures(AttribFile &af, EggPalettize *prog) {
     EggTexture *eggtex = (*ti);
     string name = eggtex->get_basename();
     
-    PTexture *texture = af.get_texture(name);
+    PTexture *texture = _attrib_file->get_texture(name);
     texture->add_filename(*eggtex);
-
-    if (prog->_dont_palettize) {
-      // If the user specified -x, it means to omit all textures
-      // processed in this run, forever.
-      texture->set_omit(PTexture::OR_cmdline);
-    } else {
-      // Or until we next see it without -x.
-      if (texture->get_omit() == PTexture::OR_cmdline) {
-	texture->set_omit(PTexture::OR_none);
-      }
-    }
 
     bool repeats = 
       eggtex->get_wrap_mode() == EggTexture::WM_repeat ||
@@ -72,7 +86,21 @@ get_textures(AttribFile &af, EggPalettize *prog) {
       eggtex->get_wrap_u() == EggTexture::WM_unspecified &&
       eggtex->get_wrap_v() == EggTexture::WM_unspecified;
 
-    bool alpha = true; //eggtex->uses_alpha();
+    bool alpha = false;
+
+    EggAlphaMode::AlphaMode alpha_mode = eggtex->get_alpha_mode();
+    if (alpha_mode == EggAlphaMode::AM_unspecified) {
+      int xsize, ysize, zsize;
+      if (texture->get_size(xsize, ysize, zsize)) {
+	alpha = eggtex->has_alpha_channel(zsize);
+      }
+
+    } else if (alpha_mode == EggAlphaMode::AM_off) {
+      alpha = false;
+
+    } else {
+      alpha = true;
+    }
 
     // Check the range of UV's actually used within the egg file.
     bool any_uvs = false;
@@ -153,48 +181,94 @@ get_textures(AttribFile &af, EggPalettize *prog) {
       }
     }
     
-    TextureRef &texref = add_texture(texture, repeats, alpha);
-    texref._eggtex = eggtex;
+    TextureEggRef *texref = add_texture(texture, (TexturePacking *)NULL,
+					repeats, alpha);
+    texref->_eggtex = eggtex;
   }
 }
 
-// Updates each PTexture with the flags stored in the various egg
-// files.  Also marks textures as used.
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::require_groups
+//       Access: Public
+//  Description: Ensures that each texture in the egg file is packed
+//               into at least one of the indicated groups.
+////////////////////////////////////////////////////////////////////
+void SourceEgg::
+require_groups(PaletteGroup *preferred, const PaletteGroups &groups) {
+  TexRefs::iterator ti;
+  for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
+    (*ti)->require_groups(preferred, groups);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::all_textures_assigned
+//       Access: Public
+//  Description: Ensures that each texture in the egg file is packed
+//               into at least one group, any group.
+////////////////////////////////////////////////////////////////////
+void SourceEgg::
+all_textures_assigned() {
+  TexRefs::iterator ti;
+  for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
+    TextureEggRef *texref = (*ti);
+    if (texref->_packing == (TexturePacking *)NULL) {
+      texref->_packing = 
+	texref->_texture->add_to_group(_attrib_file->get_default_group());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::mark_texture_flags
+//       Access: Public
+//  Description: Updates each PTexture with the flags stored in the
+//               various egg files.  Also marks textures as used.
+////////////////////////////////////////////////////////////////////
 void SourceEgg::
 mark_texture_flags() {
   TexRefs::iterator ti;
   for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
-    PTexture *texture = (*ti)._texture;
-    texture->set_unused(false);
-    if ((*ti)._alpha) {
-      texture->set_uses_alpha(true);
+    TexturePacking *packing = (*ti)->_packing;
+    packing->set_unused(false);
+    if ((*ti)->_alpha) {
+      packing->set_uses_alpha(true);
     }
-    if ((*ti)._repeats) {
-      texture->set_omit(PTexture::OR_repeats);
+    if ((*ti)->_repeats) {
+      packing->set_omit(OR_repeats);
     }
   }
 }
 
-// Updates the egg file to point to the new palettes.
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::update_trefs
+//       Access: Public
+//  Description: Updates the egg file to point to the new palettes.
+////////////////////////////////////////////////////////////////////
 void SourceEgg::
 update_trefs() {
   TexRefs::iterator ti;
   for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
-    PTexture *texture = (*ti)._texture;
-    EggTexture *eggtex = (*ti)._eggtex;
+    TexturePacking *packing = (*ti)->_packing;
+    PTexture *texture = packing->get_texture();
+    EggTexture *eggtex = (*ti)->_eggtex;
 
     if (eggtex != NULL) {
       // Make the alpha mode explicit if it isn't already.
 
-      /*
-      if (eggtex->get_alpha_mode == EggTexture::AM_unspecified) {
-	eggtex->set_alpha = eggtex->UsesAlpha() ? 
-	  EggTexture::AM_on : EggTexture::AM_off;
+      if (eggtex->get_alpha_mode() == EggTexture::AM_unspecified) {
+	int xsize, ysize, zsize;
+	if (texture->get_size(xsize, ysize, zsize)) {
+	  if (eggtex->has_alpha_channel(zsize)) {
+	    eggtex->set_alpha_mode(EggAlphaMode::AM_on);
+	  } else {
+	    eggtex->set_alpha_mode(EggAlphaMode::AM_off);
+	  }
+	}
       }
-      */
 
-      if (!texture->is_packed() || 
-	  texture->get_omit() != PTexture::OR_none) {
+      if (!packing->is_packed() || 
+	  packing->get_omit() != OR_none) {
 	// This texture wasn't palettized, so just rename the
 	// reference to the new one.
 	eggtex->set_fullpath(texture->get_filename());
@@ -202,7 +276,7 @@ update_trefs() {
       } else {
 	// This texture was palettized, so redirect the tref to point
 	// within the palette.
-	Palette *palette = texture->get_palette();
+	Palette *palette = packing->get_palette();
 	
 	eggtex->set_fullpath(palette->get_filename());
 	
@@ -217,8 +291,8 @@ update_trefs() {
 	// Build a matrix that will scale the UV's to their new place
 	// on the palette.
 	int left, top, xsize, ysize, margin;
-	texture->get_packed_location(left, top);
-	texture->get_packed_size(xsize, ysize, margin);
+	packing->get_packed_location(left, top);
+	packing->get_packed_size(xsize, ysize, margin);
 	
 	// Shrink the box to be within the margins.
 	top += margin;
@@ -254,9 +328,14 @@ update_trefs() {
   }
 }
 
-// Returns true if any of the textures referenced by the egg file have
-// been adjusted this pass, implying that the egg file will have to be
-// re-run through egg-palettize, and/or re-pfb'ed.
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::needs_rebuild
+//       Access: Public
+//  Description: Returns true if any of the textures referenced by the
+//               egg file have been adjusted this pass, implying that
+//               the egg file will have to be re-run through
+//               egg-palettize, and/or re-pfb'ed.
+////////////////////////////////////////////////////////////////////
 bool SourceEgg::
 needs_rebuild(bool force_redo_all,
 	      bool eggs_include_images) const {
@@ -265,8 +344,8 @@ needs_rebuild(bool force_redo_all,
     for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
       bool dirty = 
 	eggs_include_images ? 
-	(*ti)._texture->needs_refresh() :
-	(*ti)._texture->packing_changed();
+	(*ti)->_packing->needs_refresh() :
+	(*ti)->_packing->packing_changed();
       if (force_redo_all || dirty) {
 	return true;
       }
@@ -276,22 +355,57 @@ needs_rebuild(bool force_redo_all,
   return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::matched_anything
+//       Access: Public
+//  Description: Returns true if the egg file matched at least one
+//               line in the .txa file, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool SourceEgg::
+matched_anything() const {
+  return _matched_anything;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::set_matched_anything
+//       Access: Public
+//  Description: Sets the state of the matched_anything flag.  See
+//               matched_anything().
+////////////////////////////////////////////////////////////////////
+void SourceEgg::
+set_matched_anything(bool matched_anything) {
+  _matched_anything = matched_anything;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::write_pi
+//       Access: Public
+//  Description: Writes the entry for this egg file to the .pi file.
+////////////////////////////////////////////////////////////////////
 void SourceEgg::
 write_pi(ostream &out) const {
   out << "egg " << get_egg_filename() << "\n";
   TexRefs::const_iterator ti;
   for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
-    out << "  " << (*ti)._texture->get_name();
-    if ((*ti)._repeats) {
+    out << "  " << (*ti)->_packing->get_texture()->get_name()
+	<< " in " << (*ti)->_packing->get_group()->get_name();
+    if ((*ti)->_repeats) {
       out << " repeats";
     }
-    if ((*ti)._alpha) {
+    if ((*ti)->_alpha) {
       out << " alpha";
     }
     out << "\n";
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::get_uv_range
+//       Access: Private
+//  Description: Checks the geometry in the egg file to see what range
+//               of UV's are requested for this particular texture
+//               reference.
+////////////////////////////////////////////////////////////////////
 void SourceEgg::
 get_uv_range(EggGroupNode *group, EggTexture *tref,
 	     bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv) {

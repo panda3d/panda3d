@@ -871,8 +871,7 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
 	Texture *tex = def._texture->get_texture();
 	nassertv(tex != (Texture *)NULL);
 	int num_components = tex->_pbuffer->get_num_components();
-	if (num_components == 2 || num_components == 4 ||
-	    (num_components == 1 && egg_tex->get_format() == EggTexture::F_alpha)) {
+	if (egg_tex->has_alpha_channel(num_components)) {
 	  implicit_alpha = true;
 	}
       }

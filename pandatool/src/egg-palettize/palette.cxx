@@ -4,7 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "palette.h"
+#include "paletteGroup.h"
 #include "pTexture.h"
+#include "texturePacking.h"
 #include "attribFile.h"
 #include "string_utils.h"
 
@@ -135,13 +137,14 @@ add_margins(PNMImage *source) const {
 
 
 Palette::
-Palette(const Filename &filename, int xsize, int ysize, int components,
-	AttribFile *af) :
+Palette(const Filename &filename, PaletteGroup *group,
+	int xsize, int ysize, int components, AttribFile *attrib_file) :
   _filename(filename),
+  _group(group),
   _xsize(xsize),
   _ysize(ysize),
   _components(components),
-  _attrib_file(af)
+  _attrib_file(attrib_file)
 {
   _index = -1;
   _palette_changed = false;
@@ -149,12 +152,14 @@ Palette(const Filename &filename, int xsize, int ysize, int components,
 }
 
 Palette::
-Palette(int index, int xsize, int ysize, int components, AttribFile *af) :
+Palette(PaletteGroup *group, int index,
+	int xsize, int ysize, int components, AttribFile *attrib_file) :
+  _group(group),
   _index(index),
   _xsize(xsize),
   _ysize(ysize),
   _components(components),
-  _attrib_file(af)
+  _attrib_file(attrib_file)
 {
   _palette_changed = false;
   _new_palette = true;
@@ -165,7 +170,7 @@ Palette::
   // Unmark any textures we've had packed.
   TexPlace::iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-    (*ti)._texture->mark_unpacked();
+    (*ti)._packing->mark_unpacked();
   }
 }
 
@@ -199,7 +204,7 @@ check_uses_alpha() const {
   // Returns true if any texture in the palette uses alpha.
   TexPlace::const_iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-    if ((*ti)._texture->uses_alpha()) {
+    if ((*ti)._packing->uses_alpha()) {
       return true;
     }
   }
@@ -215,10 +220,11 @@ get_size(int &xsize, int &ysize) const {
   
 
 void Palette::
-place_texture_at(PTexture *texture, int left, int top,
+place_texture_at(TexturePacking *packing, int left, int top,
 		 int xsize, int ysize, int margin) {
+  nassertv(_group != (PaletteGroup *)NULL);
   TexturePlacement tp;
-  tp._texture = texture;
+  tp._packing = packing;
   tp._left = left;
   tp._top = top;
   tp._xsize = xsize;
@@ -226,11 +232,12 @@ place_texture_at(PTexture *texture, int left, int top,
   tp._margin = margin;
   _texplace.push_back(tp);
 
-  texture->mark_pack_location(this, left, top, xsize, ysize, margin);
+  packing->mark_pack_location(this, left, top, xsize, ysize, margin);
 }
 
 bool Palette::
-pack_texture(PTexture *texture) {
+pack_texture(TexturePacking *packing) {
+  PTexture *texture = packing->get_texture();
   int xsize, ysize;
   if (!texture->get_req(xsize, ysize)) {
     return false;
@@ -238,7 +245,7 @@ pack_texture(PTexture *texture) {
   
   int left, top;
   if (find_home(left, top, xsize, ysize)) {
-    place_texture_at(texture, left, top, xsize, ysize, texture->get_margin());
+    place_texture_at(packing, left, top, xsize, ysize, texture->get_margin());
     _palette_changed = true;
     return true;
   }
@@ -246,12 +253,12 @@ pack_texture(PTexture *texture) {
 }
 
 bool Palette::
-unpack_texture(PTexture *texture) {
+unpack_texture(TexturePacking *packing) {
   TexPlace::iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-    if ((*ti)._texture == texture) {
+    if ((*ti)._packing == packing) {
       _texplace.erase(ti);
-      texture->mark_unpacked();
+      packing->mark_unpacked();
       return true;
     }
   }
@@ -308,7 +315,7 @@ optimal_resize() {
     // these textures will need to be rebuilt.
     TexPlace::iterator ti;
     for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-      (*ti)._texture->set_changed(true);
+      (*ti)._packing->set_changed(true);
     }
 
     // And we'll have to mark the palette as a new image.
@@ -323,7 +330,7 @@ finalize_palette() {
     // Generate a filename based on the index number.
     char index_str[128];
     sprintf(index_str, "%03d", _index);
-    _basename = _attrib_file->_palette_prefix + index_str + ".rgb";
+    _basename = _group->get_name() + "-palette." + index_str + ".rgb";
     _filename = _basename;
     _filename.set_dirname(_attrib_file->_map_dirname);
   } else {
@@ -334,7 +341,7 @@ finalize_palette() {
 
   if (_texplace.size() == 1) {
     // If we packed exactly one texture, never mind.
-    PTexture *texture = (*_texplace.begin())._texture;
+    TexturePacking *packing = (*_texplace.begin())._packing;
 
     // This is a little odd: we mark the texture as being omitted, but
     // we don't actually unpack it.  That way it will still be
@@ -342,18 +349,18 @@ finalize_palette() {
     // palettizations), but it will also be copied to the map
     // directory, and any egg files that reference it will use the
     // texture and not the palette.
-    texture->set_omit(PTexture::OR_solitary);
+    packing->set_omit(OR_solitary);
   }
 }
 
 void Palette::
 write(ostream &out) const {
-  out << "palette " << _filename
+  out << "palette " << _filename << " in " << _group->get_name()
       << " size " << _xsize << " " << _ysize << " " << _components
       << "\n";
   TexPlace::const_iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-    out << "  " << (*ti)._texture->get_name()
+    out << "  " << (*ti)._packing->get_texture()->get_name()
 	<< " at " << (*ti)._left << " " << (*ti)._top
 	<< " size " << (*ti)._xsize << " " << (*ti)._ysize
 	<< " margin " << (*ti)._margin
@@ -371,7 +378,8 @@ generate_image() {
 
   TexPlace::const_iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-    PTexture *texture = (*ti)._texture;
+    TexturePacking *packing = (*ti)._packing;
+    PTexture *texture = packing->get_texture();
     nout << "  " << texture->get_name() << "\n";
     okflag = copy_texture_image(palette, *ti) && okflag;
   }
@@ -415,8 +423,9 @@ refresh_image() {
 
   TexPlace::const_iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-    PTexture *texture = (*ti)._texture;
-    if (texture->needs_refresh()) {
+    TexturePacking *packing = (*ti)._packing;
+    PTexture *texture = packing->get_texture();
+    if (packing->needs_refresh()) {
       if (!any_changed) {
 	nout << "Refreshing " << _filename << "\n";
 	any_changed = true;
@@ -442,7 +451,7 @@ refresh_image() {
 Palette *Palette::
 try_resize(int new_xsize, int new_ysize) const {
   Palette *np =
-    new Palette(_index, new_xsize, new_ysize,
+    new Palette(_group, _index, new_xsize, new_ysize,
 		_components, _attrib_file);
 
   bool okflag = true;
@@ -450,7 +459,7 @@ try_resize(int new_xsize, int new_ysize) const {
   for (ti = _texplace.begin(); 
        ti != _texplace.end() && okflag;
        ++ti) {
-    okflag = np->pack_texture((*ti)._texture);
+    okflag = np->pack_texture((*ti)._packing);
   }
 
   if (okflag) {
@@ -518,9 +527,10 @@ find_home(int &left, int &top, int xsize, int ysize) const {
 bool Palette::
 copy_texture_image(PNMImage &palette, const TexturePlacement &tp) {
   bool okflag = true;
-  PNMImage *image = tp._texture->read_image();
+  PTexture *texture = tp._packing->get_texture();
+  PNMImage *image = texture->read_image();
   if (image == NULL) {
-    nout << "  *** Unable to read " << tp._texture->get_name() << "\n";
+    nout << "  *** Unable to read " << texture->get_name() << "\n";
     okflag = false;
     
     // Create a solid red texture for images we can't read.

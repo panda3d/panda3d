@@ -6,16 +6,14 @@
 #include "userAttribLine.h"
 #include "string_utils.h"
 #include "pTexture.h"
+#include "paletteGroup.h"
+#include "sourceEgg.h"
 #include "attribFile.h"
+#include "textureEggRef.h"
 
 #include <notify.h>
 
 #include <ctype.h>
-#include <fnmatch.h>
-
-UserAttribLine::TextureName::
-TextureName(const string &pattern) : _pattern(pattern) {
-}
 
 UserAttribLine::
 UserAttribLine(const string &cline, AttribFile *af) : _attrib_file(af) {
@@ -91,6 +89,8 @@ was_used() const {
 
 void UserAttribLine::
 write(ostream &out) const {
+  int i;
+
   switch (_line_type) {
   case LT_invalid:
     out << "*** invalid line ***\n";
@@ -107,8 +107,16 @@ write(ostream &out) const {
     out << ":palette " << _xsize << " " << _ysize;
     break;
 
+  case LT_group_relate:
+    out << ":group " << _names[0] << " with";
+    for (i = 1; i < (int)_names.size(); i++) {
+      out << " " << _names[i];
+    }
+    out << "\n";
+    break;
+
   case LT_size:
-    list_textures(out) << " : " << _xsize << " " << _ysize;
+    list_patterns(out) << " : " << _xsize << " " << _ysize;
     if (_msize > 0) {
       out << " " << _msize;
     }
@@ -118,7 +126,7 @@ write(ostream &out) const {
     break;
 
   case LT_scale:
-    list_textures(out) << " : " << _scale_pct << "%";
+    list_patterns(out) << " : " << _scale_pct << "%";
     if (_msize > 0) {
       out << " " << _msize;
     }
@@ -128,10 +136,15 @@ write(ostream &out) const {
     break;
 
   case LT_name:
-    list_textures(out) << " :";
+    list_patterns(out) << " :";
     if (_omit) {
       out << " omit";
     }
+    break;
+
+  case LT_group_assign:
+    list_patterns(out) << " : ";
+    list_names(out);
     break;
 
   default:
@@ -143,16 +156,35 @@ write(ostream &out) const {
 }
 
 bool UserAttribLine::
-match_texture(PTexture *texture, int &margin) {
+get_size_request(PTexture *texture, int &margin) {
+  if (_line_type == LT_group_assign) {
+    // We don't care about group lines for the size check.
+    return false;
+  }
+
   // See if the texture name matches any of the filename patterns on
   // this line.
+  string texture_name = texture->get_name();
+
   bool matched_any = false;
-  TextureNames::const_iterator tni;
-  for (tni = _texture_names.begin();
-       tni != _texture_names.end() && !matched_any;
-       ++tni) {
-    if (fnmatch((*tni)._pattern.c_str(), texture->get_name().c_str(), 0) == 0) {
+  Patterns::const_iterator pi;
+  for (pi = _patterns.begin();
+       pi != _patterns.end() && !matched_any;
+       ++pi) {
+    if ((*pi).matches(texture_name)) {
       matched_any = true;
+    }
+
+    // Also check if it matches any of the egg files this texture is
+    // on.
+    PTexture::Eggs::const_iterator ei;
+    for (ei = texture->_eggs.begin(); 
+	 ei != texture->_eggs.end() && !matched_any;
+	 ++ei) {
+      string egg_name = (*ei)->_egg->get_egg_filename().get_basename();
+      if ((*pi).matches(egg_name)) {
+	matched_any = true;
+      }
     }
   }
 
@@ -164,6 +196,7 @@ match_texture(PTexture *texture, int &margin) {
     case LT_invalid:
     case LT_comment:
     case LT_palette:
+    case LT_group_relate:
       return false;
       
     case LT_margin:
@@ -174,7 +207,7 @@ match_texture(PTexture *texture, int &margin) {
       texture->reset_req(_xsize, _ysize);
       texture->set_margin(_msize < 0 ? margin : _msize);
       if (_omit) {
-	texture->set_omit(PTexture::OR_omitted);
+	texture->user_omit();
       }
       return true;
       
@@ -182,13 +215,13 @@ match_texture(PTexture *texture, int &margin) {
       texture->scale_req(_scale_pct);
       texture->set_margin(_msize < 0 ? margin : _msize);
       if (_omit) {
-	texture->set_omit(PTexture::OR_omitted);
+	texture->user_omit();
       }
       return true;
       
     case LT_name:
       if (_omit) {
-	texture->set_omit(PTexture::OR_omitted);
+	texture->user_omit();
       }
       return true;
       
@@ -201,12 +234,73 @@ match_texture(PTexture *texture, int &margin) {
   return false;
 }
 
+bool UserAttribLine::
+get_group_request(SourceEgg *egg) {
+  if (_line_type != LT_group_assign) {
+    // We're only looking for group lines now.
+    return false;
+  }
+
+  // See if the egg filename matches any of the filename patterns on
+  // this line.
+  string egg_name = egg->get_egg_filename().get_basename();
+
+  bool matched_any = false;
+  Patterns::const_iterator pi;
+  for (pi = _patterns.begin();
+       pi != _patterns.end() && !matched_any;
+       ++pi) {
+    if ((*pi).matches(egg_name)) {
+      matched_any = true;
+    }
+  }
+
+  if (matched_any) {
+    _was_used = true;
+
+    // It does!  Record the list of required groups with all of the
+    // textures on this egg file.
+    nassertr(!_names.empty(), false);
+    PaletteGroups groups;
+    Names::const_iterator ni = _names.begin();
+    PaletteGroup *group = _attrib_file->get_group(*ni);
+    groups.insert(group);
+
+    // The first-named group is preferred for any textures not already
+    // on another group.
+    PaletteGroup *preferred = group;
+
+    while (ni != _names.end()) {
+      group = _attrib_file->get_group(*ni);
+      groups.insert(group);
+      ++ni;
+    }
+    PaletteGroup::complete_groups(groups);
+    egg->require_groups(preferred, groups);
+
+    return true;
+  }
+
+  return false;
+}
+
 ostream &UserAttribLine::
-list_textures(ostream &out) const {
-  if (!_texture_names.empty()) {
-    out << _texture_names[0]._pattern;
-    for (int i = 1; i < (int)_texture_names.size(); i++) {
-      out << " " << _texture_names[i]._pattern;
+list_patterns(ostream &out) const {
+  if (!_patterns.empty()) {
+    out << _patterns[0];
+    for (int i = 1; i < (int)_patterns.size(); i++) {
+      out << " " << _patterns[i];
+    }
+  }
+  return out;
+}
+
+ostream &UserAttribLine::
+list_names(ostream &out) const {
+  if (!_names.empty()) {
+    out << _names[0];
+    for (int i = 1; i < (int)_names.size(); i++) {
+      out << " " << _names[i];
     }
   }
   return out;
@@ -229,13 +323,25 @@ keyword_line(const string &line) {
   } else if (words[0] == ":palette") {
     _line_type = LT_palette;
     if (words.size() != 3) {
-      nout << "Expected xsize ysize of palette.\n";
+      nout << "Expected :palette xsize ysize.\n";
       return false;
     }
     _xsize = atoi(words[1].c_str());
     _ysize = atoi(words[2].c_str());
     _attrib_file->_pal_xsize = _xsize;
     _attrib_file->_pal_ysize = _ysize;
+
+  } else if (words[0] == ":group") {
+    _line_type = LT_group_relate;
+    if (words.size() < 4 || !(words[2] == "with")) {
+      nout << "Expected :group groupname with groupname [groupname ...].\n";
+      return false;
+    }
+    PaletteGroup *group = _attrib_file->get_group(words[1]);
+
+    for (int i = 3; i < (int)words.size(); i++) {
+      group->add_parent(_attrib_file->get_group(words[i]));
+    }
 
   } else {
     nout << "Unknown keyword: " << words[0] << "\n";
@@ -262,7 +368,7 @@ texture_line(const string &line) {
 
   vector<string>::const_iterator ni;
   for (ni = names.begin(); ni != names.end(); ++ni) {
-    _texture_names.push_back(TextureName(*ni));
+    _patterns.push_back(GlobPattern(*ni));
   }
 
   if (!params.empty() && params[params.size() - 1] == "omit") {
@@ -274,6 +380,14 @@ texture_line(const string &line) {
 
   if (params.empty()) {
     _line_type = LT_name;
+    return true;
+  }
+
+  // Is it a group name?  If it is, this is an assignment of a texture
+  // or egg file to one or more groups.
+  if (!params[0].empty() && isalpha(params[0][0])) {
+    _names = params;
+    _line_type = LT_group_assign;
     return true;
   }
 
@@ -335,7 +449,7 @@ old_style_line(const string &line) {
 
   _is_old_style = true;
   _line_type = LT_size;
-  _texture_names.push_back(TextureName(words[0]));
+  _patterns.push_back(GlobPattern(words[0]));
   _xsize = atoi(words[1].c_str());
   _ysize = atoi(words[2].c_str());
   if (words.size() > 3) {

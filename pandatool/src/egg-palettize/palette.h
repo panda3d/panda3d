@@ -14,24 +14,32 @@
 
 #include <vector>
 
-class PTexture;
+class PaletteGroup;
+class TexturePacking;
 class PNMImage;
 class AttribFile;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : Palette
-// Description : 
+// Description : A single palettized image file within a palette
+//               group.  This represents one page of all the
+//               palettized textures within this group; there might be
+//               multiple Palette images within a single group,
+//               depending on the number and size of the palettized
+//               textures.
 ////////////////////////////////////////////////////////////////////
 class Palette : public ImageFile {
 public:
-  Palette(const Filename &filename, int xsize, int ysize, int components,
-	  AttribFile *af);
-  Palette(int index, int xsize, int ysize, int components,
-	  AttribFile *af);
+  Palette(const Filename &filename, PaletteGroup *group,
+	  int xsize, int ysize, int components, AttribFile *attrib_file);
+  Palette(PaletteGroup *group, int index,
+	  int xsize, int ysize, int components, AttribFile *attrib_file);
   ~Palette();
 
   virtual Filename get_filename() const;
   virtual Filename get_basename() const;
+
+  PaletteGroup *get_group() const;
 
   bool changed() const;
   bool new_palette() const;
@@ -41,11 +49,11 @@ public:
 
   void get_size(int &xsize, int &ysize) const;
 
-  void place_texture_at(PTexture *texture, int left, int top,
+  void place_texture_at(TexturePacking *packing, int left, int top,
 			int xsize, int ysize, int margin);
 
-  bool pack_texture(PTexture *texture);
-  bool unpack_texture(PTexture *texture);
+  bool pack_texture(TexturePacking *packing);
+  bool unpack_texture(TexturePacking *packing);
 
   void optimal_resize();
 
@@ -63,7 +71,7 @@ private:
     PNMImage *resize_image(PNMImage *source) const;
     PNMImage *add_margins(PNMImage *source) const;
 
-    PTexture *_texture;
+    TexturePacking *_packing;
     int _left, _top;
     int _xsize, _ysize, _margin;
   };
@@ -79,6 +87,7 @@ private:
 
   Filename _filename;
   Filename _basename;
+  PaletteGroup *_group;
   int _index;
   int _xsize, _ysize, _components;
   bool _palette_changed;

@@ -36,7 +36,7 @@ public:
   AttribFiles _attrib_files;
 
   // The following parameter values specifically relate to textures
-  // and palettes.  These values are store in the .pi file for future
+  // and palettes.  These values are stored in the .pi file for future
   // reference.
   Filename _map_dirname;
   bool _got_map_dirname;
@@ -62,7 +62,6 @@ public:
   bool _optimal_resize;
   bool _touch_eggs;
   bool _eggs_include_images;
-  bool _dont_palettize;
   bool _remove_unused_lines;
 
   bool _describe_input_file;

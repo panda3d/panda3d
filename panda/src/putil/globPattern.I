@@ -14,6 +14,25 @@ GlobPattern(const string &pattern) : _pattern(pattern) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE GlobPattern::
+GlobPattern(const GlobPattern &copy) : _pattern(copy._pattern) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void GlobPattern::
+operator = (const GlobPattern &copy) {
+  _pattern = copy._pattern;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::set_pattern
 //       Access: Public
 //  Description: Changes the pattern string that the GlobPattern
@@ -47,3 +66,12 @@ matches(const string &candidate) const {
 			candidate.begin(), candidate.end());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void GlobPattern::
+output(ostream &out) const {
+  out << _pattern;
+}

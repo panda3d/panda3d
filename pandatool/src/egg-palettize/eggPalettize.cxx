@@ -8,6 +8,7 @@
 #include "pTexture.h"
 #include "string_utils.h"
 #include "sourceEgg.h"
+#include "textureOmitReason.h"
 
 #include <pnmImage.h>
 #include <stdio.h>
@@ -39,6 +40,11 @@ EggPalettize() : EggMultiFilter(true) {
 
   clear_runlines();
   add_runline("[opts] attribfile.txa file.egg [file.egg ...]");
+
+  // We always have EggMultiBase's -f on: force complete load.  In
+  // fact, we use -f for our own purposes, below.
+  remove_option("f");
+  _force_complete = true;
 
   add_option
     ("s", "", 0, 
@@ -124,10 +130,6 @@ EggPalettize() : EggMultiFilter(true) {
      "which is an even power of 2.  They will be scaled down to "
      "achieve this.",
      &EggPalettize::dispatch_none, &_got_force_power_2);
-  add_option
-    ("x", "", 0, 
-     "Don't palettize anything, but do resize textures.",
-     &EggPalettize::dispatch_none, &_dont_palettize);
   add_option
     ("k", "", 0, 
      "Kill lines from the attributes file that aren't used on any "
@@ -227,14 +229,21 @@ read_egg(const Filename &filename) {
   // We should only call this function if we have exactly one .txa file.
   nassertr(_attrib_files.size() == 1, (EggData *)NULL);
 
-  SourceEgg *egg = _attrib_files[0]->get_egg(filename);
-  if (egg->read(filename)) {
-    return egg;
+  SourceEgg *data = _attrib_files[0]->get_egg(filename);
+  if (!data->read(filename)) {
+    // Failure reading.
+    delete data;
+    return (EggData *)NULL;
   }
 
-  // Failure reading.
-  delete egg;
-  return (EggData *)NULL;
+  if (_force_complete) {
+    if (!data->resolve_externals()) {
+      delete data;
+      return (EggData *)NULL;
+    }
+  }
+   
+  return data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,19 +276,47 @@ describe_input_file() {
     "applied).  Finally, the keyword 'omit' may be included along with the "
     "size to specify that the texture should not be placed in a palette.\n\n"
 
+    "The attributes file may also assign certain egg files into various "
+    "named palette groups.  The syntax is similar to the above:\n\n"
+
+    "  car-blue.egg : main\n"
+    "  road.egg house.egg : main\n"
+    "  plane.egg : phase2 main\n"
+    "  car*.egg : phase2\n\n"
+
+    "Any number of egg files may be named on one line, and the group of "
+    "egg files may be simultaneously assigned to one or more groups.  Each "
+    "named group represents a semi-independent collection of textures; a "
+    "different set of palette images will be created for each group.  Each "
+    "texture that is referenced by a given egg file will be palettized "
+    "in one of the groups assigned to the egg file.  Also see the "
+    ":group command, below, which defines relationships between the "
+    "different groups.\n\n"
+
     "There are some other special lines that may appear in this second, "
     "along with the resize commands.  They begin with a colon to "
     "distinguish them from the resize commands.  They are:\n\n"
 
-    ":palette xsize ysize\n\n"
+    "  :palette xsize ysize\n\n"
 
     "This specifies the size of the palette file(s) to be created.  It "
     "overrides the -s command-line option.\n\n"
 
-    ":margin msize\n\n"
+    "  :margin msize\n\n"
 
     "This specifies the size of the default margin for all subsequent "
     "resize commands.  This may appear several times in a given file.\n\n"
+
+    "  :group groupname1 with groupname2 [groupname3 ...]\n\n"
+
+    "This indicates that the palette group named by groupname1 should "
+    "be allowed to shared textures with those on groupname2 or groupname3, "
+    "etc.  In other words, that whenever palette group groupname1 is in "
+    "texture memory, we can assume that palette groups groupname2 and "
+    "groupname3 will also be in memory.  Textures that already exist on "
+    "groupname2 and other dependent groups will not be added to groupname1; "
+    "instead, egg files will reference the textures directly from the "
+    "other palettes.\n\n"
 
     "Comments may appear freely throughout the file, and are set off by a "
     "hash mark (#).\n";
@@ -314,6 +351,7 @@ format_space(int size_pixels, bool verbose) {
 ////////////////////////////////////////////////////////////////////
 void EggPalettize::
 report_statistics() {
+  /*
   // Look for textures in common.
   map<string, PTexture *> textures;
   map<string, int> dup_textures;
@@ -371,17 +409,17 @@ report_statistics() {
   int net_orig_size = 0;
   int net_resized_size = 0;
   int net_unplaced_size = 0;
-  typedef map<PTexture::OmitReason, pair<int, int> > UnplacedReasons;
+  typedef map<TextureOmitReason, pair<int, int> > UnplacedReasons;
   UnplacedReasons unplaced_reasons;
 
   map<string, PTexture *>::iterator ti;
   for (ti = textures.begin(); ti != textures.end(); ++ti) {
     PTexture *texture = (*ti).second;
 
-    int xsize, ysize;
+    int xsize, ysize, zsize;
     int rxsize, rysize;
     int rsize = 0;
-    if (texture->get_size(xsize, ysize) && 
+    if (texture->get_size(xsize, ysize, zsize) && 
 	texture->get_last_req(rxsize, rysize)) {
       net_orig_size += xsize * ysize;
       net_resized_size += rxsize * rysize;
@@ -427,7 +465,7 @@ report_statistics() {
   for (uri = unplaced_reasons.begin(); 
        uri != unplaced_reasons.end();
        ++uri) {
-    PTexture::OmitReason reason = (*uri).first;
+    TextureOmitReason reason = (*uri).first;
     int count = (*uri).second.first;
     int size = (*uri).second.second;
     cout << count << " textures (" << format_space(size)
@@ -471,6 +509,7 @@ report_statistics() {
   }
 
   cout << "\n";
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -503,12 +542,12 @@ run() {
 
     if (_statistics_only) {
       nout << "Reading " << af.get_name() << "\n";
-      okflag = af.read();
+      okflag = af.read(false);
 
     } else {
       nout << "Processing " << af.get_name() << "\n";
 
-      if (!af.read()) {
+      if (!af.read(_force_redo_all)) {
 	// Failing to read the attribute file is a fatal error.
 	exit(1);
       }
@@ -519,15 +558,17 @@ run() {
       Eggs::iterator ei;
       for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
 	SourceEgg *egg = DCAST(SourceEgg, *ei);
-	egg->get_textures(af, this);
+	egg->get_textures(this);
       }
+
+      // Assign textures into the appropriate groups.
+      af.get_egg_group_requests();
       
       // Apply the user's requested size changes onto the textures.
-      af.get_req_sizes();
+      af.get_size_requests();
       af.update_texture_flags();
       
-      if (!af.check_packing(_force_optimal) || _force_redo_all) {
-	// We need some more palettization work here.
+      if (af.prepare_repack(_force_optimal) || _force_redo_all) {
 	if (_force_redo_all || _force_optimal) {
 	  af.repack_all_textures();
 	} else {

@@ -8,16 +8,18 @@
 
 #include <pandatoolbase.h>
 
+#include <globPattern.h>
+
 #include <vector>
 
 class AttribFile;
 class PTexture;
+class SourceEgg;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : UserAttribLine
-// Description : A single entry in the user part (the beginning) of
-//               the attrib file, this defines how the user would like
-//               some particular texture to be scaled.
+// Description : A single entry in the .txa file, this defines how the
+//               user would like some particular texture to be scaled.
 ////////////////////////////////////////////////////////////////////
 
 //
@@ -27,10 +29,13 @@ class PTexture;
 //   # Comment
 //   :margin msize
 //   :palette xsize ysize 
+//   :group groupname with groupname [groupname ...]
 //   texturename xsize ysize msize
 //   texturename [texturename ...] : xsize ysize [msize] [omit]
 //   texturename [texturename ...] : scale% [msize] [omit]
 //   texturename [texturename ...] : [omit]
+//   texturename [texturename ...] : groupname [groupname ...]
+//   eggname [eggname ...] : groupname [groupname ...]
 //
 
 class UserAttribLine {
@@ -44,28 +49,25 @@ public:
 
   void write(ostream &out) const;
 
-  bool match_texture(PTexture *texture, int &margin);
+  bool get_size_request(PTexture *texture, int &margin);
+  bool get_group_request(SourceEgg *egg);
 
 private:
   enum LineType {
     LT_invalid,
     LT_comment, 
-    LT_margin, LT_palette,
-    LT_size, LT_scale, LT_name
-  };
-  class TextureName {
-  public:
-    TextureName(const string &pattern);
-    TextureName(const TextureName &copy) : 
-      _pattern(copy._pattern) { }
-
-    string _pattern;
+    LT_margin, LT_palette, LT_group_relate,
+    LT_size, LT_scale, LT_name,
+    LT_group_assign
   };
 
-  typedef vector<TextureName> TextureNames;
-  TextureNames _texture_names;
+  typedef vector<GlobPattern> Patterns;
+  Patterns _patterns;
+  typedef vector<string> Names;
+  Names _names;
 
-  ostream &list_textures(ostream &out) const;
+  ostream &list_patterns(ostream &out) const;
+  ostream &list_names(ostream &out) const;
   bool keyword_line(const string &line);
   bool texture_line(const string &line);
   bool old_style_line(const string &line);

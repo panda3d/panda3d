@@ -44,6 +44,8 @@ public:
   bool is_equivalent_to(const EggTexture &other, int eq) const;
   bool sorts_less_than(const EggTexture &other, int eq) const;
 
+  bool has_alpha_channel(int num_components) const;
+
   enum Format {
     F_unspecified, 
     F_rgba, F_rgba12, F_rgba8, F_rgba4, F_rgba5,
