@@ -23,6 +23,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     WantVisibility = config.GetBool('level-visibility', 1)
     HideZones = config.GetBool('level-hidezones', 1)
+    # set this to true to get all distrib objs when showing hidden zones
+    ColorZonesAllDOs = 0
 
     # TODO: move level-model stuff to LevelMgr or FactoryLevelMgr?
     FloorCollPrefix = 'zoneFloor'
@@ -618,6 +620,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
         """
         vizList is a list of visible zone numbers.
         """
+        # if we're showing all zones, get all the DOs
+        if self.fColorZones and DistributedLevel.ColorZonesAllDOs:
+            vizList = list(self.zoneNums)
+            vizList.remove(LevelConstants.UberZoneNum)
         # convert the zone numbers into their actual zoneIds
         # always include Toontown and factory uberZones
         uberZone = self.getZoneId(zoneNum=LevelConstants.UberZoneNum)
