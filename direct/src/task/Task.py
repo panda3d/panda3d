@@ -624,6 +624,16 @@ class TaskManager:
                 raise StandardError, "Task named %s did not return cont, exit, or done" % task.name
             # Move to the next element
             i += 1
+
+    def __addPendingTasksToTaskList(self):
+        # Now that we are all done, add any left over pendingTasks generated in
+        # priority levels lower or higher than where we were when we iterated
+        for taskList in self.pendingTaskDict.values():
+            for task in taskList:
+                if (task and not task.isRemoved()):
+                    assert(TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name)))
+                    self.__addNewTask(task)
+        self.pendingTaskDict.clear()
     
     def step(self):
         assert(TaskManager.notify.debug('step: begin'))
@@ -635,10 +645,14 @@ class TaskManager:
         self.interruptCount = 0
         signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
 
+
+
         # Traverse the task list in order because it is in priority order
-        for taskPriList in self.taskList:
+        priIndex = 0
+        while priIndex < len(self.taskList):
+            taskPriList = self.taskList[priIndex]
             pri = taskPriList.getPriority()
-            assert(TaskManager.notify.debug('step: running through taskList at pri: %s' % (pri)))
+            assert(TaskManager.notify.debug('step: running through taskList at pri: %s, priIndex: %s' % (pri, priIndex)))
             self.__stepThroughList(taskPriList)
 
             # Now see if that generated any pending tasks for this taskPriList
@@ -657,14 +671,16 @@ class TaskManager:
                 # See if we generated any more for this pri level
                 pendingTasks = self.pendingTaskDict.get(pri, [])
 
-        # Now that we are all done, add any left over pendingTasks generated in
-        # priority levels lower than where we were when we iterated
-        for taskList in self.pendingTaskDict.values():
-            for task in taskList:
-                if (task and not task.isRemoved()):
-                    assert(TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name)))
-                    self.__addNewTask(task)
-        self.pendingTaskDict.clear()
+            # Any new tasks that were made pending should be converted
+            # to real tasks now in case they need to run this frame at a
+            # later priority level
+            self.__addPendingTasksToTaskList()
+
+            # Go to the next priority level
+            priIndex += 1
+
+        # Add new pending tasks
+        self.__addPendingTasksToTaskList()
         
         # Restore default interrupt handler
         signal.signal(signal.SIGINT, signal.default_int_handler)
