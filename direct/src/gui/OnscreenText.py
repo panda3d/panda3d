@@ -26,8 +26,8 @@ class OnscreenText(PandaObject, NodePath):
                  frame = None,
                  align = None,
                  wordwrap = None,
-                 drawOrder = DirectGuiGlobals.getDefaultDrawOrder(),
-                 font = DirectGuiGlobals.getDefaultFont(),
+                 drawOrder = None,
+                 font = None,
                  parent = aspect2d,
                  sort = 0,
                  mayChange = 0):
@@ -150,6 +150,9 @@ class OnscreenText(PandaObject, NodePath):
         # Save some of the parameters for posterity.
         self.scale = scale
         self.pos = pos
+
+        if font == None:
+            font = DirectGuiGlobals.getDefaultFont()
         
         # Freeze the node while we set all the properties
         textNode.freeze()
@@ -182,6 +185,9 @@ class OnscreenText(PandaObject, NodePath):
         mat = Mat4.scaleMat(
             scale[0], 1, scale[1]) * Mat4.translateMat(pos[0], 0, pos[1])
         textNode.setTransform(mat)
+
+        if drawOrder == None:
+            drawOrder = DirectGuiGlobals.getDefaultDrawOrder()
 
         textNode.setBin('fixed')
         textNode.setDrawOrder(drawOrder)
