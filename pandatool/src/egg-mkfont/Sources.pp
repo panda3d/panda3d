@@ -9,14 +9,18 @@
 
 #begin bin_target
   #define TARGET egg-mkfont
-
+  
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx   
+  
   #define SOURCES \
-    charBitmap.I charBitmap.cxx charBitmap.h \
-    charLayout.cxx charLayout.h \
-    charPlacement.I charPlacement.cxx charPlacement.h \
-    eggMakeFont.cxx eggMakeFont.h \
-    fontFile.I fontFile.cxx fontFile.h \
-    pkFontFile.cxx pkFontFile.h
+    charBitmap.I charBitmap.h \
+    charLayout.h eggMakeFont.h \
+    fontFile.I fontFile.h pkFontFile.h  
+
+  #define INCLUDED_SOURCES \
+    charBitmap.cxx charLayout.cxx \
+    charPlacement.cxx eggMakeFont.cxx \
+    fontFile.cxx pkFontFile.cxx \
 
 #end bin_target
 
