@@ -2,6 +2,7 @@
 #define DIRECTORY_IF_AUDIO yes
 #define DIRECTORY_IF_IPC yes
 #define USE_AUDIO yes
+#define USE_RAD_MSS yes
 
 #begin lib_target
   #define TARGET audio_load_midi
