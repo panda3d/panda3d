@@ -1,5 +1,6 @@
 from ShowBaseGlobal import *
 from DirectObject import *
+from GuiGlobals import *
 import GuiManager
 import GuiLabel
 import GuiButton
@@ -8,7 +9,7 @@ guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.
 
 class Button(DirectObject):
 
-    def __init__(self, name, label=None, font=interfaceFont):
+    def __init__(self, name, label=None, font=getDefaultFont()):
         self.name = name
         # if no label given, use the button name
         if (label == None):

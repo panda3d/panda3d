@@ -1,13 +1,13 @@
 """OnscreenText module: contains the OnscreenText class"""
 
 from PandaObject import *
+from GuiGlobals import *
 
 class OnscreenText(PandaObject, NodePath):
 
-    Font = loader.loadModelOnce("phase_3/models/fonts/ttf-comic").node()
-
-    def __init__(self, string, x=0.0, y=0.0):
-        """__init__(self, string, float=0.0, float=0.0)
+    def __init__(self, string, x=0.0, y=0.0, font=getDefaultFont()):
+        """__init__(self, string, float=0.0, float=0.0,
+        font=GuiGlobals.getDefaultFont())
         Make a text node from string, put it into the 2d sg and place
         it at x, y in screen space
         """
@@ -24,7 +24,7 @@ class OnscreenText(PandaObject, NodePath):
         textNode.setCardAsMargin(0.1, 0.1, 0.1, 0.1)
         # textNode.setFrameColor(0.0, 0.0, 0.0, 1.0)
         # textNode.setFrameAsMargin(0.15, 0.15, 0.15, 0.15)
-        textNode.setFont(OnscreenText.Font)
+        textNode.setFont(font)
         textNode.setText(string)
         textNode.clearCardBorder()
         textNode.clearFrame()

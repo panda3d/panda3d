@@ -1,4 +1,5 @@
 from ShowBaseGlobal import *
+from GuiGlobals import *
 import PandaObject
 import Frame
 import GuiFrame
@@ -11,7 +12,7 @@ import Sign
 class ScrollingLabel(PandaObject.PandaObject):
 
     # special methods
-    def __init__(self, name, itemList, font=interfaceFont):
+    def __init__(self, name, itemList, font=getDefaultFont()):
 
         self.name = name
         self.eventName = self.name

@@ -18,7 +18,3 @@ __builtin__.taskMgr = base.taskMgr
 __builtin__.eventMgr = base.eventMgr
 __builtin__.messenger = base.messenger
 __builtin__.config = base.config
-
-# Pointer to interface font
-import ToontownGlobals
-__builtin__.interfaceFont = ToontownGlobals.getInterfaceFont() 

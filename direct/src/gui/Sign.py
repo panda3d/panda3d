@@ -1,5 +1,6 @@
 from ShowBaseGlobal import *
 from DirectObject import *
+from GuiGlobals import *
 import GuiSign
 import GuiManager
 import GuiLabel
@@ -8,7 +9,7 @@ guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.
 
 class Sign(DirectObject):
 
-    def __init__(self, name, label=None, font=interfaceFont):
+    def __init__(self, name, label=None, font=getDefaultFont()):
         self.name = name
         # label in this case means GuiLabel
         if not label:
