@@ -4,10 +4,12 @@
 
 #include "node.h"
 #include "nodeRelation.h"
+
 #include <bamWriter.h>
 #include <bamReader.h>
 #include <datagramIterator.h>
 #include <datagram.h>
+#include <indent.h>
 
 TypeHandle Node::_type_handle;
 Node* const Node::Null = (Node*)0L;
@@ -259,6 +261,16 @@ has_sub_render() const {
 void Node::
 output(ostream &out) const {
   out << get_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Node::write
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Node::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << *this << "\n";
 }
 
 

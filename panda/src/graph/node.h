@@ -75,6 +75,7 @@ public:
 
 PUBLISHED:
   virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
   // We reference-count the child pointer, but not the parent pointer,
   // to avoid circular reference counting.
