@@ -113,6 +113,11 @@ scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
                                  shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
                                  -shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
     }
+
+  case CS_default:
+  case CS_invalid:
+    // These should not be possible.
+    break;
   }
 
   linmath_cat.error()

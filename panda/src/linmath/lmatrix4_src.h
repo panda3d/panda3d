@@ -228,8 +228,9 @@ INLINE_LINMATH ostream &operator << (ostream &out, const FLOATNAME(LMatrix4) &ma
   return out;
 }
 
-
+BEGIN_PUBLISH
 INLINE_LINMATH FLOATNAME(LMatrix4) transpose(const FLOATNAME(LMatrix4) &a);
 INLINE_LINMATH FLOATNAME(LMatrix4) invert(const FLOATNAME(LMatrix4) &a);
+END_PUBLISH
 
 #include "lmatrix4_src.I"

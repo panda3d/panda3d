@@ -94,9 +94,8 @@ INLINE_LINMATH ostream& operator<<(ostream& os, const FLOATNAME(LQuaternion)& q)
   return os;
 }
 
-INLINE_LINMATH FLOATNAME(LQuaternion) invert(const FLOATNAME(LQuaternion) &a);
-
 BEGIN_PUBLISH
+INLINE_LINMATH FLOATNAME(LQuaternion) invert(const FLOATNAME(LQuaternion) &a);
 INLINE_LINMATH FLOATNAME(LMatrix3)
 operator * (const FLOATNAME(LMatrix3) &m, const FLOATNAME(LQuaternion) &q);
 INLINE_LINMATH FLOATNAME(LMatrix4)
