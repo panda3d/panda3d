@@ -14,7 +14,11 @@
     charBitmap.I charBitmap.cxx charBitmap.h \
     charLayout.cxx charLayout.h \
     charPlacement.I charPlacement.cxx charPlacement.h \
-    eggMakeFont.cxx eggMakeFont.h
+    eggMakeFont.cxx eggMakeFont.h \
+    fontFile.I fontFile.cxx fontFile.h \
+    pkFontFile.cxx pkFontFile.h
 
 #end bin_target
 
+#define INSTALL_SCRIPTS ttf2egg
+#define INSTALL_DATA T1-WGL4.enc

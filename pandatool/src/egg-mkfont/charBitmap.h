@@ -38,14 +38,6 @@ public:
   unsigned int _x, _y;
 };
 
-// An STL function object to sort the characters in order from tallest
-// to shortest.  This provides a more optimal packing into the
-// resulting image.
-class SortCharBitmap {
-public:
-  INLINE bool operator() (const CharBitmap *c1, const CharBitmap *c2) const;
-};
-
 #include "charBitmap.I"
 
 #endif

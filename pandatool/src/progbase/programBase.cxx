@@ -16,6 +16,7 @@
 #include <coordinateSystem.h>
 #include <dconfig.h>
 #include <config_dconfig.h>
+#include <string_utils.h>
 
 #include <stdlib.h>
 #include <algorithm>
@@ -547,17 +548,9 @@ dispatch_count(const string &, const string &, void *var) {
 ////////////////////////////////////////////////////////////////////
 bool ProgramBase::
 dispatch_int(const string &opt, const string &arg, void *var) {
-  if (arg.empty()) {
-    nout << "-" << opt << " requires an integer parameter.\n";
-    return false;
-  }
-
   int *ip = (int *)var;
-  const char *arg_str = arg.c_str();
-  char *endptr;
-  (*ip) = strtol(arg_str, &endptr, 0);
 
-  if (*endptr != '\0') {
+  if (!string_to_int(arg, *ip)) {
     nout << "Invalid integer parameter for -" << opt << ": " 
 	 << arg << "\n";
     return false;
@@ -575,40 +568,21 @@ dispatch_int(const string &opt, const string &arg, void *var) {
 ////////////////////////////////////////////////////////////////////
 bool ProgramBase::
 dispatch_int_pair(const string &opt, const string &arg, void *var) {
-  if (arg.empty()) {
-    nout << "-" << opt
-	 << " requires an pair of integers separated by a comma.\n";
-    return false;
-  }
-
-  size_t comma = arg.find(',');
-  if (comma == string::npos) {
-    nout << "-" << opt
-	 << " requires an pair of integers separated by a comma.\n";
-    return false;
-  }
-
-  string first = arg.substr(0, comma);
-  string second = arg.substr(comma + 1);
-
   int *ip = (int *)var;
-  char *endptr;
 
-  const char *first_str = first.c_str();
-  ip[0] = strtol(first_str, &endptr, 0);
+  vector_string words;
+  tokenize(arg, words, ",");
 
-  if (*endptr != '\0') {
-    nout << "Invalid integer parameter for -" << opt << ": " 
-	 << first << "\n";
-    return false;
+  bool okflag = false;
+  if (words.size() == 2) {
+    okflag =
+      string_to_int(words[0], ip[0]) &&
+      string_to_int(words[1], ip[1]);
   }
 
-  const char *second_str = second.c_str();
-  ip[1] = strtol(second_str, &endptr, 0);
-
-  if (*endptr != '\0') {
-    nout << "Invalid integer parameter for -" << opt << ": " 
-	 << second << "\n";
+  if (!okflag) {
+    nout << "-" << opt
+	 << " requires a pair of integers separated by a comma.\n";
     return false;
   }
 
@@ -624,19 +598,144 @@ dispatch_int_pair(const string &opt, const string &arg, void *var) {
 ////////////////////////////////////////////////////////////////////
 bool ProgramBase::
 dispatch_double(const string &opt, const string &arg, void *var) {
-  if (arg.empty()) {
-    nout << "-" << opt << " requires a floating-point parameter.\n";
+  double *ip = (double *)var;
+
+  if (!string_to_double(arg, *ip)) {
+    nout << "Invalid numeric parameter for -" << opt << ": " 
+	 << arg << "\n";
     return false;
   }
 
-  double *ip = (double *)var;
-  const char *arg_str = arg.c_str();
-  char *endptr;
-  (*ip) = strtod(arg_str, &endptr);
+  return true;
+}
 
-  if (*endptr != '\0') {
-    nout << "Invalid floating-point parameter for -" << opt << ": " 
-	 << arg << "\n";
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_double_pair
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               a pair of double parameters.  The data pointer is to
+//               an array of two doubles.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_double_pair(const string &opt, const string &arg, void *var) {
+  double *ip = (double *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  bool okflag = false;
+  if (words.size() == 2) {
+    okflag =
+      string_to_double(words[0], ip[0]) &&
+      string_to_double(words[1], ip[1]);
+  }
+
+  if (!okflag) {
+    nout << "-" << opt
+	 << " requires a pair of numbers separated by a comma.\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_double_triple
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               a triple of double parameters.  The data pointer is to
+//               an array of three doubles.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_double_triple(const string &opt, const string &arg, void *var) {
+  double *ip = (double *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  bool okflag = false;
+  if (words.size() == 3) {
+    okflag =
+      string_to_double(words[0], ip[0]) &&
+      string_to_double(words[1], ip[1]) &&
+      string_to_double(words[2], ip[2]);
+  }
+
+  if (!okflag) {
+    nout << "-" << opt
+	 << " requires three numbers separated by commas.\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_double_quad
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               a quad of double parameters.  The data pointer is to
+//               an array of four doubles.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_double_quad(const string &opt, const string &arg, void *var) {
+  double *ip = (double *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  bool okflag = false;
+  if (words.size() == 4) {
+    okflag =
+      string_to_double(words[0], ip[0]) &&
+      string_to_double(words[1], ip[1]) &&
+      string_to_double(words[2], ip[2]) &&
+      string_to_double(words[3], ip[3]);
+  }
+
+  if (!okflag) {
+    nout << "-" << opt
+	 << " requires four numbers separated by commas.\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_color
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes a
+//               color, either as r,g,b or as r,g,b,a.  The data
+//               pointer is to an array of four doubles, e.g. a
+//               Colord.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_color(const string &opt, const string &arg, void *var) {
+  double *ip = (double *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  bool okflag = false;
+  if (words.size() == 4) {
+    okflag =
+      string_to_double(words[0], ip[0]) &&
+      string_to_double(words[1], ip[1]) &&
+      string_to_double(words[2], ip[2]) &&
+      string_to_double(words[3], ip[3]);
+
+  } else if (words.size() == 3) {
+    okflag =
+      string_to_double(words[0], ip[0]) &&
+      string_to_double(words[1], ip[1]) &&
+      string_to_double(words[2], ip[2]);
+    ip[3] = 1.0;
+  }
+
+  if (!okflag) {
+    nout << "-" << opt
+	 << " requires three or four numbers separated by commas.\n";
     return false;
   }
 

@@ -23,14 +23,3 @@ INLINE int CharBitmap::
 get_height() const {
   return _block.size();
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: SortCharBitmap::Function Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool SortCharBitmap::
-operator() (const CharBitmap *c1, const CharBitmap *c2) const {
-  return (c1->get_height() > c2->get_height());
-}

@@ -19,6 +19,7 @@ class CharBitmap;
 class EggGroup;
 class EggTexture;
 class EggVertexPool;
+class FontFile;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggMakeFont
@@ -47,18 +48,7 @@ private:
   bool choose_scale_factor();
   void choose_image_size();
 
-  unsigned int fetch_nibble();
-  unsigned int fetch_packed_int();
-  unsigned int fetch_byte();
-  unsigned int fetch_int(int n = 4);
-  int fetch_signed_int(int n = 4);
-  bool do_character(int flag_byte);
-  void do_xxx(int num_bytes);
-  void do_yyy();
-  void do_post();
-  void do_pre();
-  void read_pk();
-
+  void unsmooth_rgb(PNMImage &image);
   string expand_hyphen(const string &str);
 
 public:
@@ -66,8 +56,10 @@ public:
 
 private:
   Filename _output_image_filename;
-  Filename _input_pk_filename;
+  Filename _input_font_filename;
   bool _got_output_size;
+  Colord _fg, _bg;
+  bool _use_alpha;
   int _output_xsize, _output_ysize, _output_zsize;
   double _buffer_pixels;
   double _poly_pixels;
@@ -77,19 +69,7 @@ private:
   bool _get_all;
   string _only_chars;
 
-  double _ds;
-  double _vppp;
-  double _hppp;
-
-  bool _post;
-  bool _post_warning;
-  int _p;
-  bool _high;
-  int _dyn_f;
-  int _repeat_count;
-  vector<unsigned char> _pk;
-  typedef vector<CharBitmap *> Chars;
-  Chars _chars;
+  FontFile *_font;
   typedef map<int, PT(EggGroup)> EggDefs;
   EggDefs _egg_defs;
 
