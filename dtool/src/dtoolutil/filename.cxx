@@ -712,6 +712,30 @@ is_directory() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::is_executable
+//       Access: Public
+//  Description: Returns true if the filename exists and is
+//               executable
+////////////////////////////////////////////////////////////////////
+bool Filename::
+is_executable() const {
+  if (!exists()) {
+#ifdef WIN32_VC
+    // no access() in windows, but to our advantage executables can only
+    // end in .exe or .com
+    string stmp = to_os_specific();
+    stmp = stmp.substr(stmp.rfind(".") + 1);
+    if ((stmp == "exe") || (stmp == "com"))
+      return true;
+#else /* WIN32_VC */
+    if (access(to_os_specific().c_str(), X_OK) == 0)
+      return true;
+#endif /* WIN32_VC */
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::compare_timestamps
 //       Access: Public
 //  Description: Returns a number less than zero if the file named by
