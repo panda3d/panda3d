@@ -75,52 +75,21 @@ traverse(PandaNode *node) {
     r_transmit(data_node, (DataNodeTransmit *)NULL);
 
   } else {
-    r_traverse_children(node, DataNodeTransmit());
+    traverse_below(node, DataNodeTransmit());
   }
 
-  // Now pick up any nodes that didn't get completely traversed.
-  // These must be nodes that have multiple parents, with at least one
-  // parent completely outside of the data graph.
-
-  while (!_multipass_data.empty()) {
-    MultipassData::iterator mi = _multipass_data.begin();
-    qpDataNode *data_node = (*mi).first;
-    const CollectedData &collected_data = (*mi).second;
-
-    dgraph_cat.warning()
-      << *data_node << " improperly parented partly outside of data graph.\n";
-
-    r_transmit(data_node, &collected_data._data[0]);
-    _multipass_data.erase(mi);
-  }  
+  collect_leftovers();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpDataGraphTraverser::r_transmit
-//       Access: Private
-//  Description: Part of the recursive implementation of traverse().
-//               This transmits the given data into the indicated
-//               DataNode, and then sends the output data to each of
-//               the node's children.
+//     Function: qpDataGraphTraverser::traverse_below
+//       Access: Public
+//  Description: Continues the traversal to all the children of the
+//               indicated node, passing in the given data, without
+//               actually calling transmit_data() on the given node.
 ////////////////////////////////////////////////////////////////////
 void qpDataGraphTraverser::
-r_transmit(qpDataNode *data_node, const DataNodeTransmit inputs[]) {
-  DataNodeTransmit output;
-  output.reserve(data_node->get_num_outputs());
-  data_node->transmit_data(inputs, output);
-
-  r_traverse_children(data_node, output);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpDataGraphTraverser::r_traverse_children
-//       Access: Private
-//  Description: Part of the recursive implementation of traverse().
-//               This visits each of the children of the indicated
-//               node, passing in the given data.
-////////////////////////////////////////////////////////////////////
-void qpDataGraphTraverser::
-r_traverse_children(PandaNode *node, const DataNodeTransmit &output) {
+traverse_below(PandaNode *node, const DataNodeTransmit &output) {
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
 
@@ -161,7 +130,47 @@ r_traverse_children(PandaNode *node, const DataNodeTransmit &output) {
       // be passing the data through here, it doesn't do any good
       // anyway, since the child nodes of this node will not know how
       // to interpret the data from a non-DataNode parent.)
-      r_traverse_children(child_node, output);
+      traverse_below(child_node, output);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpDataGraphTraverser::collect_leftovers
+//       Access: Public
+//  Description: Pick up any nodes that didn't get completely
+//               traversed.  These must be nodes that have multiple
+//               parents, with at least one parent completely outside
+//               of the data graph.
+////////////////////////////////////////////////////////////////////
+void qpDataGraphTraverser::
+collect_leftovers() {
+  while (!_multipass_data.empty()) {
+    MultipassData::iterator mi = _multipass_data.begin();
+    qpDataNode *data_node = (*mi).first;
+    const CollectedData &collected_data = (*mi).second;
+
+    dgraph_cat.warning()
+      << *data_node << " improperly parented partly outside of data graph.\n";
+
+    r_transmit(data_node, &collected_data._data[0]);
+    _multipass_data.erase(mi);
+  }  
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpDataGraphTraverser::r_transmit
+//       Access: Private
+//  Description: Part of the recursive implementation of traverse().
+//               This transmits the given data into the indicated
+//               DataNode, and then sends the output data to each of
+//               the node's children.
+////////////////////////////////////////////////////////////////////
+void qpDataGraphTraverser::
+r_transmit(qpDataNode *data_node, const DataNodeTransmit inputs[]) {
+  DataNodeTransmit output;
+  output.reserve(data_node->get_num_outputs());
+  data_node->transmit_data(inputs, output);
+
+  traverse_below(data_node, output);
 }

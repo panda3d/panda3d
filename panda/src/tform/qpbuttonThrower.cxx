@@ -36,8 +36,8 @@ qpButtonThrower::
 qpButtonThrower(const string &name) :
   qpDataNode(name)
 {
-  _button_events_input = define_input("ButtonEvents", ButtonEventList::get_class_type());
-  _button_events_output = define_output("ButtonEvents", ButtonEventList::get_class_type());
+  _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
+  _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
   _button_events = new ButtonEventList;
 

@@ -35,9 +35,9 @@ qpMouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
   _window(window),
   _device(device)
 {
-  _pixel_xy_output = define_output("PixelXY", EventStoreVec2::get_class_type());
-  _xy_output = define_output("XY", EventStoreVec2::get_class_type());
-  _button_events_output = define_output("ButtonEvents", ButtonEventList::get_class_type());
+  _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
+  _xy_output = define_output("xy", EventStoreVec2::get_class_type());
+  _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
   _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));

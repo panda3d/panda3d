@@ -12,11 +12,14 @@
   #define SOURCES  \
     buttonThrower.h \
     qpbuttonThrower.h \
-    config_tform.h dataValve.I dataValve.h  \
-    driveInterface.I driveInterface.h mouseWatcher.I  \
-    mouseWatcher.h mouseWatcherGroup.h \
-    mouseWatcherParameter.I mouseWatcherParameter.h  \
-    mouseWatcherRegion.I mouseWatcherRegion.h  \
+    config_tform.h dataValve.I dataValve.h \
+    driveInterface.I driveInterface.h \
+    qpdriveInterface.I qpdriveInterface.h \
+    mouseWatcher.I mouseWatcher.h \
+    qpmouseWatcher.I qpmouseWatcher.h \
+    mouseWatcherGroup.h \
+    mouseWatcherParameter.I mouseWatcherParameter.h \
+    mouseWatcherRegion.I mouseWatcherRegion.h \
     planarSlider.h trackball.h \
     qptrackball.h \
     transform2sg.h \
@@ -26,7 +29,11 @@
     buttonThrower.cxx \
     qpbuttonThrower.cxx \
     config_tform.cxx dataValve.cxx  \
-    driveInterface.cxx mouseWatcher.cxx mouseWatcherGroup.cxx \
+    driveInterface.cxx \
+    qpdriveInterface.cxx \
+    mouseWatcher.cxx \
+    qpmouseWatcher.cxx \
+    mouseWatcherGroup.cxx \
     mouseWatcherParameter.cxx mouseWatcherRegion.cxx  \
     planarSlider.cxx trackball.cxx \
     qptrackball.cxx \
@@ -37,7 +44,10 @@
     buttonThrower.h \
     qpbuttonThrower.h \
     dataValve.I dataValve.h \
-    driveInterface.I driveInterface.h mouseWatcher.I mouseWatcher.h \
+    driveInterface.I driveInterface.h \
+    qpdriveInterface.I qpdriveInterface.h \
+    mouseWatcher.I mouseWatcher.h \
+    qpmouseWatcher.I qpmouseWatcher.h \
     mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \
     mouseWatcherRegion.I mouseWatcherRegion.h \

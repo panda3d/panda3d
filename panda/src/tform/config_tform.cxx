@@ -20,9 +20,11 @@
 
 #include "dataValve.h"
 #include "driveInterface.h"
+#include "qpdriveInterface.h"
 #include "buttonThrower.h"
 #include "qpbuttonThrower.h"
 #include "mouseWatcher.h"
+#include "qpmouseWatcher.h"
 #include "mouseWatcherGroup.h"
 #include "mouseWatcherRegion.h"
 #include "planarSlider.h"
@@ -51,9 +53,11 @@ const double drive_horizontal_ramp_down_time = config_tform.GetDouble("drive-hor
 ConfigureFn(config_tform) {
   DataValve::init_type();
   DriveInterface::init_type();
+  qpDriveInterface::init_type();
   ButtonThrower::init_type();
   qpButtonThrower::init_type();
   MouseWatcher::init_type();
+  qpMouseWatcher::init_type();
   MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();
   PlanarSlider::init_type();

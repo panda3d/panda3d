@@ -42,10 +42,11 @@ PUBLISHED:
   ~qpDataGraphTraverser();
 
   void traverse(PandaNode *node);
+  void traverse_below(PandaNode *node, const DataNodeTransmit &output);
+  void collect_leftovers();
 
 private:
   void r_transmit(qpDataNode *data_node, const DataNodeTransmit inputs[]);
-  void r_traverse_children(PandaNode *node, const DataNodeTransmit &output);
 
   typedef pvector<DataNodeTransmit> DataVector;
 

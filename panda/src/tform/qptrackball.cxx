@@ -40,10 +40,10 @@ qpTrackball::
 qpTrackball(const string &name) :
   qpDataNode(name)
 {
-  _pixel_xy_input = define_input("PixelXY", EventStoreVec2::get_class_type());
-  _button_events_input = define_input("ButtonEvents", ButtonEventList::get_class_type());
+  _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
+  _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 
-  _transform_output = define_output("Transform", EventStoreMat4::get_class_type());
+  _transform_output = define_output("transform", EventStoreMat4::get_class_type());
 
   _transform = new EventStoreMat4(LMatrix4f::ident_mat());
 

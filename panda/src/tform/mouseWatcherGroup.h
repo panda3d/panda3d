@@ -58,6 +58,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class MouseWatcher;
+  friend class qpMouseWatcher;
   friend class BlobWatcher;
 };
 

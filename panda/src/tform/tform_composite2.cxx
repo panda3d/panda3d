@@ -1,5 +1,6 @@
 
 #include "mouseWatcher.cxx"
+#include "qpmouseWatcher.cxx"
 #include "mouseWatcherGroup.cxx"
 #include "mouseWatcherParameter.cxx"
 #include "mouseWatcherRegion.cxx"
