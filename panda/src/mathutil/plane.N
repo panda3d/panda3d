@@ -1,2 +1,0 @@
-forcetype Plane<float>
-forcetype Plane<double>
