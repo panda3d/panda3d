@@ -24,6 +24,7 @@
 #include "sourceTextureImage.h"
 #include "pnmTextMaker.h"
 #include "pnmTextGlyph.h"
+#include "eggData.h"
 #include "eggGroup.h"
 #include "eggPoint.h"
 #include "eggPolygon.h"
@@ -31,6 +32,9 @@
 #include "eggVertexPool.h"
 #include "eggVertex.h"
 #include "string_utils.h"
+#include "dcast.h"
+
+#include <ctype.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMakeFont::Constructor
@@ -94,6 +98,16 @@ EggMakeFont() : EggWriter(true, false) {
      "within square brackets, e.g. '[A-Za-z0-9]'.  If this is not specified, "
      "the default is the set of ASCII characters.",
      &EggMakeFont::dispatch_range, NULL, &_range);
+
+  add_option
+    ("extra", "file.egg", 0,
+     "Specifies additional externally-painted glyphs to mix into the "
+     "generated egg file.  The named egg file is expected to contain one "
+     "or more groups, each of which is named with the decimal unicode "
+     "number of a character and should contain one polygon.  These groups "
+     "are simply copied into the output egg file as if they were generated "
+     "locally.  This option may be repeated.",
+     &EggMakeFont::dispatch_vector_string, NULL, &_extra_filenames);
 
   add_option
     ("ppu", "pixels", 0,
@@ -161,7 +175,8 @@ EggMakeFont() : EggWriter(true, false) {
      "should contain the string %d or %x (or some variant such as %03d) "
      "which will be filled in with the Unicode number of each symbol.  "
      "If it is omitted, the default is based on the name of the egg file.  "
-     "This has no effect unless -nopal is specified.",
+     "This is used only if -nopal is specified; in the normal case, "
+     "without -nopal, use -pp instead.",
      &EggMakeFont::dispatch_string, NULL, &_output_glyph_pattern);
 
   add_option
@@ -389,6 +404,14 @@ run() {
     add_character(ri.get_code());
   } while (ri.next());
 
+  // If there are extra glyphs, pick them up.
+  if (!_extra_filenames.empty()) {
+    vector_string::const_iterator si;
+    for (si = _extra_filenames.begin(); si != _extra_filenames.end(); ++si) {
+      add_extra_glyphs(*si);
+    }
+  }
+
   if (_no_palettize) {
     // Ok, no palettize step; just write out the egg file and all of
     // the textures.
@@ -594,6 +617,73 @@ make_tref(PNMTextGlyph *glyph, int character) {
   tref->set_magfilter(EggTexture::FT_linear);
 
   return tref;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMakeFont::add_extra_glyphs
+//       Access: Private
+//  Description: Reads the indicated filename and adds any numbered
+//               groups into the current egg file.
+////////////////////////////////////////////////////////////////////
+void EggMakeFont::
+add_extra_glyphs(const Filename &extra_filename) {
+  PT(EggData) extra_data = new EggData;
+
+  if (!extra_data->read(extra_filename)) {
+    return;
+  }
+
+  _group->steal_children(*extra_data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMakeFont::r_add_extra_glyphs
+//       Access: Private
+//  Description: Recursively searches for numbered groups in the
+//               indicated egg file, and copies them to the current
+//               egg file.
+////////////////////////////////////////////////////////////////////
+void EggMakeFont::
+r_add_extra_glyphs(EggGroupNode *egg_group) {
+  if (egg_group->is_of_type(EggGroup::get_class_type())) {
+    EggGroup *group = DCAST(EggGroup, egg_group);
+    if (is_numeric(group->get_name())) {
+      EggGroup *new_group = new EggGroup(group->get_name());
+      _group->add_child(new_group);
+      new_group->steal_children(*group);
+      return;
+    }
+  }
+
+  EggGroupNode::iterator ci;
+  for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
+    EggNode *child = (*ci);
+    if (child->is_of_type(EggGroupNode::get_class_type())) {
+      r_add_extra_glyphs(DCAST(EggGroupNode, child));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMakeFont::is_numeric
+//       Access: Private, Static
+//  Description: Returns true if the indicated string is all numeric
+//               digits, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggMakeFont::
+is_numeric(const string &str) {
+  if (str.empty()) {
+    return false;
+  }
+
+  string::const_iterator si;
+  for (si = str.begin(); si != str.end(); ++si) {
+    if (!isdigit(*si)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 int main(int argc, char *argv[]) {

@@ -26,6 +26,7 @@
 #include "eggTexture.h"
 #include "pmap.h"
 #include "pvector.h"
+#include "vector_string.h"
 
 class PNMTextMaker;
 class PNMTextGlyph;
@@ -60,11 +61,16 @@ private:
   void make_geom(PNMTextGlyph *glyph, int character);
   EggTexture *get_tref(PNMTextGlyph *glyph, int character);
   EggTexture *make_tref(PNMTextGlyph *glyph, int character);
+  void add_extra_glyphs(const Filename &extra_filename);
+  void r_add_extra_glyphs(EggGroupNode *egg_group);
+  static bool is_numeric(const string &str);
+
 
 private:
   Colorf _fg, _bg, _interior;
   bool _got_interior;
   RangeDescription _range;
+  vector_string _extra_filenames;
   double _pixels_per_unit;
   double _point_size;
   double _poly_margin;
