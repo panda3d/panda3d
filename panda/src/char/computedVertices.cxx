@@ -42,7 +42,7 @@ VertexTransform(const VertexTransform &copy) :
 template<class ValueType, class MorphType>
 static void
 compute_morphs(ValueType *table, const vector<MorphType> &morph_list,
-	       Character *character) {
+           Character *character) {
   vector<MorphType>::const_iterator mli;
   for (mli = morph_list.begin(); mli != morph_list.end(); ++mli) {
     const MorphType &morph = (*mli);
@@ -51,16 +51,16 @@ compute_morphs(ValueType *table, const vector<MorphType> &morph_list,
 
     float slider_value = slider->_value;
 
-    if (slider_value != 0.0) {
+    if (slider_value != 0.0f) {
       typedef TYPENAME MorphType::Morphs Morphs;
       typedef TYPENAME MorphType::MorphValue MorphValue;
       TYPENAME Morphs::const_iterator mi;
       for (mi = morph._morphs.begin(); mi != morph._morphs.end(); ++mi) {
-	typedef typename MorphValue::VecType VecType;
-	ushort index = (*mi)._index;
-	const VecType &v = (*mi)._vector;
-	
-	table[index] += v * slider_value;
+    typedef typename MorphValue::VecType VecType;
+    ushort index = (*mi)._index;
+    const VecType &v = (*mi)._vector;
+    
+    table[index] += v * slider_value;
       }
     }
   }
@@ -199,8 +199,8 @@ update(Character *character) {
       DCAST_INTO_V(joint, character->get_part(vt._joint_index));
 
       mat = 
-	joint->_initial_net_transform_inverse * 
-	joint->_net_transform;
+    joint->_initial_net_transform_inverse * 
+    joint->_net_transform;
     }
 
     Vertices::const_iterator vi;
@@ -275,8 +275,8 @@ write(ostream &out, Character *character) const {
     }
 
     out << "  " << name << " * " << vt._effect << " : "
-	<< vt._vindex.size() << " vertices and "
-	<< vt._nindex.size() << " normals\n";
+    << vt._vindex.size() << " vertices and "
+    << vt._nindex.size() << " normals\n";
   }
 
   VertexMorphs::const_iterator vmi;
