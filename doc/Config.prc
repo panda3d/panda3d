@@ -1,5 +1,5 @@
 
-# The following (or similar) should go in ~/Configrc
+# The following (or similar) should go in ~/Config.prc
 
 # Uncomment one of the following lines to choose whether you should
 # run using OpenGL or DirectX rendering.
