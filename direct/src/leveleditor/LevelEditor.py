@@ -44,7 +44,7 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   ]
 BUILDING_HEIGHTS = [10, 14, 20, 24, 25, 30]
 NUM_WALLS = [1,2,3]
-LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop']
+LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop', 'petshop']
 
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
