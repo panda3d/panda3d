@@ -599,23 +599,45 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # send the message
         self.send(datagram)
 
-    def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
-        datagram = PyDatagram()
-        # Add message type
-        datagram.addUint16(CLIENT_SET_ZONE)
-        # Add zone id
-        datagram.addUint32(zoneId)
+    if wantOtpServer:
+        def sendSetZoneMsg(self, zoneId, visibleZoneList=None, parent=None):
+            datagram = PyDatagram()
+            # Add message type
+            datagram.addUint16(CLIENT_SET_ZONE)       
+            # Add Parent
+            if parent is not None:
+                datagram.addUint32(zoneId)
+            else:
+                datagram.addUint32(base.localAvatar.defaultShard)                                    
+            # Add zone id
+            datagram.addUint32(zoneId)
+            # if we have an explicit list of visible zones, add them
+            if visibleZoneList is not None:
+                vzl = list(visibleZoneList)
+                vzl.sort()
+                assert PythonUtil.uniqueElements(vzl)
+                for zone in vzl:
+                    datagram.addUint32(zone)
+            # send the message
+            self.send(datagram)        
+    else:
+        def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
+            datagram = PyDatagram()
+            # Add message type
+            datagram.addUint16(CLIENT_SET_ZONE)       
+            # Add zone id
+            datagram.addUint32(zoneId)
+    
+            # if we have an explicit list of visible zones, add them
+            if visibleZoneList is not None:
+                vzl = list(visibleZoneList)
+                vzl.sort()
+                assert PythonUtil.uniqueElements(vzl)
+                for zone in vzl:
+                    datagram.addUint32(zone)
 
-        # if we have an explicit list of visible zones, add them
-        if visibleZoneList is not None:
-            vzl = list(visibleZoneList)
-            vzl.sort()
-            assert PythonUtil.uniqueElements(vzl)
-            for zone in vzl:
-                datagram.addUint32(zone)
-
-        # send the message
-        self.send(datagram)
+            # send the message
+            self.send(datagram)
 
     def handleDatagram(self, di):
         if self.notify.getDebug():
