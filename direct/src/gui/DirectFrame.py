@@ -23,6 +23,7 @@ class DirectFrame(DirectGuiWidget):
             ('geom',            None,       self.setGeom),
             # A foreground text node
             ('text',            None,       self.setText),
+            ('textMayChange',   1,          None),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs,
@@ -71,7 +72,8 @@ class DirectFrame(DirectGuiWidget):
                         (), parent = self.stateNodePath[i],
                         text = text, scale = 1,
                         sort = TEXT_SORT_INDEX,
-                        mayChange = 1)
+                        mayChange = self['textMayChange'],
+                        )
 
     def setGeom(self):
         # Determine argument type

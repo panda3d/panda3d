@@ -103,6 +103,11 @@ class DirectScrolledList(DirectFrame):
             item = self["items"][i]
             item.show()
             item.setPos(0,0, - (i - self.index) * self.maxHeight)
+
+       
+        if self['command']:
+            # Pass any extra args to command
+            apply(self['command'], self['extraArgs'])    
         return ret
 
     def __scrollByTask(self, task):
@@ -123,6 +128,7 @@ class DirectScrolledList(DirectFrame):
         task.delta = 1
         self.scrollBy(task.delta)
         taskMgr.add(task, self.taskName("scroll"))
+        
 
     def __decButtonDown(self, event):
         task = Task.Task(self.__scrollByTask)
@@ -135,13 +141,14 @@ class DirectScrolledList(DirectFrame):
     def __buttonUp(self, event):
         taskMgr.remove(self.taskName("scroll"))
 
-    def addItem(self, item):
+    def addItem(self, item, refresh=1):
         """
         Add this string and extraArg to the list
         """
         self['items'].append(item)
         item.reparentTo(self.itemFrame)
-        self.refresh()
+        if refresh:
+            self.refresh()
         
 
     def removeItem(self, item):

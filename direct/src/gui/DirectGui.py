@@ -14,3 +14,4 @@ from DirectLabel import *
 from DirectScrolledList import *
 from DirectDialog import *
 from DirectWaitBar import *
+from DirectCheckButton import *
