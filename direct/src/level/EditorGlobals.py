@@ -9,6 +9,7 @@ username2entIdBase = {
     'skyler': 3*EntIdRange,
     'joe':    4*EntIdRange,
     'DrEvil': 5*EntIdRange,
+    'asad': 6*EntIdRange,
     }
 assert uniqueElements(username2entIdBase.values())
 
