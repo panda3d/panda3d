@@ -16,7 +16,9 @@
 
 #include <keyboardButton.h>
 #include <mouseButton.h>
+#ifdef DO_PSTATS
 #include <pStatTimer.h>
+#endif
 #include "dxGraphicsStateGuardian.h"
 
 #include <errno.h>
@@ -1313,8 +1315,6 @@ void wdxGraphicsWindow::show_frame(void) {
 //  Description:  timer info, incs frame #
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::end_frame(void) {
-	PStatTimer timer(_swap_pcollector);	 // added to mimic wglGraphicsWindow.cxx
-//  SwapBuffers(_hdc);
 	GraphicsWindow::end_frame();
 }
 
@@ -1484,8 +1484,10 @@ void INLINE wdxGraphicsWindow::process_events(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::update(void) {
+#ifdef DO_PSTATS
 	_show_code_pcollector.stop();
 	PStatClient::main_tick();
+#endif
 
   // Always ask for a redisplay for now
 
@@ -1507,7 +1509,9 @@ void wdxGraphicsWindow::update(void) {
   else if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 	process_events();					  
 */
+#ifdef DO_PSTATS
 	_show_code_pcollector.start();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
