@@ -61,7 +61,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, VV_BASE)
 // Now we can export the vector class.
 #pragma warning (disable : 4231)
 
-#ifdef UNKNOWN_ALLOCATOR
+#ifdef NO_STYLE_ALLOCATOR
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, std::vector<TYPE>)
 #else
 #define STD_VECTOR std::vector<TYPE, pallocator<TYPE> >
@@ -74,7 +74,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, pvector<TYPE>)
 
 // Now make a typedef for the vector.
 
-#ifdef UNKNOWN_ALLOCATOR
+#ifdef NO_STYLE_ALLOCATOR
 typedef std::vector<TYPE> NAME;
 #else
 typedef pvector<TYPE> NAME;
