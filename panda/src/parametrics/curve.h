@@ -70,12 +70,13 @@ END_PUBLISH //]
 
 
 class ParametricCurveDrawer;
+class HermiteCurveCV;
 class HermiteCurve;
 class NurbsCurve;
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : ParametricCurve
+//       Class : ParametricCurve
 // Description : A virtual base class for parametric curves.
 //               This encapsulates all curves in 3-d space defined
 //               for a single parameter t in the range [0,get_max_t()].
@@ -96,7 +97,7 @@ PUBLISHED:
   float calc_length() const;
   float calc_length(double from, double to) const;
   double compute_t(double start_t, double length_offset, double guess,
-		   double threshold) const;
+                   double threshold) const;
 
   bool convert_to_hermite(HermiteCurve &hc) const;
   bool convert_to_nurbs(NurbsCurve &nc) const;
@@ -140,8 +141,8 @@ protected:
   void invalidate_all();
 
   float r_calc_length(double t1, double t2,
-		      const LVector3f &p1, const LVector3f &p2,
-		      float seglength) const;
+                      const LVector3f &p1, const LVector3f &p2,
+                      float seglength) const;
 
   typedef list< ParametricCurveDrawer * > DrawerList;
   DrawerList _drawers;
@@ -167,7 +168,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : PiecewiseCurve
+//          Class : PiecewiseCurve
 // Description : A PiecewiseCurve is a curve made up of several curve
 //               segments, connected in a head-to-tail fashion.  The
 //               length of each curve segment in parametric space is
@@ -184,12 +185,12 @@ PUBLISHED:
   virtual bool get_2ndtangent(double t, LVector3f &tangent2) const;
 
   bool adjust_point(double t,
-		       float px, float py, float pz);
+                       float px, float py, float pz);
   bool adjust_tangent(double t,
-			 float tx, float ty, float tz);
+                         float tx, float ty, float tz);
   bool adjust_pt(double t,
-		    float px, float py, float pz,
-		    float tx, float ty, float tz);
+                    float px, float py, float pz,
+                    float tx, float ty, float tz);
 
 public:
   PiecewiseCurve();
@@ -208,15 +209,15 @@ public:
   bool set_tlength(int ti, double tlength);
 
   void make_nurbs(int order, int num_cvs,
-		  const double knots[], const LVector4f cvs[]);
+                  const double knots[], const LVector4f cvs[]);
 
   virtual bool GetBezierSegs(BezierSegs &bz_segs) const;
 
   virtual bool
   rebuild_curveseg(int rtype0, double t0, const LVector4f &v0,
-		   int rtype1, double t1, const LVector4f &v1,
-		   int rtype2, double t2, const LVector4f &v2,
-		   int rtype3, double t3, const LVector4f &v3);
+                   int rtype1, double t1, const LVector4f &v1,
+                   int rtype2, double t2, const LVector4f &v2,
+                   int rtype3, double t3, const LVector4f &v3);
 
 protected:
   ~PiecewiseCurve();
@@ -263,7 +264,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : CubicCurveseg
+//          Class : CubicCurveseg
 // Description : A CubicCurveseg is any curve that can be completely
 //               described by four 4-valued basis vectors, one for
 //               each dimension in three-space, and one for the
@@ -299,6 +300,9 @@ public:
   CubicCurveseg(const BezierSeg &seg);
   CubicCurveseg(int order, const double knots[], const LVector4f cvs[]);
 
+  void hermite_basis(const HermiteCurveCV &cv0,
+          const HermiteCurveCV &cv1,
+          double tlength = 1.0);
   void bezier_basis(const BezierSeg &seg);
   void nurbs_basis(int order, const double knots[], const LVector4f cvs[]);
 
@@ -316,25 +320,25 @@ public:
   void evaluate_point(const LVector4f &tv, LVector3f &result) const {
     double h = (rational) ? tv.dot(Bw) : 1.0;
     result.set(tv.dot(Bx) / h,
-	       tv.dot(By) / h,
-	       tv.dot(Bz) / h);
+               tv.dot(By) / h,
+               tv.dot(Bz) / h);
   }
 
   void evaluate_vector(const LVector4f &tv, LVector3f &result) const {
     result.set(tv.dot(Bx),
-	       tv.dot(By),
-	       tv.dot(Bz));
+               tv.dot(By),
+               tv.dot(Bz));
   }
 
   virtual bool GetBezierSeg(BezierSeg &seg) const;
 
   static bool compute_seg(int rtype0, double t0, const LVector4f &v0,
-			     int rtype1, double t1, const LVector4f &v1,
-			     int rtype2, double t2, const LVector4f &v2,
-			     int rtype3, double t3, const LVector4f &v3,
-			     const LMatrix4f &B,
-			     const LMatrix4f &Bi,
-			     LMatrix4f &G);
+                             int rtype1, double t1, const LVector4f &v1,
+                             int rtype2, double t2, const LVector4f &v2,
+                             int rtype3, double t3, const LVector4f &v3,
+                             const LMatrix4f &B,
+                             const LMatrix4f &Bi,
+                             LMatrix4f &G);
 
   LVector4f Bx, By, Bz, Bw;
   bool rational;
@@ -364,8 +368,8 @@ private:
 // This function is used internally to build the NURBS basis matrix
 // based on a given knot sequence.
 void compute_nurbs_basis(int order,
-			 const double knots_in[],
-			 LMatrix4f &basis);
+                         const double knots_in[],
+                         LMatrix4f &basis);
 
 
 #endif
