@@ -108,7 +108,10 @@ def traceFunctionCall(frame):
     n = co.co_argcount
     if co.co_flags & 4: n = n+1
     if co.co_flags & 8: n = n+1
-    r=f.f_code.co_name+'('
+    r=''
+    if dict.has_key('self'):
+        r = '%s.'%(dict['self'].__class__.__name__, )
+    r+="%s("%(f.f_code.co_name, )
     comma=0 # formatting, whether we should type a comma.
     for i in range(n):
         name = co.co_varnames[i]
