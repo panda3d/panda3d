@@ -53,6 +53,7 @@ private:
   ConfigString configsuffix;
   ConfigString configargs;
   ConfigString configpath;
+  ConfigString configdir;
   ConfigString configcmt;
   ConfigString argsuffix;
   ConfigString commandstub;

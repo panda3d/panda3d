@@ -141,17 +141,33 @@ void ConfigTable::ReadConfigFile() {
     int i = configpath.find_first_of(" ");
     ConfigString stmp = configpath.substr(0, i);
     if (ExecutionEnvironment::has_environment_variable(stmp)) {
-      Filename next_path = Filename::from_os_specific(ExecutionEnvironment::get_environment_variable(stmp));
-      config_search.append_path(next_path);
+      string next_path = ExecutionEnvironment::get_environment_variable(stmp);
+
+      while (!next_path.empty()) {
+        int j = next_path.find_first_of(" ");
+        Filename dir = Filename::from_os_specific(next_path.substr(0, j));
+        config_search.append_directory(dir);
+        next_path.erase(0, j);
+        CropString(next_path);
+      }
     }
     configpath.erase(0, i);
     CropString(configpath);
   }
 
+  // If the configpath is empty, use the configdir string instead.  If
+  // the configdir string is empty, it gets its value from the
+  // CONFIGRC_DIR environment variable, or from the compiled-in
+  // default.
   if (config_search.is_empty()) {
-    // If we still have no directories on the search path, then at
-    // least search the current directory.
-    config_search.append_directory(".");
+    if (configdir.empty()) {
+      configdir = ExecutionEnvironment::get_environment_variable("CONFIGRC_DIR");
+      if (configdir.empty()) {
+        configdir = DEFAULT_CONFIGRC_DIR;
+      }
+    }
+
+    config_search.append_directory(Filename::from_os_specific(configdir));
   }
 
   if (microconfig_cat->is_spam()) {
@@ -361,6 +377,7 @@ void ConfigTable::MicroConfig() {
    bool csuff = false;
    bool cargs = false;
    bool cpath = false;
+   bool cdir = false;
    bool ccmt = false;
    bool asuff = false;
    bool cstub = false;
@@ -467,6 +484,14 @@ void ConfigTable::MicroConfig() {
                         << endl;
                   }
                   cpath = true;
+               } else if (tok == "configdir") {
+                 configdir = rest;
+                 if (microconfig_cat->is_spam())
+                   microconfig_cat->spam()
+                     << "got a microconfig configdir directive, "
+                     << "setting the configdir to '" << configdir << "'"
+                     << endl;
+                  cdir = true;
                } else if (tok == "configcmt") {
                   configcmt = rest;
                   ccmt = true;
@@ -574,6 +599,13 @@ void ConfigTable::MicroConfig() {
       if (microconfig_cat->is_spam())
         microconfig_cat->spam() << "no microconfig for configpath, "
                                 << "setting to default '" << configpath
+                                << "'" << endl;
+   }
+   if (!cdir) {
+      ConfigPathDefault();
+      if (microconfig_cat->is_spam())
+        microconfig_cat->spam() << "no microconfig for configdir, "
+                                << "setting to default '" << configdir
                                 << "'" << endl;
    }
    if (!ccmt) {

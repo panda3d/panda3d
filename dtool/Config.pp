@@ -98,6 +98,15 @@
 // #define INSTALL_LIB_DIR /usr/lib/python2.2/site-packages
 
 
+// The Configrc file is used by Panda for runtime configuration.
+// Panda will look for it in the directory specified by the
+// CONFIGRC_DIR environment variable, or in the directory named here
+// if that environment variable is undefined.  By default, we specify
+// a dot, to indicate the current directory; you may redefine this if
+// you have someplace in particular you'd rather put it.
+#define DEFAULT_CONFIGRC_DIR .
+
+
 // What level of compiler optimization/debug symbols should we build?
 // The various optimize levels are defined as follows:
 //

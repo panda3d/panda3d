@@ -183,6 +183,14 @@ $[cdefine LINK_IN_GL]
 /* Define if we are linking PANDAPHYSICS in with PANDA. */
 $[cdefine LINK_IN_PHYSICS]
 
+/* The compiled-in default directory to look for the Configrc file, in
+   the absence of the CONFIGRC_DIR environment variable set, and in
+   the absence of anything specified via the configpath directive. */
+# define DEFAULT_CONFIGRC_DIR "$[DEFAULT_CONFIGRC_DIR]"
+
+
+
+
 /* Define if your processor stores words with the most significant
    byte first (like Motorola and SPARC, unlike Intel and VAX).  */
 $[cdefine WORDS_BIGENDIAN]
