@@ -170,7 +170,7 @@ void LoaderFileTypeRegistry::
 register_type(LoaderFileType *type) {
   // Make sure we haven't already registered this type.
   if (find(_types.begin(), _types.end(), type) != _types.end()) {
-    loader_cat->info()
+    loader_cat->debug()
       << "Attempt to register LoaderFileType " << type->get_name()
       << " (" << type->get_type() << ") more than once.\n";
     return;
@@ -207,7 +207,7 @@ register_deferred_type(const string &extension, const string &library) {
   if (ei != _extensions.end()) {
     // We already have a loader for this type; no need to register
     // another one.
-    loader_cat->info()
+    loader_cat->debug()
       << "Attempt to register loader library " << library
       << " (" << dcextension << ") when extension is already known.\n";
     return;
@@ -217,12 +217,12 @@ register_deferred_type(const string &extension, const string &library) {
   di = _deferred_types.find(dcextension);
   if (di != _deferred_types.end()) {
     if ((*di).second == library) {
-      loader_cat->info()
+      loader_cat->debug()
         << "Attempt to register loader library " << library
         << " (" << dcextension << ") more than once.\n";
       return;
     } else {
-      loader_cat->info()
+      loader_cat->debug()
         << "Multiple libraries registered that use the extension "
         << dcextension << "\n";
     }
@@ -243,7 +243,7 @@ record_extension(const string &extension, LoaderFileType *type) {
   Extensions::const_iterator ei;
   ei = _extensions.find(dcextension);
   if (ei != _extensions.end()) {
-    loader_cat->info()
+    loader_cat->debug()
       << "Multiple LoaderFileTypes registered that use the extension "
       << dcextension << "\n";
   } else {
