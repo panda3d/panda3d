@@ -504,7 +504,12 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
 
     if (bytes_read < 0) {
       PRErrorCode errcode = PR_GetError();
-      if (errcode == PR_CONNECT_RESET_ERROR) {
+      if (errcode == PR_CONNECT_RESET_ERROR
+#ifdef PR_SOCKET_SHUTDOWN_ERROR
+	  || errcode == PR_SOCKET_SHUTDOWN_ERROR
+	  || errcode == PR_CONNECT_ABORTED_ERROR
+#endif
+	  ) {
 	// The socket was closed.
 	if (_manager != (ConnectionManager *)NULL) {
 	  _manager->connection_reset(sinfo->_connection);
@@ -557,7 +562,12 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     
     if (bytes_read < 0) {
       PRErrorCode errcode = PR_GetError();
-      if (errcode == PR_CONNECT_RESET_ERROR) {
+      if (errcode == PR_CONNECT_RESET_ERROR 
+#ifdef PR_SOCKET_SHUTDOWN_ERROR
+	  || errcode == PR_SOCKET_SHUTDOWN_ERROR
+	  || errcode == PR_CONNECT_ABORTED_ERROR
+#endif
+	  ) {
 	// The socket was closed.
 	if (_manager != (ConnectionManager *)NULL) {
 	  _manager->connection_reset(sinfo->_connection);

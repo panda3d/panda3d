@@ -136,7 +136,12 @@ send_datagram(const NetDatagram &datagram) {
   PR_Unlock(_write_mutex);
 
   if (result < 0) {
-    if (errcode == PR_CONNECT_RESET_ERROR) {
+    if (errcode == PR_CONNECT_RESET_ERROR
+#ifdef PR_SOCKET_SHUTDOWN_ERROR
+	|| errcode == PR_SOCKET_SHUTDOWN_ERROR
+	|| errcode == PR_CONNECT_ABORTED_ERROR
+#endif
+	) {
       // The connection has been reset; tell our manager about it
       // and ignore it.
       if (_manager != (ConnectionManager *)NULL) {
