@@ -25,6 +25,8 @@ extern EXPCL_PANDA const float pstats_target_frame_rate;
 extern EXPCL_PANDA const bool pstats_scroll_mode;
 extern EXPCL_PANDA const float pstats_history;
 
+extern EXPCL_PANDA const bool pstats_threaded_write;
+
 extern EXPCL_PANDA void init_libpstatclient();
 
 #endif

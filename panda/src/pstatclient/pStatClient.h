@@ -31,6 +31,14 @@ class PStatThread;
 // Description : Manages the communications to report statistics via a
 //               network connection to a remote PStatServer.
 //
+//               Normally, there is only one PStatClient in the world,
+//               although it is possible to have multiple PStatClients
+//               if extraordinary circumstances require in.  Since
+//               each PStatCollector registers itself with the
+//               PStatClient when it is created, having multiple
+//               PStatClients requires special care when constructing
+//               the various PStatCollectors.
+//
 //               If DO_PSTATS is not defined, we don't want to use
 //               stats at all.  This class is therefore defined as a
 //               stub class.
@@ -59,22 +67,25 @@ public:
   const ClockObject &get_clock() const;
   PStatThread get_main_thread() const;
 
-  static void main_tick();
-  static PStatClient *get_global_pstats();
-
 PUBLISHED:
   INLINE static bool connect(const string &hostname = string(), int port = -1);
   INLINE static void disconnect();
   INLINE static bool is_connected();
 
-private:
-  bool ns_connect(string hostname, int port);
-  void ns_disconnect();
-  bool ns_is_connected() const;
+public:
+  static void main_tick();
+  static PStatClient *get_global_pstats();
 
+  bool client_connect(string hostname, int port);
+  void client_disconnect();
+  bool client_is_connected() const;
+
+private:
   PStatCollector make_collector_with_relname(int parent_index, string relname);
   PStatCollector make_collector_with_name(int parent_index, const string &name);
   PStatThread make_thread(const string &name);
+
+  bool is_active(int collector_index, int thread_index) const;
 
   void start(int collector_index, int thread_index, float as_of);
   void stop(int collector_index, int thread_index, float as_of);

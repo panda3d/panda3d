@@ -113,6 +113,30 @@ operator = (const PStatCollector &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::is_active
+//       Access: Public
+//  Description: Returns true if this particular collector is active
+//               on the default thread, and we are currently
+//               transmitting PStats data.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatCollector::
+is_active() {
+  return _client->is_active(_index, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::is_active
+//       Access: Public
+//  Description: Returns true if this particular collector is active
+//               on the indicated thread, and we are currently
+//               transmitting PStats data.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatCollector::
+is_active(const PStatThread &thread) {
+  return _client->is_active(_index, thread._index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::start
 //       Access: Public
 //  Description: Starts this particular timer ticking.  This should be

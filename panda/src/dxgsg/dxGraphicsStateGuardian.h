@@ -265,6 +265,10 @@ protected:
   size_t draw_prim_setup(const Geom *geom) ;
   void draw_multitri(const Geom *geom, D3DPRIMITIVETYPE tri_id);
 
+#ifdef DO_PSTATS
+  void report_texmgr_stats();
+#endif
+
   //   for drawing primitives
   Colorf	p_color;
   Normalf	p_normal;

@@ -25,6 +25,9 @@ estimate_texture_memory() {
 
   size_t pixels = pb->get_xsize() * pb->get_ysize();
 
+  size_t bpp = 4;
+
+  /*
   size_t bpp = 1;
   switch (pb->get_format()) {
   case PixelBuffer::F_rgb332:
@@ -60,6 +63,7 @@ estimate_texture_memory() {
     bpp = 6;
     break;
   }
+  */
 
   size_t bytes = pixels * bpp;
 

@@ -46,7 +46,7 @@ PerThreadData() {
 PStatClient::
 PStatClient() :
   _reader(this, 0),
-  _writer(this, 0)
+  _writer(this, pstats_threaded_write ? 1 : 0)
 {
   _is_connected = false;
   _got_udp_port = false;
@@ -369,13 +369,13 @@ get_global_pstats() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::ns_connect
+//     Function: PStatClient::client_connect
 //       Access: Private
 //  Description: The nonstatic implementation of connect().
 ////////////////////////////////////////////////////////////////////
 bool PStatClient::
-ns_connect(string hostname, int port) {
-  ns_disconnect();
+client_connect(string hostname, int port) {
+  client_disconnect();
 
   if (hostname.empty()) {
     hostname = pstats_host;
@@ -410,12 +410,12 @@ ns_connect(string hostname, int port) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::ns_disconnect
+//     Function: PStatClient::client_disconnect
 //       Access: Private
 //  Description: The nonstatic implementation of disconnect().
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-ns_disconnect() {
+client_disconnect() {
   if (_is_connected) {
     _reader.remove_connection(_tcp_connection);
     close_connection(_tcp_connection);
@@ -451,13 +451,33 @@ ns_disconnect() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::ns_is_connected
+//     Function: PStatClient::client_is_connected
 //       Access: Public
 //  Description: The nonstatic implementation of is_connected().
 ////////////////////////////////////////////////////////////////////
 bool PStatClient::
-ns_is_connected() const {
+client_is_connected() const {
   return _is_connected;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::is_active
+//       Access: Private
+//  Description: Returns true if the indicated collector/thread
+//               combination is active, and we are transmitting stats
+//               data, or false otherwise.
+//
+//               Normally you would not use this interface directly;
+//               instead, call PStatCollector::is_active().
+////////////////////////////////////////////////////////////////////
+bool PStatClient::
+is_active(int collector_index, int thread_index) const {
+  nassertr(collector_index >= 0 && collector_index < (int)_collectors.size(), false);
+  nassertr(thread_index >= 0 && thread_index < (int)_threads.size(), false);
+
+  return (_is_connected &&
+          _collectors[collector_index]._def->_is_active &&
+          _threads[thread_index]._is_active);
 }
 
 ////////////////////////////////////////////////////////////////////

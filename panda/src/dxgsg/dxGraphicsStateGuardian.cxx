@@ -67,6 +67,7 @@
 #include <throw_event.h>
 #include <mmsystem.h>
 #include <pStatTimer.h>
+#include <pStatCollector.h>
 
 #define DISABLE_POLYGON_OFFSET_DECALING
 // currently doesnt work well enough in toontown models for us to use
@@ -777,6 +778,12 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
 	show_frame();
 
+#ifdef DO_PSTATS
+  if (_texmgrmem_total_pcollector.is_active()) {
+    report_texmgr_stats();
+  }
+#endif
+
 #ifdef PRINT_TEXSTATS
 	{
 
@@ -840,6 +847,28 @@ render_frame(const AllAttributesWrapper &initial_state) {
 #endif
 }
 
+#ifdef DO_PSTATS
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::report_texmgr_stats
+//       Access: Protected
+//  Description: Reports the DX texture manager's activity to PStats.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+report_texmgr_stats() {
+  HRESULT hr;
+
+  D3DDEVINFO_TEXTUREMANAGER tminfo;
+  ZeroMemory(&tminfo, sizeof(tminfo));
+  hr = _d3dDevice->GetInfo(D3DDEVINFOID_TEXTUREMANAGER,
+                           &tminfo, sizeof(tminfo));
+  
+  // Quietly ignore an error in GetInfo().
+  if (hr == D3D_OK) {
+    _texmgrmem_total_pcollector.set_level(tminfo.dwTotalBytes);
+    _texmgrmem_resident_pcollector.set_level(tminfo.dwWorkingSetBytes);
+  }
+}
+#endif  // DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::render_scene
