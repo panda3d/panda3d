@@ -669,6 +669,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             # Initial pos/scale of the widget
             ('pos',            None,         INITOPT),
             ('scale',          None,         INITOPT),
+            ('color',          None,         INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -700,7 +701,14 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 (type(scale) == types.FloatType)):
                 self.setScale(scale)
             else:
-                apply(self.setScale, self['scale'])
+                apply(self.setScale, scale)
+        if self['color']:
+            color = self['color']
+            # Can either be a Vec4 or a tuple of 4 values
+            if (isinstance(color, Vec4)):
+                self.setColor(color)
+            else:
+                apply(self.setColor, color)
         # Initialize names
         self.setName(self.guiId)
         # Create

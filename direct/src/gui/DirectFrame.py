@@ -115,6 +115,8 @@ class DirectFrame(DirectGuiWidget):
         if arg == None:
             # Passed in None
             imageList = (None,) * self['numStates']
+        elif isinstance(arg, NodePath):
+            imageList = (arg,) * self['numStates']
         elif type(arg) == types.StringType:
             # Passed in a single node path, make a tuple out of it
             imageList = (arg,) * self['numStates']
@@ -124,7 +126,7 @@ class DirectFrame(DirectGuiWidget):
                 (type(arg[0]) == types.StringType) and
                 (type(arg[1]) == types.StringType)):
                 # Its a model/node pair of strings
-                image = (arg,) * self['numStates']
+                imageList = (arg,) * self['numStates']
             else:
                 # Assume its a list of node paths
                 imageList = arg
