@@ -24,12 +24,9 @@ class DirectLight(NodePath):
         return self.light
 
 class DirectLights(NodePath):
-    def __init__(self, parent = None):
+    def __init__(self, parent = render):
         # Initialize the superclass
         NodePath.__init__(self)
-        # Use direct.group as default parent
-        if parent == None:
-            parent = direct.group
         # Create a node for the lights
         self.assign(parent.attachNewNode('DIRECT Lights'))
         # Create a light attrib

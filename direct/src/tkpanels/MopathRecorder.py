@@ -73,6 +73,8 @@ class MopathRecorder(AppShell, PandaObject):
         self.playbackMarker = loader.loadModel('models/misc/smiley')
         self.playbackMarker.setName('Playback Marker')
         self.playbackMarker.reparentTo(self.recorderNodePath)
+        self.playbackMarkerIds = self.getChildIds(
+            self.playbackMarker.getChild(0))
         self.playbackMarker.hide()
         # Tangent marker
         self.tangentGroup = self.playbackMarker.attachNewNode('Tangent Group')
@@ -82,6 +84,8 @@ class MopathRecorder(AppShell, PandaObject):
         self.tangentMarker.setScale(0.5)
         self.tangentMarker.setColor(1,0,1,1)
         self.tangentMarker.setName('Tangent Marker')
+        self.tangentMarkerIds = self.getChildIds(
+            self.tangentMarker.getChild(0))
         self.tangentLines = LineNodePath(self.tangentGroup)
         self.tangentLines.setColor(VBase4(1,0,1,1))
         self.tangentLines.setThickness(1)
@@ -656,9 +660,10 @@ class MopathRecorder(AppShell, PandaObject):
         marker if subnode selected
         """
         taskMgr.remove(self.name + '-curveEditTask')
-        if nodePath.id() == self.playbackMarker.getChild(0).id():
+        print nodePath.id()
+        if nodePath.id() in self.playbackMarkerIds:
             direct.select(self.playbackMarker)
-        elif nodePath.id() == self.tangentMarker.getChild(0).id():
+        elif nodePath.id() in self.tangentMarkerIds:
             direct.select(self.tangentMarker)
         elif nodePath.id() == self.playbackMarker.id():
             self.tangentGroup.show()
@@ -670,6 +675,13 @@ class MopathRecorder(AppShell, PandaObject):
                                      self.name + '-curveEditTask')
         else:
             self.tangentGroup.hide()
+
+    def getChildIds(self, nodePath):
+        ids = [nodePath.id()]
+        kids = nodePath.getChildrenAsList()
+        for kid in kids:
+            ids += self.getChildIds(kid)
+        return ids
 
     def deselectedNodePathHook(self, nodePath):
         """
