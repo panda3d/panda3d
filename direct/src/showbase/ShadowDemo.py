@@ -109,7 +109,7 @@ def avatarShadow():
 
     # Set up a new node to hold the "light": this is an abitrary point
     # somewhere above the avatar, looking down, as if from the sun.
-    objectPath = base.localAvatar
+    objectPath = base.localAvatar.getGeomNode()
     shadowCamera = objectPath.attachNewNode('shadowCamera')
     lightPath = shadowCamera.attachNewNode('lightPath')
 
