@@ -37,6 +37,8 @@ enum FastReceiveCode {
   FR_no_data = -3,
 };
 
+const int MAX_RECEIVE_BYTES = 16384;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Downloader::Constructor
 //       Access: Published 
@@ -415,7 +417,16 @@ run(void) {
   }
 
   // Attempt to receive the bytes from the socket
-  int fret = fast_receive(_socket, _current_status, _receive_size);
+  int repeat = 1;
+  if (_receive_size > MAX_RECEIVE_BYTES) {
+    repeat += (int)(_receive_size / MAX_RECEIVE_BYTES);
+  }
+  int fret;
+  for (int i = 0; i < repeat; i++) {
+    fret = fast_receive(_socket, _current_status, _receive_size);
+    if (fret == FR_eof || fret < 0)
+      break;
+  }
   _tlast = _clock.get_real_time();
 
   // Check for end of file
