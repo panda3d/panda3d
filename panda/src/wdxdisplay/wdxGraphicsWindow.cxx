@@ -1728,8 +1728,10 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     _dxgsg->scrn.MaxAvailVidMem = dwVidMemTotal;
     
     #define LOWVIDMEMTHRESHOLD 3500000
-    // assume buggy drivers (this means you, FireGL2) may return zero for dwVidMemFree, so ignore value if its 0        
-    _dxgsg->scrn.bIsLowVidMemCard = ((dwVidMemFree>0) && (dwVidMemFree< LOWVIDMEMTHRESHOLD));
+    #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000     // every vidcard we deal with should have at least 1MB
+    
+    // assume buggy drivers (this means you, FireGL2) may return zero for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
+    _dxgsg->scrn.bIsLowVidMemCard = ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && (dwVidMemTotal< LOWVIDMEMTHRESHOLD));   
 
     if(DeviceIdx==SWRASTIDX) {
         // this will force 640x480x16, is this what we want for all sw rast?

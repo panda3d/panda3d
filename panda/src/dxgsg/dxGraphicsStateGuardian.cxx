@@ -1997,8 +1997,6 @@ void DXGraphicsStateGuardian::
 draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags) {
     Vertexf NextVert;
 
-    assert((_CurShadeMode==D3DSHADE_GOURAUD)==(geom->get_binding(G_COLOR)==G_PER_VERTEX));
-
     for(;nVerts > 0;nVerts--) {
          // coord info will always be _perVertex
         GET_NEXT_VERTEX(NextVert);     // need to optimize these 
