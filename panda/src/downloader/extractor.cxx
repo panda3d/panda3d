@@ -45,6 +45,7 @@ void Extractor::
 init(PT(Buffer) buffer) {
   nassertv(!buffer.is_null());
   _buffer = buffer;
+  _mfile = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,6 +55,8 @@ init(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 Extractor::
 ~Extractor(void) {
+  if (_mfile != NULL)
+    delete _mfile;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,7 +87,10 @@ initiate(Filename &source_file, const Filename &rel_path) {
   _total_bytes_read = 0;
   _read_all_input = false;
   _handled_all_input = false;
-  _mfile.reset();
+  //_mfile.reset();
+  if (_mfile != NULL)
+    delete _mfile;
+  _mfile = new Multifile;
   return ES_success;
 }
 
@@ -109,9 +115,10 @@ run(void) {
   // Write to the out file
   char *start = _buffer->_buffer;
   int size = _source_buffer_length; 
-  if (_mfile.write(start, size, _rel_path) == true) {
+  if (_mfile->write(start, size, _rel_path) == true) {
     _read_stream.close();
     _source_file.unlink();
+    delete _mfile;
     return ES_success;
   }
   return ES_ok;

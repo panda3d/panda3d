@@ -44,7 +44,7 @@ private:
 
   ifstream _read_stream;
   int _source_file_length;
-  Multifile _mfile;
+  Multifile *_mfile;
   int _total_bytes_read;
   bool _read_all_input;
   bool _handled_all_input;
