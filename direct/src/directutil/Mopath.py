@@ -57,7 +57,7 @@ class Mopath(PandaObject):
                 self.__extractCurves(child)
 
     def goTo(self, node, time):
-	if (self.xyzNurbsCurve == None) & (self.hprNurbsCurve == None):
+	if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
 	    print 'Mopath: Mopath has no curves'
 	    return
 	self.playbackTime = CLAMP(time, 0.0, self.maxT)
@@ -71,7 +71,7 @@ class Mopath(PandaObject):
 	    node.setHpr(hpr)
 
     def play(self, node, time = 0.0, loop = 0):
-	if (self.xyzNurbsCurve == None) & (self.hprNurbsCurve == None):
+	if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
 	    print 'Mopath: Mopath has no curves'
 	    return
 	self.node = node
@@ -92,7 +92,7 @@ class Mopath(PandaObject):
 	    cTime = (state.currentTime + dTime) % self.maxT
 	else:
 	    cTime = state.currentTime + dTime
-	if ((self.loop == 0) & (cTime > self.maxT)):
+	if ((self.loop == 0) and (cTime > self.maxT)):
 	    self.stop()
 	    messenger.send(self.name + '-done')
 	    self.node = None
