@@ -16,8 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "cull_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "geomBinNormal.h"
+#include "geomBinUnsorted.h"
+#include "geomBinBackToFront.h"
+
+#include <nodeAttributes.h>
+#endif
+
+#include <transparencyTransition.h>
+#include <transparencyAttribute.h>
 
 TypeHandle GeomBinNormal::_type_handle;
 

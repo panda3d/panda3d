@@ -16,33 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <allAttributesWrapper.h>
-#include <config_sgattrib.h>    // for support_decals
-#include <config_sgraphutil.h>  // for implicit_app_traversal
-#include <dconfig.h>
-#include <decalTransition.h>
-#include <directRenderTraverser.h>
-#include <frustumCullTraverser.h>
 #include <geometricBoundingVolume.h>
 #include <graphicsStateGuardian.h>
-#include <graphicsStateGuardianBase.h>
 #include <indent.h>
 #include <nodeAttributes.h>
-#include <nodeTransitionWrapper.h>
-#include <pruneTransition.h>
 #include <pStatTimer.h>
 #include <string.h>
 #include <string_utils.h>
-#include <switchNode.h>
 #include <transformAttribute.h>
 #include <transformTransition.h>
-#include <transparencyAttribute.h>
-#include <transparencyTransition.h>
-#include <wrt.h>
 
 #include "config_cull.h"
 #include "cullState.h"
-#include "cullStateLookup.h"
 #include "cullStateSubtree.h"
 #include "cullTraverser.h"
 #include "directRenderTransition.h"

@@ -16,8 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "cull_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "geomBinTransition.h"
+#include "geomBinAttribute.h"
+
+#include <indent.h>
+
+#include <string.h>
+#endif
 
 TypeHandle GeomBinTransition::_type_handle;
 

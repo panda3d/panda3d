@@ -16,8 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "cull_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "geomBinBackToFront.h"
+#include "cullTraverser.h"
+
+#include <nodeAttributes.h>
+#include <graphicsStateGuardian.h>
+#include <transformTransition.h>
+#include <transformAttribute.h>
+#include <geometricBoundingVolume.h>
+#include <pStatTimer.h>
+#endif
 
 TypeHandle GeomBinBackToFront::_type_handle;
 

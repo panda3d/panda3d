@@ -16,8 +16,38 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "cull_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "cullTraverser.h"
+#include "geomBinTransition.h"
+#include "geomBinAttribute.h"
+#include "cullStateSubtree.h"
+#include "geomBinNormal.h"
+#include "geomBinFixed.h"
+#include "directRenderTransition.h"
+#include "config_cull.h"
+
+#include <graphicsStateGuardian.h>
+#include <transformTransition.h>
+#include <nodeTransitionWrapper.h>
+#include <indent.h>
+#include <string_utils.h>
+#include <pStatTimer.h>
+#endif
+
+#include <wrt.h>
+#include <frustumCullTraverser.h>
+#include <pruneTransition.h>
+#include <decalTransition.h>
+#include <config_sgraphutil.h>  // for implicit_app_traversal
+#include <config_sgattrib.h>    // for support_decals
+#include <switchNode.h>
+
 
 TypeHandle CullTraverser::_type_handle;
 

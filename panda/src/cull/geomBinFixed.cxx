@@ -16,8 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "cull_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "geomBinFixed.h"
+#include "cullTraverser.h"
+
+#include <nodeAttributes.h>
+#include <graphicsStateGuardian.h>
+#include <transformTransition.h>
+#include <transformAttribute.h>
+#include <geometricBoundingVolume.h>
+#include <pStatTimer.h>
+#endif
+
+#include <directRenderTraverser.h>
 
 TypeHandle GeomBinFixed::_type_handle;
 

@@ -16,8 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "cull_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "geomBinUnsorted.h"
+#include "cullTraverser.h"
+
+#include <indent.h>
+#include <nodeAttributes.h>
+#include <graphicsStateGuardian.h>
+#include <pStatTimer.h>
+#endif
 
 TypeHandle GeomBinUnsorted::_type_handle;
 
