@@ -36,6 +36,10 @@ public:
   virtual streampos seekoff(streamoff off, ios::seek_dir dir, int mode);
   virtual streampos seekpos(streampos pos, int mode);
 
+#ifdef WIN32_VC
+  virtual streampos seekoff(streamoff off, ios::seekdir dir, ios::openmode mode);
+#endif
+
 protected:
   virtual int overflow(int c);
   virtual int sync(void);

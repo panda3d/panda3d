@@ -23,6 +23,34 @@
 typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
+// Temporary hack to make these thread-safe.
+//#define SUBSTREAM_THREAD_SAFE
+
+#ifdef SUBSTREAM_THREAD_SAFE
+// This requires NSPR for now.
+#include <prlock.h>
+PRLock *substream_mutex = (PRLock *)NULL;
+
+inline void init_lock() {
+  if (substream_mutex == (PRLock *)NULL) {
+    substream_mutex = PR_NewLock();
+  }
+}
+inline void grab_lock() {
+  PR_Lock(substream_mutex);
+}
+inline void release_lock() {
+  PR_Unlock(substream_mutex);
+}
+#else  // SUBSTREAM_THREAD_SAFE
+inline void init_lock() {
+}
+inline void grab_lock() {
+}
+inline void release_lock() {
+}
+#endif  // SUBSTREAM_THREAD_SAFE
+
 ////////////////////////////////////////////////////////////////////
 //     Function: SubStreamBuf::Constructor
 //       Access: Public
@@ -47,13 +75,14 @@ SubStreamBuf() {
   _cur = 0;
 
   // _unused counts the number of bytes at the beginning of the buffer
-  // that are unused.  Usually this is 0, but when we reach the end of
-  // the file we might not need the whole buffer to read the last bit,
-  // so the first part of the buffer is unused.  This is important to
-  // prevent us from inadvertently seeking into the unused part of the
-  // buffer.
+  // that are unused.  Usually this is 0 after a read, but when we
+  // reach the end of the file we might not need the whole buffer to
+  // read the last bit, so the first part of the buffer is unused.
+  // This is important to prevent us from inadvertently seeking into
+  // the unused part of the buffer.
   _unused = 0;
 
+  init_lock();
 
 #ifdef WIN32_VC
   // In spite of the claims of the MSDN Library to the contrary,
@@ -90,7 +119,9 @@ open(istream *source, streampos start, streampos end) {
   _start = start;
   _end = end;
   _cur = _start;
-  _unused = 0;
+
+  // Initially, the entire buffer is unused.  Duh.
+  _unused = egptr() - eback();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,8 +167,10 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
     if (_end == (streampos)0) {
       // If the end of the file is unspecified, we have to seek to
       // find it.
+      grab_lock();
       _source->seekg(off, ios::end);
       new_pos = _source->tellg();
+      release_lock();
 
     } else {
       new_pos = _end + off;
@@ -180,6 +213,16 @@ streampos SubStreamBuf::
 seekpos(streampos pos, int mode) {
   return seekoff(pos, ios::beg, mode);
 }
+
+#ifdef WIN32_VC
+// Windows seems to be a little confused about the proper definition
+// of seekoff().  We have to define both variants in order to get
+// reliable seeking.
+streampos SubStreamBuf::
+seekoff(streamoff off, ios::seekdir dir, ios::openmode mode) {
+  return seekoff(off, (ios::seek_dir)dir, (int)mode);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SubStreamBuf::overflow
@@ -232,12 +275,14 @@ underflow() {
       num_bytes = (size_t)(_end - _cur);
     }
 
-    _source->seekg(_cur);
     gbump(-(int)num_bytes);
     nassertr(gptr() + num_bytes <= egptr(), EOF);
 
+    grab_lock();
+    _source->seekg(_cur);
     _source->read(gptr(), num_bytes);
     size_t read_count = _source->gcount();
+    release_lock();
 
     if (read_count != num_bytes) {
       // Oops, we didn't read what we thought we would.
