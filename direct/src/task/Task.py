@@ -312,7 +312,7 @@ class TaskManager:
         # Dictionary of priority to newTaskLists
         self.pendingTaskDict = {}
         # List of tasks scheduled to execute in the future
-        self.doLaterList = []
+        self.__doLaterList = []
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
@@ -360,16 +360,25 @@ class TaskManager:
             tasks = filter(lambda task: not task.isRemoved(), tasks)
         return tasks
 
+    def __doLaterFilter(self):
+        # Filter out all the tasks that have been removed like a mark and
+        # sweep garbage collector. Returns the number of tasks that have
+        # been removed Warning: this creates an entirely new doLaterList.
+        oldLen = len(self.__doLaterList)
+        self.__doLaterList = filter(lambda task: not task.isRemoved(), self.__doLaterList)
+        newLen = len(self.__doLaterList)
+        return oldLen - newLen
+
     def __doLaterProcessor(self, task):
         # Removing the tasks during the for loop is a bad idea
         # Instead we just flag them as removed
         # Later, somebody else cleans them out
-        while self.doLaterList:
+        while self.__doLaterList:
             # Check the first one on the list to see if it is ready
-            dl = self.doLaterList[0]
+            dl = self.__doLaterList[0]
             if dl.isRemoved():
                 # Get rid of this task forever
-                heappop(self.doLaterList)
+                heappop(self.__doLaterList)
                 continue
             # If the time now is less than the start of the doLater + delay
             # then we are not ready yet, continue to next one
@@ -379,11 +388,16 @@ class TaskManager:
                 break
             else:
                 # Take it off the doLaterList, set its time, and make it pending
-                # TaskManager.notify.debug('__doLaterProcessor: spawning %s' % (dl))
-                heappop(self.doLaterList)
+
+                heappop(self.__doLaterList)
                 dl.setStartTimeFrame(self.currentTime, self.currentFrame)
                 self.__addPendingTask(dl)
                 continue
+        # Every nth pass, let's clean out the list of removed tasks
+        # This is basically a mark and sweep garbage collection of doLaters
+        if ((task.frame % 1000) == 0):
+            numRemoved = self.__doLaterFilter()
+            # TaskManager.notify.debug("filtered %s removed doLaters" % numRemoved)
         return cont
 
     def doMethodLater(self, delayTime, func, taskName, extraArgs=None, uponDeath=None):
@@ -407,7 +421,7 @@ class TaskManager:
         # Cache the time we should wake up for easier sorting
         task.wakeTime = currentTime + delayTime
         # Push this onto the doLaterList. The heap maintains the sorting.
-        heappush(self.doLaterList, task)
+        heappush(self.__doLaterList, task)
         if self.fVerbose:
             # Alert the world, a new task is born!
             messenger.send('TaskManager-spawnDoLater',
@@ -831,7 +845,7 @@ class TaskManager:
         # When we print, show the doLaterList in actual sorted order.
         # The priority heap is not actually in order - it is a tree
         # Make a shallow copy so we can sort it
-        sortedDoLaterList = self.doLaterList[:]
+        sortedDoLaterList = self.__doLaterList[:]
         sortedDoLaterList.sort()
         sortedDoLaterList.reverse()
         for task in sortedDoLaterList:
