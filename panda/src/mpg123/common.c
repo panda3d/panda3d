@@ -11,6 +11,7 @@
 #endif /* WIN32 */
 
 #include <fcntl.h>
+#include <io.h>
 
 #ifdef READ_MMAP
 #include <sys/mman.h>

@@ -20,6 +20,7 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <io.h>
 
 #ifdef AIX
 #include <sys/select.h>
@@ -244,19 +245,19 @@ extern int errno;
 
 void xfermem_init (txfermem **xf, int bufsize, int msize, int skipbuf)
 {
-  return 0;
+  return;
 }
 void xfermem_done (txfermem *xf)
 {
-  return 0;
+  return;
 }
 void xfermem_init_writer (txfermem *xf)
 {
-  return 0;
+  return;
 }
 void xfermem_init_reader (txfermem *xf)
 {
-  return 0;
+  return;
 }
 int xfermem_get_freespace (txfermem *xf)
 {

@@ -1,5 +1,7 @@
 
 #include "mpg123.h"
+#include <io.h>
+#include <stdlib.h>
 
 void audio_info_struct_init(struct audio_info_struct *ai)
 {

@@ -3,7 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <io.h>
 #include "mpg123.h"
 #include "mpgbuffer.h"
 #include "common.h"
