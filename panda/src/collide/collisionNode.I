@@ -172,39 +172,3 @@ add_solid(CollisionSolid *solid) {
   mark_bound_stale();
   return _solids.size() - 1;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::clear_velocity
-//       Access: Published
-//  Description: Removes the velocity information associated with the
-//               node.  See set_velocity().
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionNode::
-clear_velocity() {
-  _flags &= ~F_has_velocity;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::has_velocity
-//       Access: Published
-//  Description: Returns true if the node has an associated velocity,
-//               false otherwise.  See set_velocity().
-////////////////////////////////////////////////////////////////////
-INLINE bool CollisionNode::
-has_velocity() const {
-  return (_flags & F_has_velocity) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_velocity
-//       Access: Published
-//  Description: Returns the instantaneous velocity of the node, in
-//               its own coordinate space.  This represents the delta
-//               between its current position and its position last
-//               frame.  See set_velocity().
-////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &CollisionNode::
-get_velocity() const {
-  nassertr(has_velocity(), _velocity);
-  return _velocity;
-}

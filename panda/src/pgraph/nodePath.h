@@ -415,6 +415,16 @@ PUBLISHED:
 
   INLINE float get_distance(const NodePath &other) const;
 
+  INLINE void set_velocity(const LVector3f &velocity);
+  INLINE void clear_velocity();
+  INLINE bool has_velocity() const;
+  INLINE const LVector3f &get_velocity() const;
+
+  LVector3f get_velocity(const NodePath &other) const;
+  void set_velocity(const NodePath &other, const LVector3f &velocity);
+
+  LVector3f get_net_velocity() const;
+  
 
   // Methods that affect appearance of geometry: color, texture, etc.
   // These affect the state at the bottom level only.
@@ -571,13 +581,22 @@ PUBLISHED:
 
 private:
   void uncollapse_head() const;
-  static void find_common_ancestor(const NodePath &a, const NodePath &b,
-                                   int &a_count, int &b_count);
+  static NodePathComponent *
+  find_common_ancestor(const NodePath &a, const NodePath &b,
+                       int &a_count, int &b_count);
 
   CPT(RenderState) r_get_net_state(NodePathComponent *comp) const;
   CPT(RenderState) r_get_partial_state(NodePathComponent *comp, int n) const;
   CPT(TransformState) r_get_net_transform(NodePathComponent *comp) const;
   CPT(TransformState) r_get_partial_transform(NodePathComponent *comp, int n) const;
+
+  void r_get_net_velocity(NodePathComponent *comp, LVector3f &net_vel, 
+                          CPT(TransformState) &net_transform,
+                          CPT(TransformState) &parent_net_transform) const;
+  void r_get_partial_velocity(NodePathComponent *comp, int n, 
+                              LVector3f &net_vel, 
+                              CPT(TransformState) &net_transform,
+                              CPT(TransformState) &parent_net_transform) const;
 
   void find_matches(NodePathCollection &result,
                     const string &approx_path_str,

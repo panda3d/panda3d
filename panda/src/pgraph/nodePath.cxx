@@ -1503,6 +1503,107 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_velocity
+//       Access: Published
+//  Description: Returns the relative velocity to this node from the
+//               other node; i.e. the velocity of this node as seen
+//               from the other node.
+////////////////////////////////////////////////////////////////////
+LVector3f NodePath::
+get_velocity(const NodePath &other) const {
+  if (other.is_empty()) {
+    return get_net_velocity();
+  }
+  if (is_empty()) {
+    other.uncollapse_head();
+    CPT(TransformState) net_transform = TransformState::make_identity();
+    CPT(TransformState) parent_transform = net_transform;
+    LVector3f net_velocity = LVector3f::zero();
+    r_get_net_velocity(other._head, net_velocity, net_transform, parent_transform);
+    return -net_velocity;
+  }
+    
+  nassertr(verify_complete(), LVector3f::zero());
+  nassertr(other.verify_complete(), LVector3f::zero());
+
+  int a_count, b_count;
+  find_common_ancestor(*this, other, a_count, b_count);
+
+  // Now compute the net velocity of each node, by working down from
+  // the common ancestor.
+  CPT(TransformState) a_transform = TransformState::make_identity();
+  CPT(TransformState) a_parent_transform = a_transform;
+  LVector3f a_velocity = LVector3f::zero();
+  r_get_partial_velocity(_head, a_count, a_velocity, a_transform, 
+                         a_parent_transform);
+
+  CPT(TransformState) b_transform = TransformState::make_identity();
+  CPT(TransformState) b_parent_transform = b_transform;
+  LVector3f b_velocity = LVector3f::zero();
+  r_get_partial_velocity(other._head, b_count, b_velocity, b_transform, 
+                         b_parent_transform);
+
+  LVector3f net_velocity = a_velocity - b_velocity;
+  
+  // Finally, convert the net velocity back into the parent's
+  // coordinate space.
+  CPT(TransformState) a_parent_inverse = 
+    a_parent_transform->invert_compose(TransformState::make_identity());
+  return net_velocity * a_parent_inverse->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_velocity
+//       Access: Published
+//  Description: Sets the velocity of this node, relative to the other
+//               node.  This computes a new velocity that will have
+//               the indicated value when seen from the other node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_velocity(const NodePath &other, const LVector3f &velocity) {
+  nassertv(_error_type == ET_ok && other._error_type == ET_ok);
+  nassertv_always(!is_empty());
+
+  // First, we perform a wrt to the parent, to get the conversion.
+  LVector3f rel_velocity;
+  if (has_parent()) {
+    rel_velocity = other.get_velocity(get_parent());
+  } else {
+    rel_velocity = other.get_velocity(NodePath());
+  }
+
+  LVector3f new_velocity = velocity + rel_velocity;
+  set_velocity(new_velocity);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_net_velocity
+//       Access: Published
+//  Description: Returns the relative "velocity" of this node (as
+//               reported by get_velocity()) from the root of the
+//               scene graph, accumulating all velocity values set on
+//               ancestor nodes.  The result is returned in the
+//               coordinate space of the node's parent (the same
+//               coordinate space in which get_velocity() is
+//               returned).
+////////////////////////////////////////////////////////////////////
+LVector3f NodePath::
+get_net_velocity() const {
+  uncollapse_head();
+  CPT(TransformState) net_transform = TransformState::make_identity();
+  CPT(TransformState) parent_transform = net_transform;
+  LVector3f net_velocity = LVector3f::zero();
+  r_get_net_velocity(_head, net_velocity, net_transform, parent_transform);
+
+  // Convert the net velocity back from global coordinates into the
+  // parent's coordinate space.
+  CPT(TransformState) parent_inverse = 
+    parent_transform->invert_compose(TransformState::make_identity());
+  return net_velocity * parent_inverse->get_mat();
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_color
 //       Access: Published
 //  Description: Applies a scene-graph color to the referenced node.
@@ -3206,11 +3307,15 @@ uncollapse_head() const {
 //               that both have in common, if any.  Fills a_count and
 //               b_count with the number of nodes below the common
 //               node in each path.
+//
+//               The return value is the NodePathComponent of the node
+//               they have in common, or NULL if they have nothing in
+//               common.
 ////////////////////////////////////////////////////////////////////
-void NodePath::
+NodePathComponent *NodePath::
 find_common_ancestor(const NodePath &a, const NodePath &b,
                      int &a_count, int &b_count) {
-  nassertv(!a.is_empty() && !b.is_empty());
+  nassertr(!a.is_empty() && !b.is_empty(), NULL);
   a.uncollapse_head();
   b.uncollapse_head();
 
@@ -3221,12 +3326,12 @@ find_common_ancestor(const NodePath &a, const NodePath &b,
 
   // Shorten up the longer one until they are the same length.
   while (ac->get_length() > bc->get_length()) {
-    nassertv(ac != (NodePathComponent *)NULL);
+    nassertr(ac != (NodePathComponent *)NULL, NULL);
     ac = ac->get_next();
     a_count++;
   }
   while (bc->get_length() > ac->get_length()) {
-    nassertv(bc != (NodePathComponent *)NULL);
+    nassertr(bc != (NodePathComponent *)NULL, NULL);
     bc = bc->get_next();
     b_count++;
   }
@@ -3234,19 +3339,21 @@ find_common_ancestor(const NodePath &a, const NodePath &b,
   // Now shorten them both up until we reach the same component.
   while (ac != bc) {
     // These shouldn't go to NULL unless they both go there together. 
-    nassertv(ac != (NodePathComponent *)NULL);
-    nassertv(bc != (NodePathComponent *)NULL);
+    nassertr(ac != (NodePathComponent *)NULL, NULL);
+    nassertr(bc != (NodePathComponent *)NULL, NULL);
     ac = ac->get_next();
     a_count++;
     bc = bc->get_next();
     b_count++;
   }
+
+  return ac;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_get_net_state
 //       Access: Private
-//  Description: Recursively determines the net state chnages to the
+//  Description: Recursively determines the net state changes to the
 //               indicated component node from the root of the graph.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) NodePath::
@@ -3308,6 +3415,62 @@ r_get_partial_transform(NodePathComponent *comp, int n) const {
   } else {
     CPT(TransformState) transform = comp->get_node()->get_transform();
     return r_get_partial_transform(comp->get_next(), n - 1)->compose(transform);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_get_net_velocity
+//       Access: Private
+//  Description: Recursively determines the net velocity of the
+//               indicated node; the result is returned in the global
+//               coordinate space.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_get_net_velocity(NodePathComponent *comp, LVector3f &net_vel, 
+                   CPT(TransformState) &net_transform,
+                   CPT(TransformState) &parent_net_transform) const {
+  if (comp != (NodePathComponent *)NULL) {
+    r_get_net_velocity(comp->get_next(), net_vel, net_transform, 
+                       parent_net_transform);
+
+    PandaNode *node = comp->get_node();
+    if (node->has_velocity()) {
+      LVector3f vel = node->get_velocity();
+      net_vel += vel * net_transform->get_mat();
+    }
+    
+    CPT(TransformState) transform = node->get_transform();
+    parent_net_transform = net_transform;
+    net_transform = net_transform->compose(transform);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_get_partial_velocity
+//       Access: Private
+//  Description: Recursively determines the net velocity of the
+//               indicated component node from the nth node above it.
+//               If n exceeds the length of the path, this returns the
+//               net velocity from the root of the graph.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_get_partial_velocity(NodePathComponent *comp, int n, 
+                       LVector3f &net_vel,
+                       CPT(TransformState) &net_transform,
+                       CPT(TransformState) &parent_net_transform) const {
+  if (n != 0 && comp != (NodePathComponent *)NULL) {
+    r_get_partial_velocity(comp->get_next(), n - 1, net_vel, net_transform,
+                           parent_net_transform);
+    
+    PandaNode *node = comp->get_node();
+    if (node->has_velocity()) {
+      LVector3f vel = node->get_velocity();
+      net_vel += vel * net_transform->get_mat();
+    }
+    
+    CPT(TransformState) transform = node->get_transform();
+    parent_net_transform = net_transform;
+    net_transform = net_transform->compose(transform);
   }
 }
 

@@ -119,6 +119,8 @@ CData() {
   _effects = RenderEffects::make_empty();
   _transform = TransformState::make_identity();
   _draw_mask = DrawMask::all_on();
+  _velocity = LVector3f::zero();
+  _has_velocity = false;
   _net_collide_mask = CollideMask::all_off();
   _fixed_internal_bound = false;
 }
@@ -139,6 +141,8 @@ CData(const PandaNode::CData &copy) :
   _transform(copy._transform),
   _tag_data(copy._tag_data),
   _draw_mask(copy._draw_mask),
+  _velocity(copy._velocity),
+  _has_velocity(copy._has_velocity),
   _fixed_internal_bound(copy._fixed_internal_bound)
 {
   _net_collide_mask = CollideMask::all_off();
@@ -778,6 +782,61 @@ get_net_collide_mask() const {
   BoundedObject::get_bound();
   CDReader cdata(_cycler);
   return cdata->_net_collide_mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_velocity
+//       Access: Published
+//  Description: Sets the velocity of this node.  This is a delta from
+//               the position of this node in the previous frame,
+//               relative to the node's parent.  The value should not
+//               be transformed by the node's transformation (it is in
+//               the coordinate system of the node's parent).  This
+//               has meaning only to the collision subsystem.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_velocity(const LVector3f &velocity) {
+  CDWriter cdata(_cycler);
+  cdata->_velocity = velocity;
+  cdata->_has_velocity = (!velocity.almost_equal(LVector3f::zero()));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_velocity
+//       Access: Published
+//  Description: Resets the velocity of this node to zero.  See
+//               set_velocity().
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+clear_velocity() {
+  CDWriter cdata(_cycler);
+  cdata->_velocity = LVector3f::zero();
+  cdata->_has_velocity = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_velocity
+//       Access: Published
+//  Description: Returns true if a nonzero velocity has been set on
+//               this node, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+has_velocity() const {
+  CDReader cdata(_cycler);
+  return cdata->_has_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_velocity
+//       Access: Published
+//  Description: Returns the velocity previously set on this node via
+//               set_velocity(), or LVector3f::zero() if no velocity
+//               has been set.
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &PandaNode::
+get_velocity() const {
+  CDReader cdata(_cycler);
+  return cdata->_velocity;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1389,25 +1389,6 @@ as_light() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_velocity
-//       Access: Published, Virtual
-//  Description: Indicates the instantaneous velocity of this node.
-//               This function is meaningless to most kinds of nodes;
-//               it is implemented only for CollisionNodes and is
-//               intended to inform the collision system of velocity.
-//
-//               It is defined at this level only as an abstract
-//               interface to allow setting the velocity of a
-//               collision node without having to link with, or know
-//               anything about, the collision system.
-//
-//               See CollisionNode::set_velocity().
-////////////////////////////////////////////////////////////////////
-void PandaNode::
-set_velocity(const LVector3f &) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::propagate_stale_bound
 //       Access: Protected, Virtual
 //  Description: Called by BoundedObject::mark_bound_stale(), this

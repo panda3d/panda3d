@@ -44,7 +44,6 @@ CollisionNode(const string &name) :
   PandaNode(name),
   _from_collide_mask(CollideMask::all_on()),
   _into_collide_mask(CollideMask::all_on()),
-  _velocity(0.0f, 0.0f, 0.0f),
   _flags(0)
 {
   // CollisionNodes are hidden by default.
@@ -61,7 +60,6 @@ CollisionNode(const CollisionNode &copy) :
   PandaNode(copy),
   _from_collide_mask(copy._from_collide_mask),
   _into_collide_mask(copy._into_collide_mask),
-  _velocity(copy._velocity),
   _flags(copy._flags),
   _solids(copy._solids)
 {
@@ -253,31 +251,6 @@ output(ostream &out) const {
   out << " (" << _solids.size() << " solids)";
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::set_velocity
-//       Access: Published, Virtual
-//  Description: Indicates the instantaneous velocity of the node.
-//               This is only meaningful for nodes that represent
-//               "colliders", that is, nodes added to a
-//               CollisionTraverser to be tested for collision into
-//               other objects.
-//
-//               The velocity vector represents the delta from this
-//               node's position last frame to its current position.
-//               The collision traverser automatically clears it after
-//               it has performed the traversal.
-//
-//               This velocity information is optional and, if
-//               available, is used by the collision traverser to help
-//               determine which walls the collider is actually
-//               intersecting with, and which it is simply passing by.
-////////////////////////////////////////////////////////////////////
-void CollisionNode::
-set_velocity(const LVector3f &vel) {
-  _velocity = vel;
-  _flags |= F_has_velocity;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::recompute_bound

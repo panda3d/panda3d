@@ -844,6 +844,59 @@ get_distance(const NodePath &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_velocity
+//       Access: Published
+//  Description: Sets the velocity of this node.  This is a delta from
+//               the position of this node in the previous frame,
+//               relative to the node's parent.  The value should not
+//               be transformed by the node's transformation (it is in
+//               the coordinate system of the node's parent).  This
+//               has meaning only to the collision subsystem.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_velocity(const LVector3f &velocity) {
+  nassertv_always(!is_empty());
+  node()->set_velocity(velocity);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_velocity
+//       Access: Published
+//  Description: Resets the velocity of this node to zero.  See
+//               set_velocity().
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_velocity() {
+  nassertv_always(!is_empty());
+  node()->clear_velocity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_velocity
+//       Access: Published
+//  Description: Returns true if a nonzero velocity has been set on
+//               this node, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_velocity() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_velocity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_velocity
+//       Access: Published
+//  Description: Returns the velocity previously set on this node via
+//               set_velocity(), or LVector3f::zero() if no velocity
+//               has been set.
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &NodePath::
+get_velocity() const {
+  nassertr_always(!is_empty(), LVector3f::zero());
+  return node()->get_velocity();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_color_scale
 //       Access: Published
 //  Description: Sets the color scale component of the transform

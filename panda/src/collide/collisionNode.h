@@ -68,11 +68,6 @@ PUBLISHED:
   INLINE void remove_solid(int n);
   INLINE int add_solid(CollisionSolid *solid);
 
-  virtual void set_velocity(const LVector3f &vel);
-  INLINE void clear_velocity();
-  INLINE bool has_velocity() const;
-  INLINE const LVector3f &get_velocity() const;
-
 protected:
   virtual BoundingVolume *recompute_bound();
   virtual BoundingVolume *recompute_internal_bound();
@@ -85,11 +80,9 @@ private:
   // this later.
   CollideMask _from_collide_mask;
   CollideMask _into_collide_mask;
-  LVector3f _velocity;
 
   enum Flags {
     F_collide_geom = 0x0001,
-    F_has_velocity = 0x0002,
     // Presently only 8 bits are written to the bam file.
   };
   int _flags;
