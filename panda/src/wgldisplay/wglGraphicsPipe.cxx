@@ -216,6 +216,10 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
   int cur_bpp = GetDeviceCaps(hdc, BITSPIXEL);
   int pfnum = 0;
 
+  int found_pfnum = 0;
+  int found_colorbits = 0;
+  int found_depthbits = 0;
+
   for (pfnum = 1; pfnum <= max_pfnum; pfnum++) {
     DescribePixelFormat(hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
@@ -251,54 +255,54 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
 
     if (wgldisplay_cat.is_debug()) {
       wgldisplay_cat.debug()
-        << "----------------" << endl;
+        << "---------------- pfnum " << pfnum << "\n";
+
+      wgldisplay_cat.debug() 
+        << "color = " << (int)(pfd.cColorBits)
+        << " = R" << (int)(pfd.cRedBits) 
+        << " G" << (int)(pfd.cGreenBits)
+        << " B" << (int)(pfd.cBlueBits)
+        << " A" << (int)(pfd.cAlphaBits) << "\n";
 
       if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0) {
         wgldisplay_cat.debug()
-          << "want alpha, pfd says '"
-          << (int)(pfd.cAlphaBits) << "'" << endl;
+          << "alpha = " << (int)(pfd.cAlphaBits) << "\n";
       }
       if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0) {
         wgldisplay_cat.debug()
-          << "want depth, pfd says '"
-          << (int)(pfd.cDepthBits) << "'" << endl;
+          << "depth = " << (int)(pfd.cDepthBits) << "\n";
       }
       if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0) {
         wgldisplay_cat.debug()
-          << "want stencil, pfd says '"
-          << (int)(pfd.cStencilBits) << "'" << endl;
+          << "stencil = " << (int)(pfd.cStencilBits) << "\n";
       }
       wgldisplay_cat.debug()
-        << "final flag check " << (int)(pfd.dwFlags & dwReqFlags) << " =? "
-        << (int)dwReqFlags << endl;
-      wgldisplay_cat.debug() 
-        << "pfd bits = " << (int)(pfd.cColorBits) << endl;
-      wgldisplay_cat.debug() 
-        << "cur_bpp = " << cur_bpp << endl;
+        << "flags = " << hex << (int)(pfd.dwFlags) << " (missing "
+        << (int)((~pfd.dwFlags) & dwReqFlags) << dec << ")\n";
     }
 
     if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0 && 
         (pfd.cAlphaBits==0)) {
       wgldisplay_cat.debug() 
-        << "  rejecting because alpha is missing.\n";
+        << "  rejecting.\n";
       continue;
     }
     if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0 && 
         (pfd.cDepthBits==0)) {
       wgldisplay_cat.debug() 
-        << "  rejecting because depth is missing.\n";
+        << "  rejecting.\n";
       continue;
     }
     if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0 && 
         (pfd.cStencilBits==0)) {
       wgldisplay_cat.debug() 
-        << "  rejecting because stencil is missing.\n";
+        << "  rejecting.\n";
       continue;
     }
 
     if ((pfd.dwFlags & dwReqFlags) != dwReqFlags) {
       wgldisplay_cat.debug() 
-        << "  rejecting because some other required flags are missing.\n";
+        << "  rejecting.\n";
       continue;
     }
 
@@ -312,16 +316,47 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
     if ((pfd.cColorBits!=cur_bpp) && 
         (!((cur_bpp==16) && (pfd.cColorBits==15))) && 
         (!((cur_bpp==32) && (pfd.cColorBits==24)))) {
+      wgldisplay_cat.debug() 
+        << "  rejecting because it doesn't match the screen depth.\n";
       continue;
     }
 
-    // We've passed all the tests, go ahead and pick this fmt.
-    // Note: could go continue looping looking for more alpha bits or
-    // more depth bits so this would pick 16bpp depth buffer, probably
-    // not 24bpp
-    return pfnum;
+    // We've passed all the tests; this is an acceptable format.  Do
+    // we prefer this one over the previously-found acceptable
+    // formats?
+    bool preferred = false;
+
+    if (found_pfnum == 0) {
+      // If this is the first acceptable format we've found, of course
+      // we prefer it.
+      preferred = true;
+
+    } else if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0
+               && pfd.cDepthBits > found_depthbits) {
+      // We like having lots of depth bits, to a point.
+      if (pfd.cColorBits < found_colorbits && found_depthbits >= 16) {
+        // We don't like sacrificing color bits if we have at least 16
+        // bits of Z.
+      } else {
+        preferred = true;
+      }
+
+    } else if (pfd.cColorBits > found_colorbits) {
+      // We also like having lots of color bits.
+      preferred = true;
+    }
+
+    if (preferred) {
+      wgldisplay_cat.debug() 
+        << "  format is acceptable, and preferred.\n";
+      found_pfnum = pfnum;
+      found_colorbits = pfd.cColorBits;
+      found_depthbits = pfd.cDepthBits;
+    } else {
+      wgldisplay_cat.debug() 
+        << "  format is acceptable, but not preferred.\n";
+    }
   }
 
-  // No pfnum was acceptable.
-  return 0;
+  return found_pfnum;
 }
