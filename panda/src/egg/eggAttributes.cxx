@@ -15,6 +15,26 @@ TypeHandle EggAttributes::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggAttributes::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggAttributes::
+EggAttributes() {
+  _flags = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggAttributes::Copy constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggAttributes::
+EggAttributes(const EggAttributes &copy) {
+  (*this) = copy;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::Copy assignment operator
 //       Access: Public
 //  Description: 
@@ -29,6 +49,15 @@ operator = (const EggAttributes &copy) {
   _duvs = copy._duvs;
   _drgbas = copy._drgbas;
   return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggAttributes::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggAttributes::
+~EggAttributes() {
 }
 
 

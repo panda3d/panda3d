@@ -34,7 +34,7 @@ public:
   EggVertex();
   EggVertex(const EggVertex &copy);
   EggVertex &operator = (const EggVertex &copy);
-  ~EggVertex();
+  virtual ~EggVertex();
 
   INLINE EggVertexPool *get_pool() const;
 

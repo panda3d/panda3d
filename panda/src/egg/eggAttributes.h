@@ -26,9 +26,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggAttributes {
 public:
-  INLINE EggAttributes();
-  INLINE EggAttributes(const EggAttributes &copy);
+  EggAttributes();
+  EggAttributes(const EggAttributes &copy);
   EggAttributes &operator = (const EggAttributes &copy);
+  virtual ~EggAttributes();
 
   INLINE bool has_normal() const;
   INLINE const Normald &get_normal() const;
