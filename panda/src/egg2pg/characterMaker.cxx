@@ -29,6 +29,7 @@
 #include "characterJointBundle.h"
 #include "characterSlider.h"
 #include "character.h"
+#include "geomNode.h"
 #include "transformState.h"
 #include "eggSurface.h"
 #include "eggCurve.h"
@@ -151,14 +152,38 @@ egg_to_index(EggNode *egg_node) const {
 ////////////////////////////////////////////////////////////////////
 PandaNode *CharacterMaker::
 part_to_node(PartGroup *part) const {
+  PandaNode *node = _character_node;
+
   if (part->is_of_type(CharacterJoint::get_class_type())) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
     if (joint->_geom_node != (PandaNode *)NULL) {
-      return joint->_geom_node;
+      node = joint->_geom_node;
     }
   }
 
-  return _character_node;
+  if (use_qpgeom) {
+    // We should always return a GeomNode, so that all polysets
+    // created at the same level will get added into the same
+    // GeomNode.  Look for a child of this node.  If it doesn't have a
+    // child yet, add a GeomNode and it.  Otherwise, if it already has
+    // a child, return that.
+    if (node->is_geom_node()) {
+      return node;
+    }
+    for (int i = 0; i < node->get_num_children(); i++) {
+      PandaNode *child = node->get_child(i);
+      if (child->is_geom_node()) {
+        return child;
+      }
+    }
+    PT(GeomNode) geom_node = new GeomNode("");
+    node->add_child(geom_node);
+    return geom_node;
+
+  } else {
+    // In the original Geom implementation, a node is a node.
+    return node;
+  }
 }
 
 
@@ -628,19 +653,16 @@ determine_bin_home(EggBin *egg_bin) {
       egg_group->get_dcs_type() == EggGroup::DC_none) {
     // If we have rigid geometry that is assigned to a joint without a
     // <DCS> flag, which means the joint didn't get created as its own
-    // node, go ahead and make an implicit <DCS> flag for the joint.
-
+    // node, go ahead and make an implicit node for the joint.
+    
     // The alternative is to return NULL to treat the geometry as
     // dynamic (and animate it by animating its vertices), but display
     // lists and vertex buffers will perform better if as much
     // geometry as possible is rigid.
-
-    egg_group->set_dcs_type(EggGroup::DC_default);
-    PT(ModelNode) geom_node = new ModelNode(egg_group->get_name());
-    geom_node->set_preserve_transform(ModelNode::PT_local);
-
     CharacterJoint *joint;
     DCAST_INTO_R(joint, egg_to_part(egg_group), home);
+    egg_group->set_dcs_type(EggGroup::DC_default);
+    PT(GeomNode) geom_node = new GeomNode(egg_group->get_name());
     joint->_geom_node = geom_node.p();
   }
 

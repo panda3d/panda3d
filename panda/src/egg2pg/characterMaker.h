@@ -23,6 +23,7 @@
 
 #include "computedVerticesMaker.h"
 #include "vertexTransform.h"
+#include "character.h"
 #include "vector_PartGroupStar.h"
 #include "typedef.h"
 #include "pmap.h"
@@ -35,6 +36,7 @@ class EggBin;
 class PartGroup;
 class CharacterJointBundle;
 class Character;
+class GeomNode;
 class CharacterSlider;
 class MovingPartBase;
 class EggLoader;
@@ -88,7 +90,7 @@ private:
 
   EggLoader &_loader;
   EggGroup *_egg_root;
-  Character *_character_node;
+  PT(Character) _character_node;
   CharacterJointBundle *_bundle;
   ComputedVerticesMaker _comp_verts_maker;
   PartGroup *_morph_root;
