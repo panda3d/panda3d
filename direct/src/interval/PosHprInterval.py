@@ -8,62 +8,56 @@ class PosHprInterval(Interval.Interval):
 
     # special methods
     
-    def __init__(self, name, node, pos, hpr, duration, t0=0.0,
-				type=Interval.PREVIOUS_END):
-        """__init__(name, node, pos, hpr, duration, t0, type)
+    def __init__(self, name, node, pos, hpr, duration):
+        """__init__(name, node, pos, hpr, duration)
         """
 	self.name = name
 	self.node = node
 	self.pos = pos
 	self.hpr = hpr
 	self.duration = duration
-	self.startTime = t0
-	self.type = type
 
-    def setT(self, t):
+    def setT(self, t, entry=0):
 	""" setT(t)
 	    Go to time t
 	"""
-	self.node.setPosHpr(self.pos, self.hpr)
+	if (entry == 1):
+	    self.node.setPosHpr(self.pos, self.hpr)
 
 class PosInterval(Interval.Interval):
 
     # special methods
     
-    def __init__(self, name, node, pos, duration, t0=0.0,
-				type=Interval.PREVIOUS_END):
-        """__init__(name, node, pos, duration, t0, type)
+    def __init__(self, name, node, pos, duration):
+        """__init__(name, node, pos, duration)
         """
 	self.name = name
 	self.node = node
 	self.pos = pos
 	self.duration = duration
-	self.startTime = t0
-	self.type = type
 
-    def setT(self, t):
+    def setT(self, t, entry=0):
 	""" setT(t)
 	    Go to time t
 	"""
-	self.node.setPos(self.pos)
+	if (entry == 1):
+	    self.node.setPos(self.pos)
 
 class HprInterval(Interval.Interval):
 
     # special methods
     
-    def __init__(self, name, node, hpr, duration, t0=0.0,
-				type=Interval.PREVIOUS_END):
-        """__init__(name, node, hpr, duration, t0, type)
+    def __init__(self, name, node, hpr, duration):
+        """__init__(name, node, hpr, duration)
         """
 	self.name = name
 	self.node = node
 	self.hpr = hpr 
 	self.duration = duration
-	self.startTime = t0
-	self.type = type
 
-    def setT(self, t):
+    def setT(self, t, entry=0):
 	""" setT(t)
 	    Go to time t
 	"""
-	self.node.setHpr(self.hpr)
+	if (entry == 1):
+	    self.node.setHpr(self.hpr)

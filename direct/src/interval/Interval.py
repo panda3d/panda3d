@@ -2,10 +2,6 @@
 
 from DirectObject import *
 
-PREVIOUS_END = 1
-PREVIOUS_START = 2
-TRACK_START = 3
-
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
 
@@ -13,20 +9,13 @@ class Interval(DirectObject):
     notify = directNotify.newCategory("Interval")
     #notify.setDebug(1)
 
-    PrevEndRelative = 1
-    PrevStartRelative = 2
-    TrackStartRelative = 3
-
     # special methods
     
-    def __init__(self, name, duration, t0=0.0, type=PREVIOUS_END):
-        """__init__(name, duration, t0, type)
+    def __init__(self, name, duration):
+        """__init__(name, duration)
         """
 	self.name = name
 	self.duration = duration
-	assert(t >= 0.0)
-	self.startTime = t0
-	self.type = type
 
     def getName(self):
 	""" getName()
@@ -38,24 +27,7 @@ class Interval(DirectObject):
 	"""
 	return self.duration
 
-    def getStartTime(self):
-	""" getStartTime()
-	"""
-	return self.startTime
-
-    def setStartTime(self, t, rel=PREVIOUS_END):
-	""" setStartTime()
-	"""
-	assert(t >= 0.0)
-	self.startTime = t
-	self.type = rel
-
-    def getType(self):
-	""" getType()
-	"""
-	return self.type
-
-    def setT(self, t):
+    def setT(self, t, entry=0):
 	""" setT(t)
 	    Go to time t
 	"""
@@ -67,12 +39,4 @@ class Interval(DirectObject):
 	space = ''
 	for l in range(indent):
 	    space = space + ' '
-	t = 'UNKNOWN'
-	if (self.type == PREVIOUS_END):
-	    t = 'PREVIOUS_END'
-	elif (self.type == PREVIOUS_START):
-	    t = 'PREVIOUS_START'
-	elif (self.type == TRACK_START):
-	    t = 'TRACK_START'
-	print (space + self.name + ' t0: %.2f dur: %.2f %s' % (
-				self.startTime, self.duration, t))
+	print (space + self.name + ' dur: %.2f' % self.duration)

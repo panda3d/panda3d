@@ -29,17 +29,17 @@ dockLerp = LerpPosHprInterval('lerp', dock, pos, hpr, 5.0)
 # We need the dock's state to be defined before the lerp
 dockPos = PosHprInterval('dockpos', dock, dock.getPos(), dock.getHpr(), 1.0)
 dockUpTime = BOAT_END - dockLerp.getDuration()
-dockLerp.setStartTime(dockUpTime, TRACK_START)
 hpr2 = Vec3(90.0, 90.0, 90.0)
 dockLerp2 = LerpHprInterval('hpr-lerp', dock, hpr2, 3.0)
-dockLerp2.setStartTime(BOAT_START, TRACK_START)
 dockTrack = Track.Track([dockLerp2, dockPos, dockLerp], 'docktrack')
+dockTrack.setIntervalStartTime('lerp', dockUpTime)
+dockTrack.setIntervalStartTime('hpr-lerp', BOAT_START)
 
 # Start the water sound 5 seconds after the boat starts moving
 waterStartTime = BOAT_START + 5.0
-waterSound = SoundInterval('watersound', sound, loop=1)
-waterSound.setStartTime(waterStartTime, TRACK_START)
+waterSound = SoundInterval('watersound', sound)
 soundTrack = Track.Track([waterSound], 'soundtrack')
+soundTrack.setIntervalStartTime('watersound', waterStartTime)
 
 mtrack = MultiTrack.MultiTrack([boatTrack, dockTrack, soundTrack])
 mtrack.printParams()

@@ -10,8 +10,7 @@ class Wait(Interval.Interval):
 
     # special methods
     
-    def __init__(self, duration, name=None, t0=0.0,
-				type=Interval.PREVIOUS_END):
+    def __init__(self, duration, name=None):
         """__init__(duration, name, t0, type)
         """
 	if (name == None):
@@ -20,5 +19,3 @@ class Wait(Interval.Interval):
 	else:
 	    self.name = name
 	self.duration = duration 
-	self.startTime = 0.0
-	self.type = type

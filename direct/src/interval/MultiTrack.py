@@ -11,7 +11,7 @@ class MultiTrack(Interval.Interval):
 
     # special methods
     
-    def __init__(self, trackList, name = None):
+    def __init__(self, trackList, name=None):
         """__init__(trackList, name)
         """
 	if (name == None):
@@ -21,8 +21,6 @@ class MultiTrack(Interval.Interval):
 	    self.name = name
 	self.tlist = trackList
 	self.duration = self.getDuration()
-	self.startTime = 0.0
-	self.type = Interval.PREVIOUS_END
 	self.clock = ClockObject.ClockObject.getGlobalClock()
 
     def getDuration(self):
@@ -36,7 +34,7 @@ class MultiTrack(Interval.Interval):
 		duration = dur
 	return duration
 
-    def setT(self, t):
+    def setT(self, t, entry=0):
 	""" setT(t)
 	    Go to time t
 	"""
@@ -44,7 +42,7 @@ class MultiTrack(Interval.Interval):
 	    Interval.notify.warning(
 		'MultiTrack.setT(): t = %f > duration' % t)
 	for track in self.tlist:
-	    track.setT(t)
+	    track.setT(t, entry)
 
     def play(self, t0=0.0, duration=0.0):
 	""" play(t0, duration)

@@ -9,9 +9,8 @@ class SoundInterval(Interval.Interval):
 
     # special methods
     
-    def __init__(self, name, sound, loop=0, t0=0.0, 
-				type=Interval.PREVIOUS_END):
-        """__init__(name, sound, loop, t0, type)
+    def __init__(self, name, sound, loop=0):
+        """__init__(name, sound, loop)
         """
 	self.name = name
 	self.sound = sound
@@ -22,10 +21,8 @@ class SoundInterval(Interval.Interval):
 	self.duration = 1.0
 	self.loop = loop
 	self.isPlaying = 0
-	self.startTime = t0
-	self.type = type
 
-    def setT(self, t):
+    def setT(self, t, entry=0):
 	""" setT(t)
 	    Go to time t
 	"""
@@ -35,11 +32,8 @@ class SoundInterval(Interval.Interval):
 		self.isPlaying = 0
 	    return
 	assert(t >= 0)
-	if (t == 0):
+	if (entry == 1):
+	    self.isPlaying = 1
 	    AudioManager.play(self.sound)
 	    if (self.loop):
 		AudioManager.setLoop(self.sound, 1)
-	elif (self.loop) and (self.isPlaying == 0):
-	    AudioManager.play(self.sound)
-	    AudioManager.setLoop(self.sound, 1)
-	    self.isPlaying = 1
