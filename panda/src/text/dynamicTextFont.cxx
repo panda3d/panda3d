@@ -98,21 +98,10 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
       }
       set_name(name);
 
-      /*
-      if (!FT_IS_SCALABLE(_face)) {
-        text_cat.error()
-          << "Unable to read font " << get_name()
-          << ": non-scalable fonts not supported.\n";
-        // Although we could support these if we wanted to, just
-        // haven't bothered to write the few lines of glue code that
-        // would do it.
-
-        } else */ {
-        text_cat.info()
-          << "Loaded font " << get_name() << "\n";
-        _is_valid = true;
-        reset_scale();
-      }
+      text_cat.info()
+        << "Loaded font " << get_name() << "\n";
+      _is_valid = true;
+      reset_scale();
     }
   }
 }
@@ -233,6 +222,9 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
 write(ostream &out, int indent_level) const {
+  static const int max_glyph_name = 1024;
+  char glyph_name[max_glyph_name];
+
   indent(out, indent_level)
     << "DynamicTextFont " << get_name() << ", " 
     << get_num_pages() << " pages, "
@@ -243,6 +235,18 @@ write(ostream &out, int indent_level) const {
     DynamicTextGlyph *glyph = (*ci).second;
     indent(out, indent_level + 2) 
       << glyph_index;
+
+    if (FT_HAS_GLYPH_NAMES(_face)) {
+      int error = FT_Get_Glyph_Name(_face, glyph_index, 
+                                    glyph_name, max_glyph_name);
+
+      // Some fonts, notably MS Mincho, claim to have glyph names but
+      // only report ".notdef" as the name of each glyph.  Thanks.
+      if (!error && strcmp(glyph_name, ".notdef") != 0) {
+        out << " (" << glyph_name << ")";
+      }
+    }
+
     out << ", count = " << glyph->_geom_count << "\n";
   }
 }
