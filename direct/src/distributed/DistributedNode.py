@@ -7,7 +7,11 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
     """Distributed Node class:"""
 
     def __init__(self):
-        pass
+        try:
+            self.DistributedNode_initialized
+        except:
+            self.DistributedNode_initialized = 1
+        return None
 
     def generateInit(self, di):
         DistributedObject.DistributedObject.generateInit(self, di)

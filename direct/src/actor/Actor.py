@@ -68,60 +68,64 @@ class Actor(PandaObject, NodePath):
             
         """
 
-        # initial our NodePath essence
-        NodePath.__init__(self)
-
-        # create data structures
-        self.__partBundleDict = {}
-        self.__animControlDict = {}
-
-        if (other == None):
-            # act like a normal contructor
-
-            # create base hierarchy
-            self.assign(hidden.attachNewNode('actor'))
-            self.setGeomNode(self.attachNewNode('actorGeom'))
-        
-            # load models
-            # make sure we have models
-            if (models):
-                # if this is a dictionary
-                if (type(models)==type({})):
-                    # then it must be multipart actor
-                    for partName in models.keys():
-                        self.loadModel(models[partName], partName)
-                else:
-                    # else it is a single part actor
-                    self.loadModel(models)
-
-            # load anims
-            # make sure the actor has animations
-            if (anims):
-                if (len(anims) >= 1):
-                    # if so, does it have a dictionary of dictionaries
-                    if (type(anims[anims.keys()[0]])==type({})):
-                        # then it must be multipart
-                        for partName in anims.keys():
-                            self.loadAnims(anims[partName], partName)
+        try:
+            self.Actor_initialized
+        except:
+            self.Actor_initialized = 1
+            # initial our NodePath essence
+            NodePath.__init__(self)
+            
+            # create data structures
+            self.__partBundleDict = {}
+            self.__animControlDict = {}
+            
+            if (other == None):
+                # act like a normal contructor
+                
+                # create base hierarchy
+                self.assign(hidden.attachNewNode('actor'))
+                self.setGeomNode(self.attachNewNode('actorGeom'))
+                
+                # load models
+                # make sure we have models
+                if (models):
+                    # if this is a dictionary
+                    if (type(models)==type({})):
+                        # then it must be multipart actor
+                        for partName in models.keys():
+                            self.loadModel(models[partName], partName)
                     else:
-                        # else it is not multipart
-                        self.loadAnims(anims)
+                        # else it is a single part actor
+                        self.loadModel(models)
 
-        else:
-            # act like a copy constructor
+                # load anims
+                # make sure the actor has animations
+                if (anims):
+                    if (len(anims) >= 1):
+                        # if so, does it have a dictionary of dictionaries
+                        if (type(anims[anims.keys()[0]])==type({})):
+                            # then it must be multipart
+                            for partName in anims.keys():
+                                self.loadAnims(anims[partName], partName)
+                        else:
+                            # else it is not multipart
+                            self.loadAnims(anims)
 
-            # copy the scene graph elements of other
-            otherCopy = other.copyTo(hidden)
-            # assign these elements to ourselve
-            self.assign(otherCopy)
-            self.setGeomNode(otherCopy.getChild(0))
-
-            # copy the part dictionary from other
-            self.__copyPartBundles(other)
-            
-            # copy the anim dictionary from other
-            self.__copyAnimControls(other)
-            
+            else:
+                # act like a copy constructor
+                
+                # copy the scene graph elements of other
+                otherCopy = other.copyTo(hidden)
+                # assign these elements to ourselve
+                self.assign(otherCopy)
+                self.setGeomNode(otherCopy.getChild(0))
+                
+                # copy the part dictionary from other
+                self.__copyPartBundles(other)
+                
+                # copy the anim dictionary from other
+                self.__copyAnimControls(other)
+        return None
  
     def __str__(self):
         """__str__(self)

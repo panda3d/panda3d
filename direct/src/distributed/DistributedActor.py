@@ -7,8 +7,10 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
     """Distributed Actor class:"""
 
     def __init__(self):
-        pass
+        try:
+            self.DistributedActor_initialized
+        except:
+            self.DistributedActor_initialized = 1
+        return None
 
-    def generateInit(self, di):
-        DistributedNode.DistributedNode.generateInit(self, di)
         

@@ -5,13 +5,17 @@ from PandaObject import *
 class DistributedObject(PandaObject):
     """Distributed Object class:"""
     def __init__(self):
-        pass
+        try:
+            self.DistributedObject_initialized
+        except:
+            self.DistributedObject_initialized = 1
+        return None
     
     def getDoId(self):
         """getDoId(self)
         Return the distributed object id
         """
-        return self.__doId
+        return self.doId
     
     def updateRequiredFields(self, cdc, di):
         for i in cdc.allRequiredCDU:
