@@ -65,16 +65,6 @@ operator = (const TextGlyph &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::get_geom
-//       Access: Public
-//  Description: Returns a Geom that renders the particular glyph.
-////////////////////////////////////////////////////////////////////
-INLINE Geom *TextGlyph::
-get_geom() const {
-  return _geom;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextGlyph::get_trans
 //       Access: Public
 //  Description: Returns the state transitions that should be applied

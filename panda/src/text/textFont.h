@@ -49,7 +49,7 @@ PUBLISHED:
   INLINE bool is_valid() const;
   INLINE float get_line_height() const;
 
-  float calc_width(int ch);
+  float calc_width(int character);
   float calc_width(const string &line);
   string wordwrap_to(const string &text, float wordwrap_width,
                      bool preserve_trailing_whitespace);
@@ -57,11 +57,14 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  virtual const TextGlyph *get_glyph(int character)=0;
+  INLINE float get_space_advance() const;
+  virtual bool get_glyph(int character, const TextGlyph *&glyph,
+                         float &glyph_scale)=0;
 
 protected:
   bool _is_valid;
   float _line_height;
+  float _space_advance;
 
 public:
   static TypeHandle get_class_type() {

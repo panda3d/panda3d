@@ -1,5 +1,5 @@
-// Filename: textGlyph.cxx
-// Created by:  drose (08Feb02)
+// Filename: geomTextGlyph.I
+// Created by:  drose (11Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,23 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "textGlyph.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::Destructor
-//       Access: Public, Virtual
+//     Function: GeomTextGlyph::Constructor
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TextGlyph::
-~TextGlyph() {
+INLINE GeomTextGlyph::
+GeomTextGlyph(DynamicTextGlyph *glyph) :
+  _glyph(glyph)
+{
+  if (_glyph != (DynamicTextGlyph *)NULL) {
+    _glyph->_geom_count++;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::get_geom
-//       Access: Public, Virtual
-//  Description: Returns a Geom that renders the particular glyph.
+//     Function: GeomTextGlyph::Copy Constructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-PT(Geom) TextGlyph::
-get_geom() const {
-  return _geom;
+INLINE GeomTextGlyph::
+GeomTextGlyph(const GeomTextGlyph &copy) :
+  GeomTristrip(copy),
+  _glyph(copy._glyph)
+{
+  if (_glyph != (DynamicTextGlyph *)NULL) {
+    _glyph->_geom_count++;
+  }
 }

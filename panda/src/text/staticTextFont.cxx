@@ -80,17 +80,19 @@ write(ostream &out, int indent_level) const {
 
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
     int ch = (*gi).first;
-    if (islower(ch)) {
-      count_lowercase++;
-      lowercase[ch - 'a'] = true;
-
-    } else if (isupper(ch)) {
-      count_uppercase++;
-      uppercase[ch - 'A'] = true;
-
-    } else if (isdigit(ch)) {
-      count_digits++;
-      digits[ch - '0'] = true;
+    if (ch < 128) {
+      if (islower(ch)) {
+        count_lowercase++;
+        lowercase[ch - 'a'] = true;
+        
+      } else if (isupper(ch)) {
+        count_uppercase++;
+        uppercase[ch - 'A'] = true;
+        
+      } else if (isdigit(ch)) {
+        count_digits++;
+        digits[ch - '0'] = true;
+      }
     }
   }
 
@@ -141,10 +143,10 @@ write(ostream &out, int indent_level) const {
 
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
     int ch = (*gi).first;
-    if (!isalnum(ch)) {
+    if (ch >= 128 || !isalnum(ch)) {
       indent(out, indent_level + 2)
         << ch;
-      if (isprint(ch)) {
+      if (ch < isprint(ch)) {
         out << " = '" << (char)ch << "'\n";
       }
     }
@@ -154,18 +156,23 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: StaticTextFont::get_glyph
 //       Access: Public, Virtual
-//  Description: Returns the glyph associated with the given character
-//               code, or NULL if there is no such glyph.
+//  Description: Gets the glyph associated with the given character
+//               code, as well as an optional scaling parameter that
+//               should be applied to the glyph's geometry and advance
+//               parameters.  Returns true if the glyph exists, false
+//               if it does not.
 ////////////////////////////////////////////////////////////////////
-const TextGlyph *StaticTextFont::
-get_glyph(int character) {
+bool StaticTextFont::
+get_glyph(int character, const TextGlyph *&glyph, float &glyph_scale) {
   Glyphs::const_iterator gi = _glyphs.find(character);
   if (gi == _glyphs.end()) {
     // No definition for this character.
-    return (TextGlyph *)NULL;
-  } else {
-    return (*gi).second;
+    return false;
   }
+
+  glyph = (*gi).second;
+  glyph_scale = 1.0f;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -275,6 +282,7 @@ find_characters(Node *root) {
       } else {
         _line_height = alist[ilist[0]][2];
       }
+      _space_advance = 0.25f * _line_height;
     }
 
   } else {

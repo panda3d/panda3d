@@ -26,6 +26,15 @@ class DSearchPath;
 
 NotifyCategoryDecl(text, EXPCL_PANDA, EXPTP_PANDA);
 
-extern const bool flatten_text;
+extern const bool text_flatten;
+extern const bool text_update_cleared_glyphs;
+extern const int text_texture_margin;
+extern const float text_poly_margin;
+extern const int text_page_x_size;
+extern const int text_page_y_size;
+extern const float text_point_size;
+extern const float text_pixels_per_unit;
+extern const bool text_small_caps;
+extern const float text_small_caps_scale;
 
 #endif

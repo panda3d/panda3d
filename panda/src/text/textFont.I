@@ -38,3 +38,13 @@ INLINE float TextFont::
 get_line_height() const {
   return _line_height;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextFont::get_space_advance
+//       Access: Public
+//  Description: Returns the number of units wide a space is.
+////////////////////////////////////////////////////////////////////
+INLINE float TextFont::
+get_space_advance() const {
+  return _space_advance;
+}

@@ -52,6 +52,11 @@ PUBLISHED:
   INLINE bool set_pixels_per_unit(float pixels_per_unit);
   INLINE float get_pixels_per_unit() const;
 
+  INLINE void set_small_caps(bool small_caps);
+  INLINE bool get_small_caps() const;
+  INLINE void set_small_caps_scale(float small_caps_scale);
+  INLINE float get_small_caps_scale() const;
+
   INLINE void set_texture_margin(int texture_margin);
   INLINE int get_texture_margin() const;
   INLINE void set_poly_margin(float poly_margin);
@@ -61,34 +66,53 @@ PUBLISHED:
   INLINE int get_page_x_size() const;
   INLINE int get_page_y_size() const;
 
+  INLINE static void set_update_cleared_glyphs(bool update_cleared_glyphs);
+  INLINE static bool get_update_cleared_glyphs();
+
   int get_num_pages() const;
   DynamicTextPage *get_page(int n) const;
 
+  int garbage_collect();
+  void update_texture_memory();
   void clear();
 
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  virtual const TextGlyph *get_glyph(int character);
+  virtual bool get_glyph(int character, const TextGlyph *&glyph,
+                         float &glyph_scale);
 
 private:
   bool reset_scale();
-  DynamicTextGlyph *make_glyph(int character);
+  DynamicTextGlyph *make_glyph(int glyph_index);
   DynamicTextGlyph *slot_glyph(int x_size, int y_size);
 
   static void initialize_ft_library();
 
   float _point_size;
   float _pixels_per_unit;
+  bool _small_caps;
+  float _small_caps_scale;
   int _texture_margin;
   float _poly_margin;
   int _page_x_size, _page_y_size;
+  static bool _update_cleared_glyphs;
 
   typedef pvector< PT(DynamicTextPage) > Pages;
   Pages _pages;
+  int _preferred_page;
 
+  // This doesn't need to be a reference-counting pointer, because the
+  // reference to each glyph is kept by the DynamicTextPage object.
   typedef pmap<int, DynamicTextGlyph *> Cache;
   Cache _cache;
+
+  // This is a list of the glyphs that do not have any printable
+  // properties (e.g. space), but still have an advance measure.  We
+  // store them here to keep their reference counts; they also appear
+  // in the above table.
+  typedef pvector< PT(DynamicTextGlyph) > EmptyGlyphs;
+  EmptyGlyphs _empty_glyphs;
 
   FT_Face _face;
 

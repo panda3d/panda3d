@@ -83,6 +83,67 @@ get_pixels_per_unit() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_small_caps
+//       Access: Published
+//  Description: Sets the small_caps flag.  When this is set,
+//               lowercase letters are generated as scaled-down
+//               versions of their uppercase equivalents.  This is
+//               particularly useful to set for fonts that do not have
+//               lowercase letters.
+//
+//               It is also a good idea to set this for a font that
+//               has already implemented lowercase letters as
+//               scaled-down versions of their uppercase equivalents,
+//               since without this flag the texture memory may
+//               needlessly duplicate equivalent glyphs for upper and
+//               lowercase letters.  Setting this flag causes the
+//               texture memory to share the mixed-case letters.
+//
+//               The amount by which the lowercase letters are scaled
+//               is specified by set_small_caps_scale().
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_small_caps(bool small_caps) {
+  _small_caps = small_caps;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_small_caps
+//       Access: Published
+//  Description: Returns the small_caps flag.  See set_small_caps().
+////////////////////////////////////////////////////////////////////
+INLINE bool DynamicTextFont::
+get_small_caps() const {
+  return _small_caps;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_small_caps_scale
+//       Access: Published
+//  Description: Sets the scale factor applied to lowercase letters
+//               from their uppercase equivalents, when the small_caps
+//               flag is in effect.  See set_small_caps().  Normally,
+//               this will be a number less than one.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_small_caps_scale(float small_caps_scale) {
+  _small_caps_scale = small_caps_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_small_caps_scale
+//       Access: Published
+//  Description: Returns the scale factor applied to lowercase letters
+//               from their uppercase equivalents, when the small_caps
+//               flag is in effect.  See set_small_caps() and
+//               set_small_caps_scale().
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_small_caps_scale() const {
+  return _small_caps_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::set_texture_margin
 //       Access: Published
 //  Description: Sets the number of pixels of padding that is added
@@ -167,4 +228,41 @@ get_page_x_size() const {
 INLINE int DynamicTextFont::
 get_page_y_size() const {
   return _page_y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_update_cleared_glyphs
+//       Access: Published, Static
+//  Description: Sets the flag indicating whether texture memory
+//               should be updated immediately as old glyphs are
+//               removed.  If this is true, texture memory will be
+//               immediately updated when old glyphs are removed from
+//               the pages.  If this is false (the default), texture
+//               memory may not be updated until the page is next
+//               written to, that is, the next time a glyph is
+//               recorded on that page.
+//
+//               Most of the time, there is no reason to set this
+//               true, unless you are debugging the DynamicTextFont
+//               code and want to be able to see exactly what is in
+//               each texture map at any given time.
+//
+//               This is a global flag across all DynamicTextFont
+//               objects.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_update_cleared_glyphs(bool update_cleared_glyphs) {
+  _update_cleared_glyphs = update_cleared_glyphs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_update_cleared_glyphs
+//       Access: Published, Static
+//  Description: Returns the flag indicating whether texture memory
+//               should be updated immediately as old glyphs are
+//               removed.  See set_update_cleared_glyphs().
+////////////////////////////////////////////////////////////////////
+INLINE bool DynamicTextFont::
+get_update_cleared_glyphs() {
+  return _update_cleared_glyphs;
 }

@@ -38,13 +38,23 @@ class EXPCL_PANDA DynamicTextGlyph : public TextGlyph {
 public:
   INLINE DynamicTextGlyph(DynamicTextPage *page, int x, int y,
                           int x_size, int y_size, int margin);
+  INLINE DynamicTextGlyph(float advance);
+private:
+  INLINE DynamicTextGlyph(const DynamicTextGlyph &copy);
+  INLINE void operator = (const DynamicTextGlyph &copy);
+
+public:
+  virtual ~DynamicTextGlyph();
+  virtual PT(Geom) get_geom() const;
 
   INLINE bool intersects(int x, int y, int x_size, int y_size) const;
   unsigned char *get_row(int y);
+  void erase();
   void make_geom(int top, int left, float advance, float poly_margin,
                  float pixels_per_unit);
 
   DynamicTextPage *_page;
+  int _geom_count;
 
   int _x, _y;
   int _x_size, _y_size;

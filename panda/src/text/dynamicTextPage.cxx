@@ -43,11 +43,19 @@ DynamicTextPage(DynamicTextFont *font) :
                              PixelBuffer::F_alpha);
   mark_dirty(DF_image);
 
+  // We'd better never free this image.
+  set_keep_ram_image(true);
+
   // We don't necessarily want to use mipmaps, since we don't want to
   // regenerate those every time the texture changes, but we do want
   // at least linear filtering.
   set_magfilter(FT_linear);
   set_minfilter(FT_linear);
+
+  // It's slightly better to let the texture clamp, rather than
+  // wrapping, so we're less likely to get bleeding at the edges.
+  set_wrapu(WM_clamp);
+  set_wrapv(WM_clamp);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,6 +78,43 @@ slot_glyph(int x_size, int y_size, int margin) {
     new DynamicTextGlyph(this, x, y, x_size, y_size, margin);
   _glyphs.push_back(glyph);
   return glyph;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextPage::garbage_collect
+//       Access: Private
+//  Description: Removes all of the glyphs from the page that are no
+//               longer being used by any Geoms.  This should only be
+//               called from DynamicTextFont::garbage_collect(), since
+//               it is important to remove these glyphs from the
+//               font's index first.
+////////////////////////////////////////////////////////////////////
+int DynamicTextPage::
+garbage_collect() {
+  int removed_count = 0;
+
+  Glyphs new_glyphs;
+  Glyphs::iterator gi;
+  for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
+    DynamicTextGlyph *glyph = (*gi);
+    if (glyph->_geom_count != 0) {
+      // Keep this one.
+      new_glyphs.insert(new_glyphs.end(), (*gi));
+    } else {
+      // Drop this one.
+      removed_count++;
+      glyph->erase();
+    }
+  }
+
+  if (removed_count != 0 && DynamicTextFont::get_update_cleared_glyphs()) {
+    // Only mark the texture dirty if the user specifically requested
+    // an automatic texture memory update upon clearing glyphs.
+    mark_dirty(Texture::DF_image);
+  }
+
+  _glyphs.swap(new_glyphs);
+  return removed_count;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,7 +41,8 @@ isblank(char ch) {
 TextFont::
 TextFont() {
   _is_valid = false;
-  _line_height = 1.0;
+  _line_height = 1.0f;
+  _space_advance = 0.25f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,19 +61,20 @@ TextFont::
 //               or 0.0 if the character is not known.
 ////////////////////////////////////////////////////////////////////
 float TextFont::
-calc_width(int ch) {
-  if (ch == ' ') {
+calc_width(int character) {
+  if (character == ' ') {
     // A space is a special case.
-    return 0.25;
+    return _space_advance;
   }
 
-  const TextGlyph *glyph = get_glyph(ch);
-  if (glyph == (TextGlyph *)NULL) {
+  const TextGlyph *glyph;
+  float glyph_scale;
+  if (!get_glyph(character, glyph, glyph_scale)) {
     // Unknown character.
-    return 0.0;
+    return 0.0f;
   }
 
-  return glyph->get_advance();
+  return glyph->get_advance() * glyph_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,7 +86,7 @@ calc_width(int ch) {
 ////////////////////////////////////////////////////////////////////
 float TextFont::
 calc_width(const string &line) {
-  float width = 0.0;
+  float width = 0.0f;
 
   string::const_iterator si;
   for (si = line.begin(); si != line.end(); ++si) {
@@ -111,10 +113,10 @@ wordwrap_to(const string &text, float wordwrap_width,
   size_t p = 0;
 
   // Preserve any initial whitespace and newlines.
-  float initial_width = 0.0;
+  float initial_width = 0.0f;
   while (p < text.length() && isspace(text[p])) {
     if (text[p] == '\n') {
-      initial_width = 0.0;
+      initial_width = 0.0f;
     } else {
       initial_width += calc_width(text[p]);
     }
@@ -201,10 +203,10 @@ wordwrap_to(const string &text, float wordwrap_width,
     p = next_start;
 
     // Preserve any initial whitespace and newlines.
-    initial_width = 0.0;
+    initial_width = 0.0f;
     while (p < text.length() && isspace(text[p])) {
       if (text[p] == '\n') {
-        initial_width = 0.0;
+        initial_width = 0.0f;
       } else {
         initial_width += calc_width(text[p]);
       }

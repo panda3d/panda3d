@@ -346,7 +346,7 @@ generate() {
   // Now flatten our hierarchy to get rid of the transforms we put in,
   // applying them to the vertices.
 
-  if (flatten_text) {
+  if (text_flatten) {
     SceneGraphReducer gr(RenderRelation::get_class_type());
     gr.apply_transitions(root_arc);
     gr.flatten(root, true);
@@ -443,13 +443,14 @@ assemble_row(const char *&source, Node *dest) {
 
     if (character == ' ') {
       // A space is a special case.
-      xpos += 0.25f;
+      xpos += _font->get_space_advance();
 
     } else {
       // A printable character.
 
-      const TextGlyph *glyph = _font->get_glyph(character);
-      if (glyph == (const TextGlyph *)NULL) {
+      const TextGlyph *glyph;
+      float glyph_scale;
+      if (!_font->get_glyph(character, glyph, glyph_scale)) {
         text_cat.warning()
           << "No definition in " << _font->get_name() 
           << " for character " << character;
@@ -461,13 +462,13 @@ assemble_row(const char *&source, Node *dest) {
           << "\n";
 
       } else {
-        Geom *char_geom = glyph->get_geom();
-        float char_advance = glyph->get_advance();
+        PT(Geom) char_geom = glyph->get_geom();
         const AllTransitionsWrapper &trans = glyph->get_trans();
 
-        LMatrix4f mat = LMatrix4f::ident_mat();
-        mat.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
-        if (char_geom != NULL) {
+        if (char_geom != (Geom *)NULL) {
+          LMatrix4f mat = LMatrix4f::scale_mat(glyph_scale);
+          mat.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
+
           string ch(1, (char)character);
           GeomNode *geode = new GeomNode(ch);
           geode->add_geom(char_geom);
@@ -476,7 +477,7 @@ assemble_row(const char *&source, Node *dest) {
           trans.store_to(rel);
         }
 
-        xpos += char_advance;
+        xpos += glyph->get_advance() * glyph_scale;
       }
     }
     source++;
@@ -576,10 +577,10 @@ measure_row(const char *&source) {
     } else {
       // A printable character.
 
-      const TextGlyph *glyph = _font->get_glyph(character);
-      if (glyph != (const TextGlyph *)NULL) {
-        float char_advance = glyph->get_advance();
-        xpos += char_advance;
+      const TextGlyph *glyph;
+      float glyph_scale;
+      if (_font->get_glyph(character, glyph, glyph_scale)) {
+        xpos += glyph->get_advance() * glyph_scale;
       }
     }
     source++;

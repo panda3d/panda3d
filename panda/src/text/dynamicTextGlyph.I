@@ -31,6 +31,43 @@ DynamicTextGlyph(DynamicTextPage *page, int x, int y,
   _x_size(x_size), _y_size(y_size),
   _margin(margin)
 {
+  _geom_count = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::Constructor
+//       Access: Publiic
+//  Description: This constructor makes an empty glyph, whose only
+//               purpose is to remember its width.  It has no bitmap
+//               and no Geom.
+////////////////////////////////////////////////////////////////////
+INLINE DynamicTextGlyph::
+DynamicTextGlyph(float advance) :
+  _page((DynamicTextPage *)NULL),
+  _x(0), _y(0),
+  _x_size(0), _y_size(0),
+  _margin(0)
+{
+  _advance = advance;
+  _geom_count = 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::Copy Constructor
+//       Access: Private
+//  Description: Copying DynamicTextGlyph objects is not allowed.
+////////////////////////////////////////////////////////////////////
+INLINE DynamicTextGlyph::
+DynamicTextGlyph(const DynamicTextGlyph &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::Copy Assignment Operator
+//       Access: Private
+//  Description: Copying DynamicTextGlyph objects is not allowed.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextGlyph::
+operator = (const DynamicTextGlyph &) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -39,8 +39,9 @@ public:
   INLINE TextGlyph(Geom *geom, const AllTransitionsWrapper &trans, float advance);
   INLINE TextGlyph(const TextGlyph &copy);
   INLINE void operator = (const TextGlyph &copy);
+  virtual ~TextGlyph();
 
-  INLINE Geom *get_geom() const;
+  virtual PT(Geom) get_geom() const;
   INLINE const AllTransitionsWrapper &get_trans() const;
   INLINE float get_advance() const;
 

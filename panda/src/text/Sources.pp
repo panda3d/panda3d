@@ -16,6 +16,7 @@
     dynamicTextFont.I dynamicTextFont.h \
     dynamicTextGlyph.I dynamicTextGlyph.h \
     dynamicTextPage.I dynamicTextPage.h \
+    geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
@@ -26,6 +27,7 @@
     dynamicTextFont.cxx \
     dynamicTextGlyph.cxx \
     dynamicTextPage.cxx \
+    geomTextGlyph.cxx \
     staticTextFont.cxx \
     textFont.cxx textGlyph.cxx
 
@@ -34,6 +36,7 @@
     dynamicTextFont.I dynamicTextFont.h \
     dynamicTextGlyph.I dynamicTextGlyph.h \
     dynamicTextPage.I dynamicTextPage.h \
+    geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \

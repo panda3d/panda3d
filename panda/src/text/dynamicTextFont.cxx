@@ -22,6 +22,9 @@
 
 #include "config_text.h"
 #include "config_util.h"
+#include "ctype.h"
+
+bool DynamicTextFont::_update_cleared_glyphs = text_update_cleared_glyphs;
 
 FT_Library DynamicTextFont::_ft_library;
 bool DynamicTextFont::_ft_initialized = false;
@@ -31,10 +34,11 @@ TypeHandle DynamicTextFont::_type_handle;
 
 
 // This constant determines how big a particular point size font
-// appears.  By convention, 10 points is 1 foot high.
+// appears to be.  By convention, 10 points is 1 unit (e.g. 1 foot)
+// high.
 static const float points_per_unit = 10.0f;
 
-// A universal convention.
+// A universal typographic convention.
 static const float points_per_inch = 72.0f;
 
 ////////////////////////////////////////////////////////////////////
@@ -47,19 +51,24 @@ static const float points_per_inch = 72.0f;
 ////////////////////////////////////////////////////////////////////
 DynamicTextFont::
 DynamicTextFont(const Filename &font_filename, int face_index) {
-  _texture_margin = 2;
-  _poly_margin = 1.0f;
-  _page_x_size = 256;
-  _page_y_size = 256;
-  _point_size = 10.0f;
-  _pixels_per_unit = 40.0f;
+  _texture_margin = text_texture_margin;
+  _poly_margin = text_poly_margin;
+  _page_x_size = text_page_x_size;
+  _page_y_size = text_page_y_size;
+  _point_size = text_point_size;
+  _pixels_per_unit = text_pixels_per_unit;
+  _small_caps = text_small_caps;
+  _small_caps_scale = text_small_caps_scale;
+
+  _preferred_page = 0;
 
   if (!_ft_initialized) {
     initialize_ft_library();
   }
   if (!_ft_ok) {
     text_cat.error()
-      << "Unable to read font " << font_filename << ": FreeType library not available.\n";
+      << "Unable to read font " << font_filename
+      << ": FreeType library not initialized properly.\n";
     return;
   }
 
@@ -129,6 +138,64 @@ get_page(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::garbage_collect
+//       Access: Published
+//  Description: Removes all of the glyphs from the font that are no
+//               longer being used by any Geoms.  Returns the number
+//               of glyphs removed.
+////////////////////////////////////////////////////////////////////
+int DynamicTextFont::
+garbage_collect() {
+  int removed_count = 0;
+
+  // First, remove all the old entries from our cache index.
+  Cache new_cache;
+  Cache::iterator ci;
+  for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
+    DynamicTextGlyph *glyph = (*ci).second;
+    if (glyph->_geom_count != 0) {
+      // Keep this one.
+      new_cache.insert(new_cache.end(), (*ci));
+    } else {
+      // Drop this one.
+      removed_count++;
+    }
+  }
+  _cache.swap(new_cache);
+
+  // Now, go through each page and do the same thing.
+  Pages::iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    DynamicTextPage *page = (*pi);
+    page->garbage_collect();
+  }
+
+  return removed_count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::update_texture_memory
+//       Access: Published
+//  Description: Marks all of the pages dirty so they will be reloaded
+//               into texture memory.  This is necessary only if
+//               set_update_cleared_glyphs() is false, and some
+//               textures have recently been removed from the pages
+//               (for instance, after a call to garbage_collect()).
+//
+//               Calling this just ensures that what you see when you
+//               apply the texture page to a polygon represents what
+//               is actually stored on the page.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+update_texture_memory() {
+  Pages::iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    DynamicTextPage *page = (*pi);
+    page->mark_dirty(Texture::DF_image);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::clear
 //       Access: Published
 //  Description: Drops all the glyphs out of the cache and frees any
@@ -143,8 +210,9 @@ get_page(int n) const {
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
 clear() {
-  _pages.clear();
   _cache.clear();
+  _pages.clear();
+  _empty_glyphs.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,29 +224,53 @@ void DynamicTextFont::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "DynamicTextFont " << get_name() << ", " 
-    << _cache.size() << " glyphs, "
-    << get_num_pages() << " pages.\n";
+    << get_num_pages() << " pages, "
+    << _cache.size() << " glyphs:\n";
+  Cache::const_iterator ci;
+  for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
+    int glyph_index = (*ci).first;
+    DynamicTextGlyph *glyph = (*ci).second;
+    indent(out, indent_level + 2) 
+      << glyph_index;
+    out << ", count = " << glyph->_geom_count << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::get_glyph
 //       Access: Public, Virtual
-//  Description: Returns the glyph associated with the given character
-//               code, or NULL if there is no such glyph.
+//  Description: Gets the glyph associated with the given character
+//               code, as well as an optional scaling parameter that
+//               should be applied to the glyph's geometry and advance
+//               parameters.  Returns true if the glyph exists, false
+//               if it does not.
 ////////////////////////////////////////////////////////////////////
-const TextGlyph *DynamicTextFont::
-get_glyph(int character) {
-  Cache::iterator ci = _cache.find(character);
-  if (ci != _cache.end()) {
-    return (*ci).second;
-  }
+bool DynamicTextFont::
+get_glyph(int character, const TextGlyph *&glyph, float &glyph_scale) {
   if (!_is_valid) {
-    return (TextGlyph *)NULL;
+    return false;
   }
 
-  DynamicTextGlyph *glyph = make_glyph(character);
-  _cache.insert(Cache::value_type(character, glyph));
-  return glyph;
+  glyph_scale = 1.0f;
+  if (character < 128 && islower(character) && get_small_caps()) {
+    // If we have small_caps on, we implement lowercase letters by
+    // applying a scale to the corresponding uppercase letter.
+    glyph_scale = get_small_caps_scale();
+    character = toupper(character);
+  }
+
+  int glyph_index = FT_Get_Char_Index(_face, character);
+
+  Cache::iterator ci = _cache.find(glyph_index);
+  if (ci != _cache.end()) {
+    glyph = (*ci).second;
+  } else {
+    DynamicTextGlyph *dynamic_glyph = make_glyph(glyph_index);
+    _cache.insert(Cache::value_type(glyph_index, dynamic_glyph));
+    glyph = dynamic_glyph;
+  }
+
+  return (glyph != (DynamicTextGlyph *)NULL);
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -209,6 +301,17 @@ reset_scale() {
   // have a scalable font or otherwise?
   float pixel_size = _point_size * (_pixels_per_unit / points_per_unit);
   _line_height = (float)_face->height * pixel_size / ((float)_face->units_per_EM * 64.0f);
+
+  // Determine the correct width for a space.
+  error = FT_Load_Char(_face, ' ', FT_LOAD_DEFAULT);
+  if (error) {
+    // Space isn't defined.  Oh well.
+    _space_advance = 0.25f * _line_height;
+
+  } else {
+    _space_advance = _face->glyph->advance.x / (_pixels_per_unit * 64.0f);
+  }
+
   return true;
 }
 
@@ -221,46 +324,55 @@ reset_scale() {
 //               glyph cannot be created for some reason.
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextFont::
-make_glyph(int character) {
-  int error = FT_Load_Char(_face, character, FT_LOAD_RENDER);
+make_glyph(int glyph_index) {
+  int error = FT_Load_Glyph(_face, glyph_index, FT_LOAD_RENDER);
   if (error) {
     text_cat.error()
-      << "Unable to render character " << character << "\n";
+      << "Unable to render glyph " << glyph_index << "\n";
     return (DynamicTextGlyph *)NULL;
   }
 
   FT_GlyphSlot slot = _face->glyph;
   FT_Bitmap &bitmap = slot->bitmap;
 
-  if (bitmap.pixel_mode != ft_pixel_mode_grays) {
-    text_cat.error()
-      << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
-    return (DynamicTextGlyph *)NULL;
-  }
-
-  if (bitmap.num_grays != 256) {
-    // We expect 256 levels of grayscale to come back from FreeType,
-    // since that's what we asked for.
-    text_cat.warning()
-      << "Expected 256 levels of gray, got " << bitmap.num_grays << "\n";
-  }
-
-  DynamicTextGlyph *glyph = slot_glyph(bitmap.width, bitmap.rows);
-
-  // Now copy the rendered glyph into the texture.
-  unsigned char *buffer_row = bitmap.buffer;
-  for (int yi = 0; yi < bitmap.rows; yi++) {
-    unsigned char *texture_row = glyph->get_row(yi);
-    nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
-    memcpy(texture_row, buffer_row, bitmap.width);
-    buffer_row += bitmap.pitch;
-  }
-  glyph->_page->mark_dirty(Texture::DF_image);
-
   float advance = slot->advance.x / 64.0;
-  glyph->make_geom(slot->bitmap_top, slot->bitmap_left, advance,
-                   _poly_margin, _pixels_per_unit);
-  return glyph;
+
+  if (bitmap.width == 0 || bitmap.rows == 0) {
+    // If we got an empty bitmap, it's a special case.
+    PT(DynamicTextGlyph) glyph = new DynamicTextGlyph(advance / _pixels_per_unit);
+    _empty_glyphs.push_back(glyph);
+    return glyph;
+
+  } else {
+    if (bitmap.pixel_mode != ft_pixel_mode_grays) {
+      text_cat.error()
+        << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
+      return (DynamicTextGlyph *)NULL;
+    }
+    
+    if (bitmap.num_grays != 256) {
+      // We expect 256 levels of grayscale to come back from FreeType,
+      // since that's what we asked for.
+      text_cat.warning()
+        << "Expected 256 levels of gray, got " << bitmap.num_grays << "\n";
+    }
+    
+    DynamicTextGlyph *glyph = slot_glyph(bitmap.width, bitmap.rows);
+    
+    // Now copy the rendered glyph into the texture.
+    unsigned char *buffer_row = bitmap.buffer;
+    for (int yi = 0; yi < bitmap.rows; yi++) {
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
+      memcpy(texture_row, buffer_row, bitmap.width);
+      buffer_row += bitmap.pitch;
+    }
+    glyph->_page->mark_dirty(Texture::DF_image);
+    
+    glyph->make_geom(slot->bitmap_top, slot->bitmap_left, advance,
+                     _poly_margin, _pixels_per_unit);
+    return glyph;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,28 +390,50 @@ slot_glyph(int x_size, int y_size) {
   x_size += _texture_margin * 2;
   y_size += _texture_margin * 2;
 
-  Pages::iterator pi;
-  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
-    DynamicTextPage *page = (*pi);
+  if (!_pages.empty()) {
+    // Start searching on the preferred page.  That way, we'll fill up
+    // the preferred page first, and we can gradually rotate this page
+    // around; it keeps us from spending too much time checking
+    // already-filled pages for space.
+    _preferred_page = _preferred_page % _pages.size();
+    int pi = _preferred_page;
 
-    DynamicTextGlyph *glyph = page->slot_glyph(x_size, y_size, _texture_margin);
-    if (glyph != (DynamicTextGlyph *)NULL) {
-      return glyph;
-    }
+    do {
+      DynamicTextPage *page = _pages[pi];
+      DynamicTextGlyph *glyph = page->slot_glyph(x_size, y_size, _texture_margin);
+      if (glyph != (DynamicTextGlyph *)NULL) {
+        // Once we found a page to hold the glyph, that becomes our
+        // new preferred page.
+        _preferred_page = pi;
+        return glyph;
+      }
 
-    if (page->is_empty()) {
-      // If we couldn't even put in on an empty page, we're screwed.
-      text_cat.error()
-        << "Glyph of size " << x_size << " by " << y_size
-        << " won't fit on an empty page.\n";
-      return (DynamicTextGlyph *)NULL;
-    }
+      if (page->is_empty()) {
+        // If we couldn't even put it on an empty page, we're screwed.
+        text_cat.error()
+          << "Glyph of size " << x_size << " by " << y_size
+          << " pixels won't fit on an empty page.\n";
+        return (DynamicTextGlyph *)NULL;
+      }
+
+      pi = (pi + 1) % _pages.size();
+    } while (pi != _preferred_page);
   }
 
-  // We need to make a new page.
-  PT(DynamicTextPage) page = new DynamicTextPage(this);
-  _pages.push_back(page);
-  return page->slot_glyph(x_size, y_size, _texture_margin);
+  // All pages are filled.  Can we free up space by removing some old
+  // glyphs?
+  if (garbage_collect() != 0) {
+    // Yes, we just freed up some space.  Try once more, recursively.
+    return slot_glyph(x_size, y_size);
+
+  } else {
+    // No good; all recorded glyphs are actually in use.  We need to
+    // make a new page.
+    _preferred_page = _pages.size();
+    PT(DynamicTextPage) page = new DynamicTextPage(this);
+    _pages.push_back(page);
+    return page->slot_glyph(x_size, y_size, _texture_margin);
+  }
 }
 
 

@@ -46,7 +46,8 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  virtual const TextGlyph *get_glyph(int character);
+  virtual bool get_glyph(int character, const TextGlyph *&glyph,
+                         float &glyph_scale);
 
 private:
   bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,

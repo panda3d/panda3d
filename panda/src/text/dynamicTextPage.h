@@ -50,6 +50,9 @@ PUBLISHED:
   INLINE bool is_empty() const;
 
 private:
+  int garbage_collect();
+
+private:
   bool find_hole(int &x, int &y, int x_size, int y_size) const;
   DynamicTextGlyph *find_overlap(int x, int y, int x_size, int y_size) const;
 
@@ -76,6 +79,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend DynamicTextFont;
 };
 
 #include "dynamicTextPage.I"
