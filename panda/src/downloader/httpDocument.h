@@ -28,20 +28,28 @@
 
 #ifdef HAVE_SSL
 
+#include "httpClient.h"
 #include "urlSpec.h"
 #include "virtualFile.h"
 #include "pmap.h"
 #include <openssl/ssl.h>
 
 class IBioStream;
+class HTTPClient;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : HTTPDocument
 // Description : A single document retrieved from an HTTP server.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS HTTPDocument : public VirtualFile {
+private:
+  HTTPDocument(HTTPClient *client, BIO *bio = NULL);
+
+  bool send_request(const string &method, const URLSpec &url, 
+                    const string &body);
+  bool send_request(const string &header, const string &body);
+
 public:
-  HTTPDocument(BIO *bio, bool owns_bio);
   virtual ~HTTPDocument();
 
   virtual VirtualFileSystem *get_file_system() const;
@@ -50,32 +58,90 @@ public:
   virtual bool is_regular_file() const;
   virtual istream *open_read_file() const;
 
+  bool will_close_connection() const;
+
 PUBLISHED:
   INLINE bool is_valid() const;
-  INLINE const string &get_http_version() const;
+  INLINE const URLSpec &get_url() const;
+  INLINE HTTPClient::HTTPVersion get_http_version() const;
+  INLINE const string &get_http_version_string() const;
   INLINE int get_status_code() const;
   INLINE const string &get_status_string() const;
+  INLINE const string &get_realm() const;
+  INLINE const URLSpec &get_redirect() const;
   string get_header_value(const string &key) const;
+
+  INLINE void set_persistent_connection(bool persistent_connection);
+  INLINE bool get_persistent_connection() const;
 
   INLINE size_t get_file_size() const;
 
   void write_headers(ostream &out) const;
 
+  INLINE bool get_document(const URLSpec &url, const string &body = string());
+  INLINE bool get_header(const URLSpec &url);
+
 private:
-  void read_headers();
-  void determine_content_length();
+  void make_header(string &header, const string &method, 
+                   const URLSpec &url, const string &body);
+  void set_url(const URLSpec &url);
+  void issue_request(const string &header, const string &body);
+  void read_http_response();
+  void store_header_field(const string &field_name, const string &field_value);
+  bool get_authorization(string &authorization,
+                         const string &authenticate_request, 
+                         const URLSpec &url, bool is_proxy);
 
+  static string downcase(const string &s);
+  static string base64_encode(const string &s);
+  static size_t scan_quoted_or_unquoted_string(string &result, const string &source, size_t start);
+
+#ifndef NDEBUG
+  static void show_send(const string &message);
+#endif
+
+  istream *read_body(bool owns_source);
+  bool prepare_for_next();
+  void free_bio();
+
+  HTTPClient *_client;
+  URLSpec _proxy;
+  BIO *_bio;
+  bool _owns_bio;
   IBioStream *_source;
+  bool _persistent_connection;
 
-  string _http_version;
+  URLSpec _url;
+  string _method;
+
+  enum State {
+    S_new,
+    S_read_header,
+    S_started_body,
+    S_read_body,
+    S_read_trailer
+  };
+  State _state;
+  int _read_index;
+
+  HTTPClient::HTTPVersion _http_version;
+  string _http_version_string;
   int _status_code;
   string _status_string;
+  string _realm;
+  URLSpec _redirect;
 
   typedef pmap<string, string> Headers;
   Headers _headers;
 
   size_t _file_size;
 
+  typedef pmap<string, string> Tokens;
+  typedef pmap<string, Tokens> AuthenticationSchemes;
+  static void parse_authentication_schemes(AuthenticationSchemes &schemes,
+                                           const string &field_value);
+  bool get_basic_authorization(string &authorization, const Tokens &tokens,
+                               const URLSpec &url, bool is_proxy);
 
 public:
   virtual TypeHandle get_type() const {
@@ -94,6 +160,8 @@ public:
 private:
   static TypeHandle _type_handle;
   friend class ChunkedStreamBuf;
+  friend class IdentityStreamBuf;
+  friend class HTTPClient;
 };
 
 #include "httpDocument.I"

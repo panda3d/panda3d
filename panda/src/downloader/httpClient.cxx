@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "httpClient.h"
+#include "httpDocument.h"
 #include "config_downloader.h"
 #include "filename.h"
 #include "config_express.h"
@@ -107,6 +108,48 @@ HTTPClient::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_username
+//       Access: Published
+//  Description: Specifies the username:password string corresponding
+//               to a particular server and/or realm, when demanded by
+//               the server.  Either or both of the server or realm
+//               may be empty; if so, they match anything.  Also, the
+//               server may be set to the special string "*proxy",
+//               which will match any proxy server.
+//
+//               If the username is set to the empty string, this
+//               clears the password for the particular server/realm
+//               pair.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+set_username(const string &server, const string &realm, const string &username) {
+  string key = server + ":" + realm;
+  if (username.empty()) {
+    _usernames.erase(key);
+  } else {
+    _usernames[key] = username;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_username
+//       Access: Published
+//  Description: Returns the username:password string set for this
+//               server/realm pair, or empty string if nothing has
+//               been set.  See set_username().
+////////////////////////////////////////////////////////////////////
+string HTTPClient::
+get_username(const string &server, const string &realm) const {
+  string key = server + ":" + realm;
+  Usernames::const_iterator ui;
+  ui = _usernames.find(key);
+  if (ui != _usernames.end()) {
+    return (*ui).second;
+  }
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::get_http_version_string
 //       Access: Published
 //  Description: Returns the current HTTP version setting as a string,
@@ -120,9 +163,32 @@ get_http_version_string() const {
 
   case HV_11:
     return "HTTP/1.1";
+
+  case HV_other:
+    // Report the best we can do.
+    return "HTTP/1.1";
   }
 
   return "unknown";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::parse_http_version_string
+//       Access: Published
+//  Description: Matches the string representing a particular HTTP
+//               version against any of the known versions and returns
+//               the appropriate enumerated value, or HV_other if the
+//               version is unknown.
+////////////////////////////////////////////////////////////////////
+HTTPClient::HTTPVersion HTTPClient::
+parse_http_version_string(const string &version) {
+  if (version == "HTTP/1.0") {
+    return HV_10;
+  } else if (version == "HTTP/1.1") {
+    return HV_11;
+  } else {
+    return HV_other;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,6 +273,55 @@ clear_expected_servers() {
     X509_NAME_free(name);
   }
   _expected_servers.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_documents
+//       Access: Published
+//  Description: Returns a new HTTPDocument object that may be used
+//               for reading multiple documents using the same
+//               connection, for greater network efficiency than
+//               calling HTTPClient::get_document() repeatedly (and
+//               thus forcing a new connection for each document).
+////////////////////////////////////////////////////////////////////
+PT(HTTPDocument) HTTPClient::
+get_documents() {
+  PT(HTTPDocument) doc = new HTTPDocument(this);
+  doc->set_persistent_connection(true);
+  return doc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_document
+//       Access: Published
+//  Description: Opens the named document for reading, or if body is
+//               nonempty, posts data for a particular URL and
+//               retrieves the response.  Returns a new HTTPDocument
+//               object whether the document is successfully read or
+//               not; you can test is_valid() and get_return_code() to
+//               determine whether the document was retrieved.
+////////////////////////////////////////////////////////////////////
+PT(HTTPDocument) HTTPClient::
+get_document(const URLSpec &url, const string &body) {
+  PT(HTTPDocument) doc = new HTTPDocument(this);
+  doc->get_document(url, body);
+  return doc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_header
+//       Access: Published
+//  Description: Like get_document(), except only the header
+//               associated with the file is retrieved.  This may be
+//               used to test for existence of the file; it might also
+//               return the size of the file (if the server gives us
+//               this information).
+////////////////////////////////////////////////////////////////////
+PT(HTTPDocument) HTTPClient::
+get_header(const URLSpec &url) {
+  PT(HTTPDocument) doc = new HTTPDocument(this);
+  doc->get_header(url);
+  return doc;
 }
 
 
@@ -376,73 +491,44 @@ load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::make_request
+//     Function: HTTPClient::establish_connection
 //       Access: Private
-//  Description: Chooses a suitable mechanism to handle this request,
-//               based on whether it is an http or https request, and
-//               according to whether we have a proxy in place.
-//               Issues the request and returns an HTTPDocument that
-//               represents the results.
+//  Description: Establishes a connection to the server, using the
+//               appropriate means.  Returns the newly allocated BIO
+//               representing the connection, or NULL if a connection
+//               cannot be established.
 ////////////////////////////////////////////////////////////////////
-PT(HTTPDocument) HTTPClient::
-make_request(const string &method, const URLSpec &url, const string &body) {
+BIO *HTTPClient::
+establish_connection(const URLSpec &url) {
   BIO *bio;
 
   if (_proxy.empty()) {
     if (url.get_scheme() == "https") {
-      bio = get_https(method, url, body);
+      bio = establish_https(url);
     } else {
-      bio = get_http(method, url, body);
+      bio = establish_http(url);
     }
   } else {
     if (url.get_scheme() == "https") {
-      bio = get_https_proxy(method, url, body);
+      bio = establish_https_proxy(url);
     } else {
-      bio = get_http_proxy(method, url, body);
+      bio = establish_http_proxy(url);
     }
   }    
 
-  return new HTTPDocument(bio, true);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_https
-//       Access: Private
-//  Description: Opens the indicated URL directly as an ordinary http
-//               document.
-////////////////////////////////////////////////////////////////////
-BIO *HTTPClient::
-get_http(const string &method, const URLSpec &url, const string &body) {
-  ostringstream server;
-  server << url.get_server() << ":" << url.get_port();
-  string server_str = server.str();
-
-  BIO *bio = BIO_new_connect((char *)server_str.c_str());
-
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug() << "connecting to " << server_str << "\n";
-  }
-  if (BIO_do_connect(bio) <= 0) {
-    downloader_cat.info()
-      << "Could not contact server " << server_str << "\n";
-#ifdef REPORT_SSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
-    return NULL;
-  }
-
-  send_request(bio, method, url.get_path(), url.get_server(), body);
   return bio;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_https
+//     Function: HTTPClient::establish_http
 //       Access: Private
-//  Description: Opens the indicated URL directly as an https
-//               document.
+//  Description: Establishes a connection to the server directly,
+//               without using a proxy.  Returns the newly allocated
+//               BIO representing the connection, or NULL if a
+//               connection cannot be established.
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
-get_https(const string &method, const URLSpec &url, const string &body) {
+establish_http(const URLSpec &url) {
   ostringstream server;
   server << url.get_server() << ":" << url.get_port();
   string server_str = server.str();
@@ -461,22 +547,50 @@ get_https(const string &method, const URLSpec &url, const string &body) {
     return NULL;
   }
 
-  BIO *sbio = make_https_connection(bio, url);
-
-  if (sbio != (BIO *)NULL) {
-    send_request(sbio, method, url.get_path(), url.get_server(), body);
-  }
-  return sbio;
+  return bio;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_http_proxy
+//     Function: HTTPClient::establish_https
 //       Access: Private
-//  Description: Opens the indicated URL via the proxy as an ordinary
-//               http document.
+//  Description: Establishes a connection to the secure server
+//               directly, without using a proxy.  Returns the newly
+//               allocated BIO representing the connection, or NULL if
+//               a connection cannot be established.
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
-get_http_proxy(const string &method, const URLSpec &url, const string &body) {
+establish_https(const URLSpec &url) {
+  ostringstream server;
+  server << url.get_server() << ":" << url.get_port();
+  string server_str = server.str();
+
+  BIO *bio = BIO_new_connect((char *)server_str.c_str());
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "connecting to " << server_str << "\n";
+  }
+  if (BIO_do_connect(bio) <= 0) {
+    downloader_cat.info()
+      << "Could not contact server " << server_str << "\n";
+#ifdef REPORT_SSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
+    return NULL;
+  }
+
+  return make_https_connection(bio, url);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::establish_http_proxy
+//       Access: Private
+//  Description: Establishes a connection to the server through a
+//               proxy.  Returns the newly allocated BIO representing
+//               the connection, or NULL if a connection cannot be
+//               established.
+////////////////////////////////////////////////////////////////////
+BIO *HTTPClient::
+establish_http_proxy(const URLSpec &url) {
   ostringstream proxy_server;
   proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
   string proxy_server_str = proxy_server.str();
@@ -496,18 +610,19 @@ get_http_proxy(const string &method, const URLSpec &url, const string &body) {
     return NULL;
   }
 
-  send_request(bio, method, url, url.get_server(), body);
   return bio;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_https_proxy
+//     Function: HTTPClient::establish_https_proxy
 //       Access: Private
-//  Description: Opens the indicated URL via the proxy as an https
-//               document.
+//  Description: Establishes a connection to the secure server through
+//               a proxy.  Returns the newly allocated BIO
+//               representing the connection, or NULL if a connection
+//               cannot be established.
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
-get_https_proxy(const string &method, const URLSpec &url, const string &body) {
+establish_https_proxy(const URLSpec &url) {
   // First, ask the proxy to open a connection for us.
   ostringstream proxy_server;
   proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
@@ -528,35 +643,21 @@ get_https_proxy(const string &method, const URLSpec &url, const string &body) {
     return NULL;
   }
 
-  {
-    ostringstream request;
-    request 
-      << "CONNECT " << url.get_server() << ":" << url.get_port()
-      << " " << get_http_version_string() << "\r\n"
-      << "\r\n";
-    string request_str = request.str();
+  ostringstream request;
+  request 
+    << "CONNECT " << url.get_server() << ":" << url.get_port()
+    << " " << get_http_version_string() << "\r\n";
+  string connect_header = request.str();
 
-#ifndef NDEBUG
-    if (downloader_cat.is_debug()) {
-      show_send(request_str);
-    }
-#endif
-    BIO_puts(bio, request_str.c_str());
-  }
-
-  // Create a temporary HTTPDocument to read the response from the
-  // proxy.
+  // Create a temporary HTTPDocument to issue the request and read the
+  // response from the proxy.
   {
-    PT(HTTPDocument) doc = new HTTPDocument(bio, false);
-    if (!doc->is_valid()) {
+    PT(HTTPDocument) doc = new HTTPDocument(this, bio);
+    if (!doc->send_request(connect_header, string())) {
       downloader_cat.info()
         << "proxy would not open connection to " << url.get_authority()
         << ": " << doc->get_status_code() << " "
         << doc->get_status_string() << "\n";
-
-      if (downloader_cat.is_debug()) {
-        doc->write_headers(downloader_cat.debug(false));
-      }
       
       if (!get_verify_ssl()) {
         // If the proxy refused to open a raw connection for us, see
@@ -567,7 +668,7 @@ get_https_proxy(const string &method, const URLSpec &url, const string &body) {
         // us.)
         if ((doc->get_status_code() / 100) == 4) {
           BIO_free_all(bio);
-          return get_http_proxy(method, url, body);
+          return establish_http_proxy(url);
         }
       }
       return NULL;
@@ -581,12 +682,7 @@ get_https_proxy(const string &method, const URLSpec &url, const string &body) {
 
   // Ok, we now have a connection to our actual server, so start
   // speaking SSL and then ask for the document we really want.
-  BIO *sbio = make_https_connection(bio, url);
-
-  if (sbio != (BIO *)NULL) {
-    send_request(sbio, method, url.get_path(), url.get_server(), body);
-  }
-  return sbio;
+  return make_https_connection(bio, url);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -851,46 +947,6 @@ certificate signing
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::send_request
-//       Access: Private
-//  Description: Sends the appropriate GET or POST (or whatever)
-//               request to the server on the indicated connection.
-////////////////////////////////////////////////////////////////////
-void HTTPClient::
-send_request(BIO *bio, const string &method, 
-             const string &path, const string &server,
-             const string &body) const {
-  ostringstream request;
-
-  request 
-    << method << " " << path << " " << get_http_version_string() << "\r\n";
-
-  if (_http_version > HV_10) {
-    request 
-      << "Host: " << server << "\r\n"
-      << "Connection: close\r\n";
-  }
-
-  if (!body.empty()) {
-    request
-      << "Content-type: application/x-www-form-urlencoded\r\n"
-      << "Content-Length: " << body.length() << "\r\n";
-  }
-
-  request
-    << "\r\n"
-    << body;
-
-  string request_str = request.str();
-#ifndef NDEBUG
-  if (downloader_cat.is_debug()) {
-    show_send(request_str);
-  }
-#endif
-  BIO_puts(bio, request_str.c_str());
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::verify_server
 //       Access: Private
 //  Description: Returns true if the indicated server matches one of
@@ -1088,31 +1144,6 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
   }
   return true;
 }
-
-#ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::show_send
-//       Access: Private, Static
-//  Description: Writes the outgoing message, one line at a time, to
-//               the debugging log.
-////////////////////////////////////////////////////////////////////
-void HTTPClient::
-show_send(const string &message) {
-  size_t start = 0;
-  size_t newline = message.find('\n', start);
-  while (newline != string::npos) {
-    downloader_cat.debug()
-      << "send: " << message.substr(start, newline - start + 1);
-    start = newline + 1;
-    newline = message.find('\n', start);
-  }
-
-  if (start < message.length()) {
-    downloader_cat.debug()
-      << "send: " << message.substr(start) << " (no newline)\n";
-  }
-}
-#endif   // NDEBUG
 
 #if defined(SSL_097) && !defined(NDEBUG)
 ////////////////////////////////////////////////////////////////////

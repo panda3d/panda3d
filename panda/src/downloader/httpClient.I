@@ -92,37 +92,3 @@ INLINE bool HTTPClient::
 get_verify_ssl() const {
   return _verify_ssl;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_document
-//       Access: Published
-//  Description: Opens the named document for reading, or if body is
-//               nonempty, posts data for a particular URL and
-//               retrieves the response.  Returns a new HTTPDocument
-//               object whether the document is successfully read or
-//               not; you can test is_valid() and get_return_code() to
-//               determine whether the document was retrieved.
-////////////////////////////////////////////////////////////////////
-INLINE PT(HTTPDocument) HTTPClient::
-get_document(const URLSpec &url, const string &body) {
-  const char *method = "GET";
-  if (!body.empty()) {
-    method = "POST";
-  }
-
-  return make_request(method, url, body);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_header
-//       Access: Published
-//  Description: Like get_document(), except only the header
-//               associated with the file is retrieved.  This may be
-//               used to test for existence of the file; it might also
-//               return the size of the file (if the server gives us
-//               this information).
-////////////////////////////////////////////////////////////////////
-INLINE PT(HTTPDocument) HTTPClient::
-get_header(const URLSpec &url) {
-  return make_request("HEAD", url, string());
-}

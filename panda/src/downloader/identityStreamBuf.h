@@ -1,5 +1,5 @@
-// Filename: chunkedStreamBuf.h
-// Created by:  drose (25Sep02)
+// Filename: identityStreamBuf.h
+// Created by:  drose (09Oct02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,25 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CHUNKEDSTREAMBUF_H
-#define CHUNKEDSTREAMBUF_H
+#ifndef IDENTITYSTREAMBUF_H
+#define IDENTITYSTREAMBUF_H
 
 #include "pandabase.h"
 #include "httpDocument.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ChunkedStreamBuf
+//       Class : IdentityStreamBuf
 // Description : The streambuf object that implements
-//               IChunkedStream.
+//               IIdentityStream.
 ////////////////////////////////////////////////////////////////////
-// No need to export from DLL.
-class ChunkedStreamBuf : public streambuf {
+class EXPCL_PANDAEXPRESS IdentityStreamBuf : public streambuf {
 public:
-  ChunkedStreamBuf();
-  virtual ~ChunkedStreamBuf();
+  IdentityStreamBuf();
+  virtual ~IdentityStreamBuf();
 
-  void open_read(istream *source, bool owns_source, HTTPDocument *doc);
+  void open_read(istream *source, bool owns_source, HTTPDocument *doc,
+                 size_t content_length);
   void close_read();
 
 protected:
@@ -45,8 +45,7 @@ private:
 
   istream *_source;
   bool _owns_source;
-  size_t _chunk_remaining;
-  bool _done;
+  size_t _bytes_remaining;
 
   PT(HTTPDocument) _doc;
   int _read_index;

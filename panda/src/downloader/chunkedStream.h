@@ -33,14 +33,15 @@ class HTTPDocument;
 //
 //               Seeking is not supported.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS IChunkedStream : public istream {
+// No need to export from DLL.
+class IChunkedStream : public istream {
 public:
   INLINE IChunkedStream();
   INLINE IChunkedStream(istream *source, bool owns_source, 
-                        HTTPDocument *doc = NULL);
+                        HTTPDocument *doc);
 
   INLINE IChunkedStream &open(istream *source, bool owns_source, 
-                              HTTPDocument *doc = NULL);
+                              HTTPDocument *doc);
   INLINE IChunkedStream &close();
 
 private:
@@ -50,5 +51,6 @@ private:
 #include "chunkedStream.I"
 
 #endif
+
 
 

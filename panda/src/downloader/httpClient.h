@@ -29,17 +29,17 @@
 #ifdef HAVE_SSL
 
 #include "urlSpec.h"
-#include "httpDocument.h"
 #include "pointerTo.h"
 
 #include <openssl/ssl.h>
 
 // Windows may define this macro inappropriately.
-#ifdef WIN32
+#ifdef X509_NAME
 #undef X509_NAME
 #endif
 
 class Filename;
+class HTTPDocument;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : HTTPClient
@@ -60,14 +60,19 @@ PUBLISHED:
   INLINE void set_proxy(const URLSpec &proxy);
   INLINE const URLSpec &get_proxy() const;
 
+  void set_username(const string &server, const string &realm, const string &username);
+  string get_username(const string &server, const string &realm) const;
+
   enum HTTPVersion {
     HV_10,  // HTTP 1.0
     HV_11,  // HTTP 1.1
+    HV_other,
   };
 
   INLINE void set_http_version(HTTPVersion version);
   INLINE HTTPVersion get_http_version() const;
   string get_http_version_string() const;
+  static HTTPVersion parse_http_version_string(const string &version);
 
   bool load_certificates(const Filename &filename);
 
@@ -77,36 +82,28 @@ PUBLISHED:
   bool add_expected_server(const string &server_attributes);
   void clear_expected_servers();
 
-  INLINE PT(HTTPDocument) get_document(const URLSpec &url,
-                                       const string &body = string());
-  INLINE PT(HTTPDocument) get_header(const URLSpec &url);
+  PT(HTTPDocument) get_documents();
+  PT(HTTPDocument) get_document(const URLSpec &url,
+                                const string &body = string());
+  PT(HTTPDocument) get_header(const URLSpec &url);
 
 private:
   void make_ctx();
   static void initialize_ssl();
   static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
 
-  PT(HTTPDocument) make_request(const string &method, const URLSpec &url, 
-                                const string &body);
-
-  BIO *get_http(const string &method, const URLSpec &url, const string &body);
-  BIO *get_https(const string &method, const URLSpec &url, const string &body);
-  BIO *get_http_proxy(const string &method, const URLSpec &url, const string &body);
-  BIO *get_https_proxy(const string &method, const URLSpec &url, const string &body);
+  BIO *establish_connection(const URLSpec &url);
+  BIO *establish_http(const URLSpec &url);
+  BIO *establish_https(const URLSpec &url);
+  BIO *establish_http_proxy(const URLSpec &url);
+  BIO *establish_https_proxy(const URLSpec &url);
 
   BIO *make_https_connection(BIO *bio, const URLSpec &url) const;
-  void send_request(BIO *bio, const string &method,
-                    const string &path, const string &server, 
-                    const string &body) const;
   bool verify_server(X509_NAME *subject) const;
 
   static X509_NAME *parse_x509_name(const string &source);
   static string get_x509_name_component(X509_NAME *name, int nid);
   static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
-
-#ifndef NDEBUG
-  static void show_send(const string &message);
-#endif
 
 #if defined(SSL_097) && !defined(NDEBUG)
   static void ssl_msg_callback(int write_p, int version, int content_type,
@@ -118,6 +115,9 @@ private:
   HTTPVersion _http_version;
   bool _verify_ssl;
 
+  typedef pmap<string, string> Usernames;
+  Usernames _usernames;
+
   // List of allowable SSL servers to connect to.  If the list is
   // empty, any server is acceptable.
   typedef pvector<X509_NAME *> ExpectedServers;
@@ -127,6 +127,7 @@ private:
 
   static bool _ssl_initialized;
   static X509_STORE *_x509_store;
+  friend class HTTPDocument;
 };
 
 #include "httpClient.I"

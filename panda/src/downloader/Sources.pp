@@ -18,6 +18,7 @@
     extractor.h \
     httpClient.I httpClient.h \
     httpDocument.I httpDocument.h \
+    identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.h \
     urlSpec.I urlSpec.h \
@@ -33,6 +34,7 @@
     extractor.cxx \
     httpClient.cxx \
     httpDocument.cxx \
+    identityStream.cxx identityStreamBuf.cxx \
     multiplexStream.cxx multiplexStreamBuf.cxx \
     urlSpec.cxx \
     $[if $[HAVE_NET], downloadDb.cxx downloader.cxx] \
@@ -49,6 +51,7 @@
     extractor.h \
     httpClient.I httpClient.h \
     httpDocument.I httpDocument.h \
+    identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.I \
     patcher.h patcher.I \

@@ -30,14 +30,38 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_url
+//       Access: Published
+//  Description: Returns the URL that was used to retrieve this
+//               document: whatever URL was last passed to
+//               get_document() or get_header().
+////////////////////////////////////////////////////////////////////
+INLINE const URLSpec &HTTPDocument::
+get_url() const {
+  return _url;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPDocument::get_http_version
+//       Access: Published
+//  Description: Returns the HTTP version number returned by the
+//               server, as one of the HTTPClient enumerated types,
+//               e.g. HTTPClient::HV_11.
+////////////////////////////////////////////////////////////////////
+INLINE HTTPClient::HTTPVersion HTTPDocument::
+get_http_version() const {
+  return _http_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_http_version_string
 //       Access: Published
 //  Description: Returns the HTTP version number returned by the
 //               server, formatted as a string, e.g. "HTTP/1.1".
 ////////////////////////////////////////////////////////////////////
 INLINE const string &HTTPDocument::
-get_http_version() const {
-  return _http_version;
+get_http_version_string() const {
+  return _http_version_string;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,6 +90,80 @@ get_status_string() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_realm
+//       Access: Published
+//  Description: If the document failed to connect because of a 401
+//               (Authorization required) or 407 (Proxy authorization
+//               required) error, this method should return the
+//               "realm" returned by the server in which the requested
+//               document must be authenticated.  This string may be
+//               presented to the user to request an associated
+//               username and password (which then should be stored in
+//               HTTPClient::set_username()).
+//
+//               If the document was retrieved successfully, or failed
+//               to connect for some other reason, this string will be
+//               empty.  If it is empty even in the presence of a 401
+//               or 407 error, then the client code and the server do
+//               not have a common scheme for exchanging passwords.
+////////////////////////////////////////////////////////////////////
+INLINE const string &HTTPDocument::
+get_realm() const {
+  return _realm;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_redirect
+//       Access: Published
+//  Description: If the document failed with a redirect code (300
+//               series), this will generally contain the new URL the
+//               server wants us to try.  In many cases, the client
+//               will automatically follow redirects; if these are
+//               succesful the client will return a successful code
+//               and get_redirect() will return empty, but get_url()
+//               will return the new, redirected URL.
+////////////////////////////////////////////////////////////////////
+INLINE const URLSpec &HTTPDocument::
+get_redirect() const {
+  return _redirect;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::set_persistent_connection
+//       Access: Published
+//  Description: Indicates whether the HTTPDocument should try to keep
+//               the connection to the server open and reuse that
+//               connection for multiple documents, or whether it
+//               should close the connection and open a new one for
+//               each request.  Set this true to keep the connections
+//               around when possible, false to recycle them.
+//
+//               It makes most sense to set this false when the
+//               HTTPDocument will be used only once to retrieve a
+//               single document, true when you will be using the
+//               HTTPDocument interface to retrieve multiple
+//               documents.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPDocument::
+set_persistent_connection(bool persistent_connection) {
+  _persistent_connection = persistent_connection;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_persistent_connection
+//       Access: Published
+//  Description: Returns whether the HTTPDocument should try to keep
+//               the connection to the server open and reuse that
+//               connection for multiple documents, or whether it
+//               should close the connection and open a new one for
+//               each request.  See set_persistent_connection().
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPDocument::
+get_persistent_connection() const {
+  return _persistent_connection;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPDocument::get_file_size
 //       Access: Published
 //  Description: Returns the size of the file, if it is known.
@@ -82,4 +180,35 @@ get_status_string() const {
 INLINE size_t HTTPDocument::
 get_file_size() const {
   return _file_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_document
+//       Access: Published
+//  Description: Opens the named document for reading, or if body is
+//               nonempty, posts data for a particular URL and
+//               retrieves the response.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPDocument::
+get_document(const URLSpec &url, const string &body) {
+  const char *method = "GET";
+  if (!body.empty()) {
+    method = "POST";
+  }
+
+  return send_request(method, url, body);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_header
+//       Access: Published
+//  Description: Like get_document(), except only the header
+//               associated with the file is retrieved.  This may be
+//               used to test for existence of the file; it might also
+//               return the size of the file (if the server gives us
+//               this information).
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPDocument::
+get_header(const URLSpec &url) {
+  return send_request("HEAD", url, string());
 }

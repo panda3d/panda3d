@@ -38,6 +38,10 @@ PUBLISHED:
   INLINE void operator = (const string &url);
   void operator = (const URLSpec &copy);
 
+  INLINE bool operator == (const URLSpec &other) const;
+  INLINE bool operator != (const URLSpec &other) const;
+  INLINE bool operator < (const URLSpec &other) const;
+
   INLINE bool has_scheme() const;
   INLINE bool has_authority() const;
   INLINE bool has_username() const;

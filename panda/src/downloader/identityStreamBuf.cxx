@@ -1,5 +1,5 @@
-// Filename: chunkedStreamBuf.cxx
-// Created by:  drose (25Sep02)
+// Filename: identityStreamBuf.cxx
+// Created by:  drose (09Oct02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chunkedStreamBuf.h"
+#include "identityStreamBuf.h"
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
@@ -24,16 +24,15 @@ typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::Constructor
+//     Function: IdentityStreamBuf::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ChunkedStreamBuf::
-ChunkedStreamBuf() {
+IdentityStreamBuf::
+IdentityStreamBuf() {
   _source = (istream *)NULL;
   _owns_source = false;
-  _chunk_remaining = 0;
-  _done = true;
+  _bytes_remaining = 0;
 
 #ifdef WIN32_VC
   // In spite of the claims of the MSDN Library to the contrary,
@@ -52,47 +51,41 @@ ChunkedStreamBuf() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::Destructor
+//     Function: IdentityStreamBuf::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ChunkedStreamBuf::
-~ChunkedStreamBuf() {
+IdentityStreamBuf::
+~IdentityStreamBuf() {
   close_read();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::open_read
+//     Function: IdentityStreamBuf::open_read
 //       Access: Public
 //  Description: If the document pointer is non-NULL, it will be
 //               updated with the length of the file as it is derived
-//               from the chunked encoding.
+//               from the identity encoding.
 ////////////////////////////////////////////////////////////////////
-void ChunkedStreamBuf::
-open_read(istream *source, bool owns_source, HTTPDocument *doc) {
+void IdentityStreamBuf::
+open_read(istream *source, bool owns_source, HTTPDocument *doc, 
+          size_t content_length) {
   _source = source;
   _owns_source = owns_source;
-  _chunk_remaining = 0;
-  _done = false;
   _doc = doc;
+  _bytes_remaining = content_length;
 
   if (_doc != (HTTPDocument *)NULL) {
     _read_index = doc->_read_index;
-    _doc->_file_size = 0;
-
-    // Read a little bit from the file to get the first chunk (and
-    // therefore the file size, or at least the size of the first
-    // chunk).
-    underflow();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::close_read
+//     Function: IdentityStreamBuf::close_read
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void ChunkedStreamBuf::
+void IdentityStreamBuf::
 close_read() {
   if (_source != (istream *)NULL) {
     if (_owns_source) {
@@ -104,12 +97,12 @@ close_read() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::underflow
+//     Function: IdentityStreamBuf::underflow
 //       Access: Protected, Virtual
 //  Description: Called by the system istream implementation when its
 //               internal buffer needs more characters.
 ////////////////////////////////////////////////////////////////////
-int ChunkedStreamBuf::
+int IdentityStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
   if (gptr() >= egptr()) {
@@ -138,45 +131,30 @@ underflow() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::read_chars
+//     Function: IdentityStreamBuf::read_chars
 //       Access: Private
 //  Description: Gets some characters from the source stream.
 ////////////////////////////////////////////////////////////////////
-size_t ChunkedStreamBuf::
+size_t IdentityStreamBuf::
 read_chars(char *start, size_t length) {
-  if (_done) {
+  if (_bytes_remaining == 0) {
     return 0;
   }
 
-  if (_chunk_remaining != 0) {
-    // Extract some of the bytes remaining in the chunk.
-    length = min(length, _chunk_remaining);
-    _source->read(start, length);
-    length = _source->gcount();
-    _chunk_remaining -= length;
-    return length;
-  }
+  // Extract some of the bytes remaining in the chunk.
+  length = min(length, _bytes_remaining);
+  _source->read(start, length);
+  length = _source->gcount();
+  _bytes_remaining -= length;
 
-  // Read the next chunk.
-  string line;
-  getline(*_source, line);
-  if (!line.empty() && line[line.length() - 1] == '\r') {
-    line = line.substr(0, line.length() - 1);
-  }
-  size_t chunk_size = (size_t)strtol(line.c_str(), NULL, 16);
-  if (chunk_size == 0) {
-    // Last chunk; we're done.
-    _done = true;
+  if (_bytes_remaining == 0) {
+    // We're done.
     if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
-      _doc->_state = HTTPDocument::S_read_body;
+      // An IdentityStreamBuf doesn't have a trailer, so we've already
+      // "read" it.
+      _doc->_state = HTTPDocument::S_read_trailer;
     }
-    return 0;
   }
 
-  if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
-    _doc->_file_size += chunk_size;
-  }
-
-  _chunk_remaining = chunk_size;
-  return read_chars(start, length);
+  return length;
 }
