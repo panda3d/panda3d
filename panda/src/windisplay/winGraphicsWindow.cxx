@@ -97,8 +97,10 @@ move_pointer(int device, int x, int y) {
   // Note: this is not thread-safe; it should be called only from App.
   // Probably not an issue.
   nassertr(device == 0, false);
-  if (!_properties.get_foreground()) {
-    // If the window doesn't have focus, forget it.
+  if (!_properties.get_foreground() ||
+      !_input_devices[0].get_pointer().get_in_window()) {
+    // If the window doesn't have input focus, or the mouse isn't
+    // currently within the window, forget it.
     return false;
   }
 
