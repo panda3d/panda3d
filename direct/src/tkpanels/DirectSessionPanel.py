@@ -989,7 +989,5 @@ class DirectSessionPanel(AppShell):
         
     def onDestroy(self, event):
         # Remove hooks
-        print 'here'
         for event, method in self.actionEvents:
             self.ignore(event)
-        print 'there'

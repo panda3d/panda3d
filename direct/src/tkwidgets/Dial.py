@@ -1,13 +1,11 @@
 from Tkinter import *
-from tkSimpleDialog import askfloat
 from PandaModules import ClockObject
-import Task
+from WidgetPropertiesDialog import *
 import Pmw
-import tkMessageBox
+import Task
 import math
 import string
 import operator
-import types
 
 TWO_PI = 2.0 * math.pi
 ONEPOINTFIVE_PI = 1.5 * math.pi
@@ -24,187 +22,6 @@ DIAL_MINI_SIZE = 20
 globalClock = ClockObject.getGlobalClock()
 
 from tkSimpleDialog import Dialog
-
-class WidgetPropertiesDialog(Toplevel):
-    """Class to open dialogs to adjust widget properties."""
-    def __init__(self, widget, propertyList, title = None, parent = None):
-        """Initialize a dialog.
-        Arguments:
-            propertyList -- a list of properties to be edited
-            parent -- a parent window (the application window)
-            title -- the dialog title
-        """
-        # Record widget and property list
-        self.widget = widget
-        self.propertyList = propertyList
-        # Use default parent if none specified
-        if not parent:
-            import Tkinter
-            parent = Tkinter._default_root
-        # Create toplevel window
-        Toplevel.__init__(self, parent)
-        self.transient(parent)
-        # Set title
-        if title:
-            self.title(title)
-        # Record parent
-        self.parent = parent
-        # Initialize result
-        self.result = None
-        # Create body
-        body = Frame(self)
-        self.initial_focus = self.body(body)
-        body.pack(padx=5, pady=5)
-        # Create OK Cancel button
-        self.buttonbox()
-        # Initialize window state
-        self.grab_set()
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
-        self.initial_focus.focus_set()
-        self.wait_window(self)
-        
-    def destroy(self):
-        """Destroy the window"""
-        self.propertyList = []
-        self.entryList = []
-        self.initial_focus = None
-        Toplevel.destroy(self)
-        
-    #
-    # construction hooks
-    def body(self, master):
-        """create dialog body.
-        return widget that should have initial focus. 
-        This method should be overridden, and is called
-        by the __init__ method.
-        """
-        self.labelList = []
-        self.entryList = []
-        count = 0
-        for propertySet in self.propertyList:
-            # Make singletons into lists
-            if type(propertySet) is not types.ListType:
-                propertySet = [propertySet]
-            # Name of widget property
-            property = propertySet[0]
-            initialvalue = self.widget[property]
-            try:
-                entryType = propertySet[1]
-            except IndexError:
-                entryType = 'float'
-            try:
-                fAllowNone = propertySet[2]
-            except IndexError:
-                fAllowNone = 0
-            # Create label
-            label = Label(master, text=property, justify=LEFT)
-            label.grid(row=count, col = 0, padx=5, sticky=W)
-            self.labelList.append(label)
-            # Create entry
-            entry = Entry(master)
-            entry.grid(row=count, col = 1, padx=5, sticky=W+E)
-            if initialvalue is None:
-                entry.insert(0, 'None')
-            else:
-                entry.insert(0, initialvalue)
-            if entryType == 'float':
-                validateFunc = self.validateFloat
-            elif entryType == 'int':
-                validateFunc = self.validateInt
-            else:
-                validateFunc = self.validateString
-            callback = (lambda event, vf = validateFunc,
-                        e=entry,p=property,fn = fAllowNone,: vf(e, p, fn))
-            entry.bind('<Return>', callback)
-            self.entryList.append(entry)
-            count += 1
-        # Set initial focus
-        if len(self.entryList) > 0:
-            entry = self.entryList[0]
-            entry.select_range(0, END)
-            # Set initial focus to first entry in the list
-            return self.entryList[0]
-        else:
-            # Just set initial focus to self
-            return self
-        
-    def buttonbox(self):
-        """add standard button box buttons. 
-        """
-        box = Frame(self)
-        # Create buttons
-        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
-        w.pack(side=LEFT, padx=5, pady=5)
-        w = Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=LEFT, padx=5, pady=5)
-        # Bind commands
-        self.bind("<Escape>", self.cancel)
-        # Pack
-        box.pack()
-        
-    #
-    # standard button semantics
-    def ok(self, event=None):
-        self.withdraw()
-        self.update_idletasks()
-        self.apply()
-        self.cancel()
-        
-    def cancel(self, event=None):
-        # put focus back to the parent window
-        self.parent.focus_set()
-        self.destroy()
-
-    def validateFloat(self, entry, property, fAllowNone):
-        value = entry.get()
-        errormsg =  "Please enter a floating point value"
-        if fAllowNone:
-            errormsg += "\nor the string 'None'"
-        try:
-            value = string.atof(value)
-        except ValueError:
-            if fAllowNone and (value == 'None'):
-                value = None
-            else:
-                tkMessageBox.showwarning(
-                    "Illegal value", errormsg, parent = self)
-                return 0
-        self.widget[property] = value
-        return 1
-
-    def validateInt(self, entry, property, fAllowNone):
-        value = entry.get()
-        errormsg =  "Please enter an integer value"
-        if fAllowNone:
-            errormsg += "\nor the string 'None'"
-        try:
-            value = string.atoi(value)
-        except ValueError:
-            if fAllowNone and (value == 'None'):
-                value = None
-            else:
-                tkMessageBox.showwarning(
-                    "Illegal value", errormsg, parent = self)
-                return 0
-        self.widget[property] = value
-        return 1
-
-    def validateString(self, entry, property, fAllowNone):
-        value = entry.get()
-        if fAllowNone and (value == 'None'):
-            value = None
-        self.widget[property] = value
-
-    def apply(self):
-        """process the data
-
-        This method is called automatically to process the data, *after*
-        the dialog is destroyed. By default, it does nothing.
-        """
-        pass # override
-
 
 
 
@@ -254,12 +71,20 @@ class Dial(Pmw.MegaWidget):
                                           command = self.setEntry,
                                           value = self['value'])
 
+        self._dial.propertyDict['numDigits'] = {
+            'widget' : self,
+            'type' : 'integer',
+            'help' : 'Enter number of digits after decimal point.'
+            }
+        self._dial.propertyList.append('numDigits')
+
         # The Label
         self._label = self.createcomponent('label', (), None,
                                            Label, (interior,),
                                            text = self['text'],
                                            font = ('MS Sans Serif',12,'bold'),
                                            anchor = CENTER)
+        self._label.bind('<ButtonPress-3>', self._dial.popupDialMenu)
 
         # The entry
         self._entryVal = StringVar()
@@ -269,6 +94,7 @@ class Dial(Pmw.MegaWidget):
                                            width = 12,
                                            textvariable = self._entryVal)
         self._entry.bind('<Return>', self.validateEntryInput)
+        self._entry.bind('<ButtonPress-3>', self._dial.popupDialMenu)
         self._entryBackground = self._entry.cget('background')
 
         if self['style'] == DIAL_FULL:
@@ -374,6 +200,7 @@ class AngleDial(Dial):
 class DialWidget(Pmw.MegaWidget):
     sfBase = 3.0
     sfDist = 15
+    deadband = 10
     def __init__(self, parent = None, **kw):
         #define the megawidget options
         INITOPT = Pmw.INITOPT
@@ -396,7 +223,7 @@ class DialWidget(Pmw.MegaWidget):
             ('min',             None,           None),
             ('max',             None,           None),
             ('resolution',      None,           None),
-            ('numDigits',       2,              None),
+            ('numDigits',       2,              self.setNumDigits),
             # Value dial jumps to on reset
             ('resetValue',      0.0,            None),
             ## Behavior
@@ -434,6 +261,31 @@ class DialWidget(Pmw.MegaWidget):
         radius = self.radius = int(dim/2.0)
         # Radius of the inner knob
         inner_radius = max(3,radius * INNER_SF)
+
+        # A Dictionary of dictionaries
+        self.propertyDict = {
+            'min' : { 'widget' : self,
+                      'type' : 'real',
+                      'fNone' : 1,
+                      'help' : 'Minimum allowable dial value, Enter None for no minimum'},
+            'max' : { 'widget' : self,
+                      'type' : 'real',
+                      'fNone' : 1,
+                      'help' : 'Maximum allowable dial value, Enter None for no maximum'},
+            'base' : { 'widget' : self,
+                       'type' : 'real',
+                       'help' : 'Dial value = base + delta * numRevs'},
+            'delta' : { 'widget' : self,
+                        'type' : 'real',
+                        'help' : 'Dial value = base + delta * numRevs'},
+            'numSegments' : { 'widget' : self,
+                              'type' : 'integer',
+                              'help' : 'Number of segments to divide dial into'},
+            'resetValue' : { 'widget' : self,
+                             'type' : 'real',
+                             'help' : 'Enter value to set dial to on reset.'}
+            }
+        self.propertyList = ['min', 'max', 'base', 'delta', 'numSegments', 'resetValue']
 
         # The canvas 
         self._canvas = self.createcomponent('canvas', (), None,
@@ -625,8 +477,11 @@ class DialWidget(Pmw.MegaWidget):
     def computeKnobSF(self, event):
         x = self._canvas.canvasx(event.x)
         y = self._canvas.canvasy(event.y)
-        minExp = math.floor(-self['numDigits']/math.log10(DialWidget.sfBase))
-        sf = math.pow(DialWidget.sfBase, minExp + (abs(x) / DialWidget.sfDist))
+        offset = max(0, abs(x) - DialWidget.deadband)
+        if offset == 0:
+            return 0
+        sf = math.pow(DialWidget.sfBase,
+                      self.minExp + offset/DialWidget.sfDist)
         if x > 0:
             return sf
         else:
@@ -674,6 +529,11 @@ class DialWidget(Pmw.MegaWidget):
     def setBorderwidth(self):
         self.interior()['borderwidth'] = self['borderwidth']
 
+    def setNumDigits(self):
+        # Set minimum exponent to use in velocity task
+        self.minExp = math.floor(-self['numDigits']/
+                                 math.log10(DialWidget.sfBase))        
+
     # The following methods are used to handle the popup menu
     def popupDialMenu(self,event):
         self._popupMenu.post(event.widget.winfo_pointerx(),
@@ -690,56 +550,12 @@ class DialWidget(Pmw.MegaWidget):
     # This handles the popup dial min dialog
     def getProperties(self):
         # Popup dialog to adjust widget properties
-        WidgetPropertiesDialog(self, [
-            ['min', 'float', 1],
-            ['min', 'float', 1],
-            ['base', 'float', 1],
-            ['delta', 'float', 0],
-            ['resetValue', 'float', 0]])
+        WidgetPropertiesDialog(
+            self.propertyDict,
+            propertyList = self.propertyList,
+            title = 'Dial Widget Properties',
+            parent = self._canvas)
             
-    def getMin(self):
-        newMin = askfloat('Dial Min', 'Min:',
-                          initialvalue = `self['min']`,
-                          parent = self.interior())
-        if newMin is not None:
-            self['min'] = newMin
-            self.updateIndicator(self.value)
-
-    # This handles the popup dial base value dialog
-    def getBase(self):
-        newBase = askfloat('Dial Base Value', 'Base:',
-                           initialvalue = `self['base']`,
-                           parent = self.interior())
-        if newBase is not None:
-            self['base'] = newBase
-            self.updateIndicator(self.value)
-
-    # This handles the popup dial delta dialog
-    def getDelta(self):
-        newDelta = askfloat('Delta Per Revolution', 'Delta:',
-                          initialvalue = `self['delta']`,
-                          parent = self.interior())
-        if newDelta is not None:
-            self['delta'] = newDelta
-            self.updateIndicator(self.value)
-
-    # This handles the popup dial max dialog
-    def getMax(self):
-        newMax = askfloat('Dial Max', 'Max:',
-                          initialvalue = `self['max']`,
-                          parent = self.interior())
-        if newMax is not None:
-            self['max'] = newMax
-            self.updateIndicator(self.value)
-
-    # This handles the popup dial resetValue dialog
-    def getResetValue(self):
-        newResetValue = askfloat('Dial ResetValue', 'ResetValue:',
-                                 initialvalue = `self['resetValue']`,
-                                 parent = self.interior())
-        if newResetValue is not None:
-            self['resetValue'] = newResetValue
-
     # User callbacks
     def _onButtonPress(self, *args):
         """ User redefinable callback executed on button press """
