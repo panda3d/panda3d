@@ -365,9 +365,12 @@ set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint) {
     lastJoint = this;
   }
   if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != NULL ) {
-    _parentJoint = NULL;
-    //    _parentJoint = lastJoint = NULL;
-    softegg_cat.spam() << "scale joint flag set!\n";
+    // make sure _parentJoint didn't have the name "joint" in it
+    if (strstr(_parentJoint->get_name().c_str(), "joint") == NULL) {
+      _parentJoint = NULL;
+      //    _parentJoint = lastJoint = NULL;
+      softegg_cat.spam() << "scale joint flag set!\n";
+    }
   }
 
   // look in the children
