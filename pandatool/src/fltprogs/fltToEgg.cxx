@@ -23,7 +23,7 @@ FltToEgg() :
   add_texture_path_options();
   add_model_path_options();
   add_rel_dir_options();
-  add_search_path_options();
+  add_search_path_options(false);
 
   set_program_description
     ("This program converts MultiGen OpenFlight (.flt) files to egg.  Most "

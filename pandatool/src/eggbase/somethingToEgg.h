@@ -31,7 +31,7 @@ public:
   void add_texture_path_options();
   void add_model_path_options();
   void add_rel_dir_options();
-  void add_search_path_options();
+  void add_search_path_options(bool append_to_sys_paths);
 
 protected:
   void apply_units_scale(EggData &data);
@@ -59,6 +59,8 @@ protected:
   bool _got_make_rel_dir;
 
   DSearchPath _search_path;
+  bool _got_search_path;
+  bool _append_to_sys_paths;
 };
 
 #endif

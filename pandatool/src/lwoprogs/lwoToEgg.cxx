@@ -24,6 +24,7 @@ LwoToEgg() :
   add_transform_options();
   add_texture_path_options();
   add_rel_dir_options();
+  add_search_path_options(true);
 
   set_program_description
     ("This program converts Lightwave Object (.lwo) files to egg.  Many "

@@ -5,6 +5,8 @@
 
 #include "somethingToEgg.h"
 
+#include <config_util.h>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEgg::Constructor
 //       Access: Public
@@ -40,6 +42,7 @@ SomethingToEgg(const string &format_name,
   _output_units = DU_invalid;
   _texture_path_convert = SomethingToEggConverter::PC_unchanged;
   _model_path_convert = SomethingToEggConverter::PC_unchanged;
+  _append_to_sys_paths = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,19 +176,24 @@ add_rel_dir_options() {
 ////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEgg::add_search_path_options
 //       Access: Public
-//  Description: Adds -rs.
+//  Description: Adds -rs.  If append_to_sys_paths is true, the
+//               specified search path is prepended to the system
+//               paths returned by get_texture_path() and
+//               get_model_path(); otherwise, it's up to the caller to
+//               do the right thing with the _search_path.
 ////////////////////////////////////////////////////////////////////
 void SomethingToEgg::
-add_search_path_options() {
+add_search_path_options(bool append_to_sys_paths) {
+  _append_to_sys_paths = append_to_sys_paths;
   add_option
-    ("rs", "path", 0, 
+    ("rs", "path", 40, 
      "A search path for textures and external file references.  This "
      "is a colon-separated set of directories that will be searched "
      "for filenames that are not fully specified in the source file.  It "
      "is unrelated to -re and -rt, and is used only if the source file "
      "does not store absolute pathnames.  The directory containing "
      "the source filename is always implicitly included.",
-     &SomethingToEgg::dispatch_search_path, NULL, &_search_path);
+     &SomethingToEgg::dispatch_search_path, &_got_search_path, &_search_path);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,6 +277,11 @@ bool SomethingToEgg::
 post_command_line() {
   if (!_got_make_rel_dir) {
     _make_rel_dir = _input_filename.get_dirname();
+  }
+
+  if (_got_search_path && _append_to_sys_paths) {
+    get_texture_path().prepend_path(_search_path);
+    get_model_path().prepend_path(_search_path);
   }
 
   return EggConverter::post_command_line();
