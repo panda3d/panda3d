@@ -36,6 +36,10 @@ bool dx_full_screen = config_dxgsg.GetBool("dx-full-screen", false);
 //  irrespective of the video refresh.
 bool dx_sync_video = config_dxgsg.GetBool("sync-video", true);
 
+// enable this to turn on full-screen anti-aliasing, if the HW supports it
+// this var is also used in wdxGraphicsWindows.cxx
+bool dx_full_screen_antialiasing = config_dxgsg.GetBool("dx-antialias", false);
+
 // Configure this true to perform a cull traversal over the geometry
 // by default, false otherwise.  The cull traversal provides support
 // for state-sorting, z-sorting, and binning.
