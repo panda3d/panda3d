@@ -22,6 +22,32 @@ typedef int streamsize;
 #endif
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MultiplexStreamBuf::Output::close
+//       Access: Public
+//  Description: Closes or deletes the relevant pointers, if _owns_obj
+//               is true.
+////////////////////////////////////////////////////////////////////
+void MultiplexStreamBuf::Output::
+close() {
+  if (_owns_obj) {
+    switch (_output_type) {
+    case OT_ostream:
+      assert(_out != (ostream *)NULL);
+      delete _out;
+      break;
+
+    case OT_stdio:
+      assert(_fout != (FILE *)NULL);
+      fclose(_fout);
+      break;
+
+    default:
+      break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MultiplexStreamBuf::Output::write_string
 //       Access: Public
 //  Description: Dumps the indicated string to the appropriate place.
@@ -32,6 +58,13 @@ write_string(const string &str) {
   case OT_ostream:
     assert(_out != (ostream *)NULL);
     _out->write(str.data(), str.length());
+    _out->flush();
+    break;
+
+  case OT_stdio:
+    assert(_fout != (FILE *)NULL);
+    fwrite(str.data(), str.length(), 1, _fout);
+    fflush(_fout);
     break;
 
   case OT_system_debug:
@@ -65,6 +98,13 @@ MultiplexStreamBuf() {
 MultiplexStreamBuf::
 ~MultiplexStreamBuf() {
   sync();
+
+  // Make sure all of our owned pointers are freed.
+  Outputs::iterator oi;
+  for (oi = _outputs.begin(); oi != _outputs.end(); ++oi) {
+    Output &out = (*oi);
+    out.close();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

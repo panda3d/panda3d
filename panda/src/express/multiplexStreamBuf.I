@@ -14,12 +14,13 @@
 INLINE void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
 	   MultiplexStreamBuf::OutputType output_type,
-	   ostream *out, bool owns_ostream) {
+	   ostream *out, FILE *fout, bool owns_obj) {
   Output o;
   o._buffer_type = buffer_type;
   o._output_type = output_type;
   o._out = out;
-  o._owns_ostream = owns_ostream;
+  o._fout = fout;
+  o._owns_obj = owns_obj;
   _outputs.push_back(o);
 }
 

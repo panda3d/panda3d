@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include <vector>
+#include <stdio.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MultiplexStreamBuf
@@ -28,12 +29,14 @@ public:
 
   enum OutputType {
     OT_ostream,
+    OT_stdio,
     OT_system_debug,
   };
 
   INLINE void add_output(BufferType buffer_type, OutputType output_type,
 			 ostream *out = (ostream *)NULL, 
-			 bool owns_ostream = false);
+			 FILE *fout = (FILE *)NULL, 
+			 bool owns_obj = false);
 
   INLINE void flush();
 
@@ -47,12 +50,14 @@ private:
 
   class Output {
   public:
+    void close();
     void write_string(const string &str);
 
     BufferType _buffer_type;
     OutputType _output_type;
     ostream *_out;
-    bool _owns_ostream;
+    FILE *_fout;
+    bool _owns_obj;
   };
 
   typedef vector<Output> Outputs;

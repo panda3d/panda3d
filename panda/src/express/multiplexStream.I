@@ -24,7 +24,21 @@ INLINE void MultiplexStream::
 add_ostream(ostream *out, bool delete_later) {
   _msb.add_output(MultiplexStreamBuf::BT_none, 
 		  MultiplexStreamBuf::OT_ostream,
-		  out, delete_later);
+		  out, NULL, delete_later);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultiplexStream::add_stdio_file
+//       Access: Public
+//  Description: Adds the given file, previously opened using the C
+//               stdio library, to the multiplex output.
+////////////////////////////////////////////////////////////////////
+INLINE bool MultiplexStream::
+add_stdio_file(FILE *fout, bool close_when_done) {
+  _msb.add_output(MultiplexStreamBuf::BT_line, 
+		  MultiplexStreamBuf::OT_ostream,
+		  NULL, fout, close_when_done);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +50,7 @@ INLINE void MultiplexStream::
 add_standard_output() {
   _msb.add_output(MultiplexStreamBuf::BT_none, 
 		  MultiplexStreamBuf::OT_ostream,
-		  &cout, false);
+		  &cout, NULL, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +72,7 @@ add_file(Filename file) {
 
   _msb.add_output(MultiplexStreamBuf::BT_line, 
 		  MultiplexStreamBuf::OT_ostream,
-		  out, true);
+		  out, NULL, true);
   return true;
 }
 

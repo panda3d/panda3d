@@ -187,7 +187,7 @@ public:
 };
 
 INLINE ostream &operator << (ostream &out, const EggTexture &n) {
-  return out << (Filename &)n;
+  return out << n.get_filename();
 }
 
 ostream EXPCL_PANDAEGG &operator << (ostream &out, EggTexture::Format format);

@@ -85,6 +85,7 @@
 #include <collisionTraverser.h>
 #include <collisionHandlerFloor.h>
 #include <nodePath.h>
+#include <multiplexStream.h>
 
 #ifdef USE_IPC
 #include <ipc_file.h>
@@ -874,6 +875,23 @@ void event_x(CPT_Event) {
 
 int framework_main(int argc, char *argv[]) {
   pystub();
+
+  // The first thing we should do is to set up a multiplexing Notify.
+  MultiplexStream *mstream = new MultiplexStream;
+  Notify::ptr()->set_ostream_ptr(mstream, true);
+  mstream->add_standard_output();
+  mstream->add_system_debug();
+
+  string framework_notify_output = framework.GetString("framework-notify-output", "");
+  if (!framework_notify_output.empty()) {
+    if (!mstream->add_file(framework_notify_output)) {
+      framework_cat.error()
+	<< "Unable to open " << framework_notify_output << " for output.\n";
+    } else {
+      framework_cat.info() 
+	<< "Sending Notify output to " << framework_notify_output << "\n";
+    }
+  }
 
   GeomNorms::init_type();
 

@@ -12,6 +12,8 @@
 
 #include <filename.h>
 
+#include <stdio.h>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : MultiplexStream
 // Description : This is a special ostream that forwards the data that
@@ -26,6 +28,7 @@ PUBLISHED:
   INLINE MultiplexStream();
 
   INLINE void add_ostream(ostream *out, bool delete_later = false);
+  INLINE bool add_stdio_file(FILE *file, bool close_when_done);
   INLINE void add_standard_output();
   INLINE bool add_file(Filename file);
   INLINE void add_system_debug();
