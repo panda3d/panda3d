@@ -119,9 +119,7 @@ void GtkStatsPianoRoll::
 begin_draw() {
   _pixmap.draw_rectangle(_white_gc, true, 0, 0, get_xsize(), get_ysize());
 
-  Gdk_GC fg_gc =
-    get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
-  Gdk_Font font = fg_gc.get_font();
+  Gdk_Font font = get_style()->gtkobj()->font;
   int text_height = font.height();
 
   // Draw in the guide bars.
@@ -167,9 +165,7 @@ end_draw() {
   // Draw in the labels for the guide bars.  We do this in end_draw()
   // instead of in begin_draw() so the labels will appear on top of
   // any of the color bars.
-  Gdk_GC fg_gc =
-    get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
-  Gdk_Font font = fg_gc.get_font();
+  Gdk_Font font = get_style()->gtkobj()->font;
   int text_ascent = font.ascent();
 
   int num_guide_bars = get_num_guide_bars();
@@ -277,10 +273,7 @@ pack_labels() {
   _label_box->show();
   _label_align->add(*_label_box);
 
-  Gdk_GC window_gc =
-    get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
-  Gdk_Font font = window_gc.get_font();
-
+  Gdk_Font font = get_style()->gtkobj()->font;
   int num_labels = get_num_labels();
 
   while ((int)_y_positions.size() < num_labels) {

@@ -33,10 +33,7 @@ GtkStatsGuide(PStatStripChart *chart) :
 
   // Choose a suitable minimum width.  This requires knowing what the
   // font will be.
-  Gdk_GC fg_gc =
-    get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
-
-  Gdk_Font font = fg_gc.get_font();
+  Gdk_Font font = get_style()->gtkobj()->font;
   int text_width = font.string_width("0000");
   set_usize(text_width, 0);
 }
@@ -67,21 +64,23 @@ expose_event_impl(GdkEventExpose *event) {
   Gdk_GC bg_gc =
     get_style()->gtkobj()->bg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
 
-  Gdk_Window window = get_window();
-  window.draw_rectangle(bg_gc, true, 0, 0, width(), height());
-
-  Gdk_Font font = fg_gc.get_font();
-  int text_ascent = font.ascent();
-
-  int num_guide_bars = _chart->get_num_guide_bars();
-  for (int i = 0; i < num_guide_bars; i++) {
-    const PStatStripChart::GuideBar &bar = _chart->get_guide_bar(i);
-    int y = _chart->height_to_pixel(bar._height);
-
-    if (y >= 5) {
-      // Only draw it if it's not too close to the top.
-      window.draw_string(font, fg_gc, 0, y + text_ascent / 2,
-                         bar._label);
+  if (fg_gc && bg_gc) {
+    Gdk_Window window = get_window();
+    window.draw_rectangle(bg_gc, true, 0, 0, width(), height());
+    
+    Gdk_Font font = fg_gc.get_font();
+    int text_ascent = font.ascent();
+    
+    int num_guide_bars = _chart->get_num_guide_bars();
+    for (int i = 0; i < num_guide_bars; i++) {
+      const PStatStripChart::GuideBar &bar = _chart->get_guide_bar(i);
+      int y = _chart->height_to_pixel(bar._height);
+      
+      if (y >= 5) {
+        // Only draw it if it's not too close to the top.
+        window.draw_string(font, fg_gc, 0, y + text_ascent / 2,
+                           bar._label);
+      }
     }
   }
 

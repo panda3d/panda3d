@@ -374,9 +374,7 @@ pack_labels() {
   _label_box->show();
   _label_align->add(*_label_box);
 
-  Gdk_GC window_gc =
-    get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
-  Gdk_Font font = window_gc.get_font();
+  Gdk_Font font = get_style()->gtkobj()->font;
 
   int num_labels = get_num_labels();
   for (int i = 0; i < num_labels; i++) {
@@ -384,12 +382,12 @@ pack_labels() {
     GtkStatsLabel *label =
       new GtkStatsLabel(get_monitor(), collector_index, font);
     label->show();
-
+    
     label->collector_picked.connect(collector_picked.slot());
-
+    
     _label_box->pack_end(*manage(label), false, false);
   }
-
+  
   _labels_changed = false;
 }
 
