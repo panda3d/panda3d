@@ -1,4 +1,4 @@
-------------------------  RELEASE 1.1.0  ---------------------------------
+------------------------  RELEASE 1.0.0  ---------------------------------
 
 	* We now have working exporters for Max5, Max6, Max7, Maya5, Maya6
 
@@ -17,6 +17,13 @@
         Note that the installer does add the panda 'bin' directory to
 	your PATH, and it does store an uninstall key in the registry,
 	but neither of these is needed for panda to function.
+
+	* The 'makepanda' build system is now capable of building
+	prepackaged games for Windows.  These prepackaged games are simply
+	copies of panda with the game code included, some of the
+	unnecessary stuff stripped out, and some changes to the start
+	menu.  See "Airblade - Installer" on the panda downloads page
+	for an example.
 
 	* All of the sample programs have been tested.  The ones that didn't
 	work have been removed, the ones that do work have been (lightly)
