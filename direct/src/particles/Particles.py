@@ -25,6 +25,7 @@ import SphereVolumeEmitter
 import TangentRingEmitter
 import string
 import os
+import DirectSelection
 
 SparkleParticleRenderer.SparkleParticleRenderer.SPNOSCALE = 0
 SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE = 1
@@ -105,6 +106,9 @@ class Particles(ParticleSystem.ParticleSystem):
 	    self.renderer = LineParticleRenderer.LineParticleRenderer()
 	elif (type == "GeomParticleRenderer"):
 	    self.renderer = GeomParticleRenderer.GeomParticleRenderer()
+	    npath = hidden.attachNewNode(NamedNode('default-geom'))
+	    bbox = DirectSelection.DirectBoundingBox(npath)
+	    self.renderer.setGeomNode(bbox.lines.node())
 	elif (type == "SparkleParticleRenderer"):
 	    self.renderer = SparkleParticleRenderer.SparkleParticleRenderer()
 	elif (type == "SpriteParticleRenderer"):

@@ -1077,7 +1077,10 @@ class ParticlePanel(AppShell):
                  color[2]/255.0, color[3]/255.0))
     # Geom #
     def setRendererGeomNode(self, event):
-	self.particles.renderer.setGeomNode(self.rendererGeomNode.get())
+	node = loader.loadOnce(self.rendererGeomNode.get())
+	if (node == None):
+	    return None
+	self.particles.renderer.setGeomNode(node)
     # Point #
     def setRendererPointSize(self, size):
 	self.particles.renderer.setPointSize(size)
