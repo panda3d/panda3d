@@ -44,8 +44,9 @@ class DirectScrolledList(DirectFrame):
             
         self.initialiseoptions(DirectScrolledList)
         self.recordMaxHeight()
-        if len(self["items"]) > 0:
-            self.scrollTo(0)
+        #if len(self["items"]) > 0:
+        #    self.scrollTo(0)
+        self.scrollTo(0)
         
 
     def recordMaxHeight(self):
