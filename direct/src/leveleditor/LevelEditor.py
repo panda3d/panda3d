@@ -341,6 +341,11 @@ class LevelEditor(NodePath, PandaObject):
         # Enable replaceSelected by default:
         self.replaceSelectedEnabled=1
         
+        self.removeHookList=[self.landmarkBlockRemove]
+        
+        # Start block ID at 0 (it will be incremented before use (to 1)):
+        self.landmarkBlock=0
+        
         # Create ancillary objects
         # Style manager for keeping track of styles/colors
         self.styleManager = LevelStyleManager()
@@ -424,6 +429,9 @@ class LevelEditor(NodePath, PandaObject):
             ('down', self.keyboardXformSelected, ['down']),
             ('S', self.placeSuitPoint),
             ('C', self.placeBattleCell),
+            ('o', self.addToLandmarkBlock),
+            ('O', self.toggleShowLandmarkBlock),
+            ('5', self.pdbBreak),
             ]
                 
         # Initialize state
@@ -460,7 +468,6 @@ class LevelEditor(NodePath, PandaObject):
         self.battleCellMarker = loader.loadModel('models/misc/sphere')
         self.battleCellMarker.setScale(1)
         self.currentBattleCellType = "20w 20l"
-
 
     # ENABLE/DISABLE
     def enable(self):
@@ -525,6 +532,8 @@ class LevelEditor(NodePath, PandaObject):
         # The selected DNA Object/NodePath
         self.selectedDNARoot = None
         self.selectedNPRoot = None
+        self.lastLandmarkBuildingDNA = None
+        self.showLandmarkBlockToggleGroup = None
         # Set active target (the subcomponent being modified)
         self.DNATarget = None
         self.DNATargetParent = None
@@ -680,6 +689,8 @@ class LevelEditor(NodePath, PandaObject):
             dnaNode = self.findDNANode(nodePath)
             # Does the node path correspond to a DNA Object
             if dnaNode:
+                for i in self.removeHookList:
+                    i(dnaNode, nodePath)
                 # Get DNANode's parent
                 parentDNANode = dnaNode.getParent()
                 if parentDNANode:
@@ -956,18 +967,24 @@ class LevelEditor(NodePath, PandaObject):
         # Create new building
         newDNAFlatBuilding = DNAFlatBuilding()
         self.setRandomBuildingStyle(newDNAFlatBuilding,
-                                    name = buildingType + '_DNARoot')
+                                    name = 'b0_'+buildingType + '_DNARoot')
         # Initialize its position and hpr
         newDNAFlatBuilding.setPos(VBase3(0))
         newDNAFlatBuilding.setHpr(VBase3(0))
         # Now place new building in the world
         self.initDNANode(newDNAFlatBuilding)
 
+    def getNextLandmarkBlock(self):
+        self.landmarkBlock=self.landmarkBlock+1
+        return str(self.landmarkBlock)
+    
     def addLandmark(self, landmarkType):
         # Record new landmark type
         self.setCurrent('toon_landmark_texture', landmarkType)
         # And create new landmark building
-        newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType + '_DNARoot')
+        block=self.getNextLandmarkBlock()
+        newDNALandmarkBuilding = DNALandmarkBuilding(
+            'b'+block+'_'+landmarkType + '_DNARoot')
         newDNALandmarkBuilding.setCode(landmarkType)
         newDNALandmarkBuilding.setPos(VBase3(0))
         newDNALandmarkBuilding.setHpr(VBase3(0))
@@ -1416,6 +1433,14 @@ class LevelEditor(NodePath, PandaObject):
             # We got a valid node path/DNA object, continue
             self.selectedNPRoot = nodePath
             self.selectedDNARoot = dnaNode
+            # Reset last landmark
+            if DNAClassEqual(dnaNode, DNA_LANDMARK_BUILDING):
+                self.lastLandmarkBuildingDNA=dnaNode
+                if self.showLandmarkBlockToggleGroup:
+                    # Toggle old highlighting off:
+                    self.toggleShowLandmarkBlock()
+                    # Toggle on the the new highlighting:
+                    self.toggleShowLandmarkBlock()
             # Reset last Code (for autoPositionGrid)
             if DNAClassEqual(dnaNode, DNA_STREET):
                 self.snapList = OBJECT_SNAP_POINTS[dnaNode.getCode()]
@@ -1817,8 +1842,17 @@ class LevelEditor(NodePath, PandaObject):
         newNPToplevel = loadDNAFile(DNASTORE, filename, CSDefault, 1)
         # Make sure the topmost file DNA object gets put under DNARoot
         newDNAToplevel = self.findDNANode(newNPToplevel)
+        
+        # reset the landmark block number:
+        (self.landmarkBlock, needTraverse)=self.findHighestLandmarkBlock(
+            newDNAToplevel, newNPToplevel)
+
         # Update toplevel variables
-        self.createToplevel(newDNAToplevel, newNPToplevel)
+        if needTraverse:
+            self.createToplevel(newDNAToplevel)
+        else:
+            self.createToplevel(newDNAToplevel, newNPToplevel)
+
         # Create visible representations of all the paths and battle cells
         self.createSuitPaths()
         self.hideSuitPaths()
@@ -2240,10 +2274,128 @@ class LevelEditor(NodePath, PandaObject):
             np.setColor(0.5 + random()/2.0,
                         0.5 + random()/2.0,
                         0.5 + random()/2.0)
-            
-   
+    
+    def addToLandmarkBlock(self):
+        dnaRoot=self.selectedDNARoot
+        if dnaRoot and self.lastLandmarkBuildingDNA:
+            if DNAClassEqual(dnaRoot, DNA_FLAT_BUILDING):
+                n=dnaRoot.getName()
+                n=n[n.find('_'):]
+                block=self.lastLandmarkBuildingDNA.getName()
+                block=block[1:block.find('_')]
+                dnaRoot.setName('b'+block+n)
+                self.replaceSelected()
+                # If we're highlighting the landmark blocks:
+                if self.showLandmarkBlockToggleGroup:
+                    # then highlight this one:
+                    np=self.selectedNPRoot
+                    self.showLandmarkBlockToggleGroup.append(np)
+                    np.setColor(1,0,0,1)
 
-            
+    def findHighestLandmarkBlock(self, dnaRoot, npRoot):
+        npc=npRoot.findAllMatches("**/*_toon_landmark_*")
+        highest=0
+        for i in range(npc.getNumPaths()):
+            path=npc.getPath(i)
+            block=path.getName()
+            block=int(block[1:block.find('_')])
+            if (block > highest):
+                highest=block
+        # Make a list of flat building names, outside of the
+        # recursive function:
+        self.flatNames=['random20', 'random25', 'random30']+BUILDING_TYPES
+        self.flatNames=map(lambda n: n+'_DNARoot', self.flatNames)
+        # Search/recurse the dna:
+        newHighest=self.convertToLandmarkBlocks(highest, dnaRoot)
+        # Get rid of the list of flat building names:
+        del self.flatNames
+        
+        needToTraverse=highest!=newHighest
+        return (newHighest, needToTraverse)
+
+    def convertToLandmarkBlocks(self, block, dnaRoot):
+        """
+        Find all the buildings without landmark blocks and 
+        assign them one.
+        """
+        for i in range(dnaRoot.getNumChildren()):
+            child = dnaRoot.at(i)
+            if DNAClassEqual(child, DNA_LANDMARK_BUILDING):
+                # Landmark buildings:
+                name=child.getName()
+                if name.find('toon_landmark_')==0:
+                    block=block+1
+                    child.setName('b'+str(block)+'_'+name)
+            elif DNAClassEqual(child, DNA_FLAT_BUILDING):
+                # Flat buildings:
+                name=child.getName()
+                if (name in self.flatNames):
+                    child.setName('b0_'+name)
+            else:
+                block = self.convertToLandmarkBlocks(block, child)
+        return block
+
+    def revertLandmarkBlock(self, block):
+        """
+        un-block flat buildings (set them to block zero).
+        """
+        npc=self.NPToplevel.findAllMatches("**/b"+block+"_*_DNARoot")
+        for i in range(npc.getNumPaths()):
+            nodePath=npc.getPath(i)            
+            name=nodePath.getName()
+            if name[name.find('_'):][:15] != '_toon_landmark_':
+                name='b0'+name[name.find('_'):]
+                dna=self.findDNANode(nodePath)
+                dna.setName(name)
+                nodePath=self.replace(nodePath, dna)
+                # If we're highlighting the landmark blocks:
+                if self.showLandmarkBlockToggleGroup:
+                    # then highlight this one:
+                    self.showLandmarkBlockToggleGroup.append(nodePath)
+                    nodePath.setColor(0,1,0,1)
+    
+    def landmarkBlockRemove(self, dna, nodePath):
+        if dna:
+            name=dna.getName()
+            # Get the underscore index within the name:
+            usIndex=name.find('_')
+            if name[usIndex:][:15] == '_toon_landmark_':
+                block=name[1:usIndex]
+                self.lastLandmarkBuildingDNA=None
+                self.revertLandmarkBlock(block)
+    
+    def toggleShowLandmarkBlock(self):
+        dna=self.lastLandmarkBuildingDNA
+        if dna:
+            if not self.showLandmarkBlockToggleGroup:
+                group=[]
+                block=dna.getName()
+                block=block[1:block.find('_')]
+
+                # Get current landmark buildings:
+                npc=self.NPToplevel.findAllMatches("**/b"+block+"_*_DNARoot")
+                for i in range(npc.getNumPaths()):
+                    nodePath=npc.getPath(i)
+                    group.append(nodePath)
+                    nodePath.setColor(1,0,0,1)
+
+                # Get block zero buildings (i.e. non-blocked):
+                npc=self.NPToplevel.findAllMatches("**/b0_*_DNARoot")
+                for i in range(npc.getNumPaths()):
+                    nodePath=npc.getPath(i)
+                    group.append(nodePath)
+                    nodePath.setColor(0,1,0,1)
+
+                self.showLandmarkBlockToggleGroup=group
+            else:
+                for i in self.showLandmarkBlockToggleGroup:
+                    i.clearColor()
+                self.showLandmarkBlockToggleGroup=None
+    
+    def pdbBreak(self):
+        pdb.set_trace()
+
+
 class LevelStyleManager:
     """Class which reads in style files and manages class variables"""
     def __init__(self):
