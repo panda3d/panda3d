@@ -323,6 +323,17 @@ def intersection(a, b):
                 d.append(i)
     return d   
 
+def union(a, b):
+    """
+    union(list, list):
+    """
+    # Copy a
+    c = a[:]
+    for i in b:
+        if (i not in c):
+            c.append(i)
+    return c
+
 def reduceAngle(deg):
     """
     Reduces an angle (in degrees) to a value between -180. and 180.
