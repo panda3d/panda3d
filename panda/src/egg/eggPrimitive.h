@@ -14,6 +14,7 @@
 #include "eggTexture.h"
 #include "eggMaterial.h"
 #include "eggRenderMode.h"
+#include "vector_PT_EggVertex.h"
 #include <pointerTo.h>
 #include <vector>
 
@@ -41,7 +42,7 @@ class EXPCL_PANDAEGG EggPrimitive : public EggNode, public EggAttributes,
   // an STL container.
 
 private:
-  typedef vector<PT(EggVertex)> Vertices;
+  typedef vector_PT_EggVertex Vertices;
 
   // Here begins the actual public interface to EggPrimitive.
 
@@ -57,21 +58,21 @@ public:
   virtual EggRenderMode *determine_draw_order();
   virtual EggRenderMode *determine_bin();
 
-  INLINE void set_texture(PT(EggTexture) texture);
+  INLINE void set_texture(EggTexture *texture);
   INLINE void clear_texture();
-  INLINE PT(EggTexture) get_texture() const;
+  INLINE EggTexture *get_texture() const;
   INLINE bool has_texture() const;
 
-  INLINE void set_material(PT(EggMaterial) material);
+  INLINE void set_material(EggMaterial *material);
   INLINE void clear_material();
-  INLINE PT(EggMaterial) get_material() const;
+  INLINE EggMaterial *get_material() const;
   INLINE bool has_material() const;
 
   INLINE void set_bface_flag(bool flag);
   INLINE bool get_bface_flag() const;
 
   virtual void reverse_vertex_ordering();
-  virtual void cleanup();
+  virtual bool cleanup();
 
   void remove_doubled_verts(bool closed);
   void remove_nonunique_verts();
@@ -83,8 +84,8 @@ public:
   // insert/erase interface.  The following implements this.
 
 #ifdef WIN32_VC
-  typedef PT(EggVertex) *pointer;
-  typedef PT(EggVertex) *const_pointer;
+  typedef PT_EggVertex *pointer;
+  typedef PT_EggVertex *const_pointer;
 #else
   typedef Vertices::const_pointer pointer;
   typedef Vertices::const_pointer const_pointer;
@@ -105,21 +106,21 @@ public:
   INLINE bool empty() const;
   INLINE size_type size() const;
 
-  INLINE PT(EggVertex) operator [] (int index) const;
+  INLINE EggVertex *operator [] (int index) const;
 
-  INLINE iterator insert(iterator position, PT(EggVertex) x);
+  INLINE iterator insert(iterator position, EggVertex *x);
   INLINE iterator erase(iterator position);
   iterator erase(iterator first, iterator last);
-  INLINE void replace(iterator position, PT(EggVertex) vertex);
+  INLINE void replace(iterator position, EggVertex *vertex);
   INLINE void clear();
 
-  PT(EggVertex) add_vertex(PT(EggVertex) vertex);
-  PT(EggVertex) remove_vertex(PT(EggVertex) vertex);
+  EggVertex *add_vertex(EggVertex *vertex);
+  EggVertex *remove_vertex(EggVertex *vertex);
   void copy_vertices(const EggPrimitive &other);
 
   // These are shorthands if you don't want to use the iterators.
-  INLINE void set_vertex(int index, PT(EggVertex) vertex);
-  INLINE PT(EggVertex) get_vertex(int index) const;
+  INLINE void set_vertex(int index, EggVertex *vertex);
+  INLINE EggVertex *get_vertex(int index) const;
 
   INLINE EggVertexPool *get_pool() const;
 
@@ -141,6 +142,11 @@ private:
  
 protected:
   void write_body(ostream &out, int indent_level) const;
+
+  virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
+			   CoordinateSystem to_cs);
+  virtual void r_flatten_transforms();
+  virtual void r_apply_texmats(EggTextureCollection &textures);
 
 
 private:

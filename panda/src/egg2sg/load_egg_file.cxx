@@ -30,11 +30,14 @@ load_from_loader(EggLoader &loader) {
 //  Description: A convenience function.  Loads up the indicated egg
 //               file, and returns the root of a scene graph.  Returns
 //               NULL if the file cannot be read for some reason.
+//               Does not search along the egg path for the filename
+//               first; use EggData::resolve_egg_filename() if this is
+//               required.
 ////////////////////////////////////////////////////////////////////
 PT_NamedNode
 load_egg_file(const string &filename, CoordinateSystem cs) {
   Filename egg_filename = Filename::text_filename(filename);
-  if (!EggData::resolve_egg_filename(egg_filename)) {
+  if (!egg_filename.exists()) {
     egg2sg_cat.error()
       << "Could not find " << egg_filename << "\n";
     return NULL;

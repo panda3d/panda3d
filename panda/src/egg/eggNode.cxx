@@ -6,10 +6,26 @@
 #include "eggNode.h"
 #include "eggGroupNode.h"
 #include "config_egg.h"
+#include "eggTextureCollection.h"
 
 #include <algorithm>
 
 TypeHandle EggNode::_type_handle;
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::apply_texmats
+//       Access: Public
+//  Description: Applies the texture matrices to the UV's of the
+//               vertices that reference them, and then removes the
+//               texture matrices from the textures themselves.
+////////////////////////////////////////////////////////////////////
+INLINE void EggNode::
+apply_texmats() {
+  EggTextureCollection textures;
+  textures.find_used_textures(this);
+  r_apply_texmats(textures);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::determine_alpha_mode
@@ -227,4 +243,22 @@ r_transform(const LMatrix4d &, const LMatrix4d &, CoordinateSystem) {
 ////////////////////////////////////////////////////////////////////
 void EggNode::
 r_mark_coordsys(CoordinateSystem) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::r_flatten_transforms
+//       Access: Protected, Virtual
+//  Description: The recursive implementation of flatten_transforms().
+////////////////////////////////////////////////////////////////////
+void EggNode::
+r_flatten_transforms() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::r_apply_texmats
+//       Access: Protected, Virtual
+//  Description: The recursive implementation of apply_texmats().
+////////////////////////////////////////////////////////////////////
+void EggNode::
+r_apply_texmats(EggTextureCollection &textures) {
 }

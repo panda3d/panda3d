@@ -10,6 +10,7 @@
 
 #include "eggVertex.h"
 #include "eggNode.h"
+#include "pt_EggVertex.h"
 
 #include <pointerTo.h>
 #include <set>
@@ -42,7 +43,7 @@ private:
   // IndexVertices is the main storage mechanism of the vertex pool.
   // It stores a reference-counting pointer to each vertex, ordered by
   // vertex index number.
-  typedef map<int, PT(EggVertex)> IndexVertices;
+  typedef map<int, PT_EggVertex> IndexVertices;
 
   // UniqueVertices is an auxiliary indexing mechanism.  It stores the
   // same vertex pointers as IndexVertices (although these pointers
@@ -64,21 +65,21 @@ public:
   ~EggVertexPool();
 
   // Returns NULL if there is no such vertex.
-  INLINE EggVertex *get_vertex(int index) const;
-  EggVertex *operator [](int index) const;
+  EggVertex *get_vertex(int index) const;
+  INLINE EggVertex *operator [](int index) const;
 
   // Returns 0 if the pool is empty.
-  INLINE int get_highest_index() const;
+  int get_highest_index() const;
 
   // Can be used to traverse all the vertices in index number order.
-  INLINE iterator begin() const;
-  INLINE iterator end() const;
-  INLINE bool empty() const;
-  INLINE size_type size() const;
+  iterator begin() const;
+  iterator end() const;
+  bool empty() const;
+  size_type size() const;
 
   // add_vertex() adds a freshly-allocated vertex.  It is up to the
   // user to allocate the vertex.
-  void add_vertex(PT(EggVertex) vertex, int index = -1);
+  void add_vertex(EggVertex *vertex, int index = -1);
 
   // make_new_vertex() allocates and returns a new vertex from the
   // pool.
@@ -94,6 +95,7 @@ public:
   EggVertex *create_unique_vertex(const EggVertex &copy);
 
   void remove_vertex(EggVertex *vertex);
+  int remove_unused_vertices();
 
   void transform(const LMatrix4d &mat);
 

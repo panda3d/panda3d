@@ -43,6 +43,7 @@ public:
   bool read(istream &in);
 
   bool resolve_externals(const DSearchPath &searchpath = DSearchPath());
+  int collapse_equivalent_textures();
 
   bool write_egg(Filename filename);
   bool write_egg(ostream &out);

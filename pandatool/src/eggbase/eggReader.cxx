@@ -29,6 +29,23 @@ EggReader() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggReader::as_reader
+//       Access: Public, Virtual
+//  Description: Returns this object as an EggReader pointer, if it is
+//               in fact an EggReader, or NULL if it is not.
+//
+//               This is intended to work around the C++ limitation
+//               that prevents downcasts past virtual inheritance.
+//               Since both EggReader and EggWriter inherit virtually
+//               from EggBase, we need functions like this to downcast
+//               to the appropriate pointer.
+////////////////////////////////////////////////////////////////////
+EggReader *EggReader::
+as_reader() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggReader::handle_args
 //       Access: Protected, Virtual
 //  Description: 

@@ -128,6 +128,24 @@ resolve_externals(const DSearchPath &searchpath) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggData::collapse_equivalent_textures
+//       Access: Public
+//  Description: Removes duplicate references to the same texture
+//               image with the same properties.  Considers two
+//               texture references with identical properties, but
+//               different tref names, to be the equivalent, and
+//               collapses them, choosing one tref name to keep
+//               arbitrarily.  Returns the number of textures removed.
+////////////////////////////////////////////////////////////////////
+int EggData::
+collapse_equivalent_textures() {
+  EggTextureCollection textures;
+  textures.find_used_textures(this);
+  return 
+    textures.collapse_equivalent_textures(~EggTexture::E_tref_name, this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggData::write_egg
 //       Access: Public
 //  Description: The main interface for writing complete egg files.
@@ -250,9 +268,10 @@ pre_write() {
   // Remove any textures that aren't being used.
   textures.remove_unused_textures(this);
 
-  // Collapse out any textures that are equivalent except for the TRef
-  // name.
-  textures.collapse_equivalent_textures(~EggTexture::E_tref_name, this);
+  // Collapse out any textures that are completely equivalent.  For
+  // this purpose, we consider two textures with identical properties
+  // but different tref names to be different.
+  textures.collapse_equivalent_textures(~0, this);
 
   // Make sure all of the textures have unique TRef names.
   textures.uniquify_trefs();

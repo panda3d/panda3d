@@ -85,6 +85,10 @@ Loader::
 ////////////////////////////////////////////////////////////////////
 void Loader::
 resolve_filename(Filename &filename) const {
+  if (filename.is_fully_qualified()) {
+    return;
+  }
+
   string extension = filename.get_extension();
 
   if (extension.empty()) {
@@ -308,8 +312,10 @@ load_file(const Filename &filename) const {
   }
 
   Filename requested_filename = filename;
-  // Ask the loader type to look for the file along its paths.
-  requested_type->resolve_filename(requested_filename);
+  if (!requested_filename.is_fully_qualified()) {
+    // Ask the loader type to look for the file along its paths.
+    requested_type->resolve_filename(requested_filename);
+  }
 
   if (loader_cat.is_debug()) {
     loader_cat.debug()
@@ -363,8 +369,10 @@ load_unknown_file_type(const Filename &filename) const {
     consider._path = filename;
     consider._path.set_extension(consider._type->get_extension());
 
-    // Ask the loader type to look for the file along its paths.
-    consider._type->resolve_filename(consider._path);
+    if (!consider._path.is_fully_qualified()) {
+      // Ask the loader type to look for the file along its paths.
+      consider._type->resolve_filename(consider._path);
+    }
 
     if (consider._path.exists()) {
       files.push_back(consider);
@@ -447,8 +455,10 @@ resolve_unknown_file_type(Filename &filename) const {
     consider._path = filename;
     consider._path.set_extension(consider._type->get_extension());
 
-    // Ask the loader type to look for the file along its paths.
-    consider._type->resolve_filename(consider._path);
+    if (!consider._path.is_fully_qualified()) {
+      // Ask the loader type to look for the file along its paths.
+      consider._type->resolve_filename(consider._path);
+    }
 
     if (consider._path.exists()) {
       files.push_back(consider);

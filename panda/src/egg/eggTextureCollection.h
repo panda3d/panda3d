@@ -52,8 +52,8 @@ public:
   int insert_textures(EggGroupNode *node);
   int insert_textures(EggGroupNode *node, EggGroupNode::iterator position);
 
-  int find_used_textures(EggGroupNode *node);
-  void remove_unused_textures(EggGroupNode *node);
+  int find_used_textures(EggNode *node);
+  void remove_unused_textures(EggNode *node);
 
   int collapse_equivalent_textures(int eq, EggGroupNode *node);
   int collapse_equivalent_textures(int eq, TextureReplacement &removed);
@@ -70,8 +70,8 @@ public:
   INLINE bool empty() const;
   INLINE size_type size() const;
 
-  bool add_texture(PT(EggTexture) texture);
-  bool remove_texture(PT(EggTexture) texture);
+  bool add_texture(EggTexture *texture);
+  bool remove_texture(EggTexture *texture);
 
   // create_unique_texture() creates a new texture if there is not
   // already one equivalent (according to eq, see

@@ -24,6 +24,39 @@ EggBase() {
   _coordinate_system = CS_yup_right;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggBase::as_reader
+//       Access: Public, Virtual
+//  Description: Returns this object as an EggReader pointer, if it is
+//               in fact an EggReader, or NULL if it is not.
+//
+//               This is intended to work around the C++ limitation
+//               that prevents downcasts past virtual inheritance.
+//               Since both EggReader and EggWriter inherit virtually
+//               from EggBase, we need functions like this to downcast
+//               to the appropriate pointer.
+////////////////////////////////////////////////////////////////////
+EggReader *EggBase::
+as_reader() {
+  return (EggReader *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBase::as_writer
+//       Access: Public, Virtual
+//  Description: Returns this object as an EggWriter pointer, if it is
+//               in fact an EggWriter, or NULL if it is not.
+//
+//               This is intended to work around the C++ limitation
+//               that prevents downcasts past virtual inheritance.
+//               Since both EggReader and EggWriter inherit virtually
+//               from EggBase, we need functions like this to downcast
+//               to the appropriate pointer.
+////////////////////////////////////////////////////////////////////
+EggWriter *EggBase::
+as_writer() {
+  return (EggWriter *)NULL;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBase::post_command_line

@@ -137,7 +137,7 @@ run() {
   }
 
   // Done!
-  _data.write_egg(get_output());
+  write_egg_file();
 }
 
 

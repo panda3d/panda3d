@@ -39,7 +39,7 @@ EggVertex() {
 //     Function: EggVertex::Copy constructor
 //       Access: Public
 //  Description: Copies all properties of the vertex except its vertex
-//               pool and index number.
+//               pool, index number, and group membership.
 ////////////////////////////////////////////////////////////////////
 EggVertex::
 EggVertex(const EggVertex &copy) 
@@ -59,7 +59,7 @@ EggVertex(const EggVertex &copy)
 //     Function: EggVertex::Copy assignment operator
 //       Access: Public
 //  Description: Copies all properties of the vertex except its vertex
-//               pool and index number.
+//               pool, index number, and group membership.
 ////////////////////////////////////////////////////////////////////
 EggVertex &EggVertex::
 operator = (const EggVertex &copy) {
@@ -161,7 +161,7 @@ write(ostream &out, int indent_level) const {
 
     // Now output the list.
     write_long_list(out, indent_level + 2, gre.begin(), gre.end(), "// ",
-	"", 72);
+		    "", 72);
   }
 
   indent(out, indent_level)
@@ -175,6 +175,20 @@ write(ostream &out, int indent_level) const {
 //  Description: An ordering operator to compare two vertices for
 //               sorting order.  This imposes an arbitrary ordering
 //               useful to identify unique vertices.
+//
+//               Group membership is not considered in this
+//               comparison.  This is somewhat problematic, but cannot
+//               easily be helped, because considering group
+//               membership would make it difficult to add and remove
+//               groups from vertices.  It also makes it impossible to
+//               meaningfully compare with a concrete EggVertex object
+//               (which cannot have group memberships).
+//
+//               However, this is not altogether bad, because two
+//               vertices that are identical in all other properties
+//               should generally also be identical in group
+//               memberships, else the vertices will tend to fly apart
+//               when the joints animate.
 ////////////////////////////////////////////////////////////////////
 bool EggVertex::
 sorts_less_than(const EggVertex &other) const {
@@ -268,6 +282,11 @@ transform(const LMatrix4d &mat) {
 //               onto this one.  This assigns the current vertex to
 //               exactly the same groups, with exactly the same
 //               memberships, as the given one.
+//
+//               Warning: only an EggVertex allocated from the free
+//               store may have groups assigned to it.  Do not attempt
+//               to call this on a temporary concrete EggVertex
+//               object; a core dump will certainly result.
 ////////////////////////////////////////////////////////////////////
 void EggVertex::
 copy_grefs_from(const EggVertex &other) {

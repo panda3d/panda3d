@@ -35,7 +35,7 @@ public:
 
 protected:
   virtual bool handle_args(Args &args);
-  static bool dispatch_dimensions(const string &opt, const string &arg, void *data);
+  static bool dispatch_dimensions(ProgramBase *self, const string &opt, const string &arg, void *);
   bool ns_dispatch_dimensions(const string &opt, const string &arg);
 
 private:

@@ -21,7 +21,7 @@ public:
   INLINE EggPoint(const EggPoint &copy);
   INLINE EggPoint &operator = (const EggPoint &copy);
 
-  virtual void cleanup();
+  virtual bool cleanup();
 
   virtual void write(ostream &out, int indent_level) const;
 

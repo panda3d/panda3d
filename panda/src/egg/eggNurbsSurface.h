@@ -41,7 +41,7 @@ public:
 
   INLINE void set_u_knot(int k, double value);
   INLINE void set_v_knot(int k, double value);
-  INLINE void set_cv(int ui, int vi, PT(EggVertex) vertex);
+  INLINE void set_cv(int ui, int vi, EggVertex *vertex);
 
   bool is_valid() const;
 
@@ -64,12 +64,15 @@ public:
 
   INLINE double get_u_knot(int k) const;
   INLINE double get_v_knot(int k) const;
-  INLINE PT(EggVertex) get_cv(int ui, int vi) const;
+  INLINE EggVertex *get_cv(int ui, int vi) const;
 
   virtual void write(ostream &out, int indent_level) const;
 
   Curves _curves_on_surface;
   Trims _trims;
+
+protected:
+  virtual void r_apply_texmats(EggTextureCollection &textures);
 
 private:
   typedef vector_double Knots;

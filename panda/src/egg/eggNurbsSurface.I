@@ -113,7 +113,7 @@ set_v_knot(int k, double value) {
 //               assignment for a 2-d control vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggNurbsSurface::
-set_cv(int ui, int vi, PT(EggVertex) vertex) {
+set_cv(int ui, int vi, EggVertex *vertex) {
   int vertex_index = get_vertex_index(ui, vi);
   set_vertex(vertex_index, vertex);
 }
@@ -309,7 +309,7 @@ get_v_knot(int k) const {
 //  Description: Returns the control vertex at the indicate U, V
 //               position.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(EggVertex) EggNurbsSurface::
+INLINE EggVertex *EggNurbsSurface::
 get_cv(int ui, int vi) const {
   int vertex_index = get_vertex_index(ui, vi);
   return get_vertex(vertex_index);

@@ -44,7 +44,7 @@ uniquify(EggNode *node) {
   string category = get_category(node);
 
   if (!category.empty()) {
-    string name = node->get_name();
+    string name = filter_name(node);
 
     UsedNames &names = _categories[category];
     bool inserted;
@@ -55,8 +55,9 @@ uniquify(EggNode *node) {
 	name = generate_name(node, category, _index);
 	inserted = names.insert(UsedNames::value_type(name, node)).second;
       }
-      node->set_name(name);
     }
+
+    node->set_name(name);
   }
 
   if (node->is_of_type(EggGroupNode::get_class_type())) {
@@ -131,6 +132,19 @@ add_name(const string &category, const string &name, EggNode *node) {
   UsedNames &names = _categories[category];
   bool inserted = names.insert(UsedNames::value_type(name, node)).second;
   return inserted;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNameUniquifier::filter_name
+//       Access: Public, Virtual
+//  Description: Returns the name of the given node, or at least the
+//               name it should be.  This provides a hook to adjust
+//               the name before attempting to uniquify it, if
+//               desired, for instance to remove invalid characters.
+////////////////////////////////////////////////////////////////////
+string EggNameUniquifier::
+filter_name(EggNode *node) {
+  return node->get_name();
 }
 
 ////////////////////////////////////////////////////////////////////

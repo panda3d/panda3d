@@ -37,18 +37,13 @@ BamFile::
 //     Function: BamFile::open_read
 //       Access: Public
 //  Description: Attempts to open the indicated filename for reading.
-//               The model_path and bam_path are automatically
-//               searched for the file.  Returns true if successful,
-//               false on error.
+//               Returns true if successful, false on error.
 ////////////////////////////////////////////////////////////////////
 bool BamFile::
 open_read(const Filename &filename, bool report_errors) {
   close();
 
   Filename bam_filename(filename);
-  
-  bam_filename.resolve_filename(get_bam_path());
-  bam_filename.resolve_filename(get_model_path());
 
   if (!bam_filename.exists()) {
     if (report_errors) {

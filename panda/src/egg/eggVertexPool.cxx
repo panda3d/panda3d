@@ -65,6 +65,85 @@ EggVertexPool::
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::get_vertex
+//       Access: Public
+//  Description: Returns the vertex in the pool with the indicated
+//               index number, or NULL if no vertices have that index
+//               number.
+////////////////////////////////////////////////////////////////////
+EggVertex *EggVertexPool::
+get_vertex(int index) const {
+  IndexVertices::const_iterator ivi = _index_vertices.find(index);
+
+  if (ivi == _index_vertices.end()) {
+    return NULL;
+  } else {
+    return (*ivi).second;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::get_highest_index
+//       Access: Public
+//  Description: Returns the highest index number used by any vertex
+//               in the pool.
+////////////////////////////////////////////////////////////////////
+int EggVertexPool::
+get_highest_index() const {
+  if (_index_vertices.empty()) {
+    return 0;
+  }
+  IndexVertices::const_reverse_iterator ivi = _index_vertices.rbegin();
+  nassertr((*ivi).first == (*ivi).second->get_index(), 0);
+  return (*ivi).first;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::begin()
+//       Access: Public
+//  Description: Returns an iterator that can be used to traverse
+//               through all the vertices in the pool.
+////////////////////////////////////////////////////////////////////
+EggVertexPool::iterator EggVertexPool::
+begin() const {
+  nassertr(_index_vertices.size() == _unique_vertices.size(),
+	   iterator(_index_vertices.begin()));
+  return iterator(_index_vertices.begin());
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::end()
+//       Access: Public
+//  Description: Returns an iterator that can be used to traverse
+//               through all the vertices in the pool.
+////////////////////////////////////////////////////////////////////
+EggVertexPool::iterator EggVertexPool::
+end() const {
+  return iterator(_index_vertices.end());
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::empty()
+//       Access: Public
+//  Description: Returns true if the pool is empty.
+////////////////////////////////////////////////////////////////////
+bool EggVertexPool::
+empty() const {
+  return _index_vertices.empty();
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::size()
+//       Access: Public
+//  Description: Returns the number of vertices in the pool.
+////////////////////////////////////////////////////////////////////
+EggVertexPool::size_type EggVertexPool::
+size() const {
+  nassertr(_index_vertices.size() == _unique_vertices.size(), 0);
+  return _index_vertices.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::add_vertex
 //       Access: Public
 //  Description: Adds the indicated vertex to the pool.  It is an
@@ -76,7 +155,7 @@ EggVertexPool::
 //               the index number is already in use.
 ////////////////////////////////////////////////////////////////////
 void EggVertexPool::
-add_vertex(PT(EggVertex) vertex, int index) {
+add_vertex(EggVertex *vertex, int index) {
   // Don't try to add a vertex while it still belongs to another pool.
   nassertv(vertex->_pool == NULL);
 
@@ -158,6 +237,49 @@ remove_vertex(EggVertex *vertex) {
   _unique_vertices.erase(uvi);
 
   vertex->_pool = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::remove_unused_vertices
+//       Access: Public
+//  Description: Removes all vertices from the pool that are not
+//               referenced by at least one primitive.  Also renumbers
+//               all vertices after the operation so their indices are
+//               consecutive, beginning at zero.  Returns the number
+//               of vertices removed.
+////////////////////////////////////////////////////////////////////
+int EggVertexPool::
+remove_unused_vertices() {
+  int num_removed = 0;
+
+  UniqueVertices new_unique_vertices;
+  IndexVertices new_index_vertices;
+
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->pref_size() == 0) {
+      // This vertex is not used.  Don't add it to the new lists.
+      vertex->clear_grefs();
+      vertex->_pool = NULL;
+      num_removed++;
+
+    } else {
+      // The vertex *is* used somewhere.  Renumber it and add it to
+      // the new lists.
+      vertex->_index = new_index_vertices.size();
+      new_index_vertices.insert(IndexVertices::value_type(vertex->_index, vertex));
+      new_unique_vertices.insert(vertex);
+    }
+  }
+
+  // All done.  Lose the old lists.
+  _unique_vertices.swap(new_unique_vertices);
+  _index_vertices.swap(new_index_vertices);
+
+  nassertr(_index_vertices.size() == _unique_vertices.size(), num_removed);
+
+  return num_removed;
 }
 
 // A function object for split_vertex(), used in transform(), below.

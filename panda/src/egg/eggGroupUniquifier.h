@@ -1,28 +1,30 @@
-// Filename: eggPoolUniquifier.h
-// Created by:  drose (09Nov00)
+// Filename: eggGroupUniquifier.h
+// Created by:  drose (22Feb01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EGGPOOLUNIQUIFIER_H
-#define EGGPOOLUNIQUIFIER_H
+#ifndef EGGGROUPUNIQUIFIER_H
+#define EGGGROUPUNIQUIFIER_H
 
 #include <pandabase.h>
 
 #include "eggNameUniquifier.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggPoolUniquifier
+// 	 Class : EggGroupUniquifier
 // Description : This is a specialization of EggNameUniquifier to
-//               generate unique names for textures, materials, and
-//               vertex pools prior to writing out an egg file.  It's
-//               automatically called by EggData prior to writing out
-//               an egg file.
+//               generate unique names for EggGroup nodes.  It's not
+//               called automatically; you must invoke it yourself if
+//               you want it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggPoolUniquifier : public EggNameUniquifier {
+class EXPCL_PANDAEGG EggGroupUniquifier : public EggNameUniquifier {
 public:
-  EggPoolUniquifier();
+  EggGroupUniquifier();
 
   virtual string get_category(EggNode *node);
+  virtual string filter_name(EggNode *node);
+  virtual string generate_name(EggNode *node,
+			       const string &category, int index);
 
 public:
   static TypeHandle get_class_type() {
@@ -30,7 +32,7 @@ public:
   }
   static void init_type() {
     EggNameUniquifier::init_type();
-    register_type(_type_handle, "EggPoolUniquifier",
+    register_type(_type_handle, "EggGroupUniquifier",
 		  EggNameUniquifier::get_class_type());
   }
   virtual TypeHandle get_type() const {

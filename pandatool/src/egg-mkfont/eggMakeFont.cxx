@@ -81,7 +81,7 @@ EggMakeFont() : EggWriter(true, false) {
      "want a larger or smaller image, you could force the image size "
      "with this parameter, but it would probably yield better results if "
      "you re-rasterized the font at a different DPI instead.",
-     &EggMakeFont::dispatch_dimensions, &_got_output_size, (void *)this);
+     &EggMakeFont::dispatch_dimensions, &_got_output_size);
 
   add_option
     ("g", "radius", 0, 
@@ -186,8 +186,9 @@ handle_args(ProgramBase::Args &args) {
 //               them in _output_[xyz]size.
 ////////////////////////////////////////////////////////////////////
 bool EggMakeFont::
-dispatch_dimensions(const string &opt, const string &arg, void *data) {
-  EggMakeFont *me = (EggMakeFont *)data;
+dispatch_dimensions(ProgramBase *self, const string &opt, const string &arg, void *) {
+  EggBase *base = (EggBase *)self;
+  EggMakeFont *me = (EggMakeFont *)base->as_writer();
   return me->ns_dispatch_dimensions(opt, arg);
 }
 
@@ -763,7 +764,7 @@ run() {
        << _output_image_filename << "\n";  
   small.write(_output_image_filename);
 
-  _data.write_egg(get_output());
+  write_egg_file();
 }
 
 

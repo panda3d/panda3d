@@ -21,10 +21,13 @@ EggPrimitive(const string &name): EggNode(name) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::
-EggPrimitive(const EggPrimitive &copy) 
-  : EggNode(copy), 
-    EggAttributes(copy), 
-    _bface(copy._bface) {
+EggPrimitive(const EggPrimitive &copy) :
+  EggNode(copy), 
+  EggAttributes(copy), 
+  _texture(copy._texture),
+  _material(copy._material),
+  _bface(copy._bface) 
+{
   copy_vertices(copy);
 }
 
@@ -38,6 +41,8 @@ operator = (const EggPrimitive &copy) {
   EggNode::operator = (copy);
   EggAttributes::operator = (copy);
   copy_vertices(copy);
+  _texture = copy._texture;
+  _material = copy._material;
   _bface = copy._bface;
   return *this;
 }
@@ -58,7 +63,7 @@ INLINE EggPrimitive::
 //  Description: Applies the indicated texture to the primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
-set_texture(PT(EggTexture) texture) {
+set_texture(EggTexture *texture) {
   _texture = texture;
 }
 
@@ -78,7 +83,7 @@ clear_texture() {
 //  Description: Returns a pointer to the applied texture, or NULL if
 //               there is no texture applied.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(EggTexture) EggPrimitive::
+INLINE EggTexture *EggPrimitive::
 get_texture() const {
   return _texture;
 }
@@ -102,7 +107,7 @@ has_texture() const {
 //  Description: Applies the indicated material to the primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
-set_material(PT(EggMaterial) material) {
+set_material(EggMaterial *material) {
   _material = material;
 }
 
@@ -122,7 +127,7 @@ clear_material() {
 //  Description: Returns a pointer to the applied material, or NULL if
 //               there is no material applied.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(EggMaterial) EggPrimitive::
+INLINE EggMaterial *EggPrimitive::
 get_material() const {
   return _material;
 }
@@ -233,7 +238,7 @@ size() const {
 //  Description: This is read-only: you can't assign directly to an
 //               indexed vertex.  See set_vertex() instead.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(EggVertex) EggPrimitive::
+INLINE EggVertex *EggPrimitive::
 operator [] (int index) const {
   nassertr(index >= 0 && index < (int)size(), NULL);
   return *(begin() + index);
@@ -245,7 +250,7 @@ operator [] (int index) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::iterator EggPrimitive::
-insert(iterator position, PT(EggVertex) x) {
+insert(iterator position, EggVertex *x) {
   prepare_add_vertex(x);
   iterator i = _vertices.insert((Vertices::iterator &)position, x);
   x->test_pref_integrity();
@@ -274,7 +279,7 @@ erase(iterator position) {
 //               with an invalid position iterator (e.g. end()).
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
-replace(iterator position, PT(EggVertex) x) {
+replace(iterator position, EggVertex *x) {
   nassertv(position != end());
 
   prepare_remove_vertex(*position);
@@ -304,7 +309,7 @@ clear() {
 //               mess with the iterators.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
-set_vertex(int index, PT(EggVertex) vertex) {
+set_vertex(int index, EggVertex *vertex) {
   nassertv(index >= 0 && index < (int)size());
   replace(begin() + index, vertex);
 }
@@ -314,7 +319,7 @@ set_vertex(int index, PT(EggVertex) vertex) {
 //       Access: Public
 //  Description: Returns a particular index based on its index number.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(EggVertex) EggPrimitive::
+INLINE EggVertex *EggPrimitive::
 get_vertex(int index) const {
   nassertr(index >= 0 && index < (int)size(), NULL);
   return *(begin() + index);

@@ -177,6 +177,11 @@ write(ostream &out, int indent_level) const {
       << "<Billboard> { " << get_billboard_type() << " }\n";
   }
 
+  if (has_billboard_center()) {
+    indent(out, indent_level + 2)
+      << "<BillboardCenter> { " << get_billboard_center() << " }\n";
+  }
+
   if (get_cs_type() != CST_none) {
     indent(out, indent_level + 2) << "<Collide> ";
     if (has_collision_name()) {
@@ -467,6 +472,43 @@ get_vertex_membership(const EggVertex *vert) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::vref_begin
+//       Access: Public
+//  Description: Returns an iterator that can, in conjunction with
+//               vref_end(), be used to traverse the entire set of
+//               referenced vertices.  Each iterator returns a
+//               pair<PT(EggVertex), double>.
+////////////////////////////////////////////////////////////////////
+EggGroup::VertexRef::const_iterator EggGroup::
+vref_begin() const {
+  return _vref.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::vref_end
+//       Access: Public
+//  Description: Returns an iterator that can, in conjunction with
+//               vref_begin(), be used to traverse the entire set of
+//               referenced vertices.  Each iterator returns a
+//               pair<PT(EggVertex), double>.
+////////////////////////////////////////////////////////////////////
+EggGroup::VertexRef::const_iterator EggGroup::
+vref_end() const {
+  return _vref.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGrop::vref_size
+//       Access: Public
+//  Description: Returns the number of elements between vref_begin()
+//               and vref_end().
+////////////////////////////////////////////////////////////////////
+EggGroup::VertexRef::size_type EggGroup::
+vref_size() const {
+  return _vref.size();
+}
+
 
 #ifndef NDEBUG
 
@@ -661,7 +703,7 @@ write_vertex_ref(ostream &out, int indent_level) const {
       indent(out, indent_level) 
 	<< "<VertexRef> {\n";
       write_long_list(out, indent_level+2, indices.begin(), indices.end(),
-		"", "", 72);
+		      "", "", 72);
       
       // If all vrefs in this group have membership of 1, don't bother
       // to write out the membership scalar.
@@ -669,8 +711,13 @@ write_vertex_ref(ostream &out, int indent_level) const {
 	indent(out, indent_level + 2) 
 	  << "<Scalar> membership { " << membership << " }\n";
       }
-      indent(out, indent_level + 2)
-	<< "<Ref> { " << pool->get_name() << " }\n";
+      if (pool == (EggVertexPool *)NULL) {
+	indent(out, indent_level + 2)
+	  << "// Invalid NULL vertex pool.\n";
+      } else {
+	indent(out, indent_level + 2)
+	  << "<Ref> { " << pool->get_name() << " }\n";
+      }
       indent(out, indent_level)
 	<< "}\n";
     }
@@ -689,9 +736,11 @@ write_vertex_ref(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
 adjust_under() {
-  // Billboards are an implicit instance.
-  if (get_group_type() == GT_instance ||
-      get_billboard_type() != BT_none) {
+  // Billboards without an explicit center are an implicit instance.
+  bool is_billboard_instance = 
+    (get_billboard_type() != BT_none && !has_billboard_center());
+
+  if (get_group_type() == GT_instance || is_billboard_instance) {
     _under_flags |= UF_under_instance;
     if (_under_flags & UF_under_transform) {
       // If we've reached an instance node and we're under a
@@ -767,6 +816,43 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
   // Convert the LOD description too.
   if (has_lod()) {
     _lod->transform(mat);
+  }
+  if (has_billboard_center()) {
+    _billboard_center = _billboard_center * mat;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::r_flatten_transforms
+//       Access: Protected, Virtual
+//  Description: The recursive implementation of flatten_transforms().
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+r_flatten_transforms() {
+  EggGroupNode::r_flatten_transforms();
+
+  if (is_local_coord()) {
+    LMatrix4d mat = get_vertex_frame();
+    if (has_lod()) {
+      _lod->transform(mat);
+    }
+
+    if (get_billboard_type() != BT_none && !has_billboard_center()) {
+      // If we had a billboard without an explicit center, it was an
+      // implicit instance.  Now it's not any more.
+      set_billboard_center(LPoint3d(0.0, 0.0, 0.0) * mat);
+
+    } else if (has_billboard_center()) {
+      _billboard_center = _billboard_center * mat;
+    }
+  }
+
+  if (get_group_type() == GT_instance) {
+    set_group_type(GT_group);
+  }
+
+  if (get_group_type() != GT_joint) {
+    clear_transform();
   }
 }
 

@@ -13,9 +13,13 @@
 #include <coordinateSystem.h>
 #include <typeHandle.h>
 #include <pointerTo.h>
+#include <luse.h>
+
 #include <list>
 
 class EggTextureCollection;
+class EggPolygon;
+class EggVertex;
 class DSearchPath;
 
 ////////////////////////////////////////////////////////////////////
@@ -73,18 +77,18 @@ public:
   typedef Children::size_type size_type;
   typedef Children::difference_type difference_type;
 
-  INLINE iterator begin() const;
-  INLINE iterator end() const;
-  INLINE reverse_iterator rbegin() const;
-  INLINE reverse_iterator rend() const;
-  INLINE bool empty() const;
-  INLINE size_type size() const;
+  iterator begin() const;
+  iterator end() const;
+  reverse_iterator rbegin() const;
+  reverse_iterator rend() const;
+  bool empty() const;
+  size_type size() const;
 
-  INLINE iterator insert(iterator position, PT(EggNode) x);
-  INLINE iterator erase(iterator position);
+  iterator insert(iterator position, PT(EggNode) x);
+  iterator erase(iterator position);
   iterator erase(iterator first, iterator last);
   void replace(iterator position, PT(EggNode) x);
-  INLINE void clear();
+  void clear();
 
   PT(EggNode) add_child(PT(EggNode) node);
   PT(EggNode) remove_child(PT(EggNode) node);
@@ -93,12 +97,24 @@ public:
   void resolve_filenames(const DSearchPath &searchpath);
   void reverse_vertex_ordering();
 
+  void recompute_vertex_normals(double threshold);
+  void recompute_polygon_normals();
+  void strip_normals();
+
+  int triangulate_polygons();
+
+  int remove_unused_vertices();
+  int remove_invalid_primitives();
+
 protected:
   virtual void update_under(int depth_offset);
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
   virtual void r_mark_coordsys(CoordinateSystem cs);
+  virtual void r_flatten_transforms();
+  virtual void r_apply_texmats(EggTextureCollection &textures);
+
 
   CoordinateSystem find_coordsys_entry();
   int find_textures(EggTextureCollection *collection);
@@ -114,6 +130,19 @@ private:
   void prepare_add_child(EggNode *node);
   void prepare_remove_child(EggNode *node);
 
+  // This bit is in support of recompute_vertex_normals().
+  class NVertexReference {
+  public:
+    EggPolygon *_polygon;
+    Normald _normal;
+    size_t _vertex;
+  };
+  typedef vector<NVertexReference> NVertexGroup;
+  typedef map<Vertexd, NVertexGroup> NVertexCollection;
+
+  void r_collect_vertex_normals(NVertexCollection &collection,
+				double threshold);
+  void do_compute_vertex_normals(const NVertexGroup &group);
 
 public:
   static TypeHandle get_class_type() {

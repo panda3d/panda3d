@@ -21,6 +21,13 @@ public:
   EggTrans();
 
   void run();
+
+  bool _flatten_transforms;
+  bool _apply_texmats;
+  bool _collapse_equivalent_textures;
+  bool _remove_invalid_primitives;
+  bool _triangulate_polygons;
+  bool _standardize_names;
 };
 
 #endif

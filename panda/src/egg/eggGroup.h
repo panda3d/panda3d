@@ -12,6 +12,7 @@
 #include "eggRenderMode.h"
 #include "eggVertex.h"
 #include "eggSwitchCondition.h"
+#include "pt_EggVertex.h"
 
 #include <luse.h>
 #include <collideMask.h>
@@ -23,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode {
 public:
-  typedef map<PT(EggVertex), double> VertexRef;
+  typedef map<PT_EggVertex, double> VertexRef;
 
   // These bits are all stored somewhere in _flags.
   enum GroupType {
@@ -88,6 +89,11 @@ public:
 
   INLINE void set_billboard_type(BillboardType type);
   INLINE BillboardType get_billboard_type() const;
+
+  INLINE void set_billboard_center(const LPoint3d &billboard_center);
+  INLINE void clear_billboard_center();
+  INLINE bool has_billboard_center() const;
+  INLINE const LPoint3d &get_billboard_center() const;
 
   INLINE void set_cs_type(CollisionSolidType type);
   INLINE CollisionSolidType get_cs_type() const;
@@ -162,9 +168,9 @@ public:
   void unref_all_vertices();
   double get_vertex_membership(const EggVertex *vert) const;
 
-  INLINE VertexRef::const_iterator vref_begin() const;
-  INLINE VertexRef::const_iterator vref_end() const;
-  INLINE VertexRef::size_type vref_size() const;
+  VertexRef::const_iterator vref_begin() const;
+  VertexRef::const_iterator vref_end() const;
+  VertexRef::size_type vref_size() const;
 
 #ifndef NDEBUG
   void test_vref_integrity() const;
@@ -184,6 +190,7 @@ protected:
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
+  virtual void r_flatten_transforms();
 
 private:
 
@@ -206,12 +213,14 @@ private:
     F2_collide_mask          = 0x00000001,
     F2_from_collide_mask     = 0x00000002,
     F2_into_collide_mask     = 0x00000004,
+    F2_billboard_center      = 0x00000008,
   };
 
   int _flags;
   int _flags2;
   LMatrix4d _transform;
   CollideMask _collide_mask, _from_collide_mask, _into_collide_mask;
+  LPoint3d _billboard_center;
   string _objecttype;
   string _collision_name;
   double _fps;

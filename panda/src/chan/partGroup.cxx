@@ -235,8 +235,7 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
 	    << ", not in part.\n";
 	  j++;
 	} else {
-	  chan_cat.info()
-	    << "  part and anim both have " << ac->get_name() << "\n";
+	  //	  chan_cat.info() << "  part and anim both have " << ac->get_name() << "\n";
 	  i++;
 	  j++;
 	}

@@ -17,6 +17,7 @@
 
 class EggGroupNode;
 class EggRenderMode;
+class EggTextureCollection;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggNode
@@ -37,12 +38,6 @@ public:
   INLINE bool is_under_transform() const;
   INLINE bool is_local_coord() const;
 
-  virtual EggRenderMode *determine_alpha_mode();
-  virtual EggRenderMode *determine_depth_write_mode();
-  virtual EggRenderMode *determine_depth_test_mode();
-  virtual EggRenderMode *determine_draw_order();
-  virtual EggRenderMode *determine_bin();
-
   INLINE const LMatrix4d &get_vertex_frame() const;
   INLINE const LMatrix4d &get_node_frame() const;
   INLINE const LMatrix4d &get_vertex_frame_inv() const;
@@ -50,6 +45,14 @@ public:
   INLINE const LMatrix4d &get_vertex_to_node() const;
 
   INLINE void transform(const LMatrix4d &mat);
+  INLINE void flatten_transforms();
+  void apply_texmats();
+
+  virtual EggRenderMode *determine_alpha_mode();
+  virtual EggRenderMode *determine_depth_write_mode();
+  virtual EggRenderMode *determine_depth_test_mode();
+  virtual EggRenderMode *determine_draw_order();
+  virtual EggRenderMode *determine_bin();
 
   virtual void write(ostream &out, int indent_level) const=0;
 
@@ -73,6 +76,8 @@ protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
   virtual void r_mark_coordsys(CoordinateSystem cs);
+  virtual void r_flatten_transforms();
+  virtual void r_apply_texmats(EggTextureCollection &textures);
 
   // These members are updated automatically by prepare_add_child(),
   // prepare_remove_child(), and update_under().  Other functions

@@ -1158,8 +1158,9 @@ make_node(EggPrimitive *egg_prim, NamedNode *parent) {
   assert(parent != NULL);
   assert(!parent->is_of_type(GeomNode::get_class_type()));
 
-  egg_prim->cleanup();
-  make_nonindexed_primitive(egg_prim, parent);
+  if (egg_prim->cleanup()) {
+    make_nonindexed_primitive(egg_prim, parent);
+  }
   return (RenderRelation *)NULL;
 }
   
@@ -1778,13 +1779,15 @@ find_collision_geometry(EggGroup *egg_group) {
 ////////////////////////////////////////////////////////////////////
 CollisionPlane *EggLoader::
 create_collision_plane(EggPolygon *egg_poly) {
-  egg_poly->cleanup();
+  if (!egg_poly->cleanup()) {
+    return NULL;
+  }
 
   vector<Vertexf> vertices;
   if (!egg_poly->empty()) {
     EggPolygon::const_iterator vi;
     vi = egg_poly->begin();
-
+    
     Vertexd vert = (*vi)->get_pos3();
     vertices.push_back(LCAST(float, vert));
     
@@ -1795,7 +1798,7 @@ create_collision_plane(EggPolygon *egg_poly) {
       if (!vert.almost_equal(last_vert)) {
 	vertices.push_back(LCAST(float, vert));
       }
-
+      
       last_vert = vert;
       ++vi;
     }
@@ -1816,7 +1819,9 @@ create_collision_plane(EggPolygon *egg_poly) {
 ////////////////////////////////////////////////////////////////////
 CollisionPolygon *EggLoader::
 create_collision_polygon(EggPolygon *egg_poly) {
-  egg_poly->cleanup();
+  if (!egg_poly->cleanup()) {
+    return NULL;
+  }
 
   vector<Vertexf> vertices;
   if (!egg_poly->empty()) {

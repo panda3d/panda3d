@@ -229,3 +229,14 @@ write(ostream &out, int indent_level) const {
 
   indent(out, indent_level) << "}\n";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNurbsSurface::r_apply_texmats
+//       Access: Protected, Virtual
+//  Description: The recursive implementation of apply_texmats().
+////////////////////////////////////////////////////////////////////
+void EggNurbsSurface::
+r_apply_texmats(EggTextureCollection &textures) {
+  // A NURBS cannot safely apply texture matrices, so we leave it
+  // alone.
+}

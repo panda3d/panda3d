@@ -49,10 +49,7 @@ get_extension() const
 //       Access: Public, Virtual
 //  Description: Searches for the indicated filename on whatever paths
 //               are appropriate to this file type, and updates it if
-//               it is found.  It is not necessary to call this before
-//               calling load_file(), but it doesn't hurt; this is
-//               useful for when the loader needs to know the full
-//               pathname to the exact file it will be loading.
+//               it is found.
 ////////////////////////////////////////////////////////////////////
 void LoaderFileTypeBam::
 resolve_filename(Filename &path) const {

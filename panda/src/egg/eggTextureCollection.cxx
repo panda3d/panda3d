@@ -131,34 +131,34 @@ insert_textures(EggGroupNode *node, EggGroupNode::iterator position) {
 //               remove_unused_textures().
 ////////////////////////////////////////////////////////////////////
 int EggTextureCollection::
-find_used_textures(EggGroupNode *node) {
+find_used_textures(EggNode *node) {
   int num_found = 0;
 
-  EggGroupNode::iterator ci;
-  for (ci = node->begin();
-       ci != node->end();
-       ++ci) {
-    EggNode *child = *ci;
-    if (child->is_of_type(EggPrimitive::get_class_type())) {
-      EggPrimitive *primitive = DCAST(EggPrimitive, child);
-      if (primitive->has_texture()) {
-	EggTexture *tex = primitive->get_texture();
-	Textures::iterator ti = _textures.find(tex);
-	if (ti == _textures.end()) {
-	  // Here's a new texture!
-	  num_found++;
-	  _textures.insert(Textures::value_type(tex, 1));
-	  _ordered_textures.push_back(tex);
-	} else {
-	  // Here's a texture we'd already known about.  Increment its
-	  // usage count.
-	  (*ti).second++;
-	}
+  if (node->is_of_type(EggPrimitive::get_class_type())) {
+    EggPrimitive *primitive = DCAST(EggPrimitive, node);
+    if (primitive->has_texture()) {
+      EggTexture *tex = primitive->get_texture();
+      Textures::iterator ti = _textures.find(tex);
+      if (ti == _textures.end()) {
+	// Here's a new texture!
+	num_found++;
+	_textures.insert(Textures::value_type(tex, 1));
+	_ordered_textures.push_back(tex);
+      } else {
+	// Here's a texture we'd already known about.  Increment its
+	// usage count.
+	(*ti).second++;
       }
+    }
 
-    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      EggGroupNode *group_child = DCAST(EggGroupNode, child);
-      num_found += find_used_textures(group_child);
+  } else if (node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *group = DCAST(EggGroupNode, node);
+    
+    EggGroupNode::iterator ci;
+    for (ci = group->begin(); ci != group->end(); ++ci) {
+      EggNode *child = *ci;
+
+      num_found += find_used_textures(child);
     }
   }
 
@@ -175,7 +175,7 @@ find_used_textures(EggGroupNode *node) {
 //               but had not previously appeared in the collection.
 ////////////////////////////////////////////////////////////////////
 void EggTextureCollection::
-remove_unused_textures(EggGroupNode *node) {
+remove_unused_textures(EggNode *node) {
   // We'll do this the easy way: First, we'll remove *all* the
   // textures from the collection, and then we'll add back only those
   // that appear in the hierarchy.
@@ -339,18 +339,20 @@ sort_by_tref() {
 //               was already there or if there was some error.
 ////////////////////////////////////////////////////////////////////
 bool EggTextureCollection::
-add_texture(PT(EggTexture) texture) {
+add_texture(EggTexture *texture) {
   nassertr(_textures.size() == _ordered_textures.size(), false);
 
+  PT(EggTexture) new_tex = texture;
+
   Textures::const_iterator ti;
-  ti = _textures.find(texture);
+  ti = _textures.find(new_tex);
   if (ti != _textures.end()) {
     // This texture is already a member of the collection.
     return false;
   }
 
-  _textures.insert(Textures::value_type(texture, 0));
-  _ordered_textures.push_back(texture);
+  _textures.insert(Textures::value_type(new_tex, 0));
+  _ordered_textures.push_back(new_tex);
 
   nassertr(_textures.size() == _ordered_textures.size(), false);
   return true;
@@ -364,7 +366,7 @@ add_texture(PT(EggTexture) texture) {
 //               wasn't there or if there was some error.
 ////////////////////////////////////////////////////////////////////
 bool EggTextureCollection::
-remove_texture(PT(EggTexture) texture) {
+remove_texture(EggTexture *texture) {
   nassertr(_textures.size() == _ordered_textures.size(), false);
 
   Textures::iterator ti;
@@ -408,7 +410,7 @@ create_unique_texture(const EggTexture &copy, int eq) {
     }
   }
 
-  PT(EggTexture) new_texture = new EggTexture(copy);
+  EggTexture *new_texture = new EggTexture(copy);
   add_texture(new_texture);
   return new_texture;
 }

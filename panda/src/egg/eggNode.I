@@ -212,3 +212,21 @@ transform(const LMatrix4d &mat) {
 
   r_transform(mat, inv, CS_default);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::flatten_transforms
+//       Access: Public
+//  Description: Removes any transform and instance records from this
+//               node in the scene graph and below.  If an instance
+//               node is encountered, removes the instance and applies
+//               the transform to its vertices, duplicating vertices
+//               if necessary.
+//
+//               Since this function may result in duplicated
+//               vertices, it may be a good idea to call
+//               remove_unused_vertices() after calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void EggNode::
+flatten_transforms() {
+  r_flatten_transforms();
+}

@@ -337,6 +337,10 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   return BILLBOARD;
 }
+"<BILLBOARDCENTER>" {
+  accept();
+  return BILLBOARDCENTER;
+}
 "<BUNDLE>" {
   accept();
   return BUNDLE;

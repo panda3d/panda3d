@@ -115,7 +115,8 @@ egg_cleanup_parser() {
 %token <_number> NUMBER
 %token <_string> STRING
 
-%token BEZIERCURVE BFACE BILLBOARD BUNDLE CLOSED COLLIDE COMMENT
+%token BEZIERCURVE BFACE BILLBOARD BILLBOARDCENTER BUNDLE CLOSED
+%token COLLIDE COMMENT
 %token COORDSYSTEM CV DART
 %token DNORMAL DRGBA DUV DXYZ DCS DISTANCE DTREF
 %token DYNAMICVERTEXPOOL EXTERNAL_FILE
@@ -873,6 +874,11 @@ group_body:
   } else {
     group->set_billboard_type(f);
   }
+}
+	| group_body BILLBOARDCENTER '{' real real real '}'
+{
+  EggGroup *group = DCAST(EggGroup, egg_stack.back());
+  group->set_billboard_center(LPoint3d($4, $5, $6));
 }
 	| group_body COLLIDE optional_name '{' cs_type collide_flags '}'
 {

@@ -18,11 +18,13 @@ TypeHandle EggPoint::_type_handle;
 //  Description: Cleans up modeling errors in whatever context this
 //               makes sense.  For instance, for a polygon, this calls
 //               remove_doubled_verts(true).  For a point, it calls
-//               remove_nonunique_verts().
+//               remove_nonunique_verts().  Returns true if the
+//               primitive is valid, or false if it is degenerate.
 ////////////////////////////////////////////////////////////////////
-void EggPoint::
+bool EggPoint::
 cleanup() {
   remove_nonunique_verts();
+  return !empty();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@
 #include "eggPrimitive.h"
 #include "eggVertexPool.h"
 #include "eggMiscFuncs.h"
+#include "eggTextureCollection.h"
 
 #include <indent.h>
 #include <vector_int.h>
@@ -137,10 +138,12 @@ reverse_vertex_ordering() {
 //  Description: Cleans up modeling errors in whatever context this
 //               makes sense.  For instance, for a polygon, this calls
 //               remove_doubled_verts(true).  For a point, it calls
-//               remove_nonunique_verts().
+//               remove_nonunique_verts().  Returns true if the
+//               primitive is valid, or false if it is degenerate.
 ////////////////////////////////////////////////////////////////////
-void EggPrimitive::
+bool EggPrimitive::
 cleanup() {
+  return !empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -249,8 +252,8 @@ erase(iterator first, iterator last) {
 //  Description: Adds the indicated vertex to the end of the
 //               primitive's list of vertices, and returns it.
 ////////////////////////////////////////////////////////////////////
-PT(EggVertex) EggPrimitive::
-add_vertex(PT(EggVertex) vertex) {
+EggVertex *EggPrimitive::
+add_vertex(EggVertex *vertex) {
   prepare_add_vertex(vertex);
   _vertices.push_back(vertex);
 
@@ -268,11 +271,11 @@ add_vertex(PT(EggVertex) vertex) {
 //               already in the primitive, does nothing and returns
 //               NULL.
 ////////////////////////////////////////////////////////////////////
-PT(EggVertex) EggPrimitive::
-remove_vertex(PT(EggVertex) vertex) {
+EggVertex *EggPrimitive::
+remove_vertex(EggVertex *vertex) {
   iterator i = find(begin(), end(), vertex);
   if (i == end()) {
-    return PT(EggVertex)();
+    return PT_EggVertex();
   } else {
     // erase() calls prepare_remove_vertex().
     erase(i);
@@ -497,6 +500,98 @@ write_body(ostream &out, int indent_level) const {
       indent(out, indent_level+2) << "<Ref> { ";
       enquote_string(out, pool->get_name()) << " }\n";
       indent(out, indent_level) << "}\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::r_transform
+//       Access: Protected, Virtual
+//  Description: This is called from within the egg code by
+//               transform().  It applies a transformation matrix
+//               to the current node in some sensible way, then
+//               continues down the tree.
+//
+//               The first matrix is the transformation to apply; the
+//               second is its inverse.  The third parameter is the
+//               coordinate system we are changing to, or CS_default
+//               if we are not changing coordinate systems.
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
+r_transform(const LMatrix4d &mat, const LMatrix4d &, CoordinateSystem) {
+  EggAttributes::transform(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::r_flatten_transforms
+//       Access: Protected, Virtual
+//  Description: The recursive implementation of flatten_transforms().
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
+r_flatten_transforms() {
+  if (is_local_coord()) {
+    LMatrix4d mat = get_vertex_frame();
+    EggAttributes::transform(mat);
+
+    // Transform each vertex by duplicating it in the vertex pool.
+    size_t num_vertices = size();
+    for (size_t i = 0; i < num_vertices; i++) {
+      EggVertex *vertex = get_vertex(i);
+      EggVertexPool *pool = vertex->get_pool();
+      
+      EggVertex new_vertex(*vertex);
+      new_vertex.transform(mat);
+      EggVertex *unique = pool->create_unique_vertex(new_vertex);
+      unique->copy_grefs_from(*vertex);
+	
+      set_vertex(i, unique);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::r_apply_texmats
+//       Access: Protected, Virtual
+//  Description: The recursive implementation of apply_texmats().
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
+r_apply_texmats(EggTextureCollection &textures) {
+  if (has_texture()) {
+    EggTexture *texture = get_texture();
+    if (texture->has_transform()) {
+      if (texture->transform_is_identity()) {
+	// Now, what's the point of a texture with an identity
+	// transform?
+	texture->clear_transform();
+	return;
+      }
+
+      // We've got a texture with a matrix applied.  Save the matrix,
+      // and get a new texture without the matrix.
+      LMatrix3d mat = texture->get_transform();
+      EggTexture new_texture(*texture);
+      new_texture.clear_transform();
+      EggTexture *unique = textures.create_unique_texture(new_texture, ~0);
+
+      set_texture(unique);
+
+      // Now apply the matrix to the vertex UV's.  Create new vertices
+      // as necessary.
+      size_t num_vertices = size();
+      for (size_t i = 0; i < num_vertices; i++) {
+	EggVertex *vertex = get_vertex(i);
+
+	if (vertex->has_uv()) {
+	  EggVertexPool *pool = vertex->get_pool();
+
+	  EggVertex new_vertex(*vertex);
+	  new_vertex.set_uv(vertex->get_uv() * mat);
+	  EggVertex *unique = pool->create_unique_vertex(new_vertex);
+	  unique->copy_grefs_from(*vertex);
+	
+	  set_vertex(i, unique);
+	}
+      }
     }
   }
 }

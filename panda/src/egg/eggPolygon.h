@@ -20,9 +20,19 @@ public:
   INLINE EggPolygon(const EggPolygon &copy);
   INLINE EggPolygon &operator = (const EggPolygon &copy);
 
-  virtual void cleanup();
+  virtual bool cleanup();
+
+  bool calculate_normal(Normald &result) const;
+  INLINE bool recompute_polygon_normal();
+
+  INLINE bool triangulate_into(EggGroupNode *container) const;
+  PT(EggPolygon) triangulate_in_place();
 
   virtual void write(ostream &out, int indent_level) const;
+
+private:
+  bool decomp_concave(EggGroupNode *container, int asum, int x, int y) const;
+  bool triangulate_poly(EggGroupNode *container) const;
 
 public:
 

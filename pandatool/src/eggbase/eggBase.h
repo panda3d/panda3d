@@ -12,6 +12,9 @@
 #include <coordinateSystem.h>
 #include <eggData.h>
 
+class EggReader;
+class EggWriter;
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggBase
 // Description : This specialization of ProgramBase is intended for
@@ -25,6 +28,9 @@
 class EggBase : public ProgramBase {
 public:
   EggBase();
+
+  virtual EggReader *as_reader();
+  virtual EggWriter *as_writer();
 
 protected:
   virtual bool post_command_line();

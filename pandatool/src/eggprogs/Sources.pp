@@ -5,15 +5,13 @@
   dtoolutil:c dconfig:c dtool:m pystub
 
 
-// We won't install egg-trans for now, since the one in $DWDTOOL
-// is better.
-#begin noinst_bin_target
+#begin bin_target
   #define TARGET egg-trans
 
   #define SOURCES \
     eggTrans.cxx eggTrans.h
 
-#end noinst_bin_target
+#end bin_target
 
 #begin bin_target
   #define TARGET egg-texture-cards

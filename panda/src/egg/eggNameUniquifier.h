@@ -19,7 +19,7 @@
 //
 // This is actually an abstract class; in order to use it, you must
 // derive your own class and redefine some key functions (but see
-// EggPoolUniquifier).
+// EggPoolUniquifier and EggGroupUniquifier).
 //
 // You must define at least the following function:
 //
@@ -36,6 +36,13 @@
 //
 //
 // You may also define the following function:
+//
+// virtual string filter_name(EggNode *node);
+//
+//    This returns the name of the node, or at least the name it ought
+//    to be.  This provides a hook for, for instance, filtering out
+//    invalid characters before the node name is uniquified.
+//
 //
 // virtual string generate_name(EggNode *node,
 //                              const string &category, int index);
@@ -83,6 +90,7 @@ public:
 		EggNode *node = NULL);
 
   virtual string get_category(EggNode *node)=0;
+  virtual string filter_name(EggNode *node);
   virtual string generate_name(EggNode *node,
 			       const string &category, int index);
 

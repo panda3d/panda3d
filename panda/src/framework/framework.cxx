@@ -86,6 +86,7 @@
 #include <collisionHandlerFloor.h>
 #include <nodePath.h>
 #include <multiplexStream.h>
+#include <dSearchPath.h>
 
 #ifdef USE_IPC
 #include <ipc_file.h>
@@ -1161,12 +1162,19 @@ int framework_main(int argc, char *argv[]) {
 
   } else {
     // Load up some geometry from one or more files.
+    DSearchPath local_path(".");
 
     Files::const_iterator fi;
     for (fi = files.begin();
 	 fi != files.end();
 	 ++fi) {
-      const Filename &filename = (*fi);
+      Filename filename = (*fi);
+
+      // First, we always try to resolve a filename from the current
+      // directory.  This means a local filename will always be found
+      // before the model path is searched.
+      filename.resolve_filename(local_path);
+
       PT_Node node = loader.load_sync(filename);
 
       if (node == (Node *)NULL) {

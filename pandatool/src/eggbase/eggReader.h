@@ -20,6 +20,8 @@ class EggReader : virtual public EggBase {
 public:
   EggReader();
 
+  virtual EggReader *as_reader();
+
 protected:
   virtual bool handle_args(Args &args);
 

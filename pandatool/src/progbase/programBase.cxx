@@ -298,8 +298,11 @@ parse_command_line(int argc, char *argv[]) {
 	
 	const Option &opt = *(*ii).second;
 	bool okflag = true;
-	if (opt._option_function != (OptionDispatch)NULL) {
+	if (opt._option_function != (OptionDispatchFunction)NULL) {
 	  okflag = (*opt._option_function)(opt._option, arg, opt._option_data);
+	}
+	if (opt._option_method != (OptionDispatchMethod)NULL) {
+	  okflag = (*opt._option_method)(this, opt._option, arg, opt._option_data);
 	}
 	if (opt._bool_var != (bool *)NULL) {
 	  (*opt._bool_var) = true;
@@ -452,7 +455,7 @@ clear_options() {
 void ProgramBase::
 add_option(const string &option, const string &parm_name,
 	   int index_group, const string &description, 
-	   OptionDispatch option_function,
+	   OptionDispatchFunction option_function,
 	   bool *bool_var, void *option_data) {
   Option opt;
   opt._option = option;
@@ -461,6 +464,48 @@ add_option(const string &option, const string &parm_name,
   opt._sequence = ++_next_sequence;
   opt._description = description;
   opt._option_function = option_function;
+  opt._option_method = (OptionDispatchMethod)NULL;
+  opt._bool_var = bool_var;
+  opt._option_data = option_data;
+
+  _options_by_name[option] = opt;
+  _sorted_options = false;
+
+  if (bool_var != (bool *)NULL) {
+    (*bool_var) = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::add_option
+//       Access: Protected
+//  Description: This is another variant on add_option(), above,
+//               except that it receives a pointer to a "method",
+//               which is really just another static (or global)
+//               function, whose first parameter is a ProgramBase *.
+//
+//               We can't easily add a variant that accepts a real
+//               method, because the C++ syntax for methods requires
+//               us to know exactly what class object the method is
+//               defined for, and we want to support adding pointers
+//               for methods that are defined in other classes.  So we
+//               have this hacky thing, which requires the "method" to
+//               be declared static, and receive its this pointer
+//               explicitly, as the first argument.
+////////////////////////////////////////////////////////////////////
+void ProgramBase::
+add_option(const string &option, const string &parm_name,
+	   int index_group, const string &description, 
+	   OptionDispatchMethod option_method,
+	   bool *bool_var, void *option_data) {
+  Option opt;
+  opt._option = option;
+  opt._parm_name = parm_name;
+  opt._index_group = index_group;
+  opt._sequence = ++_next_sequence;
+  opt._description = description;
+  opt._option_function = (OptionDispatchFunction)NULL;
+  opt._option_method = option_method;
   opt._bool_var = bool_var;
   opt._option_data = option_data;
 

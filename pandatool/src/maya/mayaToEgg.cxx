@@ -17,6 +17,8 @@ MayaToEgg::
 MayaToEgg() :
   SomethingToEgg("Maya", ".mb")
 {
+  add_normals_options();
+
   set_program_description
     ("This program converts Maya model files to egg.  Nothing fancy yet.");
 
@@ -84,7 +86,7 @@ run() {
     _data.set_coordinate_system(_coordinate_system);
   }
 
-  _data.write_egg(get_output());
+  write_egg_file();
 }
 
 

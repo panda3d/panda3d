@@ -42,7 +42,8 @@ public:
   Args _program_args;
 
 protected:
-  typedef bool (*OptionDispatch)(const string &opt, const string &parm, void *data);
+  typedef bool (*OptionDispatchFunction)(const string &opt, const string &parm, void *data);
+  typedef bool (*OptionDispatchMethod)(ProgramBase *self, const string &opt, const string &parm, void *data);
 
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
@@ -53,7 +54,12 @@ protected:
   void clear_options();
   void add_option(const string &option, const string &parm_name,
 		  int index_group, const string &description, 
-		  OptionDispatch option_function,
+		  OptionDispatchFunction option_function,
+		  bool *bool_var = (bool *)NULL,
+		  void *option_data = (void *)NULL);
+  void add_option(const string &option, const string &parm_name,
+		  int index_group, const string &description, 
+		  OptionDispatchMethod option_method,
 		  bool *bool_var = (bool *)NULL,
 		  void *option_data = (void *)NULL);
   bool redescribe_option(const string &option, const string &description);
@@ -90,7 +96,8 @@ private:
     int _index_group;
     int _sequence;
     string _description;
-    OptionDispatch _option_function;
+    OptionDispatchFunction _option_function;
+    OptionDispatchMethod _option_method;
     bool *_bool_var;
     void *_option_data;
   };
