@@ -194,6 +194,7 @@ static void predict_event_up(CPT_Event e) {
     deadrec_cat->error() << "switching predictor to invalid type ("
 			 << (int)curr_pred << ")" << endl;
   }
+  reinit_prediction = true;
 }
 
 static void predict_event(CPT_Event e) {
@@ -399,22 +400,69 @@ inline static void predict_null(void) {
 }
 
 inline static void predict_linear(void) {
-  static bool have_vel = false;
+  static int state = 0;
+  static LPoint3f A, B;
+  static LVector3f V;
+  static float A_time, B_time;
+  static float time = 0.;
 
-  // DO THIS
-  if (reinit_prediction) {
-    have_vel = false;
-    target_vel = LVector3f(0., 0., 0.);
-    reinit_prediction = false;
+  if (reinit_prediction)
+    state = 0;
+  switch (state) {
+  case 0:
+    if (new_telemetry) {
+      A = telemetry_pos;
+      A_time = telemetry_time;
+      V = LVector3f(0., 0., 0.);
+      state = 1;
+    }
+    break;
+  case 1:
+    if (new_telemetry) {
+      B = telemetry_pos;
+      B_time = telemetry_time;
+      V = B - A;
+      V *= 1. / (B_time - A_time);
+      time = 0.5;
+      state = 2;
+    }
+    target_pos = A;
+    target_vel = V;
+    break;
+  case 2:
+    if (new_telemetry) {
+      if (telemetry_time < A_time) {
+	// before our two samples, ignore it
+      } else if (telemetry_time > B_time) {
+	// a sample in brave new territory
+	A = B;
+	A_time = B_time;
+	B = telemetry_pos;
+	B_time = telemetry_time;
+	V = B - A;
+	V *= 1. / (B_time - A_time);
+	time = 0.;
+      } else {
+	// is between our two samples
+	A = telemetry_pos;
+	A_time = telemetry_time;
+	V = B - A;
+	V *= 1. / (B_time - A_time);
+	time = 0.;
+      }
+    }
+    if (time <= 0.) {
+      float rtime = ClockObject::get_global_clock()->get_time() - A_time;
+      target_pos = (rtime * V) + A;
+      target_vel = V;
+      time = 0.5;
+    }
+    time -= ClockObject::get_global_clock()->get_dt();
+    break;
+  default:
+    deadrec_cat->error() << "got in invalid state in linear predictor ("
+			 << state << ")" << endl;
   }
-  if (have_vel) {
-    if (new_telemetry)
-      target_vel = target_pos - telemetry_pos;
-  } else {
-    if (new_telemetry)
-      have_vel = true;
-  }
-  target_pos = telemetry_pos;
 }
 
 inline static void run_predict(void) {
