@@ -59,7 +59,7 @@ class DirectSession(PandaObject):
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.selectedNPReadout)
-        self.selectedNPReadout.reparentTo( hidden )
+        self.selectedNPReadout.reparentTo(hidden)
 
         self.activeParentReadout = OnscreenText.OnscreenText(
             pos = (-1.0, -0.975), bg=Vec4(1,1,1,1),
@@ -67,7 +67,7 @@ class DirectSession(PandaObject):
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.activeParentReadout)
-        self.activeParentReadout.reparentTo( hidden )
+        self.activeParentReadout.reparentTo(hidden)
 
         self.directMessageReadout = OnscreenText.OnscreenText(
             pos = (-1.0, 0.9), bg=Vec4(1,1,1,1),
@@ -75,7 +75,7 @@ class DirectSession(PandaObject):
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.directMessageReadout)
-        self.directMessageReadout.reparentTo( hidden )
+        self.directMessageReadout.reparentTo(hidden)
 
         # Create a vrpn client vrpn-server or default
         self.deviceManager = None
