@@ -594,6 +594,7 @@ if sys.platform == "win32" and DIRECTXSDK is None:
             else:
                 sys.exit("The registry does not appear to contain a pointer to the DirectX 9.0 SDK.")
     DIRECTXSDK=DIRECTXSDK.replace("\\", "/")
+    DIRECTXSDK=DIRECTXSDK.rstrip("/")
 
 ########################################################################
 ##
@@ -1414,8 +1415,8 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             for x in wobj: cmd = cmd + ' ' + x
             if (dll[-4:]==".exe"): cmd = cmd + ' ' + PREFIX + '/tmp/pandaIcon.res'
             if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
-                cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + 'lib/x86"'
-                cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + 'lib"'
+                cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + '/lib/x86"'
+                cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + '/lib"'
             if (opts.count("D3D8")):        cmd = cmd + ' d3d8.lib d3dx8.lib dxerr8.lib'
             if (opts.count("D3D9")):        cmd = cmd + ' d3d9.lib d3dx9.lib dxerr9.lib'
             if (opts.count("DXDRAW")):      cmd = cmd + ' ddraw.lib'
