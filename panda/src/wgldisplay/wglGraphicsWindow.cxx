@@ -264,6 +264,11 @@ static DWORD GetAvailVidMem(void) {
     } else {
        if(wgldisplay_cat.is_debug())
            wgldisplay_cat.debug() << "before FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
+       if(dwTotal==0) {
+           if(wgldisplay_cat.is_debug())
+               wgldisplay_cat.debug() << "GetAvailVidMem returns bogus total of 0, assuming we have plenty of vidmem\n";
+           dwTotal=dwFree=0x7FFFFFFF;
+       }
     }
 
     pDD2->Release();  // bye-bye ddraw

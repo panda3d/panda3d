@@ -951,10 +951,31 @@ HRESULT CALLBACK EnumDevicesCallback(LPSTR pDeviceDescription, LPSTR pDeviceName
     return DDENUMRET_OK;
 }
 
-HRESULT WINAPI EnumDisplayModesCallBack(LPDDSURFACEDESC2 lpDDSurfaceDesc,LPVOID lpContext) {
-    DWORD *pDDBDMask = (DWORD*)lpContext;
+#define MAX_DISPLAY_MODES 100
+typedef struct {
+  DWORD maxWidth,maxHeight;
+  DWORD supportedBitDepths;    // uses DDBD_* flags
+  LPDDSURFACEDESC2 pDDSD_Arr;
+  DWORD cNumSurfDescs;
+} DisplayModeInfo;
 
-    *pDDBDMask |= BitDepth_2_DDBDMask(lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+HRESULT WINAPI EnumDisplayModesCallBack(LPDDSURFACEDESC2 lpDDSurfaceDesc,LPVOID lpContext) {
+    DisplayModeInfo *pDMI = (DisplayModeInfo *) lpContext;
+
+    // ignore everything over specified dimensions
+    if((lpDDSurfaceDesc->dwWidth > pDMI->maxWidth) || 
+       (lpDDSurfaceDesc->dwHeight > pDMI->maxHeight))
+      return DDENUMRET_OK;
+
+    // ignore refresh rates under 60Hz (and special values of 0 & 1)
+    if((lpDDSurfaceDesc->dwRefreshRate>1) && (lpDDSurfaceDesc->dwRefreshRate<60))
+      return DDENUMRET_OK;
+
+    assert(pDMI->cNumSurfDescs < MAX_DISPLAY_MODES);
+    memcpy( &(pDMI->pDDSD_Arr[pDMI->cNumSurfDescs]), lpDDSurfaceDesc, sizeof(DDSURFACEDESC2) );
+    pDMI->cNumSurfDescs++;
+    pDMI->supportedBitDepths |= BitDepth_2_DDBDMask(lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+
     return DDENUMRET_OK;
 }
 
@@ -997,12 +1018,12 @@ dx_setup() {
 
     HINSTANCE DDHinst = LoadLibrary( "ddraw.dll" );
     if(DDHinst == 0) {
-        wdxdisplay_cat.fatal() << "config() - DDRAW.DLL doesn't exist!" << endl;
+        wdxdisplay_cat.fatal() << "error: DDRAW.DLL doesn't exist!" << endl;
         exit(1);
     }
 
     if(NULL == GetProcAddress( DDHinst, "DirectDrawCreateEx" )) {
-        wdxdisplay_cat.fatal() << "config() - Panda currently requires at least DirectX 7.0!" << endl;
+        wdxdisplay_cat.fatal() << "Panda currently requires at least DirectX 7.0!" << endl;
         exit(1);
     }
 
@@ -1040,15 +1061,14 @@ dx_setup() {
     << " GfxCard: " << dddi.szDescription <<  "; VendorID: " <<dddi.dwVendorId <<"; DriverVer: " << HIWORD(dddi.liDriverVersion.HighPart) << "." << LOWORD(dddi.liDriverVersion.HighPart) << "." << HIWORD(dddi.liDriverVersion.LowPart) << "." << LOWORD(dddi.liDriverVersion.LowPart) << endl;
 #endif
 
-      // imperfect method to ID NVid, could also scan desc str, but that isnt fullproof either
-    BOOL bIsNvidia = (dddi.dwVendorId==4318) || (dddi.dwVendorId==4818);
+    // imperfect method to ID NVid, could also scan desc str, but that isnt fullproof either
+    BOOL bIsNvidia = (dddi.dwVendorId==0x10DE) || (dddi.dwVendorId==0x12D2);
 
-      // Query DirectDraw for access to Direct3D
+    // Query DirectDraw for access to Direct3D
 
     hr = pDD->QueryInterface( IID_IDirect3D7, (VOID**)&pD3DI );
     if(hr != DD_OK) {
-        wdxdisplay_cat.fatal()
-        << "config() - QI for D3D failed : result = " << ConvD3DErrorToString(hr) << endl;
+        wdxdisplay_cat.fatal() << "QI for D3D failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
@@ -1061,7 +1081,7 @@ dx_setup() {
     hr = pD3DI->EnumDevices(EnumDevicesCallback,d3ddevs);
     if(hr != DD_OK) {
         wdxdisplay_cat.fatal()
-        << "config() - EnumDevices failed : result = " << ConvD3DErrorToString(hr) << endl;
+        << "EnumDevices failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
@@ -1090,14 +1110,19 @@ dx_setup() {
         // CREATE FULL SCREEN BUFFERS
         // Store the rectangle which contains the renderer
 
-        DWORD dwSupportedBitDepthMask=0x0;  // uses DDBD_...
         DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_search);
         ddsd_search.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
         ddsd_search.dwWidth=dwRenderWidth;  ddsd_search.dwHeight=dwRenderHeight;
 
-        if(FAILED(hr= pDD->EnumDisplayModes(0x0,&ddsd_search,&dwSupportedBitDepthMask,EnumDisplayModesCallBack))) {
-            wdxdisplay_cat.fatal()
-            << "EnumDisplayModes failed, result = " << ConvD3DErrorToString(hr) << endl;
+        DDSURFACEDESC2 DDSD_Arr[MAX_DISPLAY_MODES];
+        DisplayModeInfo DMI;
+        ZeroMemory(&DDSD_Arr,sizeof(DDSD_Arr));
+        ZeroMemory(&DMI,sizeof(DMI));
+        DMI.maxWidth=dwRenderWidth;  DMI.maxHeight=dwRenderHeight;
+        DMI.pDDSD_Arr=DDSD_Arr;
+
+        if(FAILED(hr= pDD->EnumDisplayModes(DDEDM_REFRESHRATES,&ddsd_search,&DMI,EnumDisplayModesCallBack))) {
+            wdxdisplay_cat.fatal() << "EnumDisplayModes failed, result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
@@ -1116,7 +1141,7 @@ dx_setup() {
         ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
 
         if(FAILED(  hr = pDD->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
-            wdxdisplay_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.error() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
@@ -1125,11 +1150,11 @@ dx_setup() {
 #endif
 
         // note: this chooses 32bpp, which may not be preferred over 16 for memory & speed reasons
-        if((dwSupportedBitDepthMask & DDBD_32) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_32)) {
+        if((DMI.supportedBitDepths & DDBD_32) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_32)) {
             dwFullScreenBitDepth=32;              // go for 32bpp if its avail
-        } else if((dwSupportedBitDepthMask & DDBD_24) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_24)) {
+        } else if((DMI.supportedBitDepths & DDBD_24) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_24)) {
             dwFullScreenBitDepth=24;              // go for 24bpp if its avail
-        } else if((dwSupportedBitDepthMask & DDBD_16) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_16)) {
+        } else if((DMI.supportedBitDepths & DDBD_16) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_16)) {
             dwFullScreenBitDepth=16;              // do 16bpp
         } else {
             wdxdisplay_cat.fatal()
@@ -1137,43 +1162,45 @@ dx_setup() {
             exit(1);
         }
 
-        // hack: figuring out exactly what res to use is tricky, instead I will
-        // just use 640x480 if we have < 3 meg avail
+        if(dwFree>0) {  // assume buggy drivers (this means you, FireGL2) may return zero for dwTotal, so ignore value if its 0
 
-#define LOWVIDMEMTHRESHOLD 3500000
-        if(dwFree< LOWVIDMEMTHRESHOLD) {
-            // we're going to need 800x600 or 640x480 at 16 bit to save enough tex vidmem
-            dwFullScreenBitDepth=16;              // do 16bpp
-            dwRenderWidth=640;
-            dwRenderHeight=480;
-            wdxdisplay_cat.debug() << " "<<dwFree <<" Available VidMem is under "<< LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
+            // hack: figuring out exactly what res to use is tricky, instead I will
+            // just use 640x480 if we have < 3 meg avail
+
+    #define LOWVIDMEMTHRESHOLD 3500000
+            if(dwFree< LOWVIDMEMTHRESHOLD) {
+                // we're going to need 800x600 or 640x480 at 16 bit to save enough tex vidmem
+                dwFullScreenBitDepth=16;              // do 16bpp
+                dwRenderWidth=640;
+                dwRenderHeight=480;
+                wdxdisplay_cat.debug() << " "<<dwFree <<" Available VidMem is under "<< LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
+            }
+    
+    #if 0
+    // cant do this without more accurate way to estimate mem used before actually switching
+    // to that fullscrn mode.  simply computing memsize based on GetDisplayMode doesnt seem
+    // to be accurate within more than 1 meg
+    
+            // we think we need to reserve at least 2 megs of vidmem for textures.
+            // to do this, reduce buffer bitdepth if possible
+    #define RESERVEDTEXVIDMEM 2000000
+    
+            int rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
+            int memleft = dwFree-rendertargetmem*2;   //*2 to handle backbuf/zbuf
+    
+            if(memleft < RESERVEDTEXVIDMEM) {
+                dwFullScreenBitDepth=16;
+                wdxdisplay_cat.debug() << "using 16bpp rendertargets to save tex vidmem\n";
+                assert((DMI.supportedBitDepths & DDBD_16) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_16));   // probably a safe assumption
+                rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
+                memleft = dwFree-rendertargetmem*2;
+    
+                 // BUGBUG:  if we still cant reserve 2 megs of vidmem, need to auto-reduce the scrn res
+                if(memleft < RESERVEDTEXVIDMEM)
+                    wdxdisplay_cat.debug() << " XXXXXX WARNING: cant reserve 2MB of tex vidmem. only " << memleft << " bytes available. Need to rewrite wdxdisplay to try lower resolutions  XXXXXXXXXXXXXXXXXXXX\n";
+            }
+    #endif
         }
-
-#if 0
-// cant do this without more accurate way to estimate mem used before actually switching
-// to that fullscrn mode.  simply computing memsize based on GetDisplayMode doesnt seem
-// to be accurate within more than 1 meg
-
-        // we think we need to reserve at least 2 megs of vidmem for textures.
-        // to do this, reduce buffer bitdepth if possible
-#define RESERVEDTEXVIDMEM 2000000
-
-        int rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
-        int memleft = dwFree-rendertargetmem*2;   //*2 to handle backbuf/zbuf
-
-        if(memleft < RESERVEDTEXVIDMEM) {
-            dwFullScreenBitDepth=16;
-            wdxdisplay_cat.debug() << "using 16bpp rendertargets to save tex vidmem\n";
-            assert((dwSupportedBitDepthMask & DDBD_16) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_16));   // probably a safe assumption
-            rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
-            memleft = dwFree-rendertargetmem*2;
-
-             // BUGBUG:  if we still cant reserve 2 megs of vidmem, need to auto-reduce the scrn res
-            if(memleft < RESERVEDTEXVIDMEM)
-                wdxdisplay_cat.debug() << " XXXXXX WARNING: cant reserve 2MB of tex vidmem. only " << memleft << " bytes available. Need to rewrite wdxdisplay to try lower resolutions  XXXXXXXXXXXXXXXXXXXX\n";
-        }
-#endif
-
 
 //      extern bool dx_preserve_fpu_state;
         DWORD SCL_FPUFlag = DDSCL_FPUSETUP;
@@ -1184,8 +1211,7 @@ dx_setup() {
         DWORD SCL_FLAGS = SCL_FPUFlag | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT;
 
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
-            wdxdisplay_cat.fatal()
-            << "config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
@@ -1193,21 +1219,19 @@ dx_setup() {
         // so we do it, it really shouldnt be necessary if drivers werent buggy
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
             wdxdisplay_cat.fatal()
-            << "config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+            << "SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
         if(FAILED(hr = pDD->TestCooperativeLevel())) {
-            wdxdisplay_cat.fatal()
-            << "config() - TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
-            wdxdisplay_cat.fatal()
-            << "config() - Full screen app failed to get exclusive mode on init, exiting..\n";
+            wdxdisplay_cat.fatal() << "TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "Full screen app failed to get exclusive mode on init, exiting..\n";
             exit(1);
         }
 
         if(FAILED( hr = pDD->SetDisplayMode( dwRenderWidth, dwRenderHeight,
                                              dwFullScreenBitDepth, 0L, 0L ))) {
-            wdxdisplay_cat.fatal() << "CreateFullscreenBuffers() - Can't set display mode : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "failed to reset display mode to ("<<dwRenderWidth<<"x"<<dwRenderHeight<<"x"<<dwFullScreenBitDepth<<"): result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
@@ -1215,15 +1239,15 @@ dx_setup() {
            DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd34); 
            pDD->GetDisplayMode(&ddsd34);
            wdxdisplay_cat.debug() << "set displaymode to " << ddsd34.dwWidth << "x" << ddsd34.dwHeight << " at "<< ddsd34.ddpfPixelFormat.dwRGBBitCount << "bpp, " << ddsd34.dwRefreshRate<< "Hz\n";
-       }
 
-#ifdef _DEBUG
-        if(FAILED(  hr = pDD->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
-            wdxdisplay_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
+        #ifdef _DEBUG
+           if(FAILED(  hr = pDD->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
+               wdxdisplay_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
+               exit(1);
+           }
+           wdxdisplay_cat.debug() << "after FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
+        #endif
         }
-        wdxdisplay_cat.debug() << "after FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
-#endif
 
         // Setup to create the primary surface w/backbuffer
         DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd)
@@ -1359,7 +1383,7 @@ dx_setup() {
         Clipper->SetHWnd( 0, _mwindow );
         pPrimaryDDSurf->SetClipper( Clipper );
         Clipper->Release();
-
+   
         // Clear the primary surface to black
         DX_DECLARE_CLEAN(DDBLTFX, bltfx)
 
@@ -1402,9 +1426,16 @@ dx_setup() {
 
     resized(dwRenderWidth,dwRenderHeight);  // update panda channel/display rgn info
 
+    #ifndef NDEBUG
+      if(!(_props._mask & W_DEPTH)) {
+        wdxdisplay_cat.info() << "no zbuffer requested, skipping zbuffer creation\n";
+      }
+    #endif
+
     // Check if the device supports z-bufferless hidden surface removal. If so,
     // we don't really need a z-buffer
-    if(!(d3ddevs[DeviceIdx].dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) {
+    if((!(d3ddevs[DeviceIdx].dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) &&
+       (_props._mask & W_DEPTH)) {
 
         // Get z-buffer dimensions from the render target
         DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd);
@@ -1421,8 +1452,7 @@ dx_setup() {
         // buffer depth (as some cards unfornately require this).
         if(FAILED(pD3DI->EnumZBufferFormats(  IID_IDirect3DHALDevice, EnumZBufFmtsCallback,
                                               (VOID*)&ZBufPixFmts ))) {
-            wdxdisplay_cat.fatal()
-            << "config() - EnumZBufferFormats failed " << endl;
+            wdxdisplay_cat.fatal() << "EnumZBufferFormats failed " << endl;
             exit(1);
         }
 
@@ -1437,22 +1467,32 @@ dx_setup() {
         }
 #endif
 
+        // int want_depth_bits = _props._want_depth_bits;  should we pay attn to these at some point?
+        // int want_color_bits = _props._want_color_bits;
+        bool bWantStencil = ((_props._mask & W_STENCIL)!=0);
+
         LPDDPIXELFORMAT pCurPixFmt,pz16=NULL,pz24=NULL,pz32=NULL;
         for(i=0,pCurPixFmt=ZBufPixFmts;i<cNumZBufFmts;i++,pCurPixFmt++) {
+          if(bWantStencil==((pCurPixFmt->dwFlags & DDPF_STENCILBUFFER)!=0)) {
             switch(pCurPixFmt->dwRGBBitCount) {
                 case 16:
-                    if(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER))
-                        pz16=pCurPixFmt;
+                    pz16=pCurPixFmt;
                     break;
                 case 24:
-                    assert(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER));  // shouldnt be stencil at 24bpp
                     pz24=pCurPixFmt;
                     break;
                 case 32:
-                    if(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER))
-                        pz32=pCurPixFmt;
+                    pz32=pCurPixFmt;
                     break;
             }
+          }
+        }
+
+        if((pz16==NULL)&&(pz24==NULL)&&(pz32==NULL)) {
+            if(bWantStencil) 
+                wdxdisplay_cat.fatal() << "stencil buffer requested, device has no stencil capability\n";
+              else wdxdisplay_cat.fatal() << "failed to find adequate zbuffer capability\n";
+            exit(1);
         }
 
         if(bIsNvidia) {
@@ -1468,11 +1508,9 @@ dx_setup() {
                 ddsd.ddpfPixelFormat = *pz24;  //take the no-stencil version of the 32-bit Zbuf
             }
         } else {
-            // pick the largest non-stencil zbuffer format avail (wont support stenciling
-            // until we definitely need it).  Note: this is choosing to waste memory
-            // and possibly perf for more accuracy at long distance (std 16bpp would be smaller/
-            // maybe faster)
-
+            // pick the highest res zbuffer format avail.  Note: this is choosing to waste vid-memory
+            // and possibly perf for more accuracy, less z-fighting at long distance (std 16bpp would 
+            // be smaller// maybe faster)
 
             if(pz32!=NULL) {
                 ddsd.ddpfPixelFormat = *pz32;
@@ -1481,7 +1519,7 @@ dx_setup() {
             } else if(pz16!=NULL) {
                 ddsd.ddpfPixelFormat = *pz16;
             } else {
-                wdxdisplay_cat.fatal() << "config() - could find a valid zbuffer format!\n";
+                wdxdisplay_cat.fatal() << "could not find a valid zbuffer format!\n";
                 exit(1);
             }
         }
@@ -1490,14 +1528,12 @@ dx_setup() {
 
         // Create and attach a z-buffer
         if(FAILED( hr = pDD->CreateSurface( &ddsd, &pZDDSurf, NULL ) )) {
-            wdxdisplay_cat.fatal()
-            << "config() - CreateSurface failed for Z buffer: result = " <<  ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "CreateSurface failed for Z buffer: result = " <<  ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
         if(FAILED( hr = pBackDDSurf->AddAttachedSurface( pZDDSurf ) )) {
-            wdxdisplay_cat.fatal()
-            << "config() - AddAttachedSurface failed : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "AddAttachedSurface failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
@@ -1510,8 +1546,7 @@ dx_setup() {
     // becomes the render target for the newly created device.
     hr = pD3DI->CreateDevice(d3ddevs[DeviceIdx].deviceGUID, pBackDDSurf, &pD3DDevice );
     if(hr != DD_OK) {
-        wdxdisplay_cat.fatal()
-        << "config() - CreateDevice failed : result = " << ConvD3DErrorToString(hr) << endl;
+        wdxdisplay_cat.fatal() << "CreateDevice failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
@@ -1519,8 +1554,7 @@ dx_setup() {
     D3DVIEWPORT7 vp = { 0, 0, _props._xsize, _props._ysize, 0.0f, 1.0f};
     hr = pD3DDevice->SetViewport( &vp );
     if(hr != DD_OK) {
-        wdxdisplay_cat.fatal()
-        << "config() - SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
+        wdxdisplay_cat.fatal() << "SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
