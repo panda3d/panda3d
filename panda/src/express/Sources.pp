@@ -6,6 +6,7 @@
   #define TARGET express
   #define USE_NSPR yes
   #define USE_CRYPTO yes
+  #define USE_NET yes
 
   #define SOURCES							\
     bigEndian.I bigEndian.cxx bigEndian.h buffer.I buffer.cxx buffer.h	\

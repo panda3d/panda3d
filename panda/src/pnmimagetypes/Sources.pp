@@ -22,5 +22,8 @@
   #define IF_JPEG_SOURCES \
     pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
 
+  #define INSTALL_HEADERS \
+    config_pnmimagetypes.h
+
 #end lib_target
 

@@ -22,7 +22,7 @@ TypeHandle GraphicsWindow::_type_handle;
 TypeHandle GraphicsWindow::WindowProps::_type_handle;
 TypeHandle GraphicsWindow::WindowPipe::_type_handle;
 
-GraphicsWindow::WindowFactory GraphicsWindow::_factory;
+GraphicsWindow::WindowFactory *GraphicsWindow::_factory = NULL;
 
 PStatCollector GraphicsWindow::_app_pcollector =
   PStatCollector("App", RGBColorf(0,1,1));
@@ -497,14 +497,30 @@ make_gsg() {
   FactoryParams params;
   params.add_param(new GraphicsStateGuardian::GsgWindow(this));
   
-  _gsg = GraphicsStateGuardian::_factory.
+  _gsg = GraphicsStateGuardian::get_factory().
     make_instance(get_gsg_type(), params);
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_factory
+//       Access: Public, Static
+//  Description: Returns the factory object that can be used to
+//               register new kinds of GraphicsWindow objects that may
+//               be created.
+////////////////////////////////////////////////////////////////////
+GraphicsWindow::WindowFactory &GraphicsWindow::
+get_factory() {
+  if (_factory == (WindowFactory *)NULL) {
+    _factory = new WindowFactory;
+  }
+  return (*_factory);
+}
+
 void GraphicsWindow::read_priorities(void) {
-  if (_factory.get_num_preferred() == 0) {
+  WindowFactory &factory = get_factory();
+  if (factory.get_num_preferred() == 0) {
     Config::ConfigTable::Symbol::iterator i;
     for (i = preferred_window_begin(); i != preferred_window_end(); ++i) {
       ConfigString type_name = (*i).Val();
@@ -516,7 +532,7 @@ void GraphicsWindow::read_priorities(void) {
       } else {
 	display_cat.debug()
 	  << "Specifying type " << type << " for window preference.\n";
-	_factory.add_preferred(type);
+	factory.add_preferred(type);
       }
     }
   }

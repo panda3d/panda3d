@@ -51,6 +51,25 @@ bool egg_keep_texture_pathnames = config_egg2sg.GetBool("egg-keep-texture-pathna
 CoordinateSystem egg_coordinate_system;
 
 ConfigureFn(config_egg2sg) {
+  init_libegg2sg();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libegg2sg
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libegg2sg() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   LoaderFileTypeEgg::init_type();
 
   string csstr = config_egg2sg.GetString("egg-coordinate-system", "default");

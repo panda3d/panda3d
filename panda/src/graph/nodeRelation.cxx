@@ -12,9 +12,38 @@
 
 TypeHandle NodeRelation::_type_handle;
 
-LastGraphUpdate last_graph_update;
-
 Factory<NodeRelation> *NodeRelation::_factory = NULL;
+
+typedef map<TypeHandle, UpdateSeq> LastGraphUpdate;
+static LastGraphUpdate *last_graph_update_map = NULL;
+
+////////////////////////////////////////////////////////////////////
+//     Function: last_graph_update
+//  Description: Returns a modifiable reference to the sequence number
+//               indicating the last update to the indicated type of
+//               graph.
+////////////////////////////////////////////////////////////////////
+UpdateSeq &
+last_graph_update(TypeHandle graph_type) {
+#ifndef NDEBUG
+  static UpdateSeq initial;
+  nassertr(last_graph_update_map != (LastGraphUpdate *)NULL, initial);
+#endif
+  return (*last_graph_update_map)[graph_type];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_last_graph_update
+//  Description: Initializes the last_graph_update map.  This call
+//               must be made before last_graph_update() can be safely
+//               called.
+////////////////////////////////////////////////////////////////////
+void
+init_last_graph_update() {
+  if (last_graph_update_map == NULL) {
+    last_graph_update_map = new LastGraphUpdate;
+  }
+}
 
 // Following are a handful of local template functions that provide
 // support for manipulating the list of arcs on nodes.  They are
@@ -472,7 +501,7 @@ attach() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  _last_update = ++last_graph_update[_type];
+  _last_update = ++last_graph_update(_type);
 
   /*
   // If we have just added a new parent arc to a node that previously
@@ -532,7 +561,7 @@ detach() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  _last_update = ++last_graph_update[_type];
+  _last_update = ++last_graph_update(_type);
 
   /*
   // If we have just removed a parent arc from a node, leaving exactly
@@ -576,7 +605,7 @@ detach_below() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  _last_update = ++last_graph_update[_type];
+  _last_update = ++last_graph_update(_type);
 
   return result;
 }
@@ -598,7 +627,7 @@ changed_transition(TypeHandle trans_type) {
   if (_net_transitions != (NodeTransitionCache *)NULL) {
     _net_transitions->clear_transition(trans_type);
   }
-  _last_update = ++last_graph_update[get_type()];
+  _last_update = ++last_graph_update(get_type());
 }
 
 ////////////////////////////////////////////////////////////////////

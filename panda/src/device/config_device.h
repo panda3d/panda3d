@@ -13,4 +13,6 @@ NotifyCategoryDecl(device, EXPCL_PANDA, EXPTP_PANDA);
 
 extern const bool asynchronous_clients;
 
+extern EXPCL_PANDA void init_libdevice();
+
 #endif

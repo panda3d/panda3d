@@ -26,12 +26,11 @@
 
 class Node;
 
-// This structure keeps a monotonically incrementing sequence number
+// This function keeps a monotonically incrementing sequence number
 // for each change made to the graph, for the purpose of invalidating
 // wrt cache values.  A different sequence number is kept for each
-// type of graph, hence the map.
-typedef map<TypeHandle, UpdateSeq> LastGraphUpdate;
-extern LastGraphUpdate EXPCL_PANDA last_graph_update;
+// type of graph, hence the parameter.
+extern EXPCL_PANDA UpdateSeq &last_graph_update(TypeHandle graph_type);
 
 ///////////////////////////////////////////////////////////////////
 // 	 Class : NodeRelation

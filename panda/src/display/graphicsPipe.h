@@ -88,8 +88,7 @@ public:
     static TypeHandle _type_handle;
   };
 
-  static PipeFactory _factory;
-
+  static PipeFactory &get_factory();
   static void resolve_modules(void);
 
 private:
@@ -108,7 +107,8 @@ private:
   typedef vector<GraphicsPipe *> Pipes;
 
   Windows _windows;
-
+ 
+  static PipeFactory *_factory;
   static Pipes *_all_pipes;
   INLINE static Pipes &get_all_pipes();
 

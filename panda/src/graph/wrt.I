@@ -394,7 +394,7 @@ cached_wrt_base(const Node *from,
 		TransitionWrapper &result,
 		TypeHandle graph_type) {
 
-  UpdateSeq now = last_graph_update[graph_type];
+  UpdateSeq now = last_graph_update(graph_type);
 
   TransitionWrapper net_from_trans = TransitionWrapper::init_from(result);
 

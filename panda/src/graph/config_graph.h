@@ -18,4 +18,6 @@ extern const bool EXPCL_PANDA ambiguous_wrt_abort;
 extern const bool EXPCL_PANDA paranoid_wrt;
 extern const bool EXPCL_PANDA paranoid_graph;
 
+extern EXPCL_PANDA void init_libgraph();
+
 #endif

@@ -64,12 +64,23 @@
 #endif
 #defer CFLAGS_SHARED
 
+// Define LINK_ALL_STATIC to generate static libs instead of DLL's.
+#if $[LINK_ALL_STATIC]
+  #define dlink_all_static LINK_ALL_STATIC
+  #define build_dlls
+  #define dlllib lib
+#else
+  #define dlink_all_static
+  #define build_dlls yes
+  #define dlllib dll
+#endif
+
 #defer OPTFLAGS /O2 /Ob1 /Ogity /G6
 
-#defer CDEFINES_OPT1 _DEBUG
-#defer CDEFINES_OPT2 _DEBUG
-#defer CDEFINES_OPT3
-#defer CDEFINES_OPT4 NDEBUG
+#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
+#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static]
+#defer CDEFINES_OPT3 $[dlink_all_static]
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
 
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /Gi- /GZ /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] /MDd /Gi- /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
@@ -108,3 +119,10 @@
 
 #defer LINK_BIN_C link /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer LINK_BIN_C++ $[LINK_BIN_C]
+
+#if $[LINK_ALL_STATIC]
+  #defer SHARED_LIB_C $[STATIC_LIB_C]
+  #defer SHARED_LIB_C++ $[STATIC_LIB_C++]
+  #defer ODIR_SHARED $[ODIR_STATIC]
+#endif
+

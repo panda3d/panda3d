@@ -26,4 +26,6 @@ enum GLDecalType {
 };
 extern GLDecalType gl_decal_type;
 
+extern EXPCL_PANDAGL void init_libglgsg();
+
 #endif

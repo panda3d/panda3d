@@ -15,8 +15,8 @@
 
   #define INSTALL_HEADERS \
     adinputNode.h analogData.I analogData.h buttonData.I buttonData.h \
-    clientBase.h dialData.I dialData.h mouse.h trackerData.I \
-    trackerData.h trackerNode.h
+    clientBase.h config_device.h dialData.I dialData.h mouse.h \
+    trackerData.I trackerData.h trackerNode.h
 
   #define IGATESCAN all
 

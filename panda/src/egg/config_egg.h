@@ -15,4 +15,6 @@ NotifyCategoryDecl(egg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 
 const DSearchPath &get_egg_path();
 
+extern EXPCL_PANDAEGG void init_libegg();
+
 #endif

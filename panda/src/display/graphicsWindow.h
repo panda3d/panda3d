@@ -196,7 +196,7 @@ protected:
 private:
   typedef vector<PT(GraphicsChannel)> Channels;
   Channels _channels;
- 
+
 public:
 
   // factory stuff
@@ -237,7 +237,7 @@ public:
     INLINE WindowPipe(void) : WindowParam() {}
   };
 
-  static WindowFactory _factory;
+  static WindowFactory &get_factory();
 
 private:
 
@@ -245,6 +245,8 @@ private:
  
   GraphicsWindow(const GraphicsWindow&);
   GraphicsWindow &operator=(const GraphicsWindow&);
+
+  static WindowFactory *_factory;
  
 public:
   static TypeHandle get_class_type() {

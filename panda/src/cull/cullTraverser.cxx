@@ -189,7 +189,7 @@ traverse(Node *root,
       _as_of = UpdateSeq::initial();
     }
   }
-  _now = last_graph_update[_graph_type];
+  _now = last_graph_update(_graph_type);
   _nested_count++;
 
   if (is_initial) {

@@ -14,7 +14,7 @@
     wdxGraphicsPipe.h wdxGraphicsWindow.cxx wdxGraphicsWindow.h
 
   #define INSTALL_HEADERS \
-    wdxGraphicsPipe.h wdxGraphicsWindow.h
+    config_wdxdisplay.h wdxGraphicsPipe.h wdxGraphicsWindow.h
 
 #end lib_target
 

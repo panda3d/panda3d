@@ -11,4 +11,6 @@
 
 NotifyCategoryDecl(builder, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 
+extern EXPCL_PANDAEGG void init_libbuilder();
+
 #endif

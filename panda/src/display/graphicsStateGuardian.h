@@ -182,10 +182,12 @@ public:
     INLINE GsgWindow(void) : GsgParam() {}
   };
 
-  static GsgFactory _factory;
+  static GsgFactory &get_factory();
 
 private:
   static void read_priorities(void);
+
+  static GsgFactory *_factory;
 
 public:
   INLINE GraphicsWindow* get_window(void) const { return _win; }

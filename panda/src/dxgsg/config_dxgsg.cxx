@@ -57,6 +57,24 @@ parse_decal_type(const string &type) {
 }
 
 ConfigureFn(config_dxgsg) {
+  init_libdxgsg();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libdxgsg
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libdxgsg() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
 
   string decal_type = config_dxgsg.GetString("dx-decal-type", "");
   if (!decal_type.empty()) {
@@ -67,10 +85,7 @@ ConfigureFn(config_dxgsg) {
   DXSavedFrameBuffer::init_type();
   DXTextureContext::init_type();
 
-  GraphicsStateGuardian::_factory.register_factory
+  GraphicsStateGuardian::get_factory().register_factory
     (DXGraphicsStateGuardian::get_class_type(),
      DXGraphicsStateGuardian::make_DXGraphicsStateGuardian);
 }
-
-
-

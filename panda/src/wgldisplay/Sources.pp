@@ -13,7 +13,7 @@
     wglGraphicsPipe.h wglGraphicsWindow.cxx wglGraphicsWindow.h
 
   #define INSTALL_HEADERS \
-    wglGraphicsPipe.h wglGraphicsWindow.h
+     config_wgldisplay.h wglGraphicsPipe.h wglGraphicsWindow.h
 
 #end lib_target
 

@@ -41,4 +41,6 @@ extern IMGHeaderType img_header_type;
 extern const int img_xsize;
 extern const int img_ysize;
 
+extern EXPCL_PANDA void init_libpnmimagetypes();
+
 #endif

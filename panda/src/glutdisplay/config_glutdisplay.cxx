@@ -14,9 +14,9 @@ NotifyCategoryDef(glutdisplay, "display");
 
 ConfigureFn(config_glutdisplay) {
   glutGraphicsPipe::init_type();
-  GraphicsPipe::_factory.register_factory(glutGraphicsPipe::get_class_type(),
+  GraphicsPipe::get_factory().register_factory(glutGraphicsPipe::get_class_type(),
 					  glutGraphicsPipe::make_glutGraphicsPipe);
   glutGraphicsWindow::init_type();
-  GraphicsWindow::_factory.register_factory(glutGraphicsWindow::get_class_type(),
+  GraphicsWindow::get_factory().register_factory(glutGraphicsWindow::get_class_type(),
 					    glutGraphicsWindow::make_GlutGraphicsWindow);
 }

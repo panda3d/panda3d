@@ -44,6 +44,31 @@ Configure(config_egg);
 NotifyCategoryDef(egg, "");
 
 ConfigureFn(config_egg) {
+  init_libegg();
+}
+
+const DSearchPath &
+get_egg_path() {
+  static DSearchPath *egg_path = NULL;
+  return get_config_path("egg-path", egg_path);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libegg
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libegg() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   EggRenderMode::init_type();
   EggAnimData::init_type();
   EggAttributes::init_type();
@@ -78,10 +103,4 @@ ConfigureFn(config_egg) {
   EggVertexPool::init_type();
   EggXfmAnimData::init_type();
   EggXfmSAnim::init_type();
-}
-
-const DSearchPath &
-get_egg_path() {
-  static DSearchPath *egg_path = NULL;
-  return get_config_path("egg-path", egg_path);
 }

@@ -13,6 +13,6 @@ NotifyCategoryDef(sgiglxdisplay, "display");
 
 ConfigureFn(config_sgiglxdisplay) {
   SgiGlxGraphicsPipe::init_type();
-  GraphicsPipe::_factory.register_factory(SgiGlxGraphicsPipe::get_class_type(),
+  GraphicsPipe::get_factory().register_factory(SgiGlxGraphicsPipe::get_class_type(),
 					  SgiGlxGraphicsPipe::make_sgiglxgraphicspipe);
 }

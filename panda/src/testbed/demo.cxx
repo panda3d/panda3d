@@ -40,7 +40,19 @@
 #include <pta_Colorf.h>
 #include <pta_float.h>
 #include <pt_Node.h>
+#include <panda.h>
 
+// If we're doing a static link, we should explicitly initialize some
+// of our external libraries, or they may not get linked in.
+#ifdef LINK_ALL_STATIC
+  #ifdef HAVE_GL
+    #include <pandagl.h>
+  #endif
+  #ifdef HAVE_DX
+    #include <pandadx.h>
+  #endif
+  #include <pandaegg.h>
+#endif
 
 //From framework
 extern PT(GeomNode) geomnode;
@@ -578,6 +590,23 @@ void demo_keys(EventHandler&) {
 }
 
 int main(int argc, char *argv[]) {
+  // We call init_libpanda() to be paranoid.  It's not supposed to be
+  // necessary, but it turns out that static init isn't dependable in
+  // all cases.
+  init_libpanda();
+
+  // If we're doing a static link, we should explicitly initialize some
+  // of our external libraries, or they may not get linked in.
+#ifdef LINK_ALL_STATIC
+  #ifdef HAVE_GL
+  init_libpandagl();
+  #endif
+  #ifdef HAVE_DX
+  init_libpandadx();
+  #endif
+  init_libpandaegg();
+#endif
+
   define_keys = &demo_keys;
   return framework_main(argc, argv);
 }

@@ -19,10 +19,9 @@
 TypeHandle GraphicsPipe::_type_handle;
 TypeHandle GraphicsPipe::PipeSpec::_type_handle;
 
-GraphicsPipe::PipeFactory GraphicsPipe::_factory;
-
 // These static members are pointers rather than concrete objects so
 // we can guarantee order of creation at static init time.
+GraphicsPipe::PipeFactory *GraphicsPipe::_factory = NULL;
 GraphicsPipe::Pipes *GraphicsPipe::_all_pipes = NULL;
 
 GraphicsPipe::PipeSpec::~PipeSpec(void) {}
@@ -134,7 +133,7 @@ make_window() {
   FactoryParams params;
   params.add_param(new GraphicsWindow::WindowPipe(this));
 
-  GraphicsWindow *win = GraphicsWindow::_factory.
+  GraphicsWindow *win = GraphicsWindow::get_factory().
     make_instance(get_window_type(), params);
   nassertr(win != (GraphicsWindow *)NULL, NULL);
 
@@ -157,7 +156,7 @@ make_window(const GraphicsWindow::Properties &props) {
   params.add_param(new GraphicsWindow::WindowPipe(this));
   params.add_param(new GraphicsWindow::WindowProps(props));
 
-  GraphicsWindow *win = GraphicsWindow::_factory.
+  GraphicsWindow *win = GraphicsWindow::get_factory().
     make_instance(get_window_type(), params);
   nassertr(win != (GraphicsWindow *)NULL, NULL);
 
@@ -294,7 +293,8 @@ add_window(GraphicsWindow *win) {
 }
 
 void GraphicsPipe::read_priorities(void) {
-  if (_factory.get_num_preferred() == 0) {
+  PipeFactory &factory = get_factory();
+  if (factory.get_num_preferred() == 0) {
     Config::ConfigTable::Symbol::iterator i;
     for (i = preferred_pipe_begin(); i != preferred_pipe_end(); ++i) {
       ConfigString type_name = (*i).Val();
@@ -306,10 +306,25 @@ void GraphicsPipe::read_priorities(void) {
       } else {
 	display_cat.debug()
 	  << "Specifying type " << type << " for pipe preference.\n";
-	_factory.add_preferred(type);
+	factory.add_preferred(type);
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::get_factory
+//       Access: Public, Static
+//  Description: Returns the factory object that can be used to
+//               register new kinds of GraphicsPipe objects that may
+//               be created.
+////////////////////////////////////////////////////////////////////
+GraphicsPipe::PipeFactory &GraphicsPipe::
+get_factory() {
+  if (_factory == (PipeFactory *)NULL) {
+    _factory = new PipeFactory;
+  }
+  return (*_factory);
 }
 
 void GraphicsPipe::resolve_modules(void) {

@@ -33,5 +33,6 @@ enum DXDecalType {
 };
 extern DXDecalType dx_decal_type;
 
+extern EXPCL_PANDADX void init_libdxgsg();
 
 #endif

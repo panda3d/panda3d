@@ -13,12 +13,31 @@ Configure(config_wgldisplay);
 NotifyCategoryDef(wgldisplay, "display");
 
 ConfigureFn(config_wgldisplay) {
+  init_libwgldisplay();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libwgldisplay
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libwgldisplay() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   wglGraphicsPipe::init_type();
-  GraphicsPipe::_factory.register_factory(
+  GraphicsPipe::get_factory().register_factory(
 			wglGraphicsPipe::get_class_type(),
 		  	wglGraphicsPipe::make_wglGraphicsPipe);
   wglGraphicsWindow::init_type();
-  GraphicsWindow::_factory.register_factory(
+  GraphicsWindow::get_factory().register_factory(
 			wglGraphicsWindow::get_class_type(),
 		    	wglGraphicsWindow::make_wglGraphicsWindow);
 }

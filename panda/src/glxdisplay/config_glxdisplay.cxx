@@ -15,10 +15,10 @@ NotifyCategoryDef(glxdisplay, "display");
 
 ConfigureFn(config_glxdisplay) {
   glxGraphicsPipe::init_type();
-  GraphicsPipe::_factory.register_factory(glxGraphicsPipe::get_class_type(),
+  GraphicsPipe::get_factory().register_factory(glxGraphicsPipe::get_class_type(),
 					  glxGraphicsPipe::make_glxGraphicsPipe);
   glxGraphicsWindow::init_type();
-  GraphicsWindow::_factory.register_factory(glxGraphicsWindow::get_class_type(),
+  GraphicsWindow::get_factory().register_factory(glxGraphicsWindow::get_class_type(),
 					    glxGraphicsWindow::make_GlxGraphicsWindow);
   glxDisplay::init_type();
 }

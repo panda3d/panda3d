@@ -13,11 +13,33 @@
 #include "projectionNode.h"
 
 #include <dconfig.h>
+#include <config_graph.h>
 
 Configure(config_sgraph);
 NotifyCategoryDef(sgraph, "");
 
 ConfigureFn(config_sgraph) {
+  init_libsgraph();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libsgraph
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libsgraph() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
+  init_libgraph();
+
   RenderTraverser::init_type();
   GeomNode::init_type();
   Camera::init_type();

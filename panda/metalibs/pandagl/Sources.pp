@@ -19,5 +19,8 @@
 #begin metalib_target
   #define TARGET pandagl
 
-  #define SOURCES pandagl.cxx
+  #define SOURCES pandagl.cxx pandagl.h
+
+  #define INSTALL_HEADERS pandagl.h
+
 #end metalib_target

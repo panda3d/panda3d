@@ -4,7 +4,17 @@
     framework putil collide loader sgmanip chan text chancfg cull \
     pnmimage pnmimagetypes event effects shader graph gobj display \
     mathutil sgattrib putil express light dgraph device tform sgraph \
-    linmath pstatclient sgraphutil
+    linmath pstatclient sgraphutil panda
+
+#if $[LINK_ALL_STATIC]
+  // If we're statically linking, we need to explicitly link with
+  // at least one graphics renderer.
+  #define LOCAL_LIBS pandagl pandadx $[LOCAL_LIBS]
+
+  // And we might like to have the egg loader available.
+  #define LOCAL_LIBS pandaegg $[LOCAL_LIBS]
+#endif
+
 #define UNIX_SYS_LIBS m
 
 

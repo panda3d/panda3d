@@ -11,4 +11,6 @@
 
 NotifyCategoryDecl(sgraph, EXPCL_PANDA, EXPTP_PANDA);
 
+extern EXPCL_PANDA void init_libsgraph();
+
 #endif

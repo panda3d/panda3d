@@ -926,10 +926,10 @@ int framework_main(int argc, char *argv[]) {
   GraphicsPipe::resolve_modules();
 
   framework_cat.info() << "Known pipe types:" << endl;
-  GraphicsPipe::_factory.write_types(framework_cat.info(false), 2);
+  GraphicsPipe::get_factory().write_types(framework_cat.info(false), 2);
 
   // Create a window
-  main_pipe = GraphicsPipe::_factory.
+  main_pipe = GraphicsPipe::get_factory().
     make_instance(InteractiveGraphicsPipe::get_class_type());
 
   if (main_pipe == (GraphicsPipe*)0L) {
@@ -942,7 +942,7 @@ int framework_main(int argc, char *argv[]) {
     << "Opened a '" << main_pipe->get_type().get_name()
     << "' interactive graphics pipe." << endl;
 
-  rib_pipe = GraphicsPipe::_factory.
+  rib_pipe = GraphicsPipe::get_factory().
     make_instance(NoninteractiveGraphicsPipe::get_class_type());
 
   if (rib_pipe == (GraphicsPipe*)0L)

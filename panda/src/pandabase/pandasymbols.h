@@ -10,7 +10,7 @@
 
 /* See dtoolsymbols.h for a rant on the purpose of this file.  */
 
-#if defined(WIN32_VC) && !defined(CPPPARSER)
+#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 
 #ifdef BUILDING_PANDA
   #define EXPCL_PANDA __declspec(dllexport)

@@ -54,8 +54,26 @@ parse_decal_type(const string &type) {
   return GDT_offset;
 }
 
-
 ConfigureFn(config_glgsg) {
+  init_libglgsg();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libglgsg
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libglgsg() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   string decal_type = config_glgsg.GetString("gl-decal-type", "");
   if (!decal_type.empty()) {
     gl_decal_type = parse_decal_type(decal_type);
@@ -65,7 +83,7 @@ ConfigureFn(config_glgsg) {
   GLSavedFrameBuffer::init_type();
   GLTextureContext::init_type();
 
-  GraphicsStateGuardian::_factory.register_factory
+  GraphicsStateGuardian::get_factory().register_factory
     (GLGraphicsStateGuardian::get_class_type(),
      GLGraphicsStateGuardian::make_GlGraphicsStateGuardian);
 }

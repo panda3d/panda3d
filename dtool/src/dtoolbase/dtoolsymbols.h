@@ -36,7 +36,7 @@
 
 #define EXPCL_EMPTY
 
-#if defined(WIN32_VC) && !defined(CPPPARSER)
+#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 
 #ifdef BUILDING_DTOOL
   #define EXPCL_DTOOL __declspec(dllexport)

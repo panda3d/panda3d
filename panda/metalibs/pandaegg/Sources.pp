@@ -16,5 +16,6 @@
 #begin metalib_target
   #define TARGET pandaegg
 
-  #define SOURCES pandaegg.cxx
+  #define SOURCES pandaegg.cxx pandaegg.h
+  #define INSTALL_HEADERS pandaegg.h
 #end metalib_target

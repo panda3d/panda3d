@@ -24,5 +24,6 @@
 #begin metalib_target
   #define TARGET panda
 
-  #define SOURCES panda.cxx
+  #define SOURCES panda.cxx panda.h
+  #define INSTALL_HEADERS panda.h
 #end metalib_target

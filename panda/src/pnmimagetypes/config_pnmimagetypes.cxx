@@ -72,6 +72,26 @@ const int jpeg_scale_num = config_pnmimagetypes.GetInt("jpeg-scale-num", 1);
 const int jpeg_scale_denom = config_pnmimagetypes.GetInt("jpeg-scale-denom", 1);
 
 ConfigureFn(config_pnmimagetypes) {
+  init_libpnmimagetypes();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libpnmimagetypes
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libpnmimagetypes() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
+  init_libpnmimage();
   PNMFileTypePNM::init_type();
   PNMFileTypeSGI::init_type();
   PNMFileTypeAlias::init_type();

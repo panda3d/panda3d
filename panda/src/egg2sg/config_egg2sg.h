@@ -41,6 +41,6 @@ extern EXPCL_PANDAEGG bool egg_flatten_siblings;
 extern EXPCL_PANDAEGG bool egg_show_collision_solids;
 extern EXPCL_PANDAEGG bool egg_keep_texture_pathnames;
 
-
+extern EXPCL_PANDAEGG void init_libegg2sg();
 
 #endif

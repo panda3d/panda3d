@@ -74,7 +74,7 @@
 // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
 // list of binaries that are to be built only when specifically asked
 // for.
-#define lib_targets $[patsubst %,$[so_dir]\lib%$[dllext].dll,$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
+#define lib_targets $[patsubst %,$[so_dir]\lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
 #define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[st_dir]\lib%$[dllext].lib]
 #define bin_targets \
     $[active_target(bin_target noinst_bin_target):%=$[st_dir]\%.exe] \
@@ -322,7 +322,7 @@ $[osfilename $[directory]] :
    $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]\$[so_dir]\%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[osfilename $[sources]]
-  #define target $[so_dir]\lib$[TARGET]$[dllext].dll
+  #define target $[so_dir]\lib$[TARGET]$[dllext].$[dlllib]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]  
 $[target] : $[sources] "$[dtool_ver_dir]\version.rc"
@@ -336,7 +336,9 @@ $[target] : $[sources] "$[dtool_ver_dir]\version.rc"
 	$[SHARED_LIB_C]
   #endif
 
+#if $[build_dlls]
 $[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
+#endif
 
 #endif
 
@@ -344,7 +346,7 @@ $[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_it], \
-      $[install_lib_dir]\lib$[TARGET]$[dllext].dll \
+      $[if $[build_dlls],$[install_lib_dir]\lib$[TARGET]$[dllext].dll] \
       $[install_lib_dir]\lib$[TARGET]$[dllext].lib \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
@@ -360,10 +362,12 @@ uninstall-lib$[TARGET] :
 	-del /f $[file]
 #end file
 
+#if $[build_dlls]
 $[install_lib_dir]\lib$[TARGET]$[dllext].dll : $[so_dir]\lib$[TARGET]$[dllext].dll
 #define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
 	copy $[so_dir]\$[local] $[dest]
+#endif
 
 $[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
@@ -439,7 +443,7 @@ $[target] : $[source]
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources]]]]
-#define target $[so_dir]\lib$[TARGET]$[dllext].dll
+#define target $[so_dir]\lib$[TARGET]$[dllext].$[dlllib]
 #define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -448,7 +452,9 @@ $[target] : $[sources]
 	$[SHARED_LIB_C]
 #endif
 
+#if $[build_dlls]
 $[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
+#endif
 
 #end noinst_lib_target
 
@@ -541,6 +547,7 @@ $[varname] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.
 #define target $[st_dir]\$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
+#define transitive_link $[complete_local_libs]
 $[target] : $[sources]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
@@ -553,6 +560,7 @@ $[target] : $[sources]
 	$[LINK_BIN_C]
   #endif
 #endif
+#define transitive_link
 
 #define installed_files \
     $[install_bin_dir]\$[TARGET].exe \

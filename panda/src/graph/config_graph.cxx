@@ -23,26 +23,7 @@ NotifyCategoryDef(graph, "");
 NotifyCategoryDef(wrt, graph_cat);
 
 ConfigureFn(config_graph) {
-  BoundedObject::init_type();
-  NamedNode::init_type();
-  Node::init_type();
-  NodeRelation::init_type();
-  NodeTransition::init_type();
-  NodeAttribute::init_type();
-  OnOffTransition::init_type();
-  OnOffAttribute::init_type();
-  MultiNodeTransition::init_type();
-  MultiNodeAttribute::init_type();
-  ImmediateTransition::init_type();
-  ImmediateAttribute::init_type();
-
-  NodeRelation::register_with_factory();
-
-  //Registration of writeable object's creation
-  //functions with BamReader's factory
-  Node::register_with_read_factory();
-  NamedNode::register_with_read_factory();
-  NodeRelation::register_with_read_factory();
+  init_libgraph();
 }
 
 // Set this true if you want to cache some of the work of computing
@@ -72,3 +53,44 @@ const bool paranoid_wrt = config_graph.GetBool("paranoid-wrt", false);
 // it cannot be turned on in NDEBUG mode.
 const bool paranoid_graph = config_graph.GetBool("paranoid-graph", false);
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libgraph
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libgraph() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
+  void init_last_graph_update();
+  init_last_graph_update();
+
+  BoundedObject::init_type();
+  NamedNode::init_type();
+  Node::init_type();
+  NodeRelation::init_type();
+  NodeTransition::init_type();
+  NodeAttribute::init_type();
+  OnOffTransition::init_type();
+  OnOffAttribute::init_type();
+  MultiNodeTransition::init_type();
+  MultiNodeAttribute::init_type();
+  ImmediateTransition::init_type();
+  ImmediateAttribute::init_type();
+
+  NodeRelation::register_with_factory();
+
+  //Registration of writeable object's creation
+  //functions with BamReader's factory
+  Node::register_with_read_factory();
+  NamedNode::register_with_read_factory();
+  NodeRelation::register_with_read_factory();
+}

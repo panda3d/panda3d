@@ -15,7 +15,7 @@
 TypeHandle GraphicsStateGuardian::_type_handle;
 TypeHandle GraphicsStateGuardian::GsgWindow::_type_handle;
 
-GraphicsStateGuardian::GsgFactory GraphicsStateGuardian::_factory;
+GraphicsStateGuardian::GsgFactory *GraphicsStateGuardian::_factory = NULL;
 
 GraphicsStateGuardian::GsgWindow::~GsgWindow(void) {}
 
@@ -414,9 +414,25 @@ unmark_prepared_texture(TextureContext *tc) {
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_factory
+//       Access: Public, Static
+//  Description: Returns the factory object that can be used to
+//               register new kinds of GraphicsStateGuardian objects that may
+//               be created.
+////////////////////////////////////////////////////////////////////
+GraphicsStateGuardian::GsgFactory &GraphicsStateGuardian::
+get_factory() {
+  if (_factory == (GsgFactory *)NULL) {
+    _factory = new GsgFactory;
+  }
+  return (*_factory);
+}
+
 void GraphicsStateGuardian::read_priorities(void)
 {
-  if (_factory.get_num_preferred() == 0) {
+  GsgFactory &factory = get_factory();
+  if (factory.get_num_preferred() == 0) {
     Config::ConfigTable::Symbol::iterator i;
     for (i = preferred_gsg_begin(); i != preferred_gsg_end(); ++i) {
       ConfigString type_name = (*i).Val();
@@ -428,7 +444,7 @@ void GraphicsStateGuardian::read_priorities(void)
       } else {
 	display_cat.debug()
 	  << "Specifying type " << type << " for GSG preference.\n";
-	_factory.add_preferred(type);
+	factory.add_preferred(type);
       }
     }
   }

@@ -3,7 +3,23 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-// This is a dummy file whose sole purpose is to give the compiler
-// something to compile when making libpandaegg.so in NO_DEFER mode,
-// which generates an empty library that itself links with all the
-// other shared libraries that make up libpandaegg.
+#include "pandaegg.h"
+
+#include <config_egg.h>
+#include <config_builder.h>
+#include <config_egg2sg.h>
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libpandaegg
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libpandaegg() {
+  init_libegg();
+  init_libbuilder();
+  init_libegg2sg();
+}
