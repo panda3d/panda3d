@@ -1,4 +1,4 @@
-// Filename: dcSimpleType.cxx
+// Filename: dcSimpleParameter.cxx
 // Created by:  drose (15Jun04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,20 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dcSimpleType.h"
+#include "dcSimpleParameter.h"
 #include "dcPackData.h"
 #include "hashGenerator.h"
 
-DCSimpleType::NestedFieldMap DCSimpleType::_nested_field_map;
-DCSimpleType::Uint32Uint8Type *DCSimpleType::_uint32uint8_type = NULL;
+DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
+DCSimpleParameter::Uint32Uint8Type *DCSimpleParameter::_uint32uint8_type = NULL;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::Constructor
+//     Function: DCSimpleParameter::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCSimpleType::
-DCSimpleType(DCSubatomicType type, int divisor) :
+DCSimpleParameter::
+DCSimpleParameter(DCSubatomicType type, int divisor) :
   _type(type),
   _divisor(divisor)
 {
@@ -184,38 +184,38 @@ DCSimpleType(DCSubatomicType type, int divisor) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::as_simple_type
+//     Function: DCSimpleParameter::as_simple_parameter
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCSimpleType *DCSimpleType::
-as_simple_type() {
+DCSimpleParameter *DCSimpleParameter::
+as_simple_parameter() {
   return this;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::make_copy
+//     Function: DCSimpleParameter::make_copy
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCType *DCSimpleType::
+DCParameter *DCSimpleParameter::
 make_copy() const {
-  return new DCSimpleType(*this);
+  return new DCSimpleParameter(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::get_type
+//     Function: DCSimpleParameter::get_type
 //       Access: Published
 //  Description: Returns the particular subatomic type represented by
 //               this instance.
 ////////////////////////////////////////////////////////////////////
-DCSubatomicType DCSimpleType::
+DCSubatomicType DCSimpleParameter::
 get_type() const {
   return _type;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::get_divisor
+//     Function: DCSimpleParameter::get_divisor
 //       Access: Published
 //  Description: Returns the divisor associated with this type.  This
 //               is 1 by default, but if this is other than one it
@@ -224,17 +224,17 @@ get_type() const {
 //               in an integer field).  It is only meaningful for
 //               numeric-type fields.
 ////////////////////////////////////////////////////////////////////
-int DCSimpleType::
+int DCSimpleParameter::
 get_divisor() const {
   return _divisor;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::set_divisor
+//     Function: DCSimpleParameter::set_divisor
 //       Access: Published
 //  Description: See get_divisor().
 ////////////////////////////////////////////////////////////////////
-void DCSimpleType::
+void DCSimpleParameter::
 set_divisor(int divisor) {
   _divisor = divisor;
   if (_pack_type == PT_int || _pack_type == PT_int64) {
@@ -243,7 +243,7 @@ set_divisor(int divisor) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::has_nested_fields
+//     Function: DCSimpleParameter::has_nested_fields
 //       Access: Public, Virtual
 //  Description: Returns true if this field type has any nested fields
 //               (and thus expects a push() .. pop() interface to the
@@ -251,26 +251,26 @@ set_divisor(int divisor) {
 //               get_num_nested_fields() may be called to determine
 //               how many nested fields are expected.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 has_nested_fields() const {
   return _is_array;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::get_num_nested_fields
+//     Function: DCSimpleParameter::get_num_nested_fields
 //       Access: Public, Virtual
 //  Description: Returns the number of nested fields required by this
 //               field type.  These may be array elements or structure
 //               elements.  The return value may be -1 to indicate the
 //               number of nested fields is variable.
 ////////////////////////////////////////////////////////////////////
-int DCSimpleType::
+int DCSimpleParameter::
 get_num_nested_fields() const {
   return _is_array ? -1 : 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::get_num_nested_fields
+//     Function: DCSimpleParameter::get_num_nested_fields
 //       Access: Public, Virtual
 //  Description: This flavor of get_num_nested_fields is used during
 //               unpacking.  It returns the number of nested fields to
@@ -279,7 +279,7 @@ get_num_nested_fields() const {
 //               pack).  This will only be called if
 //               get_length_bytes() returns nonzero.
 ////////////////////////////////////////////////////////////////////
-int DCSimpleType::
+int DCSimpleParameter::
 get_num_nested_fields(size_t length_bytes) const {
   if (_is_array) {
     return length_bytes / _bytes_per_element;
@@ -288,20 +288,20 @@ get_num_nested_fields(size_t length_bytes) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::get_nested_field
+//     Function: DCSimpleParameter::get_nested_field
 //       Access: Public, Virtual
 //  Description: Returns the DCPackerInterface object that represents
 //               the nth nested field.  This may return NULL if there
 //               is no such field (but it shouldn't do this if n is in
 //               the range 0 <= n < get_num_nested_fields()).
 ////////////////////////////////////////////////////////////////////
-DCPackerInterface *DCSimpleType::
+DCPackerInterface *DCSimpleParameter::
 get_nested_field(int n) const {
   return _nested_field;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::get_length_bytes
+//     Function: DCSimpleParameter::get_length_bytes
 //       Access: Public, Virtual
 //  Description: If has_nested_fields() returns true, this should
 //               return either 0, 2, or 4, indicating the number of
@@ -309,28 +309,28 @@ get_nested_field(int n) const {
 //               record its length.  This is respected by push() and
 //               pop().
 ////////////////////////////////////////////////////////////////////
-size_t DCSimpleType::
+size_t DCSimpleParameter::
 get_length_bytes() const {
   return _type == ST_blob32 ? 4 : 2;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::get_pack_type
+//     Function: DCSimpleParameter::get_pack_type
 //       Access: Public, Virtual
 //  Description: Returns the type of value expected by this field.
 ////////////////////////////////////////////////////////////////////
-DCPackType DCSimpleType::
+DCPackType DCSimpleParameter::
 get_pack_type() const {
   return _pack_type;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_double
+//     Function: DCSimpleParameter::pack_double
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 pack_double(DCPackData &pack_data, double value) const {
   double real_value = value * _divisor;
   int int_value = (int)floor(real_value + 0.5);
@@ -399,12 +399,12 @@ pack_double(DCPackData &pack_data, double value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_int
+//     Function: DCSimpleParameter::pack_int
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 pack_int(DCPackData &pack_data, int value) const {
   int int_value = value * _divisor;
 
@@ -482,12 +482,12 @@ pack_int(DCPackData &pack_data, int value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_int64
+//     Function: DCSimpleParameter::pack_int64
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 pack_int64(DCPackData &pack_data, PN_int64 value) const {
   PN_int64 int_value = value * _divisor;
 
@@ -558,12 +558,12 @@ pack_int64(DCPackData &pack_data, PN_int64 value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_string
+//     Function: DCSimpleParameter::pack_string
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 pack_string(DCPackData &pack_data, const string &value) const {
   char buffer[4];
 
@@ -599,12 +599,12 @@ pack_string(DCPackData &pack_data, const string &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::unpack_double
+//     Function: DCSimpleParameter::unpack_double
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 unpack_double(const char *data, size_t length, size_t &p, double &value) const {
   switch (_type) {
   case ST_int8:
@@ -727,12 +727,12 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::unpack_int
+//     Function: DCSimpleParameter::unpack_int
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 unpack_int(const char *data, size_t length, size_t &p, int &value) const {
   switch (_type) {
   case ST_int8:
@@ -847,12 +847,12 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::unpack_int64
+//     Function: DCSimpleParameter::unpack_int64
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const {
   switch (_type) {
   case ST_int8:
@@ -975,12 +975,12 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::unpack_string
+//     Function: DCSimpleParameter::unpack_string
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::
+bool DCSimpleParameter::
 unpack_string(const char *data, size_t length, size_t &p, string &value) const {
   size_t string_length;
 
@@ -1020,43 +1020,43 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::output
+//     Function: DCSimpleParameter::output
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void DCSimpleType::
-output(ostream &out, const string &parameter_name, bool brief) const {
+void DCSimpleParameter::
+output(ostream &out, bool brief) const {
   out << _type;
   if (_divisor != 1) {
     out << " / " << _divisor;
   }
-  if (!brief && !parameter_name.empty()) {
-    out << " " << parameter_name;
+  if (!brief && !_name.empty()) {
+    out << " " << _name;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::generate_hash
+//     Function: DCSimpleParameter::generate_hash
 //       Access: Public, Virtual
 //  Description: Accumulates the properties of this type into the
 //               hash.
 ////////////////////////////////////////////////////////////////////
-void DCSimpleType::
+void DCSimpleParameter::
 generate_hash(HashGenerator &hashgen) const {
-  DCType::generate_hash(hashgen);
+  DCParameter::generate_hash(hashgen);
 
   hashgen.add_int(_type);
   hashgen.add_int(_divisor);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::create_nested_field
+//     Function: DCSimpleParameter::create_nested_field
 //       Access: Private, Static
-//  Description: Creates the one instance of the DCSimpleType
+//  Description: Creates the one instance of the DCSimpleParameter
 //               corresponding to this combination of type and divisor
 //               if it is not already created.
 ////////////////////////////////////////////////////////////////////
-DCSimpleType *DCSimpleType::
+DCSimpleParameter *DCSimpleParameter::
 create_nested_field(DCSubatomicType type, int divisor) {
   DivisorMap divisor_map = _nested_field_map[type];
   DivisorMap::iterator di;
@@ -1065,18 +1065,18 @@ create_nested_field(DCSubatomicType type, int divisor) {
     return (*di).second;
   }
 
-  DCSimpleType *nested_field = new DCSimpleType(type, divisor);
+  DCSimpleParameter *nested_field = new DCSimpleParameter(type, divisor);
   divisor_map[divisor] = nested_field;
   return nested_field;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::create_uint32uint8_type
+//     Function: DCSimpleParameter::create_uint32uint8_type
 //       Access: Private, Static
 //  Description: Creates the one instance of the Uint32Uint8Type
 //               object if it is not already created.
 ////////////////////////////////////////////////////////////////////
-DCPackerInterface *DCSimpleType::
+DCPackerInterface *DCSimpleParameter::
 create_uint32uint8_type() {
   if (_uint32uint8_type == NULL) {
     _uint32uint8_type = new Uint32Uint8Type;
@@ -1085,45 +1085,45 @@ create_uint32uint8_type() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::Uint32Uint8Type::Constructor
+//     Function: DCSimpleParameter::Uint32Uint8Type::Constructor
 //       Access: Public
 //  Description: This special packer interface is provided just to
 //               implement uint32uint8array, which is a special kind
 //               of array that consists of nested pairs of (uint32,
 //               uint8) values.
 ////////////////////////////////////////////////////////////////////
-DCSimpleType::Uint32Uint8Type::
+DCSimpleParameter::Uint32Uint8Type::
 Uint32Uint8Type() {
-  _uint32_type = new DCSimpleType(ST_uint32);
-  _uint8_type = new DCSimpleType(ST_uint8);
+  _uint32_type = new DCSimpleParameter(ST_uint32);
+  _uint8_type = new DCSimpleParameter(ST_uint8);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::Uint32Uint8Type::has_nested_fields
+//     Function: DCSimpleParameter::Uint32Uint8Type::has_nested_fields
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool DCSimpleType::Uint32Uint8Type::
+bool DCSimpleParameter::Uint32Uint8Type::
 has_nested_fields() const {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::Uint32Uint8Type::get_num_nested_fields
+//     Function: DCSimpleParameter::Uint32Uint8Type::get_num_nested_fields
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-int DCSimpleType::Uint32Uint8Type::
+int DCSimpleParameter::Uint32Uint8Type::
 get_num_nested_fields() const {
   return 2;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::Uint32Uint8Type::get_nested_field
+//     Function: DCSimpleParameter::Uint32Uint8Type::get_nested_field
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCPackerInterface *DCSimpleType::Uint32Uint8Type::
+DCPackerInterface *DCSimpleParameter::Uint32Uint8Type::
 get_nested_field(int n) const {
   switch (n) {
   case 0:
@@ -1138,11 +1138,11 @@ get_nested_field(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::Uint32Uint8Type::get_pack_type
+//     Function: DCSimpleParameter::Uint32Uint8Type::get_pack_type
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCPackType DCSimpleType::Uint32Uint8Type::
+DCPackType DCSimpleParameter::Uint32Uint8Type::
 get_pack_type() const {
   return PT_struct;
 }

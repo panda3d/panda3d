@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcPacker.h"
+#include "dcParserDefs.h"
+#include "dcLexerDefs.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::Constructor
@@ -50,7 +52,7 @@ DCPacker::
 //       Access: Published
 //  Description: Begins a packing session.  The parameter is the DC
 //               object that describes the packing format; it may be a
-//               DCType or DCField.
+//               DCParameter or DCField.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
 begin_pack(const DCPackerInterface *root) {
@@ -419,3 +421,129 @@ unpack_object() {
   return object;
 }
 #endif  // HAVE_PYTHON
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::parse_and_pack
+//       Access: Published
+//  Description: Parses an object's value according to the DC file
+//               syntax (e.g. as a default value string) and packs it.
+//               Returns true on success, false on a parse error.
+////////////////////////////////////////////////////////////////////
+bool DCPacker::
+parse_and_pack(const string &formatted_object) {
+  istringstream strm(formatted_object);
+  return parse_and_pack(strm);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::parse_and_pack
+//       Access: Published
+//  Description: Parses an object's value according to the DC file
+//               syntax (e.g. as a default value string) and packs it.
+//               Returns true on success, false on a parse error.
+////////////////////////////////////////////////////////////////////
+bool DCPacker::
+parse_and_pack(istream &in) {
+  dc_init_parser_parameter_value(in, "parse_and_pack", *this);
+  dcyyparse();
+  dc_cleanup_parser();
+
+  return (dc_error_count() == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_and_format
+//       Access: Published
+//  Description: Unpacks an object and formats its value into a syntax
+//               suitable for parsing in the dc file (e.g. as a
+//               default value), or as an input to parse_object.
+////////////////////////////////////////////////////////////////////
+string DCPacker::
+unpack_and_format() {
+  ostringstream strm;
+  unpack_and_format(strm);
+  return strm.str();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_and_format
+//       Access: Published
+//  Description: Unpacks an object and formats its value into a syntax
+//               suitable for parsing in the dc file (e.g. as a
+//               default value), or as an input to parse_object.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+unpack_and_format(ostream &out) {
+  DCPackType pack_type = get_pack_type();
+
+  switch (pack_type) {
+  case PT_double:
+    {
+      out << unpack_double();
+    }
+    break;
+      
+  case PT_int:
+    {
+      out << unpack_int();
+    }
+    break;
+      
+  case PT_int64:
+    {
+      out << unpack_int64();
+    }
+    break;
+
+  case PT_string:
+    {
+      out << '"' << unpack_string() << '"';
+    }
+    break;
+
+  default:
+    {
+      switch (pack_type) {
+      case PT_array:
+        out << '[';
+        break;
+
+      case PT_field:
+        out << '(';
+        break;
+
+      case PT_struct:
+      default:
+        out << '{';
+        break;
+      }
+
+      push();
+      while (more_nested_fields()) {
+        unpack_and_format(out);
+
+        if (more_nested_fields()) {
+          out << ", ";
+        }
+      }
+      pop();
+
+      switch (pack_type) {
+      case PT_array:
+        out << ']';
+        break;
+
+      case PT_field:
+        out << ')';
+        break;
+
+      case PT_struct:
+      default:
+        out << '}';
+        break;
+      }
+    }
+    break;
+  }
+}

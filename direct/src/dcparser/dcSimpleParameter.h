@@ -1,4 +1,4 @@
-// Filename: dcSimpleType.h
+// Filename: dcSimpleParameter.h
 // Created by:  drose (15Jun04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,15 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DCSIMPLETYPE_H
-#define DCSIMPLETYPE_H
+#ifndef DCSIMPLEPARAMETER_H
+#define DCSIMPLEPARAMETER_H
 
 #include "dcbase.h"
-#include "dcType.h"
+#include "dcParameter.h"
 #include "dcSubatomicType.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : DCSimpleType
+//       Class : DCSimpleParameter
 // Description : This is the most fundamental kind of parameter type:
 //               a single number or string, one of the DCSubatomicType
 //               elements.  It may also optionally have a divisor,
@@ -32,13 +32,13 @@
 //               elements (and represents a fixed-point numeric
 //               convention).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCSimpleType : public DCType {
+class EXPCL_DIRECT DCSimpleParameter : public DCParameter {
 public:
-  DCSimpleType(DCSubatomicType type, int divisor = 1);
+  DCSimpleParameter(DCSubatomicType type, int divisor = 1);
 
 PUBLISHED:
-  virtual DCSimpleType *as_simple_type();
-  virtual DCType *make_copy() const;
+  virtual DCSimpleParameter *as_simple_parameter();
+  virtual DCParameter *make_copy() const;
 
   DCSubatomicType get_type() const;
   int get_divisor() const;
@@ -62,12 +62,11 @@ public:
   virtual bool unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const;
   virtual bool unpack_string(const char *data, size_t length, size_t &p, string &value) const;
 
-  virtual void output(ostream &out, const string &parameter_name, 
-                      bool brief) const;
+  virtual void output(ostream &out, bool brief) const;
   virtual void generate_hash(HashGenerator &hash) const;
 
 private:
-  static DCSimpleType *create_nested_field(DCSubatomicType type, int divisor);
+  static DCSimpleParameter *create_nested_field(DCSubatomicType type, int divisor);
   static DCPackerInterface *create_uint32uint8_type();
 
 private:
@@ -83,7 +82,7 @@ private:
   // The rest of this is to maintain the static list of
   // DCPackerInterface objects for _nested_field, above.  We allocate
   // each possible object once, and don't delete it.
-  typedef pmap<int, DCSimpleType *> DivisorMap;
+  typedef pmap<int, DCSimpleParameter *> DivisorMap;
   typedef pmap<DCSubatomicType, DivisorMap> NestedFieldMap;
   static NestedFieldMap _nested_field_map;
 
@@ -95,8 +94,8 @@ private:
     virtual DCPackerInterface *get_nested_field(int n) const;
     virtual DCPackType get_pack_type() const;
 
-    DCSimpleType *_uint32_type;
-    DCSimpleType *_uint8_type;
+    DCSimpleParameter *_uint32_type;
+    DCSimpleParameter *_uint8_type;
   };
 
   static Uint32Uint8Type *_uint32uint8_type;

@@ -19,20 +19,21 @@
 #include "dcAtomicField.h"
 #include "hashGenerator.h"
 #include "dcindent.h"
-#include "dcSimpleType.h"
+#include "dcSimpleParameter.h"
+#include "dcPacker.h"
 
 #include <math.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::ElementType::Constructor
 //       Access: Public
-//  Description: The type parameter should be a newly-allocated DCType
+//  Description: The type parameter should be a newly-allocated DCParameter
 //               object; it will eventually be freed with delete when
 //               this object destructs.
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::ElementType::
-ElementType(DCType *type) {
-  _type = type;
+ElementType(DCParameter *param) {
+  _param = param;
   _has_default_value = false;
 }
 
@@ -43,8 +44,7 @@ ElementType(DCType *type) {
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::ElementType::
 ElementType(const DCAtomicField::ElementType &copy) :
-  _type(copy._type->make_copy()),
-  _name(copy._name),
+  _param(copy._param->make_copy()),
   _default_value(copy._default_value),
   _has_default_value(copy._has_default_value)
 {
@@ -57,9 +57,8 @@ ElementType(const DCAtomicField::ElementType &copy) :
 ////////////////////////////////////////////////////////////////////
 void DCAtomicField::ElementType::
 operator = (const DCAtomicField::ElementType &copy) {
-  delete _type;
-  _type = copy._type->make_copy();
-  _name = copy._name;
+  delete _param;
+  _param = copy._param->make_copy();
   _default_value = copy._default_value;
   _has_default_value = copy._has_default_value;
 }
@@ -71,7 +70,7 @@ operator = (const DCAtomicField::ElementType &copy) {
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::ElementType::
 ~ElementType() {
-  delete _type;
+  delete _param;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,15 +91,14 @@ set_default_value(const string &default_value) {
 ////////////////////////////////////////////////////////////////////
 void DCAtomicField::ElementType::
 output(ostream &out, bool brief) const {
-  _type->output(out, _name, brief);
+  _param->output(out, brief);
 
   if (!brief && _has_default_value) {
-    out << " = <" << hex;
-    string::const_iterator si;
-    for (si = _default_value.begin(); si != _default_value.end(); ++si) {
-      out << setw(2) << setfill('0') << (int)(unsigned char)(*si);
-    }
-    out << dec << ">";
+    out << " = ";
+    DCPacker packer;
+    packer.begin_unpack(_default_value, _param);
+    packer.unpack_and_format(out);
+    packer.end_unpack();
   }
 }
 
@@ -128,29 +126,15 @@ get_num_elements() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::get_element_type
+//     Function: DCAtomicField::get_element
 //       Access: Public
-//  Description: Returns the type object describing the type of the
-//               nth element (parameter).
+//  Description: Returns the parameter object describing the
+//               nth element.
 ////////////////////////////////////////////////////////////////////
-DCType *DCAtomicField::
-get_element_type_obj(int n) const {
+DCParameter *DCAtomicField::
+get_element(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), NULL);
-  return _elements[n]._type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::get_element_name
-//       Access: Public
-//  Description: Returns the name of the nth element of the field.
-//               This name is strictly for documentary purposes; it
-//               does not generally affect operation.  If a name is
-//               not specified, this will be the empty string.
-////////////////////////////////////////////////////////////////////
-string DCAtomicField::
-get_element_name(int n) const {
-  nassertr(n >= 0 && n < (int)_elements.size(), string());
-  return _elements[n]._name;
+  return _elements[n]._param;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,18 +171,35 @@ has_element_default(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::get_element_name
+//       Access: Public
+//  Description: Returns the name of the nth element of the field.
+//               This name is strictly for documentary purposes; it
+//               does not generally affect operation.  If a name is
+//               not specified, this will be the empty string.
+//
+//               This method is deprecated; use
+//               get_element()->get_name() instead.
+////////////////////////////////////////////////////////////////////
+string DCAtomicField::
+get_element_name(int n) const {
+  nassertr(n >= 0 && n < (int)_elements.size(), string());
+  return _elements[n]._param->get_name();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_element_type
 //       Access: Public
 //  Description: Returns the numeric type of the nth element of the
 //               field.  This method is deprecated; use
-//               get_element_type_obj() instead.
+//               get_element() instead.
 ////////////////////////////////////////////////////////////////////
 DCSubatomicType DCAtomicField::
 get_element_type(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), ST_invalid);
-  DCSimpleType *simple_type = _elements[n]._type->as_simple_type();
-  nassertr(simple_type != (DCSimpleType *)NULL, ST_invalid);
-  return simple_type->get_type();
+  DCSimpleParameter *simple_parameter = _elements[n]._param->as_simple_parameter();
+  nassertr(simple_parameter != (DCSimpleParameter *)NULL, ST_invalid);
+  return simple_parameter->get_type();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,15 +211,15 @@ get_element_type(int n) const {
 //               multiplied by this value before encoding into a
 //               packet, and divided by this number after decoding.
 //
-//               This method is deprecated; use get_element_type_obj()
-//               instead.
+//               This method is deprecated; use
+//               get_element()->get_divisor() instead.
 ////////////////////////////////////////////////////////////////////
 int DCAtomicField::
 get_element_divisor(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), 1);
-  DCSimpleType *simple_type = _elements[n]._type->as_simple_type();
-  nassertr(simple_type != (DCSimpleType *)NULL, 1);
-  return simple_type->get_divisor();
+  DCSimpleParameter *simple_parameter = _elements[n]._param->as_simple_parameter();
+  nassertr(simple_parameter != (DCSimpleParameter *)NULL, 1);
+  return simple_parameter->get_divisor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -402,7 +403,7 @@ generate_hash(HashGenerator &hashgen) const {
   Elements::const_iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
     const ElementType &element = (*ei);
-    element._type->generate_hash(hashgen);
+    element._param->generate_hash(hashgen);
   }
   hashgen.add_int(_flags);
 }
@@ -431,5 +432,5 @@ get_num_nested_fields() const {
 DCPackerInterface *DCAtomicField::
 get_nested_field(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), NULL);
-  return _elements[n]._type;
+  return _elements[n]._param;
 }

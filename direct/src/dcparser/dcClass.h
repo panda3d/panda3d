@@ -21,6 +21,7 @@
 
 #include "dcbase.h"
 #include "dcField.h"
+#include "dcPackerInterface.h"
 
 class HashGenerator;
 
@@ -29,10 +30,9 @@ class HashGenerator;
 // Description : Defines a particular DistributedClass as read from an
 //               input .dc file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCClass {
+class EXPCL_DIRECT DCClass : public DCPackerInterface {
 PUBLISHED:
   int get_number() const;
-  string get_name() const;
 
   bool has_parent() const;
   DCClass *get_parent() const;
@@ -87,7 +87,6 @@ private:
   // class as read from the file.
   bool _bogus_class;
   int _number;
-  string _name;
 
   typedef pvector<DCClass *> Parents;
   Parents _parents;

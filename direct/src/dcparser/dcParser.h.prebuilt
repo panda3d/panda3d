@@ -38,6 +38,8 @@
 # define	KW_CLRECV	291
 # define	KW_OWNSEND	292
 # define	KW_AIRECV	293
+# define	START_DC	294
+# define	START_PARAMETER_VALUE	295
 
 
 extern YYSTYPE dcyylval;

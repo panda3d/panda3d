@@ -60,8 +60,14 @@ END_PUBLISH
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCPackerInterface {
 public:
+  DCPackerInterface(const string &name = string());
   virtual ~DCPackerInterface();
 
+PUBLISHED:
+  const string &get_name() const;
+  void set_name(const string &name);
+
+public:
   virtual bool has_nested_fields() const;
   virtual int get_num_nested_fields() const;
   virtual int get_num_nested_fields(size_t length_bytes) const;
@@ -78,6 +84,9 @@ public:
   virtual bool unpack_int(const char *data, size_t length, size_t &p, int &value) const;
   virtual bool unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const;
   virtual bool unpack_string(const char *data, size_t length, size_t &p, string &value) const;
+
+protected:
+  string _name;
 };
 
 #endif

@@ -70,6 +70,11 @@ PUBLISHED:
   PyObject *unpack_object();
 #endif
 
+  bool parse_and_pack(const string &formatted_object);
+  bool parse_and_pack(istream &in);
+  string unpack_and_format();
+  void unpack_and_format(ostream &out);
+
   INLINE bool had_pack_error() const;
   INLINE size_t get_num_unpacked_bytes() const;
 

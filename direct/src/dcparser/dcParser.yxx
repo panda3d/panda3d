@@ -10,7 +10,7 @@
 #include "dcClass.h"
 #include "dcAtomicField.h"
 #include "dcMolecularField.h"
-#include "dcSimpleType.h"
+#include "dcSimpleParameter.h"
 #include "dcPacker.h"
 
 // Because our token type contains objects of type string, which
@@ -25,8 +25,10 @@ static DCFile *dc_file = (DCFile *)NULL;
 static DCClass *current_class = (DCClass *)NULL;
 static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
 static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
-static DCAtomicField::ElementType atomic_element(new DCSimpleType(ST_invalid));
-static DCPacker default_value_packer;
+static DCAtomicField::ElementType atomic_element(new DCSimpleParameter(ST_invalid));
+static DCParameter *current_parameter = (DCParameter *)NULL;
+static DCPacker default_packer;
+static DCPacker *current_packer;
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
@@ -36,6 +38,15 @@ void
 dc_init_parser(istream &in, const string &filename, DCFile &file) {
   dc_file = &file;
   dc_init_lexer(in, filename);
+}
+
+void
+dc_init_parser_parameter_value(istream &in, const string &filename, 
+                               DCPacker &packer) {
+  dc_file = NULL;
+  current_packer = &packer;
+  dc_init_lexer(in, filename);
+  dc_start_parameter_value();
 }
 
 void
@@ -85,13 +96,25 @@ dc_cleanup_parser() {
 %token KW_OWNSEND
 %token KW_AIRECV
 
+/* These special tokens are used to set the starting state of the
+   parser.  The lexer places the appropriate one of these on the head
+   of the input stream. */
+%token START_DC
+%token START_PARAMETER_VALUE
+
 %type <u.dclass> dclass_name
 %type <u.atomic> atomic_name
 %type <u.subatomic> type_token
+%type <u.parameter> parameter
 %type <str> import_identifier
 %type <str> slash_identifier
 
 %%
+
+grammar:
+	START_DC dc
+	| START_PARAMETER_VALUE	parameter_value
+	;
 
 dc:
         empty
@@ -242,94 +265,121 @@ nonempty_parameter_list:
         ;
 
 atomic_element:
-        type_token 
+        parameter
 {
-  atomic_element = DCAtomicField::ElementType(new DCSimpleType($1));
-}
-        atomic_element_definition
-{
+  atomic_element = DCAtomicField::ElementType($1);
   current_atomic->_elements.push_back(atomic_element);
 }
-        ;
-
-atomic_element_definition:
-        empty
-        | atomic_element_definition '/' INTEGER
+	| parameter '=' 
 {
-  if (atomic_element._type->as_simple_type() == NULL) {
-    yyerror("Invalid divisor on complex type");
-
-  } else {
-    atomic_element._type->as_simple_type()->set_divisor($3);
-  }
+  current_packer = &default_packer;
+  current_packer->begin_pack($1);
 }
-        | atomic_element_definition IDENTIFIER
+	parameter_value
 {
-  atomic_element._name = $2;
-}
-        | atomic_element_definition '='
-{
-  default_value_packer.begin_pack(atomic_element._type);
-}
-	default_value
-{
-  if (!default_value_packer.end_pack()) {
+  if (!current_packer->end_pack()) {
     yyerror("Invalid default value for type");
 
   } else {
-    atomic_element.set_default_value(default_value_packer.get_string());
+    atomic_element = DCAtomicField::ElementType($1);
+    atomic_element.set_default_value(current_packer->get_string());
+    current_atomic->_elements.push_back(atomic_element);
   }
 }
 	;
 
-default_value:
+parameter:
+        type_token 
+{
+  current_parameter = new DCSimpleParameter($1);
+}
+        parameter_definition
+{
+  $$ = current_parameter;
+}
+        ;
+
+parameter_definition:
+        empty
+        | parameter_definition '/' INTEGER
+{
+  if (current_parameter->as_simple_parameter() == NULL) {
+    yyerror("Invalid divisor on complex type");
+
+  } else {
+    current_parameter->as_simple_parameter()->set_divisor($3);
+  }
+}
+        | parameter_definition IDENTIFIER
+{
+  current_parameter->set_name($2);
+}
+	;
+
+parameter_value:
 	INTEGER
 {
-  default_value_packer.pack_int($1);
+  current_packer->pack_int($1);
 }
         | REAL
 {
-  default_value_packer.pack_double($1);
+  current_packer->pack_double($1);
 }
         | STRING
 {
-  default_value_packer.pack_string($1);
+  current_packer->pack_string($1);
 }
         | HEX_STRING
 {
-  default_value_packer.pack_literal_value($1);
+  current_packer->pack_literal_value($1);
 }
         | '{' 
 {
-  default_value_packer.push();
+  current_packer->push();
 }
-        default_array '}'
+        array '}'
 {
-  default_value_packer.pop();
+  current_packer->pop();
+}
+        | '[' 
+{
+  current_packer->push();
+}
+        array ']'
+{
+  current_packer->pop();
+}
+        | '(' 
+{
+  current_packer->push();
+}
+        array ')'
+{
+  current_packer->pop();
 }
         | INTEGER '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
-    default_value_packer.pack_int($1);
+    current_packer->pack_int($1);
   }
 }
         | REAL '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
-    default_value_packer.pack_double($1);
+    current_packer->pack_double($1);
   }
 }
         | HEX_STRING '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
-    default_value_packer.pack_literal_value($1);
+    current_packer->pack_literal_value($1);
   }
 }
         ;
 
-default_array:
-        empty
-        | default_array_def maybe_comma
+array:
+        maybe_comma
+        | array_def maybe_comma
         ;
 
 maybe_comma:
@@ -337,9 +387,9 @@ maybe_comma:
         | ','
         ;
 
-default_array_def:
-        default_value
-        | default_array_def ',' default_value
+array_def:
+        parameter_value
+        | array_def ',' parameter_value
         ;
 
 type_token:
@@ -494,3 +544,4 @@ molecular_atom_list:
 
 empty:
         ;
+

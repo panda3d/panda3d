@@ -34,16 +34,6 @@ get_number() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_name
-//       Access: Published
-//  Description: Returns the name of this class.
-////////////////////////////////////////////////////////////////////
-string DCClass::
-get_name() const {
-  return _name;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCClass::has_parent
 //       Access: Published
 //  Description: Returns true if this class inherits from some other
@@ -534,8 +524,8 @@ ai_format_generate(PyObject *distobj, int do_id,
 ////////////////////////////////////////////////////////////////////
 DCClass::
 DCClass(const string &name, bool bogus_class) : 
-  _bogus_class(bogus_class), 
-  _name(name) 
+  DCPackerInterface(name),
+  _bogus_class(bogus_class)
 {
 #ifdef HAVE_PYTHON
   _class_def = NULL;

@@ -22,7 +22,7 @@
 #include "dcbase.h"
 #include "dcField.h"
 #include "dcSubatomicType.h"
-#include "dcType.h"
+#include "dcParameter.h"
 
 // Must use math.h instead of cmath.h so this can compile outside of
 // Panda.
@@ -40,12 +40,12 @@ PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
 
   int get_num_elements() const;
-  DCType *get_element_type_obj(int n) const;
-  string get_element_name(int n) const;
+  DCParameter *get_element(int n) const;
   string get_element_default(int n) const;
   bool has_element_default(int n) const;
 
-  // These two methods are deprecated and will be removed soon.
+  // These three methods are deprecated and will be removed soon.
+  string get_element_name(int n) const;
   DCSubatomicType get_element_type(int n) const;
   int get_element_divisor(int n) const;
 
@@ -72,7 +72,7 @@ public:
   // definition as read from the file.
   class ElementType {
   public:
-    ElementType(DCType *type);
+    ElementType(DCParameter *param);
     ElementType(const ElementType &copy);
     void operator = (const ElementType &copy);
     ~ElementType();
@@ -81,8 +81,7 @@ public:
 
     void output(ostream &out, bool brief) const;
 
-    DCType *_type;
-    string _name;
+    DCParameter *_param;
     string _default_value;
     bool _has_default_value;
   };

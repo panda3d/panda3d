@@ -45,7 +45,6 @@ class HashGenerator;
 class EXPCL_DIRECT DCField : public DCPackerInterface {
 PUBLISHED:
   int get_number() const;
-  const string &get_name() const;
 
   virtual DCAtomicField *as_atomic_field();
   virtual DCMolecularField *as_molecular_field();
@@ -71,7 +70,6 @@ public:
 
 protected:
   int _number;
-  string _name;
 
   friend class DCClass;
 };

@@ -39,6 +39,10 @@ static istream *inp = NULL;
 // can print it out for error messages.
 static string dc_filename;
 
+// This is the initial token state returned by the lexer.  It allows
+// the yacc grammar to start from initial points.
+static int initial_token;
+
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the lexer.
@@ -52,6 +56,14 @@ dc_init_lexer(istream &in, const string &filename) {
   col_number = 0;
   error_count = 0;
   warning_count = 0;
+  initial_token = START_DC;
+}
+
+void
+dc_start_parameter_value() {
+  /* Set the initial state to begin parsing a parameter value, instead
+     of at the beginning of the dc file. */
+  initial_token = START_PARAMETER_VALUE;
 }
 
 int
@@ -295,6 +307,11 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 %%
 
 %{
+  if (initial_token != 0) {
+    int t = initial_token;
+    initial_token = 0;
+    return t;
+  }
 %}
 
 \n.* {

@@ -55,7 +55,7 @@ private:
   typedef pvector<DCAtomicField *> Fields;
   Fields _fields;
 
-  DCType *get_next_pack_element();
+  DCParameter *get_next_pack_element();
 
   typedef pvector<DCPackerInterface *> NestedFields;
   NestedFields _nested_fields;

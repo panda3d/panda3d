@@ -1,4 +1,4 @@
-// Filename: dcType.cxx
+// Filename: dcParameter.cxx
 // Created by:  drose (15Jun04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,88 +16,74 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dcType.h"
+#include "dcParameter.h"
 #include "hashGenerator.h"
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCType::Constructor
+//     Function: DCParameter::Constructor
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DCType::
-DCType() {
+DCParameter::
+DCParameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCType::Destructor
+//     Function: DCParameter::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DCType::
-~DCType() {
+DCParameter::
+~DCParameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCType::get_name
-//       Access: Published, Virtual
-//  Description: Returns a string that uniquely describes this type.
-////////////////////////////////////////////////////////////////////
-string DCType::
-get_name() const {
-  // The default get_name() implementation simply returns the result
-  // of output().
-  ostringstream result;
-  output(result, "", true);
-  return result.str();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCType::as_simple_type
+//     Function: DCParameter::as_simple_parameter
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCSimpleType *DCType::
-as_simple_type() {
+DCSimpleParameter *DCParameter::
+as_simple_parameter() {
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCType::as_class_type
+//     Function: DCParameter::as_class_parameter
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCClassType *DCType::
-as_class_type() {
+DCClassParameter *DCParameter::
+as_class_parameter() {
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCType::as_array_type
+//     Function: DCParameter::as_array_parameter
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCArrayType *DCType::
-as_array_type() {
+DCArrayParameter *DCParameter::
+as_array_parameter() {
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCType::as_typedef_type
+//     Function: DCParameter::as_typedef_parameter
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCTypedefType *DCType::
-as_typedef_type() {
+DCTypedefParameter *DCParameter::
+as_typedef_parameter() {
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCType::generate_hash
+//     Function: DCParameter::generate_hash
 //       Access: Public, Virtual
 //  Description: Accumulates the properties of this type into the
 //               hash.
 ////////////////////////////////////////////////////////////////////
-void DCType::
+void DCParameter::
 generate_hash(HashGenerator &) const {
 }

@@ -34,16 +34,6 @@ get_number() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCField::get_name
-//       Access: Published
-//  Description: Returns the name of this field.
-////////////////////////////////////////////////////////////////////
-const string &DCField::
-get_name() const {
-  return _name;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCField::as_atomic_field
 //       Access: Published, Virtual
 //  Description: Returns the same field pointer converted to an atomic
@@ -219,7 +209,7 @@ ai_format_update(int do_id, int to_id, int from_id, PyObject *args) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCField::
-DCField(const string &name) : _name(name) {
+DCField(const string &name) : DCPackerInterface(name) {
   _number = 0;
 }
 

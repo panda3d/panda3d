@@ -1,4 +1,4 @@
-// Filename: dcType.h
+// Filename: dcParameter.h
 // Created by:  drose (15Jun04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DCTYPE_H
-#define DCTYPE_H
+#ifndef DCPARAMETER_H
+#define DCPARAMETER_H
 
 #include "dcbase.h"
 #include "dcPackerInterface.h"
@@ -33,14 +33,14 @@
 
 #endif  // HAVE_PYTHON
 
-class DCSimpleType;
-class DCClassType;
-class DCArrayType;
-class DCTypedefType;
+class DCSimpleParameter;
+class DCClassParameter;
+class DCArrayParameter;
+class DCTypedefParameter;
 class HashGenerator;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : DCType
+//       Class : DCParameter
 // Description : Represents the type specification for a single
 //               parameter within a field specification.  This may be
 //               a simple type, or it may be a class or an array
@@ -50,25 +50,22 @@ class HashGenerator;
 //               which has the same properties as the referenced type,
 //               but a different name.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCType : public DCPackerInterface {
+class EXPCL_DIRECT DCParameter : public DCPackerInterface {
 protected:
-  DCType();
+  DCParameter();
 public:
-  virtual ~DCType();
+  virtual ~DCParameter();
 
 PUBLISHED:
-  virtual string get_name() const;
+  virtual DCSimpleParameter *as_simple_parameter();
+  virtual DCClassParameter *as_class_parameter();
+  virtual DCArrayParameter *as_array_parameter();
+  virtual DCTypedefParameter *as_typedef_parameter();
 
-  virtual DCSimpleType *as_simple_type();
-  virtual DCClassType *as_class_type();
-  virtual DCArrayType *as_array_type();
-  virtual DCTypedefType *as_typedef_type();
-
-  virtual DCType *make_copy() const=0;
+  virtual DCParameter *make_copy() const=0;
 
 public:
-  virtual void output(ostream &out, const string &parameter_name, 
-                      bool brief) const=0;
+  virtual void output(ostream &out, bool brief) const=0;
   virtual void generate_hash(HashGenerator &hash) const;
 };
 
