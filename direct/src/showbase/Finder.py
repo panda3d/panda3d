@@ -52,7 +52,7 @@ def findClass(namespace, className):
 
 
 def rebindClass(builtins, filename):
-    file = open(filename)
+    file = open(filename, 'r')
     lines = file.readlines()
     curLine = 0
     found = 0
@@ -82,41 +82,33 @@ def rebindClass(builtins, filename):
 
     if not found:
         print 'error: className not found'
-        return None
+        return
 
     # Store the original real class
     res = findClass(builtins, className)
     if res:
         realClass, realNameSpace = res
     else:
-        print ('Error redinifing class: could not find class: ' + className)
-        return None
-
-    # Make a temp file in the home directory to execfile from
-    tmpfilename = os.path.join(os.getenv('HOME'), 'tmp_py_file')
-    tmpfile = open(tmpfilename, 'w')
-
-    # now write the class back to the file with the new class name
-    for i in range(len(lines)):
-#        if (i == foundLine):
-#            tmpfile.write(newline)
-#        else:
-        tmpfile.write(lines[i])
-            
-    file.close()
-    tmpfile.close()
+        print ('Warning: could not find class, defining new class in builtins: ' + className)
+        # Now execute that class def
+        execfile(filename, builtins)
+        # Remove that temp file
+        file.close()
+        os.remove(filename)
+        return
 
     # Now execute that class def
-    execfile(tmpfilename, realNameSpace)
+    execfile(filename, realNameSpace)
     # Remove that temp file
-    os.remove(tmpfilename)
+    file.close()
+    os.remove(filename)
 
     res = findClass(realNameSpace, className)
     if res:
         tmpClass, tmpNameSpace = res
     else:
-        print ('Error redinifing class: could not find temp class')
-        return None
+        print ('Internal error redefining class: could not find temp class')
+        return
 
     # Copy the functions that we just redefined into the real class
     copyFuncs(tmpClass, realClass)
