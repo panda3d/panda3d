@@ -46,6 +46,8 @@ PUBLISHED:
 			int last_byte, int total_bytes, 
 			bool partial_content = true);
 
+  void change_buffer_size(int size);
+
   INLINE void set_bandwidth(float bytes);
   INLINE float get_bandwidth(void) const;
   INLINE void enable_download(bool val);

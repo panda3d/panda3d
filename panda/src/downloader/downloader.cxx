@@ -208,6 +208,19 @@ disconnect_from_server(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Downloader::change_buffer_size
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Downloader::
+change_buffer_size(int size) {
+  if (_buffer->get_length() == size)
+    return;
+  _buffer.clear();
+  _buffer = new Buffer(size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Downloader::request_download
 //       Access: Public
 //  Description: Requests the download of a complete file. 
