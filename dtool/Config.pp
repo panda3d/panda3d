@@ -6,11 +6,12 @@
 // with the Sources.pp files in each of the various directories) to
 // generate build scripts appropriate to each environment.
 //
-// ppremake is capable of generating generic Unix autoconf/automake
-// style build scripts, as well as makefiles customized for SGI's
-// MipsPRO compiler or for Microsoft's Visual C++.  It can also
-// generate Microsoft Developer's Studio project files directly.  In
-// principle, it can be extended to generate suitable build script
+// ppremake is capable of generating makefiles for Unix compilers such
+// as gcc or SGI's MipsPRO compiler, as well as for Windows
+// environments like Microsoft's Visual C++.  It can also,
+// potentially, generate Microsoft Developer's Studio project files
+// directly, although we haven't written the scripts to do this yet.
+// In principle, it can be extended to generate suitable build script
 // files for any number of different build environments.
 //
 // All of these build scripts can be tuned for a particular
@@ -53,13 +54,7 @@
 // suitable template file from the ppremake system files.  The
 // allowable choices, at present, are:
 //
-//  autoconf  - Generate configure.in and a series of Makefile.am files,
-//              suitable for using with autoconf/automake.  Do not use
-//              this mode yet; it's not finished.
-//  stopgap   - Generate original Frang-style Makefile/Makefile.install/etc.
-//              files, to ease transition to the new system.
-//  unix      - Generate makefiles suitable for most Unix platforms,
-//              without using autoconf.
+//  unix      - Generate makefiles suitable for most Unix platforms.
 //  msvc      - Generate makefiles suitable for building on Windows platforms
 //              (e.g. Windows NT, Windows 2000) using the Microsoft Visual C++
 //              command-line compiler and Microsoft nmake.
@@ -96,16 +91,7 @@
 //   3 - Full compiler optimizations, no debug symbols
 //   4 - Full optimizations, no debug symbols, and asserts removed
 //
-// Setting this has no effect when BUILD_TYPE is "stopgap".  In this
-// case, the compiler optimizations are selected by setting the
-// environment variable OPTIMIZE accordingly at compile time.
-#define OPTIMIZE 2
 
-
-////////////////////////////////////////////////////////////////////
-// The remaining variables are considered only if BUILD_TYPE is not
-// "autoconf".  (Autoconf can determine these directly.)
-////////////////////////////////////////////////////////////////////
 
 // NOTE: In the following, to indicate "yes" to a yes/no question,
 // define the variable to be a nonempty string.  To indicate "no",
@@ -328,9 +314,8 @@
 
 // Define this to export the templates from the DLL.  This is only
 // meaningful if LINK_ALL_STATIC is not defined, and we are building
-// on Windows.  This can only be used if VC++ is the compiler in
-// use, since other compilers don't support the syntax.
-#defer EXPORT_TEMPLATES $[or [eq $[USE_COMPILER],MSVC],[eq $[USE_COMPILER],INTEL]]
+// on Windows.  Some Windows compilers may not support this syntax.
+#defer EXPORT_TEMPLATES yes
 
 // Define this to explicitly link in the various external drivers, which
 // are normally separate, as part of the Panda library.
@@ -350,7 +335,7 @@
 // If BUILD_TYPE is "msvc" or "gmsvc", this may be one of:
 //    MSVC   (Microsoft Visual C++)
 //    BOUNDS (BoundsChecker)
-//    INTEL  (Intel C/C++ compiler)e
+//    INTEL  (Intel C/C++ compiler)
 
 #if $[eq $[PLATFORM], Irix]
   #define USE_COMPILER MIPS
@@ -525,6 +510,5 @@
 // There are also some additional variables that control specific
 // compiler/platform features or characteristics, defined in the
 // platform specific file Config.platform.pp.  Be sure to inspect
-// these variables for correctness too.  As above, these are
-// unnecessary when BUILD_TYPE is "autoconf".
+// these variables for correctness too.
 //////////////////////////////////////////////////////////////////////
