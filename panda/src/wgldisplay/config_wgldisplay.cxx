@@ -16,6 +16,9 @@ ConfigureFn(config_wgldisplay) {
   init_libwgldisplay();
 }
 
+bool gl_show_fps_meter = config_wgldisplay.GetBool("show-fps-meter", false);
+float gl_fps_meter_update_interval = max(0.5,config_wgldisplay.GetFloat("fps-meter-update-interval", 1.7));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwgldisplay
 //  Description: Initializes the library.  This must be called at

@@ -113,6 +113,12 @@ private:
   bool				_ignore_key_repeat;
   int                           _full_height, _full_width;
 
+  // vars for frames/sec meter
+  DWORD _start_time;
+  DWORD _start_frame_count;
+  DWORD _cur_frame_count;
+  float _current_fps;
+
 public:
   static TypeHandle get_class_type(void);
   static void init_type(void);

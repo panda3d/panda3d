@@ -12,6 +12,7 @@
 #include <glGraphicsStateGuardian.h>
 #include <errno.h>
 #include <time.h>
+#include <mmsystem.h>
 
 #ifdef DO_PSTATS
 #include <pStatTimer.h>
@@ -24,6 +25,8 @@ TypeHandle wglGraphicsWindow::_type_handle;
 
 #define MOUSE_ENTERED 0
 #define MOUSE_EXITED 1
+
+#define FONT_BITMAP_OGLDISPLAYLISTNUM 1000    // some arbitrary #
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Constructor
@@ -52,7 +55,10 @@ wglGraphicsWindow(GraphicsPipe* pipe, const
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wglGraphicsWindow::~wglGraphicsWindow(void) {
-//  DestroyWindow(_mwindow);
+
+  if(gl_show_fps_meter)
+	glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
+
   if(_visual!=NULL)
     free(_visual);
 
@@ -768,19 +774,27 @@ void wglGraphicsWindow::config(void) {
   make_current();
   make_gsg();
 
-//#ifdef _DEBUG
-#if 1
-  const GLubyte *vendorname=glGetString(GL_VENDOR);
-  if(vendorname!=NULL) {
-      if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
-          wgldisplay_cat.info() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
-      } else {
-          wgldisplay_cat.info() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
-      }
-  } else {
-     wgldisplay_cat.info() << "wglGraphicsWindow:: glGetString(GL_VENDOR) returns NULL!!!\n";
+  if(gl_show_fps_meter) {
+
+	 // 128 handles all the ascii chars
+	 // this creates a display list for each char.  displist numbering starts
+	 // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
+	 // mem by just allocing bitmaps for chars we need (0-9 fps,SPC) 
+     wglUseFontBitmaps(_hdc, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
   }
-#endif
+
+  if(wgldisplay_cat.is_debug()) {
+	  const GLubyte *vendorname=glGetString(GL_VENDOR);
+	  if(vendorname!=NULL) {
+		  if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
+			  wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
+		  } else {
+			  wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
+		  }
+	  } else {
+		 wgldisplay_cat.info() << "wglGraphicsWindow:: glGetString(GL_VENDOR) returns NULL!!!\n";
+	  }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -850,6 +864,65 @@ void wglGraphicsWindow::setup_colormap(void) {
 //  Description: Swaps the front and back buffers.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::end_frame(void) {
+
+	if(gl_show_fps_meter) {
+		 DWORD now = timeGetTime();  // this is win32 fn
+
+		 float time_delta = (now - _start_time)/1000.0;
+
+		 if(time_delta > gl_fps_meter_update_interval) {
+			 // didnt use global clock object, it wasnt working properly when I tried,
+			 // its probably slower due to cache faults, and I can easily track all the
+			 // info I need in dxgsg
+			 DWORD num_frames = _cur_frame_count - _start_frame_count;
+
+			 _current_fps = num_frames / time_delta;
+			 _start_time = now;
+			 _start_frame_count = _cur_frame_count;
+		 }
+
+		 char fps_msg[20];
+		 sprintf(fps_msg, "%7.02f fps", _current_fps);
+
+		 // Note: we cant use simple GDI TextOut calls to draw FPS meter chars (like DX fps meter)
+		 // because WGL doesnt support GDI in double-buffered mode.  Instead we have to 
+		 // use glBitMap display lists created by wglUseFontBitmaps
+
+         glColor3f(0.0,1.0,1.0);
+
+		 GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
+
+		 if(tex_was_on)
+			 glDisable(GL_TEXTURE_2D);
+
+		 glMatrixMode(GL_MODELVIEW);
+		 glPushMatrix();
+		 glLoadMatrixf(LMatrix4f::ident_mat().get_data());
+		 glMatrixMode(GL_PROJECTION);
+		 glPushMatrix();
+		 glLoadMatrixf(LMatrix4f::ident_mat().get_data());
+
+		 glOrtho(_props._xorg,_props._xorg+_props._xsize,
+				 _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
+					
+		 glRasterPos2f(_props._xsize-75,_props._ysize-20);  // these seem to be good for default font
+
+		 // set up for a string-drawing display list call 
+		 glListBase(FONT_BITMAP_OGLDISPLAYLISTNUM);
+ 
+		 // draw a string using font display lists.  chars index their corresponding displist name
+		 glCallLists(strlen(fps_msg), GL_UNSIGNED_BYTE, fps_msg);
+
+ 		 glPopMatrix();
+		 glMatrixMode(GL_MODELVIEW);
+		 glPopMatrix();
+
+		 if(tex_was_on)
+			 glEnable(GL_TEXTURE_2D);
+
+		 _cur_frame_count++;  // only used by fps meter right now
+	}
+
   {
 #ifdef DO_PSTATS
     PStatTimer timer(_swap_pcollector);
@@ -865,6 +938,7 @@ void wglGraphicsWindow::end_frame(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::handle_reshape(int w, int h) {
+  // bugbug: this is not current working right??
   if (_props._xsize != w || _props._ysize != h) {
     _props._xsize = w;
     _props._ysize = h;
