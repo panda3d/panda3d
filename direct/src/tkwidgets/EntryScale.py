@@ -293,7 +293,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
         optiondefs = (
             ('dim',             DEFAULT_DIM,            INITOPT),
             ('side',            TOP,                    INITOPT),
-            ('title',           'EntryScale Group',        None),
+            ('title',           'Group',                None),
             # A tuple of initial values, one for each entryScale
             ('initialValue',    DEFAULT_VALUE,          INITOPT),
             # The command to be executed any time one of the entryScales is updated
@@ -537,9 +537,9 @@ if __name__ == '__main__':
     group1 = EntryScaleGroup(root, dim = 4,
                           title = 'Simple RGBA Panel',
                           labels = ('R', 'G', 'B', 'A'),
-                          EntryScale_min = 0.0,
-                          EntryScale_max = 255.0,
-                          EntryScale_resolution = 1.0,
+                          Valuator_min = 0.0,
+                          Valuator_max = 255.0,
+                          Valuator_resolution = 1.0,
                           command = printVal)
     
     # Uncomment this if you aren't running in IDLE
