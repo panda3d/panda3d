@@ -59,6 +59,42 @@ CPPFile::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPFile::is_c_or_i_file
+//       Access: Public
+//  Description: Returns true if the file appears to be a C or C++
+//               source code file based on its extension.  That is,
+//               returns true if the filename ends in .c, .C, .cc,
+//               .cpp, or any of a series of likely extensions.
+////////////////////////////////////////////////////////////////////
+bool CPPFile::
+is_c_or_i_file() const {
+  return is_c_or_i_file(_filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPFile::is_c_or_i_file
+//       Access: Public, Static
+//  Description: Returns true if the file appears to be a C or C++
+//               source code file based on its extension.  That is,
+//               returns true if the filename ends in .c, .C, .cc,
+//               .cpp, or any of a series of likely extensions.
+////////////////////////////////////////////////////////////////////
+bool CPPFile::
+is_c_or_i_file(const Filename &filename) {
+  string extension = filename.get_extension();
+  // downcase the extension.
+  for (string::iterator ei = extension.begin(); 
+       ei != extension.end();
+       ++ei) {
+    (*ei) = tolower(*ei);
+  }
+    
+  return (extension == "c" || extension == "cc" || 
+	  extension == "cpp" || extension == "c++" || extension == "cxx" ||
+	  extension == "i");
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::is_c_file
 //       Access: Public
 //  Description: Returns true if the file appears to be a C or C++
@@ -90,8 +126,7 @@ is_c_file(const Filename &filename) {
   }
     
   return (extension == "c" || extension == "cc" || 
-	  extension == "cpp" || extension == "c++" || extension == "cxx" ||
-	  extension == "i");
+	  extension == "cpp" || extension == "c++" || extension == "cxx");
 }
 
 ////////////////////////////////////////////////////////////////////

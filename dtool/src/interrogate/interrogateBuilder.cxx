@@ -66,7 +66,7 @@ add_source_file(const string &filename) {
     return;
   }
 
-  if (!CPPFile::is_c_file(filename)) {
+  if (!CPPFile::is_c_or_i_file(filename)) {
     _include_files.insert('"' + filename + '"');
   }
 }
@@ -198,7 +198,7 @@ build() {
        ++ii) {
     const string &filename = (*ii);
     // Don't add any C files to the include list.
-    if (!CPPFile::is_c_file(filename)) {
+    if (!CPPFile::is_c_or_i_file(filename)) {
       _include_files.insert('"' + filename + '"');
     }
   }
@@ -207,7 +207,7 @@ build() {
        ++ii) {
     const string &filename = (*ii);
     // Don't add any C files to the include list.
-    if (!CPPFile::is_c_file(filename)) {
+    if (!CPPFile::is_c_or_i_file(filename)) {
       _include_files.insert('<' + filename + '>');
     }
   }

@@ -32,6 +32,9 @@ public:
   void operator = (const CPPFile &copy);
   ~CPPFile();
 
+  bool is_c_or_i_file() const;
+  static bool is_c_or_i_file(const Filename &filename);
+
   bool is_c_file() const;
   static bool is_c_file(const Filename &filename);
 
