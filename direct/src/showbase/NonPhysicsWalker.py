@@ -1,4 +1,18 @@
-"""NonPhysicsWalker.py is for avatars."""
+"""
+NonPhysicsWalker.py is for avatars.
+
+A walker control such as this one provides:
+    - creation of the collision nodes
+    - handling the keyboard and mouse input for avatar movement
+    - moving the avatar
+
+it does not:
+    - play sounds
+    - play animations
+
+although it does send messeges that allow a listener to play sounds or
+animations based on walker events.
+"""
 
 from ShowBaseGlobal import *
 

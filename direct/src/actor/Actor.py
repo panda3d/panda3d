@@ -511,13 +511,10 @@ class Actor(PandaObject, NodePath):
         return animControl.getNumFrames() / animControl.getFrameRate()
 
     def getNumFrames(self, animName=None, partName=None):
-        """ getNumFrames(animName, partName)
-        """
         lodName = self.__animControlDict.keys()[0]
         controls = self.getAnimControls(animName, partName)
         if len(controls) == 0:
             return None
-
         return controls[0].getNumFrames()
         
     def getCurrentAnim(self, partName=None):
@@ -940,7 +937,8 @@ class Actor(PandaObject, NodePath):
             control.pose(frame)
 
     def enableBlend(self, blendType = PartBundle.BTNormalizedLinear, partName = None):
-        """Enables blending of multiple animations simultaneously.
+        """
+        Enables blending of multiple animations simultaneously.
         After this is called, you may call play(), loop(), or pose()
         on multiple animations and have all of them contribute to the
         final pose each frame.
@@ -970,7 +968,8 @@ class Actor(PandaObject, NodePath):
 
     def setControlEffect(self, animName, effect,
                          partName = None, lodName = None):
-        """ Sets the amount by which the named animation contributes to
+        """
+        Sets the amount by which the named animation contributes to
         the overall pose.  This controls blending of multiple
         animations; it only makes sense to call this after a previous
         call to enableBlend().

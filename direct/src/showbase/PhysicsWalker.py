@@ -1,4 +1,18 @@
-"""PhysicsWalker.py is for avatars."""
+"""
+PhysicsWalker.py is for avatars.
+
+A walker control such as this one provides:
+    - creation of the collision nodes
+    - handling the keyboard and mouse input for avatar movement
+    - moving the avatar
+
+it does not:
+    - play sounds
+    - play animations
+
+although it does send messeges that allow a listener to play sounds or
+animations based on walker events.
+"""
 
 from ShowBaseGlobal import *
 
@@ -13,12 +27,14 @@ class PhysicsWalker(DirectObject.DirectObject):
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 1)
 
     # special methods
-    def __init__(self, gravity = -32.1740, standableGround=0.707):
+    def __init__(self, gravity = -32.1740, standableGround=0.707,
+            hardLandingForce=16.0):
         assert(self.debugPrint("PhysicsWalker(gravity=%s, standableGround=%s)"%(
                 gravity, standableGround)))
         DirectObject.DirectObject.__init__(self)
         self.__gravity=gravity
         self.__standableGround=standableGround
+        self.__hardLandingForce=hardLandingForce
 
         self.physVelocityIndicator=None
         self.__old_contact=None
@@ -236,8 +252,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                 # ...avatar is on standable ground.
                 if self.__old_contact==Vec3.zero():
                     jumpTime = 0.0
-                    print "contactLength", contactLength
-                    if contactLength>14.0:
+                    if contactLength>self.__hardLandingForce:
                         # ...avatar was airborne.
                         messenger.send("jumpHardLand")
                     else:
