@@ -15,7 +15,7 @@ class PPDirectory;
 class PPDependableFile;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : PPDirectoryTree
+//       Class : PPDirectoryTree
 // Description : Stores the entire directory hierarchy relationship of the
 //               source tree.  This is the root of a tree of
 //               PPDirectory objects, each of which corresponds to a
@@ -38,7 +38,7 @@ public:
 
   PPDependableFile *find_dependable_file(const string &filename) const;
   PPDependableFile *get_dependable_file_by_dirpath(const string &dirpath,
-						   bool is_header);
+                                                   bool is_header);
 
   void read_file_dependencies(const string &cache_filename);
   void update_file_dependencies(const string &cache_filename);

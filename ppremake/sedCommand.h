@@ -22,7 +22,7 @@ class SedContext;
 class SedAddress;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : SedCommand
+//       Class : SedCommand
 // Description : This represents a single command (of several
 //               possible, separated by semicolons) to a SedProgram.
 ////////////////////////////////////////////////////////////////////

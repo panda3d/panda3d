@@ -153,8 +153,8 @@ write_makefile_line(const string &line) {
     while (wi != words.end()) {
       col += (*wi).length() + 1;
       if (col > 72) {
-    (*_out) << " \\\n   ";
-    col = 4 + (*wi).length();
+        (*_out) << " \\\n   ";
+        col = 4 + (*wi).length();
       }
       (*_out) << " " << (*wi);
       ++wi;
@@ -389,7 +389,7 @@ read_line(string line) {
   // that start at the beginning of the line.
   size_t comment = line.find(begin_comment);
   while (comment != string::npos && 
-     !(comment == 0 || isspace(line[comment - 1]))) {
+         !(comment == 0 || isspace(line[comment - 1]))) {
     comment = line.find(begin_comment, comment + begin_comment.length());
   }
 
@@ -424,26 +424,26 @@ read_line(string line) {
       // Find the beginning of the line--skip initial whitespace.
       size_t p = 0;
       while (p < line.length() && isspace(line[p])) {
-          p++;
+        p++;
       }
       
       if (p == line.length()) {
         // The line is empty.  Make it truly empty.
-          line = "";
+        line = "";
       } else {
-          if (((p+1) < line.length()) && (line[p] == COMMAND_PREFIX) && 
-              isalpha(line[p + 1])) {
-              // This is a special command.
-              return handle_command(line.substr(p + 1));
-          }
+        if (((p+1) < line.length()) && (line[p] == COMMAND_PREFIX) && 
+            isalpha(line[p + 1])) {
+          // This is a special command.
+          return handle_command(line.substr(p + 1));
+        }
       }
 
       if (!_in_for && !failed_if()) {
-          if(line[p+1]==COMMAND_PREFIX) {
-              // double prefix at start of line indicates echo single prefix, like '\\' in C
-              line.erase(0,1);
-          }
-          return _write_state->write_line(_scope->expand_string(line));
+        if(line[p+1]==COMMAND_PREFIX) {
+          // double prefix at start of line indicates echo single prefix, like '\\' in C
+          line.erase(0,1);
+        }
+        return _write_state->write_line(_scope->expand_string(line));
       }
     }
   }
@@ -671,7 +671,7 @@ handle_if_command() {
       _params = _scope->expand_string(_params);
       string::const_iterator si;
       for (si = _params.begin(); si != _params.end() && is_empty; ++si) {
-    is_empty = isspace(*si);
+        is_empty = isspace(*si);
       }
     }
     
@@ -787,14 +787,14 @@ handle_begin_command() {
 
   if (contains_whitespace(name)) {
     cerr << "Attempt to define scope named \"" << name 
-     << "\".\nScope names may not contain whitespace.\n";
+         << "\".\nScope names may not contain whitespace.\n";
     return false;
   }
 
   if (name.find(SCOPE_DIRNAME_SEPARATOR) != string::npos) {
     cerr << "Attempt to define scope named \"" << name 
-     << "\".\nScope names may not contain the '"
-     << SCOPE_DIRNAME_SEPARATOR << "' character.\n";
+         << "\".\nScope names may not contain the '"
+         << SCOPE_DIRNAME_SEPARATOR << "' character.\n";
     return false;
   }
 
@@ -943,14 +943,14 @@ handle_defsub_command(bool is_defsub) {
   for (fi = formals.begin(); fi != formals.end(); ++fi) {
     if (!is_valid_formal(*fi)) {
       cerr << command << " " << subroutine_name
-       << ": invalid formal parameter name '" << (*fi) << "'\n";
+           << ": invalid formal parameter name '" << (*fi) << "'\n";
       return false;
     }
   }
 
   if (_in_for) {
     cerr << command << " may not appear within another block scoping command like\n"
-     << "#forscopes, #foreach, #formap, #defsub, or #defun.\n";
+         << "#forscopes, #foreach, #formap, #defsub, or #defun.\n";
     return false;
   }
 
@@ -1034,7 +1034,7 @@ handle_end_command() {
   string name = trim_blanks(_scope->expand_string(_params));
   if (name != _block_nesting->_name) {
     cerr << "end " << name << " encountered where end "
-     << _block_nesting->_name << " expected.\n";
+         << _block_nesting->_name << " expected.\n";
     return false;
   }
 
@@ -1089,8 +1089,8 @@ handle_end_command() {
   } else if (nest->_state == BS_output) {
     if (!_in_for) {
       if (!nest->_output) {
-    cerr << "Error while writing " << nest->_filename << "\n";
-    return false;
+        cerr << "Error while writing " << nest->_filename << "\n";
+        return false;
       }
 
       // Now compare the file we generated to the file that's already
@@ -1099,8 +1099,8 @@ handle_end_command() {
       nest->_output << ends;
       const char *generated_file = nest->_output.str();
       if (!compare_output(generated_file, nest->_filename,
-              (nest->_flags & OF_notouch) != 0)) {
-    return false;
+                          (nest->_flags & OF_notouch) != 0)) {
+        return false;
       }
     }
   }
@@ -1284,7 +1284,7 @@ handle_defer_command() {
 
   if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
     cerr << "Warning: variable " << varname
-     << " shadowed by function definition.\n";
+         << " shadowed by function definition.\n";
   }
   
   // Skip whitespace between the variable name and its definition.
@@ -1323,7 +1323,7 @@ handle_define_command() {
 
   if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
     cerr << "Warning: variable " << varname
-     << " shadowed by function definition.\n";
+         << " shadowed by function definition.\n";
   }
   
   // Skip whitespace between the variable name and its definition.
@@ -1362,7 +1362,7 @@ handle_set_command() {
 
   if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
     cerr << "Warning: variable " << varname
-     << " shadowed by function definition.\n";
+         << " shadowed by function definition.\n";
   }
   
   // Skip whitespace between the variable name and its definition.
@@ -1591,7 +1591,7 @@ replay_formap(const string &varname, const string &mapvar) {
   PPScope::MapVariableDefinition &def = _scope->find_map_variable(mapvar);
   if (&def == &PPScope::_null_map_def) {
     cerr << "Undefined map variable: #formap " << varname << " " 
-     << mapvar << "\n";
+         << mapvar << "\n";
     return false;
   }
 
@@ -1633,7 +1633,7 @@ replay_formap(const string &varname, const string &mapvar) {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 compare_output(const string &new_contents, const string &filename,
-           bool notouch) {
+               bool notouch) {
   bool exists = (access(filename.c_str(), F_OK) == 0);
   bool differ = false;
 
@@ -1659,8 +1659,8 @@ compare_output(const string &new_contents, const string &filename,
 
     if (exists) {
       if (unlink(filename.c_str()) < 0) {
-    cerr << "Unable to remove old " << filename << "\n";
-    return false;
+        cerr << "Unable to remove old " << filename << "\n";
+        return false;
       }
     }
 
@@ -1686,7 +1686,7 @@ compare_output(const string &new_contents, const string &filename,
     // makefiles know we did something.
     if (!notouch) {
       if (utime(filename.c_str(), (struct utimbuf *)NULL) < 0) {
-    cerr << "Warning: unable to touch " << filename << "\n";
+        cerr << "Warning: unable to touch " << filename << "\n";
       }
     }
   }
@@ -1704,7 +1704,7 @@ compare_output(const string &new_contents, const string &filename,
 bool PPCommandFile::
 failed_if() const {
   return (_if_nesting != (IfNesting *)NULL && 
-      (_if_nesting->_state == IS_off || _if_nesting->_state == IS_done));
+          (_if_nesting->_state == IS_off || _if_nesting->_state == IS_done));
 }
 
 ////////////////////////////////////////////////////////////////////

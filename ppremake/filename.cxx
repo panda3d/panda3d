@@ -26,7 +26,7 @@ is_fullpath(const string &pathname) {
 
   if (windows_platform) {
     if (pathname.length() > 2 && 
-	isalpha(pathname[0]) && pathname[1] == ':') {
+        isalpha(pathname[0]) && pathname[1] == ':') {
       // A drive-letter prefix.
       return (pathname[2] == '/' || pathname[2] == '\\');
     }
@@ -49,7 +49,7 @@ to_os_filename(string pathname) {
     string::iterator si;
     for (si = pathname.begin(); si != pathname.end(); ++si) {
       if ((*si) == '/') {
-	(*si) = '\\';
+        (*si) = '\\';
       }
     }
   }
@@ -69,7 +69,7 @@ to_unix_filename(string pathname) {
     string::iterator si;
     for (si = pathname.begin(); si != pathname.end(); ++si) {
       if ((*si) == '\\') {
-	(*si) = '/';
+        (*si) = '/';
       }
     }
   }

@@ -19,7 +19,7 @@ class PPDirectoryTree;
 class PPDependableFile;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : PPDirectory
+//       Class : PPDirectory
 // Description : Represents a single directory in the source
 //               hierarchy.  Each PPDirectory object is one-to-one
 //               associated with a PPCommandFile object, that
@@ -49,7 +49,7 @@ public:
   string get_complete_subtree() const;
 
   PPDependableFile *get_dependable_file(const string &filename, 
-					bool is_header);
+                                        bool is_header);
 
   void report_depends() const;
   void report_needs() const;

@@ -177,7 +177,7 @@ define_map_variable(const string &varname, const string &definition) {
 ////////////////////////////////////////////////////////////////////
 void PPScope::
 define_map_variable(const string &varname, const string &key_varname,
-            const string &scope_names) {
+                    const string &scope_names) {
   MapVariableDefinition &def = _map_variables[varname];
   def.clear();
   define_variable(varname, "");
@@ -220,7 +220,7 @@ define_map_variable(const string &varname, const string &key_varname,
       vector<string>::const_iterator ki;
       results.insert(results.end(), keys.begin(), keys.end());
       for (ki = keys.begin(); ki != keys.end(); ++ki) {
-    def[*ki] = scope;
+        def[*ki] = scope;
       }
     }
   }
@@ -238,7 +238,7 @@ define_map_variable(const string &varname, const string &key_varname,
 ////////////////////////////////////////////////////////////////////
 void PPScope::
 add_to_map_variable(const string &varname, const string &key,
-            PPScope *scope) {
+                    PPScope *scope) {
   MapVariableDefinition &def = find_map_variable(varname);
   if (&def == &_null_map_def) {
     cerr << "Warning:  undefined map variable: " << varname << "\n";
@@ -273,16 +273,16 @@ add_to_map_variable(const string &varname, const string &key,
 ////////////////////////////////////////////////////////////////////
 void PPScope::
 define_formals(const string &subroutine_name, 
-           const vector<string> &formals, const string &actuals) {
+               const vector<string> &formals, const string &actuals) {
   vector<string> actual_words;
   tokenize_params(actuals, actual_words, true);
 
   if (actual_words.size() < formals.size()) {
     cerr << "Warning: not all parameters defined for " << subroutine_name
-     << ": " << actuals << "\n";
+         << ": " << actuals << "\n";
   } else if (actual_words.size() > formals.size()) {
     cerr << "Warning: more parameters defined for " << subroutine_name
-     << " than actually exist: " << actuals << "\n";
+         << " than actually exist: " << actuals << "\n";
   }
 
   for (int i = 0; i < (int)formals.size(); i++) {
@@ -308,7 +308,7 @@ get_variable(const string &varname) {
     return expand_function(varname, sub, string());
   }      
 
-//  cerr << "getvar arg is: '" << varname << "'" << endl;
+  //  cerr << "getvar arg is: '" << varname << "'" << endl;
 
   string result;
   if (p_get_variable(varname, result)) {
@@ -362,7 +362,7 @@ expand_defined(const string &params) {
 
   if (sub != (const PPSubroutine *)NULL) {
     if(nullstr != expand_function(varname, sub, string())) {
-        return truestr;
+      return truestr;
     }
   }      
 
@@ -378,7 +378,7 @@ expand_defined(const string &params) {
   ScopeStack::reverse_iterator si;
   for (si = _scope_stack.rbegin(); si != _scope_stack.rend(); ++si) {
     if ((*si)->p_get_variable(varname, result)) {
-        return truestr;
+      return truestr;
     }
   }
 
@@ -578,7 +578,7 @@ get_bottom_scope() {
 ////////////////////////////////////////////////////////////////////
 void PPScope::
 tokenize_params(const string &str, vector<string> &tokens,
-        bool expand) {
+                bool expand) {
   size_t p = 0;
   while (p < str.length()) {
     // Skip initial whitespace.
@@ -589,16 +589,16 @@ tokenize_params(const string &str, vector<string> &tokens,
     string token;
     while (p < str.length() && str[p] != FUNCTION_PARAMETER_SEPARATOR) {
       if (p + 1 < str.length() && str[p] == VARIABLE_PREFIX &&
-      str[p + 1] == VARIABLE_OPEN_BRACE) {
-    // Skip a nested variable reference.
-    if (expand) {
-      token += r_expand_variable(str, p, (ExpandedVariable *)NULL);
-    } else {
-      token += r_scan_variable(str, p);
-    }
+          str[p + 1] == VARIABLE_OPEN_BRACE) {
+        // Skip a nested variable reference.
+        if (expand) {
+          token += r_expand_variable(str, p, (ExpandedVariable *)NULL);
+        } else {
+          token += r_scan_variable(str, p);
+        }
       } else {
-    token += str[p];
-    p++;
+        token += str[p];
+        p++;
       }
     }
 
@@ -635,7 +635,7 @@ tokenize_numeric_pair(const string &str, double &a, double &b) {
   tokenize_params(str, words, true);
   if (words.size() != 2) {
     cerr << words.size() << " parameters supplied when two were expected:\n"
-     << str << "\n";
+         << str << "\n";
     return false;
   }
 
@@ -742,7 +742,7 @@ r_expand_string(const string &str, PPScope::ExpandedVariable *expanded) {
   size_t p = 0;
   while (p < str.length()) {
     if (p + 1 < str.length() && str[p] == VARIABLE_PREFIX &&
-    str[p + 1] == VARIABLE_OPEN_BRACE) {
+        str[p + 1] == VARIABLE_OPEN_BRACE) {
       // Here's a nested variable!  Expand it fully.
       result += r_expand_variable(str, p, expanded);
 
@@ -778,7 +778,7 @@ r_scan_variable(const string &str, size_t &vp) {
   size_t p = vp + 2;
   while (p < str.length() && str[p] != VARIABLE_CLOSE_BRACE) {
     if (p + 1 < str.length() && str[p] == VARIABLE_PREFIX && 
-    str[p + 1] == VARIABLE_OPEN_BRACE) {
+        str[p + 1] == VARIABLE_OPEN_BRACE) {
       // Here's a nested variable!  Scan past it, matching braces
       // properly.
       r_scan_variable(str, p);
@@ -792,7 +792,7 @@ r_scan_variable(const string &str, size_t &vp) {
     p++;
   } else {
     cerr << "Warning!  Unclosed variable reference:\n"
-     << str.substr(vp) << "\n";
+         << str.substr(vp) << "\n";
   }
 
   vp = p;
@@ -815,7 +815,7 @@ r_scan_variable(const string &str, size_t &vp) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 r_expand_variable(const string &str, size_t &vp,
-          PPScope::ExpandedVariable *expanded) {
+                  PPScope::ExpandedVariable *expanded) {
   string varname;
 
   size_t whitespace_at = 0;
@@ -826,23 +826,23 @@ r_expand_variable(const string &str, size_t &vp,
   size_t p = vp + 2;
   while (p < str.length() && str[p] != VARIABLE_CLOSE_BRACE) {
     if (p + 1 < str.length() && str[p] == VARIABLE_PREFIX && 
-    str[p + 1] == VARIABLE_OPEN_BRACE) {
+        str[p + 1] == VARIABLE_OPEN_BRACE) {
       if (whitespace_at != 0) {
-    // Once we have encountered whitespace, we don't expand
-    // variables inline anymore.  These are now function
-    // parameters, and might need to be expanded in some other
-    // scope.
-    varname += r_scan_variable(str, p);
+        // Once we have encountered whitespace, we don't expand
+        // variables inline anymore.  These are now function
+        // parameters, and might need to be expanded in some other
+        // scope.
+        varname += r_scan_variable(str, p);
       } else {
-    varname += r_expand_variable(str, p, expanded);
+        varname += r_expand_variable(str, p, expanded);
       }
 
     } else {
       if (open_nested_at == 0 && str[p] == VARIABLE_OPEN_NESTED) {
-    open_nested_at = p - (vp + 2);
+        open_nested_at = p - (vp + 2);
       }
       if (open_nested_at == 0 && whitespace_at == 0 && isspace(str[p])) {
-    whitespace_at = p - (vp + 2);
+        whitespace_at = p - (vp + 2);
       }
       varname += str[p];
       p++;
@@ -854,7 +854,7 @@ r_expand_variable(const string &str, size_t &vp,
     p++;
   } else {
     cerr << "Warning!  Unclosed variable reference:\n"
-     << str.substr(vp) << "\n";
+         << str.substr(vp) << "\n";
   }
 
   vp = p;
@@ -1039,18 +1039,18 @@ r_expand_variable(const string &str, size_t &vp,
     
     if (tokens.size() != 2) {
       cerr << "inline patsubst should be of the form "
-       << VARIABLE_PREFIX << VARIABLE_OPEN_BRACE << "varname"
-       << VARIABLE_PATSUBST << PATTERN_WILDCARD << ".c"
-       << VARIABLE_PATSUBST_DELIM << PATTERN_WILDCARD << ".o"
-       << VARIABLE_CLOSE_BRACE << ".\n";
+           << VARIABLE_PREFIX << VARIABLE_OPEN_BRACE << "varname"
+           << VARIABLE_PATSUBST << PATTERN_WILDCARD << ".c"
+           << VARIABLE_PATSUBST_DELIM << PATTERN_WILDCARD << ".o"
+           << VARIABLE_CLOSE_BRACE << ".\n";
     } else {
       PPFilenamePattern from(tokens[0]);
       PPFilenamePattern to(tokens[1]);
     
       if (!from.has_wildcard() || !to.has_wildcard()) {
-    cerr << "The two parameters of inline patsubst must both include "
-         << PATTERN_WILDCARD << ".\n";
-    return string();
+        cerr << "The two parameters of inline patsubst must both include "
+             << PATTERN_WILDCARD << ".\n";
+        return string();
       }
     
       // Split the expansion into tokens based on the spaces.
@@ -1059,7 +1059,7 @@ r_expand_variable(const string &str, size_t &vp,
       
       vector<string>::iterator wi;
       for (wi = words.begin(); wi != words.end(); ++wi) {
-    (*wi) = to.transform(*wi, from);
+        (*wi) = to.transform(*wi, from);
       }
     
       result = repaste(words, " ");
@@ -1079,7 +1079,7 @@ r_expand_variable(const string &str, size_t &vp,
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_variable_nested(const string &varname, 
-               const string &scope_names) {
+                       const string &scope_names) {
   if (_named_scopes == (PPNamedScopes *)NULL) {
     return string();
   }
@@ -1437,14 +1437,14 @@ expand_bintest(const string &params) {
 #ifdef PLATFORM_WIN32
   if ((binname.length() > 2 && binname[1] == ':') || binname[0] == '/')
 #else
-  if (binname[0] == '/')
+    if (binname[0] == '/')
 #endif
-    {
-    if (access(binname.c_str(), F_OK) == 0) {
-      return binname;
-    }
-    return string();
-  }
+      {
+        if (access(binname.c_str(), F_OK) == 0) {
+          return binname;
+        }
+        return string();
+      }
 
   const char *path = getenv("PATH");
   if (path == (const char *)NULL) {
@@ -1525,7 +1525,7 @@ expand_shell(const string &params) {
       // because we're doing the chdir() call only within the child
       // process.
       if (chdir(dirname.c_str()) < 0) {
-    perror("chdir");
+        perror("chdir");
       }
     }
 
@@ -1562,12 +1562,12 @@ expand_shell(const string &params) {
     if (!child_done) {
       int waitresult = waitpid(pid, &status, WNOHANG);
       if (waitresult < 0) {
-    if (errno != EINTR) {
-      perror("waitpid");
-      return string();
-    }
+        if (errno != EINTR) {
+          perror("waitpid");
+          return string();
+        }
       } else if (waitresult > 0) {
-    child_done = true;
+        child_done = true;
       }
     }
   }
@@ -1616,7 +1616,7 @@ expand_standardize(const string &params) {
     if (component == ".") {
       // Ignore /./.
     } else if (component == ".." && !components.empty() && 
-           !(components.back() == "..")) {
+               !(components.back() == "..")) {
       // Back up.
       components.pop_back();
     } else {
@@ -1779,9 +1779,9 @@ expand_suffix(const string &params) {
     if (dot != string::npos) {
       string ext = word.substr(dot);
       if (ext.find('/') == string::npos) {
-    word = ext;
+        word = ext;
       } else {
-    word = string();
+        word = string();
       }
     } else {
       word = string();
@@ -1813,7 +1813,7 @@ expand_basename(const string &params) {
     if (dot != string::npos) {
       string ext = word.substr(dot);
       if (ext.find('/') == string::npos) {
-    word = word.substr(0, dot);
+        word = word.substr(0, dot);
       }
     }
   }
@@ -1895,8 +1895,8 @@ expand_wordlist(const string &params) {
 
   vector<string> results;
   results.insert(results.end(), 
-         words.begin() + start - 1, 
-         words.begin() + end - 1);
+                 words.begin() + start - 1, 
+                 words.begin() + end - 1);
 
   string result = repaste(results, " ");
   return result;
@@ -1987,9 +1987,9 @@ expand_patsubst(const string &params, bool separate_words) {
     for (fi = froms.begin(); fi != froms.end(); ++fi) {
       PPFilenamePattern pattern(*fi);
       if (!pattern.has_wildcard()) {
-    cerr << "All the \"from\" parameters of patsubst must include "
-         << PATTERN_WILDCARD << ".\n";
-    return string();
+        cerr << "All the \"from\" parameters of patsubst must include "
+             << PATTERN_WILDCARD << ".\n";
+        return string();
       }
       from.back().push_back(pattern);
     }
@@ -2006,10 +2006,10 @@ expand_patsubst(const string &params, bool separate_words) {
     for (i = 0; i < num_patterns && !matched; i++) {
       Patterns::const_iterator pi;
       for (pi = from[i].begin(); pi != from[i].end() && !matched; ++pi) {
-    if ((*pi).matches(*wi)) {
-      matched = true;
-      (*wi) = to[i].transform(*wi, (*pi));
-    }
+        if ((*pi).matches(*wi)) {
+          matched = true;
+          (*wi) = to[i].transform(*wi, (*pi));
+        }
       }
     }
   }
@@ -2058,8 +2058,8 @@ expand_filter(const string &params) {
     bool matches_pattern = false;
     vector<PPFilenamePattern>::const_iterator pi;
     for (pi = patterns.begin(); 
-     pi != patterns.end() && !matches_pattern; 
-     ++pi) {
+         pi != patterns.end() && !matches_pattern; 
+         ++pi) {
       matches_pattern = (*pi).matches(word);
     }
 
@@ -2114,8 +2114,8 @@ expand_filter_out(const string &params) {
     bool matches_pattern = false;
     vector<PPFilenamePattern>::const_iterator pi;
     for (pi = patterns.begin(); 
-     pi != patterns.end() && !matches_pattern; 
-     ++pi) {
+         pi != patterns.end() && !matches_pattern; 
+         ++pi) {
       matches_pattern = (*pi).matches(word);
     }
 
@@ -2230,7 +2230,7 @@ expand_wordsubst(const string &params) {
     vector<string>::iterator wi;
     for (wi = words.begin(); wi != words.end(); ++wi) {
       if ((*wi) == subst) {
-    (*wi) = repl;
+        (*wi) = repl;
       }
     }
   }
@@ -2721,18 +2721,18 @@ expand_closure(const string &params) {
       const string &word = (*wi);
       bool inserted = closure.insert(word).second;
       if (inserted) {
-    // This is a new word, which presumably maps to a scope.
-    MapVariableDefinition::const_iterator di;
-    di = def.find(word);
-    if (di != def.end()) {
-      PPScope *scope = (*di).second;
-      // Evaluate the expression within this scope.
-      results.push_back(scope->expand_string(expression));
+        // This is a new word, which presumably maps to a scope.
+        MapVariableDefinition::const_iterator di;
+        di = def.find(word);
+        if (di != def.end()) {
+          PPScope *scope = (*di).second;
+          // Evaluate the expression within this scope.
+          results.push_back(scope->expand_string(expression));
       
-      // What does close_on evaluate to within this scope?  That
-      // points us to the next scope(s).
-      next_pass.push_back(scope->expand_string(close_on));
-    }
+          // What does close_on evaluate to within this scope?  That
+          // points us to the next scope(s).
+          next_pass.push_back(scope->expand_string(close_on));
+        }
       }
     }
   }
@@ -2818,8 +2818,8 @@ expand_dependencies(const string &params) {
     for (dfi = files.begin(); dfi != files.end(); ++dfi) {
       PPDependableFile *df = (*dfi);
       string rel_filename =
-    current_output_directory->get_rel_to(df->get_directory()) + "/" +
-    df->get_filename();
+        current_output_directory->get_rel_to(df->get_directory()) + "/" +
+        df->get_filename();
       results.push_back(rel_filename);
     }
   }
@@ -2925,7 +2925,7 @@ expand_forscopes(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_function(const string &funcname, 
-        const PPSubroutine *sub, const string &params) {
+                const PPSubroutine *sub, const string &params) {
   PPScope::push_scope((PPScope *)this);
   PPScope nested_scope(_named_scopes);
   nested_scope.define_formals(funcname, sub->_formals, params);
@@ -2980,7 +2980,7 @@ expand_map_variable(const string &varname, const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "map variable expansions require two parameters: $["
-     << varname << " " << params << "]\n";
+         << varname << " " << params << "]\n";
     return string();
   }
 
@@ -3001,7 +3001,7 @@ expand_map_variable(const string &varname, const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_map_variable(const string &varname, const string &expression,
-            const vector<string> &keys) {
+                    const vector<string> &keys) {
   const MapVariableDefinition &def = find_map_variable(varname);
   if (&def == &_null_map_def) {
     cerr << "Warning:  undefined map variable: " << varname << "\n";
@@ -3020,7 +3020,7 @@ expand_map_variable(const string &varname, const string &expression,
       PPScope *scope = (*di).second;
       string expansion = scope->expand_string(expression);
       if (!expansion.empty()) {
-    results.push_back(expansion);
+        results.push_back(expansion);
       }
     }
   }
@@ -3039,7 +3039,7 @@ expand_map_variable(const string &varname, const string &expression,
 ////////////////////////////////////////////////////////////////////
 void PPScope::
 r_expand_matrix(vector<string> &results, const vector<vector<string> > &words,
-        int index, const string &prefix) {
+                int index, const string &prefix) {
   if (index >= (int)words.size()) {
     // This is the terminal condition.
     results.push_back(prefix);

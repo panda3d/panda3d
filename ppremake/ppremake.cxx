@@ -230,7 +230,7 @@ main(int argc, char *argv[]) {
 
     case 'D':
       if (!check_dependencies(optarg)) {
-    dependencies_stale = true;
+        dependencies_stale = true;
       }
       any_d = true;
       break;
@@ -305,7 +305,7 @@ main(int argc, char *argv[]) {
 
   PPMain ppmain(&global_scope);
   if (!ppmain.read_source(".")) {
-      exit(1);
+    exit(1);
   }
 
   if (report_depends || report_needs) {
@@ -319,11 +319,11 @@ main(int argc, char *argv[]) {
     for (int i = 1; i < argc; i++) {
       cerr << "\n";
       if (report_depends) {
-          ppmain.report_depends(argv[i]);
+        ppmain.report_depends(argv[i]);
       }
       cerr << "\n";
       if (report_needs) {
-          ppmain.report_needs(argv[i]);
+        ppmain.report_needs(argv[i]);
       }
     }
 
@@ -332,14 +332,14 @@ main(int argc, char *argv[]) {
 
     if (argc < 2) {
       if (!ppmain.process_all()) {
-          exit(1);
+        exit(1);
       }
     } else {
       for (int i = 1; i < argc; i++) {
-          if (!ppmain.process(argv[i])) {
-              cerr << "Unable to process " << argv[i] << ".\n";
-              exit(1);
-          }
+        if (!ppmain.process(argv[i])) {
+          cerr << "Unable to process " << argv[i] << ".\n";
+          exit(1);
+        }
       }
     }
   }

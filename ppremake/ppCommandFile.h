@@ -14,7 +14,7 @@
 class PPScope;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : PPCommandFile
+//       Class : PPCommandFile
 // Description : This encapsulates a file that contains #commands to
 //               execute (like #define, #if, #begin .. #end),
 //               $[variables] to expand, and plain text to output.
@@ -69,7 +69,7 @@ protected:
   bool replay_foreach(const string &varname, const vector<string> &words);
   bool replay_formap(const string &varname, const string &mapvar);
   bool compare_output(const string &new_contents, const string &filename,
-		      bool notouch);
+                      bool notouch);
   bool failed_if() const;
 
   bool is_valid_formal(const string &formal_parameter_name) const;

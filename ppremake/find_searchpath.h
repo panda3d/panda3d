@@ -14,7 +14,7 @@
 // directories, and returns the first place in which it is found, or
 // empty string if it is not found.
 string find_searchpath(const vector<string> &directories,
-		       const string &filename);
+                       const string &filename);
 
 #endif
 

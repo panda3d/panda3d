@@ -14,7 +14,7 @@ class SedCommand;
 class SedContext;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : SedScript
+//       Class : SedScript
 // Description : This is a complete sed script: a linear list of
 //               commands that are to be applied for each line read
 //               from input.

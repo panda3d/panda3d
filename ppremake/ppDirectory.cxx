@@ -73,7 +73,7 @@ PPDirectory(const string &dirname, PPDirectory *parent) :
     _tree->_dirnames.insert(PPDirectoryTree::Dirnames::value_type(_dirname, this)).second;
   if (!inserted) {
     cerr << "Warning: multiple directories encountered named "
-	 << _dirname << "\n";
+         << _dirname << "\n";
   }
 }
 
@@ -322,9 +322,9 @@ get_dependable_file(const string &filename, bool is_header) {
     
     if (!unique) {
       cerr << "Warning: source file " << dependable->get_pathname()
-	   << " may be confused with "
-	   << _tree->find_dependable_file(filename)->get_pathname()
-	   << ".\n";
+           << " may be confused with "
+           << _tree->find_dependable_file(filename)->get_pathname()
+           << ".\n";
     }
   }
 
@@ -422,11 +422,11 @@ r_scan(const string &prefix) {
       string source_filename = next_prefix + SOURCE_FILENAME;
       if (access(source_filename.c_str(), F_OK) == 0) {
 
-	PPDirectory *subtree = new PPDirectory(filename, this);
+        PPDirectory *subtree = new PPDirectory(filename, this);
 
-	if (!subtree->r_scan(next_prefix)) {
-	  return false;
-	}
+        if (!subtree->r_scan(next_prefix)) {
+          return false;
+        }
       }
     }
   }
@@ -469,7 +469,7 @@ read_source_file(const string &prefix, PPNamedScopes *named_scopes) {
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     if (!(*ci)->read_source_file(prefix + (*ci)->get_dirname() + "/",
-				  named_scopes)) {
+                                  named_scopes)) {
       return false;
     }
   }
@@ -499,7 +499,7 @@ read_depends_file(PPNamedScopes *named_scopes) {
     PPCommandFile depends(_scope);
     if (!depends.read_file(depends_filename)) {
       cerr << "Error reading dependency definition file "
-	   << depends_filename << ".\n";
+           << depends_filename << ".\n";
       return false;
     }
     
@@ -514,12 +514,12 @@ read_depends_file(PPNamedScopes *named_scopes) {
       const string &dirname = (*ni);
       PPDirectory *dir = _tree->find_dirname(dirname);
       if (dir == (PPDirectory *)NULL) {
-	cerr << "Could not find dependent dirname " << dirname << "\n";
+        cerr << "Could not find dependent dirname " << dirname << "\n";
       } else {
-	if (dir != this) {
-	  _i_depend_on.insert(dir);
-	  dir->_depends_on_me.insert(this);
-	}
+        if (dir != this) {
+          _i_depend_on.insert(dir);
+          dir->_depends_on_me.insert(this);
+        }
       }
     }
 
@@ -604,7 +604,7 @@ compute_depends_index() {
     if ((*di)->_computing_depends_index) {
       // Oops, we have a cycle!
       cerr << "Cycle detected in inter-directory dependencies!\n"
-	   << _dirname << " depends on " << (*di)->_dirname << "\n";
+           << _dirname << " depends on " << (*di)->_dirname << "\n";
       return false;
     }
       
@@ -687,12 +687,12 @@ update_file_dependencies(const string &cache_filename) {
     for (di = _dependables.begin(); di != _dependables.end(); ++di) {
       PPDependableFile *file = (*di).second;
       if (file->was_examined()) {
-	if (file->is_circularity()) {
-	  cerr << "Warning: circular #include directives:\n"
-	       << "  " << file->get_circularity() << "\n";
-	}
-	file->write_cache(out);
-	wrote_anything = true;
+        if (file->is_circularity()) {
+          cerr << "Warning: circular #include directives:\n"
+               << "  " << file->get_circularity() << "\n";
+        }
+        file->write_cache(out);
+        wrote_anything = true;
       }
     }
 

@@ -14,7 +14,7 @@
 // and repasting the tokens back into a string.
 
 void tokenize(const string &source, vector<string> &tokens,
-	      const string &delimiters);
+              const string &delimiters);
 
 void tokenize_whitespace(const string &source, vector<string> &tokens);
 

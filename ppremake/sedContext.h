@@ -9,7 +9,7 @@
 #include "ppremake.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : SedContext
+//       Class : SedContext
 // Description : This contains the current context of the sed process
 //               as it is running: the pattern space, the hold space,
 //               and the current line numbers, etc.  It is updated as

@@ -136,8 +136,8 @@ extract_body(const string &filename) const {
   if (_has_wildcard) {
     size_t outside_length = _prefix.length() + _suffix.length();
     if ((filename.length() >= outside_length) &&
-	(filename.substr(0, _prefix.length()) == _prefix) &&
-	(filename.substr(filename.length() - _suffix.length()) == _suffix)) {
+        (filename.substr(0, _prefix.length()) == _prefix) &&
+        (filename.substr(filename.length() - _suffix.length()) == _suffix)) {
       return filename.substr(_prefix.length(), filename.length() - outside_length);
     }
   }
@@ -159,7 +159,7 @@ extract_body(const string &filename) const {
 ////////////////////////////////////////////////////////////////////
 string PPFilenamePattern::
 transform(const string &filename,
-	  const PPFilenamePattern &transform_from) const {
+          const PPFilenamePattern &transform_from) const {
   assert(transform_from._has_wildcard);
 
   if (transform_from.matches(filename)) {

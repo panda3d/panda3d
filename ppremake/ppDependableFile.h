@@ -14,7 +14,7 @@
 class PPDirectory;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : PPDependableFile
+//       Class : PPDependableFile
 // Description : Corresponds to a single C/C++ source file, either a
 //               .c file or a .h file, that can be scanned for a
 //               number of #include statements.  This file may both

@@ -19,7 +19,7 @@
 class SedContext;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : SedAddress
+//       Class : SedAddress
 // Description : This represents a single address in a sed command,
 //               something like a line number or a regular expression.
 ////////////////////////////////////////////////////////////////////

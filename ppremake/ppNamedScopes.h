@@ -14,7 +14,7 @@
 class PPScope;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : PPNamedScopes
+//       Class : PPNamedScopes
 // Description : A collection of named scopes, as defined by #begin
 //               .. #end sequences within a series of command files,
 //               each associated with the directory name of the
@@ -37,7 +37,7 @@ private:
   typedef map<string, Scopes> Named;
 
   void p_get_scopes(const Named &named, const string &name,
-		    Scopes &scopes) const;
+                    Scopes &scopes) const;
 
   typedef map<string, Named> Directories;
   Directories _directories;

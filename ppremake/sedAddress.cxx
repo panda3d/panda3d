@@ -70,15 +70,15 @@ parse_address(const string &line, size_t &p) {
     size_t begin = p;
     while (p < line.length() && line[p] != delimiter) {
       if (line[p] == '\\') {
-	p++;
-	// A backslash could escape the closing character.
+        p++;
+        // A backslash could escape the closing character.
       }
       p++;
     }
 
     if (p >= line.length()) {
       cerr << "Could not find terminating character '" << delimiter
-	   << "' in regular expression: " << line.substr(p0) << "\n";
+           << "' in regular expression: " << line.substr(p0) << "\n";
       return false;
     }
 
@@ -92,7 +92,7 @@ parse_address(const string &line, size_t &p) {
       regerror(error, &_re, errbuf, errbuf_size);
 
       cerr << "Invalid regular expression: " << re << "\n"
-	   << errbuf << "\n";
+           << errbuf << "\n";
       return false;
     }
 

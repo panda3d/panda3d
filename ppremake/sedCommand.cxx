@@ -70,12 +70,12 @@ parse_command(const string &line, size_t &p) {
       // Skip the comma and more whitespace.
       p++;
       while (p < line.length() && isspace(line[p])) {
-	p++;
+        p++;
       }
 
       _addr2 = new SedAddress;
       if (!_addr2->parse_address(line, p)) {
-	return false;
+        return false;
       }
     }
   }
@@ -129,18 +129,18 @@ run(SedScript &script, SedContext &context) {
       // in, but are the rest of the lines following this one?
       matches = true;
       if (_addr2->matches(context)) {
-	// If this line matches addr2, that's the end of our range for
-	// next time.
-	_active = false;
+        // If this line matches addr2, that's the end of our range for
+        // next time.
+        _active = false;
       }
     } else {
       // We have not yet matched _addr1.  This line and subsequent
       // lines are in only if we match now.
       if (_addr1->matches(context)) {
-	matches = true;
-	if (!_addr2->precedes(context)) {
-	  _active = true;
-	}
+        matches = true;
+        if (!_addr2->precedes(context)) {
+          _active = true;
+        }
       }
     }
 
@@ -188,7 +188,7 @@ parse_s_params(const string &line, size_t &p) {
   
   if (p >= line.length()) {
     cerr << "Could not find terminating character '" << delimiter
-	 << "' in regular expression: " << line.substr(p0) << "\n";
+         << "' in regular expression: " << line.substr(p0) << "\n";
     return false;
   }
 
@@ -202,7 +202,7 @@ parse_s_params(const string &line, size_t &p) {
     regerror(error, &_re, errbuf, errbuf_size);
     
     cerr << "Invalid regular expression: " << re << "\n"
-	 << errbuf << "\n";
+         << errbuf << "\n";
     return false;
   }
   _flags |= F_have_re;
@@ -219,7 +219,7 @@ parse_s_params(const string &line, size_t &p) {
 
   if (p >= line.length()) {
     cerr << "Could not find terminating character '" << delimiter
-	 << "' in replacement string: " << line.substr(p0) << "\n";
+         << "' in replacement string: " << line.substr(p0) << "\n";
     return false;
   }
 
@@ -291,30 +291,30 @@ do_s_command(SedContext &context) {
     size_t p = 0;
     while (p < _string2.length()) {
       if (_string2[p] == '\\') {
-	p++;
-	if (p < _string2.length()) {
-	  if (isdigit(_string2[p])) {
-	    // Here's a subexpression reference.
-	    const char *numstr = _string2.c_str() + p;
-	    char *numend;
-	    int ref = strtol(numstr, &numend, 10);
-	    p += (numend - numstr);
-	    if (ref <= 0 || ref >= (int)nmatch) {
-	      cerr << "Invalid subexpression number: " << ref << "\n";
-	    } else {
-	      repl += string(str + pmatch[ref].rm_so,
-			     pmatch[ref].rm_eo - pmatch[ref].rm_so);
-	    }
-	  } else {
-	    // Here's an escaped character.
-	    repl += _string2[p];
-	    p++;
-	  }
-	}
+        p++;
+        if (p < _string2.length()) {
+          if (isdigit(_string2[p])) {
+            // Here's a subexpression reference.
+            const char *numstr = _string2.c_str() + p;
+            char *numend;
+            int ref = strtol(numstr, &numend, 10);
+            p += (numend - numstr);
+            if (ref <= 0 || ref >= (int)nmatch) {
+              cerr << "Invalid subexpression number: " << ref << "\n";
+            } else {
+              repl += string(str + pmatch[ref].rm_so,
+                             pmatch[ref].rm_eo - pmatch[ref].rm_so);
+            }
+          } else {
+            // Here's an escaped character.
+            repl += _string2[p];
+            p++;
+          }
+        }
       } else {
-	// Here's a normal character.
-	repl += _string2[p];
-	p++;
+        // Here's a normal character.
+        repl += _string2[p];
+        p++;
       }
     }
 

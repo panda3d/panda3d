@@ -9,7 +9,7 @@
 #include "ppremake.h"
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : PPFilenamePattern
+//       Class : PPFilenamePattern
 // Description : This is a string that represents a filename, or a
 //               family of filenames, using the make convention that a
 //               wildcard sign (PATTERN_WILDCARD, typically '%') in
@@ -29,7 +29,7 @@ public:
   bool matches(const string &filename) const;
   string extract_body(const string &filename) const;
   string transform(const string &filename,
-		   const PPFilenamePattern &transform_from) const;
+                   const PPFilenamePattern &transform_from) const;
 
 private:
   bool _has_wildcard;
