@@ -43,7 +43,7 @@ class Notifier:
         """warning(self, string)
         Issue the warning message if warn flag is on"""
         if (self.__warning):
-            str = "Warning: " + self.__name + ": " + warningString
+            str = ':' + self.__name + '(warning): ' + warningString
             self.__log(str)
             print(str)
 
@@ -64,7 +64,7 @@ class Notifier:
         """debug(self, string)
         Issue the debug message if debug flag is on"""
         if (self.__debug):
-            str = "Debug: " + self.__name + ": " + debugString
+            str = ':' + self.__name + '(debug): ' + debugString
             self.__log(str)
             print(str)
 
@@ -85,7 +85,7 @@ class Notifier:
         """info(self, string)
         Print the given informational string, if verbose flag is on"""
         if (self.__verbose):
-            str = "Info: " + self.__name + ": " + infoString
+            str = ':' + self.__name + '(info): ' + infoString
             self.__log(str)
             print(str)
 

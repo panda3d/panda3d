@@ -23,6 +23,7 @@ class ShowBase:
         self.wantTk = self.config.GetBool('want-tk', 0)
         self.wantSound = self.config.GetBool('want-sound', 1)
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
+        self.wantStats = self.config.GetBool('want-stats', 0)
 
         # Set a maximum frame rate on the render loop (0 means do not limit)
         Task.maxFps = self.config.GetInt('max-fps', 120)
@@ -91,8 +92,15 @@ class ShowBase:
 
         self.createAudioManager()
         self.createRootPanel()
+        self.createStats()
 
         self.restart()
+
+    def createStats(self):
+        # You must specify a pstats-host in your configrc
+        # The default is localhost
+        if self.wantStats:
+            PStatClient.getGlobalPstats().connect()
 
     def createAudioManager(self):
         if self.wantSound:

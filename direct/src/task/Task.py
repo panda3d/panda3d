@@ -184,12 +184,15 @@ class TaskManager:
     
     def __init__(self):
         self.running = 0
+        self.stepping = 0
         self.taskList = []
         self.currentTime, self.currentFrame = getTimeFrame()
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
         #TaskManager.notify.setDebug(1)
 
+    def stepping(value):
+        self.stepping = value
 
     def spawnMethodNamed(self, func, name):
         task = Task(func)
@@ -235,6 +238,7 @@ class TaskManager:
         return len(removedTasks)
 
     def step(self):
+        TaskManager.notify.debug('step')
         self.currentTime, self.currentFrame = getTimeFrame()
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
@@ -255,28 +259,29 @@ class TaskManager:
         return len(self.taskList)
 
     def run(self):
-
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
         t = globalClock.getTime()
         globalClock.setTime(t)
-        
-        self.running = 1
-        while self.running:
-            try:
-                startTime = globalClock.getRealTime()
-                self.step()
-                finishTime = globalClock.getRealTime()
-                # Max out the frame rate so we do not starve the cpu
-                if (maxFps > 0):
-                    dt = finishTime - startTime
-                    length = (1.0/maxFps)-dt
-                    if (length > 0):
-                        time.sleep(length)
-            except KeyboardInterrupt:
-                self.stop()
-            except:
-                raise
+        if self.stepping:
+            self.step()
+        else:
+            self.running = 1
+            while self.running:
+                try:
+                    startTime = globalClock.getRealTime()
+                    self.step()
+                    finishTime = globalClock.getRealTime()
+                    # Max out the frame rate so we do not starve the cpu
+                    if (maxFps > 0):
+                        dt = finishTime - startTime
+                        length = (1.0/maxFps)-dt
+                        if (length > 0):
+                            time.sleep(length)
+                except KeyboardInterrupt:
+                    self.stop()
+                except:
+                    raise
 
     def stop(self):
         # Set a flag so we will stop before beginning next frame
