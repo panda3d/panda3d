@@ -2107,6 +2107,9 @@ expand_subst(const string &params) {
 //     Function: PPScope::expand_findstrnig
 //       Access: Private
 //  Description: Expands the "findstring" function variable.
+//               $[findstring a,b] returns b if and only if it is a
+//               substring of a; otherwise, it returns the empty
+//               string.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_findstring(const string &params) {

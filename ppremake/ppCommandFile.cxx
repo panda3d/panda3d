@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <utime.h>
 #include <assert.h>
+#include <strstream.h>
 
 static const string begin_comment(BEGIN_COMMENT);
 
@@ -181,7 +182,6 @@ BlockNesting(BlockState state, const string &name) :
   _if = (PPCommandFile::IfNesting *)NULL;
   _write_state = (PPCommandFile::WriteState *)NULL;
   _scope = (PPScope *)NULL;
-  _tempnam = (char *)NULL;
   _flags = 0;
   _next = (PPCommandFile::BlockNesting *)NULL;
 }
@@ -1005,33 +1005,9 @@ handle_output_command() {
       filename = prefix + filename;
     }
     
-    nest->_true_name = filename;
-    nest->_tempnam = (char *)NULL;
+    nest->_filename = filename;
 
-    if (access(filename.c_str(), F_OK) == 0) {
-      // If the file already exists, create a temporary file first.
-      
-      nest->_tempnam = tempnam((prefix + ".").c_str(), "pptmp");
-      assert(nest->_tempnam != (char *)NULL);
-      
-      nest->_output.open(nest->_tempnam);
-      if (nest->_output.fail()) {
-	cerr << "Unable to open output file " << nest->_tempnam << "\n";
-	return false;
-      }
-      
-    } else {
-      // If the file does not already exist, create it directly instead
-      // of monkeying around with temporary files.
-      cerr << "Generating " << filename << "\n";
-      
-      nest->_output.open(filename.c_str(), ios::out, 0666);
-      if (nest->_output.fail()) {
-	cerr << "Unable to open output file " << filename << "\n";
-	return false;
-      }
-    }
-    
+    // Generate an in-memory copy of the file first.
     _write_state = new WriteState(*_write_state);
     _write_state->_out = &nest->_output;
   }
@@ -1110,18 +1086,18 @@ handle_end_command() {
   } else if (nest->_state == BS_output) {
     if (!_in_for) {
       if (!nest->_output) {
-	cerr << "Error while writing " << nest->_true_name << "\n";
+	cerr << "Error while writing " << nest->_filename << "\n";
 	return false;
       }
-      nest->_output.close();
 
-      // Verify the output file.
-      if (nest->_tempnam != (char *)NULL) {
-	if (!compare_output(nest->_tempnam, nest->_true_name,
-			    (nest->_flags & OF_notouch) != 0)) {
-	  return false;
-	}
-	free(nest->_tempnam);
+      // Now compare the file we generated to the file that's already
+      // there, if there is one.
+
+      nest->_output << ends;
+      const char *generated_file = nest->_output.str();
+      if (!compare_output(generated_file, nest->_filename,
+			  (nest->_flags & OF_notouch) != 0)) {
+	return false;
       }
     }
   }
@@ -1646,56 +1622,68 @@ replay_formap(const string &varname, const string &mapvar) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PPCommandFile::compare_output
 //       Access: Protected
-//  Description: After a temporary file has been written due to an
-//               #output command, compare the results to the original
-//               file.  If they are different, remove the original
-//               file and rename the temporary file; if they are the
-//               same, remove the temporary file.
+//  Description: After a file has been written to a (potentially
+//               large) string via an #output command, compare the
+//               results to the original file.  If they are different,
+//               remove the original file and replace it with the new
+//               contents; otherwise, leave the original alone.
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
-compare_output(const string &temp_name, const string &true_name,
+compare_output(const string &new_contents, const string &filename,
 	       bool notouch) {
-  ifstream in_a(temp_name.c_str());
-  ifstream in_b(true_name.c_str());
+  bool exists = (access(filename.c_str(), F_OK) == 0);
+  bool differ = false;
 
-  int a = in_a.get();
-  int b = in_b.get(); 
-  bool differ = (a != b);
-  while (!in_a.eof() && !in_b.eof() && !differ) {
-    a = in_a.get();
-    b = in_b.get(); 
-    differ = (a != b);
+  if (exists) {
+    size_t len = new_contents.length();
+    size_t want_bytes = len + 1;
+
+    char *orig_contents = new char[want_bytes];
+    ifstream in(filename.c_str());
+    in.read(orig_contents, want_bytes);
+
+    if (in.gcount() != len) {
+      // The wrong number of bytes.
+      differ = true;
+
+    } else {
+      differ = !(new_contents == string(orig_contents, len));
+    }
   }
 
-  in_a.close();
-  in_b.close();
+  if (differ || !exists) {
+    cerr << "Generating " << filename << "\n";
 
-  if (differ) {
-    cerr << "Generating " << true_name << "\n";
+    if (exists) {
+      if (unlink(filename.c_str()) < 0) {
+	cerr << "Unable to remove old " << filename << "\n";
+	return false;
+      }
+    }
 
-    if (unlink(true_name.c_str()) < 0) {
-      cerr << "Unable to remove old " << true_name << "\n";
+    ofstream out_b(filename.c_str(), ios::out, 0666);
+    if (!out_b) {
+      cerr << "Unable to open file " << filename << " for writing.\n";
       return false;
     }
 
-    if (rename(temp_name.c_str(), true_name.c_str()) < 0) {
-      cerr << "Unable to rename temporary file " << temp_name
-	   << " to " << true_name << "\n";
+    out_b.write(new_contents.data(), new_contents.length());
+
+    if (!out_b) {
+      cerr << "Unable to write to file " << filename << "\n";
       return false;
     }
+    out_b.close();
 
   } else {
-    //    cerr << "File " << true_name << " is unchanged.\n";
-    if (unlink(temp_name.c_str()) < 0) {
-      cerr << "Warning: unable to remove temporary file " << temp_name << "\n";
-    }
+    //    cerr << "File " << filename << " is unchanged.\n";
 
     // Even though the file is unchanged, unless the "notouch" flag is
     // set, we want to update the modification time.  This helps the
     // makefiles know we did something.
     if (!notouch) {
-      if (utime(true_name.c_str(), (struct utimbuf *)NULL) < 0) {
-	cerr << "Warning: unable to touch " << true_name << "\n";
+      if (utime(filename.c_str(), (struct utimbuf *)NULL) < 0) {
+	cerr << "Warning: unable to touch " << filename << "\n";
       }
     }
   }

@@ -68,7 +68,7 @@ protected:
   bool replay_forscopes(const string &name);
   bool replay_foreach(const string &varname, const vector<string> &words);
   bool replay_formap(const string &varname, const string &mapvar);
-  bool compare_output(const string &temp_name, const string &true_name,
+  bool compare_output(const string &new_contents, const string &filename,
 		      bool notouch);
   bool failed_if() const;
 
@@ -153,9 +153,8 @@ private:
     IfNesting *_if;
     WriteState *_write_state;
     PPScope *_scope;
-    string _true_name;
-    char *_tempnam;
-    ofstream _output;
+    string _filename;
+    ostrstream _output;
     vector<string> _words;
     int _flags;
     BlockNesting *_next;
