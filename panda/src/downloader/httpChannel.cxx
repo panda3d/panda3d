@@ -1216,7 +1216,7 @@ run_ssl_handshake() {
     downloader_cat.warning()
       << "No current cipher on SSL connection.\n";
   } else {
-    if (downloader_cat.debug()) {
+    if (downloader_cat.is_debug()) {
       downloader_cat.debug()
         << "Using cipher " << SSL_CIPHER_get_name(cipher) << "\n";
     }
