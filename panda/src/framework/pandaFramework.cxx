@@ -835,7 +835,7 @@ event_esc(CPT_Event event, void *data) {
     self->remove_mouse(win);
 
     // If we closed the last window, shut down.
-    if (self->_windows.empty()) {
+    if (self->all_windows_closed()) {
       self->_exit_flag = true;
     }
   }
@@ -1307,7 +1307,7 @@ event_window_event(CPT_Event event, void *data) {
         self->remove_mouse(win);
 
         // If the last window was closed, exit the application.
-        if (self->_windows.empty() && !self->_exit_flag) {
+        if (self->all_windows_closed() && !self->_exit_flag) {
           framework_cat.info()
             << "Last window was closed by user.\n";
           self->_exit_flag = true;
