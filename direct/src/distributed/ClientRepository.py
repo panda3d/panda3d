@@ -789,8 +789,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             datagram.addUint32(zoneId)
             self.send(datagram)
 
-
-
     else:
         def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
             datagram = PyDatagram()

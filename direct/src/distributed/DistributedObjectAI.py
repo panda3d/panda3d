@@ -142,24 +142,48 @@ class DistributedObjectAI(DirectObject.DirectObject):
         def addInterest(self, zoneId, note="", event=None):
             self.air.addInterest(self.getDoId(), zoneId, note, event)
 
+        def b_setLocation(self, parentId, zoneId):
+            self.d_setLocation(parentId, zoneId)
+            self.setLocation(parentId, zoneId)
+
+        def d_setLocation(self, parentId, zoneId):
+            self.air.sendSetLocation(self, parentId, zoneId)
+
         def setLocation(self, parentId, zoneId):
-            if self.__location:
-                # Make sure our parentId and/or zoneId are actually changing before doing any work
-                oldParentId, oldZoneId = self.__location
-                if oldParentId != parentId or oldZoneId != zoneId:
-                    # The store must run first so we know the old location
-                    self.air.sendSetLocation(self, parentId, zoneId)
-                    self.__location = (parentId, zoneId)
+            oldParentId = self.parentId
+            oldZoneId = self.zoneId
+            self.zoneId = zoneId
+            self.parentId = parentId
+            self.air.changeDOZoneInTables(self, zoneId, oldZoneId)
+            messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
+            # if we are not going into the quiet zone, send a 'logical' zone
+            # change message
+            if zoneId != DistributedObjectAI.QuietZone:
+                lastLogicalZone = oldZoneId
+                if oldZoneId == DistributedObjectAI.QuietZone:
+                    lastLogicalZone = self.lastNonQuietZone
+                self.handleLogicalZoneChange(zoneId, lastLogicalZone)
+                self.lastNonQuietZone = zoneId
+            # self.air.storeObjectLocation(self.doId, parentId, zoneId)
+            self.__location = (parentId, zoneId)
 
         def getLocation(self):
             return self.__location
 
-        if 0: # this is untested:
-            def setLocation(self, parentId, zoneId):
-                # The store must run first so we know the old location
-                self.air.storeObjectLocation(self.doId, parentId, zoneId)
-                self.__location = (parentId, zoneId)
-
+    else:
+        # NON OTP
+        def handleZoneChange(self, newZoneId, oldZoneId):
+            self.zoneId = newZoneId
+            self.air.changeDOZoneInTables(self, newZoneId, oldZoneId)
+            messenger.send(self.getZoneChangeEvent(), [newZoneId, oldZoneId])
+            # if we are not going into the quiet zone, send a 'logical' zone change
+            # message
+            if newZoneId != DistributedObjectAI.QuietZone:
+                lastLogicalZone = oldZoneId
+                if oldZoneId == DistributedObjectAI.QuietZone:
+                    lastLogicalZone = self.lastNonQuietZone
+                self.handleLogicalZoneChange(newZoneId, lastLogicalZone)
+                self.lastNonQuietZone = newZoneId
 
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
@@ -197,23 +221,6 @@ class DistributedObjectAI(DirectObject.DirectObject):
         # arguments are newZoneId, oldZoneId
         # does not include the quiet zone.
         return 'DOLogicalChangeZone-%s' % self.doId
-
-    def handleZoneChange(self, newParentId, newZoneId, oldParentId, oldZoneId):
-        if wantOtpServer:
-            assert oldParentId == self.parentId
-            ##assert oldZoneId == self.zoneId
-            self.parentId = newParentId
-        self.zoneId = newZoneId
-        self.air.changeDOZoneInTables(self, newZoneId, oldZoneId)
-        messenger.send(self.getZoneChangeEvent(), [newZoneId, oldZoneId])
-        # if we are not going into the quiet zone, send a 'logical' zone change
-        # message
-        if newZoneId != DistributedObjectAI.QuietZone:
-            lastLogicalZone = oldZoneId
-            if oldZoneId == DistributedObjectAI.QuietZone:
-                lastLogicalZone = self.lastNonQuietZone
-            self.handleLogicalZoneChange(newZoneId, lastLogicalZone)
-            self.lastNonQuietZone = newZoneId
 
     def handleLogicalZoneChange(self, newZoneId, oldZoneId):
         """this function gets called as if we never go through the

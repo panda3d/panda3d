@@ -19,6 +19,9 @@ import whrandom
 from direct.task import Task
 import __builtin__
 
+# Force direct and tk to be on
+base.startDirect(fWantDirect = 1, fWantTk = 1)
+
 visualizeZones = base.config.GetBool("visualize-zones", 0)
 dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
 fUseCVS = base.config.GetBool("level-editor-use-cvs", 1)
@@ -217,9 +220,10 @@ except NameError:
     __builtin__.DNASTORE = DNASTORE = DNAStorage()
     
     # Load the generic storage files
+    loadDNAFile(DNASTORE, 'dna/storage.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_5/dna/storage_town.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_5.5/dna/storage_estate.dna', CSDefault, 1)
+    # loadDNAFile(DNASTORE, 'phase_5.5/dna/storage_estate.dna', CSDefault, 1)
     # loadDNAFile(DNASTORE, 'phase_5.5/dna/storage_house_interior.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
     if 'TT' in hoods:
@@ -749,7 +753,7 @@ class LevelEditor(NodePath, PandaObject):
         t = direct.camera.lerpPosHpr(pos, hpr, 1.0, blendType = 'easeInOut',
                                    task = 'manipulateCamera')
         # Note, if this dies an unatural death, this could screw things up
-        t.uponDeath = self.switchToDriveMode
+        # t.uponDeath = self.switchToDriveMode
 
     def switchToDriveMode(self,state):
         """ Disable direct camera manipulation and enable player drive mode """
@@ -4104,7 +4108,10 @@ class LevelStyleManager:
         # Create top level node for new menu
         newMenu = hidden.attachNewNode(dnaType + 'Menu')
         # Compute angle per item
-        angle = deg2Rad(360.0/numItems)
+        if numItems == 0:
+            angle = 0.0
+        else:
+            angle = deg2Rad(360.0/numItems)
         aspectRatio = direct.dr.getWidth()/float(direct.dr.getHeight())
         # Add items
         for i in range (numItems):
