@@ -554,8 +554,10 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
     softegg_cat.spam() << "\t" << p << " " << h << " " << r << endl;
     softegg_cat.spam() << "\t" << x << " " << y << " " << z << endl;
 
-    // make sure the ordering is correct
-    anim->set_order(anim->get_standard_order());
+    // Encode the component multiplication ordering in the egg file.
+    // SoftImage always uses this order, regardless of the setting of
+    // temp-hpr-fix.
+    anim->set_order("sphrt");
 
     // Add each component by their names
     anim->add_component_data("i", i);
