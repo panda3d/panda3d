@@ -1,0 +1,134 @@
+MULTIPART ACTORS vs. HALF-BODY ANIMATION
+
+Sometimes you want to be able to play two different animations on the
+same Actor at once.  Panda does have support for blending two
+animations on the whole Actor simultaneously, but what if you want to
+play one animation (say, a walk cycle) on the legs while a completely
+different animation (say, a shoot animation) is playing on the torso?
+
+Although Panda doesn't currently have support for playing two
+different animations on different parts of the same actor at once
+(half-body animation), it does support loading up two completely
+different models into one actor (multipart actors), which can be used
+to achieve the same effect, albeit with a bit more setup effort.
+
+Multipart actors are more powerful than half-body animations, since
+you can completely mix-and-match the pieces with parts from other
+characters: for instance, you can swap out short legs for long legs to
+make your character taller.  On the other hand, multipart actors are
+also more limited in that there cannot be any polygons that straddle
+the connecting joint between the two parts.
+
+
+BROAD OVERVIEW
+
+What you have to do is split your character into two completely
+different models: the legs and the torso.  You don't have to do this
+in the modeling package; you should be able to do it in the conversion
+process.  The converter needs to be told to get out the entire
+skeleton, but just a subset of the geometry.  Maya2egg, for instance,
+will do this with the -subset command-line parameter.
+
+Then, in a nutshell, you load up a multipart actor with the legs and
+the torso as separate parts, and you can play the same animation on
+both parts, or you can use the per-part interface to play a different
+animation on each part.
+
+
+MORE DETAILS
+
+That nutshell oversimplifies things only a little bit.  Unless your
+different animations are very similar to each other, you will have
+issues keeping the different parts from animating in different
+directions.  To solve this, you need to parent them together properly,
+so that the torso is parented to the hips.  This means exposing the
+hip joint in the legs model, and subtracting the hip joint animation
+from the torso model using egg-topstrip (because it will pick it up
+again when it gets stacked up on the hips).  Also, you should strongly
+consider egg-optchar to remove the unused joints from each part's
+skeleton, although this step is just an optimization.
+
+Unfortunately, all this only works if your character has no polygons
+that straddle the connecting joint between the hips and the torso.  If
+it does, you may have to find a clever place to draw the line between
+them (under a shirt?) so that the pieces can animate in different
+directions without visible artifacts.  If that can't be done, then the
+only solution is to add true half-body animation support to Panda. :)
+
+
+NUTS AND BOLTS
+
+You need to parent the two parts together in Panda.  The complete
+process is this (of course, you'll need to flesh out the details of
+the maya2egg command line according to the needs of your model, and
+insert your own filenames and joint names where appropriate):
+
+(1) Extract out the model into two separate files, legs and torso.
+    Extract the animation out twice too, even though both copies will
+    be the same, just so it can conveniently exist in two different
+    egg files, one for the legs and one for the torso.
+
+   maya2egg -subset legs_group -a model -cn legs -o legs-model.egg myFile.mb
+   maya2egg -a chan -cn legs -o legs-walk.egg myFile.mb
+   maya2egg -subset torso_group -a model -cn torso -o torso-model.egg myFile.mb
+   maya2egg -a chan -cn torso -o torso-walk.egg myFile.mb
+
+    Note that I use the -cn option to give the legs and torso pieces
+    different character names.  It helps out Panda to know which
+    animations are intended to be played with which models, and the
+    character name serves this purpose--this way I can now just type:
+
+   pview legs-model.egg legs-walk.egg torso-model.egg torso-walk.egg
+
+    Panda will bind up the appropriate animations to their associated
+    models automatically, and I should see my character walking
+    normally.  We could skip straight to step (5) now, but the
+    character isn't stacked up yet, and he's only sticking together
+    now because we're playing the walk animation on both parts at the
+    same time--if we want to play different animations on different
+    parts, we have to stack them.
+
+(2) Expose the hip joint on the legs:
+
+   egg-optchar -d opt -expose hip_joint legs-model.egg legs-walk.egg
+
+(3) Strip out the hip joint animation from the torso and egg-optchar
+    it to remove the leg joints:
+
+   egg-topstrip -d strip -t hip_joint torso-model.egg torso-walk.egg
+   egg-optchar -d opt strip/torso-model.egg strip/torso-walk.egg
+
+(4) Bamify everything.
+
+   egg2bam -o legs-model.bam opt/legs-model.egg
+   egg2bam -o legs-walk.bam opt/legs-walk.egg
+   egg2bam -o torso-model.bam opt/torso-model.egg
+   egg2bam -o torso-walk.bam opt/torso-walk.egg
+
+(5) Create a multipart character in Panda.  This means loading up the
+    torso model and parenting it, in toto, to the hip joint of the
+    legs.  But the Actor interface handles this for you:
+
+   from direct.actor import Actor
+
+   a = Actor.Actor(
+     # part dictionary
+     { 'torso' : 'torso-model.bam',
+       'legs' : 'legs-model.bam',
+     },
+
+     # anim dictionary
+     { 'torso' : {'walk' : 'torso-walk.bam'},
+       'legs' : {'walk' : 'legs-walk.bam'},
+     })
+
+   # Tell the Actor how to stack the pieces.
+   a.attach('torso', 'legs', 'hip_joint')
+
+(6) You can now play animations on the whole actor, or on only part of it:
+
+   a.loop('walk')
+
+   a.stop()
+   a.loop('walk', partName = 'legs')
+
