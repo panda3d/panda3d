@@ -22,7 +22,7 @@
 
 
 
-#define LOCAL_LIBS downloader event express pandabase
+#define LOCAL_LIBS downloader express pandabase
 #define OTHER_LIBS dtoolconfig dtool
 
 #if $[LINK_IN_GL]
