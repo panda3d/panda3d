@@ -505,6 +505,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
         }
         break;
+
+        case WM_SYSCOMMAND:
+          if(wparam==SC_KEYMENU) {
+              // if Alt is released (alone w/o other keys), defwindproc will send 
+              // this command, which will 'activate' the title bar menu (we have none)
+              // and give focus to it.  we dont want this to happen, so kill this msg
+              return 0;
+          }
+        break;
     
         case WM_KEYDOWN: {
           POINT point;
