@@ -29,8 +29,6 @@ class DirectLights(NodePath):
         NodePath.__init__(self)
         # Create a node for the lights
         self.assign(parent.attachNewNode('DIRECT Lights'))
-        # Create a light attrib
-        self.la = LightAttrib.makeAllOff()
         # Create a list of all active lights
         self.lightDict = {}
         # Counts of the various types of lights
@@ -101,13 +99,15 @@ class DirectLights(NodePath):
 
     def allOn(self):
         """ Turn on all DIRECT lights """
-        render.node().setAttrib(self.la)
+        for light in self.lightDict.values():
+            self.setOn(light)
         # Make sure there is a default material
         render.setMaterial(Material())
 
     def allOff(self):
         """ Turn off all DIRECT lights """
-        render.node().clearAttrib(LightAttrib.getClassType())
+        for light in self.lightDict.values():
+            self.setOff(light)
 
     def toggle(self):
         """ Toggles light attribute, but doesn't toggle individual lights """
@@ -118,14 +118,11 @@ class DirectLights(NodePath):
 
     def setOn(self, directLight):
         """ setOn(directLight) """
-        self.la = self.la.addLight(directLight.getLight())
-        if render.node().hasAttrib(LightAttrib.getClassType()):
-            render.node().setAttrib(self.la)
+        render.setLight(directLight)
             
     def setOff(self, directLight):
         """ setOff(directLight)"""
-        self.la = self.la.removeLight(directLight.getLight())
-        if render.node().hasAttrib(LightAttrib.getClassType()):
-            render.node().setAttrib(self.la)
+        render.clearLight(directLight)
+
 
 
