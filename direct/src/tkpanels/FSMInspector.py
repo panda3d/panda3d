@@ -445,19 +445,13 @@ class StateInspector(Pmw.MegaArchetype):
 """
 # USING FINITE STATE INSPECTOR
 
-# First, in your Configrc set:
-#    want-tk   #t
-#
-# Warning: When you start emacs with tk emacs/python can sometimes hang
-# Your best bet is to:
-# 1) start the show
-# 2) try interacting with python (enter some number for example)
-# 3) when python hangs this many Control-C's in rapid succession until you break
-#    back to the prompt
-# 4) If that works, you are probably ok, if not, use the signal pull down menu to
-#    kill the python process and start again
+1)	in your Configrc add:
 
-# The following lines are just an example of how to create a finite state machine
+want-tk #t
+
+2)	start up the show and create a Finite State Machine
+
+from ShowBaseGlobal import *
 import FSM
 import State
 def enterState():
@@ -487,24 +481,50 @@ fsm = FSM.FSM('stopLight', [
         'red',
         'red')
 
+3) 	Pop open a viewer
+
+import FSMInspector
+insp = FSMInspector.FSMInspector(fsm)
+
+or if you wish to be fancy:
+
+insp = FSMInspector.FSMInspector(fsm, title = fsm.getName())
+
+Features:
+   -  Right mouse button over a state pops up a menu allowing you to
+	request a transition to that state
+   -  Middle mouse button will grab the canvas and slide things around
+	if your state machine is bigger than the viewing area
+   -  There are some self explanatory menu options up at the top, the most
+	useful being: "print FSM layout" which will print out python code
+	which will create an FSM augmented with layout information for the
+	viewer so everything shows up in the same place the next time you
+	inspect the state machine
+
+CAVEAT:
+
+There is some unexplained problems with using TK and emacs right now which
+occasionally results in everything locking up.  This procedure seems to
+avoid the problem for me:
+
+# Start up the show
+from ShowBaseGlobal import *
+
+# You will see the window and a Tk panel pop open
+
+# Type a number at the emacs prompt
+>>> 123
+
+# At this point everything will lock up and you won't get your prompt back
+
+# Hit a bunch of Control-C's in rapid succession, in most cases
+# this will break you out of whatever badness you were in and 
+# from that point on everything will behave normally
+
+
 # This is how you pop up an inspector
 import FSMInspector
 inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
 
 """
 
-fsm = FSM.FSM('stopLight', [
-    State.State('yellow',
-                enterState,
-                exitState,
-                ['red']),
-    State.State('red',
-                enterState,
-                exitState,
-                ['green']),
-    State.State('green',
-                enterState,
-                exitState,
-                ['yellow'])],
-        'red',
-        'red')
