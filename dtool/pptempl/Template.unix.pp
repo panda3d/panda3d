@@ -79,6 +79,12 @@
 #defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
 #defer actual_local_libs $[complete_local_libs]
 
+// $[static_lib_dependencies] is the set of libraries we will link
+// with that happen to be static libs.  We will introduce dependency
+// rules for these.  (We don't need dependency rules for dynamic libs,
+// since these don't get burned in at build time.)
+#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext].a]],$[complete_local_libs]]
+
 // And $[complete_ipath] is the list of directories (from within this
 // tree) we should add to our -I list.  It's basically just one for
 // each directory named in the $[complete_local_libs], above, plus
@@ -312,7 +318,7 @@ $[varname] = $[sources]
   #define target $[ODIR]/lib$[TARGET].so
   #define sources $($[varname])
 
-$[target] : $[sources]
+$[target] : $[sources] $[static_lib_dependencies]
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
   #else  
@@ -407,7 +413,7 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/lib$[TARGET].so
 #define sources $($[varname])
-$[target] : $[sources]
+$[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
 #else
@@ -506,7 +512,7 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[TARGET]
 #define sources $($[varname])
 #define ld $[get_ld]
-$[target] : $[sources]
+$[target] : $[sources] $[static_lib_dependencies]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
 $[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
@@ -554,7 +560,7 @@ $[TARGET] : $[ODIR]/$[TARGET]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[TARGET]
 #define sources $($[varname])
-$[target] : $[sources]
+$[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
 #else
