@@ -10,8 +10,7 @@ class AccountAI(DistributedObjectAI.DistributedObjectAI):
     pirateAvatars = [0,0,0,0,0,0]
 
     def setPirate(self, slot, avatarId):
-        self.pirateAvatars[slot] = avatarId
-        self.sendUpdate('pirateAvatars', self.pirateAvatars)
+        assert(0) # Ask AccountUD to setPirate
 
     def getPirate(self, slot):
         return self.pirateAvatars[slot]
