@@ -48,9 +48,13 @@ PUBLISHED:
   const ModifierButtons &get_modifier_buttons() const;
   void set_modifier_buttons(const ModifierButtons &mods);
 
+  const ModifierButtons &get_throw_buttons() const;
+  void set_throw_buttons(const ModifierButtons &throw_buttons);
+
 protected:
   string _prefix;
   ModifierButtons _mods;
+  ModifierButtons _throw_buttons;
 
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode

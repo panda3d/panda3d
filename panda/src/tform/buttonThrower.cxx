@@ -113,6 +113,41 @@ set_modifier_buttons(const ModifierButtons &mods) {
   _mods = mods;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_throw_buttons
+//       Access: Public
+//  Description: Returns the set of buttons that the ButtonThrower
+//               processes.  See set_throw_buttons().
+////////////////////////////////////////////////////////////////////
+const ModifierButtons &ButtonThrower::
+get_throw_buttons() const {
+  return _throw_buttons;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_throw_buttons
+//       Access: Public
+//  Description: Changes the set of buttons that the ButtonThrower
+//               processes.  This is a ModifierButtons object that is
+//               used only for its ability to manage a list of
+//               buttons; the up/down state of the buttons within the
+//               ModifierButtons object is not used.
+//
+//               If this is an empty set (which is the default), the
+//               ButtonThrower will process all buttons.  Otherwise,
+//               if the set is nonempty, it restricts the
+//               ButtonThrower to only throw events for the indicated
+//               buttons; buttons not on the list will be ignored by
+//               this object and passed on downstream to the child
+//               node(s) in the data graph.  A button that *is* on the
+//               list will be processed by the ButtonThrower and not
+//               passed on to the child node(s).
+////////////////////////////////////////////////////////////////////
+void ButtonThrower::
+set_throw_buttons(const ModifierButtons &throw_buttons) {
+  _throw_buttons = throw_buttons;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonThrower::transmit_data
@@ -123,29 +158,46 @@ set_modifier_buttons(const ModifierButtons &mods) {
 void ButtonThrower::
 transmit_data(AllTransitionsWrapper &data) {
   const ButtonEventDataTransition *b;
+  ButtonEventDataTransition *new_b = (ButtonEventDataTransition *)NULL;
+
   if (get_transition_into(b, data, _button_events_type)) {
     ButtonEventDataTransition::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
-      string event_name = _prefix + be._button.get_name();
-      if (be._down) {
-        if (!_mods.button_down(be._button)) {
-          // We only prepend modifier names on the button-down events,
-          // and only for buttons which are not themselves modifiers.
-          event_name = _mods.get_prefix() + event_name;
+      if (_throw_buttons.get_num_buttons() == 0 ||
+          _throw_buttons.has_button(be._button)) {
+        // Process this button.
+        string event_name = _prefix + be._button.get_name();
+        if (be._down) {
+          if (!_mods.button_down(be._button)) {
+            // We only prepend modifier names on the button-down events,
+            // and only for buttons which are not themselves modifiers.
+            event_name = _mods.get_prefix() + event_name;
+          }
+          
+        } else {
+          _mods.button_up(be._button);
+          event_name += "-up";
         }
 
-      } else {
-        _mods.button_up(be._button);
-        event_name += "-up";
-      }
+        throw_event(event_name);
 
-      throw_event(event_name);
+      } else {
+        // Don't process this button; instead, pass it down to future
+        // generations.
+        if (new_b == (ButtonEventDataTransition *)NULL) {
+          new_b = new ButtonEventDataTransition;
+        }
+        new_b->push_back(be);
+      }
     }
   }
 
-  // Clear the data going down the pipe.
-  data.clear();
+  if (new_b == (ButtonEventDataTransition *)NULL) {
+    data.clear_transition(_button_events_type);
+  } else {
+    data.set_transition(_button_events_type, new_b);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
