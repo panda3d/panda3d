@@ -27,16 +27,10 @@ class NonPhysicsWalker(DirectObject.DirectObject):
     def __init__(self):
         DirectObject.DirectObject.__init__(self)
         self.collisionsActive = 0
-        #self.forwardButton=0
-        #self.reverseButton=0
-        #self.jumpButton=0
-        #self.leftButton=0
-        #self.rightButton=0
         self.speed=0.0
         self.rotationSpeed=0.0
         self.vel=Vec3(0.0, 0.0, 0.0)
         self.stopThisFrame = 0
-        #self.fSlide = 0
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert(self.debugPrint("setWalkSpeed()"))
@@ -212,24 +206,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("enableAvatarControls"))
         print id(self), "NPW.enableAvatarControls()"
-        #self.accept("control-arrow_left", self.moveTurnLeft, [1])
-        #self.accept("control-arrow_left-up", self.moveTurnLeft, [0])
-        #self.accept("control-arrow_right", self.moveTurnRight, [1])
-        #self.accept("control-arrow_right-up", self.moveTurnRight, [0])
-        #self.accept("control-arrow_up", self.moveForward, [1])
-        #self.accept("control-arrow_up-up", self.moveForward, [0])
-        #self.accept("control-arrow_down", self.moveInReverse, [1])
-        #self.accept("control-arrow_down-up", self.moveInReverse, [0])
-        
-        #self.accept("arrow_left", self.moveTurnLeft, [1])
-        #self.accept("arrow_left-up", self.moveTurnLeft, [0])
-        #self.accept("arrow_right", self.moveTurnRight, [1])
-        #self.accept("arrow_right-up", self.moveTurnRight, [0])
-        #self.accept("arrow_up", self.moveForward, [1])
-        #self.accept("arrow_up-up", self.moveForward, [0])
-        #self.accept("arrow_down", self.moveInReverse, [1])
-        #self.accept("arrow_down-up", self.moveInReverse, [0])
-        
         self.setCollisionsActive(1)
 
         taskName = "AvatarControls%s"%(id(self),)
@@ -246,86 +222,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         print id(self), "NPW.disableAvatarControls()"
         taskName = "AvatarControls%s"%(id(self),)
         taskMgr.remove(taskName)
-
-        #self.ignore("control")
-        #self.ignore("control-up")
-        #self.ignore("control-arrow_left")
-        #self.ignore("control-arrow_left-up")
-        #self.ignore("control-arrow_right")
-        #self.ignore("control-arrow_right-up")
-        #self.ignore("control-arrow_up")
-        #self.ignore("control-arrow_up-up")
-        #self.ignore("control-arrow_down")
-        #self.ignore("control-arrow_down-up")
-        
-        #self.ignore("arrow_left")
-        #self.ignore("arrow_left-up")
-        #self.ignore("arrow_right")
-        #self.ignore("arrow_right-up")
-        #self.ignore("arrow_up")
-        #self.ignore("arrow_up-up")
-        #self.ignore("arrow_down")
-        #self.ignore("arrow_down-up")
         
         self.setCollisionsActive(0)
-
-        # reset state
-        #self.moveTurnLeft(0)
-        #self.moveTurnRight(0)
-        #self.moveForward(0)
-        #self.moveInReverse(0)
-        #self.moveJumpLeft(0)
-        #self.moveJumpRight(0)
-        #self.moveJumpForward(0)
-        #self.moveJumpInReverse(0)
-        #self.moveJump(0)
-
-    #def moveTurnLeft(self, isButtonDown):
-    #    self.leftButton=isButtonDown
-    #
-    #def moveTurnRight(self, isButtonDown):
-    #    self.rightButton=isButtonDown
-    #
-    #def moveForward(self, isButtonDown):
-    #    self.forwardButton=isButtonDown
-
-    #def moveInReverse(self, isButtonDown):
-    #    self.reverseButton=isButtonDown
-    #
-    #def moveJumpLeft(self, isButtonDown):
-    #    self.jumpButton=isButtonDown
-    #    self.leftButton=isButtonDown
-    #
-    #def moveJumpRight(self, isButtonDown):
-    #    self.jumpButton=isButtonDown
-    #    self.rightButton=isButtonDown
-    #
-    #def moveJumpForward(self, isButtonDown):
-    #    self.jumpButton=isButtonDown
-    #    self.forwardButton=isButtonDown
-    #
-    #def moveJumpInReverse(self, isButtonDown):
-    #    self.jumpButton=isButtonDown
-    #    self.reverseButton=isButtonDown
-    #
-    #def moveJump(self, isButtonDown):
-    #    self.jumpButton=isButtonDown
-    #
-    #def toggleSlide(self):
-    #    self.fSlide = not self.fSlide
-
-    #def enableSlideMode(self):
-    #    self.accept("control-up", self.toggleSlide)
-    #
-    #def disableSlideMode(self):
-    #    self.fSlide = 0
-    #    self.ignore("control-up")
-    #
-    #def slideLeft(self, isButtonDown):
-    #    self.slideLeftButton=isButtonDown
-    #
-    #def slideRight(self, isButtonDown):
-    #    self.slideRightButton=isButtonDown
     
     if __debug__:
         def debugPrint(self, message):

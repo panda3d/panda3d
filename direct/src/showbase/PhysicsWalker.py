@@ -49,16 +49,10 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__oldContact=None
         self.__oldPosDelta=Vec3(0)
         self.__oldDt=0
-        #self.__forwardButton=0
-        #self.__reverseButton=0
-        #self.__jumpButton=0
-        #self.__leftButton=0
-        #self.__rightButton=0
         self.__speed=0.0
         self.__rotationSpeed=0.0
         self.__slideSpeed=0.0
         self.__vel=Vec3(0.0)
-        #self.__slideButton = 0
         self.collisionsActive = 0
         
         self.isAirborne = 0
@@ -689,38 +683,12 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.highMark = 0
         self.actorNode.setContactVector(Vec3.zero())
 
-    #def getForwardButton(self):
-    #    return self.__forwardButton
-    
-    #def getReverseButton(self):
-    #    return self.__reverseButton
-
     def enableAvatarControls(self):
         """
         Activate the arrow keys, etc.
         """
         assert(self.debugPrint("enableAvatarControls()"))
         print id(self), "PW.enableAvatarControls()"
-        #self.accept("control", self.moveJump, [1])
-        #self.accept("control-up", self.moveJump, [0])
-        #self.accept("control-arrow_left", self.moveJumpLeft, [1])
-        #self.accept("control-arrow_left-up", self.moveJumpLeft, [0])
-        #self.accept("control-arrow_right", self.moveJumpRight, [1])
-        #self.accept("control-arrow_right-up", self.moveJumpRight, [0])
-        #self.accept("control-arrow_up", self.moveJumpForward, [1])
-        #self.accept("control-arrow_up-up", self.moveJumpForward, [0])
-        #self.accept("control-arrow_down", self.moveJumpInReverse, [1])
-        #self.accept("control-arrow_down-up", self.moveJumpInReverse, [0])
-        #
-        #self.accept("arrow_left", self.moveTurnLeft, [1])
-        #self.accept("arrow_left-up", self.moveTurnLeft, [0])
-        #self.accept("arrow_right", self.moveTurnRight, [1])
-        #self.accept("arrow_right-up", self.moveTurnRight, [0])
-        #self.accept("arrow_up", self.moveForward, [1])
-        #self.accept("arrow_up-up", self.moveForward, [0])
-        #self.accept("arrow_down", self.moveInReverse, [1])
-        #self.accept("arrow_down-up", self.moveInReverse, [0])
-        
         self.setCollisionsActive(1)
 
         if __debug__:
@@ -746,88 +714,12 @@ class PhysicsWalker(DirectObject.DirectObject):
 
         taskName = "AvatarControlsIndicator%s"%(id(self),)
         taskMgr.remove(taskName)
-
-        #self.ignore("control")
-        #self.ignore("control-up")
-        #self.ignore("control-arrow_left")
-        #self.ignore("control-arrow_left-up")
-        #self.ignore("control-arrow_right")
-        #self.ignore("control-arrow_right-up")
-        #self.ignore("control-arrow_up")
-        #self.ignore("control-arrow_up-up")
-        #self.ignore("control-arrow_down")
-        #self.ignore("control-arrow_down-up")
-        #
-        #self.ignore("arrow_left")
-        #self.ignore("arrow_left-up")
-        #self.ignore("arrow_right")
-        #self.ignore("arrow_right-up")
-        #self.ignore("arrow_up")
-        #self.ignore("arrow_up-up")
-        #self.ignore("arrow_down")
-        #self.ignore("arrow_down-up")
         
         self.setCollisionsActive(0)
 
         if __debug__:
             self.ignore("control-f3") #*#
             self.ignore("f3")
-
-        # reset state
-        #self.moveTurnLeft(0)
-        #self.moveTurnRight(0)
-        #self.moveForward(0)
-        #self.moveInReverse(0)
-        #self.moveJumpLeft(0)
-        #self.moveJumpRight(0)
-        #self.moveJumpForward(0)
-        #self.moveJumpInReverse(0)
-        #self.moveJump(0)
-        #self.moveSlide(0)
-
-    #def moveTurnLeft(self, isButtonDown):
-    #    assert(self.debugPrint("moveTurnLeft(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__leftButton=isButtonDown
-    #
-    #def moveTurnRight(self, isButtonDown):
-    #    assert(self.debugPrint("moveTurnRight(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__rightButton=isButtonDown
-    #
-    #def moveForward(self, isButtonDown):
-    #    assert(self.debugPrint("moveForward(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__forwardButton=isButtonDown
-    #
-    #def moveInReverse(self, isButtonDown):
-    #    assert(self.debugPrint("moveInReverse(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__reverseButton=isButtonDown
-    #
-    #def moveJumpLeft(self, isButtonDown):
-    #    assert(self.debugPrint("moveJumpLeft(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__jumpButton=isButtonDown
-    #    self.__leftButton=isButtonDown
-
-    #def moveJumpRight(self, isButtonDown):
-    #    assert(self.debugPrint("moveJumpRight(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__jumpButton=isButtonDown
-    #    self.__rightButton=isButtonDown
-
-    #def moveJumpForward(self, isButtonDown):
-    #    assert(self.debugPrint("moveJumpForward(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__jumpButton=isButtonDown
-    #    self.__forwardButton=isButtonDown
-
-    #def moveJumpInReverse(self, isButtonDown):
-    #    assert(self.debugPrint("moveJumpInReverse(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__jumpButton=isButtonDown
-    #    self.__reverseButton=isButtonDown
-
-    #def moveJump(self, isButtonDown):
-    #    assert(self.debugPrint("moveJump()"))
-    #    self.__jumpButton=isButtonDown
-    #
-    #def moveSlide(self, isButtonDown):
-    #    assert(self.debugPrint("moveSlide(isButtonDown=%s)"%(isButtonDown,)))
-    #    self.__slideButton=isButtonDown
     
     if __debug__:
         def debugPrint(self, message):
