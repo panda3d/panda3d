@@ -39,6 +39,7 @@ ClockObject() {
   _reported_frame_time = 0.0;
   _dt = 0.0;
   _max_dt = -1.0;
+  _average_frame_rate_interval = average_frame_rate_interval;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,6 +117,8 @@ set_frame_count(int frame_count) {
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
 tick() {
+  double old_reported_time = _reported_frame_time;
+
   double old_time = _actual_frame_time;
   _actual_frame_time = get_real_time();
 
@@ -134,6 +137,14 @@ tick() {
   }
 
   _frame_count++;
+
+  if (_average_frame_rate_interval > 0.0) {
+    _ticks.push_back(old_reported_time);
+    while (!_ticks.empty() && 
+           _reported_frame_time - _ticks.front() > _average_frame_rate_interval) {
+      _ticks.pop_front();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -134,14 +134,16 @@ get_frame_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::get_frame_rate
+//     Function: ClockObject::get_net_frame_rate
 //       Access: Published
 //  Description: Returns the average frame rate since the last reset.
 //               This is simply the total number of frames divided by
-//               the total elapsed time.
+//               the total elapsed time.  This reports the virtual
+//               frame rate if the clock is in (or has been in)
+//               M_non_real_time mode.
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
-get_frame_rate() const {
+get_net_frame_rate() const {
   return (double)get_frame_count() / get_frame_time();
 }
 
@@ -205,6 +207,57 @@ get_max_dt() const {
 INLINE void ClockObject::
 set_max_dt(double max_dt) {
   _max_dt = max_dt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_average_frame_rate_interval
+//       Access: Published
+//  Description: Specifies the interval of time (in seconds) over
+//               which get_average_frame_rate() averages the number of
+//               frames per second to compute the frame rate.
+//               Changing this does not necessarily immediately change
+//               the result of get_average_frame_rate(), until this
+//               interval of time has elapsed again.
+//
+//               Setting this to zero disables the computation of
+//               get_average_frame_rate().
+////////////////////////////////////////////////////////////////////
+INLINE void ClockObject::
+set_average_frame_rate_interval(double time) {
+  _average_frame_rate_interval = time;
+  if (_average_frame_rate_interval == 0.0) {
+    _ticks.clear();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::get_average_frame_rate_interval
+//       Access: Published
+//  Description: Returns the interval of time (in seconds) over
+//               which get_average_frame_rate() averages the number of frames
+//               per second to compute the frame rate.
+////////////////////////////////////////////////////////////////////
+INLINE double ClockObject::
+get_average_frame_rate_interval() const {
+  return _average_frame_rate_interval;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::get_average_frame_rate
+//       Access: Published
+//  Description: Returns the average frame rate in number of frames
+//               per second over the last
+//               get_average_frame_rate_interval() seconds.  This
+//               measures the virtual frame rate if the clock is in
+//               M_non_real_time mode.
+////////////////////////////////////////////////////////////////////
+INLINE double ClockObject::
+get_average_frame_rate() const {
+  if (_ticks.empty()) {
+    return 0.0;
+  } else {
+    return _ticks.size() / (_reported_frame_time - _ticks.front());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -188,6 +188,9 @@ const int patchfile_zone_size =
 const bool keep_temporary_files =
 config_express.GetBool("keep-temporary-files", false);
 
+extern const double average_frame_rate_interval = 
+config_express.GetDouble("average-frame-rate-interval", 1.0);
+
 // Set this true to use the VirtualFileSystem mechanism for loading
 // models, etc.  Since the VirtualFileSystem maps to the same as the
 // actual file system by default, there is probably no reason to set

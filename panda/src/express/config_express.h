@@ -47,6 +47,7 @@ extern const int patchfile_buffer_size;
 extern const int patchfile_zone_size;
 
 extern const bool keep_temporary_files;
+extern const double average_frame_rate_interval;
 
 extern EXPCL_PANDAEXPRESS const bool use_vfs;
 

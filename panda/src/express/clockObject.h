@@ -23,6 +23,7 @@
 
 #include "trueClock.h"
 #include "config_express.h"
+#include "pdeque.h"
 
 class EXPCL_PANDAEXPRESS TimeVal {
 PUBLISHED:
@@ -86,13 +87,17 @@ PUBLISHED:
   void set_frame_count(int frame_count);
 
   INLINE int get_frame_count() const;
-  INLINE double get_frame_rate() const;
+  INLINE double get_net_frame_rate() const;
 
   INLINE double get_dt() const;
   INLINE void set_dt(double dt);
 
   INLINE double get_max_dt() const;
   INLINE void set_max_dt(double max_dt);
+
+  INLINE void set_average_frame_rate_interval(double time);
+  INLINE double get_average_frame_rate_interval() const;
+  INLINE double get_average_frame_rate() const;
 
   void tick();
   void sync_frame_time();
@@ -109,6 +114,12 @@ private:
   double _reported_frame_time;
   double _dt;
   double _max_dt;
+
+  // For tracking the average frame rate over a certain interval of
+  // time.
+  double _average_frame_rate_interval;
+  typedef pdeque<double> Ticks;
+  Ticks _ticks;
 
   static ClockObject *_global_clock;
 };
