@@ -459,6 +459,16 @@ get_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_transform
+//       Access: Published
+//  Description: Sets the transform object on this node to identity.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_transform() {
+  set_transform(TransformState::make_identity());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_transform
 //       Access: Published
 //  Description: Changes the complete transform object on this node.
@@ -467,6 +477,18 @@ INLINE void NodePath::
 set_transform(const TransformState *transform) {
   nassertv_always(!is_empty());
   node()->set_transform(transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_transform
+//       Access: Published
+//  Description: Sets the transform object on this node to identity,
+//               relative to the other node.  This effectively places
+//               this node at the same position as the other node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_transform(const NodePath &other) {
+  set_transform(other, TransformState::make_identity());
 }
 
 ////////////////////////////////////////////////////////////////////

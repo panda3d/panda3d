@@ -238,8 +238,10 @@ PUBLISHED:
   INLINE CPT(RenderState) get_net_state() const;
 
   INLINE const TransformState *get_transform() const;
+  INLINE void clear_transform();
   INLINE void set_transform(const TransformState *transform);
   CPT(TransformState) get_transform(const NodePath &other) const;
+  INLINE void clear_transform(const NodePath &other);
   void set_transform(const NodePath &other, const TransformState *transform);
   INLINE CPT(TransformState) get_net_transform() const;
 
