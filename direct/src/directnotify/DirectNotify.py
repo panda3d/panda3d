@@ -73,6 +73,11 @@ class DirectNotify:
         
         dconfigParam = ("notify-level-" + categoryName)
         level = config.GetString(dconfigParam, "")
+
+        if not level:
+            # see if there's an override of the default config level
+            level = config.GetString('default-directnotify-level', '')
+
         if level:
             print ("Setting DirectNotify category: " + categoryName +
                    " to severity: " + level)
