@@ -1,7 +1,6 @@
 To install Panda3D on WinNT or Win98:
 -------------------------------------
 Notes:
-  Lines preceeded by "#" are comments.
   Lines preceeded by ">" are instructions to be typed on the command line. 
   On WinNT, make sure your system clock is not set to GMT (only worry about
     this if your makedepend seems out of sync, i.e. you constantly reinstall
@@ -24,176 +23,194 @@ Notes:
   Make sure your machine has networking (IP, gateway, etc.) so you can use
     ftp to get to dumbo.
 
+
 Step 1: Install Visual C++ (v6.0)
-  # On WinNT, you will be prompted to register environment variables for
-  # running the compiler from the command line - do it.
-  # I also recommend installing the full MSDN Library documentation.
+  - On WinNT, you will be prompted to register environment variables for
+    running the compiler from the command line - do it.
+  - I also recommend installing the full MSDN Library documentation.
+  - Make sure you install the latest service pack by running:
+       \\dimbo\panda\msvc-sp5\setupsp5.exe
 
 Step 2: Install Cygwin (v1.0)
-  # Install Cygwin from the cd  
-  # To get things started, you can run a bash shell by going to the "Start"
-  # button at the bottom left of your screen, selecting "Programs",
-  # "Cygwin" and "bash".  I usually run "tcsh" at the bash prompt to make 
-  # things easier.
-  # Set up the Cygwin environment:
-    # Check for directories /bin /etc /tmp /usr and create them using 
-    # mkdir if they don't exist.  Also make the following directories:
-      > mkdir /mscommon
+  - Install Cygwin from the cd  
+  - Open up a shell by running (and, if you desire, creating a shortcut to)
+    tcsh.exe in: 
+       C:/Cygwin/contrib/bin 
+    Alternately, you can run a bash shell by going to the "Start"
+    button at the bottom left of your screen, selecting "Programs",
+    "Cygwin" and "bash".  You can then run "tcsh" at the bash prompt to make 
+    things easier.  
+  - Set up the Cygwin environment:
+    - Check for directories /bin /etc /tmp /usr and create them using 
+      mkdir if they don't exist.  
+    - Make the following directories:
+      > mkdir /c /f /g /h /i /j /v
       > mkdir /msvc98
-      > mkdir /c
-    # Mount directories (This assumes VC++ was installed in C:\Program Files):
-      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/Common /mscommon
-      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/VC98 /msvc98
-      > mount -s C:/ /c
-    # Create some links expected by the attach scripts:
+      > mkdir /mscommon
       > mkdir /usr/local
       > mkdir /usr/local/bin
+      > mkdir /usr/local/etc
+    - Create some links expected by the attach scripts:
       > ln -s /contrib/bin/tcsh /bin/csh
       > ln -s /contrib/bin/perl /usr/local/bin/perl
       > ln -s /bin/bash /usr/local/bin/bash
-
-    # Connect and mount the network drives:
-      > net use g: "\\nufat\bit" /persistent:yes
+    - Connect the network drives:
+      > net use f: "\\nufat\fat" /persistent:yes
+      > net use g: "\\nufat\bit" persistent:yes
+      > net use h: "\\dimbo\usr2" /persistent:yes
       > net use i: "\\nufat\big" /persistent:yes
+      > net use j: "\\nufat\for" /persistent:yes
       > net use v: "\\dimbo\panda" /persistent:yes
-      > mkdir /g /i /v
+    - Mount directories.  Note the use of -b for the unix mounts. The
+      VC++ mounts assume VC++ was installed in C:\Program Files:
+      > mount -s c:/ /c
+      > mount -s -b f:/ /f
       > mount -s -b g:/ /g
+      > mount -s -b h:/ /h
       > mount -s -b i:/ /i
+      > mount -s -b j:/ /j
       > mount -s -b v:/ /v
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/VC98 /msvc98
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/Common /mscommon
+    - These are optional, but handy
+      > mkdir /fat
+      > mkdir /bit
+      > mkdir /fit
+      > mkdir /ful
+      > mkdir /alpha
+      > mkdir /beta
+      > mkdir /gamma
+      > mkdir /for
+      > mount -s -b F:/ /fat
+      > mount -s -b G: /bit
+      > mount -s -b H:/fit/ /fit
+      > mount -s -b H:/ful/ /ful
+      > mount -s -b I:/alpha/ /alpha
+      > mount -s -b I:/beta /beta
+      > mount -s -b I:/gamma /gamma
+      > mount -s -b J:/ /for
 
-Step 3: Install winpandatools
-  # Winpandatools currently includes rxvt, glut, and nspr, as well as
-  # .cshrc, Configrc, the .vspec files, and Squeak.
-  > cd /
-  > tar zxvf /g/player/tarballs/winpandatools.tgz
-  # Create a HOME directory:
-    > mkdir /home/<yourname>
-    > cp /usr/local/winpandatools/.cshrc /home/<yourname>
-    > cp /usr/local/winpandatools/.emacs /home/<yourname>
-    > cp /usr/local/winpandatools/Configrc /home/<yourname>
+Step 3: Create your home directory
+  - Create a HOME directory:
+    > mkdir /usr/<yourname>
+  - Create/copy necessary files: .cshrc, .emacs, Configrc, Config.pp
+  - Set the $HOME environment variable:
+    - On WinNT use the Registry:
+      - Select "My Computer" icon from the desktop.
+      - Select "Control Panel" icon.
+      - Select "System" icon.
+      - Select "Environment" tab.
+      - Create the variable "HOME" with the value "/usr/<yourname>".
+      - click ok - ok - ok to exit (you must exit for the change to take 
+        effect)
+      - Now open a new shell to get the changes.
+    - On Win98 use AUTOEXEC.BAT:
+      - Add/Change the "HOME=/usr/<yourname>" line in C:\AUTOEXEC.BAT:
+      - Note: if you want to edit your existing AUTOEXEC.BAT, you need
+        to use "edit.exe" in order to generate the correct "newline"
+        character (^M).
+    - Note: We've seen a problem where we can't source ~/.cshrc if the home
+      directory /usr/<yourname> does not match the user name exactly. 
+      To be safe, be sure and name your home directory to be /usr/<yourname>.
 
-Step 4: Set $HOME environment variable 
-  # On WinNT use the Registry:
-    # Select "My Computer" icon from the desktop.
-    # Select "Control Panel" icon.
-    # Select "System" icon.
-    # Select "Environment" tab.
-    # Create the variable "HOME" with the value "/home/<yourname>".
-    # Click the "Set" button.
-    # Click the "Apply" button.
-    # Now open a new shell to get the changes.
-  # On Win98 use AUTOEXEC.BAT:
-    # Change the "HOME=/home/<yourname>" line in 
-    # /usr/local/winpandatools/AUTOEXEC.BAT
-    > cp /usr/local/winpandatools/AUTOEXEC.BAT C:
-    # Note: if you want to edit your existing AUTOEXEC.BAT, you need
-    # to use "edit.exe" in order to generate the correct "newline"
-    # character (^M).
-  # Note: We've seen a problem where we can't source ~/.cshrc if the home
-  # directory /home/<yourname> does not match the user name exactly. 
-  # To be safe, be sure and name your home directory to be /home/<yourname>.
+Step 4: Update /usr/local/etc:
+  - Copy vspec files from $WINTOOLS to /usr/local/etc
+    > cd V:/win/install/wintools
+    > cp_vspec 
+  - Copy Config.pp from $WINTOOLS to /usr/local/etc
+    > cp V:/win/install/wintools/panda/etc/Config.pp /usr/local/etc/.
+  - (Optional) Add new username to vspec files
+    - If you are setting up a new user, edit the *.vspec files
+      in /usr/local/etc to reflect the new username and path to the player
+      tree.  
+    - Also edit (on the SGI, for instance on dumbo) the file 
+      /fit/cvs/CVSROOT/passwd to add the new username as a valid user of
+      CVS.
+  - (Optional) Update default values in vspec files
+    - Edit appropriate *.vspec files to specify which trees you wish to use
+      as a default (e.g. install vs. minstall vs. personal)
 
-Step 5: (Optional) Add new username
-  # If you are setting up a new user, edit the *.vspec files
-  # in /usr/local/etc to reflect the new username and path to the player
-  # tree.  Make and install a new winpandatools.tgz to reflect this change
-  # by typing:
-  > cd /usr/local/winpandatools
-  > source install_winpandatools
-  > mv winpandatools.tgz /g/player/tarballs
+Step 5: Grab the cvs trees
+  - Open a new shell
+  - Create personal trees:
+    > cd ~
+    > mkdir player
+    > cd player
+    # Just hit return when prompted for a password
+    > cvs login
+    > cvs co dtool (only if local dtool will be built)
+    > cvs co panda (only if local panda will be built)
+    > cvs co direct (only if local direct will be built)
+    > cvs co toontown (only if local toontown will be built)
+  - Choose which optimize level you want. This is set in
+      /usr/local/etc/Config.pp
+    or in the Config.pp in your $HOME directory (overides /usr/local/etc file)
+    Look for #define OPTIMIZE and follow instructions above that.
+    You can only choose an arbitrary optimize level if you are building
+    your own DTOOL and PANDA; otherwise, you must set it to the optimize
+    level corresponding to the version of DTOOL/PANDA you intend to attach
+    to (install is built OPTIMIZE 2, release is built OPTIMIZE 3).
 
-  # Also edit (on the SGI, for instance on dumbo) the file 
-  # /fit/cvs/CVSROOT/passwd to add the new username as a valid user of CVS.
+Step 6: (Optional) Build $DTOOL
+  - Now you must use the tcsh shortcut to open a new shell - it should attach
+    to $DTOOL:install automatically, but you will need to attach to your
+    own DTOOL if you want to build your own.
+    > cta dtool personal
+    > cd $DTOOL
+    > ppremake
+    > nmake install
 
-Step 6: Grab the cvs trees
-  > cd ~
-  > mkdir player
-  > cd player
-  > cvs login
-  > cvs co dtool (only if local dtool will be built)
-  > cvs co panda (only if local panda will be built)
-  > cvs co direct
+Step 7: (Optional) Install DirectX
+  - Install DirectX 7.0 (by default into C:\mssdk).  You need this to
+    successfully build all of panda.
 
-  # Choose which optimize level you want. This is set in
-  # /usr/local/etc/Config.pp .
-  # Look for #define OPTIMIZE and follow instructions above that.
+Step 8: (Optional) Build $PANDA 
+  - Build panda
+    > cta panda personal
+    > cd $PANDA
+    > ppremake
+    > nmake install
+  - You can now run "demo" to test the install and build - you should
+    see a window pop up with a triangle in it.  To see the triangle with
+    a texture on it, you'll need to be in $PANDA/src/all/testbed/ when
+    you run "demo".
 
-  # You can only choose an arbitrary optimize level if you are building
-  # your own DTOOL and PANDA; otherwise, you must set it to the optimize
-  # level corresponding to the version of DTOOL/PANDA you intend to attach
-  # to (install is built OPTIMIZE 2, release is built OPTIMIZE 3).
+Step 9: Install Emacs
+  - get the tarball from /for/program/tarballs/emacs-20.7-fullbin-i386.tar.gz 
+  - untar/install (This will install emacs into C:/emacs-20.7, 
+    do not attempt to install it under a directory containing a space,
+    like "Program Files".)
+    > cd /c
+    > tar xvzf ~/emacs-20.7-fullbin-i386.tar.gz
+  - Copy lisp/script files
+    > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-20.7/lisp/progmodes
+    > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
+  - Update environment variables (win2000).  Note: You should only need to
+    do this if you intend to invoke Panda from a non-Cygwin prompt.  If you
+    will always be using Cygwin, simply edit your .cshrc file to extend the
+    path appropriately. 
+    - right click on your computer icon at the top left of the screen
+    - select "properties"
+    - click on the "Advanced" tab
+    - click on "Environment Variables..."
+    - double click on the "Path" variable in the bottom pane (system variables)
+    - add  C:\emacs-20.7\bin  to the end of the path (semicolon separated)
+    - click ok - ok - ok to exit (you must exit for the change to take effect)
 
-Step 7: (Optional) Build $DTOOL
-  # Now you must use the tcsh shortcut to open a new shell - it should attach
-  # to $DTOOL:install automatically, but you will need to attach to your
-  # own DTOOL if you want to build your own.
-  > cta dtool personal
-  > cd $DTOOL
-  > ppremake
-  > nmake install
-
-Step 8: (Optional) Install DirectX
-  # Install DirectX 7.0 (by default into C:\mssdk).  You need this to
-  # successfully build all of panda.
-
-Step 9: (Optional) Build $PANDA 
-  > cta panda personal
-  > cd $PANDA
-  > ppremake
-  > nmake install
-  # You can now run "demo" to test the install and build - you should
-  # see a window pop up with a triangle in it.  To see the triangle with
-  # a texture on it, you'll need to be in $PANDA/src/all/testbed/ when
-  # you run "demo".
-
-Step 10: Install Python
-  # get /for/program/tarballs/python16.exe and python_d.zip by ftp
-  # run python16.exe to install python into C:/Python16 (the default
-    location)
-  > cd /c/Python16
-  > unzip ~/python_d.zip
-
-Step 11: Install Emacs
-  # get /for/program/tarballs/emacs-20.7-fullbin-i386.tar.gz by ftp
-  > cd /c
-  > tar xvzf ~/emacs-20.7-fullbin-i386.tar.gz
-
-  # This will install emacs into C:/emacs-20.7 .
-    (do not attempt to install it under a directory containing a space,
-     like Program Files.)
-
-  > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-20.7/lisp/progmodes
-  > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
-
-Step 12: Update environment variables (win2000)
-  # You should only need to do this if you intend to invoke Panda from
-  # a non-Cygwin prompt.  If you will always be using Cygwin, simply
-  # edit your .cshrc file to extend the path appropriately.
-
-  # right click on your computer icon at the top left of the screen
-  # select "properties"
-  # click on the "Advanced" tab
-  # click on "Environment Variables..."
-  # double click on the "Path" variable in the bottom pane (system variables)
-  # add  C:\emacs-20.7\bin  to the end of the path (semicolon separated)
-  # add  C:\PYTHON16  to the end of the path (semicolon separated)
-  # click ok - ok - ok to exit (you must exit for the change to take effect)
-
-Step 13: Build $DIRECT
+Step 10: Build $DIRECT
   > cta direct personal
   > cd $DIRECT
   > ppremake
   > nmake install
 
-Step 14: Build $TOONTOWN
+Step 11: Build $TOONTOWN
   > cta toontown personal
   > cd $TOONTOWN
   > ppremake
   > nmake install
 
-Step 15: Generate Python Code
+Step 12: Generate Python Code
   > cd $DIRECT/bin
   > ppython generatePythonCode
   # Follow instructions presented there
-
 
