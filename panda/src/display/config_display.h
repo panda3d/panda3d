@@ -26,6 +26,7 @@
 #include <string>
 #include "pvector.h"
 
+ConfigureDecl(config_display, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(display, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(gsg, EXPCL_PANDA, EXPTP_PANDA);
 
@@ -33,10 +34,6 @@ extern const bool view_frustum_cull;
 extern const bool pstats_unused_states;
 
 extern const string threading_model;
-extern const string preferred_pipe;
-
-extern Config::ConfigTable::Symbol::iterator display_modules_begin(void);
-extern Config::ConfigTable::Symbol::iterator display_modules_end(void);
 
 extern EXPCL_PANDA void init_libdisplay();
 

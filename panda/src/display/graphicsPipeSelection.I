@@ -16,18 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipeSelection::resolve_modules
+//     Function: GraphicsPipeSelection::get_num_aux_modules
 //       Access: Published
-//  Description: Conditionally calls do_resolve_modules(), if it has
-//               not been called before.
+//  Description: Returns the number of display modules that are still
+//               to be loaded.  If this is nonzero, then calling
+//               load_aux_modules() will likely increase the number of
+//               GraphicsPipes available.
 ////////////////////////////////////////////////////////////////////
-INLINE void GraphicsPipeSelection::
-resolve_modules() const {
-  if (!_resolved_modules) {
-    ((GraphicsPipeSelection *)this)->do_resolve_modules();
-  }
+INLINE int GraphicsPipeSelection::
+get_num_aux_modules() const {
+  return _display_modules.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,6 +41,19 @@ get_global_ptr() {
     _global_ptr = new GraphicsPipeSelection;
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipeSelection::load_default_module
+//       Access: Private
+//  Description: Conditionally calls do_load_default_module(), if it has
+//               not been called before.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsPipeSelection::
+load_default_module() const {
+  if (!_default_module_loaded) {
+    ((GraphicsPipeSelection *)this)->do_load_default_module();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

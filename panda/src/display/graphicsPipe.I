@@ -16,3 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::is_valid
+//       Access: Published
+//  Description: Returns false if this pipe is known to be invalid,
+//               meaning that an attempt to create a GraphicsWindow
+//               with the pipe will certainly fail.  Returns true if
+//               the pipe is probably valid (is this case, an attempt
+//               to create a GraphicsWindow should succeed, but might
+//               still fail).
+//
+//               Use the GraphicsEngine class to create a
+//               GraphicsWindow on a particular pipe.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsPipe::
+is_valid() const {
+  return _is_valid;
+}

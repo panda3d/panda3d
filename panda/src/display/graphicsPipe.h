@@ -59,11 +59,18 @@ PUBLISHED:
   int get_num_windows() const;
   PT(GraphicsWindow) get_window(int n) const;
 
+  INLINE bool is_valid() const;
+  virtual string get_interface_name() const=0;
+
 public:
   virtual int get_num_hw_channels();
   virtual HardwareChannel *get_hw_channel(GraphicsWindow *window, int index);
 
 protected:
+  // The make_window() interface on GraphicsPipe is protected; don't
+  // try to call it directly.  Instead, use
+  // GraphicsEngine::make_window() to make a new window on a
+  // particular pipe.
   virtual PT(GraphicsWindow) make_window()=0;
 
   void add_window(GraphicsWindow *window);
@@ -73,6 +80,7 @@ protected:
   Windows _windows;
   Mutex _lock;
 
+  bool _is_valid;
 
 public:
   static TypeHandle get_class_type() {

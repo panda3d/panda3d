@@ -29,11 +29,9 @@
 #include "geomNodeContext.h"
 #include "geomContext.h"
 
-Configure(config_display);
+ConfigureDef(config_display);
 NotifyCategoryDef(display, "");
 NotifyCategoryDef(gsg, display_cat);
-
-static Config::ConfigTable::Symbol *disp;
 
 ConfigureFn(config_display) {
   init_libdisplay();
@@ -59,20 +57,16 @@ const bool pstats_unused_states = config_display.GetBool("pstats-unused-states",
 // system!
 const string threading_model = config_display.GetString("threading-model", "");
 
-// Use this to specify a particular pipe you prefer to use, when more
-// than one GraphicsPipe is available (for instance, if both GL and DX
-// are linked in).  This should be the name of the type preferred, or
-// a substring unique to the type name.
-const string preferred_pipe = config_display.GetString("preferred-pipe", "");
+// Use the variable load-display to specifiy the name of the default
+// graphics display library or GraphicsPipe to load.  It is the name
+// of a shared library (or * for all libraries named in aux-display),
+// optionally followed by the name of the particular GraphicsPipe
+// class to create.
 
+// Also use the variable aux-display to name each of the graphics
+// display libraries that are available on a particular platform.
+// This variable may be repeated several times.
 
-Config::ConfigTable::Symbol::iterator display_modules_begin(void) {
-  return disp->begin();
-}
-
-Config::ConfigTable::Symbol::iterator display_modules_end(void) {
-  return disp->end();
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdisplay
@@ -102,7 +96,4 @@ init_libdisplay() {
   TextureContext::init_type();
   GeomNodeContext::init_type();
   GeomContext::init_type();
-
-  disp = new Config::ConfigTable::Symbol;
-  config_display.GetAll("load-display", *disp);
 }

@@ -29,6 +29,9 @@ TypeHandle GraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
 GraphicsPipe() {
+  // Initially, we assume the GraphicsPipe is valid.  A derived class
+  // should set this to false if it determines otherwise.
+  _is_valid = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,6 +41,7 @@ GraphicsPipe() {
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
 GraphicsPipe(const GraphicsPipe &) {
+  _is_valid = false;
   nassertv(false);
 }
 

@@ -51,11 +51,13 @@ protected:
 PUBLISHED:
   int get_num_pipe_types() const;
   TypeHandle get_pipe_type(int n) const;
+  void print_pipe_types() const;
 
   PT(GraphicsPipe) make_pipe(TypeHandle type);
   PT(GraphicsPipe) make_default_pipe();
 
-  INLINE void resolve_modules() const;
+  INLINE int get_num_aux_modules() const;
+  void load_aux_modules();
 
   INLINE static GraphicsPipeSelection *get_global_ptr();
 
@@ -64,7 +66,9 @@ public:
   bool add_pipe_type(TypeHandle type, PipeConstructorFunc *func);
 
 private:
-  void do_resolve_modules();
+  INLINE void load_default_module() const;
+  void do_load_default_module();
+  void load_named_module(const string &name);
 
   class PipeType {
   public:
@@ -74,8 +78,13 @@ private:
   };
   typedef pvector<PipeType> PipeTypes;
   PipeTypes _pipe_types;
-  bool _resolved_modules;
   Mutex _lock;
+
+  typedef pset<string> DisplayModules;
+  DisplayModules _display_modules;
+  string _default_display_module;
+  string _default_pipe_name;
+  bool _default_module_loaded;
 
   static GraphicsPipeSelection *_global_ptr;
 };  
