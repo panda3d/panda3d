@@ -91,7 +91,7 @@ public:
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>
-  INLINE pallocator(const pallocator<U> &copy) throw() { }
+  INLINE pallocator(const pallocator<U> &) throw() { }
 
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(void *p, size_type n);
