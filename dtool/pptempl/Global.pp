@@ -437,10 +437,6 @@
 #defun get_ipath
   #define alt_ipath $[stl_ipath] $[nspr_ipath] $[python_ipath]
   
-  #if $[eq $[PLATFORM],Win32]  
-    // all win32 files need path to latest windows.h and libs, which are in plat-sdk dirs, not the deflt vc ones
-    #set alt_ipath $[WIN32_PLATFORMSDK_INCPATH] $[alt_ipath]
-  #endif  
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[crypto_ipath]
   #endif
@@ -745,13 +741,12 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
   #define install_parser_inc_dir $[install_headers_dir]/parser-inc
 #endif
 
-
 // Set up the correct interrogate options.
 #defer interrogate_ipath $[target_ipath:%=-I%]
 #defer interrogate_spath $[install_parser_inc_dir:%=-S%]
-#defer interrogate_options \
+#defer interrogate_options $[interrogate_ipath] \
     -DCPPPARSER -D__cplusplus $[SYSTEM_IGATE_FLAGS] \
-    $[interrogate_spath] $[interrogate_ipath] \
+    $[interrogate_spath] \
     $[CDEFINES_OPT$[OPTIMIZE]:%=-D%] \
     $[filter -D%,$[C++FLAGS]] \
     $[INTERROGATE_OPTIONS] \
