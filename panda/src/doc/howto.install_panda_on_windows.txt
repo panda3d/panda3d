@@ -6,44 +6,56 @@ VR Studio firewall.
 If you are looking for documentation on installing Panda in the rest
 of the world, see INSTALL.txt in this directory.
 
+                ---------------------------------------
+                HOW TO INSTALL PANDA3D ON WINXP/WIN2000
+                ---------------------------------------
 
+*********************************************************************
+  NOTES
+*********************************************************************
 
-To install Panda3D on WinXP/Win2000
--------------------------------------
-Notes:
-  Lines preceeded by ">" are instructions to be typed on the command line.
-  Make sure your system clock is not set to GMT (only worry about 
-    this if your makedepend seems out of sync, i.e. you constantly reinstall 
-    old files over more current ones).
-  "Touch" doesn't quite work properly currently (is this still true?).
-  Make sure your machine has enough disk space - I'd start with the largest
-    open space on any of your partitions.
+  - Lines preceeded by ">" are instructions to be typed on the command 
+    line.
+  - Make sure your system clock is not set to GMT (only worry about 
+    this if your makedepend seems out of sync, i.e. you constantly 
+    reinstall old files over more current ones).
+  - "Touch" doesn't quite work properly currently (is this still true?).
+  - Make sure your machine has enough disk space - I'd start with the 
+    largest open space on any of your partitions.
     You will have the fewest headaches if you choose C:\ for everything.
     Also make sure that you're logged into your computer with the same
-    username as your unix account because Cygwin will get its USER variable
-    from the windows username.
-
-  Ensure your computer's date is set correctly, or else the compilation
-    scripts may have problems later.
+    username as your unix account because Cygwin will get its USER 
+    variable from the windows username.
+  - Ensure your computer's date is set correctly, or else the 
+    compilation scripts may have problems later.
     
-Step 0: Map network drive to build tools drive
+*********************************************************************
+  Step 1: Map network drive to build tools drive
+*********************************************************************
+
   - Right click on Network Places, choose Map Network Drive
-  - Map Network Drive P: to \\dimbo\panda  (blank, your password, or "changeme")
+  - Map Network Drive P: to \\dimbo\panda  (using your unix password)
     You also can do this from cmd.exe using 
       > net use p: \\dimbo\panda /persistent:yes
   - Select 'Reconnect drive at startup'
   - If this doesn't work, you can install the build tools from CD
-  - Run 'regedit P:\tabs.reg' to enable cmd.exe tab-filename-completion.  
-    You must exit and restart the cmd.exe shell to enable this, since the
-    registry is only read at cmd.exe startup.
+  - Run 'regedit P:\tabs.reg' to enable tab-filename-completion.
+    You must exit and restart the cmd.exe shell to enable this, since 
+    the registry is only read at cmd.exe startup.
     
-Step 1: Update OS software
-  On Win2000, install ServicePack 3 and DX 8.1 by running
+*********************************************************************
+  Step 2: Update OS software
+*********************************************************************
+
+  - On Win2000, install ServicePack 3 and DX 8.1 by running (unless you
+    already have DX 8 or greater)
     > P:\win2k-servicepack3.exe
     > P:\dx8.1\DX81NTeng.exe
-  or download them from http://windowsupdate.microsoft.com/ (this will be MUCH slower).
 
-  On both WinXP and Win2000, I recommend you go to 
+    or download them from http://windowsupdate.microsoft.com/ 
+      (this will be MUCH slower).
+
+  - On both WinXP and Win2000, I recommend you go to 
     http://windowsupdate.microsoft.com/, click on 'Product Updates' 
     (installing the Product Update ActiveX control), and install any
     patches labeled 'Critical Updates' as well as any updated sound,
@@ -53,47 +65,56 @@ Step 1: Update OS software
     drivers, especially on win2000, since the original win2k CD drivers
     are most likely obsolete.
 
-Step 2: 
-  Choose whether to use Visual C++ v7.0 or v6.0
+*********************************************************************
+  Step 3: Install Visual C++
+*********************************************************************
+
+  - Choose whether to use Visual C++ v7.0 or v6.0
     As of 5/19/03, it's better to use Visual C++ v7.0 
     (which is a synonym for Visual C++ .NET)
   
-  To Install VC++ 7.0
-    Run P:\msvc7\vc7_setup\SETUP.EXE, or install from the MSDN 
+  *** TO INSTALL VC++ 7.0 ***
+
+  - Run P:\msvc7\vc7_setup\SETUP.EXE, or install from the MSDN 
     'Visual Studio.NET' CD. Click on 'Windows Component Update' 
     (if it is highlighted, else click '2').  Click 'Continue' 
     (Selecting 'Do not use this machine to host web projects').  
     You will install IE6, which will requires a reboot.  Give your 
     cvspassword if you want it to happen automatically.   
   
-  After rebooting, setup should start again.  If it does not, go 
+  - After rebooting, setup should start again.  If it does not, go 
     back and rerun it, it should remember where it left off. After 
     installing components, you are ready to install VC7 in .NET 
     setup Step 2. Enter this step and enter the product-key, 
     which is stored in P:\msvc7\vc7_prodkey.txt. On the 'Select 
     items to install page', you need uncheck things to avoid 
     wasting gigs of extra space and install time.  
-    Uncheck everything except for 
+
+  - Uncheck everything except for:
     - Language Tools->Visual C++
     - Server Components->Remote Debugger->Native Remote Debugger
 
-    and if you want, 
+    And if you want:
     - Documentation (this takes a gig, and is only a slight 
       update if you already have MSDN installed locally.  
       You will want to uninstall any separately-installed 
       MSDN docs if you get this.)
 
-  Unlike VC 6.0, there is no option to add the required compiler 
+  - Unlike VC 6.0, there is no option to add the required compiler 
     bin\ directories to the environment path automatically. If you 
-    are building using tcsh.exe under cygwin, wait until step 4.5 
+    are building using tcsh.exe under cygwin, wait until step 7 
     to setup the environment after your shell environment is running 
     properly.  If you are running from the NT command line, run 
-      > C:\Program Files\Microsoft Visual Studio .NET\Vc7\bin\vcvars32.bat
+     > C:\Program Files\Microsoft Visual Studio .NET\Vc7\bin\vcvars32.bat
         
-  Note there is (currently) no need to install the MS Platform SDK, 
-    since VC7 comes with an updated version of it.
-  
-  To Install Visual C++ (v6.0)
+---------------------------------------------------------------------
+  NOTE: 
+   There is (currently) no need to install the MS Platform SDK, 
+   since VC7 comes with an updated version of it.
+---------------------------------------------------------------------
+
+  *** TO INSTALL VISUAL C++ (V6.0) ***
+
   - Run P:\msvc-6.0\setup.exe, or install from CD. For a faster 
     install, select custom install and uncheck everything but 
     Visual C++, Data Access, ActiveX, and Tools
@@ -108,93 +129,160 @@ Step 2:
     everything but Text-Search, Index, VC++, Platform SDK, Knowledge 
     Base, and All Other Files.
   - Install MS Platform SDK to get updated VC libs and headers
-  - Run P:\platform-sdk\setup.exe to install the Feb 2001 Platform SDK and
-    choose 'Install MS Platform SDK in default location.' (there may be 
-    problems with other newer versions of the Platform SDK). This should 
-    prepend the Platform SDK paths to your PATH,INCLUDE, and LIB dirs.  
+  - Run P:\platform-sdk\setup.exe to install the Feb 2001 Platform SDK 
+    and choose 'Install MS Platform SDK in default location.' 
+    (there may be problems with other newer versions of the Platform 
+    SDK). This should prepend the Platform SDK paths to your 
+    PATH,INCLUDE, and LIB dirs.  
     Building libpandadx requires this step (needs DX7 headers/libs)
     
-Step 3: Install Cygwin (v1.3.5 or above should work)
+*********************************************************************
+  Step 4: Install Cygwin (v1.3.5 or above should work)
+*********************************************************************
+
   - Latest version currently is 1.5.7-1 (Jan 31 2004)
-  - As of 1.3.11, cygwin seems stable enough to install from the internet, 
-    go to http://cygwin.com and click on the "install cygwin now" link.  
-    The most reliable download server is http://mirrors.rcn.net. Another
-    server is http://sigunix.cwrv.edu. Make sure that the following packages
-    are selected for installation:
-  - Devel packages such as :  CVS, make, flex
-  - under Interpreters : gawk, perl (see note below)
-  - under Shells : ash, bash, sh-utils, tcsh
-  - under Text : more (or less)
-  - under Archive : zip, unzip
-  - You can also install other programs (like vi for instance) if you want.  
+  - As of 1.3.11, cygwin seems stable enough to install from the 
+    internet, go to http://cygwin.com and click on "install cygwin now"
+    - The most reliable download server is http://mirrors.rcn.net. 
+      Another server is http://sigunix.cwrv.edu. 
+  - Make sure that the following packages are selected for installation:
+      - Under Devel packages such as :  CVS, make, flex
+      - Under Interpreters : gawk, perl (see note below)
+      - Under Shells : ash, bash, sh-utils, tcsh
+      - Under Text : more (or less)
+      - Under Archive : zip, unzip
+  - You can also install other programs (like vi) if you want.  
     To rotate through the possible installation options, left-click on 
     the programs of your choice.
-  - Keep in mind the following exceptions: 
-  - Do NOT install emacs/xemacs, we have our own emacs (see below under Step 10)
-  - Do NOT install the Interpreter->python package (change the Setting 
-    to "SKIP")
-  - Do NOT install the Devel->bison package if the version is 1.30-1.34,  
-    they are known to be buggy.  Version 1.28 is safe, as is version 1.35+. 
-    If 1.35+ is not available, you can install 1.28 manually, after you 
-    have a shell running (see step 4.5)
-  - There are many subpackages that are obviously not needed (e.g. Mail, 
-    Doc, Text, Games) that you can skip if you like.
-  - Create a desktop shortcut or Start Menu item for c:\cygwin\bin\tcsh.exe 
-    and use it in the future.
-  - Remove X-windows packages to make download smaller.
+  - DO NOT INSTALL the following packages (change the Setting to 
+    "SKIP"):
+      - emacs/xemacs, we have our own emacs (see Step 10) 
+      - The Interpreter->python package 
+      - The Devel->bison package if the version is 1.30-1.34, they are
+        known to be buggy.  Version 1.28 is safe, as is version 1.35+. 
+        If 1.35+ is not available, you can install 1.28 manually, 
+        after you have a shell running (see step 9) 
+      - Remove X-windows packages to make download smaller.
+  - There are many subpackages that are obviously not needed 
+    (e.g. Mail, Doc, Text, Games) that you can skip if you like.
+  - Create a desktop shortcut or Start Menu item for
+    c:\cygwin\bin\tcsh.exe and use it in the future.
 
-    ***note***
-    Known issues section pertains to older versions of Cygwin and versions
-    of software it installs by default.  If you installed Cygwin version 
-    1.5.10 (CYGWIN_NT-5.1) or newer you can probably ignore the following.
+---------------------------------------------------------------------
+  NOTE:
+    The known issues section pertains to older versions of Cygwin and 
+    versions of software it installs by default.  If you installed 
+    Cygwin version 1.5.10 (CYGWIN_NT-5.1) or newer you can probably 
+    ignore the following.
+
     Type uname -a in your cygwin tcsh window to check version number.
-    **********
+---------------------------------------------------------------------
 
     Known Problems with tcsh:
       tcsh v6.09.00: (cygwin 1.0)   
-      - long paths result in 'Word too long' errors, especially during panda 
-        "attach" scripts
+      - long paths result in 'Word too long' errors, especially during 
+        panda "attach" scripts
 
       tcsh v.6.11 - 6.12.00
       - TAB filename completion sometimes fails on second+ arguments in 
-        cmdline (e.g. "cp file.cxx file2[TAB]" fails to complete file2.cxx).
-        To fix this, go to /etc/profile.d/complete.tcsh and comment out the  
-        lines associated with "complete mv" and "complete cp"
+        cmdline (e.g. "cp file.cxx file2[TAB]" fails to complete 
+        file2.cxx).
+        To fix this, go to /etc/profile.d/complete.tcsh and comment out 
+        the lines associated with "complete mv" and "complete cp"
        
-      v6.09 and v6.11 should be stored on P:\cygwin-1.3.5, you can copy them
-        to c:\cygwin\bin if you want to use them
+      v6.09 and v6.11 should be stored on P:\cygwin-1.3.5, you can copy 
+        them to c:\cygwin\bin if you want to use them
     
     Known Problems with bash:
       - None :)
 
-    Known Problems with perl version 5.8.0-2 installed by default w/ older
-    Cygwin install, check perl version with "perl -V" in your cygwin shell:
+    Known Problems with perl version 5.8.0-2 installed by default w/ 
+      older Cygwin install, check perl version with "perl -V" in your 
+      cygwin shell:
 
       This is not compatible with the current $DTOOL startup script 
-      $DTOOL/etc/dtool.cshrc install: specifically the "source $SETUP_SCRIPT"
-      because cygwin Perl 5.8.0 leaves a ^M newline in the variable, screwing
-      up the later source $SETUP_SCRIPT resulting in startup errors.  Stay
+      $DTOOL/etc/dtool.cshrc install: specifically the 
+      "source $SETUP_SCRIPT" because cygwin Perl 5.8.0 leaves a ^M 
+      newline in the variable, screwing up the later source 
+      $SETUP_SCRIPT resulting in startup errors.  Stay
       with earlier versions of Perl (5.6.x) or later versions of Perl,
       starting with version 5.8.0-3
                
     Next, you can run a bash shell by going to the "Start"
     button at the bottom left of your screen, selecting "Programs",
-    "Cygwin" and "bash".  You can then run "tcsh" at the bash prompt to make 
-    things easier.  To make things really easy, edit C:\Cygwin\cygwin.bat,
-    change "bash --login -i" to "tcsh -i", this will cause tcsh to be the
-    default shell when you start Cygwin command prompt/shell.  
+    "Cygwin" and "bash".  You can then run "tcsh" at the bash prompt 
+    to make things easier.  To make things really easy, edit 
+    C:\Cygwin\cygwin.bat, change "bash --login -i" to "tcsh -i", 
+    this will cause tcsh to be the default shell when you start 
+    Cygwin command prompt/shell.  
 
-Step 3.5: Set up the Cygwin environment:
+*********************************************************************
+  Step 5: Create your HOME directory
+*********************************************************************
+
+  - Create a HOME directory:
+      > mkdir /<home root>/<login>
+
+    where <home root> can be either "usr" or "home", and <login> is
+    the name you use to login to your Windows machine.
+   
+    In Windows this directory will be the equivalent of:    
+      C:\cygwin\<home root>\<login>
+
+  - Set the $HOME environment variable in the Registry:
+    - Note: You must be logged into an account with Administrator access
+    - Select "Start Menu->Control Panel"
+    - Select "System" icon.
+    - Select "Advanced->Environment" button.
+    - Create the variable "HOME" with the value:
+         "c:\cygwin\<home root>\<login>".
+    - click ok - ok - ok to exit (you must exit for the change to take 
+      effect)
+    - Now open a new shell so the registry is read by the shell to get 
+      the changes.
+
+---------------------------------------------------------------------
+  NOTE: 
+      We've seen a problem where we can't source ~/.cshrc if the 
+      <login> in your HOME directory does not match the user name 
+      %USERNAME% windows env var. To be safe, be sure your <login>
+      matches your Windows login as part of your HOME directory name.
+---------------------------------------------------------------------
+
+  - Add C:\Cygwin\bin to the $path environment variable in the registry 
+    to avoid errors (sed: Command not found) when executing the file 
+    complete.tcsh (in C:\Cygwin\etc\profile.d) on startup 
+
+  - Copy important startup files into your home directory:
+    > cd /p/win/install/wintools/panda
+    > cp .cshrc .emacs Configrc Config.pp.sample /<home root>/<login>
+    > cd /<home root>/<login>
+    > mv Config.pp.sample Config.pp
+
+  - Make sure the contents of .cshrc are correct for your setup.  In 
+    particular, make sure the definition for PANDA_ROOT matches the 
+    directory you have installed Cygwin to (normally C:\Cygwin), 
+    and that CVSROOT is correct for your CVS login (if $USERNAME 
+    is not the same as your CVS/Unix account name, edit the 
+    variable as necessary).
+
+*********************************************************************
+  Step 6: Set up the Cygwin environment:
+*********************************************************************
+
   - All of the commands below have been collected in    
     P:\win\install\wintools\etc\setup_env.csh.  To do all the Cygwin 
     steps below automatically, from the tcsh prompt do:
     > cd P:/win/install/wintools/etc
     > source setup_env.csh
 
+---------------------------------------------------------------------
   CAUTION: setup_env.csh: 
-  Some of the drives may need to be mapped manually from windows. If you have a 
-  cdrom or some other drive mapped to the following drives, you need to unmount
-  those and map to some other drives.
+  Some of the drives may need to be mapped manually from windows. If you
+  have a cdrom or some other drive mapped to the following drives, 
+  you need to unmount those and map to some other drives.  See the 
+  "Connect the network drives" segment below
+---------------------------------------------------------------------
 
   These are the steps setup_env.csh performs (so you don't have to):
   - Make the following directories (don't worry if they already exist)
@@ -202,27 +290,30 @@ Step 3.5: Set up the Cygwin environment:
       > mkdir /c /f /g /h /i /j /p
       > mkdir /usr/local /usr/local/bin /usr/local/etc
       
-  - *** This is only necessary if you installed python while installing
-    *** Cygwin
-    Rename any cygwin-installed python.exe (if it exists) to avoid 
-    conflicts with required VRSTUDIO-compiled python, which is custom-built 
-    to load "sitecustomize.py" which sets up the PYTHONPATH env-var 
-    for our panda environment:
+  - Rename any cygwin-installed python.exe (if it exists) to avoid 
+    conflicts with required VRSTUDIO-compiled python, which is 
+    custom-built to load "sitecustomize.py" which sets up the 
+    PYTHONPATH env-var for our panda environment:
       > mv /bin/python.exe /bin/python-cygwin.exe
 
-  - Create some links expected by the attach scripts, which look in standard
-    modern unix BSD-style places:
+    This is only necessary if you installed python while installing
+    Cygwin
+
+  - Create some links expected by the attach scripts, which look in 
+    standard modern unix BSD-style places:
       > ln -s /bin/tcsh /bin/csh
       > ln -s /bin/perl /usr/local/bin/perl
       > ln -s /bin/bash /usr/local/bin/bash
 
   - Connect the network drives:
-    Note that any of your drive letters are already in use (by a CD drive, 
-      or by some I.S. login-script-created drive), you simply do a 'net use' 
-      to a different drive letter, then change the 'mount' command to point 
-      the official '/[drivelet]' dir at the real drive letter it's mounted 
-      to.
-      It is not necessary for cygwin's /p to point to the P: drive in Windows.
+    Note that any of your drive letters are already in use (by a 
+    CD drive, or by some I.S. login-script-created drive), you simply 
+    do a 'net use' to a different drive letter, then change the 'mount' 
+    command to point the official '/[drivelet]' dir at the real drive 
+    letter it's mounted to.
+
+    It is not necessary for cygwin's /p to point to the P: drive in 
+    Windows.
 
       > net use f: "\\nufat\fat" /persistent:yes
       > net use g: "\\nufat\bit" /persistent:yes
@@ -231,10 +322,13 @@ Step 3.5: Set up the Cygwin environment:
       > net use j: "\\nufat\for" /persistent:yes
       > net use P: "\\dimbo\panda" /persistent:yes
 
-    The "net use" commands may require you to enter a password if access is 
-      denied, in which case you can add the /USER:[username] argument to net 
-      use and it will ask for a password.  See "net use /help" for more info.  
-      The "Map Networked Drive" GUI option can be used instead of "net use".
+    The "net use" commands may require you to enter a password if 
+    access is denied, in which case you can add the /USER:[username] 
+    argument to net use and it will ask for a password.  
+      See "net use /help" for more info.  
+    
+    The "Map Networked Drive" GUI option can be used instead of 
+    "net use".
 
   - Create cygwin mount directories.  The purpose of this is to shorten 
     and simplify paths.  Note the use of -b for the mounts to mapped 
@@ -279,56 +373,13 @@ Step 3.5: Set up the Cygwin environment:
       the same path from cygwin apps (e.g. C:\Cygwin\beta will be not 
       be accessible via /beta)
 
-Step 4: Create your HOME directory
-- Create a HOME directory:
-      > mkdir /<home root>/<login>
+*********************************************************************
+  Step 7:  Setup VC7 environment in shell (skip if you have VC6)
+*********************************************************************
 
-    where <home root> can be either "usr" or "home", and <login> is
-    the name you use to login to your Windows machine.
-   
-    In Windows this directory will be the equivalent of:    
-      C:\cygwin\<home root>\<login>
+  - Use your favorite text editor to open:
+      /p/win/install/wintools/bin/setup_msvc7.csh.  
 
-- Set the $HOME environment variable in the Registry:
-  - You must be logged into your computer on an account with Administrator access
-  - Select "Start Menu->Control Panel"
-  - Select "System" icon.
-  - Select "Advanced->Environment" button.
-  - Create the variable "HOME" with the value "c:\cygwin\<home root>\<login>".
-  - click ok - ok - ok to exit (you must exit for the change to take effect)
-  - Now open a new shell so the registry is read by the shell to get the changes.
-  Note: We've seen a problem where we can't source ~/.cshrc if the 
-    <login> in your HOME directory does not match the user name 
-    %USERNAME% windows env var. To be safe, be sure your <login>
-    matches your Windows login as part of your HOME directory name.
-
-  - Add C:\Cygwin\bin to the $path environment variable in the registry 
-    to avoid errors (sed: Command not found) when executing the file 
-    complete.tcsh (in C:\Cygwin\etc\profile.d) on startup 
-
-  Copy important startup files into your home directory:
-    > cd /p/win/install/wintools/panda
-    > cp .cshrc .emacs Configrc Config.pp.sample /<home root>/<login>
-    > cd /<home root>/<login>
-    > mv Config.pp.sample Config.pp
-
-  Make sure the contents of .cshrc are correct for your setup.  In 
-    particular, make sure the definition for PANDA_ROOT matches the 
-    directory you have installed Cygwin to (normally C:\Cygwin), 
-    and that CVSROOT is correct for your CVS login (if $USERNAME 
-    is not the same as your CVS/Unix account name, edit the 
-    variable as necessary).
-
-  INSTALL BISON:  Skip this is you have bison 1.35+ installed.  
-    Versions of bison between 1.30-1.34 seem to have a bug, to 
-    avoid this you can install bison manually:
-    > cd /
-    > tar zxvf /p/Cygwin-1.3.5/bison-1.28-1.tar.gz
-
-Step 4.5:  Setup VC7 environment in shell (skip if you have VC6)
-  (NOTE: This step is already done if you ran setup_env.csh)
- 
-  Use your favorite text editor to open /p/win/install/wintools/bin/setup_msvc7.csh.  
     Copy the top portion of setup_msvc7.csh (it sets PATH and other 
     environment variables) to your .cshrc, and put 'set_msvc7' cmd 
     from the script at the end of your .cshrc to set up the PATH 
@@ -336,25 +387,25 @@ Step 4.5:  Setup VC7 environment in shell (skip if you have VC6)
     to tell ppremake to use VC7.  The USE_COMPILER variable can 
     alternatively be added to your local Config.pp.
 
-  After finishing this process, make sure you are using VC7 in your
+  - After finishing this process, make sure you are using VC7 in your
     shell by typing 'cl' at the prompt.  If you have VC7 you will see: 
 
     Microsoft (R)32-bit C/C++ Optimizing Compiler Version 13.00.9466 for 80x86 
     Copyright (C) Microsoft Corporation 1984-2001.
 
-  If you still have VC6, you will see something like
+  - If you still have VC6, you will see something like
 
     Microsoft (R)32-bit C/C++ Optimizing Compiler Version 12.00.8804 for 80x86
     Copyright (C) Microsoft Corp 1984-1998. 
 
-  If you try to build with this broken setup, the build process will get 
-    confused and compile with VC6 but try to link with the VC7 libraries 
-    and you will get link errors.
+  - If you try to build with this broken setup, the build process will 
+    get confused and compile with VC6 but try to link with the VC7 
+    libraries and you will get link errors.
 
-  To correct this problem, check your tcsh path to make sure it has the
-    .NET dirs in it, and make sure the cygwin softlink mount point /msvc7
-    exists, and is not empty but points to the proper VC7 directory. Doing
-    'ls /msvc7' should give you something like
+  - To correct this problem, check your tcsh path to make sure it has 
+    the .NET dirs in it, and make sure the cygwin softlink mount 
+    point /msvc7 exists, and is not empty but points to the proper VC7 
+    directory. Doing 'ls /msvc7' should give you something like
 
     Common7/               Visual Studio .NET Enterprise Architect - English/
     Crystal Reports/       Visual Studio SDKs/
@@ -366,31 +417,91 @@ Step 4.5:  Setup VC7 environment in shell (skip if you have VC6)
     Vc7/                   vdt70vcs.dll*
 
 
-  If it does not, try running 
-    > source ~/player/wintools/etc/setup_env.csh
-  again to get it to do the cmd (ignore file-exists errors)
-    > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET /msvc7
-  This should create the softlink mount, or you can just run the cmd manually
-  yourself.
+  - If it does not, try running 
+      > source ~/player/wintools/etc/setup_env.csh
+    again to get it to do the cmd (ignore file-exists errors)
+      > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET /msvc7
+    This should create the softlink mount, or you can just run the 
+    cmd manually yourself.
 
-Step 5: Copy files needed by attach scripts
+*********************************************************************
+  Step 8: Copy files needed by attach scripts
+*********************************************************************
+
   - Run script to copy vspec files from $WINTOOLS to /usr/local/etc
     > cd /p/win/install/wintools
     > ./cp_vspec 
-  To setup a new user in panda environment files:
-  - If you are setting up a new user, edit the *.vspec files in /usr/local/etc
-    to add the new username and path to the player tree (starting with
-    dtool.vspec, panda.vspec, direct.vspec, otp.vspec, toontown.vspec, and
-    ttpublish.vspec).
-  - (Optional) Update default values in vspec files. Edit appropriate *.vspec 
-    files to specify which trees you wish to use as a default (e.g. install, 
-    personal, or release)
 
-Step 6: Grab the cvs trees
+  To setup a new user in panda environment files:
+  - If you are setting up a new user, edit the *.vspec files in 
+    /usr/local/etc to add the new username and path to the player tree 
+    (starting with dtool.vspec, panda.vspec, direct.vspec, otp.vspec, 
+    toontown.vspec, and ttpublish.vspec).
+  - (Optional) Update default values in vspec files. Edit appropriate 
+    *.vspec files to specify which trees you wish to use as a default 
+    (e.g. install, personal, or release)
+
+*********************************************************************
+  Step 9: Install Bison
+*********************************************************************
+
+    *** Skip this is you have bison 1.35 or greater installed. ***
+
+    Versions of bison between 1.30-1.34 seem to have a bug, to 
+    avoid this you can install bison manually:
+    > cd /
+    > tar zxvf /p/Cygwin-1.3.5/bison-1.28-1.tar.gz
+
+*********************************************************************
+  Step 10: Install Emacs   
+*********************************************************************
+
+  - We use GNU emacs (21.3 currently) by default, other versions of 
+    emacs may also work.  Note: unlike xemacs.exe compiled for cygwin, 
+    this emacs does not use Cygwin paths, so "/" represents the real 
+    root (C:\, not "C:\Cygwin")).  
+  - Copy the tarball to your local machine
+    > cp /p/emacs-21.2-fullbin-i386.tar /c
+  - Untar and install (This will install emacs into C:/emacs-21.3, do 
+    not attempt to install it under a directory containing a space,
+    like "Program Files".)
+    > cd /c
+    > tar xvf emacs-21.3-fullbin-i386.tar
+  - Copy lisp/script files
+    > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-21.2/lisp/progmodes
+    > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
+  - Update environment variables (win2000/XP).  Note: You should only 
+    need to do this if you intend to invoke Emacs from a non-Cygwin 
+    prompt.  If you will always be using Cygwin, simply edit your 
+    .cshrc file to add:
+       /c/emacs-21.2/bin
+    - Select "Start Menu->Control Panel"
+    - Select "System" icon.
+    - Select "Advanced->Environment" button.
+    - double click on the "Path" variable in the bottom pane 
+      (system variables)
+    - add "C:\emacs-21.3\bin" to the end of the path (semicolon 
+      separated)
+    - click ok - ok - ok to exit (you must exit for the change to take
+      effect)
+
+
+---------------------------------------------------------------------
+ NOTE: 
+   THE FOLLOWING STEPS ARE ONLY REQUIRED IF YOU WANT YOUR OWN PERSONAL
+   COPY OF THE SOURCE TREES
+---------------------------------------------------------------------
+
+*********************************************************************
+  Step 11: (Optional) Grab the cvs trees 
+*********************************************************************
+
   - Open a new shell
+
   - Create personal trees:
     > mkdir ~/player
     > cd ~/player
+
   - Grab from local repository
 
     Make sure your CVSROOT is set to the local repository, echo $CVSROOT
@@ -401,21 +512,25 @@ Step 6: Grab the cvs trees
     where $USERNAME is your login, check your .cshrc for the environment 
     variable setting
 
-    # Just hit return or type your unix password when prompted for a password
+    # Just hit return or type your unix password when prompted for a 
+      password
     > cvs login
     > cvs co otp (only if local toontown will be built)
     > cvs co toontown (only if local toontown will be built)
 
   - Now choose either A (commit) or B (anonymous) access:
-    A. SourceForge developer (with commit) access
+
+    A. SOURCEFORGE DEVELOPER (WITH COMMIT) ACCESS
+
       1. setup an account with SourceForge at 
         http://sourceforge.net/account/register.php
         Try to use the same username used your cygwin setup.  If you are
-        unable to do so just make sure you edit your .cshrc file to reflect
-        this for the SFROOT variable.
+        unable to do so just make sure you edit your .cshrc file to 
+        reflect this for the SFROOT variable.
 
-        Tell somebody like David Rose, Dave Schuyler, or Mark Mine to add your 
-          new sourceforge username to the list of Panda3D developers.
+        Tell somebody like David Rose, Dave Schuyler, or Mark Mine 
+        to add your new sourceforge username to the list of Panda3D 
+        developers.
 
       2. setup ssh and access through the corporate firewall to
          cvs.sourceforge.net
@@ -434,16 +549,16 @@ Step 6: Grab the cvs trees
 
           > ssh-keygen -t dsa
 
-        Just press enter if prompted for password.
+          Just press enter if prompted for password.
 
-        (If you have generated this key before, copy the id_dsa and
-        id_dsa.pub from ~/.ssh on your other machine.)
+          (If you have generated this key before, copy the id_dsa and
+          id_dsa.pub from ~/.ssh on your other machine.)
 
-        If the above does not put a file in ~/.ssh, check that
-        your /etc/passwd file has an entry for your username and that
-        it points to the correct home directory for you.
+          If the above does not put a file in ~/.ssh, check that
+          your /etc/passwd file has an entry for your username and that
+          it points to the correct home directory for you.
 
-        register your generated ssh public key (id_dsa.pub) at 
+        - Register your generated ssh public key (id_dsa.pub) at 
           https://sourceforge.net/account/editsshkeys.php
 
       3. type this at the shell or/and put it into your .cshrc
@@ -454,38 +569,45 @@ Step 6: Grab the cvs trees
 
           > setenv SFROOT :ext:<your-sourceforge-username>@cvs.sourceforge.net:/cvsroot/panda3d
 
-    B. anonymous CVS (read-only access) from SourceForge
+    B. ANONYMOUS CVS (READ-ONLY ACCESS) FROM SOURCEFORGE
 
-        > setenv SFROOT :pserver:anonymous@nit:/cvsroot/panda3d
+    ---------------------------------------------------------------------
+     Note that, for the past six months or so, anonymous access from
+     SourceForge has been consistently in the poor-to-unusable
+     quality range.  You probably will be happier choosing option A,
+     above, until SourceForge gets these issues ironed out.
+    ---------------------------------------------------------------------
 
-       Note that, for the past six months or so, anonymous access from
-       SourceForge has been consistently in the poor-to-unusable
-       quality range.  You probably will be happier choosing option A,
-       above, until SourceForge gets these issues ironed out.
+      1. Set handy environment variable to use in anonymous checkout
+          > setenv SFROOT :pserver:anonymous@nit:/cvsroot/panda3d
 
-
-    - Now check out these trees
-      > cvs -d $SFROOT co dtool (only if local dtool will be built)
-      > cvs -d $SFROOT co panda (only if local panda will be built)
-      > cvs -d $SFROOT co direct (only if local direct will be built)
+  
+  NOW FOR BOTH SOURCEFORGE DEVELOPERS AND ANONYMOUS USERS:
+   
+  - Check out these trees
+     > cvs -d $SFROOT co dtool (only if local dtool will be built)
+     > cvs -d $SFROOT co panda (only if local panda will be built)
+     > cvs -d $SFROOT co direct (only if local direct will be built)
       
-    - Choose which optimize level you want. This is set in Config.pp
-      in your $HOME directory.  Look for #define OPTIMIZE and follow
-      instructions above that.  You can only choose an arbitrary
-      optimize level if you are building your own DTOOL and PANDA;
-      otherwise, you must set it to the optimize level corresponding
-      to the version of DTOOL/PANDA you intend to attach to (install
-      is built OPTIMIZE 2, release is built OPTIMIZE 3).  A good
-      choice is OPTIMIZE 3.
+  - Choose which optimize level you want. This is set in Config.pp in
+    your $HOME directory.  Look for #define OPTIMIZE and follow
+    instructions above that.  You can only choose an arbitrary
+    optimize level if you are building your own DTOOL and PANDA;
+    otherwise, you must set it to the optimize level corresponding to
+    the version of DTOOL/PANDA you intend to attach to (install is
+    built OPTIMIZE 2, release is built OPTIMIZE 3).  
+    A good choice is OPTIMIZE 3.
 
-    Your normal, non-SourceForge CVSROOT should be set to the default:
-      > setenv CVSROOT :pserver:<your-unix-username>@dimbo:/fit/cvs
+  - Your normal, non-SourceForge CVSROOT should be set to the default:
+    > setenv CVSROOT :pserver:<your-unix-username>@dimbo:/fit/cvs
 
-Step 7: (Optional) Build $DTOOL
+*********************************************************************
+  Step 12: (Optional) Build $DTOOL
+*********************************************************************
+
   - When you opened a new shell in step 6, it should have attached to 
     DTOOL:install automatically, but you will need to attach to your 
     own DTOOL if you want to build your own.
-    ** Note all the "cta" attach commands can be placed in your .cshrc **
     > cta dtool personal  
     > cd $DTOOL
     > ppremake
@@ -494,7 +616,12 @@ Step 7: (Optional) Build $DTOOL
   After the make is done, kill your current tcsh window and open another 
   using your shortcut from before.
 
-Step 8: (Optional) Build $PANDA 
+  - Note all these "cta" attach commands can be placed in your .cshrc
+
+*********************************************************************
+  Step 13: (Optional) Build $PANDA 
+*********************************************************************
+
   - Build panda
     > cta dtool personal  
     > cta panda personal
@@ -502,14 +629,17 @@ Step 8: (Optional) Build $PANDA
     > ppremake
     > make install
 
-Again, after every make, kill and reopen the tcsh window.
+  - Again, after every make, kill and reopen the tcsh window.
 
   - You can now run "pview" to test the install and build - you should
     see a window pop up with a triangle in it.  To see the triangle with
     a texture on it, you'll need to be in $PANDA/src/testbed/ when
     you run "pview".
 
-Step 9: Build $DIRECT
+*********************************************************************
+  Step 14: (Optional) Build $DIRECT
+*********************************************************************
+
   > cta dtool personal  
   > cta panda personal
   > cta direct personal
@@ -517,7 +647,10 @@ Step 9: Build $DIRECT
   > ppremake
   > make install
 
-Step 10: Build $OTP
+*********************************************************************
+  Step 15: (Optional) Build $OTP
+*********************************************************************
+
   > cta dtool personal
   > cta panda personal
   > cta direct personal
@@ -527,32 +660,10 @@ Step 10: Build $OTP
   > make install
   Exit the shell and create a new one
 
-Step 11: Install Emacs   
-  We use GNU emacs (21.3 currently) by default, other versions of emacs 
-    may also work.  Note: unlike xemacs.exe compiled for cygwin, this 
-    emacs does not use Cygwin paths, so "/" represents the real root 
-    (C:\, not "C:\Cygwin")).  
-  Copy the tarball to your local machine
-    > cp /p/emacs-21.2-fullbin-i386.tar /c
-  Untar and install (This will install emacs into C:/emacs-21.3, do 
-    not attempt to install it under a directory containing a space,
-    like "Program Files".)
-    > cd /c
-    > tar xvf emacs-21.3-fullbin-i386.tar
-  Copy lisp/script files
-    > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-21.2/lisp/progmodes
-    > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
-  Update environment variables (win2000/XP).  Note: You should only need to
-    do this if you intend to invoke Emacs from a non-Cygwin prompt.  If you
-    will always be using Cygwin, simply edit your .cshrc file to add /c/emacs-21.2/bin)
-  - Select "Start Menu->Control Panel"
-  - Select "System" icon.
-  - Select "Advanced->Environment" button.
-  - double click on the "Path" variable in the bottom pane (system variables)
-  - add "C:\emacs-21.3\bin" to the end of the path (semicolon separated)
-  - click ok - ok - ok to exit (you must exit for the change to take effect)
+*********************************************************************
+  Step 16: (Optional) Build $TOONTOWN
+*********************************************************************
 
-Step 12: Build $TOONTOWN
   > cta dtool personal  
   > cta panda personal
   > cta direct personal
@@ -563,32 +674,40 @@ Step 12: Build $TOONTOWN
   > make install
   Exit the shell and create a new one
 
-Step 13: Generate Python Code
+*********************************************************************
+  Step 17: (Optional) Generate Python Code
+*********************************************************************
+
   > cd $DIRECT/bin
   > genPyCode win-debug (if you have built using OPTIMIZE = 1 or 2)
   > genPyCode win-release (if you have built using OPTIMIZE = 3 or 4)
   > genPyCode -n win-publish (for publishes)
 
-Step 14: set up a local server (optional)
+*********************************************************************
+  Step 18: (Optional) Set up a local server
+*********************************************************************
+
   - mkdir /c/toonsrv
   - unzip /p/toontown_server/dev_NOTAG_*.zip to /c/toonsrv
-  - copy zlib1.dll and other newer .dlls if not there from /p/toontown_server
-    cp /p/toontown_server/*.dll /c/toonsrv/.
+  - copy zlib1.dll and other newer .dlls if not there from 
+    /p/toontown_server
+    > cp /p/toontown_server/*.dll /c/toonsrv/.
   - cd /c/toonsrv
   - Be sure to set the execute bit for all .dll, .exe, and .bat files
     chmod +x *.dll *.exe *.bat
-  - Make sure your Windows account on your machine is an administrator type,
-    or else you would not be able to start/stop services.  To check:
+  - Make sure your Windows account on your machine is an administrator
+    type, or else you would not be able to start/stop services.  
+    To check:
+       - Start -> Settings -> Control Panel -> User Accounts
+       - If your account does not have "Administrators" under the 
+         "Group" column, Pick your account from the list, then hit 
+         "Properties" button, then in "Other" pick "Administrator" 
+         from the drop down list, then click Ok, Ok
 
-    Start -> Settings -> Control Panel -> User Accounts
-    If your account does not have "Administrators" under the "Group" column,
-    Pick your account from the list, then hit "Properties" button, then in
-    "Other" pick "Administrator" from the drop down list, then click Ok, Ok
+  - Copy the appropriate NameMaster text file into your local server, 
+    depending on Language of the server being installed:
 
-  - Copy the appropriate NameMaster text file into your local server, depending
-    on Language of the server being installed:
-
-    cp $TOONTOWN/src/configfiles/NameMaster<language>.txt /c/toonsrv/.
+    > cp $TOONTOWN/src/configfiles/NameMaster<language>.txt /c/toonsrv/.
 
     There are currently three different files, NameMasterEnglish.txt,
     NameMasterCastillian.txt, and NameMasterJapanese.txt
@@ -596,23 +715,23 @@ Step 14: set up a local server (optional)
   - Check out dna files for server
     Make sure $CVSROOT is pointed to local repository on dimbo
     
-    cd ~/player
-    cvs co -l ttmodels
-    cvs co -l ttmodels/src
-    cvs co -l ttmodels/src/dna
-    cp ~/player/ttmodels/src/dna/*.dna /c/toonsrv
+    > cd ~/player
+    > cvs co -l ttmodels
+    > cvs co -l ttmodels/src
+    > cvs co -l ttmodels/src/dna
+    > cp ~/player/ttmodels/src/dna/*.dna /c/toonsrv
 
-    The dna files have names with language associated with them, but the server
-    expects file names without it.  Depending on the language of the server
-    you are running, rename the appropriate files so that the file names are
-    without the language designation.  For example, if you are running an
-    English server, you'd rename all .dna files with "_english" in them into
-    filenames without this, such as
+    The dna files have names with language associated with them, but 
+    the server expects file names without it.  Depending on the language 
+    of the server you are running, rename the appropriate files so that 
+    the file names are without the language designation.  For example, 
+    if you are running an English server, you'd rename all .dna files 
+    with "_english" in them into filenames without this, such as
 
     toontown_central_2100_english.dna -> toontown_central_2100.dna
     
-    You need to do this for every .dna file of the language you wish to use,
-    files for other languages can be ignored.
+    You need to do this for every .dna file of the language you wish 
+    to use, files for other languages can be ignored.
 
     ** note **  Only remove the "_<language>" portion of the file name, 
     all other strings in the file name need to stay intacted, even those 
@@ -627,9 +746,13 @@ Step 14: set up a local server (optional)
     cp $TOONTOWN/src/configfiles/toon.dc /c/toonsrv/.
     cp $OTP/src/configfiles/otp.dc /c/toonsrv/.
 
-  - run /c/toonsrv/INSTALLALL.BAT to install toon servers as local NT-type
-    services
-  - /c/toonsrv/STARTALL.BAT to start the servers and /c/toonsrv/STOPALL.BAT to
-    stop them
+  - run /c/toonsrv/INSTALLALL.BAT to install toon servers as local 
+    NT-type services
+  - run 
+    > /c/toonsrv/STARTALL.BAT 
+    to start the servers and 
+    > /c/toonsrv/STOPALL.BAT 
+    to stop them
 
-When you get here, rejoice!
+
+      ***************  When you get here, rejoice! ***************
