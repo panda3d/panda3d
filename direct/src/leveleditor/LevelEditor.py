@@ -1,3 +1,4 @@
+import pdb
 from PandaObject import *
 from PieMenu import *
 from OnscreenText import *
@@ -1856,6 +1857,22 @@ class LevelEditor(NodePath, PandaObject):
                      color[2]/255.0))
             f.close()
 
+    def saveBaselineStyle(self):
+        if self.panel.currentBaselineDNA:
+            # Valid baseline, add style to file
+            filename = self.neighborhood + '_baseline_styles.txt'
+            fname = Filename(self.styleManager.stylePathPrefix +
+                             '/alpha/DIRECT/LevelEditor/StyleFiles/' +
+                             filename)
+            f = open(fname.toOsSpecific(), 'a')
+            # Add a blank line
+            f.write('\n')
+            # Now output style details to file
+            style = DNABaselineStyle(baseline = self.panel.currentBaselineDNA)
+            style.output(f)
+            # Close the file
+            f.close()
+
     def saveWallStyle(self):
         if self.lastWall:
             # Valid wall, add style to file
@@ -2223,11 +2240,134 @@ class LevelStyleManager:
         # The main dictionary holding all attribute objects
         self.attributeDictionary = {}
         # Create the style samples
+        self.createBaselineStyleAttributes()
         self.createWallStyleAttributes()
         self.createBuildingStyleAttributes()
         self.createColorAttributes()
         self.createDNAAttributes()
         self.createMiscAttributes()    
+
+    # BASELINE STYLE FUNCTIONS
+    def createBaselineStyleAttributes(self):
+        """
+        Create a baselineStyle entry in the attribute dictionary
+        This will be a dictionary of style attributes, one per neighborhood
+        """
+        # First create an empty dictionary
+        dict = self.attributeDictionary['baseline_style'] = {}
+        # Create a attribute object for each neighborhood
+        for neighborhood in NEIGHBORHOODS:
+            attribute = LevelAttribute('baseline_style')
+            attribute.setDict(
+                # Create a baseline style dictionary for each neighborhood
+                self.createBaselineStyleDictionary(neighborhood))
+            # Using this dictionary, create color pie menus
+            #attribute.setMenu(
+            #    self.createBaselineStyleMenu(neighborhood, attribute.getDict()))
+            dict[neighborhood] = attribute
+    
+    def createBaselineStyleDictionary(self, neighborhood):
+        """
+        Create a dictionary of baseline styles for a neighborhood
+        """
+        filename = neighborhood + '_baseline_styles.txt'
+        print 'Loading baseline styles from: ' + filename
+        styleData = self.getStyleFileData(filename)
+        return self.initializeBaselineStyleDictionary(styleData, neighborhood)    
+    
+    def initializeBaselineStyleDictionary(self, styleData, neighborhood):
+        """
+        Fill in the baseline style dictionary with data from the style file
+        """
+        styleDictionary = {}
+        styleCount = 0
+        code = NEIGHBORHOOD_CODES[neighborhood]
+        while styleData:
+            l = styleData[0]
+            if l == 'baselineStyle':
+                # Start of new style, strip off first line then extract style
+                style, styleData = self.extractBaselineStyle(styleData)
+                style.name = code + '_baseline_style_' + `styleCount`
+                # Store style in dictionary
+                styleDictionary[style.name] = style
+                styleCount = styleCount + 1
+            # Move to next line
+            styleData = styleData[1:]
+        return styleDictionary
+
+    def extractBaselineStyle(self, styleData):
+        """
+        Pull out one style from a list of style data.  Will keep
+        processing data until endBaselineStyle of end of data is reached.
+        Returns a baseline style and remaining styleData.
+        """
+        # Create default style
+        style = DNABaselineStyle()
+        # Strip off first line
+        styleData = styleData[1:]
+        while styleData:
+            l = styleData[0]
+            if l == 'endBaselineStyle':
+                # End of style found, break out of while loop
+                # Note, endBaselineStyle line is *not* stripped off
+                return style, styleData
+            else:
+                pair = map(string.strip, l.split(':'))
+                if style.__dict__.has_key(pair[0]):
+                    # Convert colors and count strings to numerical values
+                    if (pair[0] == 'color'):
+                        style[pair[0]] = eval(pair[1])
+                    else:
+                        style[pair[0]] = pair[1]
+                else:
+                    print 'extractBaselineStyle: Invalid Key'
+                    print pair[0]
+            styleData = styleData[1:]
+        # No end of style found, return style data as is
+        return style, None
+        
+    def createBaselineStyleMenu(self, neighborhood, dictionary):
+        """
+        Create a baseline style pie menu
+        """
+        numItems = len(dictionary)
+        newStyleMenu = hidden.attachNewNode(neighborhood + '_style_menu')
+        radius = 0.7
+        angle = deg2Rad(360.0/numItems)
+        keys = dictionary.keys()
+        keys.sort()
+        styles = map(lambda x, d = dictionary: d[x], keys)
+        sf = 0.03
+        aspectRatio = (direct.dr.width/float(direct.dr.height))
+        for i in range(numItems):
+            # Get the node
+            node = self.createBaselineStyleSample(styles[i])
+            bounds = node.getBounds()
+            center = bounds.getCenter()
+            center = center * sf
+            # Reposition it
+            node.setPos((radius * math.cos(i * angle)) - center[0],
+                        0.0,
+                        ((radius * aspectRatio * math.sin(i * angle)) -
+                         center[2]))
+            # Scale it
+            node.setScale(sf)
+            # Add it to the styleMenu
+            node.reparentTo(newStyleMenu)
+        # Scale the whole shebang down by 0.5
+        newStyleMenu.setScale(0.5)
+        # Create and return a pie menu
+        return PieMenu(newStyleMenu, styles)
+    
+    def createBaselineStyleSample(self, baselineStyle):
+        """
+        Create a style sample using the DNA info in the style
+        """
+        baseline = DNASignBaseline()
+        #baselineStyle = DNABaselineStyle(styleList = [(baselineStyle, 10.0)])
+        #self.setDNABaselineStyle(baseline, baselineStyle, width = 12.0,
+        #                             name = 'baseline_style_sample')
+        return baseline.traverse(hidden, DNASTORE, 1)
 
     # WALL STYLE FUNCTIONS
     def createWallStyleAttributes(self):
@@ -2992,6 +3132,110 @@ class DNAFlatBuildingStyle:
             style.output(file)
         file.write('endBuildingStyle\n')
 
+
+class DNABaselineStyle:
+    """Class to hold attributes of a baseline style (wiggle, colors, etc)"""
+    def __init__(self, baseline = None, name = 'baseline_style'):
+        # First initialize everything
+        self.name = name
+        self.code = None # i.e. font
+        self.kern = None
+        self.wiggle = None
+        self.stumble = None
+        self.stomp = None
+        self.curve = None
+        self.x = None
+        self.z = None
+        self.scaleX = 1.0
+        self.scaleZ = 1.0
+        self.roll = None
+        self.flags = None
+        self.color = Vec4(1.0)
+        # Then copy the specifics for the baseline if input
+        if baseline:
+            self.copy(baseline)
+
+    def copy(self, baseline):
+        self.code = baseline.getCode()
+        self.kern = baseline.getKern()
+        self.wiggle = baseline.getWiggle()
+        self.stumble = baseline.getStumble()
+        self.stomp = baseline.getStomp()
+        width=baseline.getWidth()
+        if width:
+            self.curve = 1.0/width
+        else:
+            self.curve = 0.0
+        pos = baseline.getPos()
+        self.x = pos[0]
+        self.z = pos[2]
+        scale = baseline.getScale()
+        self.scaleX = scale[0]
+        self.scaleZ = scale[2]
+        hpr = baseline.getHpr()
+        self.roll = hpr[2]
+        self.flags = baseline.getFlags()
+        self.color = baseline.getColor()
+
+    def output(self, file = sys.stdout):
+        """ Output style description to a file """
+        file.write('baselineStyle\n')
+        if self.name:
+            file.write('name: %s\n' % self.name)
+        if self.code:
+            file.write('code: %s\n' % self.code)
+        if self.kern:
+            file.write('kern: %s\n' % self.kern)
+        if self.wiggle:
+            file.write('wiggle: %s\n' % self.wiggle)
+        if self.stumble:
+            file.write('stumble: %s\n' % self.stumble)
+        if self.stomp:
+            file.write('stomp: %s\n' % self.stomp)
+        if self.curve:
+            file.write('curve: %s\n' % self.curve)
+        if self.x:
+            file.write('x: %s\n' % self.x)
+        if self.z:
+            file.write('z: %s\n' % self.z)
+        if self.scaleX:
+            file.write('scaleX: %s\n' % self.scaleX)
+        if self.scaleZ:
+            file.write('scaleZ: %s\n' % self.scaleZ)
+        if self.roll:
+            file.write('roll: %s\n' % self.roll)
+        if self.flags:
+            file.write('flags: %s\n' % self.flags)
+        if self.color:
+            file.write('color: Vec4(%.2f, %.2f, %.2f, 1.0)\n' 
+                % (self.color[0], self.color[1], self.color[2]))
+        file.write('endBaselineStyle\n')
+
+    # Convience functions to facilitate class use
+    def __setitem__(self, index, item):
+        self.__dict__[index] = item
+    
+    def __getitem__(self, index):
+        return self.__dict__[index]
+    
+    def __repr__(self):
+        return(
+            'name: %s\n' % self.name +
+            'code: %s\n' % self.code +
+            'kern: %s\n' % self.kern +
+            'wiggle: %s\n' % self.wiggle +
+            'stumble: %s\n' % self.stumble +
+            'stomp: %s\n' % self.stomp +
+            'curve: %s\n' % self.curve +
+            'x: %s\n' % self.x +
+            'z: %s\n' % self.z +
+            'scaleX: %s\n' % self.scaleX +
+            'scaleZ: %s\n' % self.scaleZ +
+            'roll: %s\n' % self.roll +
+            'flags: %s\n' % self.flags +
+            'color: %s\n' % self.color
+            )
+
 class DNAWallStyle:
     """Class to hold attributes of a wall style (textures, colors, etc)"""
     def __init__(self, wall = None, name = 'wall_style'):
@@ -3139,6 +3383,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             label = 'Save Color',
                             command = self.levelEditor.saveColor)
         menuBar.addmenuitem('Style', 'command',
+                            "Save Selected Baseline's Style",
+                            label = 'Save Baseline Style',
+                            command = self.levelEditor.saveBaselineStyle)
+        menuBar.addmenuitem('Style', 'command',
                             "Save Selected Wall's Style",
                             label = 'Save Wall Style',
                             command = self.levelEditor.saveWallStyle)
@@ -3150,6 +3398,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             'Reload Color Palettes',
                             label = 'Reload Colors',
                             command = self.styleManager.createColorAttributes)
+        menuBar.addmenuitem('Style', 'command',
+                            'Reload Baseline Style Palettes',
+                            label = 'Reload Baseline Styles',
+                            command = self.styleManager.createBaselineStyleAttributes)
         menuBar.addmenuitem('Style', 'command',
                             'Reload Wall Style Palettes',
                             label = 'Reload Wall Styles',
@@ -3324,21 +3576,27 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.baselineTextBox = Entry(
             gridFrame, width = 24,
             textvariable=self.baselineString)
-        self.baselineTextBox.grid(row=0, column=3, columnspan=3)
+        self.baselineTextBox.grid(row=1, column=0, columnspan=6)
+
+        signSelectedFrame = Frame(gridFrame)
 
         self.currentBaselineIndex=0
         self.baselineMenu = Pmw.ComboBox(
-            gridFrame, labelpos = W,
+            signSelectedFrame, 
+            labelpos = W,
             label_text = 'Selected:', entry_width = 14,
             selectioncommand = self.selectSignBaseline,
             history = 0, # unique = 0,
             scrolledlist_items = ['<the sign>'])
         self.baselineMenu.selectitem(self.currentBaselineIndex)
-        self.baselineMenu.grid(row=0, column=0, columnspan=3)
+        self.baselineMenu.pack(side = 'left', expand = 1, fill = 'x')
 
         self.baselineAddButton = Button(
-            gridFrame, text="Add Baseline", command=self.addBaseline)
-        self.baselineAddButton.grid(row=1, column=0, columnspan=3)
+            signSelectedFrame, 
+            text="Add Baseline", command=self.addBaseline)
+        self.baselineAddButton.pack(side = 'left', expand = 1, fill = 'x')
+
+        signSelectedFrame.grid(row=0, column=0, columnspan=6)
 
         fontList = [""]+self.styleManager.getCatalogCodes('font')
         self.fontMenu = Pmw.ComboBox(
@@ -3347,68 +3605,107 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             selectioncommand = self.setSignBaslineFont, history = 0,
             scrolledlist_items = fontList)
         self.fontMenu.selectitem(fontList[0])
-        self.fontMenu.grid(row=1, column=3, columnspan=3)
+        self.fontMenu.grid(row=2, column=3, columnspan=3)
+        
+        levelAttribute = ( # Yes, there are a lot of steps here:
+            self.styleManager.attributeDictionary
+            ['baseline_style']['toontown_central']
+            .getDict().keys())
+        levelAttribute.sort()
+        baselineStyleList = ["<custom>", "Zero"] + levelAttribute
+        self.baselineStyleMenu = Pmw.ComboBox(
+            gridFrame, labelpos = W,
+            label_text = 'Style:', entry_width = 12,
+            selectioncommand = self.setSignBaselineStyle, history = 0,
+            scrolledlist_items = baselineStyleList)
+        self.baselineStyleMenu.selectitem(baselineStyleList[0])
+        self.baselineStyleMenu.grid(row=2, column=0, columnspan=3)
+
+        signButtonFrame = Frame(gridFrame)
+        
+        self.bigFirstLetterIntVar = IntVar()
+        self.bigFirstLetterCheckbutton = Checkbutton(
+            signButtonFrame,
+            text = 'Big First Letter',
+            variable=self.bigFirstLetterIntVar, command=self.setBigFirstLetter)
+        self.bigFirstLetterCheckbutton.pack(side = 'left', expand = 1, fill = 'x')
+
+        self.allCapsIntVar = IntVar()
+        self.allCapsCheckbutton = Checkbutton(
+            signButtonFrame,
+            text = 'All Caps',
+            variable=self.allCapsIntVar, command=self.setAllCaps)
+        self.allCapsCheckbutton.pack(side = 'left', expand = 1, fill = 'x')
+
+        self.dropShadowIntVar = IntVar()
+        self.dropShadowCheckbutton = Checkbutton(
+            signButtonFrame,
+            text = 'Drop Shadow',
+            variable=self.dropShadowIntVar, command=self.setDropShadow)
+        self.dropShadowCheckbutton.pack(side = 'left', expand = 1, fill = 'x')
+        
+        signButtonFrame.grid(row=3, column=0, columnspan=6)
 
         self.addKernFloater = Floater.Floater(
             gridFrame, 
             text='Kern',
             maxVelocity=1.0,
             command=self.setSignBaselineKern)
-        self.addKernFloater.grid(row=2, column=0, rowspan=2, columnspan=3)
+        self.addKernFloater.grid(row=4, column=0, rowspan=2, columnspan=3)
         self.addWiggleFloater = Floater.Floater(
             gridFrame, 
             text='Wiggle',
             maxVelocity=10.0,
             command=self.setSignBaselineWiggle)
-        self.addWiggleFloater.grid(row=4, column=0, rowspan=2, columnspan=3)
+        self.addWiggleFloater.grid(row=6, column=0, rowspan=2, columnspan=3)
         self.addStumbleFloater = Floater.Floater(
             gridFrame, 
             text='Stumble',
             maxVelocity=1.0,
             command=self.setSignBaselineStumble)
-        self.addStumbleFloater.grid(row=6, column=0, rowspan=2, columnspan=3)
+        self.addStumbleFloater.grid(row=8, column=0, rowspan=2, columnspan=3)
         self.addStompFloater = Floater.Floater(
             gridFrame, 
             text='Stomp',
             maxVelocity=1.0,
             command=self.setSignBaselineStomp)
-        self.addStompFloater.grid(row=8, column=0, rowspan=2, columnspan=3)
+        self.addStompFloater.grid(row=10, column=0, rowspan=2, columnspan=3)
         self.addCurveFloater = Floater.Floater(
             gridFrame, 
             text='Curve',
             maxVelocity = 1.0,
             command=self.setSignBaselineCurve)
-        self.addCurveFloater.grid(row=10, column=0, rowspan=2, columnspan=3)
+        self.addCurveFloater.grid(row=12, column=0, rowspan=2, columnspan=3)
         self.addXFloater = Floater.Floater(
             gridFrame, 
             text='X',
             maxVelocity=1.0,
             command=self.setDNATargetX)
-        self.addXFloater.grid(row=2, column=3, rowspan=2, columnspan=3)
+        self.addXFloater.grid(row=4, column=3, rowspan=2, columnspan=3)
         self.addZFloater = Floater.Floater(
             gridFrame, 
             text='Z',
             maxVelocity=1.0,
             command=self.setDNATargetZ)
-        self.addZFloater.grid(row=4, column=3, rowspan=2, columnspan=3)
+        self.addZFloater.grid(row=6, column=3, rowspan=2, columnspan=3)
         self.addScaleXFloater = Floater.Floater(
             gridFrame, 
             text='Scale X',
             maxVelocity=1.0,
             command=self.setDNATargetScaleX)
-        self.addScaleXFloater.grid(row=6, column=3, rowspan=2, columnspan=3)
+        self.addScaleXFloater.grid(row=8, column=3, rowspan=2, columnspan=3)
         self.addScaleZFloater = Floater.Floater(
             gridFrame, 
             text='Scale Z',
             maxVelocity=1.0,
             command=self.setDNATargetScaleZ)
-        self.addScaleZFloater.grid(row=8, column=3, rowspan=2, columnspan=3)
+        self.addScaleZFloater.grid(row=10, column=3, rowspan=2, columnspan=3)
         self.addRollFloater = Floater.Floater(
             gridFrame, 
             text='Roll',
             maxVelocity=10.0,
             command=self.setDNATargetRoll)
-        self.addRollFloater.grid(row=10, column=3, rowspan=2, columnspan=3)
+        self.addRollFloater.grid(row=12, column=3, rowspan=2, columnspan=3)
 
         gridFrame.pack(fill='both')
 
@@ -3661,7 +3958,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         target=None
         index=self.currentBaselineIndex=int((self.baselineMenu.curselection())[0])
         if (index==0):
-            self.currentBaselineDNA=None
             target=self.currentSignDNA
             # Unset some ui elements:
             self.baselineString.set('')
@@ -3671,6 +3967,9 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.addWiggleFloater.set(0)
             self.addStumbleFloater.set(0)
             self.addStompFloater.set(0)
+            self.bigFirstLetterIntVar.set(0)
+            self.allCapsIntVar.set(0)
+            self.dropShadowIntVar.set(0)
         else:
             target=DNAGetChild(self.currentSignDNA, DNA_SIGN_BASELINE, index-1)
             if target:
@@ -3682,6 +3981,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 self.addWiggleFloater.set(target.getWiggle())
                 self.addStumbleFloater.set(target.getStumble())
                 self.addStompFloater.set(target.getStomp())
+                flags=target.getFlags()
+                self.bigFirstLetterIntVar.set('b' in flags)
+                self.allCapsIntVar.set('c' in flags)
+                self.dropShadowIntVar.set('d' in flags)
 
                 self.currentBaselineDNA=target
         if target:
@@ -3701,11 +4004,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         baseline=self.currentBaselineDNA
         if baseline:
             s=self.baselineString.get()
-            DNASetBaselineString(baseline, s);
-            self.baselineMenu.delete(self.currentBaselineIndex)
-            self.baselineMenu.insert(self.currentBaselineIndex, s)
-            self.baselineMenu.selectitem(self.currentBaselineIndex)
-            self.levelEditor.replaceSelected()
+            self.setBaselineString(s)
     
     def addBaseline(self):
         sign=self.findSignFromDNARoot()
@@ -3731,6 +4030,118 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             baseline.setCode(val)
             self.levelEditor.replaceSelected()
 
+    def setSignBaselineStyle(self, val):
+        baseline=self.currentBaselineDNA
+        if baseline:
+            settings={}
+            if val == '<custom>':
+                return
+            elif val == 'Zero':
+                self.currentBaselineDNA=None
+                # Don't set string: self.baselineString.set('')
+                self.addCurveFloater.set(0)
+                self.addKernFloater.set(0)
+                self.addWiggleFloater.set(0)
+                self.addStumbleFloater.set(0)
+                self.addStompFloater.set(0)
+                self.bigFirstLetterIntVar.set(0)
+                self.allCapsIntVar.set(0)
+                self.dropShadowIntVar.set(0)
+                self.currentBaselineDNA=baseline
+
+                target=self.levelEditor.DNATarget
+                self.levelEditor.DNATarget=None
+                self.fontMenu.selectitem(0)
+                self.addXFloater.set(0)
+                self.addZFloater.set(0)
+                self.addScaleXFloater.set(1)
+                self.addScaleZFloater.set(1)
+                self.addRollFloater.set(0)
+                self.levelEditor.DNATarget=target
+
+                self.levelEditor.replaceSelected()
+                return
+            else:
+                settings = (
+                    self.styleManager.attributeDictionary
+                    ['baseline_style']['toontown_central'] 
+                    # TODO: toontown_centeral should not be hard coded.
+                    .getDict()[val])
+            self.currentBaselineDNA=None
+            
+            # Don't set string: self.baselineString.set('')
+            if settings['curve']:
+                self.addCurveFloater.set(float(settings['curve']))
+            if settings['kern']:
+                self.addKernFloater.set(float(settings['kern']))
+            if settings['wiggle']:
+                self.addWiggleFloater.set(float(settings['wiggle']))
+            if settings['stumble']:
+                self.addStumbleFloater.set(float(settings['stumble']))
+            if settings['stomp']:
+                self.addStompFloater.set(float(settings['stomp']))
+            if settings['flags']:
+                flags=settings['flags']
+                self.bigFirstLetterIntVar.set('b' in flags)
+                self.allCapsIntVar.set('c' in flags)
+                self.dropShadowIntVar.set('d' in flags)
+
+            self.currentBaselineDNA=baseline
+
+            target=self.levelEditor.DNATarget
+            self.levelEditor.DNATarget=None
+
+            if settings['code']:
+                self.fontMenu.selectitem(settings['code'])
+            if settings['x']:
+                self.addXFloater.set(float(settings['x']))
+            if settings['z']:
+                self.addZFloater.set(float(settings['z']))
+            if settings['scaleX']:
+                self.addScaleXFloater.set(float(settings['scaleX']))
+            if settings['scaleZ']:
+                self.addScaleZFloater.set(float(settings['scaleZ']))
+            if settings['roll']:
+                self.addRollFloater.set(float(settings['roll']))
+
+            self.levelEditor.DNATarget=target
+
+            self.levelEditor.replaceSelected()
+                
+
+    def setBaselineString(self, val):
+        baseline=self.currentBaselineDNA
+        if baseline:
+            DNASetBaselineString(baseline, val);
+            self.baselineMenu.delete(self.currentBaselineIndex)
+            self.baselineMenu.insert(self.currentBaselineIndex, val)
+            self.baselineMenu.selectitem(self.currentBaselineIndex)
+            self.levelEditor.replaceSelected()
+
+    def adjustBaselineFlag(self, newValue, flagChar):
+        baseline=self.currentBaselineDNA
+        if baseline:
+            flags=baseline.getFlags()
+            if newValue:
+                 if not flagChar in flags:
+                     # Add the flag:
+                     baseline.setFlags(flags+flagChar)
+            elif flagChar in flags:
+                 # Remove the flag:
+                 flags=string.join(flags.split(flagChar), '')
+                 baseline.setFlags(flags)
+            s=self.baselineString.get()
+            self.setBaselineString(s)
+    
+    def setBigFirstLetter(self):
+        self.adjustBaselineFlag(self.bigFirstLetterIntVar.get(), 'b')
+    
+    def setAllCaps(self):
+        self.adjustBaselineFlag(self.allCapsIntVar.get(), 'c')
+    
+    def setDropShadow(self):
+        self.adjustBaselineFlag(self.dropShadowIntVar.get(), 'd')
+        
     def setSignBaslineFont(self, val):
         target=self.levelEditor.DNATarget
         if target and (DNAGetClassType(target).eq(DNA_SIGN_BASELINE)
