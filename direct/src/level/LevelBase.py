@@ -7,7 +7,8 @@ from PythonUtil import lineInfo
 """
 Any data that can be edited by a level editor must be represented as
 an attribute of an entity owned by the level, in order to keep the
-level-editing interface simple and unchanging.
+level-editing interface simple and constant (there are at least three
+places where the entire editing interface must be duplicated).
 
 To support this, we have entities such as 'levelMgr' and 'zoneEntity' that
 contain crucial level information, much of which is needed when setting
@@ -15,8 +16,6 @@ up the level object, and is needed before other entity types can be
 effectively created. (If you try to create a distributed entity, but
 you don't yet have the information for the zone that it's in, because
 you haven't created the zone's ZoneEntity, you're hurting.)
-
-
 """
 
 """
@@ -35,7 +34,7 @@ class LevelBase:
     UberZoneEntId = 0
 
     def __init__(self):
-        pass
+        self.spec = None
 
     def initializeLevel(self, levelId, spec, scenarioIndex):
         """ subclass should call this as soon as it has located

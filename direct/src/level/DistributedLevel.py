@@ -355,3 +355,20 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 
             entity = self.getEntity(entId)
             entity.handleAttribChange(attribName, value)
+
+        """
+    if __debug__:
+        # if someone has edited the level, we'll get the full up-to-date
+        # spec in this message
+        def setSpecOverride(self, specStr):
+            if self.spec is not None:
+                return
+
+            try:
+                self.spec = eval(specStr)
+            except Exception, e:
+                print ('Exception in %s(%s):\n\t%s' %
+                       (lineInfo()[2], specStr, e))
+                raise e
+            """
+            

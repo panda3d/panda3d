@@ -109,3 +109,14 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             
             entity = self.getEntity(entId)
             entity.handleAttribChange(attribName, value)
+
+            # send a copy of the entire spec for any new users that
+            # might come in
+            ##self.sendUpdate('setSpecOverride', [repr(self.spec)])
+
+        """
+        def getSpecOverride(self):
+            # This is the value we'll send until someone actually edits
+            # the level
+            return repr(None)
+        """

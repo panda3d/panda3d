@@ -16,24 +16,17 @@ class Entity:
         ('comment', str, 0),
         )
 
-    def __init__(self, level=None, entId=None, attribs=None):
-        if level is not None and entId is not None:
-            self.initializeEntity(level, entId, attribs)
-        else:
-            self.level = level
-            self.entId = entId
-            self.attribs = Entity.Attribs
+    def __init__(self, level=None, entId=None):
+        self.initializeEntity(level, entId)
 
-    def initializeEntity(self, level, entId, attribs=None):
+    def initializeEntity(self, level, entId):
+        """Distributed entities don't know their level or entId values
+        until they've been generated, so they call this after they've
+        been generated. At that point, the entity is good to go."""
         self.level = level
         self.entId = entId
-
-        self.attribs = Entity.Attribs
-        # add any additional tweakable values
-        if attribs is not None:
-            self.attribs.update(attribs)
-
-        self.level.initializeEntity(self)
+        if (self.level is not None) and (self.entId is not None):
+            self.level.initializeEntity(self)
 
     def __str__(self):
         return 'ent%s(%s)' % (self.entId, self.level.getEntityType(self.entId))
