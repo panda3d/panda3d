@@ -378,9 +378,19 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     PTA_float r_table = PTA_float::empty_array(hprs.size());
 
     for (i = 0; i < (int)hprs.size(); i++) {
-      h_table[i] = hprs[i][0];
-      p_table[i] = hprs[i][1];
-      r_table[i] = hprs[i][2];
+      if (!new_hpr && temp_hpr_fix) {
+        // Convert the old HPR form to the new HPR form.
+        LVecBase3f hpr = old_to_new_hpr(hprs[i]);
+        h_table[i] = hpr[0];
+        p_table[i] = hpr[1];
+        r_table[i] = hpr[2];
+
+      } else {
+        // Store the HPR angle directly.
+        h_table[i] = hprs[i][0];
+        p_table[i] = hprs[i][1];
+        r_table[i] = hprs[i][2];
+      }
     }
     _tables[6] = h_table;
     _tables[7] = p_table;
