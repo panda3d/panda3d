@@ -123,8 +123,8 @@ rescale_source_geometry() {
   LVector3f scale = LVector3f::rfu(scale_x, 1.0, scale_y);
 
   LMatrix4f mat = 
-    LMatrix4f::translate_mat(trans) *
-    LMatrix4f::scale_mat(scale);
+    LMatrix4f::scale_mat(scale) *
+    LMatrix4f::translate_mat(trans);
 
   root_arc->set_transition(new TransformTransition(mat));
 
