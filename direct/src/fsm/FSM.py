@@ -5,8 +5,18 @@ previously called FSM.py (now called ClassicFSM.py).
 
 from direct.showbase import DirectObject
 from direct.directnotify import DirectNotifyGlobal
+from direct.showbase import PythonUtil
 import types
 import string
+
+class FSMException(Exception):
+    pass
+
+class AlreadyInTransition(FSMException):
+    pass
+
+class RequestDenied(FSMException):
+    pass
 
 class FSM(DirectObject.DirectObject):
     """
@@ -130,6 +140,11 @@ class FSM(DirectObject.DirectObject):
         # must be approved by some filter function.
         self.defaultTransitions = None
 
+        # This member records transition requests made by demand() or
+        # forceTransition() while the FSM is in transition between
+        # states.
+        self.__requestQueue = []
+
     def __del__(self):
         self.cleanup()
 
@@ -148,21 +163,54 @@ class FSM(DirectObject.DirectObject):
             return self.state
         return self.newState
 
-    def forceTransition(self, newState):
+    def forceTransition(self, request, *args):
         """Changes unconditionally to the indicated state.  This
         bypasses the filterState() function, and just calls
         exitState() followed by enterState()."""
 
-        assert(isinstance(newState, types.StringTypes))
+        assert(isinstance(request, types.StringTypes))
+        self.notify.debug("%s.forceTransition(%s, %s" % (self.name, request, str(args)[1:]))
 
-        self.__setState(newState)
+        if not self.state:
+            # Queue up the request.
+            self.__requestQueue.append(PythonUtil.Functor(self.forceTransition, request, *args))
+            return
+
+        self.__setState(request, *args)
+
+    def demand(self, request, *args):
+        """Requests a state transition, by code that does not expect
+        the request to be denied.  If the request is denied, raises a
+        RequestDenied exception.
+
+        Unlike request(), this method allows a new request to be made
+        while the FSM is currently in transition.  In this case, the
+        request is queued up and will be executed when the current
+        transition finishes.  Multiple requests will queue up in
+        sequence.
+        """
+
+        assert(isinstance(request, types.StringTypes))
+        self.notify.debug("%s.demand(%s, %s" % (self.name, request, str(args)[1:]))
+        if not self.state:
+            # Queue up the request.
+            self.__requestQueue.append(PythonUtil.Functor(self.demand, request, *args))
+            return
+
+        if not self.request(request, *args):
+            raise RequestDenied, request
 
     def request(self, request, *args):
-        """Requests a state transition (or other behavior).  The request
-        parameter should be a string.  The request, along with any
-        additional arguments, is passed to the current filterState()
-        function.  If filterState() returns a string, the FSM
-        transitions to that state.
+        """Requests a state transition (or other behavior).  The
+        request may be denied by the FSM's filter function.  If it is
+        denied, the filter function may either raise an exception
+        (RequestDenied), or it may simply return None, without
+        changing the FSM's state.
+
+        The request parameter should be a string.  The request, along
+        with any additional arguments, is passed to the current
+        filterState() function.  If filterState() returns a string,
+        the FSM transitions to that state.
 
         The return value is the same as the return value of
         filterState() (that is, None if the request does not provoke a
@@ -170,15 +218,17 @@ class FSM(DirectObject.DirectObject):
         of the state followed by any optional args.)
         
         If the FSM is currently in transition (i.e. in the middle of
-        executing an enterState or exitState function), the request is
-        denied and None is returned."""
+        executing an enterState or exitState function), an
+        AlreadyInTransition exception is raised (but see demand(),
+        which will queue these requests up and apply when the
+        transition is complete)."""
 
         assert(isinstance(request, types.StringTypes))
         self.notify.debug("%s.request(%s, %s" % (self.name, request, str(args)[1:]))
 
         if not self.state:
-            self.notify.warning("rejecting request %s while FSM is in transition from %s to %s." % (request, self.oldState, self.newState))
-            return None
+            error = "requested %s while FSM is in transition from %s to %s." % (request, self.oldState, self.newState)
+            raise AlreadyInTransition, error
 
         func = getattr(self, "filter" + self.state, None)
         if not func:
@@ -244,7 +294,7 @@ class FSM(DirectObject.DirectObject):
             # request) not listed in defaultTransitions and not
             # handled by an earlier filter.
             if request[0] in string.uppercase:
-                self.notify.error("%s rejecting request %s from state %s." % (self.name, request, self.state))
+                raise RequestedDenied, request
 
         # In either case, we quietly ignore unhandled command
         # (lowercase) requests.
@@ -295,7 +345,11 @@ class FSM(DirectObject.DirectObject):
         self.state = newState
         del self.oldState
         del self.newState
-        
+
+        if self.__requestQueue:
+            request = self.__requestQueue.pop(0)
+            assert(self.notify.debug("%s continued queued request." % (self.name)))
+            request()
 
     def __callTransitionFunc(self, name, *args):
         # Calls the appropriate enter or exit function when
