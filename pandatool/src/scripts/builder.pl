@@ -40,7 +40,6 @@ $ENV{'WINTOOLS'} = '/home/builder/player/wintools';
 $ENV{'PPREMAKE_CONFIG'} = $ENV{'WINTOOLS'}.'/panda/etc/Config.pp';
 $ENV{'TCSH_NO_CSHRC_CHDIR'}='1';
 $ENV{'ENABLE_PROFILING'}='1';    # generate .map files
-$ENV{'PANDA_BUILD_TYPE'} = 'gmsvc';
 
 # needed to add this to fix version.rc path in ppremake?
 $ENV{'DTOOL'} = '/home/builder/player/dtool';
@@ -354,7 +353,7 @@ sub archivetree() {
     # delete old browse files
     &myexecstr("del /q ".$archdirname."\\*.bsc","nomsg","DO_LOG","NT cmd");
 
-	# delete wintools, right now its too big to archive
+    # delete wintools, right now its too big to archive
     &myexecstr("rd /s /q ".$archdirname."\\wintools","nomsg","DO_LOG","NT cmd");
     &myexecstr("rd /s /q ".$archdirname."\\wintools","nomsg","DO_LOG","NT cmd");
 
@@ -415,7 +414,7 @@ sub buildall() {
     # cant do attachment, since that often hangs on NT
     # must use non-attachment build system  (BUILD_TYPE 'gmsvc', not 'stopgap', in $PPREMAKE_CONFIG)
     
-    # hacks to fix multiproc build issue (cp file to dir occurs before dir creation)
+    # hacks to fix multiproc build issue (cp file to dir occurs before dir creation, need to adjust makefiles to fix this)
     foreach my $dir1 (@dirstodolist) {    
         &mymkdir($CYGBLDROOT."/".$dir1."/etc"); 
         &mymkdir($CYGBLDROOT."/".$dir1."/bin"); 
@@ -427,7 +426,7 @@ sub buildall() {
     foreach my $dir1 (@dirstodolist) {    
         my $dir1_upcase = uc($dir1);
 
-        &logmsg("*** PPREMAKE ".$dir1_upcase." ***");
+        &logmsg("*** PPREMAKE ".$dir1_upcase." (BUILDTYPE=".$ENV{'PANDA_BUILD_TYPE'}.") ***");
         &mychdir($CYGBLDROOT."/".$dir1);
         &myexecstr("ppremake",$dir1_upcase." ppremake failed!","DO_LOG","NO_PANDA_ATTACH");
     }
@@ -436,12 +435,19 @@ sub buildall() {
     # &mychdir($CYGBLDROOT);
     # &myexecstr("dir dtool","dir failed","DO_LOG","NT cmd");
 
+    $makecmd="make";
+    $shellarg="NO_PANDA_ATTACH";
+
+    if($ENV{'PANDA_BUILD_TYPE'} eq 'msvc') {
+       $makecmd="nmake";
+       $shellarg="NT cmd";
+    }
+
     foreach my $dir1 (@dirstodolist) {    
         my $dir1_upcase = uc($dir1);
-
         &logmsg("*** BUILDING ".$dir1_upcase." ***");
         &mychdir($CYGBLDROOT."/".$dir1);
-        &myexecstr("make install",$dir1_upcase." make install failed!","DO_LOG","NO_PANDA_ATTACH");
+        &myexecstr($makecmd." install",$dir1_upcase." ".$makecmd." install failed!","DO_LOG",$shellarg);
     }
 
     &mychdir($CYGBLDROOT);  # get out of src dirs to allow them to be moved/renamed
@@ -526,20 +532,30 @@ close(LOGFILE);
 
 &logmsg("*** Panda Build Log Started at ".&gettimestr()." ***");
 
-my @do_install_dir=(1,1,1,1);
+my @do_install_dir=(0,0,0,0);
+my @dir_build_type=(0,0,0,0);
 
-if($#ARGV>=0) {
-    @do_install_dir=(0,0,0,0);
-    if($ARGV[0] eq $inst_dirnames[$INSTALLNUM]) {
-        $do_install_dir[$INSTALLNUM]=1;
-    } elsif($ARGV[0] eq $inst_dirnames[$DEBUGNUM]) {
-        $do_install_dir[$DEBUGNUM]=1;
-    } elsif($ARGV[0] eq $inst_dirnames[$RELEASENUM]) {
-        $do_install_dir[$RELEASENUM]=1;
+my $g_last_dirnum=0;
+
+if($#ARGV<0) {
+   @dir_build_type=(1,1,1,1);  
+}
+
+for($ii=0;$ii<=$#ARGV;$ii++) {
+    if(uc($ARGV[$ii]) eq uc($inst_dirnames[$INSTALLNUM])) {
+        $g_last_dirnum=$INSTALLNUM;
+    } elsif(uc($ARGV[$ii]) eq uc($inst_dirnames[$DEBUGNUM])) {
+        $g_last_dirnum=$DEBUGNUM;
+    } elsif(uc($ARGV[$ii]) eq uc($inst_dirnames[$RELEASENUM])) {
+        $g_last_dirnum=$RELEASENUM;
+    } elsif(uc($ARGV[$ii]) eq "NMAKE") {
+       $dir_build_type[$g_last_dirnum]=1;
+       next;
     } else {
         &logmsg("invalid argument '".$ARGV[0]."' to builder.pl.  arg must be 'install','debug', or 'release'\n");
         exit(1);
     }
+    $do_install_dir[$g_last_dirnum]=1;
 }
 
 if(!(-e $WIN_INSTALLDIR)) {
@@ -598,18 +614,34 @@ SKIP_REMOVE:
 # bombs if dirs exist but CVS dirs do not. 
 
 if($do_install_dir[$INSTALLNUM]) {
+  if($dir_build_type[$INSTALLNUM]) {
+    $ENV{'PANDA_BUILD_TYPE'} = 'msvc';
+  } else {
+    $ENV{'PANDA_BUILD_TYPE'} = 'gmsvc';
+  }
+
   $ENV{'PANDA_OPTIMIZE'}='2';
   &buildall($INSTALLNUM);
 }
 
 if($do_install_dir[$RELEASENUM]) {
-    $ENV{'PANDA_OPTIMIZE'}='3';
-    &buildall($RELEASENUM);
+  if($dir_build_type[$RELEASENUM]) {
+    $ENV{'PANDA_BUILD_TYPE'} = 'msvc';
+  } else {
+    $ENV{'PANDA_BUILD_TYPE'} = 'gmsvc';
+  }
+  $ENV{'PANDA_OPTIMIZE'}='3';
+  &buildall($RELEASENUM);
 }
 
 BEFORE_DBGBUILD:
 
 if($do_install_dir[$DEBUGNUM]) {
+    if($dir_build_type[$DEBUGNUM]) {
+      $ENV{'PANDA_BUILD_TYPE'} = 'msvc';
+     } else {
+       $ENV{'PANDA_BUILD_TYPE'} = 'gmsvc';
+     }
     $ENV{'USE_BROWSEINFO'}='1';   # make .sbr files, this is probably obsolete
     if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
        $ENV{'PANDA_OPTIMIZE'}='1';
