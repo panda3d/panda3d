@@ -11,36 +11,44 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 #include <filename.h>
-#include <tokenBoard.h>
 #include <buffer.h>
 #include <multifile.h>
-#include "asyncUtility.h"
-
-class ExtractorToken;
+#include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Extractor 
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS Extractor : public AsyncUtility {
+class EXPCL_PANDAEXPRESS Extractor {
 PUBLISHED:
+  enum ExtractorStatus {
+    ES_ok = 2,
+    ES_success = 1,
+    ES_error = -1,
+    ES_error_write = -2,
+  };
+
   Extractor(void);
   Extractor(PT(Buffer) buffer);
   virtual ~Extractor(void);
 
-  int request_extract(const Filename &source_file,
-		      const string &event_name, const Filename &rel_path = "");
-
-  bool extract(Filename &source_file, const Filename &rel_path);
+  int initiate(Filename &source_file, const Filename &rel_path = "");
+  int run(void);
 
 private:
   void init(PT(Buffer) buffer);
-  virtual bool process_request(void);
-
-  typedef TokenBoard<ExtractorToken> ExtractorTokenBoard;
-  ExtractorTokenBoard *_token_board;
 
   PT(Buffer) _buffer;
+
+  ifstream _read_stream;
+  int _source_file_length;
+  Multifile _mfile;
+  int _total_bytes_read;
+  bool _read_all_input;
+  bool _handled_all_input;
+  int _source_buffer_length;
+  Filename _source_file;
+  Filename _rel_path;
 };
 
 #endif
