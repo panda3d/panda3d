@@ -41,8 +41,11 @@ public:
   INLINE void set_scene_root(const qpNodePath &scene_root);
   INLINE const qpNodePath &get_scene_root() const;
 
-  INLINE void set_camera(const qpCamera *camera);
-  INLINE const qpCamera *get_camera() const;
+  INLINE void set_camera_path(const qpNodePath &camera_path);
+  INLINE const qpNodePath &get_camera_path() const;
+
+  INLINE void set_camera_node(const qpCamera *camera_node);
+  INLINE const qpCamera *get_camera_node() const;
 
   INLINE void set_lens(const Lens *lens);
   INLINE const Lens *get_lens() const;
@@ -50,14 +53,19 @@ public:
   INLINE void set_camera_transform(const TransformState *camera_transform);
   INLINE const TransformState *get_camera_transform() const;
 
+  INLINE void set_world_transform(const TransformState *world_transform);
+  INLINE const TransformState *get_world_transform() const;
+
   INLINE void set_render_transform(const TransformState *render_transform);
   INLINE const TransformState *get_render_transform() const;
 
 private:
   qpNodePath _scene_root;
-  CPT(qpCamera) _camera;
+  qpNodePath _camera_path;
+  CPT(qpCamera) _camera_node;
   CPT(Lens) _lens;
   CPT(TransformState) _camera_transform;
+  CPT(TransformState) _world_transform;
   CPT(TransformState) _render_transform;
 };
 

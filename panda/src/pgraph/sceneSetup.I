@@ -25,6 +25,7 @@
 INLINE SceneSetup::
 SceneSetup() {
   _camera_transform = TransformState::make_identity();
+  _world_transform = TransformState::make_identity();
   _render_transform = TransformState::make_identity();
 }
 
@@ -49,23 +50,43 @@ get_scene_root() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneSetup::set_camera
+//     Function: SceneSetup::set_camera_path
+//       Access: Public
+//  Description: Specifies the NodePath to the camera.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneSetup::
+set_camera_path(const qpNodePath &camera_path) {
+  _camera_path = camera_path;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_camera_path
+//       Access: Public
+//  Description: Returns the NodePath to the camera.
+////////////////////////////////////////////////////////////////////
+INLINE const qpNodePath &SceneSetup::
+get_camera_path() const {
+  return _camera_path;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::set_camera_node
 //       Access: Public
 //  Description: Specifies the camera used to render the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
-set_camera(const qpCamera *camera) {
-  _camera = camera;
+set_camera_node(const qpCamera *camera_node) {
+  _camera_node = camera_node;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneSetup::get_camera
+//     Function: SceneSetup::get_camera_node
 //       Access: Public
 //  Description: Returns the camera used to render the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE const qpCamera *SceneSetup::
-get_camera() const {
-  return _camera;
+get_camera_node() const {
+  return _camera_node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,11 +136,36 @@ get_camera_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::set_world_transform
+//       Access: Public
+//  Description: Specifies the position of the starting node relative
+//               to the camera.  This is the inverse of the camera
+//               transform.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneSetup::
+set_world_transform(const TransformState *world_transform) {
+  _world_transform = world_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_world_transform
+//       Access: Public
+//  Description: Returns the position of the starting node relative
+//               to the camera.  This is the inverse of the camera
+//               transform.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *SceneSetup::
+get_world_transform() const {
+  return _world_transform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_render_transform
 //       Access: Public
 //  Description: Specifies the position of the starting node relative
 //               to the camera, pretransformed as appropriate for
-//               rendering.
+//               rendering.  This is the same as the world transform,
+//               with a possible coordinate-system conversion applied.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
 set_render_transform(const TransformState *render_transform) {
@@ -131,7 +177,8 @@ set_render_transform(const TransformState *render_transform) {
 //       Access: Public
 //  Description: Returns the position of the starting node relative
 //               to the camera, pretransformed as appropriate for
-//               rendering.
+//               rendering.  This is the same as the world transform,
+//               with a possible coordinate-system conversion applied.
 //
 //               Note that this value is always the position of the
 //               starting node, not the current node, even if it is

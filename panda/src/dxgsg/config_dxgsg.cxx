@@ -80,6 +80,11 @@ bool dx_use_rangebased_fog = config_dxgsg.GetBool("dx-use-rangebased-fog", false
 bool dx_force_16bpptextures = config_dxgsg.GetBool("dx-force-16bpptextures", false);
 bool dx_no_dithering = config_dxgsg.GetBool("dx-no-dithering", false);
 
+// Configure this true to try to implement decals using a
+// DepthOffsetAttrib, false to do them with the more reliable 3-pass
+// rendering method instead.
+bool dx_depth_offset_decals = config_dxgsg.GetBool("depth-offset-decals", false);
+
 #ifdef _DEBUG
 float dx_global_miplevel_bias = config_dxgsg.GetFloat("dx-global-miplevel-bias", 0.0);
 bool dx_debug_view_mipmaps = config_dxgsg.GetBool("dx-debug-view-mipmaps", false);

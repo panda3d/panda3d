@@ -158,7 +158,7 @@ reset() {
   _transparency_mode = TransparencyAttrib::M_none;
 
   _has_scene_graph_color = false;
-  _issued_color_stale = false;
+  _scene_graph_color_stale = false;
   _vertex_colors_enabled = true;
   _lighting_enabled = false;
 
@@ -1120,7 +1120,7 @@ issue_color_scale(const ColorScaleAttrib *attrib) {
     _alpha_transform_enabled = true;
   }
 
-  _issued_color_stale = _has_scene_graph_color;
+  _scene_graph_color_stale = _has_scene_graph_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1145,14 +1145,14 @@ issue_color(const ColorAttrib *attrib) {
     _scene_graph_color = attrib->get_color();
     _has_scene_graph_color = true;
     _vertex_colors_enabled = false;
-    _issued_color_stale = true;
+    _scene_graph_color_stale = true;
     break;
 
   case ColorAttrib::T_off:
     // Color attribute off: it specifies that no scene graph color is
     // in effect, and vertex color is not important either.
     _has_scene_graph_color = false;
-    _issued_color_stale = false;
+    _scene_graph_color_stale = false;
     _vertex_colors_enabled = false;
     break;
 
@@ -1160,7 +1160,7 @@ issue_color(const ColorAttrib *attrib) {
     // Color attribute vertex: it specifies that vertex color should
     // be revealed.
     _has_scene_graph_color = false;
-    _issued_color_stale = false;
+    _scene_graph_color_stale = false;
     _vertex_colors_enabled = true;
     break;
   }

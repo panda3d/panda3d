@@ -296,7 +296,7 @@ protected:
 
   Colorf _scene_graph_color;
   bool _has_scene_graph_color;
-  bool _issued_color_stale;
+  bool _scene_graph_color_stale;
   bool _vertex_colors_enabled;
   bool _lighting_enabled;
 

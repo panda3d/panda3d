@@ -44,6 +44,8 @@ extern bool dx_show_transforms;
 extern bool dx_force_16bpptextures;
 extern bool dx_no_dithering;
 
+extern bool dx_depth_offset_decals;
+
 #ifndef NDEBUG
 extern int dx_force_backface_culling;
 #endif

@@ -2506,7 +2506,7 @@ issue_color_transform(const ColorMatrixTransition *attrib) {
     _color_transform_enabled = true;
   }
 
-  _issued_color_stale = _has_scene_graph_color;
+  _scene_graph_color_stale = _has_scene_graph_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2525,7 +2525,7 @@ issue_alpha_transform(const AlphaTransformTransition *attrib) {
     _alpha_transform_enabled = true;
   }
 
-  _issued_color_stale = _has_scene_graph_color;
+  _scene_graph_color_stale = _has_scene_graph_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2559,21 +2559,21 @@ issue_color(const ColorTransition *attrib) {
       _scene_graph_color = attrib->get_color();
       _has_scene_graph_color = true;
       _vertex_colors_enabled = false;
-      _issued_color_stale = true;
+      _scene_graph_color_stale = true;
 
     } else {
       // The color attribute is "on" but not "real": it specifies that
       // no scene graph color is in effect, but vertex color is not
       // important either.
       _has_scene_graph_color = false;
-      _issued_color_stale = false;
+      _scene_graph_color_stale = false;
       _vertex_colors_enabled = false;
     }
   } else {
     // The color attribute is "off": it specifies that vertex color
     // should be revealed.
     _has_scene_graph_color = false;
-    _issued_color_stale = false;
+    _scene_graph_color_stale = false;
     _vertex_colors_enabled = true;
   }
 }

@@ -263,9 +263,11 @@ setup_scene(const qpNodePath &camera, GraphicsStateGuardian *gsg) {
   }
 
   scene_setup->set_scene_root(scene_root);
-  scene_setup->set_camera(camera_node);
+  scene_setup->set_camera_path(camera);
+  scene_setup->set_camera_node(camera_node);
   scene_setup->set_lens(lens);
   scene_setup->set_camera_transform(camera_transform);
+  scene_setup->set_world_transform(world_transform);
   scene_setup->set_render_transform(render_transform);
 
   return scene_setup;
@@ -286,7 +288,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   trav.set_cull_handler(cull_handler);
   trav.set_depth_offset_decals(gsg->depth_offset_decals());
   trav.set_scene(scene_setup);
-  trav.set_camera_mask(scene_setup->get_camera()->get_camera_mask());
+  trav.set_camera_mask(scene_setup->get_camera_node()->get_camera_mask());
 
   if (qpview_frustum_cull) {
     // If we're to be performing view-frustum culling, determine the

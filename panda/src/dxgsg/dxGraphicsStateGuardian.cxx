@@ -19,48 +19,69 @@
 #include "dxGraphicsStateGuardian.h"
 #include "config_dxgsg.h"
 
-#include <directRenderTraverser.h>
-#include <cullTraverser.h>
-#include <displayRegion.h>
-#include <lensNode.h>
-#include <camera.h>
-#include <renderBuffer.h>
-#include <geom.h>
-#include <geomSphere.h>
-#include <geomIssuer.h>
-#include <graphicsWindow.h>
-#include <graphicsChannel.h>
-#include <lens.h>
-#include <get_rel_pos.h>
-#include <perspectiveLens.h>
-#include <ambientLight.h>
-#include <directionalLight.h>
-#include <pointLight.h>
-#include <spotlight.h>
-#include <transformTransition.h>
-#include <colorTransition.h>
-#include <textureTransition.h>
-#include <renderModeTransition.h>
-#include <materialTransition.h>
-#include <colorBlendTransition.h>
-#include <colorMaskTransition.h>
-#include <texMatrixTransition.h>
-#include <texGenTransition.h>
-#include <textureApplyTransition.h>
-#include <clipPlaneTransition.h>
-#include <transparencyTransition.h>
-#include <fogTransition.h>
-#include <linesmoothTransition.h>
-#include <depthTestTransition.h>
-#include <depthWriteTransition.h>
-#include <cullFaceTransition.h>
-#include <stencilTransition.h>
-#include <mmsystem.h>
+#include "directRenderTraverser.h"
+#include "cullTraverser.h"
+#include "displayRegion.h"
+#include "lensNode.h"
+#include "camera.h"
+#include "renderBuffer.h"
+#include "geom.h"
+#include "geomSphere.h"
+#include "geomIssuer.h"
+#include "graphicsWindow.h"
+#include "graphicsChannel.h"
+#include "lens.h"
+#include "get_rel_pos.h"
+#include "perspectiveLens.h"
+#include "ambientLight.h"
+#include "directionalLight.h"
+#include "pointLight.h"
+#include "spotlight.h"
+#include "transformTransition.h"
+#include "colorTransition.h"
+#include "textureTransition.h"
+#include "renderModeTransition.h"
+#include "materialTransition.h"
+#include "colorBlendTransition.h"
+#include "colorMaskTransition.h"
+#include "texMatrixTransition.h"
+#include "texGenTransition.h"
+#include "textureApplyTransition.h"
+#include "clipPlaneTransition.h"
+#include "transparencyTransition.h"
+#include "fogTransition.h"
+#include "linesmoothTransition.h"
+#include "depthTestTransition.h"
+#include "depthWriteTransition.h"
+#include "cullFaceTransition.h"
+#include "stencilTransition.h"
+#include "textureAttrib.h"
+#include "lightAttrib.h"
+#include "cullFaceAttrib.h"
+#include "transparencyAttrib.h"
+#include "depthTestAttrib.h"
+#include "depthWriteAttrib.h"
+#include "colorWriteAttrib.h"
+#include "texMatrixAttrib.h"
+#include "materialAttrib.h"
+#include "renderModeAttrib.h"
+#include "fogAttrib.h"
+#include "depthOffsetAttrib.h"
+#include "qpfog.h"
 
 #ifdef DO_PSTATS
-#include <pStatTimer.h>
-#include <pStatCollector.h>
+#include "pStatTimer.h"
+#include "pStatCollector.h"
 #endif
+
+#include <mmsystem.h>
+
+// This is a temporary hack.  The whole color_transform and
+// alpha_transform system will soon be replaced with something a
+// little smaller.  Until then, we'll just define this macro to
+// simulate the variable that used to be cached within the GSG.
+#define _color_transform_required (_color_transform_enabled || _alpha_transform_enabled)
+
 
 // print out simple drawprim stats every few secs
 //#define COUNT_DRAWPRIMS
@@ -528,7 +549,6 @@ dx_init( void) {
     //Color and alpha transform variables
     _color_transform_enabled = false;
     _alpha_transform_enabled = false;
-    _color_transform_required = _color_transform_enabled || _alpha_transform_enabled;
 
     _current_color_mat = LMatrix4f::ident_mat();
     _current_alpha_offset = 0;
@@ -559,8 +579,7 @@ dx_init( void) {
     _decal_level = 0;
     _current_projection_mat = LMatrix4f::ident_mat();
     _projection_mat_stack_count = 0;
-    _issued_color_enabled = false;
-    _enable_all_color = true;
+    _has_scene_graph_color = false;
 
 //  GL stuff that hasnt been translated to DX
 //    _scissor_enabled = false;
@@ -1053,6 +1072,43 @@ prepare_display_region() {
     }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::prepare_lens
+//       Access: Public, Virtual
+//  Description: Makes the current lens (whichever lens was most
+//               recently specified with push_lens()) active, so that
+//               it will transform future rendered geometry.  Normally
+//               this is only called from the draw process, and
+//               usually it is called immediately after a call to
+//               push_lens().
+//
+//               The return value is true if the lens is acceptable,
+//               false if it is not.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian::
+prepare_lens() {
+  if (_current_lens == (Lens *)NULL) {
+    return false;
+  }
+
+  if (!_current_lens->is_linear()) {
+    return false;
+  }
+
+  const LMatrix4f &projection_mat = _current_lens->get_projection_mat();
+
+  // The projection matrix must always be left-handed Y-up internally,
+  // even if our coordinate system of choice is otherwise.
+  LMatrix4f new_projection_mat =
+    LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
+    projection_mat;
+
+  HRESULT hr;
+  hr = scrn.pD3DDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
+                                     (LPD3DMATRIX)new_projection_mat.get_data());
+  return SUCCEEDED(hr);
+}
+
 #ifndef NO_MULTIPLE_DISPLAY_REGIONS
 ////////////////////////////////////////////////////////////////////
 //     Function: set_clipper
@@ -1135,37 +1191,6 @@ render_frame() {
 
   _win->begin_frame();
 
-#ifdef DO_PSTATS
-  // For Pstats to track our current texture memory usage, we have to
-  // reset the set of current textures each frame.
-  init_frame_pstats();
-
-  // But since we don't get sent a new issue_texture() unless our
-  // texture state has changed, we have to be sure to clear the
-  // current texture state now.  A bit unfortunate, but probably not
-  // measurably expensive.
-  NodeTransitions state;
-  state.set_transition(new TextureTransition);
-  modify_state(state);
-#endif
-
-  HRESULT hr = scrn.pD3DDevice->BeginScene();
-
-  if(FAILED(hr)) {
-    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
-          if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "BeginScene returns " << ConvD3DErrorToString(hr) << endl;
-
-          CheckCooperativeLevel();
-    } else {
-        dxgsg_cat.error() << "BeginScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
-        exit(1);
-    }
-    return;
-  }
-
-/* scrn.pD3DDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, &matIdentity); */
-
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug()
     << "begin frame --------------------------------------------" << endl;
@@ -1222,259 +1247,11 @@ render_frame() {
     }   //  for (int c = 0; c < max_channel_index; c++)
 #endif
 
-    // draw new tri-based FPS meter
-
-  if(_bShowFPSMeter) {             
-        DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
-        // compute and write new texture indices here
-    
-        char fps_msg[15];
-        sprintf(fps_msg, "%6.02f fps", _current_fps); // 6 == NUM_FPSMETER_LETTERS
-    
-        #define WRITE_FPS_UV(u,v) {*fltptr=(u); fltptr[1]=(v); fltptr= (float*)(((BYTE*)fltptr)+_fps_vertexsize);}
-        float u_FPSMETER_LETTER_WIDTH = _fps_u_usedwidth/(float)FPSMETER_NUMFONTLETTERS;
-    
-        // write out texcoords
-        float *fltptr = (float*)_fpsmeter_verts;
-        fltptr+=5;   // skip over 1st XYZ,RHW, and colr (5 DWORDs)
-    
-        for(DWORD c=0;c<NUM_FPSMETER_LETTERS;c++) {
-          char ch=fps_msg[c];
-          int charnum=ch-'0';
-          float uval1, uval2;
-          float vval2=_fps_v_usedheight;
-
-          if(ch=='.')
-             charnum=FPSMETER_NUMFONTLETTERS-1;       
-
-          uval1=u_FPSMETER_LETTER_WIDTH*charnum;
-          uval2=uval1+u_FPSMETER_LETTER_WIDTH;
-
-          if((ch!='.') && ((ch<'0') || (ch>'9'))) {
-            uval1=0.0f; uval2=0.0f; vval2=0.0f;
-          }
-
-          WRITE_FPS_UV(uval1,0.0f);
-          WRITE_FPS_UV(uval1,vval2);
-          WRITE_FPS_UV(uval2,vval2);
-    
-          WRITE_FPS_UV(uval2,vval2);
-          WRITE_FPS_UV(uval2,0.0f);
-          WRITE_FPS_UV(uval1,0.0f); 
-        }
-    
-        // is this blending fn expensive?  if so, can just overwrite everything
-    
-        // could a state-block be used here instead?  definitely to set up, but to restore?
-        #ifdef MAKE_FPSMETER_TRANSPARENT    
-           call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
-           if(!_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, true);
-        #else
-           if(_blend_enabled)
-               scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, false);
-        #endif
-        
-        if (_CurShadeMode != D3DSHADE_FLAT) {
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_FLAT);
-        }
-
-        DWORD saved_zfunc;
-        scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_ZFUNC,&saved_zfunc);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_ALWAYS);
-
-        DWORD saved_fill_state;
-        if(_current_fill_mode != RenderModeProperty::M_filled) {
-            scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &saved_fill_state);
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
-        }
-
-    
-        DWORD saved_clipping_state,saved_cull_state;
-        scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_CULLMODE, &saved_cull_state);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
-    
-        scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_CLIPPING, &saved_clipping_state);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, false);
-        
-        // ignore lighting state since verts are post-xform
-    
-        DWORD saved_magfilter,saved_minfilter,saved_mipfilter;
-        DWORD saved_colorop,saved_alphaop,saved_colorarg1,saved_alphaarg1;
-        LPDIRECTDRAWSURFACE7 saved_tex_surf=NULL;
-
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MAGFILTER, &saved_magfilter);
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MINFILTER, &saved_minfilter);
-        scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MIPFILTER, &saved_mipfilter);
-        scrn.pD3DDevice->GetTextureStageState( 0, D3DTSS_COLOROP, &saved_colorop);
-        scrn.pD3DDevice->GetTextureStageState( 0, D3DTSS_COLORARG1, &saved_colorarg1);
-        scrn.pD3DDevice->GetTextureStageState( 0, D3DTSS_ALPHAOP, &saved_alphaop);
-        scrn.pD3DDevice->GetTextureStageState( 0, D3DTSS_ALPHAARG1, &saved_alphaarg1);
-
-        if(saved_mipfilter!= D3DTFP_NONE)
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
-
-        #define FPS_TEXFILTER(X) D3D##X##_POINT
-
-        if(saved_minfilter!=FPS_TEXFILTER(TFN))
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, FPS_TEXFILTER(TFN));
-        if(saved_magfilter!= FPS_TEXFILTER(TFG))
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, FPS_TEXFILTER(TFG));
-
-        if(saved_colorop!=D3DTOP_SELECTARG1)
-            scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-        if(saved_colorarg1!=D3DTA_TEXTURE)
-            scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-        if(saved_alphaop!=D3DTOP_SELECTARG1)
-            scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,  D3DTOP_SELECTARG1);
-        if(saved_alphaarg1!=D3DTA_TEXTURE)
-            scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-    
-        hr = scrn.pD3DDevice->SetTexture(0, _fpsmeter_font_surf);
-        if(FAILED(hr)) {
-           dxgsg_cat.error() << "SetTexture failed in draw fps meter, result = " << ConvD3DErrorToString(hr) << endl;
-           exit(1);
-        }
-    
-        DWORD nVerts = (NUM_FPSMETER_LETTERS+1)*2*3;   // +1 for suffix square
-        HRESULT hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_TRIANGLELIST, _fpsmeter_fvfflags, _fpsmeter_verts, nVerts, NULL);
-        TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,NUM_FPSMETER_LETTERS*2,0);
-    
-        #ifdef MAKE_FPSMETER_TRANSPARENT    
-          if(!_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, false);
-        #else
-          if(_blend_enabled)
-              scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, true);
-        #endif
-        
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZFUNC, saved_zfunc);
-    
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, saved_clipping_state);
-        scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, saved_cull_state);
-    
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, saved_magfilter);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, saved_minfilter);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, saved_mipfilter);
-        scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLOROP, saved_colorop);
-        scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, saved_colorarg1);
-        scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, saved_alphaop);
-        scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, saved_alphaarg1);
-
-        if (_CurShadeMode != D3DSHADE_FLAT) {
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
-        }
-
-        if(_current_fill_mode != RenderModeProperty::M_filled) {
-            scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, saved_fill_state);            
-        }
-
-        scrn.pD3DDevice->SetTexture(0, ((_pCurTexContext != NULL) ? _pCurTexContext->_surface : NULL));
-  }
-
-  hr = scrn.pD3DDevice->EndScene();  
-
-  // any GDI operations MUST occur after EndScene
-
-  if(FAILED(hr)) {
-    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
-          if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "EndScene returns " << ConvD3DErrorToString(hr) << endl;
-
-          CheckCooperativeLevel();
-    } else {
-       dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
-       exit(1);
-    }
-    return;
-  }
-
-   if(_bShowFPSMeter) {
-         DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
-
-         DWORD now = timeGetTime();  // this is win32 fn
-
-         float time_delta = (now - _start_time) * 0.001f;
-
-         if(time_delta > dx_fps_meter_update_interval) {
-             // didnt use global clock object, it wasnt working properly when I tried,
-             // its probably slower due to cache faults, and I can easily track all the
-             // info I need in dxgsg
-             DWORD num_frames = _cur_frame_count - _start_frame_count;
-
-             _current_fps = num_frames / time_delta;
-             _start_time = now;
-             _start_frame_count = _cur_frame_count;
-         }
-
-         _cur_frame_count++;  // only used by fps meter right now
-    }
-
-    _win->end_frame();
-
-    show_frame();
-
-#ifdef COUNT_DRAWPRIMS
-    {
-        #define FRAMES_PER_DPINFO 90
-        static DWORD LastDPInfoFrame=0;
-        static DWORD LastTickCount=0;
-
-        if (_cur_frame_count-LastDPInfoFrame > FRAMES_PER_DPINFO) {
-            DWORD CurTickCount=GetTickCount();
-            float delta_secs=(CurTickCount-LastTickCount)/1000.0f;
-
-            float numframes=_cur_frame_count-LastDPInfoFrame;
-            float verts_per_frame = cVertcount/numframes;
-            float tris_per_frame = cTricount/numframes;
-            float DPs_per_frame = cDPcount/numframes;
-            float DPs_notexchange_per_frame = cDP_noTexChangeCount/numframes;
-            float verts_per_DP = cVertcount/(float)cDPcount;
-            float verts_per_sec = cVertcount/delta_secs;
-            float tris_per_sec = cTricount/delta_secs;
-            float Geoms_per_frame = cGeomcount/numframes;
-            float DrawPrims_per_Geom = cDPcount/(float)cGeomcount;
-            float verts_per_Geom = cVertcount/(float)cGeomcount;
-
-            dxgsg_cat.debug() << "==================================="
-                << "\n Avg Verts/sec:\t\t" << verts_per_sec
-                << "\n Avg Tris/sec:\t\t" << tris_per_sec
-                << "\n Avg Verts/frame:\t" << verts_per_frame
-                << "\n Avg Tris/frame:\t" << tris_per_frame
-                << "\n Avg DrawPrims/frm:\t" << DPs_per_frame
-                << "\n Avg Verts/DrawPrim:\t" << verts_per_DP 
-                << "\n Avg DrawPrims w/no Texture Change from prev DrawPrim/frm:\t" << DPs_notexchange_per_frame
-                << "\n Avg Geoms/frm:\t" << Geoms_per_frame
-                << "\n Avg DrawPrims/Geom:\t" << DrawPrims_per_Geom
-                << "\n Avg Verts/Geom:\t" << verts_per_Geom
-                << endl;
-
-            LastDPInfoFrame=_cur_frame_count;
-            cDPcount = cVertcount=cTricount=cDP_noTexChangeCount=cGeomcount=0;
-            LastTickCount=CurTickCount;
-        }
-    }
-#endif
-
-#if defined(DO_PSTATS)||defined(PRINT_TEXSTATS)
-#ifndef PRINT_TEXSTATS
-  if (_texmgrmem_total_pcollector.is_active()) 
-#endif
-  {
-      #define TICKS_PER_GETTEXINFO (2.5*1000)   // 2.5 second interval
-      static DWORD LastTickCount=0;
-      DWORD CurTickCount=GetTickCount();
-
-      if (CurTickCount-LastTickCount > TICKS_PER_GETTEXINFO) {
-          LastTickCount=CurTickCount;
-          report_texmgr_stats();
-      }
-  }
-#endif
-
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug() << "end frame ----------------------------------------------" << endl;
 #endif
+  
+  _win->end_frame();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1779,30 +1556,6 @@ transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::wants_colors
-//       Access: Public, Virtual
-//  Description: Returns true if the GSG should issue geometry color
-//               commands, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool DXGraphicsStateGuardian::
-wants_colors() const {
-    // If we have scene graph color enabled, return false to indicate we
-    // shouldn't bother issuing geometry color commands.
-
-    const ColorTransition *catt;
-    if (!get_attribute_into(catt, this)) {
-        // No scene graph color at all.
-        return true;
-    }
-
-    // We should issue geometry colors only if the scene graph color is off.
-    if (catt->is_off() || (!catt->is_real()))
-        return true;
-
-    return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_prim_setup
 //       Access: Private
 //  Description: This adds data to the flexible vertex format
@@ -1853,14 +1606,22 @@ draw_prim_setup(const Geom *geom) {
    GeomBindType ColorBinding=geom->get_binding(G_COLOR);
    bool bDoColor=(ColorBinding != G_OFF);
 
-   if (_enable_all_color && (bDoColor || _issued_color_enabled)) {
+   if (bDoColor || _has_scene_graph_color) {
         ci = geom->make_color_iterator();
         _curFVFflags |= D3DFVF_DIFFUSE;
         vertex_size += sizeof(D3DCOLOR);
 
-        if (_issued_color_enabled) {
-            _curD3Dcolor = _issued_color_D3DCOLOR;  // set primitive color if there is one.
-
+        if (_has_scene_graph_color) {
+            if (_scene_graph_color_stale) {
+              // Compute the D3DCOLOR for the scene graph override color.
+              if(_color_transform_required) {
+                transform_color(_scene_graph_color, _scene_graph_color_D3DCOLOR);
+              } else {
+                _scene_graph_color_D3DCOLOR = Colorf_to_D3DCOLOR(_scene_graph_color);
+              }
+              _scene_graph_color_stale = false;
+            }
+            _curD3Dcolor = _scene_graph_color_D3DCOLOR;  // set primitive color if there is one.
             _perVertex &= ~PER_COLOR;
             _perPrim &= ~PER_COLOR;
             _perComp &= ~PER_COLOR;
@@ -4689,158 +4450,53 @@ apply_fog(Fog *fog) {
     }
 }
 
-#if 0
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::apply_light
+//     Function: DXGraphicsStateGuardian::apply_fog
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
-    // The light position will be relative to the current matrix, so
-    // we have to know what the current matrix is.  Find a better
-    // solution later.
-    D3DCOLORVALUE black;
-    black.r = black.g = black.b = black.a = 0.0f;
-    D3DLIGHT7  alight;
-    alight.dltType =  D3DLIGHT_POINT;
-    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-    alight.dcvAmbient  =  black ;
-    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
+void DXGraphicsStateGuardian::
+apply_fog(qpFog *fog) {
+  if(_doFogType==None)
+    return;
 
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
-    alight.dvPosition = *(D3DVECTOR *)(get_rel_pos( light, _current_root_node ).get_data());
-
-    alight.dvRange =  D3DLIGHT_RANGE_MAX;
-    alight.dvFalloff =  1.0f;
-
-    alight.dvAttenuation0 = (D3DVALUE)light->get_constant_attenuation();
-    alight.dvAttenuation1 = (D3DVALUE)light->get_linear_attenuation();
-    alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();
-    
-    HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
+  qpFog::Mode panda_fogmode = fog->get_mode();
+  D3DFOGMODE d3dfogmode = get_fog_mode_type(panda_fogmode);
+  
+  
+  // should probably avoid doing redundant SetRenderStates, but whatever
+  scrn.pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)_doFogType, d3dfogmode);
+  
+  const Colorf &fog_colr = fog->get_color();
+  scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR,
+                                  MY_D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));  // Alpha bits are not used
+  
+  // do we need to adjust fog start/end values based on D3DPRASTERCAPS_WFOG/D3DPRASTERCAPS_ZFOG ?
+  // if not WFOG, then docs say we need to adjust values to range [0,1]
+  
+  switch (panda_fogmode) {
+  case qpFog::M_linear:
+    {
+      float onset, opaque;
+      fog->get_linear_range(onset, opaque);
+      
+      scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_FOGSTART,
+                                       *((LPDWORD) (&onset)) );
+      scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_FOGEND,
+                                       *((LPDWORD) (&opaque)) );
+    }
+    break;
+  case qpFog::M_exponential:
+  case qpFog::M_exponential_squared:
+    {
+      // Exponential fog is always camera-relative.
+      float fog_density = fog->get_exp_density();
+      scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY,
+                                       *((LPDWORD) (&fog_density)) );
+    }
+    break;
+  }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
-    // The light position will be relative to the current matrix, so
-    // we have to know what the current matrix is.  Find a better
-    // solution later.
-    D3DCOLORVALUE black;
-    black.r = black.g = black.b = black.a = 0.0f;
-
-    D3DLIGHT7  alight;
-    ZeroMemory(&alight, sizeof(D3DLIGHT7));
-
-    alight.dltType =  D3DLIGHT_DIRECTIONAL;
-    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-    alight.dcvAmbient  =  black ;
-    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
-
-    alight.dvDirection = *(D3DVECTOR *)
-                         (get_rel_forward( light, _current_camera, CS_yup_left).get_data());
-
-    alight.dvRange =  D3DLIGHT_RANGE_MAX;
-    alight.dvFalloff =  1.0f;
-
-    alight.dvAttenuation0 = 1.0f;       // constant
-    alight.dvAttenuation1 = 0.0f;       // linear
-    alight.dvAttenuation2 = 0.0f;       // quadratic
-
-    HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
-//    scrn.pD3DDevice->LightEnable( _cur_light_id, TRUE );
-//    scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_LIGHTING, TRUE );
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
-    // The light position will be relative to the current matrix, so
-    // we have to know what the current matrix is.  Find a better
-    // solution later.
-#ifdef WBD_GL_MODE
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glMatrixMode(GL_MODELVIEW)" << endl;
-    dxgsg_cat.debug()
-    << "glPushMatrix()" << endl;
-    dxgsg_cat.debug()
-    << "glLoadIdentity()" << endl;
-#endif
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
-                  .get_data());
-
-    GLenum id = get_light_id( _cur_light_id );
-    Colorf black(0, 0, 0, 1);
-    glLightfv(id, GL_AMBIENT, black.get_data());
-    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
-
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
-    LPoint3f pos = get_rel_pos( light, _current_camera );
-    LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-    glLightfv( id, GL_POSITION, fpos.get_data() );
-
-    glLightfv( id, GL_SPOT_DIRECTION,
-               get_rel_forward( light, _current_camera,
-                                _coordinate_system ).get_data() );
-    glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
-    glLightf( id, GL_SPOT_CUTOFF,
-              light->get_cutoff_angle() );
-    glLightf( id, GL_CONSTANT_ATTENUATION,
-              light->get_constant_attenuation() );
-    glLightf( id, GL_LINEAR_ATTENUATION,
-              light->get_linear_attenuation() );
-    glLightf( id, GL_QUADRATIC_ATTENUATION,
-              light->get_quadratic_attenuation() );
-
-    glPopMatrix();
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glPopMatrix()" << endl;
-#endif
-#else       // DX Spotlight
-    D3DCOLORVALUE black;
-    black.r = black.g = black.b = black.a = 0.0f;
-
-    D3DLIGHT7  alight;
-    ZeroMemory(&alight, sizeof(D3DLIGHT7));
-
-    alight.dltType =  D3DLIGHT_SPOT;
-    alight.dcvAmbient  =  black ;
-    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
-
-    alight.dvPosition = *(D3DVECTOR *)
-                        (get_rel_pos( light, _current_root_node ).get_data());
-
-    alight.dvDirection = *(D3DVECTOR *)
-                         (get_rel_forward( light, _current_root_node, _coordinate_system).get_data());
-
-    alight.dvRange =  D3DLIGHT_RANGE_MAX;
-    alight.dvFalloff =  1.0f;
-    alight.dvTheta =  0.0f;
-    alight.dvPhi =  light->get_cutoff_angle();
-
-    alight.dvAttenuation0 = (D3DVALUE)light->get_constant_attenuation(); // constant
-    alight.dvAttenuation1 = (D3DVALUE)light->get_linear_attenuation();   // linear
-    alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();// quadratic
-
-    HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
-
-#endif              // WBD_GL_MODE
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_transform
@@ -4888,18 +4544,11 @@ issue_color(const ColorTransition *attrib) {
     bool bAttribOn=attrib->is_on();
     bool bIsReal = (bAttribOn ? attrib->is_real() : false);
 
-    _issued_color_enabled = bAttribOn;
-
-    // if an active unreal color is set, disable all color
-    _enable_all_color = !(bAttribOn && (!bIsReal));  
+    _has_scene_graph_color = bAttribOn;
 
     if(bAttribOn && bIsReal) {
-        _issued_color = attrib->get_color();
-        if(_color_transform_required) {
-            transform_color(_issued_color, _issued_color_D3DCOLOR);
-        } else {
-            _issued_color_D3DCOLOR = Colorf_to_D3DCOLOR(_issued_color);
-        }
+        _scene_graph_color = attrib->get_color();
+        _scene_graph_color_stale = true;
     }
 }
 
@@ -4917,16 +4566,11 @@ issue_color_transform(const ColorMatrixTransition *attrib) {
     // so we dont have to do this comparison
     if (_current_color_mat == LMatrix4f::ident_mat()) { 
         _color_transform_enabled = false;
-        if(_issued_color_enabled) {
-             _issued_color_D3DCOLOR = Colorf_to_D3DCOLOR(_issued_color);
-        }
+
     } else {
         _color_transform_enabled = true;
-        if(_issued_color_enabled) {
-             transform_color(_issued_color, _issued_color_D3DCOLOR);
-        }
     }
-    _color_transform_required = _color_transform_enabled || _alpha_transform_enabled;
+    _scene_graph_color_stale = _has_scene_graph_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4941,16 +4585,10 @@ issue_alpha_transform(const AlphaTransformTransition *attrib) {
 
     if ((_current_alpha_offset == 0.0f) && (_current_alpha_scale == 1.0f)) {
         _alpha_transform_enabled = false;
-        if(_issued_color_enabled) {
-             _issued_color_D3DCOLOR = Colorf_to_D3DCOLOR(_issued_color);
-        }
     } else {
         _alpha_transform_enabled = true;
-        if(_issued_color_enabled) {
-             transform_color(_issued_color, _issued_color_D3DCOLOR);
-        }
     }
-    _color_transform_required = _color_transform_enabled || _alpha_transform_enabled;
+    _scene_graph_color_stale = _has_scene_graph_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5533,6 +5171,599 @@ issue_linesmooth(const LinesmoothTransition *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_transform
+//       Access: Public, Virtual
+//  Description: Sends the indicated transform matrix to the graphics
+//               API to be applied to future vertices.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_transform(const TransformState *transform) {
+  scrn.pD3DDevice->SetTransform(D3DTRANSFORMSTATE_WORLD,
+                                (LPD3DMATRIX)transform->get_mat().get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_tex_matrix
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_tex_matrix(const TexMatrixAttrib *attrib) {
+  // Not implemented.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_texture
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_texture(const TextureAttrib *attrib) {
+  if (attrib->is_off()) {
+    enable_texturing(false);
+  } else {
+    enable_texturing(true);
+    Texture *tex = attrib->get_texture();
+    nassertv(tex != (Texture *)NULL);
+    tex->apply(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_material
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_material(const MaterialAttrib *attrib) {
+  const Material *material = attrib->get_material();
+  if (material != (const Material *)NULL) {
+    apply_material(material);
+  } else {
+    // Apply a default material when materials are turned off.
+    Material empty;
+    apply_material(&empty);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_render_mode
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_render_mode(const RenderModeAttrib *attrib) {
+  RenderModeAttrib::Mode mode = attrib->get_mode();
+
+  switch (mode) {
+  case RenderModeAttrib::M_filled:
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
+    break;
+
+  case RenderModeAttrib::M_wireframe:
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_WIREFRAME);
+    break;
+
+  default:
+    dxgsg_cat.error()
+      << "Unknown render mode " << (int)mode << endl;
+  }
+
+  _current_fill_mode = (RenderModeProperty::Mode)mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_texture_apply
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_texture_apply(const TextureApplyAttrib *attrib) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_depth_test
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_depth_test(const DepthTestAttrib *attrib) {
+  DepthTestAttrib::Mode mode = attrib->get_mode();
+  if (mode == DepthTestAttrib::M_none) {
+    _depth_test_enabled = false;
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_FALSE);
+  } else {
+    _depth_test_enabled = true;
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_TRUE);
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZFUNC, get_depth_func_type(mode));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_depth_write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_depth_write(const DepthWriteAttrib *attrib) {
+  enable_zwritemask(attrib->get_mode() == DepthWriteAttrib::M_on);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_cull_face
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_cull_face(const CullFaceAttrib *attrib) {
+  CullFaceAttrib::Mode mode = attrib->get_mode();
+
+  switch (mode) {
+  case CullFaceAttrib::M_cull_none:
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+    break;
+  case CullFaceAttrib::M_cull_clockwise:
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
+    break;
+  case CullFaceAttrib::M_cull_counter_clockwise:
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+    break;
+  default:
+    dxgsg_cat.error()
+      << "invalid cull face mode " << (int)mode << endl;
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_fog
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_fog(const FogAttrib *attrib) {
+  if (!attrib->is_off()) {
+    enable_fog(true);
+    qpFog *fog = attrib->get_fog();
+    nassertv(fog != (qpFog *)NULL);
+    apply_fog(fog);
+  } else {
+    enable_fog(false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_depth_offset
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_depth_offset(const DepthOffsetAttrib *attrib) {
+  int offset = attrib->get_offset();
+  scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, offset);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+bind_light(PointLight *light, int light_id) {
+  // Get the light in "world coordinates".  This means the light in
+  // the coordinate space of the camera, converted to DX's coordinate
+  // system.
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
+  LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
+  LPoint3f pos = light->get_point() * rel_mat;
+
+  D3DCOLORVALUE black;
+  black.r = black.g = black.b = black.a = 0.0f;
+  D3DLIGHT7  alight;
+  alight.dltType =  D3DLIGHT_POINT;
+  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+  alight.dcvAmbient  =  black ;
+  alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular_color().get_data());
+  
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
+  alight.dvPosition = *(D3DVECTOR *)pos.get_data();
+  
+  alight.dvRange =  D3DLIGHT_RANGE_MAX;
+  alight.dvFalloff =  1.0f;
+  
+  const LVecBase3f &att = light->get_attenuation();
+  alight.dvAttenuation0 = (D3DVALUE)att[0];
+  alight.dvAttenuation1 = (D3DVALUE)att[1];
+  alight.dvAttenuation2 = (D3DVALUE)att[2];
+  
+  HRESULT res = scrn.pD3DDevice->SetLight(light_id, &alight);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+bind_light(DirectionalLight *light, int light_id) {
+  // Get the light in "world coordinates".  This means the light in
+  // the coordinate space of the camera, converted to DX's coordinate
+  // system.
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
+  LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
+  LVector3f dir = light->get_direction() * rel_mat;
+
+  D3DCOLORVALUE black;
+  black.r = black.g = black.b = black.a = 0.0f;
+
+  D3DLIGHT7  alight;
+  ZeroMemory(&alight, sizeof(D3DLIGHT7));
+
+  alight.dltType =  D3DLIGHT_DIRECTIONAL;
+  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+  alight.dcvAmbient  =  black ;
+  alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular_color().get_data());
+  
+  alight.dvDirection = *(D3DVECTOR *)dir.get_data();
+
+  alight.dvRange =  D3DLIGHT_RANGE_MAX;
+  alight.dvFalloff =  1.0f;
+  
+  alight.dvAttenuation0 = 1.0f;       // constant
+  alight.dvAttenuation1 = 0.0f;       // linear
+  alight.dvAttenuation2 = 0.0f;       // quadratic
+  
+  HRESULT res = scrn.pD3DDevice->SetLight(light_id, &alight);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+bind_light(Spotlight *light, int light_id) {
+  Lens *lens = light->get_lens();
+  nassertv(lens != (Lens *)NULL);
+
+  // Get the light in "world coordinates".  This means the light in
+  // the coordinate space of the camera, converted to DX's coordinate
+  // system.
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_camera_path());
+  LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
+  LPoint3f pos = lens->get_nodal_point() * rel_mat;
+  LVector3f dir = lens->get_view_vector() * rel_mat;
+
+  D3DCOLORVALUE black;
+  black.r = black.g = black.b = black.a = 0.0f;
+  
+  D3DLIGHT7  alight;
+  ZeroMemory(&alight, sizeof(D3DLIGHT7));
+  
+  alight.dltType =  D3DLIGHT_SPOT;
+  alight.dcvAmbient  =  black ;
+  alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+  alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular_color().get_data());
+  
+  alight.dvPosition = *(D3DVECTOR *)pos.get_data();
+  
+  alight.dvDirection = *(D3DVECTOR *)dir.get_data();
+
+  alight.dvRange =  D3DLIGHT_RANGE_MAX;
+  alight.dvFalloff =  1.0f;
+  alight.dvTheta =  0.0f;
+  alight.dvPhi =  lens->get_hfov();
+  
+  const LVecBase3f &att = light->get_attenuation();
+  alight.dvAttenuation0 = (D3DVALUE)att[0];
+  alight.dvAttenuation1 = (D3DVALUE)att[1];
+  alight.dvAttenuation2 = (D3DVALUE)att[2];
+  
+  HRESULT res = scrn.pD3DDevice->SetLight(light_id, &alight);
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::begin_frame
+//       Access: Public, Virtual
+//  Description: Called before each frame is rendered, to allow the
+//               GSG a chance to do any internal cleanup before
+//               beginning the frame.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+begin_frame() {
+  GraphicsStateGuardian::begin_frame();
+
+  HRESULT hr = scrn.pD3DDevice->BeginScene();
+
+  if(FAILED(hr)) {
+    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
+          if(dxgsg_cat.is_debug())
+              dxgsg_cat.debug() << "BeginScene returns " << ConvD3DErrorToString(hr) << endl;
+
+          CheckCooperativeLevel();
+    } else {
+        dxgsg_cat.error() << "BeginScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
+        exit(1);
+    }
+    return;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::end_frame
+//       Access: Public, Virtual
+//  Description: Called after each frame is rendered, to allow the
+//               GSG a chance to do any internal cleanup after
+//               rendering the frame, and before the window flips.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+end_frame() {
+  GraphicsStateGuardian::end_frame();
+
+  HRESULT hr;
+
+  // draw new tri-based FPS meter
+  if (_bShowFPSMeter) {
+    DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
+    // compute and write new texture indices here
+    
+    char fps_msg[15];
+    sprintf(fps_msg, "%6.02f fps", _current_fps); // 6 == NUM_FPSMETER_LETTERS
+    
+#define WRITE_FPS_UV(u,v) {*fltptr=(u); fltptr[1]=(v); fltptr= (float*)(((BYTE*)fltptr)+_fps_vertexsize);}
+    float u_FPSMETER_LETTER_WIDTH = _fps_u_usedwidth/(float)FPSMETER_NUMFONTLETTERS;
+    
+    // write out texcoords
+    float *fltptr = (float*)_fpsmeter_verts;
+    fltptr+=5;   // skip over 1st XYZ,RHW, and colr (5 DWORDs)
+    
+    for(DWORD c=0;c<NUM_FPSMETER_LETTERS;c++) {
+      char ch=fps_msg[c];
+      int charnum=ch-'0';
+      float uval1, uval2;
+      float vval2=_fps_v_usedheight;
+      
+      if(ch=='.')
+        charnum=FPSMETER_NUMFONTLETTERS-1;       
+      
+      uval1=u_FPSMETER_LETTER_WIDTH*charnum;
+      uval2=uval1+u_FPSMETER_LETTER_WIDTH;
+      
+      if((ch!='.') && ((ch<'0') || (ch>'9'))) {
+        uval1=0.0f; uval2=0.0f; vval2=0.0f;
+      }
+      
+      WRITE_FPS_UV(uval1,0.0f);
+      WRITE_FPS_UV(uval1,vval2);
+      WRITE_FPS_UV(uval2,vval2);
+      
+      WRITE_FPS_UV(uval2,vval2);
+      WRITE_FPS_UV(uval2,0.0f);
+      WRITE_FPS_UV(uval1,0.0f); 
+    }
+    
+    // is this blending fn expensive?  if so, can just overwrite everything
+    
+    // could a state-block be used here instead?  definitely to set up, but to restore?
+#ifdef MAKE_FPSMETER_TRANSPARENT    
+    call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
+    if(!_blend_enabled)
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, true);
+#else
+    if(_blend_enabled)
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, false);
+#endif
+    
+    if (_CurShadeMode != D3DSHADE_FLAT) {
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_FLAT);
+    }
+    
+    DWORD saved_zfunc;
+    scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_ZFUNC,&saved_zfunc);
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_ALWAYS);
+    
+    DWORD saved_fill_state;
+    if(_current_fill_mode != RenderModeProperty::M_filled) {
+      scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &saved_fill_state);
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
+    }
+    
+    
+    DWORD saved_clipping_state,saved_cull_state;
+    scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_CULLMODE, &saved_cull_state);
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+    
+    scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_CLIPPING, &saved_clipping_state);
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, false);
+    
+    // ignore lighting state since verts are post-xform
+    
+    DWORD saved_magfilter,saved_minfilter,saved_mipfilter;
+    DWORD saved_colorop,saved_alphaop,saved_colorarg1,saved_alphaarg1;
+    LPDIRECTDRAWSURFACE7 saved_tex_surf=NULL;
+    
+    scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MAGFILTER, &saved_magfilter);
+    scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MINFILTER, &saved_minfilter);
+    scrn.pD3DDevice->GetTextureStageState(0, D3DTSS_MIPFILTER, &saved_mipfilter);
+    scrn.pD3DDevice->GetTextureStageState( 0, D3DTSS_COLOROP, &saved_colorop);
+    scrn.pD3DDevice->GetTextureStageState( 0, D3DTSS_COLORARG1, &saved_colorarg1);
+    scrn.pD3DDevice->GetTextureStageState( 0, D3DTSS_ALPHAOP, &saved_alphaop);
+    scrn.pD3DDevice->GetTextureStageState( 0, D3DTSS_ALPHAARG1, &saved_alphaarg1);
+    
+    if(saved_mipfilter!= D3DTFP_NONE)
+      scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+    
+#define FPS_TEXFILTER(X) D3D##X##_POINT
+    
+    if(saved_minfilter!=FPS_TEXFILTER(TFN))
+      scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, FPS_TEXFILTER(TFN));
+    if(saved_magfilter!= FPS_TEXFILTER(TFG))
+      scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, FPS_TEXFILTER(TFG));
+    
+    if(saved_colorop!=D3DTOP_SELECTARG1)
+      scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+    if(saved_colorarg1!=D3DTA_TEXTURE)
+      scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+    if(saved_alphaop!=D3DTOP_SELECTARG1)
+      scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,  D3DTOP_SELECTARG1);
+    if(saved_alphaarg1!=D3DTA_TEXTURE)
+      scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+
+    hr = scrn.pD3DDevice->SetTexture(0, _fpsmeter_font_surf);
+    if(FAILED(hr)) {
+      dxgsg_cat.error() << "SetTexture failed in draw fps meter, result = " << ConvD3DErrorToString(hr) << endl;
+      exit(1);
+    }
+    
+    DWORD nVerts = (NUM_FPSMETER_LETTERS+1)*2*3;   // +1 for suffix square
+    hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_TRIANGLELIST, _fpsmeter_fvfflags, _fpsmeter_verts, nVerts, NULL);
+    TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,NUM_FPSMETER_LETTERS*2,0);
+    
+#ifdef MAKE_FPSMETER_TRANSPARENT    
+    if(!_blend_enabled)
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, false);
+#else
+    if(_blend_enabled)
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, true);
+#endif
+    
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ZFUNC, saved_zfunc);
+    
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPING, saved_clipping_state);
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, saved_cull_state);
+    
+    scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, saved_magfilter);
+    scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, saved_minfilter);
+    scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, saved_mipfilter);
+    scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLOROP, saved_colorop);
+    scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, saved_colorarg1);
+    scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, saved_alphaop);
+    scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, saved_alphaarg1);
+    
+    if (_CurShadeMode != D3DSHADE_FLAT) {
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
+    }
+    
+    if(_current_fill_mode != RenderModeProperty::M_filled) {
+      scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, saved_fill_state);            
+    }
+    
+    scrn.pD3DDevice->SetTexture(0, ((_pCurTexContext != NULL) ? _pCurTexContext->_surface : NULL));
+  }
+  
+  hr = scrn.pD3DDevice->EndScene();  
+  
+  // any GDI operations MUST occur after EndScene
+  
+  if(FAILED(hr)) {
+    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
+      if(dxgsg_cat.is_debug())
+        dxgsg_cat.debug() << "EndScene returns " << ConvD3DErrorToString(hr) << endl;
+      
+      CheckCooperativeLevel();
+    } else {
+      dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
+      exit(1);
+    }
+    return;
+  }
+  
+  if(_bShowFPSMeter) {
+    DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
+    
+    DWORD now = timeGetTime();  // this is win32 fn
+    
+    float time_delta = (now - _start_time) * 0.001f;
+    
+    if(time_delta > dx_fps_meter_update_interval) {
+      // didnt use global clock object, it wasnt working properly when I tried,
+      // its probably slower due to cache faults, and I can easily track all the
+      // info I need in dxgsg
+      DWORD num_frames = _cur_frame_count - _start_frame_count;
+      
+      _current_fps = num_frames / time_delta;
+      _start_time = now;
+      _start_frame_count = _cur_frame_count;
+    }
+    
+    _cur_frame_count++;  // only used by fps meter right now
+  }
+  
+  show_frame();
+  
+#ifdef COUNT_DRAWPRIMS
+  {
+#define FRAMES_PER_DPINFO 90
+    static DWORD LastDPInfoFrame=0;
+    static DWORD LastTickCount=0;
+    
+    if (_cur_frame_count-LastDPInfoFrame > FRAMES_PER_DPINFO) {
+      DWORD CurTickCount=GetTickCount();
+      float delta_secs=(CurTickCount-LastTickCount)/1000.0f;
+      
+      float numframes=_cur_frame_count-LastDPInfoFrame;
+      float verts_per_frame = cVertcount/numframes;
+      float tris_per_frame = cTricount/numframes;
+      float DPs_per_frame = cDPcount/numframes;
+      float DPs_notexchange_per_frame = cDP_noTexChangeCount/numframes;
+      float verts_per_DP = cVertcount/(float)cDPcount;
+      float verts_per_sec = cVertcount/delta_secs;
+      float tris_per_sec = cTricount/delta_secs;
+      float Geoms_per_frame = cGeomcount/numframes;
+      float DrawPrims_per_Geom = cDPcount/(float)cGeomcount;
+      float verts_per_Geom = cVertcount/(float)cGeomcount;
+      
+      dxgsg_cat.debug() << "==================================="
+                        << "\n Avg Verts/sec:\t\t" << verts_per_sec
+                        << "\n Avg Tris/sec:\t\t" << tris_per_sec
+                        << "\n Avg Verts/frame:\t" << verts_per_frame
+                        << "\n Avg Tris/frame:\t" << tris_per_frame
+                        << "\n Avg DrawPrims/frm:\t" << DPs_per_frame
+                        << "\n Avg Verts/DrawPrim:\t" << verts_per_DP 
+                        << "\n Avg DrawPrims w/no Texture Change from prev DrawPrim/frm:\t" << DPs_notexchange_per_frame
+                        << "\n Avg Geoms/frm:\t" << Geoms_per_frame
+                        << "\n Avg DrawPrims/Geom:\t" << DrawPrims_per_Geom
+                        << "\n Avg Verts/Geom:\t" << verts_per_Geom
+                        << endl;
+      
+      LastDPInfoFrame=_cur_frame_count;
+      cDPcount = cVertcount=cTricount=cDP_noTexChangeCount=cGeomcount=0;
+      LastTickCount=CurTickCount;
+    }
+  }
+#endif
+
+#if defined(DO_PSTATS)||defined(PRINT_TEXSTATS)
+#ifndef PRINT_TEXSTATS
+  if (_texmgrmem_total_pcollector.is_active()) 
+#endif
+  {
+#define TICKS_PER_GETTEXINFO (2.5*1000)   // 2.5 second interval
+    static DWORD LastTickCount=0;
+    DWORD CurTickCount=GetTickCount();
+    
+    if (CurTickCount-LastTickCount > TICKS_PER_GETTEXINFO) {
+      LastTickCount=CurTickCount;
+      report_texmgr_stats();
+    }
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
 //  Description:
@@ -5723,6 +5954,37 @@ end_decal(GeomNode *base_geom) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::depth_offset_decals
+//       Access: Public, Virtual
+//  Description: Returns true if this GSG can implement decals using a
+//               DepthOffsetAttrib, or false if that is unreliable
+//               and the three-step rendering process should be used
+//               instead.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian::
+depth_offset_decals() {
+  return dx_depth_offset_decals;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::get_internal_coordinate_system
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return the
+//               coordinate system used internally by the GSG, if any
+//               one particular coordinate system is used.  The
+//               default, CS_default, indicates that the GSG can use
+//               any coordinate system.
+//
+//               If this returns other than CS_default, the
+//               GraphicsEngine will automatically convert all
+//               transforms into the indicated coordinate system.
+////////////////////////////////////////////////////////////////////
+CoordinateSystem DXGraphicsStateGuardian::
+get_internal_coordinate_system() const {
+  return CS_yup_left;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::compute_distance_to
 //       Access: Public, Virtual
 //  Description: This function may only be called during a render
@@ -5855,6 +6117,28 @@ get_depth_func_type(DepthTestProperty::Mode m) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::get_depth_func_type
+//       Access: Protected
+//  Description: Maps from the depth func modes to gl version
+////////////////////////////////////////////////////////////////////
+INLINE D3DCMPFUNC DXGraphicsStateGuardian::
+get_depth_func_type(DepthTestAttrib::Mode m) const {
+  switch (m) {
+  case DepthTestAttrib::M_never: return D3DCMP_NEVER;
+  case DepthTestAttrib::M_less: return D3DCMP_LESS;
+  case DepthTestAttrib::M_equal: return D3DCMP_EQUAL;
+  case DepthTestAttrib::M_less_equal: return D3DCMP_LESSEQUAL;
+  case DepthTestAttrib::M_greater: return D3DCMP_GREATER;
+  case DepthTestAttrib::M_not_equal: return D3DCMP_NOTEQUAL;
+  case DepthTestAttrib::M_greater_equal: return D3DCMP_GREATEREQUAL;
+  case DepthTestAttrib::M_always: return D3DCMP_ALWAYS;
+  }
+  dxgsg_cat.error()
+    << "Invalid DepthTestAttrib::Mode value" << endl;
+  return D3DCMP_LESS;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_stencil_func_type
 //       Access: Protected
 //  Description: Maps from the stencil func modes to dx version
@@ -5912,6 +6196,25 @@ get_fog_mode_type(Fog::Mode m) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::get_fog_mode_type
+//       Access: Protected
+//  Description: Maps from the fog types to gl version
+////////////////////////////////////////////////////////////////////
+INLINE D3DFOGMODE DXGraphicsStateGuardian::
+get_fog_mode_type(qpFog::Mode m) const {
+  switch (m) {
+  case qpFog::M_linear:
+    return D3DFOG_LINEAR;
+  case qpFog::M_exponential: 
+    return D3DFOG_EXP;
+  case qpFog::M_exponential_squared:
+    return D3DFOG_EXP2;
+  }
+  dxgsg_cat.error() << "Invalid Fog::Mode value" << endl;
+  return D3DFOG_EXP;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
@@ -5922,6 +6225,20 @@ get_fog_mode_type(Fog::Mode m) const {
 void DXGraphicsStateGuardian::
 enable_lighting(bool enable) {
   scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, (DWORD)enable);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::set_ambient_light
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               indicate the color of the ambient light that should
+//               be in effect.  This is called by issue_light() after
+//               all other lights have been enabled or disabled.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+set_ambient_light(const Colorf &color) {
+  scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_AMBIENT, 
+                                  Colorf_to_D3DCOLOR(color));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5939,6 +6256,88 @@ enable_light(int light_id, bool enable) {
   dxgsg_cat.debug()
     << "LightEnable(" << light << "=" << val << ")" << endl;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::set_blend_mode
+//       Access: Protected, Virtual
+//  Description: Called after any of these three blending states have
+//               changed; this function is responsible for setting the
+//               appropriate color blending mode based on the given
+//               properties.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
+               ColorBlendAttrib::Mode color_blend_mode,
+               TransparencyAttrib::Mode transparency_mode) {
+  // If color_write_mode is off, we disable writing to the color using
+  // blending.  I don't know if it is possible in DX to disable color
+  // outside of a blend mode.
+  if (color_write_mode == ColorWriteAttrib::M_off) {
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
+    return;
+  }
+
+  // Is there a color blend set?
+  switch (color_blend_mode) {
+  case ColorBlendAttrib::M_none:
+    break;
+
+  case ColorBlendProperty::M_multiply:
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ZERO);
+    return;
+
+  case ColorBlendProperty::M_add:
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_dxBlendFunc(D3DBLEND_ONE, D3DBLEND_ONE);
+    return;
+
+  case ColorBlendProperty::M_multiply_add:
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ONE);
+    return;
+
+  default:
+    dxgsg_cat.error()
+      << "Unknown color blend mode " << (int)color_blend_mode << endl;
+    break;
+  }
+
+  // No color blend; is there a transparency set?
+  switch (transparency_mode) {
+  case TransparencyAttrib::M_none:
+    break;
+
+  case TransparencyAttrib::M_alpha:
+  case TransparencyAttrib::M_alpha_sorted:
+  case TransparencyAttrib::M_multisample:
+  case TransparencyAttrib::M_multisample_mask:
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
+    return;
+
+  case TransparencyAttrib::M_binary:
+    enable_blend(false);
+    enable_alpha_test(true);
+    call_dxAlphaFunc(D3DCMP_EQUAL, 1);
+    return;
+
+  default:
+    dxgsg_cat.error()
+      << "invalid transparency mode " << (int)transparency_mode << endl;
+    break;
+  }
+
+  // Nothing's set, so disable blending.
+  enable_blend(false);
+  enable_alpha_test(false);
 }
 
 ////////////////////////////////////////////////////////////////////

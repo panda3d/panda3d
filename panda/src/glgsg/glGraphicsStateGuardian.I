@@ -1088,9 +1088,9 @@ get_clip_plane_id(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 issue_scene_graph_color() {
-  if (_issued_color_stale) {
+  if (_scene_graph_color_stale) {
     issue_transformed_color(_scene_graph_color);
-    _issued_color_stale = false;
+    _scene_graph_color_stale = false;
   }
 }
 
