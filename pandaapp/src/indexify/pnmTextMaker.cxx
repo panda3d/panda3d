@@ -89,6 +89,8 @@ PNMTextMaker(const Filename &font_filename, int face_index) {
       }
     }
   }
+
+  _align = A_left;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,6 +143,8 @@ PNMTextMaker(const char *font_data, int font_data_size, int face_index) {
       _scale_factor = 0.0;
     }
   }
+
+  _align = A_left;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,15 +197,36 @@ set_pixel_size(int pixel_size, double scale_factor) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMTextMaker::set_align
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PNMTextMaker::
+set_align(PNMTextMaker::Alignment align_type) {
+  if (_align != align_type) {
+    _align = align_type;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMTextMaker::get_align
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+PNMTextMaker::Alignment PNMTextMaker::
+get_align() const {
+  return _align;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMTextMaker::generate_into
 //       Access: Public
 //  Description: Generates text into the indicated image at the
-//               indicated position.  Currently, text is centered
-//               horizontally, with the baseline on the y position.
+//               indicated position.
 ////////////////////////////////////////////////////////////////////
 void PNMTextMaker::
 generate_into(const string &text, PNMImage &dest_image, int x, int y) {
-  // First, measure the total width in pixels, so we can center.
+  // First, measure the total width in pixels.
   int width = 0;
   string::const_iterator ti;
   for (ti = text.begin(); ti != text.end(); ++ti) {
@@ -210,8 +235,22 @@ generate_into(const string &text, PNMImage &dest_image, int x, int y) {
     width += glyph->get_advance();
   }
 
-  int xp = x - (width / 2);
+  int xp;
   int yp = y;
+
+  switch (_align) {
+  case A_left:
+    xp = x;
+    break;
+
+  case A_center:
+    xp = x - (width / 2);
+    break;
+
+  case A_right:
+    xp = x - width;
+    break;
+  }
 
   // Now place the text.
   for (ti = text.begin(); ti != text.end(); ++ti) {

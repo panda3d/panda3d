@@ -19,3 +19,20 @@
     pnmTextMaker.cxx pnmTextMaker.h
 
 #end bin_target
+
+#begin bin_target
+  #define USE_FREETYPE yes
+
+  #define TARGET font-samples
+  #define OTHER_LIBS \
+    progbase \
+    pnmimage:c pnmimagetypes:c panda:m \
+    pystub
+
+  #define SOURCES \
+    default_font.cxx default_font.h \
+    fontSamples.cxx fontSamples.h \
+    pnmTextGlyph.cxx pnmTextGlyph.h \
+    pnmTextMaker.cxx pnmTextMaker.h
+
+#end bin_target

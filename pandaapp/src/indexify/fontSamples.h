@@ -1,5 +1,5 @@
 // Filename: indexify.h
-// Created by:  drose (03Apr02)
+// Created by:  drose (07Apr02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef INDEXIFY_H
-#define INDEXIFY_H
+#ifndef FONTSAMPLES_H
+#define FONTSAMPLES_H
 
 #include "pandatoolbase.h"
 
@@ -25,42 +25,39 @@
 #include "filename.h"
 #include "pvector.h"
 
-class RollDirectory;
 class PNMTextMaker;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Indexify
-// Description : A program to generate a series of thumbnail images
-//               and HTML pages to view a number of image files in an
-//               archive directory, before writing the archive to a
-//               permanent medium like a CD.
+//       Class : FontSamples
+// Description : A program to generate one or more image files showing
+//               samples of various fonts.
 ////////////////////////////////////////////////////////////////////
-class Indexify : public ProgramBase {
+class FontSamples : public ProgramBase {
 public:
-  Indexify();
-  virtual ~Indexify();
+  FontSamples();
+  virtual ~FontSamples();
 
 protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
-  static bool dispatch_caption(const string &opt, const string &arg, void *var);
-
 public:
   void run();
 
-  string _front_title;
-  Filename _archive_dir;
-  Filename _roll_dir_root;
-  string _photo_extension;
-  Filename _font_filename;
-  bool _generate_icons;
+  string _sample_text;
+  int _sample_height;
+  int _name_height;
+  Filename _name_font_filename;
   double _font_aa_factor;
+  int _vert_space;
+  int _image_width;
+  int _image_height;
+  string _output_filename;
 
-  typedef pvector<RollDirectory *> RollDirs;
-  RollDirs _roll_dirs;
+  typedef pvector<Filename> Filenames;
+  Filenames _font_filenames;
 
-  PNMTextMaker *_text_maker;
+  PNMTextMaker *_name_text_maker;
 };
 
 #endif

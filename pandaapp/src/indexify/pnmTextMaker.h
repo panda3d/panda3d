@@ -41,9 +41,18 @@ public:
   PNMTextMaker(const char *font_data, int font_data_size, int face_index);
   ~PNMTextMaker();
 
+  enum Alignment {
+    A_left,
+    A_right,
+    A_center,
+  };
+
   bool is_valid() const;
 
   void set_pixel_size(int pixel_size, double scale_factor = 1.0);
+
+  void set_align(Alignment align_type);
+  Alignment get_align() const;
 
   void generate_into(const string &text,
                      PNMImage &dest_image, int x, int y);
@@ -64,6 +73,7 @@ private:
   FT_Face _face;
   double _scale_factor;
   double _line_height;
+  Alignment _align;
 
   static FT_Library _ft_library;
   static bool _ft_initialized;
