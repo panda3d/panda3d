@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 LwoToEgg::
 LwoToEgg() :
-  SomethingToEgg("MultiGen", ".lwo")
+  SomethingToEgg("Lightwave", ".lwo")
 {
   add_units_options();
   add_normals_options();
