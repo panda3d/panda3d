@@ -22,6 +22,9 @@ from libheapq import heappush, heappop, heapify
 exit = -1
 done = 0
 cont = 1
+again = 2  # return this when a doLater needs to be repeated (to be able to
+           # avoid having to remove and add a new doLater for continuously repeating
+           # tasks)
 
 # Task needs this because it might run before __builtin__.globalClock
 # can be set.
@@ -81,6 +84,8 @@ class Task:
         self.extraArgs = None
         # Used for doLaters
         self.wakeTime = 0.0
+        # for repeating doLaters
+        self.delayTime = 0.0
 
 #     # Used for putting into the doLaterList
 #     # the heapq calls __cmp__ via the rich compare function
@@ -404,8 +409,12 @@ class TaskManager:
             # TaskManager.notify.debug("filtered %s removed doLaters" % numRemoved)
         return cont
 
-    def doMethodLater(self, delayTime, func, taskName, extraArgs=None, uponDeath=None):
+    def doMethodLater(self, delayTime, func, taskName, extraArgs=None, uponDeath=None, appendTask=False):
         task = Task(func)
+        # if told to, append the task object to the extra args list so the method
+        # called will be able to access any properties on the task
+        if (appendTask == True and extraArgs):
+            extraArgs.append(task)
         task.name = taskName
         if extraArgs:
             task.extraArgs = extraArgs
@@ -423,6 +432,7 @@ class TaskManager:
         # have been synced since the start of this frame
         currentTime = globalClock.getFrameTime()
         # Cache the time we should wake up for easier sorting
+        task.delayTime = delayTime
         task.wakeTime = currentTime + delayTime
         # Push this onto the doLaterList. The heap maintains the sorting.
         heappush(self.__doLaterList, task)
@@ -621,6 +631,26 @@ class TaskManager:
                 task.avgDt = 0
         return ret
 
+    def __repeatDoMethod(self,task):
+        """
+        Called when a task execute function returns Task.again because
+        it wants the task to execute again after the same or a modified
+        delay (set 'delayTime' on the task object to change the delay)
+        """
+        if (not task.isRemoved()):
+            # be sure to ask the globalClock for the current frame time
+            # rather than use a cached value; globalClock's frame time may
+            # have been synced since the start of this frame
+            currentTime = globalClock.getFrameTime()
+            # Cache the time we should wake up for easier sorting
+            task.wakeTime = currentTime + task.delayTime
+            # Push this onto the doLaterList. The heap maintains the sorting.
+            heappush(self.__doLaterList, task)
+            if self.fVerbose:
+                # Alert the world, a new task is born!
+                messenger.send('TaskManager-againDoLater',
+                               sentArgs = [task, task.name, task.id])
+
     def __stepThroughList(self, taskPriList):
         # Traverse the taskPriList with an iterator
         i = 0
@@ -645,6 +675,11 @@ class TaskManager:
             if (ret == cont):
                 # Leave it for next frame, its not done yet
                 pass
+            elif (ret == again):
+                # repeat doLater again after a delay
+                self.__repeatDoMethod(task)
+                taskPriList.remove(i)
+                continue
             elif ((ret == done) or (ret == exit) or (ret == None)):
                 # assert(TaskManager.notify.debug('__stepThroughList: task is finished %s' % (task)))
                 # Remove the task
