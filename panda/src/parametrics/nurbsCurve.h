@@ -87,15 +87,15 @@ PUBLISHED:
   bool set_knot(int n, double t);
   double get_knot(int n) const;
 
-  void print() const;
-  void print_cv(int n) const;
+  void write(ostream &out) const;
+  void write_cv(ostream &out, int n) const;
 
   bool recompute();
 
   void normalize_tlength();
 
-  bool write_egg(const char *filename);
-  bool write_egg(ostream &out, const char *basename);
+  bool write_egg(const char *filename, CoordinateSystem cs = CS_default);
+  bool write_egg(ostream &out, const char *basename, CoordinateSystem cs);
 
   void splice(double t, const NurbsCurve &other);
   
@@ -124,7 +124,7 @@ public:
     }
   }
 
-  void Output(ostream &out, int indent=0) const;
+  void format_egg(ostream &out, CoordinateSystem cs, int indent_level) const;
 
 protected:
   int FindCV(double t);

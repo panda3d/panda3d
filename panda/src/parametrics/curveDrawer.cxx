@@ -34,8 +34,8 @@ ParametricCurveDrawer(ParametricCurve *curve) {
   _lines.set_color(1.0, 1.0, 1.0);
   _ticks.set_color(1.0, 0.0, 0.0);
   _tick_scale = 0.1;
-  _num_segs = 100;
-  _num_ticks = 0;
+  _num_segs = 100.0;
+  _num_ticks = 0.0;
   _frame_accurate = false;
   _geom_node = new GeomNode;
   _drawn = false;
@@ -168,7 +168,7 @@ detach_geom_node() {
 //               curve will be get_max_t() * get_num_segs().
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveDrawer::
-set_num_segs(int num_segs) {
+set_num_segs(double num_segs) {
   _num_segs = num_segs;
   if (_drawn) {
     draw();
@@ -184,7 +184,7 @@ set_num_segs(int num_segs) {
 //               is drawn.  The total number of segments drawn for the
 //               curve will be get_max_t() * get_num_segs().
 ////////////////////////////////////////////////////////////////////
-int ParametricCurveDrawer::
+double ParametricCurveDrawer::
 get_num_segs() const {
   return _num_segs;
 }
@@ -202,7 +202,7 @@ get_num_segs() const {
 //               of tick marks.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveDrawer::
-set_num_ticks(int num_ticks) {
+set_num_ticks(double num_ticks) {
   _num_ticks = num_ticks;
   if (_drawn) {
     draw();
@@ -215,7 +215,7 @@ set_num_ticks(int num_ticks) {
 //  Description: Returns the number of time tick marks per unit of
 //               time drawn.
 ////////////////////////////////////////////////////////////////////
-int ParametricCurveDrawer::
+double ParametricCurveDrawer::
 get_num_ticks() const {
   return _num_ticks;
 }
@@ -330,7 +330,7 @@ draw() {
   _drawn = true;
 
   // Now draw the time tick marks.
-  if (_num_ticks > 0) {
+  if (_num_ticks > 0.0) {
     LVecBase3f tangent2;
     int total_ticks = (int)floor(_curve->get_max_t() * _num_ticks + 0.5);
 
@@ -424,7 +424,7 @@ recompute(double t1, double t2, ParametricCurve *curve) {
     }
   }
     
-  if (_num_ticks > 0) {
+  if (_num_ticks > 0.0) {
     LVecBase3f tangent2;
     int total_ticks = (int)floor(_curve->get_max_t() * _num_ticks + 0.5);
 

@@ -71,11 +71,11 @@ PUBLISHED:
   GeomNode *get_geom_node();
   GeomNode *detach_geom_node();
 
-  void set_num_segs(int num_segs);
-  int get_num_segs() const;
+  void set_num_segs(double num_segs);
+  double get_num_segs() const;
 
-  void set_num_ticks(int num_ticks);
-  int get_num_ticks() const;
+  void set_num_ticks(double num_ticks);
+  double get_num_ticks() const;
 
   void set_color(float r, float g, float b);
   void set_tick_color(float r, float g, float b);
@@ -119,11 +119,11 @@ protected:
   static void get_tick_marks(const LVecBase3f &tangent, LVecBase3f &t1, LVecBase3f &t2);
 
   PT(GeomNode) _geom_node;
-  int _num_segs;
+  double _num_segs;
   ParametricCurve *_curve, *_time_curve;
   LineSegs _lines, _ticks;
   bool _drawn;
-  int _num_ticks;
+  double _num_ticks;
   double _tick_scale;
   bool _frame_accurate;
   LVecBase3fMapper *_mapper;

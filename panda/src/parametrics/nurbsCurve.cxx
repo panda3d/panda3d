@@ -15,6 +15,8 @@
 #include "nurbsCurve.h"
 #include "config_parametrics.h"
 
+#include <indent.h>
+
 ////////////////////////////////////////////////////////////////////
 // Statics
 ////////////////////////////////////////////////////////////////////
@@ -25,20 +27,6 @@ static const LVecBase3f zero = LVecBase3f(0.0, 0.0, 0.0);
 // This is returned occasionally from some of the functions, and is
 // used from time to time as an initializer.
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: Indent
-//  Description: This function duplicates a similar function declared
-//               in eggBasics.C.  It prints a specified number of
-//               spaces to indent each line of output.
-////////////////////////////////////////////////////////////////////
-static ostream &
-Indent(ostream &out, int indent) {
-  for (int i=0; i<indent; i++) {
-    out << ' ';
-  }
-  return out;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurve::Constructor
@@ -355,61 +343,60 @@ get_knot(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurve::print
+//     Function: NurbsCurve::write
 //       Access: Public, Scheme
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NurbsCurve::
-print() const {
+write(ostream &out) const {
   switch (get_curve_type()) {
   case PCT_T:
-    cout << "Time-warping ";
+    out << "Time-warping ";
     break;
 
   case PCT_XYZ:
-    cout << "XYZ ";
+    out << "XYZ ";
     break;
 
   case PCT_HPR:
-    cout << "HPR ";
+    out << "HPR ";
     break;
 
   default:
     break;
   }
 
-  cout << "NurbsCurve, order " << _order << ", " << get_num_cvs()
-       << " CV's.  t ranges from 0 to " << get_max_t() << ".\n";
+  out << "NurbsCurve, order " << _order << ", " << get_num_cvs()
+      << " CV's.  t ranges from 0 to " << get_max_t() << ".\n";
 
-  cout << "CV's:\n";
+  out << "CV's:\n";
   int i;
   for (i = 0; i < (int)_cvs.size(); i++) {
     LVecBase3f p = (const LVecBase3f &)_cvs[i]._p / _cvs[i]._p[3];
-    cout << i << ") " << p << ", weight " << _cvs[i]._p[3] << "\n";
+    out << i << ") " << p << ", weight " << _cvs[i]._p[3] << "\n";
   }
 
-  cout << "Knots: ";
+  out << "Knots: ";
   for (i = 0; i < (int)_cvs.size()+_order; i++) {
-    cout << " " << GetKnot(i);
+    out << " " << GetKnot(i);
   }
-  cout << "\n" << flush;
+  out << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurve::print_cv
+//     Function: NurbsCurve::write_cv
 //       Access: Public, Scheme
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NurbsCurve::
-print_cv(int n) const {
+write_cv(ostream &out, int n) const {
   if (n < 0 || n >= (int)_cvs.size()) {
-    cout << "No such CV: " << n << "\n";
+    out << "No such CV: " << n << "\n";
   } else {
     LVecBase3f p = (const LVecBase3f &)_cvs[n]._p / _cvs[n]._p[3];
-    cout << "CV " << n << ": " << p << ", weight " 
-	 << _cvs[n]._p[3] << "\n";
+    out << "CV " << n << ": " << p << ", weight " 
+	<< _cvs[n]._p[3] << "\n";
   }
-  cout << flush;
 }
 
 
@@ -692,12 +679,12 @@ rebuild_curveseg(int rtype0, double t0, const LVecBase4f &v0,
 //               Returns true if the file is successfully written.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
-write_egg(const char *filename) {
+write_egg(const char *filename, CoordinateSystem cs) {
   const char *basename = strrchr(filename, '/');
   basename = (basename==NULL) ? filename : basename+1;
 
   ofstream out(filename, ios::app);
-  return write_egg(out, basename);
+  return write_egg(out, basename, cs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -708,7 +695,7 @@ write_egg(const char *filename) {
 //               successfully written.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
-write_egg(ostream &out, const char *basename) {
+write_egg(ostream &out, const char *basename, CoordinateSystem cs) {
   if (get_name().empty()) {
     // If we don't have a name, come up with one.
     int len = strlen(basename);
@@ -738,7 +725,7 @@ write_egg(ostream &out, const char *basename) {
     set_name(name);
   }
 
-  Output(out);
+  format_egg(out, cs, 0);
 
   if (out) {
     return true;
@@ -804,26 +791,59 @@ splice(double t, const NurbsCurve &other) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurve::Output
+//     Function: NurbsCurve::format_egg
 //       Access: Public
 //  Description: Formats the Nurbs curve for output to an Egg file.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurve::
-Output(ostream &out, int indent) const {
-  Indent(out, indent)
+format_egg(ostream &out, CoordinateSystem cs, int indent_level) const {
+  if (cs == CS_default) {
+    cs = default_coordinate_system;
+  }
+
+  if (cs != CS_invalid) {
+    indent(out, indent_level)
+      << "<CoordinateSystem> { ";
+    switch (cs) {
+    case CS_zup_right:
+      out << "Z-Up";
+      break;
+      
+    case CS_yup_right:
+      out << "Y-Up";
+      break;
+      
+    case CS_zup_left:
+      out << "Z-Up-Left";
+      break;
+      
+    case CS_yup_left:
+      out << "Y-Up-Left";
+      break;
+
+    default:
+      break;
+    }
+    out << " }\n\n";
+  }
+
+  indent(out, indent_level)
     << "<VertexPool> " << get_name() << ".pool {\n";
 
   int cv;
   for (cv = 0; cv < (int)_cvs.size(); cv++) {
-    Indent(out, indent+2) << "<Vertex> " << cv << " { " 
-			  << _cvs[cv]._p << " }\n";
+    indent(out, indent_level+2)
+      << "<Vertex> " << cv << " { " << _cvs[cv]._p << " }\n";
   }
-  Indent(out, indent) << "}\n";
+  indent(out, indent_level)
+    << "}\n";
     
-  Indent(out, indent) << "<NURBSCurve> " << get_name() << " {\n";
+  indent(out, indent_level)
+    << "<NURBSCurve> " << get_name() << " {\n";
 
   if (_curve_type!=PCT_NONE) {
-    Indent(out, indent+2) << "<Char*> type { ";
+    indent(out, indent_level+2)
+      << "<Char*> type { ";
     switch (_curve_type) {
     case PCT_XYZ:
       out << "XYZ";
@@ -840,35 +860,36 @@ Output(ostream &out, int indent) const {
     out << " }\n";
   }
 
-  Indent(out, indent+2) << "<Order> { " << _order << " }\n";
+  indent(out, indent_level+2) << "<Order> { " << _order << " }\n";
   
-  Indent(out, indent+2) << "<Knots> {";
+  indent(out, indent_level+2) << "<Knots> {";
   int k;
   int num_knots = _cvs.size() + _order;
 
   for (k = 0; k < num_knots; k++) {
     if (k%6 == 0) {
       out << "\n";
-      Indent(out, indent+4);
+      indent(out, indent_level+4);
     }
     out << GetKnot(k) << " ";
   }
   out << "\n";
-  Indent(out, indent+2) << "}\n";
+  indent(out, indent_level+2) << "}\n";
 
-  Indent(out, indent+2) << "<VertexRef> {";
+  indent(out, indent_level+2) << "<VertexRef> {";
   for (cv = 0; cv < (int)_cvs.size(); cv++) {
-    if (cv%10 == 1) {
+    if (cv%10 == 0) {
       out << "\n";
-      Indent(out, indent+3);
+      indent(out, indent_level+3);
     }
     out << " " << cv;
   }
   out << "\n";
-  Indent(out, indent+4) << "<Ref> { " << get_name() << ".pool }\n";
-  Indent(out, indent+2) << "}\n";
+  indent(out, indent_level+4)
+    << "<Ref> { " << get_name() << ".pool }\n";
+  indent(out, indent_level+2) << "}\n";
 
-  Indent(out, indent) << "}\n";
+  indent(out, indent_level) << "}\n";
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -36,6 +36,12 @@ PUBLISHED:
   void reset();
   void add_point(double t, const LVecBase3f &point);
 
+  int get_num_samples() const;
+  double get_sample_t(int n) const;
+  const LVecBase3f &get_sample_point(int n) const;
+  const LVecBase3f &get_sample_tangent(int n) const;
+  void remove_samples(int begin, int end);
+
   void sample(ParametricCurve *curve, int count, bool even);
   void generate_even(int count, double net_distance, double net_time);
 
@@ -48,11 +54,10 @@ PUBLISHED:
   PT(HermiteCurve) make_hermite() const;
   PT(NurbsCurve) make_nurbs() const;
   
-  void print() const;
+  void output(ostream &out) const;
+  void write(ostream &out) const;
 
 public:
-  void output(ostream &out) const;
-
   class DataPoint {
   public:
     DataPoint() : _t(0.0), _point(0.0, 0.0, 0.0), _tangent(0.0, 0.0, 0.0) { }

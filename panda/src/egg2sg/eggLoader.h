@@ -26,6 +26,7 @@
 class EggNode;
 class EggBin;
 class EggTable;
+class EggNurbsCurve;
 class EggPrimitive;
 class EggPolygon;
 class ComputedVerticesMaker;
@@ -77,6 +78,7 @@ private:
 		    EggPrimitive *egg_prim);
 
   RenderRelation *make_node(EggNode *egg_node, NamedNode *parent);
+  RenderRelation *make_node(EggNurbsCurve *egg_curve, NamedNode *parent);
   RenderRelation *make_node(EggPrimitive *egg_prim, NamedNode *parent);
   RenderRelation *make_node(EggBin *egg_bin, NamedNode *parent);
   RenderRelation *make_node(EggGroup *egg_group, NamedNode *parent);

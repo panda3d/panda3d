@@ -25,8 +25,7 @@
 #include <list>
 #include <vector>
 
-#include "typedWriteableReferenceCount.h"
-#include "namable.h"
+#include "namedNode.h"
 #include "luse.h"
 
 
@@ -81,8 +80,7 @@ class NurbsCurve;
 //               This encapsulates all curves in 3-d space defined
 //               for a single parameter t in the range [0,get_max_t()].
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ParametricCurve : public TypedWriteableReferenceCount,
-    public Namable {
+class EXPCL_PANDA ParametricCurve : public NamedNode {
 PUBLISHED:
   ParametricCurve();
   virtual ~ParametricCurve();
@@ -153,11 +151,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteableReferenceCount::init_type();
-    Namable::init_type();
+    NamedNode::init_type();
     register_type(_type_handle, "ParametricCurve",
-		  TypedWriteableReferenceCount::get_class_type(),
-		  Namable::get_class_type());
+		  NamedNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

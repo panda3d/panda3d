@@ -66,6 +66,74 @@ add_point(double t, const LVecBase3f &point) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::get_num_samples
+//       Access: Public
+//  Description: Returns the number of sample points that have been
+//               added.
+////////////////////////////////////////////////////////////////////
+int CurveFitter::
+get_num_samples() const {
+  return _data.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::get_sample_t
+//       Access: Public
+//  Description: Returns the parametric value of the nth sample added.
+////////////////////////////////////////////////////////////////////
+double CurveFitter::
+get_sample_t(int n) const {
+  nassertr(n >= 0 && n < (int)_data.size(), 0.0);
+  return _data[n]._t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::get_sample_point
+//       Access: Public
+//  Description: Returns the point in space of the nth sample added.
+////////////////////////////////////////////////////////////////////
+const LVecBase3f &CurveFitter::
+get_sample_point(int n) const {
+#ifndef NDEBUG
+  static const LVecBase3f zero(0.0, 0.0, 0.0);
+  nassertr(n >= 0 && n < (int)_data.size(), zero);
+#endif
+  return _data[n]._point;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::get_sample_tangent
+//       Access: Public
+//  Description: Returns the tangent associated with the nth sample
+//               added.  This is only meaningful if compute_tangents()
+//               has already been called.
+////////////////////////////////////////////////////////////////////
+const LVecBase3f &CurveFitter::
+get_sample_tangent(int n) const {
+#ifndef NDEBUG
+  static const LVecBase3f zero(0.0, 0.0, 0.0);
+  nassertr(n >= 0 && n < (int)_data.size(), zero);
+#endif
+  return _data[n]._tangent;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::remove_samples
+//       Access: Public
+//  Description: Eliminates all samples from index begin, up to but not
+//               including index end, from the database.
+////////////////////////////////////////////////////////////////////
+void CurveFitter::
+remove_samples(int begin, int end) {
+  begin = max(0, min((int)_data.size(), begin));
+  end = max(0, min((int)_data.size(), end));
+
+  nassertv(begin <= end);
+
+  _data.erase(_data.begin() + begin, _data.begin() + end);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::sample
 //       Access: Public
 //  Description: Generates a series of data points by sampling the
@@ -452,26 +520,26 @@ make_nurbs() const {
 }
   
 ////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::print
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void CurveFitter::
-print() const {
-  output(cerr);
-}
-  
-////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::output
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
 output(ostream &out) const {
+  out << "CurveFitter, " << _data.size() << " samples.\n";
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CurveFitter::
+write(ostream &out) const {
+  out << "CurveFitter, " << _data.size() << " samples:\n";
   Data::const_iterator di;
-
   for (di = _data.begin(); di != _data.end(); ++di) {
-    out << (*di) << "\n";
+    out << "  " << (*di) << "\n";
   }
 }
 

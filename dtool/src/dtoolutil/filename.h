@@ -119,6 +119,7 @@ PUBLISHED:
   // The following functions deal with the outside world.
 
   INLINE bool is_local() const;
+  INLINE bool is_fully_qualified() const;
   void make_absolute();
   void make_absolute(const Filename &start_directory);
 

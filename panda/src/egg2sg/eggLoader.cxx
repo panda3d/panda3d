@@ -26,8 +26,10 @@
 #include <eggPrimitive.h>
 #include <eggPolygon.h>
 #include <eggPoint.h>
+#include <eggNurbsCurve.h>
 #include <eggTextureCollection.h>
 #include <eggBin.h>
+#include <nurbsCurve.h>
 #include <builderBucket.h>
 #include <builderPrim.h>
 #include <builderVertex.h>
@@ -1063,7 +1065,9 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggNode *egg_node, NamedNode *parent) {
-  if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
+  if (egg_node->is_of_type(EggNurbsCurve::get_class_type())) {
+    return make_node(DCAST(EggNurbsCurve, egg_node), parent);
+  } else if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
     return make_node(DCAST(EggPrimitive, egg_node), parent);
   } else if (egg_node->is_of_type(EggBin::get_class_type())) {
     return make_node(DCAST(EggBin, egg_node), parent);
@@ -1076,6 +1080,72 @@ make_node(EggNode *egg_node, NamedNode *parent) {
   }
 
   return (RenderRelation *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_node (EggNurbsCurve)
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+RenderRelation *EggLoader::
+make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
+  assert(parent != NULL);
+  assert(!parent->is_of_type(GeomNode::get_class_type()));
+
+  PT(NurbsCurve) curve = new NurbsCurve;
+
+  if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {
+    egg2sg_cat.error()
+      << "Invalid NURBSCurve order for " << egg_curve->get_name() << ": "
+      << egg_curve->get_order() << "\n";
+    return (RenderRelation *)NULL;
+  }
+
+  curve->set_order(egg_curve->get_order());
+
+  EggPrimitive::const_iterator pi;
+  for (pi = egg_curve->begin(); pi != egg_curve->end(); ++pi) {
+    curve->append_cv(LCAST(float, (*pi)->get_pos4()));
+  }
+
+  int num_knots = egg_curve->get_num_knots();
+  if (num_knots != curve->get_num_knots()) {
+    egg2sg_cat.error()
+      << "Invalid NURBSCurve number of knots for "
+      << egg_curve->get_name() << ": got " << num_knots
+      << " knots, expected " << curve->get_num_knots() << "\n";
+    return (RenderRelation *)NULL;
+  }
+    
+  for (int i = 0; i < num_knots; i++) {
+    curve->set_knot(i, egg_curve->get_knot(i));
+  }
+
+  switch (egg_curve->get_curve_type()) {
+  case EggCurve::CT_xyz:
+    curve->set_curve_type(PCT_XYZ);
+    break;
+
+  case EggCurve::CT_hpr:
+    curve->set_curve_type(PCT_HPR);
+    break;
+
+  case EggCurve::CT_t:
+    curve->set_curve_type(PCT_T);
+    break;
+
+  default:
+    break;
+  }
+  curve->set_name(egg_curve->get_name());
+
+  if (!curve->recompute()) {
+    egg2sg_cat.error()
+      << "Invalid NURBSCurve " << egg_curve->get_name() << "\n";
+    return (RenderRelation *)NULL;
+  }
+
+  return new RenderRelation(parent, curve);
 }
 
 ////////////////////////////////////////////////////////////////////

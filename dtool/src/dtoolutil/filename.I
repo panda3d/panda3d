@@ -387,6 +387,26 @@ is_local() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::is_fully_qualified
+//       Access: Public
+//  Description: Returns true if the filename is fully qualified,
+//               e.g. begins with a slash.  This is almost, but not
+//               quite, the same thing as !is_local().  It's not
+//               exactly the same because a special case is made for
+//               filenames that begin with a single dot followed by a
+//               slash--these are considered to be fully qualified
+//               (they are explicitly relative to the current
+//               directory, and do not refer to a filename on a search
+//               path somewhere).
+////////////////////////////////////////////////////////////////////
+INLINE bool Filename::
+is_fully_qualified() const {
+  return 
+    (_filename.size() > 2 && _filename[0] == '.' && _filename[1] == '/') ||
+    (!_filename.empty() && _filename[0] == '/');
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::Equality operator
 //       Access: Public
 //  Description: 

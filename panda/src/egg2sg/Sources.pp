@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET egg2sg
   #define LOCAL_LIBS \
-    cull collide egg builder loader chan char switchnode
+    parametrics cull collide egg builder loader chan char switchnode
 
   #define SOURCES \
     animBundleMaker.cxx animBundleMaker.h characterMaker.cxx \

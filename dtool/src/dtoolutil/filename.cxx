@@ -827,7 +827,7 @@ resolve_filename(const DSearchPath &searchpath,
 		 const string &default_extension) {
   string found;
 
-  if (is_local()) {
+  if (!is_fully_qualified()) {
     found = searchpath.find_file(get_fullpath());
 
     if (found.empty()) {
