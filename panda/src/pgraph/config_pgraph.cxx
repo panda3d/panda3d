@@ -275,6 +275,7 @@ init_libpgraph() {
   PandaNode::register_with_read_factory();
   PlaneNode::register_with_read_factory();
   PointLight::register_with_read_factory();
+  PolylightNode::register_with_read_factory();
   PortalNode::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();

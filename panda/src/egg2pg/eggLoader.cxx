@@ -1870,14 +1870,14 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     // use make_sphere to get the center, radius and color
     //egg2pg_cat.debug() << "polylight node\n";
     LPoint3f center;
-	Colorf color;
-	float radius;
-	
-	if(!make_sphere(egg_group,center,radius,color)) {
+    Colorf color;
+    float radius;
+    
+    if(!make_sphere(egg_group,center,radius,color)) {
       egg2pg_cat.warning()
         << "Polylight " << egg_group->get_name() << " make_sphere failed!\n";
-	}
-	PolylightNode *pnode = new PolylightNode(egg_group->get_name());
+    }
+    PolylightNode *pnode = new PolylightNode(egg_group->get_name());
     pnode->set_pos(center);
     pnode->set_color(color);
     pnode->set_radius(radius);

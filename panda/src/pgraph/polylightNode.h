@@ -21,7 +21,6 @@
 
 #include "pandabase.h"
 
-#include "renderEffect.h"
 #include "luse.h"
 #include "nodePath.h"
 #include "pmap.h"
@@ -141,9 +140,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    RenderEffect::init_type();
+    PandaNode::init_type();
     register_type(_type_handle, "PolylightNode",
-                  RenderEffect::get_class_type());
+                  PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
