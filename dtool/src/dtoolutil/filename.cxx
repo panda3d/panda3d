@@ -314,6 +314,19 @@ from_os_specific(const string &os_specific, Filename::Type type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::expand_from
+//       Access: Public, Static
+//  Description: Returns the same thing as from_os_specific(), but
+//               embedded environment variable references
+//               (e.g. "$DMODELS/foo.txt") are expanded out.
+////////////////////////////////////////////////////////////////////
+Filename Filename::
+expand_from(const string &os_specific, Filename::Type type) {
+  return from_os_specific(ExecutionEnvironment::expand_string(os_specific),
+                          type);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::temporary
 //       Access: Public
 //  Description: Generates a temporary filename within the indicated

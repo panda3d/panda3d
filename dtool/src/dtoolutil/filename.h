@@ -77,6 +77,8 @@ PUBLISHED:
 
   static Filename from_os_specific(const string &os_specific,
                                    Type type = T_general);
+  static Filename expand_from(const string &user_string, 
+                              Type type = T_general);
   static Filename temporary(const string &dirname, const string &prefix,
                             Type type = T_general);
 
