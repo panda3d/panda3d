@@ -96,8 +96,6 @@ class DirectGuiBase(PandaObject.PandaObject):
     def __init__(self):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'
-        # List of all active hooks
-        self._hookDict = {}
         # List of all post initialization functions
         self.postInitialiseFuncList = []
         # To avoid doing things redundantly during initialisation
@@ -617,10 +615,8 @@ class DirectGuiBase(PandaObject.PandaObject):
 
     def destroy(self):
         # Clean out any hooks
-        for event in self._hookDict.keys():
-            self.ignore(event)
+        self.ignoreAll()
         del(self._optionInfo)
-        del(self._hookDict)
         del(self.__componentInfo)
         del self.postInitialiseFuncList
         
@@ -633,8 +629,6 @@ class DirectGuiBase(PandaObject.PandaObject):
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
         self.accept(gEvent, command, extraArgs = extraArgs)
-        # Keep track of all events you're accepting
-        self._hookDict[gEvent] = command
         
     def unbind(self, event):
         """
@@ -643,8 +637,6 @@ class DirectGuiBase(PandaObject.PandaObject):
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
         self.ignore(gEvent)
-        if self._hookDict.has_key(gEvent):
-            del(self._hookDict[gEvent])
 
 def toggleGuiGridSnap():
     DirectGuiWidget.snapToGrid = 1 - DirectGuiWidget.snapToGrid
@@ -665,7 +657,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         inactiveInitState = NORMAL
     else:
         inactiveInitState = DISABLED
-            
+
+    guiDict = {}
 
     def __init__(self, parent = aspect2d, **kw):
         # Direct gui widgets are node paths
@@ -771,7 +764,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.guiItem.setSuppressFlags(suppressFlags)
 
         # Bind destroy hook
-        self.bind(DESTROY, self.destroy)
+        self.guiDict[self.guiId] = self
+        # self.bind(DESTROY, self.destroy)
 
         # Update frame when everything has been initialized
         self.postInitialiseFuncList.append(self.frameInitialiseFunc)
@@ -975,11 +969,14 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         for i in range(self['numStates']):
             self.frameStyle[i].setWidth(width[0], width[1])
         self.updateFrameStyle()
-            
+
     def destroy(self):
         # Destroy children
         for child in self.getChildrenAsList():
-            messenger.send(DESTROY + child.getName())
+            childGui = self.guiDict.get(child.getName())
+            if childGui: childGui.destroy()
+            # messenger.send(DESTROY + child.getName())
+        del self.guiDict[self.guiId]
         del self.frameStyle
         # Get rid of node path
         self.removeNode()
