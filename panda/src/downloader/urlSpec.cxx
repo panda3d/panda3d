@@ -488,8 +488,10 @@ set_url(const string &url, bool server_name_expected) {
   }
 
   // First, replace backslashes with forward slashes, since this is a
-  // common mistake among Windows users.
-  for (p = 0; p < _url.length(); p++) {
+  // common mistake among Windows users.  But don't do this after an
+  // embedded question mark, which begins parameters sent directly to
+  // the host (and maybe these parameters should include backslashes).
+  for (p = 0; p < _url.length() && _url[p] != '?'; p++) {
     if (_url[p] == '\\') {
       _url[p] = '/';
     }
