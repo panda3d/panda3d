@@ -42,10 +42,10 @@ TrueClock *TrueClock::_global_ptr = NULL;
 static BOOL _has_high_res;
 static PN_int64 _frequency;
 static PN_int64 _init_count;
-double _fFrequency,_recip_fFrequency;
+static double _fFrequency,_recip_fFrequency;
 static DWORD _init_tc;
 static bool _paranoid_clock;
-const double _0001 = 1.0/1000.0;
+static const double _0001 = 1.0/1000.0;
 
 void get_true_time_of_day(ulong &sec, ulong &usec) {
   struct timeb tb;
