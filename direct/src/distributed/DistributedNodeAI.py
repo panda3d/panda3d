@@ -1,24 +1,42 @@
 from AIBaseGlobal import *
+from PandaModules import NodePath
 import DistributedObjectAI
-import Task
 
-class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI):
-    def __init__(self, air):
+class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
+    def __init__(self, air, name=None):
         DistributedObjectAI.DistributedObjectAI.__init__(self, air)
+        if name is None:
+            name = self.__class__.__name__
+        NodePath.__init__(self, hidden.attachNewNode(name))
 
     def delete(self):
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
     ### setParent ###
 
-    def d_setParent(self, parentString):
-        if type(parentString) == type(''):
-            self.sendUpdate("setParentStr", [parentString])
+    def b_setParent(self, parentToken):
+        if type(parentToken) == types.StringType:
+            self.setParentStr(parentToken)
         else:
-            self.sendUpdate("setParent", [parentString])
+            self.setParent(parentToken)
+        self.d_setParent(parentToken)
 
-    def setParent(self, parentString):
-        pass
+    def d_setParent(self, parentToken):
+        if type(parentToken) == type(''):
+            self.sendUpdate("setParentStr", [parentToken])
+        else:
+            self.sendUpdate("setParent", [parentToken])
+
+    def setParentStr(self, parentToken):
+        print 'setParentStr(%s): %s' % (self.doId, parentToken)
+        self.do_setParent(parentToken)
+
+    def setParent(self, parentToken):
+        print 'setParent(%s): %s' % (self.doId, parentToken)
+        self.do_setParent(parentToken)
+
+    def do_setParent(self, parentToken):
+        self.air.parentMgr.requestReparent(self, parentToken)
 
     ###### set pos and hpr functions #######
 
@@ -47,8 +65,8 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI):
         self.sendUpdate("setR", [r])
 
     def setXY(self, x, y):
-        pass
-
+        self.setX(x)
+        self.setY(y)
     def d_setXY(self, x, y):
         self.sendUpdate("setXY", [x, y])
 
@@ -61,19 +79,18 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI):
         self.sendUpdate("setHpr", [h, p, r])
 
     def setXYH(self, x, y, h):
-        pass
-        
+        self.setX(x)
+        self.setY(y)
+        self.setH(h)
     def d_setXYH(self, x, y, h):
         self.sendUpdate("setXYH", [x, y, h])
 
     def setXYZH(self, x, y, z, h):
-        pass
-
+        self.setPos(x, y, z)
+        self.setH(h)
     def d_setXYZH(self, x, y, z, h):
         self.sendUpdate("setXYZH", [x, y, z, h])
 
     # setPosHpr provided by NodePath
     def d_setPosHpr(self, x, y, z, h, p, r):
         self.sendUpdate("setPosHpr", [x, y, z, h, p, r])
-
-

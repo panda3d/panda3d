@@ -3,6 +3,7 @@
 from PandaModules import *
 from ClockDelta import *
 import DistributedNode
+import DistributedSmoothNodeBase
 import Task
 
 # This number defines our tolerance for out-of-sync telemetry packets.
@@ -67,7 +68,9 @@ def activateSmoothing(smoothing, prediction):
         
 
 
-class DistributedSmoothNode(DistributedNode.DistributedNode):
+class DistributedSmoothNode(DistributedNode.DistributedNode,
+                            DistributedSmoothNodeBase.\
+                            DistributedSmoothNodeBase):
     """DistributedSmoothNode class:
 
     This specializes DistributedNode to add functionality to smooth
@@ -81,10 +84,15 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         except:
             self.DistributedSmoothNode_initialized = 1
             DistributedNode.DistributedNode.__init__(self, cr)
+            DistributedSmoothNodeBase.DistributedSmoothNodeBase.__init__(self)
 
             self.smoother = SmoothMover()
             self.smoothStarted = 0
             self.lastSuggestResync = 0
+
+    def delete(self):
+        DistributedSmoothNodeBase.DistributedSmoothNodeBase.delete(self)
+        DistributedNode.DistributedNode.delete(self)
 
     ### Methods to handle computing and updating of the smoothed
     ### position.
@@ -162,76 +170,42 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         self.smoother.setPhonyTimestamp()
         self.smoother.markPosition()
         
-
-    
-    ### distributed set pos and hpr functions ###
-
-    ### These functions send the distributed update to set the
-    ### appropriate values on the remote side.  These are
-    ### composite fields, with all the likely combinations
-    ### defined; each function maps (via the dc file) to one or
-    ### more component operations on the remote client.
-
-    def d_setSmStop(self):
-        self.sendUpdate("setSmStop", [globalClockDelta.getFrameNetworkTime()])
+    # distributed set pos and hpr functions
+    # 'send' versions are inherited from DistributedSmoothNodeBase
     def setSmStop(self, timestamp):
         self.setComponentTLive(timestamp)
-
-    def d_setSmH(self, h):
-        self.sendUpdate("setSmH", [h, globalClockDelta.getFrameNetworkTime()])
     def setSmH(self, h, timestamp):
         self.setComponentH(h)
         self.setComponentTLive(timestamp)
-
-    def d_setSmXY(self, x, y):
-        self.sendUpdate("setSmXY", [x, y, globalClockDelta.getFrameNetworkTime()])
     def setSmXY(self, x, y, timestamp):
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentTLive(timestamp)
-
-    def d_setSmXZ(self, x, z):
-        self.sendUpdate("setSmXZ", [x, z, globalClockDelta.getFrameNetworkTime()])
     def setSmXZ(self, x, z, timestamp):
         self.setComponentX(x)
         self.setComponentZ(z)
         self.setComponentTLive(timestamp)
-
-    def d_setSmPos(self, x, y, z):
-        self.sendUpdate("setSmPos", [x, y, z, globalClockDelta.getFrameNetworkTime()])
     def setSmPos(self, x, y, z, timestamp):
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentZ(z)
         self.setComponentTLive(timestamp)
-
-    def d_setSmHpr(self, h, p, r):
-        self.sendUpdate("setSmHpr", [h, p, r, globalClockDelta.getFrameNetworkTime()])
     def setSmHpr(self, h, p, r, timestamp):
         self.setComponentH(h)
         self.setComponentP(p)
         self.setComponentR(r)
         self.setComponentTLive(timestamp)
-
-    def d_setSmXYH(self, x, y, h):
-        self.sendUpdate("setSmXYH", [x, y, h, globalClockDelta.getFrameNetworkTime()])
     def setSmXYH(self, x, y, h, timestamp):
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentH(h)
         self.setComponentTLive(timestamp)
-
-    def d_setSmXYZH(self, x, y, z, h):
-        self.sendUpdate("setSmXYZH", [x, y, z, h, globalClockDelta.getFrameNetworkTime()])
     def setSmXYZH(self, x, y, z, h, timestamp):
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentZ(z)
         self.setComponentH(h)
         self.setComponentTLive(timestamp)
-
-    def d_setSmPosHpr(self, x, y, z, h, p, r):
-        self.sendUpdate("setSmPosHpr", [x, y, z, h, p, r, globalClockDelta.getFrameNetworkTime()])
     def setSmPosHpr(self, x, y, z, h, p, r, timestamp):
         self.setComponentX(x)
         self.setComponentY(y)
@@ -311,11 +285,6 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         self.smoother.setTimestamp(local)
         self.smoother.markPosition()
 
-    def b_clearSmoothing(self):
-        self.d_clearSmoothing()
-        self.clearSmoothing()
-    def d_clearSmoothing(self):
-        self.sendUpdate("clearSmoothing", [0])
     def clearSmoothing(self, bogus = None):
         # Call this to invalidate all the old position reports
         # (e.g. just before popping to a new position).

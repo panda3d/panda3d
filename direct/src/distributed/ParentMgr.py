@@ -1,9 +1,9 @@
 """ParentMgr module: contains the ParentMgr class"""
 
-from ShowBaseGlobal import *
 import DirectNotifyGlobal
 
 class ParentMgr:
+    # This is now used on the AI as well.
     """ParentMgr holds a table of nodes that avatars may be parented to
     in a distributed manner. All clients within a particular zone maintain
     identical tables of these nodes, and the nodes are referenced by 'tokens'

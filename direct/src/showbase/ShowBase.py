@@ -71,6 +71,10 @@ class ShowBase(DirectObject.DirectObject):
 
         self.wantStats = self.config.GetBool('want-pstats', 0)
 
+        self.clientSleep = self.config.GetFloat('client-sleep', 0.)
+        # magic-word override
+        self.mwClientSleep = 0.
+
         # Fill this in with a function to invoke when the user "exits"
         # the program by closing the main window.
         self.exitFunc = None
@@ -1106,6 +1110,12 @@ class ShowBase(DirectObject.DirectObject):
             # minimized, not just the main window.  But it will do for
             # now until someone complains.
             time.sleep(0.1)
+        else:
+            # magic word overrides config
+            if self.mwClientSleep:
+                time.sleep(self.mwClientSleep)
+            elif self.clientSleep:
+                time.sleep(self.clientSleep)
 
         # Lerp stuff needs this event, and it must be generated in
         # C++, not in Python.
