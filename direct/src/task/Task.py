@@ -279,6 +279,7 @@ class DoLaterList(list):
             else:
                 lo = mid+1
         list.insert(self, lo, task)
+        return lo
 
 class TaskManager:
 
@@ -381,7 +382,7 @@ class TaskManager:
         task.setStartTimeFrame(currentTime, self.currentFrame)
         # Cache the time we should wake up for easier sorting
         task.wakeTime = task.starttime + task.delayTime
-        self.doLaterList.add(task)
+        index = self.doLaterList.add(task)
         if self.fVerbose:
             # Alert the world, a new task is born!
             messenger.send('TaskManager-spawnDoLater',
