@@ -19,13 +19,12 @@
 #ifndef EGGNURBSSURFACE_H
 #define EGGNURBSSURFACE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggSurface.h"
 #include "eggNurbsCurve.h"
-
-#include <vector_double.h>
-
+#include "nurbsSurfaceEvaluator.h"
+#include "vector_double.h"
 #include "plist.h"
 
 ////////////////////////////////////////////////////////////////////
