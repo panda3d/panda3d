@@ -28,9 +28,9 @@ class DistributedObject(PandaObject):
             # it needs to be optimized in this way.
             self.setCacheable(0)
 
-            # This flag tells whether the object can be deleted right away,
+            # This count tells whether the object can be deleted right away,
             # or not.
-            self.delayDeleteFlag = 0
+            self.delayDeleteCount = 0
             # This flag tells whether a delete has been requested on this
             # object.
             self.deleteImminent = 0
@@ -61,28 +61,36 @@ class DistributedObject(PandaObject):
         return self.cacheable
 
     def deleteOrDelay(self):
-        if self.delayDeleteFlag:
+        if self.delayDeleteCount > 0:
             self.deleteImminent = 1
         else:
             self.disableAnnounceAndDelete()
         return None
 
     def delayDelete(self, flag):
-        if self.delayDeleteFlag:
-            if flag:
-                self.notify.warning("Object: " + str(self.getDoId()) +
-                                    " is already in delayDelete mode")
-            else:
-                self.delayDeleteFlag = 0
-                if self.deleteImminent:
-                    self.disableAnnounceAndDelete()
+        # Flag should be 0 or 1, meaning increment or decrement count
+        if (flag == 1):
+            self.delayDeleteCount += 1
+        elif (flag == 0):
+            self.delayDeleteCount -= 1
         else:
-            if flag:
-                self.delayDeleteFlag = 1
-            else:
-                self.notify.warning("Object: " + str(self.getDoId()) +
-                                    " is not in delayDelete mode")
-        return None
+            self.notify.error("Invalid flag passed to delayDelete: " + str(flag))
+
+        if (self.delayDeleteCount < 0):
+            self.notify.error("Somebody decremented delayDelete for doId %s without incrementing"
+                              % (self.doId))
+        elif (self.delayDeleteCount == 0):
+            self.notify.debug("delayDeleteCount for doId %s now 0" % (self.doId))
+            if self.deleteImminent:
+                self.notify.debug("delayDeleteCount for doId %s -- deleteImminent"
+                                  % (self.doId))
+                self.disableAnnounceAndDelete()
+        else:
+            self.notify.debug("delayDeleteCount for doId %s now %s"
+                              % (self.doId, self.delayDeleteCount))
+
+        # Return the count just for kicks
+        return self.delayDeleteCount
 
     def disableAnnounceAndDelete(self):
         self.disableAndAnnounce()
