@@ -31,8 +31,8 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : PGEntry
 // Description : This is a particular kind of PGItem that handles
-//               simple one-line text entries, of the sort where the
-//               user can type any string.
+//               simple one-line or short multi-line text entries, of
+//               the sort where the user can type any string.
 //
 //               A PGEntry does all of its internal manipulation on a
 //               wide string, so it can store the full Unicode
