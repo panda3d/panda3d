@@ -54,7 +54,8 @@ class ClientDistUpdate:
         # Get the arguments into a list
         args = self.extractArgs(di)
         # Apply the function to the object with the arguments
-        apply(self.func, [do] + args)
+        if self.func != None:
+            apply(self.func, [do] + args)
         return None
 
     def extractArgs(self, di):
