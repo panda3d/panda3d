@@ -329,7 +329,7 @@ sub CTCvsIHave {
     local( $serve ) = &CTCvsServerLine( $_[0], $_[2] ) ;
     local( $ok ) = &CTCvsLogin( $serve ) ;
     if ( $ok ) {
-	$line = $line . "cvs -n -d " . $serve . " update" ;
+	$line = $line . "cvs -n -d " . $serve . " update 2>/dev/null" ;
 	local( $hold ) = "";
 	local( *OUTPUT ) ;
 	open( OUTPUT, $line . " |" ) ;
