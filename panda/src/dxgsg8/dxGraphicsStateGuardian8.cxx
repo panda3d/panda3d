@@ -2634,8 +2634,8 @@ draw_triangles(qpGeomTriangles *primitive) {
      primitive->get_num_primitives(), 
      primitive->get_vertices(),
      D3DFMT_INDEX16,
-     vertex_data->get_array_data(0), 
-     vertex_data->get_format()->get_array_format(0)->get_stride());
+     _vertex_data->get_array_data(0), 
+     _vertex_data->get_format()->get_array(0)->get_stride());
 
   TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nPrims,0);
 }
