@@ -10,3 +10,14 @@
   #define UNPAL_SOURCES \
     camera.egg
 #end install_egg
+
+#begin install_egg
+  #define SOURCES \
+    gridBack.egg objectHandles.egg sphere.egg smiley.egg
+#end install_egg
+
+#begin install_egg
+  #define SOURCES \
+    fade.egg iris.egg
+  #define PHASE 3
+#end install_egg
