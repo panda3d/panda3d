@@ -67,6 +67,7 @@ public:
   virtual ~RenderEffect();
 
   virtual bool safe_to_transform() const;
+  virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
   virtual bool safe_to_combine() const;
   virtual CPT(RenderEffect) xform(const LMatrix4f &mat) const;
 

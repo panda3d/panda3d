@@ -62,6 +62,22 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BillboardEffect::prepare_flatten_transform
+//       Access: Public, Virtual
+//  Description: Preprocesses the accumulated transform that is about
+//               to be applied to (or through) this node due to a
+//               flatten operation.  The returned value will be used
+//               instead.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) BillboardEffect::
+prepare_flatten_transform(const TransformState *net_transform) const {
+  // We don't want any flatten operation to rotate the billboarded
+  // node, since the billboard effect should eat any rotation that
+  // comes in from above.
+  return net_transform->set_hpr(LVecBase3f(0, 0, 0));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BillboardEffect::output
 //       Access: Public, Virtual
 //  Description: 

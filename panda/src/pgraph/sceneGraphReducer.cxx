@@ -114,6 +114,7 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
         << "Node " << *node
         << " contains a non-transformable effect; leaving transform here.\n";
     }
+    next_attribs._transform = effects->prepare_flatten_transform(next_attribs._transform);
     apply_types |= TT_transform;
   }
   if (!node->safe_to_transform()) {

@@ -110,6 +110,26 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::prepare_flatten_transform
+//       Access: Public, Virtual
+//  Description: Preprocesses the accumulated transform that is about
+//               to be applied to (or through) this node due to a
+//               flatten operation.  The returned value will be used
+//               instead.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) RenderEffects::
+prepare_flatten_transform(const TransformState *net_transform) const {
+  CPT(TransformState) result = net_transform;
+  Effects::const_iterator ai;
+  for (ai = _effects.begin(); ai != _effects.end(); ++ai) {
+    const Effect &effect = (*ai);
+    result = effect._effect->prepare_flatten_transform(result);
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::safe_to_combine
 //       Access: Public
 //  Description: Returns true if all of the effects in this set can
