@@ -561,7 +561,7 @@ class SelectionRay(SelectionQueue):
         self.collider.setDirection( dir )
         self.ct.traverse( targetNodePath )
         self.sortEntries()
-
+        
     def pickGeom3D(self, targetNodePath = render,
                    origin = Point3(0), dir = Vec3(0,0,-1),
                    skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
@@ -622,4 +622,62 @@ class SelectionSegment(SelectionQueue):
         self.ct.traverse( targetNodePath )
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
+
+
+class SelectionSphere(SelectionQueue):
+    # Wrapper around collision sphere
+    def __init__(self, parentNP = render, numSpheres = 1):
+        # Initialize the superclass
+        SelectionQueue.__init__(self, parentNP)
+        self.colliders = []
+        self.numColliders = 0
+        for i in range(numSpheres):
+            self.addCollider(CollisionSphere(Point3(0), 1))
+        
+    def addCollider(self, collider):
+        # Record new collision object
+        self.colliders.append(collider)
+        # Add the collider to the collision Node
+        self.collisionNode.addSolid( collider )
+        self.numColliders += 1
+    
+    def setCenter(self, i, center):
+        c = self.colliders[i]
+        c.setCenter(center)
+    
+    def setRadius(self, i, radius):
+        c = self.colliders[i]
+        c.setRadius(radius)
+    
+    def setCenterRadius(self, i, center, radius):
+        c = self.colliders[i]
+        c.setCenter(center)
+        c.setRadius(radius)
+    
+    def isEntryBackfacing(self, entry):
+        # If dot product of collision point surface normal and
+        # ray from sphere origin to collision point is positive, we are
+        # looking at the backface of the polygon
+        v = Vec3(entry.getFromIntersectionPoint() -
+                 entry.getFrom().getCenter())
+        n = entry.getFromSurfaceNormal()
+        # Normalize and check angle between to vectors
+        v.normalize()
+        return v.dot(n) >= 0
+
+    def pick(self, targetNodePath, skipFlags):
+        self.ct.traverse( targetNodePath )
+        self.sortEntries()
+        return self.findCollisionEntry(skipFlags)
+
+    def pickGeom(self, targetNodePath = render,
+                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+        self.collideWithGeom()
+        return self.pick(targetNodePath, skipFlags)
+    
+    def pickBitMask(self, bitMask = BitMask32.allOff(),
+                    targetNodePath = render,
+                    skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+        self.collideWithBitMask(bitMask)
+        return self.pick(targetNodePath, skipFlags)
 
