@@ -30,6 +30,7 @@ class glxGraphicsWindow;
 // A simple hack so interrogate can parse this file.
 typedef int Display;
 typedef int Window;
+typedef int XErrorEvent;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -50,14 +51,28 @@ public:
   INLINE int get_screen() const;
   INLINE Window get_root() const;
 
+  INLINE Atom get_wm_delete_window() const;
+
 protected:
   virtual PT(GraphicsWindow) make_window();
 
 private:
+  static void install_error_handlers();
+  static int error_handler(Display *display, XErrorEvent *error);
+  static int io_error_handler(Display *display);
+
   Display *_display;
   int _screen;
   Window _root;
 
+  Atom _wm_protocols;
+  Atom _wm_delete_window;
+
+  typedef int ErrorHandlerFunc(Display *, XErrorEvent *);
+  typedef int IOErrorHandlerFunc(Display *);
+  static bool _error_handlers_installed;
+  static ErrorHandlerFunc *_prev_error_handler;
+  static IOErrorHandlerFunc *_prev_io_error_handler;
 
 public:
   static TypeHandle get_class_type() {

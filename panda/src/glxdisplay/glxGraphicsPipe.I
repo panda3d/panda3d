@@ -48,3 +48,14 @@ INLINE Window glxGraphicsPipe::
 get_root() const {
   return _root;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::get_wm_delete_window
+//       Access: Public
+//  Description: Returns the X atom that represents WM_DELETE_WINDOW
+//               to the current display.
+////////////////////////////////////////////////////////////////////
+INLINE Atom glxGraphicsPipe::
+get_wm_delete_window() const {
+  return _wm_delete_window;
+}

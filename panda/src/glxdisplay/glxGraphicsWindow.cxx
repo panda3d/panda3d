@@ -50,6 +50,7 @@ glxGraphicsWindow(GraphicsPipe *pipe) :
   _context = (GLXContext)0;
   _visual = (XVisualInfo *)NULL;
   _awaiting_configure = false;
+  _wm_delete_window = glx_pipe->get_wm_delete_window();
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
@@ -182,7 +183,7 @@ process_events() {
   }
 
   XEvent event;
-  while (XCheckWindowEvent(_display, _xwindow, _event_mask, &event)) {
+  while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
     WindowProperties properties;
     ButtonHandle button;
 
@@ -268,12 +269,30 @@ process_events() {
       system_changed_properties(properties);
       break;
 
+    case ClientMessage:
+      if (event.xclient.data.l[0] == _wm_delete_window) {
+        // This is a message from the window manager indicating that
+        // the user has requested to close the window.  Honor the
+        // request.
+        // TODO: don't call release_gsg() in the window thread.
+        release_gsg();
+        close_window();
+        properties.set_open(false);
+        system_changed_properties(properties);
+      }
+      break;
+
     case DestroyNotify:
-      cerr << "destroy\n";
+      // Apparently, we never get a DestroyNotify on a toplevel
+      // window.  Instead, we rely on hints from the window manager
+      // (see above).
+      glxdisplay_cat.info()
+        << "DestroyNotify\n";
       break;
 
     default:
-      cerr << "unhandled X event type " << event.type << "\n";
+      glxdisplay_cat.error()
+        << "unhandled X event type " << event.type << "\n";
     }
   }
 }
@@ -392,7 +411,7 @@ open_window() {
   }
   setup_colormap();
 
-  _event_mask = 
+  _event_mask =
     ButtonPressMask | ButtonReleaseMask |
     KeyPressMask | KeyReleaseMask |
     EnterWindowMask | LeaveWindowMask |
@@ -406,7 +425,6 @@ open_window() {
   wa.border_pixel = 0;
   wa.colormap = _colormap;
   wa.event_mask = _event_mask;
-  wa.do_not_propagate_mask = 0;
 
   unsigned long attrib_mask = 
     CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
@@ -452,7 +470,8 @@ set_wm_properties(const WindowProperties &properties) {
     }
   }
 
-  // Setup size hints
+  // The size hints request a window of a particular size and/or a
+  // particular placement onscreen.
   XSizeHints *size_hints_p = NULL;
   if (properties.has_origin() || properties.has_size()) {
     size_hints_p = XAllocSizeHints();
@@ -470,7 +489,8 @@ set_wm_properties(const WindowProperties &properties) {
     }
   }
 
-  // Setup window manager hints
+  // The window manager hints include requests to the window manager
+  // other than those specific to window geometry.
   XWMHints *wm_hints_p = NULL;
   wm_hints_p = XAllocWMHints();
   if (wm_hints_p != (XWMHints *)NULL) {
@@ -505,6 +525,17 @@ set_wm_properties(const WindowProperties &properties) {
   if (class_hints_p != (XClassHint *)NULL) {
     XFree(class_hints_p);
   }
+
+  // Also, indicate to the window manager that we'd like to get a
+  // chance to close our windows cleanly, rather than being rudely
+  // disconnected from the X server if the user requests a window
+  // close.
+  Atom protocols[] = {
+    _wm_delete_window,
+  };
+
+  XSetWMProtocols(_display, _xwindow, protocols, 
+                  sizeof(protocols) / sizeof(Atom));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1146,4 +1177,20 @@ get_button(XKeyEvent *key_event) {
   }
 
   return ButtonHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::check_event
+//       Access: Private, Static
+//  Description: This function is used as a predicate to
+//               XCheckIfEvent() to determine if the indicated queued
+//               X event is relevant and should be returned to this
+//               window.
+////////////////////////////////////////////////////////////////////
+Bool glxGraphicsWindow::
+check_event(Display *display, XEvent *event, char *arg) {
+  const glxGraphicsWindow *self = (glxGraphicsWindow *)arg;
+
+  // We accept any event that is sent to our window.
+  return (event->xany.window == self->_xwindow);
 }

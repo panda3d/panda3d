@@ -62,6 +62,8 @@ private:
   void setup_colormap();
   ButtonHandle get_button(XKeyEvent *key_event);
 
+  static Bool check_event(Display *display, XEvent *event, char *arg);
+
 private:
   Display *_display;
   int _screen;
@@ -71,6 +73,7 @@ private:
   Colormap _colormap;
   long _event_mask;
   bool _awaiting_configure;
+  Atom _wm_delete_window;
 
 
 public:

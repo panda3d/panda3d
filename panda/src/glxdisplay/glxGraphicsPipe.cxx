@@ -25,6 +25,10 @@
 
 TypeHandle glxGraphicsPipe::_type_handle;
 
+bool glxGraphicsPipe::_error_handlers_installed = false;
+glxGraphicsPipe::ErrorHandlerFunc *glxGraphicsPipe::_prev_error_handler;
+glxGraphicsPipe::IOErrorHandlerFunc *glxGraphicsPipe::_prev_io_error_handler;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsPipe::Constructor
 //       Access: Public
@@ -46,6 +50,8 @@ glxGraphicsPipe(const string &display) {
   _screen = 0;
   _root = (Window)NULL;
 
+  install_error_handlers();
+
   _display = XOpenDisplay(display_spec.c_str());
   if (!_display) {
     glxdisplay_cat.error()
@@ -66,6 +72,9 @@ glxGraphicsPipe(const string &display) {
   _display_width = DisplayWidth(_display, _screen);
   _display_height = DisplayHeight(_display, _screen);
   _is_valid = true;
+
+  // Get the X atom number.
+  _wm_delete_window = XInternAtom(_display, "WM_DELETE_WINDOW", false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,4 +128,63 @@ make_window() {
   }
 
   return new glxGraphicsWindow(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::install_error_handlers
+//       Access: Private, Static
+//  Description: Installs new Xlib error handler functions if this is
+//               the first time this function has been called.  These
+//               error handler functions will attempt to reduce Xlib's
+//               annoying tendency to shut down the client at the
+//               first error.  Unfortunately, it is difficult to play
+//               nice with the client if it has already installed its
+//               own error handlers.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsPipe::
+install_error_handlers() {
+  if (_error_handlers_installed) {
+    return;
+  }
+
+  _prev_error_handler = (ErrorHandlerFunc *)XSetErrorHandler(error_handler);
+  _prev_io_error_handler = (IOErrorHandlerFunc *)XSetIOErrorHandler(io_error_handler);
+  _error_handlers_installed = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::error_handler
+//       Access: Private, Static
+//  Description: This function is installed as the error handler for a
+//               non-fatal Xlib error.
+////////////////////////////////////////////////////////////////////
+int glxGraphicsPipe::
+error_handler(Display *display, XErrorEvent *error) {
+  static const int msg_len = 80;
+  char msg[msg_len];
+  XGetErrorText(display, error->error_code, msg, msg_len);
+  glxdisplay_cat.error()
+    << msg << "\n";
+
+  // We return to allow the application to continue running, unlike
+  // the default X error handler which exits.
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::io_error_handler
+//       Access: Private, Static
+//  Description: This function is installed as the error handler for a
+//               fatal Xlib error.
+////////////////////////////////////////////////////////////////////
+int glxGraphicsPipe::
+io_error_handler(Display *display) {
+  glxdisplay_cat.fatal()
+    << "X fatal error on display " << (void *)display << "\n";
+
+  // Unfortunately, we can't continue from this function, even if we
+  // promise never to use X again.  We're supposed to terminate
+  // without returning, and if we do return, the caller will exit
+  // anyway.  Sigh.  Very poor design on X's part.
+  return 0;
 }
