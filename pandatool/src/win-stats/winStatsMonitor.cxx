@@ -130,8 +130,6 @@ got_bad_version(int client_major, int client_minor,
 ////////////////////////////////////////////////////////////////////
 void WinStatsMonitor::
 new_collector(int collector_index) {
-  cerr << "Got new collector " << get_collector_name(collector_index)
-       << "\n";
   Graphs::iterator gi;
   for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
     WinStatsGraph *graph = (*gi);

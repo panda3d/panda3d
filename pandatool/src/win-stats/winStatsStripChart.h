@@ -41,6 +41,8 @@ public:
 
   virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
+  virtual void force_redraw();
+  virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
 protected:
   virtual void update_labels();

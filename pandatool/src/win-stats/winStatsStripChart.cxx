@@ -41,9 +41,8 @@ WinStatsStripChart(WinStatsMonitor *monitor, PStatView &view,
   cerr << "Constructing strip chart " << (void *)this << "\n";
   _brush_origin = 0;
 
-  setup_bitmap(get_xsize(), get_ysize());
-  clear_region();
   create_window();
+  clear_region();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,6 +85,27 @@ new_collector(int collector_index) {
 void WinStatsStripChart::
 new_data(int thread_index, int frame_number) {
   update();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::force_redraw
+//       Access: Public, Virtual
+//  Description: Called when it is necessary to redraw the entire graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+force_redraw() {
+  PStatStripChart::force_redraw();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::changed_graph_size
+//       Access: Public, Virtual
+//  Description: Called when the user has resized the window, forcing
+//               a resize of the graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+changed_graph_size(int graph_xsize, int graph_ysize) {
+  PStatStripChart::changed_size(graph_xsize, graph_ysize);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,10 +155,9 @@ copy_region(int start_x, int end_x, int dest_x) {
   SetBrushOrgEx(_bitmap_dc, _brush_origin, 0, NULL);
 
   RECT rect = { 
-    _left_margin + dest_x, _top_margin, 
-    _left_margin + dest_x + end_x - start_x, _top_margin + get_ysize() 
+    dest_x, 0, dest_x + end_x - start_x, get_ysize() 
   };
-  InvalidateRect(_window, &rect, FALSE);
+  InvalidateRect(_graph_window, &rect, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,10 +235,9 @@ draw_cursor(int x) {
 void WinStatsStripChart::
 end_draw(int from_x, int to_x) {
   RECT rect = { 
-    _left_margin + from_x, _top_margin, 
-    _left_margin + to_x, _top_margin + get_ysize() 
+    from_x, 0, to_x, get_ysize() 
   };
-  InvalidateRect(_window, &rect, FALSE);
+  InvalidateRect(_graph_window, &rect, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -320,37 +338,13 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 LONG WinStatsStripChart::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
-  case WM_DESTROY:
-    close();
-    break;
-
-  case WM_DISPLAYCHANGE:
-    setup_bitmap(get_xsize(), get_ysize());
-    force_redraw();
-    break;
-
   case WM_SIZE:
-    changed_size(LOWORD(lparam) - (_left_margin + _right_margin),
-                 HIWORD(lparam) - (_top_margin + _bottom_margin));
-    setup_bitmap(get_xsize(), get_ysize());
-    force_redraw();
-    move_label_stack();
     InvalidateRect(hwnd, NULL, FALSE);
     break;
-
-  case WM_PAINT:
-    {
-      // Repaint the graph by copying the backing pixmap in.
-      PAINTSTRUCT ps;
-      HDC hdc = BeginPaint(hwnd, &ps);
-      draw_graph(hdc);
-      EndPaint(hwnd, &ps);
-      return 0;
-    }
 
   default:
     break;
   }
 
-  return DefWindowProc(hwnd, msg, wparam, lparam);
+  return WinStatsGraph::window_proc(hwnd, msg, wparam, lparam);
 }

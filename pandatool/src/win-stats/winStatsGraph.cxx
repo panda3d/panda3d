@@ -20,6 +20,9 @@
 #include "winStatsMonitor.h"
 #include "winStatsLabelStack.h"
 
+bool WinStatsGraph::_graph_window_class_registered = false;
+const char * const WinStatsGraph::_graph_window_class_name = "graph";
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::Constructor
 //       Access: Public
@@ -30,6 +33,7 @@ WinStatsGraph(WinStatsMonitor *monitor) :
   _monitor(monitor)
 {
   _window = 0;
+  _graph_window = 0;
   _bitmap = 0;
   _bitmap_dc = 0;
   _bitmap_xsize = 0;
@@ -54,6 +58,11 @@ WinStatsGraph::
   for (bi = _brushes.begin(); bi != _brushes.end(); ++bi) {
     HBRUSH brush = (*bi).second;
     DeleteObject(brush);
+  }
+
+  if (_graph_window) {
+    DestroyWindow(_graph_window);
+    _graph_window = 0;
   }
 
   if (_window) {
@@ -82,6 +91,25 @@ new_data(int thread_index, int frame_number) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::force_redraw
+//       Access: Public, Virtual
+//  Description: Called when it is necessary to redraw the entire graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+force_redraw() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::changed_graph_size
+//       Access: Public, Virtual
+//  Description: Called when the user has resized the window, forcing
+//               a resize of the graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+changed_graph_size(int graph_xsize, int graph_ysize) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::close
 //       Access: Protected
 //  Description: Should be called when the user closes the associated
@@ -97,47 +125,6 @@ close() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::setup_bitmap
-//       Access: Protected
-//  Description: Sets up a backing-store bitmap of the indicated size.
-////////////////////////////////////////////////////////////////////
-void WinStatsGraph::
-setup_bitmap(int xsize, int ysize) {
-  release_bitmap();
-  _bitmap_xsize = max(xsize, 0);
-  _bitmap_ysize = max(ysize, 0);
-
-  _frame_rect.left = _left_margin;
-  _frame_rect.top = _top_margin;
-  _frame_rect.right = _left_margin + _bitmap_xsize;
-  _frame_rect.bottom = _bottom_margin + _bitmap_ysize;
-
-  HDC hdc = GetDC(_window);
-  _bitmap_dc = CreateCompatibleDC(hdc);
-  _bitmap = CreateCompatibleBitmap(hdc, _bitmap_xsize, _bitmap_ysize);
-  SelectObject(_bitmap_dc, _bitmap);
-  ReleaseDC(_window, hdc);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::release_bitmap
-//       Access: Protected
-//  Description: Frees the backing-store bitmap created by
-//               setup_bitmap().
-////////////////////////////////////////////////////////////////////
-void WinStatsGraph::
-release_bitmap() {
-  if (_bitmap) {
-    DeleteObject(_bitmap);
-    _bitmap = 0;
-  }
-  if (_bitmap_dc) {
-    DeleteDC(_bitmap_dc);
-    _bitmap_dc = 0;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::setup_label_stack
 //       Access: Protected
 //  Description: Sets up the label stack on the left edge of the
@@ -145,7 +132,8 @@ release_bitmap() {
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
 setup_label_stack() {
-  _label_stack.setup(_window, 8, 8, _left_margin - 16, _top_margin + _bitmap_ysize + _bottom_margin - 16);
+  _label_stack.setup(_window);
+  move_label_stack();
   /*
   if (_label_stack()->get_ideal_width() > _label_stack->get_width()) {
     _left_margin = _label_stack->get_ideal_width() + 16;
@@ -162,7 +150,17 @@ setup_label_stack() {
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
 move_label_stack() {
-  _label_stack.set_pos(8, 8, _left_margin - 16, _top_margin + _bitmap_ysize + _bottom_margin - 16);
+  if (_label_stack.is_setup()) {
+    RECT rect;
+    GetClientRect(_window, &rect);
+    
+    rect.left += 8;
+    rect.right = _left_margin - 8;
+    rect.bottom -= _bottom_margin;
+    
+    _label_stack.set_pos(rect.left, rect.top, 
+                         rect.right - rect.left, rect.bottom - rect.top);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,48 +189,227 @@ get_collector_brush(int collector_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::draw_graph
+//     Function: WinStatsGraph::window_proc
 //       Access: Protected
-//  Description: Draws the graph into the window by blitting the
-//               backing-store bitmap in, along with a suitable frame.
+//  Description: This window_proc should be called up to by the
+//               derived classes for any messages that are not
+//               specifically handled by the derived class.
+////////////////////////////////////////////////////////////////////
+LONG WinStatsGraph::
+window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  switch (msg) {
+  case WM_DESTROY:
+    close();
+    break;
+
+  case WM_PAINT:
+    {
+      PAINTSTRUCT ps;
+      HDC hdc = BeginPaint(hwnd, &ps);
+
+      // First, draw a frame around the graph.
+      RECT rect;
+      GetClientRect(hwnd, &rect);
+
+      rect.left += _left_margin;
+      rect.top += _top_margin;
+      rect.right -= _right_margin;
+      rect.bottom -= _bottom_margin;
+
+      if (rect.right > rect.left && rect.bottom > rect.top) {
+        DrawEdge(hdc, &rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
+
+        int graph_xsize = rect.right - rect.left;
+        int graph_ysize = rect.bottom - rect.top;
+        if (_bitmap_dc == 0 ||
+            graph_xsize != _bitmap_xsize ||
+            graph_ysize != _bitmap_ysize) {
+          // Oops, we need to change the bitmap (and graph) size.
+          changed_graph_size(graph_xsize, graph_ysize);
+          move_graph_window(rect.left, rect.top, graph_xsize, graph_ysize);
+          move_label_stack();
+          force_redraw();
+        }
+      }
+
+      EndPaint(hwnd, &ps);
+      return 0;
+    }
+
+  default:
+    break;
+  }
+
+  return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::setup_bitmap
+//       Access: Private
+//  Description: Sets up a backing-store bitmap of the indicated size.
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
-draw_graph(HDC hdc) {
-  if (_bitmap_xsize == 0 || _bitmap_ysize == 0) {
-    // Never mind: nothing to draw.
+setup_bitmap(int xsize, int ysize) {
+  release_bitmap();
+  _bitmap_xsize = max(xsize, 0);
+  _bitmap_ysize = max(ysize, 0);
+
+  HDC hdc = GetDC(_graph_window);
+  _bitmap_dc = CreateCompatibleDC(hdc);
+  _bitmap = CreateCompatibleBitmap(hdc, _bitmap_xsize, _bitmap_ysize);
+  SelectObject(_bitmap_dc, _bitmap);
+  ReleaseDC(_window, hdc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::release_bitmap
+//       Access: Private
+//  Description: Frees the backing-store bitmap created by
+//               setup_bitmap().
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+release_bitmap() {
+  if (_bitmap) {
+    DeleteObject(_bitmap);
+    _bitmap = 0;
+  }
+  if (_bitmap_dc) {
+    DeleteDC(_bitmap_dc);
+    _bitmap_dc = 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::move_graph_window
+//       Access: Private
+//  Description: Repositions the graph child window within the parent
+//               window according to the _margin variables.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysize) {
+  if (_graph_window == 0) {
+    create_graph_window();
+  }
+
+  SetWindowPos(_graph_window, 0, 
+               graph_left, graph_top,
+               graph_xsize, graph_ysize,
+               SWP_NOZORDER | SWP_SHOWWINDOW);
+
+  if (graph_xsize != _bitmap_xsize || graph_ysize != _bitmap_ysize) {
+    setup_bitmap(graph_xsize, graph_ysize);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::create_graph_window
+//       Access: Private
+//  Description: Creates the child window that actually holds the graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+create_graph_window() {
+  if (_graph_window) {
     return;
   }
 
-  // First, draw a frame around the graph.
+  HINSTANCE application = GetModuleHandle(NULL);
+  register_graph_window_class(application);
 
-  // Windows doesn't seem to have an API to ask how big the outer
-  // frame will be before we draw it, only a way to draw the outer
-  // frame and return the size of the inner frame afterwards.
+  string window_title = "graph";
+  DWORD window_style = WS_CHILD;
 
-  // So we have to make our best guess about the correct size of the
-  // outer frame before we draw it, then examine the size of the
-  // resulting inner frame.  If it didn't come out to the correct size
-  // (that is, exactly large enough to frame our graph), we expand the
-  // outer frame by the difference, and redraw it.
-
-  RECT rect = _frame_rect;
-  DrawEdge(hdc, &rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
-
-  if (rect.left != _left_margin ||
-      rect.top != _top_margin ||
-      rect.right != _left_margin + _bitmap_xsize ||
-      rect.bottom != _top_margin + _bitmap_ysize) {
-    _frame_rect.left = _left_margin - (rect.left - _frame_rect.left);
-    _frame_rect.top = _top_margin - (rect.top - _frame_rect.top);
-    _frame_rect.right = _left_margin + _bitmap_xsize + (_frame_rect.right - rect.right);
-    _frame_rect.bottom = _top_margin + _bitmap_ysize + (_frame_rect.bottom - rect.bottom);
-
-    DrawEdge(hdc, &_frame_rect, EDGE_SUNKEN, BF_RECT);
+  _graph_window = 
+    CreateWindow(_graph_window_class_name, window_title.c_str(), window_style,
+                 0, 0, 0, 0,
+                 _window, NULL, application, 0);
+  if (!_graph_window) {
+    nout << "Could not create graph window!\n";
+    exit(1);
   }
 
-  // Now fill in the graph.
-  BitBlt(hdc, _left_margin, _top_margin, 
-         _bitmap_xsize, _bitmap_ysize,
-         _bitmap_dc, 0, 0,
-         SRCCOPY);
+  SetWindowLongPtr(_graph_window, 0, (LONG_PTR)this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::register_graph_window_class
+//       Access: Private, Static
+//  Description: Registers the window class for the stripChart window, if
+//               it has not already been registered.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+register_graph_window_class(HINSTANCE application) {
+  if (_graph_window_class_registered) {
+    return;
+  }
+
+  WNDCLASS wc;
+
+  ZeroMemory(&wc, sizeof(WNDCLASS));
+  wc.style = 0;
+  wc.lpfnWndProc = (WNDPROC)static_graph_window_proc;
+  wc.hInstance = application;
+  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+  wc.hbrBackground = NULL;
+  wc.lpszMenuName = NULL;
+  wc.lpszClassName = _graph_window_class_name;
+
+  // Reserve space to associate the this pointer with the window.
+  wc.cbWndExtra = sizeof(WinStatsGraph *);
+  
+  if (!RegisterClass(&wc)) {
+    nout << "Could not register graph window class!\n";
+    exit(1);
+  }
+
+  _graph_window_class_registered = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::static_graph_window_proc
+//       Access: Private, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LONG WINAPI WinStatsGraph::
+static_graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  WinStatsGraph *self = (WinStatsGraph *)GetWindowLongPtr(hwnd, 0);
+  if (self != (WinStatsGraph *)NULL && self->_graph_window == hwnd) {
+    return self->graph_window_proc(hwnd, msg, wparam, lparam);
+  } else {
+    return DefWindowProc(hwnd, msg, wparam, lparam);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::graph_window_proc
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LONG WinStatsGraph::
+graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  switch (msg) {
+  case WM_DISPLAYCHANGE:
+    setup_bitmap(_bitmap_xsize, _bitmap_ysize);
+    force_redraw();
+    break;
+
+  case WM_PAINT:
+    {
+      // Repaint the graph by copying the backing pixmap in.
+      PAINTSTRUCT ps;
+      HDC hdc = BeginPaint(hwnd, &ps);
+
+      BitBlt(hdc, 0, 0, 
+             _bitmap_xsize, _bitmap_ysize,
+             _bitmap_dc, 0, 0,
+             SRCCOPY);
+
+      EndPaint(hwnd, &ps);
+      return 0;
+    }
+
+  default:
+    break;
+  }
+
+  return DefWindowProc(hwnd, msg, wparam, lparam);
 }

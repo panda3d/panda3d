@@ -346,25 +346,27 @@ get_frame_data(int frame_number) {
 void PStatStripChart::
 changed_size(int xsize, int ysize) {
   if (xsize != _xsize || ysize != _ysize) {
-    _cursor_pixel = xsize * _cursor_pixel / _xsize;
     _xsize = xsize;
     _ysize = ysize;
+    if (_xsize > 0 && _ysize > 0) {
+      _cursor_pixel = xsize * _cursor_pixel / _xsize;
 
-    if (!_first_data) {
-      if (_scroll_mode) {
-        draw_pixels(0, _xsize);
+      if (!_first_data) {
+        if (_scroll_mode) {
+          draw_pixels(0, _xsize);
 
-      } else {
-        // Redraw the stats that were there before.
-        float old_start_time = _start_time;
+        } else {
+          // Redraw the stats that were there before.
+          float old_start_time = _start_time;
 
-        // Back up a bit to draw the stuff to the right of the cursor.
-        _start_time -= _time_width;
-        draw_pixels(_cursor_pixel, _xsize);
+          // Back up a bit to draw the stuff to the right of the cursor.
+          _start_time -= _time_width;
+          draw_pixels(_cursor_pixel, _xsize);
 
-        // Now draw the stuff to the left of the cursor.
-        _start_time = old_start_time;
-        draw_pixels(0, _cursor_pixel);
+          // Now draw the stuff to the left of the cursor.
+          _start_time = old_start_time;
+          draw_pixels(0, _cursor_pixel);
+        }
       }
     }
   }
