@@ -283,9 +283,11 @@ set_coordinate_system(CoordinateSystem new_coordsys) {
   if (new_coordsys != _coordsys &&
       (_coordsys != CS_default && _coordsys != CS_invalid)) {
     // Time to convert the data.
-    r_transform(LMatrix4d::convert_mat(_coordsys, new_coordsys),
-                LMatrix4d::convert_mat(new_coordsys, _coordsys),
-                new_coordsys);
+    LMatrix4d mat = LMatrix4d::convert_mat(_coordsys, new_coordsys);
+    LMatrix4d inv = LMatrix4d::convert_mat(new_coordsys, _coordsys);
+
+    r_transform(mat, inv, new_coordsys);
+    r_transform_vertices(mat);
 
     // Now we have to update the under_flags to ensure that all the
     // cached relative matrices are correct.
