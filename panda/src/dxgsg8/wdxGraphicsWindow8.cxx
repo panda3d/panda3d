@@ -656,10 +656,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 //
 //               Sets _depth_buffer_bpp appropriately.
 ////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow8::
+bool wdxGraphicsWindow8::
 create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer) {
   wdxGraphicsPipe8 *dxpipe;
-  DCAST_INTO_V(dxpipe, _pipe);
+  DCAST_INTO_R(dxpipe, _pipe, false);
 
   // only want dx_pick_best_screenres to apply to initial startup, and 
   // since the initial res has already been picked, dont use auto-res-select in any future init sequence.
@@ -725,7 +725,8 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
                                            is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level));
     if (FAILED(hr)) {
       wdxdisplay8_cat.fatal() << "device #"<<Display.CardIDNum<< " doesnt support multisample level "<<dx_multisample_antialiasing_level <<"surface fmt "<< D3DFormatStr(Display.DisplayMode.Format) <<endl;
-      exit(1);
+      //exit(1);
+      return false;
     }
 
     if (Display.PresParams.EnableAutoDepthStencil) {
@@ -733,7 +734,8 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
                                              is_fullscreen(), D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level));
       if (FAILED(hr)) {
         wdxdisplay8_cat.fatal() << "device #"<<Display.CardIDNum<< " doesnt support multisample level "<<dx_multisample_antialiasing_level <<"surface fmt "<< D3DFormatStr(Display.PresParams.AutoDepthStencilFormat) <<endl;
-        exit(1);
+        //exit(1);
+        return false;
       }
     }
 
@@ -797,6 +799,8 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
       if (hr == D3DERR_OUTOFVIDEOMEMORY)
         goto Fallback_to_16bpp_buffers;
+      else
+        return false;
     }
 
     SetRect(&view_rect, 0, 0, dwRenderWidth, dwRenderHeight);
@@ -804,22 +808,26 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   else {          // CREATE WINDOWED BUFFERS
 
+    /* not necessary anymore...all cards can do this now a days
     if (!(pD3DCaps->Caps2 & D3DCAPS2_CANRENDERWINDOWED)) {
       wdxdisplay8_cat.fatal() << "the 3D HW cannot render windowed, exiting..." << endl;
       exit(1);
     }
+    */
 
     D3DDISPLAYMODE dispmode;
     hr = Display.pD3D8->GetAdapterDisplayMode(Display.CardIDNum, &dispmode);
 
     if (FAILED(hr)) {
       wdxdisplay8_cat.fatal() << "GetAdapterDisplayMode failed" << D3DERRORSTRING(hr);
-      exit(1);
+      //exit(1);
+      return false;
     }
 
     if (dispmode.Format == D3DFMT_P8) {
       wdxdisplay8_cat.fatal() << "Can't run windowed in an 8-bit or less display mode" << endl;
-      exit(1);
+      //exit(1);
+      return false;
     }
 
     pPresParams->FullScreen_PresentationInterval = 0;
@@ -841,7 +849,8 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     if (FAILED(hr)) {
       wdxdisplay8_cat.fatal() << "D3D CreateDevice failed for device #" << Display.CardIDNum << D3DERRORSTRING(hr);
-      exit(1);
+      //exit(1);
+      return false;
     }
   }  // end create windowed buffers
 
@@ -862,7 +871,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   init_resized_window();
 
-  return;
+  return true;
 
  Fallback_to_16bpp_buffers:
 
@@ -877,8 +886,8 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
         << "CreateDevice failed with out-of-vidmem, retrying w/16bpp buffers on device #"
         << Display.CardIDNum << endl;
     }
-    create_screen_buffers_and_device(Display, true);
-    return;
+    return create_screen_buffers_and_device(Display, true);
+    //return;
 
   } else if (!((dwRenderWidth==640)&&(dwRenderHeight==480))) {
     if (wdxdisplay8_cat.info())
@@ -886,13 +895,14 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
     // try final fallback to 640x480x16
     Display.DisplayMode.Width=640;
     Display.DisplayMode.Height=480;
-    create_screen_buffers_and_device(Display, true);
-    return;
+    return create_screen_buffers_and_device(Display, true);
+    //return;
 
   } else {
     wdxdisplay8_cat.fatal() 
       << "Can't create any screen buffers, bailing out.\n";
-    exit(1);
+    //exit(1);
+    return false;
   }
 }
 
@@ -1639,7 +1649,6 @@ init_resized_window() {
 
   //wdxdisplay8_cat.debug() << "wcontext = " << &_wcontext << " and device = " << _wcontext.pD3DDevice << "\n";
 
-#if 0
   // clear textures and VB's out of video&AGP mem, so cache is reset
   hr = _wcontext.pD3DDevice->ResourceManagerDiscardBytes(0);
   if (FAILED(hr)) {
@@ -1647,7 +1656,6 @@ init_resized_window() {
       << "ResourceManagerDiscardBytes failed for device #" 
       << _wcontext.CardIDNum << D3DERRORSTRING(hr);
   }
-#endif
 
   _dxgsg->set_context(&_wcontext); 
   // Note: dx_init will fill in additional fields in _wcontext, like supportedtexfmts
@@ -1770,12 +1778,10 @@ open_window(void) {
   // In that case just create an additional swapchain for this window
 
   if (dxgsg->get_pipe()->get_device() == NULL) {
+    wdxdisplay8_cat.debug() << "device is null \n";
 
-    if (wdxdisplay8_cat.is_debug()) {
-      wdxdisplay8_cat.debug() << "device is null \n";
-    }
-
-    create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
+    if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer))
+      return false;
     dxgsg->get_pipe()->make_device((void*)(&_wcontext));
     dxgsg->copy_pres_reset(&_wcontext);
     if (multiple_windows) {
@@ -1786,19 +1792,13 @@ open_window(void) {
   } else {
     // fill in the DXScreenData from dxdevice here and change the
     // reference to hWnd.
-    if (wdxdisplay8_cat.is_debug()) {
-      wdxdisplay8_cat.debug() << "device is not null\n";
-    }
+    wdxdisplay8_cat.debug() << "device is not null\n";
+
     dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
     props = get_properties();
 
-    wdxdisplay8_cat.debug() << "dxdev_pScrn = " << &dxdev->_Scrn << ", _pScrn_device = " << dxdev->_Scrn.pD3DDevice
-                            << ", dxdev_device = " << dxdev->_pD3DDevice << "\n";
-    wdxdisplay8_cat.debug() << "_wcontext = " << &_wcontext << ", device = " << _wcontext.pD3DDevice << "\n";
-
     memcpy(&_wcontext,&dxdev->_Scrn,sizeof(DXScreenData));
     _wcontext.hWnd = _hWnd;
-    //    _wcontext.pD3DDevice = dxdev->_pD3DDevice; // copy the current device
     _wcontext.PresParams.hDeviceWindow = _hWnd;
     _wcontext.PresParams.BackBufferWidth = props.get_x_size();
     _wcontext.PresParams.BackBufferHeight = props.get_y_size();
@@ -1807,8 +1807,6 @@ open_window(void) {
     //wdxdisplay8_cat.debug()<<"debug pSwapChain "<<_wcontext.pSwapChain<<"\n";
     dxgsg->create_swap_chain(&_wcontext);
     init_resized_window();
-
-    //wdxdisplay8_cat.debug() << "Current device is " << dxdev << "\n";
   }
   wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   return true;

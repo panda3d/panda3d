@@ -4864,13 +4864,9 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
   if(SUCCEEDED(hr)) {
      if(pPresParams!=&_pScrn->PresParams)
          memcpy(&_pScrn->PresParams,pPresParams,sizeof(D3DPRESENT_PARAMETERS));
-     if (pScrn) {
+     if (pScrn)
        *pScrn = _pScrn;
-       wdxdisplay8_cat.debug() << "_pScrn = " << _pScrn << ", _pScrn_device = " << _pScrn->pD3DDevice << "\n";
-     }
   }
-  else
-    while(1);
   return hr;
 }
 
