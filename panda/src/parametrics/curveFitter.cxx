@@ -169,7 +169,7 @@ sample(ParametricCurve *curve, int count, bool even) {
   }
 
   if (even) {
-    double scale = max_t / last_t;
+    double scale = max_t / d;
     while (n < _data.size()) {
       _data[n]._t *= scale;
       n++;
