@@ -55,14 +55,24 @@
   // $[lib_targets] will be the list of dynamic libraries,
   // $[static_lib_targets] the list of static libraries, and
   // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
-  // list of binaries that are to be built only when specifically asked
-  // for.
-  #define lib_targets $[patsubst %,$[ODIR]/lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
-  #define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[ODIR]/lib%$[dllext].lib]
+  // list of binaries that are to be built only when specifically asked for.
+
+  // #set requires pre-existing vars
+  #define lib_targets
+  #define static_lib_targets
+
+  #forscopes lib_target noinst_lib_target test_lib_target
+    // get_dllname() needs to be evaluated in its lib's scope, but we need to build a global list, so use #set
+    #set lib_targets $[patsubst %,$[ODIR]/$[get_dllname %].$[dlllib],$[active_target(metalib_target noinst_lib_target test_lib_target)] $[real_lib_targets]]
+    #set static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[ODIR]/$[get_dllname %].lib]
+  #end lib_target noinst_lib_target test_lib_target
+
   #define bin_targets \
       $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
       $[active_target(sed_bin_target):%=$[ODIR]/%]
   #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%.exe]
+
+  #defer test_lib_targets $[active_target(test_lib_target):%=$[if $[TEST_ODIR],$[TEST_ODIR],$[ODIR]]/%.$[dlllib]]
 
   // And these variables will define the various things we need to
   // install.
@@ -77,15 +87,15 @@
 
   // These are the various sources collected from all targets within the
   // directory.
-  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
-  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
-  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
-  #define dep_sources_1 $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
+  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define dep_sources_1  $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
 
   // These are the source files that our dependency cache file will
   // depend on.  If it's an empty list, we won't bother writing rules to
   // freshen the cache file.
-  #define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[dep_sources_1]]]
+  #define dep_sources $[sort $[filter %.c %.cxx %.cpp %.yxx %.lxx %.h %.I %.T,$[dep_sources_1]]]
 
 #endif  // $[build_directory]
 
@@ -107,8 +117,10 @@
 // tree) we should add to our -I list.  It's basically just one for
 // each directory named in the $[complete_local_libs], above, plus
 // whatever else the user might have explicitly named in
-// $[LOCAL_INCS].
-#defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%/])]
+// $[LOCAL_INCS].  LOCAL_INCS MUST be a ppremake src dir! (RELDIR only checks those)
+// To add an arbitrary extra include dir, define EXTRA_IPATH in the Sources.pp
+
+#defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%/])] $[EXTRA_IPATH]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
@@ -150,7 +162,7 @@
 // Similarly, we need to ensure that $[ODIR] exists.  Trying to make
 // the makefiles do this automatically just causes problems with
 // multiprocess builds.
-#mkdir $[ODIR]
+#mkdir $[ODIR] $[TEST_ODIR]
 
 // Pre-compiled headers are one way to speed the compilation of many
 // C++ source files that include similar headers, but it turns out a
@@ -198,7 +210,7 @@ MAKEFLAGS := -j$[NUMBER_OF_PROCESSORS]
 all : $[all_targets]
 
 // The 'test' rule makes all the test_bin_targets.
-test : $[test_bin_targets]
+test : $[test_bin_targets] $[test_lib_targets]
 
 clean : clean-igate
 #if $[st_sources]
@@ -343,7 +355,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
-  #define target $[ODIR]/lib$[TARGET]$[dllext].$[dlllib]
+  #define target $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
   #define mybasename $[basename $[notdir $[target]]]
@@ -358,14 +370,14 @@ $[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from 
  #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
 $[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
 $[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
-  #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+  #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++] $[VER_RESOURCE]
   #else
 $[TAB] $[SHARED_LIB_C] $[VER_RESOURCE]
   #endif
 #else
 .NOTPARALLEL $[target] : $[sources] $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
-  #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+  #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
   #else
 $[TAB] $[SHARED_LIB_C]
@@ -373,10 +385,10 @@ $[TAB] $[SHARED_LIB_C]
 #endif
 
 #if $[build_dlls]
-$[ODIR]/lib$[TARGET]$[dllext].lib : $[ODIR]/lib$[TARGET]$[dllext].dll
+$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].dll
 #endif
 #if $[build_pdbs]
-$[ODIR]/lib$[TARGET]$[dllext].pdb : $[ODIR]/lib$[TARGET]$[dllext].dll
+$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].dll
 #endif
 
 #endif
@@ -385,9 +397,9 @@ $[ODIR]/lib$[TARGET]$[dllext].pdb : $[ODIR]/lib$[TARGET]$[dllext].dll
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_it], \
-      $[if $[build_dlls],$[install_lib_dir]/lib$[TARGET]$[dllext].dll] \
-      $[install_lib_dir]/lib$[TARGET]$[dllext].lib \
-      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]/lib$[TARGET]$[dllext].pdb] \
+      $[if $[build_dlls],$[install_lib_dir]/$[get_dllname $[TARGET]].dll] \
+      $[install_lib_dir]/$[get_dllname $[TARGET]].lib \
+      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]/$[get_dllname $[TARGET]].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -403,20 +415,20 @@ $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
 #if $[build_dlls]
-$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[ODIR]/lib$[TARGET]$[dllext].dll
-#define local lib$[TARGET]$[dllext].dll
+$[install_lib_dir]/$[get_dllname $[TARGET]].dll : $[ODIR]/$[get_dllname $[TARGET]].dll
+#define local $[get_dllname $[TARGET]].dll
 #define dest $[install_lib_dir]
 $[TAB] cp -f $[ODIR]/$[local] $[dest]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[ODIR]/lib$[TARGET]$[dllext].lib
-#define local lib$[TARGET]$[dllext].lib
+$[install_lib_dir]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].lib
+#define local $[get_dllname $[TARGET]].lib
 #define dest $[install_lib_dir]
 $[TAB] cp -f $[ODIR]/$[local] $[dest]
 
 #if $[and $[build_dlls],$[build_pdbs]]
-$[install_lib_dir]/lib$[TARGET]$[dllext].pdb : $[ODIR]/lib$[TARGET]$[dllext].pdb
-#define local lib$[TARGET]$[dllext].pdb
+$[install_lib_dir]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].pdb
+#define local $[get_dllname $[TARGET]].pdb
 #define dest $[install_lib_dir]
 $[TAB] cp -f $[ODIR]/$[local] $[dest]
 #endif
@@ -470,8 +482,6 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 #end metalib_target lib_target
 
 
-
-
 /////////////////////////////////////////////////////////////////////
 // Now, the noninstalled dynamic libraries.  These are presumably used
 // only within this directory, or at the most within this tree, and
@@ -480,27 +490,72 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 // lot simpler.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes noinst_lib_target
+#forscopes noinst_lib_target test_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/lib$[TARGET]$[dllext].$[dlllib]
+#define target $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+#if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
 #else
-$[TAB] $[SHARED_LIB_C]
+$[TAB] $[SHARED_LIB_C] $[COMPILED_RESOURCES]
 #endif
 
 #if $[build_dlls]
-$[ODIR]/lib$[TARGET]$[dllext].lib : $[ODIR]/lib$[TARGET]$[dllext].dll
+$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].dll
 #endif
 #if $[build_pdbs]
-$[ODIR]/lib$[TARGET]$[dllext].pdb : $[ODIR]/lib$[TARGET]$[dllext].dll
+$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].dll
 #endif
 
-#end noinst_lib_target
+// this section is all very clunky and not generalized enough
+// assuming tgt dirs and such
 
+#define rc_to_gen $[filter %.rc, $[GENERATED_SOURCES]]
+#if $[rc_to_gen]
+$[rc_to_gen] : $[GENERATED_RC_DEPENDENCIES]
+$[TAB] $[RC_GENERATOR_RULE]
+
+$[ODIR]/$[RC_BASENAME].res : $[rc_to_gen]
+$[TAB] $[COMPILE_RC] /I"$[ODIR]" /Fo"$[ODIR]/$[RC_BASENAME].res" $[ODIR]/$[RC_BASENAME].rc
+#endif
+
+#define inf_to_gen $[filter %.inf, $[GENERATED_SOURCES]]
+#if $[inf_to_gen]
+$[inf_to_gen] : $[GENERATED_INF_DEPENDENCIES]
+$[TAB] $[INF_GENERATOR_RULE]
+#endif
+
+#define rgs_to_gen $[filter %.rgs, $[GENERATED_SOURCES]]
+#if $[rgs_to_gen]
+$[rgs_to_gen] : $[GENERATED_RGS_DEPENDENCIES]
+$[TAB] $[RGS_GENERATOR_RULE]
+#endif
+
+#define MIDL_COMMAND $[COMPILE_IDL] /cstub $[ODIR]/$[IDL_BASENAME].cpp /tlb $[ODIR]/$[IDL_BASENAME].tlb /h $[ODIR]/$[IDL_BASENAME].h /proxy $[ODIR]/$[IDL_BASENAME]_p.c /dlldata $[ODIR]/dlldata.c /iid $[ODIR]/$[IDL_BASENAME]_i.c $[ODIR]/$[IDL_BASENAME].idl
+
+#define idl_to_gen $[filter %.idl, $[GENERATED_SOURCES]]
+#if $[idl_to_gen]
+$[idl_to_gen] : $[GENERATED_IDL_DEPENDENCIES]
+$[TAB] $[IDL_GENERATOR_RULE]
+
+.NOTPARALLEL $[ODIR]/$[IDL_BASENAME].h : $[idl_to_gen]
+$[TAB] $[MIDL_COMMAND]
+
+// this is a complete hack.  I dont know how add a generated .h to the dependency list of $[IDL_BASENAME].cpp.
+// it is already there, but in the wrong directory.  should really add this to official dependency list
+#foreach file $[GENERATED_IDL_H_DEPENDENTS]
+$[file] : $[ODIR]/$[IDL_BASENAME].h
+$[TAB]  // empty, dependency-only 'rule'
+
+#end file
+
+$[ODIR]/$[IDL_BASENAME].tlb : $[idl_to_gen]
+$[TAB] $[MIDL_COMMAND]
+#endif
+
+#end noinst_lib_target test_lib_target
 
 
 /////////////////////////////////////////////////////////////////////
@@ -512,17 +567,17 @@ $[ODIR]/lib$[TARGET]$[dllext].pdb : $[ODIR]/lib$[TARGET]$[dllext].dll
 #forscopes static_lib_target ss_lib_target
 #define varname $[subst -,_,lib$[TARGET]_a]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/lib$[TARGET]$[dllext].lib
+#define target $[ODIR]/$[get_dllname $[TARGET]].lib
 #define sources $($[varname])
 $[target] : $[sources]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+#if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[STATIC_LIB_C++]
 #else
 $[TAB] $[STATIC_LIB_C]
 #endif
 
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET]$[dllext].lib \
+    $[install_lib_dir]/$[get_dllname $[TARGET]].lib \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -535,8 +590,8 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[ODIR]/lib$[TARGET]$[dllext].lib
-#define local lib$[TARGET]$[dllext].lib
+$[install_lib_dir]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].lib
+#define local $[get_dllname $[TARGET]].lib
 #define dest $[install_lib_dir]
 $[TAB] cp -f $[ODIR]/$[local] $[dest]
 
@@ -597,7 +652,7 @@ $[target] : $[sources] $[static_lib_dependencies]
 $[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 #else
   // Otherwise, we can use the normal linker.
-  #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+  #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
   #else
 $[TAB] $[LINK_BIN_C]
@@ -655,7 +710,7 @@ $[TAB] cp -f $[output_exe] $[install_bin_dir]
 // of being built (when requested), but having no install rules.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes noinst_bin_target test_bin_target
+#forscopes noinst_bin_target test_bin_target test_lib_target
 $[TARGET] : $[ODIR]/$[TARGET].exe
 
 #define varname $[subst -,_,bin_$[TARGET]]
@@ -663,13 +718,13 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[TARGET].exe
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+#if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
 #else
 $[TAB] $[LINK_BIN_C]
 #endif
 
-#end noinst_bin_target test_bin_target
+#end noinst_bin_target test_bin_target test_lib_target
 
 /////////////////////////////////////////////////////////////////////
 // Rules to run bison and/or flex as needed.
@@ -727,7 +782,11 @@ $[TAB] cp $[target_prebuilt] $[target]
 // file.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+// need to use #print to avoid printing to Makefile
+// printvar prints the unevaluated defn of the var
+// #print TARGET=$[TARGET]
+// #printvar TARGET
 
 // Rules to compile ordinary C files.
 #foreach file $[sort $[c_sources]]
@@ -766,7 +825,7 @@ $[TAB] $[COMPILE_C++]
 
 #end file
 
-#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 
 // And now the rules to install the auxiliary files, like headers and
 // data files.
@@ -969,3 +1028,4 @@ $[TAB] cp -f $[local] $[dest]
 
 //////////////////////////////////////////////////////////////////////
 #endif // DIR_TYPE
+

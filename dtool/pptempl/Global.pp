@@ -35,7 +35,7 @@
 // variable as set for the dconfig library (that is, the expression
 // $[SOURCES] is evaluated within the named scope whose key is
 // "dconfig"--whose variable $[TARGET] was defined to be "dconfig").
-#map all_libs TARGET(*/static_lib_target */ss_lib_target */lib_target */noinst_lib_target */metalib_target)
+#map all_libs TARGET(*/static_lib_target */ss_lib_target */lib_target */noinst_lib_target */test_lib_target */metalib_target)
 
 // This map variable allows us to look up global variables that might
 // be defined in a particular Sources.pp, e.g. in the "toplevel" file.
@@ -51,10 +51,10 @@
 // Windows).
 #if $[WINDOWS_PLATFORM]
   #map static_libs TARGET(*/static_lib_target */ss_lib_target)
-  #map dynamic_libs TARGET(*/lib_target */noinst_lib_target */metalib_target)
+  #map dynamic_libs TARGET(*/lib_target */noinst_lib_target */test_lib_target */metalib_target)
 #else
   #map static_libs TARGET(*/static_lib_target)
-  #map dynamic_libs TARGET(*/lib_target */ss_lib_target */noinst_lib_target */metalib_target)
+  #map dynamic_libs TARGET(*/lib_target */ss_lib_target */noinst_lib_target */test_lib_target */metalib_target)
 #endif
 
 // This lets us identify which metalib, if any, is including each
@@ -63,7 +63,7 @@
 #map module COMPONENT_LIBS(*/metalib_target)
 
 // This lets up look up components of a particular metalib.
-#map components TARGET(*/lib_target */noinst_lib_target)
+#map components TARGET(*/lib_target */noinst_lib_target */test_lib_target)
 
 // And this lets us look up source directories by dirname.
 #map dirnames DIRNAME(*/)
@@ -114,7 +114,7 @@
 
 #if $[HAVE_SOXST]
   #define soxst_ipath $[wildcard $[SOXST_IPATH]]
-  #define soxst_lpath $[wildcard $[SOXST_LPATH]] 
+  #define soxst_lpath $[wildcard $[SOXST_LPATH]]
   #define soxst_cflags $[SOXST_CFLAGS]
   #define soxst_libs $[SOXST_LIBS]
 #endif
@@ -293,7 +293,7 @@
   $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[get_combined_sources]]
 
 #defer included_sources $[INCLUDED_SOURCES]
-  
+
 // This variable returns the set of sources that are to be
 // interrogated for the current target.
 #defer get_igatescan \
@@ -326,12 +326,13 @@
 // This variable returns the set of external packages used by this
 // target, and by all the components shared by this target.
 #defer use_packages $[sort $[USE_PACKAGES] $[components $[USE_PACKAGES],$[active_component_libs]]]
-    
+
 // This function returns the appropriate cflags for the target, based
 // on the various external packages this particular target claims to
 // require.
 #defun get_cflags
-  #define alt_cflags $[stl_cflags] $[nspr_cflags] $[python_cflags]
+  // hack to add stl,nspr,python.  should be removed
+  #define alt_cflags $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_cflags] $[nspr_cflags] $[python_cflags]]
 
   #foreach package $[use_packages]
     #set alt_cflags $[alt_cflags] $[$[package]_cflags]
@@ -345,8 +346,9 @@
 // claims to require.  This returns a space-separated set of directory
 // names only; the -I switch is not included here.
 #defun get_ipath
-  #define alt_ipath $[stl_ipath] $[nspr_ipath] $[python_ipath]
-  
+  // hack to add stl,nspr,python.  should be removed
+  #define alt_ipath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_ipath] $[nspr_ipath] $[python_ipath]]
+
   #foreach package $[use_packages]
     #set alt_ipath $[alt_ipath] $[$[package]_ipath]
   #end package
@@ -359,11 +361,11 @@
 // target claims to require.  This returns a space-separated set of
 // directory names only; the -L switch is not included here.
 #defun get_lpath
-  #define alt_lpath $[stl_lpath] $[nspr_lpath] $[python_lpath]
-  
-  #if $[WINDOWS_PLATFORM]  
-    #set alt_lpath $[WIN32_PLATFORMSDK_LIBPATH] $[alt_lpath] 
-  #endif  
+  #define alt_lpath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_lpath] $[nspr_lpath] $[python_lpath]]
+
+  #if $[WINDOWS_PLATFORM]
+    #set alt_lpath $[WIN32_PLATFORMSDK_LIBPATH] $[alt_lpath]
+  #endif
 
   #foreach package $[use_packages]
     #set alt_lpath $[alt_lpath] $[$[package]_lpath]
@@ -378,7 +380,7 @@
 // space-separated set of library names only; the -l switch is not
 // included here.
 #defun get_libs
-  #define alt_libs $[stl_libs] $[nspr_libs] $[python_libs] $[TARGET_LIBS]
+  #define alt_libs $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_libs] $[nspr_libs] $[python_libs]]
 
   #if $[WINDOWS_PLATFORM]
     #set alt_libs $[alt_libs] $[WIN_SYS_LIBS] $[components $[WIN_SYS_LIBS],$[active_component_libs] $[transitive_link]]
@@ -412,7 +414,7 @@
     $[dependencies $[source]]
   #endif
 #end get_depends
-  
+
 
 // This function determines the set of libraries our various targets
 // depend on.  This is a complicated definition.  It is the union of
@@ -425,7 +427,7 @@
 // the same as case (b) above.
 #defun get_depend_libs
   #define depend_libs
-  #forscopes lib_target noinst_lib_target
+  #forscopes lib_target noinst_lib_target test_lib_target
     #define metalib $[module $[TARGET],$[TARGET]]
     #if $[ne $[metalib],]
       // This library is included on a metalib.
@@ -455,8 +457,8 @@
         #endif
       #end depend
     #endif
-  #end lib_target noinst_lib_target
-  
+  #end lib_target noinst_lib_target test_lib_target
+
   // These will never be part of a metalib.
   #forscopes static_lib_target ss_lib_target bin_target noinst_bin_target metalib_target
     #foreach depend $[LOCAL_LIBS]

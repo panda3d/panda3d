@@ -11,7 +11,7 @@
   // encapsulates each of the libraries we'd be linking with normally.
   // In the case where a particular library is not part of a metalib,
   // we include the library itself.
-  
+
   #define actual_libs
   #foreach lib $[complete_libs]
     // Only consider libraries that we're actually building.
@@ -57,12 +57,12 @@
 #if $[ne $[LINK_ALL_STATIC],]
   #define dlink_all_static LINK_ALL_STATIC
   #define build_dlls
-  #define build_libs yes  
+  #define build_libs yes
   #define dlllib lib
 #else
   #define dlink_all_static
   #define build_dlls yes
-  #define build_libs  
+  #define build_libs
   #define dlllib dll
 #endif
 
@@ -80,8 +80,8 @@
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT4]
 
 //  Opt1 /GZ disables OPT flags, so make sure its OPT1 only
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS] 
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS] 
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[OPT4FLAGS] $[DEBUGPDBFLAGS]
 
@@ -107,6 +107,11 @@
 // distinction is so important in Windows).
 #define dllext $[if $[<= $[OPTIMIZE],2],_d]
 
+// note: does NOT include .dll or .lib at end
+#defun get_dllname dll_basename
+ $[if $[ne $[DONT_USE_PANDA_DLL_NAMING],], $[dll_basename], lib$[dll_basename]$[dllext]]
+#end get_dllname
+
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
 
@@ -118,13 +123,16 @@
 #defer COMPILE_C $[COMPILER] /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS]
 #defer COMPILE_C++ $[COMPILE_C]
 
-#defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
+#defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]"
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
+
+#defer COMPILE_IDL midl /nologo /env win32 /Oicf $[DECYGWINED_INC_PATHLIST_ARGS]
+#defer COMPILE_RC rc /R /D "NDEBUG" /L 0x409 $[DECYGWINED_INC_PATHLIST_ARGS]
 
 // if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
 #if $[ne $[DTOOL],]
 // use predefined bases to speed dll loading and simplify debugging
-#defer DLLNAMEBASE lib$[TARGET]$[dllext]
+#defer DLLNAMEBASE $[get_dllname $[TARGET]]
 #defer DLLBASEADDRFILENAME dllbase.txt
 #defer DLLBASEARG "/BASE:@$[dtool_ver_dir]\$[DLLBASEADDRFILENAME],$[DLLNAMEBASE]"
 #else
@@ -132,9 +140,11 @@
 #define GENERATE_BUILDDATE
 #endif
 
+#defer LINKER_DEF_FILE_ARG $[if $[LINKER_DEF_FILE],/DEF:"$[LINKER_DEF_FILE]",]
+
 //#defer ver_resource $[directory]\ver.res
-//#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
-#defer SHARED_LIB_C $[LINKER] /nologo /dll  $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
+//#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
+#defer SHARED_LIB_C $[LINKER] /nologo /DLL $[LINKER_DEF_FILE_ARG] $[LDFLAGS_OPT$[OPTIMIZE]] $[DLLBASEARG] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]]
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
 #defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"

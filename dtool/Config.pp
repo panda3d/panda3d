@@ -32,7 +32,7 @@
 // syntax used in the various ppremake system configure files; it's
 // designed to be easy to use as a macro language to generate
 // makefiles and their ilk.
-// 
+//
 
 // Some of the variables below are defined using the #define command,
 // and others are defined using #defer.  The two are very similar in
@@ -191,7 +191,7 @@
 // necessary if the default include and link lines that come with the
 // compiler don't provide adequate STL support.  At least some form of
 // STL is absolutely required in order to build Panda.
-#define STL_IPATH 
+#define STL_IPATH
 #define STL_LPATH
 #define STL_CFLAGS
 #define STL_LIBS
@@ -266,7 +266,7 @@
 #if $[WINDOWS_PLATFORM]
   #defer GL_IPATH
   #defer GL_LPATH
-  #define GL_LIBS opengl32.lib glu32.lib 
+  #define GL_LIBS opengl32.lib glu32.lib
 #else
   #defer GL_IPATH
   #defer GL_LPATH /usr/X11R6/lib
@@ -356,9 +356,9 @@
 #defer NOTIFY_DEBUG $[< $[OPTIMIZE], 4]
 
 // Do you want to build the audio interface?
-#define HAVE_AUDIO 1     
+#define HAVE_AUDIO 1
 
-// Info for the RAD game tools, Miles Sound System 
+// Info for the RAD game tools, Miles Sound System
 // note this may be overwritten in wintools Config.pp
 #define RAD_MSS_IPATH /usr/include/Miles6/include
 #define RAD_MSS_LPATH /usr/lib/Miles6/lib/win
@@ -412,7 +412,7 @@
 //#define LINK_IN_EGG yes
 //#define LINK_IN_PHYSICS yes
 
-// Define USE_COMPILER to switch the particular compiler that should 
+// Define USE_COMPILER to switch the particular compiler that should
 // be used.  A handful of tokens are recognized, depending on BUILD_TYPE.
 // This may also be further customized within Global.$[BUILD_TYPE].pp.
 
@@ -429,7 +429,7 @@
 #if $[WINDOWS_PLATFORM]
   #if $[eq $[USE_COMPILER],]
     #define USE_COMPILER MSVC7
-  #endif    
+  #endif
 #elif $[eq $[PLATFORM], Irix]
   #define USE_COMPILER MIPS
 #elif $[eq $[PLATFORM], Linux]
@@ -443,7 +443,7 @@
 // need to have these programs if you need to make changes to the
 // bison or flex sources (see the next point, below).
 #defer BISON bison
-#defer FLEX flex 
+#defer FLEX flex
 
 // You may not even have bison and flex installed.  If you don't, no
 // sweat; Panda ships with the pre-generated output of these programs,
@@ -466,7 +466,9 @@
 // However, don't define this to be '.', or you will be very sad the
 // next time you run 'make clean'.
 //#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]$[USE_COMPILER]
-#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]
+// ODIR_SUFFIX is optional, usually empty
+#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]$[ODIR_SUFFIX]
+
 
 // What is the normal extension of a compiled object file?
 #if $[WINDOWS_PLATFORM]
@@ -568,7 +570,7 @@
 #if $[eq $[USE_COMPILER], MIPS]
   #define CC cc -n32 -mips3
   #define CXX CC -n32 -mips3
-    
+
   // Turn off a few annoying warning messages.
   // 1174 - function 'blah' was declared but never used
   // 1201 - trailing comma is nonstandard.
@@ -585,20 +587,20 @@
   // 85 - definition of SOMESYMBOL in SOMELIB preempts that of definition in
   //      SOMEOTHERLIB.
   #define WOFF_LIST $[WOFF_LIST] -Wl,-LD_MSG:off=85
-  
+
   #defer OPTFLAGS -O2 -OPT:Olimit=2500
-  
+
   #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] $[WOFF_LIST] -g
   #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] $[WOFF_LIST]
   #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[WOFF_LIST]
   #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[WOFF_LIST]
-  
+
   #defer CFLAGS_SHARED
-  
+
   #defer STATIC_LIB_C $[CC] -ar -o $[target] $[sources]
   #defer STATIC_LIB_C++ $[CXX] -ar -o $[target] $[sources]
   #defer RANLIB
-  
+
   #define SHARED_FLAGS -Wl,-none -Wl,-update_registry,$[TOPDIR]/so_locations
   #defer SHARED_LIB_C $[CC] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
   #defer SHARED_LIB_C++ $[CXX] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]

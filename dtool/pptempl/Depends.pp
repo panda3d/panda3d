@@ -36,13 +36,12 @@
   // various Template.*.pp files will be able to reliably access
   // $[compile_sources] from the different directories.
   #define composite_list
-
   // Tag all the static libraries by defining the "lib_is_static" variable.
   #forscopes static_lib_target ss_lib_target
     #define lib_is_static 1
   #end static_lib_target ss_lib_target
 
-  #forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+  #forscopes metalib_target lib_target noinst_lib_target test_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
     // We can optimize quite a bit by evaluating now several of the key
     // deferred variables defined in Globals.pp.  This way they won't need
     // to get repeatedly reevaluated as each directory examines each
@@ -69,13 +68,13 @@
 
     // Now compute the source files.
     #define c_sources $[filter %.c,$[get_sources]]
-    #define cxx_sources $[filter-out %_src.cxx,$[filter %.cxx,$[get_sources]]]
+    #define cxx_sources $[filter-out %_src.cxx,$[filter %.cxx %.cpp,$[get_sources]]]
     #define yxx_sources $[filter %.yxx,$[get_sources]]
     #define lxx_sources $[filter %.lxx,$[get_sources]]
 
     // Define what the object files are.
     #foreach file $[c_sources] $[cxx_sources] $[yxx_sources] $[lxx_sources]
-      #define $[file]_obj $[patsubst %.c %.cxx %.yxx %.lxx,$[ODIR]/$[TARGET]_%$[OBJ],$[file]]
+      #define $[file]_obj $[patsubst %.c %.cxx %.cpp %.yxx %.lxx,$[ODIR]/$[TARGET]_%$[OBJ],$[notdir $[file]]]
       #push 1 $[file]_obj
     #end file
 
@@ -132,7 +131,7 @@
 
     #define compile_sources $[c_sources] $[cxx_sources]
 
-  #end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+  #end metalib_target lib_target noinst_lib_target test_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 
   // Allow the user to define additional EXTRA_DEPENDS targets in each
   // Sources.pp.
