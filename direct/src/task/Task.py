@@ -305,6 +305,7 @@ class TaskManager:
     def doMethodLater(self, delayTime, func, taskName):
         task = Task(func)
         seq = doLater(delayTime, task, taskName)
+        seq.laterTask = task
         return self.spawnTaskNamed(seq, 'doLater-' + taskName)
 
     def removeAllTasks(self):

@@ -58,6 +58,7 @@ class ShowBase:
                                        ColorAttribute())
         self.renderTop = NodePath(NamedNode('renderTop'))
         self.render = self.renderTop.attachNewNode('render')
+        
         self.hidden = NodePath(NamedNode('hidden'))
         # This will be the list of cameras, one per display region
         # For now, we only have one display region, so just create the
@@ -182,9 +183,28 @@ class ShowBase:
         # Transition effects (fade, iris, etc)
         self.transitions = Transitions.Transitions(self.loader)
 
+        import __builtin__
+        __builtin__.base = self
+        __builtin__.render2d = self.render2d
+        __builtin__.aspect2d = self.aspect2d
+        __builtin__.render = self.render
+        __builtin__.hidden = self.hidden
+        __builtin__.camera = self.camera
+        __builtin__.loader = self.loader
+        __builtin__.taskMgr = self.taskMgr
+        __builtin__.eventMgr = self.eventMgr
+        __builtin__.messenger = self.messenger
+        __builtin__.config = self.config
+        __builtin__.run = self.run
+
         # Tk
         if self.wantTk:
             import TkGlobal
+        if self.wantDIRECT:
+            import DirectSession
+            direct.enable()
+        else:
+            __builtin__.direct = self.direct = None
 
         self.restart()
 
