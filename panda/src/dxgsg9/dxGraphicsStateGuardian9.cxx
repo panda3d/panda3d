@@ -4855,14 +4855,15 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
 
     get_engine()->reset_all_windows(true);// reset with new swapchains by creating
 
-    *pScrn = NULL;
+    if (pScrn)
+      *pScrn = NULL;
     if(pPresParams!=&_pScrn->PresParams)
       memcpy(&_pScrn->PresParams,pPresParams,sizeof(D3DPRESENT_PARAMETERS));
     return hr;
   }
 
   // release the old swapchain and create a new one
-  if (_pScrn->pSwapChain) {
+  if (_pScrn && _pScrn->pSwapChain) {
     _pScrn->pSwapChain->Release();
     wdxdisplay9_cat.debug() << "SwapChain " << _pScrn->pSwapChain << " is released\n";
     _pScrn->pSwapChain = NULL;
