@@ -40,6 +40,7 @@ INLINE void GuiButton::exit(void) {
 
 INLINE void GuiButton::up(void) {
   switch (_state) {
+  case NONE:
   case DOWN:
   case INACTIVE:
     switch_state(UP);
@@ -59,6 +60,7 @@ INLINE void GuiButton::up(void) {
 
 INLINE void GuiButton::down(void) {
   switch (_state) {
+  case NONE:
   case UP:
   case INACTIVE:
     switch_state(DOWN);
@@ -78,6 +80,7 @@ INLINE void GuiButton::down(void) {
 
 INLINE void GuiButton::inactive(void) {
   switch (_state) {
+  case NONE:
   case UP:
   case DOWN:
     switch_state(INACTIVE);
@@ -95,6 +98,7 @@ INLINE void GuiButton::inactive(void) {
 
 INLINE void GuiButton::click(void) {
   switch (_state) {
+  case NONE:
   case UP:
   case UP_ROLLOVER:
     down();
