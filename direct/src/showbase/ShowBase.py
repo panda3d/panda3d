@@ -502,9 +502,13 @@ class ShowBase(DirectObject.DirectObject):
             # For toontown, it is possible that window open failed
             # because of a graphics card issue. In that case, take
             # user to the appropriate page.
-            self.setPandaErrorCode(14)
+
             self.notify.error("Unable to open '%s' window." % (self.windowType))
-            sys.exit()
+            try:
+                launcher.setPandaErrorCode(14)
+                sys.exit(1)
+            except:
+                pass
 
         return (self.win != None)
 
