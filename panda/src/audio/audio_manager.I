@@ -21,7 +21,10 @@ INLINE void AudioManager::play(AudioSound* sound, float start_time) {
 INLINE void AudioManager::update(void) {
   if (!audio_is_active)
     return;
-  mutex_lock l(_manager_mutex);
+  {
+    mutex_lock l(_manager_mutex);
+    get_ptr()->copy_loopset();
+  }
   if (_update_func != (UpdateFunc*)0L)
     (*_update_func)();
   get_ptr()->ns_update();

@@ -15,6 +15,7 @@ mutex AudioManager::_manager_mutex;
 bool* AudioManager::_quit = (bool*)0L;
 thread* AudioManager::_spawned = (thread*)0L;
 AudioManager::LoopSet* AudioManager::_loopset = (AudioManager::LoopSet*)0L;
+AudioManager::LoopSet* AudioManager::_loopcopy = (AudioManager::LoopSet*)0L;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::destructor
@@ -40,16 +41,28 @@ void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::copy_loopset
+//       Access: Public, Static
+//  Description: make a copy of the loopset to use for the rest of
+//               update
+////////////////////////////////////////////////////////////////////
+void AudioManager::copy_loopset(void) {
+  if (_loopcopy == (LoopSet*)0L)
+    _loopcopy = new LoopSet;
+  if (_loopset != (LoopSet*)0L)
+    *_loopcopy = *_loopset;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::ns_update
 //       Access: Public, Static
 //  Description: do generic update stuff
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_update(void) {
   // handle looping
-  if (_loopset != (LoopSet*)0L)
-    for (LoopSet::iterator i=_loopset->begin(); i!=_loopset->end();) {
+  if (_loopcopy != (LoopSet*)0L)
+    for (LoopSet::iterator i=_loopcopy->begin(); i!=_loopcopy->end(); ++i) {
       AudioSound* sound = *i;
-      ++i;  // because the sound may be removed from the set durring this
       if (sound->status() == AudioSound::READY) {
 	if (audio_cat->is_debug())
 	  audio_cat->debug() << "AudioManager::ns_update looping '"

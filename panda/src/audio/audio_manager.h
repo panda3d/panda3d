@@ -18,6 +18,7 @@ class EXPCL_PANDA AudioManager {
 private:
   INLINE AudioManager(void);
 
+  void copy_loopset(void);
   void ns_play(AudioSound*, float);
   void ns_stop(AudioSound*);
   void ns_set_loop(AudioSound*, bool);
@@ -41,6 +42,7 @@ private:
   static bool* _quit;
   static thread* _spawned;
   static LoopSet* _loopset;
+  static LoopSet* _loopcopy;
 public:
   virtual ~AudioManager(void);
 
