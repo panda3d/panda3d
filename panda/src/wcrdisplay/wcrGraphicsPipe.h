@@ -25,7 +25,7 @@
 
 #include <string>
 #include <interactiveGraphicsPipe.h>
-#include "wcrGraphicsWindow.h"
+//#include "wcrGraphicsWindow.h"
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #undef WINDOWS_LEAN_AND_MEAN
