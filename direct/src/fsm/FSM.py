@@ -12,13 +12,14 @@ class FSM(DirectObject):
     # special methods
 
     # these are flags that tell the FSM what to do when an
-    # undefined transition is requested
-    ALLOW = 0    # print a warning, and do the transition
-    DISALLOW = 1 # print a warning, and don't do the transition
-    ERROR = 2    # print an error message and raise an exception
+    # undefined transition is requested:
+    ALLOW = 0            # print a warning, and do the transition
+    DISALLOW = 1         # silently ignore the request
+    DISALLOW_VERBOSE = 2 # print a warning, and don't do the transition
+    ERROR = 3            # print an error message and raise an exception
 
     def __init__(self, name, states=[], initialStateName=None,
-                 finalStateName=None, onUndefTransition=DISALLOW):
+                 finalStateName=None, onUndefTransition=DISALLOW_VERBOSE):
         """__init__(self, string, State[], string, string, int)
 
         FSM constructor: takes name, list of states, initial state and
@@ -291,7 +292,7 @@ class FSM(DirectObject):
                     aStateName))
             if self.onUndefTransition == FSM.ERROR:
                 FSM.notify.error(msg)
-            else:
+            elif self.onUndefTransition == FSM.DISALLOW_VERBOSE:
                 FSM.notify.warning(msg)
             return 0
 
