@@ -270,8 +270,7 @@ class GravityWalker(DirectObject.DirectObject):
         as floor, but are nearly vertical.  This ray is
         a hack to help deal with the cliff.
         """
-        if (base.isRendering
-                and self.collisionsActive
+        if (self.collisionsActive
                 and self.moving
                 and self.lifter.isInOuterSpace()):
             temp = self.cRayNodePath.getZ()
