@@ -515,6 +515,7 @@ PUBLISHED:
   void hide_bounds();
   PT(BoundingVolume) get_bounds() const;
   void write_bounds(ostream &out) const;
+  bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point);
 
 
 private:
@@ -543,6 +544,10 @@ private:
 
   void r_adjust_all_priorities(NodeRelation *arc, int adjustment);
   void r_clear_wrt_cache(NodeRelation *arc);
+
+  void r_calc_tight_bounds(Node *dnode, LPoint3f &min_point, 
+                           LPoint3f &max_point,
+                           bool &found_any, const LMatrix4f &transform);
 
 private:
   TypeHandle _graph_type;

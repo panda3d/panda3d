@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Default Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Creates an empty NodePath.  This does not refer to
 //               any nodes, and is equivalent to a NULL Node pointer;
 //               it's an error to attempt to do any node operations on
@@ -34,7 +34,7 @@ NodePath(TypeHandle graph_type) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Creates a NodePath that contains just one node: the
 //               top node.  It's not yet much of a path, but it does
 //               reference at least the one node and can be used as an
@@ -53,7 +53,7 @@ NodePath(Node *top_node, TypeHandle graph_type) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Creates a NodePath that contains one arc, and the two
 //               Nodes connected to that arc.
 //
@@ -73,7 +73,7 @@ NodePath(NodeRelation *arc) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: This constructor creates a new NodePath given an
 //               ArcChain, which is a more primitive version of a
 //               NodePath.  Some graph-traversal operations generate
@@ -90,7 +90,7 @@ NodePath(const ArcChain &chain, TypeHandle graph_type) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
@@ -103,7 +103,7 @@ NodePath(const NodePath &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -115,7 +115,7 @@ operator = (const NodePath &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
@@ -124,7 +124,7 @@ INLINE NodePath::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::not_found named constructor
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Creates a NodePath with the ET_not_found error type
 //               set.
 ////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ not_found() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::removed named constructor
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Creates a NodePath with the ET_removed error type
 //               set.
 ////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ removed() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::fail named constructor
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Creates a NodePath with the ET_fail error type
 //               set.
 ////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ fail() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Equality Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
@@ -173,7 +173,7 @@ operator == (const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Inequality Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
@@ -183,7 +183,7 @@ operator != (const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::compare_to
-//       Access: Public
+//       Access: Published
 //  Description: Returns a number less than zero if this NodePath
 //               sorts before the indicated NodePath in an arbitrary
 //               lexicographical comparision, greater than zero if
@@ -200,7 +200,7 @@ compare_to(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_graph_type
-//       Access: Public
+//       Access: Published
 //  Description: Changes the type of graph that the NodePath will
 //               search for.  By default, this is RenderRelation.
 ////////////////////////////////////////////////////////////////////
@@ -211,7 +211,7 @@ set_graph_type(TypeHandle graph_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_graph_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns the type of graph that the NodePath is
 //               currently set to.
 ////////////////////////////////////////////////////////////////////
@@ -222,7 +222,7 @@ get_graph_type() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_max_search_depth
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Certain operations, such as extend_down_to() or
 //               find_all_matches(), require a traversal of the scene
 //               graph to search for the target node or nodes.  This
@@ -250,7 +250,7 @@ set_max_search_depth(int max_search_depth) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_max_search_depth
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the current setting of the search depth
 //               limit.  See set_max_search_depth.
 ////////////////////////////////////////////////////////////////////
@@ -261,7 +261,7 @@ get_max_search_depth() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_error_type
-//       Access: Public
+//       Access: Published
 //  Description: If is_empty() is true, this returns a code that
 //               represents the reason why the NodePath is empty.
 ////////////////////////////////////////////////////////////////////
@@ -272,7 +272,7 @@ get_error_type() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_num_children
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of children of the bottom node of
 //               the NodePath.  This will be the same as the number of
 //               paths in the collection returned by get_children().
@@ -287,7 +287,7 @@ get_num_children() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth of child of the bottom node of
 //               the NodePath.  This will be the same as nth path in
 //               the collection returned by get_children().
@@ -305,7 +305,7 @@ get_child(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_parent
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the node at the bottom of the
 //               NodePath has a parent; i.e. the NodePath contains at
 //               least two nodes.
@@ -317,7 +317,7 @@ has_parent() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_parent
-//       Access: Public
+//       Access: Published
 //  Description: Returns the NodePath to the parent node of the bottom
 //               arc: that is, this NodePath, shortened by one node.
 ////////////////////////////////////////////////////////////////////
@@ -331,7 +331,7 @@ get_parent() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_path_down_to
-//       Access: Public
+//       Access: Published
 //  Description: Returns a NodePath that represents the extension of
 //               this NodePath down to the indicated node along the
 //               shortest possible path, if any, or an empty NodePath
@@ -349,7 +349,7 @@ find_path_down_to(Node *dnode) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find
-//       Access: Public
+//       Access: Published
 //  Description: Searches for a node below this NodePath's bottom node
 //               that matches the indicated string.  Returns the
 //               shortest match found, if any, or an empty NodePath if
@@ -367,7 +367,7 @@ find(const string &path) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::attach_new_node
-//       Access: Public
+//       Access: Published
 //  Description: Creates a new NamedNode and attaches it below the
 //               current NodePath, returning a new NodePath that
 //               references it.
@@ -382,7 +382,7 @@ attach_new_node(const string &name, int sort) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -396,7 +396,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::ls
-//       Access: Public
+//       Access: Published
 //  Description: Lists all the nodes at and below the current path
 //               hierarchically.
 ////////////////////////////////////////////////////////////////////
@@ -407,7 +407,7 @@ ls() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::ls
-//       Access: Public
+//       Access: Published
 //  Description: Lists all the nodes at and below the current path
 //               hierarchically.
 ////////////////////////////////////////////////////////////////////
@@ -421,7 +421,7 @@ ls(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::ls_transitions
-//       Access: Public
+//       Access: Published
 //  Description: Lists all the nodes at and below the current path
 //               hierarchically, along with all the transitions on the
 //               arcs between them.
@@ -433,7 +433,7 @@ ls_transitions() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::ls_transitions
-//       Access: Public
+//       Access: Published
 //  Description: Lists all the nodes at and below the current path
 //               hierarchically, along with all the transitions on the
 //               arcs between them.
@@ -448,7 +448,7 @@ ls_transitions(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos
-//       Access: Public
+//       Access: Published
 //  Description: Sets the translation component of the transform,
 //               leaving rotation and scale untouched.
 ////////////////////////////////////////////////////////////////////
@@ -474,7 +474,7 @@ get_z() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_hpr
-//       Access: Public
+//       Access: Published
 //  Description: Sets the rotation component of the transform,
 //               leaving translation and scale untouched.
 ////////////////////////////////////////////////////////////////////
@@ -500,7 +500,7 @@ get_r() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_scale
-//       Access: Public
+//       Access: Published
 //  Description: Sets the scale component of the transform,
 //               leaving translation and rotation untouched.
 ////////////////////////////////////////////////////////////////////
@@ -531,7 +531,7 @@ get_sz() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_color_scale
-//       Access: Public
+//       Access: Published
 //  Description: Sets the color scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -541,7 +541,7 @@ set_color_scale(float sr, float sg, float sb, float sa) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_sr
-//       Access: Public
+//       Access: Published
 //  Description: Sets the red scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -554,7 +554,7 @@ set_sr(float sr) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_sg
-//       Access: Public
+//       Access: Published
 //  Description: Sets the alpha scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -567,7 +567,7 @@ set_sg(float sg) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_sb
-//       Access: Public
+//       Access: Published
 //  Description: Sets the blue scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -580,7 +580,7 @@ set_sb(float sb) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_sa
-//       Access: Public
+//       Access: Published
 //  Description: Sets the alpha scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -593,7 +593,7 @@ set_sa(float sa) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_sr
-//       Access: Public
+//       Access: Published
 //  Description: Gets the red scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE float NodePath::
@@ -603,7 +603,7 @@ get_sr() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_sg
-//       Access: Public
+//       Access: Published
 //  Description: Gets the green scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE float NodePath::
@@ -613,7 +613,7 @@ get_sg() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_sb
-//       Access: Public
+//       Access: Published
 //  Description: Gets the blue scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE float NodePath::
@@ -623,7 +623,7 @@ get_sb() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_sa
-//       Access: Public
+//       Access: Published
 //  Description: Gets the alpha scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE float NodePath::
@@ -634,7 +634,7 @@ get_sa() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_color_scale
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any color scale from the bottom arc.
 //               This is preferable to simply setting the color scale to
 //               identity, as it also removes the overhead associated
@@ -654,7 +654,7 @@ clear_color_scale() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_color_scale
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if a color scale has been applied
 //               to the bottom arc, false otherwise.
 //
@@ -672,7 +672,7 @@ has_color_scale() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr
-//       Access: Public
+//       Access: Published
 //  Description: Sets the translation and rotation component of the
 //               transform, leaving scale untouched.
 ////////////////////////////////////////////////////////////////////
@@ -683,7 +683,7 @@ set_pos_hpr(float x, float y, float z, float h, float p, float r) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr_scale
-//       Access: Public
+//       Access: Published
 //  Description: Completely replaces the transform with new
 //               translation, rotation, and scale components.
 ////////////////////////////////////////////////////////////////////
@@ -696,7 +696,7 @@ set_pos_hpr_scale(float x, float y, float z, float h, float p, float r,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_mat
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any transform from the bottom arc.
 //               This is preferable to simply setting the matrix to
 //               identity, as it also removes the overhead associated
@@ -710,7 +710,7 @@ clear_mat() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_mat
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if a transform matrix has been applied
 //               to the bottom arc, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -722,7 +722,7 @@ has_mat() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_mat
-//       Access: Public
+//       Access: Published
 //  Description: Returns the complete transform matrix that has been
 //               applied to the bottom arc, or the identity matrix if
 //               no matrix has been applied.
@@ -742,7 +742,7 @@ get_mat() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::look_at
-//       Access: Public
+//       Access: Published
 //  Description: Sets the transform on this NodePath so that it
 //               rotates to face the indicated point in space.  This
 //               will overwrite any previously existing scale on the
@@ -755,7 +755,7 @@ look_at(float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::heads_up
-//       Access: Public
+//       Access: Published
 //  Description: Behaves like look_at(), but with a strong preference
 //               to keeping the up vector oriented in the indicated
 //               "up" direction.
@@ -767,7 +767,7 @@ heads_up(float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::look_at_preserve_scale
-//       Access: Public
+//       Access: Published
 //  Description: Functions like look_at(), but preforms additional
 //               work to preserve any scales that may already be
 //               present on the node.  Normally, look_at() blows away
@@ -781,7 +781,7 @@ look_at_preserve_scale(float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::heads_up_preserve_scale
-//       Access: Public
+//       Access: Published
 //  Description: Functions like heads_up(), but preforms additional
 //               work to preserve any scales that may already be
 //               present on the node.  Normally, heads_up() blows away
@@ -795,7 +795,7 @@ heads_up_preserve_scale(float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_pos
-//       Access: Public
+//       Access: Published
 //  Description: Displays the translation component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -805,7 +805,7 @@ print_pos() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_hpr
-//       Access: Public
+//       Access: Published
 //  Description: Displays the rotation component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -815,7 +815,7 @@ print_hpr() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_scale
-//       Access: Public
+//       Access: Published
 //  Description: Displays the scale component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -825,7 +825,7 @@ print_scale() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_pos_hpr
-//       Access: Public
+//       Access: Published
 //  Description: Displays the translation and rotation component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -836,7 +836,7 @@ print_pos_hpr() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_pos_hpr_scale
-//       Access: Public
+//       Access: Published
 //  Description: Displays the translation, rotation, and scale
 //               components.
 ////////////////////////////////////////////////////////////////////
@@ -849,7 +849,7 @@ print_pos_hpr_scale() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_mat
-//       Access: Public
+//       Access: Published
 //  Description: Displays the complete transform matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -859,7 +859,7 @@ print_mat() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_color_scale
-//       Access: Public
+//       Access: Published
 //  Description: Displays the scale component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -869,7 +869,7 @@ print_color_scale() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos
-//       Access: Public
+//       Access: Published
 //  Description: Sets the translation component of the transform,
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
@@ -880,7 +880,7 @@ set_pos(const NodePath &other, float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_pos
-//       Access: Public
+//       Access: Published
 //  Description: Returns the relative position of the bottom node as
 //               seen from the other node.
 ////////////////////////////////////////////////////////////////////
@@ -907,7 +907,7 @@ get_z(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_hpr
-//       Access: Public
+//       Access: Published
 //  Description: Sets the rotation component of the transform,
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
@@ -933,7 +933,7 @@ get_r(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_scale
-//       Access: Public
+//       Access: Published
 //  Description: Sets the scale component of the transform,
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
@@ -944,7 +944,7 @@ set_scale(const NodePath &other, float sx, float sy, float sz) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_scale
-//       Access: Public
+//       Access: Published
 //  Description: Returns the relative scale of the bottom node
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
@@ -965,7 +965,7 @@ get_sz(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr
-//       Access: Public
+//       Access: Published
 //  Description: Sets the translation and rotation component of the
 //               transform, relative to the other node.
 ////////////////////////////////////////////////////////////////////
@@ -978,7 +978,7 @@ set_pos_hpr(const NodePath &other,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr_scale
-//       Access: Public
+//       Access: Published
 //  Description: Completely replaces the transform with new
 //               translation, rotation, and scale components, relative
 //               to the other node.
@@ -994,7 +994,7 @@ set_pos_hpr_scale(const NodePath &other,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::look_at
-//       Access: Public
+//       Access: Published
 //  Description: Sets the transform on this NodePath so that it
 //               rotates to face the indicated point in space, which
 //               is relative to the other NodePath.  This
@@ -1008,7 +1008,7 @@ look_at(const NodePath &other, float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::heads_up
-//       Access: Public
+//       Access: Published
 //  Description: Behaves like look_at(), but with a strong preference
 //               to keeping the up vector oriented in the indicated
 //               "up" direction.
@@ -1020,7 +1020,7 @@ heads_up(const NodePath &other, float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::look_at_preserve_scale
-//       Access: Public
+//       Access: Published
 //  Description: Functions like look_at(), but preforms additional
 //               work to preserve any scales that may already be
 //               present on the node.  Normally, look_at() blows away
@@ -1034,7 +1034,7 @@ look_at_preserve_scale(const NodePath &other, float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::heads_up_preserve_scale
-//       Access: Public
+//       Access: Published
 //  Description: Functions like heads_up(), but preforms additional
 //               work to preserve any scales that may already be
 //               present on the node.  Normally, heads_up() blows away
@@ -1048,7 +1048,7 @@ heads_up_preserve_scale(const NodePath &other, float x, float y, float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_pos
-//       Access: Public
+//       Access: Published
 //  Description: Displays the translation component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -1058,7 +1058,7 @@ print_pos(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_hpr
-//       Access: Public
+//       Access: Published
 //  Description: Displays the rotation component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -1068,7 +1068,7 @@ print_hpr(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_scale
-//       Access: Public
+//       Access: Published
 //  Description: Displays the scale component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -1078,7 +1078,7 @@ print_scale(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_pos_hpr
-//       Access: Public
+//       Access: Published
 //  Description: Displays the translation and rotation component.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -1089,7 +1089,7 @@ print_pos_hpr(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_pos_hpr_scale
-//       Access: Public
+//       Access: Published
 //  Description: Displays the translation, rotation, and scale
 //               components.
 ////////////////////////////////////////////////////////////////////
@@ -1102,7 +1102,7 @@ print_pos_hpr_scale(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_mat
-//       Access: Public
+//       Access: Published
 //  Description: Displays the complete transform matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -1112,7 +1112,7 @@ print_mat(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_distance
-//       Access: Public
+//       Access: Published
 //  Description: Returns the straight-line distance between this
 //               bottom node's coordinate frame's origin, and that of
 //               the other node's origin.
@@ -1125,7 +1125,7 @@ get_distance(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_color
-//       Access: Public
+//       Access: Published
 //  Description: Sets the color transition for a render relation
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -1136,7 +1136,7 @@ set_color(float r, float g, float b, float a,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_color
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any color adjustment from the arc.
 //               This allows the natural color of the geometry, or
 //               whatever color transitions might be otherwise
@@ -1150,7 +1150,7 @@ clear_color() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_color
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if a color has been applied to the given
 //               arc, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -1162,7 +1162,7 @@ has_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_bin
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any bin adjustment that may have
 //               been set via set_bin() from this particular arc.
 ////////////////////////////////////////////////////////////////////
@@ -1174,7 +1174,7 @@ clear_bin() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_bin
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the arc has been assigned to the a
 //               particular rendering bin via set_bin(), false
 //               otherwise.
@@ -1187,7 +1187,7 @@ has_bin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_texture
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any texture adjustment that may
 //               have been set via set_texture() or set_texture_off()
 //               from this particular arc.  This allows whatever
@@ -1202,7 +1202,7 @@ clear_texture() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_material
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any material adjustment that may
 //               have been set via set_material() from this particular
 //               arc.
@@ -1215,7 +1215,7 @@ clear_material() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_fog
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any fog adjustment that may
 //               have been set via set_fog() or set_fog_off()
 //               from this particular arc.  This allows whatever
@@ -1230,7 +1230,7 @@ clear_fog() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_render_mode
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any render mode adjustment that
 //               may have been set on this arc via
 //               set_render_mode_wireframe() or
@@ -1244,7 +1244,7 @@ clear_render_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_render_mode
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if a render mode has been explicitly set
 //               on this particular arc via
 //               set_render_mode_wireframe() or
@@ -1258,7 +1258,7 @@ has_render_mode() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_two_sided
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any two-sided adjustment that
 //               may have been set on this arc via set_two_sided().
 //               The geometry at this level and below will
@@ -1275,7 +1275,7 @@ clear_two_sided() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_two_sided
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if a two-sided adjustment has been
 //               explicitly set on this particular arc via
 //               set_two_sided().  If this returns true, then
@@ -1290,7 +1290,7 @@ has_two_sided() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_billboard_axis
-//       Access: Public
+//       Access: Published
 //  Description: Puts a billboard transition on the arc such that it
 //               will rotate in two dimensions around the up axis.
 ////////////////////////////////////////////////////////////////////
@@ -1302,7 +1302,7 @@ set_billboard_axis(float offset) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_billboard_point_eye
-//       Access: Public
+//       Access: Published
 //  Description: Puts a billboard transition on the arc such that it
 //               will rotate in three dimensions about the origin,
 //               keeping its up vector oriented to the top of the
@@ -1316,7 +1316,7 @@ set_billboard_point_eye(float offset) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_billboard_point_world
-//       Access: Public
+//       Access: Published
 //  Description: Puts a billboard transition on the arc such that it
 //               will rotate in three dimensions about the origin,
 //               keeping its up vector oriented to the sky.
@@ -1329,7 +1329,7 @@ set_billboard_point_world(float offset) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_billboard
-//       Access: Public
+//       Access: Published
 //  Description: Removes any billboard transition from the arc.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -1340,7 +1340,7 @@ clear_billboard() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_billboard
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if there is any billboard transition on
 //               the arc.
 ////////////////////////////////////////////////////////////////////
@@ -1352,7 +1352,7 @@ has_billboard() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_transparency
-//       Access: Public
+//       Access: Published
 //  Description: Completely removes any transparency adjustment that
 //               may have been set on this arc via set_transparency().
 //               The geometry at this level and below will
@@ -1369,7 +1369,7 @@ clear_transparency() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_transparency
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if a transparent-rendering adjustment
 //               has been explicitly set on this particular arc via
 //               set_transparency().  If this returns true, then
@@ -1385,7 +1385,7 @@ has_transparency() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::adjust_all_priorities
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated adjustment amount (which may be
 //               negative) to the priority for all transitions on the
 //               bottom arc, and for all arcs in the subgraph below.
@@ -1402,7 +1402,7 @@ adjust_all_priorities(int adjustment) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::show
-//       Access: Public
+//       Access: Published
 //  Description: Removes any PruneTransition on this bottom arc so
 //               that the geometry at this level and below will once
 //               again be visible--assuming no ancestor arc has a
@@ -1416,7 +1416,7 @@ show() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::hide
-//       Access: Public
+//       Access: Published
 //  Description: Puts a PruneTransition on this bottom arc so that the
 //               geometry at this level and below will be invisible.
 //
@@ -1435,7 +1435,7 @@ hide() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::show_collision_solids
-//       Access: Public
+//       Access: Published
 //  Description: Reveals all the collision solids at or below this
 //               node.
 ////////////////////////////////////////////////////////////////////
@@ -1446,7 +1446,7 @@ show_collision_solids() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::hide_collision_solids
-//       Access: Public
+//       Access: Published
 //  Description: Hides all the collision solids at or below this
 //               node.
 ////////////////////////////////////////////////////////////////////
@@ -1457,7 +1457,7 @@ hide_collision_solids() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::is_hidden
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the bottom arc has been hidden,
 //               false otherwise.  The bottom node may still be
 //               invisible due to a higher ancestor having been
@@ -1470,7 +1470,7 @@ is_hidden() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::stash
-//       Access: Public
+//       Access: Published
 //  Description: A more thorough version of hide(), this effectively
 //               removes the bottom node from the scene graph--it does
 //               not appear in any traversals, rendering or otherwise,
@@ -1491,7 +1491,7 @@ stash() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::unstash
-//       Access: Public
+//       Access: Published
 //  Description: Reveals a node that was previously hidden via stash().
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
@@ -1502,7 +1502,7 @@ unstash() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::is_stashed
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the bottom arc has been 'stashed',
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -1513,7 +1513,7 @@ is_stashed() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_wrt_cache
-//       Access: Public
+//       Access: Published
 //  Description: Recursively calls clear_wrt_cache() on every arc
 //               beginning at the bottom arc and below.  This wipes
 //               out the cached wrt information, which will make the
