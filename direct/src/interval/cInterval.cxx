@@ -20,7 +20,8 @@
 #include "cIntervalManager.h"
 #include "indent.h"
 #include "clockObject.h"
-#include "throw_event.h"
+#include "event.h"
+#include "eventQueue.h"
 #include <math.h>
 
 TypeHandle CInterval::_type_handle;
@@ -39,7 +40,8 @@ CInterval(const string &name, double duration, bool open_ended) :
   _open_ended(open_ended),
   _dirty(false)
 {
-  _interruptible = false;
+  _auto_pause = false;
+  _auto_finish = false;
   _wants_t_callback = false;
   _last_t_callback = -1.0;
   _manager = CIntervalManager::get_global_ptr();
@@ -610,7 +612,7 @@ mark_dirty() {
 void CInterval::
 interval_done() {
   if (!_done_event.empty()) {
-    throw_event(_done_event);
+    _manager->get_event_queue()->queue_event(new Event(_done_event));
   }
 }
 

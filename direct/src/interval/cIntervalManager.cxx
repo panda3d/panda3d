@@ -19,6 +19,7 @@
 #include "cIntervalManager.h"
 #include "cMetaInterval.h"
 #include "dcast.h"
+#include "eventQueue.h"
 
 CIntervalManager *CIntervalManager::_global_ptr;
 
@@ -31,6 +32,7 @@ CIntervalManager::
 CIntervalManager() {
   _first_slot = 0;
   _next_event_index = 0;
+  _event_queue = EventQueue::get_global_event_queue();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,18 +166,18 @@ remove_c_interval(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CIntervalManager::pause_all_interruptible
+//     Function: CIntervalManager::interrupt
 //       Access: Published
-//  Description: Pauses (removes from the active queue) all intervals
-//               tagged as "interruptible".  These are intervals that
-//               someone fired up but won't necessarily expect to
-//               clean up; they can be interrupted at will when
-//               necessary.
+//  Description: Pauses or finishes (removes from the active queue)
+//               all intervals tagged with auto_pause or auto_finish
+//               set to true.  These are intervals that someone fired
+//               up but won't necessarily expect to clean up; they can
+//               be interrupted at will when necessary.
 //
 //               Returns the number of intervals affected.
 ////////////////////////////////////////////////////////////////////
 int CIntervalManager::
-pause_all_interruptible() {
+interrupt() {
   int num_paused = 0;
 
   NameIndex::iterator ni;
@@ -184,11 +186,38 @@ pause_all_interruptible() {
     int index = (*ni).second;
     const IntervalDef &def = _intervals[index];
     nassertr(def._interval != (CInterval *)NULL, num_paused);
-    if (def._interval->get_interruptible()) {
+    if (def._interval->get_auto_pause() || def._interval->get_auto_finish()) {
       // This interval may be interrupted.
-      if (def._interval->get_state() == CInterval::S_started) {
-        def._interval->priv_interrupt();
+      if (def._interval->get_auto_pause()) {
+        // It may be interrupted simply by pausing it.
+        if (interval_cat.is_debug()) {
+          interval_cat.debug()
+            << "Auto-pausing " << def._interval->get_name() << "\n";
+        }
+        if (def._interval->get_state() == CInterval::S_started) {
+          def._interval->priv_interrupt();
+        }
+
+      } else {
+        // It should be interrupted by finishing it.
+        if (interval_cat.is_debug()) {
+          interval_cat.debug()
+            << "Auto-finishing " << def._interval->get_name() << "\n";
+        }
+        switch (def._interval->get_state()) {
+        case CInterval::S_initial:
+          def._interval->priv_instant();
+          break;
+          
+        case CInterval::S_final:
+          break;
+          
+        default:
+          def._interval->priv_finalize();
+        }
       }
+
+      // Now carefully remove it from the active list.
       NameIndex::iterator prev;
       prev = ni;
       ++ni;

@@ -75,8 +75,10 @@ PUBLISHED:
   void set_t(double t);
   INLINE double get_t() const;
 
-  INLINE void set_interruptible(bool interruptible);
-  INLINE bool get_interruptible() const;
+  INLINE void set_auto_pause(bool auto_pause);
+  INLINE bool get_auto_pause() const;
+  INLINE void set_auto_finish(bool auto_finish);
+  INLINE bool get_auto_finish() const;
 
   INLINE void set_wants_t_callback(bool wants_t_callback);
   INLINE bool get_wants_t_callback() const;
@@ -136,7 +138,8 @@ protected:
   string _done_event;
   double _duration;
 
-  bool _interruptible;
+  bool _auto_pause;
+  bool _auto_finish;
   bool _wants_t_callback;
   double _last_t_callback;
   CIntervalManager *_manager;

@@ -17,6 +17,35 @@
 ////////////////////////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: CIntervalManager::set_event_queue
+//       Access: Published
+//  Description: Specifies a custom event queue to be used for
+//               throwing done events from intervals as they finish.
+//               If this is not specified, the global event queue is
+//               used.
+//
+//               The caller maintains ownership of the EventQueue
+//               object; it is the caller's responsibility to ensure
+//               that the supplied EventQueue does not destruct during
+//               the lifetime of the CIntervalManager.
+////////////////////////////////////////////////////////////////////
+INLINE void CIntervalManager::
+set_event_queue(EventQueue *event_queue) {
+  _event_queue = event_queue;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CIntervalManager::get_event_queue
+//       Access: Published
+//  Description: Returns the custom event queue to be used for
+//               throwing done events from intervals as they finish.
+////////////////////////////////////////////////////////////////////
+INLINE EventQueue *CIntervalManager::
+get_event_queue() const {
+  return _event_queue;
+}
+
 INLINE ostream &
 operator << (ostream &out, const CIntervalManager &ival_mgr) {
   ival_mgr.output(out);

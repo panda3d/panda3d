@@ -117,30 +117,57 @@ get_t() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::set_interruptible
+//     Function: CInterval::set_auto_pause
 //       Access: Published
-//  Description: Changes the state of the 'interruptible' flag.  If
+//  Description: Changes the state of the 'auto_pause' flag.  If
 //               this is true, the interval may be arbitrarily
 //               interrupted when the system needs to reset due to
 //               some external event by calling
-//               CIntervalManager::pause_all_interruptible().  If this
+//               CIntervalManager::interrupt().  If this
 //               is false (the default), the interval must always be
 //               explicitly finished or paused.
 ////////////////////////////////////////////////////////////////////
 INLINE void CInterval::
-set_interruptible(bool interruptible) {
-  _interruptible = interruptible;
+set_auto_pause(bool auto_pause) {
+  _auto_pause = auto_pause;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::get_interruptible
+//     Function: CInterval::get_auto_pause
 //       Access: Published
-//  Description: Returns the state of the 'interruptible' flag.  See
-//               set_interruptible().
+//  Description: Returns the state of the 'auto_pause' flag.  See
+//               set_auto_pause().
 ////////////////////////////////////////////////////////////////////
 INLINE bool CInterval::
-get_interruptible() const {
-  return _interruptible;
+get_auto_pause() const {
+  return _auto_pause;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::set_auto_finish
+//       Access: Published
+//  Description: Changes the state of the 'auto_finish' flag.  If
+//               this is true, the interval may be arbitrarily
+//               finished when the system needs to reset due to
+//               some external event by calling
+//               CIntervalManager::interrupt().  If this
+//               is false (the default), the interval must always be
+//               explicitly finished or paused.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+set_auto_finish(bool auto_finish) {
+  _auto_finish = auto_finish;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_auto_finish
+//       Access: Published
+//  Description: Returns the state of the 'auto_finish' flag.  See
+//               set_auto_finish().
+////////////////////////////////////////////////////////////////////
+INLINE bool CInterval::
+get_auto_finish() const {
+  return _auto_finish;
 }
 
 ////////////////////////////////////////////////////////////////////

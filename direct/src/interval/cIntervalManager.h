@@ -26,6 +26,8 @@
 #include "pmap.h"
 #include "vector_int.h"
 
+class EventQueue;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CIntervalManager
 // Description : This object holds a number of currently-playing
@@ -46,13 +48,16 @@ PUBLISHED:
   CIntervalManager();
   ~CIntervalManager();
 
+  INLINE void set_event_queue(EventQueue *event_queue);
+  INLINE EventQueue *get_event_queue() const;
+
   int add_c_interval(CInterval *interval, bool external);
   int find_c_interval(const string &name) const;
 
   CInterval *get_c_interval(int index) const;
   void remove_c_interval(int index);
 
-  int pause_all_interruptible();
+  int interrupt();
   int get_num_intervals() const;
 
   void step();
@@ -84,6 +89,7 @@ private:
   NameIndex _name_index;
   typedef vector_int Removed;
   Removed _removed;
+  EventQueue *_event_queue;
 
   int _first_slot;
   int _next_event_index;

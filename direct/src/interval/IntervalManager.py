@@ -1,5 +1,6 @@
 from PandaModules import *
 from DirectNotifyGlobal import *
+import EventManager
 import Interval
 import types
 
@@ -24,6 +25,12 @@ class IntervalManager(CIntervalManager):
         else:
             CIntervalManager.__init__(self)
 
+        # Set up a custom event queue for handling C++ events from
+        # intervals.
+        self.eventQueue = EventQueue()
+        self.eventManager = EventManager.EventManager(self.eventQueue)
+        self.setEventQueue(self.eventQueue)
+        
         self.ivals = []
         self.removedIvals = {}
 
@@ -46,9 +53,26 @@ class IntervalManager(CIntervalManager):
         return None
 
     def step(self):
-        # Call C++ step, then do all the required Python post-processing.
+        # This method should be called once per frame to perform all
+        # of the per-frame processing on the active intervals.
+        
+        # Call C++ step, then do the Python stuff.
         CIntervalManager.step(self)
+        self.__doPythonCallbacks()
 
+    def interrupt(self):
+        # This method should be called during an emergency cleanup
+        # operation, to automatically pause or finish all active
+        # intervals tagged with autoPause or autoFinish set true.
+        
+        # Call C++ interrupt, then do the Python stuff.
+        CIntervalManager.interrupt(self)
+        self.__doPythonCallbacks()
+
+    def __doPythonCallbacks(self):
+        # This method does all of the required Python post-processing
+        # after performing some C++-level action.
+        
         # It is important to call all of the python callbacks on the
         # just-removed intervals before we call any of the callbacks
         # on the still-running intervals.
@@ -67,6 +91,13 @@ class IntervalManager(CIntervalManager):
             self.ivals[index].privPostEvent()
             index = self.getNextEvent()
 
+        # Finally, throw all the events on the custom event queue.
+        # These are the done events that may have been generated in
+        # C++.  We use a custom event queue so we can service all of
+        # these immediately, rather than waiting for the global event
+        # queue to be serviced (which might not be till next frame).
+        self.eventManager.doEvents()
+        
         
     def __storeInterval(self, interval, index):
         while index >= len(self.ivals):

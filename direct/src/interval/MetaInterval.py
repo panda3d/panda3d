@@ -32,10 +32,22 @@ class MetaInterval(CMetaInterval):
                 name = kw['name']
                 del kw['name']
 
-        interruptible = 0
-        if kw.has_key('interruptible'):
-            interruptible = kw['interruptible']
-            del kw['interruptible']
+        # If the keyword "autoPause" or "autoFinish" is defined to
+        # non-zero, it means the interval may be automatically paused
+        # or finished when CIntervalManager::interrupt() is called.
+        # This is generally called only on a catastrophic situation
+        # (for instance, the connection to the server being lost) when
+        # we have to exit right away; these keywords indicate
+        # intervals that might not be cleaned up by their owners.
+        
+        autoPause = 0
+        autoFinish = 0
+        if kw.has_key('autoPause'):
+            autoPause = kw['autoPause']
+            del kw['autoPause']
+        if kw.has_key('autoFinish'):
+            autoFinish = kw['autoFinish']
+            del kw['autoFinish']
 
         # A duration keyword specifies the duration the interval will
         # appear to have for the purposes of computing the start time
@@ -71,7 +83,8 @@ class MetaInterval(CMetaInterval):
 
         CMetaInterval.__init__(self, name)
         self.__manager = ivalMgr
-        self.setInterruptible(interruptible)
+        self.setAutoPause(autoPause)
+        self.setAutoFinish(autoFinish)
 
         self.pythonIvals = []
 
