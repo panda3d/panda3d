@@ -7,7 +7,7 @@
 //
 
 #output 20_panda.prc
-#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
+#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
 # Let's set up a default window size of 800x600.  The user can

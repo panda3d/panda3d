@@ -23,10 +23,10 @@
 #if $[eq $[PLATFORM],Win32]
 
 #output genPyCode.bat
-rem #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
+@echo off
+rem #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 rem ################################# DO NOT EDIT ###########################
 
-@echo off
 python $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 #end genPyCode.bat
 
@@ -34,7 +34,7 @@ python $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 #output genPyCode
 #! /bin/sh
-#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
+#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
 python '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
@@ -44,7 +44,7 @@ python '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
 
 #output genPyCode.py
 #! /usr/bin/env python
-#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
+#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
 import os
