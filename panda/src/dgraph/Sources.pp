@@ -6,36 +6,43 @@
   #define LOCAL_LIBS \
     pstatclient sgraph graph putil sgattrib mathutil
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx  
+  
   #define SOURCES \
-    buttonEventDataAttribute.I buttonEventDataAttribute.cxx  \
-    buttonEventDataAttribute.h buttonEventDataTransition.I \
-    buttonEventDataTransition.cxx buttonEventDataTransition.h \
-    config_dgraph.cxx config_dgraph.h dataGraphTraversal.cxx \
-    dataGraphTraversal.h dataGraphTraverser.I dataGraphTraverser.cxx \
-    dataGraphTraverser.h dataNode.cxx dataNode.h dataRelation.I \
-    dataRelation.N dataRelation.cxx dataRelation.h \
-    describe_data_verbose.cxx describe_data_verbose.h \
-    doubleDataAttribute.I doubleDataAttribute.cxx \
-    doubleDataAttribute.h doubleDataTransition.I \
-    doubleDataTransition.cxx doubleDataTransition.h \
-    doublePtrDataAttribute.I doublePtrDataAttribute.cxx \
-    doublePtrDataAttribute.h doublePtrDataTransition.I \
-    doublePtrDataTransition.cxx doublePtrDataTransition.h \
-    intDataAttribute.I intDataAttribute.cxx intDataAttribute.h \
-    intDataTransition.I intDataTransition.cxx intDataTransition.h \
-    matrixDataAttribute.I matrixDataAttribute.cxx \
-    matrixDataAttribute.h matrixDataTransition.I \
-    matrixDataTransition.cxx matrixDataTransition.h \
-    numericDataAttribute.I numericDataAttribute.h \
-    numericDataTransition.I numericDataTransition.h \
-    pointerDataAttribute.I pointerDataAttribute.h \
-    pointerDataTransition.I pointerDataTransition.h \
-    vec3DataAttribute.I vec3DataAttribute.cxx vec3DataAttribute.h \
-    vec3DataTransition.I vec3DataTransition.cxx vec3DataTransition.h \
-    vec4DataAttribute.I vec4DataAttribute.cxx vec4DataAttribute.h \
-    vec4DataTransition.I vec4DataTransition.cxx vec4DataTransition.h \
-    vectorDataAttribute.I vectorDataAttribute.h vectorDataTransition.I \
-    vectorDataTransition.h
+     buttonEventDataAttribute.I buttonEventDataAttribute.h  \
+     buttonEventDataTransition.I buttonEventDataTransition.h  \
+     config_dgraph.h dataGraphTraversal.h dataGraphTraverser.I  \
+     dataGraphTraverser.h dataNode.h dataRelation.I  \
+     dataRelation.N dataRelation.h describe_data_verbose.h  \
+     doubleDataAttribute.I doubleDataAttribute.h  \
+     doubleDataTransition.I doubleDataTransition.h  \
+     doublePtrDataAttribute.I doublePtrDataAttribute.h  \
+     doublePtrDataTransition.I doublePtrDataTransition.h  \
+     intDataAttribute.I intDataAttribute.h intDataTransition.I  \
+     intDataTransition.h matrixDataAttribute.I  \
+     matrixDataAttribute.h matrixDataTransition.I  \
+     matrixDataTransition.h numericDataAttribute.I  \
+     numericDataAttribute.h numericDataTransition.I  \
+     numericDataTransition.h pointerDataAttribute.I  \
+     pointerDataAttribute.h pointerDataTransition.I  \
+     pointerDataTransition.h vec3DataAttribute.I  \
+     vec3DataAttribute.h vec3DataTransition.I  \
+     vec3DataTransition.h vec4DataAttribute.I vec4DataAttribute.h  \
+     vec4DataTransition.I vec4DataTransition.h  \
+     vectorDataAttribute.I vectorDataAttribute.h  \
+     vectorDataTransition.I vectorDataTransition.h
+    
+ #define INCLUDED_SOURCES \
+     buttonEventDataAttribute.cxx buttonEventDataTransition.cxx  \
+     config_dgraph.cxx dataGraphTraversal.cxx  \
+     dataGraphTraverser.cxx dataNode.cxx dataRelation.cxx  \
+     describe_data_verbose.cxx doubleDataAttribute.cxx  \
+     doubleDataTransition.cxx doublePtrDataAttribute.cxx  \
+     doublePtrDataTransition.cxx intDataAttribute.cxx  \
+     intDataTransition.cxx matrixDataAttribute.cxx  \
+     matrixDataTransition.cxx vec3DataAttribute.cxx  \
+     vec3DataTransition.cxx vec4DataAttribute.cxx  \
+     vec4DataTransition.cxx  
 
   #define INSTALL_HEADERS \
     buttonEventDataAttribute.I buttonEventDataAttribute.h \
@@ -58,7 +65,7 @@
     vec4DataTransition.h vectorDataAttribute.I vectorDataAttribute.h \
     vectorDataTransition.I vectorDataTransition.h
 
-  #define PRECOMPILED_HEADER dgraph_headers.h
+//  #define PRECOMPILED_HEADER dgraph_headers.h
   
   #define IGATESCAN \
     dataNode.cxx dataNode.h dataRelation.cxx dataRelation.h \
