@@ -68,6 +68,8 @@ class DirectCheckButton(DirectButton):
         if self['frameSize']:
             # Use user specified bounds
             self.bounds = self['frameSize']
+            frameType = self.frameStyle[0].getType()
+            ibw = self.indicator['borderWidth']
         else:
             # Use ready state to compute bounds
             frameType = self.frameStyle[0].getType()

@@ -30,14 +30,7 @@
     # For iterating over children
     def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""
-        if self.isEmpty():
-            return []
-        else:
-            children = self.getChildren()
-            childrenList = []
-            for childNum in range(self.getNumChildren()):
-                childrenList.append(children[childNum])
-            return childrenList
+        return self.getChildren().asList()
 
     def printChildren(self):
         """Prints out the children of the bottom node of a node path"""
@@ -116,7 +109,7 @@
         self.calcTightBounds(v1,v2)
         return v1, v2
 
-    def pprintPos(self, other = None, sd = 2):
+    def printPos(self, other = None, sd = 2):
         """ Pretty print a node path's pos """
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
@@ -131,7 +124,7 @@
                formatString % pos[2] +
                ')\n')
 
-    def pprintHpr(self, other = None, sd = 2):
+    def printHpr(self, other = None, sd = 2):
         """ Pretty print a node path's hpr """
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
@@ -146,7 +139,7 @@
                formatString % hpr[2] +
                ')\n')
 
-    def pprintScale(self, other = None, sd = 2):
+    def printScale(self, other = None, sd = 2):
         """ Pretty print a node path's scale """
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
@@ -161,7 +154,7 @@
                formatString % scale[2] +
                ')\n')
 
-    def pprintPosHpr(self, other = None, sd = 2):
+    def printPosHpr(self, other = None, sd = 2):
         """ Pretty print a node path's pos and, hpr """
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
@@ -181,7 +174,7 @@
                formatString % hpr[2] +
                ')\n')
 
-    def pprintPosHprScale(self, other = None, sd = 2):
+    def printPosHprScale(self, other = None, sd = 2):
         """ Pretty print a node path's pos, hpr, and scale """
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
