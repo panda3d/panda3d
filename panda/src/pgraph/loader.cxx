@@ -124,12 +124,11 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
           num_added = search_path.find_all_files(filename, files);
         }
         
-        for (int i = 0; i < num_added; i++) {
+        for (int i = 0; i < num_added; ++i) {
           results.add_file(files.get_file(i), requested_type);
         }
       }
     }
-
   } else {
     // If the extension *is* empty, we have to search for all possible
     // file types.
@@ -138,7 +137,7 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
 
     if (!filename.is_local()) {
       // Global filename, take it as it is.
-      for (int t = 0; t < num_types; t++) {
+      for (int t = 0; t < num_types; ++t) {
         LoaderFileType *type = reg->get_type(t);
         Filename file(filename);
         file.set_extension(type->get_extension());
@@ -147,23 +146,22 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
           VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
           if (vfs->exists(file)) {
             results.add_file(file, type);
-            num_added++;
+            ++num_added;
           }
         } else {
           if (file.exists()) {
             results.add_file(file, type);
-            num_added++;
+            ++num_added;
           }
         }
       }
-
     } else {
       // Local filename, look it up on the model path.
       int num_dirs = search_path.get_num_directories();
-      for (int i = 0; i < num_dirs; i++) {
+      for (int i = 0; i < num_dirs; ++i) {
         const Filename &directory = search_path.get_directory(i);
         
-        for (int t = 0; t < num_types; t++) {
+        for (int t = 0; t < num_types; ++t) {
           LoaderFileType *type = reg->get_type(t);
           Filename file(directory, filename);
           file.set_extension(type->get_extension());
@@ -172,12 +170,12 @@ find_all_files(const Filename &filename, const DSearchPath &search_path,
             VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
             if (vfs->exists(file)) {
               results.add_file(file, type);
-              num_added++;
+              ++num_added;
             }
           } else {
             if (file.exists()) {
               results.add_file(file, type);
-              num_added++;
+              ++num_added;
             }
           }
         }
