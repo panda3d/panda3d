@@ -181,12 +181,13 @@ BUILDING THE SOURCE TAR-BALL AND THE RPM
 If you are using Linux and you want to build an RPM, it is fairly easy
 to do so.  First, you need a panda source tar-ball.  If you do not
 already have one, build one using 'maketarball.py'.  You will need to
-specify a version number.
+give your version of panda a version number.  The version number can
+be any three integers separated by dots.
 
-	maketarball.py --v1 58 --v2 23 --v3 95
+	makepanda/maketarball.py 58.23.95
 
-This builds panda3d-58.23.95.tar.gz.  Once you have the tar-ball,
-it is easy to turn it into a binary RPM:
+This builds panda3d-58.23.95.tar.gz and panda3d-58-23-95.zip.  Once
+you have the tar-ball, it is easy to turn it into a binary RPM:
 
 	rpmbuild -tb panda3d-58.23.95.tar.gz
 

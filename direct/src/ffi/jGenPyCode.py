@@ -2,7 +2,7 @@
 #
 # This module should be invoked by a shell-script that says:
 #
-#    python direct\\src\\ffi\\jGenPyCode.py <arguments>
+#    python -c "import direct.ffi.jGenPyCode" <arguments>
 #
 # Before invoking python, the shell-script may need to set
 # these environment variables, to make sure that everything

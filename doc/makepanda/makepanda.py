@@ -487,7 +487,7 @@ def parseopts(args):
             elif (option=="--prefix"): PREFIX=value
             elif (option=="--compiler"): COMPILER=value
             elif (option=="--directx-sdk"): DIRECTXSDK=value
-            elif (option=="--thirdparty"): THIRDPARTY=value
+            elif (option=="--thirdparty"): THIRDPARTY=value+"/"
             elif (option=="--optimize"): OPTIMIZE=value
             elif (option=="--quiet"): VERBOSE-=1
             elif (option=="--verbose"): VERBOSE+=1
@@ -585,11 +585,12 @@ if sys.platform == "win32":
         elif (os.path.isdir("C:/Python25")): PythonSDK = "C:/Python25"
         else: sys.exit("Cannot find the python SDK")
 else:
-    if   (os.path.isdir("/usr/include/python2.2")): PythonSDK = "/usr/include/python2.2"
-    elif (os.path.isdir("/usr/include/python2.3")): PythonSDK = "/usr/include/python2.3"
+    if   (os.path.isdir("/usr/include/python2.5")): PythonSDK = "/usr/include/python2.5"
     elif (os.path.isdir("/usr/include/python2.4")): PythonSDK = "/usr/include/python2.4"
-    elif (os.path.isdir("/usr/include/python2.5")): PythonSDK = "/usr/include/python2.5"
+    elif (os.path.isdir("/usr/include/python2.3")): PythonSDK = "/usr/include/python2.3"
+    elif (os.path.isdir("/usr/include/python2.2")): PythonSDK = "/usr/include/python2.2"
     else: sys.exit("Cannot find the python SDK")
+    # this is so that the user can find out which version of python was used.
 
 ########################################################################
 ##
@@ -875,7 +876,7 @@ ALLTARGETS=[]
 global CxxIncludeCache
 CxxIncludeCache = {}
 
-iCachePath=PREFIX+"/makepanda-icache"
+iCachePath=PREFIX+"/tmp/makepanda-icache"
 try: icache = open(iCachePath,'rb')
 except: icache = 0
 if (icache!=0):
@@ -1064,8 +1065,8 @@ def CopyAllFiles(dstdir,srcdir):
 
 def CopyTree(dstdir,srcdir):
     if (os.path.isdir(dstdir)): return 0
-    if (COMPILER=="MSVC7"): cmd = "xcopy.exe /I/Y/E/Q \""+srcdir+"\" \""+dstdir+"\""
-    if (COMPILER=="LINUXA"): cmd = "cp --recursive --force "+srcdir+" "+dstdir
+    if (COMPILER=="MSVC7"): cmd = 'xcopy.exe /I/Y/E/Q "' + srcdir + '" "' + dstdir+ '"'
+    if (COMPILER=="LINUXA"): cmd = 'cp --recursive --force "' + srcdir + '" "' + dstdir + '"'
     oscmd(cmd)
     updatefiledate(dstdir)
 
@@ -1105,11 +1106,10 @@ def CompileFlex(pre,dst,src,dashi):
             if (dashi): oslocalcmd(PREFIX+"/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + fn)
             else:       oslocalcmd(PREFIX+"/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
             replaceInFile(PREFIX+'/tmp/lex.yy.c', dst, '#include <unistd.h>', '')
-            #WriteFile(wdst, ReadFile("built\\tmp\\lex.yy.c").replace("#include <unistd.h>",""))
         if (COMPILER=="LINUXA"):
             if (dashi): oslocalcmd(PREFIX+"/tmp", "flex -i -P" + pre + " -olex.yy.c " + fn)
             else:       oslocalcmd(PREFIX+"/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
-            oscmd('cp built/tmp/lex.yy.c '+dst)
+            oscmd('cp "'+PREFIX+'/tmp/lex.yy.c" "'+dst+'"')
         updatefiledate(dst)
 
 ########################################################################
@@ -1158,10 +1158,10 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             if (OPTIMIZE==2): cmd = cmd + " /D_DEBUG /Zc:forScope /MDd /Zi /RTCs /GS "
             if (OPTIMIZE==3): cmd = cmd + " /Zc:forScope /MD /O2 /Ob2 /G6 /Zi /DFORCE_INLINING "
             if (OPTIMIZE==4): cmd = cmd + " /Zc:forScope /MD /O2 /Ob2 /G6 /GL /Zi /DFORCE_INLINING /DNDEBUG "
-            cmd = cmd + " /Fd\"" + wobj[:-4] + ".pdb\""
+            cmd = cmd + ' /Fd"' + wobj[:-4] + '.pdb"'
             building = buildingwhat(opts)
             if (building): cmd = cmd + " /DBUILDING_"+building
-            cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 \"" + fullsrc + "\""
+            cmd = cmd + ' /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 "' + fullsrc + '"'
             oscmd(cmd)
             updatefiledate(wobj)
 
@@ -1170,8 +1170,8 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
         if (older(wobj, dep)):
             if VERBOSE >= 0:
                 checkIfNewDir(ipath[1])
-            if (src[-2:]==".c"): cmd = "gcc -c -o "+wobj
-            else:                cmd = "g++ -ftemplate-depth-30 -c -o "+wobj
+            if (src[-2:]==".c"): cmd = 'gcc -c -o "' + wobj + '"'
+            else:                cmd = 'g++ -ftemplate-depth-30 -c -o "' + wobj + '"'
             cmd = cmd + ' -I"' + PythonSDK + '"'
             if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I"' + THIRDPARTY + 'vrpn/include"'
             if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I"' + THIRDPARTY + 'fftw/include"'
@@ -1187,7 +1187,7 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             if (OPTIMIZE==4): cmd = cmd + " -O2"
             building = buildingwhat(opts)
             if (building): cmd = cmd + " -DBUILDING_" + building
-            cmd = cmd + " " + fullsrc
+            cmd = cmd + ' "' + fullsrc + '"'
             oscmd(cmd)
             updatefiledate(wobj)
 
@@ -1242,7 +1242,7 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
         if (x[:9]=="BUILDING_"): building = x[9:]
     if (older(outc, dep) or older(outd, dep)):
         if (COMPILER=="MSVC7"):
-            cmd = dotdots + PREFIX+"/bin/interrogate.exe"
+            cmd = '"' + dotdots + PREFIX+'/bin/interrogate.exe"'
             cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
             cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
             if (OPTIMIZE==1): cmd = cmd + ' '
@@ -1252,7 +1252,7 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
             cmd = cmd + ' -S"' + dotdots + PREFIX+'/include/parser-inc"'
             cmd = cmd + ' -I"' + dotdots + PREFIX+'/python/include"'
         if (COMPILER=="LINUXA"):
-            cmd = dotdots + PREFIX+"/bin/interrogate"
+            cmd = '"' + dotdots + PREFIX + '/bin/interrogate"'
             cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
             if (OPTIMIZE==1): cmd = cmd + ' '
             if (OPTIMIZE==2): cmd = cmd + ' '
@@ -1260,7 +1260,7 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
             if (OPTIMIZE==4): cmd = cmd + ' '
             cmd = cmd + ' -S"' + dotdots + PREFIX+'/include/parser-inc" -S"/usr/include"'
             cmd = cmd + ' -I"' + dotdots + PREFIX+'/python/include"'
-        cmd = cmd + " -oc "+dotdots+outc+" -od "+dotdots+outd
+        cmd = cmd + ' -oc "' + dotdots + outc + '" -od "' + dotdots + outd + '"'
         cmd = cmd + ' -fnames -string -refcount -assert -python'
         for x in ipath: cmd = cmd + ' -I"' + dotdots + x + '"'
         if (building): cmd = cmd + " -DBUILDING_"+building
@@ -1295,10 +1295,10 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
         if VERBOSE >= 1:
             print "Generating Python-stub cxx file for %s"%(library,)
         if (COMPILER=="MSVC7"):
-                cmd = PREFIX+"/bin/interrogate_module.exe "
+                cmd = '"' + PREFIX + '/bin/interrogate_module.exe" '
         if (COMPILER=="LINUXA"):
-                cmd = PREFIX+"/bin/interrogate_module "
-        cmd = cmd + " -oc \"" + outc + '" -module "' + module + '" -library "' + library + '" -python '
+                cmd = '"' + PREFIX + '/bin/interrogate_module" '
+        cmd = cmd + ' -oc "' + outc + '" -module "' + module + '" -library "' + library + '" -python '
         for x in files: cmd = cmd + ' "' + x + '" '
         oscmd(cmd)
         updatefiledate(outc)
@@ -1319,9 +1319,9 @@ def CompileLIB(lib=0, obj=[], opts=[]):
         wobj = xpaths(PREFIX+"/tmp/",obj,"")
         ALLTARGETS.append(wlib)
         if (older(wlib, wobj)):
-            cmd = 'lib.exe /nologo /OUT:'+wlib
+            cmd = 'lib.exe /nologo /OUT:"' + wlib + '"'
             if (OPTIMIZE==4): cmd = cmd + " /LTCG "
-            for x in wobj: cmd=cmd+" "+x
+            for x in wobj: cmd=cmd+' "'+x+'"'
             oscmd(cmd)
             updatefiledate(wlib)
 
@@ -1330,8 +1330,8 @@ def CompileLIB(lib=0, obj=[], opts=[]):
         wobj = []
         for x in obj: wobj.append(PREFIX+"/tmp/" + x[:-4] + ".o")
         if (older(wlib, wobj)):
-            cmd = "ar cru " + wlib
-            for x in wobj: cmd=cmd+" "+x
+            cmd = 'ar cru "' + wlib + '"'
+            for x in wobj: cmd=cmd+' "'+x+'"'
             oscmd(cmd)
             updatefiledate(wlib)
 
@@ -1368,10 +1368,10 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             cmd = cmd + " /MAP /MAPINFO:EXPORTS /MAPINFO:LINES /fixed:no /incremental:no /stack:4194304 "
             if (opts.count("NOLIBCI")): cmd = cmd + " /NODEFAULTLIB:LIBCI.LIB "
             if (opts.count("MAXEGGDEF")): cmd = cmd + ' /DEF:pandatool/src/maxegg/MaxEgg.def'
-            cmd = cmd + " /OUT:\"" + dll + "\" /IMPLIB:\"" + lib + "\" /MAP:NUL"
-            cmd = cmd + " /LIBPATH:\""+PREFIX+"/python/libs\" "
+            cmd = cmd + ' /OUT:"' + dll + '" /IMPLIB:"' + lib + '" /MAP:NUL'
+            cmd = cmd + ' /LIBPATH:"' + PREFIX + '/python/libs" '
             for x in wobj: cmd = cmd + ' "' + x + '"'
-            if (dll[-4:]==".exe"): cmd = cmd + " built/tmp/pandaIcon.res"
+            if (dll[-4:]==".exe"): cmd = cmd + ' "' + PREFIX + '/tmp/pandaIcon.res"'
             if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
                 cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + 'lib/x86"'
                 cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + 'lib"'
@@ -1454,13 +1454,13 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x[:-4]+".a")
             else: sys.exit("unknown suffix in object list.")
         if (older(wdll, wobj+xdep)):
-            if (dll[-4:]==".exe"): cmd = "g++ -o " + wdll + " -L" + PREFIX + "/lib"
-            else:                  cmd = "g++ -shared -o " + wdll + " -L" + PREFIX + "/lib"
+            if (dll[-4:]==".exe"): cmd = 'g++ -o "' + wdll + '" -L"' + PREFIX + '/lib"'
+            else:                  cmd = 'g++ -shared -o "' + wdll + '" -L"' + PREFIX + '/lib"'
             for x in obj:
                 suffix = x[-4:]
-                if   (suffix==".obj"): cmd = cmd + " " + PREFIX + "/tmp/"+x[:-4]+".o"
-                elif (suffix==".dll"): cmd = cmd + " -l" + x[3:-4]
-                elif (suffix==".lib"): cmd = cmd + " " + PREFIX + "/lib/"+x[:-4]+".a"
+                if   (suffix==".obj"): cmd = cmd + ' "' + PREFIX + '/tmp/' + x[:-4] + '.o"'
+                elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
+                elif (suffix==".lib"): cmd = cmd + ' "' + PREFIX + '/lib/' + x[:-4] + '.a"'
             if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L"' + THIRDPARTY + 'fmod/lib" -lfmod-3.74'
             if (PkgSelected(opts,"NVIDIACG")):
                 cmd = cmd + ' -L"' + THIRDPARTY + 'nvidiacg/lib" '
@@ -1586,6 +1586,8 @@ conf = conf.replace("VERSION3",str(VERSION3))
 conf = conf.replace("NVERSION",str(NVERSION))
 
 ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.h',conf)
+
+ConditionalWriteFile(PREFIX + "/tmp/pythonversion", os.path.basename(PythonSDK))
 
 ##########################################################################################
 #

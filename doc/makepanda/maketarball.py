@@ -100,32 +100,42 @@ The Panda3D engine.
 %build
 makepanda/makepanda.py --version VERSION --everything
 %install
+PYTHONV=`cat built/tmp/pythonversion`
 rm -rf $RPM_BUILD_ROOT
-PANDA=$RPM_BUILD_ROOT/usr/share/panda3d
-mkdir -p $PANDA
+mkdir -p $RPM_BUILD_ROOT/usr/bin
+mkdir -p $RPM_BUILD_ROOT/usr/include
+mkdir -p $RPM_BUILD_ROOT/usr/lib
+mkdir -p $RPM_BUILD_ROOT/usr/share/panda3d
+mkdir -p $RPM_BUILD_ROOT/usr/lib/$PYTHONV/lib-dynload
 mkdir -p $RPM_BUILD_ROOT/etc/ld.so.conf.d
 mkdir -p $RPM_BUILD_ROOT/usr/bin
-cp --recursive built/bin     $PANDA/bin
-cp --recursive built/lib     $PANDA/lib
-cp --recursive built/etc     $PANDA/etc
-cp --recursive built/include $PANDA/include
-cp --recursive direct        $PANDA/direct
-cp built/direct/__init__.py  $PANDA/direct/__init__.py
-cp --recursive models        $PANDA/models
-cp --recursive samples       $PANDA/samples
-cp --recursive SceneEditor   $PANDA/SceneEditor
-cp --recursive Config.prc    $PANDA/Config.prc
-cp --recursive LICENSE       $PANDA/LICENSE
-echo "/usr/share/panda3d/lib" > $RPM_BUILD_ROOT/etc/ld.so.conf.d/panda3d.conf
-for x in $PANDA/bin/* ; do
+
+sed -e 's@$THIS_PRC_DIR/[.]@/usr/share/panda3d@' < doc/Config.prc > $RPM_BUILD_ROOT/etc/Config.prc
+
+cp --recursive built/lib     $RPM_BUILD_ROOT/usr/lib/panda3d
+cp --recursive built/include $RPM_BUILD_ROOT/usr/include/panda3d
+cp --recursive direct        $RPM_BUILD_ROOT/usr/lib/$PYTHONV/direct
+cp --recursive built/pandac  $RPM_BUILD_ROOT/usr/lib/$PYTHONV/pandac
+cp built/direct/__init__.py  $RPM_BUILD_ROOT/usr/lib/$PYTHONV/direct/__init__.py
+cp --recursive models        $RPM_BUILD_ROOT/usr/share/panda3d/models
+cp --recursive samples       $RPM_BUILD_ROOT/usr/share/panda3d/samples
+cp --recursive SceneEditor   $RPM_BUILD_ROOT/usr/lib/$PYTHONV/SceneEditor
+cp doc/LICENSE               $RPM_BUILD_ROOT/usr/lib/panda3d/LICENSE
+cp doc/LICENSE               $RPM_BUILD_ROOT/usr/share/panda3d/LICENSE
+cp doc/LICENSE               $RPM_BUILD_ROOT/usr/include/panda3d/LICENSE
+echo "/usr/lib/panda3d" >    $RPM_BUILD_ROOT/etc/ld.so.conf.d/panda3d.conf
+cp built/bin/*               $RPM_BUILD_ROOT/usr/bin/
+
+for x in built/lib/* ; do
   base=`basename $x`
-  ln -sf /usr/share/panda3d/bin/$base $RPM_BUILD_ROOT/usr/bin
+  ln -sf /usr/lib/panda3d/$base $RPM_BUILD_ROOT/usr/lib/$PYTHONV/lib-dynload/$base
 done
-for x in $PANDA/direct/src/* ; do
+for x in $RPM_BUILD_ROOT/usr/lib/$PYTHONV/direct/src/* ; do
   if [ `basename $x` != extensions ] ; then
     python -c "import compileall; compileall.compile_dir('$x')"
   fi
 done
+
 %post
 /sbin/ldconfig
 %postun

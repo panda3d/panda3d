@@ -51,7 +51,7 @@ void pathfail(void)
 
 int main(int argc, char **argv)
 {
-  char fnbuf[PATH_MAX],ppbuf[PATH_MAX],pabuf[PATH_MAX],prbuf[PATH_MAX],modcmd[PATH_MAX];
+  char fnbuf[PATH_MAX],ppbuf[PATH_MAX],pabuf[PATH_MAX],modcmd[PATH_MAX];
   int fnlen;
 
   // Ask windows for the file name of this executable.
@@ -67,29 +67,12 @@ int main(int argc, char **argv)
   if (stricmp(fnbuf + fnlen - srclen, LINK_SOURCE)) pathfail();
   fnlen -= srclen; fnbuf[fnlen] = 0;
   
-  // Fetch the command line and trim the first word.
-
-  char *cmdline = GetCommandLine();
-  char *args = cmdline;
-  bool inquote = false;
-  while (*args && ((*args != ' ')||(inquote))) {
-    if (*args == '"') inquote = !inquote;
-    args++;
-  }
-  while (*args==' ') args++;
-
-  // Calculate MODCMD
+  // See if we can find the panda root.  If not, abort.
   
-  if (GENPYCODE) {
-    sprintf(ppbuf,"%s\\direct\\src\\ffi\\jGenPyCode.py",fnbuf);
-    FILE *f = fopen(ppbuf,"r");
-    if (f) {
-      fclose(f);
-      sprintf(modcmd,"python %s\\direct\\src\\ffi\\jGenPyCode.py %s",fnbuf,args);
-    } else {
-      sprintf(modcmd,"python %s\\..\\direct\\src\\ffi\\jGenPyCode.py %s",fnbuf,args);
-    }
-  } else sprintf(modcmd,"python %s",args);
+  sprintf(ppbuf,"%s/direct/__init__.py",fnbuf);
+  FILE *f = fopen(ppbuf,"r");
+  if (f==0) pathfail();
+  fclose(f);
   
   // Set the PYTHONPATH and PATH
   
@@ -102,10 +85,27 @@ int main(int argc, char **argv)
   else      sprintf(pabuf,"PATH=%s\\bin",fnbuf);
   putenv(pabuf);
   
+  // Fetch the command line and trim the first word.
+
+  char *cmdline = GetCommandLine();
+  char *args = cmdline;
+  bool inquote = false;
+  while (*args && ((*args != ' ')||(inquote))) {
+    if (*args == '"') inquote = !inquote;
+    args++;
+  }
+  while (*args==' ') args++;
+
   // Append LINK_TARGET to the file name.
   
   if (fnlen + strlen(LINK_TARGET) > 1023) pathfail();
   strcat(fnbuf, LINK_TARGET);
+  
+  // Calculate MODCMD
+  
+  if (GENPYCODE) {
+    sprintf(modcmd,"python -c \"import direct.ffi.jGenPyCode\" %s",args);
+  } else sprintf(modcmd,"python %s",args);
   
   // Run it.
 
@@ -162,7 +162,7 @@ void pathfail(void)
 
 int main(int argc, char **argv)
 {
-  char fnbuf[PATH_MAX],ppbuf[PATH_MAX],pabuf[PATH_MAX],prbuf[PATH_MAX],genpyc[PATH_MAX];
+  char fnbuf[PATH_MAX],ppbuf[PATH_MAX];
   char *modargv[1024];
   int fnlen,modargc;
 
@@ -180,38 +180,31 @@ int main(int argc, char **argv)
   if (strcmp(fnbuf + fnlen - srclen, LINK_SOURCE)) pathfail();
   fnlen -= srclen; fnbuf[fnlen] = 0;
 
-  // Calculate GENPYC
+  // See if we can find the 'direct' tree locally.
+  // If not, continue anyway.  It may be possible to succeed.
   
-  if (GENPYCODE) {
-    sprintf(ppbuf,"%s/direct/src/ffi/jGenPyCode.py",fnbuf);
-    FILE *f = fopen(ppbuf,"r");
-    if (f) {
-      fclose(f);
-      sprintf(genpyc,"%s/direct/src/ffi/jGenPyCode.py",fnbuf);
-    } else {
-      sprintf(genpyc,"%s/../direct/src/ffi/jGenPyCode.py",fnbuf);
-    }
+  sprintf(ppbuf,"%s/direct/__init__.py",fnbuf);
+  FILE *f = fopen(ppbuf,"r");
+  if (f) {
+    char *pp = getenv("PYTHONPATH");
+    if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s/lib:%s",fnbuf,fnbuf,pp);
+    else    sprintf(ppbuf,"PYTHONPATH=%s:%s/lib",fnbuf,fnbuf);
+    putenv(ppbuf);
   }
   
-  // Set the PYTHONPATH and PATH
-  
-  char *pp = getenv("PYTHONPATH");
-  if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s/lib:%s",fnbuf,fnbuf,pp);
-  else    sprintf(ppbuf,"PYTHONPATH=%s:%s/lib",fnbuf,fnbuf);
-  putenv(ppbuf);
-  char *path = getenv("PATH");
-  if (path) sprintf(pabuf,"PATH=%s/bin;%s",fnbuf,path);
-  else      sprintf(pabuf,"PATH=%s/bin",fnbuf);
-  putenv(pabuf);
-  
   // Calculate MODARGV
+  
   modargc=0;
   modargv[modargc++]="python";
-  if (GENPYCODE) modargv[modargc++] = genpyc;
+  if (GENPYCODE) {
+    modargv[modargc++] = "-c";
+    modargv[modargc++] = "import direct.ffi.jGenPyCode";
+  }
   for (int i=1; i<argc; i++) modargv[modargc++] = argv[i];
   modargv[modargc] = 0;
   
   // Run it.
+
   execv("/usr/bin/python", modargv);
 }
 
