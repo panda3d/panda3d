@@ -487,6 +487,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         self.outputImports(file, nesting)
         self.outputClassHeader(file, nesting)
         self.outputClassComment(file, nesting)
+        self.outputClassCModules(file, nesting)
 
         self.outputNestedTypes(file, nesting)
 
@@ -684,13 +685,15 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             file.write(', ')
         file.write('FFIExternalObject.FFIExternalObject):\n')
 
+
+    def outputClassCModules(self, file, nesting):
         # Store the class C modules for the class so they do not
         # get garbage collected before we do
-        # TODO: this did not appear to work
-        indent(file, nesting+1, '__CModules__ = [')
-        for moduleName in self.getCModules():
-            file.write(moduleName + ',')
-        file.write(']\n')
+        # TODO: this did not appear to work so I'm taking it out
+        # indent(file, nesting+1, '__CModules__ = [')
+        # for moduleName in self.getCModules():
+        #     file.write(moduleName + ',')
+        # file.write(']\n')
 
         # Store the downcast function modules so the FFIExternalObject
         # can index into them to find the downcast functions

@@ -18,10 +18,8 @@ def indent(stream, numIndents, str):
     """
     Write str to stream with numIndents in front it it
     """
-    #indentString = '\t'
     # To match emacs, instead of a tab character we will use 4 spaces
-    indentString = '    '
-    stream.write(indentString * numIndents + str)
+    stream.write('    ' * numIndents + str)
 
 def apropos(obj, *args):
     """

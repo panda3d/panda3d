@@ -221,6 +221,9 @@ class OnscreenText(PandaObject, NodePath):
 
     def setText(self, text):
         self.textNode.setText(text)
+
+    def getText(self):
+        return self.textNode.getText()
         
     def setPos(self, x, y):
         """setPos(self, float, float)

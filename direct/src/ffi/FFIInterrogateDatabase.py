@@ -719,7 +719,9 @@ class FFIInterrogateDatabase:
         FFIConstants.notify.info( 'Generating global downcast code...')
         downcastFile = constructDowncastFile(codeDir, CModuleName)
         # Output all the imports based on this list of functions
-        outputGlobalFileImports(downcastFile, self.environment.downcastFunctions, CModuleName)
+        outputGlobalFileImports(downcastFile,
+                                self.environment.downcastFunctions,
+                                CModuleName)
         for type in self.environment.downcastFunctions:
             type.generateGlobalDowncastCode(downcastFile)
             

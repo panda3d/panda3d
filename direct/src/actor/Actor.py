@@ -709,7 +709,7 @@ class Actor(PandaObject, NodePath):
             for geomNum in range(0, numGeoms):
                 thisGeom = thisGeomNode.node().getGeom(geomNum)
                 thisGeom.markBoundStale()
-                Actor.notify.info("fixing bounds for node %s, geom %s" % \
+                Actor.notify.debug("fixing bounds for node %s, geom %s" % \
                                   (nodeNum, geomNum))
             thisGeomNode.node().markBoundStale()
 
@@ -860,7 +860,7 @@ class Actor(PandaObject, NodePath):
         name(defaults to "modelRoot") and an lod name(defaults to "lodRoot").
         If copy is set to 0, do a lodModelOnce instead of a loadModelCopy.
         """
-        Actor.notify.info("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
+        Actor.notify.debug("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
             (modelPath, partName, lodName, copy))
 
         # load the model and extract its part bundle
@@ -910,8 +910,8 @@ class Actor(PandaObject, NodePath):
         to 'lodRoot' for non-LOD actors) and dict of corresponding
         anims in the form animName:animPath{}"""
         
-        Actor.notify.info("in loadAnims: %s, part: %s, lod: %s" %
-                          (anims, partName, lodName))
+        Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
+                           (anims, partName, lodName))
 
         animDict = {}
 

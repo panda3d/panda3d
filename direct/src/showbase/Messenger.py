@@ -171,29 +171,27 @@ class Messenger:
     def toggleVerbose(self):
         Messenger.notify.setDebug(1 - Messenger.notify.getDebug())
 
-    def listAllEvents(self):
-        str = 'Messenger\n'
-        str = str + '='*50 + '\n'
+    def __repr__(self):
+        """
+        Compact version of event, acceptor pairs
+        """
+        str = "="*64 + "\n"
         keys = self.dict.keys()
         keys.sort()
         for event in keys:
-            str = str + 'Event: ' + event + '\n'
+            str = str + event.ljust(32) + '\t'
             acceptorDict = self.dict[event]
             for object in acceptorDict.keys():
                 method, extraArgs, persistent = acceptorDict[object]
                 className = object.__class__.__name__
                 methodName = method.__name__
-                str = str + '\t' + className + '.' + methodName + '('
-                if extraArgs:
-                    str = str + `extraArgs` + ' + '
-                str = str + 'sentArgs)\n'
+                str = str + className + '.' + methodName + ' '
             str = str + '\n'
-        str = str + '='*50 + '\n'
-        print str
+        return str
 
-    def __repr__(self):
-        """__repr__(self)
-        Print out the table in a readable format
+    def detailedRepr(self):
+        """
+        Print out the table in a detailed readable format
         """
         import types
         str = 'Messenger\n'

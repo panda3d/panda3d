@@ -8,7 +8,6 @@ class Loader:
     """Loader class: contains method to load models, sounds and code"""
 
     notify = directNotify.newCategory("Loader")
-    # notify.setInfo(1)
     
     # special methods
     def __init__(self, base):
@@ -22,7 +21,7 @@ class Loader:
         """loadModel(self, string)
         Attempt to load a model from given file path, return
         a nodepath to the model if successful or None otherwise."""
-        Loader.notify.info("Loading model: %s" % (modelPath) )
+        Loader.notify.debug("Loading model: %s" % (modelPath) )
         node = self.loader.loadSync(Filename(modelPath))
         if (node != None):
             nodePath = self.base.hidden.attachNewNode(node)
@@ -35,7 +34,7 @@ class Loader:
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise"""
-        Loader.notify.info("Loading model once: %s" % (modelPath))
+        Loader.notify.debug("Loading model once: %s" % (modelPath))
         node = ModelPool.loadModel(modelPath)
         if (node != None):
             nodePath = self.base.hidden.attachNewNode(node)
@@ -48,7 +47,7 @@ class Loader:
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise"""
-        Loader.notify.info("Loading model copy: %s" % (modelPath))
+        Loader.notify.debug("Loading model copy: %s" % (modelPath))
         node = ModelPool.loadModel(modelPath)
         if (node != None):
             return (NodePath(node).copyTo(self.base.hidden))
@@ -65,13 +64,13 @@ class Loader:
         anyway--it prevents accumulation of instances of the font
         model under hidden."""
         
-        Loader.notify.info("Loading model once node: %s" % (modelPath))
+        Loader.notify.debug("Loading model once node: %s" % (modelPath))
         return ModelPool.loadModel(modelPath)
 
     def unloadModel(self, modelPath):
 	"""unloadModel(self, string)
 	"""
-	Loader.notify.info("Unloading model: %s" % (modelPath))
+	Loader.notify.debug("Unloading model: %s" % (modelPath))
 	ModelPool.releaseModel(modelPath)
             
     # texture loading funcs
@@ -81,17 +80,17 @@ class Loader:
         TexturePool class. Returns None if not found"""
 
         if alphaPath == None:
-            Loader.notify.info("Loading texture: %s" % (texturePath) )
+            Loader.notify.debug("Loading texture: %s" % (texturePath) )
             texture = TexturePool.loadTexture(texturePath)
         else:
-            Loader.notify.info("Loading texture: %s %s" % (texturePath, alphaPath) )
+            Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath) )
             texture = TexturePool.loadTexture(texturePath, alphaPath)
         return texture
 
     def unloadTexture(self, texture):
 	"""unloadTexture(self, texture)
 	"""
-        Loader.notify.info("Unloading texture: %s" % (texture) )
+        Loader.notify.debug("Unloading texture: %s" % (texture) )
 	TexturePool.releaseTexture(texture)
 
     # sound loading funcs
@@ -99,7 +98,7 @@ class Loader:
         """loadSound(self, string)
         Attempt to load a sound from the given file path using
         Cary's sound class. Returns None if not found"""
-        Loader.notify.info("Loading sound: %s" % (soundPath) )
+        Loader.notify.debug("Loading sound: %s" % (soundPath) )
         sound = AudioPool.loadSound(soundPath)
         return sound
 
@@ -107,7 +106,7 @@ class Loader:
 	"""unloadSound(self, sound)
 	"""
         if sound:
-            Loader.notify.info("Unloading sound: %s" % (sound) )
+            Loader.notify.debug("Unloading sound: %s" % (sound) )
             AudioPool.releaseSound(sound)
 
 
