@@ -319,6 +319,18 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         else:
             NodePath.wrtReparentTo(self, parent)
 
+    def d_setParent(self, parentToken):
+        # We override this DistributedNode method to force a full position
+        # update immediately after the distributed setParent is sent.
+        # See ParentMgr.py for an explanation.
+        DistributedNode.DistributedNode.d_setParent(self, parentToken)
+
+        self.forceToTruePosition()
+        xyz = self.getPos()
+        hpr = self.getHpr()
+        x=xyz[0]; y=xyz[1]; z=xyz[2]
+        h=hpr[0]; p=hpr[1]; r=hpr[2]
+        self.d_setSmPosHpr(x,y,z,h,p,r)
 
     ### Monitor clock sync ###
 

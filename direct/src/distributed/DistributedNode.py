@@ -48,15 +48,14 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
 
     def b_setParent(self, parentToken):
         self.setParent(parentToken)
+        # it's important to call the local setParent first.
         self.d_setParent(parentToken)
-        return None
 
     def d_setParent(self, parentToken):
         self.sendUpdate("setParent", [parentToken])
-        return None
 
     def setParent(self, parentToken):
-        return self.do_setParent(parentToken)
+        self.do_setParent(parentToken)
 
     def do_setParent(self, parentToken):
         """do_setParent(self, int parentToken)
@@ -66,10 +65,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
         desired.
         """
         if not self.isDisabled():
-            assert(self.cr.token2nodePath.has_key(parentToken))
-            parent = self.cr.token2nodePath[parentToken]
-            self.wrtReparentTo(parent)
-        return None
+            self.cr.parentMgr.requestReparent(self, parentToken)
 
     ###### set pos and hpr functions #######
 

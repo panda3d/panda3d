@@ -8,6 +8,7 @@ import ClientDistClass
 import CRCache
 import ConnectionRepository
 import PythonUtil
+import ParentMgr
 import time
 
 class ClientRepository(ConnectionRepository.ConnectionRepository):
@@ -26,6 +27,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
         self.bootedIndex = None
         self.bootedText = None
+
+        # create a parentMgr to handle distributed reparents
+        # this used to be 'token2nodePath'
+        self.parentMgr = ParentMgr.ParentMgr()
 
     def setServerDelta(self, delta):
         """
