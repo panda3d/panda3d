@@ -53,6 +53,8 @@ PUBLISHED:
   void set_color(float r, float g, float b);
   void set_tick_color(float r, float g, float b);
 
+  void set_thickness(float thick);
+
   void set_frame_accurate(bool frame_accurate);
   bool get_frame_accurate() const;
 

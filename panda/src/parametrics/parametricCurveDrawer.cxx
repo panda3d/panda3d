@@ -223,6 +223,7 @@ get_num_ticks() const {
 void ParametricCurveDrawer::
 set_color(float r, float g, float b) {
   _lines.set_color(r, g, b);
+  redraw();
 }
 
 
@@ -235,8 +236,21 @@ set_color(float r, float g, float b) {
 void ParametricCurveDrawer::
 set_tick_color(float r, float g, float b) {
   _ticks.set_color(r, g, b);
+  redraw();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveDrawer::set_thickness
+//       Access: Public
+//  Description: Specifies the thickness of the line in pixels drawn
+//               to represent the curve.  Note that pixel thickness of
+//               a line segment is not supported by DirectX.
+////////////////////////////////////////////////////////////////////
+void ParametricCurveDrawer::
+set_thickness(float thick) {
+  _lines.set_thickness(thick);
+  redraw();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurveDrawer::set_frame_accurate
