@@ -47,7 +47,7 @@ SomethingToEgg(const string &format_name,
      "Specify the units of the resulting egg file.  If this is "
      "specified, the vertices in the egg file will be scaled as "
      "necessary to make the appropriate units conversion; otherwise, "
-     "the vertices in the input file will be converted exactly as they are.",
+     "the vertices will be left as they are.",
      &SomethingToEgg::dispatch_units, NULL, &_output_units);
 
   _input_units = DU_invalid;
