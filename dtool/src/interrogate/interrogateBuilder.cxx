@@ -1899,6 +1899,10 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     itype._flags |= InterrogateType::F_unpublished;
     return;
   }
+  if (TypeManager::involves_protected(cpptype)) {
+    itype._flags &= ~InterrogateType::F_fully_defined;
+    return;
+  }
 
   // A struct type should always be global.
   itype._flags |= InterrogateType::F_global;
