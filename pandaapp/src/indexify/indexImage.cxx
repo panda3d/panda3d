@@ -106,7 +106,7 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
   // the index image.
   bool generate_index_image = true;
   if (!dummy_mode && !force_regenerate && output_filename.exists()) {
-    // Maybe we don't need to renegerated the index.
+    // Maybe we don't need to renegerate the index.
     generate_index_image = false;
 
     const Filename &newest_contributing_filename = 
@@ -127,6 +127,25 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
       // we must regenerate it.
       generate_index_image = 
 	(output_filename.compare_timestamps(photo_filename) < 0);
+    }
+  }
+
+  // If we don't need to regenerate the index, we do need to at least
+  // scan the header.
+  if (!generate_index_image) {
+    if (index_image.read_header(output_filename)) {
+      if (index_image.get_x_size() != actual_index_width ||
+          index_image.get_y_size() != actual_index_height) {
+        // If the index exists but is the wrong size, we'd better
+        // regenerate it.
+        generate_index_image = true;
+      }
+
+    } else {
+      // If we couldn't even read the header, we'd better regenerate it
+      // after all.
+      nout << "Couldn't read " << output_filename << "; regenerating.\n";
+      generate_index_image = true;
     }
   }
 
