@@ -109,8 +109,9 @@ mkdir -p $RPM_BUILD_ROOT/usr/lib/$PYTHONV/lib-dynload
 mkdir -p $RPM_BUILD_ROOT/etc/ld.so.conf.d
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 
-sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < doc/Config.prc > $RPM_BUILD_ROOT/etc/Config.prc
+sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > $RPM_BUILD_ROOT/etc/Config.prc
 
+cp built/etc/Confauto.prc    $RPM_BUILD_ROOT/etc/Confauto.prc
 cp --recursive built/lib     $RPM_BUILD_ROOT/usr/lib/panda3d
 cp --recursive built/include $RPM_BUILD_ROOT/usr/include/panda3d
 cp --recursive direct        $RPM_BUILD_ROOT/usr/lib/$PYTHONV/direct
@@ -146,6 +147,7 @@ done
 rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
+/etc/Confauto.prc
 /etc/Config.prc
 /usr/share/panda3d
 /etc/ld.so.conf.d/panda3d.conf
