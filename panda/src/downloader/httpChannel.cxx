@@ -799,6 +799,7 @@ run_http_proxy_ready() {
     
   // All done sending request.
   _state = S_http_proxy_request_sent;
+  _sent_request_time = ClockObject::get_global_clock()->get_real_time();
   return false;
 }
 
@@ -1318,12 +1319,19 @@ run_reading_header() {
         _response_type = RT_http_hangup;
       }
 
-    } else if (ClockObject::get_global_clock()->get_real_time() -
-               _sent_request_time > get_http_timeout()) {
-      // Time to give up.
-      downloader_cat.info()
-        << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
-      _state = S_try_next_proxy;
+    } else {
+      double elapsed =
+        ClockObject::get_global_clock()->get_real_time() -
+        _sent_request_time;
+      if (elapsed > get_http_timeout()) {
+        // Time to give up.
+        downloader_cat.info()
+          << "Timeout waiting for "
+          << _request.get_url().get_server_and_port() 
+          << " in run_reading_header (" << elapsed 
+          << " seconds elapsed).\n";
+        _state = S_try_next_proxy;
+      }
     }
     return true;
   }
@@ -2040,13 +2048,20 @@ server_getline_failsafe(string &str) {
         // Try again, once.
         _response_type = RT_hangup;
       }
-      
-    } else if (ClockObject::get_global_clock()->get_real_time() -
-               _sent_request_time > get_http_timeout()) {
-      // Time to give up.
-      downloader_cat.info()
-        << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
-      _state = S_try_next_proxy;
+
+    } else {
+      double elapsed =
+        ClockObject::get_global_clock()->get_real_time() -
+        _sent_request_time;
+      if (elapsed > get_http_timeout()) {
+        // Time to give up.
+        downloader_cat.info()
+          << "Timeout waiting for "
+          << _request.get_url().get_server_and_port() 
+          << " in server_getline_failsafe (" << elapsed 
+          << " seconds elapsed).\n";
+        _state = S_try_next_proxy;
+      }
     }
     
     return false;
@@ -2105,12 +2120,19 @@ server_get_failsafe(string &str, size_t num_bytes) {
         _response_type = RT_hangup;
       }
       
-    } else if (ClockObject::get_global_clock()->get_real_time() -
-               _sent_request_time > get_http_timeout()) {
-      // Time to give up.
-      downloader_cat.info()
-        << "Timeout waiting for " << _request.get_url().get_server_and_port() << ".\n";
-      _state = S_try_next_proxy;
+    } else {
+      double elapsed =
+        ClockObject::get_global_clock()->get_real_time() -
+        _sent_request_time;
+      if (elapsed > get_http_timeout()) {
+        // Time to give up.
+        downloader_cat.info()
+          << "Timeout waiting for "
+          << _request.get_url().get_server_and_port() 
+          << " in server_get_failsafe (" << elapsed 
+          << " seconds elapsed).\n";
+        _state = S_try_next_proxy;
+      }
     }
     
     return false;
