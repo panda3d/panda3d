@@ -77,12 +77,15 @@ Step 3: Install Cygwin (v1.3.5 or above should work)
     "Cygwin" and "bash".  You can then run "tcsh" at the bash prompt to make 
     things easier.  
   - Set up the Cygwin environment:
-    - Cygwin 1.3.5 comes with tcsh 6.10.00, which has a bug preventing
-      files on the path like 'CL.EXE' from being recognized as executable 
-      when the shell is outside of their directory.  For now we must revert
-      to tcsh 6.09, do 'copy V:\cygwin-1.3.5\tcsh.exe c:\cygwin\bin'.  Also
-      copy more.exe from the same location, this seems to be missing in the
-      latest cygwin install.
+   #  ignore below, this problem seems to be rectified in latest tcsh 6.11.00,
+   #  which is latest release
+   # - Cygwin 1.3.5 comes with tcsh 6.10.00, which has a bug preventing
+   #   files on the path like 'CL.EXE' from being recognized as executable 
+   #   when the shell is outside of their directory.  For now we must revert
+   #   to tcsh 6.09, do 'copy V:\cygwin-1.3.5\tcsh.exe c:\cygwin\bin'.  Also
+   #   copy more.exe from the same location, this seems to be missing in the
+   #  latest cygwin install.
+   #  
 
     - all of the commands below have been collected in V:\win\install\wintools\etc\setup_env.csh.  cd V:\win\install\wintools\etc, run tcsh, and 
 do 'source setup_env.csh' to do all of the below automatically
