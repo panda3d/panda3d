@@ -11,6 +11,7 @@
 #include "config_framework.h"
 
 #include <pystub.h>
+#include <time.h>
 // Since framework.cxx includes pystub.h, no program that links with
 // framework needs to do so.  No Python code should attempt to link
 // with libframework.so.
@@ -937,6 +938,8 @@ void event_x(CPT_Event) {
 }
 #endif
 
+#define RANDFRAC (rand()/(float)(RAND_MAX))
+
 int framework_main(int argc, char *argv[]) {
   pystub();
 
@@ -977,7 +980,7 @@ int framework_main(int argc, char *argv[]) {
 
   typedef vector<Filename> Files;
   Files files;
-  Files grided_files;
+  Files gridded_files;
 
   if (first_init != NULL)
     first_init();
@@ -985,20 +988,29 @@ int framework_main(int argc, char *argv[]) {
   Files *pFileCollection = &files;
 
   int gridrepeats=1;
+  bool bMoveGriddedObjs = false;
 
   for (int a = 1; a < argc; a++) {
     if ((argv[a] != (char*)0L) && ((argv[a])[0] != '-') &&
 	((argv[a])[0] != '+') && ((argv[a])[0] != '#'))
       pFileCollection->push_back(Filename::from_os_specific(argv[a]));
-	else if((argv[a])[1]=='g') {
-			 pFileCollection = &grided_files;
+	else switch((argv[a])[1]) {
+			  case 'r': 
+				 bMoveGriddedObjs = true;
+				 break;
 
-			 char *pStr=(argv[a])+2;
-			 if (*pStr != '\0') {
-				 gridrepeats=atoi(pStr);
-				 if(gridrepeats<1)
-					 gridrepeats=1;
-			 }
+			  case 'g': {
+				 pFileCollection = &gridded_files;
+	
+				 char *pStr=(argv[a])+2;
+				 if (*pStr != '\0') {
+					 gridrepeats=atoi(pStr);
+					 if(gridrepeats<1)
+						 gridrepeats=1;
+	
+				 }
+				 break;
+			  }
 	}
   }
 
@@ -1140,7 +1152,22 @@ int framework_main(int argc, char *argv[]) {
   root = new NamedNode("root");
   first_arc = new RenderRelation(render, root, 100);
 
-  if (files.empty() && grided_files.empty() && framework.GetBool("have-omnitriangle", true)) {
+  ////// for gridded stuff
+  typedef struct {
+	  float xcenter,ycenter;
+	  float xoffset,yoffset;
+	  float ang1,ang1_inc;
+	  float ang2,ang2_inc;
+	  float radius;
+  } gridded_file_info;
+
+  PT_Node *pNodeArr=NULL;
+  RenderRelation **pRRptrArr=NULL;
+  gridded_file_info *InfoArr=NULL;
+  int gridded_files_size=0;
+  //////////////////
+
+  if (files.empty() && gridded_files.empty() && framework.GetBool("have-omnitriangle", true)) {
     // The user did not specify a model file to load.  Create some
     // default geometry.
       
@@ -1205,14 +1232,19 @@ int framework_main(int argc, char *argv[]) {
 	  RenderRelation *pArc = new RenderRelation(root, node);
 	}
 
-	if(!grided_files.empty()) {
+	if(!gridded_files.empty()) {
 
-		int grided_files_size = grided_files.size();
-		PT_Node *pNodeArr = new PT_Node[grided_files.size()];
+		typedef RenderRelation *RenderRelationPtr;
+
+		gridded_files_size= gridded_files.size();
+		pNodeArr = new PT_Node[gridded_files.size()*gridrepeats];
+		pRRptrArr = new RenderRelationPtr[gridded_files.size()*gridrepeats];
+		InfoArr = new gridded_file_info[gridded_files.size()*gridrepeats];
+
 
 		int i=0;
 
-		for (fi = grided_files.begin(); fi != grided_files.end(); (++fi),i++) {
+		for (fi = gridded_files.begin(); fi != gridded_files.end(); (++fi),i++) {
 			  Filename filename = (*fi);
 		
 			  filename.resolve_filename(local_path);
@@ -1222,37 +1254,75 @@ int framework_main(int argc, char *argv[]) {
 			  if (pNodeArr[i] == (Node *)NULL) {
 				  framework_cat.error() << "Unable to load file " << filename << "\n";
 				  i--;
-				  grided_files_size--;
+				  gridded_files_size--;
 				  continue;
 			  }
 		}
 	
 		#define GRIDCELLSIZE 5.0
+		#define ROTATION_INCREMENT 6.0
+		#define REVOLUTION_INCREMENT 3.0
+		#define MAX_RADIUS 4.0*GRIDCELLSIZE
+		#define MIN_RADIUS 0.1*GRIDCELLSIZE		
 		 
 		int gridwidth=1;
-		while(gridwidth*gridwidth < grided_files_size*gridrepeats) {
+		while(gridwidth*gridwidth < gridded_files_size*gridrepeats) {
 			gridwidth++;
 		}
 	
 		float xpos= -gridwidth*GRIDCELLSIZE/2.0;
 		float ypos = xpos;
 		int filenum=0;
+
+		srand( (unsigned)time( NULL ) );
 	
 		for(int passnum=0;passnum<gridrepeats;passnum++) {
-  		  for (i = 0; i < grided_files_size; i++,filenum++) {
+  		  for (i = 0; i < gridded_files_size; i++,filenum++) {
 
-			  PT_Node pNodePtr=pNodeArr[i];
 			  if(passnum>0) {
 				// cant directly instance characters due to LOD problems,
 				// must copy using copy_subgraph for now
 
-				  pNodePtr = pNodeArr[i]->copy_subgraph(RenderRelation::get_class_type());
+				  pNodeArr[filenum] = pNodeArr[i]->copy_subgraph(RenderRelation::get_class_type());
 			  }
 
-			  RenderRelation *pArc = new RenderRelation(root, pNodePtr);
-			  pArc->set_transition(
-					  new TransformTransition
-					  (LMatrix4f::translate_mat(LVector3f(xpos, ypos, 0.0))));
+			  pRRptrArr[filenum] = new RenderRelation(root, pNodeArr[filenum]);
+
+			  LMatrix4f xfm_mat;
+
+			  if(bMoveGriddedObjs) {
+
+				  InfoArr[filenum].xcenter=xpos;
+				  InfoArr[filenum].ycenter=ypos;
+				  InfoArr[filenum].ang1=RANDFRAC * 360.0;
+				  InfoArr[filenum].ang1_inc=ROTATION_INCREMENT;
+				  
+				  InfoArr[filenum].ang2=RANDFRAC * 360.0;
+				  InfoArr[filenum].ang2_inc=REVOLUTION_INCREMENT;
+	
+				  InfoArr[filenum].radius = (RANDFRAC * (MAX_RADIUS-MIN_RADIUS)) + MIN_RADIUS;
+	
+				  if(RANDFRAC>0.5) {
+					  InfoArr[filenum].ang1_inc=-InfoArr[filenum].ang1_inc;
+				  }
+
+				  if(RANDFRAC>0.5) {
+					  InfoArr[filenum].ang2_inc=-InfoArr[filenum].ang2_inc;
+				  }
+
+				  // xforms happen left to right
+				  LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) * 
+					           LMatrix3f::rotate_mat(InfoArr[filenum].ang2);
+
+				  xfm_mat = LMatrix4f::rotate_mat_normaxis(InfoArr[filenum].ang1,
+												   LVector3f(0.0, 0.0, 1.0)) *
+							LMatrix4f::translate_mat(LVector3f(xpos+new_center._v.v._0, ypos+new_center._v.v._1, 0.0));
+
+			  } else {
+				  xfm_mat = LMatrix4f::translate_mat(LVector3f(xpos, ypos, 0.0));
+			  }
+
+			  pRRptrArr[filenum]->set_transition(new TransformTransition(xfm_mat));
 		
 			  if(((filenum+1) % gridwidth) == 0) {
 				  xpos= -gridwidth*GRIDCELLSIZE/2.0;
@@ -1262,7 +1332,7 @@ int framework_main(int argc, char *argv[]) {
 			  }
 			}
 		}
-		delete [] pNodeArr;
+
 	}
 
     // If we happened to load up both a character file and its
@@ -1344,13 +1414,39 @@ int framework_main(int argc, char *argv[]) {
 	icb.idle();
     } else 
 #endif
-    {
+     {
       main_win->set_idle_callback(&icb);
-      for (;;) {
-	main_win->update();
-	handle_framerate();
-      }
-    }
+      while(1) {
+		  main_win->update();
+		  handle_framerate();
+
+		  if((!gridded_files.empty()) && bMoveGriddedObjs) {
+		    for(int i = 0; i < gridded_files_size*gridrepeats; i++) {
+
+			  InfoArr[i].ang1+=InfoArr[i].ang1_inc;
+			  InfoArr[i].ang2+=InfoArr[i].ang2_inc;
+
+			  // xforms happen left to right
+			  LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
+				           LMatrix3f::rotate_mat(InfoArr[i].ang2);
+
+			  LMatrix4f xfm_mat=
+				        LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang1,
+												   LVector3f(0.0, 0.0, 1.0)) *
+						LMatrix4f::translate_mat(LVector3f(InfoArr[i].xcenter+new_center._v.v._0,
+														   InfoArr[i].ycenter+new_center._v.v._1,
+														   0.0));
+			  pRRptrArr[i]->set_transition(new TransformTransition(xfm_mat));
+			}
+		  }
+	  }
+	}
+  }
+
+  if(!gridded_files.empty()) {
+	  delete [] pNodeArr;
+	  delete [] pRRptrArr;
+	  delete [] InfoArr;
   }
   return 1;
 }
