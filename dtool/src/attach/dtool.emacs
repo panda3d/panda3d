@@ -4,6 +4,13 @@
 ;       (require 'avoid)
 ;       (mouse-avoidance-mode 'cat-and-mouse)))
 
+;; Make sure utf-8 is at the top of the coding-system list; Panda's
+;; TextNode uses utf-8 encoding natively, so we may have some
+;; documents and code written in utf-8.
+
+(prefer-coding-system 'utf-8)
+
+
 ;; make sure we have the compile library available to us
 (load-library "compile")
 ;; Comment given for last checkout command
@@ -286,4 +293,3 @@
 
 ;; get all of the project specific .emacs files
 (ct-load-project-emacs-files)
-
