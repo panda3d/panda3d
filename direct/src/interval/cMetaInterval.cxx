@@ -871,35 +871,37 @@ do_event_forward(CMetaInterval::PlaybackEvent *event,
                  CMetaInterval::ActiveEvents &new_active, bool is_initial) {
   switch (event->_type) {
   case PET_begin:
-    {
-      nassertv(event->_begin_event == event);
-      nassertv(_active.find(event) == _active.end());
-      bool okflag = new_active.insert(event).second;
-      nassertv(okflag);
-    }
+    nassertv(event->_begin_event == event);
+    new_active.push_back(event);
     break;
     
   case PET_end:
     {
       // Erase the event from either the new active or the current
       // active lists.
-      int erase_count = new_active.erase(event->_begin_event);
-      if (erase_count != 0) {
-        // This interval was new this frame; we must invoke it as
-        // an instant event.
-        enqueue_event(event->_n, ET_instant, is_initial);
+      ActiveEvents::iterator ai;
+      ai = find(new_active.begin(), new_active.end(), event->_begin_event);
+      if (ai != new_active.end()) {
+        new_active.erase(ai);
+
       } else {
-        erase_count = _active.erase(event->_begin_event);
-        enqueue_event(event->_n, ET_finalize, is_initial);
+        ai = find(_active.begin(), _active.end(), event->_begin_event);
+        if (ai != _active.end()) {
+          _active.erase(ai);
+
+        } else {
+          // Hmm, this event wasn't on either list.  Maybe there was a
+          // start event on the list whose time was less than 0.
+          interval_cat.error()
+            << "Event " << event->_begin_event->_n << " not on active list.\n";
+          nassertv(false);
+        }
       }
-      nassertv(erase_count == 1);
     }
     break;
     
   case PET_instant:
     nassertv(event->_begin_event == event);
-    nassertv(new_active.find(event) == new_active.end());
-    nassertv(_active.find(event) == _active.end());
     enqueue_event(event->_n, ET_instant, is_initial);
     break;
   }
@@ -927,8 +929,7 @@ finish_events_forward(int now, CMetaInterval::ActiveEvents &new_active) {
   for (ai = new_active.begin(); ai != new_active.end(); ++ai) {
     PlaybackEvent *event = (*ai);
     enqueue_event(event->_n, ET_initialize, false, now - event->_time);
-    bool inserted = _active.insert(event).second;
-    nassertv(inserted);
+    _active.push_back(event);
   }
 }
 
@@ -955,31 +956,34 @@ do_event_reverse(CMetaInterval::PlaybackEvent *event,
       nassertv(event->_begin_event == event);
       // Erase the event from either the new active or the current
       // active lists.
-      int erase_count = new_active.erase(event);
-      if (erase_count != 0) {
-        // This interval was new this frame; we invoke it as an
-        // instant event.
-        enqueue_event(event->_n, ET_reverse_instant, is_initial);
+      ActiveEvents::iterator ai;
+      ai = find(new_active.begin(), new_active.end(), event);
+      if (ai != new_active.end()) {
+        new_active.erase(ai);
+
       } else {
-        erase_count = _active.erase(event->_begin_event);
-        enqueue_event(event->_n, ET_reverse_finalize, is_initial);
+        ai = find(_active.begin(), _active.end(), event);
+        if (ai != _active.end()) {
+          _active.erase(ai);
+
+        } else {
+          // Hmm, this event wasn't on either list.  Maybe there was a
+          // stop event on the list whose time was greater than the
+          // total, somehow. 
+          interval_cat.error()
+            << "Event " << event->_n << " not on active list.\n";
+          nassertv(false);
+        }
       }
-      nassertv(erase_count == 1);
     }
     break;
     
   case PET_end:
-    {
-      nassertv(new_active.find(event->_begin_event) == new_active.end());
-      bool okflag = new_active.insert(event->_begin_event).second;
-      nassertv(okflag);
-    }
+    new_active.push_front(event->_begin_event);
     break;
     
   case PET_instant:
     nassertv(event->_begin_event == event);
-    nassertv(_active.find(event) == _active.end());
-    nassertv(new_active.find(event) == new_active.end());
     enqueue_event(event->_n, ET_reverse_instant, is_initial);
     break;
   }
@@ -1008,8 +1012,7 @@ finish_events_reverse(int now, CMetaInterval::ActiveEvents &new_active) {
   for (ai = new_active.begin(); ai != new_active.end(); ++ai) {
     PlaybackEvent *event = (*ai);
     enqueue_event(event->_n, ET_reverse_initialize, false, now - event->_time);
-    bool inserted = _active.insert(event).second;
-    nassertv(inserted);
+    _active.push_front(event);
   }
 }
   

@@ -23,9 +23,10 @@
 #include "cInterval.h"
 #include "pointerTo.h"
 
-#include <pdeque.h>
-#include <pvector.h>
-#include <pset.h>
+#include "pdeque.h"
+#include "pvector.h"
+#include "plist.h"
+#include "pset.h"
 #include <math.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -136,7 +137,10 @@ private:
 
   typedef pvector<IntervalDef> Defs;
   typedef pvector<PlaybackEvent *> PlaybackEvents;
-  typedef pset<PlaybackEvent *> ActiveEvents;
+  // ActiveEvents must be either a list or a vector--something that
+  // preserves order--so we can call priv_step() on the currently
+  // active intervals in the order they were encountered.
+  typedef plist<PlaybackEvent *> ActiveEvents;
   typedef pdeque<EventQueueEntry> EventQueue;
 
   INLINE int double_to_int_time(double t) const;
