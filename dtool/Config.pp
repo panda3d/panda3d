@@ -515,9 +515,9 @@
 // the output of lex and yacc) without them, but with all the other
 // relevant flags.
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall -g
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall -g
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%]
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall -g $[OPTFLAGS]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[OPTFLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[OPTFLAGS]
 
 // What additional flags should be passed to both compilers when
 // building shared (relocatable) sources?  Some architectures require
