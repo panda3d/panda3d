@@ -476,6 +476,29 @@ get_ignore_mouse() const {
   return _ignore_mouse;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DriveInterface::set_force_mouse
+//       Access: Published
+//  Description: Changes the state of the force_mouse flag.  If this
+//               flag is true, the mouse button need not be held down
+//               in order to drive the avatar around.
+////////////////////////////////////////////////////////////////////
+INLINE void DriveInterface::
+set_force_mouse(bool force_mouse) {
+  _force_mouse = force_mouse;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DriveInterface::get_force_mouse
+//       Access: Published
+//  Description: Returns the current setting of the force_mouse flag.
+//               See set_force_mouse().
+////////////////////////////////////////////////////////////////////
+INLINE bool DriveInterface::
+get_force_mouse() const {
+  return _force_mouse;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::set_mat

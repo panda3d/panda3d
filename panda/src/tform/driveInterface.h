@@ -103,6 +103,9 @@ PUBLISHED:
   INLINE void set_ignore_mouse(bool ignore_mouse);
   INLINE bool get_ignore_mouse() const;
 
+  INLINE void set_force_mouse(bool force_mouse);
+  INLINE bool get_force_mouse() const;
+
   void set_mat(const LMatrix4f &mat);
   const LMatrix4f &get_mat() const;
 
@@ -139,6 +142,7 @@ private:
   bool _is_force_roll;
   CoordinateSystem _cs;
   bool _ignore_mouse;
+  bool _force_mouse;
 
   // Remember which mouse buttons are being held down.
   ModifierButtons _mods;

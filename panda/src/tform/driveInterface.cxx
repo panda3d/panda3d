@@ -137,6 +137,7 @@ DriveInterface(const string &name) : DataNode(name) {
 
   _cs = default_coordinate_system;
   _ignore_mouse = false;
+  _force_mouse = false;
 
   _mods.add_button(MouseButton::one());
   _mods.add_button(MouseButton::two());
@@ -235,7 +236,7 @@ apply(double x, double y, bool any_button) {
   _speed = 0.0f;
   _rot_speed = 0.0f;
 
-  if (any_button) {
+  if (any_button || _force_mouse) {
     // If we're holding down any of the mouse buttons, do this
     // computation based on the mouse position.
 
