@@ -46,6 +46,8 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
 
   _texture = new Texture();
   _texture->set_name(_name);
+  _texture->set_wrapu(Texture::WM_clamp);
+  _texture->set_wrapv(Texture::WM_clamp);
   _copy_texture = true;
 
   _x_size = x_size;

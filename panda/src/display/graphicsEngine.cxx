@@ -252,6 +252,8 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
       if (want_texture) {
         window->_texture = new Texture();
         window->_texture->set_name(name);
+        window->_texture->set_wrapu(Texture::WM_clamp);
+        window->_texture->set_wrapv(Texture::WM_clamp);
         window->_copy_texture = true;
       }
 
