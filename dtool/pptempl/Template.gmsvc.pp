@@ -50,7 +50,7 @@
         $[patsubst %,$[%_obj],$[compile_sources]]
     #endif
   #end lib_target
-  
+
   // We need to know the various targets we'll be building.
   // $[lib_targets] will be the list of dynamic libraries,
   // $[static_lib_targets] the list of static libraries, and
@@ -63,7 +63,7 @@
       $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
       $[active_target(sed_bin_target):%=$[ODIR]/%]
   #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%.exe]
-  
+
   // And these variables will define the various things we need to
   // install.
   #define install_lib $[active_target(metalib_target static_lib_target ss_lib_target)] $[real_lib_targets]
@@ -81,7 +81,7 @@
   #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
   #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
   #define dep_sources_1 $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
-  
+
   // These are the source files that our dependency cache file will
   // depend on.  If it's an empty list, we won't bother writing rules to
   // freshen the cache file.
@@ -110,8 +110,8 @@
 #defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%/include] $[get_ipath]
 
 // These are the complete set of extra flags the compiler requires.
-#defer cflags $[get_cflags] $[CFLAGS] $[CFLAGS_OPT$[OPTIMIZE]] 
-#defer c++flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] 
+#defer cflags $[get_cflags] $[CFLAGS] $[CFLAGS_OPT$[OPTIMIZE]]
+#defer c++flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]]
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
@@ -205,7 +205,7 @@ $[TAB] rm -f $[deferred_objs]
 $[TAB] rm -f $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 #endif
 $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
-                         
+
 // 'cleanall' is intended to undo all the effects of running ppremake
 // and building.  It removes everything except the Makefile.
 cleanall : clean
@@ -273,7 +273,7 @@ $[TAB] rm -f $[sort $[installed_igate_files]]
 
 #if $[HAVE_BISON]
 prebuild-bison : $[patsubst %,%.prebuilt,$[bison_prebuilt]]
-clean-prebuild-bison : 
+clean-prebuild-bison :
 #if $[bison_prebuilt]
 $[TAB] rm -f $[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]
 #endif
@@ -340,10 +340,10 @@ $[varname] = $[sources]
   #define target $[ODIR]/lib$[TARGET]$[dllext].$[dlllib]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-  #define mybasename $[basename $[notdir $[target]]]  
+  #define mybasename $[basename $[notdir $[target]]]
   #define tmpdirname_cyg $[install_lib_dir]/$[mybasename]
   #define tmpdirname_win $[osfilename $[tmpdirname_cyg]]
-  
+
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
 #if $[GENERATE_BUILDDATE]
 .NOTPARALLEL $[target] : $[sources] $[dtool_ver_dir_cyg]/version.rc $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
@@ -354,14 +354,14 @@ $[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verd
 $[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++] $[VER_RESOURCE]
-  #else  
+  #else
 $[TAB] $[SHARED_LIB_C] $[VER_RESOURCE]
   #endif
 #else
 .NOTPARALLEL $[target] : $[sources] $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
-  #else  
+  #else
 $[TAB] $[SHARED_LIB_C]
   #endif
 #endif
@@ -608,7 +608,7 @@ $[ODIR]/$[TARGET].pdb : $[ODIR]/$[TARGET].exe
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
-    $[if $[bin_postprocess_target],$[install_bin_dir]/$[bin_postprocess_target].exe] \  
+    $[if $[bin_postprocess_target],$[install_bin_dir]/$[bin_postprocess_target].exe] \
     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
 
 install-$[TARGET] : $[installed_files]
@@ -631,15 +631,15 @@ $[TAB] cp -f $[ODIR]/$[local] $[dest]
 #endif
 
 #if $[bin_postprocess_target]
+#define input_exe $[ODIR]/$[TARGET].exe
+#define output_exe $[ODIR]/$[bin_postprocess_target].exe
 
-#define exename $[bin_postprocess_target].exe
-#define dest $[install_bin_dir]
+$[output_exe] : $[input_exe]
+$[TAB] rm -f $[output_exe]
+$[TAB] $[bin_postprocess_cmd] $[input_exe] $[bin_postprocess_arg1] $[output_exe]
 
-$[ODIR]/$[bin_postprocess_target].exe : $[ODIR]/$[TARGET].exe
-$[TAB] $[bin_postprocess_cmd] $[ODIR]/$[TARGET].exe $[bin_postprocess_arg1] $[ODIR]/$[exename]
-
-$[install_bin_dir]/$[bin_postprocess_target].exe : $[ODIR]/$[exename]
-$[TAB] cp -f $[ODIR]/$[exename] $[dest]
+$[install_bin_dir]/$[bin_postprocess_target].exe : $[output_exe]
+$[TAB] cp -f $[output_exe] $[install_bin_dir]
 #endif
 
 #end bin_target
@@ -876,7 +876,7 @@ clean-prebuild-bison : $[subdirs:%=clean-prebuild-bison-%]
 #endif
 
 #formap dirname subdirs
-#define depends 
+#define depends
 $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
 $[TAB] cd ./$[PATH] && $(MAKE) all
 #end dirname
