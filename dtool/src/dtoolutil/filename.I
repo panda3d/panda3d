@@ -361,6 +361,9 @@ set_type(Filename::Type type) {
   case T_dso:
   case T_executable:
     set_binary();
+
+  case T_general:
+    break;
   }
 }
 
