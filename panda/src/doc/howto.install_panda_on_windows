@@ -30,6 +30,7 @@ Notes:
 Step 0: Map network drive to build tools drive
   - right click on Network Places, choose Map Network Drive
   - Map Network Drive V: to \\dimbo\panda
+    You also can do this from cmd.exe using 'net use v: \\dimbo\panda'
   - select reconnect drive at startup
   - if this doesnt work, you can install the build tools from CD
   - run 'regedit V:\tabs.reg' to enable cmd.exe tab-filename-completion.  
