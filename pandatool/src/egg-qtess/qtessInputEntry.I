@@ -156,14 +156,14 @@ set_uv(int u, int v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_per_isoparm
+//     Function: QtessInputEntry::set_per_isoparam
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void QtessInputEntry::
-set_per_isoparm(double pi) {
-  _per_isoparm = pi;
-  _type = T_per_isoparm;
+set_per_isoparam(double pi) {
+  _per_isoparam = pi;
+  _type = T_per_isoparam;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,7 +173,7 @@ set_per_isoparm(double pi) {
 ////////////////////////////////////////////////////////////////////
 INLINE void QtessInputEntry::
 set_per_score(double pi) {
-  _per_isoparm = pi;
+  _per_isoparam = pi;
   _type = T_per_score;
 }
 

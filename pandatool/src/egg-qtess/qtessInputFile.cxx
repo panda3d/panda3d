@@ -96,10 +96,10 @@ read(const Filename &filename) {
 	}
 	
         // Split the line into two groups of words at the colon: names
-        // before the colon, and parms following it.
-        vector_string names, parms;
+        // before the colon, and params following it.
+        vector_string names, params;
         extract_words(line.substr(0, colon), names);
-        extract_words(line.substr(colon + 1), parms);
+        extract_words(line.substr(colon + 1), params);
         
         vector_string::const_iterator ni;
         for (ni = names.begin(); ni != names.end(); ++ni) {
@@ -109,19 +109,19 @@ read(const Filename &filename) {
 	// Scan for things like ap, ad, ar, and pull them out of the
 	// stream.
 	vector_string::iterator ci, cnext;
-	ci = parms.begin();
-	while (ci != parms.end()) {
+	ci = params.begin();
+	while (ci != params.end()) {
 	  cnext = ci;
 	  ++cnext;
 	  
-	  string parm = *ci;
+	  string param = *ci;
 	  bool invert = false;
-	  if (parm[0] == '!' && parm.size() > 1) {
+	  if (param[0] == '!' && param.size() > 1) {
 	    invert = true;
-	    parm = parm.substr(1);
+	    param = param.substr(1);
 	  }
-	  if (tolower(parm[0]) == 'a' && parm.size() > 1) {
-	    switch (tolower(parm[1])) {
+	  if (tolower(param[0]) == 'a' && param.size() > 1) {
+	    switch (tolower(param[1])) {
 	    case 'p':
 	      entry._auto_place = !invert;
 	      break;
@@ -131,10 +131,10 @@ read(const Filename &filename) {
 	      break;
 
 	    case 'r':
-              if (!string_to_double(parm.substr(2), entry._curvature_ratio)) {
+              if (!string_to_double(param.substr(2), entry._curvature_ratio)) {
 		qtess_cat.error()
                   << _filename << ": line " << line_number 
-                  << " - invalid field " << parm << "\n";
+                  << " - invalid field " << param << "\n";
 		return false;
 	      }
 	      break;
@@ -145,84 +145,84 @@ read(const Filename &filename) {
                 << line_number << ".\n";
 	      return false;
 	    }
-	    parms.erase(ci);
+	    params.erase(ci);
 	  } else {
 	    ci = cnext;
 	  }
 	}
 	
-	if (!parms.empty()) {
+	if (!params.empty()) {
 	  bool okflag = true;
-	  if (cmp_nocase(parms[0], "omit")==0) {
+	  if (cmp_nocase(params[0], "omit")==0) {
 	    entry.set_omit();
 
-	  } else if (cmp_nocase(parms[0], "matchuu")==0) {
+	  } else if (cmp_nocase(params[0], "matchuu")==0) {
 	    entry.set_match_uu();
-	    if (parms.size() > 1 && cmp_nocase(parms[1], "matchvv")==0) {
+	    if (params.size() > 1 && cmp_nocase(params[1], "matchvv")==0) {
 	      entry.set_match_vv();
 	    }
 
-	  } else if (cmp_nocase(parms[0], "matchvv")==0) {
+	  } else if (cmp_nocase(params[0], "matchvv")==0) {
 	    entry.set_match_vv();
-	    if (parms.size() > 1 && cmp_nocase(parms[1], "matchuu")==0) {
+	    if (params.size() > 1 && cmp_nocase(params[1], "matchuu")==0) {
 	      entry.set_match_uu();
 	    }
 
-	  } else if (cmp_nocase(parms[0], "matchuv")==0) {
+	  } else if (cmp_nocase(params[0], "matchuv")==0) {
 	    entry.set_match_uv();
-	    if (parms.size() > 1 && cmp_nocase(parms[1], "matchvu")==0) {
+	    if (params.size() > 1 && cmp_nocase(params[1], "matchvu")==0) {
 	      entry.set_match_vu();
 	    }
 
-	  } else if (cmp_nocase(parms[0], "matchvu")==0) {
+	  } else if (cmp_nocase(params[0], "matchvu")==0) {
 	    entry.set_match_vu();
-	    if (parms.size() > 1 && cmp_nocase(parms[1], "matchuv")==0) {
+	    if (params.size() > 1 && cmp_nocase(params[1], "matchuv")==0) {
 	      entry.set_match_uv();
 	    }
 
-	  } else if (cmp_nocase(parms[0], "minu")==0) {
+	  } else if (cmp_nocase(params[0], "minu")==0) {
 	    // minu #: minimum tesselation in U.
-	    if (parms.size() < 2) {
+	    if (params.size() < 2) {
 	      okflag = false;
 	    } else {
               int value = 0;
-              okflag = string_to_int(parms[1], value);
+              okflag = string_to_int(params[1], value);
 	      entry.set_min_u(value);
 	    }
 
-	  } else if (cmp_nocase(parms[0], "minv")==0) {
+	  } else if (cmp_nocase(params[0], "minv")==0) {
 	    // minu #: minimum tesselation in V.
-	    if (parms.size() < 2) {
+	    if (params.size() < 2) {
 	      okflag = false;
 	    } else {
               int value = 0;
-              okflag = string_to_int(parms[1], value);
+              okflag = string_to_int(params[1], value);
 	      entry.set_min_v(value);
 	    }
 
-	  } else if (tolower(parms[0][0]) == 'i') {
-	    // "i#": per-isoparm tesselation.
+	  } else if (tolower(params[0][0]) == 'i') {
+	    // "i#": per-isoparam tesselation.
             int value = 0;
-            okflag = string_to_int(parms[0].substr(1), value);
-            entry.set_per_isoparm(value);
+            okflag = string_to_int(params[0].substr(1), value);
+            entry.set_per_isoparam(value);
 
-	  } else if (parms[0][parms[0].length() - 1] == '%') {
+	  } else if (params[0][params[0].length() - 1] == '%') {
             double value = 0.0;
-            okflag = string_to_double(parms[0].substr(0, parms[0].length() - 1), value);
+            okflag = string_to_double(params[0].substr(0, params[0].length() - 1), value);
 	    entry.set_importance(value / 100.0);
 
-	  } else if (parms.size() == 1) {
+	  } else if (params.size() == 1) {
 	    // One numeric parameter: the number of triangles.
             int value = 0;
-            okflag = string_to_int(parms[0], value);
+            okflag = string_to_int(params[0], value);
             entry.set_num_tris(value);
 
-	  } else if (parms.size() >= 2) {
+	  } else if (params.size() >= 2) {
 	    // Two or more numeric parameters: the number of u by v quads,
-	    // followed by an optional list of specific isoparms.
+	    // followed by an optional list of specific isoparams.
             int u = 0, v = 0;
-            okflag = string_to_int(parms[0], u) && string_to_int(parms[1], v);
-	    entry.set_uv(u, v, &parms[2], parms.size() - 2);
+            okflag = string_to_int(params[0], u) && string_to_int(params[1], v);
+	    entry.set_uv(u, v, &params[2], params.size() - 2);
 
 	  } else {
 	    okflag = false;

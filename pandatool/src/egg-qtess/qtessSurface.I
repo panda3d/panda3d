@@ -117,7 +117,7 @@ set_min_v(int min_v) {
 //     Function: QtessSurface::count_patches
 //       Access: Public
 //  Description: Returns the number of patches the NURBS contains.
-//               Each patch is a square area bounded by isoparms.
+//               Each patch is a square area bounded by isoparams.
 //               This actually scales by the importance of the
 //               surface, if it is not 1.
 ////////////////////////////////////////////////////////////////////

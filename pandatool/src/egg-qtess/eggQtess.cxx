@@ -47,16 +47,16 @@ EggQtess() {
 
   add_option
     ("up", "subdiv", 0,
-     "Specify a uniform subdivision per patch (isoparm).  Each NURBS "
+     "Specify a uniform subdivision per patch (isoparam).  Each NURBS "
      "surface is made up of N x M patches, each of which is divided "
      "into subdiv x subdiv quads.  A fractional number is allowed.",
-     &EggQtess::dispatch_double, NULL, &_uniform_per_isoparm);
+     &EggQtess::dispatch_double, NULL, &_uniform_per_isoparam);
 
   add_option
     ("us", "subdiv", 0,
      "Specify a uniform subdivision per surface.  Each NURBS "
      "surface is subdivided into subdiv x subdiv quads, regardless "
-     "of the number of isoparms it has.  A fractional number is "
+     "of the number of isoparams it has.  A fractional number is "
      "meaningless.",
      &EggQtess::dispatch_int, NULL, &_uniform_per_surface);
 
@@ -79,7 +79,7 @@ EggQtess() {
     ("ad", "", 0,
      "Attempt to automatically distribute polygons among the surfaces "
      "where they are most needed according to curvature and size, "
-     "instead of according to the number of isoparms.  This only has "
+     "instead of according to the number of isoparams.  This only has "
      "meaning when used in conjunction with -t.",
      &EggQtess::dispatch_none, &QtessGlobals::_auto_distribute);
 
@@ -111,7 +111,7 @@ EggQtess() {
      "Describe the format of the qtess parameter file specified with -f.",
      &EggQtess::dispatch_none, &_describe_qtess);
 
-  _uniform_per_isoparm = 0.0;
+  _uniform_per_isoparam = 0.0;
   _uniform_per_surface = 0;
   _total_tris = 0;
 }
@@ -173,14 +173,14 @@ run() {
 
     default_entry.set_num_tris(extra_tris);
 
-  } else if (_uniform_per_isoparm!=0.0) {
-    default_entry.set_per_isoparm(_uniform_per_isoparm);
+  } else if (_uniform_per_isoparam!=0.0) {
+    default_entry.set_per_isoparam(_uniform_per_isoparam);
 
   } else if (_uniform_per_surface!=0.0) {
     default_entry.set_uv(_uniform_per_surface, _uniform_per_surface);
 
   } else {
-    default_entry.set_per_isoparm(1.0);
+    default_entry.set_per_isoparam(1.0);
   }
 
   default_entry.count_tris();
@@ -252,11 +252,11 @@ describe_qtess_format() {
   
   show_text("  NUM NUM [[!]u# [!]u# ...] [[!]v# [!]v# ...]", 10,
             "Tesselate to NUM x NUM quads.  If u# or v# appear, they indicate "
-            "additional isoparms to insert (or remove if preceded by an "
+            "additional isoparams to insert (or remove if preceded by an "
             "exclamation point).  The range is [0, 1].\n\n");
 
   show_text("  iNUM", 10,
-            "Subdivision amount per isoparm.  Equivalent to the command-line "
+            "Subdivision amount per isoparam.  Equivalent to the command-line "
             "option -u NUM.\n\n");
   
   show_text("  NUM%", 10,
@@ -308,7 +308,7 @@ describe_qtess_format() {
 
   show_text("  !ad", 10,
             "Do not automatically distribute polygons; distribute "
-            "them according to the number of isoparms of each surface.\n\n");
+            "them according to the number of isoparams of each surface.\n\n");
 
   show_text("  arNUM", 10,
             "Specify the ratio of dominance of size to curvature.\n\n");

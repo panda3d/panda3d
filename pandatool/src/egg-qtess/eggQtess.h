@@ -46,7 +46,7 @@ private:
   void find_surfaces(EggNode *egg_node);
 
   Filename _qtess_filename;
-  double _uniform_per_isoparm;
+  double _uniform_per_isoparam;
   int _uniform_per_surface;
   int _total_tris;
   bool _qtess_output;

@@ -55,7 +55,7 @@ operator = (const QtessInputEntry &copy) {
   _num_tris = copy._num_tris;
   _num_u = copy._num_u;
   _num_v = copy._num_v;
-  _per_isoparm = copy._per_isoparm;
+  _per_isoparam = copy._per_isoparam;
   _iso_u = copy._iso_u;
   _iso_v = copy._iso_v;
   _surfaces = copy._surfaces;
@@ -100,11 +100,11 @@ public:
 //     Function: QtessInputEntry::set_uv
 //       Access: Public
 //  Description: Sets specific tesselation.  The tesselation will be u
-//               by v quads, with the addition of any isoparms
-//               described in the list of parms.
+//               by v quads, with the addition of any isoparams
+//               described in the list of params.
 ////////////////////////////////////////////////////////////////////
 void QtessInputEntry::
-set_uv(int u, int v, const string parms[], int num_parms) {
+set_uv(int u, int v, const string params[], int num_params) {
   _num_u = u;
   _num_v = v;
 
@@ -118,16 +118,16 @@ set_uv(int u, int v, const string parms[], int num_parms) {
   }
 
   // Then get out all the additional entries.
-  for (i = 0; i < num_parms; i++) {
-    const string &parm = parms[i];
+  for (i = 0; i < num_params; i++) {
+    const string &param = params[i];
 
-    if (parm[0] == '!' && parm.size() > 2) {
+    if (param[0] == '!' && param.size() > 2) {
       double value;
-      if (!string_to_double(parm.substr(2), value)) {
+      if (!string_to_double(param.substr(2), value)) {
         qtess_cat.warning()
-          << "Ignoring invalid parameter: " << parm << "\n";
+          << "Ignoring invalid parameter: " << param << "\n";
       } else {
-        switch (tolower(parm[1])) {
+        switch (tolower(param[1])) {
         case 'u':
           _auto_place = false;
           _iso_u.erase(remove_if(_iso_u.begin(), _iso_u.end(), 
@@ -144,16 +144,16 @@ set_uv(int u, int v, const string parms[], int num_parms) {
 	
         default:
           qtess_cat.warning()
-            << "Ignoring invalid parameter: " << parms[i] << "\n";
+            << "Ignoring invalid parameter: " << params[i] << "\n";
         }
       }
     } else {
       double value;
-      if (!string_to_double(parm.substr(1), value)) {
+      if (!string_to_double(param.substr(1), value)) {
         qtess_cat.warning()
-          << "Ignoring invalid parameter: " << parm << "\n";
+          << "Ignoring invalid parameter: " << param << "\n";
       } else {
-        switch (tolower(parm[0])) {
+        switch (tolower(param[0])) {
         case 'u':
           _auto_place = false;
           _iso_u.push_back(value);
@@ -166,7 +166,7 @@ set_uv(int u, int v, const string parms[], int num_parms) {
           
         default:
           qtess_cat.warning()
-            << "Ignoring invalid parameter: " << parms[i] << "\n";
+            << "Ignoring invalid parameter: " << params[i] << "\n";
         }
       }
     }
@@ -183,24 +183,24 @@ set_uv(int u, int v, const string parms[], int num_parms) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::add_extra_u_isoparm
+//     Function: QtessInputEntry::add_extra_u_isoparam
 //       Access: Public
 //  Description: May be called a number of times before set_uv() to add
-//               specific additional isoparms to the tesselation.
+//               specific additional isoparams to the tesselation.
 ////////////////////////////////////////////////////////////////////
 void QtessInputEntry::
-add_extra_u_isoparm(double u) {
+add_extra_u_isoparam(double u) {
   _iso_u.push_back(u);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::add_extra_v_isoparm
+//     Function: QtessInputEntry::add_extra_v_isoparam
 //       Access: Public
 //  Description: May be called a number of times before set_uv() to add
-//               specific additional isoparms to the tesselation.
+//               specific additional isoparams to the tesselation.
 ////////////////////////////////////////////////////////////////////
 void QtessInputEntry::
-add_extra_v_isoparm(double v) {
+add_extra_v_isoparam(double v) {
   _iso_v.push_back(v);
 }
 
@@ -321,12 +321,12 @@ count_tris(double tri_factor, int attempts) {
 
   if (_type == T_num_tris && _num_patches > 0.0) {
     // If we wanted to aim for a particular number of triangles for
-    // the group, choose a per-isoparm setting that will approximately
+    // the group, choose a per-isoparam setting that will approximately
     // achieve this.
     if (_auto_distribute) {
       set_per_score(sqrt(0.5 * (double)_num_tris / _num_patches / tri_factor));
     } else {
-      set_per_isoparm(sqrt(0.5 * (double)_num_tris / _num_patches / tri_factor));
+      set_per_isoparam(sqrt(0.5 * (double)_num_tris / _num_patches / tri_factor));
     }
     aim_for_tris = true;
   }
@@ -349,12 +349,12 @@ count_tris(double tri_factor, int attempts) {
       }
       break;
       
-    case T_per_isoparm:
-      surface->tesselate_per_isoparm(_per_isoparm, _auto_place, _curvature_ratio);
+    case T_per_isoparam:
+      surface->tesselate_per_isoparam(_per_isoparam, _auto_place, _curvature_ratio);
       break;
       
     case T_per_score:
-      surface->tesselate_per_score(_per_isoparm, _auto_place, _curvature_ratio);
+      surface->tesselate_per_score(_per_isoparam, _auto_place, _curvature_ratio);
       break;
 
     default:
@@ -380,7 +380,7 @@ count_tris(double tri_factor, int attempts) {
 ////////////////////////////////////////////////////////////////////
 //     Function: QtessInputEntry::output_extra
 //       Access: Public, Static
-//  Description: This function is used to identify the extra isoparms
+//  Description: This function is used to identify the extra isoparams
 //               in the list added by user control.
 ////////////////////////////////////////////////////////////////////
 void QtessInputEntry::
@@ -439,9 +439,9 @@ output(ostream &out) const {
     show_auto = true;
     break;
 
-  case T_per_isoparm:
+  case T_per_isoparam:
   case T_per_score:
-    out << "i" << _per_isoparm;
+    out << "i" << _per_isoparam;
     show_auto = true;
     break;
 

@@ -59,7 +59,7 @@ public:
   void tesselate_uv(int u, int v, bool autoplace, double ratio);
   void tesselate_specific(const pvector<double> &u_list,
                           const pvector<double> &v_list);
-  void tesselate_per_isoparm(double pi, bool autoplace, double ratio);
+  void tesselate_per_isoparam(double pi, bool autoplace, double ratio);
   void tesselate_per_score(double pi, bool autoplace, double ratio);
   void tesselate_auto(int u, int v, double ratio);
 
@@ -90,7 +90,7 @@ private:
 
   int _num_u, _num_v;
   int _tess_u, _tess_v;
-  pvector<double> _iso_u, _iso_v;  // If nonempty, isoparms at which to tess.
+  pvector<double> _iso_u, _iso_v;  // If nonempty, isoparams at which to tess.
 
   // _importance is the relative importance of the surface along either
   // axis; _importance2 is this number squared, which is the value set by

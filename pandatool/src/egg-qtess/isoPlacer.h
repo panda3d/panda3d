@@ -27,7 +27,7 @@ class NurbsSurfaceResult;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IsoPlacer
-// Description : Contains the logic used to place isoparms where
+// Description : Contains the logic used to place isoparams where
 //               they'll do the most good on a surface.
 ////////////////////////////////////////////////////////////////////
 class IsoPlacer {

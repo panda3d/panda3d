@@ -90,9 +90,9 @@ QtessSurface(EggNurbsSurface *egg_surface) :
 //  Description: Computes the curvature/stretch score for the surface,
 //               if it has not been already computed, and returns the
 //               net surface score.  This is used both for
-//               automatically distributing isoparms among the
+//               automatically distributing isoparams among the
 //               surfaces by curvature, as well as for automatically
-//               placing the isoparms within each surface by
+//               placing the isoparams within each surface by
 //               curvature.
 ////////////////////////////////////////////////////////////////////
 double QtessSurface::
@@ -203,7 +203,7 @@ tesselate_uv(int u, int v, bool autoplace, double ratio) {
 //     Function: QtessSurface::tesselate_specific
 //       Access: Public
 //  Description: Sets the surface up to tesselate itself at specific
-//               isoparms only.
+//               isoparams only.
 ////////////////////////////////////////////////////////////////////
 void QtessSurface::
 tesselate_specific(const pvector<double> &u_list,
@@ -215,13 +215,13 @@ tesselate_specific(const pvector<double> &u_list,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::tesselate_per_isoparm
+//     Function: QtessSurface::tesselate_per_isoparam
 //       Access: Public
 //  Description: Sets the surface up to tesselate itself to a uniform
-//               amount per isoparm.
+//               amount per isoparam.
 ////////////////////////////////////////////////////////////////////
 void QtessSurface::
-tesselate_per_isoparm(double pi, bool autoplace, double ratio) {
+tesselate_per_isoparam(double pi, bool autoplace, double ratio) {
   if (_num_u == 0 || _num_v == 0) {
     omit();
 
@@ -264,7 +264,7 @@ tesselate_per_score(double pi, bool autoplace, double ratio) {
 //       Access: Public
 //  Description: Sets the surface up to tesselate itself by
 //               automatically determining the best place to put the
-//               indicated u x v isoparms.
+//               indicated u x v isoparams.
 ////////////////////////////////////////////////////////////////////
 void QtessSurface::
 tesselate_auto(int u, int v, double ratio) {
@@ -388,7 +388,7 @@ apply_match() {
 //       Access: Private
 //  Description: Subdivide the surface uniformly according to the
 //               parameters specified by an earlier call to omit(),
-//               teseselate_uv(), or tesselate_per_isoparm().
+//               teseselate_uv(), or tesselate_per_isoparam().
 ////////////////////////////////////////////////////////////////////
 PT(EggGroup) QtessSurface::
 do_uniform_tesselate(int &tris) const {

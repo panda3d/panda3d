@@ -34,7 +34,7 @@ class QtessSurface;
 class QtessInputEntry {
 public:
   enum Type {
-    T_undefined, T_omit, T_num_tris, T_uv, T_per_isoparm, T_per_score,
+    T_undefined, T_omit, T_num_tris, T_uv, T_per_isoparam, T_per_score,
     T_importance, T_match_uu, T_match_vv, T_match_uv, T_match_vu,
     T_min_u, T_min_v
   };
@@ -55,11 +55,11 @@ public:
   INLINE void set_omit();
   INLINE void set_num_tris(int nt);
   INLINE void set_uv(int u, int v);
-  void set_uv(int u, int v, const string parms[], int num_parms);
-  INLINE void set_per_isoparm(double pi);
+  void set_uv(int u, int v, const string params[], int num_params);
+  INLINE void set_per_isoparam(double pi);
   INLINE void set_per_score(double pi);
-  void add_extra_u_isoparm(double u);
-  void add_extra_v_isoparm(double u);
+  void add_extra_u_isoparam(double u);
+  void add_extra_v_isoparam(double u);
 
   Type match(QtessSurface *surface);
   INLINE int get_num_surfaces() const;
@@ -80,7 +80,7 @@ private:
 
   int _num_tris;
   int _num_u, _num_v;
-  double _per_isoparm;
+  double _per_isoparam;
   pvector<double> _iso_u, _iso_v;
   Type _type;
 
