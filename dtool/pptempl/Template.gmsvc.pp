@@ -33,8 +33,15 @@
   #end file
 #end decygwin
 
-#define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
+// cant use DTOOL_INSTALL since may not be attached
+//#define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
+//#define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
+
+#define dtool_ver_dir_cyg ../../../dtool/src/dtoolbase
 #define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
+
+
+
 
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
@@ -335,13 +342,13 @@ $[varname] = $[sources]
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
 $[target] : $[sources] $[so_dir]/stamp $[dtool_ver_dir_cyg]/version.rc
    //  first generate builddate for rc compiler
+   // uses different .res names, no rm verdate.h to allow multi-proc build to work
 	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[dtool_ver_dir]\verdate.h"
-	rc /n /fo"$[ver_resource]" $[filter /D%, $[flags]]   "$[dtool_ver_dir]\version.rc"
-	rm -f "$[dtool_ver_dir]\verdate.h"
+	rc /n /fo"$[target]-ver.res" $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-	$[SHARED_LIB_C++]
+	$[SHARED_LIB_C++] "$[target]-ver.res"
   #else  
-	$[SHARED_LIB_C]
+	$[SHARED_LIB_C]   "$[target]-ver.res"
   #endif
 
 $[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
