@@ -20,8 +20,9 @@ class Mopath(PandaObject):
     def getMaxT(self):
         return self.maxT
 
-    def loadFile(self, filename):
-        self.reset()
+    def loadFile(self, filename, fReset = 1):
+        if fReset:
+            self.reset()
         nodePath = loader.loadModel(filename)
         if nodePath:
             self.__extractCurves(nodePath)

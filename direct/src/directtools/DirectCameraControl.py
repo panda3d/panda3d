@@ -254,12 +254,12 @@ class DirectCameraControl(PandaObject):
         t.coaCenter = getScreenXY(self.coaMarker)
         t.lastAngle = getCrankAngle(t.coaCenter)
         # Get a copy of the camera/manipRef offset matrix
-        t.wrtMat = Mat4()
-        t.wrtMat.assign(direct.camera.getMat( self.camManipRef ))
+        t.wrtMat = Mat4(direct.camera.getMat( self.camManipRef ))
         taskMgr.add(t, 'manipulateCamera')
 
     def mouseRollTask(self, state):
         wrtMat = state.wrtMat
+        print wrtMat
         angle = getCrankAngle(state.coaCenter)
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
