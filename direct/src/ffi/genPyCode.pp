@@ -25,6 +25,9 @@
 #if $[eq $[PLATFORM],Win32]
 
 #output genPyCode.bat
+rem #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
+rem ################################# DO NOT EDIT ###########################
+
 @echo off
 python $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 #end genPyCode.bat
@@ -32,14 +35,19 @@ python $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 #else  // Win32
 
 #output genPyCode
-$[hash]! /bin/sh
+#! /bin/sh
+#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
+################################# DO NOT EDIT ###########################
+
 python '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
 #end genPyCode
 
 #endif  // Win32
 
 #output genPyCode.py
-$[hash]! /usr/bin/env python
+#! /usr/bin/env python
+#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
+################################# DO NOT EDIT ###########################
 
 import os
 import sys

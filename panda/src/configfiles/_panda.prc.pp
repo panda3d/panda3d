@@ -7,6 +7,8 @@
 //
 
 #output _panda.prc
+#### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
+################################# DO NOT EDIT ###########################
 
 # Let's set up a default window size of 800x600.  The user can
 # override this in his or her personal prc file.
