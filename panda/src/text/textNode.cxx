@@ -58,6 +58,7 @@ TypeHandle TextNode::_type_handle;
 TextNode::
 TextNode(const string &name) : PandaNode(name), _assembler(this) {
   _flags = 0;
+  _max_rows = 0;
 
   if (text_small_caps) {
     set_small_caps(true);
