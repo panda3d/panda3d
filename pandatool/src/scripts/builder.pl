@@ -31,6 +31,7 @@ if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
 }
 $ENV{'PPREMAKE_CONFIG'} = '/usr/local/etc/Config.pp';
 $ENV{'TCSH_NO_CSHRC_CHDIR'}='1';
+$ENV{'ENABLE_PROFILING'}='1';    # generate .map files
 
 $ENV{'HOME'}="/home/builder";
 $ENV{'USER'}="builder";
@@ -301,13 +302,15 @@ sub archivetree() {
     &myrename($inst_dirs[$treenum],$archdirname);
 
     foreach my $dir1 (@dirstodolist) {    
-        # copy DLL .pdb up to lib dir so we can blow away metalibs subdir
+        # copy DLL .pdb/.map up to lib dir so we can blow away metalibs subdir
         # could do this is the makefiles instead
-        &myexecstr("( for /R ".$archdirname."\\".$dir1."\\metalibs %i in (lib*.pdb) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
+        &myexecstr("( for /R ".$archdirname."\\".$dir1."\\metalibs %i in (lib*.pdb lib*.map) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
 
         if($dir1 eq "panda") {
-            # audio libs seem to not have a metalib dir
-            &myexecstr("( for /R ".$archdirname."\\".$dir1."\\src\audiotraits %i in (lib*.pdb) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
+            # dll/exe not under metalibs
+            &myexecstr("( for /R ".$archdirname."\\".$dir1."\\src\\audiotraits %i in (lib*.pdb lib*.map) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
+            &myexecstr("( for /R ".$archdirname."\\".$dir1."\\src\\shader %i in (lib*.pdb lib*.map) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
+            &myexecstr("( for /R ".$archdirname."\\".$dir1."\\src\\testbed %i in (*.pdb *.map) do copy %i ".$archdirname."\\".$dir1."\\bin )","nomsg","DO_LOG","NT cmd");
         }
 
         # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just dont check retval
@@ -315,7 +318,7 @@ sub archivetree() {
         # &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
         
         # instead blow away src,CVS,include,metalibs dirs completely
-        # doing every rd twice since samba-netapp-RAID link seems to screw up and cause some files to not be deleted the 1st time
+        # doing every rd twice since windows-samba-RAID link seems to screw up and cause some files to not be deleted the 1st time
         &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\src","nomsg","DO_LOG","NT cmd");
         &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\CVS","nomsg","DO_LOG","NT cmd");
         &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\include","nomsg","DO_LOG","NT cmd");
