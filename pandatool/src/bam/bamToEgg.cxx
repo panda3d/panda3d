@@ -479,10 +479,10 @@ EggTexture *BamToEgg::
 get_egg_texture(Texture *tex) {
   if (tex != (Texture *)NULL) {
     if (tex->has_filename()) {
-      Filename filename = tex->get_filename();
+      Filename filename = _path_replace->convert_path(tex->get_filename());
       EggTexture temp(filename.get_basename_wo_extension(), filename);
       if (tex->has_alpha_filename()) {
-        Filename alpha = tex->get_alpha_filename();
+        Filename alpha = _path_replace->convert_path(tex->get_alpha_filename());
         temp.set_alpha_filename(alpha);
       }
 
