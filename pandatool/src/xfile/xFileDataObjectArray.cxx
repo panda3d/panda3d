@@ -80,7 +80,7 @@ write_data(ostream &out, int indent_level, const char *separator) const {
       }
     }
 
-    // The last object is the set is different, because it gets
+    // The last object in the set is different, because it gets
     // separator instead of a semicolon, and it always gets a newline.
     XFileDataObject *object = _nested_elements.back();
     if (object->is_complex_object()) {

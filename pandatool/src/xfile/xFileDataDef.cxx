@@ -147,8 +147,8 @@ write_text(ostream &out, int indent_level) const {
 //               data elements appropriately back into the object.
 //
 //               It returns true on success, or false on an error
-//               (e.g. too many semicolons, not enough data elements,
-//               mismatched data type).
+//               (e.g. not enough data elements, mismatched data
+//               type).
 ////////////////////////////////////////////////////////////////////
 bool XFileDataDef::
 repack_data(XFileDataObject *object, 
