@@ -313,8 +313,8 @@ do_get(const string &key, const string &name, int &data_type, string &data) {
   }
 
   if (error != ERROR_SUCCESS) {
-    express_cat.error()
-      << "Unable to get registry key " << key << " name " << name 
+    express_cat.info()
+      << "Unable to get registry value " << name 
       << ": " << format_message(error) << "\n";
     okflag = false;
   }
@@ -337,13 +337,20 @@ do_get(const string &key, const string &name, int &data_type, string &data) {
 ////////////////////////////////////////////////////////////////////
 string WindowsRegistry::
 format_message(int error_code) {
-  PVOID buffer;
+  LPTSTR buffer;
   DWORD length = 
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                  NULL, error_code, 0, (LPTSTR)&buffer, 0, NULL);
+                  NULL, error_code, 0, &buffer, 0, NULL);
   if (length == 0) {
     return "Unknown error message";
   }
+
+  // Strip off \n's and \r's trailing the string.
+  while (length > 0 && 
+         (buffer[length - 1] == '\r' || buffer[length - 1] == '\n')) {
+    length--;
+  }
+
   string result((const char *)buffer, length);
   LocalFree(buffer);
   return result;
