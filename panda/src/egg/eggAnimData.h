@@ -26,6 +26,8 @@
 #include "pointerToArray.h"
 #include "pta_double.h"
 
+#include <math.h>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : EggAnimData
 // Description : A base class for EggSAnimData and EggXfmAnimData,
@@ -49,6 +51,8 @@ PUBLISHED:
   INLINE int get_size() const;
   INLINE PTA_double get_data() const;
   INLINE void set_data(const PTA_double &data);
+
+  void quantize(double quantum);
 
 protected:
   PTA_double _data;
