@@ -27,10 +27,6 @@
 // Later (especially for non-NSPR platforms) we'll have to do the work
 // ourselves.
 
-// This file also defines one of the macros IS_BIG_ENDIAN or
-// IS_LITTLE_ENDIAN, as appropriate.  (In the case of NSPR, these are
-// defined automatically.)
-
 
 #ifdef HAVE_NSPR
 
@@ -70,12 +66,6 @@ typedef unsigned short PN_uint16;
 typedef unsigned long PN_uint32;
 
 typedef double PN_float64;
-
-#ifdef WORDS_BIGENDIAN
-#undef IS_LITTLE_ENDIAN
-#else
-#define IS_LITTLE_ENDIAN 1
-#endif
 
 #endif  // HAVE_NSPR
 

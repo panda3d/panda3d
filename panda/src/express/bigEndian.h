@@ -33,10 +33,10 @@
 //               unchanged for big-endian machines.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef IS_LITTLE_ENDIAN
-typedef ReversedNumericData BigEndian;
-#else
+#ifdef WORDS_BIGENDIAN
 typedef NativeNumericData BigEndian;
+#else
+typedef ReversedNumericData BigEndian;
 #endif
 
 #endif

@@ -19,7 +19,7 @@
 #ifndef LITTLEENDIAN_H
 #define LITTLEENDIAN_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "numeric_types.h"
 #include "nativeNumericData.h"
@@ -33,10 +33,10 @@
 //               unchanged for little-endian machines.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef IS_LITTLE_ENDIAN
-typedef NativeNumericData LittleEndian;
-#else
+#ifdef WORDS_BIGENDIAN
 typedef ReversedNumericData LittleEndian;
+#else
+typedef NativeNumericData LittleEndian;
 #endif
 
 #endif
