@@ -5,6 +5,7 @@
 
 #begin bin_target
   #define TARGET apply_patch
+  #define TARGET_IF_CRYPTO yes
 
   #define SOURCES \
     apply_patch.cxx
@@ -15,6 +16,7 @@
 
 #begin bin_target
   #define TARGET build_patch
+  #define TARGET_IF_CRYPTO yes
 
   #define SOURCES \
     build_patch.cxx

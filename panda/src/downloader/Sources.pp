@@ -13,13 +13,15 @@
     downloadDb.cxx downloadDb.h						\
     downloader.I downloader.cxx downloader.h extractor.cxx extractor.h	\
     multiplexStream.I multiplexStream.cxx multiplexStream.h \
-    multiplexStreamBuf.I multiplexStreamBuf.cxx multiplexStreamBuf.h \
-    patcher.cxx								\
-    patcher.h patcher.I
+    multiplexStreamBuf.I multiplexStreamBuf.cxx multiplexStreamBuf.h 
 
   #define IF_ZLIB_SOURCES						\
     decompressor.cxx decompressor.h zcompressor.I zcompressor.cxx	\
     zcompressor.h download_utils.cxx download_utils.h
+
+  #define IF_CRYPTO_SOURCES \
+    patcher.cxx								\
+    patcher.h patcher.I
 
   #define INSTALL_HEADERS \
     asyncUtility.h asyncUtility.I \
