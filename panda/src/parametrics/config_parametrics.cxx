@@ -30,7 +30,6 @@ ConfigureFn(config_parametrics) {
   HermiteCurve::init_type();
   NurbsCurveDrawer::init_type();
   NurbsCurveInterface::init_type();
-  NurbsPPCurve::init_type();
   ParametricCurve::init_type();
   ParametricCurveDrawer::init_type();
   PiecewiseCurve::init_type();
