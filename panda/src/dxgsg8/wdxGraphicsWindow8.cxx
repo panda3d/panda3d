@@ -199,8 +199,76 @@ release_gsg() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     GraphicsWindow::release_gsg();
   }
+} 
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::verify_window_sizes
+//       Access: Public, Virtual
+//  Description: Determines which of the indicated window sizes are
+//               supported by available hardware (e.g. in fullscreen
+//               mode).
+//
+//               On entry, dimen is an array containing contiguous x,y
+//               pairs specifying possible display sizes; it is
+//               numsizes*2 words long.  The function will zero out
+//               any invalid x,y size pairs.  The return value is the
+//               number of valid sizes that were found.
+////////////////////////////////////////////////////////////////////
+int wdxGraphicsWindow8::
+verify_window_sizes(int numsizes, int *dimen) {
+  // unfortunately this only works AFTER you make the window
+  // initially, so its really mostly useful for resizes only
+  assert(IS_VALID_PTR(_dxgsg));
+
+  int num_valid_modes = 0;
+
+  // not requesting same refresh rate since changing res might not
+  // support same refresh rate at new size
+
+  int *pCurDim = dimen;
+
+  for (int i=0; i < numsizes; i++, pCurDim += 2) {
+    int x_size = pCurDim[0];
+    int y_size = pCurDim[1];
+
+    bool bIsGoodMode = false;
+    bool CouldntFindAnyValidZBuf;
+    D3DFORMAT newPixFmt = D3DFMT_UNKNOWN;
+
+    if (special_check_fullscreen_resolution(x_size, y_size)) {
+      // bypass the test below for certain cards we know have valid modes
+      bIsGoodMode=true;
+
+    } else {
+      if (_dxgsg->scrn.bIsLowVidMemCard) {
+        bIsGoodMode = ((x_size == 640) && (y_size == 480));
+      } else  {
+        search_for_valid_displaymode(x_size, y_size, _dxgsg->scrn.PresParams.EnableAutoDepthStencil != false,
+                                     IS_STENCIL_FORMAT(_dxgsg->scrn.PresParams.AutoDepthStencilFormat),
+                                     &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                     &CouldntFindAnyValidZBuf, &newPixFmt);
+        bIsGoodMode = (newPixFmt != D3DFMT_UNKNOWN);
+      }
+    }
+
+    if (bIsGoodMode) {
+      num_valid_modes++;
+    } else {
+      // tell caller the mode is invalid
+      pCurDim[0] = 0;
+      pCurDim[1] = 0;
+    }
+
+    if (wdxdisplay8_cat.is_spam()) {
+      wdxdisplay8_cat.spam()
+        << "Fullscrn Mode (" << x_size << "," << y_size << ")\t" 
+        << (bIsGoodMode ? "V" : "Inv") <<"alid\n";
+    }
+  }
+
+  return num_valid_modes;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::begin_frame
 //       Access: Public, Virtual

@@ -931,11 +931,3 @@ do_determine_display_regions() {
     }
   }
 }
-
-void GraphicsWindow::
-get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format) {
-    display_cat.warning() << "get_framebuffer_format() unimplemented by " << get_type() << endl; 
-    
-    fb_type = PixelBuffer::T_unsigned_byte;
-    fb_format = PixelBuffer::F_rgb;
-}

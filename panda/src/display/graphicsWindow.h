@@ -104,12 +104,12 @@ public:
   bool has_button_event(int device) const;
   ButtonEvent get_button_event(int device);
 
-  virtual void get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format);
-
-public:
   virtual int verify_window_sizes(int numsizes, int *dimen);
+
   PT(DisplayRegion) make_scratch_display_region(int x_size, int y_size) const;
 
+public:
+  // These are not intended to be called directly by the user.
   INLINE void win_display_regions_changed();
 
 public:

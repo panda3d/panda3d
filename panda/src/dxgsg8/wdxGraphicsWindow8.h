@@ -45,6 +45,8 @@ public:
   virtual void make_gsg();
   virtual void release_gsg();
 
+  virtual int verify_window_sizes(int numsizes, int *dimen);
+
   virtual bool begin_frame();
   virtual void end_flip();
 
