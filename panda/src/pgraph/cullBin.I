@@ -24,8 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CullBin::
 CullBin(const string &name, GraphicsStateGuardianBase *gsg) : 
+  _gsg(gsg),
   _cull_this_pcollector(_cull_bin_pcollector, name),
-  _draw_this_pcollector(_draw_bin_pcollector, name),
-  _gsg(gsg)
+  _draw_this_pcollector(_draw_bin_pcollector, name)
 {
 }
