@@ -608,8 +608,18 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
     def outputImportsRecursively(self, parent, file, nesting):
         for parentType in parent.parentTypes:
             self.outputImportsRecursively(parentType, file, nesting)
-        indent(file, nesting, 'import ' + parent.foreignTypeName + '\n')
-        
+
+        parentTypeName = parent.foreignTypeName
+        fullNestedName = parent.getFullNestedName()
+        if (fullNestedName != parentTypeName):
+            print "full nested name: ", fullNestedName
+            nestedChain = fullNestedName.split(".") 
+            moduleName = nestedChain[0]
+            print "module name: ", moduleName
+            indent(file, nesting, 'import ' + moduleName + '\n')
+        else:
+            indent(file, nesting, 'import ' + parent.foreignTypeName + '\n')
+
         returnTypeModules = parent.getReturnTypeModules()
         if len(returnTypeModules):
             for moduleName in returnTypeModules:
@@ -632,6 +642,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         for parentType in self.parentTypes:
             self.outputImportsRecursively(parentType, file, nesting)
         indent(file, nesting, '\n')
+
 
 
     def outputClassComment(self, file, nesting):
@@ -678,10 +689,22 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         # Also inherit from all of your parentTypes
         for i in range(len(self.parentTypes)):
             parentTypeName = self.parentTypes[i].foreignTypeName
+            moduleName = parentTypeName
             # assuming the type "Node" is stored in module "Node.py"
             # and we have done an "import Node", we need to then
             # inherit from Node.Node
-            file.write(parentTypeName + '.' + parentTypeName)
+            # Actually it is trickier than this. If we import from a
+            # nested class, we need to inherit from something like:
+            #     parentClassModule.parentClass.nestedClass
+            fullNestedName = self.parentTypes[i].getFullNestedName()
+            if (fullNestedName != parentTypeName):
+                print "full nested name: ", fullNestedName
+                nestedChain = fullNestedName.split(".") 
+                moduleName = nestedChain[0]
+                print "module name: ", moduleName
+                parentTypeName = fullNestedName
+                print "resolved parent name: ", parentTypeName
+            file.write(moduleName + '.' + parentTypeName)
             file.write(', ')
         file.write('FFIExternalObject.FFIExternalObject):\n')
 
