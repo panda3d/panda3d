@@ -97,8 +97,9 @@ allocate() {
   }
   U32 id=_min+_next_free;
   _next_free=_table[_next_free];
-  // This assert will not fire because it is assigning not comparing.  This is intentional.
-  nassertr(_table[id-_min]=IndexAllocated, IndexEnd); // this assignment is debug only.
+  #ifndef NDEBUG //[
+    _table[id-_min]=IndexAllocated;
+  #endif //]
   --_free;
   uniqueIdAllocator_debug("allocate() returning "<<id);
   return id;
