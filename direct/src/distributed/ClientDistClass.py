@@ -21,8 +21,11 @@ class ClientDistClass:
             exec("import " + self.name)
             self.constructor = eval(self.name + "." + self.name)
         except ImportError, e:
-            self.notify.warning("%s.py does not exist." % (self.name))
+            self.notify.warning("Unable to import %s.py: %s" % (self.name, e))
             self.constructor = None
+        except (NameError, AttributeError), e:
+            self.notify.warning("%s.%s does not exist: %s" % (self.name, self.name, e))
+            self.constructor = None 
         return None
 
     def parseFields(self, dcClass):

@@ -28,7 +28,7 @@ class ClientDistUpdate:
         # Only catch name and attribute errors
         # as all other errors are legit errors
         except ImportError, e:
-            self.notify.warning("%s.py does not exist." % (cdc.name))
+            self.notify.warning("Unable to import %s.py: %s" % (cdc.name, e))
             self.func = None
         except (NameError, AttributeError), e:
             #self.notify.warning(cdc.name + "." + self.name +

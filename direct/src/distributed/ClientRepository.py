@@ -431,6 +431,8 @@ class ClientRepository(DirectObject.DirectObject):
         # If it is not in the dictionary or the cache, then...
         else:
             # Construct a new one
+            if cdc.constructor == None:
+                self.notify.error("Could not create an undefined %s object." % (cdc.name))
             distObj = cdc.constructor(self)
             # Assign it an Id
             distObj.doId = doId
