@@ -127,16 +127,28 @@ class FourState:
                           )
         self.fsm.enterInitialState()
     
+    def setIsOn(self, isOn):
+        assert(self.debugPrint("setIsOn(isOn=%s)"%(isOn,)))
+        if self.isOn != isOn:
+            self.isOn = isOn
+            self.changedOnState()
+    
     def getIsOn(self):
         assert(self.debugPrint("getIsOn() returning %s"%(self.isOn,)))
         return self.isOn
+
+    def changedOnState(self):
+        """
+        Allow derived classes to overide the this.
+        """
+        pass
     
     ##### state 0 #####
     
     def enterState0(self):
         assert(self.debugPrint("enter0()"))
         self.stateIndex = 0
-        self.isOn = 0
+        self.setIsOn(0)
     
     def exitState0(self):
         assert(self.debugPrint("exit0()"))
@@ -145,7 +157,7 @@ class FourState:
     
     def enterState1(self):
         self.stateIndex = 1
-        self.isOn = 0
+        self.setIsOn(0)
     
     def exitState1(self):
         assert(self.debugPrint("exitState1()"))
@@ -154,7 +166,7 @@ class FourState:
     
     def enterState2(self):
         self.stateIndex = 2
-        self.isOn = 0
+        self.setIsOn(0)
     
     def exitState2(self):
         assert(self.debugPrint("exitState2()"))
@@ -163,7 +175,7 @@ class FourState:
     
     def enterState3(self):
         self.stateIndex = 2
-        self.isOn = 0
+        self.setIsOn(0)
     
     def exitState3(self):
         assert(self.debugPrint("exitState3()"))
@@ -172,7 +184,7 @@ class FourState:
     
     def enterState4(self):
         self.stateIndex = 4
-        self.isOn = 1
+        self.setIsOn(1)
     
     def exitState4(self):
         assert(self.debugPrint("exitState4()"))
