@@ -1,5 +1,4 @@
 
-
 #include "stdafx.h"
 
 #include <iostream>
@@ -13,35 +12,35 @@ using namespace std;
 int _tmain(int argc, _TCHAR* argv[]) {
 	cout <<"UniqueIdAllocator Test"<<endl;
 	UniqueIdAllocator b=UniqueIdAllocator(2, 9);
-	b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.free(2); b.printTo(cout);
-	b.free(3); b.printTo(cout);
-	b.free(4); b.printTo(cout);
-	b.free(5); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.free(3); b.printTo(cout);
-	b.free(2); b.printTo(cout);
+	b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.free(2); b.print_to(cout, true);
+	b.free(3); b.print_to(cout, true);
+	b.free(4); b.print_to(cout, true);
+	b.free(5); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.free(3); b.print_to(cout, true);
+	b.free(2); b.print_to(cout, true);
 
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
-	b.allocate(); b.printTo(cout);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.print_to(cout, true);
 
-	b.free(4); b.printTo(cout);
-	b.free(3); b.printTo(cout);
+	b.free(4); b.print_to(cout, true);
+	b.free(3); b.print_to(cout, true);
 
-	b.allocate(); b.printTo(cout);
+	b.allocate(); b.print_to(cout, true);
 
 	return 0;
 }

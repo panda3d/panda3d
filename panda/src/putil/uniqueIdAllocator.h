@@ -35,7 +35,8 @@ PUBLISHED:
   ~UniqueIdAllocator();
   U32 allocate();
   void free(U32 index);
-  void printTo(ostream& os) const;
+  float percent_used() const;
+  void print_to(ostream& os, bool verbose=false) const;
 
 protected:
   U32* _table;
