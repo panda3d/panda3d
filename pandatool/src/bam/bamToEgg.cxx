@@ -699,7 +699,7 @@ apply_arc_properties(EggGroup *egg_group, ArcChain &chain) {
     }
   }
 
-  return true;
+  return any_applied;
 }
 
 
