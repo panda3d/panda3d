@@ -30,6 +30,14 @@
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
 
+#ifndef NDEBUG
+// We define this variable if we're compiling code to implement a
+// simulated network latency, useful for debuggin networked programs.
+// Normally, since this is a debugging tool, we wouldn't compile this
+// feature in if we're building a program for public release.
+#define SIMULATE_NETWORK_DELAY
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : QueuedConnectionReader
 // Description : This flavor of ConnectionReader will read from its
@@ -51,6 +59,29 @@ PUBLISHED:
 
 protected:
   virtual void receive_datagram(const NetDatagram &datagram);
+
+#ifdef SIMULATE_NETWORK_DELAY
+PUBLISHED:
+  void start_delay(double min_delay, double max_delay);
+  void stop_delay();
+
+private:
+  void get_delayed();
+  void delay_datagram(const NetDatagram &datagram);
+
+  class DelayedDatagram {
+  public:
+    double _reveal_time;
+    NetDatagram _datagram;
+  };
+    
+  PRLock *_dd_mutex;
+  typedef pdeque<DelayedDatagram> Delayed;
+  Delayed _delayed;
+  bool _delay_active;
+  double _min_delay, _delay_variance;
+
+#endif  // SIMULATE_NETWORK_DELAY
 };
 
 #endif
