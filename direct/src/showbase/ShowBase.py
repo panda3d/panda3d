@@ -838,16 +838,16 @@ class ShowBase(DirectObject.DirectObject):
         # give the igloop task a reasonably "late" priority,
         # so that it will get run after most tasks
         self.taskMgr.add(self.igloop, 'igloop', priority = 50)
-        # make the collisionloop task run shortly before igloop,
+        # make the collisionloop task run before igloop,
         # but leave enough room for the app to insert tasks
         # between collisionloop and igloop
-        self.taskMgr.add(self.collisionloop, 'collisionloop', priority = 45)
+        self.taskMgr.add(self.collisionloop, 'collisionloop', priority = 30)
         # give the dataloop task a reasonably "early" priority,
         # so that it will get run before most tasks
         self.taskMgr.add(self.dataloop, 'dataloop', priority = -50)
         # spawn the ivalloop with a later priority, so that it will
         # run after most tasks, but before igloop.
-        self.taskMgr.add(self.ivalloop, 'ivalloop', priority = 10)
+        self.taskMgr.add(self.ivalloop, 'ivalloop', priority = 20)
         self.eventMgr.restart()
 
     def shutdown(self):

@@ -349,9 +349,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         # remove any old
         taskMgr.remove(taskName)
         # spawn the new task
-        taskMgr.add(self.handleAvatarControls, taskName)
+        taskMgr.add(self.handleAvatarControls, taskName, 10)
         if self.physVelocityIndicator:
-            taskMgr.add(self.avatarPhysicsIndicator, "AvatarControlsIndicator%s"%(id(self),), 47)
+            taskMgr.add(self.avatarPhysicsIndicator, "AvatarControlsIndicator%s"%(id(self),), 35)
 
     def disableAvatarControls(self):
         """

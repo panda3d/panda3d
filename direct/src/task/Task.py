@@ -339,7 +339,7 @@ class TaskManager:
         self.fVerbose = 0
         # Dictionary of task name to list of tasks with that name
         self.nameDict = {}
-        self.add(self.__doLaterProcessor, "doLaterProcessor")
+        self.add(self.__doLaterProcessor, "doLaterProcessor", -10)
 
     def stepping(self, value):
         self.stepping = value
@@ -548,7 +548,6 @@ class TaskManager:
 
         Removes tasks whose names match the pattern, which can include
         standard shell globbing characters like *, ?, and [].
-
         """
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
