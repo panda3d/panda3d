@@ -2479,7 +2479,12 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     geom->get_colors(colors,ColorBinding,cindexes);
     geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
 
-    GeomVertFormat GeomVrtFmt=FlatVerts;
+    GeomVertFormat GeomVrtFmt;
+
+#ifdef DONT_USE_DRAWPRIMSTRIDED
+    GeomVrtFmt=MixedFmtVerts;
+#else
+    GeomVrtFmt=FlatVerts;
 
     // first determine if we're indexed or non-indexed
 
@@ -2492,13 +2497,10 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     } else if (!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
         GeomVrtFmt=MixedFmtVerts;
 
-#ifdef DONT_USE_DRAWPRIMSTRIDED
-    GeomVrtFmt=MixedFmtVerts;
-#endif
-
     if(!geom->uses_components()) {
        GeomVrtFmt=MixedFmtVerts; // dont need efficiency here, just use simpler codepath
     }
+#endif
 
     // for Indexed Prims and mixed indexed/non-indexed prims, we will use old pipeline
     // cant handle indexed prims because usually have different index arrays for different components,
