@@ -116,8 +116,20 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
                 self.levelSpec.saveToDisk()
                 self.modified = 0
 
-        def requestCurrentLevelSpec(self, specHash):
+        def requestCurrentLevelSpec(self, specHash, entTypeRegHash):
             senderId = self.air.msgSender
+
+            # first check the typeReg hash -- if it doesn't match, the
+            # client should not be connecting. Their entityTypeRegistry
+            # is different from ours.
+            srvHash = hash(self.levelSpec.entTypeReg)
+            if srvHash != entTypeRegHash:
+                self.sendUpdateToAvatarId(
+                    senderId, 'setSpecDeny',
+                    ['EntityTypeRegistry hashes do not match! '
+                     '(server:%s, client:%s' % (srvHash, entTypeRegHash)])
+                return
+            
             spec = None
             if hash(self.levelSpec) != specHash:
                 spec = self.levelSpec

@@ -112,11 +112,16 @@ class DistributedLevel(DistributedObject.DistributedObject,
             # if we're in debug, give the server the opportunity to send us
             # a full spec
             self.candidateSpec = levelSpec
-            self.sendUpdate('requestCurrentLevelSpec', [hash(levelSpec)])
+            self.sendUpdate('requestCurrentLevelSpec',
+                            [hash(levelSpec),
+                             hash(levelSpec.entTypeReg)])
         else:
             self.privGotSpec(levelSpec)
 
     if __debug__:
+        def setSpecDeny(self, reason):
+            DistributedLevel.notify.error(reason)
+            
         def setSpecSenderDoId(self, doId):
             DistributedLevel.notify.debug('setSpecSenderDoId: %s' % doId)
             blobSender = toonbase.tcr.doId2do[doId]
