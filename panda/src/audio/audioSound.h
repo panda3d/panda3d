@@ -40,9 +40,9 @@ PUBLISHED:
   virtual void play() = 0;
   virtual void stop() = 0;
   
-  // loop: 0 = play once; 1 = play forever.
+  // loop: false = play once; true = play forever.
   // inits to false.
-  virtual void set_loop(bool loop=false) = 0;
+  virtual void set_loop(bool loop=true) = 0;
   virtual bool get_loop() const = 0;
   
   // loop_count: 0 = forever; 1 = play once; n = play n times.

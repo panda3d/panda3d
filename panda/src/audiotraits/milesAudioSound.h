@@ -40,9 +40,9 @@ public:
   void play();
   void stop();
   
-  // loop: 0 = play once; 1 = play forever.
+  // loop: false = play once; true = play forever.
   // inits to false.
-  void set_loop(bool loop=false);
+  void set_loop(bool loop=true);
   bool get_loop() const;
   
   // loop_count: 0 = forever; 1 = play once; n = play n times.
