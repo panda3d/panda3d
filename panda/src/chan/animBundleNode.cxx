@@ -26,6 +26,16 @@ TypeHandle AnimBundleNode::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimBundleNode::make_copy
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PandaNode *AnimBundleNode::
+make_copy() const {
+  return new AnimBundleNode(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimBundleNode::safe_to_flatten
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to flatten out

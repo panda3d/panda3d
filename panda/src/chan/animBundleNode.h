@@ -41,6 +41,7 @@ protected:
   INLINE AnimBundleNode(const AnimBundleNode &copy);
 
 public:
+  virtual PandaNode *make_copy() const;
   virtual bool safe_to_flatten() const;
 
 PUBLISHED:

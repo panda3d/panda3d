@@ -46,8 +46,7 @@ AnimBundleNode() : PandaNode("") {
 //     Function: AnimBundleNode::Copy Constructor
 //       Access: Protected
 //  Description: Use make_copy() or copy_subgraph() to copy one of
-//               these.  Copying a AnimBundleNode will always force a
-//               deep copy of the PartGroup hierarchy.
+//               these.
 ////////////////////////////////////////////////////////////////////
 INLINE AnimBundleNode::
 AnimBundleNode(const AnimBundleNode &copy) :

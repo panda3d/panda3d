@@ -51,14 +51,26 @@ AnimControlCollection::
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
 store_anim(AnimControl *control, const string &name) {
-  Controls::iterator ci = _controls.find(name);
-  if (ci == _controls.end()) {
-    _controls.insert(Controls::value_type(name, control));
+  ControlsByName::iterator ci = _controls_by_name.find(name);
+
+  if (ci == _controls_by_name.end()) {
+    // Insert a new control.
+    size_t index = _controls.size();
+    ControlDef cdef;
+    cdef._control = control;
+    cdef._name = name;
+    _controls.push_back(cdef);
+    _controls_by_name.insert(ControlsByName::value_type(name, index));
+
   } else {
-    if (_last_started_control == (*ci).second) {
+    // Replace an existing control.
+    size_t index = (*ci).second;
+    nassertv(index < _controls.size());
+    nassertv(_controls[index]._name == name);
+    if (_last_started_control == _controls[index]._control) {
       _last_started_control = (AnimControl *)NULL;
     }
-    (*ci).second = control;
+    _controls[index]._control = control;
   }
 }
 
@@ -70,11 +82,14 @@ store_anim(AnimControl *control, const string &name) {
 ////////////////////////////////////////////////////////////////////
 AnimControl *AnimControlCollection::
 find_anim(const string &name) const {
-  Controls::const_iterator ci = _controls.find(name);
-  if (ci == _controls.end()) {
+  ControlsByName::const_iterator ci = _controls_by_name.find(name);
+  if (ci == _controls_by_name.end()) {
     return (AnimControl *)NULL;
   }
-  return (*ci).second;
+  size_t index = (*ci).second;
+  nassertr(index < _controls.size(), NULL);
+  nassertr(_controls[index]._name == name, NULL);
+  return _controls[index]._control;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,14 +102,30 @@ find_anim(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 bool AnimControlCollection::
 unbind_anim(const string &name) {
-  Controls::iterator ci = _controls.find(name);
-  if (ci == _controls.end()) {
+  ControlsByName::iterator ci = _controls_by_name.find(name);
+  if (ci == _controls_by_name.end()) {
     return false;
   }
-  if (_last_started_control == (*ci).second) {
+  size_t index = (*ci).second;
+  nassertr(index < _controls.size(), false);
+  nassertr(_controls[index]._name == name, false);
+
+  if (_last_started_control == _controls[index]._control) {
     _last_started_control = (AnimControl *)NULL;
   }
-  _controls.erase(ci);
+  _controls_by_name.erase(ci);
+
+  _controls.erase(_controls.begin() + index);
+
+  // Now slide all the index numbers down.
+  for (ci = _controls_by_name.begin();
+       ci != _controls_by_name.end();
+       ++ci) {
+    if ((*ci).second > index) {
+      (*ci).second--;
+    }
+  }
+
   return true;
 }
 
@@ -110,6 +141,30 @@ get_num_anims() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimControlCollection::get_anim
+//       Access: Published
+//  Description: Returns the nth AnimControl associated with
+//               this collection.
+////////////////////////////////////////////////////////////////////
+AnimControl *AnimControlCollection::
+get_anim(int n) const {
+  nassertr(n >= 0 && n < (int)_controls.size(), NULL);
+  return _controls[n]._control;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControlCollection::get_anim_name
+//       Access: Published
+//  Description: Returns the name of the nth AnimControl associated
+//               with this collection.
+////////////////////////////////////////////////////////////////////
+string AnimControlCollection::
+get_anim_name(int n) const {
+  nassertr(n >= 0 && n < (int)_controls.size(), string());
+  return _controls[n]._name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimControlCollection::clear_anims
 //       Access: Published
 //  Description: Disassociates all anims from this collection.
@@ -117,6 +172,7 @@ get_num_anims() const {
 void AnimControlCollection::
 clear_anims() {
   _controls.clear();
+  _controls_by_name.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +184,7 @@ void AnimControlCollection::
 play_all() {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
-    (*ci).second->play();
+    (*ci)._control->play();
   }
 }
 
@@ -141,7 +197,7 @@ void AnimControlCollection::
 play_all(int from, int to) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
-    (*ci).second->play(from, to);
+    (*ci)._control->play(from, to);
   }
 }
 
@@ -154,7 +210,7 @@ void AnimControlCollection::
 loop_all(bool restart) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
-    (*ci).second->loop(restart);
+    (*ci)._control->loop(restart);
   }
 }
 
@@ -167,7 +223,7 @@ void AnimControlCollection::
 loop_all(bool restart, int from, int to) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
-    (*ci).second->loop(restart, from, to);
+    (*ci)._control->loop(restart, from, to);
   }
 }
 
@@ -183,9 +239,9 @@ stop_all() {
   bool any = false;
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
-    if ((*ci).second->is_playing()) {
+    if ((*ci)._control->is_playing()) {
       any = true;
-      (*ci).second->stop();
+      (*ci)._control->stop();
     }
   }
 
@@ -201,7 +257,7 @@ void AnimControlCollection::
 pose_all(int frame) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
-    (*ci).second->pose(frame);
+    (*ci)._control->pose(frame);
   }
 }
 
@@ -218,12 +274,14 @@ which_anim_playing() const {
   string result;
 
   Controls::const_iterator ci;
-  for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
-    if ((*ci).second->is_playing()) {
+  for (ci = _controls.begin(); 
+       ci != _controls.end(); 
+       ++ci) {
+    if ((*ci)._control->is_playing()) {
       if (!result.empty()) {
         result += " ";
       }
-      result += (*ci).first;
+      result += (*ci)._name;
     }
   }
 
@@ -247,8 +305,10 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
 write(ostream &out) const {
-  Controls::const_iterator ci;
-  for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
-    out << (*ci).first << ": " << *(*ci).second << "\n";
+  ControlsByName::const_iterator ci;
+  for (ci = _controls_by_name.begin(); 
+       ci != _controls_by_name.end(); 
+       ++ci) {
+    out << (*ci).first << ": " << *_controls[(*ci).second]._control << "\n";
   }
 }

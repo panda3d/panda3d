@@ -48,6 +48,8 @@ PUBLISHED:
   bool unbind_anim(const string &name);
 
   int get_num_anims() const;
+  AnimControl *get_anim(int n) const;
+  string get_anim_name(int n) const;
   void clear_anims();
 
   INLINE void set_stop_event(const CPT_Event &stop_event);
@@ -87,8 +89,17 @@ PUBLISHED:
   void write(ostream &out) const;
 
 private:
-  typedef pmap<string,  PT(AnimControl) > Controls;
+  class ControlDef {
+  public:
+    string _name;
+    PT(AnimControl) _control;
+  };
+  typedef pvector<ControlDef> Controls;
   Controls _controls;
+
+  typedef pmap<string, size_t> ControlsByName;
+  ControlsByName _controls_by_name;
+
   CPT_Event _stop_event;
   AnimControl *_last_started_control;
 };

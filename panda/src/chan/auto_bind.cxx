@@ -58,7 +58,10 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
 
       PT(AnimControl) control =
         part->bind_anim(anim, hierarchy_match_flags);
-      string name = anim->get_name();
+      string name = (*ani)->get_name();
+      if (name.empty()) {
+        name = anim->get_name();
+      }
       if (control != (AnimControl *)NULL) {
         if (controls.find_anim(name) != (AnimControl *)NULL) {
           // That name's already used; synthesize another one.
