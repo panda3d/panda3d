@@ -411,6 +411,7 @@ class TaskManager:
         nameList.append(task)
         # Put it on the list for the end of this frame
         self.__addPendingTask(task)
+        return task
 
     def __addPendingTask(self, task):
         if TaskManager.notify.getDebug():
