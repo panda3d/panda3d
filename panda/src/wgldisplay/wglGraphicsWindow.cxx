@@ -248,14 +248,19 @@ static DWORD GetAvailVidMem(void) {
     ZeroMemory(&ddsCaps,sizeof(DDSCAPS2));
     ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
 
-    if(FAILED(  hr = pDD2->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
-        wgldisplay_cat.fatal() << "GetAvailableVidMem failed : result = " << ConvDDErrorToString(hr) << endl;
-        exit(1);
+    if(FAILED(hr = pDD2->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
+        if(hr==DDERR_NODIRECTDRAWHW) {
+           if(wgldisplay_cat.is_debug())
+               wgldisplay_cat.debug() << "GetAvailableVidMem returns no-DDraw HW, assuming we have plenty of vidmem\n";
+           dwTotal=dwFree=0x7FFFFFFF;
+        } else {
+            wgldisplay_cat.fatal() << "GetAvailableVidMem failed : result = " << ConvDDErrorToString(hr) << endl;
+            exit(1);
+        }
+    } else {
+       if(wgldisplay_cat.is_debug())
+           wgldisplay_cat.debug() << "before FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
     }
-
-#ifdef _DEBUG
-    wgldisplay_cat.debug() << "before FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
-#endif
 
     pDD2->Release();  // bye-bye ddraw
 
@@ -1023,8 +1028,8 @@ void wglGraphicsWindow::end_frame(void) {
 
   {
     PStatTimer timer(_swap_pcollector);
-	 if(_is_synced) glFinish();
-	 else SwapBuffers(_hdc);
+     if(_is_synced) glFinish();
+     else SwapBuffers(_hdc);
   }
   GraphicsWindow::end_frame();
 }
