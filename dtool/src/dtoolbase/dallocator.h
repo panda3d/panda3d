@@ -54,8 +54,8 @@ public:
 };
 
 #elif defined(GNU_STYLE_ALLOCATOR)
-// Later versions of gcc want to use a still different, nonstandard
-// definition.  Sheesh.
+// Later versions of gcc want to use a still different,
+// not-quite-standard definition.  Sheesh.
 
 template<class Type>
 class dallocator : public allocator<Type> {
