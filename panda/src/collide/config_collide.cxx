@@ -43,6 +43,14 @@ ConfigureFn(config_collide) {
   init_libcollide();
 }
 
+// Set this true to have all CollisionTraversers in the world respect
+// the previous frame's transform (position) for a given object when
+// determining motion for collision tests.  If this is false, you must
+// explicitly enable motion detection for a particular traverser.  It
+// is false by default to force programmers to decide on a
+// case-by-case basis whether they really need this feature.
+const bool respect_prev_transform = config_collide.GetBool("respect-prev-transform", false);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcollide
 //  Description: Initializes the library.  This must be called at

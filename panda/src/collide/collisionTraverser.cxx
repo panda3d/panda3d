@@ -41,7 +41,7 @@ PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
 CollisionTraverser() {
-  _respect_prev_transform = false;
+  _respect_prev_transform = respect_prev_transform;
 #ifdef DO_COLLISION_RECORDING
   _recorder = (CollisionRecorder *)NULL;
 #endif
