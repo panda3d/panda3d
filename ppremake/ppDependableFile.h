@@ -9,6 +9,7 @@
 #include "ppremake.h"
 #include <set>
 #include <vector>
+#include <time.h>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
