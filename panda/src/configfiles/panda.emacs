@@ -28,6 +28,8 @@
 ; buffer whenever you switch to C++ mode.
 (setq c++-mode-hook (lambda ()
 		      (setq indent-tabs-mode nil)
+                      ;; Make sure we use unix encoding
+                      (setq local-write-file-hooks 'Use-Undecided-Unix-Mode)
 		      ))
 
 ;;
