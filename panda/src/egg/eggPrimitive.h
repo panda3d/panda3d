@@ -87,6 +87,9 @@ public:
   INLINE void set_bface_flag(bool flag);
   INLINE bool get_bface_flag() const;
 
+  bool has_vertex_normal() const;
+  bool has_vertex_color() const;
+
   virtual void reverse_vertex_ordering();
   virtual bool cleanup();
 

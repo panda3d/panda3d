@@ -37,7 +37,6 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggPolysetMaker : public EggBinMaker {
 public:
-
   // The BinNumber serves to identify why a particular EggBin was
   // created.
   enum BinNumber {
@@ -45,11 +44,31 @@ public:
     BN_polyset,
   };
 
+  enum Properties {
+    P_has_texture        = 0x001,
+    P_texture            = 0x002,
+    P_has_material       = 0x004,
+    P_material           = 0x008,
+    P_has_poly_color     = 0x010,
+    P_poly_color         = 0x020,
+    P_has_poly_normal    = 0x040,
+    P_has_vertex_normal  = 0x080,
+    P_has_vertex_color   = 0x100,
+    P_bface              = 0x200,
+  };
+
+  EggPolysetMaker();
+  void set_properties(int properties);
+
+public:
   virtual int
   get_bin_number(const EggNode *node);
 
   virtual bool
   sorts_less(int bin_number, const EggNode *a, const EggNode *b);
+
+private:
+  int _properties;
 };
 
 

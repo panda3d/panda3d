@@ -69,14 +69,15 @@ uniquify(EggNode *node) {
     string name = filter_name(node);
 
     UsedNames &names = _categories[category];
-    bool inserted;
-    inserted = names.insert(UsedNames::value_type(name, node)).second;
-    if (!inserted) {
-      while (!inserted) {
-        _index++;
-        name = generate_name(node, category, _index);
-        inserted = names.insert(UsedNames::value_type(name, node)).second;
-      }
+    bool inserted = false;
+    if (!name.empty()) {
+      inserted = names.insert(UsedNames::value_type(name, node)).second;
+    }
+
+    while (!inserted) {
+      _index++;
+      name = generate_name(node, category, _index);
+      inserted = names.insert(UsedNames::value_type(name, node)).second;
     }
 
     node->set_name(name);
@@ -185,7 +186,13 @@ filter_name(EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 string EggNameUniquifier::
 generate_name(EggNode *node, const string &category, int index) {
+  string name = filter_name(node);
+
   ostringstream str;
-  str << node->get_name() << "." << category << index;
+  if (name.empty()) {
+    str << category << index;
+  } else {
+    str << name << "." << category << index;
+  }
   return str.str();
 }

@@ -44,6 +44,11 @@ EggMaterial::
 EggMaterial(const EggMaterial &copy)
   : EggNode(copy),
     _diff(copy._diff),
+    _amb(copy._amb),
+    _emit(copy._emit),
+    _spec(copy._spec),
+    _shininess(copy._shininess),
+    _local(copy._local),
     _flags(copy._flags)
 {
 }

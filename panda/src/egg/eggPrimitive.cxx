@@ -131,6 +131,40 @@ determine_bin() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::has_vertex_normal
+//       Access: Public
+//  Description: Returns true if any vertex on the primitive has a
+//               specific normal set, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggPrimitive::
+has_vertex_normal() const {
+  Vertices::const_iterator vi;
+  for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
+    if ((*vi)->has_normal()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::has_vertex_color
+//       Access: Public
+//  Description: Returns true if any vertex on the primitive has a
+//               specific color set, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggPrimitive::
+has_vertex_color() const {
+  Vertices::const_iterator vi;
+  for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
+    if ((*vi)->has_color()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::reverse_vertex_ordering
 //       Access: Public, Virtual
 //  Description: Reverses the ordering of the vertices in this
