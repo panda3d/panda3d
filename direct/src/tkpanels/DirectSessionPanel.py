@@ -974,7 +974,7 @@ class DirectSessionPanel(AppShell):
     def pushUndo(self, fResetRedo = 1):
         direct.pushUndo([self['nodePath']])
 
-    def undoHook(self):
+    def undoHook(self, nodePathList = []):
         pass
 
     def pushUndoHook(self):
@@ -988,7 +988,7 @@ class DirectSessionPanel(AppShell):
     def pushRedo(self):
         direct.pushRedo([self['nodePath']])
         
-    def redoHook(self):
+    def redoHook(self, nodePathList = []):
         pass
 
     def pushRedoHook(self):

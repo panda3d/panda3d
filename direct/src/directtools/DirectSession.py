@@ -748,7 +748,7 @@ class DirectSession(PandaObject):
                 # Undo xform
                 pose[0].setTransform(pose[1])
             # Alert anyone who cares
-            messenger.send('DIRECT_undo')
+            messenger.send('DIRECT_undo', [nodePathList])
 
     def redo(self):
         if self.redoList:
@@ -761,7 +761,7 @@ class DirectSession(PandaObject):
             for pose in redoGroup:
                 pose[0].setTransform(pose[1])
             # Alert anyone who cares
-            messenger.send('DIRECT_redo')
+            messenger.send('DIRECT_redo', [nodePathList])
 
     # UTILITY FUNCTIONS
     def message(self, text):
