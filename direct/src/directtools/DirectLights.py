@@ -1,7 +1,6 @@
 from PandaObject import *
 from DirectGeometry import *
 from string import lower
-import UsePgraph
 
 class DirectLight(NodePath):
     def __init__(self, light, parent):
@@ -17,11 +16,7 @@ class DirectLight(NodePath):
             node = light.upcastToPandaNode()
 
         # Attach node to self
-        if UsePgraph.use:
-            self.assign(parent.attachNewNode(node))
-        else:
-            # Old scene graph no longer has lights.
-            pass
+        self.assign(parent.attachNewNode(node))
 
     def getName(self):
         return self.light.getName()
@@ -109,17 +104,13 @@ class DirectLights(NodePath):
 
     def allOn(self):
         """ Turn on all DIRECT lights """
-        if UsePgraph.use:
-            # new-style scene graph
-            render.node().setAttrib(self.la)
+        render.node().setAttrib(self.la)
         # Make sure there is a default material
         render.setMaterial(Material())
 
     def allOff(self):
         """ Turn off all DIRECT lights """
-        if UsePgraph.use:
-            # new-style scene graph
-            render.node().clearAttrib(LightAttrib.getClassType())
+        render.node().clearAttrib(LightAttrib.getClassType())
 
     def toggle(self):
         """ Toggles light attribute, but doesn't toggle individual lights """

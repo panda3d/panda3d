@@ -19,11 +19,11 @@
 #include "textureProperties.h"
 #include "palettizer.h"
 
-#include <pnmFileType.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "pnmFileType.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle TextureProperties::_type_handle;
 

@@ -19,12 +19,13 @@
 #ifndef TEXTUREPROPERTIES_H
 #define TEXTUREPROPERTIES_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <eggTexture.h>
-#include <typedWritable.h>
+#include "eggTexture.h"
+#include "typedWritable.h"
 
 class PNMFileType;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureProperties

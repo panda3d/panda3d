@@ -19,11 +19,11 @@
 #include "paletteGroups.h"
 #include "paletteGroup.h"
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle PaletteGroups::_type_handle;
 

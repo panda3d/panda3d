@@ -1,7 +1,6 @@
 from PandaModules import *
 from PandaObject import *
 import math
-import UsePgraph
 
 X_AXIS = Vec3(1,0,0)
 Y_AXIS = Vec3(0,1,0)
@@ -47,12 +46,7 @@ class LineNodePath(NodePath):
 
     def reset( self ):
         self.lineSegs.reset()
-        if UsePgraph.use:
-            # New-style graph
-            self.lineNode.removeAllGeoms()
-        else:
-            # Old-style graph
-            self.lineNode.clear()
+        self.lineNode.removeAllGeoms()
 
     def isEmpty( self ):
         return self.lineSegs.isEmpty()
@@ -216,6 +210,5 @@ def relHpr(nodePath, base, h, p, r):
 # Set direct drawing style for an object
 # Never light object or draw in wireframe
 def useDirectRenderStyle(nodePath):
-    if UsePgraph.use:
-        nodePath.node().setAttrib(LightAttrib.makeAllOff())
+    nodePath.node().setAttrib(LightAttrib.makeAllOff())
     nodePath.setRenderModeFilled()

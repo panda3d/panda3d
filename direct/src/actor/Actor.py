@@ -2,7 +2,6 @@
 
 from PandaObject import *
 import LODNode
-import UsePgraph
 
 class Actor(PandaObject, NodePath):
     """Actor class: Contains methods for creating, manipulating
@@ -206,10 +205,7 @@ class Actor(PandaObject, NodePath):
         # bounding volume for pieces that animate away from their
         # original position.  It's disturbing to see someone's hands
         # disappear; better to cull the whole object or none of it.
-        if UsePgraph.use:
-            self.__geomNode.node().setFinal(1)
-        else:
-            self.__geomNode.arc().setFinal(1)
+        self.__geomNode.node().setFinal(1)
             
     def delete(self):
         try:
@@ -711,10 +707,7 @@ class Actor(PandaObject, NodePath):
         joint = bundle.findChild(jointName)
 
         if (joint):
-            if UsePgraph.use:
-                joint.addNetTransform(node.node())
-            else:
-                joint.addNetTransform(node.arc())
+            joint.addNetTransform(node.node())
         else:
             Actor.notify.warning("no joint named %s!" % (jointName))
 
@@ -839,18 +832,10 @@ class Actor(PandaObject, NodePath):
 
         if mode == -2:
             # Turn off depth test/write on the frontParts.
-            if UsePgraph.use:
-                numFrontParts = frontParts.getNumPaths()
-                for partNum in range(0, numFrontParts):
-                    frontParts[partNum].setDepthWrite(0, 1)
-                    frontParts[partNum].setDepthTest(0, 1)
-            else:
-                dw = DepthWriteTransition.off()
-                dt = DepthTestTransition(DepthTestProperty.MNone)
-                numFrontParts = frontParts.getNumPaths()
-                for partNum in range(0, numFrontParts):
-                    frontParts[partNum].arc().setTransition(dw, 1)
-                    frontParts[partNum].arc().setTransition(dt, 1)
+            numFrontParts = frontParts.getNumPaths()
+            for partNum in range(0, numFrontParts):
+                frontParts[partNum].setDepthWrite(0, 1)
+                frontParts[partNum].setDepthTest(0, 1)
  
         # Find the back part.
         backPart = root.find("**/" + backPartName)
@@ -860,11 +845,7 @@ class Actor(PandaObject, NodePath):
                 
         if mode == -3:
             # Draw as a decal.
-            if UsePgraph.use:
-                backPart.node().setEffect(DecalEffect.make())
-            else:
-                dt = DecalTransition()
-                backPart.arc().setTransition(dt)
+            backPart.node().setEffect(DecalEffect.make())
         else:
             # Reorder the backPart to be the first of its siblings.
             backPart.reparentTo(backPart.getParent(), -1)

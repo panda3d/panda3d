@@ -19,13 +19,12 @@
 #ifndef PALETTEGROUPS_H
 #define PALETTEGROUPS_H
 
-#include <pandatoolbase.h>
-
-#include <typedWritable.h>
-
+#include "pandatoolbase.h"
+#include "typedWritable.h"
 #include "pset.h"
 
 class PaletteGroup;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PaletteGroups

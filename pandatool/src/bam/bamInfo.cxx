@@ -20,7 +20,7 @@
 
 #include "bamFile.h"
 #include "pandaNode.h"
-#include "qpgeomNode.h"
+#include "geomNode.h"
 #include "dcast.h"
 #include "pvector.h"
 
@@ -230,7 +230,7 @@ list_hierarchy(PandaNode *node, int indent_level) {
   }
 
   if (_verbose_geoms && node->is_geom_node()) {
-    qpGeomNode *geom_node;
+    GeomNode *geom_node;
     DCAST_INTO_V(geom_node, node);
     geom_node->write_verbose(nout, indent_level);
   }

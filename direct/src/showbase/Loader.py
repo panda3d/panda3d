@@ -2,7 +2,6 @@
 
 from PandaModules import *
 from DirectNotifyGlobal import *
-import UsePgraph
 
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct
@@ -34,10 +33,7 @@ class Loader:
             phaseChecker(modelPath)
         node = self.loader.loadSync(Filename(modelPath))
         if (node != None):
-            if UsePgraph.use:
-                nodePath = NodePath(node)
-            else:
-                nodePath = self.base.hidden.attachNewNode(node)
+            nodePath = NodePath(node)
             if fMakeNodeNamesUnique:
                 self.makeNodeNamesUnique(nodePath, 0)
         else:
@@ -54,10 +50,7 @@ class Loader:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
-            if UsePgraph.use:
-                nodePath = NodePath(node)
-            else:
-                nodePath = self.base.hidden.attachNewNode(node)
+            nodePath = NodePath(node)
         else:
             nodePath = None
         return nodePath
@@ -99,10 +92,7 @@ class Loader:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
-            if UsePgraph.use:
-                return (NodePath(node.copySubgraph()))
-            else:
-                return (NodePath(node).copyTo(self.base.hidden))
+            return (NodePath(node.copySubgraph()))
         else:
             return None
 

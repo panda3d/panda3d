@@ -66,7 +66,10 @@ class ShowBase:
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
 
-        self.hidden = NodePath(NamedNode('hidden'))
+        self.hidden = NodePath('hidden')
+
+        # We need a graphics engine to manage the actual rendering.
+        self.graphicsEngine = GraphicsEngine()
 
         self.setupRender()
         self.setupRender2d()
@@ -79,6 +82,10 @@ class ShowBase:
         # Ditto for an AppTraverser.
         self.appTrav = 0
 
+        # This is the DataGraph traverser, which we might as well
+        # create now.
+        self.dgTrav = DataGraphTraverser()
+
         # base.win is the main, or only window; base.winList is a list of
         # *all* windows.  Similarly with base.pipeList and base.camList.
         self.win = None
@@ -89,12 +96,7 @@ class ShowBase:
         self.camList = []
         self.camNode = None
         self.camLens = None
-
-        # base.camera is a little different; rather than referring to
-        # base.cameraList[0], it is instead the parent node of all
-        # cameras in base.cameraList.  That way, multiple cameras can
-        # easily be dragged around by moving the one node.
-        self.camera = self.render.attachNewNode('camera')
+        self.camera = None
         self.cameraList = []
         self.groupList = []
         self.camera2d = self.render2d.attachNewNode('camera2d')
@@ -190,13 +192,14 @@ class ShowBase:
             self.pipe = makeGraphicsPipe()
             self.pipeList.append(self.pipe)
 
-        chanConfig = makeGraphicsWindow(self.pipe, self.render.arc())
+        chanConfig = makeGraphicsWindow(self.pipe, self.render)
         win = chanConfig.getWin()
 
         if self.win == None:
             self.win = win
 
         self.winList.append(win)
+        self.graphicsEngine.addWindow(win)
 
         self.getCameras(chanConfig)
 
@@ -207,11 +210,12 @@ class ShowBase:
         Creates the render scene graph, the primary scene graph for
         rendering 3-d geometry.
         """
-        self.renderTop = NodePath(NamedNode('renderTop'))
-        self.render = self.renderTop.attachNewNode('render')
+        self.render = NodePath('render')
+        self.render.setTwoSided(0)
+        self.backfaceCullingEnabled = 1
+        self.textureEnabled = 1
+        self.wireframeEnabled = 0
 
-        # Set a default "off color" (i.e. use poly color) for color transitions
-        self.render.setColorOff()
 
     def setupRender2d(self):
         """setupRender2d(self)
@@ -221,8 +225,7 @@ class ShowBase:
         3-d geometry in the window.
         """
 
-        self.render2dTop = NodePath(NamedNode('render2dTop'))
-        self.render2d = self.render2dTop.attachNewNode('render2d')
+        self.render2d = NodePath('render2d')
 
         # Set up some overrides to turn off certain properties which
         # we probably won't need for 2-d objects.
@@ -232,12 +235,12 @@ class ShowBase:
         # by the previously-drawn 3-d scene--we don't want to pay for
         # a clear operation, but we also don't want to collide with
         # that depth buffer.
-        dt = DepthTestTransition(DepthTestProperty.MNone)
-        dw = DepthWriteTransition.off()
-        lt = LightTransition.allOff()
-        self.render2d.arc().setTransition(dt, 1)
-        self.render2d.arc().setTransition(dw, 1)
-        self.render2d.arc().setTransition(lt, 1)
+        dt = DepthTestAttrib.make(DepthTestAttrib.MNone)
+        dw = DepthWriteAttrib.make(DepthWriteAttrib.MOff)
+        #lt = LightTransition.allOff()
+        self.render2d.node().setAttrib(dt, 1)
+        self.render2d.node().setAttrib(dw, 1)
+        #self.render2d.node().setAttrib(lt, 1)
 
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1, 1)
@@ -251,6 +254,7 @@ class ShowBase:
         # For now, we assume that the window will have an aspect ratio
         # matching that of a traditional PC screen (w / h) = (4 / 3)
         self.aspectRatio = self.config.GetFloat('aspect-ratio', (4.0 / 3.0))
+
         self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
         self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
 
@@ -281,10 +285,10 @@ class ShowBase:
         lens.setFilmOffset((right + left) / 2.0, (top + bottom) / 2.0)
         lens.setNearFar(-1000, 1000)
         cam2dNode.setLens(lens)
-        cam2dNode.setScene(self.render2d.getTopNode())
-        dr.setCamera(cam2dNode)
-
+        cam2dNode.setScene(self.render2d)
         camera2d = self.camera2d.attachNewNode(cam2dNode)
+        dr.setCamera(camera2d)
+
         return camera2d
 
 
@@ -295,10 +299,10 @@ class ShowBase:
         devices.
         """
         
-        self.dataRoot = NodePath(NamedNode('dataRoot'), DataRelation.getClassType())
+        self.dataRoot = NodePath('dataRoot')
         # Cache the node so we do not ask for it every frame
         self.dataRootNode = self.dataRoot.node()
-        self.dataUnused = NodePath(NamedNode('dataUnused'), DataRelation.getClassType())
+        self.dataUnused = NodePath('dataUnused')
 
 
     def setupMouse(self, win):
@@ -309,8 +313,6 @@ class ShowBase:
         per application.
         """
 
-        print 'setup mouse'
-        
         # We create both a MouseAndKeyboard object and a MouseWatcher object
         # for the window.  The MouseAndKeyboard generates mouse events and
         # mouse button/keyboard events; the MouseWatcher passes them through
@@ -329,32 +331,24 @@ class ShowBase:
         mb.addButton(KeyboardButton.alt())
         self.mouseWatcherNode.setModifierButtons(mb)
 
-        # We also create a DataValve object above the trackball/drive
-        # interface, which will allow us to switch some of the mouse
-        # control, without switching all of it, to another object
-        # later (for instance, to enable OOBE mode--see oobe(),
-        # below.)
-        self.mouseValve = self.mouseWatcher.attachNewNode(DataValve('mouseValve'))
-        # This Control object can be used to turn on and off mouse &
-        # keyboard messages to the DriveInterface.
-        self.mouseControl = DataValve.Control()
-        self.mouseValve.node().setControl(0, self.mouseControl)
-
-        # This Control object is always kept on, handy to have.
-        self.onControl = DataValve.Control()
-
         # Now we have the main trackball & drive interfaces.
         # useTrackball() and useDrive() switch these in and out; only
         # one is in use at a given time.
         self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
         self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
-        self.mouse2cam.node().setArc(self.camera.arc())
-        self.useDrive()
+        self.mouse2cam.node().setNode(self.camera.node())
+
+        # The default is trackball mode, which is more convenient for
+        # ad-hoc development in Python using ShowBase.  Applications
+        # can explicitly call base.useDrive() if they prefer a drive
+        # interface.
+        self.mouseInterface = self.trackball
+        self.useTrackball()
 
         # A ButtonThrower to generate events from the mouse and
         # keyboard buttons as they are pressed.
-        self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower())
+        self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower('buttons'))
 
         # Specialize the events based on whether the modifier keys are
         # being held down.
@@ -380,12 +374,12 @@ class ShowBase:
         lilsmiley.reparentTo(mouseViz)
         # Scale the smiley face to 32x32 pixels.
         lilsmiley.setScale(32.0 / self.win.getHeight() / self.aspectRatio, 1.0, 32.0 / self.win.getHeight())
-        self.mouseWatcherNode.setGeometry(mouseViz.arc())
+        #self.mouseWatcherNode.setGeometry(mouseViz)
         
 
     def getCameras(self, chanConfig):
-        """getCameras(self, chanConfig)
-
+        """
+        getCameras(self, chanConfig)
         Extracts the camera(s) out of the ChanConfig record, parents
         them all to base.camera, and adds them to base.cameraList.
         """
@@ -394,7 +388,7 @@ class ShowBase:
         # be more than one display region/camera node beneath each
         # one.
         for i in range(chanConfig.getNumGroups()):
-            camera = self.camera.attachNewNode(chanConfig.getGroupNode(i))
+            camera = self.render.attachNewNode(chanConfig.getGroupNode(i))
             cam = camera.find('**/+Camera')
             lens = cam.node().getLens()
 
@@ -410,18 +404,17 @@ class ShowBase:
         for i in range(chanConfig.getNumDrs()):
             self.groupList.append(chanConfig.getGroupMembership(i))
 
-        # Set the default camera
+        # Set the default camera and cam
+        if self.camera == None:
+            self.camera = self.cameraList[0]
         if self.cam == None:
             self.cam = self.camList[0]
-
             # If you need to get a handle to the camera node itself,
             # use self.camNode.
             self.camNode = self.cam.node()
-
             # If you need to adjust camera parameters, like fov or
             # near/far clipping planes, use self.camLens.
             self.camLens = self.camNode.getLens()
-
 
     def getAlt(self):
         return base.mouseWatcherNode.getModifierButtons().isDown(
@@ -536,7 +529,7 @@ class ShowBase:
         # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
         # directly acts upon them (for instance, to move the avatar).
-        traverseDataGraph(self.dataRootNode)
+        self.dgTrav.traverse(self.dataRootNode)
         return Task.cont
 
     def igloop(self, state):
@@ -545,14 +538,10 @@ class ShowBase:
         if self.cTrav:
             self.cTrav.traverse(self.render)
         if self.appTrav:
-            self.appTrav.traverse(self.render.getTopNode())
+            self.appTrav.traverse(self.render)
             
         # Finally, render the frame.
-        for win in self.winList:
-            win.renderAndUpdate()
-
-        # The clock needs to be ticked once per frame.
-        globalClock.tick()
+        self.graphicsEngine.renderFrame()
 
         # Lerp stuff needs this event, and it must be generated in
         # C++, not in Python.
@@ -575,37 +564,50 @@ class ShowBase:
         self.eventMgr.shutdown()
 
     def toggleBackface(self):
-        return toggleBackface(self.render.arc())
+        if self.backfaceCullingEnabled:
+            self.backfaceCullingOff()
+        else:
+            self.backfaceCullingOn()
 
     def backfaceCullingOn(self):
-        if self.toggleBackface():
-            self.toggleBackface()
+        if not self.backfaceCullingEnabled:
+            self.render.setTwoSided(0)
+        self.backfaceCullingEnabled = 1
 
     def backfaceCullingOff(self):
-        if not self.toggleBackface():
-            self.toggleBackface()
+        if self.backfaceCullingEnabled:
+            self.render.setTwoSided(1)
+        self.backfaceCullingEnabled = 0
 
     def toggleTexture(self):
-        return toggleTexture(self.render.arc())
+        if self.textureEnabled:
+            self.textureOff()
+        else:
+            self.textureOn()
 
     def textureOn(self):
-        if not self.toggleTexture():
-            self.toggleTexture()
+        self.render.clearTexture()
+        self.textureEnabled = 1
 
     def textureOff(self):
-        if self.toggleTexture():
-            self.toggleTexture()
+        self.render.setTextureOff(100)
+        self.textureEnabled = 0
 
     def toggleWireframe(self):
-        return toggleWireframe(self.render.arc())
+        if self.wireframeEnabled:
+            self.wireframeOff()
+        else:
+            self.wireframeOn()
 
     def wireframeOn(self):
-        if not self.toggleWireframe():
-            self.toggleWireframe()
+        self.render.setRenderModeWireframe(100);
+        self.render.setTwoSided(1);
+        self.wireframeEnabled = 1
 
     def wireframeOff(self):
-        if self.toggleWireframe():
-            self.toggleWireframe()
+        self.render.clearRenderMode()
+        render.setTwoSided(not self.backfaceCullingEnabled)
+        self.wireframeEnabled = 0
 
     def disableMouse(self):
         """
@@ -628,39 +630,37 @@ class ShowBase:
         """
         self.mouse2cam.reparentTo(self.mouseInterface)
 
-    def setMouseOnArc(self, newArc):
-        self.mouse2cam.node().setArc(newArc)
+    def setMouseOnNode(self, newNode):
+        self.mouse2cam.node().setNode(newNode)
 
     def useDrive(self):
         """
         Switch mouse action to drive mode
         """
         # Get rid of the trackball
-        self.trackball.reparentTo(self.dataUnused)
+        self.mouseInterface.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the drive
         self.mouseInterface = self.drive
         self.mouseInterfaceNode = self.mouseInterface.node()
-        self.drive.node().reset()
-        # Hookup the drive to the camera.  Make sure it is first in
-        # the list of children of the mouseValve.
-        self.drive.reparentTo(self.mouseValve, 0)
-        self.mouse2cam.reparentTo(self.drive)
+        # Hookup the drive to the camera.
+        self.mouseInterface.reparentTo(self.mouseWatcher)
+        self.mouse2cam.reparentTo(self.mouseInterface)
         # Set the height to a good eyeheight
-        self.drive.node().setZ(4.0)
+        self.mouseInterfaceNode.reset()
+        self.mouseInterfaceNode.setZ(4.0)
 
     def useTrackball(self):
         """
         Switch mouse action to trackball mode
         """
         # Get rid of the drive
-        self.drive.reparentTo(self.dataUnused)
+        self.mouseInterface.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the trackball
         self.mouseInterface = self.trackball
         self.mouseInterfaceNode = self.mouseInterface.node()
-        # Hookup the trackball to the camera.  Make sure it is first
-        # in the list of children of the mouseValve.
-        self.trackball.reparentTo(self.mouseValve, 0)
-        self.mouse2cam.reparentTo(self.trackball)
+        # Hookup the trackball to the camera.
+        self.mouseInterface.reparentTo(self.mouseWatcher)
+        self.mouse2cam.reparentTo(self.mouseInterface)
 
     def oobe(self):
         """
@@ -698,24 +698,16 @@ class ShowBase:
             self.oobeLens.setAspectRatio(self.aspectRatio)
             self.oobeLens.setNearFar(0.1, 10000.0)
             self.oobeLens.setFov(52.0)
-            self.oobeControl = DataValve.Control()
-            self.mouseValve.node().setControl(1, self.oobeControl)
-            self.oobeTrackball = self.mouseValve.attachNewNode(Trackball('oobeTrackball'), 1)
-            self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
-            self.oobe2cam.node().setArc(self.oobeCameraTrackball.arc())
 
-            self.oobeButtonEventsType = TypeRegistry.ptr().findType('ButtonEvents_ButtonEventDataTransition')
+            self.oobeTrackball = self.dataUnused.attachNewNode(Trackball('oobeTrackball'), 1)
+            self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
+            self.oobe2cam.node().setNode(self.oobeCameraTrackball.node())
 
             self.oobeVis = loader.loadModelOnce('models/misc/camera')
             if self.oobeVis:
-                self.oobeVis.arc().setFinal(1)
+                self.oobeVis.node().setFinal(1)
             self.oobeCullFrustum = None
             self.oobeCullFrustumVis = None
-
-            # Make sure the MouseValve is monitoring the Control key.
-            mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
-            mods.addButton(KeyboardButton.control())
-            self.mouseValve.node().setModifierButtons(mods)
 
         if self.oobeMode:
             # Disable OOBE mode.
@@ -724,34 +716,27 @@ class ShowBase:
                 # First, disable OOBE cull mode.
                 self.oobeCull()
             
-            self.oobeControl.setOff()
-            self.mouseControl.setOn()
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.hidden)
+
+            # Restore the mouse interface node.
+            self.mouseInterface.reparentTo(self.mouseWatcher)
+            self.oobeTrackball.reparentTo(self.dataUnused)
+                
             self.cam.reparentTo(self.camera)
             self.camNode.setLens(self.camLens)
             self.oobeCamera.reparentTo(self.hidden)
             self.oobeMode = 0            
         else:
-            # Enable OOBE mode.
-            mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
-
-            # We're in OOBE control mode without the control key.
-            mods.allButtonsUp()
-            self.oobeControl.setButtons(mods)
-
-            # We're in traditional control mode with the control key.
-            mods.buttonDown(KeyboardButton.control())
-            self.mouseControl.setButtons(mods)
-
-            # However, keyboard buttons always make it through to the
-            # traditional controller, regardless of the control key.
-            self.mouseValve.node().setFineControl(0, self.oobeButtonEventsType, self.onControl)
-
             # Make oobeCamera be a sibling of wherever camera is now.
             cameraParent = self.camera.getParent()
             self.oobeCamera.reparentTo(cameraParent)
             self.oobeCamera.clearMat()
+
+            # Move aside the current mouse interface node and put the
+            # oobeTrackball in its place.
+            self.mouseInterface.reparentTo(self.dataUnused)
+            self.oobeTrackball.reparentTo(self.mouseWatcher)
 
             # Set our initial OOB position to be just behind the camera.
             mat = Mat4.translateMat(0, -10, 3) * self.camera.getMat(cameraParent)
@@ -793,18 +778,18 @@ class ShowBase:
 
             # Assign each DisplayRegion shared by the camera to use
             # this cull frustum.
-            numDrs = self.camNode.getNumDrs()
-            for d in range(0, numDrs):
-                dr = self.camNode.getDr(d)
+            numDisplayRegions = self.camNode.getNumDisplayRegions()
+            for d in range(0, numDisplayRegions):
+                dr = self.camNode.getDisplayRegion(d)
                 dr.setCullFrustum(pnode)
         else:
             # Disable OOBE culling.
 
             # Assign each DisplayRegion shared by the camera to use
             # the default cull frustum, the camera itself.
-            numDrs = self.camNode.getNumDrs()
-            for d in range(0, numDrs):
-                dr = self.camNode.getDr(d)
+            numDisplayRegions = self.camNode.getNumDisplayRegions()
+            for d in range(0, numDisplayRegions):
+                dr = self.camNode.getDisplayRegion(d)
                 dr.setCullFrustum(self.camNode)
 
             self.oobeCullFrustum.removeNode()

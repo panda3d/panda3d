@@ -12,7 +12,6 @@ import Slider
 import VectorWidgets
 import SceneGraphExplorer
 from TaskManagerPanel import TaskManagerWidget
-import UsePgraph
 
 """
 Possible to add:
@@ -905,9 +904,8 @@ class DirectSessionPanel(AppShell):
 
     def updateLightInfo(self, page = None):
         # Set main lighting button
-        if UsePgraph.use:
-            self.enableLights.set(
-                render.node().hasAttrib(LightAttrib.getClassType()))
+        self.enableLights.set(
+            render.node().hasAttrib(LightAttrib.getClassType()))
             
         # Set light specific info
         if self.activeLight:

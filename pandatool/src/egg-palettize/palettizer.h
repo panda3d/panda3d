@@ -19,11 +19,11 @@
 #ifndef PALETTIZER_H
 #define PALETTIZER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "txaFile.h"
 
-#include <typedWritable.h>
+#include "typedWritable.h"
 
 #include "pvector.h"
 #include "pset.h"
@@ -34,6 +34,7 @@ class EggFile;
 class PaletteGroup;
 class TextureImage;
 class TexturePlacement;
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Palettizer

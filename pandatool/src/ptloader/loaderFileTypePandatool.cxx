@@ -20,7 +20,7 @@
 
 #include "somethingToEggConverter.h"
 #include "config_util.h"
-#include "qpload_egg_file.h"
+#include "load_egg_file.h"
 #include "eggData.h"
 
 TypeHandle LoaderFileTypePandatool::_type_handle;
@@ -84,14 +84,14 @@ resolve_filename(Filename &path) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileTypePandatool::
-qpload_file(const Filename &path, bool) const {
+load_file(const Filename &path, bool) const {
   PT(PandaNode) result;
 
   EggData egg_data;
   _converter->set_egg_data(&egg_data, false);
   if (_converter->convert_file(path)) {
     egg_data.set_coordinate_system(CS_default);
-    result = qpload_egg_data(egg_data);
+    result = load_egg_data(egg_data);
   }
   _converter->clear_egg_data();
   return result.p();

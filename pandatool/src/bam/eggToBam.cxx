@@ -20,7 +20,7 @@
 
 #include "config_util.h"
 #include "bamFile.h"
-#include "qpload_egg_file.h"
+#include "load_egg_file.h"
 #include "config_egg2pg.h"
 #include "config_gobj.h"
 #include "config_chan.h"
@@ -136,7 +136,7 @@ run() {
     _data.set_coordinate_system(CS_zup_right);
   }
 
-  PT(PandaNode) root = qpload_egg_data(_data);
+  PT(PandaNode) root = load_egg_data(_data);
   if (root == (PandaNode *)NULL) {
     nout << "Unable to build scene graph from egg file.\n";
     exit(1);

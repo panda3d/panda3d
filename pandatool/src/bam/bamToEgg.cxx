@@ -19,8 +19,8 @@
 #include "bamToEgg.h"
 
 #include "node.h"
-#include "qpLODNode.h"
-#include "qpgeomNode.h"
+#include "LODNode.h"
+#include "geomNode.h"
 #include "geom.h"
 #include "geomTri.h"
 #include "string_utils.h"

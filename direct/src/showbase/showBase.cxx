@@ -24,7 +24,7 @@
 #include "chancfg.h"
 #include "renderBuffer.h"
 #include "get_config_path.h"
-#include "qpcamera.h"
+#include "camera.h"
 
 ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
@@ -65,8 +65,8 @@ make_graphics_pipe() {
   return main_pipe;
 }
 
-qpChanConfig
-qpmake_graphics_window(GraphicsPipe *pipe, const qpNodePath &render) {
+ChanConfig
+make_graphics_window(GraphicsPipe *pipe, const NodePath &render) {
   PT(GraphicsWindow) main_win;
   ChanCfgOverrides override;
 
@@ -78,7 +78,7 @@ qpmake_graphics_window(GraphicsPipe *pipe, const qpNodePath &render) {
   override.setField(ChanCfgOverrides::Title, title);
 
   std::string conf = config_showbase.GetString("chan-config", chan_config);
-  qpChanConfig chan_config(pipe, conf, render, override);
+  ChanConfig chan_config(pipe, conf, render, override);
   main_win = chan_config.get_win();
   assert(main_win != (GraphicsWindow*)0L);
 

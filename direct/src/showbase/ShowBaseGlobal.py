@@ -1,10 +1,6 @@
 """instantiate global ShowBase object"""
-import UsePgraph
 
-if UsePgraph.use:
-    from qpShowBase import *
-else:
-    from ShowBase import *
+from ShowBase import *
 
 # Create the showbase instance
 ShowBase()
