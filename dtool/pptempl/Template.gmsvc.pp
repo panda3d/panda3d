@@ -315,6 +315,8 @@ $[TAB] @touch $[directory]/stamp
 // Now it's time to start generating the rules to make our actual
 // targets.
 
+igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]/%]
+
 
 /////////////////////////////////////////////////////////////////////
 // First, the dynamic libraries.  Each lib_target and metalib_target
@@ -942,6 +944,7 @@ $[TAB] @ppremake -D $[DEPENDENCY_CACHE_FILENAME]
 
 all : $[subdirs]
 test : $[subdirs:%=test-%]
+igate : $[subdirs:%=igate-%]
 clean : $[subdirs:%=clean-%]
 clean-igate : $[subdirs:%=clean-igate-%]
 cleanall : $[subdirs:%=cleanall-%]
@@ -962,6 +965,11 @@ $[TAB] cd ./$[PATH] && $(MAKE) all
 #formap dirname subdirs
 test-$[dirname] :
 $[TAB] cd ./$[PATH] && $(MAKE) test
+#end dirname
+
+#formap dirname subdirs
+igate-$[dirname] :
+$[TAB]cd ./$[PATH] && $(MAKE) igate
 #end dirname
 
 #formap dirname subdirs
