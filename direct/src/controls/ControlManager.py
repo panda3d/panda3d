@@ -27,6 +27,8 @@ class ControlManager:
         self.currentControls = None
         self.isEnabled = 1
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
+        inputState.watch("run", "running-on", "running-off")
+        
         inputState.watch("forward", "arrow_up", "arrow_up-up")
         inputState.watch("forward", "control-arrow_up", "control-arrow_up-up")
         inputState.watch("forward", "alt-arrow_up", "alt-arrow_up-up")
