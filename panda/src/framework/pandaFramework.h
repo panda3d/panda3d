@@ -78,6 +78,9 @@ public:
   INLINE bool get_two_sided() const;
   INLINE bool get_lighting() const;
 
+  static int hide_collision_solids(NodePath node);
+  static int show_collision_solids(NodePath node);
+
   void set_highlight(const NodePath &node);
   void clear_highlight();
   INLINE bool has_highlight() const;
@@ -102,6 +105,7 @@ protected:
   static void event_b(CPT_Event, void *data);
   static void event_l(CPT_Event, void *data);
   static void event_c(CPT_Event, void *data);
+  static void event_C(CPT_Event, void *data);
   static void event_L(CPT_Event, void *data);
   static void event_h(CPT_Event, void *data);
   static void event_arrow_up(CPT_Event, void *data);

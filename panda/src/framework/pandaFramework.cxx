@@ -22,6 +22,7 @@
 #include "eventQueue.h"
 #include "dataGraphTraverser.h"
 #include "interactiveGraphicsPipe.h"
+#include "collisionNode.h"
 #include "config_framework.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -357,6 +358,58 @@ set_lighting(bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::hide_collision_solids
+//       Access: Public
+//  Description: Hides any collision solids which are visible in the
+//               indicated scene graph.  Returns the number of
+//               collision solids hidden.
+////////////////////////////////////////////////////////////////////
+int PandaFramework::
+hide_collision_solids(NodePath node) {
+  int num_changed = 0;
+
+  if (node.node()->is_of_type(CollisionNode::get_class_type())) {
+    if (!node.is_hidden()) {
+      node.hide();
+      num_changed++;
+    }
+  }
+
+  int num_children = node.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    num_changed += hide_collision_solids(node.get_child(i));
+  }
+
+  return num_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::show_collision_solids
+//       Access: Public
+//  Description: Shows any collision solids which are directly hidden
+//               in the indicated scene graph.  Returns the number of
+//               collision solids shown.
+////////////////////////////////////////////////////////////////////
+int PandaFramework::
+show_collision_solids(NodePath node) {
+  int num_changed = 0;
+
+  if (node.node()->is_of_type(CollisionNode::get_class_type())) {
+    if (node.get_hidden_ancestor() == node) {
+      node.show();
+      num_changed++;
+    }
+  }
+
+  int num_children = node.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    num_changed += show_collision_solids(node.get_child(i));
+  }
+
+  return num_changed;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::set_highlight
 //       Access: Public
 //  Description: Sets the indicated node (normally a node within the
@@ -488,6 +541,7 @@ do_enable_default_keys() {
   _event_handler.add_hook("b", event_b, this);
   _event_handler.add_hook("l", event_l, this);
   _event_handler.add_hook("c", event_c, this);
+  _event_handler.add_hook("shift-c", event_C, this);
   _event_handler.add_hook("shift-l", event_L, this);
   _event_handler.add_hook("h", event_h, this);
   _event_handler.add_hook("arrow_up", event_arrow_up, this);
@@ -586,6 +640,26 @@ event_c(CPT_Event, void *data) {
   for (wi = self->_windows.begin(); wi != self->_windows.end(); ++wi) {
     WindowFramework *wf = (*wi);
     wf->center_trackball(node);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_C
+//       Access: Protected, Static
+//  Description: Default handler for shift-C key: toggle the showing
+//               of collision solids.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_C(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  NodePath node = self->get_highlight();
+  if (node.is_empty()) {
+    node = self->get_models();
+  }
+
+  if (self->hide_collision_solids(node) == 0) {
+    self->show_collision_solids(node);
   }
 }
 
