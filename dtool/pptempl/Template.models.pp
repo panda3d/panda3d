@@ -249,7 +249,7 @@ $[TAB]maya2egg $[MAYA2EGG_OPTS] -o $[target] $[source]
 #forscopes maya_char_egg
   #if $[POLY_MODEL]
     #define target $[EGG_PREFIX]$[POLY_MODEL].egg
-    #define source $[MAYA_PREFIX]$[POLY_MODEL].mb
+    #define source $[MAYA_PREFIX]$[or $[MODEL],$[POLY_MODEL]].mb
 $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -p -a model -cn "$[CHAR_NAME]" -o $[target] $[source]
   #endif
