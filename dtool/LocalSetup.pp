@@ -9,6 +9,59 @@
 // configure.
 //
 
+#print
+#if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]
+#print Configuring Panda to generate Python interfaces.
+#else
+#print Configuring Panda WITHOUT Python interfaces.
+#endif
+
+#print
+#print Optional third-party packages configured in:
+#if $[HAVE_NSPR]
+#print - NSPR
+#endif
+#if $[HAVE_SSL]
+#print - OpenSSL
+#endif
+#if $[HAVE_JPEG]
+#print - libjpeg
+#endif
+#if $[HAVE_PNG]
+#print - libpng
+#endif
+#if $[HAVE_TIFF]
+#print - libtiff
+#endif
+#if $[HAVE_FFTW]
+#print - fftw
+#endif
+#if $[HAVE_VRPN]
+#print - VRPN
+#endif
+#if $[HAVE_ZLIB]
+#print - zlib
+#endif
+#if $[HAVE_RAD_MSS]
+#print - Miles Sound System
+#endif
+#if $[HAVE_FMOD]
+#print - FMOD sound library
+#endif
+#if $[HAVE_FREETYPE]
+#print - Freetype
+#endif
+#if $[HAVE_GL]
+#print - OpenGL
+#endif
+#if $[HAVE_DX]
+#print - DirectX
+#endif
+#print
+#print See dtool_config.h for more details about the specified configuration.
+
+#print
+
 #output dtool_config.h notouch
 #format straight
 /* dtool_config.h.  Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
