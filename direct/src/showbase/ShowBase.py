@@ -52,6 +52,8 @@ class ShowBase:
         self.wantStats = self.config.GetBool('want-stats', 0)
 
         taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
+        taskMgr.extendedExceptions = self.config.GetBool('extended-exceptions', 0)
+        
         taskMgr.pStatsTasks = self.config.GetBool('pstats-tasks', 0)
 
         # Set up the TaskManager to reset the PStats clock back

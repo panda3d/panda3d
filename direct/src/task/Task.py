@@ -312,6 +312,7 @@ class TaskManager:
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
         self.taskTimerVerbose = 0
+        self.extendedExceptions = 0
         self.pStatsTasks = 0
         self.resumeFunc = None
         self.fVerbose = 0
@@ -501,9 +502,11 @@ class TaskManager:
                 except KeyboardInterrupt:
                     self.stop()
                 except:
-                    # self.stop()
-                    # print_exc_plus()
-                    raise
+                    if self.extendedExceptions:
+                        self.stop()
+                        print_exc_plus()
+                    else:
+                        raise
 
     def stop(self):
         # Set a flag so we will stop before beginning next frame

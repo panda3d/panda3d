@@ -295,7 +295,7 @@ def adjust(command = None, parent = None, **kw):
     base.wantDIRECT = 1
     base.wantTk = 1
     import TkGlobal
-    from Tkinter import *
+    import Tkinter
     import EntryScale
     import Pmw
     # Create toplevel if needed
