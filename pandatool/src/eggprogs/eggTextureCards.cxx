@@ -86,6 +86,12 @@ EggTextureCards() : EggWriter(true, true) {
      "or \"rgb5\" or \"alpha\".  The default is to leave this unspecified.",
      &EggTextureCards::dispatch_format, NULL, &_format);
 
+  add_option
+    ("b", "", 0,
+     "Make the textured polygons backfaced",
+     &EggTextureCards::dispatch_none, &_apply_bface);
+
+
   _polygon_geometry.set(-0.5, 0.5, -0.5, 0.5);
   _polygon_color.set(1.0, 1.0, 1.0, 1.0);
   _wrap_mode = EggTexture::WM_unspecified;
@@ -291,6 +297,9 @@ run() {
       sub_group->add_child(poly);
       poly->set_texture(tref);
       poly->set_color(_polygon_color);
+      if (_apply_bface){
+	poly->set_bface_flag(1);
+      }
 
       poly->add_vertex(v1);
       poly->add_vertex(v2);

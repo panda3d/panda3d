@@ -59,6 +59,7 @@ public:
   vector_string _texture_names;
   EggTexture::WrapMode _wrap_mode;
   EggTexture::Format _format;
+  bool _apply_bface;
 };
 
 #endif
