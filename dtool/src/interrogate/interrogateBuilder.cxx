@@ -2133,11 +2133,20 @@ define_method(CPPInstance *function, InterrogateType &itype,
     force_publish = true;
   }
   
+  if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
+    // A destructor is a special case.  If it's public, we export it
+    // (even if it's not published), but if it's protected or private,
+    // we don't exported it, and we flag it so we don't try to
+    // synthesize one later.
+    if (function->_vis > V_public) {
+      itype._flags |= InterrogateType::F_private_destructor;
+      return;
+    }
+    force_publish = true;
+  }
+
   if (!force_publish && function->_vis > min_vis) {
     // The function is not marked to be exported.
-    if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
-      itype._flags |= InterrogateType::F_private_destructor;
-    }
     return;
   }
 
@@ -2165,7 +2174,9 @@ define_method(CPPInstance *function, InterrogateType &itype,
   }
 
   if ((function->_storage_class & CPPInstance::SC_inherited_virtual) != 0 &&
-      struct_type->_derivation.size() == 1) {
+      struct_type->_derivation.size() == 1 &&
+      struct_type->_derivation[0]._vis <= V_public &&
+      !struct_type->_derivation[0]._is_virtual) {
     // If this function is a virtual function whose first appearance
     // is in some base class, we don't need to repeat its definition
     // here, since we're already inheriting it properly.  However, we

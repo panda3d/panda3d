@@ -91,6 +91,49 @@ ns_release_all_models() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::ns_garbage_collect
+//       Access: Private
+//  Description: The nonstatic implementation of garbage_collect().
+////////////////////////////////////////////////////////////////////
+int ModelPool::
+ns_garbage_collect() {
+  int num_released = 0;
+  Models new_set;
+
+  Models::iterator ti;
+  for (ti = _models.begin(); ti != _models.end(); ++ti) {
+    Node *node = (*ti).second;
+    if (node->get_ref_count() == 1) {
+      if (loader_cat.is_debug()) {
+	loader_cat.debug()
+	  << "Releasing " << (*ti).first << "\n";
+      }
+      num_released++;
+    } else {
+      new_set.insert(new_set.end(), *ti);
+    }
+  }
+
+  _models.swap(new_set);
+  return num_released;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::ns_list_contents
+//       Access: Private
+//  Description: The nonstatic implementation of list_contents().
+////////////////////////////////////////////////////////////////////
+void ModelPool::
+ns_list_contents(ostream &out) {
+  out << _models.size() << " models:\n";
+  Models::iterator ti;
+  for (ti = _models.begin(); ti != _models.end(); ++ti) {
+    out << "  " << (*ti).first
+	<< " (count = " << (*ti).second->get_ref_count() << ")\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelPool::get_ptr
 //       Access: Private, Static
 //  Description: Initializes and/or returns the global pointer to the

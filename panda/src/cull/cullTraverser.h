@@ -52,6 +52,7 @@ public:
   INLINE void draw_direct(Node *node,
 			  const AllAttributesWrapper &initial_state);
 
+PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 

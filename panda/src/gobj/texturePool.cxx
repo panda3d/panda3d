@@ -137,6 +137,49 @@ ns_release_all_textures() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_garbage_collect
+//       Access: Private
+//  Description: The nonstatic implementation of garbage_collect().
+////////////////////////////////////////////////////////////////////
+int TexturePool::
+ns_garbage_collect() {
+  int num_released = 0;
+  Textures new_set;
+
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    Texture *tex = (*ti).second;
+    if (tex->get_ref_count() == 1) {
+      if (gobj_cat.is_debug()) {
+	gobj_cat.debug()
+	  << "Releasing " << (*ti).first << "\n";
+      }
+      num_released++;
+    } else {
+      new_set.insert(new_set.end(), *ti);
+    }
+  }
+
+  _textures.swap(new_set);
+  return num_released;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_list_contents
+//       Access: Private
+//  Description: The nonstatic implementation of list_contents().
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+ns_list_contents(ostream &out) {
+  out << _textures.size() << " textures:\n";
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    out << "  " << (*ti).first
+	<< " (count = " << (*ti).second->get_ref_count() << ")\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::get_ptr
 //       Access: Private, Static
 //  Description: Initializes and/or returns the global pointer to the

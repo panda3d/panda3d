@@ -42,6 +42,10 @@ PUBLISHED:
   INLINE static void release_model(const string &filename);
   INLINE static void release_all_models();
 
+  INLINE static int garbage_collect();
+
+  INLINE static void list_contents(ostream &out);
+
 private:
   INLINE ModelPool();
 
@@ -50,6 +54,8 @@ private:
   void ns_add_model(const string &filename, Node *model);
   void ns_release_model(const string &filename);
   void ns_release_all_models();
+  int ns_garbage_collect();
+  void ns_list_contents(ostream &out);
 
   static ModelPool *get_ptr();
 

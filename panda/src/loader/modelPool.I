@@ -82,6 +82,30 @@ release_all_models() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::garbage_collect
+//       Access: Public, Static
+//  Description: Releases only those models in the pool that have a
+//               reference count of exactly 1; i.e. only those
+//               models that are not being used outside of the pool.
+//               Returns the number of models released.
+////////////////////////////////////////////////////////////////////
+INLINE int ModelPool::
+garbage_collect() {
+  return get_ptr()->ns_garbage_collect();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::list_contents
+//       Access: Public, Static
+//  Description: Lists the contents of the model pool to the
+//               indicated output stream.
+////////////////////////////////////////////////////////////////////
+INLINE void ModelPool::
+list_contents(ostream &out) {
+  get_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelPool::Constructor
 //       Access: Private
 //  Description: The constructor is not intended to be called

@@ -101,6 +101,30 @@ release_all_textures() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::garbage_collect
+//       Access: Public, Static
+//  Description: Releases only those textures in the pool that have a
+//               reference count of exactly 1; i.e. only those
+//               textures that are not being used outside of the pool.
+//               Returns the number of textures released.
+////////////////////////////////////////////////////////////////////
+INLINE int TexturePool::
+garbage_collect() {
+  return get_ptr()->ns_garbage_collect();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::list_contents
+//       Access: Public, Static
+//  Description: Lists the contents of the texture pool to the
+//               indicated output stream.
+////////////////////////////////////////////////////////////////////
+INLINE void TexturePool::
+list_contents(ostream &out) {
+  get_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::Constructor
 //       Access: Private
 //  Description: The constructor is not intended to be called

@@ -36,6 +36,10 @@ PUBLISHED:
   INLINE static void release_texture(Texture *texture);
   INLINE static void release_all_textures();
 
+  INLINE static int garbage_collect();
+
+  INLINE static void list_contents(ostream &out);
+
 private:
   INLINE TexturePool();
 
@@ -45,6 +49,8 @@ private:
   void ns_add_texture(Texture *texture);
   void ns_release_texture(Texture *texture);
   void ns_release_all_textures();
+  int ns_garbage_collect();
+  void ns_list_contents(ostream &out);
 
   static TexturePool *get_ptr();
 
