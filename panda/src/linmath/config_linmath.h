@@ -24,4 +24,8 @@
 
 NotifyCategoryDecl(linmath, EXPCL_PANDA, EXPTP_PANDA);
 
+extern const bool paranoid_hpr_quat;
+
+extern EXPCL_PANDA void init_liblinmath();
+
 #endif

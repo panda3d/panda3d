@@ -26,6 +26,32 @@ Configure(config_linmath);
 NotifyCategoryDef(linmath, "");
 
 ConfigureFn(config_linmath) {
+  init_liblinmath();
+}
+
+// Set this true to doublecheck the quaternion-hpr compose and
+// decompose operations against the quaternion-matrix and matrix-hpr
+// operations.  This only has effect if NDEBUG is not defined.
+
+// The default is true for now.
+const bool paranoid_hpr_quat = config_linmath.GetBool("paranoid-hpr-quat", true);
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_liblinmath
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_liblinmath() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   LVecBase2f::init_type();
   LVecBase3f::init_type();
   LVecBase4f::init_type();

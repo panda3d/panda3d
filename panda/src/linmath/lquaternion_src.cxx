@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "config_linmath.h"
+#include "compose_matrix_src.h"
+
 TypeHandle FLOATNAME(LQuaternion)::_type_handle;
 
 const FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::_ident_quat =
@@ -85,23 +88,39 @@ void FLOATNAME(LQuaternion)::
 set_hpr(const FLOATNAME(LVecBase3) &hpr) {
   FLOATNAME(LQuaternion) quat_h, quat_p, quat_r;
 
-  FLOATNAME(LVector3) v = FLOATNAME(LVector3)::up();
-  FLOATTYPE a = deg_2_rad(hpr[0] * 0.5);
-  FLOATTYPE s,c;
+  FLOATNAME(LVector3) v;
+  FLOATTYPE a, s, c;
 
-  csincos(a,&s,&c);
+  v = FLOATNAME(LVector3)::up();
+  a = deg_2_rad(hpr[0] * 0.5f);
+  csincos(a, &s, &c);
   quat_h.set(c, v[0] * s, v[1] * s, v[2] * s);
   v = FLOATNAME(LVector3)::right();
-  a = deg_2_rad(hpr[1] * 0.5);
-  csincos(a,&s,&c);
+  a = deg_2_rad(hpr[1] * 0.5f);
+  csincos(a, &s, &c);
   s = csin(a);
   quat_p.set(c, v[0] * s, v[1] * s, v[2] * s);
   v = FLOATNAME(LVector3)::forward();
-  a = deg_2_rad(hpr[2] * 0.5);
-  csincos(a,&s,&c);
+  a = deg_2_rad(hpr[2] * 0.5f);
+  csincos(a, &s, &c);
   quat_r.set(c, v[0] * s, v[1] * s, v[2] * s);
 
   (*this) = quat_h * quat_p * quat_r;
+
+#ifndef NDEBUG
+  if (paranoid_hpr_quat) {
+    FLOATNAME(LMatrix3) mat;
+    compose_matrix(mat, FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f), hpr);
+    FLOATNAME(LQuaternion) compare;
+    compare.set_from_matrix(mat);
+    if (!compare.almost_equal(*this)) {
+      linmath_cat.warning()
+        << "hpr-to-quat of " << hpr << " computed " << *this
+        << " instead of " << compare << "\n";
+      (*this) = compare;
+    }
+  }
+#endif  // NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,9 +131,9 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr) {
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
 get_hpr() const {
-  FLOATTYPE heading, pitch, roll;
+  FLOATNAME(LVecBase3) hpr;
   FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
-  FLOATTYPE s = (N == 0.) ? 0. : (2. / N);
+  FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
   FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
   FLOATTYPE cr, sr, cp, sp, ch, sh;
 
@@ -123,36 +142,51 @@ get_hpr() const {
   xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
   yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
   c1 = xz - wy;
-  c2 = 1. - (xx + yy);
-  c3 = 1. - (yy + zz);
+  c2 = 1.0f - (xx + yy);
+  c3 = 1.0f - (yy + zz);
   c4 = xy + wz;
 
-  if (c1 == 0.) {  // (roll = 0 or 180) or (pitch = +/- 90
-    if (c2 >= 0.) {
-      roll = 0.;
+  if (c1 == 0.0f) {  // (roll = 0 or 180) or (pitch = +/- 90
+    if (c2 >= 0.0f) {
+      hpr[2] = 0.0f;
       ch = c3;
       sh = c4;
       cp = c2;
     } else {
-      roll = 180.;
+      hpr[2] = 180.0f;
       ch = -c3;
       sh = -c4;
       cp = -c2;
     }
   } else {
     // this should work all the time, but the above saves some trig operations
-    roll = catan2(-c1, c2);
-    csincos(roll,&sr,&cr);
-    roll = rad_2_deg(roll);
+    FLOATTYPE roll = catan2(-c1, c2);
+    csincos(roll, &sr, &cr);
+    hpr[2] = rad_2_deg(roll);
     ch = (cr * c3) + (sr * (xz + wy));
     sh = (cr * c4) + (sr * (yz - wx));
     cp = (cr * c2) - (sr * c1);
   }
   sp = yz + wx;
-  heading = rad_2_deg(catan2(sh, ch));
-  pitch = rad_2_deg(catan2(sp, cp));
+  hpr[0] = rad_2_deg(catan2(sh, ch));
+  hpr[1] = rad_2_deg(catan2(sp, cp));
 
-  return FLOATNAME(LVecBase3)(heading, pitch, roll);
+#ifndef NDEBUG
+  if (paranoid_hpr_quat) {
+    FLOATNAME(LMatrix3) mat;
+    extract_to_matrix(mat);
+    FLOATNAME(LVecBase3) scale, compare_hpr;
+    decompose_matrix(mat, scale, compare_hpr);
+    if (!compare_hpr.almost_equal(hpr)) {
+      linmath_cat.warning()
+        << "quat-to-hpr of " << *this << " computed " << hpr << " instead of "
+        << compare_hpr << "\n";
+      hpr = compare_hpr;
+    }
+  }
+#endif  // NDEBUG
+
+  return hpr;
 }
 
 ////////////////////////////////////////////////////////////////////
