@@ -566,7 +566,8 @@ begin_decal_base_first() {
   static CPT(RenderState) decal_base_first;
   if (decal_base_first == (const RenderState *)NULL) {
     decal_base_first = RenderState::make
-      (DepthWriteAttrib::make(DepthWriteAttrib::M_off));
+      (DepthWriteAttrib::make(DepthWriteAttrib::M_off),
+       RenderState::get_max_priority());
   }
   return decal_base_first;
 }
@@ -588,7 +589,8 @@ begin_decal_nested() {
   static CPT(RenderState) decal_nested;
   if (decal_nested == (const RenderState *)NULL) {
     decal_nested = RenderState::make
-      (DepthWriteAttrib::make(DepthWriteAttrib::M_off));
+      (DepthWriteAttrib::make(DepthWriteAttrib::M_off),
+       RenderState::get_max_priority());
   }
   return decal_nested;
 }
@@ -617,7 +619,11 @@ begin_decal_base_second() {
   if (decal_base_second == (const RenderState *)NULL) {
     decal_base_second = RenderState::make
       (ColorWriteAttrib::make(ColorWriteAttrib::M_off),
-       TextureAttrib::make_off());
+       // On reflection, we need to leave texturing on so the alpha
+       // test mechanism can work (if it is enabled, e.g. we are
+       // rendering an object with M_dual transparency).
+       //       TextureAttrib::make_off(),
+       RenderState::get_max_priority());
   }
   return decal_base_second;
 }
