@@ -27,6 +27,8 @@
 #include "depthOffsetAttrib.h"
 #include "colorScaleAttrib.h"
 #include "transparencyAttrib.h"
+#include "geomLine.h"
+#include "geomSphere.h"
 
 
 #ifdef DO_COLLISION_RECORDING
@@ -155,7 +157,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
     // Now draw all of the detected points.
     if (!viz_info._points.empty()) {
-      CPT(RenderState) line_state = RenderState::make_empty();
+      CPT(RenderState) empty_state = RenderState::make_empty();
 
       PTA_Colorf colors;
       colors.push_back(Colorf(1.0f, 0.0f, 0.0f, 1.0f));
@@ -164,19 +166,38 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       Points::const_iterator pi;
       for (pi = viz_info._points.begin(); pi != viz_info._points.end(); ++pi) {
         const CollisionPoint &point = (*pi);
-        PT(GeomLine) line = new GeomLine;
+
+        // Draw a tiny sphere at the collision point.
+        {
+          PT(GeomSphere) sphere = new GeomSphere;
+          PTA_Vertexf verts;
+          verts.push_back(point._point);
+          verts.push_back(point._point + LVector3f(0.1f, 0.0f, 0.0f));
+          sphere->set_coords(verts);
+          sphere->set_colors(colors, G_OVERALL);
+          sphere->set_num_prims(1);
+          CullableObject *object = 
+            new CullableObject(sphere, empty_state, xform_data._render_transform);
+          
+          trav->get_cull_handler()->record_object(object);
+        }
+
+        // Draw the normal vector at the collision point.
+        if (!point._normal.almost_equal(LVector3f::zero())) {
+          PT(GeomLine) line = new GeomLine;
         
-        PTA_Vertexf verts;
-        verts.push_back(point._point);
-        verts.push_back(point._point + point._normal);
-        line->set_coords(verts);
-        line->set_colors(colors, G_PER_VERTEX);
-        line->set_num_prims(1);
-
-        CullableObject *object = 
-          new CullableObject(line, line_state, xform_data._render_transform);
-
-        trav->get_cull_handler()->record_object(object);
+          PTA_Vertexf verts;
+          verts.push_back(point._point);
+          verts.push_back(point._point + point._normal);
+          line->set_coords(verts);
+          line->set_colors(colors, G_PER_VERTEX);
+          line->set_num_prims(1);
+          
+          CullableObject *object = 
+            new CullableObject(line, empty_state, xform_data._render_transform);
+          
+          trav->get_cull_handler()->record_object(object);
+        }
       }
     }
 
@@ -232,11 +253,14 @@ collision_tested(const CollisionEntry &entry, bool detected) {
   if (detected) {
     viz_info._solids[entry.get_into()]._detected_count++;
 
-    if (entry.has_into_intersection_point() &&
-        entry.has_into_surface_normal()) {
+    if (entry.has_into_intersection_point()) {
       CollisionPoint p;
       p._point = entry.get_into_intersection_point();
-      p._normal = entry.get_into_surface_normal();
+      if (entry.has_into_surface_normal()) {
+        p._normal = entry.get_into_surface_normal();
+      } else {
+        p._normal = LVector3f::zero();
+      }
       viz_info._points.push_back(p);
     }
 

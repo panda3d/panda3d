@@ -60,11 +60,12 @@ CollisionPolygon(const LPoint3f *begin, const LPoint3f *end) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Constructor
-//       Access: Public
-//  Description:
+//       Access: Private
+//  Description: Creates an invalid polygon.  Only used when reading
+//               from a bam file.
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
-CollisionPolygon(void) {
+CollisionPolygon() {
 }
 
 ////////////////////////////////////////////////////////////////////

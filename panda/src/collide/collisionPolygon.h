@@ -19,11 +19,11 @@
 #ifndef COLLISIONPOLYGON_H
 #define COLLISIONPOLYGON_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "collisionPlane.h"
 
-#include <vector_LPoint2f.h>
+#include "vector_LPoint2f.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionPolygon
@@ -36,6 +36,9 @@ PUBLISHED:
   INLINE CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
                           const LPoint3f &c, const LPoint3f &d);
   INLINE CollisionPolygon(const LPoint3f *begin, const LPoint3f *end);
+
+private:
+  INLINE CollisionPolygon();
 
 public:
   CollisionPolygon(const CollisionPolygon &copy);
@@ -56,10 +59,8 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
-  INLINE CollisionPolygon(void);
   virtual BoundingVolume *recompute_bound();
 
-protected:
   virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)

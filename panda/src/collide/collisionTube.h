@@ -1,5 +1,5 @@
-// Filename: collisionSphere.h
-// Created by:  drose (24Apr00)
+// Filename: collisionTube.h
+// Created by:  drose (25Sep03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,31 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef COLLISIONSPHERE_H
-#define COLLISIONSPHERE_H
+#ifndef COLLISIONTUBE_H
+#define COLLISIONTUBE_H
 
 #include "pandabase.h"
 
 #include "collisionSolid.h"
 
 ///////////////////////////////////////////////////////////////////
-//       Class : CollisionSphere
-// Description : A spherical collision volume or object.
+//       Class : CollisionTube
+// Description : This implements a solid roughly in cylindrical shape.
+//               It's not called a CollisionCylinder because it's not
+//               a true cylinder; specifically, it has rounded ends
+//               instead of flat ends.  It looks more like a Contac
+//               pill.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionSphere : public CollisionSolid {
+class EXPCL_PANDA CollisionTube : public CollisionSolid {
 PUBLISHED:
-  INLINE CollisionSphere(const LPoint3f &center, float radius);
-  INLINE CollisionSphere(float cx, float cy, float cz, float radius);
+  INLINE CollisionTube(const LPoint3f &a, const LPoint3f &db,
+                       float radius);
+  INLINE CollisionTube(float ax, float ay, float az,
+                       float bx, float by, float bz,
+                       float radius);
 
 private:
-  INLINE CollisionSphere();
+  INLINE CollisionTube();
 
 public:
-  INLINE CollisionSphere(const CollisionSphere &copy);
+  INLINE CollisionTube(const CollisionTube &copy);
   virtual CollisionSolid *make_copy();
-
-  virtual PT(CollisionEntry)
-  test_intersection(const CollisionEntry &entry) const;
 
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
@@ -48,9 +52,13 @@ public:
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE void set_center(const LPoint3f &center);
-  INLINE void set_center(float x, float y, float z);
-  INLINE const LPoint3f &get_center() const;
+  INLINE void set_point_a(const LPoint3f &a);
+  INLINE void set_point_a(float x, float y, float z);
+  INLINE const LPoint3f &get_point_a() const;
+
+  INLINE void set_point_b(const LPoint3f &b);
+  INLINE void set_point_b(float x, float y, float z);
+  INLINE const LPoint3f &get_point_b() const;
 
   INLINE void set_radius(float radius);
   INLINE float get_radius() const;
@@ -58,6 +66,7 @@ PUBLISHED:
 protected:
   virtual BoundingVolume *recompute_bound();
 
+protected:
   virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
@@ -68,19 +77,33 @@ protected:
   virtual void fill_viz_geom();
 
 private:
+  void recalc_internals();
+
+  Vertexf calc_sphere1_vertex(int ri, int si, int num_rings, int num_slices);
+  Vertexf calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
+                              float length);
+
   bool intersects_line(double &t1, double &t2,
-                       const LPoint3f &from, const LVector3f &delta) const;
+                       LPoint3f from, LVector3f delta,
+                       float inflate_radius) const;
+  bool sphere_intersects_line(double &t1, double &t2, float center_y,
+                              const LPoint3f &from, const LVector3f &delta,
+                              float inflate_radius) const;
 
 private:
-  LPoint3f _center;
+  LPoint3f _a, _b;
   float _radius;
+
+  // These are derived from the above.
+  LMatrix4f _inv_mat;
+  float _length;
 
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *manager, Datagram &me);
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
 
 protected:
-  static TypedWritable *make_CollisionSphere(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
@@ -89,7 +112,7 @@ public:
   }
   static void init_type() {
     CollisionSolid::init_type();
-    register_type(_type_handle, "CollisionSphere",
+    register_type(_type_handle, "CollisionTube",
                   CollisionSolid::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -101,7 +124,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "collisionSphere.I"
+#include "collisionTube.I"
 
 #endif
 

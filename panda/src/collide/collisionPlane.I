@@ -18,7 +18,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::Default Constructor
-//       Access: Public
+//       Access: Protected
 //  Description: This is only for the convenience of CollisionPolygon.
 //               Normally, you should not attempt to create an
 //               uninitialized CollisionPlane.

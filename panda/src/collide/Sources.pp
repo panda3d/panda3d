@@ -24,9 +24,10 @@
     collisionRay.h \
     collisionRecorder.I collisionRecorder.h \
     collisionSegment.I collisionSegment.h  \
-    collisionSolid.I collisionSolid.h collisionSphere.I  \
-    collisionSphere.h \
+    collisionSolid.I collisionSolid.h \
+    collisionSphere.I collisionSphere.h \
     collisionTraverser.I collisionTraverser.h  \
+    collisionTube.I collisionTube.h \
     collisionVisualizer.I collisionVisualizer.h \
     config_collide.h
     
@@ -44,8 +45,10 @@
     collisionPolygon.cxx collisionRay.cxx \
     collisionRecorder.cxx \
     collisionSegment.cxx  \
-    collisionSolid.cxx collisionSphere.cxx  \
+    collisionSolid.cxx \
+    collisionSphere.cxx  \
     collisionTraverser.cxx \
+    collisionTube.cxx  \
     collisionVisualizer.cxx \
     config_collide.cxx 
 
@@ -63,9 +66,10 @@
     collisionPolygon.I collisionPolygon.h collisionRay.I collisionRay.h \
     collisionRecorder.I collisionRecorder.h \
     collisionSegment.I collisionSegment.h \
-    collisionSolid.I collisionSolid.h collisionSphere.I \
-    collisionSphere.h \
+    collisionSolid.I collisionSolid.h \
+    collisionSphere.I collisionSphere.h \
     collisionTraverser.I collisionTraverser.h \
+    collisionTube.I collisionTube.h \
     collisionVisualizer.I collisionVisualizer.h
 
   #define IGATESCAN all

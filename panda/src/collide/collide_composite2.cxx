@@ -6,4 +6,5 @@
 #include "collisionSolid.cxx"
 #include "collisionSphere.cxx"
 #include "collisionTraverser.cxx"
+#include "collisionTube.cxx"
 #include "collisionVisualizer.cxx"

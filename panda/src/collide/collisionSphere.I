@@ -40,9 +40,10 @@ CollisionSphere(float cx, float cy, float cz, float radius) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::Constructor
-//       Access: Public
-//  Description:
+//     Function: CollisionSphere::Default constructor
+//       Access: Private
+//  Description: Creates an invalid sphere.  Only used when reading
+//               from a bam file.
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSphere::
 CollisionSphere() {

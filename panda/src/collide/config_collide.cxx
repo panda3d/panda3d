@@ -32,6 +32,7 @@
 #include "collisionSegment.h"
 #include "collisionSolid.h"
 #include "collisionSphere.h"
+#include "collisionTube.h"
 #include "collisionVisualizer.h"
 #include "dconfig.h"
 
@@ -77,6 +78,7 @@ init_libcollide() {
   CollisionSegment::init_type();
   CollisionSolid::init_type();
   CollisionSphere::init_type();
+  CollisionTube::init_type();
 
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder::init_type();

@@ -64,7 +64,7 @@ xform(const LMatrix4f &mat) {
   _center = _center * mat;
 
   // This is a little cheesy and fails miserably in the presence of a
-  // non-proportionate scale.
+  // non-uniform scale.
   LVector3f radius_v = LVector3f(_radius, 0.0f, 0.0f) * mat;
   _radius = length(radius_v);
 
@@ -200,8 +200,12 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   LPoint3f into_intersection_point;
   if (t1 < 0.0) {
-    into_intersection_point = from_origin + t2 * from_direction;
+    // Point a is within the sphere.  The first intersection point is
+    // point a itself.
+    into_intersection_point = from_origin;
   } else {
+    // Point a is outside the sphere.  The first intersection point is
+    // at t1.
     into_intersection_point = from_origin + t1 * from_direction;
   }
   new_entry->set_into_intersection_point(into_intersection_point);
@@ -282,8 +286,8 @@ fill_viz_geom() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::intersects_line
-//       Access: Protected
-//  Description: Determine the point(s) of intersect of a parametric
+//       Access: Private
+//  Description: Determine the point(s) of intersection of a parametric
 //               line with the sphere.  The line is infinite in both
 //               directions, and passes through "from" and from+delta.
 //               If the line does not intersect the sphere, the
