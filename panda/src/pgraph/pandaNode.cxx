@@ -32,29 +32,33 @@ TypeHandle PandaNode::_type_handle;
 // NodePaths are kept consistent as we attach and detach nodes.  We
 // must enforce the following rules:
 //
-// 1) Each NodePath (i.e. chain of NodePathComponents) represents a
-// complete unbroken chain from a PandaNode to the root of the graph.
+//   1) Each NodePath (i.e. chain of NodePathComponents) represents a
+//   complete unbroken chain from a PandaNode to the root of the
+//   graph.
 //
-// 2) Each NodePathComponent chain is unique.  There are no two
-// different NodePathComponents that reference the same path to the
-// root.
+//   2) Each NodePathComponent chain is unique.  There are no two
+//   different NodePathComponents that reference the same path to the
+//   root.
 //
-// 3) If a PandaNode with no parents is attached to a new parent, all
-// NodePaths that previously indicated this node as the root of graph
-// must now be updated to include the complete chain to the new root.
+// The following rules all follow from rules (1) and (2):
 //
-// 4) If a PandaNode with other parents is attached to a new parent,
-// any previously existing NodePaths are not affected.
+//   3) If a PandaNode with no parents is attached to a new parent,
+//   all NodePaths that previously indicated this node as the root of
+//   graph must now be updated to include the complete chain to the
+//   new root.
 //
-// 5) If a PandaNode is disconnected from its parent, and it has no
-// other parents, all NodePaths that previously passed through this
-// node to the old parent must now be updated to indicate this node is
-// now the root.
+//   4) If a PandaNode with other parents is attached to a new parent,
+//   any previously existing NodePaths are not affected.
 //
-// 6) If a PandaNode is disconnected from its parent, and it has at
-// least one other parent, all NodePaths that previously passed
-// through this node to the old parent must now be updated to pass
-// through one of the other parents instead.
+//   5) If a PandaNode is disconnected from its parent, and it has no
+//   other parents, all NodePaths that previously passed through this
+//   node to the old parent must now be updated to indicate this node
+//   is now the root.
+//
+//   6) If a PandaNode is disconnected from its parent, and it has at
+//   least one other parent, all NodePaths that previously passed
+//   through this node to the old parent must now be updated to pass
+//   through one of the other parents instead.
 //
 // Rules (5) and (6) can especially complicate things because they
 // introduce the possibility that two formerly distinct NodePaths are
@@ -89,7 +93,7 @@ TypeHandle PandaNode::_type_handle;
 // The NodePath support interface functions are strictly called from
 // within the NodePath class, and are used to implement
 // NodePath::reparent_to() and NodePath::remove_node(), etc.  The
-// fundamental interface, on the other hand, is designed to be called
+// fundamental interface, on the other hand, is intended to be called
 // directly by the user.
 //
 // The fundamental interface has a slightly lower overhead because it
@@ -1354,8 +1358,13 @@ detach(qpNodePathComponent *child) {
   nassertv(child != (qpNodePathComponent *)NULL);
   nassertv(!child->is_top_node());
 
-  PandaNode *child_node = child->get_node();
-  PandaNode *parent_node = child->get_next()->get_node();
+  PT(PandaNode) child_node = child->get_node();
+  PT(PandaNode) parent_node = child->get_next()->get_node();
+  
+  // We should actually have a parent-child relationship, since this
+  // came from a qpNodePathComponent that ought to know about this
+  // sort of thing.
+  nassertv(child_node->find_parent(parent_node) >= 0);
   
   // Break the qpNodePathComponent connection.
   child->set_top_node();
