@@ -23,8 +23,8 @@ class MetaInterval(CMetaInterval):
 
     SequenceNum = 1
     def __init__(self, *ivals, **kw):
-        if __debug__:
-            self.debugInitTraceback = PythonUtil.StackTrace("create interval", 1, 10)
+        #if __debug__:
+        #    self.debugInitTraceback = PythonUtil.StackTrace("create interval", 1, 10)
 
         name = None
         #if len(ivals) == 2 and isinstance(ivals[1], types.StringType):
