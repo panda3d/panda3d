@@ -647,26 +647,12 @@ class ShowBase(DirectObject.DirectObject):
         # window will be cleared, which is normally sufficient).
 
         if aspectRatio == None:
-            aspectRatio = self.aspectRatio
+            aspectRatio = self.getAspectRatio()
 
         # Now make a new Camera node.
         camNode = Camera('cam')
         lens = PerspectiveLens()
-
-        if aspectRatio:
-            lens.setAspectRatio(aspectRatio)
-
-        else:
-            # If the aspectRatio is 0 or None, set up the lens with a
-            # film size that matches the window size.  This sets up
-            # the correct aspect ratio automatically (assuming the
-            # pixels are square).
-            
-            props = win.getProperties()
-            if not props.hasSize():
-                props = win.getRequestedProperties()
-            if props.hasSize():
-                lens.setFilmSize(props.getXSize(), props.getYSize())
+        lens.setAspectRatio(aspectRatio)
             
         camNode.setLens(lens)
         camNode.setScene(scene)
