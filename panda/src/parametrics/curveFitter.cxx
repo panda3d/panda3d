@@ -147,6 +147,9 @@ sample(ParametricCurve *curve, int count, bool even) {
   double t, last_t, d;
   DataPoint dp;
 
+
+  size_t n = _data.size();
+
   last_t = 0.0;
   d = 0.0;
   int i;
@@ -163,6 +166,14 @@ sample(ParametricCurve *curve, int count, bool even) {
 
     _data.push_back(dp);
     last_t = t;
+  }
+
+  if (even) {
+    double scale = max_t / last_t;
+    while (n < _data.size()) {
+      _data[n]._t *= scale;
+      n++;
+    }
   }
 }
 
