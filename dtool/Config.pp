@@ -326,7 +326,7 @@
 #defer HAVE_GTKMM $[bintest $[GTKMM_CONFIG]]
 
 // Is Maya installed?  This matters only to programs in PANDATOOL.
-#define MAYA_LOCATION /usr/aw/maya2.5
+#define MAYA_LOCATION /usr/aw/maya3.0
 #defer HAVE_MAYA $[isdir $[MAYA_LOCATION]]
 
 
