@@ -461,13 +461,19 @@ void wglGraphicsWindow::config(void) {
   // Initializes _visual
   int pfnum=choose_visual();
 
+  if(gl_forced_pixfmt!=0) {
+    if(wgldisplay_cat.is_debug())
+      wgldisplay_cat.debug() << "overriding pixfmt choice algorithm with gl-force-pixfmt\n";
+    pfnum=gl_forced_pixfmt;
+  }
+
   //  int pfnum=ChoosePixelFormat(_hdc, _visual);
   if(wgldisplay_cat.is_debug())
      wgldisplay_cat.debug() << "config() - picking pixfmt #"<< pfnum <<endl;
 
   if (!SetPixelFormat(_hdc, pfnum, _visual)) {
     wgldisplay_cat.fatal()
-      << "config() - SetPixelFormat failed after window create" << endl;
+      << "config() - SetPixelFormat("<< pfnum << ") failed after window create" << endl;
     exit(1);
   }
 
@@ -878,7 +884,7 @@ int wglGraphicsWindow::choose_visual(void) {
       wgldisplay_cat.error() << "ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
       wgldisplay_cat.error() << "make sure OpenGL driver is installed, and try reducing the screen size\n";
       if(cur_bpp>16)
-        wgldisplay_cat.error() << "or reducing the screen pixeldepth\n";
+        wgldisplay_cat.error() << "or reducing the desktop screen pixeldepth\n";
       exit(1);
   }
 

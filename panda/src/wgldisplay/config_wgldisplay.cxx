@@ -36,6 +36,7 @@ bool gl_sync_video = config_wgldisplay.GetBool("sync-video", true);
 
 bool gl_show_fps_meter = config_wgldisplay.GetBool("show-fps-meter", false);
 float gl_fps_meter_update_interval = max(0.5,config_wgldisplay.GetFloat("fps-meter-update-interval", 1.7));
+int gl_forced_pixfmt=config_wgldisplay.GetInt("gl-force-pixfmt", 0);
 
 extern void AtExitFn(void);
 
