@@ -105,7 +105,8 @@ class ShadowCaster:
 
 def avatarShadow():
     # Turn off the existing drop shadow.
-    base.localAvatar.dropShadow.hide()
+    # stash it so that when the game hides and shows it, it will still be gone
+    base.localAvatar.dropShadow.stash()
 
     # Set up a new node to hold the "light": this is an abitrary point
     # somewhere above the avatar, looking down, as if from the sun.
@@ -150,7 +151,8 @@ def piratesAvatarShadow():
 def arbitraryShadow(node):
     # Turn off the existing drop shadow, if any
     if hasattr(node, "dropShadow"):
-        base.localAvatar.dropShadow.hide()
+        # stash it so that when the game hides and shows it, it will still be gone
+        base.localAvatar.dropShadow.stash()
 
     # Set up a new node to hold the "light": this is an abitrary point
     # somewhere above the node, looking down, as if from the sun.
