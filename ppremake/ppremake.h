@@ -91,7 +91,7 @@ extern bool windows_platform;
 /* This is a command-line global parameter. */
 extern bool dry_run;
 extern bool verbose_dry_run;
-extern bool verbose;
+extern int verbose; // 0..9 to set verbose level.  0 == off.
 #endif
 
 /* These are defined so that we may build Filename, DSearchPath, and

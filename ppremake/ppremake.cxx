@@ -30,7 +30,7 @@ bool unix_platform = false;
 bool windows_platform = false;
 bool dry_run = false;
 bool verbose_dry_run = false;
-bool verbose = false;
+int verbose = 0;
 
 static void
 usage() {
@@ -70,6 +70,7 @@ usage() {
     "  -h           Display this page.\n"
     "  -V           Report the version of ppremake, and exit.\n"
     "  -v           Turn on verbose output (may help in debugging .pp files).\n"
+    "  -vv          Be very verbose (if you're getting desperate).\n"
     "  -P           Report the current platform name, and exit.\n\n"
     "  -D pp.dep    Examine the given dependency file, and re-run ppremake\n"
     "               only if the dependency file is stale.\n\n"
@@ -251,7 +252,7 @@ main(int argc, char *argv[]) {
       break;
 
     case 'v':
-      verbose=true;
+      ++verbose;
       break;
 
     case 'P':
