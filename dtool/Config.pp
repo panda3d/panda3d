@@ -108,7 +108,7 @@
 #define ZLIB_LIB
 
 // Is the sox libst library installed, and where?
-#define HAVE_SOXST 1
+#define HAVE_SOXST
 #define SOXST_INCLUDE
 #define SOXST_LIB
 

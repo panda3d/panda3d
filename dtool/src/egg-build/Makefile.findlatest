@@ -43,7 +43,7 @@ IPATH = \
 #### Other files and lib.  Include $(ODIR) in any .o names.
 # OFILES = 
 WHEN_NO_DEFER_LIBS = -ldtoolbase
-WHEN_DEFER_LIBS = -ldtoolbase
+WHEN_DEFER_LIBS = -ldtool
 LIBS = 
 SYSLIBS = -lnspr3
 ifeq (WIN32_VC,$(PENV_COMPILER))
