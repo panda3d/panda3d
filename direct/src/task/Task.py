@@ -290,6 +290,27 @@ class TaskManager:
         # Set a flag so we will stop before beginning next frame
         self.running = 0
 
+    def replaceMethod(self, oldMethod, newFunction):
+        import new
+        for task in self.taskList:
+            method = task.__call__
+            if (type(method) == types.MethodType):
+                function = method.im_func
+            else:
+                function = method
+            #print ('function: ' + `function` + '\n' +
+            #       'method: ' + `method` + '\n' +
+            #       'oldMethod: ' + `oldMethod` + '\n' +
+            #       'newFunction: ' + `newFunction` + '\n')
+            if (function == oldMethod):
+                newMethod = new.instancemethod(newFunction,
+                                               method.im_self,
+                                               method.im_class)
+                task.__call__ = newMethod
+                # Found it retrun true
+                return 1
+        return 0
+
     def __repr__(self):
         str = ''
         str = str + 'taskList\n'

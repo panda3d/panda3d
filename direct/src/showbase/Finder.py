@@ -125,10 +125,12 @@ def copyFuncs(fromClass, toClass):
             newFunc = value
             # See if we already have a function with this name
             if toClass.__dict__.has_key(key):
-                # Look in the messenger to see if this old function pointer
-                # is stored, and update it to the new function pointer
+                # Look in the messenger and taskMgr to see if this
+                # old function pointer is stored there,
+                # and update it to the new function pointer
                 oldFunc = toClass.__dict__[key]
                 replaceMessengerFunc(oldFunc, newFunc)
+                replaceTaskMgrFunc(oldFunc, newFunc)
             toClass.__dict__[key] = newFunc
 
 def replaceMessengerFunc(oldFunc, newFunc):
@@ -136,3 +138,7 @@ def replaceMessengerFunc(oldFunc, newFunc):
     if res:
         print ('replaced messenger function: ' + newFunc.__name__)
 
+def replaceTaskMgrFunc(oldFunc, newFunc):
+    res = taskMgr.replaceMethod(oldFunc, newFunc)
+    if res:
+        print ('replaced taskMgr function: ' + newFunc.__name__)
