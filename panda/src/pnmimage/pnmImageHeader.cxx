@@ -74,7 +74,6 @@ make_reader(const Filename &filename, PNMFileType *type) const {
       pnmimage_cat.debug()
         << "(reading standard input)\n";
     }
-
   } else {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     owns_file = true;
