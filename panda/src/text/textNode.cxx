@@ -20,6 +20,9 @@
 #include "textGlyph.h"
 #include "stringDecoder.h"
 #include "config_text.h"
+#include "fontPool.h"
+#include "default_font.h"
+#include "dynamicTextFont.h"
 
 #include "compose_matrix.h"
 #include "geom.h"
@@ -47,6 +50,8 @@
 
 TypeHandle TextNode::_type_handle;
 
+PT(TextFont) TextNode::_default_font;
+bool TextNode::_loaded_default_font = false;
 TextNode::Encoding TextNode::_default_encoding;
 
 ////////////////////////////////////////////////////////////////////
@@ -255,7 +260,16 @@ generate() {
   // Now build a new sub-tree for all the text components.
   PT(PandaNode) root = new PandaNode(get_text());
 
-  if (!has_text() || _font.is_null()) {
+  if (!has_text()) {
+    return root;
+  }
+
+  TextFont *font = get_font();
+  if (font == (TextFont *)NULL) {
+    font = get_default_font();
+  }
+
+  if (font == (TextFont *)NULL) {
     return root;
   }
 
@@ -270,13 +284,15 @@ generate() {
 
   wstring wtext = get_wtext();
   if (has_wordwrap()) {
-    wtext = _font->wordwrap_to(wtext, _wordwrap_width, false);
+    wtext = font->wordwrap_to(wtext, _wordwrap_width, false);
   }
 
   // Assemble the text.
   LVector2f ul, lr;
   int num_rows = 0;
-  PT(PandaNode) text_root = assemble_text(wtext.begin(), wtext.end(), ul, lr, num_rows);
+  PT(PandaNode) text_root = 
+    assemble_text(wtext.begin(), wtext.end(), font, 
+                  ul, lr, num_rows);
 
   // Parent the text in.
   PT(PandaNode) text = new PandaNode("text");
@@ -821,18 +837,28 @@ do_measure() {
   _lr3d.set(0.0f, 0.0f, 0.0f);
   _num_rows = 0;
 
-  if (!has_text() || _font.is_null()) {
+  if (!has_text()) {
+    return;
+  }
+
+  TextFont *font = get_font();
+  if (font == (TextFont *)NULL) {
+    font = get_default_font();
+  }
+
+  if (font == (TextFont *)NULL) {
     return;
   }
 
   wstring wtext = get_wtext();
   if (has_wordwrap()) {
-    wtext = _font->wordwrap_to(wtext, _wordwrap_width, false);
+    wtext = font->wordwrap_to(wtext, _wordwrap_width, false);
   }
 
   LVector2f ul, lr;
   int num_rows = 0;
-  measure_text(wtext.begin(), wtext.end(), ul, lr, num_rows);
+  measure_text(wtext.begin(), wtext.end(), font,
+               ul, lr, num_rows);
 
   _num_rows = num_rows;
   _ul2d = ul;
@@ -857,25 +883,23 @@ do_measure() {
 ////////////////////////////////////////////////////////////////////
 float TextNode::
 assemble_row(wstring::iterator &si, const wstring::iterator &send, 
-             PandaNode *dest) {
-  nassertr(_font != (TextFont *)NULL, 0.0f);
-
+             TextFont *font, PandaNode *dest) {
   float xpos = 0.0f;
   while (si != send && (*si) != '\n') {
     wchar_t character = *si;
 
     if (character == ' ') {
       // A space is a special case.
-      xpos += _font->get_space_advance();
+      xpos += font->get_space_advance();
 
     } else {
       // A printable character.
 
       const TextGlyph *glyph;
       float glyph_scale;
-      if (!_font->get_glyph(character, glyph, glyph_scale)) {
+      if (!font->get_glyph(character, glyph, glyph_scale)) {
         text_cat.warning()
-          << "No definition in " << _font->get_name() 
+          << "No definition in " << font->get_name() 
           << " for character " << character;
         if (character < 128 && isprint((unsigned int)character)) {
           text_cat.warning(false)
@@ -918,8 +942,7 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) TextNode::
 assemble_text(wstring::iterator si, const wstring::iterator &send,
-              LVector2f &ul, LVector2f &lr, int &num_rows) {
-  nassertr(_font != (TextFont *)NULL, (PandaNode *)NULL);
+              TextFont *font, LVector2f &ul, LVector2f &lr, int &num_rows) {
   float line_height = get_line_height();
 
   ul.set(0.0f, 0.8f * line_height);
@@ -936,7 +959,7 @@ assemble_text(wstring::iterator si, const wstring::iterator &send,
     nassertr(strlen(numstr) < 20, root_node);
 
     PT(PandaNode) row = new PandaNode(numstr);
-    float row_width = assemble_row(si, send, row);
+    float row_width = assemble_row(si, send, font, row);
     if (si != send) {
       // Skip past the newline.
       ++si;
@@ -988,21 +1011,22 @@ assemble_text(wstring::iterator si, const wstring::iterator &send,
 //               it.
 ////////////////////////////////////////////////////////////////////
 float TextNode::
-measure_row(wstring::iterator &si, const wstring::iterator &send) {
+measure_row(wstring::iterator &si, const wstring::iterator &send,
+            TextFont *font) {
   float xpos = 0.0f;
   while (si != send && *si != '\n') {
     wchar_t character = *si;
 
     if (character == ' ') {
       // A space is a special case.
-      xpos += _font->get_space_advance();
+      xpos += font->get_space_advance();
 
     } else {
       // A printable character.
 
       const TextGlyph *glyph;
       float glyph_scale;
-      if (_font->get_glyph(character, glyph, glyph_scale)) {
+      if (font->get_glyph(character, glyph, glyph_scale)) {
         xpos += glyph->get_advance() * glyph_scale;
       }
     }
@@ -1020,8 +1044,7 @@ measure_row(wstring::iterator &si, const wstring::iterator &send) {
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 measure_text(wstring::iterator si, const wstring::iterator &send,
-             LVector2f &ul, LVector2f &lr, int &num_rows) {
-  nassertv(_font != (TextFont *)NULL);
+             TextFont *font, LVector2f &ul, LVector2f &lr, int &num_rows) {
   float line_height = get_line_height();
 
   ul.set(0.0f, 0.8f * line_height);
@@ -1029,7 +1052,7 @@ measure_text(wstring::iterator si, const wstring::iterator &send,
 
   float posy = 0.0f;
   while (si != send) {
-    float row_width = measure_row(si, send);
+    float row_width = measure_row(si, send, font);
     if (si != send) {
       // Skip past the newline.
       ++si;
@@ -1267,4 +1290,41 @@ make_card_with_border() {
   card_geode->add_geom(geoset);
 
   return card_geode.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::load_default_font
+//       Access: Private, Static
+//  Description: This functin is called once (or never), the first
+//               time someone attempts to render a TextNode using the
+//               default font.  It should attempt to load the default
+//               font, using the compiled-in version if it is
+//               available, or whatever system file may be named in
+//               Configrc.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+load_default_font() {
+  _loaded_default_font = true;
+
+  if (!text_default_font.empty()) {
+    // First, attempt to load the user-specified filename.
+    _default_font = FontPool::load_font(text_default_font);
+    if (_default_font->is_valid()) {
+      return;
+    }
+  }
+
+  // Then, attempt to load the compiled-in font, if we have one.
+#if defined(HAVE_FREETYPE) && defined(COMPILE_IN_DEFAULT_FONT)
+  _default_font = new DynamicTextFont(default_font_data, default_font_size, 0);
+  if (_default_font->is_valid()) {
+    return;
+  }
+#endif
+
+  // Finally, fall back to a hardcoded font file, which we hope is on
+  // the model path.  (Use text_default_font, above, if you don't want
+  // to use this file and would prefer to specify a different font
+  // file instead.)
+  _default_font = FontPool::load_font("cmss12");
 }

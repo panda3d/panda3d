@@ -75,8 +75,14 @@ PUBLISHED:
   INLINE void set_font(TextFont *font);
   INLINE TextFont *get_font() const;
 
+  INLINE static void set_default_font(TextFont *);
+  INLINE static TextFont *get_default_font();
+
   INLINE void set_encoding(Encoding encoding);
   INLINE Encoding get_encoding() const;
+
+  INLINE static void set_default_encoding(Encoding encoding);
+  INLINE static Encoding get_default_encoding();
 
   INLINE void set_expand_amp(bool expand_amp);
   INLINE bool get_expand_amp() const;
@@ -243,18 +249,23 @@ private:
   void do_measure();
 
 #ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
-  float assemble_row(wstring::iterator &si, const wstring::iterator &send, 
-                     PandaNode *dest);
+  float assemble_row(wstring::iterator &si, const wstring::iterator &send,
+                     TextFont *font, PandaNode *dest);
   PT(PandaNode) assemble_text(wstring::iterator si, const wstring::iterator &send,
+                              TextFont *font,
                               LVector2f &ul, LVector2f &lr, int &num_rows);
-  float measure_row(wstring::iterator &si, const wstring::iterator &send);
+  float measure_row(wstring::iterator &si, const wstring::iterator &send,
+                    TextFont *font);
   void measure_text(wstring::iterator si, const wstring::iterator &send,
+                    TextFont *font,
                     LVector2f &ul, LVector2f &lr, int &num_rows);
 #endif  // CPPPARSER
 
   PT(PandaNode) make_frame();
   PT(PandaNode) make_card();
   PT(PandaNode) make_card_with_border();
+
+  static void load_default_font();
 
   PT(TextFont) _font;
   PT(PandaNode) _internal_geom;
@@ -311,7 +322,8 @@ private:
   LPoint3f _ul3d, _lr3d;
   int _num_rows;
 
-public:
+  static PT(TextFont) _default_font;
+  static bool _loaded_default_font;
   static Encoding _default_encoding;
 
 public:

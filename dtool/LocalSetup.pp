@@ -22,6 +22,9 @@ $[cdefine HAVE_RAD_MSS]
 /* Define if we have Freetype 2.0 or better available. */
 $[cdefine HAVE_FREETYPE]
 
+/* Define if we want to compile in a default font. */
+$[cdefine COMPILE_IN_DEFAULT_FONT]
+
 /* Define if we have Maya available. */
 $[cdefine HAVE_MAYA]
 

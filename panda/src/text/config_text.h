@@ -39,6 +39,7 @@ extern const float text_pixels_per_unit;
 extern const float text_scale_factor;
 extern const bool text_small_caps;
 extern const float text_small_caps_scale;
+extern const string text_default_font;
 
 extern Texture::FilterType text_minfilter;
 extern Texture::FilterType text_magfilter;

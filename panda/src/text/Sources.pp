@@ -13,9 +13,11 @@
 
   #define SOURCES \
     config_text.h \
+    default_font.h \
     dynamicTextFont.I dynamicTextFont.h \
     dynamicTextGlyph.I dynamicTextGlyph.h \
     dynamicTextPage.I dynamicTextPage.h \
+    fontPool.I fontPool.h \
     geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
     stringDecoder.I stringDecoder.h \
@@ -25,9 +27,11 @@
 
   #define INCLUDED_SOURCES \
     config_text.cxx \
+    default_font.cxx \
     dynamicTextFont.cxx \
     dynamicTextGlyph.cxx \
     dynamicTextPage.cxx \
+    fontPool.cxx \
     geomTextGlyph.cxx \
     stringDecoder.cxx \
     staticTextFont.cxx \
@@ -38,6 +42,7 @@
     dynamicTextFont.I dynamicTextFont.h \
     dynamicTextGlyph.I dynamicTextGlyph.h \
     dynamicTextPage.I dynamicTextPage.h \
+    fontPool.I fontPool.h \
     geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
     stringDecoder.I stringDecoder.h \

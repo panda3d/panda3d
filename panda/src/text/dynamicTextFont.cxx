@@ -52,33 +52,8 @@ static const float points_per_inch = 72.0f;
 ////////////////////////////////////////////////////////////////////
 DynamicTextFont::
 DynamicTextFont(const Filename &font_filename, int face_index) {
-  _texture_margin = text_texture_margin;
-  _poly_margin = text_poly_margin;
-  _page_x_size = text_page_x_size;
-  _page_y_size = text_page_y_size;
-  _point_size = text_point_size;
-  _tex_pixels_per_unit = text_pixels_per_unit;
-  _scale_factor = text_scale_factor;
-  _small_caps = text_small_caps;
-  _small_caps_scale = text_small_caps_scale;
+  initialize();
 
-  // We don't necessarily want to use mipmaps, since we don't want to
-  // regenerate those every time the texture changes, but we probably
-  // do want at least linear filtering.  Use whatever the Configrc
-  // file suggests.
-  _minfilter = text_minfilter;
-  _magfilter = text_magfilter;
-
-  // Anisotropic filtering can help the look of the text, and doesn't
-  // require generating mipmaps, but does require hardware support.
-  _anisotropic_degree = text_anisotropic_degree;
-
-
-  _preferred_page = 0;
-
-  if (!_ft_initialized) {
-    initialize_ft_library();
-  }
   if (!_ft_ok) {
     text_cat.error()
       << "Unable to read font " << font_filename
@@ -133,6 +108,50 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
       _is_valid = true;
       reset_scale();
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::Constructor
+//       Access: Published
+//  Description: This constructor accepts a table of data representing
+//               the font file, loaded from some source other than a
+//               filename on disk.
+////////////////////////////////////////////////////////////////////
+DynamicTextFont::
+DynamicTextFont(const char *font_data, int data_length, int face_index) {
+  initialize();
+
+  if (!_ft_ok) {
+    text_cat.error()
+      << "Unable to read font: FreeType library not initialized properly.\n";
+    return;
+  }
+
+  int error;
+  error = FT_New_Memory_Face(_ft_library, 
+                             (const FT_Byte *)font_data, data_length,
+                             face_index, &_face);
+
+  if (error == FT_Err_Unknown_File_Format) {
+    text_cat.error()
+      << "Unable to read font: unknown file format.\n";
+  } else if (error) {
+    text_cat.error()
+      << "Unable to read font: invalid.\n";
+    
+  } else {
+    string name = _face->family_name;
+    if (_face->style_name != NULL) {
+      name += " ";
+      name += _face->style_name;
+    }
+    set_name(name);
+    
+    text_cat.info()
+      << "Loaded font " << get_name() << "\n";
+    _is_valid = true;
+    reset_scale();
   }
 }
 
@@ -332,6 +351,43 @@ get_glyph(int character, const TextGlyph *&glyph, float &glyph_scale) {
   }
 
   return (glyph_index != 0 && glyph != (DynamicTextGlyph *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::initialize
+//       Access: Private
+//  Description: Called from both constructors to set up some internal
+//               structures.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+initialize() {
+  _texture_margin = text_texture_margin;
+  _poly_margin = text_poly_margin;
+  _page_x_size = text_page_x_size;
+  _page_y_size = text_page_y_size;
+  _point_size = text_point_size;
+  _tex_pixels_per_unit = text_pixels_per_unit;
+  _scale_factor = text_scale_factor;
+  _small_caps = text_small_caps;
+  _small_caps_scale = text_small_caps_scale;
+
+  // We don't necessarily want to use mipmaps, since we don't want to
+  // regenerate those every time the texture changes, but we probably
+  // do want at least linear filtering.  Use whatever the Configrc
+  // file suggests.
+  _minfilter = text_minfilter;
+  _magfilter = text_magfilter;
+
+  // Anisotropic filtering can help the look of the text, and doesn't
+  // require generating mipmaps, but does require hardware support.
+  _anisotropic_degree = text_anisotropic_degree;
+
+
+  _preferred_page = 0;
+
+  if (!_ft_initialized) {
+    initialize_ft_library();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

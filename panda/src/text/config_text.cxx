@@ -45,6 +45,7 @@ const float text_pixels_per_unit = config_text.GetFloat("text-pixels-per-unit", 
 const float text_scale_factor = config_text.GetFloat("text-scale-factor", 2.0f);
 const bool text_small_caps = config_text.GetBool("text-small-caps", false);
 const float text_small_caps_scale = config_text.GetFloat("text-small-caps-scale", 0.8f);
+const string text_default_font = config_text.GetString("text-default-font", "");
 
 Texture::FilterType text_minfilter = Texture::FT_invalid;
 Texture::FilterType text_magfilter = Texture::FT_invalid;
@@ -79,11 +80,11 @@ init_libtext() {
 
   string text_encoding = config_text.GetString("text-encoding", "iso8859");
   if (text_encoding == "iso8859") {
-    TextNode::_default_encoding = TextNode::E_iso8859;
+    TextNode::set_default_encoding(TextNode::E_iso8859);
   } else if (text_encoding == "utf8") {
-    TextNode::_default_encoding = TextNode::E_utf8;
+    TextNode::set_default_encoding(TextNode::E_utf8);
   } else if (text_encoding == "unicode") {
-    TextNode::_default_encoding = TextNode::E_unicode;
+    TextNode::set_default_encoding(TextNode::E_unicode);
   } else {
     text_cat.error()
       << "Invalid text-encoding: " << text_encoding << "\n";

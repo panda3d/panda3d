@@ -44,7 +44,9 @@ thaw() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_font
 //       Access: Published
-//  Description: Sets the font that will be used when making text.
+//  Description: Sets the font that will be used when making text.  If
+//               this is set to NULL, the default font will be used,
+//               which can be set via set_default_font().
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_font(TextFont *font) {
@@ -57,11 +59,43 @@ set_font(TextFont *font) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_font
 //       Access: Published
-//  Description: Returns the font currently in use.
+//  Description: Returns the font currently in use, if any.  If this
+//               returns NULL, the default font will be used, which
+//               can be retrieved via get_default_font().
 ////////////////////////////////////////////////////////////////////
 INLINE TextFont *TextNode::
 get_font() const {
   return _font;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_default_font
+//       Access: Published, Static
+//  Description: Specifies the default font to be used for any
+//               TextNode whose font is uninitialized or NULL.  See
+//               set_font().
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_default_font(TextFont *font) {
+  // If the user overrides the default, we don't need to try to load
+  // whatever it would have been.
+  _loaded_default_font = true;
+  _default_font = font;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_default_font
+//       Access: Published, Static
+//  Description: Specifies the default font to be used for any
+//               TextNode whose font is uninitialized or NULL.  See
+//               set_font().
+////////////////////////////////////////////////////////////////////
+INLINE TextFont *TextNode::
+get_default_font() {
+  if (!_loaded_default_font) {
+    load_default_font();
+  }
+  return _default_font;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,6 +128,30 @@ set_encoding(TextNode::Encoding encoding) {
 INLINE TextNode::Encoding TextNode::
 get_encoding() const {
   return _encoding;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_default_encoding
+//       Access: Published, Static
+//  Description: Specifies the default encoding to be used for all
+//               subsequently created TextNode objects.  See
+//               set_encoding().
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_default_encoding(TextNode::Encoding encoding) {
+  _default_encoding = encoding;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_default_encoding
+//       Access: Published, Static
+//  Description: Specifies the default encoding to be used for all
+//               subsequently created TextNode objects.  See
+//               set_encoding().
+////////////////////////////////////////////////////////////////////
+INLINE TextNode::Encoding TextNode::
+get_default_encoding() {
+  return _default_encoding;
 }
 
 ////////////////////////////////////////////////////////////////////

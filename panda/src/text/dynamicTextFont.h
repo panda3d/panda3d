@@ -45,6 +45,7 @@
 class EXPCL_PANDA DynamicTextFont : public TextFont {
 PUBLISHED:
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
+  DynamicTextFont(const char *font_data, int data_length, int face_index);
   virtual ~DynamicTextFont();
 
   INLINE bool set_point_size(float point_size);
@@ -94,6 +95,7 @@ public:
                          float &glyph_scale);
 
 private:
+  void initialize();
   void update_filters();
   bool reset_scale();
   DynamicTextGlyph *make_glyph(int glyph_index);
