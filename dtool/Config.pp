@@ -207,12 +207,6 @@
 // error messages when they occur.
 #defer REPORT_OPENSSL_ERRORS $[< $[OPTIMIZE], 4]
 
-// Is Crypto++ installed, and where?
-#define CRYPTO_IPATH /usr/include/crypto++
-#define CRYPTO_LPATH /usr/lib
-#define CRYPTO_LIBS cryptlib
-#defer HAVE_CRYPTO $[libtest $[CRYPTO_LPATH],$[CRYPTO_LIBS]]
-
 // Is libjpeg installed, and where?
 #define JPEG_IPATH
 #define JPEG_LPATH

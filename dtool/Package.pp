@@ -97,11 +97,6 @@
 #set SSL_LIBS $[SSL_LIBS]
 #set HAVE_SSL $[HAVE_SSL]
 
-#set CRYPTO_IPATH $[unixfilename $[CRYPTO_IPATH]]
-#set CRYPTO_LPATH $[unixfilename $[CRYPTO_LPATH]]
-#set CRYPTO_LIBS $[CRYPTO_LIBS]
-#set HAVE_CRYPTO $[HAVE_CRYPTO]
-
 #set JPEG_IPATH $[unixfilename $[JPEG_IPATH]]
 #set JPEG_LPATH $[unixfilename $[JPEG_LPATH]]
 #set JPEG_LIBS $[JPEG_LIBS]

@@ -98,13 +98,6 @@
   #define ssl_libs $[SSL_LIBS]
 #endif
 
-#if $[HAVE_CRYPTO]
-  #define crypto_ipath $[wildcard $[CRYPTO_IPATH]]
-  #define crypto_lpath $[wildcard $[CRYPTO_LPATH]]
-  #define crypto_cflags $[CRYPTO_CFLAGS]
-  #define crypto_libs $[CRYPTO_LIBS]
-#endif
-
 #if $[HAVE_ZLIB]
   #define zlib_ipath $[wildcard $[ZLIB_IPATH]]
   #define zlib_lpath $[wildcard $[ZLIB_LPATH]]

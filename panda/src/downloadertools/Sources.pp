@@ -54,7 +54,7 @@
 #begin bin_target
   #define TARGET check_md5
   #define BUILD_TARGET $[HAVE_SSL]
-  #define USE_PACKAGES $[USE_PACKAGES] crypto
+  #define USE_PACKAGES $[USE_PACKAGES] ssl
 
   #define SOURCES \
     check_md5.cxx

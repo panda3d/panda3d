@@ -4,7 +4,7 @@
 
 #begin lib_target
   #define TARGET express
-  #define USE_PACKAGES nspr crypto net zlib ssl
+  #define USE_PACKAGES nspr net zlib ssl
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 

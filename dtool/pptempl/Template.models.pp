@@ -430,7 +430,7 @@ $[TAB]cp $[sourcedir]/$[local] $[dest]
         // The current language file exists.
         #define local $[wantegg:%.egg=%.bam]
       #else
-        #print Warning: $[wantegg] not listed, using $[egg]
+        //#print Warning: $[wantegg] not listed, using $[egg]
         #define local $[egg:%.egg=%.bam]
       #endif
       #define remote $[egg:%_$[DEFAULT_LANGUAGE].egg=%.bam]
@@ -480,7 +480,7 @@ $[TAB]cp $[local] $[dest]
         // The current language file exists.
         #define local $[wantfile]
       #else
-        #print Warning: $[wantfile] not listed, using $[file]
+        //#print Warning: $[wantfile] not listed, using $[file]
         #define local $[file]
       #endif
       #define remote $[notdir $[file:%_$[DEFAULT_LANGUAGE].dna=%.dna]]

@@ -39,9 +39,6 @@ $[cdefine HAVE_SSL]
 $[cdefine SSL_097]
 $[cdefine REPORT_OPENSSL_ERRORS]
 
-/* Define if we have crypto++ installed.  */
-$[cdefine HAVE_CRYPTO]
-
 /* Define if we have libjpeg installed.  */
 $[cdefine HAVE_JPEG]
 
