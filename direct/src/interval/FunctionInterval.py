@@ -37,7 +37,7 @@ class FunctionInterval(Interval):
 class EventInterval(FunctionInterval):
     # Initialization
     def __init__(self, event, sentArgs=[]):
-        """__init__(name, sentArgs)
+        """__init__(event, sentArgs)
         """
         def sendFunc(event = event, sentArgs = sentArgs):
             messenger.send(event, sentArgs)
