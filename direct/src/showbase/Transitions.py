@@ -137,7 +137,7 @@ class Transitions:
             self.iris.reparentTo(hidden)
         else:
             self.iris.reparentTo(aspect2d)
-            self.iris.setScale(0.0015)
+            self.iris.setScale(0.015)
             # Create a sequence that scales the iris up,
             # then parents the fade to hidden
             task = Task.sequence(
@@ -181,7 +181,7 @@ class Transitions:
             # Create a sequence that scales the iris up,
             # then parents the fade to hidden
             task = Task.sequence(
-                self.iris.lerpScale(0.0015, 0.0015, 0.0015,
+                self.iris.lerpScale(0.015, 0.015, 0.015,
                                     t, blendType="noBlend"),
                 Task.Task(self.irisOutLerpDone))
             # Spawn the sequence
