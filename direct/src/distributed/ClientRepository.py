@@ -57,7 +57,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             ## Top level Interest Manager
             ##
             self.__interest_id_assign = 1
-            self.__interesthash = {}
+            self.__interests = {}
         
     
     def abruptCleanup(self):
@@ -636,61 +636,57 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # If we're processing a lot of datagrams within one frame, we
         # may forget to send heartbeats.  Keep them coming!
         self.considerHeartbeat()
-      
+    
     if wantOtpServer:
         ##
         ##
         ## interest managment 
         ##
         ##
-        def InterestAdd(self, parentId, zoneId, Description):        
+        def addInterest(self, parentId, zoneId, description):
             """
             Part of the new otp-server code.
             """
             self.__interest_id_assign += 1
-            self.__interesthash[self.__interest_id_assign] = Description
+            self.__interests[self.__interest_id_assign] = description
             contextId = self.__interest_id_assign
             self.__sendAddInterest(contextId, parentId, zoneId)
-            self.DumpInterests()
+            self.printInterests()
             return contextId
             
-        def InterestRemove(self,  contextId):        
+        def removeInterest(self,  contextId):        
             """
             Part of the new otp-server code.
             """
             answer = 0
-            if  self.__interesthash.has_key(contextId):
+            if  self.__interests.has_key(contextId):
                 self.__sendRemoveInterest(contextId)
-                del self.__interesthash[contextId]
-                answer = 1        
-                        
-            self.DumpInterests()            
+                del self.__interests[contextId]
+                answer = 1                                
+            self.printInterests()            
             return answer
 
-
-        def InterestAlter(self, contextId, parentId, zoneId, Description):        
+        def alterInterest(self, contextId, parentId, zoneId, description):        
             """
             Part of the new otp-server code.        
                 Removes old and adds new.. 
             """
             answer = 0
-            if  self.__interesthash.has_key(contextId):
-                self.__interesthash[contextId] = Description
+            if  self.__interests.has_key(contextId):
+                self.__interests[contextId] = description
                 self.__sendAlterInterest(contextId, parentId, zoneId)
                 answer = 1
-                
-            self.DumpInterests()            
+            self.printInterests()            
             return answer
             
-        def DumpInterests(self):
+        def printInterests(self):
             """
             Part of the new otp-server code.        
             """
             print "*********************** Interest Sets **************"
-            for i in self.__interesthash.keys():
-                 print "Interest ID:%s, Description=%s"%(i,self.__interesthash[i])
+            for i in self.__interests.keys():
+                 print "Interest ID:%s, Description=%s"%(i,self.__interests[i])
             print "****************************************************"
-
         
         def __sendAddInterest(self, contextId, parentId, zoneId):
             """
