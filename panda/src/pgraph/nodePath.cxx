@@ -291,6 +291,7 @@ reparent_to(const NodePath &other, int sort) {
   nassertv(verify_complete());
   nassertv(other.verify_complete());
   nassertv_always(!is_empty());
+  nassertv(other._error_type == ET_ok);
 
   // Reparenting implicitly resents the delta vector.
   node()->reset_prev_transform();
@@ -313,6 +314,7 @@ wrt_reparent_to(const NodePath &other, int sort) {
   nassertv(verify_complete());
   nassertv(other.verify_complete());
   nassertv_always(!is_empty());
+  nassertv(other._error_type == ET_ok);
 
   if (get_transform() == get_prev_transform()) {
     set_transform(get_transform(other));
@@ -347,6 +349,7 @@ instance_to(const NodePath &other, int sort) const {
   nassertr(verify_complete(), NodePath::fail());
   nassertr(other.verify_complete(), NodePath::fail());
   nassertr_always(!is_empty(), NodePath::fail());
+  nassertr(other._error_type == ET_ok, NodePath::fail());
 
   NodePath new_instance;
 
@@ -402,6 +405,7 @@ copy_to(const NodePath &other, int sort) const {
   nassertr(other.verify_complete(), fail());
   nassertr_always(!is_empty(), fail());
   nassertr(!other.is_empty(), fail());
+  nassertr(other._error_type == ET_ok, fail());
 
   PandaNode *source_node = node();
   PT(PandaNode) copy_node = source_node->copy_subgraph();
@@ -431,8 +435,8 @@ copy_to(const NodePath &other, int sort) const {
 NodePath NodePath::
 attach_new_node(PandaNode *node, int sort) const {
   nassertr(verify_complete(), NodePath::fail());
-  nassertr_always(!is_empty(), NodePath());
-  nassertr(node != (PandaNode *)NULL, NodePath());
+  nassertr_always(!is_empty(), NodePath::fail());
+  nassertr(node != (PandaNode *)NULL, NodePath::fail());
 
   NodePath new_path(*this);
   new_path._head = PandaNode::attach(_head, node, sort);
@@ -551,6 +555,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) NodePath::
 get_state(const NodePath &other) const {
+  nassertr(_error_type == ET_ok && other._error_type == ET_ok, RenderState::make_empty());
+
   if (is_empty()) {
     return other.get_net_state();
   }
@@ -608,6 +614,8 @@ set_state(const NodePath &other, const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
 get_transform(const NodePath &other) const {
+  nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
+
   if (other.is_empty()) {
     return get_net_transform();
   }
@@ -670,6 +678,8 @@ set_transform(const NodePath &other, const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
 get_prev_transform(const NodePath &other) const {
+  nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
+
   if (other.is_empty()) {
     return get_net_prev_transform();
   }

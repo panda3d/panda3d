@@ -444,6 +444,7 @@ set_state(const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderState) NodePath::
 get_net_state() const {
+  nassertr(_error_type == ET_ok, RenderState::make_empty());
   return r_get_net_state(_head);
 }
 
@@ -498,6 +499,7 @@ clear_transform(const NodePath &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) NodePath::
 get_net_transform() const {
+  nassertr(_error_type == ET_ok, TransformState::make_identity());
   return r_get_net_transform(_head);
 }
 
@@ -536,6 +538,7 @@ set_prev_transform(const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) NodePath::
 get_net_prev_transform() const {
+  nassertr(_error_type == ET_ok, TransformState::make_identity());
   return r_get_net_prev_transform(_head);
 }
 
