@@ -121,20 +121,25 @@ class ShowBase:
 	self.physicsMgr.attachLinearIntegrator(self.integrator)
 	self.physicsMgrEnabled = 0
 
-	# Spawn the update managers task
-	self.taskMgr.spawnTaskNamed(Task.Task(self.__updateManagers),
-					'manager-update')
-
         self.createAudioManager()
         self.createRootPanel()
         self.createStats()
 
         self.restart()
 
-    def enableParticles(self, flag = 1):
-	"""enableParticles(self, flag)"""
-	self.particleMgrEnabled = flag
-	self.physicsMgrEnabled = flag
+    def enableParticles(self):
+	"""enableParticles(self)"""
+	self.particleMgrEnabled = 1
+	self.physicsMgrEnabled = 1
+	self.taskMgr.removeTasksNamed('manager-update')
+	self.taskMgr.spawnTaskNamed(Task.Task(self.__updateManagers),
+					'manager-update')
+
+    def disableParticles(self):
+	"""enableParticles(self)"""
+	self.particleMgrEnabled = 0 
+	self.physicsMgrEnabled = 0 
+	self.taskMgr.removeTasksNamed('manager-update')
 
     def __updateManagers(self, state):
 	"""__updateManagers(self)"""
