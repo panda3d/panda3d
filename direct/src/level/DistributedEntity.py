@@ -42,7 +42,9 @@ class DistributedEntity(DistributedObject.DistributedObject, Entity.Entity):
         DistributedEntity.notify.debug('disable (%s)' % self.entId)
         # stop things
         self.destroy()
+        DistributedObject.DistributedObject.disable(self)
 
     def delete(self):
         DistributedEntity.notify.debug('delete')
         # unload things
+        DistributedObject.DistributedObject.delete(self)
