@@ -207,7 +207,7 @@ do_get(const string &key, const string &name, int &data_type, string &data) {
   error =
     RegOpenKeyEx(HKEY_LOCAL_MACHINE, key.c_str(), 0, KEY_QUERY_VALUE, &hkey);
   if (error != ERROR_SUCCESS) {
-    express_cat.error()
+    express_cat.debug()
       << "Unable to open registry key " << key
       << ": " << format_message(error) << "\n";
     return false;
