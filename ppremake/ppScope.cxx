@@ -12,9 +12,8 @@
 #include "ppDependableFile.h"
 #include "ppMain.h"
 #include "tokenize.h"
-#include "find_searchpath.h"
 #include "filename.h"
-#include "include_access.h"
+#include "dSearchPath.h"
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -1304,27 +1303,12 @@ expand_isdir(const string &params) {
     return string();
   }
 
-  const string &filename = results[0];
-
-  string result;
-#ifdef WIN32_VC
-  DWORD dresults = GetFileAttributes(filename.c_str());
-  if (dresults != -1) {
-    if ((dresults & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-      result = filename;
-    }
+  Filename filename = results[0];
+  if (filename.is_directory()) {
+    return filename;
+  } else {
+    return string();
   }
-
-#else  // WIN32_VC
-  struct stat stbuf;
-  if (stat(filename.c_str(), &stbuf) == 0) {
-    if (S_ISDIR(stbuf.st_mode)) {
-      result = filename;
-    }
-  }
-#endif // WIN32_VC
-
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1347,28 +1331,12 @@ expand_isfile(const string &params) {
     return string();
   }
 
-  const string &filename = results[0];
-
-  string result;
-
-#ifdef WIN32_VC
-  DWORD dresults = GetFileAttributes(filename.c_str());
-  if (dresults != -1) {
-    if (dresults == FILE_ATTRIBUTE_NORMAL) {
-      result = filename;
-    }
+  Filename filename = results[0];
+  if (filename.is_regular_file()) {
+    return filename;
+  } else {
+    return string();
   }
-
-#else  // WIN32_VC
-  struct stat stbuf;
-  if (stat(filename.c_str(), &stbuf) == 0) {
-    if (S_ISREG(stbuf.st_mode)) {
-      result = filename;
-    }
-  }
-#endif  // WIN32_VC
-
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1392,21 +1360,21 @@ expand_libtest(const string &params) {
     return string();
   }
 
-  vector<string> directories;
-  tokenize_whitespace(tokens[0], directories);
+  DSearchPath directories;
+  directories.append_path(tokens[0], " \n\t");
 
   // Also add the system directories to the list, whatever we think
   // those should be.  Here we have to make a few assumptions.
 #ifdef WIN32
   const char *windir = getenv("WINDIR");
   if (windir != (const char *)NULL) {
-    directories.push_back(string(windir) + "\\System");
-    directories.push_back(string(windir) + "\\System32");
+    directories.append_directory(Filename(windir, "System"));
+    directories.append_directory(Filename(windir, "System32"));
   }
 
   const char *lib = getenv("LIB");
   if (lib != (const char *)NULL) {
-    tokenize(lib, directories, ";");
+    directories.append_path(lib, ";");
   }
 #endif
 
@@ -1416,11 +1384,11 @@ expand_libtest(const string &params) {
   // Check LD_LIBRARY_PATH.
   const char *ld_library_path = getenv("LD_LIBRARY_PATH");
   if (ld_library_path != (const char *)NULL) {
-    tokenize(ld_library_path, directories, ":");
+    directories.append_path(ld_library_path, ":");
   }
 
-  directories.push_back("/lib");
-  directories.push_back("/usr/lib");
+  directories.append_directory("/lib");
+  directories.append_directory("/usr/lib");
 
   vector<string> libnames;
   tokenize_whitespace(tokens[1], libnames);
@@ -1431,32 +1399,34 @@ expand_libtest(const string &params) {
   }
 
   // We only bother to search for the first library name in the list.
-  string libname = libnames[0];
+  Filename libname = libnames[0];
 
-  string found;
+  bool found = false;
 
 #ifdef WIN32
-  if (libname.length() > 4 && libname.substr(libname.length() - 4) == ".lib") {
-    found = find_searchpath(directories, libname);    
-    if (found.empty()) {
-      found = find_searchpath(directories, libname.substr(0, libname.length() - 4) + ".dll");
-    }
-  } else {
-    found = find_searchpath(directories, "lib" + libname + ".lib");
-    if (found.empty()) {
-      found = find_searchpath(directories, "lib" + libname + ".dll");
-    }
+  if (libname.get_extension() != string("lib")) {
+    libname = "lib" + libname.get_basename() + ".lib";
+  }
+  found = libname.resolve_filename(directories);
+  if (!found) {
+    libname.set_extension("dll");
+    found = libname.resolve_filename(directories);
   }
   
 #else
-  found = find_searchpath(directories, "lib" + libname + ".a");
-  if (found.empty()) {
-    found = find_searchpath(directories, "lib" + libname + ".so");
+  libname = "lib" + libname.get_basename() + ".a";
+  found = libname.resolve_filename(directories);
+  if (!found) {
+    libname.set_extension("so");
+    found = libname.resolve_filename(directories);
   }
 #endif
 
-
-  return found;
+  if (found) {
+    return libname;
+  } else {
+    return string();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1472,7 +1442,7 @@ string PPScope::
 expand_bintest(const string &params) {
   // We only have one parameter: the filename of the executable.  We
   // always search for it on the path.
-  string binname = expand_string(params);
+  Filename binname = Filename::from_os_specific(expand_string(params));
 
   if (binname.empty()) {
     // No binary, no exist.
@@ -1480,17 +1450,13 @@ expand_bintest(const string &params) {
   }
 
   // An explicit path from the root does not require a search.
-#ifdef WIN32
-  if ((binname.length() > 2 && binname[1] == ':') || binname[0] == '/')
-#else
-    if (binname[0] == '/')
-#endif
-      {
-        if (access(binname.c_str(), F_OK) == 0) {
-          return binname;
-        }
-        return string();
-      }
+  if (binname.is_fully_qualified()) {
+    if (binname.exists()) {
+      return binname;
+    } else {
+      return string();
+    }
+  }
 
   const char *path = getenv("PATH");
   if (path == (const char *)NULL) {
@@ -1500,36 +1466,34 @@ expand_bintest(const string &params) {
 
   string pathvar(path);
 
-  vector<string> directories;
+  DSearchPath directories;
 
 #ifdef WIN32
   if (pathvar.find(';') != string::npos) {
     // If the path contains semicolons, it's a native Windows-style
     // path: split it up based on semicolons.
-    tokenize(pathvar, directories, ";");
+    directories.append_path(pathvar, ";");
 
   } else {
     // Otherwise, assume it's a Cygwin-style path: split it up based
     // on colons.
-    tokenize(pathvar, directories, ":");
+    directories.append_path(pathvar, ":");
   }
 #else
-  tokenize(pathvar, directories, ":");
+  directories.append_path(pathvar, ":");
 #endif
-
-  string found;
 
 #ifdef WIN32
-  found = find_searchpath(directories, binname + ".exe");
-  if (found.empty()) {
-    found = find_searchpath(directories, binname);
-  }
-  
+  bool found = binname.resolve_filename(directories, "exe");
 #else
-  found = find_searchpath(directories, binname);
+  bool found = binname.resolve_filename(directories);
 #endif
 
-  return found;
+  if (found) {
+    return binname;
+  } else {
+    return string();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

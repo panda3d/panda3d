@@ -6,6 +6,7 @@
 #include "ppDependableFile.h"
 #include "ppDirectory.h"
 #include "ppDirectoryTree.h"
+#include "filename.h"
 #include "check_include.h"
 
 #ifdef HAVE_UNISTD_H
@@ -441,7 +442,9 @@ stat_file() {
 
   _flags |= F_statted;
   struct stat st;
-  if (stat(get_pathname().c_str(), &st) < 0) {
+  Filename pathname(get_pathname());
+  string ospath = pathname.to_os_specific();
+  if (stat(ospath.c_str(), &st) < 0) {
     // The file doesn't exist!
     return;
   }

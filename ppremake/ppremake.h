@@ -65,11 +65,15 @@ using namespace std;
 #define SCOPE_DIRNAME_WILDCARD "*"
 #define SCOPE_DIRNAME_CURRENT "."
 
+#ifdef __cplusplus
 /* These are set from the similarly-named variables defined in
    System.pp. */
-#ifdef __cplusplus
 extern bool unix_platform;
 extern bool windows_platform;
+
+/* This is a command-line global parameter. */
+extern bool dry_run;
+extern bool verbose_dry_run;
 #endif
 
 /* These are defined so that we may build Filename and DSearchPath,

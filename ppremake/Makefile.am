@@ -5,7 +5,6 @@ ppremake_SOURCES =							\
     dSearchPath.I dSearchPath.cxx dSearchPath.h				\
     executionEnvironment.cxx executionEnvironment.h			\
     filename.I filename.cxx filename.h					\
-    find_searchpath.cxx find_searchpath.h				\
     gnu_getopt.c gnu_getopt.h gnu_regex.c gnu_regex.h			\
     ppCommandFile.cxx ppCommandFile.h ppDependableFile.cxx		\
     ppDependableFile.h ppDirectory.cxx					\
@@ -18,3 +17,7 @@ ppremake_SOURCES =							\
     sedCommand.h sedContext.cxx sedContext.h sedProcess.cxx		\
     sedProcess.h sedScript.cxx sedScript.h tokenize.cxx			\
     tokenize.h vector_string.h
+
+# Extra files for VC++ project description
+EXTRA_DIST =							\
+    ppremake.sln ppremake.vcproj ppremake.vsdir ppremake.vsz

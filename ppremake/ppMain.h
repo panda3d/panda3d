@@ -9,6 +9,7 @@
 #include "ppremake.h"
 #include "ppDirectoryTree.h"
 #include "ppNamedScopes.h"
+#include "filename.h"
 
 class PPScope;
 class PPCommandFile;
@@ -27,10 +28,10 @@ public:
   bool read_source(const string &root);
 
   bool process_all();
-  bool process(const string &dirname);
+  bool process(string dirname);
 
   void report_depends(const string &dirname) const;
-  void report_needs(const string &dirname) const;
+  void report_reverse_depends(const string &dirname) const;
 
   static string get_root();
   static void chdir_root();
@@ -50,7 +51,7 @@ private:
   PPNamedScopes _named_scopes;
   PPScope *_parent_scope;
 
-  static string _root;
+  static Filename _root;
   string _original_working_dir;
 };
 

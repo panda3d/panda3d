@@ -28,6 +28,8 @@
 
 bool unix_platform = false;
 bool windows_platform = false;
+bool dry_run = false;
+bool verbose_dry_run = false;
 
 static void
 usage() {
@@ -73,10 +75,14 @@ usage() {
     "               subdirectories that the named subdirectory depends on.\n"
     "               Directories are named by their local name, not by the\n"
     "               path to them; e.g. util instead of src/util.\n"
-    "  -n           As above, but report the set of subdirectories that\n"
-    "               depend on (need) the named subdirectory.  Options -d and\n"
-    "               -n may be combined, and you may also name multiple\n"
-    "               subdirectories to scan at once.\n\n"
+    "  -r           Reverse dependency.  As above, but report instead the set\n"
+    "               of directories that depend on the named subdirectory.\n"
+    "               Options -d and -r may be combined, and you may also\n"
+    "               name multiple subdirectories to scan at once.\n\n"
+    "  -n           Dry run: generate no output, but instead report the\n"
+    "               files that would change.\n"
+    "  -N           Verbose dry run: show the output of diff for the files\n"
+    "               that would change (not supported in Win32-only version).\n\n"
     "  -p platform  Build as if for the indicated platform name.\n"
     "  -c config.pp Read the indicated user-level config.pp file after reading\n"
     "               the system config.pp file.  If this is omitted, the value\n"
@@ -203,12 +209,12 @@ main(int argc, char *argv[]) {
   string progname = argv[0];
   extern char *optarg;
   extern int optind;
-  const char *optstr = "hVPD:dnp:c:s:";
+  const char *optstr = "hVPD:drnNp:c:s:";
 
   bool any_d = false;
   bool dependencies_stale = false;
   bool report_depends = false;
-  bool report_needs = false;
+  bool report_reverse_depends = false;
   string platform = PLATFORM;
   string ppremake_config;
   bool got_ppremake_config = false;
@@ -243,8 +249,17 @@ main(int argc, char *argv[]) {
       report_depends = true;
       break;
 
+    case 'r':
+      report_reverse_depends = true;
+      break;
+
     case 'n':
-      report_needs = true;
+      dry_run = true;
+      break;
+
+    case 'N':
+      dry_run = true;
+      verbose_dry_run = true;
       break;
 
     case 'p':
@@ -279,6 +294,12 @@ main(int argc, char *argv[]) {
     exit(0);
   }
 
+#ifdef WIN32_VC
+  if (verbose_dry_run) {
+    cerr << "Option -N treated like -n when ppremake is built without Cygwin.\n";
+  }
+#endif
+
   // If the user supplied one or more -d parameters, then we should
   // not continue unless some of the dependencies were stale.
   if (any_d) {
@@ -312,7 +333,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  if (report_depends || report_needs) {
+  if (report_depends || report_reverse_depends) {
     // With -d or -n, just report inter-directory dependency
     // relationships.
     if (argc < 2) {
@@ -326,8 +347,8 @@ main(int argc, char *argv[]) {
         ppmain.report_depends(argv[i]);
       }
       cerr << "\n";
-      if (report_needs) {
-        ppmain.report_needs(argv[i]);
+      if (report_reverse_depends) {
+        ppmain.report_reverse_depends(argv[i]);
       }
     }
 

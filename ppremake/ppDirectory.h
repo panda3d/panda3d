@@ -52,7 +52,7 @@ public:
                                         bool is_header);
 
   void report_depends() const;
-  void report_needs() const;
+  void report_reverse_depends() const;
 
 private:
   typedef set<PPDirectory *> Depends;

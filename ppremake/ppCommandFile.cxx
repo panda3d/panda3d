@@ -8,7 +8,6 @@
 #include "ppNamedScopes.h"
 #include "ppSubroutine.h"
 #include "tokenize.h"
-#include "include_access.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -1197,7 +1196,9 @@ handle_sinclude_command() {
     filename = filename.substr(1, filename.length() - 2);
   }
 
-  if (access(filename.c_str(), F_OK) != 0) {
+  Filename fn(filename);
+
+  if (!fn.exists()) {
     // No such file; no error.
     return true;
   }
@@ -1642,9 +1643,10 @@ replay_formap(const string &varname, const string &mapvar) {
 //               contents; otherwise, leave the original alone.
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
-compare_output(const string &new_contents, const string &filename,
+compare_output(const string &new_contents, Filename filename,
                bool notouch) {
-  bool exists = (access(filename.c_str(), F_OK) == 0);
+  filename.set_text();
+  bool exists = filename.exists();
   bool differ = false;
 
   if (exists) {
@@ -1652,55 +1654,92 @@ compare_output(const string &new_contents, const string &filename,
     size_t want_bytes = len + 1;
 
     char *orig_contents = new char[want_bytes];
-    ifstream in(filename.c_str());
-    in.read(orig_contents, want_bytes);
-
-    if (in.gcount() != len) {
-      // The wrong number of bytes.
+    ifstream in;
+    if (!filename.open_read(in)) {
+      cerr << "Cannot read existing " << filename << ", regenerating.\n";
       differ = true;
-
     } else {
-      differ = !(new_contents == string(orig_contents, len));
+      in.read(orig_contents, want_bytes);
+
+      if (in.gcount() != len) {
+        // The wrong number of bytes.
+        differ = true;
+        
+      } else {
+        differ = !(new_contents == string(orig_contents, len));
+      }
     }
   }
 
   if (differ || !exists) {
-    cerr << "Generating " << filename << "\n";
-
-    if (exists) {
-      if (unlink(filename.c_str()) < 0) {
-        cerr << "Unable to remove old " << filename << "\n";
+#ifndef WIN32_VC
+    if (verbose_dry_run) {
+      // Write our new contents to a file so we can run diff on both
+      // of them.
+      Filename temp_filename = filename.get_fullpath() + string(".ppd");
+      temp_filename.set_text();
+      ofstream out_b;
+      if (!temp_filename.open_write(out_b)) {
+        cerr << "Unable to open temporary file " << filename << " for writing.\n";
         return false;
       }
-    }
+      
+      out_b.write(new_contents.data(), new_contents.length());
 
-#ifdef WIN32_VC
-    ofstream out_b(filename.c_str(), ios::out);
-#else  // WIN32_VC
-    ofstream out_b(filename.c_str(), ios::out, 0666);
-#endif  // WIN32_VC
-    if (!out_b) {
-      cerr << "Unable to open file " << filename << " for writing.\n";
-      return false;
-    }
+      bool diff_ok = true;
+      if (!out_b) {
+        cerr << "Unable to write to temporary file " << filename << "\n";
+        diff_ok = true;
+      }
+      out_b.close();
+      string command = "diff -u '" + filename.get_fullpath() + "' '" + 
+        temp_filename.get_fullpath() + "'";
+      int sys_result = system(command.c_str());
+      if (sys_result < 0) {
+        cerr << "Unable to invoke diff\n";
+        diff_ok = false;
+      }
+      out_b.close();
+      temp_filename.unlink();
 
-    out_b.write(new_contents.data(), new_contents.length());
-
-    if (!out_b) {
-      cerr << "Unable to write to file " << filename << "\n";
-      return false;
-    }
-    out_b.close();
-
+      return diff_ok;
+      
+    } else
+#endif
+      if (dry_run) {
+        cerr << "Would generate " << filename << "\n";
+      } else {
+        cerr << "Generating " << filename << "\n";
+        
+        if (exists) {
+          if (!filename.unlink()) {
+            cerr << "Unable to remove old " << filename << "\n";
+            return false;
+          }
+        }
+        
+        ofstream out_b;
+        if (!filename.open_write(out_b)) {
+          cerr << "Unable to open file " << filename << " for writing.\n";
+          return false;
+        }
+        
+        out_b.write(new_contents.data(), new_contents.length());
+        
+        if (!out_b) {
+          cerr << "Unable to write to file " << filename << "\n";
+          return false;
+        }
+        out_b.close();
+      }
+      
   } else {
-    //    cerr << "File " << filename << " is unchanged.\n";
-
     // Even though the file is unchanged, unless the "notouch" flag is
     // set, we want to update the modification time.  This helps the
     // makefiles know we did something.
-    if (!notouch) {
-      if (utime(filename.c_str(), (struct utimbuf *)NULL) < 0) {
-        cerr << "Warning: unable to touch " << filename << "\n";
+    if (!notouch && !dry_run) {
+      if (!filename.touch()) {
+        cerr << "Warning: unable to update timestamp for " << filename << "\n";
       }
     }
   }

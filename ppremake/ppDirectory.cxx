@@ -10,7 +10,6 @@
 #include "ppCommandFile.h"
 #include "ppDependableFile.h"
 #include "tokenize.h"
-#include "include_access.h"
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
@@ -372,13 +371,13 @@ report_depends() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPDirectory::report_needs
+//     Function: PPDirectory::report_reverse_depends
 //       Access: Public
-//  Description: Reports all the directories that depend on (need) the
+//  Description: Reports all the directories that depend on the
 //               current directory.
 ////////////////////////////////////////////////////////////////////
 void PPDirectory::
-report_needs() const {
+report_reverse_depends() const {
   if (_depends_on_me.empty()) {
     cerr << _dirname << " is needed by no other directories.\n";
 
@@ -402,7 +401,7 @@ report_needs() const {
 ////////////////////////////////////////////////////////////////////
 bool PPDirectory::
 r_scan(const string &prefix) {
-  string root_name = ".";
+  Filename root_name = ".";
   if (!prefix.empty()) {
     root_name = prefix.substr(0, prefix.length() - 1);
   }
@@ -410,54 +409,10 @@ r_scan(const string &prefix) {
   // Collect all the filenames in the directory in this vector first,
   // so we can sort them.
   vector<string> filenames;
-
-#ifdef WIN32_VC
-  // Use FindFirstFile()/FindNextFile() to walk through the list of
-  // files in a directory.
-  string match;
-  if (root_name.empty()) {
-    match = "*.*";
-  } else {
-    match = root_name + "\\*.*";
-  }
-  WIN32_FIND_DATA find_data;
-
-  HANDLE handle = FindFirstFile(match.c_str(), &find_data);
-  if (handle == INVALID_HANDLE_VALUE) {
-    if (GetLastError() == ERROR_NO_MORE_FILES) {
-      // No matching files is not an error.
-      return true;
-    }
-    return false;
-  }
-
-  do {
-    string filename = find_data.cFileName;
-    if (filename != "." && filename != "..") {
-      filenames.push_back(filename);
-    }
-  } while (FindNextFile(handle, &find_data));
-
-  bool scan_ok = (GetLastError() == ERROR_NO_MORE_FILES);
-  FindClose(handle);
-
-#else  // WIN32_VC  
-  DIR *root = opendir(root_name.c_str());
-  if (root == (DIR *)NULL) {
+  if (!root_name.scan_directory(filenames)) {
     cerr << "Unable to scan directory " << root_name << "\n";
     return false;
   }
-
-  struct dirent *d;
-  d = readdir(root);
-  while (d != (struct dirent *)NULL) {
-    filenames.push_back(d->d_name);
-    d = readdir(root);
-  }
-  closedir(root);
-#endif  // WIN32_VC
-
-  sort(filenames.begin(), filenames.end());
 
   vector<string>::const_iterator fi;
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
@@ -467,9 +422,8 @@ r_scan(const string &prefix) {
       // Is this possibly a subdirectory with its own Sources.pp
       // within it?
       string next_prefix = prefix + filename + "/";
-      string source_filename = next_prefix + SOURCE_FILENAME;
-      if (access(source_filename.c_str(), F_OK) == 0) {
-
+      Filename source_filename = next_prefix + SOURCE_FILENAME;
+      if (source_filename.exists()) {
         PPDirectory *subtree = new PPDirectory(filename, this);
 
         if (!subtree->r_scan(next_prefix)) {
@@ -715,26 +669,8 @@ read_file_dependencies(const string &cache_filename) {
 ////////////////////////////////////////////////////////////////////
 void PPDirectory::
 update_file_dependencies(const string &cache_filename) {
-  // Open up the dependency cache file in the directory.
-  string cache_pathname = get_path() + "/" + cache_filename;
-  unlink(cache_pathname.c_str());
-
-  // If we have no files, don't bother writing the cache.
-  if (!_dependables.empty()) {
-    bool wrote_anything = false;
-
-#ifdef WIN32_VC
-    ofstream out(cache_pathname.c_str(), ios::out);
-#else
-    ofstream out(cache_pathname.c_str(), ios::out, 0666);
-#endif
-    if (!out) {
-      cerr << "Cannot update cache dependency file " << cache_pathname << "\n";
-      return;
-    }
-    
-    // Walk through our list of dependable files, writing them out the
-    // the cache file.
+  if (dry_run) {
+    // If this is just a dry run, just report circularities.
     Dependables::const_iterator di;
     for (di = _dependables.begin(); di != _dependables.end(); ++di) {
       PPDependableFile *file = (*di).second;
@@ -743,20 +679,50 @@ update_file_dependencies(const string &cache_filename) {
           cerr << "Warning: circular #include directives:\n"
                << "  " << file->get_circularity() << "\n";
         }
-        file->write_cache(out);
-        wrote_anything = true;
       }
     }
 
-    out.close();
+  } else {
+    // Open up the dependency cache file in the directory.
+    Filename cache_pathname(get_path(), cache_filename);
+    cache_pathname.set_text();
+    cache_pathname.unlink();
 
-    if (!wrote_anything) {
-      // Well, if we didn't write anything, remove the cache file
-      // after all.
-      unlink(cache_pathname.c_str());
+    // If we have no files, don't bother writing the cache.
+    if (!_dependables.empty()) {
+      bool wrote_anything = false;
+      
+      ofstream out;
+      if (!cache_pathname.open_write(out)) {
+        cerr << "Cannot update cache dependency file " << cache_pathname << "\n";
+        return;
+      }
+      
+      // Walk through our list of dependable files, writing them out the
+      // the cache file.
+      Dependables::const_iterator di;
+      for (di = _dependables.begin(); di != _dependables.end(); ++di) {
+        PPDependableFile *file = (*di).second;
+        if (file->was_examined()) {
+          if (file->is_circularity()) {
+            cerr << "Warning: circular #include directives:\n"
+                 << "  " << file->get_circularity() << "\n";
+          }
+          file->write_cache(out);
+          wrote_anything = true;
+        }
+      }
+      
+      out.close();
+      
+      if (!wrote_anything) {
+        // Well, if we didn't write anything, remove the cache file
+        // after all.
+        cache_pathname.unlink();
+      }
     }
   }
-
+    
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci)->update_file_dependencies(cache_filename);

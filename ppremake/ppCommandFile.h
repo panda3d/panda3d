@@ -7,6 +7,7 @@
 #define PPCOMMANDFILE_H
 
 #include "ppremake.h"
+#include "filename.h"
 
 #include <map>
 #include <vector>
@@ -68,7 +69,7 @@ protected:
   bool replay_forscopes(const string &name);
   bool replay_foreach(const string &varname, const vector<string> &words);
   bool replay_formap(const string &varname, const string &mapvar);
-  bool compare_output(const string &new_contents, const string &filename,
+  bool compare_output(const string &new_contents, Filename filename,
                       bool notouch);
   bool failed_if() const;
 

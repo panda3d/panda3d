@@ -8,7 +8,6 @@
 #include "ppCommandFile.h"
 #include "ppDirectory.h"
 #include "tokenize.h"
-#include "include_access.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -23,7 +22,7 @@
 #define getcwd _getcwd
 #endif  // WIN32_VC
 
-string PPMain::_root;
+Filename PPMain::_root;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPMain::Constructor
@@ -38,15 +37,10 @@ PPMain(PPScope *global_scope) {
   _def_scope = (PPScope *)NULL;
   _defs = (PPCommandFile *)NULL;
 
-  // save current working dir
-  char tmp[1024];
-  string dirpath = getcwd(tmp,sizeof(tmp));
-  size_t slash_pos = dirpath.rfind('/');
-  if (slash_pos == string::npos) {
-     _original_working_dir = dirpath;
-   } else {
-     _original_working_dir = dirpath.substr(slash_pos + 1);
-   }
+  // save current working directory name, so that "ppremake ." can map
+  // to the current directory.
+  Filename dirpath = get_cwd();
+  _original_working_dir = dirpath.get_basename();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,35 +68,49 @@ bool PPMain::
 read_source(const string &root) {
   // First, find the top of the source tree, as indicated by the
   // presence of a Package.pp file.
-  string trydir = root;
+  Filename trydir = root;
 
-  string package_file = trydir + "/" + PACKAGE_FILENAME;
+  Filename package_file(trydir, PACKAGE_FILENAME);
+  bool any_source_files_found = false;
 
-  while (access(package_file.c_str(), F_OK) != 0) {
+  while (!package_file.exists()) {
     // We continue to walk up directories as long as we see a source
     // file in each directory.  When we stop seeing source files, we
     // stop walking upstairs.
-    string source_file = trydir + "/" + SOURCE_FILENAME;
-    if (access(source_file.c_str(), F_OK) != 0) {
-      cerr << "Could not find ppremake package file " << PACKAGE_FILENAME
-       << ".\n\n"
-       << "This file should be present in the top of the source directory tree;\n"
-       << "it defines implementation-specific variables to control the output\n"
-       << "of ppremake, as well as pointing out the installed location of\n"
-       << "important ppremake config files.\n\n";
+    Filename source_file(trydir, SOURCE_FILENAME);
+    if (!source_file.exists()) {
+      if (!any_source_files_found) {
+        // If we never saw a single Sources.pp file, complain about that.
+        cerr << "Could not find ppremake source file " << SOURCE_FILENAME
+             << ".\n\n"
+             << "This file should be present at each level of the source directory tree;\n"
+             << "it defines how each directory should be processed by ppremake.\n\n";
+      } else {
+        // If we found at least one Sources.pp file, but didn't find
+        // the Package.pp file at the top of the tree, complain about
+        // *that*.
+        cerr << "Could not find ppremake package file " << PACKAGE_FILENAME
+             << ".\n\n"
+             << "This file should be present in the top of the source directory tree;\n"
+             << "it defines implementation-specific variables to control the output\n"
+             << "of ppremake, as well as pointing out the installed location of\n"
+             << "important ppremake config files.\n\n";
+      }
       return false;
     }
-    trydir += "/..";
-    package_file = trydir + "/" + PACKAGE_FILENAME;
+    any_source_files_found = true;
+    trydir = Filename(trydir, "..");
+    package_file = Filename(trydir, PACKAGE_FILENAME);
   }
 
   // Now cd to the source root and get the actual path.
-  if (chdir(trydir.c_str()) < 0) {
+  string osdir = trydir.to_os_specific();
+  if (chdir(osdir.c_str()) < 0) {
     perror("chdir");
     return false;
   }
 
-  _root = get_cwd();
+  _root = Filename::from_os_specific(get_cwd());
   cerr << "Root is " << _root << "\n";
 
   _def_scope = new PPScope(&_named_scopes);
@@ -190,18 +198,16 @@ process_all() {
 //               output the template file indicates.
 ////////////////////////////////////////////////////////////////////
 bool PPMain::
-process(const string &dirnam) {
+process(string dirname) {
   string cache_filename = _def_scope->expand_variable("DEPENDENCY_CACHE_FILENAME");
-  string dirname = dirnam;
-
   if (cache_filename.empty()) {
     cerr << "Warning: no definition given for $[DEPENDENCY_CACHE_FILENAME].\n";
   } else {
     _tree.read_file_dependencies(cache_filename);
   }
 
-  if(dirname == ".") {
-      dirname = _original_working_dir;
+  if (dirname == ".") {
+    dirname = _original_working_dir;
   }
   
   PPDirectory *dir = _tree.find_dirname(dirname);
@@ -244,20 +250,20 @@ report_depends(const string &dirname) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPMain::report_needs
+//     Function: PPMain::report_reverse_depends
 //       Access: Public
 //  Description: Reports all the directories that depend on (need) the
 //               named directory.
 ////////////////////////////////////////////////////////////////////
 void PPMain::
-report_needs(const string &dirname) const {
+report_reverse_depends(const string &dirname) const {
   PPDirectory *dir = _tree.find_dirname(dirname);
   if (dir == (PPDirectory *)NULL) {
     cerr << "Unknown directory: " << dirname << "\n";
     return;
   }
 
-  dir->report_needs();
+  dir->report_reverse_depends();
 }
 
 ////////////////////////////////////////////////////////////////////
