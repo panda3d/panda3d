@@ -208,6 +208,29 @@ class PosHprInterval(FunctionInterval):
         # Create function interval
         FunctionInterval.__init__(self, posHprFunc, name = name)
 
+class HprScaleInterval(FunctionInterval):
+    # HprScaleInterval counter
+    hprScaleIntervalNum = 1
+    # Initialization
+    def __init__(self, nodePath, hpr, scale, duration = 0.0,
+                 name = None, other = None):
+        """__init__(nodePath, hpr, scale, duration, other, name)
+        """
+        # Create function
+        def hprScaleFunc(np=nodePath, hpr=hpr, scale=scale,
+                            other = other):
+            if other:
+                np.setHprScale(other, hpr, scale)
+            else:
+                np.setHprScale(hpr, scale)                
+        # Determine name
+        if (name == None):
+            name = ('HprScale-%d' %
+                    HprScaleInterval.hprScaleIntervalNum)
+            HprScaleInterval.hprScaleIntervalNum += 1
+        # Create function interval
+        FunctionInterval.__init__(self, hprScaleFunc, name = name)
+
 class PosHprScaleInterval(FunctionInterval):
     # PosHprScaleInterval counter
     posHprScaleIntervalNum = 1

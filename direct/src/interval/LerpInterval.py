@@ -100,7 +100,7 @@ class LerpHprInterval(LerpInterval):
             if (other != None):
                 # lerp wrt other
                 if (startHpr == None):
-                    startHpr = node.getHpr(other)
+                    startHpr = VBase3(node.getHpr(other))
                 functor = HprLerpFunctor(node, startHpr, hpr, other)
             else:
                 if (startHpr == None):
@@ -190,6 +190,53 @@ class LerpPosHprInterval(LerpInterval):
         if (name == None):
             name = 'LerpPosHpr-%d' % LerpPosHprInterval.lerpPosHprNum
             LerpPosHprInterval.lerpPosHprNum += 1
+        # Initialize superclass
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
+
+class LerpHprScaleInterval(LerpInterval):
+    # Interval counter
+    lerpHprScaleNum = 1
+    # Class methods
+    def __init__(self, node, duration, hpr, scale,
+                 startHpr=None, startScale=None,
+                 other=None, blendType='noBlend', name=None): 
+        """ __init__(node, duration, hpr, scale,
+                     startHpr, startScale, 
+                     other, blendType, name)
+        """
+        def functorFunc(node=node, hpr=hpr, scale=scale,
+                        startHpr=startHpr,
+                        startScale=startScale, other=other):
+            assert(not node.isEmpty())
+            if callable(hpr):
+                # This may be a thunk that returns a point.
+                hpr = hpr()
+            if callable(scale):
+                # This may be a thunk that returns a point.
+                scale = scale()
+            if (other != None):
+                # lerp wrt other
+                if (startHpr == None):
+                    startHpr = node.getHpr(other)
+                if (startScale == None):
+                    startScale = node.getScale(other)
+                functor = HprScaleLerpFunctor(
+                    node, startHpr, hpr,
+                    startScale, scale, other)
+            else:
+                if (startHpr == None):
+                    startHpr = node.getHpr()
+                if (startScale == None):
+                    startScale = node.getScale()
+                functor = HprScaleLerpFunctor(
+                    node, startHpr, hpr, startScale, scale)
+            return functor
+
+        # Generate unique name if necessary
+        if (name == None):
+            name = ('LerpHprScale-%d' %
+                    LerpHprScaleInterval.lerpHprScaleNum)
+            LerpHprScaleInterval.lerpHprScaleNum += 1
         # Initialize superclass
         LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
