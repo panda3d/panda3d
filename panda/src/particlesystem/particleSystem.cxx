@@ -139,20 +139,20 @@ birth_particle(void) {
 
   // make sure there's room for a new particle
   if (_living_particles >= _particle_pool_size) {
-#ifdef PSDEBUG
+    #ifdef PSDEBUG
     if (_living_particles > _particle_pool_size) {
       cout << "_living_particles > _particle_pool_size" << endl;
     }
-#endif
+    #endif
     return false;
   }
 
-#ifdef PSDEBUG
+  #ifdef PSDEBUG
   if (0 == _free_particle_fifo.size()) {
     cout << "Error: _free_particle_fifo is empty, but _living_particles < _particle_pool_size" << endl;
     return false;
   }
-#endif
+  #endif
 
   pool_index = _free_particle_fifo.back();
   _free_particle_fifo.pop_back();
@@ -295,8 +295,9 @@ kill_particle(int pool_index) {
   BaseParticle *bp = (BaseParticle *) _physics_objects[pool_index].p();
 
   // create a new system where this one died, maybe.
-  if (_spawn_on_death_flag == true)
+  if (_spawn_on_death_flag == true) {
     spawn_child_system(bp);
+  }
 
   // tell everyone that it's dead
   bp->set_alive(false);
@@ -325,10 +326,10 @@ resize_pool(int size) {
   int delta = size - _particle_pool_size;
   int po_delta = _particle_pool_size - _physics_objects.size();
 
-#ifdef PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
+  #ifdef PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
   cout << "resizing particle pool from " << _particle_pool_size
        << " to " << size << endl;
-#endif
+  #endif
 
   if (_factory.is_null()) {
     particlesystem_cat.error() << "ParticleSystem::resize_pool"
