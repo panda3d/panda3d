@@ -4138,9 +4138,7 @@ get_stencil_action_type(StencilProperty::Action a) const
   case StencilProperty::A_decrement:
       glgsg_cat.error()
              << "wraparound incr/decr StencilProperty::Action not supported by OpenGL\n";
-      if(a == StencilProperty::A_increment)
-         return GL_INCR;
-       else return GL_DECR;
+      return ((a == StencilProperty::A_increment) ? GL_INCR : GL_DECR);
   }
   glgsg_cat.error()
     << "Invalid StencilProperty::Action value" << endl;
