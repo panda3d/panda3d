@@ -390,7 +390,13 @@ handle_update_field() {
       DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
       Py_DECREF(dclass_this);
 
+      // It's a good idea to ensure the reference count to distobj is
+      // raised while we call the update method--otherwise, the update
+      // method might get into trouble if it tried to delete the
+      // object from the doId2do map.
+      Py_INCREF(distobj);
       dclass->receive_update(distobj, _di); 
+      Py_DECREF(distobj);
     }
   }
 #endif  // HAVE_PYTHON  
