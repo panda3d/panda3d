@@ -119,7 +119,7 @@
 // '#defer extra_cflags $[extra_cflags] /STUFF' will never work because extra_cflags hasnt been
 // defined yet, so this just evaluates the reference to null and removes the reference and the
 // the defining extra_cflags in individual sources.pp's will not picked up.  use END_FLAGS instead
-#defer extra_cflags /EHsc /Zm300 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
+#defer extra_cflags /EHsc /Zm350 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
 #defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH]]
 #defer MAIN_C_COMPILE_ARGS /nologo /c $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] "$[osfilename $[source]]"

@@ -127,7 +127,7 @@
 #define extra_defines FORCE_INLINING HAVE_DINKUM WIN32_VC WIN32
 
 // Additional compiler flags.
-#defer extra_cflags /EHsc /Zm300 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
+#defer extra_cflags /EHsc /Zm350 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]

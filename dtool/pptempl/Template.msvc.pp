@@ -333,7 +333,7 @@
 #endif
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm300"
+				AdditionalOptions="/Zm350"
 				AdditionalIncludeDirectories="$[converted_ipath]"
 				PreprocessorDefinitions="$[defines]"
 				RuntimeLibrary="2"/>
@@ -446,7 +446,7 @@
 			ConfigurationType="4">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm300"
+				AdditionalOptions="/Zm350"
 				AdditionalIncludeDirectories="$[converted_ipath]"
 				PreprocessorDefinitions="$[defines]"
 				RuntimeLibrary="2"/>
@@ -515,7 +515,7 @@
 			ConfigurationType="1">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm300"
+				AdditionalOptions="/Zm350"
 				AdditionalIncludeDirectories="$[converted_ipath]"
 				PreprocessorDefinitions="$[defines]"
 				RuntimeLibrary="2"/>
