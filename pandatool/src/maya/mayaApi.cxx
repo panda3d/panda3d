@@ -41,6 +41,20 @@ MayaApi *MayaApi::_global_api = (MayaApi *)NULL;
 ////////////////////////////////////////////////////////////////////
 MayaApi::
 MayaApi(const string &program_name) {
+  if (program_name == "plug-in") {
+    // In this special case, we are invoking the code from within a
+    // plug-in, so we need not (and should not) call
+    // MLibrary::initialize().
+    _plug_in = true;
+    _is_valid = true;
+    return;
+  }
+
+  // Otherwise, if program_name is any other name, we are invoking the
+  // code from a standalone application and we do need to call
+  // MLibrary::initialize().
+  _plug_in = false;
+
   // Beginning with Maya4.5, the call to initialize seems to change
   // the current directory!  Yikes!
 
@@ -100,7 +114,7 @@ operator = (const MayaApi &copy) {
 MayaApi::
 ~MayaApi() {
   nassertv(_global_api == this);
-  if (_is_valid) {
+  if (_is_valid && !_plug_in) {
     // Caution!  Calling this function seems to call exit() somewhere
     // within Maya code.
     MLibrary::cleanup();
@@ -119,7 +133,10 @@ MayaApi::
 //               If program_name is supplied, it is passed to Maya as
 //               the name of the currently-executing program.
 //               Otherwise, the current program name is extracted from
-//               the execution environment, if possible.
+//               the execution environment, if possible.  The special
+//               program_name "plug-in" is used for code that is
+//               intended to be invoked as a plug-in only; in this
+//               case, the maya library is not re-initialized.
 ////////////////////////////////////////////////////////////////////
 PT(MayaApi) MayaApi::
 open_api(string program_name) {

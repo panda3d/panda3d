@@ -81,10 +81,9 @@
 
   #define UNIX_SYS_LIBS \
     m
+  #define BUILDING_DLL BUILDING_MISC
 
   #if $[WINDOWS_PLATFORM]
-    // Explicitly export the maya initialize and shutdown functions.
-    #define LINKER_FLAGS $[LINKER_FLAGS] /export:initializePlugin /export:uninitializePlugin
     // On Windows, Maya expects its plugins to be named with a .mll
     // extension, but it's a perfectly normal dll otherwise.  This
     // ppremake hack achieves that filename.
@@ -92,7 +91,7 @@
   #endif
 
   #define SOURCES \
-    mayaPview.cxx
+    mayaPview.cxx mayaPview.h
 
 #end lib_target
   

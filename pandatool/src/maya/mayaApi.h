@@ -55,6 +55,7 @@ public:
 
 private:
   bool _is_valid;
+  bool _plug_in;
   static MayaApi *_global_api;
 };
 
