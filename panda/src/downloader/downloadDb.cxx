@@ -177,10 +177,8 @@ client_file_version_correct(string mfname, string filename) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
-client_file_hash_correct(string mfname, string filename) const {
-  Hash client_hash = get_client_file_hash(mfname, filename);
-  Hash server_hash = get_server_file_hash(mfname, filename);
-  return (client_hash == server_hash);
+client_file_crc_correct(string mfname, string filename) const {
+  return true;
 }
 
 // Operations on multifiles
@@ -246,6 +244,11 @@ read_db(Filename &file) {
       << file << endl;
     return db;
   }
+  if (!read_version_map(read_stream)) {
+    downloader_cat.error()
+      << "DownloadDb::read() - read_version_map() failed: " 
+      << file << endl;
+  }
 
   return db;
 }
@@ -270,6 +273,7 @@ write_db(Filename &file, Db db) {
     << "Writing to file: " << file << endl;
 
   db.write(write_stream);
+  write_version_map(write_stream);
   write_stream.close();
   return true;
 }
@@ -305,9 +309,9 @@ server_add_multifile(string mfname, Phase phase, Version version, int size, int 
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-server_add_file(string mfname, string fname, Version version, Hash hash) {
+server_add_file(string mfname, string fname, Version version) {
   // Make the new file record
-  PT(FileRecord) fr = new FileRecord(fname, version, hash);
+  PT(FileRecord) fr = new FileRecord(fname, version);
 
   // Find the multifile with mfname
   vector<PT(MultifileRecord)>::iterator i = _server_db._mfile_records.begin();
@@ -658,12 +662,9 @@ parse_fr(uchar *start, int size) {
   PN_int32 fr_name_length = di.get_int32();
   fr->_name = di.extract_bytes(fr_name_length);
   fr->_version = di.get_int32();
-  fr->_hash = di.get_int32();
   
   downloader_cat.debug()
-    << "Parsed file record: " << fr->_name 
-    << " version: " << fr->_version
-    << " hash: " << fr->_hash << endl;
+    << "Parsed file record: " << fr->_name << " version: " << fr->_version << endl;
 
   // Return the new MultifileRecord
   return fr;
@@ -893,7 +894,6 @@ DownloadDb::FileRecord::
 FileRecord(void) {
   _name = "";
   _version = 0;
-  _hash = 0;
 }
 
 
@@ -903,10 +903,9 @@ FileRecord(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::FileRecord::
-FileRecord(string name, Version version, Hash hash) {
+FileRecord(string name, Version version) {
   _name = name;
   _version = version;
-  _hash = hash;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -916,9 +915,7 @@ FileRecord(string name, Version version, Hash hash) {
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::FileRecord::
 output(ostream &out) const {
-  out << " FileRecord: " << _name 
-      << " version: " << _version 
-      << " hash: " << _hash << endl;
+  out << " FileRecord: " << _name << "  version: " << _version << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -930,6 +927,16 @@ void DownloadDb::
 add_version(const Filename &name, ulong hash, int version) {
   int name_code = atoi(name.get_fullpath().c_str());
   _versions[name_code][version] = hash;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::add_version
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+add_version(int name, ulong hash, int version) {
+  _versions[name][version] = hash;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -947,6 +954,56 @@ get_version(const Filename &name, ulong hash) {
   return -1;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::write_version_map
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+write_version_map(ofstream &write_stream) {
+  _master_datagram.clear();
+  VersionMap::iterator vmi;
+  vector_ulong::iterator i;
+  _master_datagram.add_int32(_versions.size());
+  for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
+    _master_datagram.add_int32((*vmi).first);
+    _master_datagram.add_int32((*vmi).second.size());
+    for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i)
+      _master_datagram.add_uint64((*i));
+  }
+  string msg = _master_datagram.get_message();
+  write_stream.write((char *)msg.data(), msg.length());
+}
 
-
-
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::read_version_map
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool DownloadDb::
+read_version_map(ifstream &read_stream) {
+  _master_datagram.clear();
+  char *buffer = new char[sizeof(PN_uint64)];
+  read_stream.read(buffer, sizeof(PN_int32));
+  _master_datagram.append_data(buffer, sizeof(PN_int32));
+  DatagramIterator di(_master_datagram);
+  int num_entries = di.get_int32();
+  _master_datagram.clear();
+  for (int i = 0; i < num_entries; i++) {
+    read_stream.read(buffer, 2 * sizeof(PN_int32)); 
+    _master_datagram.append_data(buffer, 2 * sizeof(PN_int32)); 
+    DatagramIterator di2(_master_datagram);
+    int name = di2.get_int32();
+    int length = di2.get_int32();   
+    for (int j = 0; j < length; j++) {
+      read_stream.read(buffer, sizeof(PN_uint64));
+      _master_datagram.clear();
+      _master_datagram.append_data(buffer, sizeof(PN_uint64));
+      DatagramIterator di3(_master_datagram);
+      int hash = di3.get_uint64();
+      add_version(name, hash, j);
+    }
+  }
+  delete buffer;
+  return true;
+}
