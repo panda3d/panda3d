@@ -700,12 +700,12 @@ def describeException(backTrace = 4):
     stack = []
     while trace.tb_next:
         module = trace.tb_frame.f_globals.get('__name__', None)
-        lineno = trace.tb_lineno
+        lineno = trace.tb_frame.f_lineno
         stack.append("%s:%s, " % (module, lineno))
         trace = trace.tb_next
 
     module = trace.tb_frame.f_globals.get('__name__', None)
-    lineno = trace.tb_lineno
+    lineno = trace.tb_frame.f_lineno
     stack.append("%s:%s, " % (module, lineno))
 
     description = ""
