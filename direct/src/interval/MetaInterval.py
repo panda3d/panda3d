@@ -174,7 +174,7 @@ class MetaInterval(CMetaInterval):
     def __getslice__(self, i, j):
         if isinstance(self.ivals, types.TupleType):
             self.ivals = list(self.ivals)
-        return self.ivals[i : j]
+        return self.__class__(self.ivals[i : j])
 
     def __setslice__(self, i, j, s):
         if isinstance(self.ivals, types.TupleType):
@@ -197,6 +197,11 @@ class MetaInterval(CMetaInterval):
             self.ivals += list(other)
         self.__ivalsDirty = 1
         return self
+
+    def __add__(self, other):
+        copy = self[:]
+        copy += other
+        return copy
 
     # Functions to define sequence, parallel, and track behaviors:
     
