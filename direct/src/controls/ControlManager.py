@@ -113,6 +113,7 @@ class ControlManager:
                 if self.currentControls is not None:
                     self.currentControls.disableAvatarControls()
                     self.currentControls.setCollisionsActive(0)
+                    self.currentControls.setAvatar(None)
                 self.currentControls = controls
                 self.currentControls.setAvatar(avatar)
                 self.currentControls.setCollisionsActive(1)
