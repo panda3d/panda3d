@@ -561,12 +561,10 @@ class ShowBase:
         self.notify.debug("Enabling audio")
 
     def loadSfx(self, name):
-        # showbase's sfxManager should always be at front of list
-        if(not self.sfxManagerIsValidList[0]):
-            # dont print a warning if mgr invalid, since they should already know
-            return None
+        # should return a valid sound obj even if soundMgr is invalid
         sound = None
         if (name):
+            # showbase-created sfxManager should always be at front of list
             sound=self.sfxManagerList[0].getSound(name)
         if sound == None:
             self.notify.warning("Could not load sound file %s." % name)
@@ -574,8 +572,7 @@ class ShowBase:
 
 
     def loadMusic(self, name):
-        if(not self.musicManagerIsValid):
-            return None
+        # should return a valid sound obj even if musicMgr is invalid
         sound = None
         if (name):
             sound=self.musicManager.getSound(name)
