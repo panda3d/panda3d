@@ -2,6 +2,7 @@
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
+#define WIN_SYS_LIBS Imm32.lib
 
 #begin lib_target
   #define TARGET wgldisplay

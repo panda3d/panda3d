@@ -1,4 +1,4 @@
-// Filename: wglGraphicsWindow.cxx
+
 // Created by:  
 //
 ////////////////////////////////////////////////////////////////////
@@ -510,7 +510,15 @@ void wglGraphicsWindow::config(void) {
         PrintErrorMessage(LAST_ERROR);
         exit(1);
   }
-    
+  
+  // Determine the initial open status of the IME.
+  _ime_open = false;
+  HIMC hIMC = ImmGetContext(_mwindow);
+  if (hIMC != 0) {
+    _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+    ImmReleaseContext(_mwindow, hIMC);
+  }
+
   hwnd_pandawin_map[_mwindow] = this;
   global_wglwinptr = NULL;  // get rid of any reference to this obj
     
@@ -1628,13 +1636,57 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           return 0;       
     }
 
-    case WM_SYSCHAR:
-    case WM_CHAR:  // shouldnt receive WM_CHAR unless WM_KEYDOWN stops returning 0 and passes on to DefWindProc
-        break;
+    case WM_IME_NOTIFY:
+      if (wparam == IMN_SETOPENSTATUS) {
+        HIMC hIMC = ImmGetContext(hwnd);
+        nassertr(hIMC != 0, 0);
+        _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+        ImmReleaseContext(hwnd, hIMC);
+      }
+      break;
+
+    case WM_IME_COMPOSITION:
+      if (lparam & GCS_RESULTSTR) {
+        HIMC hIMC = ImmGetContext(hwnd);
+        nassertr(hIMC != 0, 0);
+        
+        static const int max_ime_result = 128;
+        static char ime_result[max_ime_result];
+
+        DWORD result_size =
+          ImmGetCompositionStringW(hIMC, GCS_RESULTSTR, 
+                                   ime_result, max_ime_result);
+        ImmReleaseContext(hwnd, hIMC);
+
+        // Add this string into the text buffer of the application.
+        wchar_t *ime_wchar_result = (wchar_t *)ime_result;
+        for (DWORD i = 0; i < result_size / 2; i++) {
+          _input_devices[0].keystroke(ime_wchar_result[i]);
+        }
+      }
+      break;
+
+    case WM_CHAR:
+      // Ignore WM_CHAR messages if we have the IME open, since
+      // everything will come in through WM_IME_COMPOSITION.  (It's
+      // supposed to come in through WM_CHAR, too, but there seems to
+      // be a bug in Win2000 in that it only sends question mark
+      // characters through here.)
+      if (!_ime_open && !_input_devices.empty()) {
+        _input_devices[0].keystroke(wparam);
+      }
+      break;
 
     case WM_SYSKEYDOWN:
-    case WM_KEYDOWN: {
+      // want to use defwindproc on Alt syskey so Alt-F4 works, etc
+      // but do want to bypass defwindproc F10 behavior (it activates
+      // the main menu, but we have none)
+      if (wparam == VK_F10) {
+        return 0;
+      }
+      break;
 
+    case WM_KEYDOWN: {
             POINT point;
 
             GetCursorPos(&point);
@@ -1670,19 +1722,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 CloseClipboard(); 
             }
           #endif
-            // want to use defwindproc on Alt syskey so Alt-F4 works, etc
-            // but do want to bypass defwindproc F10 behavior (it activates the
-            // main menu, but we have none)
-            if((msg==WM_SYSKEYDOWN)&&(wparam!=VK_F10))
-              break;
-             else return 0;
+            break;
     }
 
     case WM_SYSKEYUP:
-    case WM_KEYUP: {
-            handle_keyrelease(lookup_key(wparam));
-            return 0;
-    }
+    case WM_KEYUP:
+      handle_keyrelease(lookup_key(wparam));
+      break;
 
     case WM_LBUTTONDOWN:
       button = 0;
