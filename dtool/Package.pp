@@ -40,6 +40,9 @@
   #if $[eq $[DTOOL],]
     #error You seem to be attached to some trees, but not DTOOL!
   #endif
+  #if $[ne $[canonical $[DTOOL]], $[canonical $[TOPDIR]]]
+    #error You are not attached to the right DTOOL!
+  #endif
 #else
   // Otherwise, if we are not attached, install in the standard place
   // (unless the user specifies otherwise).
