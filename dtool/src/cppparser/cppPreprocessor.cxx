@@ -128,6 +128,14 @@ int CPPPreprocessor::InputFile::
 get() {
   assert(_in != NULL);
   int c = _in->get();
+  
+  // Quietly skip over embedded carriage-return characters.  We
+  // shouldn't see any of these unless there was some DOS-to-Unix file
+  // conversion problem.
+  while (c == '\r') {
+    c = _in->get();
+  }
+
   switch (c) {
   case EOF:
     break;
