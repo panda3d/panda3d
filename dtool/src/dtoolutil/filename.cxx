@@ -110,7 +110,7 @@ get_panda_root() {
 }
 
 static string
-convert_pathname(const string &unix_style_pathname) {
+convert_pathname(const string &unix_style_pathname, bool use_backslash) {
   if (unix_style_pathname.empty()) {
     return string();
   }
@@ -133,7 +133,11 @@ convert_pathname(const string &unix_style_pathname) {
     // It doesn't even start from the root, so we don't have to do
     // anything fancy--relative pathnames are the same in Windows as
     // in Unix, except for the direction of the slashes.
-    windows_pathname = front_to_back_slash(unix_style_pathname);
+    if (use_backslash) {
+      windows_pathname = front_to_back_slash(unix_style_pathname);
+    } else {
+      windows_pathname = unix_style_pathname;
+    }
 
   } else if (unix_style_pathname.length() > 3 &&
              isalpha(unix_style_pathname[1]) &&
@@ -145,9 +149,15 @@ convert_pathname(const string &unix_style_pathname) {
     // compilers (e.g. Cygwin's gcc 2.95.3) happy; so that they do not
     // confuse this string constructor with one that takes two
     // iterators.
-    windows_pathname =
-      string(1, (char)toupper(unix_style_pathname[1])) + ":" +
-      front_to_back_slash(unix_style_pathname.substr(2));
+    if (use_backslash) {
+      windows_pathname =
+	string(1, (char)toupper(unix_style_pathname[1])) + ":" +
+	front_to_back_slash(unix_style_pathname.substr(2));
+    } else {
+      windows_pathname =
+	string(1, (char)toupper(unix_style_pathname[1])) + ":" +
+	unix_style_pathname.substr(2);
+    }
 
   } else {
     // It starts with a slash, but the first part is not a single
@@ -157,29 +167,37 @@ convert_pathname(const string &unix_style_pathname) {
     // Use Cygwin to convert it if possible.
     char result[4096] = "";
     cygwin_conv_to_win32_path(unix_style_pathname.c_str(), result);
-    windows_pathname = result;
+    if (use_backslash) {
+      windows_pathname = result;
+    } else {
+      windows_pathname = back_to_front_slash(result);
+    }
 #else  // HAVE_CYGWIN
     // Without Cygwin, just prefix $PANDA_ROOT.
     windows_pathname = get_panda_root();
-    windows_pathname += front_to_back_slash(unix_style_pathname.substr(1));
+    if (use_backslash) {
+      windows_pathname += front_to_back_slash(unix_style_pathname.substr(1));
+    } else {
+      windows_pathname += unix_style_pathname.substr(1);
+    }
 #endif  // HAVE_CYGWIN
   }
 
   return windows_pathname;
 }
 
-string
-convert_dso_pathname(const string &unix_style_pathname) {
+static string
+convert_dso_pathname(const string &unix_style_pathname, bool use_backslash) {
   // If the extension is .so, change it to .dll.
   size_t dot = unix_style_pathname.rfind('.');
   if (dot == string::npos ||
       unix_style_pathname.find('/', dot) != string::npos) {
     // No filename extension.
-    return convert_pathname(unix_style_pathname);
+    return convert_pathname(unix_style_pathname, use_backslash);
   }
   if (unix_style_pathname.substr(dot) != ".so") {
     // Some other extension.
-    return convert_pathname(unix_style_pathname);
+    return convert_pathname(unix_style_pathname, use_backslash);
   }
 
   string dll_basename = unix_style_pathname.substr(0, dot);
@@ -196,27 +214,27 @@ convert_dso_pathname(const string &unix_style_pathname) {
   // somewhere on the LD_LIBRARY_PATH, or on PATH, or any of a number
   // of nutty places.
 
-  return convert_pathname(dll_basename + "_d.dll");
+  return convert_pathname(dll_basename + "_d.dll", use_backslash);
 #else
-  return convert_pathname(dll_basename + ".dll");
+  return convert_pathname(dll_basename + ".dll", use_backslash);
 #endif
 }
 
-string
-convert_executable_pathname(const string &unix_style_pathname) {
+static string
+convert_executable_pathname(const string &unix_style_pathname, bool use_backslash) {
   // If the extension is not .exe, append .exe.
   size_t dot = unix_style_pathname.rfind('.');
   if (dot == string::npos ||
       unix_style_pathname.find('/', dot) != string::npos) {
     // No filename extension.
-    return convert_pathname(unix_style_pathname + ".exe");
+    return convert_pathname(unix_style_pathname + ".exe", use_backslash);
   }
   if (unix_style_pathname.substr(dot) != ".exe") {
     // Some other extension.
-    return convert_pathname(unix_style_pathname + ".exe");
+    return convert_pathname(unix_style_pathname + ".exe", use_backslash);
   }
 
-  return convert_pathname(unix_style_pathname);
+  return convert_pathname(unix_style_pathname, use_backslash);
 }
 #endif //WIN32
 
@@ -746,11 +764,48 @@ to_os_specific() const {
 #ifdef WIN32
   switch (get_type()) {
   case T_dso:
-    return convert_dso_pathname(standard.get_fullpath());
+    return convert_dso_pathname(standard.get_fullpath(), true);
   case T_executable:
-    return convert_executable_pathname(standard.get_fullpath());
+    return convert_executable_pathname(standard.get_fullpath(), true);
   default:
-    return convert_pathname(standard.get_fullpath());
+    return convert_pathname(standard.get_fullpath(), true);
+  }
+#else // WIN32
+  return standard;
+#endif // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::to_os_generic
+//       Access: Public
+//  Description: This is similar to to_os_specific(), but it is
+//               designed to generate a filename that can be
+//               understood on as many platforms as possible.  Since
+//               Windows can usually understand a
+//               forward-slash-delimited filename, this means it does
+//               the same thing as to_os_specific(), but it uses
+//               forward slashes instead of backslashes.
+//
+//               This method has a pretty limited use; it should
+//               generally be used for writing file references to a
+//               file that might be read on any operating system.
+////////////////////////////////////////////////////////////////////
+string Filename::
+to_os_generic() const {
+  if (empty()) {
+    return string();
+  }
+  Filename standard(*this);
+  standard.standardize();
+
+#ifdef WIN32
+  switch (get_type()) {
+  case T_dso:
+    return convert_dso_pathname(standard.get_fullpath(), false);
+  case T_executable:
+    return convert_executable_pathname(standard.get_fullpath(), false);
+  default:
+    return convert_pathname(standard.get_fullpath(), false);
   }
 #else // WIN32
   return standard;

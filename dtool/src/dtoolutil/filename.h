@@ -19,7 +19,7 @@
 #ifndef FILENAME_H
 #define FILENAME_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "vector_string.h"
 
@@ -135,6 +135,7 @@ PUBLISHED:
   bool make_canonical();
 
   string to_os_specific() const;
+  string to_os_generic() const;
 
   bool exists() const;
   bool is_regular_file() const;
