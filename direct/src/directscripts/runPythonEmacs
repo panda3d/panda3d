@@ -35,6 +35,11 @@ if [ "$DIRECT" ]; then
     DIRECT=`cygpath -w $DIRECT`
     export DIRECT
 fi
+if [ "$OTP" ]; then
+    if [ "$debug" ]; then echo "OTP    $OTP"; fi
+    OTP=`cygpath -w $OTP`
+    export OTP
+fi
 if [ "$TOONTOWN" ]; then
     if [ "$debug" ]; then echo "TOONTOWN  $TOONTOWN"; fi
     TOONTOWN=`cygpath -w $TOONTOWN`

@@ -45,6 +45,10 @@ if [ "$DIRECT" ]; then
     DIRECT=`cygpath -w $DIRECT`
     export DIRECT
 fi
+if [ "$OTP" ]; then
+    OTP=`cygpath -w $OTP`
+    export OTP
+fi
 if [ "$TOONTOWN" ]; then
     TOONTOWN=`cygpath -w $TOONTOWN`
     export TOONTOWN
