@@ -65,10 +65,10 @@ ConfigureFn(config_util) {
 // allocation/deallcation via the MemoryUsage object.  This is
 // primarily useful for detecting memory leaks.  It has no effect when
 // compiling in NDEBUG mode.
-
+//
 // This variable is no longer defined here; instead, it's a member of
 // MemoryUsage.
-
+//
 //const bool track_memory_usage = config_util.GetBool("track-memory-usage", false);
 
 DSearchPath &
