@@ -398,7 +398,7 @@ void resize_func(int w, int h)
 
 void unpause_draw(void);
 
-void event_esc(CPT_Event) {
+void event_esc(CPT_Event ev) {
 #ifdef USE_IPC
   if (forked_draw) {
     quit_draw = true;
@@ -419,8 +419,6 @@ void event_esc(CPT_Event) {
   }
 
   // The Escape key was pressed.  Exit the application.
-  main_pipe = NULL;
-  main_win = NULL;
 
   rib_pipe = NULL;
   rib_win = NULL;
@@ -432,7 +430,18 @@ void event_esc(CPT_Event) {
   }
 #endif
 
-  exit(0);
+   if(ev->get_name()=="q") {
+      // if app ever exits using exit() without close_window, hopefully this will work
+      framework_cat.debug() << "Testing unsafe, no close_window(), direct exit() of framework\n";
+   } else {
+    main_win->close_window(0);
+    framework_cat.debug() << "Exiting framework\n";
+   }
+
+   main_win = NULL;
+   main_pipe = NULL;
+
+   exit(0);
 }
 
 void event_f(CPT_Event) {
