@@ -3655,20 +3655,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             gridFrame, width = 24,
             textvariable=self.baselineString)
         self.baselineTextBox.grid(row=1, column=0, columnspan=3)
-        
-        """levelAttribute = (
-            self.styleManager.attributeDictionary
-            ['baseline_style']['toontown_central']
-            .getDict().keys())
-        levelAttribute.sort()
-        baselineStyleList = ["<custom>", "Plain"] + levelAttribute
-        self.baselineStyleMenu = Pmw.ComboBox(
-            gridFrame, labelpos = W,
-            label_text = 'Style:', entry_width = 12,
-            selectioncommand = self.setSignBaselineStyle, history = 0,
-            scrolledlist_items = baselineStyleList)
-        self.baselineStyleMenu.selectitem(0)
-        self.baselineStyleMenu.grid(row=2, column=0, columnspan=3)"""
 
         fontList = [""]+self.styleManager.getCatalogCodes('font')
         self.fontMenu = Pmw.ComboBox(
@@ -4090,7 +4076,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
     def setSignBaselineStyle(self, val):
         baseline=self.currentBaselineDNA
-        if not baseline:
+        if baseline == None:
+            print "\n\nbaseline == None"
             return #skyler: This isn't working yet.
             #               As a workaround, select the baseline from the tk panel.
             # Try to find the first baseline in the sign:
