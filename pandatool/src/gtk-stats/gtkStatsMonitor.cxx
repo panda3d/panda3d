@@ -48,7 +48,8 @@ GtkStatsMonitor::
 
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    (*wi)->destruct();
+    GtkStatsWindow *window = (*wi);
+    window->destruct();
   }
 }
 
@@ -66,7 +67,8 @@ close_all_windows() {
   PT(PStatMonitor) temp = this;
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    (*wi)->destruct();
+    GtkStatsWindow *window = (*wi);
+    window->destruct();
   }
   return temp;
 }
