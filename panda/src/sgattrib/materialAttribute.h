@@ -10,6 +10,7 @@
 
 #include <onOffAttribute.h>
 #include <material.h>
+#include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : MaterialAttribute
@@ -19,8 +20,8 @@ class EXPCL_PANDA MaterialAttribute : public OnOffAttribute {
 public:
   INLINE MaterialAttribute();
 
-  INLINE void set_on(Material *material);
-  INLINE PT(Material) get_material() const;
+  INLINE void set_on(const Material *material);
+  INLINE const Material *get_material() const;
 
   virtual TypeHandle get_handle() const;
   virtual NodeAttribute *make_copy() const;
@@ -34,7 +35,7 @@ protected:
   virtual void output_value(ostream &out) const;
   virtual void write_value(ostream &out, int indent_level) const;
 
-  PT(Material) _value;
+  CPT(Material) _value;
 
 public:
   virtual TypeHandle get_type() const {

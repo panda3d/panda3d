@@ -51,14 +51,13 @@ protected:
   PT(Texture) _value;
 
 public:
-  static void register_with_read_factory(void);
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
   virtual int complete_pointers(vector_typedWriteable &plist, 
 				BamReader *manager);
 
-  static TypedWriteable *make_TextureTransition(const FactoryParams &params);
-
 protected:
+  static TypedWriteable *make_TextureTransition(const FactoryParams &params);
   void fillin(DatagramIterator& scan, BamReader* manager);
 
 public:

@@ -133,7 +133,7 @@ public:
 				 const RenderBuffer &rb,
 				 const NodeAttributes& na=NodeAttributes())=0;
 
-  virtual void apply_material(Material *material)=0;
+  virtual void apply_material(const Material *material)=0;
   virtual void apply_fog(Fog *fog)=0;
 
   virtual void apply_light(PointLight *light)=0;

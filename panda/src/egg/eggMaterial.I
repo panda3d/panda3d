@@ -10,9 +10,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void EggMaterial::
-set_diff(const Colorf &diff) {
+set_diff(const RGBColorf &diff) {
   _diff = diff;
-  _has_diff = true;
+  _flags |= F_diff;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ set_diff(const Colorf &diff) {
 ////////////////////////////////////////////////////////////////////
 INLINE void EggMaterial::
 clear_diff() {
-  _has_diff = false;
+  _flags &= ~F_diff;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ clear_diff() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggMaterial::
 has_diff() const {
-  return _has_diff;
+  return (_flags & F_diff) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,11 +42,152 @@ has_diff() const {
 //               false.  If so, it simply returns the default diff
 //               color.
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf EggMaterial::
+INLINE RGBColorf EggMaterial::
 get_diff() const {
   if (has_diff()) {
     return _diff;
   } else {
-    return Colorf(1.0, 1.0, 1.0, 1.0);
+    return RGBColorf(1.0, 1.0, 1.0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::set_amb
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+set_amb(const RGBColorf &amb) {
+  _amb = amb;
+  _flags |= F_amb;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::clear_amb
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+clear_amb() {
+  _flags &= ~F_amb;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::has_amb
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool EggMaterial::
+has_amb() const {
+  return (_flags & F_amb) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::get_amb
+//       Access: Public
+//  Description: It is legal to call this even if has_amb() returns
+//               false.  If so, it simply returns the default amb
+//               color.
+////////////////////////////////////////////////////////////////////
+INLINE RGBColorf EggMaterial::
+get_amb() const {
+  if (has_amb()) {
+    return _amb;
+  } else {
+    return RGBColorf(1.0, 1.0, 1.0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::set_emit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+set_emit(const RGBColorf &emit) {
+  _emit = emit;
+  _flags |= F_emit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::clear_emit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+clear_emit() {
+  _flags &= ~F_emit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::has_emit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool EggMaterial::
+has_emit() const {
+  return (_flags & F_emit) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::get_emit
+//       Access: Public
+//  Description: It is legal to call this even if has_emit() returns
+//               false.  If so, it simply returns the default emit
+//               color.
+////////////////////////////////////////////////////////////////////
+INLINE RGBColorf EggMaterial::
+get_emit() const {
+  if (has_emit()) {
+    return _emit;
+  } else {
+    return RGBColorf(1.0, 1.0, 1.0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::set_spec
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+set_spec(const RGBColorf &spec) {
+  _spec = spec;
+  _flags |= F_spec;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::clear_spec
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+clear_spec() {
+  _flags &= ~F_spec;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::has_spec
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool EggMaterial::
+has_spec() const {
+  return (_flags & F_spec) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::get_spec
+//       Access: Public
+//  Description: It is legal to call this even if has_spec() returns
+//               false.  If so, it simply returns the default spec
+//               color.
+////////////////////////////////////////////////////////////////////
+INLINE RGBColorf EggMaterial::
+get_spec() const {
+  if (has_spec()) {
+    return _spec;
+  } else {
+    return RGBColorf(1.0, 1.0, 1.0);
   }
 }

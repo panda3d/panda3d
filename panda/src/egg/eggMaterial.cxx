@@ -19,8 +19,7 @@ EggMaterial::
 EggMaterial(const string &mref_name)
   : EggNode(mref_name)
 {
-  _diff.set(1.0, 1.0, 1.0, 1.0);
-  _has_diff = false;
+  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -31,8 +30,9 @@ EggMaterial(const string &mref_name)
 EggMaterial::
 EggMaterial(const EggMaterial &copy) 
   : EggNode(copy),
-    _has_diff(copy._has_diff),
-    _diff(copy._diff) {
+    _diff(copy._diff),
+    _flags(copy._flags)
+{
 }
 
 

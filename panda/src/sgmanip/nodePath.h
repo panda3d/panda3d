@@ -20,6 +20,8 @@
 #include <alphaTransformTransition.h>
 #include <colorTransition.h>
 #include <textureTransition.h>
+#include <materialTransition.h>
+#include <material.h>
 #include <fogTransition.h>
 #include <compose_matrix.h>
 #include <renderModeTransition.h>
@@ -407,6 +409,11 @@ PUBLISHED:
   bool has_texture() const;
   bool has_texture_off() const;
   Texture *get_texture() const;
+  
+  void set_material(Material *tex, int priority = 0);
+  INLINE void clear_material();
+  bool has_material() const;
+  PT(Material) get_material() const;
   
   void set_fog(Fog *fog, int priority = 0);
   void set_fog_off(int priority = 0);

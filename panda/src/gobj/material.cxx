@@ -2,14 +2,15 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+
 #include <pandabase.h>
 #include "material.h"
 
 #include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
 
 #include <stddef.h>
 
@@ -19,57 +20,142 @@
 TypeHandle Material::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Constructor
-//       Access:
-//  Description:
+//     Function: Material::Copy Assignment Operator
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-Material::Material( void )
-{
-    set_ambient( Colorf( 0.2, 0.2, 0.2, 1 ) );
-    set_diffuse( Colorf( 0.8, 0.8, 0.8, 1 ) );
-    set_specular( Colorf( 0, 0, 0, 1 ) );
-    set_shininess( 0.0 );
-    set_emission( Colorf( 0, 0, 0, 1 ) );
-
-    set_local( false );
-    set_twoside( false );
+void Material::
+operator = (const Material &copy) {
+  _ambient = copy._ambient;
+  _diffuse = copy._diffuse;
+  _specular = copy._specular;
+  _emission = copy._emission;
+  _shininess = copy._shininess;
+  _flags = copy._flags;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Destructor 
-//       Access:
+//     Function: Material::compare_to
+//       Access: Public
+//  Description: Returns a number less than zero if this material
+//               sorts before the other one, greater than zero if it
+//               sorts after, or zero if they are equivalent.  The
+//               sorting order is arbitrary and largely meaningless,
+//               except to differentiate different materials.
+////////////////////////////////////////////////////////////////////
+int Material::
+compare_to(const Material &other) const {
+  if (_flags != other._flags) {
+    return _flags - other._flags;
+  }
+  if (has_ambient() && get_ambient() != other.get_ambient()) {
+    return get_ambient().compare_to(other.get_ambient());
+  }
+  if (has_diffuse() && get_diffuse() != other.get_diffuse()) {
+    return get_diffuse().compare_to(other.get_diffuse());
+  }
+  if (has_specular() && get_specular() != other.get_specular()) {
+    return get_specular().compare_to(other.get_specular());
+  }
+  if (has_emission() && get_emission() != other.get_emission()) {
+    return get_emission().compare_to(other.get_emission());
+  }
+  if (get_shininess() != other.get_shininess()) {
+    return get_shininess() < other.get_shininess() ? -1 : 1;
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::output 
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-Material::~Material( void )
-{
+void Material::
+output(ostream &out) const {
+  out << "a" << get_ambient()[0] << ",d" << get_diffuse()[0] 
+      << ",s" << get_specular()[0] << ",e" << get_emission()[0]
+      << ",s" << get_shininess() << ",l" << get_local()
+      << ",t" << get_twoside();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::write 
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Material::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << "ambient = " << get_ambient() << "\n";
+  indent(out, indent_level) << "diffuse = " << get_diffuse() << "\n";
+  indent(out, indent_level) << "specular = " << get_specular() << "\n";
+  indent(out, indent_level) << "emission = " << get_emission() << "\n";
+  indent(out, indent_level) << "shininess = " << get_shininess() << "\n";
+  indent(out, indent_level) << "local = " << get_local() << "\n";
+  indent(out, indent_level) << "twoside = " << get_twoside() << "\n";
 }
 
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: output 
-//       Access:
-//  Description:
+//     Function: Material::register_with_read_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a Material object
 ////////////////////////////////////////////////////////////////////
-void Material::output( ostream &out ) const
-{
-  out << "a" << _ambient[0] << ",d" << _diffuse[0] 
-      << ",s" << _specular[0] << ",s" << _shininess
-      << ",e" << _emission[0] << ",l" << _local
-      << ",t" << _twoside;
+void Material::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_Material);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: write 
-//       Access:
-//  Description:
+//     Function: Material::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
-void Material::write( ostream &out, int indent_level ) const
-{
-  indent(out, indent_level) << "ambient = " << _ambient << "\n";
-  indent(out, indent_level) << "diffuse = " << _diffuse << "\n";
-  indent(out, indent_level) << "specular = " << _specular << "\n";
-  indent(out, indent_level) << "shininess = " << _shininess << "\n";
-  indent(out, indent_level) << "emission = " << _emission << "\n";
-  indent(out, indent_level) << "local = " << _local << "\n";
-  indent(out, indent_level) << "twoside = " << _twoside << "\n";
+void Material::
+write_datagram(BamWriter *manager, Datagram &me) {
+  _ambient.write_datagram(me);
+  _diffuse.write_datagram(me);
+  _specular.write_datagram(me);
+  _emission.write_datagram(me);
+  me.add_float32(_shininess);
+  me.add_int32(_flags);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::make_Material
+//       Access: Protected
+//  Description: Factory method to generate a Material object
+////////////////////////////////////////////////////////////////////
+TypedWriteable *Material::
+make_Material(const FactoryParams &params) {
+  Material *me = new Material;
+  BamReader *manager;
+  Datagram packet;
+
+  parse_params(params, manager, packet);
+  DatagramIterator scan(packet);
+
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void Material::
+fillin(DatagramIterator& scan, BamReader* manager) {
+  _ambient.read_datagram(scan);
+  _diffuse.read_datagram(scan);
+  _specular.read_datagram(scan);
+  _emission.read_datagram(scan);
+  _shininess = scan.get_float32();
+  _flags = scan.get_int32();
 }

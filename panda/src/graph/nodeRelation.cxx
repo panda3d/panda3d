@@ -967,7 +967,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeRelation::register_with_factory
+//     Function: NodeRelation::register_with_read_factory
 //       Access: Public, Static
 //  Description: Factory method to generate a NodeRelation object
 ////////////////////////////////////////////////////////////////////

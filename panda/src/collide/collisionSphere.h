@@ -66,13 +66,12 @@ private:
   float _radius;
 
 public:
-  static void register_with_read_factory(void);
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
-
-  static TypedWriteable *make_CollisionSphere(const FactoryParams &params);
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
 
 protected:
-  void fillin(DatagramIterator& scan, BamReader* manager);
+  static TypedWriteable *make_CollisionSphere(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {

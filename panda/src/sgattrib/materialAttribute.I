@@ -18,8 +18,8 @@ MaterialAttribute() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void MaterialAttribute::
-set_on(Material *material) {
-  nassertv(material != (Material *)NULL);
+set_on(const Material *material) {
+  nassertv(material != (const Material *)NULL);
   _value = material;
   OnOffAttribute::set_on();
 }
@@ -31,7 +31,7 @@ set_on(Material *material) {
 //               represents.  It is only valid to call this if is_on()
 //               has returned true.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(Material) MaterialAttribute::
+INLINE const Material *MaterialAttribute::
 get_material() const {
   nassertr(is_on(), NULL);
   return _value;

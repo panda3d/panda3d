@@ -10,6 +10,7 @@
 
 #include <onOffTransition.h>
 #include <material.h>
+#include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : MaterialTransition
@@ -19,12 +20,13 @@
 class EXPCL_PANDA MaterialTransition : public OnOffTransition {
 public:
   INLINE MaterialTransition();
-  INLINE MaterialTransition(Material *material);
+  INLINE MaterialTransition(const Material *material);
   INLINE static MaterialTransition off();
 
-  INLINE void set_on(Material *material);
-  INLINE PT(Material) get_material() const;
-  
+  INLINE void set_on(const Material *material);
+  INLINE const Material *get_material() const;
+
+public:  
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 
@@ -34,7 +36,17 @@ protected:
   virtual void output_value(ostream &out) const;
   virtual void write_value(ostream &out, int indent_level) const;
 
-  PT(Material) _value;
+  CPT(Material) _value;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  virtual int complete_pointers(vector_typedWriteable &plist, 
+				BamReader *manager);
+
+protected:
+  static TypedWriteable *make_MaterialTransition(const FactoryParams &params);
+  void fillin(DatagramIterator& scan, BamReader* manager);
 
 public:
   virtual TypeHandle get_type() const {

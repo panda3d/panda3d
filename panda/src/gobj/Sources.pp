@@ -15,7 +15,9 @@
     geomSprite.cxx geomSprite.h geomTri.cxx geomTri.h geomTrifan.cxx \
     geomTrifan.h geomTristrip.cxx geomTristrip.h \
     imageBuffer.I imageBuffer.cxx \
-    imageBuffer.h material.I material.cxx material.h orthoProjection.I \
+    imageBuffer.h material.I material.cxx material.h \
+    materialPool.I materialPool.h materialPool.cxx \
+    orthoProjection.I \
     orthoProjection.cxx orthoProjection.h perspectiveProjection.I \
     perspectiveProjection.cxx perspectiveProjection.h pixelBuffer.I \
     pixelBuffer.N pixelBuffer.cxx pixelBuffer.h projection.cxx \
@@ -28,6 +30,7 @@
     geomLinestrip.h geomPoint.h geomPolygon.h geomQuad.h geomSphere.h \
     geomSprite.I geomSprite.h geomTri.h geomTrifan.h geomTristrip.h \
     geomprimitives.h imageBuffer.I imageBuffer.h material.I material.h \
+    materialPool.I materialPool.h \
     orthoProjection.I orthoProjection.h perspectiveProjection.I \
     perspectiveProjection.h pixelBuffer.I pixelBuffer.h projection.h \
     texture.I texture.h texturePool.I texturePool.h

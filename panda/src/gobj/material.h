@@ -11,68 +11,92 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 
-#include <graphicsStateGuardianBase.h>
-#include <typedReferenceCount.h>
+#include <typedWriteableReferenceCount.h>
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////
 //       Class : Material
-// Description :
+// Description : Defines the way an object appears in the presence of
+//               lighting.  A material is only necessary if lighting
+//               is to be enabled; otherwise, the material isn't used.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Material : public TypedReferenceCount
-{
-    public:
+class EXPCL_PANDA Material : public TypedWriteableReferenceCount {
+PUBLISHED:
+  INLINE Material();
+  INLINE Material(const Material &copy);
+  void operator = (const Material &copy);
+  INLINE ~Material();
 
-	Material( void );
-	~Material( void );
+  INLINE bool has_ambient() const;
+  INLINE const Colorf &get_ambient() const;
+  INLINE void set_ambient(const Colorf &color);
+  INLINE void clear_ambient();
 
-  	void apply( GraphicsStateGuardianBase *gsg ) {
-	    gsg->apply_material( this );
-	}
+  INLINE bool has_diffuse() const;
+  INLINE const Colorf &get_diffuse() const;
+  INLINE void set_diffuse(const Colorf &color);
+  INLINE void clear_diffuse();
 
-	INLINE Colorf get_ambient( void ) const;
-	INLINE void set_ambient( const Colorf& color );
-	INLINE Colorf get_diffuse( void ) const;
-	INLINE void set_diffuse( const Colorf& color );
-	INLINE Colorf get_specular( void ) const;
-	INLINE void set_specular( const Colorf& color );
-	INLINE float get_shininess( void ) const;
-	INLINE void set_shininess( float shininess );
-	INLINE Colorf get_emission( void ) const;
-	INLINE void set_emission( const Colorf& color );
+  INLINE bool has_specular() const;
+  INLINE const Colorf &get_specular() const;
+  INLINE void set_specular(const Colorf &color);
+  INLINE void clear_specular();
 
-	INLINE bool get_local( void ) const;
-	INLINE void set_local( bool local );
-	INLINE bool get_twoside( void ) const;
-	INLINE void set_twoside( bool twoside );
+  INLINE bool has_emission() const;
+  INLINE const Colorf &get_emission() const;
+  INLINE void set_emission(const Colorf &color);
+  INLINE void clear_emission();
 
-	void output( ostream &out ) const;
-	void write( ostream &out, int indent = 0 ) const;
+  INLINE float get_shininess() const;
+  INLINE void set_shininess(float shininess);
+  
+  INLINE bool get_local() const;
+  INLINE void set_local(bool local);
+  INLINE bool get_twoside() const;
+  INLINE void set_twoside(bool twoside);
 
-    protected:
+  INLINE bool operator == (const Material &other) const;
+  INLINE bool operator != (const Material &other) const;
+  INLINE bool operator < (const Material &other) const;
 
-	Colorf				_ambient;
-	Colorf				_diffuse;
-	Colorf				_specular;
-	float				_shininess;
-	Colorf				_emission;
+  int compare_to(const Material &other) const;
+  
+  void output(ostream &out) const;
+  void write(ostream &out, int indent) const;
 
-	bool				_local;
-	bool				_twoside;
+private:
+  Colorf _ambient;
+  Colorf _diffuse;
+  Colorf _specular;
+  Colorf _emission;
+  float _shininess;
+
+  enum Flags {
+    F_ambient   = 0x001,
+    F_diffuse   = 0x002,
+    F_specular  = 0x004,
+    F_emission  = 0x008,
+    F_local     = 0x010,
+    F_twoside   = 0x020,
+  };
+  int _flags;
 
 public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
 
+protected:
+  static TypedWriteable *make_Material(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWriteableReferenceCount::init_type();
     register_type(_type_handle, "Material",
-		  TypedReferenceCount::get_class_type());
+		  TypedWriteableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -3648,7 +3648,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::apply_material( Material* material ) {
+void DXGraphicsStateGuardian::apply_material( const Material* material ) {
 	D3DMATERIAL7 cur_material;
 	cur_material.dcvDiffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
 	cur_material.dcvAmbient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
@@ -4131,9 +4131,9 @@ void DXGraphicsStateGuardian::
 issue_material(const MaterialAttribute *attrib) {
 	activate();
 	if (attrib->is_on()) {
-		Material *material = attrib->get_material();
-		nassertv(material != (Material *)NULL);
-		material->apply(this);
+		const Material *material = attrib->get_material();
+		nassertv(material != (const Material *)NULL);
+		apply_material(material);
 	}
 }
 

@@ -25,6 +25,7 @@
 #include <traverserVisitor.h>
 #include <dftraverser.h>
 #include <bamFile.h>
+#include <materialPool.h>
 
 #include <list>
 
@@ -2008,6 +2009,78 @@ get_texture() const {
   if (get_transition_into(tt, arc())) {
     if (tt->is_on()) {
       return tt->get_texture();
+    }
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_material
+//       Access: Public
+//  Description: Sets the geometry at this level and below to render
+//               using the indicated material.
+//
+//               This operation copies the given material pointer.  If
+//               the material structure is changed later, it must be
+//               reapplied via another call to set_material().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_material(Material *mat, int priority) {
+  nassertv(has_arcs());
+  nassertv(mat != NULL);
+
+  // We create a temporary Material pointer, a copy of the one we are
+  // given, to allow the user to monkey with the material and set it
+  // again later, with the desired effect.  If we stored the user's
+  // pointer directly, it would be bad if the user later modified the
+  // values within the Material.
+  PT(Material) temp = new Material(*mat);
+  const Material *mp = MaterialPool::get_material(temp);
+
+  MaterialTransition *mat_trans = new MaterialTransition(mp);
+  arc()->set_transition(mat_trans, priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_material
+//       Access: Public
+//  Description: Returns true if a material has been applied to this
+//               particular arc via set_material(), false otherwise.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_material() const {
+  nassertr(has_arcs(), false);
+
+  const MaterialTransition *mt;
+  if (get_transition_into(mt, arc())) {
+    return mt->is_on();
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_material
+//       Access: Public
+//  Description: Returns the material that has been set on this
+//               particular arc, or NULL if no material has been set.
+//               This is not necessarily the material that will be
+//               applied to the geometry at or below this level, as
+//               another material at a higher or lower level may
+//               override.
+//
+//               This function returns a copy of the given material,
+//               to allow changes, if desired.  Once changes are made,
+//               they should be reapplied via set_material().
+////////////////////////////////////////////////////////////////////
+PT(Material) NodePath::
+get_material() const {
+  nassertr(has_arcs(), NULL);
+
+  const MaterialTransition *mt;
+  if (get_transition_into(mt, arc())) {
+    if (mt->is_on()) {
+      return new Material(*mt->get_material());
     }
   }
   return NULL;

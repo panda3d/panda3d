@@ -23,14 +23,39 @@ public:
 
   virtual void write(ostream &out, int indent_level) const;
 
-  INLINE void set_diff(const Colorf &diff);
+  INLINE void set_diff(const RGBColorf &diff);
   INLINE void clear_diff();
   INLINE bool has_diff() const;
-  INLINE Colorf get_diff() const;
+  INLINE RGBColorf get_diff() const;
+
+  INLINE void set_amb(const RGBColorf &amb);
+  INLINE void clear_amb();
+  INLINE bool has_amb() const;
+  INLINE RGBColorf get_amb() const;
+
+  INLINE void set_emit(const RGBColorf &emit);
+  INLINE void clear_emit();
+  INLINE bool has_emit() const;
+  INLINE RGBColorf get_emit() const;
+
+  INLINE void set_spec(const RGBColorf &spec);
+  INLINE void clear_spec();
+  INLINE bool has_spec() const;
+  INLINE RGBColorf get_spec() const;
 
 private:
-  bool _has_diff;
-  Colorf _diff;
+  enum Flags {
+    F_diff    = 0x001,
+    F_amb     = 0x002,
+    F_emit    = 0x004,
+    F_spec    = 0x008
+  };
+
+  RGBColorf _diff;
+  RGBColorf _amb;
+  RGBColorf _emit;
+  RGBColorf _spec;
+  int _flags;
 
 
 public:

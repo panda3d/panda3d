@@ -5,8 +5,13 @@
 
 #include "materialTransition.h"
 #include "materialAttribute.h"
+#include "config_sgattrib.h"
 
 #include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
 
 TypeHandle MaterialTransition::_type_handle;
 
@@ -42,7 +47,7 @@ set_value_from(const OnOffTransition *other) {
   const MaterialTransition *ot;
   DCAST_INTO_V(ot, other);
   _value = ot->_value;
-  nassertv(_value != (Material *)NULL);
+  nassertv(_value != (const Material *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +69,7 @@ compare_values(const OnOffTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 void MaterialTransition::
 output_value(ostream &out) const {
-  nassertv(_value != (Material *)NULL);
+  nassertv(_value != (const Material *)NULL);
   out << *_value;
 }
 
@@ -76,6 +81,85 @@ output_value(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void MaterialTransition::
 write_value(ostream &out, int indent_level) const {
-  nassertv(_value != (Material *)NULL);
+  nassertv(_value != (const Material *)NULL);
   indent(out, indent_level) << *_value << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialTransition::register_with_read_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a MaterialTransition object
+////////////////////////////////////////////////////////////////////
+void MaterialTransition::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_MaterialTransition);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialTransition::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void MaterialTransition::
+write_datagram(BamWriter *manager, Datagram &me) {
+  OnOffTransition::write_datagram(manager, me);
+  manager->write_pointer(me, _value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialTransition::complete_pointers
+//       Access: Public
+//  Description: Takes in a vector of pointes to TypedWriteable
+//               objects that correspond to all the requests for 
+//               pointers that this object made to BamReader.
+////////////////////////////////////////////////////////////////////
+int MaterialTransition::
+complete_pointers(vector_typedWriteable &plist, BamReader *) {
+  if (plist[0] == TypedWriteable::Null) {
+    if (sgattrib_cat->is_debug()) {
+      sgattrib_cat->debug()
+	<< get_type().get_name() << " received null Material," 
+	<< " turning off" << endl;
+    }
+    _value = (const Material *)NULL;
+    set_off();
+
+  } else {
+    _value = DCAST(Material, plist[0]);
+  }
+
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialTransition::make_MaterialTransition
+//       Access: Protected
+//  Description: Factory method to generate a MaterialTransition object
+////////////////////////////////////////////////////////////////////
+TypedWriteable* MaterialTransition::
+make_MaterialTransition(const FactoryParams &params) {
+  MaterialTransition *me = new MaterialTransition;
+  BamReader *manager;
+  Datagram packet;
+
+  parse_params(params, manager, packet);
+  DatagramIterator scan(packet);
+
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialTransition::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void MaterialTransition::
+fillin(DatagramIterator& scan, BamReader* manager) {
+  OnOffTransition::fillin(scan, manager);
+  manager->read_pointer(scan, this);
 }

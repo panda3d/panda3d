@@ -18,7 +18,7 @@ MaterialTransition() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE MaterialTransition::
-MaterialTransition(Material *material) : 
+MaterialTransition(const Material *material) : 
   OnOffTransition(TD_on),
   _value(material)
 {
@@ -43,8 +43,8 @@ off() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void MaterialTransition::
-set_on(Material *material) {
-  nassertv(material != (Material *)NULL);
+set_on(const Material *material) {
+  nassertv(material != (const Material *)NULL);
   _value = material;
   OnOffTransition::set_on();
 }
@@ -56,7 +56,7 @@ set_on(Material *material) {
 //               represents.  It is only valid to call this if is_on()
 //               has returned true.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(Material) MaterialTransition::
+INLINE const Material *MaterialTransition::
 get_material() const {
   nassertr(is_on(), NULL);
   return _value;

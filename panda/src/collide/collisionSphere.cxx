@@ -340,33 +340,26 @@ intersects_line(double &t1, double &t2,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::register_with_read_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a CollisionSphere object
+////////////////////////////////////////////////////////////////////
+void CollisionSphere::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionSphere);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void CollisionSphere::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   CollisionSolid::write_datagram(manager, me);
   _center.write_datagram(me);
   me.add_float32(_radius);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
-void CollisionSphere::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
-  CollisionSolid::fillin(scan, manager);
-  _center.read_datagram(scan);
-  _radius = scan.get_float32();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -374,9 +367,8 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a CollisionSphere object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* CollisionSphere::
-make_CollisionSphere(const FactoryParams &params)
-{
+TypedWriteable *CollisionSphere::
+make_CollisionSphere(const FactoryParams &params) {
   CollisionSphere *me = new CollisionSphere;
   BamReader *manager;
   Datagram packet;
@@ -389,13 +381,16 @@ make_CollisionSphere(const FactoryParams &params)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a CollisionSphere object
+//     Function: CollisionSphere::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
 ////////////////////////////////////////////////////////////////////
 void CollisionSphere::
-register_with_read_factory(void)
-{
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionSphere);
+fillin(DatagramIterator& scan, BamReader* manager) {
+  CollisionSolid::fillin(scan, manager);
+  _center.read_datagram(scan);
+  _radius = scan.get_float32();
 }
-

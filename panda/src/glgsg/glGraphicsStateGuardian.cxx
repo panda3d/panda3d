@@ -248,7 +248,6 @@ reset() {
   _multisample_enabled = false;
   _line_smooth_enabled = false;
   _point_smooth_enabled = false;
-  _color_material_enabled = false;
   _scissor_enabled = false;
   _lighting_enabled = false;
   _normals_enabled = false;
@@ -2081,7 +2080,6 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 
   set_state(state, false);
 
-  enable_color_material(false);
   set_unpack_alignment(1);
 
   glMatrixMode( GL_PROJECTION );
@@ -2153,19 +2151,43 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::apply_material( Material* material )
-{
-    call_glMaterialAmbient( material->get_twoside(), material->get_ambient() );
-    call_glMaterialDiffuse( material->get_twoside(), material->get_diffuse() );
-    call_glMaterialSpecular( material->get_twoside(), 
-            material->get_specular() );
-    call_glMaterialShininess( material->get_twoside(), 
-            material->get_shininess() );
-    call_glMaterialEmission( material->get_twoside(), 
-            material->get_emission() );
+void GLGraphicsStateGuardian::apply_material(const Material *material) {
+  GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
   
-    call_glLightModelLocal( material->get_local() );
-    call_glLightModelTwoSide( material->get_twoside() );
+  if (material->has_ambient() && material->has_diffuse()) {
+    // The material has both an ambient and diffuse specified.  This
+    // means we do not need glMaterialColor().
+    glMaterialfv(face, GL_AMBIENT, material->get_ambient().get_data());
+    glMaterialfv(face, GL_DIFFUSE, material->get_diffuse().get_data());
+    glDisable(GL_COLOR_MATERIAL);
+
+  } else if (material->has_ambient()) {
+    // The material specifies an ambient, but not a diffuse component.
+    // The diffuse component comes from the object's color.
+    glMaterialfv(face, GL_AMBIENT, material->get_ambient().get_data());
+    glColorMaterial(face, GL_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
+
+  } else if (material->has_diffuse()) {
+    // The material specifies a diffuse, but not an ambient component.
+    // The ambient component comes from the object's color.
+    glMaterialfv(face, GL_AMBIENT, material->get_ambient().get_data());
+    glColorMaterial(face, GL_AMBIENT);
+    glEnable(GL_COLOR_MATERIAL);
+
+  } else {
+    // The material specifies neither a diffuse nor an ambient
+    // component.  Both components come from the object's color.
+    glColorMaterial(face, GL_AMBIENT_AND_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
+  }
+
+  glMaterialfv(face, GL_SPECULAR, material->get_specular().get_data());
+  glMaterialfv(face, GL_EMISSION, material->get_emission().get_data());
+  glMaterialf(face, GL_SHININESS, material->get_shininess());
+  
+  call_glLightModelLocal(material->get_local());
+  call_glLightModelTwoSide(material->get_twoside());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2563,9 +2585,9 @@ void GLGraphicsStateGuardian::
 issue_material(const MaterialAttribute *attrib) {
   //  activate();
   if (attrib->is_on()) {
-    Material *material = attrib->get_material();
-    nassertv(material != (Material *)NULL);
-    material->apply(this);
+    const Material *material = attrib->get_material();
+    nassertv(material != (const Material *)NULL);
+    apply_material(material);
   }
 }
 
@@ -2707,10 +2729,8 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
   // If no lights were enabled, disable lighting
   if (num_enabled == 0) {
     enable_lighting(false);
-    enable_color_material(false);
   } else {
     call_glLightModelAmbient(_cur_ambient_light);
-    enable_color_material(true);
   }
 }
 

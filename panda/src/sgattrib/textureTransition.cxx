@@ -87,31 +87,25 @@ write_value(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureTransition::register_with_read_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a TextureTransition object
+////////////////////////////////////////////////////////////////////
+void TextureTransition::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_TextureTransition);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureTransition::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void TextureTransition::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   OnOffTransition::write_datagram(manager, me);
   manager->write_pointer(me, _value);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureTransition::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
-void TextureTransition::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
-  OnOffTransition::fillin(scan, manager);
-  manager->read_pointer(scan, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,10 +116,8 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int TextureTransition::
-complete_pointers(vector_typedWriteable &plist, BamReader*)
-{
-  if(plist[0] == TypedWriteable::Null)
-  {
+complete_pointers(vector_typedWriteable &plist, BamReader *) {
+  if (plist[0] == TypedWriteable::Null) {
     if (sgattrib_cat->is_debug()) {
       sgattrib_cat->debug()
 	<< get_type().get_name() << " received null Texture," 
@@ -133,9 +125,8 @@ complete_pointers(vector_typedWriteable &plist, BamReader*)
     }
     _value = (Texture *)NULL;
     set_off();
-  }
-  else
-  {
+
+  } else {
     _value = DCAST(Texture, plist[0]);
   }
 
@@ -148,8 +139,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader*)
 //  Description: Factory method to generate a TextureTransition object
 ////////////////////////////////////////////////////////////////////
 TypedWriteable* TextureTransition::
-make_TextureTransition(const FactoryParams &params)
-{
+make_TextureTransition(const FactoryParams &params) {
   TextureTransition *me = new TextureTransition;
   BamReader *manager;
   Datagram packet;
@@ -162,12 +152,15 @@ make_TextureTransition(const FactoryParams &params)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureTransition::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a TextureTransition object
+//     Function: TextureTransition::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
 ////////////////////////////////////////////////////////////////////
 void TextureTransition::
-register_with_read_factory(void)
-{
-  BamReader::get_factory()->register_factory(get_class_type(), make_TextureTransition);
+fillin(DatagramIterator& scan, BamReader* manager) {
+  OnOffTransition::fillin(scan, manager);
+  manager->read_pointer(scan, this);
 }

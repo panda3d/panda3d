@@ -108,7 +108,7 @@ public:
                                  const RenderBuffer &rb,
 				 const NodeAttributes& na=NodeAttributes());
 
-  virtual void apply_material(Material* material);
+  virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
 
   virtual void apply_light(PointLight* light);
@@ -184,12 +184,6 @@ protected:
   INLINE void call_glLightModelAmbient(const Colorf& color);
   INLINE void call_glLightModelLocal(GLboolean local);
   INLINE void call_glLightModelTwoSide(GLboolean twoside);
-  INLINE void call_glMaterialAmbient(bool twoside, const Colorf& color);
-  INLINE void call_glMaterialDiffuse(bool twoside, const Colorf& color);
-  INLINE void call_glMaterialAmbientDiffuse(bool twoside, const Colorf& color);
-  INLINE void call_glMaterialSpecular(bool twoside, const Colorf& color);
-  INLINE void call_glMaterialShininess(bool twoside, float shininess);
-  INLINE void call_glMaterialEmission(bool twoside, const Colorf& color);
   INLINE void call_glStencilFunc(GLenum func);
   INLINE void call_glStencilOp(GLenum op);
   INLINE void call_glClipPlane(GLenum plane, const double equation[4]);
@@ -212,7 +206,6 @@ protected:
   INLINE void enable_point_smooth(bool val);
   INLINE void enable_lighting(bool val);
   INLINE void enable_light(int light, bool val);
-  INLINE void enable_color_material(bool val);
   INLINE void enable_texturing(bool val);
   INLINE void enable_scissor(bool val);
   INLINE void enable_dither(bool val);
@@ -300,7 +293,6 @@ protected:
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
   bool* _light_enabled;      // bool[_max_lights]
-  bool _color_material_enabled;
   bool _scissor_enabled;
   bool _lighting_enabled;
   bool _texturing_enabled;

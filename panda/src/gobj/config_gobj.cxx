@@ -150,5 +150,6 @@ ConfigureFn(config_gobj) {
   GeomTristrip::register_with_read_factory();
   GeomTrifan::register_with_read_factory();
   GeomSphere::register_with_read_factory();
+  Material::register_with_read_factory();
   Texture::register_with_read_factory();
 }

@@ -68,7 +68,7 @@ set_value_from(const OnOffTransition *other) {
   const MaterialTransition *ot;
   DCAST_INTO_V(ot, other);
   _value = ot->_value;
-  nassertv(_value != (Material *)NULL);
+  nassertv(_value != (const Material *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ compare_values(const OnOffAttribute *other) const {
 ////////////////////////////////////////////////////////////////////
 void MaterialAttribute::
 output_value(ostream &out) const {
-  nassertv(_value != (Material *)NULL);
+  nassertv(_value != (const Material *)NULL);
   out << *_value;
 }
 
@@ -102,6 +102,6 @@ output_value(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void MaterialAttribute::
 write_value(ostream &out, int indent_level) const {
-  nassertv(_value != (Material *)NULL);
+  nassertv(_value != (const Material *)NULL);
   indent(out, indent_level) << *_value << "\n";
 }

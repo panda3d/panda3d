@@ -1099,7 +1099,7 @@ has_color() const {
 INLINE void NodePath::
 clear_bin() {
   nassertv(has_arcs());
-  arc()->clear_transition(TextureTransition::get_class_type());
+  arc()->clear_transition(GeomBinTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1128,6 +1128,19 @@ INLINE void NodePath::
 clear_texture() {
   nassertv(has_arcs());
   arc()->clear_transition(TextureTransition::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_material
+//       Access: Public
+//  Description: Completely removes any material adjustment that may
+//               have been set via set_material() from this particular
+//               arc.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_material() {
+  nassertv(has_arcs());
+  arc()->clear_transition(MaterialTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
