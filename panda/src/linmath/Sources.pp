@@ -11,7 +11,9 @@
     config_linmath.cxx config_linmath.h coordinateSystem.cxx \
     coordinateSystem.h deg_2_rad.h \
     ioPtaDatagramLinMath.I ioPtaDatagramLinMath.cxx \
-    ioPtaDatagramLinMath.h lmatrix.cxx lmatrix.h luse.I luse.N luse.cxx \
+    ioPtaDatagramLinMath.h lmatrix.cxx lmatrix.h \
+    lmatrix3.I lmatrix3.h lmatrix4.I lmatrix4.h \
+    luse.I luse.N luse.cxx \
     luse.h lquaternion.I lquaternion.h lrotation.I lrotation.h \
     lvec2_ops.I lvec2_ops.h lvec3_ops.I lvec3_ops.h lvec4_ops.I \
     lvec4_ops.h lvecBase2.I lvecBase2.h lvecBase3.I lvecBase3.h \
