@@ -449,11 +449,11 @@ load_file(const Filename &filename, bool search) const {
 
     if (search) {
       loader_cat.error()
-        << "Couldn't load file " << filename << ": not found on model path.\n";
-
+        << "Couldn't load file " << filename << ": not found on model path "
+        << "(which is currently: \"" << get_model_path() << "\")\n";
     } else {
       loader_cat.error()
-        << "Couldn't load file " << filename << ": does not exist.\n";
+        << "Couldn't load file ./" << filename << ": does not exist.\n";
     }
     return NULL;
   }
