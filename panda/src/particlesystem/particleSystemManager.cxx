@@ -36,6 +36,15 @@ ParticleSystemManager(int every_nth_frame) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : ParticleSystemManager
+//      Access : Public, Virtual
+// Description : Destructor
+////////////////////////////////////////////////////////////////////
+ParticleSystemManager::
+~ParticleSystemManager() {
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : remove_particlesystem
 //      Access : public
 // Description : removes a ps from the maintenance list

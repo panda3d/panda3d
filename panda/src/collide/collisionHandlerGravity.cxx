@@ -66,8 +66,8 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   // Get the maximum height for all collisions with this node.
   bool got_max = false;
   float max_height = 0.0f;
+  CollisionEntry *highest = NULL;
 
-  CollisionEntry* highest;
   _outer_space = entries.empty();
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
