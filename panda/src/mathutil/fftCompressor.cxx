@@ -776,7 +776,7 @@ get_real_compress_plan(int length) {
   }
 
   rfftw_plan plan;
-  plan = rfftw_create_plan(length, FFTW_REAL_TO_COMPLEX, FFTW_MEASURE);
+  plan = rfftw_create_plan(length, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
   _real_compress_plans.insert(RealPlans::value_type(length, plan));
 
   return plan;
@@ -796,7 +796,7 @@ get_real_decompress_plan(int length) {
   }
 
   rfftw_plan plan;
-  plan = rfftw_create_plan(length, FFTW_COMPLEX_TO_REAL, FFTW_MEASURE);
+  plan = rfftw_create_plan(length, FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE);
   _real_decompress_plans.insert(RealPlans::value_type(length, plan));
 
   return plan;
