@@ -29,6 +29,8 @@
 #ifdef HAVE_SSL
 
 #include "urlSpec.h"
+#include "httpAuthorization.h"
+#include "httpEnum.h"
 #include "pointerTo.h"
 
 #include <openssl/ssl.h>
@@ -63,17 +65,10 @@ PUBLISHED:
   void set_username(const string &server, const string &realm, const string &username);
   string get_username(const string &server, const string &realm) const;
 
-  enum HTTPVersion {
-    HV_09,  // HTTP 0.9 or older
-    HV_10,  // HTTP 1.0
-    HV_11,  // HTTP 1.1
-    HV_other,
-  };
-
-  INLINE void set_http_version(HTTPVersion version);
-  INLINE HTTPVersion get_http_version() const;
+  INLINE void set_http_version(HTTPEnum::HTTPVersion version);
+  INLINE HTTPEnum::HTTPVersion get_http_version() const;
   string get_http_version_string() const;
-  static HTTPVersion parse_http_version_string(const string &version);
+  static HTTPEnum::HTTPVersion parse_http_version_string(const string &version);
 
   bool load_certificates(const Filename &filename);
 
@@ -99,6 +94,13 @@ public:
 
 private:
   void add_http_username(const string &http_username);
+  string select_username(const URLSpec &url, bool is_proxy, 
+                         const string &realm) const;
+
+  HTTPAuthorization *select_auth(const URLSpec &url, bool is_proxy,
+                                 const string &last_realm);
+  PT(HTTPAuthorization) generate_auth(const URLSpec &url, bool is_proxy,
+                                      const string &challenge);
 
   static void initialize_ssl();
   static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
@@ -112,12 +114,19 @@ private:
 #endif
 
   URLSpec _proxy;
-  string _proxy_authorization;
-  HTTPVersion _http_version;
+  HTTPEnum::HTTPVersion _http_version;
   VerifySSL _verify_ssl;
 
   typedef pmap<string, string> Usernames;
   Usernames _usernames;
+
+  typedef map<string, PT(HTTPAuthorization) > Realms;
+  class Domain {
+  public:
+    Realms _realms;
+  };
+  typedef pmap<string, Domain> Domains;
+  Domains _proxy_domains, _www_domains;
 
   // List of allowable SSL servers to connect to.  If the list is
   // empty, any server is acceptable.

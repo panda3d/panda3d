@@ -1,5 +1,5 @@
-// Filename: chunkedStream.cxx
-// Created by:  drose (25Sep02)
+// Filename: httpDigestAuthorization.I
+// Created by:  drose (25Oct02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,25 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chunkedStream.h"
-
-// This module is not compiled if OpenSSL is not available.
-#ifdef HAVE_SSL
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::is_closed
-//       Access: Public, Virtual
-//  Description: Returns true if the last eof condition was triggered
-//               because the socket has genuinely closed, or false if
-//               we can expect more data to come along shortly.
+//     Function: HTTPDigestAuthorization::hexdigit
+//       Access: Private, Static
+//  Description: Returns the ASCII character corresponding to the
+//               hexadecimal representation of the indicated value,
+//               which must be 0 <= value <= 15.
 ////////////////////////////////////////////////////////////////////
-bool IChunkedStream::
-is_closed() {
-  if (_buf._done || (*_buf._source)->is_closed()) {
-    return true;
-  }
-  clear();
-  return false;
+INLINE char HTTPDigestAuthorization::
+hexdigit(int value) {
+  return (value < 10) ? (value + '0') : (value - 10 + 'a');
 }
-
-#endif  // HAVE_SSL

@@ -7,12 +7,3 @@
 #include "chunkedStream.cxx"
 #include "chunkedStreamBuf.cxx"
 #include "extractor.cxx"
-#include "httpClient.cxx"
-#include "httpChannel.cxx"
-#include "identityStream.cxx"
-#include "identityStreamBuf.cxx"
-#include "multiplexStream.cxx"
-#include "multiplexStreamBuf.cxx"
-#include "socketStream.cxx"
-#include "urlSpec.cxx"
-

@@ -28,7 +28,7 @@
 //               because the socket has genuinely closed, or false if
 //               we can expect more data to come along shortly.
 ////////////////////////////////////////////////////////////////////
-INLINE bool IIdentityStream::
+bool IIdentityStream::
 is_closed() {
   if ((_buf._has_content_length && _buf._bytes_remaining == 0) || 
       (*_buf._source)->is_closed()) {

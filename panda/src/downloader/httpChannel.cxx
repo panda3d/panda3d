@@ -24,21 +24,11 @@
 #include "config_downloader.h"
 #include "clockObject.h"
 #include "buffer.h"  // for Ramfile
+#include <sys/time.h>
 
 #ifdef HAVE_SSL
 
 TypeHandle HTTPChannel::_type_handle;
-
-static const char base64_table[64] = {
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-  'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
-  'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-  'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-  'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-  'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-  'w', 'x', 'y', 'z', '0', '1', '2', '3',
-  '4', '5', '6', '7', '8', '9', '+', '/',
-};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::Constructor
@@ -138,7 +128,7 @@ is_regular_file() const {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 will_close_connection() const {
-  if (get_http_version() < HTTPClient::HV_11) {
+  if (get_http_version() < HTTPEnum::HV_11) {
     // pre-HTTP 1.1 always closes.
     return true;
   }
@@ -151,22 +141,6 @@ will_close_connection() const {
 
   // Assume the server will keep it open.
   return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::has_no_body
-//       Access: Public
-//  Description: Returns true if the nature of the request is such
-//               that there is no associated body to read, false if
-//               there should be a body (even if that body might be
-//               empty).
-////////////////////////////////////////////////////////////////////
-bool HTTPChannel::
-has_no_body() const {
-  return (get_status_code() / 100 == 1 ||
-          get_status_code() == 204 ||
-          get_status_code() == 304 || 
-          _method == M_head);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -570,6 +544,23 @@ get_connection() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::downcase
+//       Access: Public, Static
+//  Description: Returns the input string with all uppercase letters
+//               converted to lowercase.
+////////////////////////////////////////////////////////////////////
+string HTTPChannel::
+downcase(const string &s) {
+  string result;
+  result.reserve(s.size());
+  string::const_iterator p;
+  for (p = s.begin(); p != s.end(); ++p) {
+    result += tolower(*p);
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::reached_done_state
 //       Access: Private
 //  Description: Called by run() after it reaches the done state, this
@@ -792,14 +783,23 @@ run_proxy_reading_header() {
     return true;
   }
 
-  if (get_status_code() == 407 && !_proxy.empty()) {
+  _server_response_has_no_body = 
+    (get_status_code() / 100 == 1 ||
+     get_status_code() == 204 ||
+     get_status_code() == 304);
+
+  int last_status = _last_status_code;
+  _last_status_code = get_status_code();
+
+  if (get_status_code() == 407 && last_status != 407 && !_proxy.empty()) {
     // 407: not authorized to proxy.  Try to get the authorization.
     string authenticate_request = get_header_value("Proxy-Authenticate");
-    string authorization;
-    if (get_authorization(authorization, authenticate_request, _proxy, true)) {
-      if (_client->_proxy_authorization != authorization) {
-        // Change the authorization.
-        _client->_proxy_authorization = authorization;
+    _proxy_auth = 
+      _client->generate_auth(_proxy, true, authenticate_request);
+    if (_proxy_auth != (HTTPAuthorization *)NULL) {
+      _proxy_realm = _proxy_auth->get_realm();
+      _proxy_username = _client->select_username(_proxy, false, _proxy_realm);
+      if (!_proxy_username.empty()) {
         make_proxy_request_text();
 
         // Roll the state forward to force a new request.
@@ -825,7 +825,7 @@ run_proxy_reading_header() {
 
   // Now we have a tunnel opened through the proxy.
   _proxy_tunnel = true;
-  make_request_text(string());
+  make_request_text();
 
   _state = _want_ssl ? S_setup_ssl : S_ready;
   return false;
@@ -1039,7 +1039,11 @@ run_reading_header() {
     return true;
   }
 
-  _realm = string();
+  _server_response_has_no_body = 
+    (get_status_code() / 100 == 1 ||
+     get_status_code() == 204 ||
+     get_status_code() == 304 || 
+     _method == HTTPEnum::M_head);
 
   // Look for key properties in the header fields.
   if (get_status_code() == 206) {
@@ -1063,7 +1067,7 @@ run_reading_header() {
 
   _state = S_read_header;
 
-  if (has_no_body() && will_close_connection()) {
+  if (_server_response_has_no_body && will_close_connection()) {
     // If the server said it will close the connection, we should
     // close it too.
     close_connection();
@@ -1076,12 +1080,13 @@ run_reading_header() {
   if (get_status_code() == 407 && last_status != 407 && !_proxy.empty()) {
     // 407: not authorized to proxy.  Try to get the authorization.
     string authenticate_request = get_header_value("Proxy-Authenticate");
-    string authorization;
-    if (get_authorization(authorization, authenticate_request, _proxy, true)) {
-      if (_client->_proxy_authorization != authorization) {
-        // Change the authorization.
-        _client->_proxy_authorization = authorization;
-        make_request_text(string());
+    _proxy_auth = 
+      _client->generate_auth(_proxy, true, authenticate_request);
+    if (_proxy_auth != (HTTPAuthorization *)NULL) {
+      _proxy_realm = _proxy_auth->get_realm();
+      _proxy_username = _client->select_username(_proxy, false, _proxy_realm);
+      if (!_proxy_username.empty()) {
+        make_request_text();
 
         // Roll the state forward to force a new request.
         _state = S_begin_body;
@@ -1093,19 +1098,24 @@ run_reading_header() {
   if (get_status_code() == 401 && last_status != 401) {
     // 401: not authorized to remote server.  Try to get the authorization.
     string authenticate_request = get_header_value("WWW-Authenticate");
-    string authorization;
-    if (get_authorization(authorization, authenticate_request, _url, false)) {
-      make_request_text(authorization);
+    _www_auth = _client->generate_auth(_url, false, authenticate_request);
+    if (_www_auth != (HTTPAuthorization *)NULL) {
+      _www_realm = _www_auth->get_realm();
+      _www_username = _client->select_username(_url, false, _www_realm);
+      if (!_www_username.empty()) {
+        make_request_text();
       
-      // Roll the state forward to force a new request.
-      _state = S_begin_body;
-      return false;
+        // Roll the state forward to force a new request.
+        _state = S_begin_body;
+        return false;
+      }
     }
   }
 
   if ((get_status_code() / 100) == 3 && get_status_code() != 305) {
     // Redirect.  Should we handle it automatically?
-    if (!get_redirect().empty() && (_method == M_get || _method == M_head)) {
+    if (!get_redirect().empty() && (_method == HTTPEnum::M_get || 
+                                    _method == HTTPEnum::M_head)) {
       // Sure!
       URLSpec new_url = get_redirect();
       if (!_redirect_trail.insert(new_url).second) {
@@ -1122,7 +1132,7 @@ run_reading_header() {
         }
         set_url(new_url);
         make_header();
-        make_request_text(string());
+        make_request_text();
 
         // Roll the state forward to force a new request.
         _state = S_begin_body;
@@ -1173,9 +1183,9 @@ run_begin_body() {
     return false;
   }
 
-  if (has_no_body()) {
+  if (_server_response_has_no_body) {
     // We have already "read" the nonexistent body.
-    _state = S_ready;
+    _state = S_read_trailer;
 
   } else if (_file_size > 8192) {
     // If we know the size of the body we are about to skip and it's
@@ -1406,7 +1416,7 @@ run_download_to_ram() {
 //               necessary.
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
-begin_request(HTTPChannel::Method method, const URLSpec &url,
+begin_request(HTTPEnum::Method method, const URLSpec &url,
               const string &body, bool nonblocking, 
               size_t first_byte, size_t last_byte) {
   reset_for_new_request();
@@ -1440,9 +1450,9 @@ begin_request(HTTPChannel::Method method, const URLSpec &url,
   _last_byte = last_byte;
 
   make_header();
-  make_request_text(string());
+  make_request_text();
 
-  if (!_proxy.empty() && (_want_ssl || _method == M_connect)) {
+  if (!_proxy.empty() && (_want_ssl || _method == HTTPEnum::M_connect)) {
     // Maybe we need to tunnel through the proxy to connect to the
     // server directly.  We need this for HTTPS, or if the user
     // requested a direct connection somewhere.
@@ -1450,7 +1460,7 @@ begin_request(HTTPChannel::Method method, const URLSpec &url,
     request 
       << "CONNECT " << _url.get_server() << ":" << _url.get_port()
       << " " << _client->get_http_version_string() << "\r\n";
-    if (_client->get_http_version() >= HTTPClient::HV_11) {
+    if (_client->get_http_version() >= HTTPEnum::HV_11) {
       request 
         << "Host: " << _url.get_server() << "\r\n";
     }
@@ -1472,7 +1482,7 @@ begin_request(HTTPChannel::Method method, const URLSpec &url,
     _state = S_begin_body;
   }
 
-  _done_state = (_method == M_connect) ? S_ready : S_read_header;
+  _done_state = (_method == HTTPEnum::M_connect) ? S_ready : S_read_header;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2085,7 +2095,14 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 make_header() {
-  if (_method == M_connect) {
+  _proxy_auth = _client->select_auth(_proxy, true, _proxy_realm);
+  _proxy_username = string();
+  if (_proxy_auth != (HTTPAuthorization *)NULL) {
+    _proxy_realm = _proxy_auth->get_realm();
+    _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
+  }
+
+  if (_method == HTTPEnum::M_connect) {
     // This method doesn't require an HTTP header at all; we'll just
     // open a plain connection.  (Except when we're using a proxy; but
     // in that case, it's the proxy_header we'll need, not the regular
@@ -2094,45 +2111,34 @@ make_header() {
     return;
   }
 
-  string path;
+  _www_auth = _client->select_auth(_url, false, _www_realm);
+  _www_username = string();
+  if (_www_auth != (HTTPAuthorization *)NULL) {
+    _www_realm = _www_auth->get_realm();
+    _www_username = _client->select_username(_url, false, _www_realm);
+  }
+
+  string request_path;
   if (_proxy_serves_document) {
     // If we'll be asking the proxy for the document, we need its full
     // URL--but we omit the username, which is information just for us.
     URLSpec url_no_username = _url;
     url_no_username.set_username(string());
-    path = url_no_username.get_url();
+    request_path = url_no_username.get_url();
 
   } else {
     // If we'll be asking the server directly for the document, we
     // just want its path relative to the server.
-    path = _url.get_path();
+    request_path = _url.get_path();
   }
 
   ostringstream stream;
 
-  switch (_method) {
-  case M_get:
-    stream << "GET";
-    break;
-
-  case M_head:
-    stream << "HEAD";
-    break;
-
-  case M_post:
-    stream << "POST";
-    break;
-
-  case M_connect:
-    stream << "CONNECT";
-    break;
-  }
-
   stream 
-    << " " << path << " " 
+    << _method << " " << request_path << " " 
     << _client->get_http_version_string() << "\r\n";
 
-  if (_client->get_http_version() >= HTTPClient::HV_11) {
+  if (_client->get_http_version() >= HTTPEnum::HV_11) {
     stream 
       << "Host: " << _url.get_server() << "\r\n";
     if (!get_persistent_connection()) {
@@ -2172,9 +2178,14 @@ void HTTPChannel::
 make_proxy_request_text() {
   _proxy_request_text = _proxy_header;
 
-  if (!_client->_proxy_authorization.empty()) {
+  if (_proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
+    ostringstream strm;
+    strm << _url.get_server() << ":" << _url.get_port();
+
     _proxy_request_text += "Proxy-Authorization: ";
-    _proxy_request_text += _client->_proxy_authorization;
+    _proxy_request_text += 
+      _proxy_auth->generate(HTTPEnum::M_connect, strm.str(), 
+                            _proxy_username, _body);
     _proxy_request_text += "\r\n";
   }
     
@@ -2189,19 +2200,22 @@ make_proxy_request_text() {
 //               pass, based on the current header and body.
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
-make_request_text(const string &authorization) {
+make_request_text() {
   _request_text = _header;
 
-  if (!_proxy.empty() && !_client->_proxy_authorization.empty() && 
-      !_proxy_tunnel) {
+  if (!_proxy.empty() && 
+      _proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
     _request_text += "Proxy-Authorization: ";
-    _request_text += _client->_proxy_authorization;
+    _request_text += 
+      _proxy_auth->generate(_method, _url.get_url(), _proxy_username, _body);
     _request_text += "\r\n";
   }
 
-  if (!authorization.empty()) {
+  if (_www_auth != (HTTPAuthorization *)NULL && !_www_username.empty()) {
+    string authorization = 
     _request_text += "Authorization: ";
-    _request_text += authorization;
+    _request_text +=
+      _www_auth->generate(_method, _url.get_path(), _www_username, _body);
     _request_text += "\r\n";
   }
     
@@ -2252,153 +2266,6 @@ store_header_field(const string &field_name, const string &field_value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_authorization
-//       Access: Private
-//  Description: Looks for a username:password to satisfy the given
-//               authenticate_request string from the server or proxy.
-//               If found, fills in authorization and returns true;
-//               otherwise, returns false.
-////////////////////////////////////////////////////////////////////
-bool HTTPChannel::
-get_authorization(string &authorization, const string &authenticate_request,
-                  const URLSpec &url, bool is_proxy) {
-  AuthenticationSchemes schemes;
-  parse_authentication_schemes(schemes, authenticate_request);
-
-  AuthenticationSchemes::iterator si;
-  si = schemes.find("basic");
-  if (si != schemes.end()) {
-    return get_basic_authorization(authorization, (*si).second, url, is_proxy);
-  }
-
-  downloader_cat.warning() 
-    << "Don't know how to use any of the server's available authorization schemes:\n";
-  for (si = schemes.begin(); si != schemes.end(); ++si) {
-    downloader_cat.warning() << (*si).first << "\n";
-  }
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::downcase
-//       Access: Private, Static
-//  Description: Returns the input string with all uppercase letters
-//               converted to lowercase.
-////////////////////////////////////////////////////////////////////
-string HTTPChannel::
-downcase(const string &s) {
-  string result;
-  result.reserve(s.size());
-  string::const_iterator p;
-  for (p = s.begin(); p != s.end(); ++p) {
-    result += tolower(*p);
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::base64_encode
-//       Access: Private, Static
-//  Description: Returns the input string encoded using base64.  No
-//               respect is paid to maintaining a 76-char line length.
-////////////////////////////////////////////////////////////////////
-string HTTPChannel::
-base64_encode(const string &s) {
-  // Collect the string 3 bytes at a time into 24-bit words, then
-  // output each word using 4 bytes.
-  size_t num_words = (s.size() + 2) / 3;
-  string result;
-  result.reserve(num_words * 4);
-  size_t p;
-  for (p = 0; p + 2 < s.size(); p += 3) {
-    unsigned int word = 
-      ((unsigned)s[p] << 16) |
-      ((unsigned)s[p + 1] << 8) |
-      ((unsigned)s[p + 2]);
-    result += base64_table[(word >> 18) & 0x3f];
-    result += base64_table[(word >> 12) & 0x3f];
-    result += base64_table[(word >> 6) & 0x3f];
-    result += base64_table[(word) & 0x3f];
-  }
-  // What's left over?
-  if (p < s.size()) {
-    unsigned int word = ((unsigned)s[p] << 16);
-    p++;
-    if (p < s.size()) {
-      word |= ((unsigned)s[p] << 8);
-      p++;
-      nassertr(p == s.size(), result);
-
-      result += base64_table[(word >> 18) & 0x3f];
-      result += base64_table[(word >> 12) & 0x3f];
-      result += base64_table[(word >> 6) & 0x3f];
-      result += '=';
-    } else {
-      result += base64_table[(word >> 18) & 0x3f];
-      result += base64_table[(word >> 12) & 0x3f];
-      result += '=';
-      result += '=';
-    }
-  }
-
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::scan_quoted_or_unquoted_string
-//       Access: Private, Static
-//  Description: Scans the string source beginning at character
-//               position start, to identify either the
-//               (spaced-delimited) unquoted string there, or the
-//               (quote-delimited) quoted string.  In either case,
-//               fills the string found into result, and returns the
-//               next character position after the string (or after
-//               its closing quote mark).
-////////////////////////////////////////////////////////////////////
-size_t HTTPChannel::
-scan_quoted_or_unquoted_string(string &result, const string &source, 
-                               size_t start) {
-  result = string();
-
-  if (start < source.length()) {
-    if (source[start] == '"') {
-      // Quoted string.
-      size_t p = start + 1;
-      while (p < source.length() && source[p] != '"') {
-        if (source[p] == '\\') {
-          // Backslash escapes.
-          ++p;
-          if (p < source.length()) {
-            result += source[p];
-            ++p;
-          }
-        } else {
-          result += source[p];
-          ++p;
-        }
-      }
-      if (p < source.length()) {
-        ++p;
-      }
-      return p;
-    }
-
-    // Unquoted string.
-    size_t p = start;
-    while (p < source.length() && source[p] != ',' && !isspace(source[p])) {
-      result += source[p];
-      ++p;
-    }
-
-    return p;
-  }
-
-  // Empty string.
-  return start;
-}
-
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::show_send
@@ -2424,68 +2291,6 @@ show_send(const string &message) {
   }
 }
 #endif   // NDEBUG
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::parse_authentication_schemes
-//       Access: Private, Static
-//  Description: Decodes the text following a WWW-Authenticate: or
-//               Proxy-Authenticate: header field.
-////////////////////////////////////////////////////////////////////
-void HTTPChannel::
-parse_authentication_schemes(HTTPChannel::AuthenticationSchemes &schemes,
-                             const string &field_value) {
-  // This string will consist of one or more records of the form:
-  //
-  //  scheme token=value[,token=value[,...]]
-  //
-  // If there are multiple records, they will be comma-delimited,
-  // which makes parsing just a bit tricky.
-
-  // Start by skipping initial whitespace.
-  size_t p = 0;
-  while (p < field_value.length() && isspace(field_value[p])) {
-    ++p;
-  }
-
-  if (p < field_value.length()) {
-    size_t q = p;
-    while (q < field_value.length() && !isspace(field_value[q])) {
-      ++q;
-    }
-    // Here's our first scheme.
-    string scheme = downcase(field_value.substr(p, q - p));
-    Tokens *tokens = &(schemes[scheme]);
-    
-    // Now pull off the tokens, one at a time.
-    p = q + 1;
-    while (p < field_value.length()) {
-      q = p;
-      while (q < field_value.length() && field_value[q] != '=' && 
-             field_value[q] != ',' && !isspace(field_value[q])) {
-        ++q;
-      }
-      if (field_value[q] == '=') {
-        // This is a token.
-        string token = downcase(field_value.substr(p, q - p));
-        string value;
-        p = scan_quoted_or_unquoted_string(value, field_value, q + 1);
-        (*tokens)[token] = value;
-
-        // Skip trailing whitespace and extra commas.
-        while (p < field_value.length() && 
-               (field_value[p] == ',' || isspace(field_value[p]))) {
-          ++p;
-        }
-
-      } else {
-        // This is not a token; it must be the start of a new scheme.
-        scheme = downcase(field_value.substr(p, q - p));
-        tokens = &(schemes[scheme]);
-        p = q + 1;
-      }
-    }
-  }
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::reset_download_to
@@ -2531,68 +2336,6 @@ close_connection() {
   _sent_so_far = 0;
   _proxy_tunnel = false;
   _read_index++;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_basic_authorization
-//       Access: Private
-//  Description: Looks for a username:password to satisfy the "Basic"
-//               scheme authorization request from the server or
-//               proxy.
-////////////////////////////////////////////////////////////////////
-bool HTTPChannel::
-get_basic_authorization(string &authorization, const HTTPChannel::Tokens &tokens, const URLSpec &url, bool is_proxy) {
-  Tokens::const_iterator ti;
-  ti = tokens.find("realm");
-  if (ti != tokens.end()) {
-    _realm = (*ti).second;
-  }
-
-  string username;
-
-  // Look in several places in order to find the matching username.
-
-  // Fist, if there's a username on the URL, that always wins (except
-  // when we are looking for a proxy username).
-  if (url.has_username() && !is_proxy) {
-    username = url.get_username();
-  }
-
-  // Otherwise, start looking on the HTTPClient.  
-  if (is_proxy) {
-    if (username.empty()) {
-      // Try the *proxy/realm.
-      username = _client->get_username("*proxy", _realm);
-    }
-    if (username.empty()) {
-      // Then, try *proxy/any realm.
-      username = _client->get_username("*proxy", string());
-    }
-  }
-  if (username.empty()) {
-    // Try the specific server/realm.
-    username = _client->get_username(url.get_server(), _realm);
-  }
-  if (username.empty()) {
-    // Then, try the specific server/any realm.
-    username = _client->get_username(url.get_server(), string());
-  }
-  if (username.empty()) {
-    // Then, try any server with this realm.
-    username = _client->get_username(string(), _realm);
-  }
-  if (username.empty()) {
-    // Then, take the general password.
-    username = _client->get_username(string(), string());
-  }
-
-  if (username.empty()) {
-    // No username:password available.
-    return false;
-  }
-
-  authorization = "Basic " + base64_encode(username);
-  return true;
 }
 
 #endif  // HAVE_SSL

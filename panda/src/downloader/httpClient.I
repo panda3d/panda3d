@@ -26,7 +26,6 @@
 INLINE void HTTPClient::
 set_proxy(const URLSpec &proxy) {
   _proxy = proxy;
-  _proxy_authorization = string();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +48,7 @@ get_proxy() const {
 //               request the server use the older interface.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPClient::
-set_http_version(HTTPClient::HTTPVersion version) {
+set_http_version(HTTPEnum::HTTPVersion version) {
   _http_version = version;
 }
 
@@ -59,7 +58,7 @@ set_http_version(HTTPClient::HTTPVersion version) {
 //  Description: Returns the client's current setting for HTTP
 //               version.  See set_http_version().
 ////////////////////////////////////////////////////////////////////
-INLINE HTTPClient::HTTPVersion HTTPClient::
+INLINE HTTPEnum::HTTPVersion HTTPClient::
 get_http_version() const {
   return _http_version;
 }
@@ -91,3 +90,4 @@ INLINE HTTPClient::VerifySSL HTTPClient::
 get_verify_ssl() const {
   return _verify_ssl;
 }
+

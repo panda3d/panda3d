@@ -19,9 +19,11 @@
 #ifndef CONFIG_DOWNLOADER_H
 #define CONFIG_DOWNLOADER_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
+#include "dconfig.h"
 
+ConfigureDecl(config_downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 
 extern const int downloader_disk_write_frequency;

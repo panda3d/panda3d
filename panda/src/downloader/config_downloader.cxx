@@ -22,7 +22,7 @@
 #include "httpChannel.h"
 
 
-Configure(config_downloader);
+ConfigureDef(config_downloader);
 NotifyCategoryDef(downloader, "");
 
 // How often we write to disk is determined by this ratio which is

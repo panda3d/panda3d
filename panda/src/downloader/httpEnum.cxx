@@ -1,5 +1,5 @@
-// Filename: chunkedStream.cxx
-// Created by:  drose (25Sep02)
+// Filename: httpEnum.cxx
+// Created by:  drose (25Oct02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,25 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "chunkedStream.h"
+#include "httpEnum.h"
 
-// This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_SSL
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::is_closed
-//       Access: Public, Virtual
-//  Description: Returns true if the last eof condition was triggered
-//               because the socket has genuinely closed, or false if
-//               we can expect more data to come along shortly.
+//     Function: HTTPEnum::Method::output operator
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-bool IChunkedStream::
-is_closed() {
-  if (_buf._done || (*_buf._source)->is_closed()) {
-    return true;
+ostream &
+operator << (ostream &out, HTTPEnum::Method method) {
+  switch (method) {
+  case HTTPEnum::M_get:
+    out << "GET";
+    break;
+
+  case HTTPEnum::M_head:
+    out << "HEAD";
+    break;
+
+  case HTTPEnum::M_post:
+    out << "POST";
+    break;
+
+  case HTTPEnum::M_connect:
+    out << "CONNECT";
+    break;
   }
-  clear();
-  return false;
+
+  return out;
 }
 
 #endif  // HAVE_SSL

@@ -317,16 +317,26 @@ set_path(const string &path) {
 
   } else if (!has_path()) {
     // Insert a new path specification.
-    length_adjust = path.length();
+    string cpath = path;
+    if (cpath[0] != '/') {
+      // Paths must always begin with a slash.
+      cpath = '/' + cpath;
+    }
+    length_adjust = cpath.length();
 
-    _url = _url.substr(0, _path_start) + path + _url.substr(_path_end);
+    _url = _url.substr(0, _path_start) + cpath + _url.substr(_path_end);
     _flags |= F_has_path;
 
   } else {
     // Replace an existing path specification.
+    string cpath = path;
+    if (cpath[0] != '/') {
+      // Paths must always begin with a slash.
+      cpath = '/' + cpath;
+    }
     int old_length = (int)_path_end - (int)_path_start;
-    length_adjust = path.length() - old_length;
-    _url = _url.substr(0, _path_start) + path + _url.substr(_path_end);
+    length_adjust = cpath.length() - old_length;
+    _url = _url.substr(0, _path_start) + cpath + _url.substr(_path_end);
   }
 
   _path_end += length_adjust;

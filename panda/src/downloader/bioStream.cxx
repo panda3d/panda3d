@@ -25,7 +25,7 @@
 //               because the socket has genuinely closed, or false if
 //               we can expect more data to come along shortly.
 ////////////////////////////////////////////////////////////////////
-INLINE bool IBioStream::
+bool IBioStream::
 is_closed() {
   if (_buf._is_closed) {
     return true;
@@ -42,7 +42,7 @@ is_closed() {
 //               false if we can expect to send more data along
 //               shortly.
 ////////////////////////////////////////////////////////////////////
-INLINE bool OBioStream::
+bool OBioStream::
 is_closed() {
   if (_buf._is_closed) {
     return true;
@@ -59,7 +59,7 @@ is_closed() {
 //               false if we can expect to read or send more data
 //               shortly.
 ////////////////////////////////////////////////////////////////////
-INLINE bool BioStream::
+bool BioStream::
 is_closed() {
   if (_buf._is_closed) {
     return true;

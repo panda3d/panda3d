@@ -27,7 +27,7 @@
 INLINE bool HTTPChannel::
 is_valid() const {
   return (_state != S_failure && (_status_code / 100) == 2 &&
-          (has_no_body() || !_source.is_null()));
+          (_server_response_has_no_body || !_source.is_null()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ get_url() const {
 //               server, as one of the HTTPClient enumerated types,
 //               e.g. HTTPClient::HV_11.
 ////////////////////////////////////////////////////////////////////
-INLINE HTTPClient::HTTPVersion HTTPChannel::
+INLINE HTTPEnum::HTTPVersion HTTPChannel::
 get_http_version() const {
   return _http_version;
 }
@@ -113,26 +113,34 @@ get_status_string() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_realm
+//     Function: HTTPChannel::get_www_realm
 //       Access: Published
 //  Description: If the document failed to connect because of a 401
-//               (Authorization required) or 407 (Proxy authorization
-//               required) error, this method should return the
+//               (Authorization required), this method will return the
 //               "realm" returned by the server in which the requested
 //               document must be authenticated.  This string may be
 //               presented to the user to request an associated
 //               username and password (which then should be stored in
 //               HTTPClient::set_username()).
-//
-//               If the document was retrieved successfully, or failed
-//               to connect for some other reason, this string will be
-//               empty.  If it is empty even in the presence of a 401
-//               or 407 error, then the client code and the server do
-//               not have a common scheme for exchanging passwords.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &HTTPChannel::
-get_realm() const {
-  return _realm;
+get_www_realm() const {
+  return _www_realm;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_proxy_realm
+//       Access: Published
+//  Description: If the document failed to connect because of a 407
+//               (Proxy authorization required), this method will
+//               return the "realm" returned by the proxy.  This
+//               string may be presented to the user to request an
+//               associated username and password (which then should
+//               be stored in HTTPClient::set_username()).
+////////////////////////////////////////////////////////////////////
+INLINE const string &HTTPChannel::
+get_proxy_realm() const {
+  return _proxy_realm;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -383,7 +391,7 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 post_form(const URLSpec &url, const string &body) {
-  begin_request(M_post, url, body, false, 0, 0);
+  begin_request(HTTPEnum::M_post, url, body, false, 0, 0);
   run();
   return is_valid();
 }
@@ -396,7 +404,7 @@ post_form(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_document(const URLSpec &url) {
-  begin_request(M_get, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_get, url, string(), false, 0, 0);
   run();
   return is_valid();
 }
@@ -413,7 +421,7 @@ get_document(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
-  begin_request(M_get, url, string(), false, first_byte, last_byte);
+  begin_request(HTTPEnum::M_get, url, string(), false, first_byte, last_byte);
   run();
   return is_valid();
 }
@@ -429,7 +437,7 @@ get_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_header(const URLSpec &url) {
-  begin_request(M_head, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_head, url, string(), false, 0, 0);
   run();
   return is_valid();
 }
@@ -448,7 +456,7 @@ get_header(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 connect_to(const URLSpec &url) {
-  begin_request(M_connect, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_connect, url, string(), false, 0, 0);
   run();
   return is_connection_ready();
 }
@@ -469,7 +477,7 @@ connect_to(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
 begin_post_form(const URLSpec &url, const string &body) {
-  begin_request(M_post, url, body, true, 0, 0);
+  begin_request(HTTPEnum::M_post, url, body, true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -488,7 +496,7 @@ begin_post_form(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
 begin_get_document(const URLSpec &url) {
-  begin_request(M_get, url, string(), true, 0, 0);
+  begin_request(HTTPEnum::M_get, url, string(), true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -505,7 +513,7 @@ begin_get_document(const URLSpec &url) {
 INLINE void HTTPChannel::
 begin_get_subdocument(const URLSpec &url, size_t first_byte, 
                       size_t last_byte) {
-  begin_request(M_get, url, string(), true, first_byte, last_byte);
+  begin_request(HTTPEnum::M_get, url, string(), true, first_byte, last_byte);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -516,7 +524,7 @@ begin_get_subdocument(const URLSpec &url, size_t first_byte,
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
 begin_get_header(const URLSpec &url) {
-  begin_request(M_head, url, string(), true, 0, 0);
+  begin_request(HTTPEnum::M_head, url, string(), true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -539,7 +547,7 @@ begin_get_header(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
 begin_connect_to(const URLSpec &url) {
-  begin_request(M_connect, url, string(), true, 0, 0);
+  begin_request(HTTPEnum::M_connect, url, string(), true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
