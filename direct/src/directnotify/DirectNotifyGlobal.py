@@ -1,4 +1,4 @@
-"""instantiate global DirectNotfiy used in Direct"""
+"""instantiate global DirectNotify used in Direct"""
 
 import DirectNotify
 
