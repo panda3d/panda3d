@@ -70,6 +70,7 @@
 #include <maya/MAnimUtil.h>
 #include <maya/MFnSkinCluster.h>
 #include <maya/MFnSingleIndexedComponent.h>
+#include <maya/MFnDoubleIndexedComponent.h>
 #include <maya/MItDependencyGraph.h>
 #include <maya/MDagPathArray.h>
 #include <maya/MSelectionList.h>
@@ -1033,17 +1034,19 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
     return;
   }
 
-  /*
-    We don't use these variables currently.
   MFnNurbsSurface::Form u_form = surface.formInU();
   MFnNurbsSurface::Form v_form = surface.formInV();
-  */
 
   int u_degree = surface.degreeU();
   int v_degree = surface.degreeV();
 
   int u_cvs = surface.numCVsInU();
   int v_cvs = surface.numCVsInV();
+
+  // Maya repeats CVS at the end for a periodic surface, and doesn't
+  // count them in the weighted array, below.
+  int maya_u_cvs = (u_form == MFnNurbsSurface::kPeriodic) ? u_cvs - u_degree : u_cvs;
+  int maya_v_cvs = (v_form == MFnNurbsSurface::kPeriodic) ? v_cvs - v_degree : v_cvs;
 
   int u_knots = surface.numKnotsInU();
   int v_knots = surface.numKnotsInV();
@@ -1084,11 +1087,12 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
     if (!status) {
       status.perror("MPoint::get");
     } else {
-      EggVertex vert;
+      EggVertex *vert = vpool->add_vertex(new EggVertex, i);
       LPoint4d p4d(v[0], v[1], v[2], v[3]);
       p4d = p4d * vertex_frame_inv;
-      vert.set_pos(p4d);
-      egg_nurbs->add_vertex(vpool->create_unique_vertex(vert));
+      vert->set_pos(p4d);
+
+      egg_nurbs->add_vertex(vert);
     }
   }
 
@@ -1159,6 +1163,44 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
 
   if (shader != (MayaShader *)NULL) {
     set_shader_attributes(*egg_nurbs, *shader);
+  }
+
+  // Now try to find the skinning information for the surface.
+  bool got_weights = false;
+
+  pvector<EggGroup *> joints;
+  MFloatArray weights;
+  if (_animation_convert == AC_model) {
+    got_weights = 
+      get_vertex_weights(dag_path, surface, joints, weights);
+  }
+
+  if (got_weights && !joints.empty()) {
+    int num_joints = joints.size();
+    int num_weights = (int)weights.length();
+    int num_verts = num_weights / num_joints;
+    // The number of weights should be an even multiple of verts *
+    // joints.
+    nassertv(num_weights == num_verts * num_joints);
+
+    for (i = 0; i < egg_nurbs->get_num_cvs(); i++) {
+      int ui = egg_nurbs->get_u_index(i) % maya_u_cvs;
+      int vi = egg_nurbs->get_v_index(i) % maya_v_cvs;
+
+      int maya_vi = maya_v_cvs * ui + vi;
+      nassertv(maya_vi < num_verts);
+      EggVertex *vert = vpool->get_vertex(i);
+
+      for (int ji = 0; ji < num_joints; ++ji) {
+        float weight = weights[maya_vi * num_joints + ji];
+        if (weight != 0.0f) {
+          EggGroup *joint = joints[ji];
+          if (joint != (EggGroup *)NULL) {
+            joint->ref_vertex(vert, weight);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -1684,6 +1726,7 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   egg_group->add_translate(p3d);
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::get_vertex_weights
 //       Access: Private
@@ -1775,6 +1818,100 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
   // The mesh was not soft-skinned.
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_vertex_weights
+//       Access: Private
+//  Description: As above, for a NURBS surface instead of a polygon
+//               mesh.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
+                   pvector<EggGroup *> &joints, MFloatArray &weights) {
+  MStatus status;
+  
+  // Since we are working with a NURBS surface the input attribute that 
+  // creates the surface is named "create" 
+  // 
+  MObject attr = surface.attribute("create"); 
+  
+  // Create the plug to the "create" attribute then use the 
+  // DG iterator to walk through the DG, at the node level.
+  // 
+  MPlug history(surface.object(), attr); 
+  MItDependencyGraph it(history, MFn::kDependencyNode, 
+                        MItDependencyGraph::kUpstream, 
+                        MItDependencyGraph::kDepthFirst, 
+                        MItDependencyGraph::kNodeLevel);
+
+  while (!it.isDone()) {
+    // We will walk along the node level of the DG until we 
+    // spot a skinCluster node.
+    // 
+    MObject c_node = it.thisNode(); 
+    if (c_node.hasFn(MFn::kSkinClusterFilter)) { 
+      // We've found the cluster handle. Try to get the weight
+      // data.
+      // 
+      MFnSkinCluster cluster(c_node, &status); 
+      if (!status) {
+        status.perror("MFnSkinCluster constructor");
+        return false;
+      }
+
+      // Get the set of objects that influence the vertices of this
+      // surface.  Hopefully these will all be joints.
+      MDagPathArray influence_objects;
+      cluster.influenceObjects(influence_objects, &status); 
+      if (!status) {
+        status.perror("MFnSkinCluster::influenceObjects");
+
+      } else {
+        // Fill up the vector with the corresponding table of egg
+        // groups for each joint.
+        joints.clear();
+        for (unsigned oi = 0; oi < influence_objects.length(); oi++) {
+          MDagPath joint_dag_path = influence_objects[oi];
+          MayaNodeDesc *joint_node_desc = _tree.build_node(joint_dag_path);
+          EggGroup *joint = _tree.get_egg_group(joint_node_desc);
+          joints.push_back(joint);
+        }
+
+        // Now use a component object to retrieve all of the weight
+        // data in one API call.
+        MFnDoubleIndexedComponent dic; 
+        MObject dic_object = dic.create(MFn::kSurfaceCVComponent); 
+        dic.setCompleteData(surface.numCVsInU(), surface.numCVsInV()); 
+        unsigned influence_count; 
+
+        status = cluster.getWeights(dag_path, dic_object, 
+                                    weights, influence_count); 
+        if (!status) {
+          status.perror("MFnSkinCluster::getWeights");
+        } else {
+          if (influence_count != influence_objects.length()) {
+            mayaegg_cat.error()
+              << "MFnSkinCluster::influenceObjects() returns " 
+              << influence_objects.length()
+              << " objects, but MFnSkinCluster::getWeights() reports "
+              << influence_count << " objects.\n";
+            
+          } else {
+            // We've got the weights and the set of objects.  That's all
+            // we need.
+            return true;
+          }
+        }
+      }
+    }
+
+    it.next();
+  }
+
+  // The surface was not soft-skinned.
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::set_shader_attributes

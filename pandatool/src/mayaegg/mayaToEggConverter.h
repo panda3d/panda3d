@@ -122,6 +122,8 @@ private:
                     EggGroup *egg_group);
   bool get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
                           pvector<EggGroup *> &joints, MFloatArray &weights);
+  bool get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
+                          pvector<EggGroup *> &joints, MFloatArray &weights);
   void set_shader_attributes(EggPrimitive &primitive,
                              const MayaShader &shader);
   void apply_texture_properties(EggTexture &tex, 
