@@ -628,14 +628,14 @@ attach() {
 
   if (parent_connection == (NodeConnection *)NULL) {
     graph_cat.error()
-      << "Attempt to attach " << _parent << " simultaneously to more than "
+      << "Attempt to attach " << *_parent << " simultaneously to more than "
       << max_node_graphs << " different graph types.\n";
     nassertv(false);
   }
 
   if (child_connection == (NodeConnection *)NULL) {
     graph_cat.error()
-      << "Attempt to attach " << _child << " simultaneously to more than "
+      << "Attempt to attach " << *_child << " simultaneously to more than "
       << max_node_graphs << " different graph types.\n";
     nassertv(false);
   }
