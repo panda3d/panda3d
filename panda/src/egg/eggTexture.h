@@ -64,10 +64,10 @@ public:
     FT_linear,
  
     // Min Filter Only
-    FT_nearest_mipmap_nearest,
-    FT_linear_mipmap_nearest,
-    FT_nearest_mipmap_linear,
-    FT_linear_mipmap_linear,
+    FT_nearest_mipmap_nearest,   // "mipmap point"
+    FT_linear_mipmap_nearest,    // "mipmap linear"
+    FT_nearest_mipmap_linear,    // "mipmap bilinear"
+    FT_linear_mipmap_linear,     // "mipmap trilinear"
   };
   enum EnvType {
     ET_unspecified, ET_modulate, ET_decal

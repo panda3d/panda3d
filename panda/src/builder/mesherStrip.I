@@ -251,7 +251,9 @@ make_prim(const BuilderBucket &bucket) {
     p.set_attrib(_prims.front());
     Verts::iterator vi;
     for (vi = _verts.begin(); vi != _verts.end(); ++vi) {
-      p.add_vertex(**vi);
+      const Vertex *v = *vi;
+      nassertr(v != (Vertex *)NULL, p);
+      p.add_vertex(*v);
     }
     p.set_type(dest_type);
 
@@ -271,7 +273,8 @@ make_prim(const BuilderBucket &bucket) {
     for (vi = _verts.begin();
 	 vi != _verts.end() && pi != _prims.end();
 	 ++vi) {
-      Vertex v = **vi;
+      const Vertex *v = *vi;
+      nassertr(v != (Vertex *)NULL, p);
       
       if (++count >= 3) {
 	// Beginning with the third vertex, we increment pi.  Thus, the
@@ -280,7 +283,7 @@ make_prim(const BuilderBucket &bucket) {
 	p.add_component(*pi);
 	++pi;
       }
-      p.add_vertex(v);
+      p.add_vertex(*v);
     }
     
     p.set_type(type);

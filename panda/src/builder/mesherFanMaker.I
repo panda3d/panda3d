@@ -59,7 +59,10 @@ template <class PrimType>
 MesherFanMaker<PrimType>::
 MesherFanMaker(const Vertex *vertex, Strip *tri, Mesher *mesher) {
   _vertex = vertex;
-  _edges.push_back(tri->find_opposite_edge(vertex));
+  const Edge *edge = tri->find_opposite_edge(vertex);
+  if (edge != (const Edge *)NULL) {
+    _edges.push_back(edge);
+  }
   _strips.push_back(tri);
   _planar = tri->_planar;
   _mesher = mesher;
@@ -73,19 +76,37 @@ join(MesherFanMaker &other) {
   nassertr(_mesher == other._mesher, false);
   nassertr(_bucket == other._bucket, false);
 
-  if (_edges.back()->_b == other._edges.front()->_a) {
+  nassertr(!_edges.empty() && !other._edges.empty(), false);
+
+  const Edge *my_back = _edges.back();
+  const Edge *other_front = other._edges.front();
+  nassertr(my_back != (Edge *)NULL && other_front != (Edge *)NULL, false);
+
+  const Vertex *my_back_b = my_back->_b;
+  const Vertex *other_front_a = other_front->_a;
+
+  if (my_back_b == other_front_a) {
     _planar = is_coplanar_with(other);
     _edges.splice(_edges.end(), other._edges);
     _strips.splice(_strips.end(), other._strips);
     return true;
-  } else if (_edges.front()->_a == other._edges.back()->_b) {
+  }
+
+  const Edge *my_front = _edges.front();
+  const Edge *other_back = other._edges.back();
+  nassertr(my_front != (Edge *)NULL && other_back != (Edge *)NULL, false);
+
+  const Vertex *my_front_a = my_front->_a;
+  const Vertex *other_back_b = other_back->_b;
+
+  if (my_front_a == other_back_b) {
     _planar = is_coplanar_with(other);
     _edges.splice(_edges.begin(), other._edges);
     _strips.splice(_strips.begin(), other._strips);
     return true;
-  } else {
-    return false;
   }
+
+  return false;
 }
 
 
