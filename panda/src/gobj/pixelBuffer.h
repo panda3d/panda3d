@@ -141,8 +141,8 @@ private:
 protected:
   int _xsize;
   int _ysize;
-  int _xorg;
-  int _yorg;
+  int _xorg;  // origin is not a well defined concept for PixelBuffer.  It's zero by default &
+  int _yorg;  // not used by any internal code other than constructors, should probably be deleted from API
   int _border;
   int _components;
   int _component_width;
