@@ -20,6 +20,6 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
         return None
 
     def disable(self):
-        # remove anims here
-        print("####\n#### anim dump!\n####")
+        # remove all anims, on all parts and all lods
+        Actor.Actor.unloadAnims(None, None, None)
         DistributedNode.DistributedNode.disable(self)

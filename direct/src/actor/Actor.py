@@ -766,8 +766,8 @@ class Actor(PandaObject, NodePath):
         Stop named animation on the given part of the actor.
         If no name specified then stop all animations on the actor.
         NOTE: stops all LODs"""
-        for lodName in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[lodName]
+        for thisLod in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[thisLod]
             # assemble lists of parts and anims
             if (partName == None):
                 partNames = animControlDict.keys()
@@ -782,28 +782,28 @@ class Actor(PandaObject, NodePath):
             for thisPart in partNames:
                 for thisAnim in animNames:
                     # only stop if it's bound
-                    if isinstance(animControlDict[thisPart][thisAnim],
+                    if isinstance(animControlDict[thisPart][thisAnim][1],
                                   AnimControl):
-                            animControlDict[thisPart][thisAnim].stop()
+                        animControlDict[thisPart][thisAnim][1].stop()
         
     def play(self, animName, partName=None):
         """play(self, string, string=None)
         Play the given animation on the given part of the actor.
         If no part is specified, try to play on all parts. NOTE:
         plays over ALL LODs"""
-        for lodName in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[lodName]
+        for thisLod in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[thisLod]
             if (partName == None):
                 # play all parts
                 for thisPart in animControlDict.keys():            
                     animControl = self.getAnimControl(animName, thisPart,
-                                                        lodName)
+                                                        thisLod)
                     if (animControl != None):
                         animControl.play()
 
             else:
                 animControl = self.getAnimControl(animName, partName,
-                                                    lodName)
+                                                    thisLod)
                 if (animControl != None):
                     animControl.play()
 
@@ -814,19 +814,19 @@ class Actor(PandaObject, NodePath):
         restarting at zero frame if requested. If no part name
         is given then try to loop on all parts. NOTE: loops on
         all LOD's"""
-        for lodName in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[lodName]
+        for thisLod in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[thisLod]
             if (partName == None):
                 # loop all parts
                 for thisPart in animControlDict.keys():
                     animControl = self.getAnimControl(animName, thisPart,
-                                                        lodName)
+                                                        thisLod)
                     if (animControl != None):
                         animControl.loop(restart)
             else:
                 # loop a specific part
                 animControl = self.getAnimControl(animName, partName,
-                                                    lodName)
+                                                    thisLod)
                 if (animControl != None):
                     animControl.loop(restart)
         
@@ -835,19 +835,19 @@ class Actor(PandaObject, NodePath):
         Pose the actor in position found at given frame in the specified
         animation for the specified part. If no part is specified attempt
         to apply pose to all parts. NOTE: poses all LODs"""
-        for lodName in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[lodName]
+        for thisLod in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[thisLod]
             if (partName==None):
                 # pose all parts
                 for thisPart in animControlDict.keys():
                     animControl = self.getAnimControl(animName, thisPart,
-                                                        lodName)
+                                                        thisLod)
                     if (animControl != None):
                         animControl.pose(frame)
             else:
                 # pose a specific part
                 animControl = self.getAnimControl(animName, partName,
-                                                    lodName)
+                                                    thisLod)
                 if (animControl != None):
                     animControl.pose(frame)
         
@@ -863,7 +863,7 @@ class Actor(PandaObject, NodePath):
                 if (animControlDict[partName].has_key(animName)):
                     # make sure the anim is bound first
                     self.bindAnim(animName, partName, lodName)
-                    return animControlDict[partName][animName]
+                    return animControlDict[partName][animName][1]
                 else:
                     # anim was not present
                     Actor.notify.warning("couldn't find anim: %s" % (animName))
@@ -935,8 +935,8 @@ class Actor(PandaObject, NodePath):
         to 'lodRoot' for non-LOD actors) and dict of corresponding
         anims in the form animName:animPath{}"""
         
-        #Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
-        #                   (anims, partName, lodName))
+        Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
+                          (anims, partName, lodName))
 
         for animName in anims.keys():
             # make sure this lod in in anim control dict
@@ -954,9 +954,10 @@ class Actor(PandaObject, NodePath):
                 animDict = {}
                 self.__animControlDict[lodName][partName] = animDict
 
-            # store the file path for now, we assume its been preloaded
-            # and will bind it only when played
-            self.__animControlDict[lodName][partName][animName] = anims[animName]
+            # store the file path and None in place of the animControl.
+            # we will bind it only when played
+            self.__animControlDict[lodName][partName][animName] = \
+                                                                [anims[animName], None]
 
 
     def unloadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
@@ -975,19 +976,23 @@ class Actor(PandaObject, NodePath):
             lodNames = self.__animControlDict.keys()
         else:
             lodNames = [lodName]
+
         if (partName == None):
             partNames = self.__animControlDict[lodNames[0]].keys()
         else:
             partNames = [partName]
 
+        if (anims==None):
+            anims = self.__animControlDict[lodNames[0]][partNames[0]].keys()
+
         for lodName in lodNames:
             for partName in partNames:
-                for animName in anims.keys():
+                for animName in anims:
                     # delete the anim control
-                    del(self.__animControlDict[lodName][partName][animName])
-                    # store the filepath for reloading
-                    self.__animControlDict[lodName][partName][animName] = \
-                                                            anims[animName]
+                    animControlPair = self.__animControlDict[lodName][partName][animName]
+                    if animControlPair[1] != None:
+                        del(animControlPair[1])
+                        animControlPair.append(None)
     
     def bindAnim(self, animName, partName="modelRoot", lodName="lodRoot"):
         """bindAnim(self, string, string='modelRoot', string='lodRoot')
@@ -1019,13 +1024,13 @@ class Actor(PandaObject, NodePath):
             Actor.notify.debug("actor has no animation %s", animName)
             
         # only bind if not already bound!
-        if isinstance(self.__animControlDict[lodName][partName][animName],
+        if isinstance(self.__animControlDict[lodName][partName][animName][1],
                       AnimControl):
             return None
 
         # fetch a copy from the modelPool, or if we weren't careful
         # enough to preload, fetch from disk :(
-        animPath = self.__animControlDict[lodName][partName][animName]
+        animPath = self.__animControlDict[lodName][partName][animName][0]
         anim = loader.loadModelOnce(animPath)
         animBundle = \
                    (anim.find("**/+AnimBundleNode").node()).getBundle()
@@ -1042,7 +1047,8 @@ class Actor(PandaObject, NodePath):
             Actor.notify.error("Null AnimControl: %s" % (animName))
         else:
             # store the animControl
-            self.__animControlDict[lodName][partName][animName] = animControl
+            self.__animControlDict[lodName][partName][animName][1] = \
+                                                                   animControl
             Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
                            (animName, partName, lodName))
         return animControl
@@ -1077,11 +1083,15 @@ class Actor(PandaObject, NodePath):
                 for animName in other.__animControlDict[lodName][partName].keys():
                     # if the anim is bound copy the animControl
                     if isinstance(
-                        other.__animControlDict[lodName][partName][animName],
+                        other.__animControlDict[lodName][partName][animName][1],
                         AnimControl):
                         # get the anim
                         animBundle = \
-                                   other.__animControlDict[lodName][partName][animName].getAnim()
+                                   other.__animControlDict[lodName][partName][animName][1].getAnim()
+                        # get the animPath
+                        animPath = \
+                                   other.__animControlDict[lodName][partName][animName][0]
+                        
                         # get the part
                         partBundleNode = \
                                        (self.__partBundleDict[lodName][partName].node())
@@ -1092,9 +1102,11 @@ class Actor(PandaObject, NodePath):
                             Actor.notify.error("Null animControl: %s" % (animName))
                         else:
                             # store the anim control
-                            self.__animControlDict[lodName][partName][animName] = animControl
+                            self.__animControlDict[lodName][partName][animName] = [animPath, animControl]
                     else:
                         # else just copy what's there
                         self.__animControlDict[lodName][partName][animName] = \
                         other.__animControlDict[lodName][partName][animName]
+
+
 
