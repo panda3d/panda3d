@@ -111,7 +111,7 @@ is_mouse_button(ButtonHandle button) {
     }
   }
 
-  return false;
+  return button == _wheel_up || button == _wheel_down;
 }
 
 ////////////////////////////////////////////////////////////////////

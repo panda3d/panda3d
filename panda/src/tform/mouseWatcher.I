@@ -407,6 +407,63 @@ get_modifier_buttons() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_display_region
+//       Access: Published
+//  Description: Constrains the MouseWatcher to watching the mouse
+//               within a particular indicated region of the screen.
+//               DataNodes parented under the MouseWatcher will
+//               observe the mouse and keyboard events only when the
+//               mouse is within the indicated region, and the
+//               observed range will be from -1 .. 1 across the
+//               region.
+//
+//               Do not delete the DisplayRegion while it is owned by
+//               the MouseWatcher.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_display_region(DisplayRegion *dr) {
+  _display_region = dr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::clear_display_region
+//       Access: Published
+//  Description: Removes the display region constraint from the
+//               MouseWatcher, and restores it to the default behavior
+//               of watching the whole window.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+clear_display_region() {
+  _display_region = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_display_region
+//       Access: Published
+//  Description: Returns the display region the MouseWatcher is
+//               constrained to by set_display_region(), or NULL if it
+//               is not constrained.
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *MouseWatcher::
+get_display_region() const {
+  return _display_region;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::has_display_region
+//       Access: Published
+//  Description: Returns true if the MouseWatcher has been constrained
+//               to a particular region of the screen via
+//               set_display_region(), or false otherwise.  If this
+//               returns true, get_display_region() may be used to
+//               return the particular region.
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcher::
+has_display_region() const {
+  return (_display_region != (DisplayRegion *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::within_region
 //       Access: Protected
 //  Description: Called internally to indicate the mouse pointer has

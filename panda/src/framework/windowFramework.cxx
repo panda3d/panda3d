@@ -18,8 +18,7 @@
 
 #include "windowFramework.h"
 #include "pandaFramework.h"
-#include "mouseAndKeyboard.h"
-#include "mouseRecorder.h"
+#include "displayRegion.h"
 #include "buttonThrower.h"
 #include "transform2sg.h"
 #include "dSearchPath.h"
@@ -78,6 +77,34 @@ WindowFramework(PandaFramework *panda_framework) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::Copy Constructor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+WindowFramework::
+WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
+  _panda_framework(copy._panda_framework),
+  _window(copy._window),
+  _display_region_3d(display_region)
+{
+  _alight = (AmbientLight *)NULL;
+  _dlight = (DirectionalLight *)NULL;
+  _got_keyboard = false;
+  _got_trackball = false;
+  _got_lights = false;
+  _wireframe_enabled = false;
+  _texture_enabled = true;
+  _two_sided_enabled = false;
+  _one_sided_reverse_enabled = false;
+  _lighting_enabled = false;
+  _background_type = BT_default;
+
+  set_background_type(copy._background_type);
+  // Set up a 3-d camera for the window by default.
+  make_camera();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::Destructor
 //       Access: Public, Virtual
 //  Description: 
@@ -120,6 +147,21 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
   _window = engine->make_window(ptgsg, name, 0);
   if (_window != (GraphicsWindow *)NULL) {
     _window->request_properties(props);
+
+    // Get the first channel on the window.  This will be the only
+    // channel on non-SGI hardware.
+    PT(GraphicsChannel) channel = _window->get_channel(0);
+    
+    // Make a layer on the channel to hold our display region.
+    PT(GraphicsLayer) layer = channel->make_layer();
+    
+    // And create a display region that covers the entire window.
+    _display_region_3d = layer->make_display_region();
+
+    // Make sure the DisplayRegion does the clearing, not the window,
+    // so we can have multiple DisplayRegions of different colors.
+    _window->set_clear_color_active(false);
+    _window->set_clear_depth_active(false);
     set_background_type(_background_type);
 
     // Set up a 3-d camera for the window by default.
@@ -228,8 +270,11 @@ get_render_2d() {
     // Make a layer on the channel to hold our display region.
     PT(GraphicsLayer) layer = channel->make_layer(10);
     
-    // And create a display region that covers the entire window.
-    PT(DisplayRegion) dr = layer->make_display_region();
+    // And create a display region that matches the size of the 3-d
+    // display region.
+    float l, r, b, t;
+    _display_region_3d->get_dimensions(l, r, b, t);
+    _display_region_2d = layer->make_display_region(l, r, b, t);
     
     // Finally, we need a camera to associate with the display region.
     PT(Camera) camera = new Camera("camera2d");
@@ -247,7 +292,7 @@ get_render_2d() {
 
     camera->set_lens(lens);
     camera->set_scene(_render_2d);
-    dr->set_camera(camera_np);
+    _display_region_2d->set_camera(camera_np);
   }
 
   return _render_2d;
@@ -294,19 +339,16 @@ get_aspect_2d() {
 const NodePath &WindowFramework::
 get_mouse() {
   if (_mouse.is_empty()) {
-    nassertr(_window->get_num_input_devices() > 0, _mouse);
-    NodePath data_root = _panda_framework->get_data_root();
-    MouseAndKeyboard *mouse_node = 
-      new MouseAndKeyboard(_window, 0, "mouse");
-    _mouse = data_root.attach_new_node(mouse_node);
+    NodePath mouse = _panda_framework->get_mouse(_window);
 
-    RecorderController *recorder = _panda_framework->get_recorder();
-    if (recorder != (RecorderController *)NULL) {
-      // If we're in recording or playback mode, associate a recorder.
-      MouseRecorder *mouse_recorder = new MouseRecorder("mouse");
-      _mouse = _mouse.attach_new_node(mouse_recorder);
-      recorder->add_recorder("mouse", mouse_recorder);
-    }
+    // Create a MouseWatcher to filter the mouse input.  We do this
+    // mainly so we can constrain the mouse input to our particular
+    // display region, if we have one.  This means the node we return
+    // from get_mouse() is actually a MouseWatcher, but since it
+    // presents the same interface as a Mouse, no one should mind.
+    PT(MouseWatcher) mw = new MouseWatcher("watcher");
+    mw->set_display_region(_display_region_3d);
+    _mouse = mouse.attach_new_node(mw);
   }
   return _mouse;
 }
@@ -326,6 +368,8 @@ enable_keyboard() {
   if (_window->get_num_input_devices() > 0) {
     NodePath mouse = get_mouse();
 
+    // Create a button thrower to listen for our keyboard events and
+    // associate this WindowFramework pointer with each one.
     PT(ButtonThrower) bt = new ButtonThrower("kb-events");
     bt->add_parameter(EventParameter(this));
     ModifierButtons mods;
@@ -479,8 +523,6 @@ bool WindowFramework::
 load_models(const NodePath &parent, const pvector<Filename> &files) {
   bool all_ok = true;
 
-  NodePath render = get_render();
-
   pvector<Filename>::const_iterator fi;
   for (fi = files.begin(); fi != files.end(); ++fi) {
     const Filename &filename = (*fi);
@@ -608,6 +650,59 @@ loop_animations() {
   // animations looping.
   auto_bind(get_render().node(), _anim_controls, ~0);
   _anim_controls.loop_all(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::split_window
+//       Access: Public
+//  Description: Divides the window into two display regions, each of
+//               which gets its own trackball and keyboard events.
+//               The new window pointer is returned.
+//
+//               There is not an interface for recombining divided
+//               windows.
+////////////////////////////////////////////////////////////////////
+WindowFramework *WindowFramework::
+split_window(SplitType split_type) {
+  DisplayRegion *new_region = NULL;
+
+  if (split_type == ST_default) {
+    // Choose either horizontal or vertical according to the largest
+    // dimension.
+    
+    if (_display_region_3d->get_pixel_width() > 
+        _display_region_3d->get_pixel_height()) {
+      split_type = ST_horizontal;
+    } else {
+      split_type = ST_vertical;
+    }
+  }
+  
+  float left, right, bottom, top;
+  _display_region_3d->get_dimensions(left, right, bottom, top);
+  new_region = _display_region_3d->get_layer()->make_display_region();
+
+  if (split_type == ST_vertical) {
+    _display_region_3d->set_dimensions(left, right, bottom, (top + bottom) / 2.0f);
+    if (_display_region_2d != (DisplayRegion *)NULL) {
+      _display_region_2d->set_dimensions(left, right, bottom, (top + bottom) / 2.0f);
+    }
+      
+    new_region->set_dimensions(left, right, (top + bottom) / 2.0f, top);
+    
+  } else {
+    _display_region_3d->set_dimensions(left, (left + right) / 2.0f, bottom, top);
+    if (_display_region_2d != (DisplayRegion *)NULL) {
+      _display_region_2d->set_dimensions(left, (left + right) / 2.0f, bottom, top);
+    }
+
+    new_region->set_dimensions((left + right) / 2.0f, right, bottom, top);
+  }
+
+  PT(WindowFramework) wf = new WindowFramework(*this, new_region);
+  _panda_framework->_windows.push_back(wf);
+
+  return wf;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -756,38 +851,40 @@ void WindowFramework::
 set_background_type(WindowFramework::BackgroundType type) {
   _background_type = type;
 
-  if (_window != (GraphicsWindow *)NULL) {
-    switch (_background_type) {
-    case BT_other:
-      break;
-      
-    case BT_default:
-      _window->set_clear_color_active(true);
-      _window->set_clear_depth_active(true);
-      _window->set_clear_color(Colorf(win_background_r, win_background_g, 
-                                      win_background_b, 1.0f));
-      _window->set_clear_depth(1.0f);
-      break;
-      
-    case BT_gray:
-      _window->set_clear_color_active(true);
-      _window->set_clear_depth_active(true);
-      _window->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 1.0f));
-      _window->set_clear_depth(1.0f);
-      break;
-      
-    case BT_black:
-      _window->set_clear_color_active(true);
-      _window->set_clear_depth_active(true);
-      _window->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 1.0f));
-      _window->set_clear_depth(1.0f);
+  if (_display_region_3d == (DisplayRegion *)NULL) {
+    return;
+  }
+
+  switch (_background_type) {
+  case BT_other:
+    break;
+    
+  case BT_default:
+    _display_region_3d->set_clear_color_active(true);
+    _display_region_3d->set_clear_depth_active(true);
+    _display_region_3d->set_clear_color(Colorf(win_background_r, win_background_g, 
+                                               win_background_b, 1.0f));
+    _display_region_3d->set_clear_depth(1.0f);
+    break;
+    
+  case BT_gray:
+    _display_region_3d->set_clear_color_active(true);
+    _display_region_3d->set_clear_depth_active(true);
+    _display_region_3d->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 1.0f));
+    _display_region_3d->set_clear_depth(1.0f);
+    break;
+    
+  case BT_black:
+    _display_region_3d->set_clear_color_active(true);
+    _display_region_3d->set_clear_depth_active(true);
+    _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+    _display_region_3d->set_clear_depth(1.0f);
       break;
 
-    case BT_none:
-      _window->set_clear_color_active(false);
-      _window->set_clear_depth_active(false);
-      break;
-    }
+  case BT_none:
+    _display_region_3d->set_clear_color_active(false);
+    _display_region_3d->set_clear_depth_active(false);
+    break;
   }
 }
 
@@ -798,16 +895,6 @@ set_background_type(WindowFramework::BackgroundType type) {
 ////////////////////////////////////////////////////////////////////
 PT(Camera) WindowFramework::
 make_camera() {
-  // Get the first channel on the window.  This will be the only
-  // channel on non-SGI hardware.
-  PT(GraphicsChannel) channel = _window->get_channel(0);
-
-  // Make a layer on the channel to hold our display region.
-  PT(GraphicsLayer) layer = channel->make_layer();
-
-  // And create a display region that covers the entire window.
-  PT(DisplayRegion) dr = layer->make_display_region();
-
   // Finally, we need a camera to associate with the display region.
   PT(Camera) camera = new Camera("camera");
   NodePath camera_np = get_camera_group().attach_new_node(camera);
@@ -833,7 +920,7 @@ make_camera() {
 
   camera->set_lens(lens);
   camera->set_scene(get_render());
-  dr->set_camera(camera_np);
+  _display_region_3d->set_camera(camera_np);
 
   return camera;
 }

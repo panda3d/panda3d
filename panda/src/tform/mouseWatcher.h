@@ -34,6 +34,7 @@
 #include "pvector.h"
 
 class MouseWatcherParameter;
+class DisplayRegion;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseWatcher
@@ -103,6 +104,11 @@ PUBLISHED:
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
   INLINE ModifierButtons get_modifier_buttons() const;
 
+  INLINE void set_display_region(DisplayRegion *dr);
+  INLINE void clear_display_region();
+  INLINE DisplayRegion *get_display_region() const;
+  INLINE bool has_display_region() const;
+
 public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -141,6 +147,9 @@ protected:
   void enter_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
   void exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
 
+  void set_no_mouse();
+  void set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy);
+
   // This wants to be a set, but because you cannot export sets across
   // dlls in windows, we will make it a vector instead
   typedef pvector< PT(MouseWatcherGroup) > Groups;
@@ -149,6 +158,7 @@ protected:
   bool _has_mouse;
   int _suppress_flags;
   LPoint2f _mouse;
+  LPoint2f _mouse_pixel;
 
   VRegions _current_regions;
   PT(MouseWatcherRegion) _preferred_region;
@@ -168,8 +178,8 @@ protected:
   PT(PandaNode) _geometry;
 
   EventHandler *_eh;
-
   ModifierButtons _mods;
+  DisplayRegion *_display_region;
 
 protected:
   // Inherited from DataNode

@@ -52,6 +52,22 @@ event_W(CPT_Event, void *) {
   }
 }
 
+void
+event_2(CPT_Event event, void *) {
+  // 2: split the window into two display regions.
+
+  EventParameter param = event->get_parameter(0);
+  WindowFramework *wf;
+  DCAST_INTO_V(wf, param.get_ptr());
+
+  WindowFramework *split = wf->split_window();
+  if (split != (WindowFramework *)NULL) {
+    split->enable_keyboard();
+    split->setup_trackball();
+    framework.get_models().instance_to(split->get_render());
+  }
+}
+
 void 
 usage() {
   cerr <<
@@ -162,6 +178,7 @@ main(int argc, char *argv[]) {
 
     framework.enable_default_keys();
     framework.define_key("shift-w", "open a new window", event_W, NULL);
+    framework.define_key("2", "split the window", event_2, NULL);
     framework.main_loop();
     framework.report_frame_rate(nout);
   }

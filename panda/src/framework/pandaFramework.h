@@ -51,6 +51,8 @@ public:
   INLINE GraphicsEngine *get_graphics_engine();
   INLINE const NodePath &get_data_root() const;
   INLINE EventHandler &get_event_handler();
+  NodePath get_mouse(GraphicsWindow *window);
+  void remove_mouse(const GraphicsWindow *window);
 
   void define_key(const string &event_name, 
                   const string &description,
@@ -155,6 +157,9 @@ private:
   typedef pvector< PT(WindowFramework) > Windows;
   Windows _windows;
 
+  typedef pmap< const GraphicsWindow *, NodePath > Mouses;
+  Mouses _mouses;
+
   NodePath _models;
 
   // For counting frame rate.
@@ -187,6 +192,8 @@ private:
   double _screenshot_clear_time;
 
   PT(RecorderController) _recorder;
+
+  friend class WindowFramework;
 };
 
 #include "pandaFramework.I"

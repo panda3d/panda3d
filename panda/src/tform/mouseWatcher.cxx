@@ -27,6 +27,7 @@
 #include "eventParameter.h"
 #include "dataNodeTransmit.h"
 #include "transformState.h"
+#include "displayRegion.h"
 #include "dcast.h"
 
 #include <algorithm>
@@ -59,7 +60,8 @@ MouseWatcher(const string &name) :
   _preferred_region = (MouseWatcherRegion *)NULL;
   _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   _button_down = false;
-  _eh = (EventHandler*)0L;
+  _eh = (EventHandler *)NULL;
+  _display_region = (DisplayRegion *)NULL;
 
   // When this flag is true, the mouse pointer is allowed to be
   // "entered" into multiple regions simultaneously; when false, it
@@ -707,8 +709,8 @@ keystroke(int keycode) {
   // Keystrokes go to all those regions that want keyboard events,
   // regardless of which is the "preferred" region (that is, without
   // respect to the mouse position).  However, we do set the outside
-  // flag according to whether the given region is preferred region or
-  // not.
+  // flag according to whether the given region is the preferred
+  // region or not.
 
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
@@ -833,6 +835,52 @@ exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_no_mouse
+//       Access: Protected
+//  Description: Called from do_transmit_data() to indicate the mouse
+//               is not within the window.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+set_no_mouse() {
+  if (_has_mouse) {
+    // Hide the mouse pointer.
+    if (!_geometry.is_null()) {
+      _geometry->set_draw_mask(DrawMask::all_off());
+    }
+  }
+  
+  _has_mouse = false;
+  clear_current_regions();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_mouse
+//       Access: Protected
+//  Description: Called from do_transmit_data() to indicate the mouse
+//               is within the window, and to specify its current
+//               position.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
+  if (!_geometry.is_null()) {
+    // Transform the mouse pointer.
+    _geometry->set_transform(TransformState::make_pos(LVecBase3f(xy[0], 0, xy[1])));
+    if (!_has_mouse) {
+      // Show the mouse pointer.
+      _geometry->set_draw_mask(DrawMask::all_on());
+    }
+  }
+  
+  _has_mouse = true;
+  _mouse = xy;
+  _mouse_pixel = pixel_xy;
+    
+  VRegions regions;
+  get_over_regions(regions, _mouse);
+  set_current_regions(regions);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::do_transmit_data
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of transmit_data().  This
@@ -847,43 +895,58 @@ exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+  // Initially, we do not suppress any events to objects below us in
+  // the data graph.
+  _suppress_flags = 0;
+
   if (!input.has_data(_xy_input)) {
     // No mouse in the window.
-
-    if (_has_mouse) {
-      // Hide the mouse pointer.
-      if (!_geometry.is_null()) {
-        _geometry->set_draw_mask(DrawMask::all_off());
-      }
-    }
-
-    _has_mouse = false;
-    clear_current_regions();
+    set_no_mouse();
 
   } else {
     // The mouse is within the window.  Get the current mouse position.
-    const EventStoreVec2 *xy;
+    const EventStoreVec2 *xy, *pixel_xy;
     DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
-    const LVecBase2f &p = xy->get_value();
-    _mouse.set(p[0], p[1]);
-    
-    if (!_geometry.is_null()) {
-      // Transform the mouse pointer.
-      _geometry->set_transform(TransformState::make_pos(LVecBase3f(p[0], 0, p[1])));
-      if (!_has_mouse) {
-        // Show the mouse pointer.
-        _geometry->set_draw_mask(DrawMask::all_on());
+    DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
+
+    const LVecBase2f &f = xy->get_value();
+    const LVecBase2f &p = pixel_xy->get_value();
+
+    if (_display_region != (DisplayRegion *)NULL) {
+      // If we've got a display region, constrain the mouse to it.
+      int xo, yo, width, height;
+      _display_region->get_region_pixels_i(xo, yo, width, height);
+
+      if (p[0] < xo || p[0] >= xo + width || 
+          p[1] < yo || p[1] >= yo + height) {
+        // The mouse is outside the display region, even though it's
+        // within the window.  This is considered not having a mouse.
+        set_no_mouse();
+
+        // This also means we should suppress button events below us.
+        _suppress_flags = MouseWatcherRegion::SF_any_button;
+
+      } else {
+        // The mouse is within the display region; rescale it.
+        float left, right, bottom, top;
+        _display_region->get_dimensions(left, right, bottom, top);
+
+        LVecBase2f new_f((f[0] - left) / (right - left), 
+                         (f[1] - bottom) / (top - bottom));
+        LVecBase2f new_p(p[0] - xo, p[1] - xo);
+
+        set_mouse(new_f, new_p);
       }
+
+    } else {
+      // No display region; respect the whole window.
+      set_mouse(f, p);
     }
-
-    _has_mouse = true;
-
-    VRegions regions;
-    get_over_regions(regions, _mouse);
-    set_current_regions(regions);
   }
 
-  _suppress_flags = 0;
+  // If the mouse is over a particular region, or still considered
+  // owned by a region because of a recent button-down event, that
+  // region determines whether we suppress events below us.
   if (_preferred_region != (MouseWatcherRegion *)NULL) {
     _suppress_flags = _preferred_region->get_suppress_flags();
   }
@@ -920,15 +983,15 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   if (_has_mouse &&
       (_suppress_flags & MouseWatcherRegion::SF_mouse_position) == 0) {
     // Transmit the mouse position.
-    output.set_data(_xy_output, input.get_data(_xy_input));
-    output.set_data(_pixel_xy_output, input.get_data(_pixel_xy_input));
+    _xy->set_value(_mouse);
+    output.set_data(_xy_output, EventParameter(_xy));
+    _pixel_xy->set_value(_mouse_pixel);
+    output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
   }
 
   int suppress_buttons = (_suppress_flags & MouseWatcherRegion::SF_any_button);
-  if (suppress_buttons == MouseWatcherRegion::SF_any_button) {
-    // Suppress all buttons.
 
-  } else if (suppress_buttons != 0) {
+  if (suppress_buttons != 0) {
     // Suppress some buttons.
     _button_events->clear();
 
@@ -947,7 +1010,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
           suppress = ((suppress_buttons & MouseWatcherRegion::SF_other_button) != 0);
         }
 
-        if (!suppress) {
+        if (!suppress || be._type == ButtonEvent::T_up) {
           // Don't suppress this button event; pass it through.
           _button_events->add_event(be);
         }
@@ -963,4 +1026,3 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     output.set_data(_button_events_output, input.get_data(_button_events_input));
   }
 }
-

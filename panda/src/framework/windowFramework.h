@@ -37,6 +37,7 @@ class AmbientLight;
 class DirectionalLight;
 class GraphicsEngine;
 class GraphicsPipe;
+class DisplayRegion;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowFramework
@@ -46,6 +47,8 @@ class GraphicsPipe;
 class EXPCL_FRAMEWORK WindowFramework : public TypedWritableReferenceCount {
 protected:
   WindowFramework(PandaFramework *panda_framework);
+  WindowFramework(const WindowFramework &copy, DisplayRegion *display_region);
+
 public:
   virtual ~WindowFramework();
 
@@ -58,6 +61,7 @@ protected:
 public:
   INLINE PandaFramework *get_panda_framework() const;
   INLINE GraphicsWindow *get_graphics_window() const;
+  INLINE DisplayRegion *get_display_region() const;
   const NodePath &get_camera_group();
 
   INLINE int get_num_cameras() const;
@@ -88,6 +92,13 @@ public:
     BT_none
   };
 
+  enum SplitType {
+    ST_default,
+    ST_horizontal,
+    ST_vertical,
+  };
+  WindowFramework *split_window(SplitType split_type = ST_default);
+
   void set_wireframe(bool enable);
   void set_texture(bool enable);
   void set_two_sided(bool enable);
@@ -112,6 +123,8 @@ private:
 private:
   PandaFramework *_panda_framework;
   PT(GraphicsWindow) _window;
+  PT(DisplayRegion) _display_region_2d;
+  PT(DisplayRegion) _display_region_3d;
 
   NodePath _camera_group;
   typedef pvector< PT(Camera) > Cameras;

@@ -26,6 +26,8 @@
 #include "graphicsPipeSelection.h"
 #include "nodePathCollection.h"
 #include "textNode.h"
+#include "mouseAndKeyboard.h"
+#include "mouseRecorder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::Constructor
@@ -158,6 +160,59 @@ get_default_pipe() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_mouse
+//       Access: Public
+//  Description: Returns a NodePath to the MouseAndKeyboard associated
+//               with the indicated GraphicsWindow object.  If there's
+//               not yet a mouse associated with the window, creates
+//               one.
+//
+//               This allows multiple WindowFramework objects that
+//               represent different display regions of the same
+//               GraphicsWindow to share the same mouse.
+////////////////////////////////////////////////////////////////////
+NodePath PandaFramework::
+get_mouse(GraphicsWindow *window) {
+  Mouses::iterator mi = _mouses.find(window);
+  if (mi != _mouses.end()) {
+    return (*mi).second;
+  }
+
+  NodePath mouse;
+
+  NodePath data_root = get_data_root();
+  MouseAndKeyboard *mouse_node = new MouseAndKeyboard(window, 0, "mouse");
+  mouse = data_root.attach_new_node(mouse_node);
+
+  RecorderController *recorder = get_recorder();
+  if (recorder != (RecorderController *)NULL) {
+    // If we're in recording or playback mode, associate a recorder.
+    MouseRecorder *mouse_recorder = new MouseRecorder("mouse");
+    mouse = mouse.attach_new_node(mouse_recorder);
+    recorder->add_recorder("mouse", mouse_recorder);
+  }
+
+  _mouses[window] = mouse;
+
+  return mouse;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::remove_mouse
+//       Access: Public
+//  Description: Removes the mouse that may have been created by an
+//               earlier call to get_mouse().
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+remove_mouse(const GraphicsWindow *window) {
+  Mouses::iterator mi = _mouses.find(window);
+  if (mi != _mouses.end()) {
+    (*mi).second.remove_node();
+    _mouses.erase(mi);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::define_key
 //       Access: Public
 //  Description: Sets up a handler for the indicated key.  When the
@@ -276,9 +331,9 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::find_window
 //       Access: Public
-//  Description: Returns the index of the WindowFramework object that
-//               references the indicated GraphicsWindow pointer, or
-//               -1 if none do.
+//  Description: Returns the index of the first WindowFramework object
+//               found that references the indicated GraphicsWindow
+//               pointer, or -1 if none do.
 ////////////////////////////////////////////////////////////////////
 int PandaFramework::
 find_window(const GraphicsWindow *win) const {
@@ -351,7 +406,13 @@ close_all_windows() {
     wf->close_window();
   }
 
+  Mouses::iterator mi;
+  for (mi = _mouses.begin(); mi != _mouses.end(); ++mi) {
+    (*mi).second.remove_node();
+  }
+
   _windows.clear();
+  _mouses.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -758,8 +819,20 @@ event_esc(CPT_Event event, void *data) {
     WindowFramework *wf;
     DCAST_INTO_V(wf, param.get_ptr());
 
+    PT(GraphicsWindow) win = wf->get_graphics_window();
+
     PandaFramework *self = (PandaFramework *)data;
     self->close_window(wf);
+
+    // Also close any other WindowFrameworks on the same window.
+    int window_index = self->find_window(win);
+    while (window_index != -1) {
+      self->close_window(window_index);
+      window_index = self->find_window(win);
+    }
+
+    // Free up the mouse for that window.
+    self->remove_mouse(win);
 
     // If we closed the last window, shut down.
     if (self->_windows.empty()) {
@@ -1221,10 +1294,20 @@ event_window_event(CPT_Event event, void *data) {
     if (window_index == -1) {
       framework_cat.debug()
         << "Ignoring message from unknown window.\n";
+
     } else {
       if (!win->get_properties().get_open()) {
+        int window_index = self->find_window(win);
+        while (window_index != -1) {
+          self->close_window(window_index);
+          window_index = self->find_window(win);
+        }
+        
+        // Free up the mouse for that window.
+        self->remove_mouse(win);
+
         // If the last window was closed, exit the application.
-        if (self->all_windows_closed() && !self->_exit_flag) {
+        if (self->_windows.empty() && !self->_exit_flag) {
           framework_cat.info()
             << "Last window was closed by user.\n";
           self->_exit_flag = true;
