@@ -8,7 +8,7 @@
 
 #begin install_egg
   #define UNPAL_SOURCES \
-    camera.egg
+    camera.egg rgbCube.egg
 #end install_egg
 
 #begin install_egg
@@ -18,5 +18,5 @@
 
 #begin install_egg
   #define SOURCES \
-    fade_sphere.egg fade.egg iris.egg
+    fade_sphere.egg fade.egg iris.egg 
 #end install_egg
