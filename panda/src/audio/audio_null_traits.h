@@ -34,6 +34,8 @@ class EXPCL_PANDA NullPlaying : public AudioTraits::PlayingClass {
 public:
   INLINE NullPlaying(void);
   virtual ~NullPlaying(void);
+
+  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
 };
 
 class EXPCL_PANDA NullPlayer : public AudioTraits::PlayerClass {

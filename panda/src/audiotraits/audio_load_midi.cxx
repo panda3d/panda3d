@@ -25,7 +25,7 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
   *music = MikModMidi::load_midi(filename);
   if (*music == (AudioTraits::MusicClass*)0L)
     return;
-  *state = *music->get_state();
+  *state = ((MikModMidi*)(*music))->get_state();
   *player = MikModMidiPlayer::get_instance();
   *destroy = AudioDestroyMidi;
 }
@@ -47,7 +47,7 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
   *music = WinMusic::load_midi(filename);
   if (*music == (AudioTraits::MusicClass*)0L)
     return;
-  *state = *music->get_state();
+  *state = ((WinMusic*)(*music))->get_state();
   *player = WinPlayer::get_instance();
   *destroy = AudioDestroyMidi;
 }

@@ -51,6 +51,12 @@ AudioTraits::MusicClass::MusicStatus NullMusic::status(void) {
 NullPlaying::~NullPlaying(void) {
 }
 
+AudioTraits::PlayingClass::PlayingStatus NullPlaying::status(void) {
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "in playing status in Null audio driver" << endl;
+  return BAD;
+}
+
 NullPlayer::~NullPlayer(void) {
 }
 

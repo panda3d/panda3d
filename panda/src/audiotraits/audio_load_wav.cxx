@@ -26,7 +26,7 @@ void AudioLoadWav(AudioTraits::SampleClass** sample,
   *sample = MikModSample::load_wav(filename);
   if (*sample == (AudioTraits::SampleClass*)0L)
     return;
-  *state = *sample->get_state();
+  *state = ((MikModSample*)(*sample))->get_state();
   *player = MikModSamplePlayer::get_instance();
   *destroy = AudioDestroyWav;
 }
@@ -48,7 +48,7 @@ void AudioLoadWav(AudioTraits::SampleClass** sample,
   *sample = WinSample::load_wav(filename);
   if (*sample == (AudioTraits::SampleClass*)0L)
     return;
-  *state = *sample->get_state();
+  *state = ((WinSample*)(*sample))->get_state();
   *player = WinPlayer::get_instance();
   *destroy = AudioDestroyWav;
 }
