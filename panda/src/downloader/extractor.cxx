@@ -92,7 +92,6 @@ initiate(Filename &source_file, const Filename &rel_path) {
     delete _mfile;
   _mfile = new Multifile;
   _buffer_start = _buffer->_buffer;
-  _buffer_size = _source_buffer_length;
   return ES_success;
 }
 
@@ -108,6 +107,7 @@ run(void) {
   if (_read_all_input == false) {
     _read_stream.read(_buffer->_buffer, _buffer->get_length());
     _source_buffer_length = _read_stream.gcount();
+    _buffer_size = _source_buffer_length;
     _total_bytes_read += _source_buffer_length;
     if (_read_stream.eof()) {
       nassertr(_total_bytes_read == _source_file_length, false);
