@@ -9,6 +9,8 @@
 #include "fltUnsupportedRecord.h"
 #include "config_flt.h"
 
+#include <nearly_zero.h>
+
 #include <assert.h>
 #include <math.h>
 
@@ -284,7 +286,7 @@ bool FltHeader::
 check_version() const {
   double version = get_flt_version();
 
-  if (version < min_flt_version()) {
+  if (version < min_flt_version() && !IS_NEARLY_EQUAL(version, min_flt_version())) {
     nout << "Warning!  The version number of this file appears to be "
 	 << version << ", which is older than " << min_flt_version()
 	 << ", the oldest OpenFlight version understood by this program.  "
@@ -293,7 +295,7 @@ check_version() const {
     return false;
   }
   
-  if (version > max_flt_version()) {
+  if (version > max_flt_version() && !IS_NEARLY_EQUAL(version, max_flt_version())) {
     nout << "Warning!  The version number of this file appears to be "
 	 << version << ", which is newer than " << max_flt_version()
 	 << ", the newest OpenFlight version understood by this program.  "
