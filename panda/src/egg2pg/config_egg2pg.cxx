@@ -20,6 +20,8 @@
 
 #include "dconfig.h"
 #include "get_config_path.h"
+#include "loaderFileTypeEgg.h"
+#include "loaderFileTypeRegistry.h"
 
 ConfigureDef(config_egg2pg);
 NotifyCategoryDef(egg2pg, "");
@@ -104,4 +106,10 @@ init_libegg2pg() {
   }
   egg_coordinate_system = (cs == CS_default) ?
     default_coordinate_system : cs;
+
+  LoaderFileTypeEgg::init_type();
+
+  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+
+  reg->register_type(new LoaderFileTypeEgg);
 }

@@ -140,20 +140,6 @@ get_point_b() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::set_from_lens
 //       Access: Public
-//  Description: Accepts a LensNode and a 2-d point in the range
-//               [-1,1].  Sets the CollisionSegment so that it begins at
-//               the LensNode's near plane and extends to the
-//               far plane, making it suitable for picking objects
-//               from the screen given a camera and a mouse location.
-////////////////////////////////////////////////////////////////////
-INLINE bool CollisionSegment::
-set_from_lens(LensNode *camera, float px, float py) {
-  return set_from_lens(camera, LPoint2f(px, py));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSegment::set_from_lens
-//       Access: Public
 //  Description: Accepts a qpLensNode and a 2-d point in the range
 //               [-1,1].  Sets the CollisionSegment so that it begins at
 //               the qpLensNode's near plane and extends to the

@@ -18,11 +18,10 @@
 
 #include "bamInfo.h"
 
-#include <bamFile.h>
-#include <node.h>
-#include <renderRelation.h>
-#include <geomNode.h>
-
+#include "bamFile.h"
+#include "pandaNode.h"
+#include "qpgeomNode.h"
+#include "dcast.h"
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -138,8 +137,9 @@ get_info(const Filename &filename) {
   bam_file.resolve();
   bam_file.close();
 
-  if (objects.size() == 1 && objects[0]->is_of_type(Node::get_class_type())) {
-    describe_scene_graph(DCAST(Node, objects[0]));
+  if (objects.size() == 1 && 
+      objects[0]->is_of_type(PandaNode::get_class_type())) {
+    describe_scene_graph(DCAST(PandaNode, objects[0]));
 
   } else {
     for (int i = 0; i < (int)objects.size(); i++) {
@@ -159,15 +159,15 @@ get_info(const Filename &filename) {
 //               that scene graph in some meaningful way.
 ////////////////////////////////////////////////////////////////////
 void BamInfo::
-describe_scene_graph(Node *node) {
+describe_scene_graph(PandaNode *node) {
   // Parent the node to our own scene graph root, so we can (a)
   // guarantee it won't accidentally be deleted before we're done, (b)
   // easily determine the bounding volume of the scene, and (c) report
   // statistics on all the bam file's scene graphs together when we've
   // finished.
 
-  PT_Node root = new Node;
-  NodeRelation *arc = new RenderRelation(root, node);
+  PT(PandaNode) root = new PandaNode("root");
+  root->add_child(node);
   _num_scene_graphs++;
 
   int num_nodes = _analyzer._num_nodes;
@@ -175,7 +175,7 @@ describe_scene_graph(Node *node) {
   num_nodes = _analyzer._num_nodes - num_nodes;
 
   nout << "  " << num_nodes << " nodes, bounding volume is "
-       << arc->get_bound() << "\n";
+       << root->get_bound() << "\n";
 
   if (_ls || _verbose_geoms || _verbose_transitions) {
     list_hierarchy(node, 0);
@@ -201,31 +201,44 @@ describe_general_object(TypedWritable *object) {
 //               information.
 ////////////////////////////////////////////////////////////////////
 void BamInfo::
-list_hierarchy(Node *node, int indent_level) {
-  indent(nout, indent_level) << *node << "\n";
+list_hierarchy(PandaNode *node, int indent_level) {
+  indent(nout, indent_level) << *node;
 
-  if (_verbose_geoms && node->is_of_type(GeomNode::get_class_type())) {
-    GeomNode *geom_node;
+  if (_verbose_transitions) {
+    nout << "\n";
+    if (!node->get_transform()->is_identity()) {
+      node->get_transform()->write(nout, indent_level);
+    }
+    if (!node->get_state()->is_empty()) {
+      node->get_state()->write(nout, indent_level);
+    }
+    if (!node->get_effects()->is_empty()) {
+      node->get_effects()->write(nout, indent_level);
+    }
+
+  } else {
+    if (!node->get_transform()->is_identity()) {
+      nout << " " << *node->get_transform();
+    }
+    if (!node->get_state()->is_empty()) {
+      nout << " " << *node->get_state();
+    }
+    if (!node->get_effects()->is_empty()) {
+      nout << " " << *node->get_effects();
+    }
+    nout << "\n";
+  }
+
+  if (_verbose_geoms && node->is_geom_node()) {
+    qpGeomNode *geom_node;
     DCAST_INTO_V(geom_node, node);
     geom_node->write_verbose(nout, indent_level);
   }
 
-  int num_children = node->get_num_children(RenderRelation::get_class_type());
+  int num_children = node->get_num_children();
   for (int i = 0; i < num_children; i++) {
-    int next_indent = indent_level + 2;
-
-    NodeRelation *arc = node->get_child(RenderRelation::get_class_type(), i);
-    if (_verbose_transitions) {
-      nout << "\n";
-      indent(nout, next_indent) << *arc << "\n";
-
-      arc->write_transitions(nout, next_indent);
-      nout << "\n";
-
-      next_indent += 2;
-    }
-
-    list_hierarchy(arc->get_child(), next_indent);
+    PandaNode *child = node->get_child(i);
+    list_hierarchy(child, indent_level + 2);
   }
 }
 

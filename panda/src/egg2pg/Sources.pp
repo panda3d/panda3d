@@ -6,13 +6,12 @@
 #begin lib_target
   #define TARGET egg2pg
   #define LOCAL_LIBS \
-    parametrics cull collide egg builder loader chan char switchnode
+    parametrics collide egg builder loader chan char
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
     animBundleMaker.h \
-    characterMaker.h \
     qpcharacterMaker.h \
     computedVerticesMaker.I computedVerticesMaker.h \
     computedVerticesMakerEntity.I computedVerticesMakerEntity.h \
@@ -21,18 +20,19 @@
     eggBinner.h \
     eggLoaderBase.h \
     qpeggLoader.h \
-    qpload_egg_file.h
+    qpload_egg_file.h \
+    loaderFileTypeEgg.h
 
   #define INCLUDED_SOURCES \
     animBundleMaker.cxx \
-    characterMaker.cxx \
     qpcharacterMaker.cxx \
     computedVerticesMaker.cxx \
     config_egg2pg.cxx \
     deferredNodeProperty.cxx \
     eggBinner.cxx \
     qpeggLoader.cxx \
-    qpload_egg_file.cxx
+    qpload_egg_file.cxx \
+    loaderFileTypeEgg.cxx
 
   #if $[DONT_COMBINE_PGRAPH]    
     #define SOURCES $[SOURCES] $[INCLUDED_SOURCES]

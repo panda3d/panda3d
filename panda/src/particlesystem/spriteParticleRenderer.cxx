@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "spriteParticleRenderer.h"
+
 #include "boundingSphere.h"
 #include "geom.h"
 #include "qpnodePath.h"
-
-#include "spriteParticleRenderer.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SpriteParticleRenderer::SpriteParticleRenderer

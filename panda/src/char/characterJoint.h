@@ -19,13 +19,10 @@
 #ifndef CHARACTERJOINT_H
 #define CHARACTERJOINT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <movingPartMatrix.h>
-#include <namedNode.h>
-#include <nodeRelation.h>
-#include <pt_NamedNode.h>
-#include <pt_NodeRelation.h>
+#include "movingPartMatrix.h"
+#include "pandaNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterJoint
@@ -47,14 +44,6 @@ public:
                                 bool parent_changed);
 
 PUBLISHED:
-  bool add_net_transform(NodeRelation *arc);
-  bool remove_net_transform(NodeRelation *arc);
-  bool has_net_transform(NodeRelation *arc) const;
-
-  bool add_local_transform(NodeRelation *arc);
-  bool remove_local_transform(NodeRelation *arc);
-  bool has_local_transform(NodeRelation *arc) const;
-
   bool add_net_transform(PandaNode *node);
   bool remove_net_transform(PandaNode *node);
   bool has_net_transform(PandaNode *node) const;
@@ -66,10 +55,6 @@ PUBLISHED:
   void clear_local_transforms();
 
 private:
-  typedef pset< PT_NodeRelation > ArcList;
-  ArcList _net_transform_arcs;
-  ArcList _local_transform_arcs;
-
   typedef pset< PT(PandaNode) > NodeList;
   NodeList _net_transform_nodes;
   NodeList _local_transform_nodes;
@@ -86,7 +71,6 @@ protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
 
 private:
-  int _num_net_arcs, _num_local_arcs;
   int _num_net_nodes, _num_local_nodes;
 
 public:
@@ -94,7 +78,6 @@ public:
   // for the CharacterMaker's convenenience while creating the
   // character.  It does not store any meaningful value after
   // creation is complete.
-  PT_NamedNode _geom_node;
   PT(PandaNode) _qpgeom_node;
 
   // These are filled in as the joint animates.

@@ -38,9 +38,8 @@ ConfigureFn(config_effects) {
 ////////////////////////////////////////////////////////////////////
 void
 init_libeffects() {
+#if 0  // temporarily disabled until we can port to new scene graph.
   LensFlareNode::init_type();
-
-  //Registration of writeable object's creation
-  //functions with BamReader's factory
   LensFlareNode::register_with_read_factory();
+#endif  // temporarily disabled until we can port to new scene graph.
 }

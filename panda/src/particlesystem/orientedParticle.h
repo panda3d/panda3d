@@ -21,8 +21,6 @@
 
 #include "baseParticle.h"
 
-#include <renderRelation.h>
-
 ///////////////////////////////////////////////////////////////////
 //        Class : OrientedParticle
 //  Description : Describes a particle that has angular

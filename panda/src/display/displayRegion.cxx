@@ -23,6 +23,7 @@
 #include "config_display.h"
 #include "displayRegion.h"
 #include "qpcamera.h"
+#include "dcast.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -157,31 +158,6 @@ get_window() const {
 GraphicsPipe *DisplayRegion::
 get_pipe() const {
   return (_layer != (GraphicsLayer *)NULL) ? _layer->get_pipe() : NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_camera
-//       Access: Public
-//  Description: Sets the camera that is associated with this
-//               DisplayRegion.  Each DisplayRegion may have zero or
-//               one cameras associated.  (If it has no camera,
-//               nothing is rendered.)  A given camera may be shared
-//               between multiple DisplayRegions.
-////////////////////////////////////////////////////////////////////
-void DisplayRegion::
-set_camera(Camera *camera) {
-  if (camera != _camera) {
-    if (_camera != (Camera *)NULL) {
-      // We need to tell the old camera we're not using him anymore.
-      _camera->remove_display_region(this);
-    }
-    _camera = camera;
-    if (_camera != (Camera *)NULL) {
-      // Now tell the new camera we are using him.
-      _camera->add_display_region(this);
-    }
-  }
-  set_cull_frustum(camera);
 }
 
 ////////////////////////////////////////////////////////////////////

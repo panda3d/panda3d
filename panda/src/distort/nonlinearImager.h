@@ -23,8 +23,11 @@
 
 #include "projectionScreen.h"
 #include "displayRegion.h"
-#include "camera.h"
+#include "qpcamera.h"
 #include "texture.h"
+#include "pandaNode.h"
+#include "qpnodePath.h"
+#include "pointerTo.h"
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -58,16 +61,16 @@ PUBLISHED:
   int get_num_screens() const;
   ProjectionScreen *get_screen(int index) const;
   void set_size(int index, int width, int height);
-  void set_source(int index, LensNode *source, Node *scene);
-  void set_source(int index, Camera *source);
+  void set_source(int index, qpLensNode *source, const qpNodePath &scene);
+  void set_source(int index, qpCamera *source);
 
   void set_active(int index, bool active);
   bool get_active(int index) const;
 
-  INLINE void set_camera(LensNode *camera);
-  INLINE LensNode *get_camera() const;
+  INLINE void set_camera(qpLensNode *camera);
+  INLINE qpLensNode *get_camera() const;
 
-  INLINE Node *get_internal_scene() const;
+  INLINE qpNodePath get_internal_scene() const;
 
   void recompute();
   void render();
@@ -76,10 +79,10 @@ private:
   class Screen {
   public:
     PT(ProjectionScreen) _screen;
-    NodeRelation *_mesh_arc;
+    qpNodePath _mesh;
     PT(Texture) _texture;
-    PT(LensNode) _source;
-    PT_Node _scene;
+    PT(qpLensNode) _source;
+    qpNodePath _scene;
     int _tex_width, _tex_height;
     UpdateSeq _last_screen;
     bool _active;
@@ -94,11 +97,11 @@ private:
   typedef pvector<Screen> Screens;
   Screens _screens;
 
-  PT(LensNode) _camera;
+  PT(qpLensNode) _camera;
 
-  PT(Camera) _internal_camera;
-  PT_Node _internal_scene_top;
-  PT_Node _internal_scene;
+  PT(qpCamera) _internal_camera;
+  qpNodePath _internal_scene;
+  PT(PandaNode) _internal_scene_node;
 
   bool _stale;
   UpdateSeq _camera_lens_change;

@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET chancfg
   #define LOCAL_LIBS \
-    putil display sgattrib linmath graph sgraph gobj display gsgbase \
+    putil display linmath gobj display gsgbase \
     mathutil
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    

@@ -24,7 +24,6 @@
 #include "config_text.h"
 #include "textFont.h"
 #include "textGlyph.h"
-#include "pt_Node.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
 #include "pmap.h"
@@ -43,7 +42,6 @@ class GeomPoint;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StaticTextFont : public TextFont {
 PUBLISHED:
-  StaticTextFont(Node *font_def);
   StaticTextFont(PandaNode *font_def);
 
   virtual void write(ostream &out, int indent_level) const;
@@ -53,9 +51,6 @@ public:
                          float &glyph_scale);
 
 private:
-  bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
-                            AllTransitionsWrapper &trans);
-  void find_characters(Node *root);
   void find_character_gsets(PandaNode *root, Geom *&ch, GeomPoint *&dot,
                             const RenderState *&state, 
                             const RenderState *net_state);
@@ -65,7 +60,6 @@ private:
   typedef pmap<int, PT(TextGlyph)> Glyphs;
   Glyphs _glyphs;
   float _font_height;
-  PT_Node _font;
   PT(PandaNode) _qpfont;
 
 public:

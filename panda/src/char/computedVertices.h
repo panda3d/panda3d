@@ -27,7 +27,6 @@
 #include "vector_ushort.h"
 #include "typedWritableReferenceCount.h"
 
-class Character;
 class qpCharacter;
 class CharacterJoint;
 
@@ -42,12 +41,10 @@ class EXPCL_PANDA ComputedVertices : public TypedWritableReferenceCount {
 public:
   INLINE ComputedVertices();
 
-  void update(Character *character);
   void update(qpCharacter *character);
-  void make_orig(Character *character);
   void make_orig(qpCharacter *character);
 
-  void write(ostream &out, Character *character) const;
+  void write(ostream &out, qpCharacter *character) const;
 
 private:
   typedef vector_ushort Vertices;

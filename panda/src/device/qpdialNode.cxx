@@ -19,6 +19,7 @@
 #include "qpdialNode.h"
 #include "config_device.h"
 #include "dataNodeTransmit.h"
+#include "dcast.h"
 
 TypeHandle qpDialNode::_type_handle;
 

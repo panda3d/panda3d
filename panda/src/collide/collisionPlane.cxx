@@ -18,9 +18,7 @@
 
 
 #include "collisionPlane.h"
-#include "collisionHandler.h"
 #include "qpcollisionHandler.h"
-#include "collisionEntry.h"
 #include "qpcollisionEntry.h"
 #include "collisionSphere.h"
 #include "collisionRay.h"
@@ -36,8 +34,6 @@
 #include "omniBoundingVolume.h"
 #include "geomQuad.h"
 
-#include "geomNode.h"
-
 TypeHandle CollisionPlane::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -48,20 +44,6 @@ TypeHandle CollisionPlane::_type_handle;
 CollisionSolid *CollisionPlane::
 make_copy() {
   return new CollisionPlane(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::test_intersection
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPlane::
-test_intersection(CollisionHandler *, const CollisionEntry &,
-                  const CollisionSolid *) const {
-  // Planes cannot currently be intersected from, only into.  Do not
-  // add a CollisionPlane to a CollisionTraverser.
-  nassertr(false, 0);
-  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,7 +68,7 @@ test_intersection(qpCollisionHandler *, const qpCollisionEntry &,
 void CollisionPlane::
 xform(const LMatrix4f &mat) {
   _plane = _plane * mat;
-  clear_viz_arcs();
+  mark_viz_stale();
   mark_bound_stale();
 }
 
@@ -128,84 +110,6 @@ recompute_bound() {
   // Less than ideal: we throw away whatever we just allocated in
   // BoundedObject.
   return set_bound_ptr(new OmniBoundingVolume);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPlane::
-test_intersection_from_sphere(CollisionHandler *record,
-                              const CollisionEntry &entry) const {
-  const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
-
-  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
-  LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
-  float from_radius = length(from_radius_v);
-
-  float dist = dist_to_plane(from_center);
-  if (dist > from_radius) {
-    // No intersection.
-    return 0;
-  }
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
-      << entry.get_into_node_path() << "\n";
-  }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-
-  LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
-  float into_depth = from_radius - dist;
-
-  new_entry->set_into_surface_normal(into_normal);
-  new_entry->set_into_depth(into_depth);
-
-  record->add_entry(new_entry);
-  return 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPlane::
-test_intersection_from_ray(CollisionHandler *record,
-                           const CollisionEntry &entry) const {
-  const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
-
-  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_space();
-  LVector3f from_direction = ray->get_direction() * entry.get_wrt_space();
-
-  float t;
-  if (!_plane.intersects_line(t, from_origin, from_direction)) {
-    // No intersection.
-    return 0;
-  }
-
-  if (t < 0.0f) {
-    // The intersection point is before the start of the ray.
-    return 0;
-  }
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
-      << entry.get_into_node_path() << "\n";
-  }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-
-  LPoint3f into_intersection_point = from_origin + t * from_direction;
-  new_entry->set_into_intersection_point(into_intersection_point);
-
-  record->add_entry(new_entry);
-  return 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -284,78 +188,6 @@ test_intersection_from_ray(qpCollisionHandler *record,
 
   record->add_entry(new_entry);
   return 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::recompute_viz
-//       Access: Public, Virtual
-//  Description: Rebuilds the geometry that will be used to render a
-//               visible representation of the collision solid.
-////////////////////////////////////////////////////////////////////
-void CollisionPlane::
-recompute_viz(Node *parent) {
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "Recomputing viz for " << *this << " on " << *parent << "\n";
-  }
-
-  // Since we can't represent an infinite plane, we'll have to be
-  // satisfied with drawing a big polygon.  Choose four points on the
-  // plane to be the corners of the polygon.
-
-  // We must choose four points fairly reasonably spread apart on
-  // the plane.  We'll start with a center point and one corner
-  // point, and then use cross products to find the remaining three
-  // corners of a square.
-
-  // The center point will be on the axis with the largest
-  // coefficent.  The first corner will be diagonal in the other two
-  // dimensions.
-
-  LPoint3f cp;
-  LVector3f p1, p2, p3, p4;
-
-  LVector3f normal = get_normal();
-  float D = _plane._d;
-
-  if (fabs(normal[0]) > fabs(normal[1]) &&
-      fabs(normal[0]) > fabs(normal[2])) {
-    // X has the largest coefficient.
-    cp.set(-D / normal[0], 0.0f, 0.0f);
-    p1 = LPoint3f(-(normal[1] + normal[2] + D)/normal[0], 1.0f, 1.0f) - cp;
-
-  } else if (fabs(normal[1]) > fabs(normal[2])) {
-    // Y has the largest coefficient.
-    cp.set(0.0f, -D / normal[1], 0.0f);
-    p1 = LPoint3f(1.0f, -(normal[0] + normal[2] + D)/normal[1], 1.0f) - cp;
-
-  } else {
-    // Z has the largest coefficient.
-    cp.set(0.0f, 0.0f, -D / normal[2]);
-    p1 = LPoint3f(1.0f, 1.0f, -(normal[0] + normal[1] + D)/normal[2]) - cp;
-  }
-
-  p1.normalize();
-  p2 = cross(normal, p1);
-  p3 = cross(normal, p2);
-  p4 = cross(normal, p3);
-
-  static const double plane_scale = 10.0;
-
-  PTA_Vertexf verts;
-  verts.push_back(cp + p1 * plane_scale);
-  verts.push_back(cp + p2 * plane_scale);
-  verts.push_back(cp + p3 * plane_scale);
-  verts.push_back(cp + p4 * plane_scale);
-
-  GeomQuad *quad = new GeomQuad;
-  quad->set_coords(verts);
-  quad->set_num_prims(1);
-
-  GeomNode *viz = new GeomNode("viz-plane");
-  viz->add_geom(quad);
-  add_solid_viz(parent, viz);
-  add_wireframe_viz(parent, viz);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -20,11 +20,9 @@
 #include "config_distort.h"
 
 #include "graphicsStateGuardian.h"
-#include "textureTransition.h"
 #include "matrixLens.h"
-#include "renderRelation.h"
 #include "graphicsWindow.h"
-#include "cullFaceTransition.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::Constructor
@@ -39,21 +37,19 @@ NonlinearImager::
 NonlinearImager(DisplayRegion *dr) {
   _dr = dr;
 
-  _internal_camera = new Camera("NonlinearImager");
+  _internal_camera = new qpCamera("NonlinearImager");
   _internal_camera->set_lens(new MatrixLens);
-  _internal_scene_top = new NamedNode("NonlinearImager");
-  _internal_scene = new NamedNode("screens");
-  _internal_camera->set_scene(_internal_scene_top);
-  _dr->set_camera(_internal_camera);
+  _internal_scene_node = new PandaNode("screens");
+  _internal_scene = qpNodePath(_internal_scene_node);
+  _internal_camera->set_scene(_internal_scene);
 
-  RenderRelation *top_arc = 
-    new RenderRelation(_internal_scene_top, _internal_scene);
+  qpNodePath camera_np = _internal_scene.attach_new_node(_internal_camera);
+  _dr->set_qpcamera(camera_np);
 
   // Enable face culling on the wireframe mesh.  This will help us to
   // cull out invalid polygons that result from vertices crossing a
   // singularity (for instance, at the back of a fisheye lens).
-  CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
-  top_arc->set_transition(cfa);
+  _internal_scene.set_two_sided(0);
 
   _stale = true;
 }
@@ -65,8 +61,8 @@ NonlinearImager(DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 NonlinearImager::
 ~NonlinearImager() {
-  _internal_camera->set_scene((Node *)NULL);
-  _dr->set_camera((Camera *)NULL);
+  _internal_camera->set_scene(qpNodePath());
+  _dr->set_qpcamera(qpNodePath());
   remove_all_screens();
 }
 
@@ -100,7 +96,6 @@ add_screen(ProjectionScreen *screen) {
   _screens.push_back(Screen());
   Screen &new_screen = _screens.back();
   new_screen._screen = screen;
-  new_screen._mesh_arc = (NodeRelation *)NULL;
   new_screen._texture = (Texture *)NULL;
   new_screen._tex_width = 256;
   new_screen._tex_height = 256;
@@ -110,9 +105,9 @@ add_screen(ProjectionScreen *screen) {
   // If the LensNode associated with the ProjectionScreen is an actual
   // Camera, then it has a scene associated.  Otherwise, the user will
   // have to specify the scene later.
-  LensNode *projector = screen->get_projector();
-  if (projector->is_of_type(Camera::get_class_type())) {
-    Camera *camera = DCAST(Camera, projector);
+  qpLensNode *projector = screen->get_projector();
+  if (projector->is_of_type(qpCamera::get_class_type())) {
+    qpCamera *camera = DCAST(qpCamera, projector);
     new_screen._scene = camera->get_scene();
   }
 
@@ -148,9 +143,7 @@ void NonlinearImager::
 remove_screen(int index) {
   nassertv_always(index >= 0 && index < (int)_screens.size());
   Screen &screen = _screens[index];
-  if (screen._mesh_arc != (NodeRelation *)NULL) {
-    remove_arc(screen._mesh_arc);
-  }
+  screen._mesh.remove_node();
   _screens.erase(_screens.begin() + index);
 }
 
@@ -164,9 +157,7 @@ remove_all_screens() {
   Screens::iterator si;
   for (si = _screens.begin(); si != _screens.end(); ++si) {
     Screen &screen = (*si);
-    if (screen._mesh_arc != (NodeRelation *)NULL) {
-      remove_arc(screen._mesh_arc);
-    }
+    screen._mesh.remove_node();
   }
 
   _screens.clear();
@@ -221,7 +212,7 @@ set_size(int index, int width, int height) {
 //               screen.
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
-set_source(int index, LensNode *source, Node *scene) {
+set_source(int index, qpLensNode *source, const qpNodePath &scene) {
   nassertv(index >= 0 && index < (int)_screens.size());
   _screens[index]._source = source;
   _screens[index]._scene = scene;
@@ -239,7 +230,7 @@ set_source(int index, LensNode *source, Node *scene) {
 //               Camera itself.
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
-set_source(int index, Camera *source) {
+set_source(int index, qpCamera *source) {
   nassertv(index >= 0 && index < (int)_screens.size());
   _screens[index]._source = source;
   _screens[index]._scene = source->get_scene();
@@ -260,10 +251,7 @@ set_active(int index, bool active) {
   if (!active) {
     Screen &screen = _screens[index];
     // If we've just made this screen inactive, remove its mesh.
-    if (screen._mesh_arc != (NodeRelation *)NULL) {
-      remove_arc(screen._mesh_arc);
-      screen._mesh_arc = (NodeRelation *)NULL;
-    }
+    screen._mesh.remove_node();
     screen._texture.clear();
   } else {
     // If we've just made it active, it needs to be recomputed.
@@ -296,7 +284,7 @@ recompute() {
     }
   }
 
-  if (_camera != (LensNode *)NULL && _camera->get_lens() != (Lens *)NULL) {
+  if (_camera != (qpLensNode *)NULL && _camera->get_lens() != (Lens *)NULL) {
     _camera_lens_change = _camera->get_lens()->get_last_change();
   }
   _stale = false;
@@ -331,7 +319,7 @@ render() {
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
 recompute_if_stale() {
-  if (_camera != (LensNode *)NULL && 
+  if (_camera != (qpLensNode *)NULL && 
       _camera->get_lens() != (Lens *)NULL) {
     UpdateSeq lens_change = _camera->get_lens()->get_last_change();
     if (_stale || lens_change != _camera_lens_change) {
@@ -359,18 +347,15 @@ recompute_if_stale() {
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
 recompute_screen(NonlinearImager::Screen &screen) {
-  if (screen._mesh_arc != (NodeRelation *)NULL) {
-    remove_arc(screen._mesh_arc);
-    screen._mesh_arc = (NodeRelation *)NULL;
-  }
+  screen._mesh.remove_node();
   screen._texture.clear();
-  if (_camera == (LensNode *)NULL || !screen._active) {
+  if (_camera == (qpLensNode *)NULL || !screen._active) {
     // Not much we can do without a camera.
     return;
   }
 
-  PT_Node mesh = screen._screen->make_flat_mesh(_camera);
-  screen._mesh_arc = new RenderRelation(_internal_scene, mesh);
+  PT(PandaNode) mesh = screen._screen->make_flat_mesh(_camera);
+  screen._mesh = _internal_scene.attach_new_node(mesh);
 
   PT(Texture) texture = new Texture;
   texture->set_minfilter(Texture::FT_linear);
@@ -381,7 +366,7 @@ recompute_screen(NonlinearImager::Screen &screen) {
   texture->_pbuffer->set_ysize(screen._tex_height);
 
   screen._texture = texture;
-  screen._mesh_arc->set_transition(new TextureTransition(texture));
+  screen._mesh.set_texture(texture);
   screen._last_screen = screen._screen->get_last_screen();
 }
 
@@ -393,20 +378,23 @@ recompute_screen(NonlinearImager::Screen &screen) {
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
 render_screen(NonlinearImager::Screen &screen) {
-  if (screen._source == (LensNode *)NULL) {
+  if (screen._source == (qpLensNode *)NULL) {
     distort_cat.error()
       << "No source lens specified for screen " << screen._screen->get_name()
       << "\n";
     return;
   }
 
-  if (screen._scene == (Node *)NULL) {
+  if (screen._scene.is_empty()) {
     distort_cat.error()
       << "No scene specified for screen " << screen._screen->get_name()
       << "\n";
     return;
   }
 
+  // Got to update this to new scene graph.
+
+  /*
   GraphicsStateGuardian *gsg = _dr->get_window()->get_gsg();
 
   // Make a display region of the proper size and clear it to prepare for
@@ -428,4 +416,5 @@ render_screen(NonlinearImager::Screen &screen) {
   
   // Restore the original display region.
   gsg->pop_display_region(old_dr);
+  */
 }

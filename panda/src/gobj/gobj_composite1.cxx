@@ -1,4 +1,5 @@
 
+#include "boundedObject.cxx"
 #include "geom.cxx"
 #include "geomLine.cxx"
 #include "geomLinestrip.cxx"

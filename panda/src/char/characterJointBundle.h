@@ -19,13 +19,13 @@
 #ifndef CHARACTERJOINTBUNDLE_H
 #define CHARACTERJOINTBUNDLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <partBundle.h>
-#include <partGroup.h>
-#include <animControl.h>
+#include "partBundle.h"
+#include "partGroup.h"
+#include "animControl.h"
 
-class Character;
+class qpCharacter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterJointBundle
@@ -40,7 +40,7 @@ public:
   CharacterJointBundle(const string &name = "");
 
 PUBLISHED:
-  INLINE Character *get_node() const;
+  INLINE qpCharacter *get_qpnode() const;
 
 public:
   virtual PartGroup *make_copy() const;

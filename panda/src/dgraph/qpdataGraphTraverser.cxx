@@ -19,6 +19,7 @@
 #include "qpdataGraphTraverser.h"
 #include "qpdataNode.h"
 #include "config_dgraph.h"
+#include "dcast.h"
 
 
 ////////////////////////////////////////////////////////////////////

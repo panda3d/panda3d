@@ -1287,6 +1287,17 @@ children_changed() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::transform_changed
+//       Access: Protected, Virtual
+//  Description: Called after the node's transform has been changed
+//               for any reason, this just provides a hook so derived
+//               classes can do something special in this case.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+transform_changed() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::r_copy_subgraph
 //       Access: Protected, Virtual
 //  Description: This is the recursive implementation of copy_subgraph().

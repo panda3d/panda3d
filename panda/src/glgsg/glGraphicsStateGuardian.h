@@ -29,13 +29,10 @@
 #include "pixelBuffer.h"
 #include "displayRegion.h"
 #include "material.h"
-#include "textureApplyProperty.h"
-#include "depthTestProperty.h"
-#include "stencilProperty.h"
-#include "fog.h"
 #include "depthTestAttrib.h"
 #include "textureApplyAttrib.h"
 #include "pointerToArray.h"
+#include "qpfog.h"
 
 #ifdef WIN32_VC
 // Must include windows.h before gl.h on NT
@@ -77,15 +74,6 @@ public:
   virtual void prepare_display_region();
   virtual bool prepare_lens();
 
-  virtual void render_frame();
-  virtual void render_scene(Node *root, LensNode *projnode);
-  virtual void render_subgraph(RenderTraverser *traverser,
-                               Node *subgraph, LensNode *projnode,
-                               const AllTransitionsWrapper &net_trans);
-  virtual void render_subgraph(RenderTraverser *traverser,
-                               Node *subgraph,
-                               const AllTransitionsWrapper &net_trans);
-
   virtual void draw_point(GeomPoint *geom, GeomContext *gc);
   virtual void draw_line(GeomLine *geom, GeomContext *gc);
   virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc);
@@ -101,15 +89,13 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
-  virtual void draw_geom_node(GeomNode *node, GeomNodeContext *gnc);
+  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node);
+  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+                              GeomNodeContext *gnc);
   virtual void release_geom_node(GeomNodeContext *gnc);
 
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr);
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
-                            const RenderBuffer &rb);
-  virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr);
-  virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr,
                             const RenderBuffer &rb);
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);
@@ -119,38 +105,9 @@ public:
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb);
-  virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const NodeTransitions& na=NodeTransitions());
-  virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const RenderBuffer &rb,
-                                 const NodeTransitions& na=NodeTransitions());
 
   virtual void apply_material(const Material *material);
-  virtual void apply_fog(Fog *fog);
   void apply_fog(qpFog *fog);
-
-  virtual void issue_transform(const TransformTransition *attrib);
-  virtual void issue_color_transform(const ColorMatrixTransition *attrib);
-  virtual void issue_alpha_transform(const AlphaTransformTransition *attrib);
-  virtual void issue_tex_matrix(const TexMatrixTransition *attrib);
-  virtual void issue_color(const ColorTransition *attrib);
-  virtual void issue_texture(const TextureTransition *attrib);
-  virtual void issue_material(const MaterialTransition *attrib);
-  virtual void issue_render_mode(const RenderModeTransition *attrib);
-  virtual void issue_color_blend(const ColorBlendTransition *attrib);
-  virtual void issue_texture_apply(const TextureApplyTransition *attrib);
-  virtual void issue_color_mask(const ColorMaskTransition *attrib);
-  virtual void issue_depth_test(const DepthTestTransition *attrib);
-  virtual void issue_depth_write(const DepthWriteTransition *attrib);
-  virtual void issue_tex_gen(const TexGenTransition *attrib);
-  virtual void issue_cull_face(const CullFaceTransition *attrib);
-  virtual void issue_stencil(const StencilTransition *attrib);
-  virtual void issue_clip_plane(const ClipPlaneTransition *attrib);
-  virtual void issue_transparency(const TransparencyTransition *attrib);
-  virtual void issue_fog(const FogTransition *attrib);
-  virtual void issue_linesmooth(const LinesmoothTransition *attrib);
-  virtual void issue_point_shape(const PointShapeTransition *attrib);
-  virtual void issue_polygon_offset(const PolygonOffsetTransition *attrib);
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
@@ -174,9 +131,6 @@ public:
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
-
-  virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
-  virtual void end_decal(GeomNode *base_geom);
 
   virtual bool depth_offset_decals();
 
@@ -273,18 +227,23 @@ protected:
   void specify_texture(Texture *tex);
   bool apply_texture_immediate(Texture *tex);
 
+  void draw_texture(TextureContext *tc, const DisplayRegion *dr);
+  void draw_texture(TextureContext *tc, const DisplayRegion *dr, 
+                    const RenderBuffer &rb);
+  void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
+  void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
+                         const RenderBuffer &rb);
+
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   GLenum get_texture_filter_type(Texture::FilterType ft);
   GLenum get_image_type(PixelBuffer::Type type);
   GLenum get_external_image_format(PixelBuffer::Format format);
   GLenum get_internal_image_format(PixelBuffer::Format format);
-  GLint get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const;
   GLint get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const;
-  GLenum get_depth_func_type(DepthTestProperty::Mode m) const;
   GLenum get_depth_func_type(DepthTestAttrib::Mode m) const;
-  GLenum get_stencil_func_type(StencilProperty::Mode m) const;
-  GLenum get_stencil_action_type(StencilProperty::Action a) const;
-  GLenum get_fog_mode_type(Fog::Mode m) const;
+  GLenum get_fog_mode_type(qpFog::Mode m) const;
+
+  static CPT(RenderState) get_untextured_state();
 
 #ifndef NDEBUG
   void build_phony_mipmaps(Texture *tex);

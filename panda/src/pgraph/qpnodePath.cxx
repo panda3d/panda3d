@@ -45,6 +45,7 @@
 #include "textureCollection.h"
 #include "globPattern.h"
 #include "config_gobj.h"
+#include "dcast.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.

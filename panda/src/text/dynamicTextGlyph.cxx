@@ -25,8 +25,6 @@
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
 #include "renderState.h"
-#include "textureTransition.h"
-#include "transparencyTransition.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::Destructor
@@ -160,12 +158,6 @@ make_geom(int bitmap_top, int bitmap_left,
   _geom->set_colors(colors, G_OVERALL);
   _geom->set_lengths(lengths);
   _geom->set_num_prims(1);
-
-  TextureTransition *tex = new TextureTransition(_page);
-  TransparencyTransition *trans = new TransparencyTransition(TransparencyProperty::M_alpha);
-
-  _trans.set_transition(tex);
-  _trans.set_transition(trans);
 
   _state = RenderState::make(TextureAttrib::make(_page),
                              TransparencyAttrib::make(TransparencyAttrib::M_alpha));

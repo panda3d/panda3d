@@ -22,10 +22,7 @@
 #include "pandabase.h"
 
 #include "luse.h"
-#include "pt_Node.h"
 
-class NodeRelation;
-class Node;
 class PandaNode;
 class qpNodePath;
 
@@ -65,13 +62,9 @@ PUBLISHED:
 
 public:
   bool xform(const LMatrix4f &mat);
-  NodeRelation *generate_into(Node *node, const LVecBase4f &frame);
   qpNodePath generate_into(const qpNodePath &parent, const LVecBase4f &frame);
 
 private:
-  PT_Node generate_flat_geom(const LVecBase4f &frame);
-  PT_Node generate_bevel_geom(const LVecBase4f &frame, bool in);
-  PT_Node generate_groove_geom(const LVecBase4f &frame, bool in);
   PT(PandaNode) qpgenerate_flat_geom(const LVecBase4f &frame);
   PT(PandaNode) qpgenerate_bevel_geom(const LVecBase4f &frame, bool in);
   PT(PandaNode) qpgenerate_groove_geom(const LVecBase4f &frame, bool in);

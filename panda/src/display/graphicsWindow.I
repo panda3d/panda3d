@@ -418,20 +418,6 @@ get_button_event(int device) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::render_and_update
-//       Access: Published
-//  Description: Renders the scene associated with the window and
-//               updates the window.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsWindow::
-render_and_update() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    _gsg->render_frame();
-  }
-  update();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::win_display_regions_changed
 //       Access: Public
 //  Description: Intended to be called when the active state on a

@@ -20,6 +20,7 @@
 
 #include "qpcollisionNode.h"
 #include "pandaNode.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DeferredNodeProperty::Constructor

@@ -17,6 +17,7 @@
 #include "renderEffects.cxx"
 #include "renderModeAttrib.cxx"
 #include "renderState.cxx"
+#include "sceneGraphAnalyzer.cxx"
 #include "qpsceneGraphReducer.cxx"
 #include "selectiveChildNode.cxx"
 #include "qpsequenceNode.cxx"

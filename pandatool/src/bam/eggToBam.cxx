@@ -20,10 +20,8 @@
 
 #include "config_util.h"
 #include "bamFile.h"
-#include "nodePath.h"
-#include "load_egg_file.h"
 #include "qpload_egg_file.h"
-#include "config_egg2sg.h"
+#include "config_egg2pg.h"
 #include "config_gobj.h"
 #include "config_chan.h"
 
@@ -43,13 +41,6 @@ EggToBam() :
   // -f is always in effect for egg2bam.  It doesn't make sense to
   // provide it as an option to the user.
   remove_option("f");
-
-  add_option
-    ("s", "", 0,
-     "Writes an old-style bam file, with the old scene graph code, "
-     "suitable for loading in demo (but won't work in pview).  This is "
-     "a temporary hack.",
-     &EggToBam::dispatch_none, &_pgraph_style);
 
   add_option
     ("tp", "path", 0,
@@ -145,69 +136,32 @@ run() {
     _data.set_coordinate_system(CS_zup_right);
   }
 
-  if (!_pgraph_style) {
-    // New style scene graph.
-
-    PT(PandaNode) root = qpload_egg_data(_data);
-    if (root == (PandaNode *)NULL) {
-      nout << "Unable to build scene graph from egg file.\n";
+  PT(PandaNode) root = qpload_egg_data(_data);
+  if (root == (PandaNode *)NULL) {
+    nout << "Unable to build scene graph from egg file.\n";
+    exit(1);
+  }
+  
+  if (_ls) {
+    root->ls(nout, 0);
+  }
+  
+  // This should be guaranteed because we pass false to the
+  // constructor, above.
+  nassertv(has_output_filename());
+  
+  Filename filename = get_output_filename();
+  filename.make_dir();
+  nout << "Writing " << filename << "\n";
+  BamFile bam_file;
+  if (!bam_file.open_write(filename)) {
+    nout << "Error in writing.\n";
+    exit(1);
+  }
+  
+  if (!bam_file.write_object(root)) {
+    nout << "Error in writing.\n";
       exit(1);
-    }
-
-    if (_ls) {
-      root->ls(nout, 0);
-    }
-    
-    // This should be guaranteed because we pass false to the
-    // constructor, above.
-    nassertv(has_output_filename());
-    
-    Filename filename = get_output_filename();
-    filename.make_dir();
-    nout << "Writing " << filename << "\n";
-    BamFile bam_file;
-    if (!bam_file.open_write(filename)) {
-      nout << "Error in writing.\n";
-      exit(1);
-    }
-    
-    if (!bam_file.write_object(root)) {
-      nout << "Error in writing.\n";
-      exit(1);
-    }
-
-  } else {
-    // Old style scene graph.
-
-    PT_NamedNode root = load_egg_data(_data);
-    if (root == (NamedNode *)NULL) {
-      nout << "Unable to build scene graph from egg file.\n";
-      exit(1);
-    }
-
-    if (_ls) {
-      // If we wanted to list the contents, we need a NodePath.
-      NodePath np(root);
-      np.ls();
-    }
-    
-    // This should be guaranteed because we pass false to the
-    // constructor, above.
-    nassertv(has_output_filename());
-    
-    Filename filename = get_output_filename();
-    filename.make_dir();
-    nout << "Writing " << filename << "\n";
-    BamFile bam_file;
-    if (!bam_file.open_write(filename)) {
-      nout << "Error in writing.\n";
-      exit(1);
-    }
-    
-    if (!bam_file.write_object(root)) {
-      nout << "Error in writing.\n";
-      exit(1);
-    }
   }
 }
 

@@ -16,12 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pandabase.h"
-#include "directRenderTraverser.h"
-#include "cullTraverser.h"
+#include "dxGraphicsStateGuardian8.h"
+#include "config_dxgsg8.h"
+#include "d3dx8.h"
+
 #include "displayRegion.h"
-#include "lensNode.h"
-#include "camera.h"
 #include "renderBuffer.h"
 #include "geom.h"
 #include "geomSphere.h"
@@ -29,30 +28,11 @@
 #include "graphicsWindow.h"
 #include "graphicsChannel.h"
 #include "lens.h"
-#include "get_rel_pos.h"
 #include "perspectiveLens.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
 #include "spotlight.h"
-#include "transformTransition.h"
-#include "colorTransition.h"
-#include "textureTransition.h"
-#include "renderModeTransition.h"
-#include "materialTransition.h"
-#include "colorBlendTransition.h"
-#include "colorMaskTransition.h"
-#include "texMatrixTransition.h"
-#include "texGenTransition.h"
-#include "textureApplyTransition.h"
-#include "clipPlaneTransition.h"
-#include "transparencyTransition.h"
-#include "fogTransition.h"
-#include "linesmoothTransition.h"
-#include "depthTestTransition.h"
-#include "depthWriteTransition.h"
-#include "cullFaceTransition.h"
-#include "stencilTransition.h"
 #include "textureAttrib.h"
 #include "lightAttrib.h"
 #include "cullFaceAttrib.h"
@@ -71,10 +51,6 @@
 #include "pStatTimer.h"
 #include "pStatCollector.h"
 #endif
-
-#include "config_dxgsg8.h"
-#include "dxGraphicsStateGuardian8.h"
-#include "d3dx8.h"
 
 // This is a temporary hack.  The whole color_transform and
 // alpha_transform system will soon be replaced with something a
@@ -306,15 +282,6 @@ reset_panda_gsg(void) {
     //   stmt below is incorrect for general mono displays, need both right and left flags set.
     //   stereo not supported in dx8
     //    _buffer_mask &= ~RenderBuffer::T_right;
-
-    if(_render_traverser.is_null()) {
-        // Create a default RenderTraverser.
-        if (dx_cull_traversal) {
-            _render_traverser = new CullTraverser(this, RenderRelation::get_class_type());
-        } else {
-            _render_traverser = new DirectRenderTraverser(this, RenderRelation::get_class_type());
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,8 +300,6 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 
     _pFvfBufBasePtr = NULL;
     _index_buf=NULL;
-    _clip_plane_enabled = (bool *)NULL;
-    _cur_clip_plane_enabled = (bool *)NULL;
 
     _pStatMeterFont=NULL;
     _bShowFPSMeter = false;
@@ -388,7 +353,8 @@ reset(void) {
 void DXGraphicsStateGuardian::
 free_dxgsg_objects(void) {
     // dont want a full reset of gsg, just a state clear      
-    GraphicsStateGuardian::clear_cached_state(); // want gsg to pass all state settings through
+    set_state(RenderState::make_empty());
+    // want gsg to pass all state settings through
 
     _bDXisReady = false;
     
@@ -414,7 +380,7 @@ dx_init(HCURSOR hMouseCursor) {
     HRESULT hr;
 
     // make sure gsg passes all current state down to us
-    GraphicsStateGuardian::clear_cached_state(); 
+    set_state(RenderState::make_empty());
     // want gsg to pass all state settings down so any non-matching defaults we set here get overwritten
 
     assert(scrn.pD3D8!=NULL);
@@ -631,7 +597,7 @@ dx_init(HCURSOR hMouseCursor) {
     enable_line_smooth(false);
 //  enable_multisample(true);
 
-    _current_fill_mode = RenderModeProperty::M_filled;
+    _current_fill_mode = RenderModeAttrib::M_filled;
     scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
     scrn.pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);  // Use the diffuse vertex color. 
@@ -646,29 +612,10 @@ dx_init(HCURSOR hMouseCursor) {
     if(dx_auto_normalize_lighting)
          scrn.pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
 
-    // Set up the clip plane id map  (need to rewrite this)
-    if(scrn.d3dcaps.MaxUserClipPlanes==0)
-        _max_clip_planes = D3DMAXUSERCLIPPLANES;
-      else _max_clip_planes = scrn.d3dcaps.MaxUserClipPlanes;
-
-    if(_available_clip_plane_ids.is_null())
-        _available_clip_plane_ids = PTA(PlaneNode*)::empty_array(_max_clip_planes);
-
-    if(_clip_plane_enabled == NULL) 
-        _clip_plane_enabled = new bool[_max_clip_planes];
-
-    if(_cur_clip_plane_enabled == NULL)
-        _cur_clip_plane_enabled = new bool[_max_clip_planes];
-
-    for (int i = 0; i < _max_clip_planes; i++) {
-        _available_clip_plane_ids[i] = NULL;
-        _clip_plane_enabled[i] = false;
-    }
-
     // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
     // initial conditions must be correct
 
-    _CurTexBlendMode = TextureApplyProperty::M_modulate;
+    _CurTexBlendMode = TextureApplyAttrib::M_modulate;
     SetTextureBlendMode(_CurTexBlendMode,false);
     _texturing_enabled = false;
     scrn.pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
@@ -785,15 +732,13 @@ dx_init(HCURSOR hMouseCursor) {
     PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
     // Make sure the DX state matches all of our initial attribute states.
-    PT(DepthTestTransition) dta = new DepthTestTransition;
-    PT(DepthWriteTransition) dwa = new DepthWriteTransition;
-    PT(CullFaceTransition) cfa = new CullFaceTransition;
-    PT(TextureTransition) ta = new TextureTransition;
-
+    CPT(RenderAttrib) dta = DepthTestAttrib::make(DepthTestAttrib::M_less);
+    CPT(RenderAttrib) dwa = DepthWriteAttrib::make(DepthWriteAttrib::M_on);
+    CPT(RenderAttrib) cfa = CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise);
+    
     dta->issue(this);
     dwa->issue(this);
     cfa->issue(this);
-    ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
 
     PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 }
@@ -997,86 +942,6 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3D
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::render_frame
-//       Access: Public, Virtual
-//  Description: Renders an entire frame, including all display
-//               regions within the frame, and includes any necessary
-//               pre- and post-processing like swapping buffers.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-render_frame() {
-  if (!_bDXisReady) {
-    //if(dxgsg_cat.is_spam())
-    //  dxgsg_cat.spam() << "dx is not ready, skipping render_frame()\n";
-    return;
-  }
-
-  _win->begin_frame();
-
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "begin frame --------------------------------------------" << endl;
-#endif
-
-    _decal_level = 0;
-
-    if (_clear_buffer_type != 0) {
-      // First, clear the entire window.
-      #ifndef NO_MULTIPLE_DISPLAY_REGIONS
-        PT(DisplayRegion) win_dr = _win->make_scratch_display_region(_win->get_width(), _win->get_height());
-        clear(get_render_buffer(_clear_buffer_type), win_dr);
-      #else
-        clear(get_render_buffer(_clear_buffer_type));     
-      #endif
-    }
-
-#if 0
-    int max_channel_index = _win->get_max_channel_index();
-    for (int c = 0; c < max_channel_index; c++) {
-        if (_win->is_channel_defined(c)) {
-#endif
-
-    // only 1 channel on dx currently
-    assert(_win->get_max_channel_index()==1);
-    assert(_win->is_channel_defined(0));
-
-            if(_panda_gfx_channel->is_active()) {
-                // Now render each of our layers in order.
-
-                int num_layers = _panda_gfx_channel->get_num_layers();
-                for (int l = 0; l < num_layers; l++) {
-                    GraphicsLayer *layer = _panda_gfx_channel->get_layer(l);
-                    if (layer->is_active()) {
-                        int num_drs = layer->get_num_drs();
-                        for (int d = 0; d < num_drs; d++) {
-                            DisplayRegion *dr = layer->get_dr(d);
-                            Camera *cam = dr->get_camera();
-
-                            // For each display region, render from the camera's view.
-                            if (dr->is_active() && cam != (Camera *)NULL &&
-                                cam->is_active() && cam->get_scene() != (Node *)NULL) {
-                                DisplayRegionStack old_dr = push_display_region(dr);
-                                prepare_display_region();
-                                render_scene(cam->get_scene(), cam);
-                                pop_display_region(old_dr);
-                            }
-                        }
-                    }       //      if (layer->is_active())
-                }
-            }       //      if (chan->is_active())
-#if 0
-        }
-    }   //  for (int c = 0; c < max_channel_index; c++)
-#endif
-
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug() << "end frame ----------------------------------------------" << endl;
-#endif
-
-    _win->end_frame();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::report_texmgr_stats
 //       Access: Protected
 //  Description: Reports the DX texture manager's activity to PStats.
@@ -1194,147 +1059,6 @@ report_texmgr_stats() {
 
 #endif
 
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::render_scene
-//       Access: Public, Virtual
-//  Description: Renders an entire scene, from the root node of the
-//               scene graph, as seen from a particular LensNode
-//               and with a given initial state.  This initial state
-//               may be modified during rendering.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-render_scene(Node *root, LensNode *projnode) {
-#ifdef GSG_VERBOSE
-    _pass_number = 0;
-    dxgsg_cat.debug()
-    << "begin scene - - - - - - - - - - - - - - - - - - - - - - - - -"
-    << endl;
-#endif
-    _current_root_node = root;
-
-    render_subgraph(_render_traverser, root, projnode,
-                    AllTransitionsWrapper());
-
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "done scene  - - - - - - - - - - - - - - - - - - - - - - - - -"
-    << endl;
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::render_subgraph
-//       Access: Public, Virtual
-//  Description: Renders a subgraph of the scene graph as seen from a
-//               given lens node, and with a particular initial
-//               state.  This state may be modified by the render
-//               process.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-render_subgraph(RenderTraverser *traverser,
-                Node *subgraph, LensNode *projnode,
-                const AllTransitionsWrapper &net_trans) {
-    LensNode *old_camera = _current_camera;
-    _current_camera = projnode;
-    LMatrix4f old_projection_mat = _current_projection_mat;
-
-    Lens *lens = projnode->get_lens();
-    const LMatrix4f &projection_mat = lens->get_projection_mat();
-
-    // d3d is left-handed coord system
-    _current_projection_mat = 
-      LMatrix4f::convert_mat(CS_yup_left, lens->get_coordinate_system()) *
-      projection_mat;
-    _projection_mat_stack_count++;
-
-#if 0
-    dxgsg_cat.spam() << "cur projection matrix: " << _current_projection_mat <<"\n";
-#endif
-
-#ifdef _DEBUG
-   {
-      static bool bPrintedMsg=false;
-
-      if((!bPrintedMsg) && !IS_NEARLY_EQUAL(projection_mat(2,3),1.0f)) {
-         bPrintedMsg=true;
-         dxgsg_cat.debug() << "non w-compliant render_subgraph projection matrix [2][3] should be 1.0, instead is: " << projection_mat(2,3) << endl;
-         dxgsg_cat.debug() << "cur projection matrix: " << projection_mat << endl;
-      }
-
-      // note: a projection matrix that does not have a [3][4] value of 1.0f is
-      //       not w-compliant and could cause problems with fog
-
-    }
-#endif
-
-    HRESULT hr;
-
-    // BUGBUG: could we avoid doing this every frame if projmat doesnt change?
-    // We load the projection matrix directly.
-    hr = scrn.pD3DDevice->SetTransform(D3DTS_PROJECTION,
-                                 (D3DMATRIX*) _current_projection_mat.get_data());
-
-    // We infer the modelview matrix by doing a wrt on the projection
-    // node.
-    LMatrix4f modelview_mat;
-    get_rel_mat(subgraph, _current_camera, modelview_mat);  //needs reversal from glgsg, probably due D3D LH coordsys
-//  get_rel_mat(_current_camera, subgraph, modelview_mat);
-
-    if (_coordinate_system != CS_yup_left) {
-        // Now we build the coordinate system conversion into the
-        // modelview matrix (as described in the paragraph above).
-        modelview_mat = modelview_mat *
-                        LMatrix4f::convert_mat(_coordinate_system, CS_yup_left);
-    }
-
-    // The modelview matrix will be loaded as each geometry is
-    // encountered.  So we set the supplied modelview matrix as an
-    // initial value instead of loading it now.
-    AllTransitionsWrapper sub_trans = net_trans;
-    sub_trans.set_transition(new TransformTransition(modelview_mat));
-
-    render_subgraph(traverser, subgraph, sub_trans);
-
-    _current_camera = old_camera;
-    _current_projection_mat = old_projection_mat;
-    _projection_mat_stack_count--;
-
-
-    // We must now restore the projection matrix from before.  We could
-    // do a push/pop matrix if we were using D3DX
-    if (_projection_mat_stack_count > 0)
-        hr =scrn.pD3DDevice->SetTransform(D3DTS_PROJECTION,
-                                    (D3DMATRIX*) _current_projection_mat.get_data());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::render_subgraph
-//       Access: Public, Virtual
-//  Description: Renders a subgraph of the scene graph as seen from the
-//               current lens node, and with a particular
-//               initial state.  This state may be modified during the
-//               render process.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-render_subgraph(RenderTraverser *traverser, Node *subgraph,
-                const AllTransitionsWrapper &net_trans) {
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "begin subgraph (pass " << ++_pass_number
-    << ") - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-#endif
-
-    nassertv(traverser != (RenderTraverser *)NULL);
-    traverser->traverse(subgraph, net_trans);
-
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "end subgraph (pass " << _pass_number
-    << ") - - - - - - - - - - - - - - - - - - - - - - - - -"
-    << endl;
 #endif
 }
 
@@ -2001,37 +1725,22 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     Texture *tex = geom->get_texture();
     if(tex !=NULL) {
-
-        // set up the texture-rendering state
-        NodeTransitions state;
-
-        // this sets up texturing.  Could just set the renderstates directly, but this is a little cleaner
-        TextureTransition *ta = new TextureTransition(tex);
-        state.set_transition(ta);
-
-        TextureApplyTransition *taa = new TextureApplyTransition(TextureApplyProperty::M_modulate);
-        state.set_transition(taa);
-
-        modify_state(state);
-
-        tex_xsize = tex->_pbuffer->get_xsize();
-        tex_ysize = tex->_pbuffer->get_ysize();
+      // set up the texture-rendering state
+      modify_state(RenderState::make
+                   (TextureAttrib::make(tex),
+                    TextureApplyAttrib::make(TextureApplyAttrib::M_modulate)));
+      tex_xsize = tex->_pbuffer->get_xsize();
+      tex_ysize = tex->_pbuffer->get_ysize();
     }
 
     // save the modelview matrix
-    LMatrix4f modelview_mat;
+    const LMatrix4f &modelview_mat = _transform->get_mat();
 
-    const TransformTransition *ctatt;
-    if (!get_attribute_into(ctatt, this))
-        modelview_mat = LMatrix4f::ident_mat();
-    else
-        modelview_mat = ctatt->get_matrix();
+    // We don't need to mess with the aspect ratio, since we are now
+    // using the default projection matrix, which has the right aspect
+    // ratio built in.
 
-    // get the camera information
-    float aspect_ratio =
-      get_current_camera()->get_lens()->get_aspect_ratio();
-
-    // null the world xform, so sprites are orthog to scrn  (but not necessarily camera pnt unless they lie along z-axis)
+    // null the world xform, so sprites are orthog to scrn
     scrn.pD3DDevice->SetTransform(D3DTS_WORLD, &matIdentity);
     // only need to change _WORLD xform, _VIEW xform is Identity
 
@@ -2049,10 +1758,11 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     bool alpha = false;
 
     if (!geom->get_alpha_disable()) {
-        // figure out if alpha's enabled (if not, no reason to sort)
-        const TransparencyTransition *ctratt;
-        if (get_attribute_into(ctratt, this))
-          alpha = (ctratt->get_mode() != TransparencyProperty::M_none);
+      // figure out if alpha's enabled (if not, no reason to sort)
+      const TransparencyAttrib *trans = _qpstate->get_transparency();
+      if (trans != (const TransparencyAttrib *)NULL) {
+        alpha = (trans->get_mode() != TransparencyAttrib::M_none);
+      }
     }
 
     // inner loop vars
@@ -2081,7 +1791,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     // y direction
     if (y_overall)
-        scaled_height = geom->_y_texel_ratio[0] * half_height * aspect_ratio;
+        scaled_height = geom->_y_texel_ratio[0] * half_height;
     else {
         nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
         y_walk = &geom->_y_texel_ratio[0];
@@ -2228,7 +1938,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
             scaled_width = pSpr->_x_ratio * half_width;
 
         if (!y_overall)
-            scaled_height = pSpr->_y_ratio * half_height * aspect_ratio;
+            scaled_height = pSpr->_y_ratio * half_height;
 
         // if not G_OVERALL, do some trig for this z rotate   //what is the theta angle??
         if (theta_on) {
@@ -2319,7 +2029,8 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     delete [] SpriteArray;
 
     // restore the matrices
-    scrn.pD3DDevice->SetTransform(D3DTS_WORLD, &OldD3DWorldMatrix);
+    scrn.pD3DDevice->SetTransform(D3DTS_WORLD,
+                                  (D3DMATRIX*)modelview_mat.get_data());
 
     if(bReEnableDither)
         enable_dither(true);
@@ -3300,93 +3011,6 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-draw_texture(TextureContext *tc, const DisplayRegion *dr) {
-
-    dxgsg_cat.fatal() << "DXGSG draw_texture unimplemented!!!";
-    return;
-
-    nassertv(tc != NULL && dr != NULL);
-
-#ifdef WBD_GL_MODE
-    Texture *tex = tc->_texture;
-
-    DisplayRegionStack old_dr = push_display_region(dr);
-    prepare_display_region();
-
-    NodeTransitions state;
-    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_none);
-    DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_none);
-    DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
-    TextureTransition *ta = new TextureTransition(tex);
-    TextureApplyTransition *taa = new TextureApplyTransition(TextureApplyProperty::M_decal);
-
-    state.set_transition(new ColorMaskTransition);
-    state.set_transition(new RenderModeTransition);
-    state.set_transition(new TexMatrixTransition);
-    state.set_transition(new TransformTransition);
-    state.set_transition(new ColorBlendTransition);
-    state.set_transition(cfa);
-    state.set_transition(dta);
-    state.set_transition(dwa);
-    state.set_transition(ta);
-    state.set_transition(taa);
-    modify_state(state);
-
-    // We set up an orthographic projection that defines our entire
-    // viewport to the range [0..1] in both dimensions.  Then, when we
-    // create a unit square polygon below, it will exactly fill the
-    // viewport (and thus exactly fill the display region).
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0, 1, 0, 1);
-
-    float txl, txr, tyt, tyb;
-    txl = tyb = 0.;
-    if (tex->_has_requested_size) {
-        txr = ((float)(tex->_requested_w)) / ((float)(tex->_pbuffer->get_xsize()));
-        tyt = ((float)(tex->_requested_h)) / ((float)(tex->_pbuffer->get_ysize()));
-    } else {
-        txr = tyt = 1.;
-    }
-
-    // This two-triangle strip is actually a quad.  But it's usually
-    // better to render quads as tristrips anyway.
-    glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(txl, tyb);   glVertex2i(0, 0);
-    glTexCoord2f(txr, tyb);   glVertex2i(1, 0);
-    glTexCoord2f(txl, tyt);   glVertex2i(0, 1);
-    glTexCoord2f(txr, tyt);   glVertex2i(1, 1);
-    glEnd();
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-
-    pop_display_region(old_dr);
-#endif              // WBD_GL_MODE
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-draw_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
-    dxgsg_cat.fatal() << "DXGSG draw_texture unimplemented!!!";
-    return;
-
-    set_draw_buffer(rb);
-    draw_texture(tc, dr);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::texture_to_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
@@ -3419,22 +3043,8 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
 void DXGraphicsStateGuardian::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
                         const DisplayRegion *dr) {
-    nassertv(tc != NULL && pb != NULL && dr != NULL);
-
-    Texture *tex = tc->_texture;
-
-    // Do a deep copy to initialize the pixel buffer
-    pb->copy(tex->_pbuffer);
-
-    // If the image was empty, we need to render the texture into the frame
-    // buffer and then copy the results into the pixel buffer's image
-    if (pb->_image.empty()) {
-        int w = pb->get_xsize();
-        int h = pb->get_ysize();
-        draw_texture(tc, dr);
-        pb->_image = PTA_uchar::empty_array(w * h * pb->get_num_components());
-        copy_pixel_buffer(pb, dr);
-    }
+    dxgsg_cat.error()
+      << "texture_to_pixel_buffer unimplemented!\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3553,135 +3163,6 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const NodeTransitions& na) {
-
-    dxgsg_cat.fatal() << "DXGSG draw_pixel_buffer unimplemented!!!";
-    return;
-
-#ifdef WBD_GL_MODE
-    nassertv(pb != NULL && dr != NULL);
-    nassertv(!pb->_image.empty());
-
-    DisplayRegionStack old_dr = push_display_region(dr);
-    prepare_display_region();
-
-    NodeTransitions state(na);
-    state.set_transition(new TextureTransition);
-    state.set_transition(new TransformTransition);
-    state.set_transition(new ColorBlendTransition);
-    state.set_transition(new StencilTransition);
-
-    switch (pb->get_format()) {
-        case PixelBuffer::F_depth_component:
-            {
-                ColorMaskTransition *cma = new ColorMaskTransition(0);
-                DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_always);
-                DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
-                state.set_transition(cma);
-                state.set_transition(dta);
-                state.set_transition(dwa);
-            }
-            break;
-
-        case PixelBuffer::F_rgb:
-        case PixelBuffer::F_rgb5:
-        case PixelBuffer::F_rgb8:
-        case PixelBuffer::F_rgb12:
-        case PixelBuffer::F_rgba:
-        case PixelBuffer::F_rgba4:
-        case PixelBuffer::F_rgba8:
-        case PixelBuffer::F_rgba12:
-            {
-                ColorMaskTransition *cma = new ColorMaskTransition;
-                DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_none);
-                DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
-                state.set_transition(cma);
-                state.set_transition(dta);
-                state.set_transition(dwa);
-            }
-            break;
-        default:
-            dxgsg_cat.error()
-            << "draw_pixel_buffer(): unknown buffer format" << endl;
-            break;
-    }
-
-    modify_state(state);
-
-    enable_color_material(false);
-    set_unpack_alignment(1);
-
-    glMatrixMode( GL_PROJECTION );
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0, _win->get_width(),
-               0, _win->get_height());
-
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glDrawPixels(" << pb->get_xsize() << ", " << pb->get_ysize()
-    << ", ";
-    switch (get_external_image_format(pb->get_format())) {
-        case GL_DEPTH_COMPONENT:
-            dxgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
-            break;
-        case GL_RGB:
-            dxgsg_cat.debug(false) << "GL_RGB, ";
-            break;
-        case GL_RGBA:
-            dxgsg_cat.debug(false) << "GL_RGBA, ";
-            break;
-        default:
-            dxgsg_cat.debug(false) << "unknown, ";
-            break;
-    }
-    switch (get_image_type(pb->get_image_type())) {
-        case GL_UNSIGNED_BYTE:
-            dxgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
-            break;
-        case GL_float:
-            dxgsg_cat.debug(false) << "GL_float, ";
-            break;
-        default:
-            dxgsg_cat.debug(false) << "unknown, ";
-            break;
-    }
-    dxgsg_cat.debug(false)
-    << (void *)pb->_image.p() << ")" << endl;
-#endif
-
-    glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
-    glDrawPixels( pb->get_xsize(), pb->get_ysize(),
-                  get_external_image_format(pb->get_format()),
-                  get_image_type(pb->get_image_type()),
-                  pb->_image.p() );
-
-    glMatrixMode( GL_PROJECTION );
-    glPopMatrix();
-
-    pop_display_region(old_dr);
-#endif              // WBD_GL_MODE
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const RenderBuffer &rb, const NodeTransitions& na) {
-    set_read_buffer(rb);
-    draw_pixel_buffer(pb, dr, na);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::apply_material
 //       Access: Public, Virtual
 //  Description:
@@ -3694,61 +3175,6 @@ void DXGraphicsStateGuardian::apply_material( const Material* material ) {
     cur_material.Emissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
     cur_material.Power   =  material->get_shininess();
     scrn.pD3DDevice->SetMaterial(&cur_material);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::apply_fog
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-apply_fog(Fog *fog) {
-
-    if(_doFogType==None)
-      return;
-
-    Fog::Mode panda_fogmode = fog->get_mode();
-    D3DFOGMODE d3dfogmode = get_fog_mode_type(panda_fogmode);
-
-
-    // should probably avoid doing redundant SetRenderStates, but whatever
-    scrn.pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)_doFogType, d3dfogmode);
-
-    const Colorf &fog_colr = fog->get_color();
-    scrn.pD3DDevice->SetRenderState(D3DRS_FOGCOLOR,
-                   MY_D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));  // Alpha bits are not used
-
-    // do we need to adjust fog start/end values based on D3DPRASTERCAPS_WFOG/D3DPRASTERCAPS_ZFOG ?
-    // if not WFOG, then docs say we need to adjust values to range [0,1]
-
-    switch (panda_fogmode) {
-        case Fog::M_linear:
-            {
-                // Linear fog may be world-relative or
-                // camera-relative.  The fog object knows how to
-                // decode its parameters into camera-relative
-                // properties.
-                float fog_start, fog_end;
-                fog->compute_linear_range(fog_start, fog_end,
-                                          _current_camera,
-                                          _coordinate_system);
-
-                scrn.pD3DDevice->SetRenderState( D3DRS_FOGSTART,
-                                            *((LPDWORD) (&fog_start)) );
-                scrn.pD3DDevice->SetRenderState( D3DRS_FOGEND,
-                                            *((LPDWORD) (&fog_end)) );
-            }
-            break;
-        case Fog::M_exponential:
-        case Fog::M_exponential_squared:
-            {
-                // Exponential fog is always camera-relative.
-                float fog_density = fog->get_exp_density();
-                scrn.pD3DDevice->SetRenderState( D3DRS_FOGDENSITY,
-                            *((LPDWORD) (&fog_density)) );
-            }
-            break;
-    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3800,289 +3226,13 @@ apply_fog(qpFog *fog) {
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_transform
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_transform(const TransformTransition *attrib) {
-    scrn.pD3DDevice->SetTransform(D3DTS_WORLD/*VIEW*/,
-                             (D3DMATRIX*) attrib->get_matrix().get_data());
-    _bTransformIssued = true;
-}
+void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bCanJustEnable) {
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_matrix
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_tex_matrix(const TexMatrixTransition *attrib) {
-    dxgsg_cat.fatal() << "DXGSG issue_tex_matrix unimplemented!!!";
-    return;
-
-#ifdef WBD_GL_MODE
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "glLoadMatrix(GL_TEXTURE): " << attrib->get_matrix() << endl;
-#endif
-    glMatrixMode(GL_TEXTURE);
-    glLoadMatrixf(attrib->get_matrix().get_data());
-#else
-    scrn.pD3DDevice->SetTransform( D3DTS_TEXTURE0,
-                              (D3DMATRIX *)attrib->get_matrix().get_data());
-#endif              // WBD_GL_MODE
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_color
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_color(const ColorTransition *attrib) {
-    
-    bool bAttribOn=attrib->is_on();
-    bool bIsReal = (bAttribOn ? attrib->is_real() : false);
-
-    _has_scene_graph_color = bAttribOn;
-
-    if(bAttribOn && bIsReal) {
-        _scene_graph_color = attrib->get_color();
-        _scene_graph_color_stale = true;
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_color_transform
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_color_transform(const ColorMatrixTransition *attrib) {
-    _current_color_mat = attrib->get_matrix();
-
-    // couldnt we compare a single ptr instead of doing full comparison?
-    // bugbug: the ColorMatrixTransition needs to be an On/Off transition 
-    // so we dont have to do this comparison
-    if (_current_color_mat == LMatrix4f::ident_mat()) { 
-        _color_transform_enabled = false;
-
-    } else {
-        _color_transform_enabled = true;
-    }
-    _scene_graph_color_stale = _has_scene_graph_color;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_alpha_transform
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_alpha_transform(const AlphaTransformTransition *attrib) {
-    _current_alpha_offset = attrib->get_offset();
-    _current_alpha_scale = attrib->get_scale();
-
-    if ((_current_alpha_offset == 0.0f) && (_current_alpha_scale == 1.0f)) {
-        _alpha_transform_enabled = false;
-    } else {
-        _alpha_transform_enabled = true;
-    }
-    _scene_graph_color_stale = _has_scene_graph_color;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_texture(const TextureTransition *attrib) {
-    if (attrib->is_on()) {
-        enable_texturing(true);
-        Texture *tex = attrib->get_texture();
-        nassertv(tex != (Texture *)NULL);
-        tex->apply(this);
-    } else {
-        enable_texturing(false);
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_tex_gen
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_tex_gen(const TexGenTransition *attrib) {
-    dxgsg_cat.fatal() << "DXGSG issue_tex_gen unimplemented!!!";
-    return;
-#ifdef WBD_GL_MODE
-    TexGenProperty::Mode mode = attrib->get_mode();
-
-    switch (mode) {
-        case TexGenProperty::M_none:
-            glDisable(GL_TEXTURE_GEN_S);
-            glDisable(GL_TEXTURE_GEN_T);
-            glDisable(GL_TEXTURE_GEN_Q);
-            glDisable(GL_TEXTURE_GEN_R);
-            break;
-
-        case TexGenProperty::M_texture_projector:
-            {
-                glEnable(GL_TEXTURE_GEN_S);
-                glEnable(GL_TEXTURE_GEN_T);
-                glEnable(GL_TEXTURE_GEN_Q);
-                glEnable(GL_TEXTURE_GEN_R);
-                const LMatrix4f &plane = attrib->get_plane();
-                glTexGenfv(GL_S, GL_OBJECT_PLANE, plane.get_row(0).get_data());
-                glTexGenfv(GL_T, GL_OBJECT_PLANE, plane.get_row(1).get_data());
-                glTexGenfv(GL_R, GL_OBJECT_PLANE, plane.get_row(2).get_data());
-                glTexGenfv(GL_Q, GL_OBJECT_PLANE, plane.get_row(3).get_data());
-                glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-                glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-                glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-                glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-            }
-            break;
-
-        case TexGenProperty::M_sphere_map:
-            glEnable(GL_TEXTURE_GEN_S);
-            glEnable(GL_TEXTURE_GEN_T);
-            glDisable(GL_TEXTURE_GEN_Q);
-            glDisable(GL_TEXTURE_GEN_R);
-            glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-            glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-            break;
-
-        default:
-            dxgsg_cat.error()
-            << "Unknown texgen mode " << (int)mode << endl;
-            break;
-    }
-#endif              // WBD_GL_MODE
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_material
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_material(const MaterialTransition *attrib) {
-    if (attrib->is_on()) {
-        const Material *material = attrib->get_material();
-        nassertv(material != (const Material *)NULL);
-        apply_material(material);
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_fog
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_fog(const FogTransition *attrib) {
-
-    if (attrib->is_on()) {
-        enable_fog(true);
-        Fog *fog = attrib->get_fog();
-        nassertv(fog != (Fog *)NULL);
-        fog->apply(this);
-    } else {
-        enable_fog(false);
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_render_mode
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_render_mode(const RenderModeTransition *attrib) {
-
-    RenderModeProperty::Mode mode = attrib->get_mode();
-
-    if(mode==_current_fill_mode) 
-      return;
-
-    switch (mode) {
-        case RenderModeProperty::M_filled:
-            scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-            break;
-
-        case RenderModeProperty::M_wireframe:
-            scrn.pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-            break;
-
-        default:
-            dxgsg_cat.error()
-            << "Unknown render mode " << (int)mode << endl;
-    }
-
-    _current_fill_mode = mode;
-}
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::reset_ambient
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-reset_ambient() {
-    _lmodel_ambient += 2.0f;
-}
-*/
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_color_blend       //
-//       Access: Public, Virtual                                  //
-//  Description:                                                  //
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_color_blend(const ColorBlendTransition *attrib) {
-    
-    ColorBlendProperty::Mode mode = attrib->get_mode();
-
-    switch (mode) {
-        case ColorBlendProperty::M_none:
-            enable_blend(false);
-            break;
-        case ColorBlendProperty::M_multiply:
-            enable_blend(true);
-            call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ZERO);
-            break;
-        case ColorBlendProperty::M_add:
-            enable_blend(true);
-            call_dxBlendFunc(D3DBLEND_ONE, D3DBLEND_ONE);
-            break;
-        case ColorBlendProperty::M_multiply_add:
-            enable_blend(true);
-            call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ONE);
-            break;
-        case ColorBlendProperty::M_alpha:
-            enable_blend(true);
-            call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
-            break;
-        default:
-            dxgsg_cat.error()
-            << "Unknown color blend mode " << (int)mode << endl;
-            break;
-    }
-}
-
-void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bCanJustEnable) {
-
-/*class TextureApplyProperty {
+/*class TextureApplyAttrib {
   enum Mode {
     M_modulate,M_decal,M_blend,M_replace,M_add};
 */
-    static D3DTEXTUREOP TexBlendColorOp1[/* TextureApplyProperty::Mode maxval*/ 10] =
+    static D3DTEXTUREOP TexBlendColorOp1[/* TextureApplyAttrib::Mode maxval*/ 10] =
     {D3DTOP_MODULATE,D3DTOP_BLENDTEXTUREALPHA,D3DTOP_MODULATE,D3DTOP_SELECTARG1,D3DTOP_ADD};
 
     //if bCanJustEnable, then we only need to make sure ColorOp is turned on and set properly
@@ -4096,7 +3246,7 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
 
     switch (TexBlendMode) {
 
-        case TextureApplyProperty::M_modulate:
+        case TextureApplyAttrib::M_modulate:
             // emulates GL_MODULATE glTexEnv mode
             // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
@@ -4106,7 +3256,7 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
 
             break;
-        case TextureApplyProperty::M_decal:
+        case TextureApplyAttrib::M_decal:
             // emulates GL_DECAL glTexEnv mode
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
@@ -4115,13 +3265,13 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
 
             break;
-        case TextureApplyProperty::M_replace:
+        case TextureApplyAttrib::M_replace:
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
             break;
-        case TextureApplyProperty::M_add:
+        case TextureApplyAttrib::M_add:
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 
@@ -4131,7 +3281,7 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
             scrn.pD3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
 
             break;
-        case TextureApplyProperty::M_blend:
+        case TextureApplyAttrib::M_blend:
             dxgsg_cat.error()
             << "Impossible to emulate GL_BLEND in DX exactly " << (int) TexBlendMode << endl;
 /*
@@ -4187,300 +3337,6 @@ enable_texturing(bool val) {
     } else {
           SetTextureBlendMode(_CurTexBlendMode,true);
     }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_texture_apply
-//       Access: Public, Virtual
-//  Description: handles texture transition (i.e. filter modes, etc) changes
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_texture_apply(const TextureApplyTransition *attrib) {
-
-    _CurTexBlendMode = attrib->get_mode();
-
-    if (!_texturing_enabled) {
-        return;
-    }
-
-    SetTextureBlendMode(_CurTexBlendMode,FALSE);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_color_mask
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_color_mask(const ColorMaskTransition *attrib) {
-  if(dxgsg_cat.is_debug() && ((scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE)==0)) {
-    dxgsg_cat.debug() << "DXGSG issue_color_mask unsupported by device #" << scrn.CardIDNum << endl;
-    return;
-  }
-
-  UINT maskVal=0x0;
-  if(attrib->is_write_r())
-     maskVal|=D3DCOLORWRITEENABLE_RED;
-  if(attrib->is_write_g())
-     maskVal|=D3DCOLORWRITEENABLE_GREEN;
-  if(attrib->is_write_b())
-     maskVal|=D3DCOLORWRITEENABLE_BLUE;
-  if(attrib->is_write_a())
-     maskVal|=D3DCOLORWRITEENABLE_ALPHA;
-
-  scrn.pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, maskVal);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_depth_test
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_depth_test(const DepthTestTransition *attrib) {
-    
-
-    DepthTestProperty::Mode mode = attrib->get_mode();
-
-    if (mode == DepthTestProperty::M_none) {
-        _depth_test_enabled = false;
-        scrn.pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-    } else {
-        _depth_test_enabled = true;
-        scrn.pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-        scrn.pD3DDevice->SetRenderState(D3DRS_ZFUNC, get_depth_func_type(mode));
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_stencil
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_stencil(const StencilTransition *attrib) {
-  StencilProperty::Mode mode = attrib->get_mode();
-
-    if (mode == StencilProperty::M_none) {
-        enable_stencil_test(false);
-    } else {
-        enable_stencil_test(true);
-        D3DSTENCILOP pass_op = get_stencil_action_type(attrib->get_pass_action());
-        D3DSTENCILOP fail_op = get_stencil_action_type(attrib->get_fail_action());
-        D3DSTENCILOP zfail_op = get_stencil_action_type(attrib->get_zfail_action());
-
-        #ifdef _DEBUG
-           if(!(scrn.d3dcaps.StencilCaps & (1<<(pass_op-1)))) {
-               dxgsg_cat.warning() << "driver doesnt support pass stencil operation: " << pass_op << endl;
-           }
-           if(!(scrn.d3dcaps.StencilCaps & (1<<(fail_op-1)))) {
-               dxgsg_cat.warning() << "driver doesnt support fail stencil operation: " << fail_op << endl;
-           }
-           if(!(scrn.d3dcaps.StencilCaps & (1<<(zfail_op-1)))) {
-               dxgsg_cat.warning() << "driver doesnt support zfail stencil operation: " << zfail_op << endl;
-           }
-        #endif
-        // TODO: need to cache all these
-        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILFUNC, get_stencil_func_type(mode));
-        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILPASS, pass_op);
-        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILFAIL, fail_op);
-        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILZFAIL, zfail_op);
-        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILREF, attrib->get_reference_value());
-        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILMASK, attrib->get_func_mask());
-        scrn.pD3DDevice->SetRenderState(D3DRS_STENCILWRITEMASK, attrib->get_write_mask());
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_cull_transition
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_cull_face(const CullFaceTransition *attrib) {
-    
-#ifndef NDEBUG
-    if(dx_force_backface_culling!=0) {
-        return;  // leave as initially set
-    }
-#endif
-
-    CullFaceProperty::Mode mode = attrib->get_mode();
-
-    switch (mode) {
-        case CullFaceProperty::M_cull_none:
-            scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-            break;
-        case CullFaceProperty::M_cull_clockwise:
-            scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-            break;
-        case CullFaceProperty::M_cull_counter_clockwise:
-            scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-            break;
-        case CullFaceProperty::M_cull_all:
-            dxgsg_cat.warning() << "M_cull_all is invalid for DX GSG renderer, using CULL_CCW \n";
-            scrn.pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-            break;
-        default:
-            dxgsg_cat.error()
-            << "invalid cull face mode " << (int)mode << endl;
-            break;
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_clip_plane
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_clip_plane(const ClipPlaneTransition *attrib) {
-  nassertv(attrib->get_default_dir() != TD_on);
-    
-  // Initialize the currently enabled clip plane list
-  int i;
-  for (i = 0; i < _max_clip_planes; i++)
-    _cur_clip_plane_enabled[i] = false;
-  
-  int num_enabled = 0;
-  ClipPlaneTransition::const_iterator pi;
-  for (pi = attrib->begin(); pi != attrib->end(); ++pi) {
-    PlaneNode *plane_node;
-    DCAST_INTO_V(plane_node, (*pi).first);
-    nassertv(plane_node != (PlaneNode *)NULL);
-    TransitionDirection dir = (*pi).second;
-
-    if (dir == TD_on) {
-      _cur_clip_plane_id = -1;
-      num_enabled++;
-      
-      // Check to see if this clip plane has already been bound to an id
-      for (i = 0; i < _max_clip_planes; i++) {
-        if (_available_clip_plane_ids[i] == plane_node) {
-          // Clip plane has already been bound to an id, we only need
-          // to enable the clip plane, not apply it
-          _cur_clip_plane_id = -2;
-          enable_clip_plane(i, true);
-          _cur_clip_plane_enabled[i] = true;
-          break;
-        }
-      }
-      
-      // See if there are any unbound clip plane ids
-      if (_cur_clip_plane_id == -1) {
-        for (i = 0; i < _max_clip_planes; i++) {
-          if (_available_clip_plane_ids[i] == NULL) {
-            _available_clip_plane_ids[i] = plane_node;
-            _cur_clip_plane_id = i;
-            break;
-          }
-        }
-      }
-      
-      // If there were no unbound clip plane ids, see if we can replace
-      // a currently unused but previously bound id
-      if (_cur_clip_plane_id == -1) {
-        for (i = 0; i < _max_clip_planes; i++) {
-          if (attrib->is_off(_available_clip_plane_ids[i])) {
-            _available_clip_plane_ids[i] = plane_node;
-            _cur_clip_plane_id = i;
-            break;
-          }
-        }
-      }
-      
-      if (_cur_clip_plane_id >= 0) {
-        enable_clip_plane(_cur_clip_plane_id, true);
-        _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
-        const Planef clip_plane = plane_node->get_plane();
-        
-        float equation[4];
-        equation[0] = clip_plane._a;
-        equation[1] = clip_plane._b;
-        equation[2] = clip_plane._c;
-        equation[3] = clip_plane._d;
-        scrn.pD3DDevice->SetClipPlane(_cur_clip_plane_id, equation);
-        
-      } else if (_cur_clip_plane_id == -1) {
-        dxgsg_cat.error()
-          << "issue_clip_plane() - failed to bind clip plane to id" << endl;
-      }
-    }
-  }
-
-  // Disable all unused clip planes
-  for (i = 0; i < _max_clip_planes; i++) {
-    if (!_cur_clip_plane_enabled[i])
-      enable_clip_plane(i, false);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_transparency
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_transparency(const TransparencyTransition *attrib ) {
-
-    TransparencyProperty::Mode mode = attrib->get_mode();
-
-    switch (mode) {
-        case TransparencyProperty::M_none:
-//          enable_multisample_alpha_one(false);
-//          enable_multisample_alpha_mask(false);
-            enable_blend(false);
-            enable_alpha_test(false);
-            break;
-        case TransparencyProperty::M_alpha:
-        case TransparencyProperty::M_alpha_sorted:
-            // Should we really have an "alpha" and an "alpha_sorted" mode,
-            // like Performer does?  (The difference is that "alpha" is with
-            // the write to the depth buffer disabled.)  Or should we just use
-            // the separate depth write transition to control this?  Doing it
-            // implicitly requires a bit more logic here and in the state
-            // management; for now we require the user to explicitly turn off
-            // the depth write.
-//          enable_multisample_alpha_one(false);
-//          enable_multisample_alpha_mask(false);
-            enable_blend(true);
-            enable_alpha_test(false);
-            call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
-            break;
-        case TransparencyProperty::M_multisample:
-//          enable_multisample_alpha_one(true);
-//          enable_multisample_alpha_mask(true);
-            enable_blend(false);
-            enable_alpha_test(false);
-            break;
-        case TransparencyProperty::M_multisample_mask:
-//          enable_multisample_alpha_one(false);
-//          enable_multisample_alpha_mask(true);
-            enable_blend(false);
-            enable_alpha_test(false);
-            break;
-        case TransparencyProperty::M_binary:
-//          enable_multisample_alpha_one(false);
-//          enable_multisample_alpha_mask(false);
-            enable_blend(false);
-            enable_alpha_test(true);
-            call_dxAlphaFunc(D3DCMP_EQUAL, 1);
-            break;
-        default:
-            dxgsg_cat.error()
-            << "invalid transparency mode " << (int)mode << endl;
-            break;
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_linesmooth
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_linesmooth(const LinesmoothTransition *attrib) {
-    enable_line_smooth(attrib->is_on());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4562,7 +3418,7 @@ issue_render_mode(const RenderModeAttrib *attrib) {
       << "Unknown render mode " << (int)mode << endl;
   }
 
-  _current_fill_mode = (RenderModeProperty::Mode)mode;
+  _current_fill_mode = mode;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4971,174 +3827,6 @@ wants_texcoords() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_depth_write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_depth_write(const DepthWriteTransition *attrib) {
-    enable_zwritemask(attrib->is_on());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::begin_decal
-//       Access: Public, Virtual
-//  Description: This will be called to initiate decaling mode.  It is
-//               passed the pointer to the GeomNode that will be the
-//               destination of the decals, which it is expected that
-//               the GSG will render normally; subsequent geometry
-//               rendered up until the next call of end_decal() should
-//               be rendered as decals of the base_geom.
-//
-//               The transitions wrapper is the current state as of the
-//               base geometry node.  It may or may not be modified by
-//               the GSG to reflect whatever rendering state is
-//               necessary to render the decals properly.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
-    nassertv(base_geom != (GeomNode *)NULL);
-
-    assert(_decal_level>=0);
-
-    _decal_level++;
-
-#ifndef DISABLE_DECALING
-
- #ifndef DISABLE_POLYGON_OFFSET_DECALING
-    if (dx_decal_type == GDT_offset) {
- #define POLYGON_OFFSET_MULTIPLIER 2
-
-        // note: zbias seems inconsitently supported.  may be possible to fake it by
-        //       adding (delta * element[4,3]) to element [3,3] of a regular matrix
-        //       need to test this and see if to offers perf improvement over blend-based decaling
-
-        nassertv(POLYGON_OFFSET_MULTIPLIER*_decal_level < 16);  // 16 is the max allowed zbias
-
-        // Just draw the base geometry normally.
-        base_geom->draw(this);
-        scrn.pD3DDevice->SetRenderState(D3DRS_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
-    } else
- #endif
-
-    {
-        if (_decal_level > 1) {
-            base_geom->draw(this);  // If we're already decaling, just draw the geometry.
-        } else {
-            // need to save current xform matrix in case it is changed during subrendering, so subsequent decal draws use same xform
-            _bTransformIssued = false;
-            scrn.pD3DDevice->GetTransform( D3DTS_WORLD, &_SavedTransform);
-
-            // First turn off writing the depth buffer to render the base geometry.
-            enable_zwritemask(false);
-
-            // It is also important to update the current state to
-            // indicate the depth buffer write is off, so that future
-            // geometry will render correctly.
-            DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
-            attrib.set_transition(dwa);
-
-            // Now render the base geometry.
-            base_geom->draw(this);
-
-            // Render all of the decal geometry, too.  We'll keep the depth
-            // buffer write off during this.
-        }
-    }
-#else
-            base_geom->draw(this);
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::end_decal
-//       Access: Public, Virtual
-//  Description: This will be called to terminate decaling mode.  It
-//               is passed the same base_geom that was passed to
-//               begin_decal().
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-end_decal(GeomNode *base_geom) {
-    _decal_level--;
-
-    assert(_decal_level>=0);
-
-#ifdef DISABLE_DECALING
-    return;
-#endif
-
-    nassertv(base_geom != (GeomNode *)NULL);
-//  nassertv(_decal_level >= 1);
-
-#ifndef DISABLE_POLYGON_OFFSET_DECALING
-    if (dx_decal_type == GDT_offset) {
-        // Restore the Zbias offset.
-        scrn.pD3DDevice->SetRenderState(D3DRS_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
-    } else
-#endif
-    {  // for GDT_mask
-        if (_decal_level == 0) {
-            // Now we need to re-render the base geometry with the depth write
-            // on and the color mask off, so we update the depth buffer
-            // properly.
-
-            // need to save the state we change on the stack, since we could get called
-            // recursively by the draw() method, and the draw method could change any of
-            // the state below
-            D3DBLEND saved_blend_source_func = _blend_source_func;
-            D3DBLEND saved_blend_dest_func = _blend_dest_func;
-            UINT saved_colorwritemask = _color_writemask;
-            bool saved_texture_enabled = _texturing_enabled;
-            bool saved_blend_enabled = _blend_enabled;
-    
-            // Enable the writing to the depth buffer.
-            enable_zwritemask(true);
-
-            // Disable the writing to the color buffer, however we have to
-            // do this.  (I don't think this is possible in DX without blending.)
-            if (dx_decal_type == GDT_blend) {
-                // Expensive.
-                enable_blend(true);
-                call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
-            } else {  
-                set_color_writemask(0x0);
-            }
-
-            // No need to have texturing on for this.
-            enable_texturing(false);
-
-            // if current xform has changed, reset to saved xform
-            if(_bTransformIssued) 
-                scrn.pD3DDevice->SetTransform( D3DTS_WORLD, &_SavedTransform);
-
-            base_geom->draw(this);
-
-            // Finally, restore the depth write and color mask states to the
-            // way they're supposed to be.
-
-            if (dx_decal_type == GDT_blend) {
-                enable_blend(saved_blend_enabled);
-                if (saved_blend_enabled)
-                    call_dxBlendFunc(saved_blend_source_func, saved_blend_dest_func);
-            } else {
-                set_color_writemask(saved_colorwritemask);
-            }
-            enable_texturing(saved_texture_enabled);
-
-            // Finally, restore the depth write state to the
-            // way they're supposed to be.
-
-            // needs to match value specified at begin_decal() start, so cant just
-            // save value across this end_decal() call like the other rstates
-            DepthWriteTransition *depth_write;
-            if (get_attribute_into(depth_write, this)) {
-                issue_depth_write(depth_write);
-            }
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::depth_offset_decals
 //       Access: Public, Virtual
 //  Description: Returns true if this GSG can implement decals using a
@@ -5280,28 +3968,6 @@ get_texture_wrap_mode(Texture::WrapMode wm) const {
 //  Description: Maps from the depth func modes to gl version
 ////////////////////////////////////////////////////////////////////
 INLINE D3DCMPFUNC DXGraphicsStateGuardian::
-get_depth_func_type(DepthTestProperty::Mode m) const {
-    switch (m) {
-        case DepthTestProperty::M_never: return D3DCMP_NEVER;
-        case DepthTestProperty::M_less: return D3DCMP_LESS;
-        case DepthTestProperty::M_equal: return D3DCMP_EQUAL;
-        case DepthTestProperty::M_less_equal: return D3DCMP_LESSEQUAL;
-        case DepthTestProperty::M_greater: return D3DCMP_GREATER;
-        case DepthTestProperty::M_not_equal: return D3DCMP_NOTEQUAL;
-        case DepthTestProperty::M_greater_equal: return D3DCMP_GREATEREQUAL;
-        case DepthTestProperty::M_always: return D3DCMP_ALWAYS;
-    }
-    dxgsg_cat.error()
-    << "Invalid DepthTestProperty::Mode value" << endl;
-    return D3DCMP_LESS;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_depth_func_type
-//       Access: Protected
-//  Description: Maps from the depth func modes to gl version
-////////////////////////////////////////////////////////////////////
-INLINE D3DCMPFUNC DXGraphicsStateGuardian::
 get_depth_func_type(DepthTestAttrib::Mode m) const {
   switch (m) {
   case DepthTestAttrib::M_never: return D3DCMP_NEVER;
@@ -5316,63 +3982,6 @@ get_depth_func_type(DepthTestAttrib::Mode m) const {
   dxgsg_cat.error()
     << "Invalid DepthTestAttrib::Mode value" << endl;
   return D3DCMP_LESS;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_stencil_func_type
-//       Access: Protected
-//  Description: Maps from the stencil func modes to dx version
-////////////////////////////////////////////////////////////////////
-INLINE D3DCMPFUNC DXGraphicsStateGuardian::
-get_stencil_func_type(StencilProperty::Mode m) const {
-    switch (m) {
-        case StencilProperty::M_never: return D3DCMP_NEVER;
-        case StencilProperty::M_less: return D3DCMP_LESS;
-        case StencilProperty::M_equal: return D3DCMP_EQUAL;
-        case StencilProperty::M_less_equal: return D3DCMP_LESSEQUAL;
-        case StencilProperty::M_greater: return D3DCMP_GREATER;
-        case StencilProperty::M_not_equal: return D3DCMP_NOTEQUAL;
-        case StencilProperty::M_greater_equal: return D3DCMP_GREATEREQUAL;
-        case StencilProperty::M_always: return D3DCMP_ALWAYS;
-    }
-    dxgsg_cat.error() << "Invalid StencilProperty::Mode value" << endl;
-    return D3DCMP_LESS;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_stencil_action_type
-//       Access: Protected
-//  Description: Maps from the stencil action modes to dx version
-////////////////////////////////////////////////////////////////////
-INLINE D3DSTENCILOP DXGraphicsStateGuardian::
-get_stencil_action_type(StencilProperty::Action a) const {
-    switch (a) {
-        case StencilProperty::A_keep: return D3DSTENCILOP_KEEP;
-        case StencilProperty::A_zero: return D3DSTENCILOP_ZERO;
-        case StencilProperty::A_replace: return D3DSTENCILOP_REPLACE;
-        case StencilProperty::A_increment: return D3DSTENCILOP_INCR;
-        case StencilProperty::A_decrement: return D3DSTENCILOP_DECR;
-        case StencilProperty::A_invert: return D3DSTENCILOP_INVERT;
-    }
-    dxgsg_cat.error() << "Invalid StencilProperty::Action value" << endl;
-    return D3DSTENCILOP_KEEP;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_fog_mode_type
-//       Access: Protected
-//  Description: Maps from the fog types to gl version
-////////////////////////////////////////////////////////////////////
-INLINE D3DFOGMODE DXGraphicsStateGuardian::
-get_fog_mode_type(Fog::Mode m) const {
-    switch (m) {
-        case Fog::M_linear: return D3DFOG_LINEAR;
-        case Fog::M_exponential: return D3DFOG_EXP;
-        case Fog::M_exponential_squared: return D3DFOG_EXP2;
-    }
-    dxgsg_cat.error() << "Invalid Fog::Mode value" << endl;
-    return D3DFOG_EXP;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5465,19 +4074,19 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   case ColorBlendAttrib::M_none:
     break;
 
-  case ColorBlendProperty::M_multiply:
+  case ColorBlendAttrib::M_multiply:
     enable_blend(true);
     enable_alpha_test(false);
     call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ZERO);
     return;
 
-  case ColorBlendProperty::M_add:
+  case ColorBlendAttrib::M_add:
     enable_blend(true);
     enable_alpha_test(false);
     call_dxBlendFunc(D3DBLEND_ONE, D3DBLEND_ONE);
     return;
 
-  case ColorBlendProperty::M_multiply_add:
+  case ColorBlendAttrib::M_multiply_add:
     enable_blend(true);
     enable_alpha_test(false);
     call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ONE);
@@ -5532,8 +4141,6 @@ free_local_resources() {
     // those should be released in free_dxgsg_objects instead
     SAFE_DELETE_ARRAY(_index_buf);
     SAFE_DELETE_ARRAY(_pFvfBufBasePtr);
-    SAFE_DELETE_ARRAY(_cur_clip_plane_enabled);
-    SAFE_DELETE_ARRAY(_clip_plane_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5581,26 +4188,8 @@ save_frame_buffer(const RenderBuffer &buffer,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
-
     dxgsg_cat.error() << "restore_frame_buffer unimplemented!!\n";
     return;
-
-#if 0
-    DXSavedFrameBuffer *sfb = DCAST(DXSavedFrameBuffer, frame_buffer);
-
-    if (sfb->_back_rgba != (Texture *)NULL &&
-        (sfb->_buffer._buffer_type & RenderBuffer::T_back) != 0) {
-        // Restore the color buffer.
-        draw_texture(sfb->_back_rgba->prepare(this),
-                     sfb->_display_region, sfb->_buffer);
-    }
-
-    if (sfb->_depth != (PixelBuffer *)NULL &&
-        (sfb->_buffer._buffer_type & RenderBuffer::T_depth) != 0) {
-        // Restore the depth buffer.
-        draw_pixel_buffer(sfb->_depth, sfb->_display_region, sfb->_buffer);
-    }
-#endif
 }
 
 // factory and type stuff
@@ -6169,466 +4758,9 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DXVECTOR3& vFrom, D3DXVECTOR3& vAt,
 //               contents of the node.
 ////////////////////////////////////////////////////////////////////
 GeomNodeContext *DXGraphicsStateGuardian::
-prepare_geom_node(GeomNode *node) {
-
- dxgsg_cat.error() << "prepare_geom_node unimplemented for DX8!\n";
- return NULL;
-
-#if 0
- if(link_tristrips) {
-  for(int iGeom=0;iGeom<node->get_num_geoms();iGeom++) {
-    dDrawable *drawable1 = node->get_geom(iGeom);
-    
-    if(!drawable1->is_of_type(Geom::get_class_type()))
-      continue;
-    
-    Geom *geomptr=DCAST(Geom, drawable1);
-    assert(geomptr!=NULL);
-    
-    if(!geomptr->is_of_type(GeomTristrip::get_class_type()))
-      continue;
-    
-    GeomTristrip *me = DCAST(GeomTristrip, geomptr);
-    assert(me!=NULL);
-    
-    int nPrims=me->get_num_prims();
-    if(nPrims==1)
-      continue;
-    
-    if(dxgsg_cat.is_debug()) {
-       static bool bPrintedMsg=false;
-       if(!bPrintedMsg) {
-           dxgsg_cat.debug() << "linking tristrips together with degenerate tris\n";
-           bPrintedMsg=true;
-       }
-    }
-
-    bool bStripReversalNeeded;
-    unsigned int nOrigTotalVerts=0;
-    PTA_int new_lengths;
-    int p;
-
-    // sum things up so can reserve space for new vecs
-    for(p=0;p<nPrims;p++) {
-      nOrigTotalVerts+=me->get_length(p);
-    }
-
-    // could compute it exactly if I wanted to reproduce all the cTotalVertsOutputSoFar logic in the loop below
-    // might save on memory reallocations. try to overestimate using *3.
-    int cEstimatedTotalVerts=nOrigTotalVerts+nPrims*3-2;
-
-    #define INIT_ATTRVARS(ATTRNAME,PTA_TYPENAME)                                                 \
-       PTA_##PTA_TYPENAME old_##ATTRNAME##s,new_##ATTRNAME##s;                                   \
-       PTA_ushort old_##ATTRNAME##_indices,new_##ATTRNAME##_indices;                             \
-       GeomBindType ATTRNAME##binding;                                                           \
-       me->get_##ATTRNAME##s(old_##ATTRNAME##s, ATTRNAME##binding, old_##ATTRNAME##_indices);    \
-                                                                                                 \
-       PTA_##PTA_TYPENAME::iterator old_##ATTRNAME##_iter=old_##ATTRNAME##s.begin();             \
-       PTA_ushort::iterator old_##ATTRNAME##index_iter;                                          \
-                                                                                                 \
-       if((ATTRNAME##binding!=G_OFF)&&(ATTRNAME##binding!=G_OVERALL)) {                          \
-         if(old_##ATTRNAME##_indices!=NULL) {                                                    \
-             old_##ATTRNAME##index_iter=old_##ATTRNAME##_indices.begin();                        \
-             new_##ATTRNAME##_indices.reserve(cEstimatedTotalVerts);                             \
-         } else {                                                                                \
-             new_##ATTRNAME##s.reserve(cEstimatedTotalVerts);                                    \
-         }                                                                                       \
-       }
-
-    INIT_ATTRVARS(coord,Vertexf);
-    INIT_ATTRVARS(color,Colorf);
-    INIT_ATTRVARS(normal,Normalf);
-    INIT_ATTRVARS(texcoord,TexCoordf);
-
-#define IsOdd(X) (((X) & 0x1)!=0)
-
-    uint cTotalVertsOutputSoFar=0;
-    int nVerts;
-    bool bAddExtraStartVert;
-
-    for(p=0;p<nPrims;p++) {
-      nVerts=me->get_length(p);
-
-         // if bStripStateStartsBackfacing, then if the current strip
-         // ends frontfacing, we can fix the problem by just reversing
-         // the current strip order.  But if the current strip ends
-         // backfacing, this will not work, since last tri is encoded for backfacing slot
-         // so it will be incorrectly backfacing when you put it in a backfacing
-         // slot AND reverse the vtx order.
-      
-         // insert an extra pad vertex at the beginning to force the
-         // strip backface-state parity to change (more expensive, since
-         // we make 1 more degen tri).  We always want the first tri
-         // to start in a front-facing slot (unless it's a reversed end
-
-         bStripReversalNeeded = false;      
-         bAddExtraStartVert=false;
-
-         if(p==0) {
-           cTotalVertsOutputSoFar+=nVerts+1;
-         } else {
-            if(!IsOdd(cTotalVertsOutputSoFar)) {
-               // we're starting on a backfacing slot
-               if(IsOdd(nVerts)) {
-                  bStripReversalNeeded = true;
-               } else {
-                bAddExtraStartVert=true;
-                cTotalVertsOutputSoFar++;
-               }
-            }
-
-            cTotalVertsOutputSoFar+=nVerts+2;
-            if(p==nPrims-1)
-              cTotalVertsOutputSoFar--;
-         }
-                
-#define PERVERTEX_ATTRLOOP(OLDVERT_ITERATOR,NEWVERT_VECTOR,VECLENGTH,NUMSTARTPADDINGATTRS,NUMENDPADDINGATTRS)    \
-          if(bStripReversalNeeded) {                                                        \
-              /* to preserve normal-direction property for backface-cull purposes, */       \
-              /* vtx order must be reversed*/                                               \
-                                                                                            \
-              OLDVERT_ITERATOR+=((VECLENGTH)-1);  /* start at last vert, and go back*/      \
-              /*dxgsg_cat.debug() << "doing reversal on strip " << p << " of length " << nVerts << endl;*/ \
-                                                                                            \
-              if(p!=0) {                                                                    \
-                 /* copy first vert twice to link with last strip*/                         \
-                 for(int i=0;i<NUMSTARTPADDINGATTRS;i++)                                    \
-                      NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                          \
-              }                                                                             \
-                                                                                            \
-              for(int v=0;v<(VECLENGTH);v++,OLDVERT_ITERATOR--) {                           \
-                  NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                              \
-              }                                                                             \
-                                                                                            \
-              OLDVERT_ITERATOR++;                                                           \
-                                                                                            \
-              if(p!=(nPrims-1)) {                                                           \
-                  /* copy last vert twice to link to next strip  */                         \
-                 for(int i=0;i<NUMENDPADDINGATTRS;i++)                                      \
-                    NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                            \
-              }                                                                             \
-                                                                                            \
-              OLDVERT_ITERATOR+=(VECLENGTH);                                                \
-                                                                                            \
-          } else {                                                                          \
-              if(p!=0) {                                                                    \
-                 /* copy first vert twice to link with last strip*/                         \
-                 for(int i=0;i<NUMSTARTPADDINGATTRS;i++)                                    \
-                      NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                          \
-              }                                                                             \
-                                                                                            \
-              for(int v=0;v<(VECLENGTH);v++,OLDVERT_ITERATOR++)                             \
-                  NEWVERT_VECTOR.push_back(*OLDVERT_ITERATOR);                              \
-                                                                                            \
-              if(p!=(nPrims-1)) {                                                           \
-                  /* copy last vert twice to link to next strip  */                         \
-                 for(int i=0;i<NUMENDPADDINGATTRS;i++)                                      \
-                    NEWVERT_VECTOR.push_back(*(OLDVERT_ITERATOR-1));                        \
-              }                                                                             \
-          }
-
-
-#define CONVERT_ATTR_VECTOR(ATTRNAME)                                                          \
-      switch(ATTRNAME##binding) {                                                              \
-            case G_OFF:                                                                        \
-            case G_OVERALL:                                                                    \
-                break;                                                                         \
-                                                                                               \
-            case G_PER_PRIM: {                                                                 \
-              /* must convert to per-component*/                                               \
-              /* nPrims*2+origTotalVerts-2 components  */                                      \
-                int veclength=nVerts+2;                                                        \
-                if((p==0)||(p==(nPrims-1)))                                                    \
-                    veclength--;                                                               \
-                if(bAddExtraStartVert)                                                         \
-                   veclength++;                                                                \
-                                                                                               \
-                if(old_##ATTRNAME##_indices!=NULL) {                                           \
-                    for(int v=0;v<veclength;v++)                                               \
-                       new_##ATTRNAME##_indices.push_back(*old_##ATTRNAME##index_iter);        \
-                                                                                               \
-                    old_##ATTRNAME##index_iter++; /* move on to val for next strip*/           \
-                 } else {                                                                      \
-                      for(int v=0;v<veclength;v++)                                             \
-                         new_##ATTRNAME##s.push_back(*old_##ATTRNAME##_iter);                  \
-                                                                                               \
-                      old_##ATTRNAME##_iter++; /* move on to val for next strip*/              \
-                 }                                                                             \
-                 break;                                                                        \
-             }                                                                                 \
-                                                                                               \
-            case G_PER_COMPONENT:                                                              \
-            case G_PER_VERTEX: {                                                               \
-                int veclength,numstartcopies,numendcopies;                                     \
-                                                                                               \
-                if(ATTRNAME##binding==G_PER_VERTEX) {                                          \
-                    veclength=nVerts;                                                          \
-                    numstartcopies=numendcopies=1;                                             \
-                } else {                                                                       \
-                    veclength=nVerts-2;                                                        \
-                    numstartcopies=numendcopies=2;                                             \
-                }                                                                              \
-                if(bAddExtraStartVert)                                                         \
-                   numstartcopies++;                                                           \
-                                                                                               \
-                if(old_##ATTRNAME##_indices!=NULL) {                                           \
-                    PERVERTEX_ATTRLOOP(old_##ATTRNAME##index_iter,new_##ATTRNAME##_indices,veclength,numstartcopies,numendcopies); \
-                } else {                                                                       \
-                    /* non-indexed case */                                                     \
-                    PERVERTEX_ATTRLOOP(old_##ATTRNAME##_iter,new_##ATTRNAME##s,veclength,numstartcopies,numendcopies); \
-                }                                                                              \
-            }                                                                                  \
-            break;                                                                             \
-      }                                                                                        \
-
-      
-      CONVERT_ATTR_VECTOR(coord);
-
-      #ifdef _DEBUG
-         if(old_coord_indices==NULL)
-           assert(cTotalVertsOutputSoFar==new_coords.size());
-         else 
-           assert(cTotalVertsOutputSoFar==new_coord_indices.size());
-      #endif
-
-      CONVERT_ATTR_VECTOR(color);
-      CONVERT_ATTR_VECTOR(normal);
-      CONVERT_ATTR_VECTOR(texcoord);
-
-    }  // end per-Prim (strip) loop
-
-    if(old_coord_indices!=NULL)  {
-        me->set_coords(old_coords, new_coord_indices);
-        new_lengths.push_back(new_coord_indices.size());
-    } else {
-        me->set_coords(new_coords);
-        new_lengths.push_back(new_coords.size());
-    }
-
-    me->set_lengths(new_lengths);
-    me->set_num_prims(1);
-
-    #define SET_NEW_ATTRIBS(ATTRNAME)                                                                 \
-    if((ATTRNAME##binding!=G_OFF) && (ATTRNAME##binding!=G_OVERALL)) {                                \
-        if(ATTRNAME##binding==G_PER_PRIM)                                                             \
-           ATTRNAME##binding=G_PER_COMPONENT;                                                         \
-        if(old_##ATTRNAME##_indices==NULL) {                                                          \
-           me->set_##ATTRNAME##s(new_##ATTRNAME##s, ATTRNAME##binding);                               \
-        } else {                                                                                      \
-           me->set_##ATTRNAME##s(old_##ATTRNAME##s, ATTRNAME##binding, new_##ATTRNAME##_indices);     \
-        }                                                                                             \
-    }
-    /*    
-    int ii;
-    for( ii=0;ii<old_coords.size();ii++) 
-        dxgsg_cat.debug() << "old coord[" << ii <<"] " << old_coords[ii] << endl;
-    dxgsg_cat.debug() << "=================\n";
-    for(ii=0;ii<new_coords.size();ii++) 
-        dxgsg_cat.debug() << "new coord[" << ii <<"] " << new_coords[ii] << endl;
-    dxgsg_cat.debug() << "=================\n";
-    
-    for( ii=0;ii<old_normals.size();ii++) 
-        dxgsg_cat.debug() << "old norm[" << ii <<"] " << old_normals[ii] << endl;
-    dxgsg_cat.debug() << "=================\n";
-    for(ii=0;ii<new_normals.size();ii++) 
-        dxgsg_cat.debug() << "new norm[" << ii <<"] " << new_normals[ii] << endl;
-    
-    if(old_color_indices!=NULL) {
-    
-    for( ii=0;ii<old_color_indices.size();ii++) 
-        dxgsg_cat.debug() << "old colorindex[" << ii <<"] " << old_color_indices[ii] << endl;
-    dxgsg_cat.debug() << "=================\n";
-    for( ii=0;ii<new_color_indices.size();ii++) 
-        dxgsg_cat.debug() << "new colorindex[" << ii <<"] " << new_color_indices[ii] << endl;
-    }
-    */
-
-    SET_NEW_ATTRIBS(color);
-    SET_NEW_ATTRIBS(normal);
-    SET_NEW_ATTRIBS(texcoord);
-
-    me->make_dirty();
-  }
- } // if(link_tristrips)
-
-  // for now, only using vertexbufs for static Geom, so
-  // Make sure we have at least some static Geoms in the GeomNode;
-  int cNumVerts=0,i,num_geoms = node->get_num_geoms();
-
-  // need to always put in space for color because we might have some scene-graph color we need to add?
-  // will that even work?  I think we'd have to overwrite all the VB colors dynamically, and then restore
-  // them from somewhere if the global color goes away
-
-  DWORD fvfFlags=D3DFVF_XYZ;// | D3DFVF_DIFFUSE;
-
-  for (i = 0; (i < num_geoms); i++) {
-    dDrawable *drawable1 = node->get_geom(i);
-    if(!drawable1->is_of_type(Geom::get_class_type()))
-      continue;
-    
-    Geom *geom=DCAST(Geom, drawable1);
-    assert(geom!=NULL);
-
-    DWORD new_fvfFlags=D3DFVF_XYZ;
-
-    if(!geom->is_dynamic()) {
-        cNumVerts+=geom->get_num_vertices();
-        if(geom->get_binding(G_COLOR) != G_OFF)
-            new_fvfFlags |= D3DFVF_DIFFUSE;
-        if(geom->get_binding(G_NORMAL) != G_OFF)
-            new_fvfFlags |= D3DFVF_NORMAL;
-        if(geom->get_binding(G_TEXCOORD) != G_OFF) 
-            new_fvfFlags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
-    }
-    if(i!=0) {
-       if(fvfFlags!=new_fvfFlags) {
-           // all primitives within a geom must use the same FVF type for the DrawPrim api
-           dxgsg_cat.error() << "error creating vertex buffer, geoms within geomnode require differing vertex data types!!\n";
-           exit(1);
-       }
-    } else fvfFlags=new_fvfFlags;
-  }
-
-  if(cNumVerts==0) {
-    // Never mind.
-    return (GeomNodeContext *)NULL;
-  }
-
-  if(cNumVerts>PANDA_MAXNUMVERTS) {
-      dxgsg_cat.error() << "geom node contains more than " << PANDA_MAXNUMVERTS << " vertices, cant create 1 vertex buffer\n";
-      exit(1);
-  }
-
-  // Ok, we've got something; use it.
-  DXGeomNodeContext *dx_gnc = new DXGeomNodeContext(node);
-
-  assert(dx_gnc!=NULL);
-
-  // right now there is a 1-1 correspondence b/w vertbufs and geomnodecontexts.
-  // later multiple geomnodecontexts will use the same vertbuf
-
-  HRESULT hr;
-  LPDIRECT3D7 pD3D;
-
-  assert(scrn.pD3DDevice!=NULL);
-  hr=scrn.pD3DDevice->GetDirect3D(&pD3D);
-  assert(!FAILED(hr));
-  LPDIRECT3DVERTEXBUFFER7 pD3DVertexBuffer;
-  DX_DECLARE_CLEAN(D3DVERTEXBUFFERDESC, VBdesc);
-
-  VBdesc.dwCaps = D3DVBCAPS_WRITEONLY;
-  VBdesc.dwCaps |= scrn.bIsTNLDevice ? 0x0 : D3DVBCAPS_SYSTEMMEMORY;
-  VBdesc.dwFVF=fvfFlags;
-  VBdesc.dwNumVertices=cNumVerts;
-
-  hr=pD3D->CreateVertexBuffer(&VBdesc,&pD3DVertexBuffer,0x0);
-  if(FAILED(hr)) {
-    dxgsg_cat.error() << "error creating vertex buffer: " << D3DERRORSTRING(hr);
-    delete dx_gnc;
-    exit(1);
-  }
-
-  dx_gnc->_pVB = pD3DVertexBuffer;
-
-  if(!scrn.bIsTNLDevice) {
-      // create VB for ProcessVerts to xform to
-
-      fvfFlags&=~D3DFVF_XYZ;    // switch to xformed vert type
-      fvfFlags&=~D3DFVF_NORMAL; // xformed verts are also lighted, so no normals allowed
-      fvfFlags|=D3DFVF_XYZRHW; 
-      VBdesc.dwFVF=fvfFlags;
-
-      hr=pD3D->CreateVertexBuffer(&VBdesc,&pD3DVertexBuffer,0x0);
-      if(FAILED(hr)) {
-          dxgsg_cat.error() << "error creating xformed vertex buffer: " << D3DERRORSTRING(hr);
-          delete dx_gnc;
-          exit(1);
-      }
-
-      dx_gnc->_pXformed_VB = pD3DVertexBuffer;
-  }
-
-  pD3D->Release();
-
-  dx_gnc->_num_verts=0;
-  dx_gnc->_start_index=0;   
-
-  LPVOID pVertData=NULL;
-  DWORD dwVBFlags = DDLOCK_NOOVERWRITE | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR |
-                    DDLOCK_WAIT | DDLOCK_DISCARDCONTENTS;
-
-  hr=dx_gnc->_pVB->Lock(dwVBFlags,&pVertData,NULL);
-  if(FAILED(hr)) {
-        dxgsg_cat.error() << "error locking vertex buffer: " << D3DERRORSTRING(hr);
-        delete dx_gnc;
-        exit(1);
-  }
-
-  assert(pVertData!=NULL);
-  _pCurrentGeomContext = dx_gnc;
-  _pCurrentGeomContext->_pEndofVertData=(BYTE*)pVertData;
-  _bDrawPrimDoSetupVertexBuffer = true;
-
-
-  for (i = 0; (i < num_geoms); i++) {
-    dDrawable *drawable1 = node->get_geom(i);
-    if(!drawable1->is_of_type(Geom::get_class_type()))
-      continue;
-    
-    Geom *geom=DCAST(Geom, drawable1);
-    assert(geom!=NULL);
-
-    if(geom->is_dynamic()) {
-      dx_gnc->_other_geoms.push_back(geom);
-    } else {
-       dx_gnc->_cached_geoms.push_back(geom);
-       node->get_geom(i)->draw(this);
-    }
-  }
-
-  _bDrawPrimDoSetupVertexBuffer = false;
-  _pCurrentGeomContext->_pEndofVertData=NULL;  
-  _pCurrentGeomContext = NULL;
-
-  hr=dx_gnc->_pVB->Unlock();
-  if(FAILED(hr)) {
-      dxgsg_cat.error() << "error unlocking vertex buffer: " << D3DERRORSTRING(hr);
-      delete dx_gnc;
-      exit(1);
-  }
-
-  assert(cNumVerts==dx_gnc->_num_verts);
-
-  hr=dx_gnc->_pVB->Optimize(scrn.pD3DDevice,0x0);
-  if(FAILED(hr)) {
-      dxgsg_cat.error() << "error optimizing vertex buffer: " << D3DERRORSTRING(hr);
-      delete dx_gnc;
-      exit(1);
-  }
-
-  if(dxgsg_cat.is_spam())
-      dxgsg_cat.spam() << "creating vertex buffer of size: " << cNumVerts << endl;
-
-#if 0  //DO_PSTATS
-  float num_verts_after = 
-    _vertices_tristrip_pcollector.get_level() +
-    _vertices_trifan_pcollector.get_level() +
-    _vertices_tri_pcollector.get_level() +
-    _vertices_other_pcollector.get_level();
-  float num_verts = num_verts_after - num_verts_before;
-  ggnc->_num_verts = (int)(num_verts + 0.5);
-#endif
-
-  bool inserted = mark_prepared_geom_node(dx_gnc);
-
-  // If this assertion fails, the same GeomNode was prepared twice,
-  // which shouldn't be possible, since the GeomNode itself should
-  // detect this.
-  nassertr(inserted, NULL);
-
-  return dx_gnc;
-#endif
-
+prepare_geom_node(qpGeomNode *node) {
+  dxgsg_cat.error() << "prepare_geom_node unimplemented for DX8!\n";
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6638,97 +4770,9 @@ prepare_geom_node(GeomNode *node) {
 //               prepare_geom_node().
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
+draw_geom_node(qpGeomNode *node, const RenderState *state,
+               GeomNodeContext *gnc) {
   return;  // unimplemented
-
-#if 0
-  uint i,num_geoms = node->get_num_geoms();
-
-  if (gnc == (GeomNodeContext *)NULL) {
-
-    // We don't have a saved context; just draw the GeomNode in
-    // immediate mode.
-    for (i = 0; i < num_geoms; i++) {
-        node->get_geom(i)->draw(this);
-    }
-    return;
-  }
-
-  // We do have a saved context; use it.
-  add_to_geom_node_record(gnc);
-  DXGeomNodeContext *dx_gnc = DCAST(DXGeomNodeContext, gnc);
-
-  #ifdef _DEBUG
-     assert(dx_gnc->_pVB!=NULL);
-     assert((!scrn.bIsTNLDevice)==(dx_gnc->_pXformed_VB!=NULL));
-  #endif
-  
-  if(!scrn.bIsTNLDevice) {
-      HRESULT hr;
-    
-      DWORD PVOp=D3DVOP_CLIP | D3DVOP_TRANSFORM | D3DVOP_EXTENTS;
-    
-      D3DVERTEXBUFFERDESC VBdesc;
-      VBdesc.dwSize=sizeof(VBdesc);
-      hr=dx_gnc->_pVB->GetVertexBufferDesc(&VBdesc);   // would be useful to keep fvf in vertbuf struct to avoid having to do this
-      if(FAILED(hr)) {
-          dxgsg_cat.error() << "error in getvbdesc: " << D3DERRORSTRING(hr);
-        exit(1);
-      }
-    
-      if(_lighting_enabled && (VBdesc.dwFVF & D3DFVF_NORMAL)) {
-          PVOp|=D3DVOP_LIGHT;
-      }
-    
-      hr=dx_gnc->_pXformed_VB->ProcessVertices(PVOp,0,dx_gnc->_num_verts,dx_gnc->_pVB,0,scrn.pD3DDevice,0x0);
-      if(FAILED(hr)) {
-        dxgsg_cat.error() << "error in ProcessVertices: " << D3DERRORSTRING(hr);
-        exit(1);
-      }
-
-      // disable clipping, since VB is already xformed and clipped
-      if(_clipping_enabled)
-          scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, false);
-  }
-
-  // assume we need gouraud for now.  we can make this more complex to select flat conditionally later
-  enable_gouraud_shading(true);
-  int cur_startvert=dx_gnc->_start_index;
-
-  for (i = 0; i < dx_gnc->_cached_geoms.size(); i++) {
-    // I think we can just draw them directly? since cant account for issued stuff (since 
-    // its already encoded in the VB), and we can set the renderstates here (e.g. gouraud mode)
-    //      dx_gnc->_cached_geoms[i]->draw(this);
-
-     DPInfo *dpi=&dx_gnc->_PrimInfo[i];
-
-     LPDIRECT3DVERTEXBUFFER7 pVB;
-     if(scrn.bIsTNLDevice) {
-         pVB=dx_gnc->_pVB;
-     } else {
-         pVB=dx_gnc->_pXformed_VB;
-     }
-
-     HRESULT hr = scrn.pD3DDevice->DrawPrimitiveVB(dpi->primtype,pVB,cur_startvert,dpi->nVerts,0x0);
-     TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,dpi->nVerts,0);
-
-     cur_startvert+=dpi->nVerts;
-  }
-
-  if((!scrn.bIsTNLDevice) && _clipping_enabled)
-      scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, true);
-
-  // Also draw all the dynamic Geoms.
-  for (i = 0; i < dx_gnc->_other_geoms.size(); i++) {
-      dx_gnc->_other_geoms[i]->draw(this);
-  }
-
-#if 0 //def DO_PSTATS
-    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
-    _vertices_display_list_pcollector.add_level(dx_gnc->_num_verts);
-#endif
-
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6740,20 +4784,6 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 release_geom_node(GeomNodeContext *gnc) {
-#if 0
-  if (gnc != (GeomNodeContext *)NULL) {
-    DXGeomNodeContext *dx_gnc = DCAST(DXGeomNodeContext, gnc);
-
-    bool erased = unmark_prepared_geom_node(dx_gnc);
-
-    // If this assertion fails, a GeomNode was released that hadn't
-    // been prepared (or a GeomNode was released twice).
-    nassertv(erased);
-    
-    dx_gnc->_node->clear_gsg(this);
-    delete dx_gnc;  // should release vertex buffer
-  }
-#endif
 }
 
 HRESULT CreateDX8Cursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,BOOL bAddWatermark) {

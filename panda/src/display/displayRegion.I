@@ -92,17 +92,6 @@ get_layer() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_camera
-//       Access: Public
-//  Description: Returns the camera associated with this
-//               DisplayRegion, or NULL if no camera is associated.
-////////////////////////////////////////////////////////////////////
-INLINE Camera *DisplayRegion::
-get_camera() const {
-  return _camera;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_qpcamera
 //       Access: Public
 //  Description: Returns the camera associated with this
@@ -111,35 +100,6 @@ get_camera() const {
 INLINE const qpNodePath &DisplayRegion::
 get_qpcamera() const {
   return _qpcamera;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_cull_frustum
-//       Access: Public
-//  Description: Sets the LensNode that will be used to perform
-//               view-frustum culling for this particular
-//               DisplayRegion.  Normally, this is the same as the
-//               camera (and is implicitly set when set_camera() is
-//               called).  However, it may be useful to occasionally
-//               set it to a different node, particularly to enable a
-//               debugging mode where the culling effectiveness can be
-//               observed from a third-person perspective.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-set_cull_frustum(LensNode *cull_frustum) {
-  _cull_frustum = cull_frustum;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_cull_frustum
-//       Access: Public
-//  Description: Returns the LensNode that will be used to
-//               perform view-frustum culling for this particular
-//               DisplayRegion.  See set_cull_frustum().
-////////////////////////////////////////////////////////////////////
-INLINE LensNode *DisplayRegion::
-get_cull_frustum() const {
-  return _cull_frustum;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pgMouseWatcherGroup.h"
-#include "pgTop.h"
+#include "qppgTop.h"
 
 TypeHandle PGMouseWatcherGroup::_type_handle;
 
@@ -28,11 +28,10 @@ TypeHandle PGMouseWatcherGroup::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PGMouseWatcherGroup::
 ~PGMouseWatcherGroup() {
-  cerr << "~PGMouseWatcherGroup()\n";
   // When the MouseWatcherGroup destructs for whatever reason, the
   // PGTop object should lose its MouseWatcher.
-  if (_top != (PGTop *)NULL) {
-    _top->_watcher_group = (PGMouseWatcherGroup *)NULL;
-    _top->set_mouse_watcher((MouseWatcher *)NULL);
+  if (_qptop != (qpPGTop *)NULL) {
+    _qptop->_watcher_group = (PGMouseWatcherGroup *)NULL;
+    _qptop->set_mouse_watcher((qpMouseWatcher *)NULL);
   }
 }

@@ -193,12 +193,6 @@ PUBLISHED:
   virtual void register_draw_function(GraphicsWindow::vfn);
   virtual void register_idle_function(GraphicsWindow::vfn);
 
-  // Old-style scene graph rendering (will be phased out eventually).
-  virtual void main_loop();
-  virtual bool supports_update() const;
-  virtual void update();
-  INLINE void render_and_update();
-
 public:
   virtual void begin_frame();
   void clear();

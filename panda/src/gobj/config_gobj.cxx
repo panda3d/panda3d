@@ -17,8 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <config_util.h>
-#include "config_gobj.h"
 #include "LOD.h"
+#include "boundedObject.h"
+#include "config_gobj.h"
 #include "drawable.h"
 #include "geom.h"
 #include "geomprimitives.h"
@@ -163,6 +164,7 @@ ConfigureFn(config_gobj) {
     textures_down_square = config_gobj.GetBool("textures-square", false);
   }
 
+  BoundedObject::init_type();
   Geom::init_type();
   GeomLine::init_type();
   GeomLinestrip::init_type();

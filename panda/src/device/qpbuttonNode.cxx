@@ -20,6 +20,7 @@
 #include "config_device.h"
 #include "dataNodeTransmit.h"
 #include "buttonEventList.h"
+#include "dcast.h"
 
 TypeHandle qpButtonNode::_type_handle;
 

@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomNodeContext::
-GeomNodeContext(GeomNode *node) :
+GeomNodeContext(qpGeomNode *node) :
   _node(node)
 {
 }

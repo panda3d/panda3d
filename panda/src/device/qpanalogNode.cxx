@@ -19,6 +19,7 @@
 #include "qpanalogNode.h"
 #include "config_device.h"
 #include "dataNodeTransmit.h"
+#include "dcast.h"
 
 
 TypeHandle qpAnalogNode::_type_handle;

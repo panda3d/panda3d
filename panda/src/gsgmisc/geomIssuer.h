@@ -19,12 +19,11 @@
 #ifndef GEOMISSUER_H
 #define GEOMISSUER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <nodeTransition.h>
-#include <luse.h>
-#include <typedef.h>
-#include <geom.h>
+#include "luse.h"
+#include "typedef.h"
+#include "geom.h"
 
 class GraphicsStateGuardianBase;
 

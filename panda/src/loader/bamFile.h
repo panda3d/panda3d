@@ -19,10 +19,10 @@
 #ifndef BAMFILE_H
 #define BAMFILE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <datagramInputFile.h>
-#include <datagramOutputFile.h>
+#include "datagramInputFile.h"
+#include "datagramOutputFile.h"
 
 class BamReader;
 class BamWriter;

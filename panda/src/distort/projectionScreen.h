@@ -21,9 +21,9 @@
 
 #include "pandabase.h"
 
-#include "namedNode.h"
-#include "lensNode.h"
-#include "geomNode.h"
+#include "pandaNode.h"
+#include "qplensNode.h"
+#include "qpgeomNode.h"
 
 class Geom;
 
@@ -45,27 +45,26 @@ class Geom;
 //               using the Lens interface, including fisheye and
 //               cylindrical lenses.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAFX ProjectionScreen : public NamedNode {
+class EXPCL_PANDAFX ProjectionScreen : public PandaNode {
 PUBLISHED:
   ProjectionScreen(const string &name = "");
   virtual ~ProjectionScreen();
 
-public:
+protected:
   ProjectionScreen(const ProjectionScreen &copy);
-  void operator = (const ProjectionScreen &copy);
-
-  virtual Node *make_copy() const;
-  virtual void app_traverse(const ArcChain &chain);
+  virtual PandaNode *make_copy() const;
 
 PUBLISHED:
-  INLINE void set_projector(LensNode *projector);
-  INLINE LensNode *get_projector() const;
+  INLINE void set_projector(qpLensNode *projector);
+  INLINE qpLensNode *get_projector() const;
 
-  PT(GeomNode) generate_screen(LensNode *projector, const string &screen_name,
-                               int num_x_verts, int num_y_verts, float distance);
-  void regenerate_screen(LensNode *projector, const string &screen_name,
+  PT(qpGeomNode) generate_screen(qpLensNode *projector,
+                                 const string &screen_name,
+                                 int num_x_verts, int num_y_verts,
+                                 float distance);
+  void regenerate_screen(qpLensNode *projector, const string &screen_name,
                          int num_x_verts, int num_y_verts, float distance);
-  PT_Node make_flat_mesh(LensNode *camera);
+  PT(PandaNode) make_flat_mesh(qpLensNode *camera);
 
   INLINE void set_vignette_on(bool vignette_on);
   INLINE bool get_vignette_on() const;
@@ -82,21 +81,22 @@ public:
 
 private:
   void recompute_if_stale();
-  void recompute_node(Node *node, LMatrix4f &rel_mat, bool &computed_rel_mat);
-  void recompute_geom_node(GeomNode *node, LMatrix4f &rel_mat, bool &computed_rel_mat);
+  void recompute_node(PandaNode *node, LMatrix4f &rel_mat, bool &computed_rel_mat);
+  void recompute_geom_node(qpGeomNode *node, LMatrix4f &rel_mat, bool &computed_rel_mat);
   void recompute_geom(Geom *geom, const LMatrix4f &rel_mat);
 
-  NodeRelation *
-  make_mesh_node(Node *result_parent, Node *node, LensNode *camera,
+  PandaNode *
+  make_mesh_node(PandaNode *result_parent, PandaNode *node, qpLensNode *camera,
                  LMatrix4f &rel_mat, bool &computed_rel_mat);
-  void make_mesh_children(Node *new_node, Node *node, LensNode *camera,
+  void make_mesh_children(PandaNode *new_node, PandaNode *node, 
+                          qpLensNode *camera,
                           LMatrix4f &rel_mat, bool &computed_rel_mat);
-  PT(GeomNode) make_mesh_geom_node(GeomNode *node, LensNode *camera,
-                                   LMatrix4f &rel_mat, bool &computed_rel_mat);
-  PT(dDrawable) make_mesh_geom(Geom *geom, Lens *lens, LMatrix4f &rel_mat);
+  PT(qpGeomNode) make_mesh_geom_node(qpGeomNode *node, qpLensNode *camera,
+                                     LMatrix4f &rel_mat, bool &computed_rel_mat);
+  PT(Geom) make_mesh_geom(Geom *geom, Lens *lens, LMatrix4f &rel_mat);
 
 
-  PT(LensNode) _projector;
+  PT(qpLensNode) _projector;
   bool _vignette_on;
   Colorf _vignette_color;
   Colorf _frame_color;
@@ -113,9 +113,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    NamedNode::init_type();
+    PandaNode::init_type();
     register_type(_type_handle, "ProjectionScreen",
-                  NamedNode::get_class_type());
+                  PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

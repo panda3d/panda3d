@@ -23,46 +23,18 @@
 #include "config_glgsg.h"
 
 #include "config_util.h"
-#include "directRenderTraverser.h"
-#include "cullTraverser.h"
 #include "displayRegion.h"
-#include "lensNode.h"
-#include "camera.h"
 #include "renderBuffer.h"
 #include "geom.h"
 #include "geomIssuer.h"
 #include "graphicsWindow.h"
 #include "graphicsChannel.h"
 #include "lens.h"
-#include "get_rel_pos.h"
 #include "perspectiveLens.h"
 #include "directionalLight.h"
 #include "pointLight.h"
 #include "spotlight.h"
 #include "GL/glu.h"
-#include "lensNode.h"
-#include "transformTransition.h"
-#include "colorMatrixTransition.h"
-#include "alphaTransformTransition.h"
-#include "colorTransition.h"
-#include "textureTransition.h"
-#include "renderModeTransition.h"
-#include "materialTransition.h"
-#include "colorBlendTransition.h"
-#include "colorMaskTransition.h"
-#include "texMatrixTransition.h"
-#include "texGenTransition.h"
-#include "textureApplyTransition.h"
-#include "clipPlaneTransition.h"
-#include "transparencyTransition.h"
-#include "fogTransition.h"
-#include "linesmoothTransition.h"
-#include "depthTestTransition.h"
-#include "depthWriteTransition.h"
-#include "cullFaceTransition.h"
-#include "stencilTransition.h"
-#include "pointShapeTransition.h"
-#include "polygonOffsetTransition.h"
 #include "textureAttrib.h"
 #include "lightAttrib.h"
 #include "cullFaceAttrib.h"
@@ -157,15 +129,6 @@ GLGraphicsStateGuardian::
 GLGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
   _clip_plane_enabled = (bool *)NULL;
   _cur_clip_plane_enabled = (bool *)NULL;
-
-  // Create a default RenderTraverser.
-  if (gl_cull_traversal) {
-    _render_traverser =
-      new CullTraverser(this, RenderRelation::get_class_type());
-  } else {
-    _render_traverser =
-      new DirectRenderTraverser(this, RenderRelation::get_class_type());
-  }
 
   reset();
 }
@@ -310,10 +273,10 @@ reset() {
 
   // Make sure the GL state matches all of our initial attribute
   // states.
-  PT(DepthTestTransition) dta = new DepthTestTransition;
-  PT(DepthWriteTransition) dwa = new DepthWriteTransition;
-  PT(CullFaceTransition) cfa = new CullFaceTransition;
-  PT(TextureTransition) ta = new TextureTransition;
+  CPT(RenderAttrib) dta = DepthTestAttrib::make(DepthTestAttrib::M_less);
+  CPT(RenderAttrib) dwa = DepthWriteAttrib::make(DepthWriteAttrib::M_on);
+  CPT(RenderAttrib) cfa = CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise);
+  CPT(RenderAttrib) ta = TextureAttrib::make_off();
 
   dta->issue(this);
   dwa->issue(this);
@@ -359,14 +322,14 @@ clear(const RenderBuffer &buffer) {
   nassertv(buffer._gsg == this);
   int buffer_type = buffer._buffer_type;
   GLbitfield mask = 0;
-  NodeTransitions state;
+  CPT(RenderState) state = RenderState::make_empty();
 
   if (buffer_type & RenderBuffer::T_color) {
     call_glClearColor(_color_clear_value[0],
                       _color_clear_value[1],
                       _color_clear_value[2],
                       _color_clear_value[3]);
-    state.set_transition(new ColorMaskTransition);
+    state = state->add_attrib(ColorWriteAttrib::make(ColorWriteAttrib::M_on));
     mask |= GL_COLOR_BUFFER_BIT;
 
     set_draw_buffer(buffer);
@@ -379,7 +342,7 @@ clear(const RenderBuffer &buffer) {
     // In order to clear the depth buffer, the depth mask must enable
     // writing to the depth buffer.
     if (!_depth_mask) {
-      state.set_transition(new DepthWriteTransition);
+      state = state->add_attrib(DepthWriteAttrib::make(DepthWriteAttrib::M_on));
     }
   }
 
@@ -504,191 +467,6 @@ prepare_lens() {
   glLoadMatrixf(new_projection_mat.get_data());
 
   return true;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::render_frame
-//       Access: Public, Virtual
-//  Description: Renders an entire frame, including all display
-//               regions within the frame, and includes any necessary
-//               pre- and post-processing like swapping buffers.
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-render_frame() {
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "begin frame " << ClockObject::get_global_clock()->get_frame_count()
-    << " --------------------------------------------" << endl;
-#endif
-
-  activate();
-  _win->begin_frame();
-  report_errors();
-  _decal_level = 0;
-
-#ifdef DO_PSTATS
-  _vertices_display_list_pcollector.clear_level();
-#endif
-
-  // First, clear the entire window.
-  clear_framebuffer();
-
-  // Now render each of our layers in order.
-  int max_channel_index = _win->get_max_channel_index();
-  for (int c = 0; c < max_channel_index; c++) {
-    if (_win->is_channel_defined(c)) {
-      GraphicsChannel *chan = _win->get_channel(c);
-      if (chan->is_active()) {
-        int num_layers = chan->get_num_layers();
-        for (int l = 0; l < num_layers; l++) {
-          GraphicsLayer *layer = chan->get_layer(l);
-          if (layer->is_active()) {
-            int num_drs = layer->get_num_drs();
-            for (int d = 0; d < num_drs; d++) {
-              DisplayRegion *dr = layer->get_dr(d);
-              nassertv(dr != (DisplayRegion *)NULL);
-              Camera *cam = dr->get_camera();
-
-              // For each display region, render from the camera's view.
-              if (dr->is_active() && cam != (Camera *)NULL &&
-                  cam->is_active() && cam->get_scene() != (Node *)NULL) {
-                DisplayRegionStack old_dr = push_display_region(dr);
-                prepare_display_region();
-                render_scene(cam->get_scene(), cam);
-                pop_display_region(old_dr);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Now we're done with the frame processing.  Clean up.
-
-#ifndef NDEBUG
-  report_errors();
-#endif
-
-  _win->end_frame();
-
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "end frame ----------------------------------------------" << endl;
-#endif
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::render_scene
-//       Access: Public, Virtual
-//  Description: Renders an entire scene, from the root node of the
-//               scene graph, as seen from a particular LensNode
-//               and with a given initial state.  This initial state
-//               may be modified during rendering.
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-render_scene(Node *root, LensNode *projnode) {
-#ifdef GSG_VERBOSE
-  _pass_number = 0;
-  glgsg_cat.debug()
-    << "begin scene - - - - - - - - - - - - - - - - - - - - - - - - -"
-    << endl;
-#endif
-  _current_root_node = root;
-
-  render_subgraph(_render_traverser, root, projnode,
-                  AllTransitionsWrapper());
-
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "done scene  - - - - - - - - - - - - - - - - - - - - - - - - -"
-    << endl;
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::render_subgraph
-//       Access: Public, Virtual
-//  Description: Renders a subgraph of the scene graph as seen from a
-//               given lens node, and with a particular initial
-//               state.  This state may be modified by the render
-//               process.
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-render_subgraph(RenderTraverser *traverser,
-                Node *subgraph, LensNode *projnode,
-                const AllTransitionsWrapper &net_trans) {
-  // Calling activate() frequently seems to be intolerably expensive
-  // on some platforms.  We'll limit ourselves for now to calling it
-  // only in render_frame().
-
-  //  activate();
-
-  Lens *lens = projnode->get_lens();
-  LensNode *old_camera = _current_camera;
-  _current_camera = projnode;
-
-  LensStack lens_stack = push_lens(lens);
-  if (!prepare_lens()) {
-    glgsg_cat.error()
-      << "Cannot render with a nonlinear lens!\n";
-    return;
-  }
-
-  // We infer the modelview matrix by doing a wrt on the lens
-  // node.
-  LMatrix4f modelview_mat;
-  get_rel_mat(subgraph, _current_camera, modelview_mat);
-
-  if (_coordinate_system != CS_yup_right) {
-    // Now we build the coordinate system conversion into the
-    // modelview matrix (as described in the paragraph above).
-    modelview_mat = modelview_mat *
-      LMatrix4f::convert_mat(_coordinate_system, CS_yup_right);
-  }
-
-  // The modelview matrix will be loaded as each geometry is
-  // encountered.  So we set the supplied modelview matrix as an
-  // initial value instead of loading it now.
-  AllTransitionsWrapper sub_trans = net_trans;
-  sub_trans.set_transition(new TransformTransition(modelview_mat));
-
-  render_subgraph(traverser, subgraph, sub_trans);
-
-  _current_camera = old_camera;
-
-  pop_lens(lens_stack);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::render_subgraph
-//       Access: Public, Virtual
-//  Description: Renders a subgraph of the scene graph as seen from the
-//               current lens node, and with a particular
-//               initial state.  This state may be modified during the
-//               render process.
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-render_subgraph(RenderTraverser *traverser, Node *subgraph,
-                const AllTransitionsWrapper &net_trans) {
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "begin subgraph (pass " << ++_pass_number
-    << ") - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
-#endif
-  //  activate();
-
-  nassertv(traverser != (RenderTraverser *)NULL);
-  traverser->traverse(subgraph, net_trans);
-
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "end subgraph (pass " << _pass_number
-    << ") - - - - - - - - - - - - - - - - - - - - - - - - -"
-    << endl;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1804,7 +1582,9 @@ release_texture(TextureContext *tc) {
 //               contents of the node.
 ////////////////////////////////////////////////////////////////////
 GeomNodeContext *GLGraphicsStateGuardian::
-prepare_geom_node(GeomNode *node) {
+prepare_geom_node(qpGeomNode *node) {
+#if 0  // temporarily disabled until we bring to new scene graph
+
   // Make sure we have at least some static Geoms in the GeomNode;
   // otherwise there's no point in building a display list.
   int num_geoms = node->get_num_geoms();
@@ -1888,6 +1668,8 @@ prepare_geom_node(GeomNode *node) {
   nassertr(inserted, NULL);
 
   return ggnc;
+#endif  // temporarily disabled until we bring to new scene graph
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1897,7 +1679,9 @@ prepare_geom_node(GeomNode *node) {
 //               prepare_geom_node().
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
+draw_geom_node(qpGeomNode *node, const RenderState *state,
+               GeomNodeContext *gnc) {
+#if 0  // temporarily disabled until we bring to new scene graph
   if (gnc == (GeomNodeContext *)NULL) {
     // We don't have a saved context; just draw the GeomNode in
     // immediate mode.
@@ -1923,6 +1707,7 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
       ggnc->_dynamic_geoms[i]->draw(this);
     }
   }
+#endif  // temporarily disabled until we bring to new scene graph
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1934,6 +1719,7 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 release_geom_node(GeomNodeContext *gnc) {
+#if 0  // temporarily disabled until we bring to new scene graph
   if (gnc != (GeomNodeContext *)NULL) {
     GLGeomNodeContext *ggnc = DCAST(GLGeomNodeContext, gnc);
     glDeleteLists(ggnc->_index, 1);
@@ -1947,6 +1733,7 @@ release_geom_node(GeomNodeContext *gnc) {
     ggnc->_node->clear_gsg(this);
     delete ggnc;
   }
+#endif  // temporarily disabled until we bring to new scene graph
 }
 
 static int logs[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
@@ -2001,7 +1788,9 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
                    get_internal_image_format(pb->get_format()),
                    pb->get_xorg(), pb->get_yorg(),
                    pb->get_xsize(), pb->get_ysize(), pb->get_border());
-  clear_attribute(TextureTransition::get_class_type());
+
+  // Clear the internal texture state, since we've just monkeyed with it.
+  modify_state(get_untextured_state());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2014,90 +1803,6 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb
   //  activate();
   set_read_buffer(rb);
   copy_texture(tc, dr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-draw_texture(TextureContext *tc, const DisplayRegion *dr) {
-  nassertv(tc != NULL && dr != NULL);
-  //  activate();
-
-  Texture *tex = tc->_texture;
-
-  DisplayRegionStack old_dr = push_display_region(dr);
-  prepare_display_region();
-
-  NodeTransitions state;
-  CullFaceTransition *cfa = new CullFaceTransition;
-  cfa->set_mode(CullFaceProperty::M_cull_none);
-  DepthTestTransition *dta = new DepthTestTransition;
-  dta->set_mode(DepthTestProperty::M_none);
-  DepthWriteTransition *dwa = new DepthWriteTransition;
-  dwa->set_off();
-  TextureTransition *ta = new TextureTransition;
-  ta->set_on(tex);
-  TextureApplyTransition *taa = new TextureApplyTransition;
-  taa->set_mode(TextureApplyProperty::M_decal);
-
-  state.set_transition(new ColorMaskTransition);
-  state.set_transition(new RenderModeTransition);
-  state.set_transition(new TexMatrixTransition);
-  state.set_transition(new TransformTransition);
-  state.set_transition(new ColorBlendTransition);
-  state.set_transition(cfa);
-  state.set_transition(dta);
-  state.set_transition(dwa);
-  state.set_transition(ta);
-  state.set_transition(taa);
-  modify_state(state);
-
-  // We set up an orthographic projection that defines our entire
-  // viewport to the range [0..1] in both dimensions.  Then, when we
-  // create a unit square polygon below, it will exactly fill the
-  // viewport (and thus exactly fill the display region).
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glLoadIdentity();
-  gluOrtho2D(0, 1, 0, 1);
-
-  float txl, txr, tyt, tyb;
-  txl = tyb = 0.;
-  if (tex->_has_requested_size) {
-    txr = ((float)(tex->_requested_w)) / ((float)(tex->_pbuffer->get_xsize()));
-    tyt = ((float)(tex->_requested_h)) / ((float)(tex->_pbuffer->get_ysize()));
-  } else {
-    txr = tyt = 1.;
-  }
-
-  // This two-triangle strip is actually a quad.  But it's usually
-  // better to render quads as tristrips anyway.
-  glBegin(GL_TRIANGLE_STRIP);
-  glTexCoord2f(txl, tyb);   glVertex2i(0, 0);
-  glTexCoord2f(txr, tyb);   glVertex2i(1, 0);
-  glTexCoord2f(txl, tyt);   glVertex2i(0, 1);
-  glTexCoord2f(txr, tyt);   glVertex2i(1, 1);
-  glEnd();
-
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-
-  pop_display_region(old_dr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-draw_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
-  //  activate();
-  set_draw_buffer(rb);
-  draw_texture(tc, dr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2170,7 +1875,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   // for glReadPixels() to work
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
-  clear_attribute(TextureTransition::get_class_type());
+  modify_state(get_untextured_state());
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
@@ -2243,141 +1948,6 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const NodeTransitions& na) {
-  nassertv(pb != NULL && dr != NULL);
-  nassertv(!pb->_image.empty());
-  //  activate();
-
-  DisplayRegionStack old_dr = push_display_region(dr);
-  prepare_display_region();
-
-  NodeTransitions state(na);
-  state.set_transition(new TextureTransition);
-  state.set_transition(new TransformTransition);
-  //state.set_transition(new ColorBlendTransition);
-  state.set_transition(new StencilTransition);
-
-  switch (pb->get_format()) {
-  case PixelBuffer::F_depth_component:
-    {
-      ColorMaskTransition *cma = new ColorMaskTransition(0);
-      DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_always);
-      DepthWriteTransition *dwa = new DepthWriteTransition;
-      state.set_transition(cma);
-      state.set_transition(dta);
-      state.set_transition(dwa);
-    }
-    break;
-
-  case PixelBuffer::F_rgb:
-  case PixelBuffer::F_rgb5:
-  case PixelBuffer::F_rgb8:
-  case PixelBuffer::F_rgb12:
-  case PixelBuffer::F_rgba:
-  case PixelBuffer::F_rgbm:
-  case PixelBuffer::F_rgba4:
-  case PixelBuffer::F_rgba5:
-  case PixelBuffer::F_rgba8:
-  case PixelBuffer::F_rgba12:
-    {
-      ColorMaskTransition *cma = new ColorMaskTransition;
-      DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_none);
-      DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
-      state.set_transition(cma);
-      state.set_transition(dta);
-      state.set_transition(dwa);
-    }
-    break;
-  default:
-    glgsg_cat.error()
-      << "draw_pixel_buffer(): unknown buffer format" << endl;
-    break;
-  }
-
-  modify_state(state);
-
-  set_unpack_alignment(1);
-
-  glMatrixMode( GL_PROJECTION );
-  glPushMatrix();
-  glLoadIdentity();
-  gluOrtho2D(0, _win->get_width(),
-             0, _win->get_height());
-
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glDrawPixels(" << pb->get_xsize() << ", " << pb->get_ysize()
-    << ", ";
-  switch (get_external_image_format(pb->get_format())) {
-  case GL_DEPTH_COMPONENT:
-    glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
-    break;
-  case GL_RGB:
-    glgsg_cat.debug(false) << "GL_RGB, ";
-    break;
-  case GL_RGBA:
-    glgsg_cat.debug(false) << "GL_RGBA, ";
-    break;
-#ifdef GL_BGR
-  case GL_BGR:
-    glgsg_cat.debug(false) << "GL_BGR, ";
-    break;
-  case GL_BGRA:
-    glgsg_cat.debug(false) << "GL_BGRA, ";
-    break;
-#endif  // GL_BGR
-  default:
-    glgsg_cat.debug(false) << "unknown, ";
-    break;
-  }
-  switch (get_image_type(pb->get_image_type())) {
-  case GL_UNSIGNED_BYTE:
-    glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
-    break;
-  case GL_FLOAT:
-    glgsg_cat.debug(false) << "GL_FLOAT, ";
-    break;
-  default:
-    glgsg_cat.debug(false) << "unknown, ";
-    break;
-  }
-  glgsg_cat.debug(false)
-    << (void *)pb->_image.p() << ")" << endl;
-#endif
-
-  glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
-  glDrawPixels( pb->get_xsize(), pb->get_ysize(),
-                get_external_image_format(pb->get_format()),
-                get_image_type(pb->get_image_type()),
-                pb->_image.p() );
-
-  glMatrixMode( GL_PROJECTION );
-  glPopMatrix();
-
-  pop_display_region(old_dr);
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const RenderBuffer &rb, const NodeTransitions& na) {
-  //  activate();
-  set_draw_buffer(rb);
-  draw_pixel_buffer(pb, dr, na);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_material
 //       Access: Public, Virtual
 //  Description:
@@ -2428,38 +1998,9 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-apply_fog(Fog *fog) {
-  Fog::Mode fmode = fog->get_mode();
-  call_glFogMode(get_fog_mode_type(fmode));
-
-  if (fmode == Fog::M_linear) {
-    // Linear fog may be world-relative or camera-relative.  The fog
-    // object knows how to decode its parameters into camera-relative
-    // properties.
-    float onset, opaque;
-    fog->compute_linear_range(onset, opaque, _current_camera,
-                              _coordinate_system);
-    call_glFogStart(onset);
-    call_glFogEnd(opaque);
-
-  } else {
-    // Exponential fog is always camera-relative.
-    call_glFogDensity(fog->get_exp_density());
-  }
-
-  call_glFogColor(fog->get_color());
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_fog
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
 apply_fog(qpFog *fog) {
   qpFog::Mode fmode = fog->get_mode();
-  call_glFogMode(get_fog_mode_type((Fog::Mode)fmode));
+  call_glFogMode(get_fog_mode_type(fmode));
 
   if (fmode == qpFog::M_linear) {
     float onset, opaque;
@@ -2473,614 +2014,6 @@ apply_fog(qpFog *fog) {
   }
 
   call_glFogColor(fog->get_color());
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_transform
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_transform(const TransformTransition *attrib) {
-  //  activate();
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glLoadMatrix(GL_MODELVIEW): " << attrib->get_matrix() << endl;
-#endif
-  glMatrixMode(GL_MODELVIEW);
-  glLoadMatrixf(attrib->get_matrix().get_data());
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_color_transform
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_color_transform(const ColorMatrixTransition *attrib) {
-  _current_color_mat = attrib->get_matrix();
-
-  if (_current_color_mat == LMatrix4f::ident_mat()) {
-    _color_transform_enabled = false;
-  } else {
-    _color_transform_enabled = true;
-  }
-
-  _scene_graph_color_stale = _has_scene_graph_color;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_alpha_transform
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_alpha_transform(const AlphaTransformTransition *attrib) {
-  _current_alpha_offset= attrib->get_offset();
-  _current_alpha_scale = attrib->get_scale();
-
-  if (_current_alpha_offset == 0 && _current_alpha_scale == 1) {
-    _alpha_transform_enabled = false;
-  } else {
-    _alpha_transform_enabled = true;
-  }
-
-  _scene_graph_color_stale = _has_scene_graph_color;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_matrix
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_tex_matrix(const TexMatrixTransition *attrib) {
-  //  activate();
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glLoadMatrix(GL_TEXTURE): " << attrib->get_matrix() << endl;
-#endif
-  glMatrixMode(GL_TEXTURE);
-  glLoadMatrixf(attrib->get_matrix().get_data());
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_color
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_color(const ColorTransition *attrib) {
-  if (attrib->is_on()) {
-    if (attrib->is_real()) {
-      // The color attribute is "on" and "real": it specifies a scene
-      // graph color that overrides the vertex color.
-      _scene_graph_color = attrib->get_color();
-      _has_scene_graph_color = true;
-      _vertex_colors_enabled = false;
-      _scene_graph_color_stale = true;
-
-    } else {
-      // The color attribute is "on" but not "real": it specifies that
-      // no scene graph color is in effect, but vertex color is not
-      // important either.
-      _has_scene_graph_color = false;
-      _scene_graph_color_stale = false;
-      _vertex_colors_enabled = false;
-    }
-  } else {
-    // The color attribute is "off": it specifies that vertex color
-    // should be revealed.
-    _has_scene_graph_color = false;
-    _scene_graph_color_stale = false;
-    _vertex_colors_enabled = true;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_texture(const TextureTransition *attrib) {
-  //  activate();
-
-  if (attrib->is_on()) {
-    enable_texturing(true);
-    Texture *tex = attrib->get_texture();
-    nassertv(tex != (Texture *)NULL);
-    tex->apply(this);
-  } else {
-    enable_texturing(false);
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_tex_gen
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_tex_gen(const TexGenTransition *attrib) {
-  //  activate();
-  TexGenProperty::Mode mode = attrib->get_mode();
-
-  switch (mode) {
-  case TexGenProperty::M_none:
-    glDisable(GL_TEXTURE_GEN_S);
-    glDisable(GL_TEXTURE_GEN_T);
-    glDisable(GL_TEXTURE_GEN_Q);
-    glDisable(GL_TEXTURE_GEN_R);
-    break;
-
-  case TexGenProperty::M_texture_projector:
-    {
-      glEnable(GL_TEXTURE_GEN_S);
-      glEnable(GL_TEXTURE_GEN_T);
-      glEnable(GL_TEXTURE_GEN_Q);
-      glEnable(GL_TEXTURE_GEN_R);
-      const LMatrix4f &plane = attrib->get_plane();
-      glTexGenfv(GL_S, GL_OBJECT_PLANE, plane.get_row(0).get_data());
-      glTexGenfv(GL_T, GL_OBJECT_PLANE, plane.get_row(1).get_data());
-      glTexGenfv(GL_R, GL_OBJECT_PLANE, plane.get_row(2).get_data());
-      glTexGenfv(GL_Q, GL_OBJECT_PLANE, plane.get_row(3).get_data());
-      glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-      glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-      glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-      glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-    }
-    break;
-
-  case TexGenProperty::M_sphere_map:
-    glEnable(GL_TEXTURE_GEN_S);
-    glEnable(GL_TEXTURE_GEN_T);
-    glDisable(GL_TEXTURE_GEN_Q);
-    glDisable(GL_TEXTURE_GEN_R);
-    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-    break;
-
-  default:
-    glgsg_cat.error()
-      << "Unknown texgen mode " << (int)mode << endl;
-    break;
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_material
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_material(const MaterialTransition *attrib) {
-  //  activate();
-  if (attrib->is_on()) {
-    const Material *material = attrib->get_material();
-    nassertv(material != (const Material *)NULL);
-    apply_material(material);
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_fog
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_fog(const FogTransition *attrib) {
-  //  activate();
-
-  if (attrib->is_on()) {
-    enable_fog(true);
-    Fog *fog = attrib->get_fog();
-    nassertv(fog != (Fog *)NULL);
-    fog->apply(this);
-  } else {
-    enable_fog(false);
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_render_mode
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_render_mode(const RenderModeTransition *attrib) {
-  //  activate();
-
-  RenderModeProperty::Mode mode = attrib->get_mode();
-
-  switch (mode) {
-  case RenderModeProperty::M_filled:
-    call_glPolygonMode(GL_FILL);
-    break;
-
-  case RenderModeProperty::M_wireframe:
-    // Make sure line width is back to default (1 pixel)
-    call_glLineWidth(attrib->get_line_width());
-    call_glPolygonMode(GL_LINE);
-    break;
-
-  default:
-    glgsg_cat.error()
-      << "Unknown render mode " << (int)mode << endl;
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_color_blend
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_color_blend(const ColorBlendTransition *attrib) {
-  //  activate();
-  ColorBlendProperty::Mode mode = attrib->get_mode();
-
-  switch (mode) {
-  case ColorBlendProperty::M_none:
-    enable_blend(false);
-    break;
-  case ColorBlendProperty::M_multiply:
-    enable_blend(true);
-    call_glBlendFunc(GL_DST_COLOR, GL_ZERO);
-    break;
-  case ColorBlendProperty::M_add:
-    enable_blend(true);
-    call_glBlendFunc(GL_ONE, GL_ONE);
-    break;
-  case ColorBlendProperty::M_multiply_add:
-    enable_blend(true);
-    call_glBlendFunc(GL_DST_COLOR, GL_ONE);
-    break;
-  case ColorBlendProperty::M_alpha:
-    enable_blend(true);
-    call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    break;
-  default:
-    glgsg_cat.error()
-      << "Unknown color blend mode " << (int)mode << endl;
-    break;
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_texture_apply
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_texture_apply(const TextureApplyTransition *attrib) {
-  //  activate();
-  GLint glmode = get_texture_apply_mode_type(attrib->get_mode());
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_color_mask
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_color_mask(const ColorMaskTransition *attrib) {
-  //  activate();
-  glColorMask(attrib->is_write_r(),
-              attrib->is_write_g(),
-              attrib->is_write_b(),
-              attrib->is_write_a());
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_test
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_depth_test(const DepthTestTransition *attrib) {
-  //  activate();
-
-  DepthTestProperty::Mode mode = attrib->get_mode();
-  if (mode == DepthTestProperty::M_none) {
-    enable_depth_test(false);
-  } else {
-    enable_depth_test(true);
-    glDepthFunc(get_depth_func_type(mode));
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_depth_write(const DepthWriteTransition *attrib) {
-  //  activate();
-  glDepthMask(attrib->is_on());
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_stencil
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_stencil(const StencilTransition *attrib) {
-  StencilProperty::Mode mode = attrib->get_mode();
-  if (mode == StencilProperty::M_none) {
-    enable_stencil_test(false);
-
-  } else {
-    enable_stencil_test(true);
-    call_glStencilFunc(get_stencil_func_type(mode),attrib->get_reference_value(),attrib->get_func_mask());
-    call_glStencilOp(get_stencil_action_type(attrib->get_fail_action()),
-                     get_stencil_action_type(attrib->get_zfail_action()),
-                     get_stencil_action_type(attrib->get_pass_action()));
-    #ifdef _DEBUG
-      if (attrib->get_write_mask() != 0xFFFFFFFF)
-          glgsg_cat.warning() << "OpenGL doesnt support stencil writemasks!\n";
-    #endif
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_cull_transition
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_cull_face(const CullFaceTransition *attrib) {
-  //  activate();
-  CullFaceProperty::Mode mode = attrib->get_mode();
-
-  switch (mode) {
-  case CullFaceProperty::M_cull_none:
-    glDisable(GL_CULL_FACE);
-    break;
-  case CullFaceProperty::M_cull_clockwise:
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    break;
-  case CullFaceProperty::M_cull_counter_clockwise:
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-    break;
-  case CullFaceProperty::M_cull_all:
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT_AND_BACK);
-    break;
-  default:
-    glgsg_cat.error()
-      << "invalid cull face mode " << (int)mode << endl;
-    break;
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_clip_plane
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_clip_plane(const ClipPlaneTransition *attrib)
-{
-  nassertv(attrib->get_default_dir() != TD_on);
-  //  activate();
-
-  // Initialize the currently enabled clip plane list
-  int i;
-  for (i = 0; i < _max_clip_planes; i++)
-    _cur_clip_plane_enabled[i] = false;
-
-  int num_enabled = 0;
-  ClipPlaneTransition::const_iterator pi;
-  for (pi = attrib->begin(); pi != attrib->end(); ++pi) {
-    PlaneNode *plane_node;
-    DCAST_INTO_V(plane_node, (*pi).first);
-    nassertv(plane_node != (PlaneNode *)NULL);
-    TransitionDirection dir = (*pi).second;
-
-    if (dir == TD_on) {
-      _cur_clip_plane_id = -1;
-      num_enabled++;
-
-      // Check to see if this clip plane has already been bound to an id
-      for (i = 0; i < _max_clip_planes; i++) {
-        if (_available_clip_plane_ids[i] == plane_node) {
-          // Clip plane has already been bound to an id, we only need
-          // to enable the clip plane, not apply it
-          _cur_clip_plane_id = -2;
-          enable_clip_plane(i, true);
-          _cur_clip_plane_enabled[i] = true;
-          break;
-        }
-      }
-
-      // See if there are any unbound clip plane ids
-      if (_cur_clip_plane_id == -1) {
-        for (i = 0; i < _max_clip_planes; i++) {
-          if (_available_clip_plane_ids[i] == NULL) {
-            _available_clip_plane_ids[i] = plane_node;
-            _cur_clip_plane_id = i;
-            break;
-          }
-        }
-      }
-      
-      // If there were no unbound clip plane ids, see if we can replace
-      // a currently unused but previously bound id
-      if (_cur_clip_plane_id == -1) {
-        for (i = 0; i < _max_clip_planes; i++) {
-          if (attrib->is_off(_available_clip_plane_ids[i])) {
-            _available_clip_plane_ids[i] = plane_node;
-            _cur_clip_plane_id = i;
-            break;
-          }
-        }
-      }
-      
-      if (_cur_clip_plane_id >= 0) {
-        enable_clip_plane(_cur_clip_plane_id, true);
-        _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
-        double equation[4];
-        const Planef clip_plane = plane_node->get_plane();
-        // Move us into the coordinate space of the plane
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadMatrixf(clip_plane.get_reflection_mat().get_data());
-        equation[0] = clip_plane._a;
-        equation[1] = clip_plane._b;
-        equation[2] = clip_plane._c;
-        equation[3] = clip_plane._d;
-        glClipPlane(get_clip_plane_id(_cur_clip_plane_id), equation);
-        glPopMatrix();
-      } else if (_cur_clip_plane_id == -1) {
-        glgsg_cat.error()
-          << "issue_clip_plane() - failed to bind clip plane to id" << endl;
-      }
-    }
-  }
-
-  // Disable all unused clip planes
-  for (i = 0; i < _max_clip_planes; i++) {
-    if (_cur_clip_plane_enabled[i] == false)
-      enable_clip_plane(i, false);
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_transparency
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_transparency(const TransparencyTransition *attrib )
-{
-  //  activate();
-
-  TransparencyProperty::Mode mode = attrib->get_mode();
-
-  switch (mode) {
-  case TransparencyProperty::M_none:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(false);
-    enable_alpha_test(false);
-    break;
-  case TransparencyProperty::M_alpha:
-  case TransparencyProperty::M_alpha_sorted:
-    // Should we really have an "alpha" and an "alpha_sorted" mode,
-    // like Performer does?  (The difference is that "alpha" is with
-    // the write to the depth buffer disabled.)  Or should we just use
-    // the separate depth write transition to control this?  Doing it
-    // implicitly requires a bit more logic here and in the state
-    // management; for now we require the user to explicitly turn off
-    // the depth write.
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    enable_alpha_test(false);
-    call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    break;
-  case TransparencyProperty::M_multisample:
-    enable_multisample_alpha_one(true);
-    enable_multisample_alpha_mask(true);
-    enable_blend(false);
-    enable_alpha_test(false);
-    break;
-  case TransparencyProperty::M_multisample_mask:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(true);
-    enable_blend(false);
-    enable_alpha_test(false);
-    break;
-  case TransparencyProperty::M_binary:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(false);
-    enable_alpha_test(true);
-    call_glAlphaFunc(GL_EQUAL, 1);
-    break;
-  default:
-    glgsg_cat.error()
-      << "invalid transparency mode " << (int)mode << endl;
-    break;
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_linesmooth
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_linesmooth(const LinesmoothTransition *attrib) {
-  //  activate();
-  enable_line_smooth(attrib->is_on());
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_point_shape
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_point_shape(const PointShapeTransition *attrib) {
-  //  activate();
-
-  if (attrib->get_mode() == PointShapeProperty::M_square)
-    glDisable(GL_POINT_SMOOTH);
-  else
-    glEnable(GL_POINT_SMOOTH);
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_polygon_offset
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_polygon_offset(const PolygonOffsetTransition *attrib) {
-  //  activate();
-  //GL really wants to do a enable/disable of PolygonOffset, but it
-  //seems more intuitive to have a PolygonOffset "on" all the time,
-  //and have zero mean nothing is being done.  So check for a zero
-  //offset to decide whether to enable or disable PolygonOffset
-  if(attrib->get_units() != 0 || attrib->get_factor() != 0)
-    {
-      //    GLfloat newfactor=attrib->get_factor();
-      GLfloat newfactor= 1.0f;
-
-      GLfloat newunits=attrib->get_units();
-      glPolygonOffset(newfactor,newunits);
-      enable_polygon_offset(true);
-    }
-  else
-    {
-      enable_polygon_offset(false);
-    }
   report_errors();
 }
 
@@ -3453,151 +2386,6 @@ wants_normals() const {
 bool GLGraphicsStateGuardian::
 wants_texcoords() const {
   return _texturing_enabled;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::begin_decal
-//       Access: Public, Virtual
-//  Description: This will be called to initiate decaling mode.  It is
-//               passed the pointer to the GeomNode that will be the
-//               destination of the decals, which it is expected that
-//               the GSG will render normally; subsequent geometry
-//               rendered up until the next call of end_decal() should
-//               be rendered as decals of the base_geom.
-//
-//               The transitions wrapper is the current state as of the
-//               base geometry node.  It may or may not be modified by
-//               the GSG to reflect whatever rendering state is
-//               necessary to render the decals properly.
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
-  nassertv(base_geom != (GeomNode *)NULL);
-  _decal_level++;
-
-#define POLYGON_OFFSET_MULTIPLIER -2
-
-  if (gl_decal_type == GDT_offset) {
-    // GL 1.1-style: use glPolygonOffset to do decals.
-
-    // Just draw the base geometry normally.
-    base_geom->draw(this);
-    glPolygonOffset(0.0f,POLYGON_OFFSET_MULTIPLIER * _decal_level);
-    glEnable(GL_POLYGON_OFFSET_FILL);
-
-  } else {
-    // GL 1.0f-style: use three-step rendering to do decals.
-
-    if (_decal_level > 1) {
-      // If we're already decaling, just draw the geometry.
-      base_geom->draw(this);
-
-    } else {
-      // Turn off writing the depth buffer to render the base geometry.
-      glDepthMask(false);
-      DepthWriteTransition *dwa = new DepthWriteTransition;
-      dwa->set_off();
-      attrib.set_transition(dwa);
-
-      // Now render the base geometry.
-      base_geom->draw(this);
-
-      // Render all of the decal geometry, too.  We'll keep the depth
-      // buffer write off during this.
-
-      // Save the current transform within the GL state so we can
-      // restore it when we come back to draw the base geometry again.
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-    }
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_decal
-//       Access: Public, Virtual
-//  Description: This will be called to terminate decaling mode.  It
-//               is passed the same base_geom that was passed to
-//               begin_decal().
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-end_decal(GeomNode *base_geom) {
-  nassertv(base_geom != (GeomNode *)NULL);
-
-  _decal_level--;
-
-  if (gl_decal_type == GDT_offset) {
-    // GL 1.1-style: use glPolygonOffset to do decals.
-    glPolygonOffset(0.0f,POLYGON_OFFSET_MULTIPLIER * _decal_level);
-    if (_decal_level == 0) {
-      glDisable(GL_POLYGON_OFFSET_FILL);
-    }
-
-  } else {
-    // GL 1.0f-style: use three-step rendering to do decals.
-
-    if (_decal_level == 0) {
-      // Now we need to re-render the base geometry with the depth write
-      // on and the color mask off, so we update the depth buffer
-      // properly.
-      bool was_textured = _texturing_enabled;
-      bool was_blend = _blend_enabled;
-      GLenum old_blend_source_func = _blend_source_func;
-      GLenum old_blend_dest_func = _blend_dest_func;
-
-      // First, we'd better restore the transform matrix in case our
-      // decals screwed it up.
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix();
-
-      // Enable the writing to the depth buffer.
-      glDepthMask(true);
-
-      // Disable the writing to the color buffer, however we have to
-      // do this.
-      if (gl_decal_type == GDT_blend) {
-        // For the early nVidia Linux driver, at least, we don't seem
-        // to have a working glColorMask.  So we have to disable the
-        // color writes through the use of a blend function.
-        // Expensive.
-
-        enable_blend(true);
-        call_glBlendFunc(GL_ZERO, GL_ONE);
-      } else {
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-      }
-
-      // No need to have texturing on for this.
-      enable_texturing(false);
-
-      base_geom->draw(this);
-
-      // Finally, restore the depth write and color mask states to the
-      // way they're supposed to be.
-      DepthWriteTransition *depth_write;
-      if (get_attribute_into(depth_write, this)) {
-        issue_depth_write(depth_write);
-      }
-
-      if (gl_decal_type == GDT_blend) {
-        enable_blend(was_blend);
-        if (was_blend) {
-          call_glBlendFunc(old_blend_source_func, old_blend_dest_func);
-        }
-      } else {
-        ColorMaskTransition *color_mask;
-        if (get_attribute_into(color_mask, this)) {
-          issue_color_mask(color_mask);
-        } else {
-          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        }
-      }
-
-      enable_texturing(was_textured);
-    }
-  }
-  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4021,6 +2809,223 @@ apply_texture_immediate(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_texture
+//       Access: Protected
+//  Description: Copies the texture image directly onto the frame
+//               buffer within the indicated display region.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+draw_texture(TextureContext *tc, const DisplayRegion *dr) {
+  nassertv(tc != NULL && dr != NULL);
+  //  activate();
+
+  Texture *tex = tc->_texture;
+
+  DisplayRegionStack old_dr = push_display_region(dr);
+  prepare_display_region();
+
+  static CPT(RenderState) basic_state;
+  if (basic_state == (RenderState *)NULL) {
+    // Create a State object for rendering textures in general.  Lots
+    // of things get turned off.
+    const RenderAttrib *attribs[] = {
+      CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
+      DepthTestAttrib::make(DepthTestAttrib::M_none),
+      DepthWriteAttrib::make(DepthWriteAttrib::M_off),
+      TextureApplyAttrib::make(TextureApplyAttrib::M_decal),
+      ColorWriteAttrib::make(ColorWriteAttrib::M_on),
+      RenderModeAttrib::make(RenderModeAttrib::M_filled),
+      //TexMatrixAttrib::make(LMatrix4f::ident_mat()),
+      ColorBlendAttrib::make(ColorBlendAttrib::M_none),
+      TransparencyAttrib::make(TransparencyAttrib::M_none),
+    };
+    basic_state = 
+      RenderState::make(attribs, sizeof(attribs) / sizeof(void *));
+  }      
+  CPT(RenderState) state = basic_state->compose
+    (RenderState::make(TextureAttrib::make(tex)));
+  modify_state(state);
+  set_transform(TransformState::make_identity());
+
+  // We set up an orthographic projection that defines our entire
+  // viewport to the range [0..1] in both dimensions.  Then, when we
+  // create a unit square polygon below, it will exactly fill the
+  // viewport (and thus exactly fill the display region).
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  gluOrtho2D(0, 1, 0, 1);
+
+  float txl, txr, tyt, tyb;
+  txl = tyb = 0.;
+  if (tex->_has_requested_size) {
+    txr = ((float)(tex->_requested_w)) / ((float)(tex->_pbuffer->get_xsize()));
+    tyt = ((float)(tex->_requested_h)) / ((float)(tex->_pbuffer->get_ysize()));
+  } else {
+    txr = tyt = 1.;
+  }
+
+  // This two-triangle strip is actually a quad.  But it's usually
+  // better to render quads as tristrips anyway.
+  glBegin(GL_TRIANGLE_STRIP);
+  glTexCoord2f(txl, tyb);   glVertex2i(0, 0);
+  glTexCoord2f(txr, tyb);   glVertex2i(1, 0);
+  glTexCoord2f(txl, tyt);   glVertex2i(0, 1);
+  glTexCoord2f(txr, tyt);   glVertex2i(1, 1);
+  glEnd();
+
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+
+  pop_display_region(old_dr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_texture
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+draw_texture(TextureContext *tc, const DisplayRegion *dr, 
+             const RenderBuffer &rb) {
+  //  activate();
+  set_draw_buffer(rb);
+  draw_texture(tc, dr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_pixel_buffer
+//       Access: Protected
+//  Description: Copies the indicated pixel buffer into the frame
+//               buffer in the given display region.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
+  nassertv(pb != NULL && dr != NULL);
+  nassertv(!pb->_image.empty());
+  //  activate();
+
+  DisplayRegionStack old_dr = push_display_region(dr);
+  prepare_display_region();
+
+  static CPT(RenderState) depth_state;
+  static CPT(RenderState) color_state;
+  if (depth_state == (RenderState *)NULL) {
+    // Create a State object for rendering depth-mask pixel buffers.
+    depth_state = 
+      RenderState::make(TextureAttrib::make_off(),
+                        ColorWriteAttrib::make(ColorWriteAttrib::M_off),
+                        DepthTestAttrib::make(DepthTestAttrib::M_always),
+                        DepthWriteAttrib::make(DepthWriteAttrib::M_on));
+
+    // And one for rendering color buffers.
+    color_state =
+      RenderState::make(TextureAttrib::make_off(),
+                        ColorWriteAttrib::make(ColorWriteAttrib::M_on),
+                        DepthTestAttrib::make(DepthTestAttrib::M_none),
+                        DepthWriteAttrib::make(DepthWriteAttrib::M_off));
+  }
+
+  switch (pb->get_format()) {
+  case PixelBuffer::F_depth_component:
+    modify_state(depth_state);
+    break;
+
+  case PixelBuffer::F_rgb:
+  case PixelBuffer::F_rgb5:
+  case PixelBuffer::F_rgb8:
+  case PixelBuffer::F_rgb12:
+  case PixelBuffer::F_rgba:
+  case PixelBuffer::F_rgbm:
+  case PixelBuffer::F_rgba4:
+  case PixelBuffer::F_rgba5:
+  case PixelBuffer::F_rgba8:
+  case PixelBuffer::F_rgba12:
+    modify_state(color_state);
+    break;
+
+  default:
+    glgsg_cat.error()
+      << "draw_pixel_buffer(): unknown buffer format" << endl;
+  }
+  set_transform(TransformState::make_identity());
+
+  set_unpack_alignment(1);
+
+  glMatrixMode( GL_PROJECTION );
+  glPushMatrix();
+  glLoadIdentity();
+  gluOrtho2D(0, _win->get_width(),
+             0, _win->get_height());
+
+#ifdef GSG_VERBOSE
+  glgsg_cat.debug()
+    << "glDrawPixels(" << pb->get_xsize() << ", " << pb->get_ysize()
+    << ", ";
+  switch (get_external_image_format(pb->get_format())) {
+  case GL_DEPTH_COMPONENT:
+    glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
+    break;
+  case GL_RGB:
+    glgsg_cat.debug(false) << "GL_RGB, ";
+    break;
+  case GL_RGBA:
+    glgsg_cat.debug(false) << "GL_RGBA, ";
+    break;
+#ifdef GL_BGR
+  case GL_BGR:
+    glgsg_cat.debug(false) << "GL_BGR, ";
+    break;
+  case GL_BGRA:
+    glgsg_cat.debug(false) << "GL_BGRA, ";
+    break;
+#endif  // GL_BGR
+  default:
+    glgsg_cat.debug(false) << "unknown, ";
+    break;
+  }
+  switch (get_image_type(pb->get_image_type())) {
+  case GL_UNSIGNED_BYTE:
+    glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
+    break;
+  case GL_FLOAT:
+    glgsg_cat.debug(false) << "GL_FLOAT, ";
+    break;
+  default:
+    glgsg_cat.debug(false) << "unknown, ";
+    break;
+  }
+  glgsg_cat.debug(false)
+    << (void *)pb->_image.p() << ")" << endl;
+#endif
+
+  glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
+  glDrawPixels( pb->get_xsize(), pb->get_ysize(),
+                get_external_image_format(pb->get_format()),
+                get_image_type(pb->get_image_type()),
+                pb->_image.p() );
+
+  glMatrixMode( GL_PROJECTION );
+  glPopMatrix();
+
+  pop_display_region(old_dr);
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_pixel_buffer
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
+                  const RenderBuffer &rb) {
+  //  activate();
+  set_draw_buffer(rb);
+  draw_pixel_buffer(pb, dr);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_texture_wrap_mode
 //       Access: Protected
 //  Description: Maps from the Texture's internal wrap mode symbols to
@@ -4231,27 +3236,6 @@ get_internal_image_format(PixelBuffer::Format format) {
 //       to the corresponding OpenGL ids
 ////////////////////////////////////////////////////////////////////
 GLint GLGraphicsStateGuardian::
-get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
-{
-  switch( am ) {
-  case TextureApplyProperty::M_modulate: return GL_MODULATE;
-  case TextureApplyProperty::M_decal: return GL_DECAL;
-  case TextureApplyProperty::M_blend: return GL_BLEND;
-  case TextureApplyProperty::M_replace: return GL_REPLACE;
-  case TextureApplyProperty::M_add: return GL_ADD;
-  }
-  glgsg_cat.error()
-    << "Invalid TextureApplyProperty::Mode value" << endl;
-  return GL_MODULATE;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_apply_mode_type
-//       Access: Protected
-//  Description: Maps from the texture environment's mode types
-//       to the corresponding OpenGL ids
-////////////////////////////////////////////////////////////////////
-GLint GLGraphicsStateGuardian::
 get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const {
   switch (am) {
   case TextureApplyAttrib::M_modulate: return GL_MODULATE;
@@ -4263,31 +3247,6 @@ get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const {
   glgsg_cat.error()
     << "Invalid TextureApplyAttrib::Mode value" << endl;
   return GL_MODULATE;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_depth_func_type
-//       Access: Protected
-//  Description: Maps from the depth func modes to gl version
-////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
-get_depth_func_type(DepthTestProperty::Mode m) const
-{
-  switch(m) {
-  case DepthTestProperty::M_never: return GL_NEVER;
-  case DepthTestProperty::M_less: return GL_LESS;
-  case DepthTestProperty::M_equal: return GL_EQUAL;
-  case DepthTestProperty::M_less_equal: return GL_LEQUAL;
-  case DepthTestProperty::M_greater: return GL_GREATER;
-  case DepthTestProperty::M_not_equal: return GL_NOTEQUAL;
-  case DepthTestProperty::M_greater_equal: return GL_GEQUAL;
-  case DepthTestProperty::M_always: return GL_ALWAYS;
-
-  default:
-    glgsg_cat.error()
-      << "Invalid DepthTestProperty::Mode value" << endl;
-    return GL_LESS;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4316,78 +3275,24 @@ get_depth_func_type(DepthTestAttrib::Mode m) const
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_stencil_func_type
-//       Access: Protected
-//  Description: Maps from the stencil func modes to gl version
-////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
-get_stencil_func_type(StencilProperty::Mode m) const
-{
-  // TODO: should do this with a table, not a switch
-  switch(m) {
-  case StencilProperty::M_never: return GL_NEVER;
-  case StencilProperty::M_less: return GL_LESS;
-  case StencilProperty::M_equal: return GL_EQUAL;
-  case StencilProperty::M_less_equal: return GL_LEQUAL;
-  case StencilProperty::M_greater: return GL_GREATER;
-  case StencilProperty::M_not_equal: return GL_NOTEQUAL;
-  case StencilProperty::M_greater_equal: return GL_GEQUAL;
-  case StencilProperty::M_always: return GL_ALWAYS;
-
-  default:
-    glgsg_cat.error()
-      << "Invalid StencilProperty::Mode value" << endl;
-    return GL_LESS;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_stencil_action_type
-//       Access: Protected
-//  Description: Maps from the stencil action modes to gl version
-////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
-get_stencil_action_type(StencilProperty::Action a) const
-{
-  // TODO: should do this with a table, not a switch
-  switch(a) {
-  case StencilProperty::A_keep: return GL_KEEP;
-  case StencilProperty::A_zero: return GL_ZERO;
-  case StencilProperty::A_replace: return GL_REPLACE;
-  case StencilProperty::A_increment_clamp: return GL_INCR;
-  case StencilProperty::A_decrement_clamp: return GL_DECR;
-  case StencilProperty::A_invert: return GL_INVERT;
-
-  case StencilProperty::A_increment:
-  case StencilProperty::A_decrement:
-      glgsg_cat.error()
-             << "wraparound incr/decr StencilProperty::Action not supported by OpenGL\n";
-      return ((a == StencilProperty::A_increment) ? GL_INCR : GL_DECR);
-  }
-  glgsg_cat.error()
-    << "Invalid StencilProperty::Action value" << endl;
-  return GL_KEEP;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_fog_mode_type
 //       Access: Protected
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
 GLenum GLGraphicsStateGuardian::
-get_fog_mode_type(Fog::Mode m) const {
+get_fog_mode_type(qpFog::Mode m) const {
   switch(m) {
-  case Fog::M_linear: return GL_LINEAR;
-  case Fog::M_exponential: return GL_EXP;
-  case Fog::M_exponential_squared: return GL_EXP2;
+  case qpFog::M_linear: return GL_LINEAR;
+  case qpFog::M_exponential: return GL_EXP;
+  case qpFog::M_exponential_squared: return GL_EXP2;
     /*
       #ifdef GL_FOG_FUNC_SGIS
-      case Fog::M_spline: return GL_FOG_FUNC_SGIS;
+      case qpFog::M_spline: return GL_FOG_FUNC_SGIS;
       #endif
     */
 
   default:
-    glgsg_cat.error() << "Invalid Fog::Mode value" << endl;
+    glgsg_cat.error() << "Invalid qpFog::Mode value" << endl;
     return GL_EXP;
   }
 }
@@ -4746,6 +3651,21 @@ restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
     // Restore the depth buffer.
     draw_pixel_buffer(sfb->_depth, sfb->_display_region, sfb->_buffer);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_untextured_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState object that represents
+//               texturing off.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) GLGraphicsStateGuardian::
+get_untextured_state() {
+  static CPT(RenderState) state;
+  if (state == (RenderState *)NULL) {
+    state = RenderState::make(TextureAttrib::make_off());
+  }
+  return state;
 }
 
 #ifndef NDEBUG

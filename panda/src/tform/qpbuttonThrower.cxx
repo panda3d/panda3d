@@ -23,6 +23,7 @@
 #include "dataNodeTransmit.h"
 #include "throw_event.h"
 #include "indent.h"
+#include "dcast.h"
 
 TypeHandle qpButtonThrower::_type_handle;
 

@@ -19,7 +19,10 @@
 #ifndef GLGEOMNODECONTEXT_H
 #define GLGEOMNODECONTEXT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
+#include "geomNodeContext.h"
+#include "qpgeomNode.h"
+#include "pvector.h"
 
 #ifdef WIN32_VC
 // Must include windows.h before gl.h on NT
@@ -29,9 +32,6 @@
 #endif
 
 #include <GL/gl.h>
-#include <geomNodeContext.h>
-#include <geomNode.h>
-#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLGeomNodeContext
@@ -39,7 +39,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL GLGeomNodeContext : public GeomNodeContext {
 public:
-  INLINE GLGeomNodeContext(GeomNode *node);
+  INLINE GLGeomNodeContext(qpGeomNode *node);
 
   // The GL display list index that draws the contents of this
   // GeomNode.
@@ -47,7 +47,7 @@ public:
 
   // A list of the dynamic Geoms within the GeomNode; these aren't
   // part of the above display list.
-  typedef pvector<PT(dDrawable) > Geoms;
+  typedef pvector< PT(Geom) > Geoms;
   Geoms _dynamic_geoms;
 
   // The number of vertices represented by the display list.  This is

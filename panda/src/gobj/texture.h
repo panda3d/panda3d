@@ -122,10 +122,6 @@ public:
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
                     const RenderBuffer &rb);
-  virtual void draw(GraphicsStateGuardianBase *gsg);
-  virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
-  virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                    const RenderBuffer &rb);
 
   // These bits are used as parameters to Texture::mark_dirty() and
   // also TextureContext::mark_dirty() (and related functions in

@@ -5,9 +5,9 @@
 
 #include "pandaegg.h"
 
-#include <config_egg.h>
-#include <config_builder.h>
-#include <config_egg2sg.h>
+#include "config_egg.h"
+#include "config_builder.h"
+#include "config_egg2pg.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpandaegg
@@ -21,5 +21,5 @@ void
 init_libpandaegg() {
   init_libegg();
   init_libbuilder();
-  init_libegg2sg();
+  init_libegg2pg();
 }

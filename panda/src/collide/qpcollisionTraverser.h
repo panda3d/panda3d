@@ -24,10 +24,6 @@
 #include "qpcollisionHandler.h"
 #include "qpcollisionLevelState.h"
 
-#include "traverserVisitor.h"
-#include "nullTransitionWrapper.h"
-#include "pointerTo.h"
-#include "renderRelation.h"
 #include "pointerTo.h"
 #include "pStatCollector.h"
 

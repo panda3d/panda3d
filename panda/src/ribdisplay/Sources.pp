@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET ribdisplay
   #define LOCAL_LIBS \
-    display ribgsg sgraph
+    display ribgsg
 
   #define SOURCES \
     config_ribdisplay.cxx config_ribdisplay.h ribGraphicsPipe.I \

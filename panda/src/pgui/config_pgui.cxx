@@ -17,20 +17,15 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_pgui.h"
-#include "pgButton.h"
 #include "qppgButton.h"
 #include "pgCullTraverser.h"
-#include "pgEntry.h"
 #include "qppgEntry.h"
 #include "pgMouseWatcherParameter.h"
 #include "pgMouseWatcherGroup.h"
-#include "pgItem.h"
 #include "qppgItem.h"
 #include "pgMouseWatcherBackground.h"
 #include "pgMouseWatcherRegion.h"
-#include "pgTop.h"
 #include "qppgTop.h"
-#include "pgWaitBar.h"
 #include "qppgWaitBar.h"
 
 #include "dconfig.h"
@@ -68,19 +63,14 @@ init_libpgui() {
   }
   initialized = true;
 
-  PGButton::init_type();
   qpPGButton::init_type();
   PGCullTraverser::init_type();
-  PGEntry::init_type();
   qpPGEntry::init_type();
   PGMouseWatcherParameter::init_type();
   PGMouseWatcherGroup::init_type();
-  PGItem::init_type();
   qpPGItem::init_type();
   PGMouseWatcherBackground::init_type();
   PGMouseWatcherRegion::init_type();
-  PGTop::init_type();
   qpPGTop::init_type();
-  PGWaitBar::init_type();
   qpPGWaitBar::init_type();
 }

@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "driveInterface.h"
+#include "qpdriveInterface.h"
 #include "config_tform.h"
 
 #include "compose_matrix.h"
-#include "mouse.h"
+#include "mouseAndKeyboard.h"
 #include "mouseData.h"
 #include "clockObject.h"
 #include "modifierButtons.h"

@@ -403,17 +403,3 @@ void PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
   gsg->copy_pixel_buffer(this, dr, rb);
 }
 
-void PixelBuffer::draw(GraphicsStateGuardianBase *) {
-  gobj_cat.error()
-    << "DisplayRegion required to draw pixel buffer.\n";
-}
-
-void PixelBuffer::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
-  gsg->draw_pixel_buffer(this, dr);
-}
-
-void PixelBuffer::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                        const RenderBuffer &rb) {
-  gsg->draw_pixel_buffer(this, dr, rb);
-}
-

@@ -5,25 +5,24 @@
 
 #include "panda.h"
 
-#include <config_device.h>
-#include <config_display.h>
-#include <config_graph.h>
-#include <config_pnmimagetypes.h>
+#include "config_device.h"
+#include "config_display.h"
+#include "config_pnmimagetypes.h"
+#include "config_pgraph.h"
 #ifdef DO_PSTATS
-#include <config_pstats.h>
+#include "config_pstats.h"
 #endif
-#include <config_sgraph.h>
 
 #ifdef LINK_IN_GL
-#include <config_glgsg.h>
+#include "config_glgsg.h"
 #ifdef HAVE_WGL
-#include <config_wgldisplay.h>
+#include "config_wgldisplay.h"
 #endif
 #endif
 
 #ifdef LINK_IN_PHYSICS
-#include <config_physics.h>
-#include <config_particlesystem.h>
+#include "config_physics.h"
+#include "config_particlesystem.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -38,12 +37,11 @@ void
 init_libpanda() {
   init_libdevice();
   init_libdisplay();
-  init_libgraph();
+  init_libpgraph();
   init_libpnmimagetypes();
 #ifdef DO_PSTATS
   init_libpstatclient();
 #endif
-  init_libsgraph();
 
 #ifdef LINK_IN_GL
   init_libglgsg();

@@ -20,19 +20,15 @@
 #include "collisionSphere.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
-#include "collisionHandler.h"
 #include "qpcollisionHandler.h"
-#include "collisionEntry.h"
 #include "qpcollisionEntry.h"
 #include "config_collide.h"
 
 #include "boundingSphere.h"
-#include "geomNode.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-
 #include "geomSphere.h"
 #include "nearly_zero.h"
 
@@ -46,17 +42,6 @@ TypeHandle CollisionSphere::_type_handle;
 CollisionSolid *CollisionSphere::
 make_copy() {
   return new CollisionSphere(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionSphere::
-test_intersection(CollisionHandler *record, const CollisionEntry &entry,
-                  const CollisionSolid *into) const {
-  return into->test_intersection_from_sphere(record, entry);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,7 +69,7 @@ xform(const LMatrix4f &mat) {
   LVector3f radius_v = LVector3f(_radius, 0.0f, 0.0f) * mat;
   _radius = length(radius_v);
 
-  clear_viz_arcs();
+  mark_viz_stale();
   mark_bound_stale();
 }
 
@@ -125,146 +110,6 @@ recompute_bound() {
   bound->extend_by(&sphere);
 
   return bound;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionSphere::
-test_intersection_from_sphere(CollisionHandler *record,
-                              const CollisionEntry &entry) const {
-  const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
-
-  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
-  LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
-  float from_radius = length(from_radius_v);
-
-  LPoint3f into_center = _center;
-  float into_radius = _radius;
-
-  LVector3f vec = from_center - into_center;
-  float dist2 = dot(vec, vec);
-  if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
-    // No intersection.
-    return 0;
-  }
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
-      << entry.get_into_node_path() << "\n";
-  }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-
-  float dist = sqrtf(dist2);
-  LVector3f into_normal = normalize(vec);
-  LPoint3f into_intersection_point = into_normal * (dist - from_radius);
-  float into_depth = into_radius + from_radius - dist;
-
-  new_entry->set_into_surface_normal(into_normal * entry.get_inv_wrt_space());
-  new_entry->set_into_intersection_point(into_intersection_point * entry.get_inv_wrt_space());
-  new_entry->set_into_depth(into_depth);
-
-  record->add_entry(new_entry);
-  return 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionSphere::
-test_intersection_from_ray(CollisionHandler *record,
-                           const CollisionEntry &entry) const {
-  const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
-
-  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_space();
-  LVector3f from_direction = ray->get_direction() * entry.get_wrt_space();
-
-  double t1, t2;
-  if (!intersects_line(t1, t2, from_origin, from_direction)) {
-    // No intersection.
-    return 0;
-  }
-
-  if (t2 < 0.0) {
-    // Both intersection points are before the start of the ray.
-    return 0;
-  }
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
-      << entry.get_into_node_path() << "\n";
-  }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-
-  LPoint3f into_intersection_point;
-  if (t1 < 0.0) {
-    into_intersection_point = from_origin + t2 * from_direction;
-  } else {
-    into_intersection_point = from_origin + t1 * from_direction;
-  }
-  new_entry->set_into_intersection_point(into_intersection_point);
-
-  record->add_entry(new_entry);
-  return 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_segment
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionSphere::
-test_intersection_from_segment(CollisionHandler *record,
-                               const CollisionEntry &entry) const {
-  const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), 0);
-
-  LPoint3f from_a = segment->get_point_a() * entry.get_wrt_space();
-  LPoint3f from_b = segment->get_point_b() * entry.get_wrt_space();
-  LVector3f from_direction = from_b - from_a;
-
-  double t1, t2;
-  if (!intersects_line(t1, t2, from_a, from_direction)) {
-    // No intersection.
-    return 0;
-  }
-
-  if (t2 < 0.0 || t1 > 1.0) {
-    // Both intersection points are before the start of the segment or
-    // after the end of the segment.
-    return 0;
-  }
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
-      << entry.get_into_node_path() << "\n";
-  }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-
-  LPoint3f into_intersection_point;
-  if (t1 < 0.0) {
-    // Point a is within the sphere.  The first intersection point is
-    // point a itself.
-    into_intersection_point = from_a;
-  } else {
-    // Point a is outside the sphere, and point b is either inside the
-    // sphere or beyond it.  The first intersection point is at t1.
-    into_intersection_point = from_a + t1 * from_direction;
-  }
-  new_entry->set_into_intersection_point(into_intersection_point);
-
-  record->add_entry(new_entry);
-  return 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -405,32 +250,6 @@ test_intersection_from_segment(qpCollisionHandler *record,
 
   record->add_entry(new_entry);
   return 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::recompute_viz
-//       Access: Public, Virtual
-//  Description: Rebuilds the geometry that will be used to render a
-//               visible representation of the collision solid.
-////////////////////////////////////////////////////////////////////
-void CollisionSphere::
-recompute_viz(Node *parent) {
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "Recomputing viz for " << *this << " on " << *parent << "\n";
-  }
-
-  GeomSphere *sphere = new GeomSphere;
-  PTA_Vertexf verts;
-  verts.push_back(_center);
-  verts.push_back(_center + LVector3f(_radius, 0.0f, 0.0f));
-  sphere->set_coords(verts);
-  sphere->set_num_prims(1);
-
-  GeomNode *viz = new GeomNode("viz-sphere");
-  viz->add_geom(sphere);
-  add_solid_viz(parent, viz);
-  //  add_wireframe_viz(parent, viz);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -23,7 +23,6 @@
 
 #include "mouseWatcherRegion.h"
 
-class PGItem;
 class qpPGItem;
 
 ////////////////////////////////////////////////////////////////////
@@ -35,7 +34,6 @@ class qpPGItem;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PGMouseWatcherRegion : public MouseWatcherRegion {
 public:
-  PGMouseWatcherRegion(PGItem *item);
   PGMouseWatcherRegion(qpPGItem *item);
   virtual ~PGMouseWatcherRegion();
 
@@ -48,7 +46,6 @@ public:
   virtual void keystroke(const MouseWatcherParameter &param);
 
 private:
-  PGItem *_item;
   qpPGItem *_qpitem;
   static int _next_index;
 
@@ -69,7 +66,6 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend class PGItem;
   friend class qpPGItem;
 };
 

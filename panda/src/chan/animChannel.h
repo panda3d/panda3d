@@ -19,11 +19,11 @@
 #ifndef ANIMCHANNEL_H
 #define ANIMCHANNEL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animChannelBase.h"
 
-#include <lmatrix.h>
+#include "lmatrix.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimChannel

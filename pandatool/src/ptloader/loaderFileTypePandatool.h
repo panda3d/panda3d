@@ -19,9 +19,9 @@
 #ifndef LOADERFILETYPEPANDATOOL_H
 #define LOADERFILETYPEPANDATOOL_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <loaderFileType.h>
+#include "loaderFileType.h"
 
 class SomethingToEggConverter;
 
@@ -41,7 +41,7 @@ public:
   virtual string get_extension() const;
 
   virtual void resolve_filename(Filename &path) const;
-  virtual PT_Node load_file(const Filename &path, bool report_errors) const;
+  virtual PT(PandaNode) qpload_file(const Filename &path, bool report_errors) const;
 
 private:
   SomethingToEggConverter *_converter;

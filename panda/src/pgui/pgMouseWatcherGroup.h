@@ -24,7 +24,6 @@
 #include "mouseWatcherGroup.h"
 #include "pointerTo.h"
 
-class PGTop;
 class qpPGTop;
 
 ////////////////////////////////////////////////////////////////////
@@ -37,15 +36,12 @@ class qpPGTop;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PGMouseWatcherGroup : public MouseWatcherGroup {
 public:
-  INLINE PGMouseWatcherGroup(PGTop *top);
   INLINE PGMouseWatcherGroup(qpPGTop *top);
   virtual ~PGMouseWatcherGroup();
 
-  INLINE void clear_top(PGTop *top);
   INLINE void clear_top(qpPGTop *top);
 
 private:
-  PGTop *_top;
   qpPGTop *_qptop;
 
 public:

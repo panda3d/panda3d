@@ -19,7 +19,6 @@
 
 #include "collisionSolid.h"
 #include "config_collide.h"
-#include "collisionEntry.h"
 #include "collisionSphere.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
@@ -35,14 +34,6 @@
 #include "transparencyAttrib.h"
 #include "qpgeomNode.h"
 
-#include "renderRelation.h"
-#include "geomNode.h"
-#include "cullFaceTransition.h"
-#include "colorTransition.h"
-#include "renderModeTransition.h"
-#include "transparencyTransition.h"
-#include "textureTransition.h"
-
 TypeHandle CollisionSolid::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +43,6 @@ TypeHandle CollisionSolid::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 CollisionSolid() {
-  _viz_stale = true;
   _viz_geom_stale = true;
   _tangible = true;
 }
@@ -67,7 +57,6 @@ CollisionSolid(const CollisionSolid &copy) :
   _tangible(copy._tangible)
 {
   // Actually, there's not a whole lot here we want to copy.
-  _viz_stale = true;
   _viz_geom_stale = true;
 }
 
@@ -78,21 +67,6 @@ CollisionSolid(const CollisionSolid &copy) :
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 ~CollisionSolid() {
-  clear_viz_arcs();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::update_viz
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CollisionSolid::
-update_viz(Node *parent) {
-  if (_viz_stale) {
-    clear_viz_arcs();
-    recompute_viz(parent);
-    _viz_stale = false;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,45 +109,6 @@ output(ostream &out) const {
 void CollisionSolid::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_sphere
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionSolid::
-test_intersection_from_sphere(CollisionHandler *,
-                              const CollisionEntry &) const {
-  report_undefined_intersection_test(CollisionSphere::get_class_type(),
-                                     get_type());
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_ray
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionSolid::
-test_intersection_from_ray(CollisionHandler *,
-                           const CollisionEntry &) const {
-  report_undefined_intersection_test(CollisionRay::get_class_type(),
-                                     get_type());
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_segment
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionSolid::
-test_intersection_from_segment(CollisionHandler *,
-                               const CollisionEntry &) const {
-  report_undefined_intersection_test(CollisionSegment::get_class_type(),
-                                     get_type());
-  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -245,75 +180,6 @@ report_undefined_intersection_test(TypeHandle from_type, TypeHandle into_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::clear_viz_arcs
-//       Access: Protected
-//  Description: Removes all of the solids' visualization geometry and
-//               marks the viz as stale so it will be recomputed next
-//               time the solid is rendered.
-////////////////////////////////////////////////////////////////////
-void CollisionSolid::
-clear_viz_arcs() {
-  VizArcs::iterator vi;
-  for (vi = _solid_viz_arcs.begin(); vi != _solid_viz_arcs.end(); ++vi) {
-    remove_arc(*vi);
-  }
-  for (vi = _wireframe_viz_arcs.begin(); vi != _wireframe_viz_arcs.end(); ++vi) {
-    remove_arc(*vi);
-  }
-  for (vi = _other_viz_arcs.begin(); vi != _other_viz_arcs.end(); ++vi) {
-    remove_arc(*vi);
-  }
-  _solid_viz_arcs.clear();
-  _wireframe_viz_arcs.clear();
-  _other_viz_arcs.clear();
-  _viz_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::add_solid_viz
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CollisionSolid::
-add_solid_viz(Node *parent, GeomNode *viz) {
-  RenderRelation *arc = new RenderRelation(parent, viz);
-  arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_clockwise));
-  arc->set_transition(new RenderModeTransition(RenderModeProperty::M_filled));
-  arc->set_transition(new TextureTransition(TextureTransition::off()));
-  arc->set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
-
-  if (is_tangible()) {
-    arc->set_transition(new ColorTransition(1.0f, 1.0f, 1.0f, 0.5));
-  } else {
-    arc->set_transition(new ColorTransition(1.0f, 0.3, 0.5, 0.5));
-  }
-
-  _solid_viz_arcs.push_back(arc);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::add_wireframe_viz
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CollisionSolid::
-add_wireframe_viz(Node *parent, GeomNode *viz) {
-  RenderRelation *arc = new RenderRelation(parent, viz);
-  arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_none));
-  arc->set_transition(new RenderModeTransition(RenderModeProperty::M_wireframe));
-  arc->set_transition(new TextureTransition(TextureTransition::off()));
-  arc->set_transition(new TransparencyTransition(TransparencyProperty::M_none));
-  float r,g,b;
-  if (is_tangible()) {
-      r=1.0f;  g=1.0f;  b=0.0f;
-  } else {
-      r=0.0f;  g=0.0f;  b=1.0f;
-  }
-  arc->set_transition(new ColorTransition(r,g,b,1.0f));
-  _wireframe_viz_arcs.push_back(arc);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in
@@ -339,22 +205,6 @@ fillin(DatagramIterator& scan, BamReader*)
   _tangible = (scan.get_uint8() != 0);
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::add_other_viz
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CollisionSolid::
-add_other_viz(Node *parent, GeomNode *viz) {
-  RenderRelation *arc = new RenderRelation(parent, viz);
-  arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_clockwise));
-  arc->set_transition(new RenderModeTransition(RenderModeProperty::M_filled));
-  arc->set_transition(new TextureTransition(TextureTransition::off()));
-  arc->set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
-
-  _other_viz_arcs.push_back(arc);
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::fill_viz_geom

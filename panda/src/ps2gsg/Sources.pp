@@ -6,8 +6,8 @@
 #begin lib_target
   #define TARGET ps2gsg
   #define LOCAL_LIBS \
-    cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display \
-    putil linmath sgraph mathutil pnmimage
+    gsgmisc gsgbase gobj display \
+    putil linmath mathutil pnmimage
 
   #define SOURCES \
     config_ps2gsg.cxx ps2GraphicsStateGuardian.cxx \

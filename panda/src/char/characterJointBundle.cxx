@@ -17,11 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "characterJointBundle.h"
-#include "character.h"
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle CharacterJointBundle::_type_handle;
 

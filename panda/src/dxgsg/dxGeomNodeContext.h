@@ -21,11 +21,9 @@
 
 #include "dxgsgbase.h"
 
-#include <geomNodeContext.h>
-#include <geomNode.h>
+#include "geomNodeContext.h"
+#include "qpgeomNode.h"
 #include "pvector.h"
-
-
 
 typedef struct {
      DWORD nVerts;
@@ -38,12 +36,12 @@ typedef struct {
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGeomNodeContext : public GeomNodeContext {
 public:
-  INLINE DXGeomNodeContext(GeomNode *node);
+  INLINE DXGeomNodeContext(qpGeomNode *node);
   ~DXGeomNodeContext();
 
   // A list of the dynamic Geoms within the GeomNode; these aren't
   // part of the above display list and must be drawn separately
-  typedef pvector<PT(dDrawable) > Geoms;
+  typedef pvector< PT(Geom) > Geoms;
   Geoms _cached_geoms,_other_geoms;
 
   // VB's are already reference-counted by D3D, no need to make separate panda object to do that

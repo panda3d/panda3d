@@ -19,7 +19,6 @@
 #include "config_text.h"
 #include "staticTextFont.h"
 #include "textFont.h"
-#include "textNode.h"
 #include "qptextNode.h"
 #include "dynamicTextFont.h"
 #include "dynamicTextPage.h"
@@ -68,7 +67,6 @@ init_libtext() {
 
   StaticTextFont::init_type();
   TextFont::init_type();
-  TextNode::init_type();
   qpTextNode::init_type();
 
 #ifdef HAVE_FREETYPE
@@ -80,13 +78,10 @@ init_libtext() {
 
   string text_encoding = config_text.GetString("text-encoding", "iso8859");
   if (text_encoding == "iso8859") {
-    TextNode::_default_encoding = TextNode::E_iso8859;
     qpTextNode::_default_encoding = qpTextNode::E_iso8859;
   } else if (text_encoding == "utf8") {
-    TextNode::_default_encoding = TextNode::E_utf8;
     qpTextNode::_default_encoding = qpTextNode::E_utf8;
   } else if (text_encoding == "unicode") {
-    TextNode::_default_encoding = TextNode::E_unicode;
     qpTextNode::_default_encoding = qpTextNode::E_unicode;
   } else {
     text_cat.error()

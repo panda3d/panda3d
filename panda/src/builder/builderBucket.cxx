@@ -21,8 +21,6 @@
 #include "builderBucket.h"
 #include "builderFuncs.h"
 #include "builderMisc.h"
-#include "namedNode.h"
-#include "geomNode.h"
 #include "qpgeomNode.h"
 
 
@@ -36,7 +34,6 @@ BuilderBucket *BuilderBucket::_default_bucket = NULL;
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket() {
-  _node = NULL;
   _qpnode = NULL;
   (*this) = (*get_default_bucket());
 }
@@ -49,7 +46,6 @@ BuilderBucket() {
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket(const BuilderBucket &copy) {
-  _node = NULL;
   _qpnode = NULL;
   (*this) = copy;
 }
@@ -71,12 +67,10 @@ operator = (const BuilderBucket &copy) {
   set_texcoords(copy._texcoords);
   set_colors(copy._colors);
 
-  _node = copy._node;
   _qpnode = copy._qpnode;
   _drawBin = copy._drawBin;
   _drawOrder = copy._drawOrder;
 
-  _trans = copy._trans;
   _state = copy._state;
 
   return *this;
@@ -107,20 +101,6 @@ make_copy() const {
   return new BuilderBucket(*this);
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: BuilderBucket::make_geom_node
-//       Access: Public, Virtual
-//  Description: Called by the builder when it is time to create a new
-//               GeomNode.  This function should allocate and return a
-//               new GeomNode suitable for adding geometry to.  You
-//               may redefine it to return a subclass of GeomNode, or
-//               to do some initialization to the node.
-////////////////////////////////////////////////////////////////////
-GeomNode *BuilderBucket::
-make_geom_node() {
-  return new GeomNode;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::qpmake_geom_node
@@ -183,9 +163,6 @@ operator < (const BuilderBucket &other) const {
     return get_name() < other.get_name();
   }
 
-  if (_node != other._node) {
-    return _node < other._node;
-  }
   if (_qpnode != other._qpnode) {
     return _qpnode < other._qpnode;
   }
@@ -204,10 +181,6 @@ operator < (const BuilderBucket &other) const {
   if (_drawOrder != other._drawOrder)
     return _drawOrder < other._drawOrder;
 
-  int compare = _trans.compare_to(other._trans);
-  if (compare != 0) {
-    return (compare < 0);
-  }
   if (_state != other._state) {
     return _state < other._state;
   }
@@ -224,9 +197,6 @@ void BuilderBucket::
 output(ostream &out) const {
   out << "Bucket \"" << get_name() << "\"";
 
-  if (_node != (NamedNode *)NULL) {
-    out << " attached to " << *_node << "\n";
-  }
   if (_qpnode != (PandaNode *)NULL) {
     out << " attached to " << *_qpnode << "\n";
   }
@@ -275,7 +245,6 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket(int) {
-  _node = NULL;
   _qpnode = NULL;
 
   _drawBin = -1;

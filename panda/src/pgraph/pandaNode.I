@@ -624,6 +624,7 @@ set_transform(const TransformState *transform) {
   CDWriter cdata(_cycler);
   cdata->_transform = transform;
   mark_bound_stale();
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -650,6 +651,8 @@ INLINE void PandaNode::
 clear_transform() {
   CDWriter cdata(_cycler);
   cdata->_transform = TransformState::make_identity();
+  mark_bound_stale();
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////

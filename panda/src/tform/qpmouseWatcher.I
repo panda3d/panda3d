@@ -313,15 +313,15 @@ get_without_pattern() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpMouseWatcher::set_geometry
 //       Access: Published
-//  Description: Sets the arc that will be transformed each frame by
+//  Description: Sets the node that will be transformed each frame by
 //               the mouse's coordinates.  It will also be hidden when
 //               the mouse goes outside the window.  This can be used
 //               to implement a software mouse pointer for when a
 //               hardware (or system) mouse pointer is unavailable.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpMouseWatcher::
-set_geometry(NodeRelation *arc) {
-  _geometry = arc;
+set_geometry(PandaNode *node) {
+  _geometry = node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -339,11 +339,11 @@ has_geometry() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpMouseWatcher::get_geometry
 //       Access: Published
-//  Description: Returns the arc that has been set as the software
-//               mouse pointer, or NULL if no arc has been set.  See
+//  Description: Returns the node that has been set as the software
+//               mouse pointer, or NULL if no node has been set.  See
 //               has_geometry() and set_geometry().
 ////////////////////////////////////////////////////////////////////
-INLINE NodeRelation *qpMouseWatcher::
+INLINE PandaNode *qpMouseWatcher::
 get_geometry() const {
   return _geometry;
 }

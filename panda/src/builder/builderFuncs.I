@@ -484,10 +484,10 @@ expand(const PrimType &prim, BuilderBucket &bucket, OutputIterator result) {
 //               creates corresponding geometry for them in the
 //               indicated GeomNode.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class PrimType, class GeomNode>
+template<class InputIterator, class PrimType>
 static int
 build_geoms(InputIterator first, InputIterator last,
-            BuilderBucket &bucket, GeomNode *geom_node,
+            BuilderBucket &bucket, qpGeomNode *geom_node,
             PrimType *) {
   if (first==last) {
     return 0;
@@ -794,10 +794,10 @@ public:
 //               to infer the PrimType (BuilderPrim or BuilderPrimI)
 //               from the iterator's value type, and template on that.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class PrimType, class GeomNode>
+template<class InputIterator, class PrimType>
 static int
 __mesh_and_build(InputIterator first, InputIterator last,
-                 BuilderBucket &bucket, GeomNode *geom_node,
+                 BuilderBucket &bucket, qpGeomNode *geom_node,
                  PrimType *) {
   if (first==last) {
     return 0;
@@ -877,10 +877,10 @@ __mesh_and_build(InputIterator first, InputIterator last,
 //               runs them through the mesher if specified by the
 //               bucket, and builds them into the indicated GeomNode.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class value_type, class GeomNode>
+template<class InputIterator, class value_type>
 int
 mesh_and_build(InputIterator first, InputIterator last,
-               BuilderBucket &bucket, GeomNode *geom_node,
+               BuilderBucket &bucket, qpGeomNode *geom_node,
                value_type *value_type_ptr) {
   return __mesh_and_build(first, last, bucket, geom_node, value_type_ptr);
 }

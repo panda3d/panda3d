@@ -4,13 +4,12 @@
 #begin lib_target
   #define TARGET char
   #define LOCAL_LIBS \
-    chan graph sgraph linmath putil event sgattrib mathutil gsgbase \
+    chan linmath putil event mathutil gsgbase \
     pstatclient    
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-    character.I character.h \
     qpcharacter.I qpcharacter.h \
     characterJoint.h characterJointBundle.I  \
     characterJointBundle.h characterSlider.h computedVertices.I  \
@@ -18,7 +17,6 @@
     computedVerticesMorph.h config_char.h dynamicVertices.h
     
   #define INCLUDED_SOURCES \
-    character.cxx \
     qpcharacter.cxx \
     characterJoint.cxx characterJointBundle.cxx  \
     characterSlider.cxx computedVertices.cxx  \
@@ -26,7 +24,6 @@
     dynamicVertices.cxx
 
   #define INSTALL_HEADERS \
-    character.I character.h \
     qpcharacter.I qpcharacter.h \
     characterJoint.h characterJointBundle.I \
     characterJointBundle.h characterSlider.h computedVertices.I \

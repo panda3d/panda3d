@@ -20,13 +20,10 @@
 #define TEXTGLYPH_H
 
 #include "pandabase.h"
-#include "allTransitionsWrapper.h"
 #include "renderState.h"
 #include "referenceCount.h"
 #include "geom.h"
 #include "pointerTo.h"
-
-class TextGlyph;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextGlyph
@@ -37,20 +34,17 @@ class TextGlyph;
 class EXPCL_PANDA TextGlyph : public ReferenceCount {
 public:
   INLINE TextGlyph();
-  INLINE TextGlyph(Geom *geom, const AllTransitionsWrapper &trans, float advance);
   INLINE TextGlyph(Geom *geom, const RenderState *state, float advance);
   INLINE TextGlyph(const TextGlyph &copy);
   INLINE void operator = (const TextGlyph &copy);
   virtual ~TextGlyph();
 
   virtual PT(Geom) get_geom() const;
-  INLINE const AllTransitionsWrapper &get_trans() const;
   INLINE const RenderState *get_state() const;
   INLINE float get_advance() const;
 
 protected:
   PT(Geom) _geom;
-  AllTransitionsWrapper _trans;
   CPT(RenderState) _state;
   float _advance;
 };

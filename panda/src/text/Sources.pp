@@ -6,9 +6,8 @@
 
   #define TARGET text
   #define LOCAL_LIBS \
-    cull putil gobj sgattrib pgraph graph sgraph linmath \
-    sgraphutil pnmimage gsgbase \
-    mathutil
+    putil gobj pgraph linmath \
+    pnmimage gsgbase mathutil
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
@@ -22,7 +21,6 @@
     stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    textNode.I textNode.h textNode.cxx \
     qptextNode.I qptextNode.h qptextNode.cxx
 
   #define INCLUDED_SOURCES \
@@ -45,7 +43,6 @@
     stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    textNode.I textNode.h \
     qptextNode.I qptextNode.h
 
   #define IGATESCAN all

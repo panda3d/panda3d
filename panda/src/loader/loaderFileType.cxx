@@ -58,8 +58,7 @@ resolve_filename(Filename &) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) LoaderFileType::
-qpload_file(const Filename &path, bool report_errors) const
-{
+qpload_file(const Filename &path, bool report_errors) const {
   loader_cat.error()
     << get_type() << " cannot read PandaNode objects.\n";
   return NULL;

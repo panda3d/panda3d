@@ -18,13 +18,11 @@
 #ifndef BUILDERFUNCS_H
 #define BUILDERFUNCS_H
 
-#include <pandabase.h>
-
+#include "pandabase.h"
 #include "pvector.h"
 
-#include <string>
-
 class BuilderBucket;
+class qpGeomNode;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -56,10 +54,10 @@ expand(const PrimType &prim, BuilderBucket &bucket,
 //               runs them through the mesher if specified by the
 //               bucket, and builds them into the indicated GeomNode.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class GeomNode>
+template<class InputIterator>
 int
 mesh_and_build(InputIterator first, InputIterator last,
-               BuilderBucket &bucket, GeomNode *geom_node);
+               BuilderBucket &bucket, qpGeomNode *geom_node);
 
 
 

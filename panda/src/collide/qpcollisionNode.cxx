@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionNode.h"
+#include "qpcollisionNode.h"
 #include "config_collide.h"
 
 #include "qpgeomNode.h"

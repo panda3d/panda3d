@@ -20,29 +20,21 @@
 #define DXGRAPHICSSTATEGUARDIAN_H
 
 #include "dxgsgbase.h"
+#include "dxGeomNodeContext.h"
+#include "dxTextureContext.h"
+
 #include "graphicsStateGuardian.h"
 #include "geomprimitives.h"
 #include "texture.h"
 #include "pixelBuffer.h"
 #include "displayRegion.h"
 #include "material.h"
-#include "textureApplyProperty.h"
-#include "depthTestProperty.h"
 #include "depthTestAttrib.h"
-#include "stencilProperty.h"
-#include "fog.h"
+#include "renderModeAttrib.h"
+#include "textureApplyAttrib.h"
 #include "qpfog.h"
-#include "renderModeProperty.h"
-#include "colorMatrixTransition.h"
-#include "alphaTransformTransition.h"
 #include "pointerToArray.h"
-#include "planeNode.h"
-#include "dxGeomNodeContext.h"
-#include "dxTextureContext.h"
 
-#include <vector>
-
-class PlaneNode;
 class Light;
 
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
@@ -82,15 +74,6 @@ public:
   virtual void prepare_display_region();
   virtual bool prepare_lens();
 
-  virtual void render_frame();
-  virtual void render_scene(Node *root, LensNode *projnode);
-  virtual void render_subgraph(RenderTraverser *traverser,
-                   Node *subgraph, LensNode *projnode,
-                   const AllTransitionsWrapper &net_trans);
-  virtual void render_subgraph(RenderTraverser *traverser,
-                   Node *subgraph,
-                   const AllTransitionsWrapper &net_trans);
-
   virtual void draw_point(GeomPoint *geom, GeomContext *gc);
   virtual void draw_line(GeomLine *geom, GeomContext *gc);
   virtual void draw_linestrip(GeomLinestrip *geom, GeomContext *gc);
@@ -103,8 +86,9 @@ public:
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
-  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
-  virtual void draw_geom_node(GeomNode *node, GeomNodeContext *gnc);
+  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node);
+  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+                              GeomNodeContext *gnc);
   virtual void release_geom_node(GeomNodeContext *gnc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
@@ -114,9 +98,6 @@ public:
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr);
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
                             const RenderBuffer &rb);
-  virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr);
-  virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr,
-                            const RenderBuffer &rb);
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
@@ -125,36 +106,9 @@ public:
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb);
-  virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                 const NodeTransitions& na=NodeTransitions());
-  virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const RenderBuffer &rb,
-                 const NodeTransitions& na=NodeTransitions());
 
   virtual void apply_material(const Material *material);
-  virtual void apply_fog(Fog *fog);
   virtual void apply_fog(qpFog *fog);
-
-  virtual void issue_transform(const TransformTransition *attrib);
-  virtual void issue_tex_matrix(const TexMatrixTransition *attrib);
-  virtual void issue_color(const ColorTransition *attrib);
-  virtual void issue_color_transform(const ColorMatrixTransition *);
-  virtual void issue_alpha_transform(const AlphaTransformTransition *);
-  virtual void issue_texture(const TextureTransition *attrib);
-  virtual void issue_material(const MaterialTransition *attrib);
-  virtual void issue_render_mode(const RenderModeTransition *attrib);
-  virtual void issue_color_blend(const ColorBlendTransition *attrib);
-  virtual void issue_texture_apply(const TextureApplyTransition *attrib);
-  virtual void issue_color_mask(const ColorMaskTransition *attrib);
-  virtual void issue_depth_test(const DepthTestTransition *attrib);
-  virtual void issue_depth_write(const DepthWriteTransition *attrib);
-  virtual void issue_tex_gen(const TexGenTransition *attrib);
-  virtual void issue_cull_face(const CullFaceTransition *attrib);
-  virtual void issue_stencil(const StencilTransition *attrib);
-  virtual void issue_clip_plane(const ClipPlaneTransition *attrib);
-  virtual void issue_transparency(const TransparencyTransition *attrib);
-  virtual void issue_fog(const FogTransition *attrib);
-  virtual void issue_linesmooth(const LinesmoothTransition *attrib);
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
@@ -177,9 +131,6 @@ public:
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
-
-  virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
-  virtual void end_decal(GeomNode *base_geom);
 
   virtual bool depth_offset_decals();
 
@@ -254,13 +205,8 @@ protected:
   INLINE void set_shademode(D3DSHADEMODE val);
 
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
-  INLINE D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
   INLINE D3DCMPFUNC get_depth_func_type(DepthTestAttrib::Mode m) const;
-  INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
   INLINE D3DFOGMODE get_fog_mode_type(qpFog::Mode m) const;
-
-  INLINE D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
-  INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
 
   INLINE void enable_primitive_clipping(bool val);
   INLINE void enable_alpha_test(bool val);
@@ -351,22 +297,17 @@ protected:
   bool _alpha_test_enabled;
   int _decal_level;
 
-  RenderModeProperty::Mode _current_fill_mode;  //poinr/wireframe/solid
+  RenderModeAttrib::Mode _current_fill_mode;  //poinr/wireframe/solid
   GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
 
   // Cur Texture State
-  TextureApplyProperty::Mode _CurTexBlendMode;
+  TextureApplyAttrib::Mode _CurTexBlendMode;
   Texture::FilterType _CurTexMagFilter,_CurTexMinFilter;
   DWORD _CurTexAnisoDegree;
   Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
 
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;
-
-  PTA(PlaneNode*) _available_clip_plane_ids;
-  int _max_clip_planes;
-  bool* _cur_clip_plane_enabled;
-  int _cur_clip_plane_id;
 
   CPT(DisplayRegion) _actual_display_region;
 
@@ -406,7 +347,7 @@ public:
   void adjust_view_rect(int x, int y);
   INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
   INLINE bool GetDXReady(void)  { return _dx_ready;}
-  void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bJustEnable);
+  void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
 

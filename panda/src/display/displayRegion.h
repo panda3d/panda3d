@@ -21,7 +21,6 @@
 #include "pandabase.h"
 
 #include "referenceCount.h"
-#include "camera.h"
 #include "qpnodePath.h"
 #include "cullResult.h"
 #include "pointerTo.h"
@@ -66,14 +65,8 @@ PUBLISHED:
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
 
-  void set_camera(Camera *camera);
-  INLINE Camera *get_camera() const;
-
   void set_qpcamera(const qpNodePath &camera);
   INLINE const qpNodePath &get_qpcamera() const;
-
-  INLINE void set_cull_frustum(LensNode *cull_frustum);
-  INLINE LensNode *get_cull_frustum() const;
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
@@ -103,10 +96,8 @@ protected:
   int _pt;
 
   GraphicsLayer *_layer;
-  PT(Camera) _camera;
   qpNodePath _qpcamera;
   qpCamera *_camera_node;
-  PT(LensNode) _cull_frustum;
 
   bool _active;
 

@@ -412,49 +412,6 @@ register_idle_function(GraphicsWindow::vfn f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::main_loop
-//       Access: Public, Virtual
-//  Description: Yields the application over to the window entirely
-//               for rendering.  The window will wait for keyboard and
-//               mouse input, and repeatedly call update() on itself.
-//               For some kinds of window API's (notably glut), this
-//               is the only way to use the window--see
-//               supports_update().
-//
-//               This function does not return.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-main_loop() {
-  while (true) {
-    update();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::supports_update
-//       Access: Public, Virtual
-//  Description: Returns true if this particular kind of
-//               GraphicsWindow supports use of the update() function
-//               to update the graphics one frame at a time, so that
-//               the window does not need to be the program's main
-//               loop.  Returns false if the only way to update the
-//               window is to call main_loop().
-////////////////////////////////////////////////////////////////////
-bool GraphicsWindow::
-supports_update() const {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::update
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-update() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::begin_frame
 //       Access: Public, Virtual
 //  Description: This function will be called by the GSG before

@@ -2,10 +2,10 @@
                    dtoolutil:c dtoolbase:c dtool:m pystub
 
 #define LOCAL_LIBS \
-    framework putil collide loader sgmanip chan text chancfg cull \
-    pnmimage pnmimagetypes event effects graph gobj display \
-    mathutil sgattrib putil express dgraph device tform sgraph \
-    linmath sgraphutil pstatclient panda
+    framework putil collide loader chan text chancfg \
+    pnmimage pnmimagetypes event effects gobj display \
+    mathutil putil express dgraph device tform \
+    linmath pstatclient panda
 
 #if $[LINK_ALL_STATIC]
   // If we're statically linking, we need to explicitly link with

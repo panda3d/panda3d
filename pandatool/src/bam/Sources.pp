@@ -3,10 +3,9 @@
   #define LOCAL_LIBS \
     progbase
   #define OTHER_LIBS \
-    parametrics:c collide:c chan:c char:c switchnode:c \
-    cull:c loader:c egg:c sgraphutil:c sgattrib:c \
-    sgraph:c pnmimagetypes:c \
-    graph:c putil:c linmath:c express:c panda:m pandaexpress:m \
+    parametrics:c collide:c chan:c char:c \
+    loader:c egg:c pnmimagetypes:c \
+    putil:c linmath:c express:c panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
@@ -23,9 +22,9 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    sgmanip:c cull:c sgattrib:c sgraph:c dgraph:c \
-    loader:c egg2sg:c builder:c egg:c pnmimagetypes:c gobj:c \
-    chan:c graph:c putil:c linmath:c \
+    dgraph:c \
+    loader:c egg2pg:c builder:c egg:c pnmimagetypes:c gobj:c \
+    chan:c putil:c linmath:c \
     express:c pandaegg:m panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
@@ -37,16 +36,16 @@
 #end bin_target
 
 
+#if // Temporarily broken until we can bring it into the new scene graph.
 #begin bin_target
   #define TARGET bam2egg
   #define LOCAL_LIBS \
     converter eggbase progbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    parametrics:c collide:c chan:c char:c switchnode:c \
-    cull:c loader:c gobj:c sgraphutil:c sgattrib:c \
-    sgraph:c pnmimagetypes:c pstatclient:c \
-    graph:c putil:c linmath:c express:c panda:m pandaexpress:m \
+    parametrics:c collide:c chan:c char:c \
+    loader:c gobj:c pnmimagetypes:c pstatclient:c \
+    putil:c linmath:c express:c panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define UNIX_SYS_LIBS \
@@ -56,4 +55,4 @@
     bamToEgg.cxx bamToEgg.h
 
 #end bin_target
-
+#endif // Temporarily broken until we can bring it into the new scene graph.

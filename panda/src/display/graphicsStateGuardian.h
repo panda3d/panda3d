@@ -28,14 +28,10 @@
 
 #include "graphicsStateGuardianBase.h"
 #include "sceneSetup.h"
-#include "nodeTransition.h"
-#include "nodeTransitionCache.h"
 #include "luse.h"
 #include "coordinateSystem.h"
 #include "factory.h"
-#include "renderTraverser.h"
 #include "pStatCollector.h"
-#include "allTransitionsWrapper.h"
 #include "transformState.h"
 #include "renderState.h"
 #include "light.h"
@@ -45,8 +41,6 @@
 
 #include "notify.h"
 #include "pvector.h"
-
-class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsStateGuardian
@@ -67,9 +61,6 @@ public:
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
-  INLINE void set_render_traverser(RenderTraverser *rt);
-  INLINE RenderTraverser *get_render_traverser() const;
-
   virtual void set_color_clear_value(const Colorf& value);
   virtual void set_depth_clear_value(const float value);
   virtual void set_stencil_clear_value(const bool value);
@@ -91,9 +82,6 @@ PUBLISHED:
   void release_all_textures();
   void release_all_geoms();
 
-  void clear_attribute(TypeHandle type);
-  NodeTransition *get_attribute(TypeHandle type) const;
-
 public:
   INLINE bool is_closed() const;
 
@@ -104,8 +92,9 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
-  virtual void draw_geom_node(GeomNode *node, GeomNodeContext *gnc);
+  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node);
+  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+                              GeomNodeContext *gnc);
   virtual void release_geom_node(GeomNodeContext *gnc);
 
   virtual GeomContext *prepare_geom(Geom *geom);
@@ -121,15 +110,6 @@ public:
   virtual void prepare_display_region()=0;
   virtual bool prepare_lens();
 
-  virtual void render_frame()=0;
-  virtual void render_scene(Node *root, LensNode *projnode)=0;
-  virtual void render_subgraph(RenderTraverser *traverser,
-                               Node *subgraph, LensNode *projnode,
-                               const AllTransitionsWrapper &net_trans)=0;
-  virtual void render_subgraph(RenderTraverser *traverser,
-                               Node *subgraph,
-                               const AllTransitionsWrapper &net_trans)=0;
-
   INLINE void enable_normals(bool val) { _normals_enabled = val; }
 
   virtual void begin_frame();
@@ -142,9 +122,6 @@ public:
   virtual bool wants_texcoords() const;
   virtual bool wants_colors() const;
 
-  virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
-  virtual void end_decal(GeomNode *base_geom);
-
   virtual bool depth_offset_decals();
   virtual CPT(RenderState) begin_decal_base_first();
   virtual CPT(RenderState) begin_decal_nested();
@@ -153,21 +130,11 @@ public:
 
   virtual void reset();
 
-  // *** QP
-  void modify_state(const NodeTransitions &new_state);
-  //  void modify_state(const NodeTransitionCache &new_state);
-  void set_state(const NodeTransitionCache &new_state);
-  INLINE void set_state(const AllTransitionsWrapper &new_state);
-  //  INLINE const NodeTransitionCache *get_state() const;
-
   INLINE void modify_state(const RenderState *state);
   INLINE void set_state(const RenderState *state);
   INLINE void set_transform(const TransformState *transform);
 
   RenderBuffer get_render_buffer(int buffer_type);
-
-  INLINE LensNode *get_current_camera(void) const ;
-  INLINE const Node* get_current_root_node(void) const;
 
   INLINE const DisplayRegion *get_current_display_region(void) const;
   INLINE const Lens *get_current_lens() const;
@@ -185,8 +152,6 @@ public:
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
   virtual CoordinateSystem get_internal_coordinate_system() const;
-
-  INLINE void clear_cached_state(void) { _state.clear(); };  
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_color_scale(const ColorScaleAttrib *attrib);
@@ -252,19 +217,6 @@ protected:
 protected:
   PT(SceneSetup) _scene_setup;
 
-  class StateInfo {
-  public:
-    INLINE StateInfo(TypeHandle type);
-    INLINE StateInfo(const NodeTransitions::value_type &value);
-    INLINE StateInfo(const NodeTransitionCache::value_type &value);
-    INLINE bool operator < (const StateInfo &other) const;
-
-    TypeHandle _type;
-    PT(NodeTransition) _trans;
-  };
-  typedef pvector<StateInfo> State;
-  State _state;
-
   CPT(RenderState) _qpstate;
   CPT(TransformState) _transform;
 
@@ -280,13 +232,8 @@ protected:
   int _lens_stack_level;
 
   GraphicsWindow *_win;
-  PT(RenderTraverser) _render_traverser;
 
-  // These must be set by render_scene().
-  Node *_current_root_node;
-  LensNode *_current_camera;
   CPT(DisplayRegion) _current_display_region;
-
   CPT(Lens) _current_lens;
 
   // This is used by wants_normals()
@@ -416,10 +363,6 @@ private:
   friend class GraphicsPipe;
   friend class GraphicsWindow;
 };
-
-template<class Transition>
-INLINE bool
-get_attribute_into(Transition *&ptr, const GraphicsStateGuardian *gsg);
 
 #include "graphicsStateGuardian.I"
 

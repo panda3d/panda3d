@@ -18,6 +18,7 @@
 
 #include "qpcollisionLevelState.h"
 #include "collisionSolid.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCollisionLevelState::clear

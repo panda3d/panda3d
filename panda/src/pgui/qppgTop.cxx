@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qppgTop.h"
-#include "pgItem.h"
 #include "pgMouseWatcherGroup.h"
 #include "pgCullTraverser.h"
 #include "cullBinAttrib.h"
@@ -150,33 +149,3 @@ set_mouse_watcher(qpMouseWatcher *watcher) {
     _watcher->add_group(_watcher_group);
   }
 }
-
-/*
-  if (node->is_of_type(PGItem::get_class_type())) {
-    PGItem *pgi = DCAST(PGItem, node);
-
-    if (pgi->has_frame() && pgi->get_active()) {
-      // The item has a frame, so we want to generate a region for it
-      // and update the MouseWatcher.
-
-      // Get the complete net transform to the PGItem from the top.
-      LMatrix4f mat;
-      
-      NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-      wrt(pgi, chain.begin(), chain.end(), (Node *)NULL, 
-          ntw, RenderRelation::get_class_type());
-      const TransformTransition *tt;
-      if (!get_transition_into(tt, ntw)) {
-        // No relative transform.
-        mat = LMatrix4f::ident_mat();
-      } else {
-        mat = tt->get_matrix();
-      }
-      
-      // Now apply this transform to the item's frame.
-      pgi->activate_region(this, mat, _sort_index);
-      _sort_index++;
-
-      add_region(pgi->get_region());
-    }
-*/

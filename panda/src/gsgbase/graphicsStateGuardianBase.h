@@ -22,7 +22,6 @@
 #include "pandabase.h"
 
 #include "typedReferenceCount.h"
-#include "nodeTransitions.h"
 #include "luse.h"
 
 // A handful of forward references.
@@ -32,7 +31,7 @@ class GraphicsWindow;
 
 class GeomContext;
 class GeomNodeContext;
-class GeomNode;
+class qpGeomNode;
 class Geom;
 class GeomPoint;
 class GeomLine;
@@ -52,31 +51,6 @@ class RenderState;
 class TransformState;
 
 class Material;
-class Fog;
-
-class TransformTransition;
-class ColorMatrixTransition;
-class AlphaTransformTransition;
-class TexMatrixTransition;
-class ColorTransition;
-class TextureTransition;
-class LightTransition;
-class MaterialTransition;
-class RenderModeTransition;
-class ColorBlendTransition;
-class TextureApplyTransition;
-class ColorMaskTransition;
-class DepthTestTransition;
-class DepthWriteTransition;
-class TexGenTransition;
-class CullFaceTransition;
-class StencilTransition;
-class ClipPlaneTransition;
-class TransparencyTransition;
-class FogTransition;
-class LinesmoothTransition;
-class PointShapeTransition;
-class PolygonOffsetTransition;
 
 class ColorScaleAttrib;
 class TexMatrixAttrib;
@@ -100,8 +74,6 @@ class LinesmoothAttrib;
 class PointShapeAttrib;
 class DepthOffsetAttrib;
 
-class Node;
-class GeomNode;
 class PointLight;
 class DirectionalLight;
 class Spotlight;
@@ -109,7 +81,6 @@ class AmbientLight;
 
 class DisplayRegion;
 class Lens;
-class LensNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsStateGuardianBase
@@ -137,8 +108,9 @@ public:
   virtual void apply_texture(TextureContext *tc)=0;
   virtual void release_texture(TextureContext *tc)=0;
 
-  virtual GeomNodeContext *prepare_geom_node(GeomNode *node)=0;
-  virtual void draw_geom_node(GeomNode *node, GeomNodeContext *gnc)=0;
+  virtual GeomNodeContext *prepare_geom_node(qpGeomNode *node)=0;
+  virtual void draw_geom_node(qpGeomNode *node, const RenderState *state,
+                              GeomNodeContext *gnc)=0;
   virtual void release_geom_node(GeomNodeContext *gnc)=0;
 
   virtual GeomContext *prepare_geom(Geom *geom)=0;
@@ -186,9 +158,6 @@ public:
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr)=0;
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
                             const RenderBuffer &rb)=0;
-  virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr)=0;
-  virtual void draw_texture(TextureContext *tc, const DisplayRegion *dr,
-                            const RenderBuffer &rb)=0;
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb)=0;
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
@@ -197,38 +166,8 @@ public:
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr)=0;
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb)=0;
-  virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const NodeTransitions& na=NodeTransitions())=0;
-  virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const RenderBuffer &rb,
-                                 const NodeTransitions& na=NodeTransitions())=0;
 
   virtual void apply_material(const Material *material)=0;
-  virtual void apply_fog(Fog *fog)=0;
-
-  virtual void issue_transform(const TransformTransition *) { }
-  virtual void issue_color_transform(const ColorMatrixTransition *) { }
-  virtual void issue_alpha_transform(const AlphaTransformTransition *) { }
-  virtual void issue_tex_matrix(const TexMatrixTransition *) { }
-  virtual void issue_color(const ColorTransition *) { }
-  virtual void issue_texture(const TextureTransition *) { }
-  virtual void issue_light(const LightTransition *) { }
-  virtual void issue_material(const MaterialTransition *) { }
-  virtual void issue_render_mode(const RenderModeTransition *) { }
-  virtual void issue_color_blend(const ColorBlendTransition *) { }
-  virtual void issue_texture_apply(const TextureApplyTransition *) { }
-  virtual void issue_color_mask(const ColorMaskTransition *) { }
-  virtual void issue_depth_test(const DepthTestTransition *) { }
-  virtual void issue_depth_write(const DepthWriteTransition *) { }
-  virtual void issue_tex_gen(const TexGenTransition *) { }
-  virtual void issue_cull_face(const CullFaceTransition *) { }
-  virtual void issue_stencil(const StencilTransition *) { }
-  virtual void issue_clip_plane(const ClipPlaneTransition *) { }
-  virtual void issue_transparency(const TransparencyTransition *) { }
-  virtual void issue_fog(const FogTransition *) { }
-  virtual void issue_linesmooth(const LinesmoothTransition *) { }
-  virtual void issue_point_shape(const PointShapeTransition *) { }
-  virtual void issue_polygon_offset(const PolygonOffsetTransition *) { }
 
   virtual void issue_transform(const TransformState *) { }
   virtual void issue_color_scale(const ColorScaleAttrib *) { }

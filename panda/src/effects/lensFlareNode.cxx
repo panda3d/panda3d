@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if 0  // temporarily disabled until we can port to new scene graph.
+
 #include "lensFlareNode.h"
 #include "config_effects.h"
 
@@ -732,3 +734,5 @@ prepare_sparkles(vector_relation &arcs, const vector_texture &sparkles,
 }
 
 ****************/
+
+#endif  // temporarily disabled until we can port to new scene graph.

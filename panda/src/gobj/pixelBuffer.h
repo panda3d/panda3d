@@ -112,10 +112,6 @@ public:
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
             const RenderBuffer &rb);
-  virtual void draw(GraphicsStateGuardianBase *gsg);
-  virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
-  virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-            const RenderBuffer &rb);
 
   INLINE void set_xsize(int size);
   INLINE void set_ysize(int size);

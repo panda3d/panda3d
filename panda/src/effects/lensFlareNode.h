@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LENS_FLARE_NODE
-#define LENS_FLARE_NODE
+#if 0  // temporarily disabled until we can port to new scene graph.
+
+#ifndef LENSFLARENODE_H
+#define LENSFLARENODE_H
 
 #include <pandabase.h>
 
@@ -176,3 +178,5 @@ private:
   int compute_current(int &current_sparkle, vector_texture sparkles);
 
 ******************/
+
+#endif  // temporarily disabled until we can port to new scene graph.

@@ -26,7 +26,7 @@
 //               establish a relative coordinate system with them.
 ////////////////////////////////////////////////////////////////////
 INLINE void NonlinearImager::
-set_camera(LensNode *camera) {
+set_camera(qpLensNode *camera) {
   _camera = camera;
   _stale = true;
 }
@@ -37,7 +37,7 @@ set_camera(LensNode *camera) {
 //  Description: Returns the virtual camera that will be used to
 //               view the various ProjectionScreens.
 ////////////////////////////////////////////////////////////////////
-INLINE LensNode *NonlinearImager::
+INLINE qpLensNode *NonlinearImager::
 get_camera() const {
   return _camera;
 }
@@ -49,7 +49,7 @@ get_camera() const {
 //               scene graph, which is used to render all of the
 //               screen meshes.
 ////////////////////////////////////////////////////////////////////
-INLINE Node *NonlinearImager::
+INLINE qpNodePath NonlinearImager::
 get_internal_scene() const {
-  return _internal_scene_top;
+  return _internal_scene;
 }

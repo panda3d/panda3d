@@ -18,9 +18,7 @@
 
 
 #include "config_device.h"
-#include "analogNode.h"
 #include "qpanalogNode.h"
-#include "buttonNode.h"
 #include "qpbuttonNode.h"
 #include "clientAnalogDevice.h"
 #include "clientBase.h"
@@ -28,13 +26,9 @@
 #include "clientDevice.h"
 #include "clientDialDevice.h"
 #include "clientTrackerDevice.h"
-#include "dialNode.h"
 #include "qpdialNode.h"
-#include "mouse.h"
 #include "mouseAndKeyboard.h"
-#include "trackerNode.h"
 #include "qptrackerNode.h"
-#include "virtualMouse.h"
 #include "qpvirtualMouse.h"
 
 #include <dconfig.h>
@@ -64,9 +58,7 @@ init_libdevice() {
   }
   initialized = true;
 
-  AnalogNode::init_type();
   qpAnalogNode::init_type();
-  ButtonNode::init_type();
   qpButtonNode::init_type();
   ClientAnalogDevice::init_type();
   ClientBase::init_type();
@@ -74,12 +66,8 @@ init_libdevice() {
   ClientDevice::init_type();
   ClientDialDevice::init_type();
   ClientTrackerDevice::init_type();
-  DialNode::init_type();
   qpDialNode::init_type();
-  MouseAndKeyboard::init_type();
   qpMouseAndKeyboard::init_type();
-  TrackerNode::init_type();
   qpTrackerNode::init_type();
-  VirtualMouse::init_type();
   qpVirtualMouse::init_type();
 }

@@ -19,13 +19,15 @@
 #include "qpmouseWatcher.h"
 #include "config_tform.h"
 #include "mouseWatcherParameter.h"
-#include "mouse.h"
+#include "mouseAndKeyboard.h"
 #include "mouseData.h"
 #include "buttonEventList.h"
 #include "mouseButton.h"
 #include "throw_event.h"
 #include "eventParameter.h"
 #include "dataNodeTransmit.h"
+#include "transformState.h"
+#include "dcast.h"
 
 #include <algorithm>
 
@@ -851,7 +853,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     if (_has_mouse) {
       // Hide the mouse pointer.
       if (!_geometry.is_null()) {
-        _geometry->set_transition(new PruneTransition);
+        _geometry->set_draw_mask(DrawMask::all_off());
       }
     }
 
@@ -870,11 +872,10 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
 
   if (!_geometry.is_null()) {
     // Transform the mouse pointer.
-    LMatrix4f mat = LMatrix4f::translate_mat(p[0], 0, p[1]);
-    _geometry->set_transition(new TransformTransition(mat));
+    _geometry->set_transform(TransformState::make_pos(LVecBase3f(p[0], 0, p[1])));
     if (!_has_mouse) {
       // Show the mouse pointer.
-      _geometry->clear_transition(PruneTransition::get_class_type());
+      _geometry->set_draw_mask(DrawMask::all_on());
     }
   }
 

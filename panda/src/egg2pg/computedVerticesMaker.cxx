@@ -17,10 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "computedVerticesMaker.h"
-#include "characterMaker.h"
+#include "qpcharacterMaker.h"
 
 #include "characterJoint.h"
-#include "character.h"
+#include "qpcharacter.h"
 #include "computedVertices.h"
 #include "eggNode.h"
 #include "eggGroup.h"
@@ -34,13 +34,12 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ComputedVerticesMaker::
-ComputedVerticesMaker()
-{
-    _coords= PTA_Vertexf::empty_array(0);
-    _norms= PTA_Normalf::empty_array(0);
-    _colors= PTA_Colorf::empty_array(0);
-    _texcoords= PTA_TexCoordf::empty_array(0);
-    _current_vc = NULL;
+ComputedVerticesMaker() {
+  _coords= PTA_Vertexf::empty_array(0);
+  _norms= PTA_Normalf::empty_array(0);
+  _colors= PTA_Colorf::empty_array(0);
+  _texcoords= PTA_TexCoordf::empty_array(0);
+  _current_vc = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -310,141 +309,6 @@ add_color(const Colorf &color, const EggMorphColorList &morphs) {
   }
 
   return index;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ComputedVerticesMaker::make_computed_vertices
-//       Access: Public
-//  Description: After all spaces have been defined and all vertices
-//               added, creates a new ComputedVertices object and
-//               returns it.
-////////////////////////////////////////////////////////////////////
-ComputedVertices *ComputedVerticesMaker::
-make_computed_vertices(Character *character, CharacterMaker &char_maker) {
-  // We must first build up a set of all the unique kinds of vertex
-  // transforms.
-  typedef pset<ComputedVertices::VertexTransform> VertexTransforms;
-  VertexTransforms transforms;
-
-  TransformSpaces::const_iterator tsi;
-  for (tsi = _transforms.begin();
-       tsi != _transforms.end();
-       ++tsi) {
-    const JointWeights &jw = (*tsi).first;
-    const VertexCollection &vc = (*tsi).second;
-
-    JointWeights::const_iterator jwi;
-    for (jwi = jw.begin(); jwi != jw.end(); ++jwi) {
-      double weight = (*jwi).second;
-      EggNode *egg_joint = (*jwi).first;
-      int joint_index = char_maker.egg_to_index(egg_joint);
-
-      // Look for a VertexTransform that matches this template.
-      ComputedVertices::VertexTransform new_vt;
-      new_vt._joint_index = joint_index;
-      new_vt._effect = (float)weight;
-
-      // This will either insert the VertexTransform into the set and
-      // return its newly-created iterator, or it will return the
-      // iterator referring to the previously-inserted VertexTransform
-      // like this.
-      VertexTransforms::iterator vti = transforms.insert(new_vt).first;
-
-      // We can discard the const-ness of the set's iterator, because
-      // we will only be changing a part of the VertexTransform that
-      // doesn't affect its sort order within the set.
-      ComputedVertices::VertexTransform &insert_vt =
-        (ComputedVertices::VertexTransform &)*vti;
-
-      // Now add in all the vertices and normals.
-      copy(vc._vindex.begin(), vc._vindex.end(),
-           back_inserter(insert_vt._vindex));
-      copy(vc._nindex.begin(), vc._nindex.end(),
-           back_inserter(insert_vt._nindex));
-    }
-  }
-
-  // Ok, now we have the set of all VertexTransforms.  Create a
-  // ComputedVertices object that reflects this.
-  ComputedVertices *comp_verts = new ComputedVertices;
-  copy(transforms.begin(), transforms.end(),
-       back_inserter(comp_verts->_transforms));
-
-  character->_cv._coords = _coords;
-  character->_cv._norms = _norms;
-  character->_cv._colors = _colors;
-  character->_cv._texcoords = _texcoords;
-
-  // Finally, add in all the morph definitions.
-  Morphs::const_iterator mi;
-  for (mi = _morphs.begin(); mi != _morphs.end(); ++mi) {
-    const string &name = (*mi).first;
-    const MorphList &mlist = (*mi).second;
-
-    int slider_index = char_maker.create_slider(name);
-
-    if (!mlist._vmorphs.empty()) {
-      // We push an empty MorphVertex object and then modify it,
-      // rather than filling it first and then pushing it, just to
-      // avoid unnecessary copying of data.
-      comp_verts->_vertex_morphs.push_back(ComputedVerticesMorphVertex());
-      ComputedVerticesMorphVertex &mv = comp_verts->_vertex_morphs.back();
-      mv._slider_index = slider_index;
-
-      VertexMorphList::const_iterator vmi;
-      for (vmi = mlist._vmorphs.begin();
-           vmi != mlist._vmorphs.end();
-           ++vmi) {
-        mv._morphs.push_back(ComputedVerticesMorphValue3((*vmi).first,
-                                                         (*vmi).second));
-      }
-    }
-
-    if (!mlist._nmorphs.empty()) {
-      comp_verts->_normal_morphs.push_back(ComputedVerticesMorphNormal());
-      ComputedVerticesMorphNormal &mv = comp_verts->_normal_morphs.back();
-      mv._slider_index = slider_index;
-
-      NormalMorphList::const_iterator vmi;
-      for (vmi = mlist._nmorphs.begin();
-           vmi != mlist._nmorphs.end();
-           ++vmi) {
-        mv._morphs.push_back(ComputedVerticesMorphValue3((*vmi).first,
-                                                         (*vmi).second));
-      }
-    }
-
-    if (!mlist._tmorphs.empty()) {
-      comp_verts->_texcoord_morphs.push_back(ComputedVerticesMorphTexCoord());
-      ComputedVerticesMorphTexCoord &mv = comp_verts->_texcoord_morphs.back();
-      mv._slider_index = slider_index;
-
-      TexCoordMorphList::const_iterator vmi;
-      for (vmi = mlist._tmorphs.begin();
-           vmi != mlist._tmorphs.end();
-           ++vmi) {
-        mv._morphs.push_back(ComputedVerticesMorphValue2((*vmi).first,
-                                                         (*vmi).second));
-      }
-    }
-
-    if (!mlist._cmorphs.empty()) {
-      comp_verts->_color_morphs.push_back(ComputedVerticesMorphColor());
-      ComputedVerticesMorphColor &mv = comp_verts->_color_morphs.back();
-      mv._slider_index = slider_index;
-
-      ColorMorphList::const_iterator vmi;
-      for (vmi = mlist._cmorphs.begin();
-           vmi != mlist._cmorphs.end();
-           ++vmi) {
-        mv._morphs.push_back(ComputedVerticesMorphValue4((*vmi).first,
-                                                         (*vmi).second));
-      }
-    }
-  }
-
-  comp_verts->make_orig(character);
-  return comp_verts;
 }
 
 ////////////////////////////////////////////////////////////////////

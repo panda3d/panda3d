@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET ribgsg
   #define LOCAL_LIBS \
-    gsgmisc display gobj sgattrib sgraph sgraphutil
+    pgraph gsgmisc display gobj
 
   #define SOURCES \
     config_ribgsg.cxx config_ribgsg.h ribGraphicsStateGuardian.I \

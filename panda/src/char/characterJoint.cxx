@@ -19,12 +19,11 @@
 #include "characterJoint.h"
 #include "config_char.h"
 
-#include <compose_matrix.h>
-#include <transformTransition.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "compose_matrix.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle CharacterJoint::_type_handle;
 
@@ -48,7 +47,7 @@ CharacterJoint(const CharacterJoint &copy) :
   _net_transform(copy._net_transform),
   _initial_net_transform_inverse(copy._initial_net_transform_inverse)
 {
-  // We don't copy the sets of transform arcs.
+  // We don't copy the sets of transform nodes.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,46 +119,6 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
     }
   }
 
-  if (net_changed && !_net_transform_arcs.empty()) {
-    PT(TransformTransition) t = new TransformTransition(_net_transform);
-
-    ArcList::iterator ai;
-    ai = _net_transform_arcs.begin();
-    while (ai != _net_transform_arcs.end()) {
-      NodeRelation *arc = *ai;
-      if (arc->is_attached()) {
-        arc->set_transition(t);
-        ++ai;
-      } else {
-        // The arc is now invalid; its geometry must have been
-        // removed.  Remove the arc from our set.
-        ArcList::iterator invalid = ai;
-        ++ai;
-        _net_transform_arcs.erase(invalid);
-      }
-    }
-  }
-
-  if (self_changed && !_local_transform_arcs.empty()) {
-    PT(TransformTransition) t = new TransformTransition(_value);
-
-    ArcList::iterator ai;
-    ai = _local_transform_arcs.begin();
-    while (ai != _local_transform_arcs.end()) {
-      NodeRelation *arc = *ai;
-      if (arc->is_attached()) {
-        arc->set_transition(t);
-        ++ai;
-      } else {
-        // The arc is now invalid; its geometry must have been
-        // removed.  Remove the arc from our set.
-        ArcList::iterator invalid = ai;
-        ++ai;
-        _local_transform_arcs.erase(invalid);
-      }
-    }
-  }
-
   if (net_changed && !_net_transform_nodes.empty()) {
     CPT(TransformState) t = TransformState::make_mat(_net_transform);
 
@@ -187,85 +146,6 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
   return self_changed || net_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::add_net_transform
-//       Access: Public
-//  Description: Adds the indicated arc to the list of arcs that will
-//               be updated each frame with the joint's net transform
-//               from the root.  Returns true if the arc is
-//               successfully added, false if it had already been
-//               added.
-////////////////////////////////////////////////////////////////////
-bool CharacterJoint::
-add_net_transform(NodeRelation *arc) {
-  return _net_transform_arcs.insert(arc).second;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::remove_net_transform
-//       Access: Public
-//  Description: Removes the indicated arc from the list of arcs that
-//               will be updated each frame with the joint's net
-//               transform from the root.  Returns true if the arc is
-//               successfully removed, false if it was not on the
-//               list.
-////////////////////////////////////////////////////////////////////
-bool CharacterJoint::
-remove_net_transform(NodeRelation *arc) {
-  return (_net_transform_arcs.erase(arc) > 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::has_net_transform
-//       Access: Public
-//  Description: Returns true if the arc is on the list of arcs that
-//               will be updated each frame with the joint's net
-//               transform from the root, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool CharacterJoint::
-has_net_transform(NodeRelation *arc) const {
-  return (_net_transform_arcs.count(arc) > 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::add_local_transform
-//       Access: Public
-//  Description: Adds the indicated arc to the list of arcs that will
-//               be updated each frame with the joint's local
-//               transform from its parent.  Returns true if the arc
-//               is successfully added, false if it had already been
-//               added.
-////////////////////////////////////////////////////////////////////
-bool CharacterJoint::
-add_local_transform(NodeRelation *arc) {
-  return _local_transform_arcs.insert(arc).second;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::remove_local_transform
-//       Access: Public
-//  Description: Removes the indicated arc from the list of arcs that
-//               will be updated each frame with the joint's local
-//               transform from its parent.  Returns true if the arc
-//               is successfully removed, false if it was not on the
-//               list.
-////////////////////////////////////////////////////////////////////
-bool CharacterJoint::
-remove_local_transform(NodeRelation *arc) {
-  return (_local_transform_arcs.erase(arc) > 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::has_local_transform
-//       Access: Public
-//  Description: Returns true if the arc is on the list of arcs that
-//               will be updated each frame with the joint's local
-//               transform from its parent, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool CharacterJoint::
-has_local_transform(NodeRelation *arc) const {
-  return (_local_transform_arcs.count(arc) > 0);
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::add_net_transform
@@ -316,7 +196,6 @@ has_net_transform(PandaNode *node) const {
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
 clear_net_transforms() {
-  _net_transform_arcs.clear();
   _net_transform_nodes.clear();
 }
 
@@ -369,7 +248,6 @@ has_local_transform(PandaNode *node) const {
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
 clear_local_transforms() {
-  _local_transform_arcs.clear();
   _local_transform_nodes.clear();
 }
 
@@ -382,53 +260,13 @@ clear_local_transforms() {
 void CharacterJoint::
 write_datagram(BamWriter *manager, Datagram &me)
 {
-  ArcList::iterator ai;
   NodeList::iterator ni;
-
-  // First, make sure all of our arcs are still valid, before we try
-  // to write them out.  Remove any invalid arcs.
-  ai = _net_transform_arcs.begin();
-  while (ai != _net_transform_arcs.end()) {
-    NodeRelation *arc = *ai;
-    if (arc->is_attached()) {
-      ++ai;
-    } else {
-      // The arc is now invalid; its geometry must have been
-      // removed.  Remove the arc from our set.
-      ArcList::iterator invalid = ai;
-      ++ai;
-      _net_transform_arcs.erase(invalid);
-    }
-  }
-  ai = _local_transform_arcs.begin();
-  while (ai != _local_transform_arcs.end()) {
-    NodeRelation *arc = *ai;
-    if (arc->is_attached()) {
-      ++ai;
-    } else {
-      // The arc is now invalid; its geometry must have been
-      // removed.  Remove the arc from our set.
-      ArcList::iterator invalid = ai;
-      ++ai;
-      _local_transform_arcs.erase(invalid);
-    }
-  }
-
   MovingPartMatrix::write_datagram(manager, me);
 
-  me.add_uint16(_net_transform_arcs.size());
-  for(ai = _net_transform_arcs.begin(); 
-      ai != _net_transform_arcs.end(); 
-      ai++) {
-    manager->write_pointer(me, (*ai));
-  }
-
-  me.add_uint16(_local_transform_arcs.size());
-  for(ai = _local_transform_arcs.begin(); 
-      ai != _local_transform_arcs.end(); 
-      ai++) {
-    manager->write_pointer(me, (*ai));
-  }
+  // Legacy.  We don't store the list of arcs any more.  Remove this
+  // when we go to bam version 4.0.
+  me.add_uint16(0);
+  me.add_uint16(0);
 
   me.add_uint16(_net_transform_nodes.size());
   for(ni = _net_transform_nodes.begin(); 
@@ -459,15 +297,12 @@ void CharacterJoint::
 fillin(DatagramIterator &scan, BamReader *manager) {
   int i;
   MovingPartMatrix::fillin(scan, manager);
-  _num_net_arcs = scan.get_uint16();
-  for(i = 0; i < _num_net_arcs; i++) {
-    manager->read_pointer(scan);
-  }
 
-  _num_local_arcs = scan.get_uint16();
-  for(i = 0; i < _num_local_arcs; i++) {
-    manager->read_pointer(scan);
-  }
+  // Remove this when we go to bam 4.0.
+  int num_net_arcs = scan.get_uint16();
+  nassertv(num_net_arcs == 0);
+  int num_local_arcs = scan.get_uint16();
+  nassertv(num_local_arcs == 0);
 
   if (manager->get_file_minor_ver() < 7) {
     // No _node lists before version 3.7.
@@ -501,14 +336,6 @@ complete_pointers(TypedWritable **p_list, BamReader* manager)
   int pi = MovingPartMatrix::complete_pointers(p_list, manager);
 
   int i;
-  for (i = 0; i < _num_net_arcs; i++) {
-    add_net_transform(DCAST(NodeRelation, p_list[pi++]));
-  }
-
-  for (i = 0; i < _num_local_arcs; i++) {
-    add_local_transform(DCAST(NodeRelation, p_list[pi++]));
-  }
-
   for (i = 0; i < _num_net_nodes; i++) {
     add_net_transform(DCAST(PandaNode, p_list[pi++]));
   }

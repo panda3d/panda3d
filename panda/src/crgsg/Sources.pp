@@ -7,8 +7,8 @@
 #begin lib_target
   #define TARGET crgsg
   #define LOCAL_LIBS \
-    pandabase cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display \
-    putil linmath sgraph mathutil pnmimage
+    pandabase gsgmisc gsgbase gobj display \
+    putil linmath mathutil pnmimage
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 

@@ -40,7 +40,7 @@ private:
   INLINE CullFaceAttrib(Mode mode = M_cull_clockwise);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode);
+  static CPT(RenderAttrib) make(Mode mode = M_cull_clockwise);
 
   INLINE Mode get_mode() const;
 

@@ -19,6 +19,7 @@
 #include "qpdataNode.h"
 #include "dataNodeTransmit.h"
 #include "config_dgraph.h"
+#include "dcast.h"
 
 TypeHandle qpDataNode::_type_handle;
 

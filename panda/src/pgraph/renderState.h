@@ -75,6 +75,8 @@ PUBLISHED:
                                const RenderAttrib *attrib2,
                                const RenderAttrib *attrib3,
                                const RenderAttrib *attrib4, int override = 0);
+  static CPT(RenderState) make(const RenderAttrib * const *attrib,
+                               int num_attribs, int override = 0);
 
   CPT(RenderState) compose(const RenderState *other) const;
   CPT(RenderState) invert_compose(const RenderState *other) const;

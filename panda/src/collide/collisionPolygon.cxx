@@ -18,9 +18,7 @@
 
 
 #include "collisionPolygon.h"
-#include "collisionHandler.h"
 #include "qpcollisionHandler.h"
-#include "collisionEntry.h"
 #include "qpcollisionEntry.h"
 #include "collisionSphere.h"
 #include "collisionRay.h"
@@ -36,8 +34,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "geomPolygon.h"
-
-#include "geomNode.h"
 
 #include <algorithm>
 
@@ -130,20 +126,6 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPolygon::
-test_intersection(CollisionHandler *, const CollisionEntry &,
-                  const CollisionSolid *into) const {
-  // Polygons cannot currently be intersected from, only into.  Do not
-  // add a CollisionPolygon to a CollisionTraverser.
-  nassertr(false, 0);
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPolygon::
 test_intersection(qpCollisionHandler *, const qpCollisionEntry &,
                   const CollisionSolid *into) const {
   // Polygons cannot currently be intersected from, only into.  Do not
@@ -188,7 +170,7 @@ xform(const LMatrix4f &mat) {
     setup_points(verts_begin, verts_end);
   }
 
-  clear_viz_arcs();
+  mark_viz_stale();
   mark_bound_stale();
 }
 
@@ -241,212 +223,6 @@ recompute_bound() {
   gbv->around(vertices_begin, vertices_end);
 
   return bound;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPolygon::
-test_intersection_from_sphere(CollisionHandler *record,
-                              const CollisionEntry &entry) const {
-  if (_points.size() < 3) {
-    return 0;
-  }
-
-  const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), 0);
-
-  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
-  LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
-  float from_radius = length(from_radius_v);
-
-  float dist = dist_to_plane(from_center);
-  if (dist > from_radius || dist < -from_radius) {
-    // No intersection.
-    return 0;
-  }
-
-  // Ok, we intersected the plane, but did we intersect the polygon?
-
-  // The nearest point within the plane to our center is the
-  // intersection of the line (center, center+normal) with the plane.
-  LPoint3f plane_point;
-  bool really_intersects =
-    get_plane().intersects_line(plane_point,
-                                from_center, from_center + get_normal());
-  nassertr(really_intersects, 0);
-
-  LPoint2f p = to_2d(plane_point);
-
-  // Now we have found a point on the polygon's plane that corresponds
-  // to the point tangent to our collision sphere where it first
-  // touches the plane.  We want to decide whether the sphere itself
-  // will intersect the polygon.  We can approximate this by testing
-  // whether a circle of the given radius centered around this tangent
-  // point, in the plane of the polygon, would intersect.
-
-  // But even this approximate test is too difficult.  To approximate
-  // the approximation, we'll test two points: (1) the center itself.
-  // If this is inside the polygon, then certainly the circle
-  // intersects the polygon, and the sphere collides.  (2) a point on
-  // the outside of the circle, nearest to the center of the polygon.
-  // If _this_ point is inside the polygon, then again the circle, and
-  // hence the sphere, intersects.  If neither point is inside the
-  // polygon, chances are reasonably good the sphere doesn't intersect
-  // the polygon after all.
-
-  if (is_inside(p)) {
-    // The circle's center is inside the polygon; we have a collision!
-
-  } else {
-
-    if (from_radius > 0.0f) {
-      // Now find the point on the rim of the circle nearest the
-      // polygon's center.
-
-      // First, get a vector from the center of the circle to the center
-      // of the polygon.
-      LVector2f rim = _median - p;
-      float rim_length = length(rim);
-
-      if (rim_length <= from_radius) {
-        // Here's a surprise: the center of the polygon is within the
-        // circle!  Since the center is guaranteed to be interior to the
-        // polygon (the polygon is convex), it follows that the circle
-        // intersects the polygon.
-
-      } else {
-        // Now scale this vector to length radius, and get the new point.
-        rim = (rim * from_radius / rim_length) + p;
-
-        // Is the new point within the polygon?
-        if (is_inside(rim)) {
-          // It sure is!  The circle intersects!
-
-        } else {
-          // No intersection.
-          return 0;
-        }
-      }
-    }
-  }
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
-      << entry.get_into_node_path() << "\n";
-  }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-
-  LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
-  float into_depth = from_radius - dist;
-
-  new_entry->set_into_surface_normal(into_normal);
-  new_entry->set_into_depth(into_depth);
-
-  record->add_entry(new_entry);
-  return 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPolygon::
-test_intersection_from_ray(CollisionHandler *record,
-                           const CollisionEntry &entry) const {
-  if (_points.size() < 3) {
-    return 0;
-  }
-
-  const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), 0);
-
-  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_space();
-  LVector3f from_direction = ray->get_direction() * entry.get_wrt_space();
-
-  float t;
-  if (!get_plane().intersects_line(t, from_origin, from_direction)) {
-    // No intersection.
-    return 0;
-  }
-
-  if (t < 0.0f) {
-    // The intersection point is before the start of the ray.
-    return 0;
-  }
-
-  LPoint3f plane_point = from_origin + t * from_direction;
-  if (!is_inside(to_2d(plane_point))) {
-    // Outside the polygon's perimeter.
-    return 0;
-  }
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
-      << entry.get_into_node_path() << "\n";
-  }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-
-  new_entry->set_into_intersection_point(plane_point);
-
-  record->add_entry(new_entry);
-  return 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_segment
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPolygon::
-test_intersection_from_segment(CollisionHandler *record,
-                               const CollisionEntry &entry) const {
-  if (_points.size() < 3) {
-    return 0;
-  }
-
-  const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), 0);
-
-  LPoint3f from_a = segment->get_point_a() * entry.get_wrt_space();
-  LPoint3f from_b = segment->get_point_b() * entry.get_wrt_space();
-  LPoint3f from_direction = from_b - from_a;
-
-  float t;
-  if (!get_plane().intersects_line(t, from_a, from_direction)) {
-    // No intersection.
-    return 0;
-  }
-
-  if (t < 0.0f || t > 1.0f) {
-    // The intersection point is before the start of the segment or
-    // after the end of the segment.
-    return 0;
-  }
-
-  LPoint3f plane_point = from_a + t * from_direction;
-  if (!is_inside(to_2d(plane_point))) {
-    // Outside the polygon's perimeter.
-    return 0;
-  }
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
-      << entry.get_into_node_path() << "\n";
-  }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-
-  new_entry->set_into_intersection_point(plane_point);
-
-  record->add_entry(new_entry);
-  return 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -653,50 +429,6 @@ test_intersection_from_segment(qpCollisionHandler *record,
 
   record->add_entry(new_entry);
   return 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::recompute_viz
-//       Access: Public, Virtual
-//  Description: Rebuilds the geometry that will be used to render a
-//               visible representation of the collision solid.
-////////////////////////////////////////////////////////////////////
-void CollisionPolygon::
-recompute_viz(Node *parent) {
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "Recomputing viz for " << *this << " on " << *parent << "\n";
-  }
-
-  if (_points.size() < 3) {
-    if (collide_cat.is_debug()) {
-      collide_cat.debug()
-        << "(Degenerate poly, ignoring.)\n";
-    }
-    return;
-  }
-
-  PTA_Vertexf verts;
-  Points::const_iterator pi;
-  for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    verts.push_back(to_3d(*pi));
-  }
-  if (_reversed) {
-    reverse(verts.begin(), verts.end());
-  }
-
-  PTA_int lengths;
-  lengths.push_back(_points.size());
-
-  GeomPolygon *polygon = new GeomPolygon;
-  polygon->set_coords(verts);
-  polygon->set_num_prims(1);
-  polygon->set_lengths(lengths);
-
-  GeomNode *viz = new GeomNode("viz-polygon");
-  viz->add_geom(polygon);
-  add_solid_viz(parent, viz);
-  add_wireframe_viz(parent, viz);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -22,12 +22,11 @@
 #include "classicNurbsCurve.h"
 #include "parametricCurveDrawer.h"
 
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamWriter.h>
-#include <bamReader.h>
-#include <renderRelation.h>
-#include <omniBoundingVolume.h>
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamWriter.h"
+#include "bamReader.h"
+#include "omniBoundingVolume.h"
 
 TypeHandle ParametricCurve::_type_handle;
 

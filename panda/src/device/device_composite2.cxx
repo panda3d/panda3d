@@ -1,16 +1,10 @@
 
 #include "config_device.cxx"
-#include "analogNode.cxx"
 #include "qpanalogNode.cxx"
-#include "buttonNode.cxx"
 #include "qpbuttonNode.cxx"
-#include "dialNode.cxx"
 #include "qpdialNode.cxx"
-#include "mouse.cxx"
 #include "mouseAndKeyboard.cxx"
 #include "trackerData.cxx"
-#include "trackerNode.cxx"
 #include "qptrackerNode.cxx"
-#include "virtualMouse.cxx"
 #include "qpvirtualMouse.cxx"
 

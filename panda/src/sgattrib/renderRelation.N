@@ -1,1 +1,0 @@
-ignoremember register_with_factory

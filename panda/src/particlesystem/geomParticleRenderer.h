@@ -22,10 +22,9 @@
 #include "baseParticleRenderer.h"
 #include "baseParticle.h"
 
-#include <node.h>
-#include <pointerTo.h>
-#include <pointerToArray.h>
-#include <renderRelation.h>
+#include "pandaNode.h"
+#include "pointerTo.h"
+#include "pointerToArray.h"
 
 #include "pvector.h"
 

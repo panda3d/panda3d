@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qppgItem.h"
-#include "pgTop.h"
 #include "pgMouseWatcherParameter.h"
 #include "pgCullTraverser.h"
 #include "config_pgui.h"
@@ -29,6 +28,7 @@
 #include "qpnodePath.h"
 #include "qpcullTraverser.h"
 #include "cullTraverserData.h"
+#include "dcast.h"
 
 #ifdef HAVE_AUDIO
 #include "audioSound.h"

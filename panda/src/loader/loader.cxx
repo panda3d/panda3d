@@ -15,6 +15,7 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #include "loader.h"
 #include "loaderFileType.h"
 #include "loaderFileTypeRegistry.h"
@@ -44,14 +45,14 @@ bool Loader::_file_types_loaded = false;
 class LoaderToken : public ReferenceCount {
 public:
   INLINE LoaderToken(uint id, Filename path, const string &event_name,
-        PT_Node node=NULL) : _id(id), _node(node) {
+        PandaNode *node=NULL) : _id(id), _node(node) {
     _path = path;
     _event_name = event_name;
   }
   uint _id;
   Filename _path;
   string _event_name;
-  PT_Node _node;
+  PT(PandaNode) _node;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -205,7 +206,7 @@ check_load(uint id) {
 //               number (returned by a previous call to request_load),
 //               or NULL if the request has not yet completed.
 ////////////////////////////////////////////////////////////////////
-PT_Node Loader::
+PT(PandaNode) Loader::
 fetch_load(uint id) {
   PT(LoaderToken) tok = _token_board->get_done_token(id);
   if (tok.is_null()) {
@@ -213,7 +214,7 @@ fetch_load(uint id) {
       << "Request to fetch id " << id << " which has not yet completed.\n";
     return NULL;
   }
-  PT_Node node = tok->_node;
+  PT(PandaNode) node = tok->_node;
   return node;
 }
 
@@ -264,7 +265,7 @@ process_request() {
   while (!_token_board->_waiting.empty()) {
     PT(LoaderToken) tok = _token_board->_waiting.front();
     _token_board->_waiting.pop_front();
-    tok->_node = load_file(tok->_path);
+    tok->_node = qpload_file(tok->_path);
     if (tok->_node == NULL) {
       loader_cat.error()
         << "Loader::callback() - couldn't find file: "
@@ -287,51 +288,6 @@ process_request() {
   }
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::load_file
-//       Access: Private
-//  Description: Loads a single scene graph file, if possible.
-//               Returns the Node that is the root of the file, or
-//               NULL if the file cannot be loaded.
-////////////////////////////////////////////////////////////////////
-PT_Node Loader::
-load_file(const Filename &filename) const {
-  string extension = filename.get_extension();
-
-  if (extension.empty()) {
-    return load_unknown_file_type(filename);
-  }
-
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-  LoaderFileType *requested_type =
-    reg->get_type_from_extension(extension);
-
-  if (requested_type == (LoaderFileType *)NULL) {
-    loader_cat.error()
-      << "Extension of file " << filename
-      << " is unrecognized; cannot load.\n";
-    loader_cat.error(false)
-      << "Currently known scene file types are:\n";
-    reg->write_types(loader_cat.error(false), 2);
-    return NULL;
-  }
-
-  Filename requested_filename = filename;
-  if (!requested_filename.is_fully_qualified()) {
-    // Ask the loader type to look for the file along its paths.
-    requested_type->resolve_filename(requested_filename);
-  }
-
-  if (loader_cat.is_debug()) {
-    loader_cat.debug()
-      << "Loading " << requested_type->get_name() << " file: "
-      << requested_filename << "\n";
-  }
-
-  PT_Node result = requested_type->load_file(requested_filename, true);
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -388,95 +344,6 @@ public:
     return _path.compare_timestamps(other._path) > 0;
   }
 };
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::load_unknown_file_type
-//       Access: Private
-//  Description: Attempts to guess which file is meant when a file
-//               with no extension is given.  Looks around for a file
-//               with a suitable extension for each of our known file
-//               types, and loads the most recent file available of
-//               any file type.
-////////////////////////////////////////////////////////////////////
-PT_Node Loader::
-load_unknown_file_type(const Filename &filename) const {
-  typedef pvector<LoaderConsiderFile> Files;
-  Files files;
-
-  // First, build up a list of all of the possible files it could be.
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-  int num_types = reg->get_num_types();
-
-  if (num_types == 0) {
-    loader_cat.error()
-      << "Can't load file " << filename
-      << "; no scene file types are known.\n";
-    return (Node *)NULL;
-  }
-
-  for (int i = 0; i < num_types; i++) {
-    LoaderConsiderFile consider;
-    consider._type = reg->get_type(i);
-    consider._path = filename;
-    consider._path.set_extension(consider._type->get_extension());
-
-    if (!consider._path.is_fully_qualified()) {
-      // Ask the loader type to look for the file along its paths.
-      consider._type->resolve_filename(consider._path);
-    }
-
-    if (consider._path.exists()) {
-      files.push_back(consider);
-    }
-  }
-
-  if (files.empty()) {
-    loader_cat.error()
-      << "Couldn't find file " << filename << " as:\n";
-    for (int i = 0; i < num_types; i++) {
-      Filename p = filename;
-      p.set_extension(reg->get_type(i)->get_extension());
-      loader_cat.error(false)
-        << "  " << p << "\n";
-    }
-    return (Node *)NULL;
-  }
-
-  // Now sort the list into order by timestamp, from newest to oldest.
-  sort(files.begin(), files.end());
-
-  // And try to load each file one at a time.
-  Files::const_iterator fi;
-
-  if (loader_cat.is_debug()) {
-    loader_cat.debug()
-      << "Loading " << filename << ", one of " << files.size()
-      << " possible types:\n";
-    for (fi = files.begin(); fi != files.end(); ++fi) {
-      loader_cat.debug(false)
-        << "  " << (*fi)._path << "\n";
-    }
-  }
-
-  for (fi = files.begin(); fi != files.end(); ++fi) {
-    const LoaderConsiderFile &consider = (*fi);
-    PT_Node result = consider._type->load_file(consider._path, false);
-    if (result != (Node *)NULL) {
-      return result;
-    }
-    if (loader_cat.is_debug()) {
-      loader_cat.debug()
-        << "Couldn't read " << consider._type->get_name()
-        << " file " << consider._path << "\n";
-    }
-  }
-
-  loader_cat.error()
-    << "Cannot read " << files.front()._path << "\n";
-
-  return (Node *)NULL;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::load_unknown_file_type

@@ -21,6 +21,7 @@
 #include "buttonHandle.h"
 #include "buttonEvent.h"
 #include "dataNodeTransmit.h"
+#include "graphicsWindow.h"
 
 TypeHandle qpMouseAndKeyboard::_type_handle;
 

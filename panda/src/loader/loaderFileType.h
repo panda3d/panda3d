@@ -22,8 +22,6 @@
 #include "pandabase.h"
 
 #include "typedObject.h"
-#include "node.h"
-#include "pt_Node.h"
 #include "filename.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
@@ -46,7 +44,6 @@ public:
   virtual string get_extension() const=0;
 
   virtual void resolve_filename(Filename &path) const;
-  virtual PT_Node load_file(const Filename &path, bool report_errors) const=0;
   virtual PT(PandaNode) qpload_file(const Filename &path, bool report_errors) const;
 
 public:

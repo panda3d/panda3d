@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define LOCAL_LIBS lerp event gsgbase gobj putil graph linmath express pandabase
+#define LOCAL_LIBS lerp event gsgbase gobj putil linmath express pandabase
 
 #begin lib_target
   #define TARGET pgraph
@@ -59,6 +59,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    sceneGraphAnalyzer.h \
     qpsceneGraphReducer.I qpsceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \
@@ -128,6 +129,7 @@
     renderEffects.cxx \
     renderModeAttrib.cxx \
     renderState.cxx \
+    sceneGraphAnalyzer.cxx \
     qpsceneGraphReducer.cxx \
     sceneSetup.cxx \
     selectiveChildNode.cxx \
@@ -199,6 +201,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    sceneGraphAnalyzer.h \
     qpsceneGraphReducer.I qpsceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \

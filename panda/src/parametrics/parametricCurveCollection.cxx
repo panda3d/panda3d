@@ -22,11 +22,10 @@
 #include "parametricCurveDrawer.h"
 #include "nurbsCurve.h"
 
-#include <indent.h>
-#include <compose_matrix.h>
-#include <renderRelation.h>
-#include <string_utils.h>
-#include <look_at.h>
+#include "indent.h"
+#include "compose_matrix.h"
+#include "string_utils.h"
+#include "look_at.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurveCollection::Constructor

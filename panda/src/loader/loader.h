@@ -21,8 +21,6 @@
 #include "pandabase.h"
 
 #include "notify.h"
-#include "node.h"
-#include "pt_Node.h"
 #include "pandaNode.h"
 #include "filename.h"
 #include "tokenBoard.h"
@@ -42,20 +40,17 @@ PUBLISHED:
 
   void resolve_filename(Filename &filename) const;
 
-  INLINE PT_Node load_sync(const Filename &filename) const;
   INLINE PT(PandaNode) qpload_sync(const Filename &filename) const;
 
   uint request_load(const Filename &filename, const string &event_name);
   bool check_load(uint id);
-  PT_Node fetch_load(uint id);
+  PT(PandaNode) fetch_load(uint id);
 
 private:
   static void load_file_types();
   static bool _file_types_loaded;
 
   virtual bool process_request(void);
-  PT_Node load_file(const Filename &filename) const;
-  PT_Node load_unknown_file_type(const Filename &filename) const;
   PT(PandaNode) qpload_file(const Filename &filename) const;
   PT(PandaNode) qpload_unknown_file_type(const Filename &filename) const;
   void resolve_unknown_file_type(Filename &filename) const;

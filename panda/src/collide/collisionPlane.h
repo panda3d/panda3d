@@ -19,12 +19,12 @@
 #ifndef COLLISIONPLANE_H
 #define COLLISIONPLANE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "collisionSolid.h"
 
-#include <luse.h>
-#include <plane.h>
+#include "luse.h"
+#include "plane.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionPlane
@@ -40,11 +40,6 @@ PUBLISHED:
 
 public:
   virtual CollisionSolid *make_copy();
-
-  virtual int
-  test_intersection(CollisionHandler *record,
-                    const CollisionEntry &entry,
-                    const CollisionSolid *into) const;
 
   virtual int
   test_intersection(qpCollisionHandler *record,
@@ -68,19 +63,12 @@ protected:
 
 protected:
   virtual int
-  test_intersection_from_sphere(CollisionHandler *record,
-                                const CollisionEntry &entry) const;
-  virtual int
-  test_intersection_from_ray(CollisionHandler *record,
-                             const CollisionEntry &entry) const;
-  virtual int
   test_intersection_from_sphere(qpCollisionHandler *record,
                                 const qpCollisionEntry &entry) const;
   virtual int
   test_intersection_from_ray(qpCollisionHandler *record,
                              const qpCollisionEntry &entry) const;
 
-  virtual void recompute_viz(Node *parent);
   virtual void fill_viz_geom();
 
 private:

@@ -26,7 +26,6 @@
 #include "namable.h"
 #include "pointerToArray.h"
 #include "luse.h"
-#include "nodeTransitions.h"
 #include "pta_Vertexf.h"
 #include "pta_Normalf.h"
 #include "pta_Colorf.h"
@@ -35,10 +34,7 @@
 
 #include "stdlib.h"
 
-
-class NamedNode;
 class Geom;
-class GeomNode;
 class PandaNode;
 class qpGeomNode;
 
@@ -68,7 +64,6 @@ public:
   virtual ~BuilderBucket();
 
   virtual BuilderBucket *make_copy() const;
-  virtual GeomNode *make_geom_node();
   virtual qpGeomNode *qpmake_geom_node();
   virtual Geom *done_geom(Geom *geom);
   void add_attrib(const RenderAttrib *attrib);
@@ -91,13 +86,11 @@ public:
 
   virtual void output(ostream &out) const;
 
-  NamedNode *_node;
   PandaNode *_qpnode;
 
   short _drawBin;
   unsigned int _drawOrder;
 
-  NodeTransitions _trans;
   CPT(RenderState) _state;
 
 protected:

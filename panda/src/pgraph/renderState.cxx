@@ -280,7 +280,7 @@ make(const RenderAttrib *attrib1,
      const RenderAttrib *attrib2,
      const RenderAttrib *attrib3, int override) {
   RenderState *state = new RenderState;
-  state->_attributes.reserve(2);
+  state->_attributes.reserve(3);
   state->_attributes.push_back(Attribute(attrib1, override));
   state->_attributes.push_back(Attribute(attrib2, override));
   state->_attributes.push_back(Attribute(attrib3, override));
@@ -299,12 +299,27 @@ make(const RenderAttrib *attrib1,
      const RenderAttrib *attrib3,
      const RenderAttrib *attrib4, int override) {
   RenderState *state = new RenderState;
-  state->_attributes.reserve(2);
+  state->_attributes.reserve(4);
   state->_attributes.push_back(Attribute(attrib1, override));
   state->_attributes.push_back(Attribute(attrib2, override));
   state->_attributes.push_back(Attribute(attrib3, override));
   state->_attributes.push_back(Attribute(attrib4, override));
   state->_attributes.sort();
+  return return_new(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::make
+//       Access: Published, Static
+//  Description: Returns a RenderState with n attributes set.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+make(const RenderAttrib * const *attrib, int num_attribs, int override) {
+  RenderState *state = new RenderState;
+  state->_attributes.reserve(num_attribs);
+  for (int i = 0; i < num_attribs; i++) {
+    state->_attributes.push_back(Attribute(attrib[i], override));
+  }
   return return_new(state);
 }
 

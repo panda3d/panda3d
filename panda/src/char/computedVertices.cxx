@@ -19,15 +19,15 @@
 
 #include "computedVertices.h"
 #include "characterJoint.h"
-#include "character.h"
 #include "qpcharacter.h"
 #include "config_char.h"
 
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <ioPtaDatagramLinMath.h>
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "ioPtaDatagramLinMath.h"
+
 #include <algorithm>
 
 TypeHandle ComputedVertices::_type_handle;
@@ -54,11 +54,10 @@ VertexTransform(const VertexTransform &copy) :
 //               vertices in the table, according to the values of the
 //               relevant slider.
 ////////////////////////////////////////////////////////////////////
-// QP
-template<class ValueType, class MorphType, class Character>
+template<class ValueType, class MorphType>
 static void
 compute_morphs(ValueType *table, const pvector<MorphType> &morph_list,
-               Character *character) {
+               qpCharacter *character) {
   pvector<MorphType>::const_iterator mli;
   for (mli = morph_list.begin(); mli != morph_list.end(); ++mli) {
     const MorphType &morph = (*mli);
@@ -126,108 +125,6 @@ read_datagram(DatagramIterator &source)
   for(i = 0; i < nsize; i++)
   {
     _nindex.push_back(source.get_uint16());
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ComputedVertices::update
-//       Access: Public
-//  Description: Recomputes all of the _coords, _norms, etc. values
-//               based on the values in _orig_coords, _orig_norms,
-//               etc., and the current positions of all of the joints.
-////////////////////////////////////////////////////////////////////
-void ComputedVertices::
-update(Character *character) {
-  nassertv(character != (Character *)NULL);
-  nassertv(character->_cv._coords.size() == _orig_coords.size());
-  nassertv(character->_cv._norms.size() == _orig_norms.size());
-  nassertv(character->_cv._texcoords.size() == _orig_texcoords.size());
-  nassertv(character->_cv._colors.size() == _orig_colors.size());
-
-  const Vertexf *orig_coords = _orig_coords;
-  const Normalf *orig_norms = _orig_norms;
-
-  memset(character->_cv._coords, 0, sizeof(Vertexf) * character->_cv._coords.size());
-  memset(character->_cv._norms, 0, sizeof(Normalf) * character->_cv._norms.size());
-
-  if (!_vertex_morphs.empty()) {
-    // We have some vertex morphs.  Compute them first.
-    int table_size = sizeof(Vertexf) * _orig_coords.size();
-    Vertexf *morphed_coords = (Vertexf *)alloca(table_size);
-    memcpy(morphed_coords, _orig_coords, table_size);
-
-    compute_morphs(morphed_coords, _vertex_morphs, character);
-    orig_coords = morphed_coords;
-  }
-
-  if (!_normal_morphs.empty()) {
-    // We also have some normal morphs.  Compute them too.
-    int table_size = sizeof(Normalf) * _orig_norms.size();
-    Normalf *morphed_norms = (Normalf *)alloca(table_size);
-    memcpy(morphed_norms, _orig_norms, table_size);
-
-    compute_morphs(morphed_norms, _normal_morphs, character);
-    orig_norms = morphed_norms;
-  }
-
-  if (!_texcoord_morphs.empty()) {
-    // We have some uv morphs.  These don't particularly need to be
-    // done before the joints are computed, but do them now anyway.
-    int table_size = sizeof(TexCoordf) * _orig_texcoords.size();
-
-    // **** Is this right?  Test it!
-    //    TexCoordf *morphed_texcoords = (TexCoordf *)alloca(table_size);
-    memcpy(character->_cv._texcoords, _orig_texcoords, table_size);
-
-    compute_morphs(character->_cv._texcoords.p(), _texcoord_morphs, character);
-  }
-
-  if (!_color_morphs.empty()) {
-    // We have some color morphs.  Do these now too.
-    int table_size = sizeof(Colorf) * _orig_colors.size();
-
-    // **** Is this right?  Test it!
-    // Colorf *morphed_colors = (Colorf *)alloca(table_size);
-    memcpy(character->_cv._colors, _orig_colors, table_size);
-
-    compute_morphs(character->_cv._colors.p(), _color_morphs, character);
-  }
-
-  // Now that we've computed all the morphs, it's safe to transform
-  // vertices into their proper coordinate space, according to the
-  // current positions of all the joints.
-
-  LMatrix4f mat = LMatrix4f::ident_mat();
-  int last_joint_index = -1;
-
-  VertexTransforms::const_iterator vti;
-  for (vti = _transforms.begin(); vti != _transforms.end(); ++vti) {
-    const VertexTransform &vt = (*vti);
-
-    // We cache the matrix from the last joint, because we are likely
-    // to encounter the same joint several times in a row.
-    if (vt._joint_index != last_joint_index) {
-      last_joint_index = vt._joint_index;
-
-      // We won't encounter -1 after the first few joints.
-      nassertv(vt._joint_index >= 0);
-      CharacterJoint *joint;
-      DCAST_INTO_V(joint, character->get_part(vt._joint_index));
-
-      mat =
-        joint->_initial_net_transform_inverse *
-        joint->_net_transform;
-    }
-
-    Vertices::const_iterator vi;
-    for (vi = vt._vindex.begin(); vi != vt._vindex.end(); ++vi) {
-      int i = (*vi);
-      character->_cv._coords[i] += (orig_coords[i] * mat) * vt._effect;
-    }
-    for (vi = vt._nindex.begin(); vi != vt._nindex.end(); ++vi) {
-      int i = (*vi);
-      character->_cv._norms[i] += (orig_norms[i] * mat) * vt._effect;
-    }
   }
 }
 
@@ -341,46 +238,6 @@ update(qpCharacter *character) {
 //               etc. arrays.
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::
-make_orig(Character *character) {
-  nassertv(character != (Character *)NULL);
-
-  if (character->_cv._coords.empty()) {
-    _orig_coords.clear();
-  } else {
-    _orig_coords = PTA_Vertexf::empty_array(0);
-    _orig_coords.v() = character->_cv._coords.v();
-  }
-
-  if (character->_cv._norms.empty()) {
-    _orig_norms.clear();
-  } else {
-    _orig_norms = PTA_Normalf::empty_array(0);
-    _orig_norms.v() = character->_cv._norms.v();
-  }
-
-  if (character->_cv._colors.empty()) {
-    _orig_colors.clear();
-  } else {
-    _orig_colors = PTA_Colorf::empty_array(0);
-    _orig_colors.v() = character->_cv._colors.v();
-  }
-
-  if (character->_cv._texcoords.empty()) {
-    _orig_texcoords.clear();
-  } else {
-    _orig_texcoords = PTA_TexCoordf::empty_array(0);
-    _orig_texcoords.v() = character->_cv._texcoords.v();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ComputedVertices::make_orig
-//       Access: Public
-//  Description: Copies all the values loaded in the _coords, _norms,
-//               etc. arrays into the corresponding _orig_coords,
-//               etc. arrays.
-////////////////////////////////////////////////////////////////////
-void ComputedVertices::
 make_orig(qpCharacter *character) {
   nassertv(character != (qpCharacter *)NULL);
 
@@ -419,7 +276,7 @@ make_orig(qpCharacter *character) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::
-write(ostream &out, Character *character) const {
+write(ostream &out, qpCharacter *character) const {
   VertexTransforms::const_iterator vti;
 
   out << "ComputedVertices:\n";

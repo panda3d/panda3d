@@ -175,7 +175,6 @@
 #include "pset.h"
 
 
-class GeomNode;
 class qpGeomNode;
 
 
@@ -196,7 +195,6 @@ public:
   INLINE bool add_prim_nonindexed(const BuilderBucket &bucket,
                                   const BuilderPrimI &prim);
 
-  GeomNode *build(const string &default_name = "");
   qpGeomNode *qpbuild(const string &default_name = "");
 
 protected:

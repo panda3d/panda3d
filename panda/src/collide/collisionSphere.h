@@ -37,11 +37,6 @@ public:
   virtual CollisionSolid *make_copy();
 
   virtual int
-  test_intersection(CollisionHandler *record,
-                    const CollisionEntry &entry,
-                    const CollisionSolid *into) const;
-
-  virtual int
   test_intersection(qpCollisionHandler *record,
                     const qpCollisionEntry &entry,
                     const CollisionSolid *into) const;
@@ -65,15 +60,6 @@ protected:
 
 protected:
   virtual int
-  test_intersection_from_sphere(CollisionHandler *record,
-                                const CollisionEntry &entry) const;
-  virtual int
-  test_intersection_from_ray(CollisionHandler *record,
-                             const CollisionEntry &entry) const;
-  virtual int
-  test_intersection_from_segment(CollisionHandler *record,
-                                 const CollisionEntry &entry) const;
-  virtual int
   test_intersection_from_sphere(qpCollisionHandler *record,
                                 const qpCollisionEntry &entry) const;
   virtual int
@@ -83,7 +69,6 @@ protected:
   test_intersection_from_segment(qpCollisionHandler *record,
                                  const qpCollisionEntry &entry) const;
 
-  virtual void recompute_viz(Node *parent);
   virtual void fill_viz_geom();
 
   bool intersects_line(double &t1, double &t2,

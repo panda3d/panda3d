@@ -521,20 +521,6 @@ void Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
   gsg->copy_texture(prepare(gsg), dr, rb);
 }
 
-void Texture::draw(GraphicsStateGuardianBase *) {
-  gobj_cat.error()
-    << "DisplayRegion required to draw texture.\n";
-}
-
-void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
-  gsg->draw_texture(prepare(gsg), dr);
-}
-
-void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                   const RenderBuffer &rb) {
-  gsg->draw_texture(prepare(gsg), dr, rb);
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::mark_dirty
 //       Access: Public

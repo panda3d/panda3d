@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET loader
   #define LOCAL_LIBS \
-    event pgraph graph ipc putil express downloader
+    event pgraph ipc putil express downloader
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
@@ -12,19 +12,16 @@
     bamFile.I bamFile.h config_loader.h loader.I loader.h  \
     loaderFileType.h loaderFileTypeBam.h  \
     loaderFileTypeRegistry.h \
-    modelPool.I modelPool.h \
     qpmodelPool.I qpmodelPool.h  
      
   #define INCLUDED_SOURCES  \
     bamFile.cxx config_loader.cxx loader.cxx loaderFileType.cxx  \
     loaderFileTypeBam.cxx loaderFileTypeRegistry.cxx  \
-    modelPool.cxx \
     qpmodelPool.cxx
 
   #define INSTALL_HEADERS \
     bamFile.I bamFile.h loader.I loader.h loaderFileType.h \
     loaderFileTypeBam.h loaderFileTypeRegistry.h \
-    modelPool.I modelPool.h \
     qpmodelPool.I qpmodelPool.h  
 
   #define IGATESCAN all

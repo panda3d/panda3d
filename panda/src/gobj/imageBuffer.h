@@ -38,9 +38,10 @@ class DisplayRegion;
 //       Class : ImageBuffer
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ImageBuffer : public dDrawable, public Namable {
+class EXPCL_PANDA ImageBuffer : public ReferenceCount,
+                                public WritableConfigurable, public Namable {
 PUBLISHED:
-  ImageBuffer() : dDrawable() { }
+  ImageBuffer() { }
   virtual ~ImageBuffer() { }
 
 public:
@@ -48,10 +49,6 @@ public:
 
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *,
-                    const RenderBuffer &rb)=0;
-  virtual void draw(GraphicsStateGuardianBase *)=0;
-  virtual void draw(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
-  virtual void draw(GraphicsStateGuardianBase *, const DisplayRegion *,
                     const RenderBuffer &rb)=0;
 
 PUBLISHED:
@@ -83,6 +80,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
+    // This indicates an inheritance from dDrawable, even though we
+    // don't any more.  When we upgrade to Bam version 4.0 we will
+    // change this.
     dDrawable::init_type();
     Namable::init_type();
     register_type(_type_handle, "ImageBuffer",

@@ -176,6 +176,7 @@ protected:
   INLINE void changed_internal_bound();
   virtual void parents_changed();
   virtual void children_changed();
+  virtual void transform_changed();
   INLINE void add_net_collide_mask(CollideMask mask);
 
   typedef pmap<PandaNode *, PandaNode *> InstanceMap;

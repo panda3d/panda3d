@@ -17,14 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_dgraph.h"
-#include "dataNode.h"
 #include "qpdataNode.h"
-#include "dataRelation.h"
-#include "intDataTransition.h"
-#include "doubleDataTransition.h"
-#include "vec3DataTransition.h"
-#include "matrixDataTransition.h"
-#include "buttonEventDataTransition.h"
 
 #include <dconfig.h>
 
@@ -32,14 +25,5 @@ Configure(config_dgraph);
 NotifyCategoryDef(dgraph, "");
 
 ConfigureFn(config_dgraph) {
-  DataNode::init_type();
   qpDataNode::init_type();
-  DataRelation::init_type();
-  IntDataTransition::init_type();
-  DoubleDataTransition::init_type();
-  Vec3DataTransition::init_type();
-  MatrixDataTransition::init_type();
-  ButtonEventDataTransition::init_type();
-
-  DataRelation::register_with_factory();
 }

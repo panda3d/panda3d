@@ -19,12 +19,11 @@
 #ifndef BAMINFO_H
 #define BAMINFO_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <programBase.h>
-#include <filename.h>
-#include <pt_Node.h>
-#include <sceneGraphAnalyzer.h>
+#include "programBase.h"
+#include "filename.h"
+#include "sceneGraphAnalyzer.h"
 
 #include "pvector.h"
 
@@ -45,9 +44,9 @@ protected:
 
 private:
   bool get_info(const Filename &filename);
-  void describe_scene_graph(Node *node);
+  void describe_scene_graph(PandaNode *node);
   void describe_general_object(TypedWritable *object);
-  void list_hierarchy(Node *node, int indent_level);
+  void list_hierarchy(PandaNode *node, int indent_level);
 
   typedef pvector<Filename> Filenames;
   Filenames _filenames;

@@ -25,6 +25,7 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 #include "factoryParam.h"
+#include "dcast.h"
 
 #include "pvector.h"
 

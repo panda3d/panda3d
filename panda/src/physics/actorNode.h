@@ -19,26 +19,23 @@
 #ifndef ACTORNODE_H
 #define ACTORNODE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "physicalNode.h"
-
-#include <renderRelation.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ActorNode
 // Description : Like a physical node, but with a little more.  The
-//               actornode assumes responsibility for its parent arc,
-//               and changes in its own PhysicsObject will be
-//               reflected as transforms in the arc.  This relation
-//               goes both ways; changes in the arc will update the
+//               actornode assumes responsibility for its own
+//               transform, and changes in its own PhysicsObject will
+//               be reflected as transforms.  This relation goes both
+//               ways; changes in the transform will update the
 //               object's position (shoves).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ActorNode : public PhysicalNode {
 private:
-  // node hook if the client changes the parent arc.
-  virtual void transform_changed(NodeRelation *arc);
+  // node hook if the client changes the node's transform.
+  virtual void transform_changed();
 
-  RenderRelation *_parent_arc;
   PhysicsObject *_mass_center;
 
   bool _ok_to_callback;
@@ -49,10 +46,7 @@ public:
   virtual ~ActorNode(void);
 
   // update the parent arc with PhysicsObject information
-  void update_arc(void);
-
-  INLINE void set_parent_arc(RenderRelation *arc);
-  INLINE RenderRelation *get_parent_arc(void) const;
+  void update_transform(void);
 
 public:
   static TypeHandle get_class_type(void) {

@@ -24,7 +24,8 @@
 #include "qpdataNode.h"
 #include "buttonEventList.h"
 #include "linmath_events.h"
-
+#include "pointerTo.h"
+#include "graphicsWindow.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseAndKeyboard

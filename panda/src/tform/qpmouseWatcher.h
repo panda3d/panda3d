@@ -92,9 +92,9 @@ PUBLISHED:
   INLINE void set_without_pattern(const string &pattern);
   INLINE const string &get_without_pattern() const;
 
-  INLINE void set_geometry(NodeRelation *arc);
+  INLINE void set_geometry(PandaNode *node);
   INLINE bool has_geometry() const;
-  INLINE NodeRelation *get_geometry() const;
+  INLINE PandaNode *get_geometry() const;
   INLINE void clear_geometry();
 
   INLINE void set_extra_handler(EventHandler *eh);
@@ -165,7 +165,7 @@ protected:
   string _within_pattern;
   string _without_pattern;
 
-  PT_NodeRelation _geometry;
+  PT(PandaNode) _geometry;
 
   EventHandler *_eh;
 

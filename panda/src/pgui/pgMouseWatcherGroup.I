@@ -23,31 +23,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PGMouseWatcherGroup::
-PGMouseWatcherGroup(PGTop *top) : _top(top) {
-  _qptop = (qpPGTop *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherGroup::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE PGMouseWatcherGroup::
 PGMouseWatcherGroup(qpPGTop *top) : _qptop(top) {
-  _top = (PGTop *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherGroup::clear_top
-//       Access: Public
-//  Description: Called by the PGTop object to indicate that it is no
-//               longer keeping the pointer to the PGMouseWatcherGroup
-//               object.
-////////////////////////////////////////////////////////////////////
-INLINE void PGMouseWatcherGroup::
-clear_top(PGTop *top) {
-  nassertv(_top == top);
-  _top = (PGTop *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

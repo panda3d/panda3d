@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET distort
   #define LOCAL_LIBS \
-    sgraphutil sgraph sgattrib gobj linmath
+    display pgraph gobj linmath
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 

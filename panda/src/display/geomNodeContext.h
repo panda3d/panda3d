@@ -23,7 +23,7 @@
 
 #include "savedContext.h"
 
-class GeomNode;
+class qpGeomNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomNodeContext
@@ -44,12 +44,12 @@ class GeomNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomNodeContext : public SavedContext {
 public:
-  INLINE GeomNodeContext(GeomNode *node);
+  INLINE GeomNodeContext(qpGeomNode *node);
 
   // This cannot be a PT(GeomNode), because the geomNode and the GSG
   // both own their GeomNodeContexts!  That would create a circular
   // reference count.
-  GeomNode *_node;
+  qpGeomNode *_node;
 
 public:
   static TypeHandle get_class_type() {

@@ -5,8 +5,8 @@
   #define TARGET effects
   
   #define LOCAL_LIBS \
-    display sgraph graph sgraphutil sgattrib gobj putil gsgbase linmath \
-    mathutil switchnode
+    display gobj putil gsgbase linmath \
+    mathutil
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx         
 

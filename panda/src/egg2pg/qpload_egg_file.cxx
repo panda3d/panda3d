@@ -20,7 +20,6 @@
 #include "qpeggLoader.h"
 #include "config_egg2pg.h"
 #include "qpsceneGraphReducer.h"
-#include "renderRelation.h"
 
 static PT(PandaNode)
 load_from_loader(qpEggLoader &loader) {

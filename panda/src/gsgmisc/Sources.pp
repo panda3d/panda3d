@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET gsgmisc
   #define LOCAL_LIBS \
-    putil gobj gsgbase graph mathutil
+    putil gobj gsgbase mathutil
 
   #define SOURCES \
     geomIssuer.I geomIssuer.cxx geomIssuer.h

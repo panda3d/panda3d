@@ -126,7 +126,7 @@ do_physics(float dt) {
     PhysicalNode *pn = physical->get_physical_node();
     if (pn->is_of_type(ActorNode::get_class_type())) {
       ActorNode *an = (ActorNode *) pn;
-      an->update_arc();
+      an->update_transform();
     }
   }
 }
