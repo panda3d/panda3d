@@ -148,6 +148,7 @@ class ClusterServer(DirectObject.DirectObject):
         if (type == CLUSTER_NONE):
             pass
         elif (type == CLUSTER_EXIT):
+            print 'GOT EXIT'
             import sys
             sys.exit()
         elif (type == CLUSTER_CAM_OFFSET):

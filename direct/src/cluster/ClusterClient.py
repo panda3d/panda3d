@@ -20,7 +20,6 @@ class ClusterClient(DirectObject.DirectObject):
         if clusterDaemonClient == 'None':
             clusterDaemonClient = os.popen('uname -n').read()
             clusterDaemonClient = clusterDaemonClient.replace('\n', '')
-        print 'CLIENT', clusterDaemonClient
         # What daemon port are we using to communicate between client/servers
         clusterDaemonPort = base.config.GetInt(
             'cluster-daemon-port', CLUSTER_DAEMON_PORT)
