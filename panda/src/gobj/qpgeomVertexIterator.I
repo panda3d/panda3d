@@ -291,99 +291,99 @@ get_write_vertex() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::set_data1
+//     Function: qpGeomVertexIterator::set_data1f
 //       Access: Published
 //  Description: Sets the write vertex to a particular 1-component
 //               value, and advances the write vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
-set_data1(float data) {
+set_data1f(float data) {
   nassertv(!_const_data);
   _data->set_data(_array, _data_type, _write_vertex, &data, 1);
   ++_write_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::set_data2
+//     Function: qpGeomVertexIterator::set_data2f
 //       Access: Published
 //  Description: Sets the write vertex to a particular 2-component
 //               value, and advances the write vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
-set_data2(float x, float y) {
-  set_data2(LVecBase2f(x, y));
+set_data2f(float x, float y) {
+  set_data2f(LVecBase2f(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::set_data2
+//     Function: qpGeomVertexIterator::set_data2f
 //       Access: Published
 //  Description: Sets the write vertex to a particular 2-component
 //               value, and advances the write vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
-set_data2(const LVecBase2f &data) {
+set_data2f(const LVecBase2f &data) {
   nassertv(!_const_data);
   _data->set_data(_array, _data_type, _write_vertex, data.get_data(), 2);
   ++_write_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::set_data3
+//     Function: qpGeomVertexIterator::set_data3f
 //       Access: Published
 //  Description: Sets the write vertex to a particular 3-component
 //               value, and advances the write vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
-set_data3(float x, float y, float z) {
-  set_data3(LVecBase3f(x, y, z));
+set_data3f(float x, float y, float z) {
+  set_data3f(LVecBase3f(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::set_data3
+//     Function: qpGeomVertexIterator::set_data3f
 //       Access: Published
 //  Description: Sets the write vertex to a particular 3-component
 //               value, and advances the write vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
-set_data3(const LVecBase3f &data) {
+set_data3f(const LVecBase3f &data) {
   nassertv(!_const_data);
   _data->set_data(_array, _data_type, _write_vertex, data.get_data(), 3);
   ++_write_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::set_data4
+//     Function: qpGeomVertexIterator::set_data4f
 //       Access: Published
 //  Description: Sets the write vertex to a particular 4-component
 //               value, and advances the write vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
-set_data4(float x, float y, float z, float w) {
-  set_data4(LVecBase4f(x, y, z, w));
+set_data4f(float x, float y, float z, float w) {
+  set_data4f(LVecBase4f(x, y, z, w));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::set_data4
+//     Function: qpGeomVertexIterator::set_data4f
 //       Access: Published
 //  Description: Sets the write vertex to a particular 4-component
 //               value, and advances the write vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexIterator::
-set_data4(const LVecBase4f &data) {
+set_data4f(const LVecBase4f &data) {
   nassertv(!_const_data);
   _data->set_data(_array, _data_type, _write_vertex, data.get_data(), 4);
   ++_write_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::get_data1
+//     Function: qpGeomVertexIterator::get_data1f
 //       Access: Published
 //  Description: Returns the data associated with the read vertex,
 //               expressed as a 1-component value, and advances the
 //               read vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE float qpGeomVertexIterator::
-get_data1() {
+get_data1f() {
   float data;
   _data->get_data(_array, _data_type, _read_vertex, &data, 1);
   ++_read_vertex;
@@ -391,14 +391,14 @@ get_data1() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::get_data2
+//     Function: qpGeomVertexIterator::get_data2f
 //       Access: Published
 //  Description: Returns the data associated with the read vertex,
 //               expressed as a 2-component value, and advances the
 //               read vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase2f qpGeomVertexIterator::
-get_data2() {
+get_data2f() {
   float data[4];
   int num_values = min(_data_type->get_num_values(), 4);
   _data->get_data(_array, _data_type, _read_vertex, data, num_values);
@@ -409,14 +409,14 @@ get_data2() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::get_data3
+//     Function: qpGeomVertexIterator::get_data3f
 //       Access: Published
 //  Description: Returns the data associated with the read vertex,
 //               expressed as a 3-component value, and advances the
 //               read vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase3f qpGeomVertexIterator::
-get_data3() {
+get_data3f() {
   float data[4];
   int num_values = min(_data_type->get_num_values(), 4);
   _data->get_data(_array, _data_type, _read_vertex, data, num_values);
@@ -427,14 +427,14 @@ get_data3() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexIterator::get_data4
+//     Function: qpGeomVertexIterator::get_data4f
 //       Access: Published
 //  Description: Returns the data associated with the read vertex,
 //               expressed as a 4-component value, and advances the
 //               read vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase4f qpGeomVertexIterator::
-get_data4() {
+get_data4f() {
   float data[4];
   int num_values = min(_data_type->get_num_values(), 4);
   _data->get_data(_array, _data_type, _read_vertex, data, num_values);
@@ -442,4 +442,32 @@ get_data4() {
   LVecBase4f result;
   qpGeomVertexData::to_vec4(result, data, num_values);
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexIterator::set_data1i
+//       Access: Published
+//  Description: Sets the write vertex to a particular 1-component
+//               value, and advances the write vertex.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexIterator::
+set_data1i(int data) {
+  nassertv(!_const_data);
+  _data->set_data(_array, _data_type, _write_vertex, &data, 1);
+  ++_write_vertex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexIterator::get_data1i
+//       Access: Published
+//  Description: Returns the data associated with the read vertex,
+//               expressed as a 1-component value, and advances the
+//               read vertex.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexIterator::
+get_data1i() {
+  int data;
+  _data->get_data(_array, _data_type, _read_vertex, &data, 1);
+  ++_read_vertex;
+  return data;
 }

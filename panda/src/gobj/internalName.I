@@ -178,6 +178,19 @@ get_color() {
   return _color;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_transform_blend
+//       Access: Published, Static
+//  Description: Returns the standard InternalName "transform_blend".
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_transform_blend() {
+  if (_transform_blend == (InternalName *)NULL) {
+    _transform_blend = InternalName::make("transform_blend");
+  }
+  return _transform_blend;
+}
+
 INLINE ostream &
 operator << (ostream &out, const InternalName &tcn) {
   tcn.output(out);

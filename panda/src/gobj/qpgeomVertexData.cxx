@@ -28,6 +28,7 @@ TypeHandle qpGeomVertexData::_type_handle;
 PStatCollector qpGeomVertexData::_convert_pcollector("Cull:Munge:Convert");
 PStatCollector qpGeomVertexData::_scale_color_pcollector("Cull:Munge:Scale color");
 PStatCollector qpGeomVertexData::_set_color_pcollector("Cull:Munge:Set color");
+PStatCollector qpGeomVertexData::_compute_vertices_pcollector("Cull:Compute vertices");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::Default Constructor
@@ -137,6 +138,7 @@ clear_vertices() {
     (*ai)->clear_vertices();
   }
   cdata->_modified = qpGeom::get_next_modified();
+  cdata->_computed_vertices.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,6 +162,7 @@ modify_array(int i) {
     cdata->_arrays[i] = new qpGeomVertexArrayData(*cdata->_arrays[i]);
   }
   cdata->_modified = qpGeom::get_next_modified();
+  cdata->_computed_vertices_modified = UpdateSeq();
 
   return cdata->_arrays[i];
 }
@@ -178,6 +181,48 @@ set_array(int i, const qpGeomVertexArrayData *array) {
   nassertv(i >= 0 && i < (int)cdata->_arrays.size());
   cdata->_arrays[i] = (qpGeomVertexArrayData *)array;
   cdata->_modified = qpGeom::get_next_modified();
+  cdata->_computed_vertices_modified = UpdateSeq();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::modify_transform_blend_palette
+//       Access: Published
+//  Description: Returns a modifiable pointer to the current
+//               TransformBlendPalette on this vertex data, if any, or
+//               NULL if there is not a TransformBlendPalette.  See
+//               get_transform_blend_palette().
+////////////////////////////////////////////////////////////////////
+TransformBlendPalette *qpGeomVertexData::
+modify_transform_blend_palette() {
+  // Perform copy-on-write: if the reference count on the palette is
+  // greater than 1, assume some other GeomVertexData has the same
+  // pointer, so make a copy of it first.
+  CDWriter cdata(_cycler);
+
+  if (cdata->_transform_blend_palette->get_ref_count() > 1) {
+    cdata->_transform_blend_palette = new TransformBlendPalette(*cdata->_transform_blend_palette);
+  }
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_computed_vertices_modified = UpdateSeq();
+
+  return cdata->_transform_blend_palette;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_transform_blend_palette
+//       Access: Published
+//  Description: Replaces the TransformBlendPalette on this vertex
+//               data with the indicated palette.  The length of this
+//               palette should be consistent with the maximum palette
+//               index assigned to the vertices under the
+//               "transform_blend" name.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+set_transform_blend_palette(const TransformBlendPalette *palette) {
+  CDWriter cdata(_cycler);
+  cdata->_transform_blend_palette = (TransformBlendPalette *)palette;
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_computed_vertices_modified = UpdateSeq();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,6 +271,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
 
   PT(qpGeomVertexData) new_data = 
     new qpGeomVertexData(new_format, get_usage_hint());
+  new_data->set_transform_blend_palette(get_transform_blend_palette());
 
   pset<int> done_arrays;
 
@@ -319,15 +365,16 @@ scale_color(const LVecBase4f &color_scale, int num_components,
   PStatTimer timer(_scale_color_pcollector);
 
   PT(qpGeomVertexData) new_data = replace_data_type
-    (InternalName::get_color(), num_components, numeric_type);
+    (InternalName::get_color(), num_components, numeric_type,
+     get_usage_hint(), true);
 
   // Now go through and apply the scale, copying it to the new data.
   qpGeomVertexIterator from(this, InternalName::get_color());
   qpGeomVertexIterator to(new_data, InternalName::get_color());
 
   for (int i = 0; i < num_vertices; i++) {
-    Colorf color = from.get_data4();
-    to.set_data4(color[0] * color_scale[0],
+    Colorf color = from.get_data4f();
+    to.set_data4f(color[0] * color_scale[0],
                  color[1] * color_scale[1],
                  color[2] * color_scale[2],
                  color[3] * color_scale[3]);
@@ -359,16 +406,60 @@ set_color(const Colorf &color, int num_components,
   PStatTimer timer(_set_color_pcollector);
 
   PT(qpGeomVertexData) new_data = replace_data_type
-    (InternalName::get_color(), num_components, numeric_type);
+    (InternalName::get_color(), num_components, numeric_type,
+     get_usage_hint(), true);
 
   // Now go through and set the new color value.
   qpGeomVertexIterator to(new_data, InternalName::get_color());
 
   for (int i = 0; i < num_vertices; i++) {
-    to.set_data4(color);
+    to.set_data4f(color);
   }
 
   return new_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::compute_vertices
+//       Access: Published
+//  Description: Returns a GeomVertexData that represents the results
+//               of computing the vertex animation on the CPU for this
+//               GeomVertexData.
+//
+//               If there is no CPU-defined vertex animation on this
+//               object, this just returns the original object.
+//
+//               If there is vertex animation, but the VertexTransform
+//               values have not changed since last time, this may
+//               return the same pointer it returned previously.  Even
+//               if the VertexTransform values have changed, it may
+//               still return the same pointer, but with its contents
+//               modified (this is preferred, since it allows the
+//               graphics backend to update vertex buffers optimally).
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexData) qpGeomVertexData::
+compute_vertices() const {
+  CDReader cdata(_cycler);
+  if (cdata->_transform_blend_palette == (TransformBlendPalette *)NULL) {
+    // No vertex animation.
+    return this;
+  }
+
+  if (cdata->_computed_vertices == (qpGeomVertexData *)NULL) {
+    CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
+    ((qpGeomVertexData *)this)->make_computed_vertices(cdataw);
+    return cdataw->_computed_vertices;
+  } else {
+    UpdateSeq blend_modified = cdata->_transform_blend_palette->get_modified();
+    if (cdata->_computed_vertices_modified == blend_modified) {
+      // No changes.
+      return cdata->_computed_vertices;
+    }
+    CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
+    cdataw->_computed_vertices_modified = blend_modified;
+    ((qpGeomVertexData *)this)->update_computed_vertices(cdataw);
+    return cdataw->_computed_vertices;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -380,10 +471,16 @@ set_color(const Colorf &color, int num_components,
 //               new table will be added as a new array; if the old
 //               table was interleaved with a previous array, the
 //               previous array will not be repacked.
+//
+//               If num_components is 0, the indicated name is simply
+//               removed from the type, without replacing it with
+//               anything else.
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomVertexData) qpGeomVertexData::
 replace_data_type(const InternalName *name, int num_components,
-                  qpGeomVertexDataType::NumericType numeric_type) const {
+                  qpGeomVertexDataType::NumericType numeric_type,
+                  qpGeomUsageHint::UsageHint usage_hint,
+                  bool keep_animation) const {
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
 
   // Remove the old description of the type from the format.
@@ -405,13 +502,20 @@ replace_data_type(const InternalName *name, int num_components,
   }
     
   // Now define a new array to contain just the type.
-  PT(qpGeomVertexArrayFormat) type_array_format = 
-    new qpGeomVertexArrayFormat(name, num_components, numeric_type);
-  int new_type_array = new_format->add_array(type_array_format);
-  
+  int new_type_array = -1;
+  if (num_components != 0) {
+    PT(qpGeomVertexArrayFormat) type_array_format = 
+      new qpGeomVertexArrayFormat(name, num_components, numeric_type);
+    new_type_array = new_format->add_array(type_array_format);
+  }
+    
   PT(qpGeomVertexData) new_data = 
     new qpGeomVertexData(qpGeomVertexFormat::register_format(new_format),
-                         get_usage_hint());
+                         usage_hint);
+  if (keep_animation) {
+    new_data->set_transform_blend_palette(get_transform_blend_palette());
+  }
+
 
   int j = 0;
   int num_arrays = get_num_arrays();
@@ -431,14 +535,16 @@ replace_data_type(const InternalName *name, int num_components,
     }
   }
 
-  nassertr(j == new_type_array, new_data);
+  if (new_type_array != -1) {
+    nassertr(j == new_type_array, new_data);
 
-  // For the new type array, we set up a temporary array that has
-  // room for the right number of vertices.
-  PT(qpGeomVertexArrayData) new_array = new qpGeomVertexArrayData
-    (new_format->get_array(j), get_usage_hint());
-  new_array->set_num_vertices(get_num_vertices());
-  new_data->set_array(j, new_array);
+    // For the new type array, we set up a temporary array that has
+    // room for the right number of vertices.
+    PT(qpGeomVertexArrayData) new_array = new qpGeomVertexArrayData
+      (new_format->get_array(j), get_usage_hint());
+    new_array->set_num_vertices(get_num_vertices());
+    new_data->set_array(j, new_array);
+  }
 
   return new_data;
 }
@@ -496,7 +602,26 @@ set_data(int array, const qpGeomVertexDataType *data_type,
   nassertv(element >= 0 && element + data_type->get_total_bytes() <= (int)array_data.size());
 
   switch (data_type->get_numeric_type()) {
-  case qpGeomVertexDataType::NT_uint8:
+  case qpGeomVertexDataType::NT_uint16:
+    {
+      // Elevate or truncate to the right number of components.
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        *(PN_uint16 *)&array_data[element] = (int)data[i];
+        element += sizeof(PN_uint16);
+        ++i;
+      }
+      while (i < data_type->get_num_values()) {
+        *(PN_uint16 *)&array_data[element] = 0;
+        element += sizeof(PN_uint16);
+        ++i;
+      }
+    }
+      
+    break;
+
+  case qpGeomVertexDataType::NT_ufloat8:
     {
       int i = 0;
       int min_values = min(num_values, data_type->get_num_values());
@@ -528,7 +653,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
     }
     break;
 
-  case qpGeomVertexDataType::NT_float:
+  case qpGeomVertexDataType::NT_float32:
     if (num_values == 4 && sizeof(float) == sizeof(PN_float32)) {
       // The easy way: we can memcpy the data directly in.
       memcpy(&array_data[element], data, data_type->get_total_bytes());
@@ -577,7 +702,23 @@ get_data(int array, const qpGeomVertexDataType *data_type,
   nassertv(element >= 0 && element + data_type->get_total_bytes() <= (int)array_data.size());
 
   switch (data_type->get_numeric_type()) {
-  case qpGeomVertexDataType::NT_uint8:
+  case qpGeomVertexDataType::NT_uint16:
+    {
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        data[i] = *(PN_uint16 *)&array_data[element];
+        element += sizeof(PN_uint16);
+        ++i;
+      }
+      while (i < num_values) {
+        data[i] = 0;
+        ++i;
+      }
+    }
+    break;
+
+  case qpGeomVertexDataType::NT_ufloat8:
     {
       int i = 0;
       int min_values = min(num_values, data_type->get_num_values());
@@ -607,7 +748,7 @@ get_data(int array, const qpGeomVertexDataType *data_type,
     }
     break;
 
-  case qpGeomVertexDataType::NT_float:
+  case qpGeomVertexDataType::NT_float32:
     if (num_values == data_type->get_num_values() && 
         sizeof(float) == sizeof(PN_float32)) {
       memcpy(data, &array_data[element], num_values * sizeof(PN_float32));
@@ -628,7 +769,194 @@ get_data(int array, const qpGeomVertexDataType *data_type,
         ++i;
       }
     }
+    break;
+  }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_data
+//       Access: Public
+//  Description: Sets the nth vertex to a particular value.  Query the
+//               format to get the array index and data_type
+//               parameters for the particular data type you want to
+//               set.
+//
+//               This flavor of set_data() accepts a generic float
+//               array and a specific number of dimensions.  The new
+//               data will be copied from the num_values elements
+//               of data.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+set_data(int array, const qpGeomVertexDataType *data_type,
+         int vertex, const int *data, int num_values) {
+  int stride = _format->get_array(array)->get_stride();
+  int element = vertex * stride + data_type->get_start();
+
+  {
+    CDReader cdata(_cycler);
+    int array_size = (int)cdata->_arrays[array]->get_data_size_bytes();
+    if (element + data_type->get_total_bytes() > array_size) {
+      // Whoops, we need more vertices!
+      CDWriter cdataw(_cycler, cdata);
+      do_set_num_vertices(vertex + 1, cdataw);
+    }
+  }
+
+  PTA_uchar array_data = modify_array(array)->modify_data();
+  nassertv(element >= 0 && element + data_type->get_total_bytes() <= (int)array_data.size());
+
+  switch (data_type->get_numeric_type()) {
+  case qpGeomVertexDataType::NT_uint16:
+    {
+      // Elevate or truncate to the right number of components.
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        *(PN_uint16 *)&array_data[element] = data[i];
+        element += sizeof(PN_uint16);
+        ++i;
+      }
+      while (i < data_type->get_num_values()) {
+        *(PN_uint16 *)&array_data[element] = 0;
+        element += sizeof(PN_uint16);
+        ++i;
+      }
+    }
+      
+    break;
+
+  case qpGeomVertexDataType::NT_ufloat8:
+    {
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        array_data[element] = data[i];
+        element += 1;
+        ++i;
+      }
+      while (i < data_type->get_num_values()) {
+        array_data[element] = 0;
+        element += 1;
+        ++i;
+      }        
+    }
+    break;
+
+  case qpGeomVertexDataType::NT_packed_argb:
+    {
+      if (num_values == 4) {
+        *(PN_uint32 *)&array_data[element] = pack_argb(data);
+      } else {
+        // Elevate (or truncate) to 4 components.
+        int data4[4];
+        memset(data4, 0, 4 * sizeof(int));
+        memcpy(data4, data, min(4, num_values) * sizeof(int));
+        *(PN_uint32 *)&array_data[element] = pack_argb(data4);
+      }
+    }
+    break;
+
+  case qpGeomVertexDataType::NT_float32:
+    {
+      // Elevate or truncate to the right number of components.
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        *(PN_float32 *)&array_data[element] = data[i];
+        element += sizeof(PN_float32);
+        ++i;
+      }
+      while (i < data_type->get_num_values()) {
+        *(PN_float32 *)&array_data[element] = 0.0f;
+        element += sizeof(PN_float32);
+        ++i;
+      }
+    }
+      
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_data
+//       Access: Public
+//  Description: Returns the data associated with the nth vertex for a
+//               particular value.  Query the format to get the array
+//               index and data_type parameters for the particular
+//               data type you want to get.
+//
+//               This flavor of get_data() copies its data into a
+//               generic float array.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+get_data(int array, const qpGeomVertexDataType *data_type,
+         int vertex, int *data, int num_values) const {
+  CPTA_uchar array_data = get_array(array)->get_data();
+  int stride = _format->get_array(array)->get_stride();
+  int element = vertex * stride + data_type->get_start();
+  nassertv(element >= 0 && element + data_type->get_total_bytes() <= (int)array_data.size());
+
+  switch (data_type->get_numeric_type()) {
+  case qpGeomVertexDataType::NT_uint16:
+    {
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        data[i] = *(PN_uint16 *)&array_data[element];
+        element += sizeof(PN_uint16);
+        ++i;
+      }
+      while (i < num_values) {
+        data[i] = 0;
+        ++i;
+      }
+    }
+    break;
+
+  case qpGeomVertexDataType::NT_ufloat8:
+    {
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        int value = *(unsigned char *)&array_data[element];
+        element += 1;
+        data[i] = value;
+        ++i;
+      }
+      while (i < num_values) {
+        data[i] = 0;
+        ++i;
+      }
+    }
+    break;
+
+  case qpGeomVertexDataType::NT_packed_argb:
+    {
+      if (num_values == 4) {
+        unpack_argb(data, *(PN_uint32 *)&array_data[element]);
+      } else {
+        int data4[4];
+        unpack_argb(data4, *(PN_uint32 *)&array_data[element]);
+        memset(data, 0, num_values * sizeof(int));
+        memcpy(data, data4, min(num_values, 4) * sizeof(int));
+      }
+    }
+    break;
+
+  case qpGeomVertexDataType::NT_float32:
+    {
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        data[i] = (int)*(PN_float32 *)&array_data[element];
+        element += sizeof(PN_float32);
+        ++i;
+      }
+      while (i < num_values) {
+        data[i] = 0;
+        ++i;
+      }
+    }
     break;
   }
 }
@@ -775,6 +1103,35 @@ unpack_argb(float data[4], unsigned int packed_argb) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::pack_argb
+//       Access: Public, Static
+//  Description: Packs four ints, stored R, G, B, A, into a
+//               packed_argb value.
+////////////////////////////////////////////////////////////////////
+unsigned int qpGeomVertexData::
+pack_argb(const int data[4]) {
+  unsigned int r = ((unsigned int)data[0]) & 0xff;
+  unsigned int g = ((unsigned int)data[1]) & 0xff;
+  unsigned int b = ((unsigned int)data[2]) & 0xff;
+  unsigned int a = ((unsigned int)data[3]) & 0xff;
+  return ((a << 24) | (r << 16) | (g << 8) | b);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::unpack_argb
+//       Access: Public, Static
+//  Description: Unpacks a packed_argb value into four ints, stored
+//               R, G, B, A.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+unpack_argb(int data[4], unsigned int packed_argb) {
+  data[0] = (int)((packed_argb >> 16) & 0xff);
+  data[1] = (int)((packed_argb >> 8) & 0xff);
+  data[2] = (int)(packed_argb & 0xff);
+  data[3] = (int)((packed_argb >> 24) & 0xff);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::do_set_num_vertices
 //       Access: Private
 //  Description: The private implementation of set_num_vertices().
@@ -798,9 +1155,64 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
 
   if (any_changed) {
     cdata->_modified = qpGeom::get_next_modified();
+    cdata->_computed_vertices.clear();
   }
 
   return any_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::make_computed_vertices
+//       Access: Private
+//  Description: Creates the GeomVertexData that represents the
+//               results of computing the vertex animation on the CPU.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+make_computed_vertices(qpGeomVertexData::CDWriter &cdata) {
+  // First, make a new format that doesn't have the transform_blend
+  // array.
+  cdata->_computed_vertices = replace_data_type
+    (InternalName::get_transform_blend(), 0, qpGeomVertexDataType::NT_uint16,
+     qpGeomUsageHint::UH_dynamic, false);
+
+  // Now fill it up with the appropriate data.
+  update_computed_vertices(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::update_computed_vertices
+//       Access: Private
+//  Description: Recomputes the results of computing the vertex
+//               animation on the CPU, and applies them to the
+//               existing computed_vertices object.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+update_computed_vertices(qpGeomVertexData::CDWriter &cdata) {
+  int num_vertices = get_num_vertices();
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Computing " << num_vertices << " vertices.\n";
+  }
+  PStatTimer timer(_compute_vertices_pcollector);
+
+  CPT(TransformBlendPalette) palette = cdata->_transform_blend_palette;
+  nassertv(palette != (TransformBlendPalette *)NULL);
+  PT(qpGeomVertexData) new_data = cdata->_computed_vertices;
+
+  // Now go through and apply the scale, copying it to the new data.
+  qpGeomVertexIterator from(this, InternalName::get_vertex());
+  qpGeomVertexIterator blendi(this, InternalName::get_transform_blend());
+  qpGeomVertexIterator to(new_data, InternalName::get_vertex());
+
+  for (int i = 0; i < num_vertices; i++) {
+    LPoint4f vertex = from.get_data4f();
+    int bi = blendi.get_data1i();
+    const TransformBlend &blend = palette->get_blend(bi);
+    blend.transform_point(vertex);
+
+    to.set_data4f(vertex);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

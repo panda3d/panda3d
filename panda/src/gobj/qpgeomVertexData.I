@@ -92,6 +92,38 @@ get_array(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_transform_blend_palette
+//       Access: Published
+//  Description: Returns a const pointer to the TransformBlendPalette
+//               assigned to this data.  Vertices within the table
+//               will index into this palette to indicate their
+//               dynamic skinning information; this table is used when
+//               the vertex animation is to be performed by the CPU
+//               (but also see get_transform_palette()).
+//
+//               This will return NULL if the vertex data does not
+//               have a TransformBlendPalette assigned (which implies
+//               the vertices will not be animated by the CPU).
+////////////////////////////////////////////////////////////////////
+INLINE const TransformBlendPalette *qpGeomVertexData::
+get_transform_blend_palette() const {
+  CDReader cdata(_cycler);
+  return cdata->_transform_blend_palette;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::clear_transform_blend_palette
+//       Access: Published
+//  Description: Sets the TransformBlendPalette pointer to NULL,
+//               removing the palette from the vertex data.  This
+//               disables CPU-driven vertex animation.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexData::
+clear_transform_blend_palette() {
+  set_transform_blend_palette(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::get_modified
 //       Access: Published
 //  Description: Returns a sequence number which is guaranteed to
@@ -121,6 +153,9 @@ CData() {
 INLINE qpGeomVertexData::CData::
 CData(const qpGeomVertexData::CData &copy) :
   _arrays(copy._arrays),
+  _transform_blend_palette(copy._transform_blend_palette),
+  _computed_vertices(copy._computed_vertices),
+  _computed_vertices_modified(copy._computed_vertices_modified),
   _modified(copy._modified)
 {
 }

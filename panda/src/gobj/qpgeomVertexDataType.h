@@ -35,9 +35,10 @@
 class EXPCL_PANDA qpGeomVertexDataType {
 PUBLISHED:
   enum NumericType {
-    NT_uint8,
-    NT_packed_argb,  // DirectX style
-    NT_float,
+    NT_uint16,       // A short integer 0..65535
+    NT_ufloat8,      // A floating-point number 0..1 packed into a byte
+    NT_float32,      // A true floating-point number
+    NT_packed_argb,  // DirectX style color specification
   };
 
   INLINE qpGeomVertexDataType(const InternalName *name, int num_components,

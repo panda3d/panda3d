@@ -640,21 +640,21 @@ load_default_model(const NodePath &parent) {
     qpGeomVertexIterator color(vdata, InternalName::get_color());
     qpGeomVertexIterator texcoord(vdata, InternalName::get_texcoord());
 
-    vertex.set_data3(Vertexf::rfu(0.0, 0.0, 0.0));
-    vertex.set_data3(Vertexf::rfu(1.0, 0.0, 0.0));
-    vertex.set_data3(Vertexf::rfu(0.0, 0.0, 1.0));
+    vertex.set_data3f(Vertexf::rfu(0.0, 0.0, 0.0));
+    vertex.set_data3f(Vertexf::rfu(1.0, 0.0, 0.0));
+    vertex.set_data3f(Vertexf::rfu(0.0, 0.0, 1.0));
 
-    normal.set_data3(Normalf::back());
-    normal.set_data3(Normalf::back());
-    normal.set_data3(Normalf::back());
+    normal.set_data3f(Normalf::back());
+    normal.set_data3f(Normalf::back());
+    normal.set_data3f(Normalf::back());
 
-    color.set_data4(0.5, 0.5, 1.0, 1.0);
-    color.set_data4(0.5, 0.5, 1.0, 1.0);
-    color.set_data4(0.5, 0.5, 1.0, 1.0);
+    color.set_data4f(0.5, 0.5, 1.0, 1.0);
+    color.set_data4f(0.5, 0.5, 1.0, 1.0);
+    color.set_data4f(0.5, 0.5, 1.0, 1.0);
 
-    texcoord.set_data2(0.0, 0.0);
-    texcoord.set_data2(1.0, 0.0);
-    texcoord.set_data2(0.0, 1.0);
+    texcoord.set_data2f(0.0, 0.0);
+    texcoord.set_data2f(1.0, 0.0);
+    texcoord.set_data2f(0.0, 1.0);
     
     PT(qpGeomTriangles) tri = new qpGeomTriangles(qpGeomUsageHint::UH_static);
     tri->add_consecutive_vertices(0, 3);
@@ -1065,15 +1065,15 @@ load_image_as_model(const Filename &filename) {
     qpGeomVertexIterator vertex(vdata, InternalName::get_vertex());
     qpGeomVertexIterator texcoord(vdata, InternalName::get_texcoord());
 
-    vertex.set_data3(Vertexf::rfu(left, 0.02f, top));
-    vertex.set_data3(Vertexf::rfu(left, 0.02f, bottom));
-    vertex.set_data3(Vertexf::rfu(right, 0.02f, top));
-    vertex.set_data3(Vertexf::rfu(right, 0.02f, bottom));
+    vertex.set_data3f(Vertexf::rfu(left, 0.02f, top));
+    vertex.set_data3f(Vertexf::rfu(left, 0.02f, bottom));
+    vertex.set_data3f(Vertexf::rfu(right, 0.02f, top));
+    vertex.set_data3f(Vertexf::rfu(right, 0.02f, bottom));
     
-    texcoord.set_data2(0.0f, 1.0f);
-    texcoord.set_data2(0.0f, 0.0f);
-    texcoord.set_data2(1.0f, 1.0f);
-    texcoord.set_data2(1.0f, 0.0f);
+    texcoord.set_data2f(0.0f, 1.0f);
+    texcoord.set_data2f(0.0f, 0.0f);
+    texcoord.set_data2f(1.0f, 1.0f);
+    texcoord.set_data2f(1.0f, 0.0f);
     
     PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
     strip->add_consecutive_vertices(0, 4);

@@ -67,6 +67,7 @@ PUBLISHED:
   INLINE static PT(InternalName) get_texcoord();
   INLINE static PT(InternalName) get_texcoord_name(const string &name);
   INLINE static PT(InternalName) get_color();
+  INLINE static PT(InternalName) get_transform_blend();
 
 private:
   PT(InternalName) _parent;
@@ -84,6 +85,7 @@ private:
   static PT(InternalName) _binormal;
   static PT(InternalName) _texcoord;
   static PT(InternalName) _color;
+  static PT(InternalName) _transform_blend;
   
 public:
   // Datagram stuff

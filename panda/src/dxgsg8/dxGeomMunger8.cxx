@@ -45,7 +45,7 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
 
   if (vertex_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
-      (InternalName::get_vertex(), 3, qpGeomVertexDataType::NT_float);
+      (InternalName::get_vertex(), 3, qpGeomVertexDataType::NT_float32);
   } else {
     // If we don't have a vertex type, not much we can do.
     return orig;
@@ -53,7 +53,7 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
 
   if (normal_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
-      (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float);
+      (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float32);
   }
 
   if (color_type != (const qpGeomVertexDataType *)NULL) {
@@ -67,7 +67,7 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
   if (texcoord_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
       (InternalName::get_texcoord(), texcoord_type->get_num_values(),
-       qpGeomVertexDataType::NT_float);
+       qpGeomVertexDataType::NT_float32);
   }
 
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(new_array_format);

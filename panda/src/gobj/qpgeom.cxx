@@ -397,7 +397,7 @@ draw(GraphicsStateGuardianBase *gsg, const qpGeomMunger *munger,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_next_modified
-//       Access: Public
+//       Access: Public, Static
 //  Description: Returns a monotonically increasing sequence.  Each
 //               time this is called, a new sequence number is
 //               returned, higher than the previous value.

@@ -41,12 +41,16 @@ PUBLISHED:
                               const string &name);
   INLINE qpGeomVertexIterator(qpGeomVertexData *data,
                               const InternalName *name);
+public:
+  // These const variants are not published, since our Python layer
+  // doesn't know the difference between const and non-const anyway.
   INLINE qpGeomVertexIterator(const qpGeomVertexData *data);
   INLINE qpGeomVertexIterator(const qpGeomVertexData *data,
                               const string &name);
   INLINE qpGeomVertexIterator(const qpGeomVertexData *data,
                               const InternalName *name);
 
+PUBLISHED:
   INLINE const qpGeomVertexData *get_data() const;
 
   INLINE void set_data_type(int data_type);
@@ -63,18 +67,21 @@ PUBLISHED:
   INLINE int get_read_vertex() const;
   INLINE int get_write_vertex() const;
 
-  INLINE void set_data1(float data);
-  INLINE void set_data2(float x, float y);
-  INLINE void set_data2(const LVecBase2f &data);
-  INLINE void set_data3(float x, float y, float z);
-  INLINE void set_data3(const LVecBase3f &data);
-  INLINE void set_data4(float x, float y, float z, float w);
-  INLINE void set_data4(const LVecBase4f &data);
+  INLINE void set_data1f(float data);
+  INLINE void set_data2f(float x, float y);
+  INLINE void set_data2f(const LVecBase2f &data);
+  INLINE void set_data3f(float x, float y, float z);
+  INLINE void set_data3f(const LVecBase3f &data);
+  INLINE void set_data4f(float x, float y, float z, float w);
+  INLINE void set_data4f(const LVecBase4f &data);
 
-  INLINE float get_data1();
-  INLINE LVecBase2f get_data2();
-  INLINE LVecBase3f get_data3();
-  INLINE LVecBase4f get_data4();
+  INLINE float get_data1f();
+  INLINE LVecBase2f get_data2f();
+  INLINE LVecBase3f get_data3f();
+  INLINE LVecBase4f get_data4f();
+
+  INLINE void set_data1i(int data);
+  INLINE int get_data1i();
 
 private:
   PT(qpGeomVertexData) _data;

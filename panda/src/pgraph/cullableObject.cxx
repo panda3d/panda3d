@@ -38,6 +38,7 @@ munge_geom(const qpGeomMunger *munger) {
       _munger = munger;
       CPT(qpGeom) qpgeom = DCAST(qpGeom, _geom);
       qpgeom->munge_geom(munger, qpgeom, _munged_data);
+      _munged_data = _munged_data->compute_vertices();
       _geom = qpgeom;
     }
   }

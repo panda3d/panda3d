@@ -151,12 +151,9 @@ rotate_impl() const {
   CPTA_int::const_iterator ei;
   for (ei = ends.begin(); ei != ends.end(); ++ei) {
     int end = (*ei);
-    int num_vertices = end - begin;
-
     for (int vi = end - 1; vi >= begin; --vi) {
       new_vertices.push_back(vertices[vi]);
     }
-
     begin = end;
   }
   nassertr(new_vertices.size() == vertices.size(), vertices);

@@ -25,6 +25,7 @@
 #include "qpgeomVertexDataType.h"
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomUsageHint.h"
+#include "transformBlendPalette.h"
 #include "internalName.h"
 #include "cycleData.h"
 #include "cycleDataReader.h"
@@ -81,6 +82,11 @@ PUBLISHED:
   qpGeomVertexArrayData *modify_array(int i);
   void set_array(int i, const qpGeomVertexArrayData *array);
 
+  INLINE const TransformBlendPalette *get_transform_blend_palette() const;
+  TransformBlendPalette *modify_transform_blend_palette();
+  void set_transform_blend_palette(const TransformBlendPalette *palette);
+  INLINE void clear_transform_blend_palette();
+
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
@@ -92,9 +98,13 @@ PUBLISHED:
     set_color(const Colorf &color, int num_components,
               qpGeomVertexDataType::NumericType numeric_type) const;
 
+  CPT(qpGeomVertexData) compute_vertices() const;
+
   PT(qpGeomVertexData) 
     replace_data_type(const InternalName *name, int num_components,
-                      qpGeomVertexDataType::NumericType numeric_type) const;
+                      qpGeomVertexDataType::NumericType numeric_type,
+                      qpGeomUsageHint::UsageHint usage_hint,
+                      bool keep_animation) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -104,6 +114,10 @@ public:
                 int vertex, const float *data, int num_values);
   void get_data(int array, const qpGeomVertexDataType *data_type,
                 int vertex, float *data, int num_values) const;
+  void set_data(int array, const qpGeomVertexDataType *data_type,
+                int vertex, const int *data, int num_values);
+  void get_data(int array, const qpGeomVertexDataType *data_type,
+                int vertex, int *data, int num_values) const;
 
   bool get_array_info(const InternalName *name, 
                       const qpGeomVertexArrayData *&array_data,
@@ -117,6 +131,8 @@ public:
 
   static unsigned int pack_argb(const float data[4]);
   static void unpack_argb(float data[4], unsigned int packed_argb);
+  static unsigned int pack_argb(const int data[4]);
+  static void unpack_argb(int data[4], unsigned int packed_argb);
 
 private:
   CPT(qpGeomVertexFormat) _format;
@@ -135,6 +151,9 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Arrays _arrays;
+    PT(TransformBlendPalette) _transform_blend_palette;
+    PT(qpGeomVertexData) _computed_vertices;
+    UpdateSeq _computed_vertices_modified;
     UpdateSeq _modified;
   };
 
@@ -144,10 +163,13 @@ private:
 
 private:
   bool do_set_num_vertices(int n, CDWriter &cdata);
+  void make_computed_vertices(CDWriter &cdata);
+  void update_computed_vertices(CDWriter &cdata);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;
   static PStatCollector _set_color_pcollector;
+  static PStatCollector _compute_vertices_pcollector;
 
 public:
   static void register_with_read_factory();

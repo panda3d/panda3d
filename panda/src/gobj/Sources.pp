@@ -49,7 +49,12 @@
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
     textureStage.I textureStage.h \
-    vertexBufferContext.I vertexBufferContext.h
+    transformBlend.I transformBlend.h \
+    transformBlendPalette.I transformBlendPalette.h \
+    transformPalette.I transformPalette.h \
+    userVertexTransform.I userVertexTransform.h \
+    vertexBufferContext.I vertexBufferContext.h \
+    vertexTransform.I vertexTransform.h
     
   #define INCLUDED_SOURCES \
     boundedObject.cxx \
@@ -85,7 +90,12 @@
     lens.cxx  \
     savedContext.cxx texture.cxx textureContext.cxx texturePool.cxx \
     textureStage.cxx \
-    vertexBufferContext.cxx
+    transformBlend.cxx \
+    transformBlendPalette.cxx \
+    transformPalette.cxx \
+    userVertexTransform.cxx \
+    vertexBufferContext.cxx \
+    vertexTransform.cxx
 
   #define INSTALL_HEADERS \
     boundedObject.I boundedObject.h \
@@ -127,7 +137,12 @@
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
     textureStage.I textureStage.h \
-    vertexBufferContext.I vertexBufferContext.h
+    transformBlend.I transformBlend.h \
+    transformBlendPalette.I transformBlendPalette.h \
+    transformPalette.I transformPalette.h \
+    userVertexTransform.I userVertexTransform.h \
+    vertexBufferContext.I vertexBufferContext.h \
+    vertexTransform.I vertexTransform.h
 
 
   #define IGATESCAN all

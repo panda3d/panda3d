@@ -1904,11 +1904,11 @@ make_vertex_data(const EggRenderState *render_state,
   PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat;
   array_format->add_data_type
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-     qpGeomVertexDataType::NT_float);
+     qpGeomVertexDataType::NT_float32);
 
   if (vertex_pool->has_normals()) {
     array_format->add_data_type
-      (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float);
+      (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float32);
   }
 
   if (vertex_pool->has_colors()) {
@@ -1925,7 +1925,7 @@ make_vertex_data(const EggRenderState *render_state,
       name = string();
     }
     PT(InternalName) iname = InternalName::get_texcoord_name(name);
-    array_format->add_data_type(iname, 2, qpGeomVertexDataType::NT_float);
+    array_format->add_data_type(iname, 2, qpGeomVertexDataType::NT_float32);
   }
 
   CPT(qpGeomVertexFormat) format = 
@@ -1943,16 +1943,16 @@ make_vertex_data(const EggRenderState *render_state,
     gvi.set_vertex(vertex->get_index());
 
     gvi.set_data_type(InternalName::get_vertex());
-    gvi.set_data4(LCAST(float, vertex->get_pos4() * transform));
+    gvi.set_data4f(LCAST(float, vertex->get_pos4() * transform));
 
     if (vertex->has_normal()) {
       gvi.set_data_type(InternalName::get_normal());
-      gvi.set_data3(LCAST(float, vertex->get_normal() * transform));
+      gvi.set_data3f(LCAST(float, vertex->get_normal() * transform));
     }
 
     if (vertex->has_color()) {
       gvi.set_data_type(InternalName::get_color());
-      gvi.set_data4(vertex->get_color());
+      gvi.set_data4f(vertex->get_color());
     }
 
     EggVertex::const_uv_iterator uvi;
@@ -1973,7 +1973,7 @@ make_vertex_data(const EggRenderState *render_state,
         uv = uv * (*buv).second->get_transform();
       }
 
-      gvi.set_data2(LCAST(float, uv));
+      gvi.set_data2f(LCAST(float, uv));
     }
   }
 

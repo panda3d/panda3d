@@ -428,7 +428,7 @@ p() const {
 template<class Element>
 INLINE pvector<Element> &PointerToArray<Element>::
 v() const {
-  nassertd((this->_void_ptr) != NULL) {
+  if ((this->_void_ptr) == NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
   return *((To *)(this->_void_ptr));

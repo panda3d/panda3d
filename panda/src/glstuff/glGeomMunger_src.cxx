@@ -60,7 +60,7 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
 
     // Replace the existing color format with the new format.
     new_array_format->add_data_type
-      (InternalName::get_color(), 4, qpGeomVertexDataType::NT_uint8,
+      (InternalName::get_color(), 4, qpGeomVertexDataType::NT_ufloat8,
        color_type->get_start());
 
     format = qpGeomVertexFormat::register_format(new_format);

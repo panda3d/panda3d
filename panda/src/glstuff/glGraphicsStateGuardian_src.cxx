@@ -2079,6 +2079,8 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     case qpGeomPrimitive::PT_lines:
       setup_antialias_line();
       break;
+    case qpGeomPrimitive::PT_none:
+      break;
     }
   }
 
@@ -4428,11 +4430,17 @@ upload_texture_image(CLP(TextureContext) *gtc,
 GLenum CLP(GraphicsStateGuardian)::
 get_numeric_type(qpGeomVertexDataType::NumericType numeric_type) {
   switch (numeric_type) {
-  case qpGeomVertexDataType::NT_uint8:
+  case qpGeomVertexDataType::NT_uint16:
+    return GL_UNSIGNED_SHORT;
+
+  case qpGeomVertexDataType::NT_ufloat8:
     return GL_UNSIGNED_BYTE;
     
-  case qpGeomVertexDataType::NT_float:
+  case qpGeomVertexDataType::NT_float32:
     return GL_FLOAT;
+
+  case qpGeomVertexDataType::NT_packed_argb:
+    break;
   }
 
   GLCAT.error()

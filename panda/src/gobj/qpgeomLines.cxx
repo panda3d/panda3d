@@ -114,7 +114,6 @@ CPTA_ushort qpGeomLines::
 rotate_impl() const {
   // To rotate lines, we just move reverse the pairs of vertices.
   CPTA_ushort vertices = get_vertices();
-  ShadeModel shade_model = get_shade_model();
 
   PTA_ushort new_vertices;
   new_vertices.reserve(vertices.size());
