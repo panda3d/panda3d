@@ -18,19 +18,19 @@
 #include "textNode.h"
 #include "config_text.h"
 
-#include <compose_matrix.h>
-#include <transformTransition.h>
-#include <colorTransition.h>
-#include <geom.h>
-#include <geomprimitives.h>
-#include <renderRelation.h>
-#include <notify.h>
-#include <sceneGraphReducer.h>
-#include <geomBinTransition.h>
-#include <indent.h>
+#include "compose_matrix.h"
+#include "transformTransition.h"
+#include "colorTransition.h"
+#include "geom.h"
+#include "geomprimitives.h"
+#include "renderRelation.h"
+#include "notify.h"
+#include "sceneGraphReducer.h"
+#include "geomBinTransition.h"
+#include "indent.h"
 
-#include <stdio.h>
-#include <ctype.h>
+#include "stdio.h"
+#include "ctype.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -450,7 +450,14 @@ assemble_row(const char *&source, Node *dest) {
       const TextFont::CharDef *def = _font->get_char(character);
       if (def == (const TextFont::CharDef *)NULL) {
         text_cat.warning()
-          << "No definition for character " << character << endl;
+          << "No definition in " << _font->get_name() 
+          << " for character " << character;
+        if (isprint(character)) {
+          text_cat.warning(false)
+            << " ('" << (char)character << "')";
+        }
+        text_cat.warning(false)
+          << "\n";
 
       } else {
         Geom *char_geom = def->_geom;

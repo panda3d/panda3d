@@ -19,11 +19,13 @@
 #include "textFont.h"
 #include "config_text.h"
 
-#include <geom.h>
-#include <geomPoint.h>
-#include <geomNode.h>
-#include <namedNode.h>
-#include <renderRelation.h>
+#include "geom.h"
+#include "geomPoint.h"
+#include "geomNode.h"
+#include "namedNode.h"
+#include "renderRelation.h"
+
+#include "ctype.h"
 
 TypeHandle TextFont::_type_handle;
 
@@ -233,7 +235,97 @@ void TextFont::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "TextFont " << get_name() << "; "
-    << _defs.size() << " characters available in font.\n";
+    << _defs.size() << " characters available in font:\n";
+  CharDefs::const_iterator di;
+  
+  // Figure out which symbols we have.  We collect lowercase letters,
+  // uppercase letters, and digits together for the user's
+  // convenience.
+  static const int num_letters = 26;
+  static const int num_digits = 10;
+  bool lowercase[num_letters];
+  bool uppercase[num_letters];
+  bool digits[num_digits];
+
+  memset(lowercase, 0, sizeof(bool) * num_letters);
+  memset(uppercase, 0, sizeof(bool) * num_letters);
+  memset(digits, 0, sizeof(bool) * num_digits);
+
+  int count_lowercase = 0;
+  int count_uppercase = 0;
+  int count_digits = 0;
+
+  for (di = _defs.begin(); di != _defs.end(); ++di) {
+    int ch = (*di).first;
+    if (islower(ch)) {
+      count_lowercase++;
+      lowercase[ch - 'a'] = true;
+
+    } else if (isupper(ch)) {
+      count_uppercase++;
+      uppercase[ch - 'A'] = true;
+
+    } else if (isdigit(ch)) {
+      count_digits++;
+      digits[ch - '0'] = true;
+    }
+  }
+
+  if (count_lowercase == num_letters) {
+    indent(out, indent_level + 2)
+      << "All lowercase letters\n";
+
+  } else if (count_lowercase > 0) {
+    indent(out, indent_level + 2)
+      << "Some lowercase letters: ";
+    for (int i = 0; i < num_letters; i++) {
+      if (lowercase[i]) {
+        out << (char)(i + 'a');
+      }
+    }
+    out << "\n";
+  }
+
+  if (count_uppercase == num_letters) {
+    indent(out, indent_level + 2)
+      << "All uppercase letters\n";
+
+  } else if (count_uppercase > 0) {
+    indent(out, indent_level + 2)
+      << "Some uppercase letters: ";
+    for (int i = 0; i < num_letters; i++) {
+      if (uppercase[i]) {
+        out << (char)(i + 'A');
+      }
+    }
+    out << "\n";
+  }
+
+  if (count_digits == num_digits) {
+    indent(out, indent_level + 2)
+      << "All digits\n";
+
+  } else if (count_digits > 0) {
+    indent(out, indent_level + 2)
+      << "Some digits: ";
+    for (int i = 0; i < num_digits; i++) {
+      if (digits[i]) {
+        out << (char)(i + '0');
+      }
+    }
+    out << "\n";
+  }
+
+  for (di = _defs.begin(); di != _defs.end(); ++di) {
+    int ch = (*di).first;
+    if (!isalnum(ch)) {
+      indent(out, indent_level + 2)
+        << ch;
+      if (isprint(ch)) {
+        out << " = '" << (char)ch << "'\n";
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
