@@ -149,6 +149,7 @@ class Messenger:
         you redefine functions with Control-c-Control-v
         """
         import new
+        retFlag = 0
         for entry in self.dict.items():
             event, objectDict = entry
             for objectEntry in objectDict.items():
@@ -168,9 +169,9 @@ class Messenger:
                                                    method.im_class)
                     params[0] = newMethod
                     # Found it retrun true
-                    return 1
+                    retFlag += 1
         # didnt find that method, return false
-        return 0
+        return retFlag
     
     def toggleVerbose(self):
         Messenger.notify.setDebug(1 - Messenger.notify.getDebug())
