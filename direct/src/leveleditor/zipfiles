@@ -24,7 +24,7 @@ then
     exit 1
 fi
 
-if [ -f ${zipfile} ]
+if [ -f printfiles ]
 then
     echo "Found printfiles"
 else

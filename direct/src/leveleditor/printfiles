@@ -44,7 +44,6 @@ echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/tokenize.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/token.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/ihooks.py
 
-
 # Libraries
 echo $WINTOOLS/lib
 echo $WINTOOLS/sdk/rad/Miles6/redist/win32/Mss32.dll
