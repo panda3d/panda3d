@@ -305,4 +305,5 @@ finalize() {
 void RenderAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
+  manager->register_change_this(change_this, this);
 }
