@@ -635,41 +635,35 @@ void TexturePlacement::
 compute_tex_matrix(LMatrix3d &transform) {
   nassertv(is_placed());
 
+  LMatrix3d source_uvs = LMatrix3d::ident_mat();
+
+  TexCoordd range = _placed._max_uv - _placed._min_uv;
+  if (range[0] != 0.0 && range[1] != 0.0) {
+    source_uvs = 
+      LMatrix3d::translate_mat(-_placed._min_uv) *
+      LMatrix3d::scale_mat(1.0 / range[0], 1.0 / range[1]);
+  }
+
+  int top = _placed._y + _placed._margin;
+  int left = _placed._x + _placed._margin;
   int x_size = _placed._x_size - _placed._margin * 2;
   int y_size = _placed._y_size - _placed._margin * 2;
 
-  TexCoordd range = _placed._max_uv - _placed._min_uv;
-
-  int x_origin = 0;
-  int y_origin = 0;
-
-  if (range[0] != 0.0) {
-    x_size = (int)floor(x_size / range[0] + 0.5);
-    x_origin = (int)floor(_placed._min_uv[0] * x_size / range[0] + 0.5);
-  }
-
-  if (range[1] != 0.0) { 
-    y_size = (int)floor(y_size / range[1] + 0.5);
-    y_origin = (int)floor(_placed._min_uv[1] * y_size / range[1] + 0.5);
-  }
-
-  int x = _placed._x + _placed._margin - x_origin;
-  int y = -_placed._y + _placed._margin - y_origin;
-
+  int bottom = top + y_size;
   int pal_x_size = _image->get_x_size();
   int pal_y_size = _image->get_y_size();
 
-  LVecBase2d t((double)x / (double)pal_x_size,
-	       (double)(pal_y_size - 1 - 
-			(_placed._y_size - 1 - y)) / (double)pal_y_size);
-	
-  LVecBase2d s((double)x_size / (double)pal_x_size, 
+  LVecBase2d t((double)left / (double)pal_x_size,
+	       (double)(pal_y_size - bottom) / (double)pal_y_size);
+  LVecBase2d s((double)x_size / (double)pal_x_size,
 	       (double)y_size / (double)pal_y_size);
-  
-  transform.set
+
+  LMatrix3d dest_uvs
     (s[0],  0.0,  0.0,
-      0.0, s[1],  0.0,
+     0.0, s[1],  0.0,
      t[0], t[1],  1.0);
+
+  transform = source_uvs * dest_uvs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -730,29 +724,32 @@ fill_image(PNMImage &image) {
 
   _is_filled = true;
 
-  // First, we need to determine the size to shrink the original image
-  // to.  This is almost, but not exactly, the same as the
-  // texture->size.  (It might differ a little because of the
-  // margins).
-  
-  int x_size = _placed._x_size - _placed._margin * 2;
-  int y_size = _placed._y_size - _placed._margin * 2;
+  // We determine the pixels to place the source image at by
+  // transforming the unit texture box: the upper-left and lower-right
+  // corners.  These corners, in the final texture coordinate space,
+  // represent where on the palette image the original texture should
+  // be located.
 
-  // Actually, it might differ a great deal because of the UV range.
-  TexCoordd range = _placed._max_uv - _placed._min_uv;
+  LMatrix3d transform;
+  compute_tex_matrix(transform);
+  TexCoordd ul = TexCoordd(0.0, 1.0) * transform;
+  TexCoordd lr = TexCoordd(1.0, 0.0) * transform;
 
-  int x_origin = 0;
-  int y_origin = 0;
+  // Now we convert those texture coordinates back to pixel units.
+  int pal_x_size = _image->get_x_size();
+  int pal_y_size = _image->get_y_size();
 
-  if (range[0] != 0.0) {
-    x_size = (int)floor(x_size / range[0] + 0.5);
-    x_origin = (int)floor(_placed._min_uv[0] * x_size / range[0] + 0.5);
-  }
+  int top = (int)floor((1.0 - ul[1]) * pal_y_size + 0.5);
+  int left = (int)floor(ul[0] * pal_x_size + 0.5);
+  int bottom = (int)floor((1.0 - lr[1]) * pal_y_size + 0.5);
+  int right = (int)floor(lr[0] * pal_x_size + 0.5);
 
-  if (range[1] != 0.0) { 
-    y_size = (int)floor(y_size / range[1] + 0.5);
-    y_origin = (int)floor(_placed._min_uv[1] * y_size / range[1] + 0.5);
-  }
+  // And now we can determine the size to scale the image to based on
+  // that.  This may not be the same as texture->size() because of
+  // margins.
+  int x_size = right - left;
+  int y_size = bottom - top;
+  nassertv(x_size >= 0 && y_size >= 0);
 
   // Now we get a PNMImage that represents the source texture at that
   // size.
@@ -769,12 +766,14 @@ fill_image(PNMImage &image) {
   bool alpha = image.has_alpha();
   bool source_alpha = source.has_alpha();
 
-  // Now copy the pixels.  If we exceed the bounds from 0 .. size, we
-  // either repeat or clamp based on the texture reference.
-  for (int y = 0; y < _placed._y_size; y++) {
-    int sy = 
-      y_size - 1 -
-      ((_placed._y_size - 1 - y) - _placed._margin + y_origin);
+  // Now copy the pixels.  We do this by walking through the
+  // rectangular region on the palette image that we have reserved for
+  // this texture; for each pixel in this region, we determine its
+  // appropriate color based on its relation to the actual texture
+  // image location (determined above), and on whether the texture
+  // wraps or clamps.
+  for (int y = _placed._y; y < _placed._y + _placed._y_size; y++) {
+    int sy = y - top;
 
     if (_placed._wrap_v == EggTexture::WM_clamp) {
       // Clamp at [0, y_size).
@@ -785,8 +784,8 @@ fill_image(PNMImage &image) {
       sy = (sy < 0) ? y_size - 1 - ((-sy - 1) % y_size) : sy % y_size;
     }
 
-    for (int x = 0; x < _placed._x_size; x++) {
-      int sx = x - _placed._margin + x_origin;
+    for (int x = _placed._x; x < _placed._x + _placed._x_size; x++) {
+      int sx = x - left;
 
       if (_placed._wrap_u == EggTexture::WM_clamp) {
 	// Clamp at [0, x_size).
@@ -797,13 +796,12 @@ fill_image(PNMImage &image) {
 	sx = (sx < 0) ? x_size - 1 - ((-sx - 1) % x_size) : sx % x_size;
       }
 
-      image.set_xel(x + _placed._x, y + _placed._y, source.get_xel(sx, sy));
+      image.set_xel(x, y, source.get_xel(sx, sy));
       if (alpha) {
 	if (source_alpha) {
-	  image.set_alpha(x + _placed._x, y + _placed._y,
-			  source.get_alpha(sx, sy));
+	  image.set_alpha(x, y, source.get_alpha(sx, sy));
 	} else {
-	  image.set_alpha(x + _placed._x, y + _placed._y, 1.0);
+	  image.set_alpha(x, y, 1.0);
 	}
       }
     }

@@ -532,7 +532,7 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
 	      }
 	    } else {
 	      collect_uv(group_any_uvs, group_min_uv, group_max_uv,
-		       geom_min_uv, geom_max_uv);
+			 geom_min_uv, geom_max_uv);
 	    }
 	  }
 	}
@@ -581,7 +581,7 @@ get_geom_uvs(EggPrimitive *geom,
       collect_uv(geom_any_uvs, geom_min_uv, geom_max_uv, uv, uv);
     }
   }
-
+  
   return geom_any_uvs;
 }
 
