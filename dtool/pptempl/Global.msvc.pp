@@ -101,15 +101,6 @@
 #defer LDFLAGS_OPT3 $[LINKER_FLAGS] $[LDFLAGS_OPT3]
 #defer LDFLAGS_OPT4 $[LINKER_FLAGS] $[LDFLAGS_OPT4]
 
-// $[build_pdbs] will be nonempty (true) if we should expect to
-// generate a .pdb file when we build a DLL or EXE.
-// we now build pdb for all Opt values
-#if $[eq $[USE_COMPILER], MSVC]
-  #define build_pdbs yes
-#else
-  #define build_pdbs
-#endif
-
 // $[dllext] will be "_d" for debug builds, and empty for non-debug
 // builds.  This is the extra bit of stuff we tack on to the end of a
 // dll name.  We name the debug dll's file_d.dll, partly to be

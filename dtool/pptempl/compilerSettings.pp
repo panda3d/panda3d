@@ -41,6 +41,9 @@
       #define EXTRA_CDEFS FORCE_INLINING $[EXTRA_CDEFS]
   #endif 
   
+  // ensure pdbs are copied to install dir
+  #define build_pdbs yes  
+  
 #elif $[eq $[USE_COMPILER], MSVC7]
 
   #define COMPILER cl
@@ -104,6 +107,9 @@
 // in case we have mixed intel/msvc build
 //  #define EXTRA_LIBPATH /ia32/lib
 //  #define EXTRA_INCPATH /ia32/include  
+
+  // ensure pdbs are copied to install dir
+  #define build_pdbs yes  
     
 #elif $[eq $[USE_COMPILER], INTEL]
   #define COMPILER icl
@@ -147,6 +153,9 @@
   // Note: all Opts will link w/debug info now 
   #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no
   
+  // ensure pdbs are copied to install dir
+  #define build_pdbs yes    
+  
 #elif $[eq $[USE_COMPILER], BOUNDS] // NuMega BoundsChecker
   #define COMPILER nmcl
   #define LINKER nmlink
@@ -165,7 +174,7 @@
     #define COMPILER $[COMPILER] /NMttOn
     #define LINKER $[LINKER] /NMttOn
   #endif 
-
+  
 #elif $[eq $[USE_COMPILER], TRUETIME] // NuMega TrueTime Profiler
   // This may look like a bad thing (to extend the compiler 
   // and linker with a switch), but I think it's the right 
@@ -195,3 +204,4 @@
 #if $[PREPROCESSOR_OUTPUT]
 #define END_CFLAGS $[END_CFLAGS] /E 
 #endif 
+
