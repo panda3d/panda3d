@@ -506,7 +506,7 @@ describe_input_file() {
             "be written to the directory specified by -ds on the command "
             "line.\n\n");
 
-  show_text("  :group groupname [dir dirname] [with group1 group2 ...]", 10,
+  show_text("  :group groupname [dir dirname] [on group1 group2 ...] [includes group1 group2 ...]", 10,
             "This defines a palette group, a logical division of textures.  "
             "Each texture is assigned to one or more palette groups before "
             "being placed in any palette image; the palette images are "
@@ -520,10 +520,14 @@ describe_input_file() {
             "on the groups they are assigned to.\n\n"
 
             "Palette groups can also be hierarchically related.  The "
-            "keyword 'with' specifies any number of groups that this "
+            "keyword 'on' specifies any number of groups that this "
             "palette group depends on; if a texture has already been "
             "assigned to one of this group's dependent groups, it will "
-            "not need to be assigned to this group.\n\n");
+            "not need to be assigned to this group.  This also implicitly "
+            "specifies a dir if one has not already been specified.\n\n"
+
+            "The keyword 'includes' names one or more groups that depend "
+            "on this group.\n\n");
 
 
   nout <<

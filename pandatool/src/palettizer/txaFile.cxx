@@ -216,15 +216,25 @@ parse_group_line(const vector_string &words) {
 
   enum State {
     S_none,
-    S_with,
+    S_on,
+    S_includes,
     S_dir,
   };
   State state = S_none;
 
+  bool first_on = false;
+
   while (wi != words.end()) {
     const string &word = (*wi);
     if (word == "with") {
-      state = S_with;
+      // Deprecated keyword: "with" means the same thing as "on".
+      state = S_on;
+
+    } else if (word == "on") {
+      state = S_on;
+
+    } else if (word == "includes") {
+      state = S_includes;
 
     } else if (word == "dir") {
       state = S_dir;
@@ -235,8 +245,21 @@ parse_group_line(const vector_string &words) {
         nout << "Invalid keyword: " << word << "\n";
         return false;
 
-      case S_with:
-        group->group_with(pal->get_palette_group(word));
+      case S_on:
+        {
+          PaletteGroup *on_group = pal->get_palette_group(word);
+          if (first_on) {
+            if (!group->has_dirname() && on_group->has_dirname()) {
+              group->set_dirname(on_group->get_dirname());
+            }
+            first_on = false;
+          }
+          group->group_with(on_group);
+        }
+        break;
+
+      case S_includes:
+        pal->get_palette_group(word)->group_with(group);
         break;
 
       case S_dir:
