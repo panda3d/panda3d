@@ -551,10 +551,14 @@ def formatElapsedSeconds(seconds):
     if seconds < 0:
         seconds = -seconds
         sign = '-'
-    seconds = (int)(seconds)
-    hours = (int)(seconds / (60 * 60))
+
+    # We use math.floor() instead of casting to an int, so we avoid
+    # problems with numbers that are too large to represent as
+    # type int.
+    seconds = math.floor(seconds)
+    hours = math.floor(seconds / (60 * 60))
     if hours > 36:
-        days = (int)((hours + 12) / 24)
+        days = math.floor((hours + 12) / 24)
         return "%s%d days" % (sign, days)
     
     seconds -= hours * (60 * 60)
