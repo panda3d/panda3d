@@ -283,6 +283,7 @@
             if (task.lerp.isDone()):
                 # Reset the init flag, in case the task gets re-used
                 task.init = 1
+		del task.functorFunc
                 return(Task.done)
             else:
                 return(Task.cont)
@@ -506,7 +507,7 @@
         else:
             # bad number off args
             raise Exception("Error: NodePath.lerpPos: bad number of args")
-        
+
     def lerpPosXYZ(self, x, y, z, time, other=None,
                    blendType="noBlend", auto=None, task=None):
         """lerpPosXYZ(self, float, float, float, float, string="noBlend",

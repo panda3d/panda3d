@@ -15,6 +15,10 @@ class LerpInterval(Interval):
 	self.blendType = self.getBlend(blendType)
         # Initialize superclass
 	Interval.__init__(self, name, duration)
+
+    def __del__(self):
+	print 'LerpInterval destructing'
+
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
 	"""
@@ -25,6 +29,7 @@ class LerpInterval(Interval):
         # Evaluate the lerp if its been created
         if self.lerp:
             self.lerp.setT(t)
+
     def getBlend(self, blendType):
         """__getBlend(self, string)
         Return the C++ blend class corresponding to blendType string
@@ -50,7 +55,7 @@ class LerpPosInterval(LerpInterval):
 				other=None, blendType='noBlend', name=None):
 	""" __init__(node, duration, pos, startPos, other, blendType, name)
 	"""
-	def functorFunc(self=self, node=node, pos=pos, startPos=startPos,
+	def functorFunc(node=node, pos=pos, startPos=startPos,
 			other=other):
             import PosLerpFunctor
 	    assert(not node.isEmpty())
@@ -66,6 +71,7 @@ class LerpPosInterval(LerpInterval):
             	functor = PosLerpFunctor.PosLerpFunctor(
                     node, startPos, pos)
 	    return functor
+
         # Generate unique name if necessary
 	if (name == None):
 	    name = 'LerpPosInterval-%d' % LerpPosInterval.lerpPosNum
@@ -81,7 +87,7 @@ class LerpHprInterval(LerpInterval):
 				other=None, blendType='noBlend', name=None):
 	""" __init__(node, duration, hpr, startHpr, other, blendType, name)
 	"""
-	def functorFunc(self=self, node=node, hpr=hpr, startHpr=startHpr,
+	def functorFunc(node=node, hpr=hpr, startHpr=startHpr,
 			other=other):
             import HprLerpFunctor
 
@@ -98,6 +104,7 @@ class LerpHprInterval(LerpInterval):
             	functor = HprLerpFunctor.HprLerpFunctor(
                     node, startHpr, hpr)
 	    return functor
+
         # Generate unique name if necessary
 	if (name == None):
 	    name = 'LerpHprInterval-%d' % LerpHprInterval.lerpHprNum
@@ -114,7 +121,7 @@ class LerpScaleInterval(LerpInterval):
 				other=None, blendType='noBlend', name=None):
 	""" __init__(node, duration, scale, startScale, other, blendType, name)
 	"""
-	def functorFunc(self=self, node=node, scale=scale,
+	def functorFunc(node=node, scale=scale,
                         startScale=startScale, other=other):
             import ScaleLerpFunctor
 
@@ -149,7 +156,7 @@ class LerpPosHprInterval(LerpInterval):
 	""" __init__(node, duration, pos, hpr, startPos, startHpr,
 						other, blendType, name)
 	"""
-	def functorFunc(self=self, node=node, pos=pos, hpr=hpr, 
+	def functorFunc(node=node, pos=pos, hpr=hpr, 
 			startPos=startPos, startHpr=startHpr, other=other):
             import PosHprLerpFunctor
 
@@ -180,6 +187,9 @@ class LerpPosHprInterval(LerpInterval):
         # Initialize superclass
 	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
+    def __del__(self):
+	print 'LerpPosHprInterval destructing'
+
 class LerpPosHprScaleInterval(LerpInterval):
     # Interval counter
     lerpPosHprScaleNum = 1
@@ -191,7 +201,7 @@ class LerpPosHprScaleInterval(LerpInterval):
                      startPos, startHpr, startScale, 
                      other, blendType, name)
 	"""
-	def functorFunc(self=self, node=node, pos=pos, hpr=hpr, scale=scale,
+	def functorFunc(node=node, pos=pos, hpr=hpr, scale=scale,
 			startPos=startPos, startHpr=startHpr,
                         startScale=startScale, other=other):
             import PosHprScaleLerpFunctor
