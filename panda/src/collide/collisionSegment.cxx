@@ -16,17 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionSegment.h"
-#include "collisionHandler.h"
-#include "collisionEntry.h"
-#include "config_collide.h"
-
-#include <geom.h>
-#include <geomNode.h>
-#include <geomLine.h>
-#include <geometricBoundingVolume.h>
-#include <projectionNode.h>
-#include <projection.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionSegment::_type_handle;
 

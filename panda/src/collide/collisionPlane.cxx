@@ -16,22 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionPlane.h"
-#include "collisionHandler.h"
-#include "collisionEntry.h"
-#include "collisionSphere.h"
-#include "collisionRay.h"
-#include "config_collide.h"
-
-#include <omniBoundingVolume.h>
-#include <pointerToArray.h>
-#include <geomNode.h>
-#include <geom.h>
-#include <geomQuad.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionPlane::_type_handle;
 

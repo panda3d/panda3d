@@ -16,17 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionRay.h"
-#include "collisionHandler.h"
-#include "collisionEntry.h"
-#include "config_collide.h"
-
-#include <geom.h>
-#include <geomNode.h>
-#include <geomLinestrip.h>
-#include <boundingLine.h>
-#include <projectionNode.h>
-#include <projection.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionRay::_type_handle;
 

@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionHandlerFloor.h"
-#include "config_collide.h"
-
-#include <renderRelation.h>
-#include <transformTransition.h>
-#include <clockObject.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionHandlerFloor::_type_handle;
 

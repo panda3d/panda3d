@@ -16,28 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionPolygon.h"
-#include "collisionHandler.h"
-#include "collisionEntry.h"
-#include "collisionSphere.h"
-#include "collisionRay.h"
-#include "collisionSegment.h"
-#include "config_collide.h"
+#include "collide_headers.h"
+#pragma hdrstop
 
-#include <boundingSphere.h>
-#include <pointerToArray.h>
-#include <geomNode.h>
-#include <geom.h>
-#include <geomPolygon.h>
 #include <algorithm>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
 
 TypeHandle CollisionPolygon::_type_handle;
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: is_right

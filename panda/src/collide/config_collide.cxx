@@ -16,23 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_collide.h"
-#include "collisionEntry.h"
-#include "collisionHandler.h"
-#include "collisionHandlerEvent.h"
-#include "collisionHandlerFloor.h"
-#include "collisionHandlerPhysical.h"
-#include "collisionHandlerPusher.h"
-#include "collisionHandlerQueue.h"
-#include "collisionNode.h"
-#include "collisionPlane.h"
-#include "collisionPolygon.h"
-#include "collisionRay.h"
-#include "collisionSegment.h"
-#include "collisionSolid.h"
-#include "collisionSphere.h"
-
-#include <dconfig.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 Configure(config_collide);
 NotifyCategoryDef(collide, "");

@@ -16,26 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionSolid.h"
-#include "config_collide.h"
-#include "collisionEntry.h"
-#include "collisionSphere.h"
-#include "collisionRay.h"
-#include "collisionSegment.h"
-
-#include <renderRelation.h>
-#include <geomNode.h>
-#include <cullFaceTransition.h>
-#include <renderModeTransition.h>
-#include <lightTransition.h>
-#include <textureTransition.h>
-#include <transparencyTransition.h>
-#include <colorTransition.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <indent.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionSolid::_type_handle;
 

@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionHandlerQueue.h"
-#include "config_collide.h"
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionHandlerQueue::_type_handle;
 

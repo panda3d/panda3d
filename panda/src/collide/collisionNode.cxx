@@ -16,13 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionNode.h"
-#include "config_collide.h"
-
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionNode::_type_handle;
 

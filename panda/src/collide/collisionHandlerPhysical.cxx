@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionHandlerPhysical.h"
-#include "config_collide.h"
-
-#include <renderRelation.h>
-#include <transformTransition.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionHandlerPhysical::_type_handle;
 

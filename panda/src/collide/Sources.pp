@@ -41,6 +41,8 @@
     collisionSolid.I collisionSolid.h collisionSphere.I \
     collisionSphere.h collisionTraverser.I collisionTraverser.h
 
+    #define PRECOMPILED_HEADER collide_headers.h
+
   #define IGATESCAN all
 
 #end lib_target

@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionHandlerEvent.h"
-#include "config_collide.h"
-
-#include <eventParameter.h>
-#include <throw_event.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionHandlerEvent::_type_handle;
 

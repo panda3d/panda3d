@@ -16,21 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionSphere.h"
-#include "collisionRay.h"
-#include "collisionSegment.h"
-#include "collisionHandler.h"
-#include "collisionEntry.h"
-#include "config_collide.h"
-
-#include <boundingSphere.h>
-#include <geomSphere.h>
-#include <geomNode.h>
-#include <nearly_zero.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 TypeHandle CollisionSphere::_type_handle;
 

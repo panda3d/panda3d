@@ -16,20 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collisionTraverser.h"
-#include "collisionNode.h"
-#include "collisionEntry.h"
-#include "collisionPolygon.h"
-#include "config_collide.h"
-
-#include <dftraverser.h>
-#include <wrt.h>
-#include <get_rel_pos.h>
-#include <transformTransition.h>
-#include <geomNode.h>
-#include <geom.h>
-#include <nodePath.h>
-#include <pStatTimer.h>
+#include "collide_headers.h"
+#pragma hdrstop
 
 #ifndef CPPPARSER
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
