@@ -474,12 +474,14 @@ class ShowBase:
         self.sfxManager = AudioManager.createAudioManager()
         self.sfxManagerIsValid=self.sfxManager!=None \
                 and self.sfxManager.isValid()
+        if self.sfxManagerIsValid:
+            self.sfxManager.setActive(self.sfxActive)
 
         self.musicManager = AudioManager.createAudioManager()
         self.musicManagerIsValid=self.musicManager!=None \
                 and self.musicManager.isValid()
-
         if self.musicManagerIsValid:
+            self.musicManager.setActive(self.musicActive)
             # Turn down the music globally
             # Eventually we may want to control this in the options page
             self.musicManager.setVolume(0.7)
