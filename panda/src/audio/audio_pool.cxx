@@ -76,7 +76,11 @@ AudioSample* AudioPool::ns_load_sample(Filename filename) {
     // this sample was previously loaded
     return (*si).second;
   }
-  audio_cat.info() << "Loading sample " << filename << "\n";
+  if (!filename.exists()) {
+    audio_cat.info() << "'" << filename << "' does not exist" << endl;
+    return (AudioSample*)0L;
+  }
+  audio_cat.info() << "Loading sample " << filename << endl;
   AudioTraits::SampleClass* sample = (AudioTraits::SampleClass*)0L;
   AudioTraits::PlayingClass* state = (AudioTraits::PlayingClass*)0L;
   AudioTraits::PlayerClass* player = (AudioTraits::PlayerClass*)0L;
