@@ -1,8 +1,10 @@
 from PandaObject import *
 from Tkinter import *
 import Pmw
+import tkColorChooser
 import WidgetPropertiesDialog
 import string
+from DirectUtil import getTkColorString
 
 VALUATOR_MINI = 'mini'
 VALUATOR_FULL = 'full'
@@ -103,7 +105,7 @@ class Valuator(Pmw.MegaWidget):
                     '<ButtonPress-3>', self._popupValuatorMenu)
             self._entry.bind(
                 '<ButtonPress-3>', self._popupValuatorMenu)
-            self._valuator._canvas.bind(
+            self._valuator._widget.bind(
                 '<ButtonPress-3>', self._popupValuatorMenu)
 
             # A Dictionary of dictionaries for the popup property dialog
@@ -265,11 +267,11 @@ class Valuator(Pmw.MegaWidget):
         if self['state'] == NORMAL:
             self._entry['state'] = NORMAL
             self._entry['background'] = self._entryBackground
-            self._valuator._canvas['state'] = NORMAL
+            self._valuator._widget['state'] = NORMAL
         elif self['state'] == DISABLED:
             self._entry['background'] = 'grey75'
             self._entry['state'] = DISABLED
-            self._valuator._canvas['state'] = DISABLED
+            self._valuator._widget['state'] = DISABLED
 
     def setLabel(self):
         """ Update label's text """
@@ -295,7 +297,7 @@ class Valuator(Pmw.MegaWidget):
         Reset valuator to resetValue
         """
         # If not over any canvas item
-        #if not self._canvas.find_withtag(CURRENT):
+        #if not self._widget.find_withtag(CURRENT):
         self.reset()
         
     # Popup dialog to adjust widget properties
@@ -582,20 +584,30 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
 Pmw.forwardmethods(ValuatorGroupPanel, ValuatorGroup, 'valuatorGroup')
 
 
-def rgbPanel(nodePath, callback = None, style = 'full'):
-    def setNodePathColor(color, np = nodePath, cb = callback):
-        np.setColor(color[0]/255.0, color[1]/255.0,
-                    color[2]/255.0, color[3]/255.0)
-        # Execute callback to pass along color info
-        if cb:
-            cb(color)
+def rgbPanel(nodePath, callback = None, style = 'mini'):
+    def onRelease(r,g,b,a, nodePath = nodePath):
+        messenger.send('RGBPanel_setColor', [nodePath, r,g,b,a])
+
+    def popupColorPicker():
+        # Can pass in current color with: color = (255, 0, 0)
+        color = tkColorChooser.askcolor(
+            parent = vgp.interior(),
+            # Initialize it to current color
+            initialcolor = tuple(vgp.get()[:3]))[0]
+        if color:
+            vgp.set((color[0], color[1], color[2], vgp.getAt(3)))
+
+    def printToLog():
+        c=nodePath.getColor()
+        print "Vec4(%.3f, %.3f, %.3f, %.3f)"%(c[0], c[1], c[2], c[3])
+
     # Check init color
     if nodePath.hasColor():
         initColor = nodePath.getColor() * 255.0
     else:
         initColor = Vec4(255)
     # Create entry scale group
-    esg = ValuatorGroupPanel(title = 'RGBA Panel: ' + nodePath.getName(),
+    vgp = ValuatorGroupPanel(title = 'RGBA Panel: ' + nodePath.getName(),
                              dim = 4,
                              labels = ['R','G','B','A'],
                              value = [int(initColor[0]),
@@ -608,44 +620,50 @@ def rgbPanel(nodePath, callback = None, style = 'full'):
                              valuator_max = 255,
                              valuator_resolution = 1,
                              # Destroy not withdraw panel on dismiss
-                             fDestroy = 1,
-                             command = setNodePathColor)
+                             fDestroy = 1)
     # Update menu button
-    esg.component('menubar').component('Valuator Group-button')['text'] = (
+    vgp.component('menubar').component('Valuator Group-button')['text'] = (
         'RGBA Panel')
+
+    # Set callback
+    vgp['postCallback'] = onRelease
+    
+    # Add a print button which will also serve as a color tile
+    pButton = Button(vgp.interior(), text = 'Print to Log',
+                     bg = getTkColorString(initColor),
+                     command = printToLog)
+    pButton.pack(expand = 1, fill = BOTH)
+    
     # Update menu
-    menu = esg.component('menubar').component('Valuator Group-menu')
+    menu = vgp.component('menubar').component('Valuator Group-menu')
     # Some helper functions
     # Clear color
     menu.insert_command(index = 1, label = 'Clear Color',
-                        command = lambda np = nodePath: np.clearColor())
+                        command = lambda: nodePath.clearColor())
     # Set Clear Transparency
     menu.insert_command(index = 2, label = 'Set Transparency',
-                        command = lambda np = nodePath: np.setTransparency(1))
+                        command = lambda: nodePath.setTransparency(1))
     menu.insert_command(
         index = 3, label = 'Clear Transparency',
-        command = lambda np = nodePath: np.clearTransparency())
+        command = lambda: nodePath.clearTransparency())
+
 
     # System color picker
-    def popupColorPicker(esg = esg):
-        # Can pass in current color with: color = (255, 0, 0)
-        color = tkColorChooser.askcolor(
-            parent = esg.interior(),
-            # Initialize it to current color
-            initialcolor = tuple(esg.get()[:3]))[0]
-        if color:
-            esg.set((color[0], color[1], color[2], esg.getAt(3)))
     menu.insert_command(index = 4, label = 'Popup Color Picker',
                         command = popupColorPicker)
-    def printToLog(nodePath=nodePath):
-        c=nodePath.getColor()
-        print "Vec4(%.3f, %.3f, %.3f, %.3f)"%(c[0], c[1], c[2], c[3])
+
     menu.insert_command(index = 5, label = 'Print to log',
                         command = printToLog)
+
+    def setNodePathColor(color):
+        nodePath.setColor(color[0]/255.0, color[1]/255.0,
+                          color[2]/255.0, color[3]/255.0)
+        # Update color chip button
+        pButton['bg'] = getTkColorString(color)
+        # Execute callback to pass along color info
+        if callback:
+            callback(color)
+    vgp['command'] = setNodePathColor
     
-    # Set callback
-    def onRelease(r,g,b,a, nodePath = nodePath):
-        messenger.send('RGBPanel_setColor', [nodePath, r,g,b,a])
-    esg['postCallback'] = onRelease
-    return esg
+    return vgp
 

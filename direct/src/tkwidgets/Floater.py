@@ -34,7 +34,7 @@ class Floater(Valuator):
                                               (self.interior(),),
                                               command = self.setEntry,
                                               value = self['value'])
-        self._valuator._canvas.bind('<Double-ButtonPress-1>', self.mouseReset)
+        self._valuator._widget.bind('<Double-ButtonPress-1>', self.mouseReset)
 
     def packValuator(self):
         # Position components
@@ -85,7 +85,7 @@ class FloaterWidget(Pmw.MegaWidget):
         # The canvas
         width = self['width']
         height = self['height']
-        self._canvas = self.createcomponent('canvas', (), None,
+        self._widget = self.createcomponent('canvas', (), None,
                                             Canvas, (interior,),
                                             width = width,
                                             height = height,
@@ -95,24 +95,24 @@ class FloaterWidget(Pmw.MegaWidget):
                                                             -height/2.0,
                                                             width/2.0,
                                                             height/2.0))
-        self._canvas.pack(expand = 1, fill = BOTH)
+        self._widget.pack(expand = 1, fill = BOTH)
 
         # The floater icon
-        self._canvas.create_polygon(-width/2.0, 0, -2.0, -height/2.0,
+        self._widget.create_polygon(-width/2.0, 0, -2.0, -height/2.0,
                                     -2.0, height/2.0,
-                                    fill = '#A0A0A0',
+                                    fill = 'grey50',
                                     tags = ('floater',))
-        self._canvas.create_polygon(width/2.0, 0, 2.0, height/2.0,
+        self._widget.create_polygon(width/2.0, 0, 2.0, height/2.0,
                                     2.0, -height/2.0,
-                                    fill = '#A0A0A0',
+                                    fill = 'grey50',
                                     tags = ('floater',))
 
         # Add event bindings
-        self._canvas.bind('<ButtonPress-1>', self.mouseDown)
-        self._canvas.bind('<B1-Motion>', self.updateFloaterSF)
-        self._canvas.bind('<ButtonRelease-1>', self.mouseUp)
-        self._canvas.bind('<Enter>', self.highlightWidget)
-        self._canvas.bind('<Leave>', self.restoreWidget)
+        self._widget.bind('<ButtonPress-1>', self.mouseDown)
+        self._widget.bind('<B1-Motion>', self.updateFloaterSF)
+        self._widget.bind('<ButtonRelease-1>', self.mouseUp)
+        self._widget.bind('<Enter>', self.highlightWidget)
+        self._widget.bind('<Leave>', self.restoreWidget)
 
         # Make sure input variables processed 
         self.initialiseoptions(FloaterWidget)
@@ -167,8 +167,8 @@ class FloaterWidget(Pmw.MegaWidget):
         """
         Update velocity scale factor based of mouse distance from origin
         """
-        x = self._canvas.canvasx(event.x)
-        y = self._canvas.canvasy(event.y)
+        x = self._widget.canvasx(event.x)
+        y = self._widget.canvasy(event.y)
         offset = max(0, abs(x) - Valuator.deadband)
         if offset == 0:
             return 0
@@ -203,13 +203,13 @@ class FloaterWidget(Pmw.MegaWidget):
         self.interior()['borderwidth'] = self['borderwidth']
 
     def setBackground(self):
-        self._canvas['background'] = self['background']
+        self._widget['background'] = self['background']
 
     def highlightWidget(self, event):
-        self._canvas.itemconfigure('floater', fill = 'black')
+        self._widget.itemconfigure('floater', fill = 'black')
 
     def restoreWidget(self, event):
-        self._canvas.itemconfigure('floater', fill = '#A0A0A0')
+        self._widget.itemconfigure('floater', fill = 'grey50')
 
 
 class FloaterGroup(Pmw.MegaToplevel):

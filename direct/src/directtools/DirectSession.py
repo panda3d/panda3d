@@ -160,8 +160,10 @@ class DirectSession(PandaObject):
                           '[', '{', ']', '}',
                           'shift-a', 'b', 'l', 'shift-l', 'o', 'p', 'r',
                           'shift-r', 's', 't', 'v', 'w']
-        self.mouseEvents = ['mouse1', 'mouse1-up',
-                            'mouse2', 'mouse2-up',
+        self.mouseEvents = ['mouse1', 'shift-mouse1', 'control-mouse1',
+                            'alt-mouse1', 'mouse1-up',
+                            'mouse2', 'shift-mouse2', 'control-mouse2',
+                            'alt-mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
 
         if base.wantTk:
@@ -324,11 +326,13 @@ class DirectSession(PandaObject):
 
     def inputHandler(self, input):
         # Deal with keyboard and mouse input
-        if input == 'mouse1':
+        if ((input == 'mouse1') or (input == 'shift-mouse1') or
+            (input == 'control-mouse1') or (input == 'alt-mouse1')):
             messenger.send('DIRECT_mouse1')
         elif input == 'mouse1-up':
             messenger.send('DIRECT_mouse1Up')
-        elif input == 'mouse2': 
+        elif ((input == 'mouse2') or (input == 'shift-mouse2') or
+              (input == 'control-mouse2') or (input == 'alt-mouse2')): 
             messenger.send('DIRECT_mouse2')
         elif input == 'mouse2-up':
             messenger.send('DIRECT_mouse2Up')

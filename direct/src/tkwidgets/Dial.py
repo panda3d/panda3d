@@ -49,7 +49,7 @@ class Dial(Valuator):
             style = self['style'],
             command = self.setEntry,
             value = self['value'])
-        self._valuator._canvas.bind('<Double-ButtonPress-1>', self.mouseReset)
+        self._valuator._widget.bind('<Double-ButtonPress-1>', self.mouseReset)
 
     def packValuator(self):
         if self['style'] == VALUATOR_FULL:
@@ -209,41 +209,41 @@ class DialWidget(Pmw.MegaWidget):
         inner_radius = max(3,radius * INNER_SF)
 
         # The canvas 
-        self._canvas = self.createcomponent('canvas', (), None,
+        self._widget = self.createcomponent('canvas', (), None,
                                             Canvas, (interior,),
                                             width = size, height = size,
                                             background = self['background'],
                                             highlightthickness = 0,
                                             scrollregion = (-radius,-radius,
                                                             radius, radius))
-        self._canvas.pack(expand = 1, fill = BOTH)
+        self._widget.pack(expand = 1, fill = BOTH)
 
         # The dial face (no outline/fill, primarily for binding mouse events)
-        self._canvas.create_oval(-radius, -radius, radius, radius,
+        self._widget.create_oval(-radius, -radius, radius, radius,
                                  outline = '',
                                  tags = ('dial',))
 
         # The indicator
-        self._canvas.create_line(0, 0, 0, -radius, width = 2,
+        self._widget.create_line(0, 0, 0, -radius, width = 2,
                                  tags = ('indicator', 'dial'))
 
         # The central knob
-        self._canvas.create_oval(-inner_radius, -inner_radius,
+        self._widget.create_oval(-inner_radius, -inner_radius,
                                  inner_radius, inner_radius,
-                                 fill = '#A0A0A0',
+                                 fill = 'grey50',
                                  tags = ('knob',))
 
         # Add event bindings
-        self._canvas.tag_bind('dial', '<ButtonPress-1>', self.mouseDown)
-        self._canvas.tag_bind('dial', '<B1-Motion>', self.mouseMotion)
-        self._canvas.tag_bind('dial', '<Shift-B1-Motion>',
+        self._widget.tag_bind('dial', '<ButtonPress-1>', self.mouseDown)
+        self._widget.tag_bind('dial', '<B1-Motion>', self.mouseMotion)
+        self._widget.tag_bind('dial', '<Shift-B1-Motion>',
                               self.shiftMouseMotion)
-        self._canvas.tag_bind('dial', '<ButtonRelease-1>', self.mouseUp)
-        self._canvas.tag_bind('knob', '<ButtonPress-1>', self.knobMouseDown)
-        self._canvas.tag_bind('knob', '<B1-Motion>', self.updateDialSF)
-        self._canvas.tag_bind('knob', '<ButtonRelease-1>', self.knobMouseUp)
-        self._canvas.tag_bind('knob', '<Enter>', self.highlightKnob)
-        self._canvas.tag_bind('knob', '<Leave>', self.restoreKnob)
+        self._widget.tag_bind('dial', '<ButtonRelease-1>', self.mouseUp)
+        self._widget.tag_bind('knob', '<ButtonPress-1>', self.knobMouseDown)
+        self._widget.tag_bind('knob', '<B1-Motion>', self.updateDialSF)
+        self._widget.tag_bind('knob', '<ButtonRelease-1>', self.knobMouseUp)
+        self._widget.tag_bind('knob', '<Enter>', self.highlightKnob)
+        self._widget.tag_bind('knob', '<Leave>', self.restoreKnob)
 
         # Make sure input variables processed 
         self.initialiseoptions(DialWidget)
@@ -289,8 +289,8 @@ class DialWidget(Pmw.MegaWidget):
         self.computeValueFromAngle(dialAngle)
         
     def computeDialAngle(self,event, fShift = 0):
-        x = self._canvas.canvasx(event.x)
-        y = self._canvas.canvasy(event.y)
+        x = self._widget.canvasx(event.x)
+        y = self._widget.canvasy(event.y)
         rawAngle = math.atan2(y,x)
         # Snap to grid
         # Convert to dial coords to do snapping
@@ -328,7 +328,7 @@ class DialWidget(Pmw.MegaWidget):
         endx = math.cos(rawAngle) * self.radius
         endy = math.sin(rawAngle) * self.radius
         # Draw new indicator
-        self._canvas.coords('indicator', endx * INNER_SF, endy * INNER_SF,
+        self._widget.coords('indicator', endx * INNER_SF, endy * INNER_SF,
                             endx, endy)
 
     # Knob velocity controller
@@ -347,8 +347,8 @@ class DialWidget(Pmw.MegaWidget):
         return Task.cont
 
     def updateDialSF(self, event):
-        x = self._canvas.canvasx(event.x)
-        y = self._canvas.canvasy(event.y)
+        x = self._widget.canvasx(event.x)
+        y = self._widget.canvasy(event.y)
         offset = max(0, abs(x) - Valuator.deadband)
         if offset == 0:
             return 0
@@ -377,10 +377,10 @@ class DialWidget(Pmw.MegaWidget):
         self.interior()['borderwidth'] = self['borderwidth']
 
     def setBackground(self):
-        self._canvas['background'] = self['background']
+        self._widget['background'] = self['background']
 
     def setNumSegments(self):
-        self._canvas.delete('ticks')
+        self._widget.delete('ticks')
         # Based upon input snap angle, how many ticks
         numSegments = self['numSegments']
         # Compute snapAngle (radians)
@@ -400,14 +400,14 @@ class DialWidget(Pmw.MegaWidget):
                 sf = 0.8
             endx = startx * sf
             endy = starty * sf
-            self._canvas.create_line(startx, starty, endx, endy,
+            self._widget.create_line(startx, starty, endx, endy,
                                      tags = ('ticks','dial'))
 
     def highlightKnob(self, event):
-        self._canvas.itemconfigure('knob', fill = 'black')
+        self._widget.itemconfigure('knob', fill = 'black')
 
     def restoreKnob(self, event):
-        self._canvas.itemconfigure('knob', fill = '#A0A0A0')
+        self._widget.itemconfigure('knob', fill = 'grey50')
 
     # To call user callbacks
     def _onButtonPress(self, *args):

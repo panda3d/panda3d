@@ -1,5 +1,18 @@
 from PandaObject import *
 
+# Create a tk compatible color string
+def getTkColorString(color):
+        def toHex(intVal):
+            val = int(round(intVal))
+            if val < 16:
+                return "0" + hex(val)[2:]
+            else:
+                return hex(val)[2:]
+        r = toHex(color[0])
+        g = toHex(color[1])
+        b = toHex(color[2])
+        return "#" + r + g + b
+
 ## Background Color ##
 def setBackgroundColor(r,g,b):
     base.win.getGsg().setColorClearValue(VBase4(r, g, b, 1.0))
