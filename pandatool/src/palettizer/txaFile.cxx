@@ -222,7 +222,7 @@ parse_group_line(const vector_string &words) {
   };
   State state = S_none;
 
-  bool first_on = false;
+  bool first_on = true;
 
   while (wi != words.end()) {
     const string &word = (*wi);
