@@ -46,7 +46,7 @@ operator << (ostream &out, Fog::Mode mode) {
 Fog::Fog(Mode mode, int hardware_bits) {
   _hardware_bits = hardware_bits;
   set_mode(mode);
-  set_color(Colorf(0.0, 0.0, 0.0, 1.0));
+  set_color(Colorf(1.0, 1.0, 1.0, 1.0));
   set_range(0.0f, 100.0f);
   set_offsets(0.0f, 0.0f);
   compute_density();
