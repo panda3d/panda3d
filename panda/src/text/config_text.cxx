@@ -26,6 +26,7 @@
 #include "unicodeLatinMap.h"
 
 #include "dconfig.h"
+#include "config_express.h"
 
 Configure(config_text);
 NotifyCategoryDef(text, "");
@@ -47,6 +48,18 @@ const float text_scale_factor = config_text.GetFloat("text-scale-factor", 2.0f);
 const bool text_small_caps = config_text.GetBool("text-small-caps", false);
 const float text_small_caps_scale = config_text.GetFloat("text-small-caps-scale", 0.8f);
 const string text_default_font = config_text.GetString("text-default-font", "");
+
+// This is the decimal character number that, embedded in a string, is
+// identified as the soft-hyphen character.
+const int text_soft_hyphen_key = config_text.GetInt("text-soft-hyphen-key", 3);
+
+// This is the string that is output, encoded in the default encoding,
+// to represent the soft-hyphen character.
+wstring *text_soft_hyphen_output;
+
+// If the rightmost whitespace character falls before this fraction of
+// the line, hyphenate a word to the right of that if possible.
+const float text_hyphen_ratio = config_text.GetFloat("text-hyphen-ratio", 0.7);
 
 Texture::FilterType text_minfilter = Texture::FT_invalid;
 Texture::FilterType text_magfilter = Texture::FT_invalid;
@@ -103,5 +116,11 @@ init_libtext() {
       << "Invalid text-magfilter: " << text_magfilter_str << "\n";
     text_magfilter = Texture::FT_linear;
   }
-  
+
+  // Make sure libexpress is initialized before we ask something of
+  // TextEncoder.
+  init_libexpress();
+  string encoded = config_text.GetString("text-soft-hyphen-output", "-");
+  TextEncoder encoder;
+  text_soft_hyphen_output = new wstring(encoder.decode_text(encoded));
 }

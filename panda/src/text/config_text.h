@@ -40,6 +40,9 @@ extern const float text_scale_factor;
 extern const bool text_small_caps;
 extern const float text_small_caps_scale;
 extern const string text_default_font;
+extern const int text_soft_hyphen_key;
+extern wstring *text_soft_hyphen_output;
+extern const float text_hyphen_ratio;
 
 extern Texture::FilterType text_minfilter;
 extern Texture::FilterType text_magfilter;
