@@ -50,7 +50,7 @@ PUBLISHED:
   bool has_collider(CollisionNode *node) const;
   void clear_colliders();
 
-  // add_collider_drive() is becoming obsolete.  If you need let, let us know.
+  // add_collider_drive() is becoming obsolete.  If you need it, let us know.
   void add_collider_drive(CollisionNode *node, DriveInterface *drive_interface);
 
 protected:
