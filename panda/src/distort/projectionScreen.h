@@ -77,6 +77,9 @@ PUBLISHED:
 
   void recompute();
 
+public:
+  INLINE const UpdateSeq &get_last_screen() const;
+
 private:
   void recompute_if_stale();
   void recompute_node(Node *node, LMatrix4f &rel_mat, bool &computed_rel_mat);
@@ -103,6 +106,7 @@ private:
   bool _computed_rel_top_mat;
   bool _stale;
   UpdateSeq _projector_lens_change;
+  UpdateSeq _last_screen;
 
 public:
   static TypeHandle get_class_type() {

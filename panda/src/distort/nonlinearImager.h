@@ -81,6 +81,7 @@ private:
     PT(LensNode) _source;
     PT_Node _scene;
     int _tex_width, _tex_height;
+    UpdateSeq _last_screen;
     bool _active;
   };
 

@@ -131,3 +131,18 @@ INLINE const Colorf &ProjectionScreen::
 get_frame_color() const {
   return _frame_color;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::get_last_screen
+//       Access: Public
+//  Description: Returns an UpdateSeq corresponding to the last time a
+//               screen mesh was generated for the ProjectionScreen.
+//               Each time generate_screen() is called, this number is
+//               incremented; this allows other objects (like
+//               NonlinearImager) to know when they need to recompute
+//               themselves.
+////////////////////////////////////////////////////////////////////
+INLINE const UpdateSeq &ProjectionScreen::
+get_last_screen() const {
+  return _last_screen;
+}

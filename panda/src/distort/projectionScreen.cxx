@@ -208,6 +208,7 @@ generate_screen(LensNode *projector, const string &screen_name,
   geom_node->add_geom(geom);
 
   _stale = true;
+  ++_last_screen;
   return geom_node;
 }
 

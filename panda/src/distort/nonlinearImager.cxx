@@ -104,6 +104,7 @@ add_screen(ProjectionScreen *screen) {
   new_screen._texture = (Texture *)NULL;
   new_screen._tex_width = 256;
   new_screen._tex_height = 256;
+  new_screen._last_screen = screen->get_last_screen();
   new_screen._active = true;
 
   // If the LensNode associated with the ProjectionScreen is an actual
@@ -335,6 +336,17 @@ recompute_if_stale() {
     UpdateSeq lens_change = _camera->get_lens()->get_last_change();
     if (_stale || lens_change != _camera_lens_change) {
       recompute();
+    } else {
+      // We're not overall stale, but maybe we need to recompute one
+      // or more of our screens.
+      Screens::iterator si;
+      for (si = _screens.begin(); si != _screens.end(); ++si) {
+        Screen &screen = (*si);
+        if (screen._active && 
+            screen._last_screen != screen._screen->get_last_screen()) {
+          recompute_screen(screen);
+        }
+      }
     }
   }
 }
@@ -370,6 +382,7 @@ recompute_screen(NonlinearImager::Screen &screen) {
 
   screen._texture = texture;
   screen._mesh_arc->set_transition(new TextureTransition(texture));
+  screen._last_screen = screen._screen->get_last_screen();
 }
 
 ////////////////////////////////////////////////////////////////////
