@@ -46,7 +46,7 @@ def getClassLineage(obj):
         return []
 
 def pdir(obj, str = None, fOverloaded = 0, width = None,
-            fTruncate = 1, lineWidth = 75):
+            fTruncate = 1, lineWidth = 75, wantPrivate = 0):
     # Remove redundant class entries
     uniqueLineage = []
     for l in getClassLineage(obj):
@@ -57,7 +57,7 @@ def pdir(obj, str = None, fOverloaded = 0, width = None,
     # Pretty print out directory info
     uniqueLineage.reverse()
     for obj in uniqueLineage:
-        _pdir(obj, str, fOverloaded, width, fTruncate, lineWidth)
+        _pdir(obj, str, fOverloaded, width, fTruncate, lineWidth, wantPrivate)
         print
 
 def _pdir(obj, str = None, fOverloaded = 0, width = None,
