@@ -67,8 +67,7 @@ class EventInterval(FunctionInterval):
         def sendFunc(event = event, sentArgs = sentArgs):
             messenger.send(event, sentArgs)
         # Create function interval
-        FunctionInterval.__init__(self, sendFunc, name = event,
-                                  openEnded = 0)
+        FunctionInterval.__init__(self, sendFunc, name = event)
 
 ### FunctionInterval subclass for accepting hooks ###
 class AcceptInterval(FunctionInterval):
@@ -82,8 +81,7 @@ class AcceptInterval(FunctionInterval):
         if (name == None):
             name = 'Accept-' + event
         # Create function interval
-        FunctionInterval.__init__(self, acceptFunc, name = name,
-                                  openEnded = 0)
+        FunctionInterval.__init__(self, acceptFunc, name = name)
 
 ### FunctionInterval subclass for ignoring events ###
 class IgnoreInterval(FunctionInterval):
@@ -97,8 +95,7 @@ class IgnoreInterval(FunctionInterval):
         if (name == None):
             name = 'Ignore-' + event
         # Create function interval
-        FunctionInterval.__init__(self, ignoreFunc, name = name,
-                                  openEnded = 0)
+        FunctionInterval.__init__(self, ignoreFunc, name = name)
 
 ### Function Interval subclass for adjusting scene graph hierarchy ###
 class ParentInterval(FunctionInterval):
