@@ -116,7 +116,7 @@ static toff_t
 istream_seek(thandle_t fd, off_t off, int whence) {
   istream *in = (istream *)fd;
 
-  ios::seek_dir dir;
+  ios_seekdir dir;
   switch (whence) {
   case SEEK_SET:
     dir = ios::beg;
@@ -142,7 +142,7 @@ static toff_t
 ostream_seek(thandle_t fd, off_t off, int whence) {
   ostream *out = (ostream *)fd;
 
-  ios::seek_dir dir;
+  ios_seekdir dir;
   switch (whence) {
   case SEEK_SET:
     dir = ios::beg;
