@@ -109,7 +109,7 @@ clamp_val(int input_value) const {
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImage::
 to_val(double input_value) const {
-  return clamp_val(input_value * get_maxval() + 0.5);
+  return clamp_val((int)(input_value * get_maxval() + 0.5));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -643,9 +643,9 @@ get_bright(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE double PNMImage::
 get_bright(int x, int y, double rc, double gc, double bc) const {
-  return from_val(rc * get_red_val(x, y) +
-                  gc * get_green_val(x, y) +
-                  bc * get_blue_val(x, y));
+  return from_val((int)(rc * get_red_val(x, y) +
+                        gc * get_green_val(x, y) +
+                        bc * get_blue_val(x, y)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -658,10 +658,10 @@ get_bright(int x, int y, double rc, double gc, double bc) const {
 ////////////////////////////////////////////////////////////////////
 INLINE double PNMImage::
 get_bright(int x, int y, double rc, double gc, double bc, double ac) const {
-  return from_val(rc * get_red_val(x, y) +
-                  gc * get_green_val(x, y) +
-                  bc * get_blue_val(x, y) +
-                  ac * get_alpha_val(x, y));
+  return from_val((int)(rc * get_red_val(x, y) +
+                        gc * get_green_val(x, y) +
+                        bc * get_blue_val(x, y) +
+                        ac * get_alpha_val(x, y)));
 }
 
 ////////////////////////////////////////////////////////////////////
