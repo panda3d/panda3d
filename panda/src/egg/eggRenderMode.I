@@ -17,20 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE EggRenderMode::
-EggRenderMode() {
-  _alpha_mode = AM_unspecified;
-  _depth_write_mode = DWM_unspecified;
-  _depth_test_mode = DTM_unspecified;
-  _draw_order = 0;
-  _has_draw_order = false;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRenderMode::Copy Constructor
@@ -41,22 +27,6 @@ INLINE EggRenderMode::
 EggRenderMode(const EggRenderMode &copy) {
   (*this) = copy;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE EggRenderMode &EggRenderMode::
-operator = (const EggRenderMode &copy) {
-  _alpha_mode = copy._alpha_mode;
-  _depth_write_mode = copy._depth_write_mode;
-  _depth_test_mode = copy._depth_test_mode;
-  _draw_order = copy._draw_order;
-  _has_draw_order = copy._has_draw_order;
-  return *this;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRenderMode::set_depth_write_mode
@@ -106,6 +76,32 @@ set_depth_test_mode(DepthTestMode mode) {
 INLINE EggRenderMode::DepthTestMode EggRenderMode::
 get_depth_test_mode() const {
   return _depth_test_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggRenderMode::set_visibility_mode
+//       Access: Public
+//  Description: Specifies whether this geometry is to be considered
+//               normally visible, or hidden.  If it is hidden, it is
+//               either not loaded into the scene graph at all, or
+//               loaded as a "stashed" node, according to the setting
+//               of egg-suppress-hidden.
+////////////////////////////////////////////////////////////////////
+INLINE void EggRenderMode::
+set_visibility_mode(VisibilityMode mode) {
+  _visibility_mode = mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggRenderMode::get_visibility_mode
+//       Access: Public
+//  Description: Returns the visibility mode that was set, or
+//               VM_unspecified if nothing was set.  See
+//               set_visibility_mode().
+////////////////////////////////////////////////////////////////////
+INLINE EggRenderMode::VisibilityMode EggRenderMode::
+get_visibility_mode() const {
+  return _visibility_mode;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -238,6 +238,10 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
                           const LMatrix4d *transform) {
   BuilderBucket bucket;
   setup_bucket(bucket, parent, egg_prim);
+  if (bucket._hidden && egg_suppress_hidden) {
+    // Eat this primitive.
+    return;
+  }
 
   LMatrix4d mat;
 
@@ -331,6 +335,10 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
                        ComputedVerticesMaker &_comp_verts_maker) {
   BuilderBucket bucket;
   setup_bucket(bucket, parent, egg_prim);
+  if (bucket._hidden && egg_suppress_hidden) {
+    // Eat this primitive.
+    return;
+  }
 
   bucket.set_coords(_comp_verts_maker._coords);
   bucket.set_normals(_comp_verts_maker._norms);
@@ -510,6 +518,10 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
   // from it.
   BuilderBucket bucket;
   setup_bucket(bucket, parent, egg_curve);
+  if (bucket._hidden && egg_suppress_hidden) {
+    // Eat this primitive.
+    return;
+  }
 
   rope->set_state(bucket._state);
 
@@ -661,6 +673,10 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, PandaNode *parent,
   // from it.
   BuilderBucket bucket;
   setup_bucket(bucket, parent, egg_surface);
+  if (bucket._hidden && egg_suppress_hidden) {
+    // Eat this primitive.
+    return;
+  }
 
   sheet->set_state(bucket._state);
 
@@ -1235,6 +1251,7 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
   EggRenderMode::AlphaMode am = EggRenderMode::AM_unspecified;
   EggRenderMode::DepthWriteMode dwm = EggRenderMode::DWM_unspecified;
   EggRenderMode::DepthTestMode dtm = EggRenderMode::DTM_unspecified;
+  EggRenderMode::VisibilityMode vm = EggRenderMode::VM_unspecified;
   bool implicit_alpha = false;
   bool has_draw_order = false;
   int draw_order = 0;
@@ -1253,6 +1270,10 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
   render_mode = egg_prim->determine_depth_test_mode();
   if (render_mode != (EggRenderMode *)NULL) {
     dtm = render_mode->get_depth_test_mode();
+  }
+  render_mode = egg_prim->determine_visibility_mode();
+  if (render_mode != (EggRenderMode *)NULL) {
+    vm = render_mode->get_visibility_mode();
   }
   render_mode = egg_prim->determine_draw_order();
   if (render_mode != (EggRenderMode *)NULL) {
@@ -1379,6 +1400,16 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     bucket.add_attrib(DepthTestAttrib::make(DepthTestAttrib::M_none));
     break;
 
+  default:
+    break;
+  }
+
+  switch (vm) {
+  case EggRenderMode::VM_hidden:
+    bucket._hidden = true;
+    break;
+
+  case EggRenderMode::VM_normal:
   default:
     break;
   }

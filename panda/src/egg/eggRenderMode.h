@@ -39,9 +39,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggRenderMode {
 PUBLISHED:
-  INLINE EggRenderMode();
+  EggRenderMode();
   INLINE EggRenderMode(const EggRenderMode &copy);
-  INLINE EggRenderMode &operator = (const EggRenderMode &copy);
+  EggRenderMode &operator = (const EggRenderMode &copy);
 
   void write(ostream &out, int indent_level) const;
 
@@ -65,6 +65,10 @@ PUBLISHED:
     DTM_unspecified, DTM_off, DTM_on
   };
 
+  enum VisibilityMode {
+    VM_unspecified, VM_hidden, VM_normal
+  };
+
   INLINE void set_alpha_mode(AlphaMode mode);
   INLINE AlphaMode get_alpha_mode() const;
 
@@ -73,6 +77,9 @@ PUBLISHED:
 
   INLINE void set_depth_test_mode(DepthTestMode mode);
   INLINE DepthTestMode get_depth_test_mode() const;
+
+  INLINE void set_visibility_mode(VisibilityMode mode);
+  INLINE VisibilityMode get_visibility_mode() const;
 
   INLINE void set_draw_order(int order);
   INLINE int get_draw_order() const;
@@ -92,11 +99,13 @@ PUBLISHED:
   static AlphaMode string_alpha_mode(const string &string);
   static DepthWriteMode string_depth_write_mode(const string &string);
   static DepthTestMode string_depth_test_mode(const string &string);
+  static VisibilityMode string_visibility_mode(const string &string);
 
 private:
   AlphaMode _alpha_mode;
   DepthWriteMode _depth_write_mode;
   DepthTestMode _depth_test_mode;
+  VisibilityMode _visibility_mode;
   int _draw_order;
   bool _has_draw_order;
   string _bin;
@@ -117,6 +126,7 @@ private:
 ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode);
 ostream &operator << (ostream &out, EggRenderMode::DepthWriteMode mode);
 ostream &operator << (ostream &out, EggRenderMode::DepthTestMode mode);
+ostream &operator << (ostream &out, EggRenderMode::VisibilityMode mode);
 
 #include "eggRenderMode.I"
 

@@ -391,6 +391,15 @@ texture_body:
       texture->set_depth_test_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "visibility") == 0) {
+    EggRenderMode::VisibilityMode m = 
+      EggRenderMode::string_visibility_mode(strval);
+    if (m == EggRenderMode::VM_unspecified) {
+      eggyywarning("Unknown visibility mode " + strval);
+    } else {
+      texture->set_visibility_mode(m);
+    }
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     texture->set_draw_order((int)value);
 
@@ -904,6 +913,16 @@ group_body:
     } else {
       group->set_depth_test_mode(m);
     }
+
+  } else if (cmp_nocase_uh(name, "visibility") == 0) {
+    EggRenderMode::VisibilityMode m = 
+      EggRenderMode::string_visibility_mode(strval);
+    if (m == EggRenderMode::VM_unspecified) {
+      eggyywarning("Unknown visibility mode " + strval);
+    } else {
+      group->set_visibility_mode(m);
+    }
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     group->set_draw_order(ulong_value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
@@ -1465,6 +1484,16 @@ primitive_body:
     } else {
       primitive->set_depth_test_mode(m);
     }
+
+  } else if (cmp_nocase_uh(name, "visibility") == 0) {
+    EggRenderMode::VisibilityMode m = 
+      EggRenderMode::string_visibility_mode(strval);
+    if (m == EggRenderMode::VM_unspecified) {
+      eggyywarning("Unknown visibility mode " + strval);
+    } else {
+      primitive->set_visibility_mode(m);
+    }
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
@@ -1532,6 +1561,16 @@ nurbs_surface_body:
     } else {
       primitive->set_depth_test_mode(m);
     }
+
+  } else if (cmp_nocase_uh(name, "visibility") == 0) {
+    EggRenderMode::VisibilityMode m = 
+      EggRenderMode::string_visibility_mode(strval);
+    if (m == EggRenderMode::VM_unspecified) {
+      eggyywarning("Unknown visibility mode " + strval);
+    } else {
+      primitive->set_visibility_mode(m);
+    }
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
@@ -1596,6 +1635,16 @@ nurbs_curve_body:
     } else {
       primitive->set_depth_test_mode(m);
     }
+
+  } else if (cmp_nocase_uh(name, "visibility") == 0) {
+    EggRenderMode::VisibilityMode m = 
+      EggRenderMode::string_visibility_mode(strval);
+    if (m == EggRenderMode::VM_unspecified) {
+      eggyywarning("Unknown visibility mode " + strval);
+    } else {
+      primitive->set_visibility_mode(m);
+    }
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {

@@ -426,7 +426,7 @@ determine_alpha_mode() {
 //       Access: Public, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
-//               above this group that has an depth_write_mode other
+//               above this group that has a depth_write_mode other
 //               than DWM_unspecified.  Returns a valid EggRenderMode
 //               pointer if one is found, or NULL otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -443,7 +443,7 @@ determine_depth_write_mode() {
 //       Access: Public, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
-//               above this group that has an depth_test_mode other
+//               above this group that has a depth_test_mode other
 //               than DTM_unspecified.  Returns a valid EggRenderMode
 //               pointer if one is found, or NULL otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -453,6 +453,23 @@ determine_depth_test_mode() {
     return this;
   }
   return EggGroupNode::determine_depth_test_mode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::determine_visibility_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this group that has a visibility_mode other
+//               than VM_unspecified.  Returns a valid EggRenderMode
+//               pointer if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggGroup::
+determine_visibility_mode() {
+  if (get_visibility_mode() != VM_unspecified) {
+    return this;
+  }
+  return EggGroupNode::determine_visibility_mode();
 }
 
 ////////////////////////////////////////////////////////////////////

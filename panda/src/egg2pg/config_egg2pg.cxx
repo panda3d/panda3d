@@ -71,6 +71,12 @@ bool egg_load_classic_nurbs_curves = config_egg2pg.GetBool("egg-load-classic-nur
 // be loaded.
 bool egg_accept_errors = config_egg2pg.GetBool("egg-accept-errors", true);
 
+// When this is true, objects flagged as "hidden" with the visibility
+// scalar are not created at all.  When false, these objects are
+// created, but initially stashed.
+bool egg_suppress_hidden = config_egg2pg.GetBool("egg-suppress-hidden", false);
+
+
 CoordinateSystem egg_coordinate_system = CS_invalid;
 EggRenderMode::AlphaMode egg_alpha_mode = EggRenderMode::AM_unspecified;
 

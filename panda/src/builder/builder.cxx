@@ -59,8 +59,8 @@ Builder::
 // should all be given the same GeomNode, when possible.
 
 // However, if two buckets have different sets of scene graph
-// properties--that is, the _trans member is different--they must be
-// given separate GeomNodes.
+// properties--in particular, the _hidden member is different--they
+// must be given separate GeomNodes.
 
 // Furthermore, it's possible to name each bucket.  If two buckets
 // with the same Node pointer have different names, then they should
@@ -74,6 +74,9 @@ public:
   bool operator < (const NodeMap &other) const {
     if (_node != other._node) {
       return _node < other._node;
+    }
+    if (_bucket->_hidden != other._bucket->_hidden) {
+      return _bucket->_hidden < other._bucket->_hidden;
     }
     if (_bucket->get_name() != other._bucket->get_name()) {
       return _bucket->get_name() < other._bucket->get_name();
@@ -127,7 +130,6 @@ build(const string &default_name) {
        ++i) {
     BuilderBucket *bucket = (*i).get_bucket();
     PandaNode *node = bucket->_node;
-    //    const string &name = bucket->get_name();
     GeomNode *geom_node = NULL;
 
     if (node != (PandaNode *)NULL && 
@@ -197,10 +199,20 @@ build(const string &default_name) {
 
       } else if (node==NULL) {
         nassertr(base_geom_node == NULL, NULL);
-        base_geom_node = geom_node;
+        if (!nm._bucket->_hidden) {
+          base_geom_node = geom_node;
+        }
 
       } else {
-        node->add_child(geom_node);
+        if (nm._bucket->_hidden) {
+          // If the contents of the bucket are supposed to be hidden,
+          // add the GeomNode as a stashed child.
+          node->add_stashed(geom_node);
+        } else {
+          // Otherwise, in the normal case, the GeomNode is a normal,
+          // visible child of its parent.
+          node->add_child(geom_node);
+        }
       }
     }
   }

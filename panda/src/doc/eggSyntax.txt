@@ -449,6 +449,18 @@ GEOMETRY ENTRIES
     which is a GeomBinFixed object that always exists by default.
 
 
+  <Scalar> visibility { hidden | normal }
+
+    If the visibility of a primitive is set to "hidden", the primitive
+    is not generated as a normally visible primitive.  If the Configrc
+    variable egg-suppress-hidden is set to true, the primitive is not
+    converted at all; otherwise, it is converted as a "stashed" node.
+
+    This, like the other rendering flags alpha, draw_order, and bin,
+    may be specified at the group level, within the primitive level,
+    or even within a texture.
+
+
 <PointLight> name { 
     [attributes] 
     <VertexRef> { 
@@ -459,7 +471,7 @@ GEOMETRY ENTRIES
 
   A PointLight is a set of single points.  One point is drawn for each
   vertex listed in the <VertexRef>.  Normals, textures, and colors may
-  be specified for PointLights, as well as draw-order, plus one
+  be specified for PointLights, as well as draw_order, plus one
   additional attribute valid only for PointLights and Lines:
 
   <Scalar> thick { number }
@@ -482,7 +494,7 @@ GEOMETRY ENTRIES
   A Line is a connected set of line segments.  The listed N vertices
   define a series of N-1 line segments, drawn between vertex 0 and
   vertex 1, vertex 1 and vertex 2, etc.  As with a PointLight,
-  normals, textures, colors, draw-order, and the "thick" attribute are
+  normals, textures, colors, draw_order, and the "thick" attribute are
   all valid.
 
 
@@ -614,7 +626,7 @@ surfaces.  Non-player tools, however, may respect them.
   A NURBS surface is an extension of a NURBS curve into two parametric
   dimensions, u and v.  NURBS surfaces may be given the same set of
   attributes assigned to polygons, except for normals: <TRef>,
-  <Texture>, <MRef>, <RGBA>, and draw-order are all valid attributes
+  <Texture>, <MRef>, <RGBA>, and draw_order are all valid attributes
   for NURBS.  NURBS vertices, similarly, may be colored or morphed,
   but <Normal> and <UV> entries do not apply to NURBS vertices.  The
   attributes may also include <NURBSCurve> and <Trim> entries; see
@@ -839,6 +851,14 @@ GROUPING ENTRIES
     This specifies the drawing order for all polygons at or below this
     node that do not explicitly set their own drawing order.  See the
     description of draw_order for geometry attributes, above.
+
+  <Scalar> visibility { hidden | normal }
+
+    If the visibility of a group is set to "hidden", the primitives
+    nested within that group are not generated as a normally visible
+    primitive.  If the Configrc variable egg-suppress-hidden is set to
+    true, the primitives are not converted at all; otherwise, they are
+    converted as a "stashed" node.
 
   <Scalar> write_through { boolean-value }
 

@@ -113,6 +113,24 @@ determine_depth_test_mode() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggNode::determine_visibility_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this node that has a visibility_mode other than
+//               VM_unspecified.  Returns a valid EggRenderMode pointer
+//               if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggNode::
+determine_visibility_mode() {
+  if (_parent == (EggGroupNode *)NULL) {
+    // Too bad; we're done.
+    return (EggRenderMode *)NULL;
+  }
+  return _parent->determine_visibility_mode();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggNode::determine_draw_order
 //       Access: Public, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup

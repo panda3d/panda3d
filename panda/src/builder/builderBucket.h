@@ -87,11 +87,8 @@ public:
   virtual void output(ostream &out) const;
 
   PandaNode *_node;
-
-  short _drawBin;
-  unsigned int _drawOrder;
-
   CPT(RenderState) _state;
+  bool _hidden;
 
 protected:
   PTA_Vertexf _coords;

@@ -46,7 +46,6 @@ BuilderBucket() {
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket(const BuilderBucket &copy) {
-  _node = NULL;
   (*this) = copy;
 }
 
@@ -67,9 +66,7 @@ operator = (const BuilderBucket &copy) {
   set_colors(copy._colors);
 
   _node = copy._node;
-  _drawBin = copy._drawBin;
-  _drawOrder = copy._drawOrder;
-
+  _hidden = copy._hidden;
   _state = copy._state;
 
   return *this;
@@ -166,6 +163,10 @@ operator < (const BuilderBucket &other) const {
     return _node < other._node;
   }
 
+  if (_hidden != other._hidden) {
+    return _hidden < other._hidden;
+  }
+
   if (_coords != other._coords)
     return _coords < other._coords;
   if (_normals != other._normals)
@@ -174,11 +175,6 @@ operator < (const BuilderBucket &other) const {
     return _texcoords < other._texcoords;
   if (_colors != other._colors)
     return _colors < other._colors;
-
-  if (_drawBin != other._drawBin)
-    return _drawBin < other._drawBin;
-  if (_drawOrder != other._drawOrder)
-    return _drawOrder < other._drawOrder;
 
   if (_state != other._state) {
     return _state < other._state;
@@ -201,6 +197,9 @@ output(ostream &out) const {
   }
   out << "\n";
 
+  if (_hidden) {
+    out << "_hidden\n";
+  }
 
   if (_coords != (Vertexf *)NULL) {
     out << "_coords = " << (void *)_coords << "\n";
@@ -216,14 +215,6 @@ output(ostream &out) const {
 
   if (_colors != (Colorf *)NULL) {
     out << "_colors = " << (void *)_colors << "\n";
-  }
-
-  if (_drawBin != -1) {
-    out << "_drawBin = " << _drawBin << "\n";
-  }
-
-  if (_drawOrder != 0) {
-    out << "_drawOrder = " << _drawOrder << "\n";
   }
 
   if (!_state->is_empty()) {
@@ -245,9 +236,7 @@ output(ostream &out) const {
 BuilderBucket::
 BuilderBucket(int) {
   _node = NULL;
-
-  _drawBin = -1;
-  _drawOrder = 0;
+  _hidden = false;
 
   // From BuilderProperties
   _mesh = true;
