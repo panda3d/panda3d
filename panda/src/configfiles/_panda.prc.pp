@@ -6,7 +6,7 @@
 // parameters, in particular the default display types.
 //
 
-#output _panda.prc
+#output _80_panda.prc
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
@@ -57,4 +57,4 @@ load-file-type egg pandaegg
 egg-object-type-portal          <Scalar> portal { 1 }
 egg-object-type-polylight       <Scalar> polylight { 1 }
 
-#end _panda.prc
+#end _80_panda.prc
