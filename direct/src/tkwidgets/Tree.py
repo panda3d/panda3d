@@ -36,7 +36,8 @@ class TreeNode:
         self.item = item
         self.state = 'collapsed'
         self.selected = 0
-        self.children = []
+        self.children = {}
+        self.kidKeys = []
         self.x = self.y = None
         self.iconimages = {} # cache of PhotoImage instances for icons
         self.menuList = menuList
@@ -55,8 +56,9 @@ class TreeNode:
                     command = self.popupMenuCommand)
 
     def destroy(self):
-        for c in self.children[:]:
-            self.children.remove(c)
+        for key in self.kidKeys:
+            c = self.children[key]
+            del self.children[key]
             c.destroy()
         self.parent = None
 
@@ -99,7 +101,8 @@ class TreeNode:
     def deselecttree(self):
         if self.selected:
             self.deselect()
-        for child in self.children:
+        for key in self.kidKeys:
+            child = self.children[key]
             child.deselecttree()
 
     def flip(self, event=None):
@@ -121,7 +124,7 @@ class TreeNode:
         self.item.MenuCommand(self.menuList[self.menuVar.get()])
 
     def expand(self, event=None):
-        if not self.item._IsExpandable():
+        if not self.item.IsExpandable():
             return
         if self.state != 'expanded':
             self.state = 'expanded'
@@ -151,8 +154,8 @@ class TreeNode:
         self.canvas.yview_moveto(fraction)
 
     def lastvisiblechild(self):
-        if self.children and self.state == 'expanded':
-            return self.children[-1].lastvisiblechild()
+        if self.kidKeys and self.state == 'expanded':
+            return self.children[self.kidKeys[-1]].lastvisiblechild()
         else:
             return self
 
@@ -178,22 +181,29 @@ class TreeNode:
             return y+17
         # draw children
         #if not self.children:
+        #self.children = []
         sublist = self.item._GetSubList()
         if not sublist:
-            # _IsExpandable() was mistaken; that's allowed
+            # IsExpandable() was mistaken; that's allowed
             return y+17
-        #self.children = []
+        self.kidKeys = []
         for item in sublist:
-            child = TreeNode(self.canvas, self, item, self.menuList)
-            self.children.append(child)
+            key = item.nodePath.id()
+            if self.children.has_key(key):
+                child = self.children[key]
+            else:
+                child = TreeNode(self.canvas, self, item, self.menuList)
+            self.children[key] = child
+            self.kidKeys.append(key)
         cx = x+20
         cy = y+17
         cylast = 0
-        for child in self.children:
+        for key in self.kidKeys:
+            child = self.children[key]
             cylast = cy
             self.canvas.create_line(x+9, cy+7, cx, cy+7, fill="gray50")
             cy = child.draw(cx, cy)
-            if child.item._IsExpandable():
+            if child.item.IsExpandable():
                 if child.state == 'expanded':
                     iconname = "minusnode"
                     callback = child.collapse
@@ -312,14 +322,6 @@ class TreeItem:
     def GetLabelText(self):
         """Return label text string to display in front of text (if any)."""
 
-    expandable = None
-
-    def _IsExpandable(self):
-        """Do not override!  Called by TreeNode."""
-        if self.expandable is None:
-            self.expandable = self.IsExpandable()
-        return self.expandable
-
     def IsExpandable(self):
         """Return whether there are subitems."""
         return 1
@@ -329,8 +331,6 @@ class TreeItem:
         if not self.IsExpandable():
             return []
         sublist = self.GetSubList()
-        if not sublist:
-            self.expandable = 0
         return sublist
 
     def IsEditable(self):
@@ -353,4 +353,6 @@ class TreeItem:
 
     def OnSelect(self):
         """Called when item selected."""
+
+
 
