@@ -124,6 +124,8 @@ class AmbientSound(Nodepath):
     type = 'ambientSound'
     attribs = (
         ('soundPath', '', 'bamfilename'),
+        ('volume', 1, 'float', {'min':0,'max':1}),
+        ('enabled', 1, 'bool'),
         )
 
 class PropSpinner(Entity):
