@@ -160,13 +160,19 @@ do_autorestart() {
     perror("sigaction");
   }
 
-
-  /* If we have a logfile, dup it onto stdout and stderr. */
   if (logfile_fd >= 0) {
+    /* If we have a logfile, dup it onto stdout and stderr. */
     dup2(logfile_fd, STDOUT_FILENO);
     dup2(logfile_fd, STDERR_FILENO);
     close(logfile_fd);
+  } else {
+    /* Otherwise, close them. */
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
   }
+
+  /* Make sure stdin is closed. */
+  close(STDIN_FILENO);
 
   now = time(NULL);
   strftime(time_buffer, TIME_BUFFER_SIZE, "%T on %A, %d %b %Y", localtime(&now));
@@ -327,9 +333,6 @@ main(int argc, char *argv[]) {
     }
     fprintf(stderr, "Generating output to %s.\n", logfile_name);
   }
-
-  /* Make sure standard input is closed. */
-  close(STDIN_FILENO);
 
   double_fork();
 
