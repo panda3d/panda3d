@@ -34,13 +34,12 @@
 #endif
 #include "sgi.h"
 
-#include <config_pnmimage.h>
-#include <pnmFileTypeRegistry.h>
-#include <string_utils.h>
-#include <dconfig.h>
+#include "config_pnmimage.h"
+#include "pnmFileTypeRegistry.h"
+#include "string_utils.h"
+#include "dconfig.h"
 
 Configure(config_pnmimagetypes);
-NotifyCategoryDef(pnmimage_pnm, pnmimage_cat);
 NotifyCategoryDef(pnmimage_sgi, pnmimage_cat);
 NotifyCategoryDef(pnmimage_alias, pnmimage_cat);
 NotifyCategoryDef(pnmimage_tiff, pnmimage_cat);
