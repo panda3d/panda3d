@@ -359,12 +359,12 @@ void ImageFile::
 update_egg_tex(EggTexture *egg_tex) const {
   nassertv(egg_tex != (EggTexture *)NULL);
 
-  egg_tex->set_filename(_filename);
+  egg_tex->set_filename(FilenameUnifier::make_egg_filename(_filename));
 
   if (_properties._alpha_type != (PNMFileType *)NULL &&
       _properties.uses_alpha() &&
       !_alpha_filename.empty()) {
-    egg_tex->set_alpha_file(_alpha_filename);
+    egg_tex->set_alpha_file(FilenameUnifier::make_egg_filename(_alpha_filename));
   } else {
     egg_tex->clear_alpha_file();
   }

@@ -183,65 +183,147 @@ describe_input_file() {
     "the qtess input file.  Examples:\n\n"
 
     "  texturename.rgb : 64 64\n"
-    "  texture-a.rgb texture-b.rgb : 32 16 2\n"
-    "  *.rgb : 50%\n"
+    "  texture-a.rgb texture-b.rgb : 32 16 margin 2\n"
+    "  *.rgb : 50% cont\n"
     "  eyelids.rgb : 16 16 omit\n\n"
 
     "In general, each line consists of one or more filenames (and can "
     "contain shell globbing characters like '*' or '?'), and a colon "
     "followed by a size request.  For each texture appearing in an egg "
     "file, the input list is scanned from the beginning and the first "
-    "line that matches the filename defines the size of the texture.\n\n"
+    "line that matches the filename defines the size of the texture, as "
+    "well as other properties associated with the texture.\n\n"
 
-    "A size request may be either a pair of numbers, giving a specific x y "
-    "size of the texture, or it may be a scale factor in the form of a "
-    "percentage.  It may also include an additional number, giving a margin "
-    "for this particular texture (otherwise the default margin is "
-    "applied).  Finally, the keyword 'omit' may be included along with the "
-    "size to specify that the texture should not be placed in a palette.\n\n"
+    "A size request is most often a pair of numbers, giving a specific x y "
+    "size of the texture.  A third number may also be supplied, giving a "
+    "specific number of channels to convert to (for instance, to force an "
+    "image to a 64x64 grayscale image, set its size to 64 64 1).  "
+    "Alternatively, a percentage scaling may be specified, e.g. 30%.  The "
+    "requested size need not be a power of 2.\n\n"
 
+    "Other valid keywords that may be specified on the same line with the "
+    "texture are:\n\n";
+
+  show_text("  omit", 10,
+	    "This indicates that the texture should not be placed on any "
+	    "palette image.  It may still be resized, and it will in any "
+	    "case be copied into the install directory.\n\n");
+
+  show_text("  margin i", 10,
+	    "This specifies the number of pixels that should be written "
+	    "around the border of the texture when it is placed in a "
+	    "palette image; i is the integer number.  The use of a margin "
+	    "helps cut down on color bleed from neighboring images.  "
+	    "If the texture does not end up placed in a palette image, the "
+	    "margin is not used.  If not specified, the default margin is "
+	    "used, which is specified by the :margin command (see below).\n\n");
+
+  show_text("  coverage f", 10,
+	    "This parameter specifies the maximum coverage to allow for this "
+	    "particular texture before rejecting it "
+	    "from the palette.  If not specified, the default is "
+	    "specified by the :coverage command (see below).\n\n");
+
+  nout << "  nearest\n"
+       << "  linear\n";
+  show_text("  mipmap", 10,
+	    "One of these options may be used to force the texture to use "
+	    "a particular minfilter/magfilter sampling mode.  If this is not "
+	    "specified, the sampling mode specified in the egg file is "
+	    "used.  Textures that use different sampling modes cannot "
+	    "be placed together on the same palette images.\n\n");
+
+  show_text("  rgba", 10,
+	    "This specifies format 'rgba' should be in effect for this "
+	    "particular texture.  Any valid egg texture format, such as "
+	    "rgba, rgba12, rgba8, rgb5, luminance, etc. may be specified.  "
+	    "If nothing is specified, the format specified in the egg file "
+	    "is used.  The format will automatically be downgraded to match "
+	    "the number of channels in the texture image; e.g. rgba will "
+	    "automatically be converted to rgb for a three-channel image.  "
+	    "As with the filter modes above, textures that use different "
+	    "formats cannot be placed together on the same palette "
+	    "images.\n\n");
+
+  show_text("  (group name)", 10,
+	    "A texture may also be assigned to a specific group by naming "
+	    "the group.  The groups are defined using the :group command "
+	    "(see below).  Normally, textures are not assigned directly "
+	    "to groups; instead, it is more useful to assign the egg files "
+	    "they appear on to groups; see below.\n\n");
+
+  nout << 
     "The attributes file may also assign certain egg files into various "
     "named palette groups.  The syntax is similar to the above:\n\n"
 
     "  car-blue.egg : main\n"
     "  road.egg house.egg : main\n"
-    "  plane.egg : phase2 main\n"
-    "  car*.egg : phase2\n\n"
+    "  plane.egg : phase_2 main\n"
+    "  *.egg : phase_2\n\n"
 
     "Any number of egg files may be named on one line, and the group of "
-    "egg files may be simultaneously assigned to one or more groups.  Each "
-    "named group represents a semi-independent collection of textures; a "
-    "different set of palette images will be created for each group.  Each "
-    "texture that is referenced by a given egg file will be palettized "
-    "in one of the groups assigned to the egg file.  Also see the "
-    ":group command, below, which defines relationships between the "
-    "different groups.\n\n"
+    "egg files may be simultaneously assigned to one or more groups.  "
+    "The groups are defined using the :group command (see below).  "
+    "Each texture that is referenced by a given egg file will be palettized "
+    "into at least one of the groups assigned to the egg file.\n\n"
 
-    "There are some other special lines that may appear in this second, "
-    "along with the resize commands.  They begin with a colon to "
-    "distinguish them from the resize commands.  They are:\n\n"
+    "Finally, there are a number of special commands that may appear in the "
+    "attributes file; some of these have been alluded to in the above "
+    "comments.  These commands typically specify global parameters or "
+    "palettization options.  The command names begin with a colon to "
+    "distinguish them from other kinds of lines.  Each command must "
+    "appear on a line by itself.  The commands are:\n\n";
 
-    "  :palette xsize ysize\n\n"
+  show_text("  :palette xsize ysize", 10,
+	    "This specifies the size of the palette images to be "
+	    "created.  The default is 512 by 512.\n\n");
 
-    "This specifies the size of the palette file(s) to be created.  It "
-    "overrides the -s command-line option.\n\n"
+  show_text("  :margin msize", 10,
+	    "This specifies the amount of default margin to apply to all "
+	    "textures that are placed within a palette image.  The margin "
+	    "is a number of additional pixels that are written around the "
+	    "texture image to help prevent color bleeding between "
+	    "neighboring images within the same palette.  The default "
+	    "is 2.\n\n");
 
-    "  :margin msize\n\n"
+  show_text("  :coverage area", 10,
+	    "The 'coverage' of a texture refers to the fraction of "
+	    "the area in the texture image that is actually used, according "
+	    "to the UV's that appear in the various egg files.  If a texture's "
+	    "coverage is less than 1, only some of the texture image is used "
+	    "(and only this part will be written to the palette).  If the "
+	    "coverage is greater than 1, the texture repeats that number of "
+	    "times.  A repeating texture may still be palettized by writing "
+	    "the required number of copies into the palette image, according "
+	    "to the coverage area.\n\n"
+	    
+	    "This command specifies the maximum coverage to allow for any "
+	    "texture before rejecting it from the palette.  It may be any "
+	    "floating-point number greater than zero.  Set this to 1 "
+	    "to avoid palettizing repeating textures altogether.  This may "
+	    "also be overridden for a particular texture using the 'coverage' "
+	    "keyword on the texture line.\n\n");
 
-    "This specifies the size of the default margin for all subsequent "
-    "resize commands.  This may appear several times in a given file.\n\n"
+  show_text("  :group groupname [dir dirname] [with group1 group2 ...]", 10,
+	    "This defines a palette group, a logical division of textures.  "
+	    "Each texture is assigned to one or more palette groups before "
+	    "being placed in any palette image; the palette images are "
+	    "tied to the groups.\n\n"
+ 
+	    "The optional parameter 'dir' specifies a directory name to "
+	    "associate with this group.  This name is substituted in for "
+	    "the string '%g' when it appears in the map directory name "
+	    "specified on the command line with -dm; this may be used to "
+	    "install textures and palettes into different directories based "
+	    "on the groups they are assigned to.\n\n"
 
-    "  :group groupname1 with groupname2 [groupname3 ...]\n\n"
+	    "Palette groups can also be hierarchically related.  The "
+	    "keyword 'with' specifies any number of groups that this "
+	    "palette group depends on; if a texture has already been "
+	    "assigned to one of this group's dependent groups, it will "
+	    "be considered to be assigned to this group.\n\n");
 
-    "This indicates that the palette group named by groupname1 should "
-    "be allowed to shared textures with those on groupname2 or groupname3, "
-    "etc.  In other words, that whenever palette group groupname1 is in "
-    "texture memory, we can assume that palette groups groupname2 and "
-    "groupname3 will also be in memory.  Textures that already exist on "
-    "groupname2 and other dependent groups will not be added to groupname1; "
-    "instead, egg files will reference the textures directly from the "
-    "other palettes.\n\n"
-
+  nout <<
     "Comments may appear freely throughout the file, and are set off by a "
     "hash mark (#).\n";
 }

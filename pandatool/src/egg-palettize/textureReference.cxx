@@ -625,10 +625,14 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 write_datagram(BamWriter *writer, Datagram &datagram) {
-  // We don't write _egg_tex, _egg_data, or _tex_mat; that's specific
-  // to the session.
-
   writer->write_pointer(datagram, _egg_file);
+
+  // We don't write _egg_tex or _egg_data; that's specific to the
+  // session.
+
+  _tex_mat.write_datagram(datagram);
+  _inv_tex_mat.write_datagram(datagram);
+
   writer->write_pointer(datagram, _source_texture);
   writer->write_pointer(datagram, _placement);
 
@@ -706,6 +710,10 @@ make_TextureReference(const FactoryParams &params) {
 void TextureReference::
 fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan, this);  // _egg_file
+
+  _tex_mat.read_datagram(scan);
+  _inv_tex_mat.read_datagram(scan);
+
   manager->read_pointer(scan, this);  // _source_texture
   manager->read_pointer(scan, this);  // _placement
 
