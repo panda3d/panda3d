@@ -18,69 +18,27 @@
 
 // This file is compiled only if we have zlib installed.
 
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-
 #include "config_downloader.h"
+
+#include "error_utils.h"
+#include "filename.h"
+#include "zStream.h"
+
+#include "decompressor.h"
 
 #include <stdio.h>
 #include <errno.h>
 
-#include <error_utils.h>
-#include <filename.h>
-
-#include "decompressor.h"
-
-
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Decompressor::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Decompressor::
-Decompressor(void) {
-  if (downloader_cat.is_debug())
-    downloader_cat.debug()
-      << "Decompressor::constructor() - Creating buffer of size: "
-      << decompressor_buffer_size << endl;
-  PT(Buffer) buffer = new Buffer(decompressor_buffer_size);
-  init(buffer);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-Decompressor::
-Decompressor(PT(Buffer) buffer) {
-  init(buffer);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Decompressor::
-init(PT(Buffer) buffer) {
-  if (downloader_cat.is_debug())
-    downloader_cat.debug()
-      << "Decompressor constructor called" << endl;
-  _initiated = false;
-  nassertv(!buffer.is_null());
-  _half_buffer_length = buffer->get_length()/2;
-  _buffer = buffer;
-  char *temp_name = tempnam(NULL, "dc");
-  _temp_file_name = temp_name;
-  _temp_file_name.set_binary();
-  delete temp_name;
-  _decompressor = new ZDecompressor();
+Decompressor() {
+  _source = NULL;
+  _decompress = NULL;
+  _dest = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,267 +47,208 @@ init(PT(Buffer) buffer) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Decompressor::
-~Decompressor(void) {
-  if (downloader_cat.is_debug())
-    downloader_cat.debug()
-      << "Decompressor destructor called" << endl;
-  _temp_file_name.unlink();
-  if (_initiated == true)
-    cleanup();
+~Decompressor() {
+  cleanup();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Decompressor::initiate
 //       Access: Public
-//  Description:
+//  Description: Begins a background decompression of the named file
+//               (whose filename must end in ".pz") to a new file
+//               without the .pz extension.  The source file is
+//               removed after successful completion.
 ////////////////////////////////////////////////////////////////////
 int Decompressor::
-initiate(Filename &source_file) {
-  Filename dest_file = source_file;
+initiate(const Filename &source_file) {
   string extension = source_file.get_extension();
-  if (extension == "pz")
+  if (extension == "pz") {
+    Filename dest_file = source_file;
     dest_file = source_file.get_fullpath_wo_extension();
-  else {
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
-        << "Decompressor::request_decompress() - Unknown file extension: ."
-        << extension << endl;
-      return EU_error_abort;
-  }
-  return initiate(source_file, dest_file);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::initiate
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-int Decompressor::
-initiate(Filename &source_file, Filename &dest_file) {
-
-  if (_initiated == true) {
-    downloader_cat.error()
-      << "Decompressor::initiate() - Decompression has already been initiated"
-      << endl;
-    return EU_error_abort;
+    return initiate(source_file, dest_file);
   }
 
-  // Open source file
-  _source_file = source_file;
-  _source_file.set_binary();
-  if (!_source_file.open_read(_read_stream)) {
-    downloader_cat.error()
-      << "Decompressor::initiate() - Error opening source file: "
-      << _source_file << " : " << strerror(errno) << endl;
-    return get_write_error();
-  }
-
-  // Determine source file length
-  _read_stream.seekg(0, ios::end);
-  _source_file_length = _read_stream.tellg();
-  if (_source_file_length == 0) {
-    downloader_cat.warning()
-      << "Decompressor::initiate() - Zero length file: "
-      << source_file << " : " << strerror(errno) << endl;
-    return get_write_error();
-  }
-  _read_stream.seekg(0, ios::beg);
-
-  // Open destination file
-  dest_file.set_binary();
-  if (!dest_file.open_write(_write_stream)) {
-    downloader_cat.error()
-      << "Decompressor::initiate() - Error opening dest file: "
-      << source_file << " : " << strerror(errno) << endl;
-    return get_write_error();
-  }
-
-  // Read from the source file into the first half of the buffer,
-  // decompress into the second half of the buffer, write the second
-  // half of the buffer to disk, and repeat.
-  _total_bytes_read = 0;
-  _read_all_input = false;
-  _source_buffer_length = 0;
-  _initiated = true;
-  _decompressor = new ZDecompressor();
-  _decompress_to_ram = false;
-  return EU_success;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::initiate
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-int Decompressor::
-initiate(Ramfile &source_file) {
-
-  if (_initiated == true) {
-    downloader_cat.error()
-      << "Decompressor::initiate() - Decompression has already been initiated"
-      << endl;
-    return EU_error_abort;
-  }
-
-  // Open source file
-  _read_string_stream = new istringstream(source_file._data);
-
-  // Determine source file length
-  _source_file_length = source_file._data.length();
-  if (_source_file_length == 0) {
-    downloader_cat.warning()
-      << "Decompressor::initiate() - Zero length file: "
-      << strerror(errno) << endl;
-    return get_write_error();
-  }
-
-  // Open destination file
-  _write_string_stream = new ostringstream();
-
-  // Read from the source file into the first half of the buffer,
-  // decompress into the second half of the buffer, write the second
-  // half of the buffer to disk, and repeat.
-  _total_bytes_read = 0;
-  _read_all_input = false;
-  _source_buffer_length = 0;
-  _initiated = true;
-  _decompressor = new ZDecompressor();
-  _decompress_to_ram = true;
-  return EU_success;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::cleanup
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Decompressor::
-cleanup(void) {
-  if (downloader_cat.is_debug())
+  if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << "Decompressor cleanup called" << endl;
-  if (_initiated == false) {
+      << "Unknown file extension for decompressor: ."
+      << extension << endl;
+  }
+  return EU_error_abort;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Decompressor::initiate
+//       Access: Public
+//  Description: Begins a background decompression from the named
+//               source file to the named destination file.  The
+//               source file is removed after successful completion.
+////////////////////////////////////////////////////////////////////
+int Decompressor::
+initiate(const Filename &source_file, const Filename &dest_file) {
+  cleanup();
+
+  // Open source file
+  _source_filename = Filename(source_file);
+  _source_filename.set_binary();
+
+  ifstream *source_fstream = new ifstream;
+  _source = source_fstream;
+  if (!_source_filename.open_read(*source_fstream)) {
     downloader_cat.error()
-      << "Decompressor::cleanup() - Decompression has not been "
-      << "initiated" << endl;
-    return;
+      << "Unable to read " << _source_filename << "\n";
+    return get_write_error();
   }
 
-  _initiated = false;
-  delete _decompressor;
-  _decompressor = NULL;
-  _read_stream.close();
-  _write_stream.close();
-  if (_decompress_to_ram == false)
-    _source_file.unlink();
+  // Determine source file length
+  source_fstream->seekg(0, ios::end);
+  _source_length = source_fstream->tellg();
+  if (_source_length == 0) {
+    downloader_cat.warning()
+      << "Zero length file: " << source_file << "\n";
+    return EU_error_file_empty;
+  }
+  source_fstream->seekg(0, ios::beg);
+
+  // Open destination file
+  Filename dest_filename(dest_file);
+  dest_filename.set_binary();
+
+  ofstream *dest_fstream = new ofstream;
+  _dest = dest_fstream;
+  if (!dest_filename.open_write(*dest_fstream)) {
+    downloader_cat.error()
+      << "Unable to write to " << dest_filename << "\n";
+    return get_write_error();
+  }
+
+  // Now create the decompressor stream.
+  _decompress = new IDecompressStream(_source, false);
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Decompressor::run
 //       Access: Public
-//  Description:
+//  Description: Called each frame to do the next bit of work in the
+//               background task.  Returns EU_ok if a chunk is
+//               completed but there is more to go, or EU_success when
+//               we're all done.  Any other return value indicates an
+//               error.
 ////////////////////////////////////////////////////////////////////
 int Decompressor::
-run(void) {
-  if (_initiated == false) {
-    downloader_cat.error()
-      << "Decompressor::run() - Decompression has not been initiated"
-      << endl;
-    return EU_error_abort;
+run() {
+  if (_decompress == (istream *)NULL) {
+    // Hmm, we were already done.
+    return EU_success;
   }
-
-  // See if there is anything left in the source file
-  if (_read_all_input == false) {
-    if (_decompress_to_ram == false) {
-      _read_stream.read(_buffer->_buffer, _half_buffer_length);
-      _source_buffer_length = _read_stream.gcount();
-      _total_bytes_read += _source_buffer_length;
-      if (_read_stream.eof()) {
-        nassertr(_total_bytes_read == _source_file_length, false);
-        _read_all_input = true;
-      }
-    } else {
-      _read_string_stream->read(_buffer->_buffer, _half_buffer_length);
-      _source_buffer_length = _read_string_stream->gcount();
-      _total_bytes_read += _source_buffer_length;
-      if (_read_string_stream->eof()) {
-        nassertr(_total_bytes_read == _source_file_length, false);
-        _read_all_input = true;
-      }
+  
+  // Read a bunch of characters from the decompress stream, but no
+  // more than decompressor_buffer_size.
+  int count = 0;
+  int ch = _decompress->get();
+  while (!_decompress->eof() && !_decompress->fail()) {
+    _dest->put(ch);
+    if (++count >= decompressor_buffer_size) {
+      // That's enough for now.
+      return EU_ok;
     }
+
+    ch = _decompress->get();
   }
 
-  char *next_in = _buffer->_buffer;
-  int avail_in = _source_buffer_length;
-  char *dest_buffer = _buffer->_buffer + _source_buffer_length;
-  char *next_out = dest_buffer;
-  int dest_buffer_length = _buffer->get_length() - _source_buffer_length;
-  int avail_out = dest_buffer_length;
-  nassertr(avail_out > 0 && avail_in > 0, false);
-
-  while (avail_in > 0) {
-    int ret;
-    if (_decompress_to_ram == false)
-      ret = _decompressor->decompress_to_stream(next_in, avail_in,
-                        next_out, avail_out, dest_buffer,
-                        dest_buffer_length, _write_stream);
-    else
-      ret = _decompressor->decompress_to_stream(next_in, avail_in,
-                        next_out, avail_out, dest_buffer,
-                        dest_buffer_length, *_write_string_stream);
-    if (ret == ZCompressorBase::S_error)
-      return EU_error_zlib;
-    if ((int)_decompressor->get_total_in() == _source_file_length &&
-          avail_out == dest_buffer_length) {
-      cleanup();
-      return EU_success;
-    }
-  }
-
-  return EU_ok;
+  // All done!
+  cleanup();
+  _source_filename.unlink();
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Decompressor::decompress
 //       Access: Public
-//  Description:
+//  Description: Performs a foreground decompression of the named
+//               file; does not return until the decompression is
+//               complete.
 ////////////////////////////////////////////////////////////////////
 bool Decompressor::
-decompress(Filename &source_file) {
+decompress(const Filename &source_file) {
   int ret = initiate(source_file);
   if (ret < 0)
     return false;
-  for (;;) {
-    ret = run();
-    if (ret == EU_success)
-      return true;
-    else if (ret < 0)
-      return false;
+
+  int ch = _decompress->get();
+  while (!_decompress->eof() && !_decompress->fail()) {
+    _dest->put(ch);
+    ch = _decompress->get();
   }
-  return false;
+
+  cleanup();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Decompressor::decompress
 //       Access: Public
-//  Description:
+//  Description: Does an in-memory decompression of the indicated
+//               Ramfile.  The decompressed contents are written back
+//               into the same Ramfile on completion.
 ////////////////////////////////////////////////////////////////////
 bool Decompressor::
-decompress(Ramfile &source_file) {
-  int ret = initiate(source_file);
-  if (ret < 0)
-    return false;
-  for (;;) {
-    ret = run();
-    if (ret == EU_success) {
-      source_file._data = _write_string_stream->str();
-      delete _read_string_stream;
-      _read_string_stream = NULL;
-      delete _write_string_stream;
-      _write_string_stream = NULL;
-      return true;
-    } else if (ret < 0)
-      return false;
+decompress(Ramfile &source_and_dest_file) {
+  istringstream source(source_and_dest_file._data);
+  ostringstream dest;
+
+  IDecompressStream decompress(&source, false);
+
+  int ch = decompress.get();
+  while (!decompress.eof() && !decompress.fail()) {
+    dest.put(ch);
+    ch = decompress.get();
   }
-  return false;
+
+  source_and_dest_file._pos = 0;
+  source_and_dest_file._data = dest.str();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Decompressor::get_progress
+//       Access: Public
+//  Description: Returns the ratio through the decompression step
+//               in the background.
+////////////////////////////////////////////////////////////////////
+float Decompressor::
+get_progress() const {
+  if (_decompress == (istream *)NULL) {
+    // Hmm, we were already done.
+    return 1.0f;
+  }
+
+  nassertr(_source_length > 0, 0.0);
+  size_t source_pos = _source->tellg();
+
+  // We stop the scale at 0.99 because there may be a little bit more
+  // to do even after the decompressor has read all of the source.
+  return (0.99f * (float)source_pos / (float)_source_length);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Decompressor::cleanup
+//       Access: Private
+//  Description: Called to reset a previous decompressor state and
+//               clean up properly.
+////////////////////////////////////////////////////////////////////
+void Decompressor::
+cleanup() {
+  if (_source != (istream *)NULL) {
+    delete _source;
+    _source = NULL;
+  }
+  if (_dest != (ostream *)NULL) {
+    delete _dest;
+    _dest = NULL;
+  }
+  if (_decompress != (istream *)NULL) {
+    delete _decompress;
+    _decompress = NULL;
+  }
 }

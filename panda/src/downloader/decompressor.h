@@ -15,59 +15,45 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef DECOMPRESSOR_H
 #define DECOMPRESSOR_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
-#include <filename.h>
-#include <buffer.h>
-#include <pointerTo.h>
-#include "zcompressor.h"
+
+#include "pandabase.h"
+#include "filename.h"
+
+class Ramfile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Decompressor
-// Description :
+// Description : This manages run-time decompression of a
+//               zlib-compressed stream, as a background or foreground
+//               task.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Decompressor {
 PUBLISHED:
-  Decompressor(void);
-  Decompressor(PT(Buffer) buffer);
-  virtual ~Decompressor(void);
+  Decompressor();
+  ~Decompressor();
 
-  int initiate(Filename &source_file);
-  int initiate(Filename &source_file, Filename &dest_file);
-  int initiate(Ramfile &source_file);
-  int run(void);
+  int initiate(const Filename &source_file);
+  int initiate(const Filename &source_file, const Filename &dest_file);
+  int run();
 
-  bool decompress(Filename &source_file);
-  bool decompress(Ramfile &source_file);
+  bool decompress(const Filename &source_file);
+  bool decompress(Ramfile &source_and_dest_file);
 
-  INLINE float get_progress(void) const;
+  float get_progress() const;
 
 private:
-  void init(PT(Buffer) buffer);
   void cleanup(void);
 
-  bool _initiated;
-  PT(Buffer) _buffer;
-  int _half_buffer_length;
-  Filename _temp_file_name;
+  Filename _source_filename;
+  
+  istream *_source;
+  istream *_decompress;
+  ostream *_dest;
 
-  Filename _source_file;
-  ifstream _read_stream;
-  ofstream _write_stream;
-  istringstream *_read_string_stream;
-  ostringstream *_write_string_stream;
-  int _source_file_length;
-  int _total_bytes_read;
-  bool _read_all_input;
-  bool _handled_all_input;
-  int _source_buffer_length;
-  ZDecompressor *_decompressor;
-  bool _decompress_to_ram;
+  size_t _source_length;
 };
 
 #include "decompressor.I"

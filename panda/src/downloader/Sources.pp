@@ -26,7 +26,7 @@
     socketStream.h socketStream.I \
     urlSpec.I urlSpec.h \
     $[if $[HAVE_NET], downloadDb.I downloadDb.h downloader.I downloader.h] \
-    $[if $[HAVE_ZLIB], decompressor.h zcompressor.I zcompressor.h download_utils.h] \
+    $[if $[HAVE_ZLIB], decompressor.h download_utils.h] \
     $[if $[HAVE_CRYPTO], patcher.cxx patcher.h patcher.I]
     
   #define INCLUDED_SOURCES                 \
@@ -43,7 +43,7 @@
     multiplexStream.cxx multiplexStreamBuf.cxx \
     urlSpec.cxx \
     $[if $[HAVE_NET], downloadDb.cxx downloader.cxx] \
-    $[if $[HAVE_ZLIB], decompressor.cxx zcompressor.cxx download_utils.cxx]
+    $[if $[HAVE_ZLIB], decompressor.cxx download_utils.cxx]
 
   #define INSTALL_HEADERS \
     asyncUtility.h asyncUtility.I \
@@ -63,8 +63,7 @@
     multiplexStreamBuf.I multiplexStreamBuf.I \
     patcher.h patcher.I \
     socketStream.h socketStream.I \
-    urlSpec.h urlSpec.I \
-    zcompressor.I zcompressor.h
+    urlSpec.h urlSpec.I
     
   #define IGATESCAN all
 
