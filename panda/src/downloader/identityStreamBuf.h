@@ -20,7 +20,12 @@
 #define IDENTITYSTREAMBUF_H
 
 #include "pandabase.h"
+
+// This module is not compiled if OpenSSL is not available.
+#ifdef HAVE_SSL
+
 #include "httpDocument.h"
+#include "bioStreamPtr.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -33,8 +38,8 @@ public:
   IdentityStreamBuf();
   virtual ~IdentityStreamBuf();
 
-  void open_read(istream *source, bool owns_source, HTTPDocument *doc,
-                 size_t content_length);
+  void open_read(BioStreamPtr *source, HTTPDocument *doc,
+                 bool has_content_length, size_t content_length);
   void close_read();
 
 protected:
@@ -43,12 +48,16 @@ protected:
 private:
   size_t read_chars(char *start, size_t length);
 
-  istream *_source;
-  bool _owns_source;
+  PT(BioStreamPtr) _source;
+  bool _has_content_length;
   size_t _bytes_remaining;
 
   PT(HTTPDocument) _doc;
   int _read_index;
+
+  friend class IIdentityStream;
 };
+
+#endif  // HAVE_SSL
 
 #endif

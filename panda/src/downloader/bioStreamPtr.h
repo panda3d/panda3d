@@ -1,5 +1,5 @@
-// Filename: chunkedStream.h
-// Created by:  drose (25Sep02)
+// Filename: bioStreamPtr.h
+// Created by:  drose (15Oct02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,48 +16,46 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CHUNKEDSTREAM_H
-#define CHUNKEDSTREAM_H
+#ifndef BIOSTREAMPTR_H
+#define BIOSTREAMPTR_H
 
 #include "pandabase.h"
 
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_SSL
 
-#include "socketStream.h"
-#include "chunkedStreamBuf.h"
-
-class HTTPDocument;
-class BioStreamPtr;
+#include "bioStream.h"
+#include "referenceCount.h"
+#include <openssl/ssl.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : IChunkedStream
-// Description : An input stream object that reads data from a source
-//               istream, but automatically decodes the "chunked"
-//               transfer-coding specified by an HTTP server.
-//
-//               Seeking is not supported.
+//       Class : BioStreamPtr
+// Description : A wrapper around an IBioStream object to make a
+//               reference-counting pointer to it.
 ////////////////////////////////////////////////////////////////////
-// No need to export from DLL.
-class IChunkedStream : public ISocketStream {
+class EXPCL_PANDAEXPRESS BioStreamPtr : public ReferenceCount {
 public:
-  INLINE IChunkedStream();
-  INLINE IChunkedStream(BioStreamPtr *source, HTTPDocument *doc);
+  INLINE BioStreamPtr(IBioStream *stream);
+  virtual ~BioStreamPtr();
 
-  INLINE IChunkedStream &open(BioStreamPtr *source, HTTPDocument *doc);
-  INLINE IChunkedStream &close();
+  INLINE IBioStream &operator *() const;
+  INLINE IBioStream *operator -> () const;
+  INLINE operator IBioStream * () const;
 
-  virtual bool is_closed();
+  INLINE void set_stream(IBioStream *stream);
+  INLINE IBioStream *get_stream() const;
 
+  bool connect() const;
+  
 private:
-  ChunkedStreamBuf _buf;
+  IBioStream *_stream;
 };
 
-#include "chunkedStream.I"
+#include "bioStreamPtr.I"
 
 #endif  // HAVE_SSL
 
-#endif
 
+#endif
 
 

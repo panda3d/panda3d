@@ -20,7 +20,12 @@
 #define CHUNKEDSTREAMBUF_H
 
 #include "pandabase.h"
+
+// This module is not compiled if OpenSSL is not available.
+#ifdef HAVE_SSL
+
 #include "httpDocument.h"
+#include "bioStreamPtr.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +39,7 @@ public:
   ChunkedStreamBuf();
   virtual ~ChunkedStreamBuf();
 
-  void open_read(istream *source, bool owns_source, HTTPDocument *doc);
+  void open_read(BioStreamPtr *source, HTTPDocument *doc);
   void close_read();
 
 protected:
@@ -43,13 +48,16 @@ protected:
 private:
   size_t read_chars(char *start, size_t length);
 
-  istream *_source;
-  bool _owns_source;
+  PT(BioStreamPtr) _source;
   size_t _chunk_remaining;
   bool _done;
 
   PT(HTTPDocument) _doc;
   int _read_index;
+
+  friend class IChunkedStream;
 };
+
+#endif  // HAVE_SSL
 
 #endif

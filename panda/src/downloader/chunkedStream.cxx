@@ -17,3 +17,24 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "chunkedStream.h"
+
+// This module is not compiled if OpenSSL is not available.
+#ifdef HAVE_SSL
+
+////////////////////////////////////////////////////////////////////
+//     Function: IChunkedStream::is_closed
+//       Access: Public, Virtual
+//  Description: Returns true if the last eof condition was triggered
+//               because the socket has genuinely closed, or false if
+//               we can expect more data to come along shortly.
+////////////////////////////////////////////////////////////////////
+INLINE bool IChunkedStream::
+is_closed() {
+  if (_buf._done || (*_buf._source)->is_closed()) {
+    return true;
+  }
+  clear();
+  return false;
+}
+
+#endif  // HAVE_SSL

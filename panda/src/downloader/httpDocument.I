@@ -25,8 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPDocument::
 is_valid() const {
-  return (_source != (IBioStream *)NULL && 
-          (_status_code / 100) == 2);
+  return (!_source.is_null() && (_status_code / 100) == 2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -183,30 +182,35 @@ get_file_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::get_document
+//     Function: HTTPDocument::post_form
 //       Access: Published
-//  Description: Opens the named document for reading, or if body is
-//               nonempty, posts data for a particular URL and
-//               retrieves the response.
+//  Description: Posts form data to a particular URL and retrieves the
+//               response.
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPDocument::
-get_document(const URLSpec &url, const string &body) {
-  const char *method = "GET";
-  if (!body.empty()) {
-    method = "POST";
-  }
+post_form(const URLSpec &url, const string &body) {
+  return send_request("POST", url, body);
+}
 
-  return send_request(method, url, body);
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_document
+//       Access: Published
+//  Description: Opens the named document for reading, if available.
+//               Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPDocument::
+get_document(const URLSpec &url) {
+  return send_request("GET", url, string());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPDocument::get_header
 //       Access: Published
 //  Description: Like get_document(), except only the header
-//               associated with the file is retrieved.  This may be
-//               used to test for existence of the file; it might also
-//               return the size of the file (if the server gives us
-//               this information).
+//               associated with the document is retrieved.  This may
+//               be used to test for existence of the document; it
+//               might also return the size of the document (if the
+//               server gives us this information).
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPDocument::
 get_header(const URLSpec &url) {

@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IBioStream::
-IBioStream() : istream(&_buf) {
+IBioStream() : ISocketStream(&_buf) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,8 +32,8 @@ IBioStream() : istream(&_buf) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IBioStream::
-IBioStream(BIO *source, bool owns_source) : istream(&_buf) {
-  open(source, owns_source);
+IBioStream(BioPtr *source) : ISocketStream(&_buf) {
+  open(source);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,9 +42,9 @@ IBioStream(BIO *source, bool owns_source) : istream(&_buf) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE IBioStream &IBioStream::
-open(BIO *source, bool owns_source) {
+open(BioPtr *source) {
   clear(0);
-  _buf.open_read(source, owns_source);
+  _buf.open_read(source);
   return *this;
 }
 

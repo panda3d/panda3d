@@ -1,5 +1,5 @@
-// Filename: bioStream.cxx
-// Created by:  drose (25Sep02)
+// Filename: socketStream.I
+// Created by:  drose (15Oct02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,20 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "bioStream.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IBioStream::is_closed
-//       Access: Public, Virtual
-//  Description: Returns true if the last eof condition was triggered
-//               because the socket has genuinely closed, or false if
-//               we can expect more data to come along shortly.
+//     Function: ISocketStream::Constructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool IBioStream::
-is_closed() {
-  if (_buf._is_closed) {
-    return true;
-  }
-  clear();
-  return false;
+INLINE ISocketStream::
+ISocketStream(streambuf *buf) : istream(buf) {
 }

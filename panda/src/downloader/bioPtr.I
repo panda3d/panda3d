@@ -1,5 +1,5 @@
-// Filename: chunkedStream.I
-// Created by:  drose (25Sep02)
+// Filename: bioPtr.I
+// Created by:  drose (15Oct02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,44 +18,60 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::Constructor
+//     Function: BioPtr::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE IChunkedStream::
-IChunkedStream() : ISocketStream(&_buf) {
+INLINE BioPtr::
+BioPtr(BIO *bio) : _bio(bio) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::Constructor
+//     Function: BioPtr::operator *
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE IChunkedStream::
-IChunkedStream(BioStreamPtr *source, HTTPDocument *doc) : ISocketStream(&_buf) {
-  open(source, doc);
+INLINE BIO &BioPtr::
+operator *() const {
+  return *_bio;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::open
+//     Function: BioPtr::operator ->
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE IChunkedStream &IChunkedStream::
-open(BioStreamPtr *source, HTTPDocument *doc) {
-  clear(0);
-  _buf.open_read(source, doc);
-  return *this;
+INLINE BIO *BioPtr::
+operator ->() const {
+  return _bio;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::close
+//     Function: BioPtr::operator typecast
 //       Access: Public
-//  Description: Resets the ChunkedStream to empty, but does not actually
-//               close the source CHUNKED unless owns_source was true.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE IChunkedStream &IChunkedStream::
-close() {
-  _buf.close_read();
-  return *this;
+INLINE BioPtr::
+operator BIO * () const {
+  return _bio;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioPtr::get_bio
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BioPtr::
+set_bio(BIO *bio) {
+  _bio = bio;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioPtr::get_bio
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BIO *BioPtr::
+get_bio() const {
+  return _bio;
 }

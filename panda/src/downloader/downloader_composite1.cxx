@@ -1,5 +1,7 @@
 #include "config_downloader.cxx"
 #include "asyncUtility.cxx"
+#include "bioPtr.cxx"
+#include "bioStreamPtr.cxx"
 #include "bioStream.cxx"
 #include "bioStreamBuf.cxx"
 #include "chunkedStream.cxx"

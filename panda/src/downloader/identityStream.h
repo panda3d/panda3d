@@ -21,9 +21,14 @@
 
 #include "pandabase.h"
 
+// This module is not compiled if OpenSSL is not available.
+#ifdef HAVE_SSL
+
+#include "socketStream.h"
 #include "identityStreamBuf.h"
 
 class HTTPDocument;
+class BioStreamPtr;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IIdentityStream
@@ -39,21 +44,25 @@ class HTTPDocument;
 //               completely read.
 ////////////////////////////////////////////////////////////////////
 // No need to export from DLL.
-class IIdentityStream : public istream {
+class IIdentityStream : public ISocketStream {
 public:
   INLINE IIdentityStream();
-  INLINE IIdentityStream(istream *source, bool owns_source, 
-                         HTTPDocument *doc, size_t content_length);
+  INLINE IIdentityStream(BioStreamPtr *source, HTTPDocument *doc,
+                         bool has_content_length, size_t content_length);
 
-  INLINE IIdentityStream &open(istream *source, bool owns_source, 
-                              HTTPDocument *doc, size_t content_length);
+  INLINE IIdentityStream &open(BioStreamPtr *source, HTTPDocument *doc,
+                               bool has_content_length, size_t content_length);
   INLINE IIdentityStream &close();
+
+  virtual bool is_closed();
 
 private:
   IdentityStreamBuf _buf;
 };
 
 #include "identityStream.I"
+
+#endif  // HAVE_SSL
 
 #endif
 

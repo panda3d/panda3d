@@ -43,12 +43,9 @@ static const char base64_table[64] = {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 HTTPDocument::
-HTTPDocument(HTTPClient *client, BIO *bio) :
-  _client(client),
-  _bio(bio)
+HTTPDocument(HTTPClient *client) :
+  _client(client)
 {
-  _owns_bio = false;
-  _source = (IBioStream *)NULL;
   _persistent_connection = false;
   _state = S_new;
   _read_index = 0;
@@ -77,13 +74,13 @@ send_request(const string &method, const URLSpec &url, const string &body) {
   // Let's call this before we call make_header(), so we'll get the
   // right HTTP version and proxy information etc.
   set_url(url);
-  if (!prepare_for_next()) {
+  if (!prepare_for_next(true)) {
     return false;
   }
 
   string header;
   make_header(header, method, url, body);
-  send_request(header, body);
+  send_request(header, body, true);
 
   if ((get_status_code() / 100) == 3 && get_status_code() != 305) {
     // Redirect.  Should we handle it automatically?
@@ -103,9 +100,9 @@ send_request(const string &method, const URLSpec &url, const string &body) {
             new_url.set_username(url.get_username());
           }
           set_url(new_url);
-          if (prepare_for_next()) {
+          if (prepare_for_next(true)) {
             make_header(header, method, new_url, body);
-            send_request(header, body);
+            send_request(header, body, true);
             keep_going =
               ((get_status_code() / 100) == 3 && get_status_code() != 305);
           }
@@ -125,8 +122,8 @@ send_request(const string &method, const URLSpec &url, const string &body) {
 //               that have already been defined.
 ////////////////////////////////////////////////////////////////////
 bool HTTPDocument::
-send_request(const string &header, const string &body) {
-  if (prepare_for_next()) {
+send_request(const string &header, const string &body, bool allow_reconnect) {
+  if (prepare_for_next(allow_reconnect)) {
     // Tack on a proxy authorization if it is called for.  Assume we
     // can use the same authorization we used last time.
     string proxy_auth_header = header;
@@ -149,7 +146,7 @@ send_request(const string &header, const string &body) {
           proxy_auth_header += "Proxy-Authorization: ";
           proxy_auth_header += _client->_proxy_authorization;
           proxy_auth_header += "\r\n";
-          if (prepare_for_next()) {
+          if (prepare_for_next(allow_reconnect)) {
             issue_request(proxy_auth_header, body);
           }
         }
@@ -165,7 +162,7 @@ send_request(const string &header, const string &body) {
         web_auth_header += "Authorization: ";
         web_auth_header += authorization;
         web_auth_header += "\r\n";
-        if (prepare_for_next()) {
+        if (prepare_for_next(allow_reconnect)) {
           issue_request(web_auth_header, body);
         }
       }
@@ -254,11 +251,7 @@ will_close_connection() const {
 ////////////////////////////////////////////////////////////////////
 istream *HTTPDocument::
 open_read_file() const {
-  // TODO: make this smarter about reference-counting the source
-  // stream properly so we can return an istream and not worry about
-  // future interference to or from the HTTPDocument.
-  bool persist = (get_persistent_connection() && !will_close_connection());
-  return ((HTTPDocument *)this)->read_body(!persist);
+  return ((HTTPDocument *)this)->read_body();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -292,6 +285,45 @@ write_headers(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::read_body
+//       Access: Published
+//  Description: Returns a newly-allocated istream suitable for
+//               reading the body of the document.
+////////////////////////////////////////////////////////////////////
+ISocketStream *HTTPDocument::
+read_body() {
+  if (_state != S_read_header) {
+    return NULL;
+  }
+
+  string transfer_coding = downcase(get_header_value("Transfer-Encoding"));
+  string content_length = get_header_value("Content-Length");
+
+  ISocketStream *result;
+  if (transfer_coding == "chunked") {
+    // "chunked" transfer encoding.  This means we will have to decode
+    // the length of the file as we read it in chunks.  The
+    // IChunkedStream does this.
+    _file_size = 0;
+    _state = S_started_body;
+    _read_index++;
+    result = new IChunkedStream(_source, (HTTPDocument *)this);
+
+  } else {
+    // If the transfer encoding is anything else, assume "identity".
+    // This is just the literal characters following the header, up
+    // until _file_size bytes have been read (if content-length was
+    // specified), or till end of file otherwise.
+    _state = S_started_body;
+    _read_index++;
+    result = new IIdentityStream(_source, (HTTPDocument *)this, 
+                                 !content_length.empty(), _file_size);
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPDocument::establish_connection
 //       Access: Private
 //  Description: Establishes a connection to the server, using the
@@ -302,8 +334,6 @@ write_headers(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool HTTPDocument::
 establish_connection() {
-  nassertr(_bio == (BIO *)NULL, false);
-
   bool result;
   if (_proxy.empty()) {
     if (_url.get_scheme() == "https") {
@@ -330,25 +360,9 @@ establish_connection() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPDocument::
 establish_http() {
-  ostringstream server;
-  server << _url.get_server() << ":" << _url.get_port();
-  string server_str = server.str();
-
-  _bio = BIO_new_connect((char *)server_str.c_str());
-
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug() << "connecting to " << server_str << "\n";
-  }
-  if (BIO_do_connect(_bio) <= 0) {
-    downloader_cat.info()
-      << "Could not contact server " << server_str << "\n";
-#ifdef REPORT_SSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
-    return false;
-  }
-
-  return true;
+  _bio = new BioPtr(_url);
+  _source = new BioStreamPtr(new IBioStream(_bio));
+  return _bio->connect();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -359,21 +373,9 @@ establish_http() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPDocument::
 establish_https() {
-  ostringstream server;
-  server << _url.get_server() << ":" << _url.get_port();
-  string server_str = server.str();
-
-  _bio = BIO_new_connect((char *)server_str.c_str());
-
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug() << "connecting to " << server_str << "\n";
-  }
-  if (BIO_do_connect(_bio) <= 0) {
-    downloader_cat.info()
-      << "Could not contact server " << server_str << "\n";
-#ifdef REPORT_SSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
+  _bio = new BioPtr(_url);
+  _source = new BioStreamPtr(new IBioStream(_bio));
+  if (!_bio->connect()) {
     return false;
   }
 
@@ -388,26 +390,9 @@ establish_https() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPDocument::
 establish_http_proxy() {
-  ostringstream proxy_server;
-  proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
-  string proxy_server_str = proxy_server.str();
-
-  _bio = BIO_new_connect((char *)proxy_server_str.c_str());
-
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
-      << "connecting to proxy " << proxy_server_str << "\n";
-  }
-  if (BIO_do_connect(_bio) <= 0) {
-    downloader_cat.info()
-      << "Could not contact proxy " << proxy_server_str << "\n";
-#ifdef REPORT_SSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
-    return false;
-  }
-
-  return true;
+  _bio = new BioPtr(_proxy);
+  _source = new BioStreamPtr(new IBioStream(_bio));
+  return _bio->connect();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -419,13 +404,10 @@ establish_http_proxy() {
 bool HTTPDocument::
 establish_https_proxy() {
   // First, ask the proxy to open a connection for us.
-  ostringstream proxy_server;
-  proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
-  string proxy_server_str = proxy_server.str();
-
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
-      << "connecting to proxy " << proxy_server_str << "\n";
+  _bio = new BioPtr(_proxy);
+  _source = new BioStreamPtr(new IBioStream(_bio));
+  if (!_bio->connect()) {
+    return false;
   }
 
   ostringstream request;
@@ -438,53 +420,27 @@ establish_https_proxy() {
   }
   string connect_header = request.str();
 
-  _bio = BIO_new_connect((char *)proxy_server_str.c_str());
-  if (BIO_do_connect(_bio) <= 0) {
-    downloader_cat.info()
-      << "Could not contact proxy " << proxy_server_str << ".\n";
-#ifdef REPORT_SSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
-    return false;
-  }
-
   // Now issue the request and read the response from the proxy.
 
-  // Temporarily flag our bio as being owned externally, so our call
-  // to send_request() won't end up with a recursive call back to
-  // establish_connection().
-  _owns_bio = false;
-
   string old_proxy_authorization = _client->_proxy_authorization;
-  bool connected = send_request(connect_header, string());
+  bool connected = send_request(connect_header, string(), false);
   if (!connected && get_status_code() == 407 &&
       _client->_proxy_authorization != old_proxy_authorization) {
     // If we ended up with a 407 (proxy authorization required), and
     // we changed authorization strings recently, then try the new
     // authorization string, once.  (Normally, send_request() would
     // have tried it again automatically, but we may have prevented
-    // that by setting _owns_bio to false.)
-    if (!prepare_for_next()) {
+    // that by passing false allow_reconnect as false.)
+    if (!prepare_for_next(true)) {
       free_bio();
-      _bio = BIO_new_connect((char *)proxy_server_str.c_str());
-      if (BIO_do_connect(_bio) <= 0) {
-        downloader_cat.info()
-          << "Could not contact proxy " << proxy_server_str 
-          << " a second time.\n";
-#ifdef REPORT_SSL_ERRORS
-        ERR_print_errors_fp(stderr);
-#endif
-        _owns_bio = true;
+      _bio = new BioPtr(_proxy);
+      _source = new BioStreamPtr(new IBioStream(_bio));
+      if (!_bio->connect()) {
         return false;
       }
     }
-    connected = send_request(connect_header, string());
+    connected = send_request(connect_header, string(), false);
   }
-
-  // Now that we've connected, be honest with the _owns_bio flag: if
-  // we're here, we know we really do own the BIO pointer (we just
-  // created it, after all.)
-  _owns_bio = true;
 
   if (!connected) {
     downloader_cat.info()
@@ -538,7 +494,7 @@ establish_https_proxy() {
 bool HTTPDocument::
 make_https_connection() {
   BIO *sbio = BIO_new_ssl(_client->_ssl_ctx, true);
-  BIO_push(sbio, _bio);
+  BIO_push(sbio, *_bio);
 
   SSL *ssl;
   BIO_get_ssl(sbio, &ssl);
@@ -563,7 +519,7 @@ make_https_connection() {
 
   // Now that we've made an SSL handshake, we can use the SSL bio to
   // do all of our communication henceforth.
-  _bio = sbio;
+  _bio->set_bio(sbio);
 
   long verify_result = SSL_get_verify_result(ssl);
   if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
@@ -995,7 +951,7 @@ set_url(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 void HTTPDocument::
 issue_request(const string &header, const string &body) {
-  if (_bio != (BIO *)NULL) {
+  if (!_bio.is_null()) {
     string request = header;
     request += "\r\n";
     request += body;
@@ -1004,21 +960,21 @@ issue_request(const string &header, const string &body) {
       show_send(request);
     }
 #endif
-    BIO_puts(_bio, request.c_str());
+    BIO_puts(*_bio, request.c_str());
     read_http_response();
 
-    if (_source->eof() || _source->fail()) {
+    if ((*_source)->eof() || (*_source)->fail()) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
           << "Whoops, socket closed.\n";
         free_bio();
-        if (prepare_for_next()) {
+        if (prepare_for_next(true)) {
 #ifndef NDEBUG
           if (downloader_cat.is_spam()) {
             show_send(request);
           }
 #endif
-          BIO_puts(_bio, request.c_str());
+          BIO_puts(*_bio, request.c_str());
           read_http_response();
         }
       }
@@ -1035,14 +991,13 @@ issue_request(const string &header, const string &body) {
 ////////////////////////////////////////////////////////////////////
 void HTTPDocument::
 read_http_response() {
-  nassertv(_source != (IBioStream *)NULL);
   _headers.clear();
   _realm = string();
 
   // The first line back should include the HTTP version and the
   // result code.
   string line;
-  getline(*_source, line);
+  getline(**_source, line);
   if (!line.empty() && line[line.length() - 1] == '\r') {
     line = line.substr(0, line.length() - 1);
   }
@@ -1050,7 +1005,7 @@ read_http_response() {
     downloader_cat.spam() << "recv: " << line << "\n";
   }
 
-  if (!(*_source) || line.length() < 5 || line.substr(0, 5) != "HTTP/") {
+  if (!(**_source) || line.length() < 5 || line.substr(0, 5) != "HTTP/") {
     // Not an HTTP response.
     _status_code = 0;
     _status_string = "Not an HTTP response";
@@ -1085,7 +1040,7 @@ read_http_response() {
   string field_name;
   string field_value;
 
-  getline(*_source, line);
+  getline(**_source, line);
   if (!line.empty() && line[line.length() - 1] == '\r') {
     line = line.substr(0, line.length() - 1);
   }
@@ -1093,7 +1048,7 @@ read_http_response() {
     downloader_cat.spam() << "recv: " << line << "\n";
   }
 
-  while (!_source->eof() && !_source->fail() && !line.empty()) {
+  while (!(*_source)->eof() && !(*_source)->fail() && !line.empty()) {
     if (isspace(line[0])) {
       // If the line begins with a space, that continues the previous
       // field.
@@ -1122,7 +1077,7 @@ read_http_response() {
       }
     }
 
-    getline(*_source, line);
+    getline(**_source, line);
     if (!line.empty() && line[line.length() - 1] == '\r') {
       line = line.substr(0, line.length() - 1);
     }
@@ -1412,59 +1367,6 @@ parse_authentication_schemes(HTTPDocument::AuthenticationSchemes &schemes,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPDocument::read_body
-//       Access: Private
-//  Description: Returns a newly-allocated istream suitable for
-//               reading the body of the document.  If owns_source is
-//               true, the ownership of the _source pointer will be
-//               passed to the istream; otherwise, it will be
-//               retained.  (owns_source must be true in order to read
-//               "identity" encoded documents.)
-////////////////////////////////////////////////////////////////////
-istream *HTTPDocument::
-read_body(bool owns_source) {
-  if (_state != S_read_header || _source == (IBioStream *)NULL) {
-    return NULL;
-  }
-
-  string transfer_coding = downcase(get_header_value("Transfer-Encoding"));
-  string content_length = get_header_value("Content-Length");
-
-  istream *result;
-  if (transfer_coding == "chunked") {
-    // Chunked can be used directly.
-    _file_size = 0;
-    _state = S_started_body;
-    _read_index++;
-    result = new IChunkedStream(_source, owns_source, (HTTPDocument *)this);
-    if (owns_source) {
-      _source = (IBioStream *)NULL;
-    }
-
-  } else if (!content_length.empty()) {
-    // If we have a content length, we can use an IdentityStream.
-    _state = S_started_body;
-    _read_index++;
-    result = new IIdentityStream(_source, owns_source, (HTTPDocument *)this, _file_size);
-    if (owns_source) {
-      _source = (IBioStream *)NULL;
-    }
-
-  } else if (owns_source) {
-    // If we own the source, we can return it.
-    _state = S_started_body;
-    result = _source;
-    _source = (IBioStream *)NULL;
-
-  } else {
-    // Otherwise, we don't own the source; too bad.
-    result = NULL;
-  }
-
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: HTTPDocument::prepare_for_next
 //       Access: Private
 //  Description: Resets the state to prepare it for sending a new
@@ -1473,15 +1375,21 @@ read_body(bool owns_source) {
 //               skipping past the unread body in the persistent
 //               connection, or it might do nothing at all if the body
 //               has already been completely read.
+//
+//               If allow_reconnect is true, then the current
+//               connection may be automatically dropped and a new
+//               connection reestablished if necessary; otherwise,
+//               this function will fail (and return false) if
+//               multiple connections are required.
 ////////////////////////////////////////////////////////////////////
 bool HTTPDocument::
-prepare_for_next() {
+prepare_for_next(bool allow_reconnect) {
   if (get_persistent_connection() && !will_close_connection() &&
       _proxy == _client->get_proxy()) {
     // See if we can reuse the current connection.
     if (_state == S_read_header) {
       // We have read the header; now skip past the body.
-      istream *body = read_body(false); 
+      istream *body = read_body(); 
       if (body != (istream *)NULL) {
         string line;
         getline(*body, line);
@@ -1491,27 +1399,22 @@ prepare_for_next() {
           }
           getline(*body, line);
         }
-        nassertr(body != _source, false);
         delete body;
       }
-    }
-
-    if (_source == (IBioStream *)NULL) {
-      _source = new IBioStream(_bio, false);
     }
 
     if (_state == S_read_body) {
       // We have read the body, but there's a trailer to read.
       string line;
-      getline(*_source, line);
+      getline(**_source, line);
       if (!line.empty() && line[line.length() - 1] == '\r') {
         line = line.substr(0, line.length() - 1);
       }
       if (downloader_cat.is_spam()) {
         downloader_cat.spam() << "skip: " << line << "\n";
       }
-      while (!_source->eof() && !_source->fail() && !line.empty()) {
-        getline(*_source, line);
+      while (!(*_source)->eof() && !(*_source)->fail() && !line.empty()) {
+        getline(**_source, line);
         if (!line.empty() && line[line.length() - 1] == '\r') {
           line = line.substr(0, line.length() - 1);
         }
@@ -1528,12 +1431,9 @@ prepare_for_next() {
     }
   }
 
-  if (_bio != (BIO *)NULL && _state == S_new) {
+  if (!_bio.is_null() && _state == S_new) {
     // If we have a BIO and the _state is S_new, then we haven't done
     // anything with the BIO yet, so we can still use it.
-    if (_source == (IBioStream *)NULL) {
-      _source = new IBioStream(_bio, false);
-    }
     return true;
   }
 
@@ -1541,9 +1441,9 @@ prepare_for_next() {
   // body, or we were only partly through reading the body elsewhere;
   // or possibly we don't have a connection yet at all.  In any case,
   // we must now get a new connection.
-  if (_bio != (BIO *)NULL && !_owns_bio) {
-    // We have a connection, but we don't own it, so we can't close
-    // it.  Too bad.
+  if (!_bio.is_null() && !allow_reconnect) {
+    // We have a connection, and we're not allowed to throw it away.
+    // Too bad.
     return false;
   }
   
@@ -1553,9 +1453,7 @@ prepare_for_next() {
   _proxy = _client->get_proxy();
   _http_version = _client->get_http_version();
   _http_version_string = _client->get_http_version_string();
-  _owns_bio = true;
   if (establish_connection()) {
-    _source = new IBioStream(_bio, false);
     return true;
   }
 
@@ -1572,24 +1470,8 @@ prepare_for_next() {
 ////////////////////////////////////////////////////////////////////
 void HTTPDocument::
 free_bio() {
-  if (_source != (IBioStream *)NULL) {
-    delete _source;
-    _source = (IBioStream *)NULL;
-  }
-  if (_bio != (BIO *)NULL) {
-    if (_owns_bio) {
-      // TODO: We should be more careful here to manage reference
-      // counts so we don't free the bio out from under a BIOStreamBuf
-      // that's trying to read from it.
-      if (downloader_cat.is_debug()) {
-        const URLSpec &url = _proxy.empty() ? _url : _proxy;
-        downloader_cat.debug()
-          << "Dropping connection to " << url.get_server() << "\n";
-      }
-      BIO_free_all(_bio);
-    }
-    _bio = (BIO *)NULL;
-  }
+  _source.clear();
+  _bio.clear();
   _read_index++;
   _state = S_new;
 }

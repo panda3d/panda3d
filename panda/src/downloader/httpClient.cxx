@@ -286,7 +286,7 @@ clear_expected_servers() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_documents
+//     Function: HTTPClient::make_channel
 //       Access: Published
 //  Description: Returns a new HTTPDocument object that may be used
 //               for reading multiple documents using the same
@@ -295,9 +295,25 @@ clear_expected_servers() {
 //               thus forcing a new connection for each document).
 ////////////////////////////////////////////////////////////////////
 PT(HTTPDocument) HTTPClient::
-get_documents() {
+make_channel() {
   PT(HTTPDocument) doc = new HTTPDocument(this);
   doc->set_persistent_connection(true);
+  return doc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::post_form
+//       Access: Published
+//  Description: Posts form data to a particular URL and retrieves the
+//               response.  Returns a new HTTPDocument object whether
+//               the document is successfully read or not; you can
+//               test is_valid() and get_return_code() to determine
+//               whether the document was retrieved.
+////////////////////////////////////////////////////////////////////
+PT(HTTPDocument) HTTPClient::
+post_form(const URLSpec &url, const string &body) {
+  PT(HTTPDocument) doc = new HTTPDocument(this);
+  doc->post_form(url, body);
   return doc;
 }
 
@@ -314,7 +330,11 @@ get_documents() {
 PT(HTTPDocument) HTTPClient::
 get_document(const URLSpec &url, const string &body) {
   PT(HTTPDocument) doc = new HTTPDocument(this);
-  doc->get_document(url, body);
+  if (body.empty()) {
+    doc->get_document(url);
+  } else {
+    doc->post_form(url, body);
+  }
   return doc;
 }
 
@@ -322,10 +342,10 @@ get_document(const URLSpec &url, const string &body) {
 //     Function: HTTPClient::get_header
 //       Access: Published
 //  Description: Like get_document(), except only the header
-//               associated with the file is retrieved.  This may be
-//               used to test for existence of the file; it might also
-//               return the size of the file (if the server gives us
-//               this information).
+//               associated with the document is retrieved.  This may
+//               be used to test for existence of the document; it
+//               might also return the size of the document (if the
+//               server gives us this information).
 ////////////////////////////////////////////////////////////////////
 PT(HTTPDocument) HTTPClient::
 get_header(const URLSpec &url) {

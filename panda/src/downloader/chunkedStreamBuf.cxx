@@ -18,6 +18,9 @@
 
 #include "chunkedStreamBuf.h"
 
+// This module is not compiled if OpenSSL is not available.
+#ifdef HAVE_SSL
+
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
 typedef int streamsize;
@@ -30,8 +33,6 @@ typedef int streamsize;
 ////////////////////////////////////////////////////////////////////
 ChunkedStreamBuf::
 ChunkedStreamBuf() {
-  _source = (istream *)NULL;
-  _owns_source = false;
   _chunk_remaining = 0;
   _done = true;
 
@@ -69,9 +70,8 @@ ChunkedStreamBuf::
 //               from the chunked encoding.
 ////////////////////////////////////////////////////////////////////
 void ChunkedStreamBuf::
-open_read(istream *source, bool owns_source, HTTPDocument *doc) {
+open_read(BioStreamPtr *source, HTTPDocument *doc) {
   _source = source;
-  _owns_source = owns_source;
   _chunk_remaining = 0;
   _done = false;
   _doc = doc;
@@ -94,13 +94,7 @@ open_read(istream *source, bool owns_source, HTTPDocument *doc) {
 ////////////////////////////////////////////////////////////////////
 void ChunkedStreamBuf::
 close_read() {
-  if (_source != (istream *)NULL) {
-    if (_owns_source) {
-      delete _source;
-      _owns_source = false;
-    }
-    _source = (istream *)NULL;
-  }
+  _source.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,15 +145,15 @@ read_chars(char *start, size_t length) {
   if (_chunk_remaining != 0) {
     // Extract some of the bytes remaining in the chunk.
     length = min(length, _chunk_remaining);
-    _source->read(start, length);
-    length = _source->gcount();
+    (*_source)->read(start, length);
+    length = (*_source)->gcount();
     _chunk_remaining -= length;
     return length;
   }
 
   // Read the next chunk.
   string line;
-  getline(*_source, line);
+  getline(**_source, line);
   if (!line.empty() && line[line.length() - 1] == '\r') {
     line = line.substr(0, line.length() - 1);
   }
@@ -180,3 +174,5 @@ read_chars(char *start, size_t length) {
   _chunk_remaining = chunk_size;
   return read_chars(start, length);
 }
+
+#endif  // HAVE_SSL

@@ -13,6 +13,8 @@
   #define SOURCES \
     config_downloader.h \
     asyncUtility.I asyncUtility.h \
+    bioPtr.I bioPtr.h \
+    bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \
     chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
     extractor.h \
@@ -21,6 +23,7 @@
     identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.h \
+    socketStream.h socketStream.I \
     urlSpec.I urlSpec.h \
     $[if $[HAVE_NET], downloadDb.I downloadDb.h downloader.I downloader.h] \
     $[if $[HAVE_ZLIB], decompressor.h zcompressor.I zcompressor.h download_utils.h] \
@@ -29,6 +32,8 @@
   #define INCLUDED_SOURCES                 \
     config_downloader.cxx \
     asyncUtility.cxx \
+    bioPtr.cxx \
+    bioStreamPtr.cxx \
     bioStream.cxx bioStreamBuf.cxx \
     chunkedStream.cxx chunkedStreamBuf.cxx \
     extractor.cxx \
@@ -42,6 +47,8 @@
 
   #define INSTALL_HEADERS \
     asyncUtility.h asyncUtility.I \
+    bioPtr.I bioPtr.h \
+    bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \
     chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
     config_downloader.h \
@@ -55,6 +62,7 @@
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.I \
     patcher.h patcher.I \
+    socketStream.h socketStream.I \
     urlSpec.h urlSpec.I \
     zcompressor.I zcompressor.h
     

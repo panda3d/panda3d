@@ -31,10 +31,12 @@
 #include "httpClient.h"
 #include "urlSpec.h"
 #include "virtualFile.h"
+#include "bioPtr.h"
+#include "bioStreamPtr.h"
 #include "pmap.h"
+#include "pointerTo.h"
 #include <openssl/ssl.h>
 
-class IBioStream;
 class HTTPClient;
 
 ////////////////////////////////////////////////////////////////////
@@ -43,11 +45,12 @@ class HTTPClient;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS HTTPDocument : public VirtualFile {
 private:
-  HTTPDocument(HTTPClient *client, BIO *bio = NULL);
+  HTTPDocument(HTTPClient *client);
 
   bool send_request(const string &method, const URLSpec &url, 
                     const string &body);
-  bool send_request(const string &header, const string &body);
+  bool send_request(const string &header, const string &body, 
+                    bool allow_reconnect);
 
 public:
   virtual ~HTTPDocument();
@@ -78,8 +81,11 @@ PUBLISHED:
 
   void write_headers(ostream &out) const;
 
-  INLINE bool get_document(const URLSpec &url, const string &body = string());
+  INLINE bool post_form(const URLSpec &url, const string &body);
+  INLINE bool get_document(const URLSpec &url);
   INLINE bool get_header(const URLSpec &url);
+
+  ISocketStream *read_body();
 
 private:
   bool establish_connection();
@@ -112,15 +118,13 @@ private:
   static void show_send(const string &message);
 #endif
 
-  istream *read_body(bool owns_source);
-  bool prepare_for_next();
+  bool prepare_for_next(bool allow_reconnect);
   void free_bio();
 
   HTTPClient *_client;
   URLSpec _proxy;
-  BIO *_bio;
-  bool _owns_bio;
-  IBioStream *_source;
+  PT(BioPtr) _bio;
+  PT(BioStreamPtr) _source;
   bool _persistent_connection;
 
   URLSpec _url;

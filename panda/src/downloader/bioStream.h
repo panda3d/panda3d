@@ -24,6 +24,7 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_SSL
 
+#include "socketStream.h"
 #include "bioStreamBuf.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -35,13 +36,15 @@
 //
 //               Seeking is not supported.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS IBioStream : public istream {
+class EXPCL_PANDAEXPRESS IBioStream : public ISocketStream {
 public:
   INLINE IBioStream();
-  INLINE IBioStream(BIO *source, bool owns_source);
+  INLINE IBioStream(BioPtr *source);
 
-  INLINE IBioStream &open(BIO *source, bool owns_source);
+  INLINE IBioStream &open(BioPtr *source);
   INLINE IBioStream &close();
+
+  virtual bool is_closed();
 
 private:
   BioStreamBuf _buf;

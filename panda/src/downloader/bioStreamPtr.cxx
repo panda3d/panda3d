@@ -1,5 +1,5 @@
-// Filename: bioStream.cxx
-// Created by:  drose (25Sep02)
+// Filename: bioStreamPtr.cxx
+// Created by:  drose (15Oct02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,20 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "bioStream.h"
+#include "bioPtr.h"
+
+#ifdef HAVE_SSL
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IBioStream::is_closed
-//       Access: Public, Virtual
-//  Description: Returns true if the last eof condition was triggered
-//               because the socket has genuinely closed, or false if
-//               we can expect more data to come along shortly.
+//     Function: BioStreamPtr::Destructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool IBioStream::
-is_closed() {
-  if (_buf._is_closed) {
-    return true;
+BioStreamPtr::
+~BioStreamPtr() {
+  if (_stream != (IBioStream *)NULL) {
+    delete _stream;
+    _stream = (IBioStream *)NULL;
   }
-  clear();
-  return false;
 }
+
+#endif  // HAVE_SSL

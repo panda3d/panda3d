@@ -18,6 +18,9 @@
 
 #include "identityStreamBuf.h"
 
+// This module is not compiled if OpenSSL is not available.
+#ifdef HAVE_SSL
+
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
 typedef int streamsize;
@@ -30,8 +33,7 @@ typedef int streamsize;
 ////////////////////////////////////////////////////////////////////
 IdentityStreamBuf::
 IdentityStreamBuf() {
-  _source = (istream *)NULL;
-  _owns_source = false;
+  _has_content_length = true;
   _bytes_remaining = 0;
 
 #ifdef WIN32_VC
@@ -68,11 +70,11 @@ IdentityStreamBuf::
 //               from the identity encoding.
 ////////////////////////////////////////////////////////////////////
 void IdentityStreamBuf::
-open_read(istream *source, bool owns_source, HTTPDocument *doc, 
-          size_t content_length) {
+open_read(BioStreamPtr *source, HTTPDocument *doc, 
+          bool has_content_length, size_t content_length) {
   _source = source;
-  _owns_source = owns_source;
   _doc = doc;
+  _has_content_length = has_content_length;
   _bytes_remaining = content_length;
 
   if (_doc != (HTTPDocument *)NULL) {
@@ -87,13 +89,7 @@ open_read(istream *source, bool owns_source, HTTPDocument *doc,
 ////////////////////////////////////////////////////////////////////
 void IdentityStreamBuf::
 close_read() {
-  if (_source != (istream *)NULL) {
-    if (_owns_source) {
-      delete _source;
-      _owns_source = false;
-    }
-    _source = (istream *)NULL;
-  }
+  _source.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,24 +133,44 @@ underflow() {
 ////////////////////////////////////////////////////////////////////
 size_t IdentityStreamBuf::
 read_chars(char *start, size_t length) {
-  if (_bytes_remaining == 0) {
-    return 0;
-  }
+  if (!_has_content_length) {
+    // If we have no restrictions on content length, read till end of
+    // file.
+    (*_source)->read(start, length);
+    length = (*_source)->gcount();
 
-  // Extract some of the bytes remaining in the chunk.
-  length = min(length, _bytes_remaining);
-  _source->read(start, length);
-  length = _source->gcount();
-  _bytes_remaining -= length;
+    if (length == 0) {
+      // End of file; we're done.
+      if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
+        // An IdentityStreamBuf doesn't have a trailer, so we've already
+        // "read" it.
+        _doc->_state = HTTPDocument::S_read_trailer;
+      }
+    }
 
-  if (_bytes_remaining == 0) {
-    // We're done.
-    if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
-      // An IdentityStreamBuf doesn't have a trailer, so we've already
-      // "read" it.
-      _doc->_state = HTTPDocument::S_read_trailer;
+  } else {
+    if (_bytes_remaining == 0) {
+      return 0;
+    }
+    
+    // Extract some of the bytes remaining in the chunk.
+    
+    length = min(length, _bytes_remaining);
+    (*_source)->read(start, length);
+    length = (*_source)->gcount();
+    _bytes_remaining -= length;
+    
+    if (_bytes_remaining == 0) {
+      // We're done.
+      if (_doc != (HTTPDocument *)NULL && _read_index == _doc->_read_index) {
+        // An IdentityStreamBuf doesn't have a trailer, so we've already
+        // "read" it.
+        _doc->_state = HTTPDocument::S_read_trailer;
+      }
     }
   }
 
   return length;
 }
+
+#endif  // HAVE_SSL

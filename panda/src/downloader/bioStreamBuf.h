@@ -24,6 +24,8 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_SSL
 
+#include "bioPtr.h"
+#include "pointerTo.h"
 #include <openssl/ssl.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -36,15 +38,17 @@ public:
   BioStreamBuf();
   virtual ~BioStreamBuf();
 
-  void open_read(BIO *source, bool owns_source);
+  void open_read(BioPtr *source);
   void close_read();
 
 protected:
   virtual int underflow(void);
 
 private:
-  BIO *_source;
-  bool _owns_source;
+  PT(BioPtr) _source;
+  bool _is_closed;
+
+  friend class IBioStream;
 };
 
 #endif  // HAVE_SSL

@@ -32,8 +32,7 @@ typedef int streamsize;
 ////////////////////////////////////////////////////////////////////
 BioStreamBuf::
 BioStreamBuf() {
-  _source = (BIO *)NULL;
-  _owns_source = false;
+  _is_closed = false;
 
 #ifdef WIN32_VC
   // In spite of the claims of the MSDN Library to the contrary,
@@ -67,9 +66,8 @@ BioStreamBuf::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BioStreamBuf::
-open_read(BIO *source, bool owns_source) {
+open_read(BioPtr *source) {
   _source = source;
-  _owns_source = owns_source;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,13 +77,7 @@ open_read(BIO *source, bool owns_source) {
 ////////////////////////////////////////////////////////////////////
 void BioStreamBuf::
 close_read() {
-  if (_source != (BIO *)NULL) {
-    if (_owns_source) {
-      BIO_free_all(_source);
-      _owns_source = false;
-    }
-    _source = (BIO *)NULL;
-  }
+  _source.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,11 +97,12 @@ underflow() {
 
     // BIO_read might return -1 or -2 on eof or error, so we have to
     // allow for negative numbers.
-    int read_count = BIO_read(_source, gptr(), buffer_size);
+    int read_count = BIO_read(*_source, gptr(), buffer_size);
 
     if (read_count != (int)num_bytes) {
       // Oops, we didn't read what we thought we would.
       if (read_count <= 0) {
+        _is_closed = !BIO_should_retry(*_source);
         return EOF;
       }
 

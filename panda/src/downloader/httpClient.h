@@ -89,7 +89,8 @@ PUBLISHED:
   bool add_expected_server(const string &server_attributes);
   void clear_expected_servers();
 
-  PT(HTTPDocument) get_documents();
+  PT(HTTPDocument) make_channel();
+  PT(HTTPDocument) post_form(const URLSpec &url, const string &body);
   PT(HTTPDocument) get_document(const URLSpec &url,
                                 const string &body = string());
   PT(HTTPDocument) get_header(const URLSpec &url);

@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IIdentityStream::
-IIdentityStream() : istream(&_buf) {
+IIdentityStream() : ISocketStream(&_buf) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,9 +32,11 @@ IIdentityStream() : istream(&_buf) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IIdentityStream::
-IIdentityStream(istream *source, bool owns_source, 
-               HTTPDocument *doc, size_t content_length) : istream(&_buf) {
-  open(source, owns_source, doc, content_length);
+IIdentityStream(BioStreamPtr *source, HTTPDocument *doc,
+                bool has_content_length, size_t content_length) : 
+  ISocketStream(&_buf) 
+{
+  open(source, doc, has_content_length, content_length);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,10 +45,10 @@ IIdentityStream(istream *source, bool owns_source,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE IIdentityStream &IIdentityStream::
-open(istream *source, bool owns_source, HTTPDocument *doc, 
-     size_t content_length) {
+open(BioStreamPtr *source, HTTPDocument *doc, 
+     bool has_content_length, size_t content_length) {
   clear(0);
-  _buf.open_read(source, owns_source, doc, content_length);
+  _buf.open_read(source, doc, has_content_length, content_length);
   return *this;
 }
 
