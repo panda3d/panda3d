@@ -3642,8 +3642,7 @@ bind_clip_plane(PlaneNode *plane, int plane_id) {
   const LMatrix4f &plane_mat = plane_np.get_mat(_scene_setup->get_scene_root());
   Planef xformed_plane = plane->get_plane() * plane_mat;
 
-  Planed double_plane(xformed_plane._a, xformed_plane._b, 
-                      xformed_plane._c, xformed_plane._d);
+  Planed double_plane(LCAST(double, xformed_plane));
   glClipPlane(id, double_plane.get_data());
 
   report_gl_errors();
