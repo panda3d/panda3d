@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandaFramework.h"
+#include "textNode.h"
 
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"
@@ -72,6 +73,11 @@ help() {
     "      Automatically center models within the viewing window on startup.\n"
     "      This can also be achieved with the 'c' hotkey at runtime.\n\n"
 
+    "  -l\n"
+    "      Open the window before loading any models with the text \"Loading\"\n"
+    "      displayed in the window.  The default is not to open the window\n"
+    "      until all models are loaded.\n\n"
+
     "  -h\n"
     "      Display this help text.\n\n";
 }
@@ -82,16 +88,21 @@ main(int argc, char *argv[]) {
   framework.set_window_title("Panda Viewer");
 
   bool auto_center = false;
+  bool show_loading = false;
 
   //  extern char *optarg;
   extern int optind;
-  static const char *optflags = "ch";
+  static const char *optflags = "clh";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
     switch (flag) {
     case 'c':
       auto_center = true;
+      break;
+
+    case 'l':
+      show_loading = true;
       break;
 
     case 'h':
@@ -113,6 +124,26 @@ main(int argc, char *argv[]) {
   if (window != (WindowFramework *)NULL) {
     // We've successfully opened a window.
 
+    NodePath loading_np;
+
+    if (show_loading) {
+      // Put up a "loading" message for the user's benefit.
+      NodePath aspect_2d = window->get_aspect_2d();
+      PT(TextNode) loading = new TextNode("loading");
+      loading_np = aspect_2d.attach_new_node(loading);
+      loading_np.set_scale(0.125f);
+      loading->set_text_color(1.0f, 1.0f, 1.0f, 1.0f);
+      loading->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
+      loading->set_shadow(0.04f, 0.04f);
+      loading->set_align(TextNode::A_center);
+      loading->set_text("Loading...");
+
+      // Allow a couple of frames to go by so the window will be fully
+      // created and the text will be visible.
+      framework.do_frame();
+      framework.do_frame();
+    }
+
     window->enable_keyboard();
     window->setup_trackball();
     framework.get_models().instance_to(window->get_render());
@@ -123,6 +154,7 @@ main(int argc, char *argv[]) {
       window->load_models(framework.get_models(), argc, argv);
     }
     window->loop_animations();
+    loading_np.remove_node();
 
     if (auto_center) {
       window->center_trackball(framework.get_models());
