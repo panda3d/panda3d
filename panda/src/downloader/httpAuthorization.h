@@ -67,6 +67,7 @@ public:
                                            const string &field_value);
   static URLSpec get_canonical_url(const URLSpec &url);
   static string base64_encode(const string &s);
+  static string base64_decode(const string &s);
 
 protected:
   static size_t scan_quoted_or_unquoted_string(string &result, 

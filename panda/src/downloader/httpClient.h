@@ -125,6 +125,9 @@ PUBLISHED:
   PT(HTTPChannel) get_document(const URLSpec &url);
   PT(HTTPChannel) get_header(const URLSpec &url);
 
+  INLINE static string base64_encode(const string &s);
+  INLINE static string base64_decode(const string &s);
+
 public:
   SSL_CTX *get_ssl_ctx();
 

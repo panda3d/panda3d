@@ -33,6 +33,9 @@ static const char base64_table[64] = {
   '4', '5', '6', '7', '8', '9', '+', '/',
 };
 
+static unsigned char base64_invert[128];
+static bool got_base64_invert = false;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPAuthorization::Constructor
 //       Access: Protected
@@ -234,6 +237,56 @@ base64_encode(const string &s) {
       result += base64_table[(word >> 12) & 0x3f];
       result += '=';
       result += '=';
+    }
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPAuthorization::base64_decode
+//       Access: Public, Static
+//  Description: Returns the string decoded from base64.
+////////////////////////////////////////////////////////////////////
+string HTTPAuthorization::
+base64_decode(const string &s) {
+  // Build up the invert table if this is the first time.
+  if (!got_base64_invert) {
+    int i;
+    for (i = 0; i < 128; i++) {
+      base64_invert[i] = 0xff;
+    }
+
+    for (int i = 0; i < 64; i++) {
+      base64_invert[base64_table[i]] = i;
+    }
+
+    base64_invert['='] = 0;
+
+    got_base64_invert = true;
+  }
+
+  // Collect the string 4 bytes at a time; decode this back into a
+  // 24-bit word and output the 3 corresponding bytes.
+  size_t num_words = s.size() / 4;
+  string result;
+  result.reserve(num_words * 3);
+  size_t p;
+  for (p = 0; p < s.size(); p += 4) {
+    unsigned int c0 = base64_invert[s[p] & 0x7f];
+    unsigned int c1 = base64_invert[s[p + 1] & 0x7f];
+    unsigned int c2 = base64_invert[s[p + 2] & 0x7f];
+    unsigned int c3 = base64_invert[s[p + 3] & 0x7f];
+
+    unsigned int word = 
+      (c0 << 18) | (c1 << 12) | (c2 << 6) | c3;
+
+    result += (char)((word >> 16) & 0xff);
+    if (s[p + 2] != '=') {
+      result += (char)((word >> 8) & 0xff);
+      if (s[p + 3] != '=') {
+        result += (char)(word & 0xff);
+      }
     }
   }
 

@@ -170,3 +170,28 @@ get_cipher_list() const {
   return _cipher_list;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::base64_encode
+//       Access: Published, Static
+//  Description: Implements HTTPAuthorization::base64_encode().  This
+//               is provided here just as a convenient place to
+//               publish it for access by the scripting language; C++
+//               code should probably use HTTPAuthorization directly.
+////////////////////////////////////////////////////////////////////
+INLINE string HTTPClient::
+base64_encode(const string &s) {
+  return HTTPAuthorization::base64_encode(s);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::base64_decode
+//       Access: Published, Static
+//  Description: Implements HTTPAuthorization::base64_decode().  This
+//               is provided here just as a convenient place to
+//               publish it for access by the scripting language; C++
+//               code should probably use HTTPAuthorization directly.
+////////////////////////////////////////////////////////////////////
+INLINE string HTTPClient::
+base64_decode(const string &s) {
+  return HTTPAuthorization::base64_decode(s);
+}
