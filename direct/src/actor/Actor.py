@@ -483,7 +483,7 @@ class Actor(PandaObject, NodePath):
         return controls[0].getPlayRate()
     
     def setPlayRate(self, rate, animName, partName=None):
-        """getPlayRate(self, float, string, string=None)
+        """setPlayRate(self, float, string, string=None)
         Set the play rate of given anim for a given part.
         If no part is given, set for all parts in dictionary.
 
@@ -508,7 +508,7 @@ class Actor(PandaObject, NodePath):
             return None
 
         animControl = controls[0]
-        return (animControl.getNumFrames() / animControl.getFrameRate())
+        return animControl.getNumFrames() / animControl.getFrameRate()
 
     def getNumFrames(self, animName=None, partName=None):
         """ getNumFrames(animName, partName)

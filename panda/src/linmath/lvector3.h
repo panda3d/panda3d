@@ -19,7 +19,7 @@
 #ifndef LVECTOR3_H
 #define LVECTOR3_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "coordinateSystem.h"
 #include "cmath.h"

@@ -62,7 +62,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "lvec2_ops.h"
 #include "lvec3_ops.h"

@@ -19,7 +19,7 @@
 #ifndef VECTOR_PT_EGGMATERIAL_H
 #define VECTOR_PT_EGGMATERIAL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggMaterial.h"
 #include "pt_EggMaterial.h"
@@ -40,7 +40,7 @@
 #define TYPE PT_EggMaterial
 #define NAME vector_PT_EggMaterial
 
-#include <vector_src.h>
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

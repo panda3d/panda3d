@@ -19,10 +19,8 @@
 #ifndef VECTOR_PARTGROUPSTAR_H
 #define VECTOR_PARTGROUPSTAR_H
 
-#include <pandabase.h>
-
+#include "pandabase.h"
 #include "partGroup.h"
-
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +38,7 @@
 #define TYPE PartGroup *
 #define NAME vector_PartGroupStar
 
-#include <vector_src.h>
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

@@ -19,10 +19,8 @@
 #ifndef VECTOR_VERTEXF_H
 #define VECTOR_VERTEXF_H
 
-#include <pandabase.h>
-
+#include "pandabase.h"
 #include "luse.h"
-
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +37,7 @@
 #define TYPE Vertexf
 #define NAME vector_Vertexf
 
-#include <vector_src.h>
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

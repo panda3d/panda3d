@@ -19,7 +19,7 @@
 #ifndef VECTOR_PT_EGGTEXTURE_H
 #define VECTOR_PT_EGGTEXTURE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggTexture.h"
 #include "pt_EggTexture.h"
@@ -40,7 +40,7 @@
 #define TYPE PT_EggTexture
 #define NAME vector_PT_EggTexture
 
-#include <vector_src.h>
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

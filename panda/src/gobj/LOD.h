@@ -73,7 +73,7 @@ protected:
 #define TYPE LODSwitch
 #define NAME LODSwitchVector
 
-#include <vector_src.h>
+#include "vector_src.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LOD

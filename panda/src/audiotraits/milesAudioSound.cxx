@@ -55,7 +55,6 @@ namespace {
       audio_debug("MilesAudioSound "<<get_status_char(_audio)<<" \""<<get_name() \
       <<"\" "<< x )
 }
-
 #else //][
 #define miles_audio_debug(x) ((void)0)
 #endif //]

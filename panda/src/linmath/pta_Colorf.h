@@ -19,11 +19,11 @@
 #ifndef PTA_COLORF_H
 #define PTA_COLORF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "vector_Colorf.h"
 
-#include <pointerToArray.h>
+#include "pointerToArray.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PTA_Colorf

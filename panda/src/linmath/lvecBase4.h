@@ -19,12 +19,12 @@
 #ifndef LVECBASE4_H
 #define LVECBASE4_H
 
-#include <pandabase.h>
-#include <typedObject.h>
-#include <notify.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <checksumHashGenerator.h>
+#include "pandabase.h"
+#include "typedObject.h"
+#include "notify.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "checksumHashGenerator.h"
 
 #include "cmath.h"
 #include "nearly_zero.h"

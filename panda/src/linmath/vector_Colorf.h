@@ -19,10 +19,8 @@
 #ifndef VECTOR_COLORF_H
 #define VECTOR_COLORF_H
 
-#include <pandabase.h>
-
+#include "pandabase.h"
 #include "luse.h"
-
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +37,7 @@
 #define TYPE Colorf
 #define NAME vector_Colorf
 
-#include <vector_src.h>
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

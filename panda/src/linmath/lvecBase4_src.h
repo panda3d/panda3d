@@ -51,11 +51,22 @@ PUBLISHED:
   INLINE_LINMATH FLOATTYPE get_y() const;
   INLINE_LINMATH FLOATTYPE get_z() const;
   INLINE_LINMATH FLOATTYPE get_w() const;
+
   INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
   INLINE_LINMATH void set_x(FLOATTYPE value);
   INLINE_LINMATH void set_y(FLOATTYPE value);
   INLINE_LINMATH void set_z(FLOATTYPE value);
   INLINE_LINMATH void set_w(FLOATTYPE value);
+
+  // These next functions add to an existing value.
+  // i.e. foo.set_x(foo.get_x() + value)
+  // These are useful to reduce overhead in scripting
+  // languages:
+  INLINE_LINMATH void add_to_cell(int i, FLOATTYPE value);
+  INLINE_LINMATH void add_x(FLOATTYPE value);
+  INLINE_LINMATH void add_y(FLOATTYPE value);
+  INLINE_LINMATH void add_z(FLOATTYPE value);
+  INLINE_LINMATH void add_w(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
   INLINE_LINMATH int get_num_components() const;

@@ -19,11 +19,11 @@
 #ifndef __LROTATION_H__
 #define __LROTATION_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "lquaternion.h"
 #include "cmath.h"
 
-#include <notify.h>
+#include "notify.h"
 
 #include "fltnames.h"
 #include "lrotation_src.h"

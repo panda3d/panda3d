@@ -19,7 +19,7 @@
 #ifndef CMATH_H
 #define CMATH_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <math.h>
 

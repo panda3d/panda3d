@@ -78,7 +78,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # List the cdc in the number and name dictionaries
             self.number2cdc[dcClass.getNumber()]=clientDistClass
             self.name2cdc[dcClass.getName()]=clientDistClass
-        return None
 
     def handleGenerateWithRequired(self, di):
         # Get the class Id
@@ -89,7 +88,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         cdc = self.number2cdc[classId]
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredFields(cdc, doId, di)
-        return None
 
     def handleGenerateWithRequiredOther(self, di):
         # Get the class Id
@@ -100,7 +98,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         cdc = self.number2cdc[classId]
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredOtherFields(cdc, doId, di)
-        return None
 
     def handleQuietZoneGenerateWithRequired(self, di):
         # Special handler for quiet zone generates -- we need to filter
@@ -115,7 +112,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         if cdc.constructor.neverDisable:
             # Create a new distributed object, and put it in the dictionary
             distObj = self.generateWithRequiredFields(cdc, doId, di)
-        return None
 
     def handleQuietZoneGenerateWithRequiredOther(self, di):
         # Special handler for quiet zone generates -- we need to filter
@@ -241,7 +237,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             ClientRepository.notify.warning("Disable failed. DistObj " +
                                             str(doId) +
                                             " is not in dictionary")
-        return None
 
     def handleDelete(self, di):
         # Get the DO Id
@@ -282,7 +277,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         else:
             ClientRepository.notify.warning(
                 "Asked to delete non-existent DistObj " + str(doId))
-        return None
 
     def handleUpdateField(self, di):
         # Get the DO Id
@@ -300,7 +294,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         else:
             ClientRepository.notify.warning(
                 "Asked to update non-existent DistObj " + str(doId))
-        return None
 
     def handleGoGetLost(self, di):
         # The server told us it's about to drop the connection on us.
@@ -347,7 +340,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 currentLoginStateName +
                 " game state: " +
                 currentGameStateName)
-        return None
 
     def sendSetShardMsg(self, shardId):
         datagram = Datagram()
@@ -357,7 +349,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         datagram.addUint32(shardId)
         # send the message
         self.send(datagram)
-        return None
 
     def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
         datagram = Datagram()

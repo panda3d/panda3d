@@ -19,8 +19,7 @@
 #ifndef VECTOR_TEXCOORDF_H
 #define VECTOR_TEXCOORDF_H
 
-#include <pandabase.h>
-
+#include "pandabase.h"
 #include "vector_LPoint2f.h"
 
 ////////////////////////////////////////////////////////////////////

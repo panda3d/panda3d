@@ -67,9 +67,7 @@ class Loader:
         times before parenting each instance somewhere, or when you
         want to load a model and immediately set a transform on it.
         But also consider loadModelCopy().
-        
         """
-
         assert(Loader.notify.debug("Loading model once: %s under %s" % (modelPath, underNode)))
         if phaseChecker:
             phaseChecker(modelPath)
@@ -91,7 +89,7 @@ class Loader:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
-            return (NodePath(node.copySubgraph()))
+            return NodePath(node.copySubgraph())
         else:
             return None
 

@@ -19,7 +19,7 @@
 #ifndef VECTOR_UCHAR_H
 #define VECTOR_UCHAR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pvector.h"
 
@@ -37,7 +37,7 @@
 #define TYPE unsigned char
 #define NAME vector_uchar
 
-#include <vector_src.h>
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

@@ -19,7 +19,7 @@
 #ifndef EGGMORPHLIST_H
 #define EGGMORPHLIST_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggMorph.h"
 
@@ -73,19 +73,19 @@ private:
 #define EXPTP EXPTP_PANDAEGG
 #define TYPE LVector3d
 #define NAME vector_LVector3d
-#include <vector_src.h>
+#include "vector_src.h"
 
 #define EXPCL EXPCL_PANDAEGG
 #define EXPTP EXPTP_PANDAEGG
 #define TYPE LVector2d
 #define NAME vector_LVector2d
-#include <vector_src.h>
+#include "vector_src.h"
 
 #define EXPCL EXPCL_PANDAEGG
 #define EXPTP EXPTP_PANDAEGG
 #define TYPE LVector4f
 #define NAME vector_LVector4f
-#include <vector_src.h>
+#include "vector_src.h"
 
 // Now export each EggMorphList.
 

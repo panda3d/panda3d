@@ -19,10 +19,8 @@
 #ifndef VECTOR_LPOINT2F_H
 #define VECTOR_LPOINT2F_H
 
-#include <pandabase.h>
-
+#include "pandabase.h"
 #include "luse.h"
-
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +37,7 @@
 #define TYPE LPoint2f
 #define NAME vector_LPoint2f
 
-#include <vector_src.h>
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
