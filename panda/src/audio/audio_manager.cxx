@@ -47,8 +47,9 @@ void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
 void AudioManager::ns_update(void) {
   // handle looping
   if (_loopset != (LoopSet*)0L)
-    for (LoopSet::iterator i=_loopset->begin(); i!=_loopset->end(); ++i) {
+    for (LoopSet::iterator i=_loopset->begin(); i!=_loopset->end();) {
       AudioSound* sound = *i;
+      ++i;  // because the sound may be removed from the set durring this
       if (sound->status() == AudioSound::READY) {
 	if (audio_cat->is_debug())
 	  audio_cat->debug() << "AudioManager::ns_update looping '"
