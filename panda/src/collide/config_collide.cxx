@@ -21,6 +21,7 @@
 #include "collisionHandler.h"
 #include "collisionHandlerEvent.h"
 #include "collisionHandlerFloor.h"
+#include "collisionHandlerGravity.h"
 #include "collisionHandlerPhysical.h"
 #include "collisionHandlerPusher.h"
 #include "collisionHandlerQueue.h"
@@ -77,6 +78,7 @@ init_libcollide() {
   CollisionHandler::init_type();
   CollisionHandlerEvent::init_type();
   CollisionHandlerFloor::init_type();
+  CollisionHandlerGravity::init_type();
   CollisionHandlerPhysical::init_type();
   CollisionHandlerPusher::init_type();
   CollisionHandlerQueue::init_type();
