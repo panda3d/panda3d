@@ -50,7 +50,6 @@ class TreeNode:
 
     def destroy(self):
         if self._popupMenu:
-            print 'kill it'
             self._popupMenu.destroy()
         for key in self.kidKeys:
             c = self.children[key]
