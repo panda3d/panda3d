@@ -200,7 +200,10 @@ PACKAGES=["ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
           "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAX5","MAX6","MAX7"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
-DIRECTXSDK=None
+DIRECTXSDK = None
+MAYASDK = {}
+MAXSDK = {}
+MAXSDKCS = {}
 STARTTIME=time.time()
 
 ##########################################################################################
@@ -574,6 +577,25 @@ os.chdir(PANDASOURCE)
 
 ########################################################################
 ##
+## If you have the "sdks" directory, supply all sdks
+##
+## This is a temporary hack, it may go away.
+##
+########################################################################
+
+if (os.path.isdir("sdks")):
+    DIRECTXSDK="sdks/directx"
+    MAXSDKCS["MAX5"] = "sdks/maxsdk5"
+    MAXSDKCS["MAX6"] = "sdks/maxsdk6"
+    MAXSDKCS["MAX7"] = "sdks/maxsdk7"
+    MAXSDK["MAX5"]   = "sdks/maxsdk5"
+    MAXSDK["MAX6"]   = "sdks/maxsdk6"
+    MAXSDK["MAX7"]   = "sdks/maxsdk7"
+    MAYASDK["MAYA5"] = "sdks/maya5"
+    MAYASDK["MAYA6"] = "sdks/maya6"
+
+########################################################################
+##
 ## Locate the DirectX SDK
 ##
 ########################################################################
@@ -593,8 +615,59 @@ if sys.platform == "win32" and DIRECTXSDK is None:
                     DIRECTXSDK=dxdir
             else:
                 sys.exit("The registry does not appear to contain a pointer to the DirectX 9.0 SDK.")
-    DIRECTXSDK=DIRECTXSDK.replace("\\", "/")
-    DIRECTXSDK=DIRECTXSDK.rstrip("/")
+    DIRECTXSDK=DIRECTXSDK.replace("\\", "/").rstrip("/")
+
+########################################################################
+##
+## Locate the Maya 5.0 and Maya 6.0 SDK
+##
+########################################################################
+
+for ver in ["MAYA5","MAYA6"]:
+    if (OMIT.count(ver)==0) and (MAYASDK.has_key(ver)==0):
+        if (sys.platform == "win32"):
+            MAYASDK[ver]=GetRegistryKey("SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPath","MAYA_INSTALL_LOCATION")
+            if (MAYASDK[ver] == 0):
+                WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
+                WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
+                OMIT.append(ver)
+            else:
+                MAYASDK[ver] = MAYASDK[ver].replace("\\", "/").rstrip("/")
+        else:
+            WARNINGS.append(ver+" not yet supported under linux")
+            WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
+            OMIT.append(ver)
+
+########################################################################
+##
+## Locate the 3D Studio Max and Character Studio SDKs
+##
+########################################################################
+
+MAXVERSIONS = [("MAX5", "SOFTWARE\\Autodesk\\3DSMAX\\5.0\\MAX-1:409", "uninstallpath", "Cstudio\\Sdk"),
+               ("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "installdir",    "maxsdk\\cssdk\\include"),
+               ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0",            "Installdir",    "maxsdk\\include\\CS")]
+
+for version,key1,key2,subdir in MAXVERSIONS:
+    if (OMIT.count(version)==0) and (MAXSDK.has_key(version)==0):
+        if (sys.platform == "win32"):
+            top = GetRegistryKey(key1,key2)
+            if (top == 0):
+                WARNINGS.append("The registry does not appear to contain a pointer to "+version)
+                WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+                OMIT.append(version)
+            else:
+                if (os.path.isdir(top + "\\" + subdir)==0):
+                    WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
+                    WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+                    OMIT.append(version)
+                else:
+                    MAXSDK[version] = top + "maxsdk\\"
+                    MAXSDKCS[version] = top + subdir
+        else:
+            WARNINGS.append(version+" not yet supported under linux")
+            WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+            OMIT.append(version)
 
 ########################################################################
 ##
@@ -617,74 +690,6 @@ else:
     elif (os.path.isdir("/usr/include/python2.2")): PythonSDK = "/usr/include/python2.2"
     else: sys.exit("Cannot find the python SDK")
     # this is so that the user can find out which version of python was used.
-
-########################################################################
-##
-## Locate the Maya 5.0 SDK
-##
-########################################################################
-
-if (OMIT.count("MAYA5")==0):
-    if (sys.platform == "win32"):
-        Maya5SDK = GetRegistryKey("SOFTWARE\\Alias|Wavefront\\Maya\\5.0\\Setup\\InstallPath", "MAYA_INSTALL_LOCATION")
-        if (Maya5SDK == 0):
-            WARNINGS.append("The registry does not appear to contain a pointer to the Maya 5 SDK.")
-            WARNINGS.append("I have automatically added this command-line option: --no-maya5")
-            OMIT.append("MAYA5")
-    else:
-        WARNINGS.append("MAYA5 not yet supported under linux")
-        WARNINGS.append("I have automatically added this command-line option: --no-maya5")
-        OMIT.append("MAYA5")
-
-########################################################################
-##
-## Locate the Maya 6.0 SDK
-##
-########################################################################
-
-if (OMIT.count("MAYA6")==0):
-    if (sys.platform == "win32"):
-        Maya6SDK = GetRegistryKey("SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath", "MAYA_INSTALL_LOCATION")
-        if (Maya6SDK == 0):
-            WARNINGS.append("The registry does not appear to contain a pointer to the Maya 6 SDK.")
-            WARNINGS.append("I have automatically added this command-line option: --no-maya6")
-            OMIT.append("MAYA6")
-    else:
-        WARNINGS.append("MAYA6 not yet supported under linux")
-        WARNINGS.append("I have automatically added this command-line option: --no-maya6")
-        OMIT.append("MAYA6")
-
-########################################################################
-##
-## Locate the 3D Studio Max and Character Studio SDKs
-##
-########################################################################
-
-MAXVERSIONS = [("MAX5", "SOFTWARE\\Autodesk\\3DSMAX\\5.0\\MAX-1:409", "uninstallpath", "Cstudio\\Sdk"),
-               ("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "installdir",    "maxsdk\\cssdk\\include"),
-               ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0",            "Installdir",    "maxsdk\\include\\CS")]
-MAXSDK = {}
-MAXSDKCS = {}
-for version,key1,key2,subdir in MAXVERSIONS:
-    if (OMIT.count(version)==0):
-        if (sys.platform == "win32"):
-            top = GetRegistryKey(key1,key2)
-            if (top == 0):
-                WARNINGS.append("The registry does not appear to contain a pointer to "+version)
-                WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
-                OMIT.append(version)
-            else:
-                if (os.path.isdir(top + "\\" + subdir)==0):
-                    WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
-                    WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
-                    OMIT.append(version)
-                else:
-                    MAXSDK[version] = top + "maxsdk\\"
-                    MAXSDKCS[version] = top + subdir
-        else:
-            WARNINGS.append(version+" not yet supported under linux")
-            WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
-            OMIT.append(version)
 
 ########################################################################
 ##
@@ -1179,8 +1184,8 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             cmd = "cl.exe /Fo" + wobj + " /nologo /c"
             cmd = cmd + " /I" + PREFIX + "/python/include"
             if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DIRECTXSDK + '/include"'
-            if (opts.count("MAYA5")): cmd = cmd + ' /I"' + Maya5SDK + 'include"'
-            if (opts.count("MAYA6")): cmd = cmd + ' /I"' + Maya6SDK + 'include"'
+            if (opts.count("MAYA5")): cmd = cmd + ' /I"' + MAYASDK["MAYA5"] + '/include"'
+            if (opts.count("MAYA6")): cmd = cmd + ' /I"' + MAYASDK["MAYA6"] + '/include"'
             for max in ["MAX5","MAX6","MAX7"]:
                 if (PkgSelected(opts,max)):
                     cmd = cmd + ' /I"' + MAXSDK[max] + 'include" /I"' + MAXSDKCS[max] + '" /D' + max
@@ -1309,8 +1314,8 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
         if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
-        if ((COMPILER=="MSVC7") and opts.count("MAYA5")): cmd = cmd + ' -I"' + Maya5SDK + 'include"'
-        if ((COMPILER=="MSVC7") and opts.count("MAYA6")): cmd = cmd + ' -I"' + Maya6SDK + 'include"'
+        if ((COMPILER=="MSVC7") and opts.count("MAYA5")): cmd = cmd + ' -I"' + MAYASDK["MAYA5"] + '/include"'
+        if ((COMPILER=="MSVC7") and opts.count("MAYA6")): cmd = cmd + ' -I"' + MAYASDK["MAYA6"] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oslocalcmd(src, cmd)
         updatefiledate(outd)
@@ -1465,20 +1470,17 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (PkgSelected(opts,"FFTW")):
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/rfftw.lib'
                 cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/fftw.lib'
-            if (PkgSelected(opts,"MAYA5")):
-                cmd = cmd + ' ' + Maya5SDK +  'lib/Foundation.lib'
-                cmd = cmd + ' ' + Maya5SDK +  'lib/OpenMaya.lib'
-                cmd = cmd + ' ' + Maya5SDK +  'lib/OpenMayaAnim.lib'
-            if (PkgSelected(opts,"MAYA6")):
-                cmd = cmd + ' ' + Maya6SDK +  'lib/Foundation.lib'
-                cmd = cmd + ' ' + Maya6SDK +  'lib/OpenMaya.lib'
-                cmd = cmd + ' ' + Maya6SDK +  'lib/OpenMayaAnim.lib'
+            for maya in ["MAYA5","MAYA6"]:
+                if (PkgSelected(opts,maya)):
+                    cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/Foundation.lib"'
+                    cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMaya.lib"'
+                    cmd = cmd + ' "' + MAYASDK[maya] +  '/lib/OpenMayaAnim.lib"'
             for max in ["MAX5","MAX6","MAX7"]:
                 if PkgSelected(opts,max):
-                    cmd = cmd + ' ' + MAXSDK[max] +  'lib/core.lib'
-                    cmd = cmd + ' ' + MAXSDK[max] +  'lib/mesh.lib'
-                    cmd = cmd + ' ' + MAXSDK[max] +  'lib/maxutil.lib'
-                    cmd = cmd + ' ' + MAXSDK[max] +  'lib/paramblk2.lib'
+                    cmd = cmd + ' "' + MAXSDK[max] +  'lib/core.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  'lib/mesh.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  'lib/maxutil.lib"'
+                    cmd = cmd + ' "' + MAXSDK[max] +  'lib/paramblk2.lib"'
             oscmd(cmd)
             updatefiledate(dll)
             if ((OPTIMIZE == 1) and (dll[-4:]==".dll")):
