@@ -70,6 +70,7 @@ PUBLISHED:
   static CPT(TransformState) make_invalid();
   INLINE static CPT(TransformState) make_pos(const LVecBase3f &pos);
   INLINE static CPT(TransformState) make_hpr(const LVecBase3f &hpr);
+  INLINE static CPT(TransformState) make_quat(const LQuaternionf &quat);
   INLINE static CPT(TransformState) make_pos_hpr(const LVecBase3f &pos,
                                                  const LVecBase3f &hpr);
   INLINE static CPT(TransformState) make_scale(float scale);
@@ -77,6 +78,9 @@ PUBLISHED:
   static CPT(TransformState) make_pos_hpr_scale(const LVecBase3f &pos,
                                                 const LVecBase3f &hpr, 
                                                 const LVecBase3f &scale);
+  static CPT(TransformState) make_pos_quat_scale(const LVecBase3f &pos,
+                                                 const LQuaternionf &quat, 
+                                                 const LVecBase3f &scale);
   static CPT(TransformState) make_mat(const LMatrix4f &mat);
 
   INLINE bool is_identity() const;
@@ -84,17 +88,24 @@ PUBLISHED:
   INLINE bool is_singular() const;
   INLINE bool has_components() const;
   INLINE bool components_given() const;
+  INLINE bool hpr_given() const;
+  INLINE bool quat_given() const;
   INLINE bool has_pos() const;
   INLINE bool has_hpr() const;
+  INLINE bool has_quat() const;
   INLINE bool has_scale() const;
+  INLINE bool has_uniform_scale() const;
   INLINE bool has_mat() const;
   INLINE const LVecBase3f &get_pos() const;
   INLINE const LVecBase3f &get_hpr() const;
+  INLINE const LQuaternionf &get_quat() const;
   INLINE const LVecBase3f &get_scale() const;
+  INLINE float get_uniform_scale() const;
   INLINE const LMatrix4f &get_mat() const;
 
   CPT(TransformState) set_pos(const LVecBase3f &pos) const;
   CPT(TransformState) set_hpr(const LVecBase3f &hpr) const;
+  CPT(TransformState) set_quat(const LQuaternionf &quat) const;
   CPT(TransformState) set_scale(const LVecBase3f &scale) const;
 
   CPT(TransformState) compose(const TransformState *other) const;
@@ -144,10 +155,16 @@ private:
   // This is the actual data within the TransformState.
   INLINE void check_singular() const;
   INLINE void check_components() const;
+  INLINE void check_hpr() const;
+  INLINE void check_quat() const;
   INLINE void check_mat() const;
   void calc_singular();
   void calc_components();
+  void calc_hpr();
+  void calc_quat();
   void calc_mat();
+
+  INLINE void check_uniform_scale();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -155,15 +172,21 @@ private:
   enum Flags {
     F_is_identity      = 0x0001,
     F_is_singular      = 0x0002,
-    F_singular_known   = 0x0004,
+    F_singular_known   = 0x0004,  // set if we know F_is_singular
     F_components_given = 0x0008,
-    F_components_known = 0x0010,
+    F_components_known = 0x0010,  // set if we know F_has_components
     F_has_components   = 0x0020,
-    F_mat_known        = 0x0040,
+    F_mat_known        = 0x0040,  // set if _mat is defined
     F_is_invalid       = 0x0080,
+    F_quat_given       = 0x0100,
+    F_quat_known       = 0x0200,  // set if _quat is defined
+    F_hpr_given        = 0x0400,
+    F_hpr_known        = 0x0800,  // set if _hpr is defined
+    F_uniform_scale    = 0x1000,
     F_is_destructing   = 0x8000,
   };
   LVecBase3f _pos, _hpr, _scale;
+  LQuaternionf _quat;
   LMatrix4f _mat;
   LMatrix4f *_inv_mat;
   

@@ -206,7 +206,7 @@ TransformState::
 bool TransformState::
 operator < (const TransformState &other) const {
   static const int significant_flags = 
-    (F_is_invalid | F_is_identity | F_components_given);
+    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given);
 
   int flags = (_flags & significant_flags);
   int other_flags = (other._flags & significant_flags);
@@ -220,7 +220,8 @@ operator < (const TransformState &other) const {
     return 0;
   }
 
-  if ((_flags & F_components_given) != 0) {
+  if ((_flags & (F_components_given | F_hpr_given)) == 
+      (F_components_given | F_hpr_given)) {
     // If the transform was specified componentwise, compare them
     // componentwise.
     int c = _pos.compare_to(other._pos);
@@ -301,7 +302,33 @@ make_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
   state->_pos = pos;
   state->_hpr = hpr;
   state->_scale = scale;
-  state->_flags = F_components_given | F_components_known | F_has_components;
+  state->_flags = F_components_given | F_hpr_given | F_components_known | F_hpr_known | F_has_components;
+  state->check_uniform_scale();
+  return return_new(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_pos_quat_scale
+//       Access: Published, Static
+//  Description: Makes a new TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+make_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat, 
+                    const LVecBase3f &scale) {
+  // Make a special-case check for the identity transform.
+  if (pos == LVecBase3f(0.0f, 0.0f, 0.0f) &&
+      quat == LQuaternionf::ident_quat() &&
+      scale == LVecBase3f(1.0f, 1.0f, 1.0f)) {
+    return make_identity();
+  }
+
+  TransformState *state = new TransformState;
+  state->_pos = pos;
+  state->_quat = quat;
+  state->_scale = scale;
+  state->_flags = F_components_given | F_quat_given | F_components_known | F_quat_known | F_has_components;
+  state->check_uniform_scale();
   return return_new(state);
 }
 
@@ -333,10 +360,14 @@ make_mat(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_pos(const LVecBase3f &pos) const {
-  if ((_flags & F_components_given) != 0) {
+  if (components_given()) {
     // If we started with a componentwise transform, we keep it that
     // way.
-    return make_pos_hpr_scale(pos, get_hpr(), get_scale());
+    if (quat_given()) {
+      return make_pos_quat_scale(pos, get_quat(), get_scale());
+    } else {
+      return make_pos_hpr_scale(pos, get_hpr(), get_scale());
+    }
 
   } else {
     // Otherwise, we have a matrix transform, and we keep it that way.
@@ -350,13 +381,26 @@ set_pos(const LVecBase3f &pos) const {
 //     Function: TransformState::set_hpr
 //       Access: Published
 //  Description: Returns a new TransformState object that represents the
-//               original TransformState with its hpr component
+//               original TransformState with its rotation component
 //               replaced with the indicated value, if possible.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_hpr(const LVecBase3f &hpr) const {
   nassertr(has_components(), this);
   return make_pos_hpr_scale(get_pos(), hpr, get_scale());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_quat
+//       Access: Published
+//  Description: Returns a new TransformState object that represents the
+//               original TransformState with its rotation component
+//               replaced with the indicated value, if possible.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+set_quat(const LQuaternionf &quat) const {
+  nassertr(has_components(), this);
+  return make_pos_quat_scale(get_pos(), quat, get_scale());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -369,7 +413,11 @@ set_hpr(const LVecBase3f &hpr) const {
 CPT(TransformState) TransformState::
 set_scale(const LVecBase3f &scale) const {
   nassertr(has_components(), this);
-  return make_pos_hpr_scale(get_pos(), get_hpr(), scale);
+  if (quat_given()) {
+    return make_pos_quat_scale(get_pos(), get_quat(), scale);
+  } else {
+    return make_pos_hpr_scale(get_pos(), get_hpr(), scale);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -549,13 +597,25 @@ output(ostream &out) const {
       out << lead << "pos " << get_pos();
       lead = ' ';
     }
-    if (!get_hpr().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
-      out << lead << "hpr " << get_hpr();
-      lead = ' ';
+    if (quat_given()) {
+      if (!get_quat().almost_equal(LQuaternionf::ident_quat())) {
+        out << lead << "quat " << get_quat();
+        lead = ' ';
+      }
+    } else {
+      if (!get_hpr().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
+        out << lead << "hpr " << get_hpr();
+        lead = ' ';
+      }
     }
     if (!get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
-      out << lead << "scale " << get_scale();
-      lead = ' ';
+      if (has_uniform_scale()) {
+        out << lead << "scale " << get_uniform_scale();
+        lead = ' ';
+      } else {
+        out << lead << "scale " << get_scale();
+        lead = ' ';
+      }
     }
     if (lead == '(') {
       out << "(almost identity)";
@@ -702,8 +762,9 @@ calc_components() {
   if ((_flags & F_is_identity) != 0) {
     _scale.set(1.0f, 1.0f, 1.0f);
     _hpr.set(0.0f, 0.0f, 0.0f);
+    _quat = LQuaternionf::ident_quat();
     _pos.set(0.0f, 0.0f, 0.0f);
-    _flags |= F_has_components;
+    _flags |= F_has_components | F_components_known | F_hpr_known | F_quat_known | F_uniform_scale;
 
   } else {
     // If we don't have components and we're not identity, the only
@@ -712,16 +773,57 @@ calc_components() {
 
     const LMatrix4f &mat = get_mat();
     bool possible = decompose_matrix(mat, _scale, _hpr, _pos);
-    if (possible) {
-      // Some matrices can't be decomposed into scale, hpr, pos.
-      _flags |= F_has_components;
+    if (!possible) {
+      // Some matrices can't be decomposed into scale, hpr, pos.  In
+      // this case, we now know that we cannot compute the components.
+      _flags |= F_components_known | F_hpr_known | F_quat_known;
 
-      // However, we can always get at least the pos.
-      mat.get_row3(_pos, 3);
+    } else {
+      // Otherwise, we do have the components, or at least the hpr.
+      _flags |= F_has_components | F_components_known | F_hpr_known;
+      check_uniform_scale();
     }
-  }
 
-  _flags |= F_components_known;
+    // However, we can always get at least the pos.
+    mat.get_row3(_pos, 3);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::calc_hpr
+//       Access: Private
+//  Description: Derives the hpr, from the matrix if necessary, or
+//               from the quat.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+calc_hpr() {
+  nassertv((_flags & F_is_invalid) == 0);
+  check_components();
+  if ((_flags & F_hpr_known) == 0) {
+    // If we don't know the hpr yet, we must have been given a quat.
+    // Decompose it.
+    nassertv((_flags & F_quat_known) != 0);
+    _hpr = _quat.get_hpr();
+    _flags |= F_hpr_known;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::calc_quat
+//       Access: Private
+//  Description: Derives the quat from the hpr.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+calc_quat() {
+  nassertv((_flags & F_is_invalid) == 0);
+  check_components();
+  if ((_flags & F_quat_known) == 0) {
+    // If we don't know the quat yet, we must have been given a hpr.
+    // Decompose it.
+    nassertv((_flags & F_hpr_known) != 0);
+    _quat.set_hpr(_hpr);
+    _flags |= F_quat_known;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -739,7 +841,7 @@ calc_mat() {
     // If we don't have a matrix and we're not identity, the only
     // other explanation is that we were constructed via components.
     nassertv((_flags & F_components_known) != 0);
-    compose_matrix(_mat, _scale, _hpr, _pos);
+    compose_matrix(_mat, _scale, get_hpr(), _pos);
   }
   _flags |= F_mat_known;
 }
@@ -778,10 +880,20 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   } else if ((_flags & F_components_given) != 0) {
     // A component-based transform.
     int flags = F_components_given | F_components_known | F_has_components;
+    if ((_flags & F_quat_given) != 0) {
+      flags |= (F_quat_given | F_quat_known);
+    } else if ((_flags & F_hpr_given) != 0) {
+      flags |= (F_hpr_given | F_hpr_known);
+    }
+
     dg.add_uint16(flags);
 
     _pos.write_datagram(dg);
-    _hpr.write_datagram(dg);
+    if ((_flags & F_quat_given) != 0) {
+      _quat.write_datagram(dg);
+    } else {
+      get_hpr().write_datagram(dg);
+    }
     _scale.write_datagram(dg);
 
   } else {
@@ -879,11 +991,19 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _flags = scan.get_uint16();
 
-  if ((_flags & F_components_known) != 0) {
+  if ((_flags & F_components_given) != 0) {
     // Componentwise transform.
     _pos.read_datagram(scan);
-    _hpr.read_datagram(scan);
+    if ((_flags & F_quat_given) != 0) {
+      _quat.read_datagram(scan);
+    } else {
+      _hpr.read_datagram(scan);
+      // Holdover support for bams 4.0 or older: add these bits that
+      // should have been added when the bam was written.
+      _flags |= (F_hpr_given | F_hpr_known);
+    }
     _scale.read_datagram(scan);
+    check_uniform_scale();
   }
 
   if ((_flags & F_mat_known) != 0) {

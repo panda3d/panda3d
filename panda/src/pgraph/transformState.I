@@ -64,6 +64,19 @@ make_hpr(const LVecBase3f &hpr) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_quat
+//       Access: Published, Static
+//  Description: Makes a new TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_quat(const LQuaternionf &quat) {
+  return make_pos_quat_scale(LVecBase3f(0.0f, 0.0f, 0.0f),
+                             quat, 
+                             LVecBase3f(1.0f, 1.0f, 1.0f));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::make_pos_hpr
 //       Access: Published, Static
 //  Description: Makes a new TransformState with the specified
@@ -168,13 +181,42 @@ has_components() const {
 //  Description: Returns true if the transform was specified
 //               componentwise, or false if it was specified with a
 //               general 4x4 matrix.  If this is true, the components
-//               returned by get_pos(), get_hpr(), and get_scale()
-//               will be exactly those that were set; otherwise, these
-//               functions will return computed values.
+//               returned by get_pos() and get_scale() will be exactly
+//               those that were set; otherwise, these functions will
+//               return computed values.  If this is true, the
+//               rotation may have been set either with a hpr trio or
+//               with a quaternion; hpr_given() or quat_given() can
+//               resolve the difference.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TransformState::
 components_given() const {
   return ((_flags & F_components_given) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::hpr_given
+//       Access: Published
+//  Description: Returns true if the rotation was specified via a trio
+//               of Euler angles, false otherwise.  If this is true,
+//               get_hpr() will be exactly as set; otherwise, it will
+//               return a computed value.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+hpr_given() const {
+  return ((_flags & F_hpr_given) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::quat_given
+//       Access: Published
+//  Description: Returns true if the rotation was specified via a 
+//               quaternion, false otherwise.  If this is true,
+//               get_quat() will be exactly as set; otherwise, it will
+//               return a computed value.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+quat_given() const {
+  return ((_flags & F_quat_given) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,6 +246,19 @@ has_hpr() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_quat
+//       Access: Published
+//  Description: Returns true if the transform's rotation component
+//               can be extracted out separately and described as a
+//               quaternion.  This is generally true only when
+//               has_components() is true.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_quat() const {
+  return has_components();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::has_scale
 //       Access: Published
 //  Description: Returns true if the transform's scale component
@@ -213,6 +268,20 @@ has_hpr() const {
 INLINE bool TransformState::
 has_scale() const {
   return has_components();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_uniform_scale
+//       Access: Published
+//  Description: Returns true if the scale is uniform across all three
+//               axes (and therefore can be expressed as a single
+//               number), or false if the transform has a different
+//               scale in different dimensions.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_uniform_scale() const {
+  check_components();
+  return (_flags & F_uniform_scale) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -243,15 +312,29 @@ get_pos() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::get_hpr
 //       Access: Published
-//  Description: Returns the hpr component of the transform.  It is an
-//               error to call this if has_components() returned
-//               false.
+//  Description: Returns the rotation component of the transform as a
+//               trio of Euler angles.  It is an error to call this if
+//               has_components() returned false.
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase3f &TransformState::
 get_hpr() const {
-  check_components();
+  check_hpr();
   nassertr(has_hpr(), _hpr);
   return _hpr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_quat
+//       Access: Published
+//  Description: Returns the rotation component of the transform as a
+//               quaternion.  It is an error to call this if
+//               has_components() returned false.
+////////////////////////////////////////////////////////////////////
+INLINE const LQuaternionf &TransformState::
+get_quat() const {
+  check_quat();
+  nassertr(has_quat(), _quat);
+  return _quat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,6 +349,20 @@ get_scale() const {
   check_components();
   nassertr(has_scale(), _scale);
   return _scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_uniform_scale
+//       Access: Published
+//  Description: Returns the scale component of the transform, as a
+//               single number.  It is an error to call this if
+//               has_uniform_scale() returned false.
+////////////////////////////////////////////////////////////////////
+INLINE float TransformState::
+get_uniform_scale() const {
+  check_components();
+  nassertr(has_uniform_scale(), _scale[0]);
+  return _scale[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -310,6 +407,36 @@ check_components() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::check_hpr
+//       Access: Private
+//  Description: Ensures that we know the hpr of the transform
+//               (or that we know they cannot be derived).
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+check_hpr() const {
+  // This pretends to be a const function, even though it's not,
+  // because it only updates a transparent cache value.
+  if ((_flags & F_hpr_known) == 0) {
+    ((TransformState *)this)->calc_hpr();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::check_quat
+//       Access: Private
+//  Description: Ensures that we know the quat of the transform
+//               (or that we know they cannot be derived).
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+check_quat() const {
+  // This pretends to be a const function, even though it's not,
+  // because it only updates a transparent cache value.
+  if ((_flags & F_quat_known) == 0) {
+    ((TransformState *)this)->calc_quat();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::check_mat
 //       Access: Private
 //  Description: Ensures that we know the overall matrix.
@@ -320,6 +447,21 @@ check_mat() const {
   // because it only updates a transparent cache value.
   if ((_flags & F_mat_known) == 0) {
     ((TransformState *)this)->calc_mat();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::check_uniform_scale
+//       Access: Private
+//  Description: Should be called immediately after _scale (and
+//               F_has_components) is set, this checks for a uniform
+//               scale and sets the bit appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+check_uniform_scale() {
+  if (IS_NEARLY_EQUAL(_scale[0], _scale[1]) && 
+      IS_NEARLY_EQUAL(_scale[0], _scale[2])) {
+    _flags |= F_uniform_scale;
   }
 }
 
