@@ -192,8 +192,8 @@ connect_to_server(void) {
 
   if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) < 0) {
     downloader_cat.error()
-        << "Downloader::connect_to_server() - connect() failed: "
-        << strerror(errno) << endl;
+      << "Downloader::connect_to_server() - connect() failed: "
+      << strerror(errno) << endl;
     disconnect_from_server();
     _connected = false;
   }
@@ -356,6 +356,7 @@ process_request() {
       failure->add_parameter(EventParameter((int)tok->_id));
       failure->add_parameter(EventParameter(0));
       failure->add_parameter(EventParameter(-1));
+      throw_event(failure);
     }
   }
 
@@ -706,9 +707,9 @@ parse_header(DownloadStatus &status) {
   if (status._header_is_complete == true)
     return true;
 
-  if (status._total_bytes == 0) {
+  if (status._bytes_in_buffer == 0) {
     downloader_cat.error()
-      << "Downloader::parse_header() - Total bytes == 0!" << endl;
+      << "Downloader::parse_header() - Empty buffer!" << endl;
     return false;
   }
 
