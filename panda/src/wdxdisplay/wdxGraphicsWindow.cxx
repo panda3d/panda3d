@@ -1298,7 +1298,7 @@ dx_setup()
           << "wdxGraphicsWindow::config() - QI for D3D failed : result = " << ConvD3DErrorToString(hr) << endl;
     	  exit(1);
       }
-    
+
        // just look for HAL and TnL devices right now.  I dont think 
        // we have any interest in the sw rasts at this point
        
@@ -1320,9 +1320,11 @@ dx_setup()
        DX_DECLARE_CLEAN(DDCAPS,DDCaps);
        pDD->GetCaps(&DDCaps,NULL);
 
+  	  DWORD dwRenderWidth,dwRenderHeight;
+
       if (dx_full_screen) {
-		DWORD dwRenderWidth  = _props._xsize;
-		DWORD dwRenderHeight = _props._ysize;
+		dwRenderWidth  = _props._xsize;
+		dwRenderHeight = _props._ysize;
 		_props._xorg = _props._yorg = 0;
 		SetRect(&view_rect, _props._xorg, _props._yorg, _props._xsize, _props._ysize);
 
@@ -1413,7 +1415,14 @@ dx_setup()
         }
 #endif
 
-        if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, DDSCL_FPUSETUP | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT ))) {
+
+//		extern bool dx_preserve_fpu_state;
+		DWORD SCL_FPUFlag = DDSCL_FPUSETUP;
+
+//		if(dx_preserve_fpu_state)
+//		   SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
+
+        if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FPUFlag | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT ))) {
              wdxdisplay_cat.fatal()
              << "wdxGraphicsWindow::config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
              exit(1);
@@ -1502,7 +1511,13 @@ dx_setup()
                 exit(1);
         }
 
-        if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, DDSCL_FPUSETUP | DDSCL_NORMAL))) {
+//		extern bool dx_preserve_fpu_state;
+		DWORD SCL_FPUFlag = DDSCL_FPUSETUP;
+
+//		if(dx_preserve_fpu_state)
+//		   SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
+
+        if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FPUFlag | DDSCL_NORMAL))) {
              wdxdisplay_cat.fatal()
              << "wdxGraphicsWindow::config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
              exit(1);
@@ -1510,10 +1525,16 @@ dx_setup()
 	    // Get the dimensions of the viewport and screen bounds
 
 		GetClientRect( _mwindow, &view_rect );
-		ClientToScreen( _mwindow, (POINT*)&view_rect.left );
-		ClientToScreen( _mwindow, (POINT*)&view_rect.right );
-		DWORD dwRenderWidth  = view_rect.right - view_rect.left;
-		DWORD dwRenderHeight = view_rect.bottom - view_rect.top;
+		POINT ul,lr;
+		ul.x=view_rect.left;  ul.y=view_rect.top;
+		lr.x=view_rect.right;  lr.y=view_rect.bottom;
+		ClientToScreen( _mwindow, &ul );
+		ClientToScreen( _mwindow, &lr );
+		view_rect.left=ul.x; view_rect.top=ul.y;
+		view_rect.right=lr.x; view_rect.bottom=lr.y;
+
+		dwRenderWidth  = view_rect.right - view_rect.left;
+		dwRenderHeight = view_rect.bottom - view_rect.top;
 		_props._xorg = view_rect.left;	// _props should reflect view rectangle
 		_props._yorg = view_rect.top;
 		_props._xsize = dwRenderWidth;
@@ -1585,6 +1606,8 @@ dx_setup()
 
 //	========================================================
 
+    resized(dwRenderWidth,dwRenderHeight);  // update panda channel/display rgn info
+	
     // Check if the device supports z-bufferless hidden surface removal. If so,
     // we don't really need a z-buffer
     if(!(d3ddevs[0].dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) {
@@ -1777,6 +1800,22 @@ void wdxGraphicsWindow::setup_colormap(void) {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: begin_frame 
+//       Access:
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow::begin_frame(void) {
+  GraphicsWindow::begin_frame();
+}
+
+void wdxGraphicsWindow::show_frame(void) 
+{
+  DXGraphicsStateGuardian* dxgsg = DCAST(DXGraphicsStateGuardian, _gsg);
+  dxgsg->show_frame();
+}
+
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: end_frame 
 //       Access:
 //  Description:  timer info, incs frame #
@@ -1786,106 +1825,6 @@ void wdxGraphicsWindow::end_frame(void) {
 //  SwapBuffers(_hdc);
   GraphicsWindow::end_frame();
 }
-
-
-//-----------------------------------------------------------------------------
-// Name: SetViewMatrix()
-// Desc: Given an eye point, a lookat point, and an up vector, this
-//       function builds a 4x4 view matrix.
-//-----------------------------------------------------------------------------
-HRESULT SetViewMatrix( D3DMATRIX& mat, D3DVECTOR& vFrom, D3DVECTOR& vAt,
-                       D3DVECTOR& vWorldUp )
-{
-    // Get the z basis vector, which points straight ahead. This is the
-    // difference from the eyepoint to the lookat point.
-    D3DVECTOR vView = vAt - vFrom;
-
-    FLOAT fLength = Magnitude( vView );
-    if( fLength < 1e-6f )
-        return E_INVALIDARG;
-
-    // Normalize the z basis vector
-    vView /= fLength;
-
-    // Get the dot product, and calculate the projection of the z basis
-    // vector onto the up vector. The projection is the y basis vector.
-    FLOAT fDotProduct = DotProduct( vWorldUp, vView );
-
-    D3DVECTOR vUp = vWorldUp - fDotProduct * vView;
-
-    // If this vector has near-zero length because the input specified a
-    // bogus up vector, let's try a default up vector
-    if( 1e-6f > ( fLength = Magnitude( vUp ) ) )
-    {
-        vUp = D3DVECTOR( 0.0f, 1.0f, 0.0f ) - vView.y * vView;
-
-        // If we still have near-zero length, resort to a different axis.
-        if( 1e-6f > ( fLength = Magnitude( vUp ) ) )
-        {
-            vUp = D3DVECTOR( 0.0f, 0.0f, 1.0f ) - vView.z * vView;
-
-            if( 1e-6f > ( fLength = Magnitude( vUp ) ) )
-                return E_INVALIDARG;
-        }
-    }
-
-    // Normalize the y basis vector
-    vUp /= fLength;
-
-    // The x basis vector is found simply with the cross product of the y
-    // and z basis vectors
-    D3DVECTOR vRight = CrossProduct( vUp, vView );
-    
-    // Start building the matrix. The first three rows contains the basis
-    // vectors used to rotate the view to point at the lookat point
-    mat._11 = vRight.x;  mat._12 = vUp.x;  mat._13 = vView.x;  mat._14 = 0.0f;
-    mat._21 = vRight.y;  mat._22 = vUp.y;  mat._23 = vView.y;  mat._24 = 0.0f;
-    mat._31 = vRight.z;  mat._32 = vUp.z;  mat._33 = vView.z;  mat._34 = 0.0f;
-
-    // Do the translation values (rotations are still about the eyepoint)
-    mat._41 = - DotProduct( vFrom, vRight );
-    mat._42 = - DotProduct( vFrom, vUp );
-    mat._43 = - DotProduct( vFrom, vView );
-    mat._44 = 1.0f;
-
-    return S_OK;
-}
-
-
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: begin_frame 
-//       Access:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::begin_frame(void) {
-  GraphicsWindow::begin_frame();
-}
-
-
-void wdxGraphicsWindow::show_frame(void) 
-{
-  DXGraphicsStateGuardian* dxgsg = DCAST(DXGraphicsStateGuardian, _gsg);
-  dxgsg->show_frame();
-}
-
-/**
-////////////////////////////////////////////////////////////////////
-//     Function: end_frame 
-//       Access:
-//  Description: Swaps the front and back buffers.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::end_frame(void) {
-
-  BUGBUG:  do we want this here (as it is in GL)??
-  {
-    PStatTimer timer(_swap_pcollector);
-    SwapBuffers(_hdc);
-  }
-
-  GraphicsWindow::end_frame();
-}
-**/  
 
 
 
