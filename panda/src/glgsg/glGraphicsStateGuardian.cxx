@@ -1058,6 +1058,7 @@ draw_sprite(const GeomSprite *geom) {
   // vector with the final geometric information.
   /////////////////////////////////////////////////////////////////////
 
+  cameraspace_vector.reserve(nprims);   //pre-alloc space for nprims
 
   // the state is set, start running the prims
   for (i = 0; i < nprims; i++) {
