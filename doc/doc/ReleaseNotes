@@ -1,3 +1,34 @@
+------------------------  RELEASE 1.0.1  ------------------------
+
+This is a bugfix release.
+
+  * In the previous binary release, Config.prc did not contain a
+    load-display line.  This confuses pview.  Pview is being fixed,
+    but until then, the load-display line has been restored.
+
+  * The Max and Maya plugins were inadvertently omitted from the
+    previous binary release.  This has been corrected.
+
+  * An error in the distributed object networking layer has
+    been fixed.  The error only affected those who were trying to
+    write LAN games using the CMU LAN server and p2p messages.
+
+  * An error in the physics code has been corrected.
+
+  * Python Megawidgets (pmw), which is required for "directtools",
+    was not supplied in the previous release.  We are now including
+    pmw.  In the Linux RPMs, to avoid overwriting any
+    distribution-supplied pmw package, we put this package
+    into /usr/share/panda3d.
+
+  * To be consistent, we moved all the other python code into
+    /usr/share/panda3d as well.  This requires a file 'panda.pth'
+    in the python lib directory.
+
+  * In the binary RPMs, the file permissions of the python
+    source files have been changed to 555, so that even if root
+    runs panda, the '.pyc' files will not be modified or regenerated.
+
 ------------------------  RELEASE 1.0.0  ------------------------
 
 Configuration, installation, and execution environments:
@@ -53,6 +84,33 @@ Miscellaneous:
 
   * Add optional support for STL's semistandard hashing containers,
     e.g. hash_map and hash_set.
+
+  * Panda no longer requires any registry keys or environment
+    variables. This means it is now possible to run panda directly
+    from a CD, install multiple copies of panda on a single machine,
+    or install panda by copying the tree from another computer.
+    Note that the installer does add the panda 'bin' directory to
+    your PATH, and it does store an uninstall key in the registry,
+    but neither of these is needed for panda to function.
+
+  * The 'makepanda' build system is now capable of building
+    prepackaged games for Windows.  These prepackaged games are simply
+    copies of panda with the game code included, some of the
+    unnecessary stuff stripped out, and some changes to the start
+    menu.  See "Airblade - Installer" on the panda downloads page
+    for an example.
+
+  * This is the first release to include not just a binary installer
+    for windows, but also binary RPMs for fedora 2, fedora 3, and
+    redhat 9.
+
+  * All of the sample programs have been tested.  The ones that didn't
+    work have been removed, the ones that do work have been (lightly)
+    documented.
+
+  * In the Win32 binary release, the 'config.prc' file has been moved
+    to the 'etc' directory.  This is to make it consistent with the
+    Linux version.
 
 Rendering system:
 
@@ -181,6 +239,12 @@ Model converters:
     problems with unintended absolute path references.
 
   * Added egg2bam -flatten and -combine-geoms.
+
+  * We now have working exporters for Max5, Max6, Max7, Maya5, Maya6.
+    (Update: these were accidentally omitted from the binary release)
+
+  * The Max exporter is dramatically improved: it now includes support
+    for character studio, and the polygon winding bug has been fixed.
 
 
 ------------------------  RELEASE 2004-07-27  ------------------------
