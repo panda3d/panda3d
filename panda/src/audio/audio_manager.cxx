@@ -93,7 +93,7 @@ AudioManager* AudioManager::get_ptr(void) {
 void AudioManager::ns_play(AudioSound* sound, float start_time) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "AudioManager: playing sound 0x" << (void*)sound
-		       << endl;
+		       << " (" << sound->get_name() << ")" << endl;
   if (sound->status() == AudioSound::PLAYING)
     this->ns_stop(sound);
   sound->get_player()->play_sound(sound->get_sound(), sound->get_state(),
@@ -108,7 +108,7 @@ void AudioManager::ns_play(AudioSound* sound, float start_time) {
 void AudioManager::ns_stop(AudioSound* sound) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "AudioManager: stopping sound 0x" << (void*)sound
-		       << endl;
+		       << " (" << sound->get_name() << ")" << endl;
   this->ns_set_loop(sound, false);
   if (sound->status() == AudioSound::PLAYING)
     sound->get_player()->stop_sound(sound->get_sound(), sound->get_state());
