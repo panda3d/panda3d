@@ -1,7 +1,7 @@
 """EntityCreator.py: contains methods for creation of Entities"""
 
 from PythonUtil import Functor
-#import PlatformEntity
+import PlatformEntity
 import BasicEntities
 
 def nothing(level, entId):
@@ -17,7 +17,7 @@ EntityType2Ctor = {
     'gagBarrel': nothing,
     'lift': nothing,
     'nodepath': BasicEntities.NodePathEntity,
-    #'platform': PlatformEntity.PlatformEntity,
+    'platform': PlatformEntity.PlatformEntity,
     'stomper': nothing,
     'switch': nothing,
 
