@@ -21,6 +21,12 @@ import __builtin__
 
 visualizeZones = base.config.GetBool("visualize-zones", 0)
 
+# Temporary try..except for old Pandas.
+try:
+    dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
+except:
+    dnaDirectory = Filename.fromOsSpecific(base.config.GetString("dna-directory", "/"))
+
 # Colors used by all color menus
 DEFAULT_COLORS = [
     Vec4(1,1,1,1),
@@ -2360,9 +2366,7 @@ class LevelEditor(NodePath, PandaObject):
 
     # STYLE/DNA FILE FUNCTIONS
     def loadSpecifiedDNAFile(self):
-        f = Filename(self.styleManager.stylePathPrefix +
-                     '/alpha/DIRECT/LevelEditor/DNAFiles')
-        path = os.path.join(f.toOsSpecific(), self.outputDir)
+        path = dnaDirectory.toOsSpecific()
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid default DNA directory!'
             print 'Using current directory'
@@ -2377,9 +2381,7 @@ class LevelEditor(NodePath, PandaObject):
             self.loadDNAFromFile(dnaFilename)
 
     def saveToSpecifiedDNAFile(self):
-        f = Filename(self.styleManager.stylePathPrefix +
-                     '/alpha/DIRECT/LevelEditor/DNAFiles')
-        path = os.path.join(f.toOsSpecific(), self.outputDir)
+        path = dnaDirectory.toOsSpecific()
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid DNA save directory!'
             print 'Using current directory'
@@ -2433,9 +2435,7 @@ class LevelEditor(NodePath, PandaObject):
         self.panel.sceneGraphExplorer.update()
 
     def outputDNADefaultFile(self):
-        f = Filename(self.styleManager.stylePathPrefix +
-                     '/alpha/DIRECT/LevelEditor/DNAFiles')
-        file = os.path.join(f.toOsSpecific(), self.outputDir, self.outputFile)
+        file = os.path.join(dnaDirectory.toOsSpecific(), self.outputFile)
         self.outputDNA(file)
         
     def outputDNA(self,filename):
@@ -2467,10 +2467,9 @@ class LevelEditor(NodePath, PandaObject):
                 return
             # Valid type, add color to file
             filename = self.neighborhood + '_colors.txt'
-            fname = Filename(self.styleManager.stylePathPrefix +
-                             '/alpha/DIRECT/LevelEditor/StyleFiles/' +
-                             filename)
-            f = open(fname.toOsSpecific(), 'a')
+            fname = Filename(dnaDirectory.getFullpath() +
+                             '/stylefiles/' + filename)
+            f = open(fname.toOsSpecific(), 'ab')
             f.write('%s Vec4(%.2f, %.2f, %.2f, 1.0)\n' %
                     (tag,
                      color[0]/255.0,
@@ -2478,37 +2477,34 @@ class LevelEditor(NodePath, PandaObject):
                      color[2]/255.0))
             f.close()
 
+    def saveStyle(self, filename, style):
+        # A generic routine to append a new style definition to one of
+        # the style files.
+
+        fname = Filename(dnaDirectory.getFullpath() +
+                         '/stylefiles/' + filename)
+        # We use binary mode to avoid Windows' end-of-line convention
+        f = open(fname.toOsSpecific(), 'ab')
+        # Add a blank line
+        f.write('\n')
+        # Now output style details to file
+        style.output(f)
+        # Close the file
+        f.close()
+
     def saveBaselineStyle(self):
         if self.panel.currentBaselineDNA:
             # Valid baseline, add style to file
             filename = self.neighborhood + '_baseline_styles.txt'
-            fname = Filename(self.styleManager.stylePathPrefix +
-                             '/alpha/DIRECT/LevelEditor/StyleFiles/' +
-                             filename)
-            f = open(fname.toOsSpecific(), 'a')
-            # Add a blank line
-            f.write('\n')
-            # Now output style details to file
-            style = DNABaselineStyle(baseline = self.panel.currentBaselineDNA)
-            style.output(f)
-            # Close the file
-            f.close()
+            style = DNABaselineStyle(self.panel.currentBaselineDNA)
+            self.saveStyle(filename, style)
 
     def saveWallStyle(self):
         if self.lastWall:
             # Valid wall, add style to file
             filename = self.neighborhood + '_wall_styles.txt'
-            fname = Filename(self.styleManager.stylePathPrefix +
-                             '/alpha/DIRECT/LevelEditor/StyleFiles/' +
-                             filename)
-            f = open(fname.toOsSpecific(), 'a')
-            # Add a blank line
-            f.write('\n')
-            # Now output style details to file
-            style = DNAWallStyle(wall = self.lastWall)
-            style.output(f)
-            # Close the file
-            f.close()
+            style = DNAWallStyle(self.lastWall)
+            self.saveStyle(filename, style)
 
     def saveBuildingStyle(self):
         dnaObject = self.selectedDNARoot
@@ -2516,17 +2512,8 @@ class LevelEditor(NodePath, PandaObject):
             if DNAClassEqual(dnaObject, DNA_FLAT_BUILDING):
                 # Valid wall, add style to file
                 filename = self.neighborhood + '_building_styles.txt'
-                fname = Filename(self.styleManager.stylePathPrefix +
-                                 '/alpha/DIRECT/LevelEditor/StyleFiles/' +
-                                 filename)
-                f = open(fname.toOsSpecific(), 'a')
-                # Add a blank line
-                f.write('\n')
-                # Now output style details to file
-                style = DNAFlatBuildingStyle(building = dnaObject)
-                style.output(f)
-                # Close the file
-                f.close()
+                style = DNAFlatBuildingStyle(dnaObject)
+                self.saveStyle(filename, style)
                 return
         print 'Must select building before saving building style'
 
@@ -3168,8 +3155,6 @@ class LevelEditor(NodePath, PandaObject):
 class LevelStyleManager:
     """Class which reads in style files and manages class variables"""
     def __init__(self):
-        # Used to locate the alpha mount on windows (i.e. on what drive)
-        self.stylePathPrefix = base.config.GetString('style-path-prefix', '')
         # The main dictionary holding all attribute objects
         self.attributeDictionary = {}
         # Create the style samples
@@ -4009,10 +3994,11 @@ class LevelStyleManager:
         Open the specified file and strip out unwanted whitespace and
         empty lines.  Return file as list, one file line per element.
         """
-        fname = Filename(self.stylePathPrefix +
-                         '/alpha/DIRECT/LevelEditor/StyleFiles/' +
-                         filename)
-        f = open(fname.toOsSpecific(), 'r')
+        fname = Filename(dnaDirectory.getFullpath() +
+                         '/stylefiles/' + filename)
+
+        # We use binary mode to avoid Windows' end-of-line convention
+        f = open(fname.toOsSpecific(), 'rb')
         rawData = f.readlines()
         f.close()
         styleData = []
