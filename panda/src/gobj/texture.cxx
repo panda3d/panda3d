@@ -232,7 +232,12 @@ load(const PNMImage &pnmimage) {
   if (!_pbuffer->load(pnmimage))
     return false;
 
-  unprepare();
+  // It's not a good idea to call this here, since this function might
+  // be called from within the GSG itself--which won't expect the
+  // texture to suddenly unprepare itself.  Better to have the user
+  // explicitly unprepare() the texture if she loads a new file.
+  //  unprepare();
+
   return true;
 }
 
