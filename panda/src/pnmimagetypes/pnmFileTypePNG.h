@@ -75,19 +75,31 @@ public:
     jmp_buf _jmpbuf;
   };
 
-  /*
   class Writer : public PNMWriter {
   public:
     Writer(PNMFileType *type, ostream *file, bool owns_file);
+    virtual ~Writer();
 
     virtual int write_data(xel *array, xelval *alpha);
 
   private:
+    void free_png();
+    static int make_png_bit_depth(int bit_depth);
     static void png_write_data(png_structp png_ptr, png_bytep data, 
                                png_size_t length);
     static void png_flush_data(png_structp png_ptr);
+
+    static void png_error(png_structp png_ptr, png_const_charp error_msg);
+    static void png_warning(png_structp png_ptr, png_const_charp warning_msg);
+
+    png_structp _png;
+    png_infop _info;
+
+    // We need a jmp_buf to support libpng's fatal error handling, in
+    // which the error handler must not immediately leave libpng code,
+    // but must return to the caller in Panda.
+    jmp_buf _jmpbuf;
   };
-  */
 
   // The TypedWritable interface follows.
 public:
