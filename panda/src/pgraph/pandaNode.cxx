@@ -66,8 +66,23 @@ PandaNode(const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Destructor
+//       Access: Published, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PandaNode::
+~PandaNode() {
+  // We shouldn't have any parents left by the time we destruct, or
+  // there's a refcount fault somewhere.
+  CDReader cdata(_cycler);
+  nassertv(cdata->_up.empty());
+
+  remove_all_children();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Copy Constructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PandaNode::
@@ -88,7 +103,7 @@ PandaNode(const PandaNode &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Copy Assignment Operator
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
@@ -106,18 +121,120 @@ operator = (const PandaNode &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::Destructor
-//       Access: Published, Virtual
-//  Description:
+//     Function: PandaNode::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated PandaNode that is a shallow copy
+//               of this one.  It will be a different pointer, but its
+//               internal data may or may not be shared with that of
+//               the original PandaNode.  No children will be copied.
 ////////////////////////////////////////////////////////////////////
-PandaNode::
-~PandaNode() {
-  // We shouldn't have any parents left by the time we destruct, or
-  // there's a refcount fault somewhere.
-  CDReader cdata(_cycler);
-  nassertv(cdata->_up.empty());
+PandaNode *PandaNode::
+make_copy() const {
+  return new PandaNode(*this);
+}
 
-  remove_all_children();
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::copy_subgraph
+//       Access: Public
+//  Description: Allocates and returns a complete copy of this
+//               PandaNode and the entire scene graph rooted at this
+//               PandaNode.  Some data may still be shared from the
+//               original (e.g. vertex index tables), but nothing that
+//               will impede normal use of the PandaNode.
+////////////////////////////////////////////////////////////////////
+PandaNode *PandaNode::
+copy_subgraph() const {
+  //*** Do something here.
+  nassertr(false, (PandaNode *)NULL);
+  return (PandaNode *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::safe_to_flatten
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to flatten out
+//               this particular kind of PandaNode by duplicating
+//               instances, false otherwise (for instance, a Camera
+//               cannot be safely flattened, because the Camera
+//               pointer itself is meaningful).
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+safe_to_flatten() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::safe_to_transform
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to transform
+//               this particular kind of PandaNode by calling the
+//               xform() method, false otherwise.  For instance, it's
+//               usually a bad idea to attempt to xform a Character.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+safe_to_transform() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to combine this
+//               particular kind of PandaNode with other kinds of
+//               PandaNodes, adding children or whatever.  For
+//               instance, an LODNode should not be combined with any
+//               other PandaNode, because its set of children is
+//               meaningful.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+safe_to_combine() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this PandaNode by the
+//               indicated matrix, if it means anything to do so.  For
+//               most kinds of PandaNodes, this does nothing.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+xform(const LMatrix4f &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::combine_with
+//       Access: Public, Virtual
+//  Description: Collapses this PandaNode with the other PandaNode, if
+//               possible, and returns a pointer to the combined
+//               PandaNode, or NULL if the two PandaNodes cannot
+//               safely be combined.
+//
+//               The return value may be this, other, or a new
+//               PandaNode altogether.
+//
+//               This function is called from GraphReducer::flatten(),
+//               and need not deal with children; its job is just to
+//               decide whether to collapse the two PandaNodes and
+//               what the collapsed PandaNode should look like.
+////////////////////////////////////////////////////////////////////
+PandaNode *PandaNode::
+combine_with(PandaNode *other) {
+  // An unadorned PandaNode always combines with any other PandaNodes by
+  // yielding completely.  However, if we are actually some fancy PandaNode
+  // type that derives from PandaNode but didn't redefine this function, we
+  // should refuse to combine.
+  if (is_exact_type(get_class_type())) {
+    // No, we're an ordinary PandaNode.
+    return other;
+
+  } else if (other->is_exact_type(get_class_type())) {
+    // We're not an ordinary PandaNode, but the other one is.
+    return this;
+  }
+
+  // We're something other than an ordinary PandaNode.  Don't combine.
+  return (PandaNode *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

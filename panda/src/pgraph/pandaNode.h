@@ -49,10 +49,22 @@ class EXPCL_PANDA PandaNode : public TypedWritable, public Namable,
                               virtual public ReferenceCount {
 PUBLISHED:
   PandaNode(const string &name);
-  PandaNode(const PandaNode &copy);
-  void operator = (const PandaNode &copy);
   virtual ~PandaNode();
 
+public:
+  PandaNode(const PandaNode &copy);
+  void operator = (const PandaNode &copy);
+
+  virtual PandaNode *make_copy() const;
+  PandaNode *copy_subgraph() const;
+
+  virtual bool safe_to_flatten() const;
+  virtual bool safe_to_transform() const;
+  virtual bool safe_to_combine() const;
+  virtual void xform(const LMatrix4f &mat);
+  virtual PandaNode *combine_with(PandaNode *other); 
+
+PUBLISHED:
   INLINE int get_num_parents() const;
   INLINE PandaNode *get_parent(int n) const;
   INLINE int find_parent(PandaNode *node) const;
