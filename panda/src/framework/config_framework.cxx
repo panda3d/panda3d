@@ -30,6 +30,8 @@ ConfigureFn(config_framework) {
 
 const int win_width = config_framework.GetInt("win-width", 640);
 const int win_height = config_framework.GetInt("win-height", 480);
+const int win_origin_x = config_framework.GetInt("win-origin-x", -1);
+const int win_origin_y = config_framework.GetInt("win-origin-y", -1);
 const bool fullscreen = config_framework.GetBool("fullscreen", false);
 const bool undecorated = config_framework.GetBool("undecorated", false);
 const bool cursor_hidden = config_framework.GetBool("cursor-hidden", false);

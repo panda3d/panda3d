@@ -27,6 +27,8 @@ NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPTP_FRAMEWORK);
 // Configure variables for framework package.
 extern const int win_width;
 extern const int win_height;
+extern const int win_origin_x;
+extern const int win_origin_y;
 extern const bool fullscreen;
 extern const bool undecorated;
 extern const bool cursor_hidden;

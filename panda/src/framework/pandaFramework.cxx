@@ -206,6 +206,9 @@ void PandaFramework::
 get_default_window_props(WindowProperties &props) {
   props.set_open(true);
   props.set_size(win_width, win_height);
+  if (win_origin_x >= 0 && win_origin_y >= 0) {
+    props.set_origin(win_origin_x, win_origin_y);
+  }
   props.set_fullscreen(fullscreen);
   props.set_undecorated(undecorated);
   props.set_cursor_hidden(cursor_hidden);

@@ -89,6 +89,8 @@ class ShowBase(DirectObject.DirectObject):
         # Get the default window properties.
         winWidth = self.config.GetInt('win-width', 640)
         winHeight = self.config.GetInt('win-height', 480)
+        winOriginX = self.config.GetInt('win-origin-x', -1)
+        winOriginY = self.config.GetInt('win-origin-y', -1)
         fullscreen = self.config.GetBool('fullscreen', 0)
         undecorated = self.config.GetBool('undecorated', 0)
         cursorHidden = self.config.GetBool('cursor-hidden', 0)
@@ -97,6 +99,8 @@ class ShowBase(DirectObject.DirectObject):
         self.defaultWindowProps = WindowProperties()
         self.defaultWindowProps.setOpen(1)
         self.defaultWindowProps.setSize(winWidth, winHeight)
+        if winOriginX >= 0 and winOriginY >= 0:
+            self.defaultWindowProps.setOrigin(winOriginX, winOriginY)
         self.defaultWindowProps.setFullscreen(fullscreen)
         self.defaultWindowProps.setUndecorated(undecorated)
         self.defaultWindowProps.setCursorHidden(cursorHidden)
