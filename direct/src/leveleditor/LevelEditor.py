@@ -1539,8 +1539,8 @@ class LevelEditor(NodePath, PandaObject):
         path = os.path.join(f.toOsSpecific(), self.outputDir)
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid default DNA directory!'
-            print 'Using: C:\\'
-            path = 'C:\\'
+            print 'Using current directory'
+            path = '.'
         dnaFilename = askopenfilename(
             defaultextension = '.dna',
             filetypes = (('DNA Files', '*.dna'),('All files', '*')),
@@ -1556,8 +1556,8 @@ class LevelEditor(NodePath, PandaObject):
         path = os.path.join(f.toOsSpecific(), self.outputDir)
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid DNA save directory!'
-            print 'Using: C:\\'
-            path = 'C:\\'
+            print 'Using current directory'
+            path = '.'
         dnaFilename = asksaveasfilename(
             defaultextension = '.dna',
             filetypes = (('DNA Files', '*.dna'),('All files', '*')),

@@ -973,11 +973,11 @@ class ParticlePanel(AppShell):
         if pPath.getNumDirectories() > 0:
             path = pPath.getDirectory(0).toOsSpecific()
         else:
-            path = ''
+            path = '.'
         if not os.path.isdir(path):
-            print 'LevelEditor Warning: Invalid default DNA directory!'
-            print 'Using: C:\\'
-            path = 'C:\\'
+            print 'ParticlePanel Warning: Invalid default DNA directory!'
+            print 'Using current directory'
+            path = '.'
         particleFilename = askopenfilename(
             defaultextension = '.ptf',
             filetypes = (('Particle Files', '*.ptf'),('All files', '*')),
@@ -995,11 +995,11 @@ class ParticlePanel(AppShell):
         if pPath.getNumDirectories() > 0:
             path = pPath.getDirectory(0).toOsSpecific()
         else:
-            path = ''
+            path = '.'
         if not os.path.isdir(path):
-            print 'LevelEditor Warning: Invalid default DNA directory!'
-            print 'Using: C:\\'
-            path = 'C:\\'
+            print 'ParticlePanel Warning: Invalid default DNA directory!'
+            print 'Using current directory'
+            path = '.'
         particleFilename = asksaveasfilename(
             defaultextension = '.ptf',
             filetypes = (('Particle Files', '*.ptf'),('All files', '*')),
