@@ -175,7 +175,8 @@
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
-// for single-processor builds, write out *_composite.cxx files that include all composite
+// for single-processor builds (all nmake msvc-type builds can use only a single-proc), 
+// write out *_composite.cxx files that include all composite
 // files into 1 in order to speed the build of our heavily templated source
 #forscopes lib_target bin_target static_lib_target
 #if $[and $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]

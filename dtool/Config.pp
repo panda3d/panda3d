@@ -293,7 +293,7 @@
 // performance statistics?  This requires NET to be available.  By
 // default, we don't build PStats when OPTIMIZE = 4, although this is
 // possible.
-#defer DO_PSTATS $[and $[HAVE_NET],$[< $[OPTIMIZE], 4]]
+#defer DO_PSTATS $[or $[and $[HAVE_NET],$[< $[OPTIMIZE], 4]], $[DO_PSTATS]]
 
 // Do you want to include the "debug" and "spam" Notify messages?
 // Normally, these are stripped out when we build with OPTIMIZE = 4, but
