@@ -243,27 +243,21 @@ underflow() {
 ////////////////////////////////////////////////////////////////////
 size_t ZStreamBuf::
 read_chars(char *start, size_t length) {
-  static const size_t decompress_buffer_size = 4096;
-  char decompress_buffer[decompress_buffer_size];
-
   _z_source.next_out = (Bytef *)start;
   _z_source.avail_out = length;
 
-  int flush = (_source->eof() || _source->fail()) ? Z_FINISH : 0;
+  bool eof = (_source->eof() || _source->fail());
 
   while (_z_source.avail_out > 0) {
-    if (_z_source.avail_in == 0 && flush == 0) {
+    if (_z_source.avail_in == 0 && !eof) {
       _source->read(decompress_buffer, decompress_buffer_size);
       size_t read_count = _source->gcount();
-      if (read_count == 0 || _source->eof() || _source->fail()) {
-        // End of input; tell zlib to expect to stop.
-        flush = Z_FINISH;
-      }
+      eof = (read_count == 0 || _source->eof() || _source->fail());
         
       _z_source.next_in = (Bytef *)decompress_buffer;
       _z_source.avail_in = read_count;
     }
-    int result = inflate(&_z_source, flush);
+    int result = inflate(&_z_source, 0);
     size_t bytes_read = length - _z_source.avail_out;
 
     if (result == Z_STREAM_END) {

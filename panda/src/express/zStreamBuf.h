@@ -61,6 +61,20 @@ private:
 
   z_stream _z_source;
   z_stream _z_dest;
+
+  // We need to store the decompression buffer on the class object,
+  // because zlib might not consume all of the input characters at
+  // each call to inflate().  This isn't a problem on output because
+  // in that case we can afford to wait until it does consume all of
+  // the characters we give it.
+  enum {
+    // It's not clear how large or small this buffer ought to be.  It
+    // doesn't seem to matter much, especially since this is just a
+    // temporary holding area before getting copied into zlib's own
+    // internal buffers.
+    decompress_buffer_size = 128
+  };
+  char decompress_buffer[decompress_buffer_size];
 };
 
 #endif  // HAVE_ZLIB
