@@ -49,6 +49,7 @@
 #include "loaderFileTypeRegistry.h"
 #include "pnmFileTypeRegistry.h"
 #include "pnmImage.h"
+#include "virtualFileSystem.h"
 
 // This is generated data for the standard texture we apply to the
 // blue triangle.
@@ -552,7 +553,8 @@ load_model(const NodePath &parent, Filename filename) {
 
   // If the filename already exists where it is, or if it is fully
   // qualified, don't search along the model path for it.
-  bool search = !(filename.is_fully_qualified() || filename.exists());
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  bool search = !(filename.is_fully_qualified() || vfs->exists(filename));
 
   // We allow loading image files here.  Check to see if it might be
   // an image file, based on the filename extension.
