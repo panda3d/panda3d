@@ -805,7 +805,7 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
       nassertr(oci != _ordered_colliders.end(), hi);
       _ordered_colliders.erase(oci);
       
-      nassertr(_ordered_colliders.size() == _colliders.size(), false);
+      nassertr(_ordered_colliders.size() == _colliders.size(), hi);
 
     } else {
       // This collider references some other handler; keep it.
