@@ -143,20 +143,22 @@ class DistributedObject(PandaObject):
         generated and all of its required fields filled in.
         """
         assert(self.notify.debug('announceGenerate(): %s' % (self.doId)))
-        self.activeState = ESGenerated
-        messenger.send(self.uniqueName("generate"), [self])
+        if self.activeState != ESGenerated:
+            self.activeState = ESGenerated
+            messenger.send(self.uniqueName("generate"), [self])
 
     def disable(self):
         """
         Inheritors should redefine this to take appropriate action on disable
         """
         assert(self.notify.debug('disable(): %s' % (self.doId)))
-        self.activeState = ESDisabled
-        self.__callbacks = {}
-        if wantOtpServer:
-            self.cr.deleteObjectLocation(self.doId, self.__location[0], self.__location[1])
-            self.__location = (None, None)
-            # TODO: disable my children
+        if self.activeState != ESDisabled:
+            self.activeState = ESDisabled
+            self.__callbacks = {}
+            if wantOtpServer:
+                self.cr.deleteObjectLocation(self.doId, self.__location[0], self.__location[1])
+                self.__location = (None, None)
+                # TODO: disable my children
 
     def isDisabled(self):
         """
