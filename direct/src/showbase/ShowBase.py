@@ -728,7 +728,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def makeCamera(self, win, chan = None, layer = None, layerSort = 0,
                    scene = None,
-                   displayRegion = (0, 1, 0, 1), aspectRatio = None):
+                   displayRegion = (0, 1, 0, 1), aspectRatio = None, camName = 'cam'):
         """
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
@@ -754,7 +754,7 @@ class ShowBase(DirectObject.DirectObject):
             aspectRatio = self.getAspectRatio()
 
         # Now make a new Camera node.
-        camNode = Camera('cam')
+        camNode = Camera(camName)
         lens = PerspectiveLens()
         lens.setAspectRatio(aspectRatio)
             
@@ -1029,7 +1029,6 @@ class ShowBase(DirectObject.DirectObject):
         return self.physicsMgrEnabled
 
     def updateManagers(self, state):
-        """updateManagers(self)"""
         dt = globalClock.getDt()
         if (self.particleMgrEnabled == 1):
             self.particleMgr.doParticles(dt)
