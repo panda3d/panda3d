@@ -56,6 +56,7 @@ def privUpdateSpec(spec, modelPath, entTypeModule):
     TexturePool.setFakeTextureImage(
         '/i/alpha/player/install/ttmodels/src/fonts/ImpressBT.rgb')
     model = loader.loadModel(modelPath)
+    assert model is not None
     TexturePool.clearFakeTextureImage()
     # get the model's zone info
     modelZoneNum2node = LevelUtil.getZoneNum2Node(model)
