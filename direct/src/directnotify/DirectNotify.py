@@ -62,7 +62,7 @@ class DirectNotify:
         dconfigParam = ("notify-level-" + categoryName)
         level = config.GetString(dconfigParam, "")
         if level:
-            print ("Setting DirectNotify category: " + dconfigParam +
+            print ("Setting DirectNotify category: " + categoryName +
                    " to severity: " + level)
             category = self.getCategory(categoryName)
             if level == "error":
