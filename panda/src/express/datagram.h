@@ -45,29 +45,29 @@ PUBLISHED:
   virtual void clear();
   void dump_hex(ostream &out) const;
 
-  INLINE void add_bool(bool b);
-  INLINE void add_int8(PN_int8 int8);
-  INLINE void add_uint8(PN_uint8 uint8);
+  INLINE void add_bool(bool value);
+  INLINE void add_int8(PN_int8 value);
+  INLINE void add_uint8(PN_uint8 value);
 
   // The default numeric packing is little-endian.
-  INLINE void add_int16(PN_int16 int16);
-  INLINE void add_int32(PN_int32 int32);
-  INLINE void add_int64(PN_int64 int64);
-  INLINE void add_uint16(PN_uint16 uint16);
-  INLINE void add_uint32(PN_uint32 uint32);
-  INLINE void add_uint64(PN_uint64 uint64);
-  INLINE void add_float32(float float32);
-  INLINE void add_float64(PN_float64 float64);
+  INLINE void add_int16(PN_int16 value);
+  INLINE void add_int32(PN_int32 value);
+  INLINE void add_int64(PN_int64 value);
+  INLINE void add_uint16(PN_uint16 value);
+  INLINE void add_uint32(PN_uint32 value);
+  INLINE void add_uint64(PN_uint64 value);
+  INLINE void add_float32(float value);
+  INLINE void add_float64(PN_float64 value);
 
   // These functions pack numbers big-endian, in case that's desired.
-  INLINE void add_be_int16(PN_int16 int16);
-  INLINE void add_be_int32(PN_int32 int32);
-  INLINE void add_be_int64(PN_int64 int64);
-  INLINE void add_be_uint16(PN_uint16 uint16);
-  INLINE void add_be_uint32(PN_uint32 uint32);
-  INLINE void add_be_uint64(PN_uint64 uint64);
-  INLINE void add_be_float32(float float32);
-  INLINE void add_be_float64(PN_float64 float64);
+  INLINE void add_be_int16(PN_int16 value);
+  INLINE void add_be_int32(PN_int32 value);
+  INLINE void add_be_int64(PN_int64 value);
+  INLINE void add_be_uint16(PN_uint16 value);
+  INLINE void add_be_uint32(PN_uint32 value);
+  INLINE void add_be_uint64(PN_uint64 value);
+  INLINE void add_be_float32(float value);
+  INLINE void add_be_float64(PN_float64 value);
 
   INLINE void add_string(const string &str);
   INLINE void add_fixed_string(const string &str, size_t size);

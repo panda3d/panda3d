@@ -67,8 +67,8 @@ add_bool(bool b) {
 //  Description: Adds a signed 8-bit integer to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_int8(PN_int8 int8) {
-  _message += LittleEndian((char *)&int8, sizeof(int8));
+add_int8(PN_int8 value) {
+  _message += (char)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,8 +77,8 @@ add_int8(PN_int8 int8) {
 //  Description: Adds an unsigned 8-bit integer to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_uint8(PN_uint8 uint8) {
-  _message += LittleEndian((char *)&uint8, sizeof(uint8));
+add_uint8(PN_uint8 value) {
+  _message += (char)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,8 +87,9 @@ add_uint8(PN_uint8 uint8) {
 //  Description: Adds a signed 16-bit integer to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_int16(PN_int16 int16) {
-  _message += LittleEndian((char *)&int16, sizeof(int16));
+add_int16(PN_int16 value) {
+  LittleEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,8 +98,9 @@ add_int16(PN_int16 int16) {
 //  Description: Adds a signed 32-bit integer to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_int32(PN_int32 int32) {
-  _message += LittleEndian((char *)&int32, sizeof(int32));
+add_int32(PN_int32 value) {
+  LittleEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,8 +109,9 @@ add_int32(PN_int32 int32) {
 //  Description: Adds a signed 64-bit integer to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_int64(PN_int64 int64) {
-  _message += LittleEndian((char *)&int64, sizeof(int64));
+add_int64(PN_int64 value) {
+  LittleEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,8 +120,9 @@ add_int64(PN_int64 int64) {
 //  Description: Adds an unsigned 16-bit integer to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_uint16(PN_uint16 uint16) {
-  _message += LittleEndian((char *)&uint16, sizeof(uint16));
+add_uint16(PN_uint16 value) {
+  LittleEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -127,8 +131,9 @@ add_uint16(PN_uint16 uint16) {
 //  Description: Adds an unsigned 32-bit integer to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_uint32(PN_uint32 uint32) {
-  _message += LittleEndian((char *)&uint32, sizeof(uint32));
+add_uint32(PN_uint32 value) {
+  LittleEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,8 +142,9 @@ add_uint32(PN_uint32 uint32) {
 //  Description: Adds an unsigned 64-bit integer to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_uint64(PN_uint64 uint64) {
-  _message += LittleEndian((char *)&uint64, sizeof(uint64));
+add_uint64(PN_uint64 value) {
+  LittleEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,12 +156,13 @@ add_uint64(PN_uint64 uint64) {
 //               special care is required.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_float32(float float32) {
+add_float32(float value) {
   // For now, we assume the float format is portable across all
   // architectures we are concerned with.  If we come across one that
   // is different, we will have to convert.
-  nassertv(sizeof(float32) == 4);
-  _message += LittleEndian((char *)&float32, sizeof(float32));
+  nassertv(sizeof(value) == 4);
+  LittleEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,8 +171,9 @@ add_float32(float float32) {
 //  Description: Adds a 64-bit floating-point number to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_float64(PN_float64 float64) {
-  _message += LittleEndian((char *)&float64, sizeof(float64));
+add_float64(PN_float64 value) {
+  LittleEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,8 +183,9 @@ add_float64(PN_float64 float64) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_int16(PN_int16 int16) {
-  _message += BigEndian((char *)&int16, sizeof(int16));
+add_be_int16(PN_int16 value) {
+  BigEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,8 +195,9 @@ add_be_int16(PN_int16 int16) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_int32(PN_int32 int32) {
-  _message += BigEndian((char *)&int32, sizeof(int32));
+add_be_int32(PN_int32 value) {
+  BigEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,8 +207,9 @@ add_be_int32(PN_int32 int32) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_int64(PN_int64 int64) {
-  _message += BigEndian((char *)&int64, sizeof(int64));
+add_be_int64(PN_int64 value) {
+  BigEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,8 +219,9 @@ add_be_int64(PN_int64 int64) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_uint16(PN_uint16 uint16) {
-  _message += BigEndian((char *)&uint16, sizeof(uint16));
+add_be_uint16(PN_uint16 value) {
+  BigEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,8 +231,9 @@ add_be_uint16(PN_uint16 uint16) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_uint32(PN_uint32 uint32) {
-  _message += BigEndian((char *)&uint32, sizeof(uint32));
+add_be_uint32(PN_uint32 value) {
+  BigEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,8 +243,9 @@ add_be_uint32(PN_uint32 uint32) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_uint64(PN_uint64 uint64) {
-  _message += BigEndian((char *)&uint64, sizeof(uint64));
+add_be_uint64(PN_uint64 value) {
+  BigEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -243,12 +257,13 @@ add_be_uint64(PN_uint64 uint64) {
 //               different architectures, special care is required.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_float32(float float32) {
+add_be_float32(float value) {
   // For now, we assume the float format is portable across all
   // architectures we are concerned with.  If we come across one that
   // is different, we will have to convert.
-  nassertv(sizeof(float32) == 4);
-  _message += BigEndian((char *)&float32, sizeof(float32));
+  nassertv(sizeof(value) == 4);
+  BigEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -258,8 +273,9 @@ add_be_float32(float float32) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_float64(PN_float64 float64) {
-  _message += BigEndian((char *)&float64, sizeof(float64));
+add_be_float64(PN_float64 value) {
+  BigEndian s(&value, sizeof(value));
+  s.append_to(_message, sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////

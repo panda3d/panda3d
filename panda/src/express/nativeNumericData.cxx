@@ -1,0 +1,6 @@
+// Filename: nativeNumericData.cxx
+// Created by:  drose (09May01)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "nativeNumericData.h"

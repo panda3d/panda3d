@@ -1,25 +1,21 @@
-// Filename: littleEndian.cxx
-// Created by:  drose (09Feb00)
+// Filename: reversedNumericData.cxx
+// Created by:  drose (09May01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "littleEndian.h"
+#include "reversedNumericData.h"
 
-#ifdef IS_BIG_ENDIAN
+#include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LittleEndian::reverse_assign
+//     Function: ReversedNumericData::reverse_assign
 //       Access: Private
 //  Description: Actually does the data reversal.
 ////////////////////////////////////////////////////////////////////
-void LittleEndian::
-reverse_assign(const char *data, size_t length) {
-  _str = "";
-  _str.reserve(length);
-
+void ReversedNumericData::
+reverse_assign(const char *source, size_t length) {
+  nassertv(length <= max_numeric_size);
   for (size_t i = 0; i < length; i++) {
-    _str += data[length - 1 - i];
+    _data[i] = source[length - 1 - i];
   }
 }
-
-#endif // IS_BIG_ENDIAN

@@ -9,7 +9,7 @@
   #define USE_NET yes
 
   #define SOURCES							\
-    bigEndian.I bigEndian.cxx bigEndian.h buffer.I buffer.cxx buffer.h	\
+    bigEndian.h buffer.I buffer.cxx buffer.h	\
     circBuffer.I circBuffer.h clockObject.I clockObject.cxx		\
     clockObject.h config_express.cxx config_express.h datagram.I	\
     datagram.cxx datagram.h datagramGenerator.I datagramGenerator.cxx	\
@@ -20,13 +20,17 @@
     datagramSink.I datagramSink.cxx datagramSink.h			\
     get_config_path.cxx get_config_path.h				\
     hashVal.I hashVal.cxx hashVal.h \
-    indent.I indent.cxx indent.h littleEndian.I				\
-    littleEndian.cxx littleEndian.h memoryUsage.I memoryUsage.cxx	\
+    indent.I indent.cxx indent.h \
+    littleEndian.h memoryUsage.I memoryUsage.cxx	\
     memoryUsage.h memoryUsagePointers.I memoryUsagePointers.cxx		\
     memoryUsagePointers.h multifile.I multifile.cxx multifile.h \
-    namable.I namable.cxx namable.h numeric_types.h 			\
+    namable.I namable.cxx namable.h \
+    nativeNumericData.I nativeNumericData.cxx nativeNumericData.h \
+    numeric_types.h 			\
     pointerTo.I pointerTo.h referenceCount.I	\
-    referenceCount.cxx referenceCount.h tokenBoard.I tokenBoard.h	\
+    referenceCount.cxx referenceCount.h \
+    reversedNumericData.I reversedNumericData.cxx reversedNumericData.h \
+    tokenBoard.I tokenBoard.h	\
     trueClock.I trueClock.cxx trueClock.h typeHandle.I typeHandle.cxx	\
     typeHandle.h typedReferenceCount.I typedReferenceCount.cxx		\
     typedReferenceCount.h typedef.h error_utils.cxx error_utils.h
@@ -36,7 +40,7 @@
     patchfile.I patchfile.cxx patchfile.h
 
   #define INSTALL_HEADERS						\
-    bigEndian.I bigEndian.h buffer.I buffer.h circBuffer.I		\
+    bigEndian.h buffer.I buffer.h circBuffer.I		\
     circBuffer.h clockObject.I clockObject.h config_express.h		\
     datagram.I datagram.h datagramInputFile.I datagramInputFile.h	\
     datagramIterator.I datagramIterator.h \
@@ -44,11 +48,13 @@
     datagramSink.I datagramSink.h datagramGenerator.I			\
     datagramGenerator.h get_config_path.h				\
     hashVal.I hashVal.h \
-    indent.I indent.h littleEndian.I littleEndian.h			\
+    indent.I indent.h littleEndian.h			\
     memoryUsage.I memoryUsage.h memoryUsagePointers.I			\
     memoryUsagePointers.h multifile.I multifile.h \
+    nativeNumericData.I nativeNumericData.h \
     numeric_types.h	\
     pointerTo.I pointerTo.h referenceCount.I referenceCount.h		\
+    reversedNumericData.I reversedNumericData.h \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h	\
     typedReferenceCount.I typedReferenceCount.h typedef.h		\
     namable.I namable.h tokenBoard.I patchfile.h patchfile.I		\
