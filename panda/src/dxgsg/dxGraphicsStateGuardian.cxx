@@ -3016,24 +3016,23 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         bool bUseTexCoordOnlyLoop = ((ColorBinding != G_PER_VERTEX) &&
                                      (NormalBinding == G_OFF) &&
                                      (TexCoordBinding != G_OFF));
-
-        bool bPerPrimNormal;
-        bool bPerPrimColor=((_perPrim & PER_COLOR)!=0);
+        bool bPerPrimNormal=false;
 
         if(bUseTexCoordOnlyLoop) {
            _perVertex |= PER_TEXCOORD;  // TexCoords are either G_OFF or G_PER_VERTEX 
         } else {
             if(NormalBinding == G_PER_VERTEX)   
                 _perVertex |= PER_NORMAL;
-            else if(NormalBinding == G_PER_PRIM) 
+            else if(NormalBinding == G_PER_PRIM) {
                     _perPrim |= PER_NORMAL;
-
-            bPerPrimNormal=((_perPrim & PER_NORMAL)!=0);
+                    bPerPrimNormal=true;
+            }
 
             if(TexCoordBinding == G_PER_VERTEX) 
                _perVertex |= PER_TEXCOORD;
         } 
 
+        bool bPerPrimColor=(ColorBinding == G_PER_PRIM);
         if(bPerPrimColor)
            _perPrim |= PER_COLOR;
           else if(ColorBinding == G_PER_VERTEX)    
