@@ -322,7 +322,7 @@ sorts_less_than(const EggVertex &other) const {
   // Merge-compare the uv maps.
   UVMap::const_iterator ai, bi;
   ai = _uv_map.begin();
-  bi = other._uv_map.end();
+  bi = other._uv_map.begin();
   while (ai != _uv_map.end() && bi != other._uv_map.end()) {
     if ((*ai).first < (*bi).first) {
       return true;
@@ -339,7 +339,7 @@ sorts_less_than(const EggVertex &other) const {
     ++ai;
     ++bi;
   }
-  if (bi != _uv_map.end()) {
+  if (bi != other._uv_map.end()) {
     return true;
   }
   if (ai != _uv_map.end()) {
