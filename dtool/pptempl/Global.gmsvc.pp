@@ -118,7 +118,7 @@
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
 
-#defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
+#defer extra_cflags /EHsc /Zm300 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
 #defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH]]
 #defer MAIN_C_COMPILE_ARGS /nologo /c $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] "$[osfilename $[source]]"
