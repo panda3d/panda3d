@@ -70,7 +70,7 @@ public:
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
 
 protected:
-  static TypedWriteable *make_CollisionSphere(const FactoryParams &params);
+  static TypedWritable *make_CollisionSphere(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

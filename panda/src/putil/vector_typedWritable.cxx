@@ -1,9 +1,9 @@
-// Filename: vector_writeable.cxx
-// Created by:   (15Jun00)
+// Filename: vector_typedWritable.cxx
+// Created by:  jason (19Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "vector_writeable.h"
+#include "vector_typedWritable.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

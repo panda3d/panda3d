@@ -1,31 +1,31 @@
-// Filename: typeWriteable.h
+// Filename: typeWritable.h
 // Created by:  jason (08Jun00)
 //
 
-#include "typedWriteable.h"
+#include "typedWritable.h"
 
-TypeHandle TypedWriteable::_type_handle;
-TypedWriteable* const TypedWriteable::Null = (TypedWriteable*)0L;
+TypeHandle TypedWritable::_type_handle;
+TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedWriteable::Destructor
+//     Function: TypedWritable::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TypedWriteable::~TypedWriteable() 
+TypedWritable::~TypedWritable() 
 { 
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedWriteable::complete_pointers
+//     Function: TypedWritable::complete_pointers
 //       Access: Public, Virtual
-//  Description: Takes in a vector of pointers to TypedWriteable
+//  Description: Takes in a vector of pointers to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
-int TypedWriteable::
-complete_pointers(vector_typedWriteable &, BamReader*)
+int TypedWritable::
+complete_pointers(vector_typedWritable &, BamReader*)
 {
   return 0;
 }

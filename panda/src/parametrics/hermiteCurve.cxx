@@ -911,7 +911,7 @@ register_with_read_factory() {
 //       Access: Protected
 //  Description: Factory method to generate an object of this type.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *HermiteCurve::
+TypedWritable *HermiteCurve::
 make_HermiteCurve(const FactoryParams &params) {
   HermiteCurve *me = new HermiteCurve;
   DatagramIterator scan;

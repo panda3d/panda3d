@@ -14,12 +14,12 @@
 #include "mouseButton.h"
 #include "factoryParam.h"
 #include "datagram.h"
-#include "writeable.h"
-#include "typedWriteable.h"
-#include "typedWriteableReferenceCount.h"
-#include "writeableParam.h"
+#include "writable.h"
+#include "typedWritable.h"
+#include "typedWritableReferenceCount.h"
+#include "writableParam.h"
 #include "bamReaderParam.h"
-#include "writeableConfigurable.h"
+#include "writableConfigurable.h"
 #include "get_config_path.h"
 
 #include <dconfig.h>
@@ -39,12 +39,12 @@ ConfigureFn(config_util) {
   MouseButton::init_mouse_buttons();
   FactoryParam::init_type();
   Datagram::init_type();
-  Writeable::init_type();
-  TypedWriteable::init_type();
-  WriteableParam::init_type();
+  Writable::init_type();
+  TypedWritable::init_type();
+  WritableParam::init_type();
   BamReaderParam::init_type();
-  TypedWriteableReferenceCount::init_type();
-  WriteableConfigurable::init_type();
+  TypedWritableReferenceCount::init_type();
+  WritableConfigurable::init_type();
 }
 
 

@@ -72,8 +72,8 @@ load_file(const Filename &path, bool report_errors) const
 
   PT_Node result;
 
-  TypedWriteable *object = bam_file.read_object();
-  if (object == TypedWriteable::Null) {
+  TypedWritable *object = bam_file.read_object();
+  if (object == TypedWritable::Null) {
     if (report_errors) {
       loader_cat.error() << "Bam file " << path << " is empty.\n";
     }

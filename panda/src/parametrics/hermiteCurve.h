@@ -145,12 +145,12 @@ protected:
 
   vector<HermiteCurveCV> _points;
 
-// TypedWriteable stuff
+// TypedWritable stuff
 public:
   static void register_with_read_factory();
 
 protected:
-  static TypedWriteable *make_HermiteCurve(const FactoryParams &params);
+  static TypedWritable *make_HermiteCurve(const FactoryParams &params);
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
   void fillin(DatagramIterator &scan, BamReader *manager);
 

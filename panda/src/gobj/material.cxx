@@ -154,7 +154,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //       Access: Protected
 //  Description: Factory method to generate a Material object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *Material::
+TypedWritable *Material::
 make_Material(const FactoryParams &params) {
   Material *me = new Material;
   DatagramIterator scan;

@@ -698,21 +698,21 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TextureReference::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr((int)plist.size() >= 3, 0);
   int index = 0;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_egg_file, plist[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_source_texture, plist[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_placement, plist[index], index);
   }
   index++;
@@ -728,7 +728,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TextureReference::
+TypedWritable* TextureReference::
 make_TextureReference(const FactoryParams &params) {
   TextureReference *me = new TextureReference;
   DatagramIterator scan;

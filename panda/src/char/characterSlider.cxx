@@ -57,7 +57,7 @@ make_copy() const {
 //       Access: Protected
 //  Description: Factory method to generate a CharacterSlider object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* CharacterSlider::
+TypedWritable* CharacterSlider::
 make_CharacterSlider(const FactoryParams &params)
 {
   CharacterSlider *me = new CharacterSlider;

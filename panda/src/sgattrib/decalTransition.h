@@ -40,7 +40,7 @@ public:
 
 public:
   static void register_with_read_factory(void);
-  static TypedWriteable *make_DecalTransition(const FactoryParams &params);
+  static TypedWritable *make_DecalTransition(const FactoryParams &params);
 
 public:
   virtual TypeHandle get_type() const {

@@ -277,12 +277,12 @@ fillin(DatagramIterator& scan, BamReader* manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int CharacterJoint::
-complete_pointers(vector_typedWriteable &plist, BamReader* manager)
+complete_pointers(vector_typedWritable &plist, BamReader* manager)
 {
   int i;
   int start = MovingPartMatrix::complete_pointers(plist, manager);
@@ -291,7 +291,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader* manager)
   
   for(i = start; i < mid; i++)
   {
-    if (plist[i] == TypedWriteable::Null)
+    if (plist[i] == TypedWritable::Null)
     {
       char_cat->warning() << get_name() 
 			  << " Ignoring null Net NodeRelation" << endl;
@@ -304,7 +304,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader* manager)
 
   for(i = mid; i < end; i++)
   {
-    if (plist[i] == TypedWriteable::Null)
+    if (plist[i] == TypedWritable::Null)
     {
       char_cat->warning() << get_name() 
 			  << " Ignoring null Local NodeRelation" << endl;
@@ -323,7 +323,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a CharacterJoint object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* CharacterJoint::
+TypedWritable* CharacterJoint::
 make_CharacterJoint(const FactoryParams &params)
 {
   CharacterJoint *me = new CharacterJoint;

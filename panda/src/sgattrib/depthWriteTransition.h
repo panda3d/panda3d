@@ -28,7 +28,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
 
-  static TypedWriteable *make_DepthWriteTransition(const FactoryParams &params);
+  static TypedWritable *make_DepthWriteTransition(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);

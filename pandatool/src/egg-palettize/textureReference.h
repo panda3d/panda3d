@@ -12,7 +12,7 @@
 #include "palettizer.h"
 
 #include <luse.h>
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 class TextureImage;
 class SourceTextureImage;
@@ -31,7 +31,7 @@ class TexturePlacement;
 //               information about the way in which the egg file uses
 //               the texture; e.g. does it repeat.
 ////////////////////////////////////////////////////////////////////
-class TextureReference : public TypedWriteable {
+class TextureReference : public TypedWritable {
 public:
   TextureReference();
   ~TextureReference();
@@ -88,15 +88,15 @@ private:
 
   TextureProperties _properties;
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 protected:
-  static TypedWriteable *make_TextureReference(const FactoryParams &params);
+  static TypedWritable *make_TextureReference(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
@@ -104,9 +104,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     register_type(_type_handle, "TextureReference",
-		  TypedWriteable::get_class_type());
+		  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -201,7 +201,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a BillboardTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* BillboardTransition::
+TypedWritable* BillboardTransition::
 make_BillboardTransition(const FactoryParams &params)
 {
   BillboardTransition *me = new BillboardTransition;

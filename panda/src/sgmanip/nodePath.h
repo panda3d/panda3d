@@ -494,6 +494,19 @@ private:
   // It's important that there are no data members in this class.  Put
   // them in NodePathBase instead.
 
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    NodePathBase::init_type();
+    register_type(_type_handle, "NodePath",
+		  NodePathBase::get_class_type());
+  }
+  
+private:
+  static TypeHandle _type_handle;
+
   friend class NodePathCollection;
 };
 

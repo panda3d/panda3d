@@ -21,6 +21,8 @@ TypeHandle AnimControl::_type_handle;
 ////////////////////////////////////////////////////////////////////
 AnimControl::
 AnimControl(PartBundle *part, AnimBundle *anim, int channel_index) {
+  MemoryUsage::update_type(this, get_class_type());
+
   _part = part;
   _anim = anim;
   _channel_index = channel_index;

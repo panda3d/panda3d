@@ -493,7 +493,7 @@ get_tris() const {
 //       Access: Protected
 //  Description: Factory method to generate a GeomTristrip object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomTristrip::
+TypedWritable* GeomTristrip::
 make_GeomTristrip(const FactoryParams &params) {
   GeomTristrip *me = new GeomTristrip;
   DatagramIterator scan;

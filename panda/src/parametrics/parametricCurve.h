@@ -132,7 +132,7 @@ private:
   ParametricCurveDrawer *_implicit_drawer;
   PT_NodeRelation _viz_arc;
 
-// TypedWriteable stuff
+// TypedWritable stuff
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
   void fillin(DatagramIterator &scan, BamReader *manager);

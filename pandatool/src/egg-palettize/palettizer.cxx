@@ -867,26 +867,26 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int Palettizer::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr((int)plist.size() >= 4 + _num_egg_files + _num_groups + _num_textures, 0);
   int index = 0;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_color_type, plist[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_alpha_type, plist[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_shadow_color_type, plist[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_shadow_alpha_type, plist[index], index);
   }
   index++;
@@ -924,7 +924,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* Palettizer::
+TypedWritable* Palettizer::
 make_Palettizer(const FactoryParams &params) {
   Palettizer *me = new Palettizer;
   DatagramIterator scan;

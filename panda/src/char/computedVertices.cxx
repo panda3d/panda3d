@@ -403,7 +403,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a ComputedVertices object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* ComputedVertices::
+TypedWritable* ComputedVertices::
 make_ComputedVertices(const FactoryParams &params)
 {
   ComputedVertices *me = new ComputedVertices;

@@ -37,7 +37,7 @@ make_copy() const {
 //       Access: Protected
 //  Description: Factory method to generate a CharacterJointBundle object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* CharacterJointBundle::
+TypedWritable* CharacterJointBundle::
 make_CharacterJointBundle(const FactoryParams &params)
 {
   CharacterJointBundle *me = new CharacterJointBundle;

@@ -74,7 +74,7 @@ make_arc(const FactoryParams &) {
 //       Access: Protected
 //  Description: Factory method to generate a RenderRelation object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* RenderRelation::
+TypedWritable* RenderRelation::
 make_RenderRelation(const FactoryParams &params)
 {
   RenderRelation *me = new RenderRelation;

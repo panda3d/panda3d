@@ -489,8 +489,8 @@ run() {
       exit(1);
     }
 
-    TypedWriteable *obj = state_file.read_object();
-    if (obj == (TypedWriteable *)NULL || !state_file.resolve()) {
+    TypedWritable *obj = state_file.read_object();
+    if (obj == (TypedWritable *)NULL || !state_file.resolve()) {
       nout << FilenameUnifier::make_user_filename(state_filename)
 	   << " exists, but appears to be corrupt.  Perhaps you "
 	   << "should remove it so a new one can be created.\n";

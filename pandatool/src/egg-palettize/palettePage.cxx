@@ -280,11 +280,11 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int PalettePage::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr((int)plist.size() >= 1 + _num_images, 0);
   int index = 0;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_group, plist[index], index);
   }
   index++;
@@ -309,7 +309,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* PalettePage::
+TypedWritable* PalettePage::
 make_PalettePage(const FactoryParams &params) {
   PalettePage *me = new PalettePage;
   DatagramIterator scan;

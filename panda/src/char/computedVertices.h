@@ -12,7 +12,7 @@
 #include "computedVerticesMorph.h"
 
 #include <vector_ushort.h>
-#include <typedWriteableReferenceCount.h>
+#include <typedWritableReferenceCount.h>
 
 class Character;
 class CharacterJoint;
@@ -24,7 +24,7 @@ class CharacterJoint;
 //               vertices animated into one or more joints, as well as
 //               morph vertices.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ComputedVertices : public TypedWriteableReferenceCount {
+class EXPCL_PANDA ComputedVertices : public TypedWritableReferenceCount {
 public:
   INLINE ComputedVertices();
 
@@ -73,7 +73,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
 
-  static TypedWriteable *make_ComputedVertices(const FactoryParams &params);
+  static TypedWritable *make_ComputedVertices(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
@@ -87,9 +87,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteableReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "ComputedVertices",
-		  TypedWriteableReferenceCount::get_class_type());
+		  TypedWritableReferenceCount::get_class_type());
   }
 
 private:

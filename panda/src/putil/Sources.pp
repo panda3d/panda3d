@@ -33,16 +33,16 @@
     pta_double.h pta_float.cxx pta_float.h pta_int.cxx pta_int.h \
     pta_uchar.cxx pta_uchar.h pta_ushort.cxx pta_ushort.h \
     string_utils.I string_utils.N string_utils.cxx string_utils.h \
-    timedCycle.I timedCycle.cxx timedCycle.h typedWriteable.I \
-    typedWriteable.cxx typedWriteable.h typedWriteableReferenceCount.I \
-    typedWriteableReferenceCount.cxx typedWriteableReferenceCount.h \
+    timedCycle.I timedCycle.cxx timedCycle.h typedWritable.I \
+    typedWritable.cxx typedWritable.h typedWritableReferenceCount.I \
+    typedWritableReferenceCount.cxx typedWritableReferenceCount.h \
     updateSeq.I updateSeq.cxx updateSeq.h vector_double.cxx \
     vector_double.h vector_float.cxx vector_float.h \
-    vector_typedWriteable.cxx vector_typedWriteable.h vector_uchar.cxx \
+    vector_typedWritable.cxx vector_typedWritable.h vector_uchar.cxx \
     vector_uchar.h vector_ushort.cxx vector_ushort.h \
-    vector_writeable.cxx vector_writeable.h writeable.I writeable.cxx \
-    writeable.h writeableConfigurable.cxx writeableConfigurable.h \
-    writeableParam.I writeableParam.cxx writeableParam.h
+    vector_writable.cxx vector_writable.h writable.I writable.cxx \
+    writable.h writableConfigurable.cxx writableConfigurable.h \
+    writableParam.I writableParam.cxx writableParam.h
 
   #define INSTALL_HEADERS \
     bam.h bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
@@ -61,13 +61,13 @@
     modifierButtons.h mouseButton.h mouseData.h nameUniquifier.I \
     nameUniquifier.h pointerToArray.I pointerToArray.h pta_double.h \
     pta_float.h pta_int.h pta_uchar.h pta_ushort.h string_utils.I \
-    string_utils.h timedCycle.I timedCycle.h typedWriteable.I \
-    typedWriteable.h typedWriteableReferenceCount.I \
-    typedWriteableReferenceCount.h updateSeq.I updateSeq.h \
-    vector_double.h vector_float.h vector_typedWriteable.h \
-    vector_uchar.h vector_ushort.h vector_writeable.h writeable.I \
-    writeable.h writeableConfigurable.h writeableParam.I \
-    writeableParam.h
+    string_utils.h timedCycle.I timedCycle.h typedWritable.I \
+    typedWritable.h typedWritableReferenceCount.I \
+    typedWritableReferenceCount.h updateSeq.I updateSeq.h \
+    vector_double.h vector_float.h vector_typedWritable.h \
+    vector_uchar.h vector_ushort.h vector_writable.h writable.I \
+    writable.h writableConfigurable.h writableParam.I \
+    writableParam.h
 
   #define IGATESCAN all
 

@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET pnmimage
   #define LOCAL_LIBS \
-    pnm linmath
+    pnm linmath putil express
 
   #define SOURCES \
     config_pnmimage.cxx config_pnmimage.h pnm-image-filter.cxx \

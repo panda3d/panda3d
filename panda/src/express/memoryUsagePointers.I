@@ -8,9 +8,11 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-MemoryUsagePointers::Entry::
-Entry(ReferenceCount *ptr, TypeHandle type, double age) :
+INLINE MemoryUsagePointers::Entry::
+Entry(ReferenceCount *ptr, TypedObject *typed_ptr,
+      TypeHandle type, double age) :
   _ptr(ptr),
+  _typed_ptr(typed_ptr),
   _type(type),
   _age(age)
 {
@@ -22,9 +24,10 @@ Entry(ReferenceCount *ptr, TypeHandle type, double age) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-MemoryUsagePointers::Entry::
+INLINE MemoryUsagePointers::Entry::
 Entry(const Entry &copy) :
   _ptr(copy._ptr),
+  _typed_ptr(copy._typed_ptr),
   _type(copy._type),
   _age(copy._age)
 {
@@ -36,13 +39,16 @@ Entry(const Entry &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void MemoryUsagePointers::Entry::
+INLINE void MemoryUsagePointers::Entry::
 operator = (const Entry &copy) {
   if (_ptr != copy._ptr) {
     _ptr->unref();
     _ptr = copy._ptr;
+    // We can't call unref_delete(), because we don't know what kind
+    // of pointer it is precisely.  Potential leak.
     _ptr->ref();
   }
+  _typed_ptr = copy._typed_ptr;
   _type = copy._type;
   _age = copy._age;
 }
@@ -52,8 +58,10 @@ operator = (const Entry &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-MemoryUsagePointers::Entry::
+INLINE MemoryUsagePointers::Entry::
 ~Entry() {
+  // We can't call unref_delete(), because we don't know what kind
+  // of pointer it is precisely.  Potential leak.
   _ptr->unref();
 }
 

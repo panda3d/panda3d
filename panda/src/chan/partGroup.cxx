@@ -477,17 +477,17 @@ fillin(DatagramIterator& scan, BamReader* manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PartGroup::
-complete_pointers(vector_typedWriteable &plist, BamReader*)
+complete_pointers(vector_typedWritable &plist, BamReader*)
 {
   int i;
   for(i = 0; i < _num_children; i++)
   {
-    if (plist[i] == TypedWriteable::Null)
+    if (plist[i] == TypedWritable::Null)
     {
       chan_cat->warning() << get_type().get_name()
 			  << " Ignoring null PartGroup" << endl;
@@ -506,7 +506,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader*)
 //       Access: Protected
 //  Description: Factory method to generate a PartGroup object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* PartGroup::
+TypedWritable* PartGroup::
 make_PartGroup(const FactoryParams &params)
 {
   PartGroup *me = new PartGroup;

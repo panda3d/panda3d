@@ -1,39 +1,39 @@
-// Filename: typedReferenceCount.I
-// Created by:  drose (25May00)
+// Filename: typedWritableReferenceCount.I
+// Created by:  jason (08Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedReferenceCount::Constructor
+//     Function: TypedWritableReferenceCount::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE TypedReferenceCount::
-TypedReferenceCount() { 
+INLINE TypedWritableReferenceCount::
+TypedWritableReferenceCount() { 
   MemoryUsage::update_type(this, this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedReferenceCount::Copy Constructor
+//     Function: TypedWritableReferenceCount::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE TypedReferenceCount::
-TypedReferenceCount(const TypedReferenceCount &copy) : 
-  TypedObject(copy), 
+INLINE TypedWritableReferenceCount::
+TypedWritableReferenceCount(const TypedWritableReferenceCount &copy) : 
+  TypedWritable(copy), 
   ReferenceCount(copy) 
 {
   MemoryUsage::update_type(this, this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedReferenceCount::Copy Assignment Operator
+//     Function: TypedWritableReferenceCount::Copy Assignment Operator
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void TypedReferenceCount::
-operator = (const TypedReferenceCount &copy) {
-  TypedObject::operator = (copy);
+INLINE void TypedWritableReferenceCount::
+operator = (const TypedWritableReferenceCount &copy) {
+  TypedWritable::operator = (copy);
   ReferenceCount::operator = (copy);
 }

@@ -1,30 +1,31 @@
-// Filename: typedWriteable.I
-// Created by:  jason (08Jun00)
+// Filename: writable.I
+// Created by:  jason (19Jun00)
 // 
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedWriteable::Constructor
+//     Function: Writable::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE TypedWriteable::
-TypedWriteable() { 
+INLINE Writable::
+Writable() { 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedWriteable::Copy Constructor
+//     Function: Writable::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE TypedWriteable::
-TypedWriteable(const TypedWriteable &) { 
+INLINE Writable::
+Writable(const Writable &) { 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedWriteable::Copy Assignment Operator
+//     Function: Writable::Copy Assignment Operator
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void TypedWriteable::
-operator = (const TypedWriteable &) {
+INLINE void Writable::
+operator = (const Writable &) {
 } 

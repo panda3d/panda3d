@@ -1083,7 +1083,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TextureImage::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr((int)plist.size() >= _num_placement * 2 + _num_sources + _num_dests, 0);
   int index = 0;
 
@@ -1128,7 +1128,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *TextureImage::
+TypedWritable *TextureImage::
 make_TextureImage(const FactoryParams &params) {
   TextureImage *me = new TextureImage;
   DatagramIterator scan;

@@ -10,7 +10,7 @@
 
 #include "txaFile.h"
 
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 #include <vector>
 #include <set>
@@ -30,7 +30,7 @@ class TexturePlacement;
 //               serves as the driving force in the actual palettizing
 //               process.
 ////////////////////////////////////////////////////////////////////
-class Palettizer : public TypedWriteable {
+class Palettizer : public TypedWritable {
 public:
   Palettizer();
 
@@ -117,15 +117,15 @@ private:
   Textures _textures;
 
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 protected:
-  static TypedWriteable *make_Palettizer(const FactoryParams &params);
+  static TypedWritable *make_Palettizer(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
@@ -140,9 +140,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     register_type(_type_handle, "Palettizer",
-		  TypedWriteable::get_class_type());
+		  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

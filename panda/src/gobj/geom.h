@@ -12,7 +12,7 @@
 
 #include "drawable.h"
 
-#include <vector_typedWriteable.h>
+#include <vector_typedWritable.h>
 #include <pointerTo.h>
 #include <pointerToArray.h>
 #include <typedef.h>
@@ -236,7 +236,7 @@ public:
   //static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
 
-  //static TypedWriteable *make_Generic(const FactoryParams &params);
+  //static TypedWritable *make_Generic(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);

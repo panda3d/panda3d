@@ -400,7 +400,7 @@ finalize(void)
 //       Access: Protected
 //  Description: Factory method to generate a PartBundle object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* PartBundle::
+TypedWritable* PartBundle::
 make_PartBundle(const FactoryParams &params)
 {
   PartBundle *me = new PartBundle;

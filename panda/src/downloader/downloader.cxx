@@ -501,7 +501,7 @@ run(void) {
   // Attempt to receive the bytes from the socket
   int fret;
   // Handle the case of a fast connection
-  if (_receive_size > MAX_RECEIVE_BYTES) {
+  if (_receive_size > (ulong)MAX_RECEIVE_BYTES) {
     int repeat = (int)(_receive_size / MAX_RECEIVE_BYTES);
     int remain = (int)fmod((double)_receive_size, (double)MAX_RECEIVE_BYTES);
     if (downloader_cat.is_debug())
@@ -621,7 +621,7 @@ run_to_ram(void) {
   // Attempt to receive the bytes from the socket
   int fret;
   // Handle the case of a fast connection
-  if (_receive_size > MAX_RECEIVE_BYTES) {
+  if (_receive_size > (ulong)MAX_RECEIVE_BYTES) {
     int repeat = (int)(_receive_size / MAX_RECEIVE_BYTES);
     int remain = (int)fmod((double)_receive_size, (double)MAX_RECEIVE_BYTES);
     if (downloader_cat.is_debug())

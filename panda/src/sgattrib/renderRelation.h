@@ -40,7 +40,7 @@ private:
 public:
   static void register_with_read_factory(void);
 
-  static TypedWriteable *make_RenderRelation(const FactoryParams &params);
+  static TypedWritable *make_RenderRelation(const FactoryParams &params);
 
 PUBLISHED:
   INLINE static TypeHandle get_class_type();

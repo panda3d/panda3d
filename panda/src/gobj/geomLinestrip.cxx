@@ -69,7 +69,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //       Access: Protected
 //  Description: Factory method to generate a GeomLinestrip object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomLinestrip::
+TypedWritable* GeomLinestrip::
 make_GeomLinestrip(const FactoryParams &params) {
   GeomLinestrip *me = new GeomLinestrip;
   DatagramIterator scan;

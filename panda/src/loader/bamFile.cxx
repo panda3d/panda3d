@@ -90,7 +90,7 @@ open_read(const Filename &filename, bool report_errors) {
 //               The pointers returned by this method will not be
 //               valid for use until resolve() is subsequently called.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *BamFile::
+TypedWritable *BamFile::
 read_object() {
   if (_reader == (BamReader *)NULL) {
     return NULL;
@@ -174,18 +174,18 @@ open_write(const Filename &filename, bool) {
 //               true if successful, false on error.
 ////////////////////////////////////////////////////////////////////
 bool BamFile::
-write_object(const TypedWriteable *object) {
+write_object(const TypedWritable *object) {
   if (_writer == (BamWriter *)NULL) {
     return false;
   }
 
-  // We'll go ahead and cast the const TypedWriteable pointer to a
+  // We'll go ahead and cast the const TypedWritable pointer to a
   // non-const for issuing the actual write.  This allows
   // write_datagram to be defined in such a way that it can modify
   // itself in some minor way if it must; we assume that no class will
   // abuse this privilege and modify its contents significantly during
   // write_datagram().
-  if (!_writer->write_object((TypedWriteable *)object)) {
+  if (!_writer->write_object((TypedWritable *)object)) {
     close();
     return false;
   }

@@ -167,7 +167,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //               the Bam file.  It should create the LODNode and
 //               extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *LODNode::
+TypedWritable *LODNode::
 make_LODNode(const FactoryParams &params) {
   LODNode *me = new LODNode;
   DatagramIterator scan;

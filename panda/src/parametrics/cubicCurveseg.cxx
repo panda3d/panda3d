@@ -560,7 +560,7 @@ register_with_read_factory() {
 //       Access: Protected
 //  Description: Factory method to generate an object of this type.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *CubicCurveseg::
+TypedWritable *CubicCurveseg::
 make_CubicCurveseg(const FactoryParams &params) {
   CubicCurveseg *me = new CubicCurveseg;
   DatagramIterator scan;

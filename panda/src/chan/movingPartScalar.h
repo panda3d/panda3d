@@ -35,7 +35,7 @@ protected:
 public:
   static void register_with_read_factory(void);
 
-  static TypedWriteable *make_MovingPartScalar(const FactoryParams &params);
+  static TypedWritable *make_MovingPartScalar(const FactoryParams &params);
 
 public:
   virtual TypeHandle get_type() const {

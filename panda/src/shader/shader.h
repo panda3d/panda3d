@@ -14,7 +14,7 @@
 #include <configurable.h>
 #include <namedNode.h>
 #include <projectionNode.h>
-#include <referenceCount.h>
+#include <typedReferenceCount.h>
 #include <graphicsStateGuardian.h>
 #include <allAttributesWrapper.h>
 #include <allTransitionsWrapper.h>
@@ -32,7 +32,7 @@ class EXPCL_SHADER Shader : public ReferenceCount, public Configurable
 {
 protected:
  
-  Shader(void) : Configurable(), _priority(0) { }
+  Shader();
 
   int _priority;
   bool _multipass_on;

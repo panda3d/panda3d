@@ -350,7 +350,7 @@ get_tris() const {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 config(void) {
-  WriteableConfigurable::config();
+  WritableConfigurable::config();
 
   // Only per vertex binding makes any sense
   if (_coords != (Vertexf*)0L && _bind[G_COORD] != G_OFF) {
@@ -441,7 +441,7 @@ init(void) {
   _get_texcoord = get_texcoord_noop;
   _get_color = get_color_noop;
   
-  WriteableConfigurable::config();
+  WritableConfigurable::config();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 
-#include <typedWriteableReferenceCount.h>
+#include <typedWritableReferenceCount.h>
 #include <pointerTo.h>
 #include <namable.h>
 #include <typedef.h>
@@ -25,7 +25,7 @@ class BamReader;
 // Description : This is the base class for PartRoot and
 //               MovingPart.  It defines a hierarchy of MovingParts.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PartGroup : public TypedWriteableReferenceCount, public Namable {
+class EXPCL_PANDA PartGroup : public TypedWritableReferenceCount, public Namable {
 public:
   // This enum defines bits which may be passed into check_hierarchy()
   // and PartBundle::bind_anim() to allow an inexact match of channel
@@ -85,10 +85,10 @@ protected:
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
-  static TypedWriteable *make_PartGroup(const FactoryParams &params);
+  static TypedWritable *make_PartGroup(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
@@ -108,9 +108,9 @@ public:
 
 public:
   static void init_type() {
-    TypedWriteableReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "PartGroup",
-		  TypedWriteableReferenceCount::get_class_type());
+		  TypedWritableReferenceCount::get_class_type());
   }
 
 private:

@@ -14,6 +14,7 @@
 #include <pointerTo.h>
 #include <referenceCount.h>
 #include <notify.h>
+#include <typeHandle.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ArcChain
@@ -87,6 +88,19 @@ protected:
       Node *_node;
     } _p;
     PT(ArcComponent) _next;
+
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      ReferenceCount::init_type();
+      register_type(_type_handle, "ArcChain::ArcComponent",
+		    ReferenceCount::get_class_type());
+    }
+    
+  private:
+    static TypeHandle _type_handle;
   };
 
   PT(ArcComponent) _head;
@@ -135,6 +149,18 @@ public:
 private:
   void r_output(ostream &out, ArcComponent *comp) const;
   static int r_compare_to(const ArcComponent *a, const ArcComponent *v);
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    ArcComponent::init_type();
+    register_type(_type_handle, "ArcChain");
+  }
+  
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE_GRAPH ostream &operator << (ostream &out, const ArcChain &arc_chain);

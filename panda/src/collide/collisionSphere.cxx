@@ -367,7 +367,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //       Access: Protected
 //  Description: Factory method to generate a CollisionSphere object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *CollisionSphere::
+TypedWritable *CollisionSphere::
 make_CollisionSphere(const FactoryParams &params) {
   CollisionSphere *me = new CollisionSphere;
   DatagramIterator scan;

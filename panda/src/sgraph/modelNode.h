@@ -44,7 +44,7 @@ public:
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
   void fillin(DatagramIterator &scan, BamReader *manager);
-  static TypedWriteable *make_ModelNode(const FactoryParams &params);
+  static TypedWritable *make_ModelNode(const FactoryParams &params);
 
 private:
   bool _preserve_transform;

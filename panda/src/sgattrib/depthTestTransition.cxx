@@ -108,7 +108,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //       Access: Protected
 //  Description: Factory method to generate a DepthTestTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* DepthTestTransition::
+TypedWritable* DepthTestTransition::
 make_DepthTestTransition(const FactoryParams &params) {
   DepthTestTransition *me = new DepthTestTransition;
   DatagramIterator scan;

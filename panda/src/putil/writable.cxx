@@ -1,19 +1,19 @@
-// Filename: writeable.cxx
+// Filename: writable.cxx
 // Created by:  jason (19Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
 
 
-#include "writeable.h"
+#include "writable.h"
 
-TypeHandle Writeable::_type_handle;
-Writeable* const Writeable::Null = (Writeable*)0L;
+TypeHandle Writable::_type_handle;
+Writable* const Writable::Null = (Writable*)0L;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Writeable::Destructor
+//     Function: Writable::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-Writeable::~Writeable() 
+Writable::~Writable() 
 { 
 }

@@ -8,7 +8,7 @@
 
 #include <pandatoolbase.h>
 
-#include <typedWriteable.h>
+#include <typedWritable.h>
 #include <luse.h>
 #include <eggTexture.h>
 
@@ -20,7 +20,7 @@
 //               structure so the TexturePlacement can easily consider
 //               repositioning the texture.
 ////////////////////////////////////////////////////////////////////
-class TexturePosition : public TypedWriteable {
+class TexturePosition : public TypedWritable {
 public:
   TexturePosition();
   TexturePosition(const TexturePosition &copy);
@@ -36,13 +36,13 @@ public:
   EggTexture::WrapMode _wrap_u;
   EggTexture::WrapMode _wrap_v;
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
 
 protected:
-  static TypedWriteable *make_TexturePosition(const FactoryParams &params);
+  static TypedWritable *make_TexturePosition(const FactoryParams &params);
 
 public:
   void fillin(DatagramIterator &scan, BamReader *manager);
@@ -52,9 +52,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     register_type(_type_handle, "TexturePosition",
-		  TypedWriteable::get_class_type());
+		  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

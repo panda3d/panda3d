@@ -671,13 +671,13 @@ attach() {
 //               generally a bad idea to destruct a class within its
 //               own method.
 
-//               It must be a PT(TypedWriteableReferenceCount), and
+//               It must be a PT(TypedWritableReferenceCount), and
 //               not PT_NodeRelation, because of circularity problems
 //               trying to export the template class PT_NodeRelation.
 ////////////////////////////////////////////////////////////////////
-PT(TypedWriteableReferenceCount) NodeRelation::
+PT(TypedWritableReferenceCount) NodeRelation::
 detach() {
-  PT(TypedWriteableReferenceCount) result = this;
+  PT(TypedWritableReferenceCount) result = this;
 
   nassertr(_parent != (Node*)NULL, result);
   nassertr(_child != (Node*)NULL, result);
@@ -730,9 +730,9 @@ detach() {
 //               remove it from its parent's arc list, which is
 //               presumably about to be destroyed anyway.
 ////////////////////////////////////////////////////////////////////
-PT(TypedWriteableReferenceCount) NodeRelation::
+PT(TypedWritableReferenceCount) NodeRelation::
 detach_below() {
-  PT(TypedWriteableReferenceCount) result = this;
+  PT(TypedWritableReferenceCount) result = this;
 
   nassertr(_parent != (Node*)NULL, result);
   nassertr(_child != (Node*)NULL, result);
@@ -878,14 +878,14 @@ write_datagram(BamWriter *manager, Datagram &me)
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointers to TypedWriteable
+//  Description: Takes in a vector of pointers to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int NodeRelation::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
-  nassertr(plist[0] != TypedWriteable::Null &&
-	   plist[1] != TypedWriteable::Null, 0);
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
+  nassertr(plist[0] != TypedWritable::Null &&
+	   plist[1] != TypedWritable::Null, 0);
   _parent = DCAST(Node, plist[0]);
   _child = DCAST(Node, plist[1]);
 
@@ -918,7 +918,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
     //version doesn't know about, so we want to be able
     //to gracefully handle new functionality being thrown
     //at old code
-    if (plist[i] == TypedWriteable::Null)
+    if (plist[i] == TypedWritable::Null)
     {
       graph_cat->warning() 
 	<< get_type().get_name() 
@@ -940,7 +940,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //       Access: Protected, Static
 //  Description: Factory method to generate a NodeRelation object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* NodeRelation::
+TypedWritable* NodeRelation::
 make_NodeRelation(const FactoryParams &params)
 {
   NodeRelation *me = new NodeRelation(get_class_type());
@@ -998,10 +998,10 @@ register_with_read_factory(void)
 ////////////////////////////////////////////////////////////////////
 void NodeRelation::
 init_type() {
-  TypedWriteableReferenceCount::init_type();
+  TypedWritableReferenceCount::init_type();
   BoundedObject::init_type();
   register_type(_type_handle, "NodeRelation",
-		TypedWriteableReferenceCount::get_class_type(),
+		TypedWritableReferenceCount::get_class_type(),
 		BoundedObject::get_class_type());
   register_type(_stashed_type_handle, "StashedNodeRelation",
 		get_class_type());

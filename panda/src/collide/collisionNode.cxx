@@ -230,12 +230,12 @@ fillin(DatagramIterator& scan, BamReader* manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int CollisionNode::
-complete_pointers(vector_typedWriteable &plist, BamReader* manager) {
+complete_pointers(vector_typedWritable &plist, BamReader* manager) {
   int num_solids = _solids.size();
   int start = NamedNode::complete_pointers(plist, manager);
 
@@ -251,7 +251,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader* manager) {
 //       Access: Protected
 //  Description: Factory method to generate a CollisionNode object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* CollisionNode::
+TypedWritable* CollisionNode::
 make_CollisionNode(const FactoryParams &params)
 {
   CollisionNode *me = new CollisionNode;

@@ -7,6 +7,9 @@
 #include "node.h"
 #include "namedNode.h"
 
+TypeHandle ArcChain::_type_handle;
+TypeHandle ArcChain::ArcComponent::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::ArcComponent::Copy Assignment Operator
 //       Access: Public

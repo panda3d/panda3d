@@ -382,7 +382,7 @@ get_tris() const {
 //       Access: Protected
 //  Description: Factory method to generate a GeomTrifan object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomTrifan::
+TypedWritable* GeomTrifan::
 make_GeomTrifan(const FactoryParams &params) {
   GeomTrifan *me = new GeomTrifan;
   DatagramIterator scan;

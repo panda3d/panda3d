@@ -153,6 +153,7 @@ public:
   TypeHandle register_dynamic_type(const string &name);
 
   void record_derivation(TypeHandle child, TypeHandle parent);
+  void record_alternate_name(TypeHandle type, const string &name);
 
 PUBLISHED:
   TypeHandle find_type(const string &name) const;

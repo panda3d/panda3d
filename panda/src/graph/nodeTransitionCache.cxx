@@ -10,6 +10,8 @@
 
 #include <indent.h>
 
+TypeHandle NodeTransitionCache::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::Constructor
 //       Access: Public
@@ -17,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache::
 NodeTransitionCache() {
+  MemoryUsage::update_type(this, get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -27,6 +30,8 @@ NodeTransitionCache() {
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache::
 NodeTransitionCache(const NodeTransitions &nt) {
+  MemoryUsage::update_type(this, get_class_type());
+
   NodeTransitions::Transitions::const_iterator ti;
   for (ti = nt._transitions.begin();
        ti != nt._transitions.end();

@@ -56,12 +56,12 @@ fillin(DatagramIterator& scan, BamReader* manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimBundleNode::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int AnimBundleNode::
-complete_pointers(vector_typedWriteable &plist, BamReader* manager)
+complete_pointers(vector_typedWritable &plist, BamReader* manager)
 {
   int start = NamedNode::complete_pointers(plist, manager);
   _bundle = DCAST(AnimBundle, plist[start]);
@@ -73,7 +73,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a AnimBundleNode object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* AnimBundleNode::
+TypedWritable* AnimBundleNode::
 make_AnimBundleNode(const FactoryParams &params)
 {
   AnimBundleNode *me = new AnimBundleNode;

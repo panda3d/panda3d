@@ -60,7 +60,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //       Access: Public
 //  Description: Factory method to generate a DepthWriteTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *DepthWriteTransition::
+TypedWritable *DepthWriteTransition::
 make_DepthWriteTransition(const FactoryParams &params) {
   DepthWriteTransition *me = new DepthWriteTransition;
   DatagramIterator scan;

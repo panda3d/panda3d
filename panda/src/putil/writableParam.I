@@ -1,57 +1,57 @@
-// Filename: writeableParam.I
+// Filename: writableParam.I
 // Created by:  jason (13Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WriteableParam::Constructor
+//     Function: WritableParam::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE WriteableParam::
-WriteableParam(const Datagram &datagram) :
+INLINE WritableParam::
+WritableParam(const Datagram &datagram) :
   _packet(datagram)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WriteableParam::Copy Constructor
+//     Function: WritableParam::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE WriteableParam::
-WriteableParam(const WriteableParam &copy) :
+INLINE WritableParam::
+WritableParam(const WritableParam &copy) :
   FactoryParam(copy),
   _packet(copy._packet)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WriteableParam::Destructor
+//     Function: WritableParam::Destructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE WriteableParam::
-~WriteableParam(void) {
+INLINE WritableParam::
+~WritableParam(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WriteableParam::Copy Assignment Operator
+//     Function: WritableParam::Copy Assignment Operator
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void WriteableParam::
-operator = (const WriteableParam &) {
+INLINE void WritableParam::
+operator = (const WritableParam &) {
   // The assignment operator cannot be used for this class.
   nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WriteableParam::get_datagram
+//     Function: WritableParam::get_datagram
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const Datagram& WriteableParam::
+INLINE const Datagram& WritableParam::
 get_datagram(void) {
   return _packet;
 }

@@ -13,7 +13,7 @@
 
 #include <filename.h>
 #include <namable.h>
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 #include <set>
 
@@ -29,7 +29,7 @@ class TextureImage;
 //               of its textures will try to assign themselves to one
 //               of its groups.
 ////////////////////////////////////////////////////////////////////
-class EggFile : public TypedWriteable, public Namable {
+class EggFile : public TypedWritable, public Namable {
 public:
   EggFile();
 
@@ -82,15 +82,15 @@ private:
   bool _is_stale;
 
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 protected:
-  static TypedWriteable *make_EggFile(const FactoryParams &params);
+  static TypedWritable *make_EggFile(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
@@ -103,10 +103,10 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     Namable::init_type();
     register_type(_type_handle, "EggFile",
-		  TypedWriteable::get_class_type(),
+		  TypedWritable::get_class_type(),
 		  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -769,7 +769,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a CollisionPolygon object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* CollisionPolygon::
+TypedWritable* CollisionPolygon::
 make_CollisionPolygon(const FactoryParams &params)
 {
   CollisionPolygon *me = new CollisionPolygon;

@@ -111,13 +111,13 @@ write_datagram(BamWriter *manager, Datagram &me) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureTransition::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int TextureTransition::
-complete_pointers(vector_typedWriteable &plist, BamReader *) {
-  if (plist[0] == TypedWriteable::Null) {
+complete_pointers(vector_typedWritable &plist, BamReader *) {
+  if (plist[0] == TypedWritable::Null) {
     if (sgattrib_cat->is_debug()) {
       sgattrib_cat->debug()
 	<< get_type().get_name() << " received null Texture," 
@@ -138,7 +138,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *) {
 //       Access: Protected
 //  Description: Factory method to generate a TextureTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TextureTransition::
+TypedWritable* TextureTransition::
 make_TextureTransition(const FactoryParams &params) {
   TextureTransition *me = new TextureTransition;
   DatagramIterator scan;

@@ -36,7 +36,7 @@ draw_immediate(GraphicsStateGuardianBase *gsg) const {
 //       Access: Protected
 //  Description: Factory method to generate a GeomSphere object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomSphere::
+TypedWritable* GeomSphere::
 make_GeomSphere(const FactoryParams &params)
 {
   GeomSphere *me = new GeomSphere;

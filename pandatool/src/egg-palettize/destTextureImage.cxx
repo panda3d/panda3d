@@ -136,7 +136,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* DestTextureImage::
+TypedWritable* DestTextureImage::
 make_DestTextureImage(const FactoryParams &params) {
   DestTextureImage *me = new DestTextureImage;
   DatagramIterator scan;

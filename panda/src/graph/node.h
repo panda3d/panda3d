@@ -11,7 +11,7 @@
 #include "boundedObject.h"
 #include "nodeConnection.h"
 
-#include <typedWriteable.h>
+#include <typedWritable.h>
 #include <referenceCount.h>
 #include <luse.h>
 
@@ -34,9 +34,9 @@ static const int max_node_graphs = 2;
 //               be joined to any number of other nodes, as a parent
 //               or as a child, with any kind of relation arcs.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Node : public TypedWriteable, public BoundedObject,
+class EXPCL_PANDA Node : public TypedWritable, public BoundedObject,
 	     virtual public ReferenceCount {
-  // We can't simply inherit from TypedWriteableReferenceCount, because we need
+  // We can't simply inherit from TypedWritableReferenceCount, because we need
   // to inherit virtually from ReferenceCount.
 public:
   static Node* const Null;
@@ -110,10 +110,10 @@ protected:
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
-  static TypedWriteable *make_Node(const FactoryParams &params);
+  static TypedWritable *make_Node(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
@@ -123,11 +123,11 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     BoundedObject::init_type();
     ReferenceCount::init_type();
     register_type(_type_handle, "Node",
-		  TypedWriteable::get_class_type(),
+		  TypedWritable::get_class_type(),
 		  BoundedObject::get_class_type(),
 		  ReferenceCount::get_class_type());
   }

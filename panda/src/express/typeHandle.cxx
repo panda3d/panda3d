@@ -226,6 +226,29 @@ record_derivation(TypeHandle child, TypeHandle parent) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeRegistry::record_alternate_name
+//       Access: Public
+//  Description: Indicates an alternate name for the same type.  This
+//               is particularly useful when a type has changed names,
+//               since the type is stored in a Bam file by name;
+//               setting the original name as the alternate will allow
+//               the type to be correctly read from old Bam files.
+////////////////////////////////////////////////////////////////////
+void TypeRegistry::
+record_alternate_name(TypeHandle type, const string &name) {
+  RegistryNode *rnode = look_up(type, (TypedObject *)NULL);
+  if (rnode != (RegistryNode *)NULL) {
+    NameRegistry::iterator ri = 
+      _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
+    if ((*ri).second != rnode) {
+      express_cat.warning()
+	<< "Name " << name << " already assigned to TypeHandle "
+	<< rnode->_name << "; cannot reassign to " << type << "\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::find_type
 //       Access: Public
 //  Description: Looks for a previously-registered type of the given

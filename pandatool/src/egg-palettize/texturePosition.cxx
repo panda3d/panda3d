@@ -109,7 +109,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TexturePosition::
+TypedWritable* TexturePosition::
 make_TexturePosition(const FactoryParams &params) {
   TexturePosition *me = new TexturePosition;
   DatagramIterator scan;

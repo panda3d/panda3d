@@ -553,7 +553,7 @@ register_with_read_factory() {
 //       Access: Protected
 //  Description: Factory method to generate an object of this type.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *ClassicNurbsCurve::
+TypedWritable *ClassicNurbsCurve::
 make_ClassicNurbsCurve(const FactoryParams &params) {
   ClassicNurbsCurve *me = new ClassicNurbsCurve;
   DatagramIterator scan;

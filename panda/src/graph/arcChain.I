@@ -14,6 +14,7 @@ INLINE_GRAPH ArcChain::ArcComponent::
 ArcComponent(Node *node) :
   _next(NULL)
 {
+  MemoryUsage::update_type(this, get_class_type());
   nassertv(node != (Node *)NULL);
   _p._node = node;
   _p._node->ref();
@@ -31,6 +32,7 @@ INLINE_GRAPH ArcChain::ArcComponent::
 ArcComponent(NodeRelation *arc, ArcComponent *next) :
   _next(next)
 {
+  MemoryUsage::update_type(this, get_class_type());
   nassertv(_next != (ArcComponent *)NULL);
   nassertv(arc != (NodeRelation *)NULL);
   _p._arc = arc;
@@ -47,6 +49,7 @@ INLINE_GRAPH ArcChain::ArcComponent::
 ArcComponent(const ArcComponent &copy) :
   _next(copy._next)
 {
+  MemoryUsage::update_type(this, get_class_type());
   if (has_arc()) {
     _p._arc = copy._p._arc;
     _p._arc->ref();

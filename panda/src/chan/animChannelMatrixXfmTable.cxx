@@ -359,7 +359,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a AnimChannelMatrixXfmTable object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* AnimChannelMatrixXfmTable::
+TypedWritable* AnimChannelMatrixXfmTable::
 make_AnimChannelMatrixXfmTable(const FactoryParams &params)
 {
   AnimChannelMatrixXfmTable *me = new AnimChannelMatrixXfmTable;

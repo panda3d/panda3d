@@ -586,7 +586,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int PaletteGroup::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr((int)plist.size() >= _num_placements + _num_pages, 0);
   int index = 0;
 
@@ -645,7 +645,7 @@ finalize() {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *PaletteGroup::
+TypedWritable *PaletteGroup::
 make_PaletteGroup(const FactoryParams &params) {
   PaletteGroup *me = new PaletteGroup;
   DatagramIterator scan;

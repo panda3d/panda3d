@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 
-#include <typedWriteableReferenceCount.h>
+#include <typedWritableReferenceCount.h>
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@
 //               lighting.  A material is only necessary if lighting
 //               is to be enabled; otherwise, the material isn't used.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Material : public TypedWriteableReferenceCount {
+class EXPCL_PANDA Material : public TypedWritableReferenceCount {
 PUBLISHED:
   INLINE Material();
   INLINE Material(const Material &copy);
@@ -86,7 +86,7 @@ public:
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
 
 protected:
-  static TypedWriteable *make_Material(const FactoryParams &params);
+  static TypedWritable *make_Material(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
@@ -94,9 +94,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteableReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "Material",
-		  TypedWriteableReferenceCount::get_class_type());
+		  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

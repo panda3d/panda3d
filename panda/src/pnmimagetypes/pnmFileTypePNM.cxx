@@ -344,7 +344,7 @@ register_with_read_factory() {
 //               objects are all shared, we just pull the object from
 //               the registry.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *PNMFileTypePNM::
+TypedWritable *PNMFileTypePNM::
 make_PNMFileTypePNM(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
 }

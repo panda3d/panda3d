@@ -303,7 +303,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a AnimChannelScalarTable object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* AnimChannelScalarTable::
+TypedWritable* AnimChannelScalarTable::
 make_AnimChannelScalarTable(const FactoryParams &params)
 {
   AnimChannelScalarTable *me = new AnimChannelScalarTable;

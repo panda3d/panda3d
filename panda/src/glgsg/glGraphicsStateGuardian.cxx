@@ -3861,9 +3861,11 @@ get_fog_mode_type(Fog::Mode m) const {
     case Fog::M_linear: return GL_LINEAR;
     case Fog::M_exponential: return GL_EXP;
     case Fog::M_exponential_squared: return GL_EXP2;
+      /*
 #ifdef GL_FOG_FUNC_SGIS
     case Fog::M_spline: return GL_FOG_FUNC_SGIS;
 #endif
+      */
 
   default:
     glgsg_cat.error() << "Invalid Fog::Mode value" << endl;

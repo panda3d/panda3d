@@ -9,7 +9,7 @@
 #include <pandatoolbase.h>
 
 #include <eggTexture.h>
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 class PNMFileType;
 
@@ -21,7 +21,7 @@ class PNMFileType;
 //               properties such as mipmapping, number of channels,
 //               etc.
 ////////////////////////////////////////////////////////////////////
-class TextureProperties : public TypedWriteable {
+class TextureProperties : public TypedWritable {
 public:
   TextureProperties();
   TextureProperties(const TextureProperties &copy);
@@ -58,15 +58,15 @@ private:
 					 EggTexture::Format b);
   static EggTexture::FilterType union_filter(EggTexture::FilterType a,
 					     EggTexture::FilterType b);
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 protected:
-  static TypedWriteable *make_TextureProperties(const FactoryParams &params);
+  static TypedWritable *make_TextureProperties(const FactoryParams &params);
 
 public:
   void fillin(DatagramIterator &scan, BamReader *manager);
@@ -76,9 +76,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     register_type(_type_handle, "TextureProperties",
-		  TypedWriteable::get_class_type());
+		  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

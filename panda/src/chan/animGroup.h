@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 
-#include <typedWriteableReferenceCount.h>
+#include <typedWritableReferenceCount.h>
 #include <pointerTo.h>
 #include <namable.h>
 
@@ -22,7 +22,7 @@ class BamReader;
 //               AnimChannels.  The root of the hierarchy must be an
 //               AnimBundle.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimGroup : public TypedWriteableReferenceCount, public Namable {
+class EXPCL_PANDA AnimGroup : public TypedWritableReferenceCount, public Namable {
 protected:
   // The default constructor is protected: don't try to create an
   // AnimGroup without a parent.  To create an AnimChannel hierarchy,
@@ -56,10 +56,10 @@ protected:
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
-  static TypedWriteable *make_AnimGroup(const FactoryParams &params);
+  static TypedWritable *make_AnimGroup(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
@@ -77,9 +77,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteableReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "AnimGroup",
-		  TypedWriteableReferenceCount::get_class_type());
+		  TypedWritableReferenceCount::get_class_type());
   }
 
 private:

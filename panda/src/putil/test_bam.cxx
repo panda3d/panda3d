@@ -21,10 +21,10 @@ ConfigureFn(config_util)
   init_system_type_handles();
   FactoryParam::init_type();
   Datagram::init_type();
-  TypedWriteable::init_type();
-  WriteableParam::init_type();
+  TypedWritable::init_type();
+  WritableParam::init_type();
   BamReaderParam::init_type();
-  TypedWriteableReferenceCount::init_type();
+  TypedWritableReferenceCount::init_type();
 
   Person::init_type();
   Parent::init_type();
@@ -46,7 +46,7 @@ write_datagram(BamWriter* manager, Datagram &me)
   manager->write_pointer(me, _sis);
 }
 
-TypedWriteable* Person::
+TypedWritable* Person::
 make_person(const FactoryParams &params)
 {
   Person *me = new Person;
@@ -68,10 +68,10 @@ fillin(Person* me, DatagramIterator& scan, BamReader* manager)
 }
 
 int Person::
-complete_pointers(vector_typedWriteable& plist, BamReader *)
+complete_pointers(vector_typedWritable& plist, BamReader *)
 {
-  _bro = (plist[0] == TypedWriteable::Null) ? (Person*)NULL : DCAST(Person, plist[0]);
-  _sis = (plist[1] == TypedWriteable::Null) ? (Person*)NULL : DCAST(Person, plist[1]);
+  _bro = (plist[0] == TypedWritable::Null) ? (Person*)NULL : DCAST(Person, plist[0]);
+  _sis = (plist[1] == TypedWritable::Null) ? (Person*)NULL : DCAST(Person, plist[1]);
   return 2;
 }
 
@@ -92,7 +92,7 @@ write_datagram(BamWriter* manager, Datagram &me)
   manager->write_pointer(me, _daughter);
 }
 
-TypedWriteable* Parent::
+TypedWritable* Parent::
 make_parent(const FactoryParams &params)
 {
   Parent *me = new Parent;
@@ -113,11 +113,11 @@ fillin(Parent* me, DatagramIterator& scan, BamReader* manager)
 }
 
 int Parent::
-complete_pointers(vector_typedWriteable& plist, BamReader *manager)
+complete_pointers(vector_typedWritable& plist, BamReader *manager)
 {
   int start = Person::complete_pointers(plist, manager);
-  _son = (plist[start] == TypedWriteable::Null) ? (Child*)NULL : DCAST(Child, plist[2]);
-  _daughter = (plist[start+1] == TypedWriteable::Null) ? (Child*)NULL : DCAST(Child, plist[3]);
+  _son = (plist[start] == TypedWritable::Null) ? (Child*)NULL : DCAST(Child, plist[2]);
+  _daughter = (plist[start+1] == TypedWritable::Null) ? (Child*)NULL : DCAST(Child, plist[3]);
   return start+2;
 }
 
@@ -150,7 +150,7 @@ write_datagram(BamWriter* manager, Datagram &me)
   manager->write_pointer(me, _mom);
 }
 
-TypedWriteable* Child::
+TypedWritable* Child::
 make_child(const FactoryParams &params)
 {
   Child *me = new Child;
@@ -173,11 +173,11 @@ fillin(Child* me, DatagramIterator& scan, BamReader* manager)
 }
 
 int Child::
-complete_pointers(vector_typedWriteable& plist, BamReader *manager)
+complete_pointers(vector_typedWritable& plist, BamReader *manager)
 {
   int start = Person::complete_pointers(plist, manager);
-  _dad = (plist[start] == TypedWriteable::Null) ? (Parent*)NULL : DCAST(Parent, plist[2]);
-  _mom = (plist[start+1] == TypedWriteable::Null) ? (Parent*)NULL : DCAST(Parent, plist[3]);
+  _dad = (plist[start] == TypedWritable::Null) ? (Parent*)NULL : DCAST(Parent, plist[2]);
+  _mom = (plist[start+1] == TypedWritable::Null) ? (Parent*)NULL : DCAST(Parent, plist[3]);
   return start+2;
 }
 

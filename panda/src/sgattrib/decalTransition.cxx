@@ -51,7 +51,7 @@ has_sub_render() const {
 //       Access: Protected
 //  Description: Factory method to generate a DecalTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* DecalTransition::
+TypedWritable* DecalTransition::
 make_DecalTransition(const FactoryParams &params)
 {
   DecalTransition *me = new DecalTransition;

@@ -52,7 +52,7 @@ public:
 public:
   static void register_with_read_factory(void);
 
-  static TypedWriteable *make_GeomSphere(const FactoryParams &params);
+  static TypedWritable *make_GeomSphere(const FactoryParams &params);
 
 PUBLISHED:
   static TypeHandle get_class_type() {

@@ -50,7 +50,7 @@ make_with_matrix(const LMatrix4f &matrix) const {
 //       Access: Protected
 //  Description: Factory method to generate a ColorMatrixTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* ColorMatrixTransition::
+TypedWritable* ColorMatrixTransition::
 make_ColorMatrixTransition(const FactoryParams &params)
 {
   ColorMatrixTransition *me = new ColorMatrixTransition;

@@ -125,6 +125,7 @@ TypeHandle GraphicsWindow::WindowPipe::force_init_type(void) {
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
+  MemoryUsage::update_type(this, this);
   _pipe = pipe;
 
   _draw_callback = NULL;
@@ -141,6 +142,7 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
 GraphicsWindow::
 GraphicsWindow(GraphicsPipe *pipe,
 	       const GraphicsWindow::Properties& props) : Configurable() {
+  MemoryUsage::update_type(this, this);
   _pipe = pipe;
   _props = props;
 

@@ -53,7 +53,7 @@ draw_immediate(GraphicsStateGuardianBase *gsg) const {
 //       Access: Protected
 //  Description: Factory method to generate a GeomPolygon object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomPolygon::
+TypedWritable* GeomPolygon::
 make_GeomPolygon(const FactoryParams &params) {
   GeomPolygon *me = new GeomPolygon;
   DatagramIterator scan;

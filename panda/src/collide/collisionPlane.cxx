@@ -281,7 +281,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a CollisionPlane object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* CollisionPlane::
+TypedWritable* CollisionPlane::
 make_CollisionPlane(const FactoryParams &params)
 {
   CollisionPlane *me = new CollisionPlane;

@@ -112,7 +112,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //       Access: Public
 //  Description: Factory method to generate a GeomBinTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *GeomBinTransition::
+TypedWritable *GeomBinTransition::
 make_GeomBinTransition(const FactoryParams &params) {
   GeomBinTransition *me = new GeomBinTransition;
   DatagramIterator scan;

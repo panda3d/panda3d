@@ -68,13 +68,23 @@ void MemoryUsage::MemoryInfo::
 determine_dynamic_type() {
   if (_reconsider_dynamic_type && _static_type != TypeHandle::none()) {
     // See if we know enough now to infer the dynamic type from the
-    // pointer.  We can do this only if our static type is known to
-    // inherit from TypedReferenceCount--see the comments about this
-    // sort of thing in MemoryUsagePointers::get_typed_pointer().
+    // pointer.
 
-    if (_static_type.is_derived_from(TypedReferenceCount::get_class_type())) {
-      TypedReferenceCount *typed_ref = (TypedReferenceCount *)_ptr;
-      TypeHandle got_type = typed_ref->get_type();
+    if (_typed_ptr == (TypedObject *)NULL) {
+      // If our static type is known to inherit from
+      // TypedReferenceCount, then we can directly downcast to get the
+      // TypedObject pointer.
+      if (_static_type.is_derived_from(TypedReferenceCount::get_class_type())) {
+	_typed_ptr = (TypedReferenceCount *)_ptr;
+      }
+    }
+
+    if (_typed_ptr != (TypedObject *)NULL) {
+      // If we have a TypedObject pointer, we can determine the type.
+      // This might still not return the exact type, particularly if
+      // we are being called within the destructor or constructor of
+      // this object.
+      TypeHandle got_type = _typed_ptr->get_type();
       
       if (got_type == TypeHandle::none()) {
 	express_cat.warning()
@@ -270,10 +280,29 @@ record_pointer(ReferenceCount *ptr) {
 //     Function: MemoryUsage::update_type
 //       Access: Public, Static
 //  Description: Associates the indicated type with the given pointer.
+//               This should be called by functions (e.g. the
+//               constructor) that know more specifically what type of
+//               thing we've got; otherwise, the MemoryUsage database
+//               will know only that it's a "ReferenceCount".
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 update_type(ReferenceCount *ptr, TypeHandle type) {
   get_global_ptr()->ns_update_type(ptr, type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::update_type
+//       Access: Public, Static
+//  Description: Associates the indicated type with the given pointer.
+//               This flavor of update_type() also passes in the
+//               pointer as a TypedObject, and useful for objects that
+//               are, in fact, TypedObjects.  Once the MemoryUsage
+//               database has the pointer as a TypedObject it doesn't
+//               need any more help.
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
+  get_global_ptr()->ns_update_type(ptr, typed_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -332,6 +361,7 @@ ns_record_pointer(ReferenceCount *ptr) {
   if (_track_memory_usage) {
     MemoryInfo info;
     info._ptr = ptr;
+    info._typed_ptr = (TypedObject *)NULL;
     info._static_type = ReferenceCount::get_class_type();
     info._dynamic_type = ReferenceCount::get_class_type();
     info._time = TrueClock::get_ptr()->get_real_time();
@@ -354,6 +384,10 @@ ns_record_pointer(ReferenceCount *ptr) {
 //     Function: MemoryUsage::ns_update_type
 //       Access: Private
 //  Description: Associates the indicated type with the given pointer.
+//               This should be called by functions (e.g. the
+//               constructor) that know more specifically what type of
+//               thing we've got; otherwise, the MemoryUsage database
+//               will know only that it's a "ReferenceCount".
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
 ns_update_type(ReferenceCount *ptr, TypeHandle type) {
@@ -369,6 +403,35 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
 
     MemoryInfo &info = (*ti).second;
     info.update_type_handle(info._static_type, type);
+    info.determine_dynamic_type();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::ns_update_type
+//       Access: Private
+//  Description: Associates the indicated type with the given pointer.
+//               This flavor of update_type() also passes in the
+//               pointer as a TypedObject, and useful for objects that
+//               are, in fact, TypedObjects.  Once the MemoryUsage
+//               database has the pointer as a TypedObject it doesn't
+//               need any more help.
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
+  if (_track_memory_usage) {
+    Table::iterator ti;
+    ti = _table.find(ptr);
+    if (ti == _table.end()) {
+      express_cat.error() 
+	<< "Attempt to update type to " << typed_ptr->get_type()
+	<< " for unrecorded pointer "
+	<< (void *)ptr << "!\n";
+      return;
+    }
+
+    MemoryInfo &info = (*ti).second;
+    info._typed_ptr = typed_ptr;
     info.determine_dynamic_type();
   }
 }
@@ -394,6 +457,12 @@ ns_remove_pointer(ReferenceCount *ptr) {
     }
 
     MemoryInfo &info = (*ti).second;
+
+    // Since the pointer has been destructed, we can't safely call its
+    // TypedObject virtual methods any more.  Better clear out the
+    // typed_ptr for good measure.
+    info._typed_ptr = (TypedObject *)NULL;
+
     if (info._freeze_index == _freeze_index) {
       double now = TrueClock::get_ptr()->get_real_time();
       _count--;
@@ -432,7 +501,8 @@ ns_get_pointers(MemoryUsagePointers &result) {
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
-      result.add_entry((*ti).first, info.get_type(), now - info._time);
+      result.add_entry(info._ptr, info._typed_ptr, info.get_type(), 
+		       now - info._time);
     }
   }
 }
@@ -457,7 +527,8 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
       TypeHandle info_type = info.get_type();
       if (info_type != TypeHandle::none() &&
 	  info_type.is_derived_from(type)) {
-	result.add_entry((*ti).first, info_type, now - info._time);
+	result.add_entry(info._ptr, info._typed_ptr, info_type,
+			 now - info._time);
       }
     }
   }
@@ -484,7 +555,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
       double age = now - info._time;
       if ((age >= from && age <= to) || 
 	  (age >= to && age <= from)) {
-	result.add_entry((*ti).first, info.get_type(), age);
+	result.add_entry(info._ptr, info._typed_ptr, info.get_type(), age);
       }
     }
   }
@@ -525,7 +596,8 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
     if (info._freeze_index == _freeze_index) {
       if ((*ti).first->get_ref_count() == 0) {
 	(*ti).first->ref();
-	result.add_entry((*ti).first, info.get_type(), now - info._time);
+	result.add_entry(info._ptr, info._typed_ptr, info.get_type(),
+			 now - info._time);
       }
     }
   }

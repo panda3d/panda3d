@@ -67,8 +67,8 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter *manager, Datagram &me);
 
-  int complete_pointers(vector_typedWriteable &plist, BamReader *manager);
-  static TypedWriteable *make_GeomSprite(const FactoryParams &params);
+  int complete_pointers(vector_typedWritable &plist, BamReader *manager);
+  static TypedWritable *make_GeomSprite(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator &scan, BamReader *manager);

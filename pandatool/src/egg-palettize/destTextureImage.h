@@ -33,13 +33,13 @@ private:
   static int to_power_2(int value);
 
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
 
 protected:
-  static TypedWriteable *make_DestTextureImage(const FactoryParams &params);
+  static TypedWritable *make_DestTextureImage(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

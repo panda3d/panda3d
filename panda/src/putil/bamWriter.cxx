@@ -83,7 +83,7 @@ init() {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
-write_object(TypedWriteable *object) {
+write_object(TypedWritable *object) {
   nassertr(_object_queue.empty(), false);
 
   int object_id = enqueue_object(object);
@@ -156,10 +156,10 @@ write_object(TypedWriteable *object) {
 //               automatically be written.
 ////////////////////////////////////////////////////////////////////
 void BamWriter::
-write_pointer(Datagram &packet, TypedWriteable *object) {
+write_pointer(Datagram &packet, TypedWritable *object) {
   // If the pointer is NULL, we always simply write a zero for an
   // object ID and leave it at that.
-  if (object == (TypedWriteable *)NULL) {
+  if (object == (TypedWritable *)NULL) {
     packet.add_uint16(0);
 
   } else {
@@ -299,15 +299,15 @@ write_handle(Datagram &packet, TypeHandle type) {
 //               an error.
 ////////////////////////////////////////////////////////////////////
 int BamWriter::
-enqueue_object(TypedWriteable *object) {
+enqueue_object(TypedWritable *object) {
   Datagram dg;
 
-  nassertr(object != TypedWriteable::Null, 0);
+  nassertr(object != TypedWritable::Null, 0);
 
   // No object should ever be written out that is not registered as a
-  // child of TypedWriteable.  The only way this can happen is if
+  // child of TypedWritable.  The only way this can happen is if
   // someone failed to initialize their type correctly in init_type().
-  nassertr(object->is_of_type(TypedWriteable::get_class_type()), 0);
+  nassertr(object->is_of_type(TypedWritable::get_class_type()), 0);
 
   // We need to assign a unique index number to every object we write
   // out.  Has this object been assigned a number yet?

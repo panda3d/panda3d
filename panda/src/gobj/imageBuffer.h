@@ -37,7 +37,7 @@ PUBLISHED:
   virtual bool write( const string& name = "" ) const = 0;
   
 public:
-  virtual void config( void ) { WriteableConfigurable::config(); }
+  virtual void config( void ) { WritableConfigurable::config(); }
   
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *,

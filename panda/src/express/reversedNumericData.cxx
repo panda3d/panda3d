@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////
 void ReversedNumericData::
 reverse_assign(const char *source, size_t length) {
-  nassertv(length <= max_numeric_size);
+  nassertv((int)length <= max_numeric_size);
   for (size_t i = 0; i < length; i++) {
     _data[i] = source[length - 1 - i];
   }

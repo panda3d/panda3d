@@ -7,7 +7,7 @@
 #define COMPUTEDVERTICESMORPH_H
 
 #include <pandabase.h>
-#include <vector_typedWriteable.h>
+#include <vector_typedWritable.h>
 
 #include <luse.h>
 
@@ -16,7 +16,7 @@ class BamReader;
 class BamWriter;
 class Datagram;
 class DatagramIterator;
-class TypedWriteable;
+class TypedWritable;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ComputedVerticesMorphValue2

@@ -1,10 +1,10 @@
-// Filename: writeableConfigurable.h
+// Filename: writableConfigurable.h
 // Created by:  jason (19Jun00)
 //
 
 //
-#ifndef WRITEABLECONFIGURABLE_H
-#define WRITEABLECONFIGURABLE_H
+#ifndef WRITABLECONFIGURABLE_H
+#define WRITABLECONFIGURABLE_H
 //
 ////////////////////////////////////////////////////////////////////
 // Includes
@@ -12,28 +12,28 @@
 
 #include <pandabase.h>
 
-#include "typedWriteable.h"
+#include "typedWritable.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//       Class : WriteableConfigurable
+//       Class : WritableConfigurable
 // Description : Defined as a fix to allow creating Configurable and 
-//               Writeable objects.  Otherwise the compilter gets
-//               confused since both TypedWriteable and Configurable 
-//               inherit from TypedObject  
+//               Writable objects.  Otherwise the compiler gets
+//               confused since both TypedWritable and Configurable 
+//               inherit from TypedObject.
 //
 //               An object that has data or parameters that are set
 //		 less frequently (at least occasionally) than every
 //		 frame.  We can cache the configuration info by
 //		 by using the "dirty" flag. 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA WriteableConfigurable : public TypedWriteable {
+class EXPCL_PANDA WritableConfigurable : public TypedWritable {
 
 public:
-  WriteableConfigurable( void ) { make_dirty(); }
+  WritableConfigurable( void ) { make_dirty(); }
   virtual void config( void ) { _dirty = false; }
   INLINE void check_config() const {
     if (_dirty) {
@@ -43,7 +43,7 @@ public:
       // object, in some sense it's not really modifying the class
       // object--it's just updating a few internal settings for
       // consistency.
-      ((WriteableConfigurable *)this)->config();
+      ((WritableConfigurable *)this)->config();
     }
   }
 
@@ -63,9 +63,11 @@ PUBLISHED:
 
 public:
   static void init_type() {
-    TypedWriteable::init_type();
-    register_type(_type_handle, "WriteableConfigurable",
-		  TypedWriteable::get_class_type());
+    TypedWritable::init_type();
+    register_type(_type_handle, "WritableConfigurable",
+		  TypedWritable::get_class_type());
+    TypeRegistry::ptr()->record_alternate_name(_type_handle, 
+					       "WriteableConfigurable");
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -40,7 +40,7 @@ public:
 
 public:
   static void register_with_read_factory(void);
-  static TypedWriteable *make_GeomTrifan(const FactoryParams &params);
+  static TypedWritable *make_GeomTrifan(const FactoryParams &params);
 
 PUBLISHED:
   static TypeHandle get_class_type() {

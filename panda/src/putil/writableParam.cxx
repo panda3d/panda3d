@@ -1,8 +1,8 @@
-// Filename: writeableParam.cxx
+// Filename: writableParam.cxx
 // Created by:  jason (13Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "writeableParam.h"
+#include "writableParam.h"
 
-TypeHandle WriteableParam::_type_handle;
+TypeHandle WritableParam::_type_handle;

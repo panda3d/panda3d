@@ -8,7 +8,7 @@
 
 #include <pandatoolbase.h>
 
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 #include <set>
 
@@ -20,7 +20,7 @@ class PaletteGroup;
 //               very like an STL set, with a few additional
 //               functions.
 ////////////////////////////////////////////////////////////////////
-class PaletteGroups : public TypedWriteable {
+class PaletteGroups : public TypedWritable {
 private:
   typedef set<PaletteGroup *> Groups;
 
@@ -60,15 +60,15 @@ private:
 
   Groups _groups;
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 protected:
-  static TypedWriteable *make_PaletteGroups(const FactoryParams &params);
+  static TypedWritable *make_PaletteGroups(const FactoryParams &params);
 
 public:
   void fillin(DatagramIterator &scan, BamReader *manager);
@@ -83,9 +83,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     register_type(_type_handle, "PaletteGroups",
-		  TypedWriteable::get_class_type());
+		  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

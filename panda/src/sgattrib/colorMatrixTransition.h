@@ -31,7 +31,7 @@ protected:
 public:
   static void register_with_read_factory(void);
 
-  static TypedWriteable *make_ColorMatrixTransition(const FactoryParams &params);
+  static TypedWritable *make_ColorMatrixTransition(const FactoryParams &params);
 
 protected:
 

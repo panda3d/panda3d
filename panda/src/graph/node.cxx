@@ -23,6 +23,7 @@ Node* const Node::Null = (Node*)0L;
 ////////////////////////////////////////////////////////////////////
 Node::
 Node() {
+  MemoryUsage::update_type(this, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,10 +37,11 @@ Node() {
 ////////////////////////////////////////////////////////////////////
 Node::
 Node(const Node &copy) :
-  TypedWriteable(copy),
+  TypedWritable(copy),
   BoundedObject(copy),
   ReferenceCount(copy)
 {
+  MemoryUsage::update_type(this, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +51,7 @@ Node(const Node &copy) :
 ////////////////////////////////////////////////////////////////////
 void Node::
 operator = (const Node &copy) {
-  TypedWriteable::operator = (copy);
+  TypedWritable::operator = (copy);
   BoundedObject::operator = (copy);
   ReferenceCount::operator = (copy);
 }
@@ -453,12 +455,12 @@ write_datagram(BamWriter *manager, Datagram &me) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Node::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointers to TypedWriteable
+//  Description: Takes in a vector of pointers to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int Node::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   if (manager->get_file_minor_ver() < 3) {
     // In bam versions before 3.3, this function does nothing (since
     // the arcs are completely responsible for adding themselves to
@@ -502,7 +504,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //       Access: Protected
 //  Description: Factory method to generate a node object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* Node::
+TypedWritable* Node::
 make_Node(const FactoryParams &params) {
   Node *me = new Node;
   DatagramIterator scan;

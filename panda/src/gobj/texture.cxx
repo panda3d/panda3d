@@ -491,11 +491,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 //       Access: Protected
 //  Description: Factory method to generate a Texture object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* Texture::
+TypedWritable* Texture::
 make_Texture(const FactoryParams &params)
 {
   //The process of making a texture is slightly
-  //different than making other Writeable objects.
+  //different than making other Writable objects.
   //That is because all creation of Textures should
   //be done through calls to TexturePool, which ensures
   //that any loads of the same Texture, refer to the

@@ -39,15 +39,15 @@ private:
   bool _read_header;
   bool _successfully_read_header;
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 protected:
-  static TypedWriteable *make_SourceTextureImage(const FactoryParams &params);
+  static TypedWritable *make_SourceTextureImage(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

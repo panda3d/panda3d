@@ -114,7 +114,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a TextureApplyTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TextureApplyTransition::
+TypedWritable* TextureApplyTransition::
 make_TextureApplyTransition(const FactoryParams &params)
 {
   TextureApplyTransition *me = new TextureApplyTransition;

@@ -36,6 +36,19 @@ protected:
 
   TypeHandle _graph_type;
   static int _max_search_depth;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    ArcChain::init_type();
+    register_type(_type_handle, "NodePathBase",
+		  ArcChain::get_class_type());
+  }
+  
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "nodePathBase.I"

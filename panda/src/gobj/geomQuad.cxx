@@ -104,7 +104,7 @@ get_tris() const {
 //       Access: Protected
 //  Description: Factory method to generate a GeomQuad object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomQuad::
+TypedWritable* GeomQuad::
 make_GeomQuad(const FactoryParams &params) {
   GeomQuad *me = new GeomQuad;
   DatagramIterator scan;

@@ -1,22 +1,22 @@
-// Filename: typedWriteable.h
+// Filename: typedWritable.h
 // Created by:  jason (08Jun00)
 //
 
-#ifndef __TYPED_WRITEABLE_
-#define __TYPED_WRITEABLE_
+#ifndef __TYPED_WRITABLE_
+#define __TYPED_WRITABLE_
 
 #include "typeHandle.h"
-#include "writeable.h"
-#include "vector_typedWriteable.h"
+#include "writable.h"
+#include "vector_typedWritable.h"
 
 class BamReader;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : TypedWriteable
+// 	 Class : TypedWritable
 // Description : Convience class to not have to derive from TypedObject
-//               and writeable all the time
+//               and writable all the time
 //
-// Important   : Every class derived from TypedWriteable that is
+// Important   : Every class derived from TypedWritable that is
 //               not an abstract class, MUST define a factory method
 //               for creating and object of that type.  This method
 //               must be static.  This method must be of the form
@@ -26,18 +26,18 @@ class BamReader;
 //               creation function with BamReader's factory.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA TypedWriteable : public TypedObject, public Writeable {
+class EXPCL_PANDA TypedWritable : public TypedObject, public Writable {
 public:
-  static TypedWriteable* const Null;
+  static TypedWritable* const Null;
 
-  INLINE TypedWriteable();
-  INLINE TypedWriteable(const TypedWriteable &copy);
-  INLINE void operator = (const TypedWriteable &copy);
+  INLINE TypedWritable();
+  INLINE TypedWritable(const TypedWritable &copy);
+  INLINE void operator = (const TypedWritable &copy);
 
-  virtual ~TypedWriteable();
+  virtual ~TypedWritable();
 
   //The essential virtual function interface to define
-  //how any writeable object, writes itself to a datagram
+  //how any writable object, writes itself to a datagram
   virtual void write_datagram(BamWriter *, Datagram &) = 0; 
 
   //This function is the interface through which BamReader is
@@ -50,16 +50,16 @@ public:
   //Return the number of pointers read.  This is useful for when
   //a parent reads in a variable number of pointers, so the child
   //knows where to start reading from.
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 
 protected:
   //This interface function is written here, as a suggestion
   //for a function to write in any class that will have children
-  //that are also TypedWriteable.  To encourage code re-use
+  //that are also TypedWritable.  To encourage code re-use
   
-  //virtual void fillin(TypedWriteable*, DatagramIterator&, BamReader *);
+  //virtual void fillin(TypedWritable*, DatagramIterator&, BamReader *);
 
 PUBLISHED:
   static TypeHandle get_class_type() {
@@ -69,10 +69,11 @@ PUBLISHED:
 public:
   static void init_type() {
     TypedObject::init_type();
-    Writeable::init_type();
-    register_type(_type_handle, "TypedWriteable", 
-    TypedObject::get_class_type(),
-    Writeable::get_class_type());
+    Writable::init_type();
+    register_type(_type_handle, "TypedWritable", 
+		  TypedObject::get_class_type(),
+		  Writable::get_class_type());
+    TypeRegistry::ptr()->record_alternate_name(_type_handle, "TypedWriteable");
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -86,7 +87,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "typedWriteable.I"
+#include "typedWritable.I"
 
 #endif
 

@@ -1,11 +1,11 @@
-// Filename: writeable.h
+// Filename: writable.h
 // Created by:  jason (08Jun00)
 //
 
-#ifndef __WRITEABLE_
-#define __WRITEABLE_
+#ifndef __WRITABLE_
+#define __WRITABLE_
 
-#include "vector_writeable.h"
+#include "vector_writable.h"
 #include "typeHandle.h"
 
 class BamWriter;
@@ -14,24 +14,24 @@ class DatagramIterator;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Writeable
+// 	 Class : Writable
 // Description : This is an abstract class that all classes which
 //               need to write themselves in binary form to some
 //               media should inherit from
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA Writeable {
+class EXPCL_PANDA Writable {
 public:
-  static Writeable* const Null;
+  static Writable* const Null;
 
-  INLINE Writeable();
-  INLINE Writeable(const Writeable &copy);
-  INLINE void operator = (const Writeable &copy);
+  INLINE Writable();
+  INLINE Writable(const Writable &copy);
+  INLINE void operator = (const Writable &copy);
 
-  virtual ~Writeable();
+  virtual ~Writable();
 
   //The essential virtual function interface to define
-  //how any writeable object, writes itself to a datagram
+  //how any writable object, writes itself to a datagram
   virtual void write_datagram(BamWriter *manager, Datagram &me) = 0; 
 
   //This function is the interface through which BamReader is
@@ -44,7 +44,7 @@ public:
   //Return the number of pointers read.  This is useful for when
   //a parent reads in a variable number of pointers, so the child
   //knows where to start reading from.
-  //virtual int complete_pointers(vector_typedWriteable &plist, 
+  //virtual int complete_pointers(vector_typedWritable &plist, 
   //                              BamReader *manager) {}
 
 
@@ -56,7 +56,7 @@ public:
 protected:
   //This interface function is written here, as a suggestion
   //for a function to write in any class that will have children
-  //that are also Writeable.  To encourage code re-use
+  //that are also Writable.  To encourage code re-use
   
   //virtual void fillin(DatagramIterator& scan, BamReader *manager);
 
@@ -65,7 +65,8 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    register_type(_type_handle, "Writeable");
+    register_type(_type_handle, "Writable");
+    TypeRegistry::ptr()->record_alternate_name(_type_handle, "Writeable");
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -79,6 +80,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "writeable.I"
+#include "writable.I"
 
 #endif

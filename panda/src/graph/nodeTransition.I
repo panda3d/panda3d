@@ -20,7 +20,7 @@ NodeTransition() {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransition::
 NodeTransition(const NodeTransition &copy) :
-  TypedWriteableReferenceCount(copy),
+  TypedWritableReferenceCount(copy),
   _priority(copy._priority)
 {
   // We specifically do *not* copy the _arcs list.
@@ -33,7 +33,7 @@ NodeTransition(const NodeTransition &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransition::
 operator = (const NodeTransition &copy) {
-  TypedWriteableReferenceCount::operator = (copy);
+  TypedWritableReferenceCount::operator = (copy);
   _priority = copy._priority;
   // We specifically do *not* copy the _arcs list.
 }

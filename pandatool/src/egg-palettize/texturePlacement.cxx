@@ -925,7 +925,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TexturePlacement::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr((int)plist.size() >= 3 + _num_references, 0);
   if (Palettizer::_read_pi_version >= 2) {
     nassertr((int)plist.size() >= 4 + _num_references, 0);
@@ -933,23 +933,23 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
     
   int index = 0;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_texture, plist[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_group, plist[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_image, plist[index], index);
   }
   index++;
 
   if (Palettizer::_read_pi_version >= 2) {
-    if (plist[index] != (TypedWriteable *)NULL) {
+    if (plist[index] != (TypedWritable *)NULL) {
       DCAST_INTO_R(_dest, plist[index], index);
     }
     index++;
@@ -974,7 +974,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TexturePlacement::
+TypedWritable* TexturePlacement::
 make_TexturePlacement(const FactoryParams &params) {
   TexturePlacement *me = new TexturePlacement;
   DatagramIterator scan;

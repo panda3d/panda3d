@@ -19,7 +19,7 @@
 // 	 Class : MemoryUsagePointers
 // Description : This is a list of pointers returned by a MemoryUsage
 //               object in response to some query.  
-
+//
 //               Warning: once pointers are stored in a
 //               MemoryUsagePointers object, they are
 //               reference-counted, and will not be freed until the
@@ -51,11 +51,13 @@ PUBLISHED:
   void clear();
 
 private:
-  void add_entry(ReferenceCount *ptr, TypeHandle type, double age);
+  void add_entry(ReferenceCount *ptr, TypedObject *typed_ptr,
+		 TypeHandle type, double age);
 
   class Entry {
   public:
-    INLINE Entry(ReferenceCount *ptr, TypeHandle type, double age);
+    INLINE Entry(ReferenceCount *ptr, TypedObject *typed_ptr,
+		 TypeHandle type, double age);
     INLINE Entry(const Entry &copy);
     INLINE void operator = (const Entry &copy);
     INLINE ~Entry();
@@ -66,6 +68,7 @@ private:
     // delete it, we can't make a PointerTo it, since PointerTo wants
     // to be able to delete things.
     ReferenceCount *_ptr;
+    TypedObject *_typed_ptr;
     TypeHandle _type;
     double _age;
   };

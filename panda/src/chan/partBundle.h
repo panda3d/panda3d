@@ -130,7 +130,7 @@ public:
   static void register_with_read_factory(void);
   virtual void finalize();
 
-  static TypedWriteable *make_PartBundle(const FactoryParams &params);
+  static TypedWritable *make_PartBundle(const FactoryParams &params);
 
 public:
 

@@ -16,6 +16,16 @@ TypeHandle FrustumShader::_type_handle;
 
 Shader::Visualize* Shader::_viz = (Shader::Visualize*)0L;
 
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::Constructor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+Shader::
+Shader() : Configurable(), _priority(0) { 
+  MemoryUsage::update_type(this, this);
+}
+
 Shader::Visualize::Visualize(void)
 {
 }

@@ -218,7 +218,7 @@ get_tris() const {
 //       Access: Protected
 //  Description: Factory method to generate a GeomTri object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomTri::
+TypedWritable* GeomTri::
 make_GeomTri(const FactoryParams &params) {
   GeomTri *me = new GeomTri;
   DatagramIterator scan;

@@ -50,7 +50,7 @@ has_sub_render() const {
 //       Access: Protected
 //  Description: Factory method to generate a PruneTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* PruneTransition::
+TypedWritable* PruneTransition::
 make_PruneTransition(const FactoryParams &params)
 {
   PruneTransition *me = new PruneTransition;

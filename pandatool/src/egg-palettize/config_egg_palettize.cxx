@@ -39,7 +39,7 @@ ConfigureFn(config_egg_palettize) {
   TexturePosition::init_type();
   PalettePage::init_type();
 
-  // Registration of writeable object's creation functions with
+  // Registration of writable object's creation functions with
   // BamReader's factory
   Palettizer::register_with_read_factory();
   EggFile::register_with_read_factory();

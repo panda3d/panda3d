@@ -563,16 +563,16 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int TextureProperties::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr(plist.size() >= 2, 0);
   int index = 0;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_color_type, plist[index], index);
   }
   index++;
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_alpha_type, plist[index], index);
   }
   index++;
@@ -588,7 +588,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TextureProperties::
+TypedWritable* TextureProperties::
 make_TextureProperties(const FactoryParams &params) {
   TextureProperties *me = new TextureProperties;
   DatagramIterator scan;

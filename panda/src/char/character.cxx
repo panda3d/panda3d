@@ -434,12 +434,12 @@ fillin(DatagramIterator& scan, BamReader* manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointers to TypedWriteable
+//  Description: Takes in a vector of pointers to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int Character::
-complete_pointers(vector_typedWriteable &plist, BamReader* manager)
+complete_pointers(vector_typedWritable &plist, BamReader* manager)
 {
   int start = PartBundleNode::complete_pointers(plist, manager);
   _computed_vertices = DCAST(ComputedVertices, plist[start]);
@@ -459,7 +459,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a Character object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* Character::
+TypedWritable* Character::
 make_Character(const FactoryParams &params)
 {
   Character *me = new Character;

@@ -161,7 +161,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 //               the Bam file.  It should create the SequenceNode and
 //               extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *SequenceNode::
+TypedWritable *SequenceNode::
 make_SequenceNode(const FactoryParams &params) {
   SequenceNode *me = new SequenceNode;
   DatagramIterator scan;

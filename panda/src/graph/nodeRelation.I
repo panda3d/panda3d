@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDA INLINE_GRAPH void
 remove_arc(NodeRelation *arc) {
-  PT(TypedWriteableReferenceCount) hold_ptr = arc->detach();
+  PT(TypedWritableReferenceCount) hold_ptr = arc->detach();
   arc->_parent = NULL;
   arc->_child = NULL;
 }
@@ -88,7 +88,7 @@ get_graph_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeRelation::
 change_parent(Node *parent) {
-  PT(TypedWriteableReferenceCount) hold_ptr = detach();
+  PT(TypedWritableReferenceCount) hold_ptr = detach();
   _parent = parent;
   attach();
 }
@@ -101,7 +101,7 @@ change_parent(Node *parent) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeRelation::
 change_parent(Node *parent, int sort) {
-  PT(TypedWriteableReferenceCount) hold_ptr = detach();
+  PT(TypedWritableReferenceCount) hold_ptr = detach();
   _parent = parent;
   _sort = sort;
   attach();
@@ -114,7 +114,7 @@ change_parent(Node *parent, int sort) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeRelation::
 change_child(Node *child) {
-  PT(TypedWriteableReferenceCount) hold_ptr = detach();
+  PT(TypedWritableReferenceCount) hold_ptr = detach();
   _child = child;
   attach();
 }
@@ -127,7 +127,7 @@ change_child(Node *child) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeRelation::
 change_parent_and_child(Node *parent, Node *child) {
-  PT(TypedWriteableReferenceCount) hold_ptr = detach();
+  PT(TypedWritableReferenceCount) hold_ptr = detach();
   _parent = parent;
   _child = child;
   attach();
@@ -141,7 +141,7 @@ change_parent_and_child(Node *parent, Node *child) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeRelation::
 set_sort(int sort) {
-  PT(TypedWriteableReferenceCount) hold_ptr = detach();
+  PT(TypedWritableReferenceCount) hold_ptr = detach();
   _sort = sort;
   attach();
 }
@@ -155,7 +155,7 @@ set_sort(int sort) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeRelation::
 set_graph_type(TypeHandle graph_type) {
-  PT(TypedWriteableReferenceCount) hold_ptr = detach();
+  PT(TypedWritableReferenceCount) hold_ptr = detach();
   _graph_type = graph_type;
   attach();
 }

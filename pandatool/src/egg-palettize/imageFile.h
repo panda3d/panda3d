@@ -11,7 +11,7 @@
 #include "textureProperties.h"
 
 #include <filename.h>
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 class PNMImage;
 class EggTexture;
@@ -24,7 +24,7 @@ class PaletteGroup;
 //               specific to an image file that can be assigned as a
 //               texture image to egg geometry.
 ////////////////////////////////////////////////////////////////////
-class ImageFile : public TypedWriteable {
+class ImageFile : public TypedWritable {
 public:
   ImageFile();
 
@@ -61,7 +61,7 @@ protected:
   bool _size_known;
   int _x_size, _y_size;
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
 
@@ -73,9 +73,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     register_type(_type_handle, "ImageFile",
-		  TypedWriteable::get_class_type());
+		  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

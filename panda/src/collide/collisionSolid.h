@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 
-#include <typedWriteableReferenceCount.h>
+#include <typedWritableReferenceCount.h>
 #include <boundedObject.h>
 #include <luse.h>
 #include <nodeRelation.h>
@@ -37,7 +37,7 @@ class CollisionNode;
 //               intersection tests that we care about.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionSolid : 
-  public TypedWriteableReferenceCount, public BoundedObject {
+  public TypedWritableReferenceCount, public BoundedObject {
 public:
   CollisionSolid();
   CollisionSolid(const CollisionSolid &copy);
@@ -105,10 +105,10 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteableReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     BoundedObject::init_type();
     register_type(_type_handle, "CollisionSolid",
-		  TypedWriteableReferenceCount::get_class_type(),
+		  TypedWritableReferenceCount::get_class_type(),
 		  BoundedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

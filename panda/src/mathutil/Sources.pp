@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET mathutil
   #define LOCAL_LIBS \
-    linmath putil
+    linmath putil express
   #define USE_FFTW yes
   #define UNIX_SYS_LIBS m
 

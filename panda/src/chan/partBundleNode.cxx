@@ -57,12 +57,12 @@ fillin(DatagramIterator& scan, BamReader* manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundleNode::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PartBundleNode::
-complete_pointers(vector_typedWriteable &plist, BamReader* manager)
+complete_pointers(vector_typedWritable &plist, BamReader* manager)
 {
   int start = NamedNode::complete_pointers(plist, manager);
   _bundle = DCAST(PartBundle, plist[start]);

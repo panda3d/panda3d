@@ -539,7 +539,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int EggFile::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr((int)plist.size() >= _num_textures + 1, 0);
   int index = 0;
 
@@ -552,7 +552,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
     index++;
   }
 
-  if (plist[index] != (TypedWriteable *)NULL) {
+  if (plist[index] != (TypedWritable *)NULL) {
     DCAST_INTO_R(_default_group, plist[index], index);
   }
   index++;
@@ -568,7 +568,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* EggFile::
+TypedWritable* EggFile::
 make_EggFile(const FactoryParams &params) {
   EggFile *me = new EggFile;
   DatagramIterator scan;

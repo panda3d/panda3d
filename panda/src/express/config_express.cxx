@@ -47,6 +47,27 @@ get_leak_memory() {
   return leak_memory;
 }
 
+// never-destruct is similar to leak-memory, above, except that not
+// only will memory not be freed, but the destructor will not even be
+// called (on ReferenceCount objects, at least).  This will leak gobs
+// of memory, but ensures that every pointer to a ReferenceCount
+// object will always be valid, and may be useful for tracking down
+// certain kinds of errors.
+
+// never-destruct is only respected if leak-memory, above, is true.
+bool
+get_never_destruct() {
+  static bool got_never_destruct = false;
+  static bool never_destruct;
+
+  if (!got_never_destruct) {
+    never_destruct = config_express.GetBool("never-destruct", false);
+    got_never_destruct = true;
+  }
+  
+  return never_destruct;
+}
+
 //const bool track_memory_usage = config_express.GetBool("track-memory-usage", false);
 
 // Set this to false to avoid using the high-precision clock, even if

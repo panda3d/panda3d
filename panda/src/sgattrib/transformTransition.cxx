@@ -50,7 +50,7 @@ make_with_matrix(const LMatrix4f &matrix) const {
 //       Access: Protected
 //  Description: Factory method to generate a TransformTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TransformTransition::
+TypedWritable* TransformTransition::
 make_TransformTransition(const FactoryParams &params)
 {
   TransformTransition *me = new TransformTransition;

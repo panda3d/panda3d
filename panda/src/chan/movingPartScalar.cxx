@@ -75,7 +75,7 @@ get_blend_value(const PartBundle *root) {
 //       Access: Protected
 //  Description: Factory method to generate a MovingPartScalar object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* MovingPartScalar::
+TypedWritable* MovingPartScalar::
 make_MovingPartScalar(const FactoryParams &params)
 {
   MovingPartScalar *me = new MovingPartScalar;

@@ -201,18 +201,18 @@ fillin(DatagramIterator& scan, BamReader* manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int AnimGroup::
-complete_pointers(vector_typedWriteable &plist, BamReader*)
+complete_pointers(vector_typedWritable &plist, BamReader*)
 {
-  nassertr(plist[0] != TypedWriteable::Null, 0);
+  nassertr(plist[0] != TypedWritable::Null, 0);
   _root = DCAST(AnimBundle, plist[0]);
   for(int i = 1; i < _num_children+1; i++)
   {
-    if (plist[i] == TypedWriteable::Null)
+    if (plist[i] == TypedWritable::Null)
     {
       chan_cat->warning() << get_type().get_name() 
 			  << " Ignoring null child" << endl;
@@ -230,7 +230,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader*)
 //       Access: Protected
 //  Description: Factory method to generate a AnimGroup object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* AnimGroup::
+TypedWritable* AnimGroup::
 make_AnimGroup(const FactoryParams &params)
 {
   AnimGroup *me = new AnimGroup;

@@ -30,7 +30,7 @@ protected:
 public:
   static void register_with_read_factory(void);
 
-  static TypedWriteable *make_TransformTransition(const FactoryParams &params);
+  static TypedWritable *make_TransformTransition(const FactoryParams &params);
 
 protected:
 

@@ -409,7 +409,7 @@ register_with_read_factory() {
 //               objects are all shared, we just pull the object from
 //               the registry.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *PNMFileTypeYUV::
+TypedWritable *PNMFileTypeYUV::
 make_PNMFileTypeYUV(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_ptr()->get_type_by_handle(get_class_type());
 }

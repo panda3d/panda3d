@@ -67,7 +67,7 @@ register_with_read_factory() {
 //       Access: Protected, Static
 //  Description: Factory method to generate a node object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* ModelNode::
+TypedWritable* ModelNode::
 make_ModelNode(const FactoryParams &params) {
   ModelNode *me = new ModelNode;
   DatagramIterator scan;

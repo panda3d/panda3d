@@ -57,7 +57,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //       Access: Protected
 //  Description: Factory method to generate a node object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* NamedNode::
+TypedWritable* NamedNode::
 make_NamedNode(const FactoryParams &params)
 {
   NamedNode *me = new NamedNode;

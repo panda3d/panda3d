@@ -116,7 +116,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a CullFaceTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* CullFaceTransition::
+TypedWritable* CullFaceTransition::
 make_CullFaceTransition(const FactoryParams &params)
 {
   CullFaceTransition *me = new CullFaceTransition;

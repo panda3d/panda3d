@@ -15,7 +15,7 @@
 #include <pta_Normalf.h>
 #include <pta_Colorf.h>
 #include <pta_TexCoordf.h>
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 class BamReader;
 
@@ -23,7 +23,7 @@ class BamReader;
 //       Class : DynamicVertices
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DynamicVertices : public TypedWriteable {
+class EXPCL_PANDA DynamicVertices : public TypedWritable {
 public:
   DynamicVertices();
   DynamicVertices(const DynamicVertices &copy);
@@ -47,9 +47,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     register_type(_type_handle, "DynamicVertices",
-		  TypedWriteable::get_class_type());
+		  TypedWritable::get_class_type());
   }
 
 private:

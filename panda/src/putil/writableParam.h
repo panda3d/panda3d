@@ -1,10 +1,10 @@
-// Filename: writeableParam.h
+// Filename: writableParam.h
 // Created by:  jason (13Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef WRITEABLEPARAM_H
-#define WRITEABLEPARAM_H
+#ifndef WRITABLEPARAM_H
+#define WRITABLEPARAM_H
 
 #include <pandabase.h>
 
@@ -14,13 +14,13 @@
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : WriteableParam
+// 	 Class : WritableParam
 // Description : The specific derivation of FactoryParam that 
-//               contains the information needed by a TypedWriteable
+//               contains the information needed by a TypedWritable
 //               object.  Simply contains a Datagram for the object
 //               to construct itself from.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA WriteableParam : public FactoryParam {
+class EXPCL_PANDA WritableParam : public FactoryParam {
 public:
   INLINE const Datagram &get_datagram(void);
 
@@ -28,13 +28,13 @@ private:
   const Datagram &_packet;
 
 public:
-  INLINE WriteableParam(const Datagram &datagram);
-  INLINE WriteableParam(const WriteableParam &other);
-  INLINE ~WriteableParam();
+  INLINE WritableParam(const Datagram &datagram);
+  INLINE WritableParam(const WritableParam &other);
+  INLINE ~WritableParam();
 
 private:
   // The assignment operator cannot be used for this class.
-  INLINE void operator = (const WriteableParam &other);
+  INLINE void operator = (const WritableParam &other);
 
 public:
   virtual TypeHandle get_type() const {
@@ -46,7 +46,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "WriteableParam",
+    register_type(_type_handle, "WritableParam",
 		  FactoryParam::get_class_type());
   }
 
@@ -54,7 +54,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "writeableParam.I"
+#include "writableParam.I"
 
 #endif
 

@@ -21,6 +21,10 @@ update_type(ReferenceCount *, TypeHandle) {
 }
 
 INLINE void MemoryUsage::
+update_type(ReferenceCount *, TypedObject *) {
+}
+
+INLINE void MemoryUsage::
 remove_pointer(ReferenceCount *) {
 }
 
@@ -60,10 +64,29 @@ record_pointer(ReferenceCount *ptr) {
 //     Function: MemoryUsage::update_type
 //       Access: Public, Static
 //  Description: Associates the indicated type with the given pointer.
+//               This should be called by functions (e.g. the
+//               constructor) that know more specifically what type of
+//               thing we've got; otherwise, the MemoryUsage database
+//               will know only that it's a "ReferenceCount".
 ////////////////////////////////////////////////////////////////////
 INLINE void MemoryUsage::
 update_type(ReferenceCount *ptr, TypeHandle type) {
   get_global_ptr()->ns_update_type(ptr, type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::update_type
+//       Access: Public, Static
+//  Description: Associates the indicated type with the given pointer.
+//               This flavor of update_type() also passes in the
+//               pointer as a TypedObject, and useful for objects that
+//               are, in fact, TypedObjects.  Once the MemoryUsage
+//               database has the pointer as a TypedObject it doesn't
+//               need any more help.
+////////////////////////////////////////////////////////////////////
+INLINE void MemoryUsage::
+update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
+  get_global_ptr()->ns_update_type(ptr, typed_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -4,10 +4,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_graph.h"
+#include "arcChain.h"
 #include "namedNode.h"
 #include "node.h"
 #include "nodeRelation.h"
 #include "nodeTransition.h"
+#include "nodeTransitionCache.h"
 #include "nodeAttribute.h"
 #include "onOffTransition.h"
 #include "onOffAttribute.h"
@@ -73,11 +75,13 @@ init_libgraph() {
   void init_last_graph_update();
   init_last_graph_update();
 
+  ArcChain::init_type();
   BoundedObject::init_type();
   NamedNode::init_type();
   Node::init_type();
   NodeRelation::init_type();
   NodeTransition::init_type();
+  NodeTransitionCache::init_type();
   NodeAttribute::init_type();
   OnOffTransition::init_type();
   OnOffAttribute::init_type();
@@ -92,5 +96,5 @@ init_libgraph() {
   //functions with BamReader's factory
   Node::register_with_read_factory();
   NamedNode::register_with_read_factory();
-  NodeRelation::register_with_read_factory();
+  NodeRelation::register_with_read_factory();  
 }

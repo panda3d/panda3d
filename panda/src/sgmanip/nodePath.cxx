@@ -30,6 +30,9 @@
 
 #include <list>
 
+TypeHandle NodePath::_type_handle;
+
+
 // This class is used in prepare_scene() to traverse the scene graph
 // and register textures with the gsg.
 class ScenePrepareVisitor : public TraverserVisitor<NodeTransitionWrapper, NullLevelState> {

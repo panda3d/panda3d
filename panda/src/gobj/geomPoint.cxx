@@ -65,7 +65,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //       Access: Protected
 //  Description: Factory method to generate a GeomPoint object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomPoint::
+TypedWritable* GeomPoint::
 make_GeomPoint(const FactoryParams &params) {
   GeomPoint *me = new GeomPoint;
   DatagramIterator scan;

@@ -57,12 +57,12 @@ public:
   };
 
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
 
 protected:
-  static TypedWriteable *make_PNMFileTypeYUV(const FactoryParams &params);
+  static TypedWritable *make_PNMFileTypeYUV(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {

@@ -41,11 +41,11 @@ protected:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 protected:
-  static TypedWriteable *make_MaterialTransition(const FactoryParams &params);
+  static TypedWritable *make_MaterialTransition(const FactoryParams &params);
   void fillin(DatagramIterator& scan, BamReader* manager);
 
 public:

@@ -11,7 +11,7 @@
 #include "textureProperties.h"
 
 #include <namable.h>
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 class PaletteGroup;
 class PaletteImage;
@@ -25,7 +25,7 @@ class TexturePlacement;
 //               therefore all be placed on the same set of
 //               PaletteImages together.
 ////////////////////////////////////////////////////////////////////
-class PalettePage : public TypedWriteable, public Namable {
+class PalettePage : public TypedWritable, public Namable {
 private:
   PalettePage();
 
@@ -56,15 +56,15 @@ private:
   typedef vector<PaletteImage *> Images;
   Images _images;
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
 protected:
-  static TypedWriteable *make_PalettePage(const FactoryParams &params);
+  static TypedWritable *make_PalettePage(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
@@ -77,10 +77,10 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     Namable::init_type();
     register_type(_type_handle, "PalettePage",
-		  TypedWriteable::get_class_type(),
+		  TypedWritable::get_class_type(),
 		  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {

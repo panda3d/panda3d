@@ -33,7 +33,7 @@ public:
   static void register_with_read_factory(void);
 
 protected:
-  static TypedWriteable *make_ModelRoot(const FactoryParams &params);
+  static TypedWritable *make_ModelRoot(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {

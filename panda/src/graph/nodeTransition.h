@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 
-#include <typedWriteableReferenceCount.h>
+#include <typedWritableReferenceCount.h>
 
 class Node;
 class NodeAttribute;
@@ -34,7 +34,7 @@ class DatagramIterator;
 //               for a fuller description of the purpose of this
 //               class.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodeTransition : public TypedWriteableReferenceCount {
+class EXPCL_PANDA NodeTransition : public TypedWritableReferenceCount {
 protected:
   INLINE_GRAPH NodeTransition();
   INLINE_GRAPH NodeTransition(const NodeTransition &copy);
@@ -112,9 +112,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteableReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "NodeTransition",
-		  TypedWriteableReferenceCount::get_class_type());
+		  TypedWritableReferenceCount::get_class_type());
   }
 
 private:

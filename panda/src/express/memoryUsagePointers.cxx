@@ -63,6 +63,12 @@ get_pointer(int n) const {
 TypedObject *MemoryUsagePointers::
 get_typed_pointer(int n) const {
   nassertr(n >= 0 && n < get_num_pointers(), NULL);
+  TypedObject *typed_ptr = _entries[n]._typed_ptr;
+
+  if (typed_ptr != (TypedObject *)NULL) {
+    return typed_ptr;
+  }
+
   ReferenceCount *ptr = _entries[n]._ptr;
 
   TypeHandle type = _entries[n]._type;
@@ -141,12 +147,13 @@ clear() {
 //               only by MemoryUsage.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsagePointers::
-add_entry(ReferenceCount *ptr, TypeHandle type, double age) {
+add_entry(ReferenceCount *ptr, TypedObject *typed_ptr, 
+	  TypeHandle type, double age) {
   // We can't safly add pointers with a zero reference count.  They
   // might be statically-allocated or something, and if we try to add
   // them they'll try to destruct when the PointerTo later goes away.
   if (ptr->get_ref_count() != 0) {
-    _entries.push_back(Entry(ptr, type, age));
+    _entries.push_back(Entry(ptr, typed_ptr, type, age));
   }
 }
 

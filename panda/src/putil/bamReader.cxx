@@ -10,9 +10,9 @@
 #include <datagramIterator.h>
 #include "config_util.h"
 
-WriteableFactory *BamReader::_factory = (WriteableFactory*)0L;
+WritableFactory *BamReader::_factory = (WritableFactory*)0L;
 BamReader *const BamReader::Null = (BamReader*)0L;
-WriteableFactory *const BamReader::NullFactory = (WriteableFactory*)0L;
+WritableFactory *const BamReader::NullFactory = (WritableFactory*)0L;
 
 const int BamReader::_cur_major = _bam_major_ver;
 const int BamReader::_cur_minor = _bam_minor_ver;
@@ -131,9 +131,9 @@ init() {
 //               all the available pointers before you can safely use
 //               any objects returned by read_object().
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *BamReader::
+TypedWritable *BamReader::
 read_object() {
-  nassertr(_num_extra_objects == 0, (TypedWriteable *)NULL);
+  nassertr(_num_extra_objects == 0, (TypedWritable *)NULL);
 
   // First, read the base object.
   int object_id = p_read_object();
@@ -156,7 +156,7 @@ read_object() {
 	<< "Returning NULL\n";
     }
 #endif
-    return (TypedWriteable *)NULL;
+    return (TypedWritable *)NULL;
   }
 
   CreatedObjs::iterator oi = _created_objs.find(object_id);
@@ -164,14 +164,14 @@ read_object() {
   if (oi == _created_objs.end()) {
     bam_cat.error() 
       << "Undefined object encountered!\n";
-    return (TypedWriteable *)NULL;
+    return (TypedWritable *)NULL;
 
   } else {
-    TypedWriteable *object = (*oi).second;
+    TypedWritable *object = (*oi).second;
 
 #ifndef NDEBUG
     if (bam_cat.is_spam()) {
-      if (object != (TypedWriteable *)NULL) {
+      if (object != (TypedWritable *)NULL) {
 	bam_cat.spam()
 	  << "Returning object of type " << object->get_type() << "\n";
       }
@@ -208,7 +208,7 @@ resolve() {
   Requests::iterator ri;
   ri = _deferred_pointers.begin(); 
   while (ri != _deferred_pointers.end()) {
-    TypedWriteable *whom = (*ri).first;
+    TypedWritable *whom = (*ri).first;
     const vector_ushort &pointers = (*ri).second;
 
     // Now make sure we have all of the pointers this object is
@@ -218,7 +218,7 @@ resolve() {
     // object.
 
     bool is_complete = true;
-    vector_typedWriteable references;
+    vector_typedWritable references;
 
     vector_ushort::const_iterator pi;
     for (pi = pointers.begin(); pi != pointers.end() && is_complete; ++pi) {
@@ -226,7 +226,7 @@ resolve() {
 
       if (object_id == 0) {
 	// A NULL pointer is a NULL pointer.
-	references.push_back((TypedWriteable *)NULL);
+	references.push_back((TypedWritable *)NULL);
 
       } else {
 	// See if we have the pointer available now.
@@ -374,7 +374,7 @@ read_handle(DatagramIterator &scan) {
 //               object properly.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
-read_pointer(DatagramIterator &scan, TypedWriteable *for_whom) {
+read_pointer(DatagramIterator &scan, TypedWritable *for_whom) {
   // Read the object ID, and associate it with the requesting object.
   int object_id = scan.get_uint16();
   _deferred_pointers[for_whom].push_back(object_id);
@@ -399,7 +399,7 @@ read_pointer(DatagramIterator &scan, TypedWriteable *for_whom) {
 //               read_pointer() count times.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
-read_pointers(DatagramIterator &scan, TypedWriteable *for_whom, int count) {
+read_pointers(DatagramIterator &scan, TypedWritable *for_whom, int count) {
   for (int i = 0; i < count; i++) {
     read_pointer(scan, for_whom);
   }
@@ -433,8 +433,8 @@ skip_pointer(DatagramIterator &scan) {
 //               be filled in.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
-register_finalize(TypedWriteable *whom) {
-  if (whom == TypedWriteable::Null) {
+register_finalize(TypedWritable *whom) {
+  if (whom == TypedWritable::Null) {
     bam_cat.error() << "Can't register a null pointer to finalize!" << endl;
     return;
   }
@@ -450,8 +450,8 @@ register_finalize(TypedWriteable *whom) {
 //               where it is important.
 ////////////////////////////////////////////////////////////////////
 void BamReader::
-finalize_now(TypedWriteable *whom) {
-  nassertv(whom != (TypedWriteable *)NULL);
+finalize_now(TypedWritable *whom) {
+  nassertv(whom != (TypedWritable *)NULL);
   
   Finalize::iterator fi = _finalize_list.find(whom);
   if (fi != _finalize_list.end()) {
@@ -598,14 +598,14 @@ p_read_object() {
       _created_objs.insert(CreatedObjs::value_type(object_id, NULL)).first;
 
     // Now we can call the factory to create the object.
-    TypedWriteable *object = 
+    TypedWritable *object = 
       _factory->make_instance_more_general(type, fparams);
 
     // And now we can store the new object pointer in the map.
     (*oi).second = object;
 
     //Just some sanity checks
-    if (object == (TypedWriteable *)NULL) {
+    if (object == (TypedWritable *)NULL) {
       bam_cat.error() 
 	<< "Unable to create an object of type " << type << endl;
 
@@ -646,8 +646,8 @@ finalize() {
 
   Finalize::iterator fi = _finalize_list.begin();
   while (fi != _finalize_list.end()) {
-    TypedWriteable *object = (*fi);
-    nassertv(object != (TypedWriteable *)NULL);
+    TypedWritable *object = (*fi);
+    nassertv(object != (TypedWritable *)NULL);
     _finalize_list.erase(fi);
     object->finalize();
 

@@ -57,7 +57,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //       Access: Protected
 //  Description: Factory method to generate a GeomLine object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomLine::
+TypedWritable* GeomLine::
 make_GeomLine(const FactoryParams &params) {
   GeomLine *me = new GeomLine;
   DatagramIterator scan;

@@ -66,10 +66,10 @@ get_current_minor_ver() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_factory
 //       Access: Public, Static
-//  Description: Returns the global WriteableFactory for generating
-//               TypedWriteable objects
+//  Description: Returns the global WritableFactory for generating
+//               TypedWritable objects
 ////////////////////////////////////////////////////////////////////
-INLINE WriteableFactory* BamReader::
+INLINE WritableFactory* BamReader::
 get_factory() {
   if (_factory == NullFactory)
     create_factory();
@@ -79,19 +79,19 @@ get_factory() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::create_factory
 //       Access: Private, Static
-//  Description: Creates a new WriteableFactory for generating
-//               TypedWriteable objects
+//  Description: Creates a new WritableFactory for generating
+//               TypedWritable objects
 ////////////////////////////////////////////////////////////////////
 INLINE void BamReader::
 create_factory() {
-  _factory = new WriteableFactory;
+  _factory = new WritableFactory;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: parse_params
 //       Access: Private, Static
-//  Description: Takes in a FactoryParams, passed from a WriteableFactory
-//               into any TypedWriteable's make function, and parses
+//  Description: Takes in a FactoryParams, passed from a WritableFactory
+//               into any TypedWritable's make function, and parses
 //               out the datagram that contatins the data it needs to
 //               construct itself, and parses out the pointer to the
 //               managing BamReader object 

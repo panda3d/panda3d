@@ -188,7 +188,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 //               number of pointers processed from the list.
 ////////////////////////////////////////////////////////////////////
 int SourceTextureImage::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   nassertr(plist.size() >= 1, 0);
 
   DCAST_INTO_R(_texture, plist[0], 0);
@@ -203,7 +203,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *SourceTextureImage::
+TypedWritable *SourceTextureImage::
 make_SourceTextureImage(const FactoryParams &params) {
   SourceTextureImage *me = new SourceTextureImage;
   DatagramIterator scan;

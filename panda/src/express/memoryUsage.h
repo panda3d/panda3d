@@ -40,10 +40,12 @@ PUBLISHED:
   // mode, these functions do nothing anyway).
   static void record_pointer(ReferenceCount *ptr);
   static void update_type(ReferenceCount *ptr, TypeHandle type);
+  static void update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
   static void remove_pointer(ReferenceCount *ptr);
 #else // __GNUC__ && !NDEBUG
   INLINE static void record_pointer(ReferenceCount *ptr);
   INLINE static void update_type(ReferenceCount *ptr, TypeHandle type);
+  INLINE static void update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
   INLINE static void remove_pointer(ReferenceCount *ptr);
 #endif // __GNUC__ && !NDEBUG
 
@@ -69,6 +71,7 @@ private:
   
   void ns_record_pointer(ReferenceCount *ptr);
   void ns_update_type(ReferenceCount *ptr, TypeHandle type);
+  void ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
   void ns_remove_pointer(ReferenceCount *ptr);
 
   int ns_get_num_pointers();
@@ -94,6 +97,7 @@ private:
     void update_type_handle(TypeHandle &destination, TypeHandle refined);
 
     ReferenceCount *_ptr;
+    TypedObject *_typed_ptr;
     TypeHandle _static_type;
     TypeHandle _dynamic_type;
     

@@ -13,7 +13,7 @@
 
 class BamReader;
 class BamWriter;
-class TypedWriteable;
+class TypedWritable;
 class Filename;
 
 ////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ class Filename;
 //               or subgraphs, and by convention they are given
 //               filenames ending in the extension ".bam" when they
 //               are used for this purpose.  However, a Bam file may
-//               store any arbitrary list of TypedWriteable objects;
+//               store any arbitrary list of TypedWritable objects;
 //               in this more general usage, they are given filenames
 //               ending in ".boo" to differentiate them from the more
 //               common scene graph files.
@@ -37,12 +37,12 @@ public:
   ~BamFile();
 
   bool open_read(const Filename &filename, bool report_errors = true);
-  TypedWriteable *read_object();
+  TypedWritable *read_object();
   bool is_eof() const;
   bool resolve();
 
   bool open_write(const Filename &filename, bool report_errors = true);
-  bool write_object(const TypedWriteable *object);
+  bool write_object(const TypedWritable *object);
 
   void close();
   INLINE bool is_valid_read() const;

@@ -13,7 +13,7 @@
 #include "boundedObject.h"
 #include "pt_Node.h"
 
-#include <typedWriteableReferenceCount.h>
+#include <typedWritableReferenceCount.h>
 #include <bamWriter.h>
 #include <bamReader.h>
 #include <pointerTo.h>
@@ -47,7 +47,7 @@ EXPCL_PANDA INLINE_GRAPH void remove_arc(NodeRelation *arc);
 //               NodeTransitions which affect the attributes of the
 //               child node and later descendants.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodeRelation : public TypedWriteableReferenceCount, public BoundedObject {
+class EXPCL_PANDA NodeRelation : public TypedWritableReferenceCount, public BoundedObject {
 public:
   NodeRelation(Node *from, Node *to, int sort, TypeHandle graph_type);
 
@@ -134,8 +134,8 @@ private:
 
 protected:
   void attach();
-  PT(TypedWriteableReferenceCount) detach();
-  PT(TypedWriteableReferenceCount) detach_below();
+  PT(TypedWritableReferenceCount) detach();
+  PT(TypedWritableReferenceCount) detach_below();
 
 private:
   // We reference-count the child pointer, but not the parent pointer,
@@ -176,10 +176,10 @@ private:
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 
-  static TypedWriteable *make_NodeRelation(const FactoryParams &params);
+  static TypedWritable *make_NodeRelation(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);

@@ -88,7 +88,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //       Access: Protected
 //  Description: Factory method to generate a GeomSprite object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomSprite::
+TypedWritable* GeomSprite::
 make_GeomSprite(const FactoryParams &params) {
   GeomSprite *me = new GeomSprite;
   DatagramIterator scan;
@@ -136,7 +136,7 @@ register_with_read_factory(void) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int GeomSprite::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
+complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   int index = Geom::complete_pointers(plist, manager);
   _texture = DCAST(Texture, plist[index]);
 

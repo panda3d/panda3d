@@ -113,11 +113,11 @@ get_info(const Filename &filename) {
   nout << filename << " : Bam version " << bam_file.get_file_major_ver()
        << "." << bam_file.get_file_minor_ver() << "\n";
 
-  typedef vector<TypedWriteable *> Objects;
+  typedef vector<TypedWritable *> Objects;
   Objects objects;
-  TypedWriteable *object = bam_file.read_object();
+  TypedWritable *object = bam_file.read_object();
   while (!bam_file.is_eof()) {
-    if (object != (TypedWriteable *)NULL) {
+    if (object != (TypedWritable *)NULL) {
       objects.push_back(object);
     }
     object = bam_file.read_object();
@@ -177,7 +177,7 @@ describe_scene_graph(Node *node) {
 //               should describe each object in some meaningful way.
 ////////////////////////////////////////////////////////////////////
 void BamInfo::
-describe_general_object(TypedWriteable *object) {
+describe_general_object(TypedWritable *object) {
   nout << "  " << object->get_type() << "\n";
 }
 

@@ -59,7 +59,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a AnimBundle object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* AnimBundle::
+TypedWritable* AnimBundle::
 make_AnimBundle(const FactoryParams &params)
 {
   AnimBundle *me = new AnimBundle;

@@ -335,12 +335,12 @@ event_fkey(CPT_Event event) {
 
 static void
 event_B(CPT_Event event) {
+  // List everything under the selected bounding volume and
+  // recompute the volume.
+  selected_node.ls();
+  selected_node.analyze();
+  
   if (selected_node.has_arcs()) {
-    // List everything under the selected bounding volume and
-    // recompute the volume.
-    selected_node.ls();
-    selected_node.analyze();
-
     selected_node.arc()->force_bound_stale();
   }
 }

@@ -260,12 +260,12 @@ write_datagram(BamWriter *manager, Datagram &me)
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int GeomNode::
-complete_pointers(vector_typedWriteable &plist, BamReader* manager)
+complete_pointers(vector_typedWritable &plist, BamReader* manager)
 {
   int start = NamedNode::complete_pointers(plist, manager);
   for(int i = start; i < _num_geoms+start; i++)
@@ -281,7 +281,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a GeomNode object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* GeomNode::
+TypedWritable* GeomNode::
 make_GeomNode(const FactoryParams &params)
 {
   GeomNode *me = new GeomNode;

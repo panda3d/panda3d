@@ -8,7 +8,7 @@
 #include <pandabase.h>
 #include <notify.h>
 
-#include "typedWriteable.h"
+#include "typedWritable.h"
 #include "datagramSink.h"
 #include <deque>
 
@@ -29,7 +29,7 @@
 //               A Bam file can be thought of as a linear collection
 //               of objects.  Each object is an instance of a class
 //               that inherits, directly or indirectly, from
-//               TypedWriteable.  The objects may include pointers to
+//               TypedWritable.  The objects may include pointers to
 //               other objects; the BamWriter automatically manages
 //               these (with help from code within each class) and
 //               writes all referenced objects to the file in such a
@@ -47,7 +47,7 @@
 //               or subgraphs, and by convention they are given
 //               filenames ending in the extension ".bam" when they
 //               are used for this purpose.  However, a Bam file may
-//               store any arbitrary list of TypedWriteable objects;
+//               store any arbitrary list of TypedWritable objects;
 //               in this more general usage, they are given filenames
 //               ending in ".boo" to differentiate them from the more
 //               common scene graph files.
@@ -63,17 +63,17 @@ public:
   // The primary interface for a caller.
   
   bool init();
-  bool write_object(TypedWriteable *obj);
+  bool write_object(TypedWritable *obj);
 
 public:
   // Functions to support classes that write themselves to the Bam.
 
-  void write_pointer(Datagram &packet, TypedWriteable *dest);
+  void write_pointer(Datagram &packet, TypedWritable *dest);
   bool register_pta(Datagram &packet, void *ptr);
   void write_handle(Datagram &packet, TypeHandle type);
 
 private:
-  int enqueue_object(TypedWriteable *object);
+  int enqueue_object(TypedWritable *object);
 
 
   // This is the set of all TypeHandles already written.
@@ -89,7 +89,7 @@ private:
     
     StoreState(int object_id) : _object_id(object_id), _written(false) {}
   };
-  typedef map<TypedWriteable *, StoreState> StateMap;
+  typedef map<TypedWritable *, StoreState> StateMap;
   StateMap _state_map;
 
   // This is the next object ID that will be assigned to a new object.
@@ -97,7 +97,7 @@ private:
 
   // This is the queue of objects that need to be written when the
   // current object is finished.
-  typedef deque<TypedWriteable *> ObjectQueue;
+  typedef deque<TypedWritable *> ObjectQueue;
   ObjectQueue _object_queue;
 
   // These are used by register_pta() to unify multiple references to

@@ -122,7 +122,7 @@ get_blend_value(const PartBundle *root) {
 //       Access: Protected
 //  Description: Factory method to generate a MovingPartMatrix object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* MovingPartMatrix::
+TypedWritable* MovingPartMatrix::
 make_MovingPartMatrix(const FactoryParams &params)
 {
   MovingPartMatrix *me = new MovingPartMatrix;

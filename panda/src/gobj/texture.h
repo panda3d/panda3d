@@ -106,7 +106,7 @@ public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
 
-  static TypedWriteable *make_Texture(const FactoryParams &params);
+  static TypedWritable *make_Texture(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);

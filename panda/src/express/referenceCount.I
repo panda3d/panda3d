@@ -295,7 +295,12 @@ unref_delete(RefCountType *ptr) {
       // although we do call the destructor explicitly.  This has
       // exactly the same effect as deleting it, without actually
       // freeing up the memory it uses.
-      ptr->~RefCountType();
+
+      if (!get_never_destruct()) {
+	// Furthermore, if we have never-destruct set, we don't even
+	// call the destructor.
+	ptr->~RefCountType();
+      }
       return;
     }
 #endif
@@ -390,7 +395,7 @@ RefCountObj(const Base &copy) : Base(copy) {
 template<class Base>
 void RefCountObj<Base>::
 init_type() {
-#ifdef RTTI
+#ifdef HAVE_RTTI
   // If we have RTTI, we can determine the name of the base type.
   string base_name = typeid(Base).name();
 #else

@@ -114,7 +114,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //       Access: Protected
 //  Description: Factory method to generate a TransparencyTransition object
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TransparencyTransition::
+TypedWritable* TransparencyTransition::
 make_TransparencyTransition(const FactoryParams &params)
 {
   TransparencyTransition *me = new TransparencyTransition;

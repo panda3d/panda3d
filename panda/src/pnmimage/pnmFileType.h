@@ -11,7 +11,7 @@
 #include "pnmimage_base.h"
 
 #include <typeHandle.h>
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 class PNMReader;
 class PNMWriter;
@@ -22,7 +22,7 @@ class PNMWriter;
 //               represent particular image file types that PNMImage
 //               supports.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileType : public TypedWriteable {
+class EXPCL_PANDA PNMFileType : public TypedWritable {
 protected:
   PNMFileType();
 
@@ -49,22 +49,22 @@ private:
   static bool _did_init_pnm;
 
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
 
 protected:
-  static TypedWriteable *make_PNMFileType(const FactoryParams &params);
+  static TypedWritable *make_PNMFileType(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     register_type(_type_handle, "PNMFileType",
-                  TypedWriteable::get_class_type());
+                  TypedWritable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

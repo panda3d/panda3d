@@ -12,7 +12,7 @@
 #include "textureProperties.h"
 
 #include <namable.h>
-#include <typedWriteable.h>
+#include <typedWritable.h>
 
 #include <set>
 #include <vector>
@@ -33,7 +33,7 @@ class TextureImage;
 //               chunk.  It is the set of all textures that may be
 //               displayed together at any given time.
 ////////////////////////////////////////////////////////////////////
-class PaletteGroup : public TypedWriteable, public Namable {
+class PaletteGroup : public TypedWritable, public Namable {
 public:
   PaletteGroup();
 
@@ -89,16 +89,16 @@ private:
   Pages _pages;
 
 
-  // The TypedWriteable interface follows.
+  // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
   virtual void finalize();
 
 protected:
-  static TypedWriteable *make_PaletteGroup(const FactoryParams &params);
+  static TypedWritable *make_PaletteGroup(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
@@ -113,10 +113,10 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteable::init_type();
+    TypedWritable::init_type();
     Namable::init_type();
     register_type(_type_handle, "PaletteGroup",
-		  TypedWriteable::get_class_type(),
+		  TypedWritable::get_class_type(),
 		  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {

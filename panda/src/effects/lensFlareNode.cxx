@@ -492,12 +492,12 @@ fillin(DatagramIterator &scan, BamReader *manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: LensFlareNode::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointes to TypedWritable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int LensFlareNode::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager)
+complete_pointers(vector_typedWritable &plist, BamReader *manager)
 {
   int i;
   int start = Node::complete_pointers(plist, manager);
@@ -529,7 +529,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager)
 //               the Bam file.  It should create the LensFlareNode and
 //               extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable *LensFlareNode::
+TypedWritable *LensFlareNode::
 make_LensFlareNode(const FactoryParams &params) {
   LensFlareNode *me = new LensFlareNode;
   DatagramIterator scan;

@@ -7,24 +7,24 @@
 #include <notify.h>
 
 #include "factory.h"
-#include "writeableParam.h"
+#include "writableParam.h"
 #include "factoryParams.h"
 #include "bamWriter.h"
 #include "bamReader.h"
 #include "pointerTo.h"
 
-#include "typedWriteableReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 
 #include <ipc_file.h>
 
 class Child;
 
-class Person : public TypedWriteableReferenceCount {
+class Person : public TypedWritableReferenceCount {
 public:
   void write_datagram(BamWriter*, Datagram&);
 
-  static TypedWriteable *make_person(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  static TypedWritable *make_person(const FactoryParams &params);
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 protected:
   void fillin(Person*,DatagramIterator&,BamReader*);
@@ -58,9 +58,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWriteableReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "Person",
-		  TypedWriteableReferenceCount::get_class_type());
+		  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -78,8 +78,8 @@ class Parent : public Person {
 public:
   void write_datagram(BamWriter*, Datagram&);
 
-  static TypedWriteable *make_parent(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  static TypedWritable *make_parent(const FactoryParams &params);
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 protected:
   void fillin(Parent*,DatagramIterator&,BamReader*);
@@ -124,8 +124,8 @@ class Child : public Person {
 public:
   void write_datagram(BamWriter*, Datagram&);
 
-  static TypedWriteable *make_child(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWriteable &plist, 
+  static TypedWritable *make_child(const FactoryParams &params);
+  virtual int complete_pointers(vector_typedWritable &plist, 
 				BamReader *manager);
 protected:
   void fillin(Child*,DatagramIterator&,BamReader*);
