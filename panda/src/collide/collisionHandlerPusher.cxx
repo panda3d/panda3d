@@ -245,12 +245,16 @@ handle_entries() {
           }
           #endif
           
+          // This is the part where the node actually gets moved:
           CPT(TransformState) trans = def._target.get_transform();
           LVecBase3f pos = trans->get_pos();
           pos += net_shove * trans->get_mat();
           def._target.set_transform(trans->set_pos(pos));
           def.updated_transform();
           
+          // We call this to allow derived classes to do other
+          // fix-ups as they see fit:
+          apply_net_shove(def, net_shove, force_normal);
           apply_linear_force(def, force_normal);
         }
       }
@@ -261,10 +265,22 @@ handle_entries() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPusher::apply_linear_force
+//     Function: CollisionHandlerPusher::apply_net_shove
 //       Access: Protected, Virtual
-//  Description: 
+//  Description: This is an optional hook for derived classes to do
+//               some work with the ColliderDef and the force vector.
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerPusher::
-apply_linear_force(ColliderDef &, const LVector3f &) {
+apply_net_shove(ColliderDef &def, const LVector3f &net_shove, 
+    const LVector3f &force_normal) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPusher::apply_linear_force
+//       Access: Protected, Virtual
+//  Description: This is an optional hook for derived classes to do
+//               some work with the ColliderDef and the force vector.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerPusher::
+apply_linear_force(ColliderDef &def, const LVector3f &force_normal) {
 }

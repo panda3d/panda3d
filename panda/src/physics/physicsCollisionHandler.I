@@ -15,3 +15,36 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
+
+INLINE void PhysicsCollisionHandler::
+set_almost_stationary_speed(float speed) {
+  _almost_stationary_speed = speed;
+}
+
+INLINE float PhysicsCollisionHandler::
+get_almost_stationary_speed() {
+  return _almost_stationary_speed;
+}
+
+INLINE void PhysicsCollisionHandler::
+set_static_friction_coef(float coef) {
+  _static_friction_coef = coef;
+}
+
+INLINE float PhysicsCollisionHandler::
+get_static_friction_coef() {
+  return _static_friction_coef;
+}
+
+INLINE void PhysicsCollisionHandler::
+set_dynamic_friction_coef(float coef) {
+  _dynamic_friction_coef = coef;
+}
+
+INLINE float PhysicsCollisionHandler::
+get_dynamic_friction_coef() {
+  return _dynamic_friction_coef;
+}
+
+
