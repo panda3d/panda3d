@@ -75,6 +75,18 @@ get_usage_hint() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::has_column
+//       Access: Published
+//  Description: Returns true if the data has the named column,
+//               false otherwise.  This is really just a shortcut for
+//               asking the same thing from the format.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexData::
+has_column(const InternalName *name) const {
+  return _format->has_column(name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::set_num_vertices
 //       Access: Published
 //  Description: Sets the length of the array to n vertices in all of

@@ -18,6 +18,51 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::qpSourceVertices::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomTransformer::qpSourceVertices::
+operator < (const GeomTransformer::qpSourceVertices &other) const {
+  if (_vertex_data != other._vertex_data) {
+    return _vertex_data < other._vertex_data;
+  }
+  return (_mat.compare_to(other._mat) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::qpSourceTexCoords::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomTransformer::qpSourceTexCoords::
+operator < (const GeomTransformer::qpSourceTexCoords &other) const {
+  if (_vertex_data != other._vertex_data) {
+    return _vertex_data < other._vertex_data;
+  }
+  if (_from != other._from) {
+    return _from < other._from;
+  }
+  if (_to != other._to) {
+    return _to < other._to;
+  }
+  return (_mat.compare_to(other._mat) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::qpSourceColors::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomTransformer::qpSourceColors::
+operator < (const GeomTransformer::qpSourceColors &other) const {
+  if (_vertex_data != other._vertex_data) {
+    return _vertex_data < other._vertex_data;
+  }
+  return (_color.compare_to(other._color) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::SourceVertices::Ordering Operator
 //       Access: Public
 //  Description:

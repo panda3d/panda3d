@@ -85,6 +85,7 @@ qpGeomVertexData(const qpGeomVertexData &copy) :
   TypedWritableReferenceCount(copy),
   _name(copy._name),
   _format(copy._format),
+  _usage_hint(copy._usage_hint),
   _cycler(copy._cycler),
   _app_char_pcollector(copy._app_char_pcollector),
   _cull_char_pcollector(copy._cull_char_pcollector)
@@ -101,6 +102,10 @@ operator = (const qpGeomVertexData &copy) {
   TypedWritableReferenceCount::operator = (copy);
   _name = copy._name;
   _format = copy._format;
+
+  // The assignment operator does not copy the usage_hint, which is
+  // not supposed to change over the lifetime of a GeomVertexData.
+
   _cycler = copy._cycler;
   _app_char_pcollector = copy._app_char_pcollector;
   _cull_char_pcollector = copy._cull_char_pcollector;
@@ -727,10 +732,10 @@ set_color(const Colorf &color, int num_components,
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomVertexData) qpGeomVertexData::
 replace_column(const InternalName *name, int num_components,
-                  qpGeomVertexColumn::NumericType numeric_type,
-                  qpGeomVertexColumn::Contents contents,
-                  qpGeomUsageHint::UsageHint usage_hint,
-                  bool keep_animation) const {
+               qpGeomVertexColumn::NumericType numeric_type,
+               qpGeomVertexColumn::Contents contents,
+               qpGeomUsageHint::UsageHint usage_hint,
+               bool keep_animation) const {
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
 
   // Remove the old description of the type from the format.
@@ -818,7 +823,7 @@ output(ostream &out) const {
   if (!get_name().empty()) {
     out << get_name() << " ";
   }
-  out << get_num_vertices() << ": " << *get_format();
+  out << get_num_vertices() << " vertices: " << *get_format();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -831,7 +836,7 @@ write(ostream &out, int indent_level) const {
   if (!get_name().empty()) {
     indent(out, indent_level) << get_name() << "\n";
   }
-  _format->write_with_data(out, indent_level, this);
+  _format->write_with_data(out, indent_level + 2, this);
   if (get_transform_blend_palette() != (TransformBlendPalette *)NULL) {
     indent(out, indent_level)
       << "Transform blend palette:\n";

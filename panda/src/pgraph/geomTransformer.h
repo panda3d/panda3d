@@ -23,6 +23,7 @@
 
 #include "geom.h"
 #include "luse.h"
+#include "qpgeomVertexData.h"
 
 class GeomNode;
 class RenderState;
@@ -68,6 +69,44 @@ public:
   bool apply_state(GeomNode *node, const RenderState *state);
 
 private:
+  class qpSourceVertices {
+  public:
+    INLINE bool operator < (const qpSourceVertices &other) const;
+
+    LMatrix4f _mat;
+    CPT(qpGeomVertexData) _vertex_data;
+  };
+  typedef pmap<qpSourceVertices, PT(qpGeomVertexData) > NewVertices;
+  NewVertices _qpvertices;
+
+  class qpSourceTexCoords {
+  public:
+    INLINE bool operator < (const qpSourceTexCoords &other) const;
+
+    LMatrix4f _mat;
+    CPT(InternalName) _from;
+    CPT(InternalName) _to;
+    CPT(qpGeomVertexData) _vertex_data;
+  };
+  typedef pmap<qpSourceTexCoords, PT(qpGeomVertexData) > NewTexCoords;
+  NewTexCoords _qptexcoords;
+
+  class qpSourceColors {
+  public:
+    INLINE bool operator < (const qpSourceColors &other) const;
+
+    LVecBase4f _color;
+    CPT(qpGeomVertexData) _vertex_data;
+  };
+  typedef pmap<qpSourceColors, CPT(qpGeomVertexData) > NewColors;
+
+  // We have two concepts of colors: the "fixed" colors, which are
+  // slapped in complete replacement of the original colors (e.g. via
+  // a ColorAttrib), and the "transformed" colors, which are modified
+  // from the original colors (e.g. via a ColorScaleAttrib).
+  NewColors _qpfcolors, _qptcolors;
+
+
   class SourceVertices {
   public:
     INLINE bool operator < (const SourceVertices &other) const;

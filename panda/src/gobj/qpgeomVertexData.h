@@ -83,6 +83,8 @@ PUBLISHED:
   INLINE const qpGeomVertexFormat *get_format() const;
   INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
 
+  INLINE bool has_column(const InternalName *name) const;
+
   int get_num_vertices() const;
   INLINE bool set_num_vertices(int n);
   void clear_vertices();
@@ -129,10 +131,10 @@ PUBLISHED:
 
   PT(qpGeomVertexData) 
     replace_column(const InternalName *name, int num_components,
-                      qpGeomVertexColumn::NumericType numeric_type,
-                      qpGeomVertexColumn::Contents contents,
-                      qpGeomUsageHint::UsageHint usage_hint,
-                      bool keep_animation) const;
+                   qpGeomVertexColumn::NumericType numeric_type,
+                   qpGeomVertexColumn::Contents contents,
+                   qpGeomUsageHint::UsageHint usage_hint,
+                   bool keep_animation) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

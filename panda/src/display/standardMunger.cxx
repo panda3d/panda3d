@@ -87,12 +87,12 @@ munge_data_impl(const qpGeomVertexData *data) {
                                      _contents);
   }
 
-  qpGeomVertexAnimationSpec animation = data->get_format()->get_animation();
+  qpGeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
   if (hardware_animated_vertices &&
       animation.get_animation_type() == qpGeomVertexAnimationSpec::AT_panda &&
-      data->get_slider_table() == (SliderTable *)NULL) {
+      new_data->get_slider_table() == (SliderTable *)NULL) {
     // Maybe we can animate the vertices with hardware.
-    const TransformBlendPalette *palette = data->get_transform_blend_palette();
+    const TransformBlendPalette *palette = new_data->get_transform_blend_palette();
     if (palette != (TransformBlendPalette *)NULL &&
         palette->get_max_simultaneous_transforms() <= 
         _gsg->get_max_vertex_transforms()) {
@@ -121,15 +121,15 @@ munge_data_impl(const qpGeomVertexData *data) {
     }
   }
   
-  CPT(qpGeomVertexFormat) orig_format = data->get_format();
+  CPT(qpGeomVertexFormat) orig_format = new_data->get_format();
   CPT(qpGeomVertexFormat) new_format = munge_format(orig_format, animation);
 
   if (new_format == orig_format) {
     // Trivial case.
-    return data;
+    return new_data;
   }
 
-  return data->convert_to(new_format);
+  return new_data->convert_to(new_format);
 }
 
 ////////////////////////////////////////////////////////////////////
