@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "casterShader.h"
 #include "projtexShader.h"
@@ -38,8 +38,7 @@
 //               it onto a receiving object(s) from a given light
 //               frustum
 ////////////////////////////////////////////////////////////////////
-class EXPCL_SHADER ProjtexShadower : public CasterShader
-{
+class EXPCL_SHADER ProjtexShadower : public CasterShader {
 public:
 
   ProjtexShadower(int size = 256);

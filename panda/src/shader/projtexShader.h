@@ -17,33 +17,25 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef PROJTEXSHADER_H
 #define PROJTEXSHADER_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+
+#include "pandabase.h"
 
 #include "shader.h"
-#include <texture.h>
-#include <colorBlendProperty.h>
+#include "texture.h"
+#include "colorBlendProperty.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ProjtexShader
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_SHADER ProjtexShader : public FrustumShader
-{
+class EXPCL_SHADER ProjtexShader : public FrustumShader {
 public:
-
   ProjtexShader(Texture* texture = NULL,
                 ColorBlendProperty::Mode mode = ColorBlendProperty::M_multiply);
   ~ProjtexShader() { }
 
-  virtual void config(void);
+  virtual void config();
   virtual void apply(Node *node, const AllAttributesWrapper &init_state,
                      const AllTransitionsWrapper &net_trans,
                      GraphicsStateGuardian *gsg);
@@ -53,15 +45,13 @@ public:
     make_dirty();
   }
 
-  INLINE Texture* get_texture(void) { return _texture; }
+  INLINE Texture* get_texture() { return _texture; }
 
 protected:
-
   PT(Texture) _texture;
   ColorBlendProperty::Mode _blend;
 
 public:
-
   static TypeHandle get_class_type() {
     return _type_handle;
     }
@@ -76,7 +66,6 @@ public:
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
-
   static TypeHandle _type_handle;
 };
 
