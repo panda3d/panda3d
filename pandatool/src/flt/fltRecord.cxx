@@ -710,23 +710,6 @@ write_record_and_children(FltRecordWriter &writer) const {
     }
   }
 
-  // Any subfaces?
-  if (!_subfaces.empty()) {
-    result = writer.write_record(FO_push_face);
-    if (result != FE_ok) {
-      return result;
-    }
-
-    for (ci = _subfaces.begin(); ci != _subfaces.end(); ++ci) {
-      (*ci)->write_record_and_children(writer);
-    }
-
-    result = writer.write_record(FO_pop_face);
-    if (result != FE_ok) {
-      return result;
-    }
-  }
-
   // Any extensions?
   if (!_extensions.empty()) {
     result = writer.write_record(FO_push_face);
@@ -756,6 +739,24 @@ write_record_and_children(FltRecordWriter &writer) const {
     }
 
     result = writer.write_record(FO_pop);
+    if (result != FE_ok) {
+      return result;
+    }
+  }
+
+  // We must write subfaces *after* the list of children, or Creator
+  // will crash trying to load the file.
+  if (!_subfaces.empty()) {
+    result = writer.write_record(FO_push_face);
+    if (result != FE_ok) {
+      return result;
+    }
+
+    for (ci = _subfaces.begin(); ci != _subfaces.end(); ++ci) {
+      (*ci)->write_record_and_children(writer);
+    }
+
+    result = writer.write_record(FO_pop_face);
     if (result != FE_ok) {
       return result;
     }
