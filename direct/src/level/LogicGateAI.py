@@ -116,7 +116,7 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
             self.logicTest(self, isTrue, self.isInput2)
     
     def setIsInput2(self, isTrue):
-        assert(self.debugPrint("setIsInput1(isTrue=%s)"%(isTrue,)))
+        assert(self.debugPrint("setIsInput2(isTrue=%s)"%(isTrue,)))
         if 1 or (not isTrue) != (not self.input2Event):
             # ...the logical state of self.input2Event has changed.
             self.isInput2=isTrue
