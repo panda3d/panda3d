@@ -99,6 +99,6 @@ operator = (const PStatThread &copy) {
 INLINE void PStatThread::
 new_frame() {
 #ifdef DO_PSTATS
-  _client->new_frame(_index);
+  _client->get_impl()->new_frame(_index);
 #endif
 }

@@ -10,7 +10,9 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
 
   #define SOURCES \
-     config_pstats.h pStatClient.I pStatClient.h pStatClientVersion.I  \
+     config_pstats.h pStatClient.I pStatClient.h \
+     pStatClientImpl.I pStatClientImpl.h \
+     pStatClientVersion.I  \
      pStatClientVersion.h pStatClientControlMessage.h  \
      pStatCollector.I pStatCollector.h pStatCollectorDef.h  \
      pStatFrameData.I pStatFrameData.h pStatProperties.h  \
@@ -18,13 +20,15 @@
      pStatTimer.I pStatTimer.h
 
   #define INCLUDED_SOURCES  \
-     config_pstats.cxx pStatClient.cxx pStatClientVersion.cxx  \
+     config_pstats.cxx pStatClient.cxx pStatClientImpl.cxx \
+     pStatClientVersion.cxx  \
      pStatClientControlMessage.cxx pStatCollectorDef.cxx  \
      pStatFrameData.cxx pStatProperties.cxx  \
      pStatServerControlMessage.cxx 
 
   #define INSTALL_HEADERS \
     config_pstats.h pStatClient.I pStatClient.h \
+    pStatClientImpl.I pStatClientImpl.h \
     pStatClientVersion.I pStatClientVersion.h \
     pStatClientControlMessage.h pStatCollector.I pStatCollector.h \
     pStatCollectorDef.h pStatFrameData.I pStatFrameData.h \

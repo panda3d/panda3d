@@ -22,19 +22,10 @@
 #include "pandabase.h"
 
 #include "pStatFrameData.h"
-
-#include "clockObject.h"
+#include "pStatClientImpl.h"
 #include "luse.h"
 #include "pmap.h"
 
-#ifdef HAVE_NET
-#include "connectionManager.h"
-#include "queuedConnectionReader.h"
-#include "connectionWriter.h"
-#include "netAddress.h"
-#endif
-
-class PStatServerControlMessage;
 class PStatCollector;
 class PStatCollectorDef;
 class PStatThread;
@@ -62,25 +53,26 @@ public:
   PStatClient();
   ~PStatClient();
 
+PUBLISHED:
   INLINE void set_client_name(const string &name);
   INLINE string get_client_name() const;
   INLINE void set_max_rate(float rate);
   INLINE float get_max_rate() const;
 
-  int get_num_collectors() const;
+  INLINE int get_num_collectors() const;
   PStatCollector get_collector(int index) const;
   const PStatCollectorDef &get_collector_def(int index) const;
   string get_collector_name(int index) const;
   string get_collector_fullname(int index) const;
 
-  int get_num_threads() const;
+  INLINE int get_num_threads() const;
   PStatThread get_thread(int index) const;
-  string get_thread_name(int index) const;
+  INLINE string get_thread_name(int index) const;
 
-  const ClockObject &get_clock() const;
   PStatThread get_main_thread() const;
 
-PUBLISHED:
+  INLINE const ClockObject &get_clock() const;
+
   INLINE static bool connect(const string &hostname = string(), int port = -1);
   INLINE static void disconnect();
   INLINE static bool is_connected();
@@ -89,17 +81,20 @@ PUBLISHED:
 
   static void main_tick();
 
-public:
+  void client_main_tick();
+  INLINE bool client_connect(string hostname, int port);
+  void client_disconnect();
+  INLINE bool client_is_connected() const;
+
+  INLINE void client_resume_after_pause();
+
   static PStatClient *get_global_pstats();
 
-  void client_main_tick();
-  bool client_connect(string hostname, int port);
-  void client_disconnect();
-  bool client_is_connected() const;
-
-  void client_resume_after_pause();
-
 private:
+  INLINE bool has_impl() const;
+  INLINE PStatClientImpl *get_impl();
+  INLINE const PStatClientImpl *get_impl() const;
+
   PStatCollector make_collector_with_relname(int parent_index, string relname);
   PStatCollector make_collector_with_name(int parent_index, const string &name);
   PStatThread make_thread(const string &name);
@@ -116,14 +111,6 @@ private:
   void set_level(int collector_index, int thread_index, float level);
   void add_level(int collector_index, int thread_index, float increment);
   float get_level(int collector_index, int thread_index) const;
-
-  void new_frame(int thread_index);
-  void transmit_frame_data(int thread_index);
-
-  void transmit_control_data();
-
-  // Stats collecting stuff
-  ClockObject _clock;
 
   // Not a phash_map, so the threads remain sorted by name.
   typedef pmap<string, int> ThingsByName;
@@ -167,43 +154,18 @@ private:
   typedef pvector<Thread> Threads;
   Threads _threads;
 
+  PStatClientImpl *_impl;
 
-private:
-  // Networking stuff
-  string get_hostname();
-  void send_hello();
-  void report_new_collectors();
-  void report_new_threads();
-  void handle_server_control_message(const PStatServerControlMessage &message);
-
-  virtual void connection_reset(const PT(Connection) &connection, 
-                                PRErrorCode errcode);
-
-  bool _is_connected;
-  bool _got_udp_port;
-
-  NetAddress _server;
-  QueuedConnectionReader _reader;
-  ConnectionWriter _writer;
-
-  PT(Connection) _tcp_connection;
-  PT(Connection) _udp_connection;
-
-  int _collectors_reported;
-  int _threads_reported;
-
-  string _hostname;
-  string _client_name;
-  float _max_rate;
-
-  float _tcp_count_factor;
-  float _udp_count_factor;
-  unsigned int _tcp_count;
-  unsigned int _udp_count;
+  static PStatCollector _total_size_pcollector;
+  static PStatCollector _cpp_size_pcollector;
+  static PStatCollector _interpreter_size_pcollector;
+  static PStatCollector _pstats_pcollector;
 
   static PStatClient *_global_pstats;
+
   friend class PStatCollector;
   friend class PStatThread;
+  friend class PStatClientImpl;
 };
 
 #include "pStatClient.I"
