@@ -96,19 +96,26 @@ class DirectAnalogs(AnalogNode, PandaObject):
     def disable(self):
         self.nodePath.reparentTo(base.dataUnused)
     
-    def normalize(self, val, min = -1, max = -1):
+    def normalize(self, val, minVal = -1, maxVal = -1):
+        # First record sign
+        if val < 0:
+            sign = -1
+        else:
+            sign = 1
+        # Zero out values in deadband
+        val = sign * max(abs(val) - ANALOG_DEADBAND, 0.0)
+        # Now clamp value between minVal and maxVal
         val = CLAMP(val, ANALOG_MIN, ANALOG_MAX)
-        if abs(val) < ANALOG_DEADBAND:
-            val = 0.0
-        return ((max - min) * ((val - ANALOG_MIN) / ANALOG_RANGE)) + min
+        return (((maxVal - minVal) * ((val - ANALOG_MIN) / ANALOG_RANGE))
+                + minVal)
     
-    def normalizeChannel(self, chan, min = -1, max = 1):
+    def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:
             if (chan == 2) | (chan == 6):
                 # These channels have reduced range
-                return self.normalize(self[chan] * 3.0, min, max)
+                return self.normalize(self[chan] * 3.0, minVal, maxVal)
             else:
-                return self.normalize(self[chan], min, max)
+                return self.normalize(self[chan], minVal, maxVal)
         except IndexError:
             return 0.0
 

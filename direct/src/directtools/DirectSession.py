@@ -54,6 +54,11 @@ class DirectSession(PandaObject):
         # Create a vrpn client vrpn-server or default
         if base.config.GetBool('want-vrpn', 0):
             self.deviceManager = DirectDeviceManager()
+            # Automatically create any devices specified in config file
+            joybox = base.config.GetString('vrpn-joybox-device', '')
+            if joybox:
+                from DirectJoybox import *
+                self.joybox = DirectJoybox(joybox)
         else:
             self.deviceManager = None
 

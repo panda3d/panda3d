@@ -30,22 +30,23 @@ class DirectJoybox(PandaObject):
     joyboxCount = 0
     xyzMultiplier = 1.0
     hprMultiplier = 1.0
-    def __init__(self, nodePath = direct.camera):
+    def __init__(self, device = 'CerealBox', nodePath = direct.camera):
         # See if device manager has been initialized
         if direct.deviceManager == None:
             direct.deviceManager = DirectDeviceManager()
         # Set name
         self.name = 'Joybox-' + `DirectJoybox.joyboxCount`
         # Get buttons and analogs
-        self.device = base.config.GetString('joybox-device', 'CerealBox')
+        self.device = device
         self.analogs = direct.deviceManager.createAnalogs(self.device)
         self.buttons = direct.deviceManager.createButtons(self.device)
         self.aList = [0,0,0,0,0,0,0,0]
         self.bList = [0,0,0,0,0,0,0,0]
         # For joybox fly mode
-        self.mapping = [L_LEFT_RIGHT, L_FWD_BACK, L_TWIST,
-                        R_TWIST, R_FWD_BACK, R_LEFT_RIGHT]
-        self.modifier = [1,1,1,1,1,1]
+        # Default is joe mode
+        self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
+                        R_TWIST, L_TWIST, NULL_AXIS]
+        self.modifier = [1,1,1,-1,-1,0]
         # Initialize time
         self.lastTime = globalClock.getTime()
         # Record node path
@@ -58,7 +59,7 @@ class DirectJoybox(PandaObject):
         # List of functions to cycle through
         self.modeList = [self.joeMode, self.driveMode]
         # Pick initial mode
-        self.updateFunc = self.joeFly
+        self.updateFunc = self.joyboxFly
         self.modeName = 'Joe Mode'
         # Button registry
         self.addButtonEvents()
@@ -173,35 +174,8 @@ class DirectJoybox(PandaObject):
         self.showMode(self.modeName)
         self.enable()
         
-    def joeMode(self):
-        self.setMode(self.joeFly, 'Joe Mode')
-    
-    def joeFly(self):
-        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 200) *
-                    DirectJoybox.hprMultiplier)
-        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
-                    DirectJoybox.xyzMultiplier)
-        # XYZ
-        x = self.aList[R_LEFT_RIGHT]
-        y = self.aList[R_FWD_BACK]
-        if self.bList[L_STICK]:
-            z = 0.0
-        else:
-            z = self.aList[L_FWD_BACK]
-        pos = Vec3(x,y,z) * (posScale * self.deltaTime)
-        # HPR
-        h = -1 * self.aList[R_TWIST]
-        if self.bList[L_STICK]:
-            p = -1 * self.aList[L_FWD_BACK]
-        else:
-            p = 0.0
-        r = 0.0
-        hpr = Vec3(h,p,r) * (hprScale * self.deltaTime)
-        # Move node path
-        self.nodePath.setPosHpr(self.nodePath, pos, hpr)
-
     def joyboxFly(self):
-        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 200) *
+        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
         posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)
@@ -223,17 +197,29 @@ class DirectJoybox(PandaObject):
         # Move node path
         self.nodePath.setPosHpr(self.nodePath, pos, hpr)
 
+    def joeMode(self):
+        self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
+                        R_TWIST, L_TWIST, NULL_AXIS]
+        self.modifier = [1,1,1,-1,-1,0]
+        self.setMode(self.joyboxFly, 'Joe Mode')
+
+    def driveMode(self):
+        self.mapping = [L_LEFT_RIGHT, R_FWD_BACK, R_TWIST,
+                        R_LEFT_RIGHT, L_FWD_BACK, NULL_AXIS]
+        self.modifier = [1,1,-1,-1,-1,0]
+        self.setMode(self.joyboxFly, 'Drive Mode')
+
+    def lookAtMode(self):
+        self.mapping = [R_LEFT_RIGHT, R_TWIST, R_FWD_BACK,
+                        L_LEFT_RIGHT, L_FWD_BACK, NULL_AXIS]
+        self.modifier = [1,1,1,-1,1,0]
+        self.setMode(self.joyboxFly, 'Look At Mode')
+
     def demoMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
                         R_TWIST, NULL_AXIS, NULL_AXIS]
         self.modifier = [1,1,1,-1,0,0]
         self.setMode(self.joyboxFly, 'Demo Mode')
-
-    def driveMode(self):
-        self.mapping = [L_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
-                        R_LEFT_RIGHT, NULL_AXIS, NULL_AXIS]
-        self.modifier = [1,1,1,-1,0,0]
-        self.setMode(self.joyboxFly, 'Drive Mode')
 
     def hprXyzMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, R_TWIST,
@@ -257,7 +243,7 @@ class DirectJoybox(PandaObject):
         self.setMode(self.orbitFly, 'Orbit Mode')
 
     def orbitFly(self):
-        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 200) *
+        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
         posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)

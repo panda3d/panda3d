@@ -18,6 +18,7 @@ class EntryScale(Pmw.MegaWidget):
             ('initialValue',        0.0,           Pmw.INITOPT),
             ('resolution',          0.001,         None),
             ('command',             None,          None),
+            ('callbackData',        [],       None),
             ('min',                 0.0,           self._updateValidate),
             ('max',                 100.0,         self._updateValidate),
             ('text',                'EntryScale',  self._updateLabelText),
@@ -99,6 +100,12 @@ class EntryScale(Pmw.MegaWidget):
         self.scale.pack(side = 'left', expand = 1, fill = 'x')
         # Set scale to the middle of its range
         self.scale.set(self['initialValue'])
+        self.scale.bind('<Button-1>',
+                        lambda event, s = self:
+                        apply(s.onPress, s['callbackData']))
+        self.scale.bind('<ButtonRelease-1>',
+                        lambda event, s = self:
+                        apply(s.onRelease, s['callbackData']))
 
         self.maxLabel = self.createcomponent('maxLabel', (), None,
                                              Button, self.minMaxFrame,
@@ -176,7 +183,9 @@ class EntryScale(Pmw.MegaWidget):
     def _entryCommand(self, event = None):
         try:
             val = string.atof( self.entryValue.get() )
+            apply(self.onReturn,self['callbackData'])
             self.set( val )
+            apply(self.onReturnRelease,self['callbackData'])
         except ValueError:
             pass
 
@@ -213,6 +222,21 @@ class EntryScale(Pmw.MegaWidget):
         if fCommand & (self['command'] is not None):
             self['command']( newVal )
 
+    def onReturn(self, *args):
+        """ User redefinable callback executed on <Return> in entry """
+        pass
+
+    def onReturnRelease(self, *args):
+        """ User redefinable callback executed on <Return> release in entry """
+        pass
+
+    def onPress(self, *args):
+        """ User redefinable callback executed on button press """
+        pass
+
+    def onRelease(self, *args):
+        """ User redefinable callback executed on button release """
+        pass
 
 class EntryScaleGroup(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
