@@ -31,7 +31,7 @@
 
 TypeHandle HermiteCurve::_type_handle;
 
-static const LVecBase3f zero = LVecBase3f(0.0, 0.0, 0.0);
+static const LVecBase3f zerovec_3f = LVecBase3f(0.0, 0.0, 0.0);
 // This is returned occasionally from some of the functions, and is
 // used from time to time as an initializer.
 
@@ -369,8 +369,8 @@ append_cv(int type, float x, float y, float z) {
   HermiteCurveCV cv;
   cv.set_type(type);
   cv.set_point(LVecBase3f(x, y, z));
-  cv.set_in(zero);
-  cv.set_out(zero);
+  cv.set_in(zerovec_3f);
+  cv.set_out(zerovec_3f);
   _points.push_back(cv);
   if (_points.size()>1) {
     bool result =
@@ -569,7 +569,7 @@ get_cv_type(int n) const {
 const LVecBase3f &HermiteCurve::
 get_cv_point(int n) const {
   if (n < 0 || n >= (int)_points.size()) {
-    return zero;
+    return zerovec_3f;
   }
 
   return _points[n]._p;
@@ -588,7 +588,7 @@ get_cv_point(int n, LVecBase3f &v) const {
 const LVecBase3f &HermiteCurve::
 get_cv_in(int n) const {
   if (n < 0 || n >= (int)_points.size() || _points[n-1]._type==HC_CUT) {
-    return zero;
+    return zerovec_3f;
   }
 
   return _points[n]._in;
@@ -607,7 +607,7 @@ get_cv_in(int n, LVecBase3f &v) const {
 const LVecBase3f &HermiteCurve::
 get_cv_out(int n) const {
   if (n < 0 || n >= (int)_points.size() || _points[n]._type==HC_CUT) {
-    return zero;
+    return zerovec_3f;
   }
 
   return _points[n]._out;

@@ -32,7 +32,7 @@
 TypeHandle ClassicNurbsCurve::_type_handle;
 TypeHandle ClassicNurbsCurve::_orig_type_handle;
 
-static const LVecBase3f zero = LVecBase3f(0.0, 0.0, 0.0);
+static const LVecBase3f zero = LVecBase3f(0.0f, 0.0f, 0.0f);
 // This is returned occasionally from some of the functions, and is
 // used from time to time as an initializer.
 
@@ -377,8 +377,8 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
   // properties depends on the original value.
   if ((rtype0 | rtype1 | rtype2 | rtype3) & RT_KEEP_ORIG) {
     for (c = 0; c < 4; c++) {
-      static const LVecBase4f zero(0.0, 0.0, 0.0, 0.0);
-      const LVecBase4f &s = (c < _order) ? _cvs[c+cv]._p : zero;
+      static const LVecBase4f zero_vec(0.0f, 0.0f, 0.0f, 0.0f);
+      const LVecBase4f &s = (c < _order) ? _cvs[c+cv]._p : zero_vec;
 
       G.set_col(c, s);
     }
