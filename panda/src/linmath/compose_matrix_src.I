@@ -135,7 +135,7 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 
 
 // Deprecated function.
-INLINE EXPCL_PANDA void
+INLINE_LINMATH void
 compose_matrix(FLOATNAME(LMatrix3) &mat,
                const FLOATNAME(LVecBase3) &scale,
                const FLOATNAME(LVecBase3) &hpr,
