@@ -178,7 +178,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	#fname = Filename(filename)
 	#fname.resolveFilename(getParticlePath())
 	#fname.resolveFilename(getModelPath())
-        f = open(fname.toOsSpecific(), 'a')
+        f = open(filename.toOsSpecific(), 'ab')
         # Add a blank line
         f.write('\n')
         # Now output style details to file
