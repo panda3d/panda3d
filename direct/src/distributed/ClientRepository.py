@@ -614,6 +614,24 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 self.handleInterestDoneMessage(di)
             elif msgType == CLIENT_OBJECT_LOCATION:
                 self.handleObjectLocation(di)
+            else:
+                currentLoginState = self.loginFSM.getCurrentState()
+                if currentLoginState:
+                    currentLoginStateName = currentLoginState.getName()
+                else:
+                    currentLoginStateName = "None"
+                currentGameState = self.gameFSM.getCurrentState()
+                if currentGameState:
+                    currentGameStateName = currentGameState.getName()
+                else:
+                    currentGameStateName = "None"
+                ClientRepository.notify.warning(
+                    "Ignoring unexpected message type: " +
+                    str(msgType) +
+                    " login state: " +
+                    currentLoginStateName +
+                    " game state: " +
+                    currentGameStateName) 
         else:
             currentLoginState = self.loginFSM.getCurrentState()
             if currentLoginState:
@@ -769,9 +787,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         if self.notify.getDebug():
             print "ClientRepository received datagram:"
             di.getDatagram().dumpHex(ostream)
-
+            
         msgType = self.getMsgType()
-
 
         if not wantOtpServer:
             if msgType == CLIENT_DONE_SET_ZONE_RESP:
