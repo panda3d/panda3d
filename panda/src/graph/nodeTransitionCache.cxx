@@ -8,6 +8,8 @@
 #include "config_graph.h"
 #include "setTransitionHelpers.h"
 
+#include <indent.h>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::Constructor
 //       Access: Public
@@ -73,9 +75,8 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 int NodeTransitionCache::
 compare_to(const NodeTransitionCache &other) const {
-   int result = tmap_compare_cache(_cache.begin(), _cache.end(),
-				   other._cache.begin(), other._cache.end());
-   return result;
+   return tmap_compare_cache(_cache.begin(), _cache.end(),
+			     other._cache.begin(), other._cache.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -496,6 +497,7 @@ void NodeTransitionCache::
 write(ostream &out, int indent_level) const {
   Cache::const_iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
-    (*ci).second.write(out, indent_level);
+    indent(out, indent_level) << (*ci).first << "\n";
+    (*ci).second.write(out, indent_level + 2);
   }
 }

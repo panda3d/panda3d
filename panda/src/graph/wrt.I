@@ -17,18 +17,19 @@ describe_ambiguous_wrt(const Node *node,
 		       InputIterator arc_list_end,
 		       TypeHandle graph_type) {
   if (wrt_cat.is_warning()) {
-    int num_parents = node->get_num_parents(graph_type);
+    const UpRelationPointers &urp = node->find_connection(graph_type).get_up();
+    int num_parents = urp.size();
     wrt_cat.warning()
       << *node << " has " << num_parents << " parents; wrt() ambiguous.\n"
       << "  parents are: ";
     nassertv(num_parents > 1);
 
-    NodeRelation *parent_arc = node->get_parent(graph_type, 0);
+    NodeRelation *parent_arc = urp[0];
     wrt_cat.warning(false) << *parent_arc->get_parent();
     for (int i = 1; i < num_parents; i++) {
-      parent_arc = node->get_parent(graph_type, 0);
+      parent_arc = urp[i];
       wrt_cat.warning(false) 
-	<< ", " << *node->get_parent(graph_type, i)->get_parent();
+	<< ", " << *parent_arc->get_parent();
     }
     wrt_cat.warning(false) << "\n";
     
@@ -131,7 +132,8 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
     // Get the node above the arc.
     Node *node = arc->get_parent();
 
-    int num_parents = node->get_num_parents(graph_type);
+    const UpRelationPointers &urp = node->find_connection(graph_type).get_up();
+    int num_parents = urp.size();
 
     if (num_parents != 1) {
       // The node has zero or multiple parents.  It's thus either the
@@ -155,7 +157,7 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
     } else {
       // The node has exactly one parent.  Carry on.
 
-      NodeRelation *parent_arc = node->get_parent(graph_type, 0);
+      NodeRelation *parent_arc = urp[0];
       get_cached_net_transition(parent_arc, root, as_of, now, net, graph_type);
 
       // Now recompute our own cache.
@@ -223,14 +225,15 @@ get_cached_net_transition(const Node *node,
     return;
   }
 
-  int num_parents = node->get_num_parents(graph_type);
+  const UpRelationPointers &urp = node->find_connection(graph_type).get_up();
+  int num_parents = urp.size();
 
   const NodeRelation *parent_arc = (const NodeRelation *)NULL;
 
   if (num_parents == 1) {
     // There is only one parent, so there's no doubt as to which arc
     // to choose.
-    parent_arc = node->get_parent(graph_type, 0);
+    parent_arc = urp[0];
 
   } else if (num_parents == 0) {
     // This node has no parents.  Stop here.
@@ -262,7 +265,7 @@ get_cached_net_transition(const Node *node,
       // one.
       describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, graph_type);
 #endif
-      parent_arc = node->get_parent(graph_type, 0);
+      parent_arc = urp[0];
     }
   }
 
@@ -317,14 +320,15 @@ get_uncached_net_transition(const Node *node,
     return;
   }
 
-  int num_parents = node->get_num_parents(graph_type);
+  const UpRelationPointers &urp = node->find_connection(graph_type).get_up();
+  int num_parents = urp.size();
 
   const NodeRelation *parent_arc = (const NodeRelation *)NULL;
 
   if (num_parents == 1) {
     // There is only one parent, so there's no doubt as to which arc
     // to choose.
-    parent_arc = node->get_parent(graph_type, 0);
+    parent_arc = urp[0];
 
   } else if (num_parents == 0) {
     // This node has no parents.  Stop here.
@@ -353,7 +357,7 @@ get_uncached_net_transition(const Node *node,
       // one. 
       describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, graph_type);
 #endif
-      parent_arc = node->get_parent(graph_type, 0);
+      parent_arc = urp[0];
     }
   }
 
@@ -620,7 +624,8 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
 			 TypeHandle graph_type) {
   nassertr(node != (Node *)NULL, to);
 
-  int num_parents = node->get_num_parents(graph_type);
+  const UpRelationPointers &urp = node->find_connection(graph_type).get_up();
+  int num_parents = urp.size();
 
   if (num_parents == 0) {
     // This node has no parents.  Stop here.
@@ -654,7 +659,7 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
     // Actually, we do need to keep walking up till we find the actual
     // top of the instanced subtree, so we can return the correct
     // pointer.
-    int num_parents = node->get_num_parents(graph_type);
+    num_parents = node->get_num_parents(graph_type);
     while (num_parents == 1) {
       node = node->get_parent(graph_type, 0)->get_parent();
       num_parents = node->get_num_parents(graph_type);
@@ -667,7 +672,7 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
     }
   }
 
-  const NodeRelation *parent_arc = node->get_parent(graph_type, 0);
+  const NodeRelation *parent_arc = urp[0];
 
   Node *stop = 
     get_uncached_wrt_subtree(parent_arc->get_parent(), to,
@@ -875,12 +880,6 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 	<< "  should be:\n";
       check_trans.write(wrt_cat.warning(false), 4);
       result = check_trans;
-
-      /*
-      cerr << "Begin recheck.\n";
-      int num = check_trans.compare_to(result);
-      cerr << "Done recheck, result = " << num << "\n";
-      */
     }
   }
 #endif

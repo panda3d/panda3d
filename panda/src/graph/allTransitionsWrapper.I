@@ -216,10 +216,10 @@ compare_to(const AllTransitionsWrapper &other) const {
     return 0;
   }
   if (_cache == (NodeTransitionCache *)NULL) {
-    return -1;
+    return other._cache->is_identity() ? 0 : -1;
   }
   if (other._cache == (NodeTransitionCache *)NULL) {
-    return 1;
+    return _cache->is_identity() ? 0 : 1;
   }
 
   return _cache->compare_to(*other._cache);
