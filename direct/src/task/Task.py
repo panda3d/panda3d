@@ -349,14 +349,20 @@ class TaskManager:
         # Add this task to the nameDict
         nameList = ifAbsentPut(self.nameDict, task.name, [])
         nameList.append(task)
-        task.setStartTimeFrame(self.currentTime, self.currentFrame)
+        # be sure to ask the globalClock for the current frame time
+        # rather than use a cached value; globalClock's frame time may
+        # have been synced since the start of this frame
+        currentTime = globalClock.getFrameTime()
+        task.setStartTimeFrame(currentTime, self.currentFrame)
         # search from the beginning of the list to put this doLater in
         # the list in order of execution from earliest to latest
         # Assume it goes last unless we break out early
         index = len(self.doLaterList) + 1
         for i in range(len(self.doLaterList)):
             dl = self.doLaterList[i]
-            remainingTime = ((dl.starttime + dl.delayTime) - self.currentTime)
+            # don't use the cached currentTime, use the one we just
+            # got from globalClock. see comment above
+            remainingTime = ((dl.starttime + dl.delayTime) - currentTime)
             if task.delayTime < remainingTime:
                 index = i
                 break
@@ -399,7 +405,11 @@ class TaskManager:
         assert(TaskManager.notify.debug('__spawnTaskNamed: %s' % (name)))
         # Init params
         task.name = name
-        task.setStartTimeFrame(self.currentTime, self.currentFrame)
+        # be sure to ask the globalClock for the current frame time
+        # rather than use a cached value; globalClock's frame time may
+        # have been synced since the start of this frame
+        currentTime = globalClock.getFrameTime()
+        task.setStartTimeFrame(currentTime, self.currentFrame)
         nameList = ifAbsentPut(self.nameDict, name, [])
         nameList.append(task)
         # Put it on the list for the end of this frame
