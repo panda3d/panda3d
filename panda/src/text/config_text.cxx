@@ -56,7 +56,7 @@ ConfigureFn(config_text) {
 
 const bool text_flatten = config_text.GetBool("text-flatten", true);
 const bool text_update_cleared_glyphs = config_text.GetBool("text-update-cleared-glyphs", false);
-const bool text_mipmap = config_text.GetBool("text-mipmap", true);
+const bool text_mipmap = config_text.GetBool("text-mipmap", false);
 const int text_anisotropic_degree = config_text.GetInt("text-anisotropic-degree", 1);
 const int text_texture_margin = config_text.GetInt("text-texture-margin", 2);
 const float text_poly_margin = config_text.GetFloat("text-poly-margin", 1.0f);

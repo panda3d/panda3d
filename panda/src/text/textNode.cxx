@@ -93,19 +93,6 @@ TextNode::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_text
-//       Access: Published
-//  Description: Changes the text that is displayed under the
-//               TextNode.
-////////////////////////////////////////////////////////////////////
-void TextNode::
-set_text(const string &text) {
-  _text = text;
-  _wtext = decode_text(text);
-  rebuild(true);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::wordwrap_to
 //       Access: Published
 //  Description: Inserts newlines into the given text at the
@@ -439,10 +426,10 @@ encode_wchar(wchar_t ch) const {
 //               accoding to the current encoding.
 ////////////////////////////////////////////////////////////////////
 string TextNode::
-encode_wtext(const wstring &text) const {
+encode_wtext(const wstring &wtext) const {
   string result;
 
-  for (wstring::const_iterator pi = text.begin(); pi != text.end(); ++pi) {
+  for (wstring::const_iterator pi = wtext.begin(); pi != wtext.end(); ++pi) {
     result += encode_wchar(*pi);
   }
 

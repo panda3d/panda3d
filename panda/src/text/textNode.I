@@ -1023,6 +1023,19 @@ get_coordinate_system() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_text
+//       Access: Published
+//  Description: Changes the text that is displayed under the
+//               TextNode.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_text(const string &text) {
+  _text = text;
+  _wtext = decode_text(text);
+  rebuild(true);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_text
 //       Access: Published
 //  Description: Removes the text from the TextNode.
@@ -1224,4 +1237,59 @@ get_lower_right_3d() const {
 INLINE int TextNode::
 get_num_rows() const {
   return _num_rows;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_wtext
+//       Access: Public
+//  Description: Changes the text that is displayed under the
+//               TextNode, with a wide text.  This automatically sets
+//               the string reported by get_text() to the 8-bit
+//               encoded version of the same string.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_wtext(const wstring &wtext) {
+  _wtext = wtext;
+  _text = encode_wtext(wtext);
+  rebuild(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_wtext
+//       Access: Public
+//  Description: Returns the text associated with the TextNode, as a
+//               wide-character string.
+////////////////////////////////////////////////////////////////////
+INLINE const wstring &TextNode::
+get_wtext() const {
+  return _wtext;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::calc_width
+//       Access: Published
+//  Description: Returns the width of a line of text of arbitrary
+//               characters.  The line should not include the newline
+//               character.
+////////////////////////////////////////////////////////////////////
+INLINE float TextNode::
+calc_width(const wstring &line) const {
+  nassertr(_font != (TextFont *)NULL, 0.0);
+  return _font->calc_width(line);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::wordwrap_to
+//       Access: Published
+//  Description: Inserts newlines into the given text at the
+//               appropriate places in order to make each line be the
+//               longest possible line that is not longer than
+//               wordwrap_width (and does not break any words, if
+//               possible).  Returns the new string.
+////////////////////////////////////////////////////////////////////
+wstring TextNode::
+wordwrap_to(const wstring &wtext, float wordwrap_width,
+            bool preserve_trailing_whitespace) const {
+  nassertr(_font != (TextFont *)NULL, wtext);
+  return _font->wordwrap_to(wtext, wordwrap_width, preserve_trailing_whitespace);
 }

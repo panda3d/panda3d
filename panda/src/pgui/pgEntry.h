@@ -33,6 +33,14 @@
 // Description : This is a particular kind of PGItem that handles
 //               simple one-line text entries, of the sort where the
 //               user can type any string.
+//
+//               A PGEntry does all of its internal manipulation on a
+//               wide string, so it can store the full Unicode
+//               character set.  The interface can support either the
+//               wide string getters and setters, or the normal 8-bit
+//               string getters and setters, which use whatever
+//               encoding method is specified by the associated
+//               TextNode.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PGEntry : public PGItem {
 PUBLISHED:
@@ -66,7 +74,7 @@ PUBLISHED:
   void setup(float width, int num_lines);
 
   INLINE void set_text(const string &text);
-  INLINE const string &get_text() const;
+  INLINE string get_text() const;
 
   INLINE void set_cursor_position(int position);
   INLINE int get_cursor_position() const;
@@ -106,16 +114,21 @@ PUBLISHED:
   INLINE string get_type_event() const;
   INLINE string get_erase_event() const;
 
+public:
+  INLINE void set_wtext(const wstring &wtext);
+  INLINE const wstring &get_wtext() const;
+
+
 private:
-  const string &get_display_text();
+  const wstring &get_display_wtext();
   void slot_text_def(int state);
   void update_text();
   void update_cursor();
   void show_hide_cursor(bool visible);
   void update_state();
 
-  string _text;
-  string _obscured_text;
+  wstring _wtext;
+  wstring _obscured_wtext;
   int _cursor_position;
   bool _cursor_stale;
   bool _cursor_visible;
@@ -142,7 +155,7 @@ private:
   // to compute the correct cursor position.
   class WWLine {
   public:
-    string _str;
+    wstring _str;
     float _left;
   };
   typedef pvector<WWLine> WWLines;

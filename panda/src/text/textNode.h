@@ -186,7 +186,7 @@ PUBLISHED:
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
 
-  void set_text(const string &str);
+  INLINE void set_text(const string &text);
   INLINE void clear_text();
   INLINE bool has_text() const;
   INLINE string get_text() const;
@@ -218,8 +218,16 @@ PUBLISHED:
   PT_Node generate();
 
 public:
+  // Direct support for wide-character strings.
+  INLINE void set_wtext(const wstring &wtext);
+  INLINE const wstring &get_wtext() const;
+
+  INLINE float calc_width(const wstring &line) const;
+  INLINE wstring wordwrap_to(const wstring &wtext, float wordwrap_width,
+                             bool preserve_trailing_whitespace) const;
+
   string encode_wchar(wchar_t ch) const;
-  string encode_wtext(const wstring &text) const;
+  string encode_wtext(const wstring &wtext) const;
   wstring decode_text(const string &text) const;
 
 private:

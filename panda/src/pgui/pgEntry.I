@@ -21,25 +21,30 @@
 //     Function: PGEntry::set_text
 //       Access: Published
 //  Description: Changes the text currently displayed within the
-//               entry.
+//               entry.  This uses the Unicode encoding currently
+//               specified for the "focus" TextNode; therefore, the
+//               TextNode must exist before calling set_text().
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_text(const string &text) {
-  _text = text;
-  _text_geom_stale = true;
-  _cursor_stale = true;
-  _blink_start = ClockObject::get_global_clock()->get_frame_time();
+  TextNode *text_node = get_text_def(S_focus);
+  nassertv(text_node != (TextNode *)NULL);
+  set_wtext(text_node->decode_text(text));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_text
 //       Access: Published
 //  Description: Returns the text currently displayed within the
-//               entry.
+//               entry.  This uses the Unicode encoding currently
+//               specified for the "focus" TextNode; therefore, the
+//               TextNode must exist before calling get_text().
 ////////////////////////////////////////////////////////////////////
-INLINE const string &PGEntry:: 
+INLINE string PGEntry:: 
 get_text() const {
-  return _text;
+  TextNode *text_node = get_text_def(S_focus);
+  nassertr(text_node != (TextNode *)NULL, string());
+  return text_node->encode_wtext(get_wtext());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -351,4 +356,29 @@ get_type_event() const {
 INLINE string PGEntry::
 get_erase_event() const {
   return "erase-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::set_wtext
+//       Access: Public
+//  Description: Changes the text currently displayed within the
+//               entry.
+////////////////////////////////////////////////////////////////////
+INLINE void PGEntry:: 
+set_wtext(const wstring &wtext) {
+  _wtext = wtext;
+  _text_geom_stale = true;
+  _cursor_stale = true;
+  _blink_start = ClockObject::get_global_clock()->get_frame_time();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_wtext
+//       Access: Public
+//  Description: Returns the text currently displayed within the
+//               entry.
+////////////////////////////////////////////////////////////////////
+INLINE const wstring &PGEntry:: 
+get_wtext() const {
+  return _wtext;
 }

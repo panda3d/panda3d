@@ -82,8 +82,8 @@ PGEntry::
 PGEntry::
 PGEntry(const PGEntry &copy) :
   PGItem(copy),
-  _text(copy._text),
-  _obscured_text(copy._obscured_text),
+  _wtext(copy._wtext),
+  _obscured_wtext(copy._obscured_wtext),
   _cursor_position(copy._cursor_position),
   _max_chars(copy._max_chars),
   _max_width(copy._max_width),
@@ -106,8 +106,8 @@ PGEntry(const PGEntry &copy) :
 void PGEntry::
 operator = (const PGEntry &copy) {
   PGItem::operator = (copy);
-  _text = copy._text;
-  _obscured_text = copy._obscured_text;
+  _wtext = copy._wtext;
+  _obscured_wtext = copy._obscured_wtext;
   _cursor_position = copy._cursor_position;
   _max_chars = copy._max_chars;
   _max_width = copy._max_width;
@@ -179,7 +179,7 @@ press(const MouseWatcherParameter &param, bool background) {
       } else if ((!background && get_focus()) || 
                  (background && get_background_focus())) {
         // Keyboard button.
-        _cursor_position = min(_cursor_position, (int)_text.length());
+        _cursor_position = min(_cursor_position, (int)_wtext.length());
         _blink_start = ClockObject::get_global_clock()->get_frame_time();
         if (button == KeyboardButton::enter()) {
           // Enter.  Accept the entry.
@@ -188,10 +188,10 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::backspace()) {
           // Backspace.  Remove the character to the left of the cursor.
           if (_cursor_position > 0) {
-            if (_obscure_mode && _obscured_text.length() == _text.length()) {
-              _obscured_text.erase(_obscured_text.begin() + _obscured_text.length() - 1);
+            if (_obscure_mode && _obscured_wtext.length() == _wtext.length()) {
+              _obscured_wtext.erase(_obscured_wtext.begin() + _obscured_wtext.length() - 1);
             }
-            _text.erase(_text.begin() + _cursor_position - 1);
+            _wtext.erase(_wtext.begin() + _cursor_position - 1);
             _cursor_position--;
             _cursor_stale = true;
             _text_geom_stale = true;
@@ -200,11 +200,11 @@ press(const MouseWatcherParameter &param, bool background) {
           
         } else if (button == KeyboardButton::del()) {
           // Delete.  Remove the character to the right of the cursor.
-          if (_cursor_position < (int)_text.length()) {
-            if (_obscure_mode && _obscured_text.length() == _text.length()) {
-              _obscured_text.erase(_obscured_text.begin() + _obscured_text.length() - 1);
+          if (_cursor_position < (int)_wtext.length()) {
+            if (_obscure_mode && _obscured_wtext.length() == _wtext.length()) {
+              _obscured_wtext.erase(_obscured_wtext.begin() + _obscured_wtext.length() - 1);
             }
-            _text.erase(_text.begin() + _cursor_position);
+            _wtext.erase(_wtext.begin() + _cursor_position);
             _text_geom_stale = true;
             erase(param);
           }
@@ -219,7 +219,7 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::right()) {
           if (_cursor_keys_active) {
             // Right arrow.  Move the cursor position to the right.
-            _cursor_position = min(_cursor_position + 1, (int)_text.length());
+            _cursor_position = min(_cursor_position + 1, (int)_wtext.length());
             _cursor_stale = true;
           }
           
@@ -233,29 +233,32 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::end()) {
           if (_cursor_keys_active) {
             // End.  Move the cursor position to the end.
-            _cursor_position = _text.length();
+            _cursor_position = _wtext.length();
             _cursor_stale = true;
           }
           
         } else if (!use_keystrokes && button.has_ascii_equivalent()) {
-          char key = button.get_ascii_equivalent();
+          // This part of the code is deprecated and will be removed
+          // soon.  It only supports the old button up/down method of
+          // sending keystrokes, instead of the new keystroke method.
+          wchar_t key = button.get_ascii_equivalent();
           if (isprint(key)) {
             // A normal visible character.  Add a new character to the
             // text entry, if there's room.
             
-            if (get_max_chars() > 0 && (int)_text.length() >= get_max_chars()) {
+            if (get_max_chars() > 0 && (int)_wtext.length() >= get_max_chars()) {
               overflow(param);
             } else {
-              string new_text = 
-                _text.substr(0, _cursor_position) + key +
-                _text.substr(_cursor_position);
+              wstring new_text = 
+                _wtext.substr(0, _cursor_position) + key +
+                _wtext.substr(_cursor_position);
 
               // Get a string to measure its length.  In normal mode,
               // we measure the text itself.  In obscure mode, we
               // measure a string of n asterisks.
-              string measure_text;
+              wstring measure_text;
               if (_obscure_mode) {
-                measure_text = get_display_text() + '*';
+                measure_text = get_display_wtext() + (wchar_t)'*';
               } else {
                 measure_text = new_text;
               }
@@ -273,7 +276,7 @@ press(const MouseWatcherParameter &param, bool background) {
                   // If we have multiple lines, we have to check the
                   // length by wordwrapping it and counting up the
                   // number of lines.
-                  string ww_text = text_node->wordwrap_to(measure_text, _max_width, true);
+                  wstring ww_text = text_node->wordwrap_to(measure_text, _max_width, true);
                   int num_lines = 1;
                   size_t last_line_start = 0;
                   for (size_t p = 0;
@@ -290,7 +293,7 @@ press(const MouseWatcherParameter &param, bool background) {
                     // We must also ensure that the last line is not too
                     // long (it might be, because of additional
                     // whitespace on the end).
-                    string last_line = ww_text.substr(last_line_start);
+                    wstring last_line = ww_text.substr(last_line_start);
                     float last_line_width = text_node->calc_width(last_line);
                     if (num_lines == _num_lines) {
                       // Mainly we only care about this if we're on
@@ -303,8 +306,8 @@ press(const MouseWatcherParameter &param, bool background) {
                       // infinite number of spaces to accumulate.
                       // However, we must allow at least *one* space
                       // on the end of a line.
-                      if (_text.length() >= 1 && 
-                          _text[_text.length() - 1] == ' ') {
+                      if (_wtext.length() >= 1 && 
+                          _wtext[_wtext.length() - 1] == ' ') {
                         if (last_line_width > _max_width) {
                           // In this case, however, it's not exactly
                           // an overflow; we just want to reject the
@@ -321,9 +324,9 @@ press(const MouseWatcherParameter &param, bool background) {
                 overflow(param);
                 
               } else {
-                _text = new_text;
+                _wtext = new_text;
                 if (_obscure_mode) {
-                  _obscured_text = measure_text;
+                  _obscured_wtext = measure_text;
                 }
                 
                 _cursor_position++;
@@ -356,26 +359,22 @@ keystroke(const MouseWatcherParameter &param, bool background) {
         if (!isascii(keycode) || isprint(keycode)) {
           // A normal visible character.  Add a new character to the
           // text entry, if there's room.
+          wstring new_char(1, (wchar_t)keycode);
 
-          // Encode the character.  This might expand it to two or
-          // three bytes, or it might remain a one-byte character.
-          TextNode *text_node = get_text_def(S_focus);
-          string new_char = text_node->encode_wchar(keycode);
-
-          if (get_max_chars() > 0 && (int)_text.length() >= get_max_chars()) {
+          if (get_max_chars() > 0 && (int)_wtext.length() >= get_max_chars()) {
             overflow(param);
           } else {
-            _cursor_position = min(_cursor_position, (int)_text.length());
-            string new_text = 
-              _text.substr(0, _cursor_position) + new_char +
-              _text.substr(_cursor_position);
+            _cursor_position = min(_cursor_position, (int)_wtext.length());
+            wstring new_text = 
+              _wtext.substr(0, _cursor_position) + new_char +
+              _wtext.substr(_cursor_position);
             
             // Get a string to measure its length.  In normal mode,
             // we measure the text itself.  In obscure mode, we
             // measure a string of n asterisks.
-            string measure_text;
+            wstring measure_text;
             if (_obscure_mode) {
-              measure_text = get_display_text() + '*';
+              measure_text = get_display_wtext() + (wchar_t)'*';
             } else {
               measure_text = new_text;
             }
@@ -393,7 +392,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
                 // If we have multiple lines, we have to check the
                 // length by wordwrapping it and counting up the
                 // number of lines.
-                string ww_text = text_node->wordwrap_to(measure_text, _max_width, true);
+                wstring ww_text = text_node->wordwrap_to(measure_text, _max_width, true);
                 int num_lines = 1;
                 size_t last_line_start = 0;
                 for (size_t p = 0;
@@ -410,7 +409,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
                   // We must also ensure that the last line is not too
                   // long (it might be, because of additional
                   // whitespace on the end).
-                  string last_line = ww_text.substr(last_line_start);
+                  wstring last_line = ww_text.substr(last_line_start);
                   float last_line_width = text_node->calc_width(last_line);
                   if (num_lines == _num_lines) {
                     // Mainly we only care about this if we're on
@@ -423,8 +422,8 @@ keystroke(const MouseWatcherParameter &param, bool background) {
                     // infinite number of spaces to accumulate.
                     // However, we must allow at least *one* space
                     // on the end of a line.
-                    if (_text.length() >= 1 && 
-                        _text[_text.length() - 1] == ' ') {
+                    if (_wtext.length() >= 1 && 
+                        _wtext[_wtext.length() - 1] == ' ') {
                       if (last_line_width > _max_width) {
                         // In this case, however, it's not exactly
                         // an overflow; we just want to reject the
@@ -441,9 +440,9 @@ keystroke(const MouseWatcherParameter &param, bool background) {
               overflow(param);
               
             } else {
-              _text = new_text;
+              _wtext = new_text;
               if (_obscure_mode) {
-                _obscured_text = measure_text;
+                _obscured_wtext = measure_text;
               }
               
               _cursor_position += new_char.length();
@@ -561,16 +560,16 @@ setup(float width, int num_lines) {
   frame[3] = max(max(ll[2], ur[2]), max(lr[2], ul[2]));
 
   switch (text_node->get_align()) {
-  case TM_ALIGN_LEFT:
+  case TextNode::A_left:
     // The default case.
     break;
 
-  case TM_ALIGN_CENTER:
+  case TextNode::A_center:
     frame[0] = -width / 2.0;
     frame[1] = width / 2.0;
     break;
 
-  case TM_ALIGN_RIGHT:
+  case TextNode::A_right:
     frame[0] = -width;
     frame[1] = 0.0f;
     break;
@@ -676,30 +675,30 @@ set_focus(bool focus) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::get_display_text
+//     Function: PGEntry::get_display_wtext
 //       Access: Private
 //  Description: Returns the string that should be displayed within
-//               the entry.  This is normally _text, but it may be
-//               _obscured_text.
+//               the entry.  This is normally _wtext, but it may be
+//               _obscured_wtext.
 ////////////////////////////////////////////////////////////////////
-const string &PGEntry::
-get_display_text() {
+const wstring &PGEntry::
+get_display_wtext() {
   if (_obscure_mode) {
     // If obscure mode is enabled, we should just display a bunch of
     // asterisks.
-    if (_obscured_text.length() != _text.length()) {
-      _obscured_text = "";
-      string::const_iterator ti;
-      for (ti = _text.begin(); ti != _text.end(); ++ti) {
-        _obscured_text += '*';
+    if (_obscured_wtext.length() != _wtext.length()) {
+      _obscured_wtext = wstring();
+      wstring::const_iterator ti;
+      for (ti = _wtext.begin(); ti != _wtext.end(); ++ti) {
+        _obscured_wtext += (wchar_t)'*';
       }
     }
 
-    return _obscured_text;
+    return _obscured_wtext;
 
   } else {
     // In normal, non-obscure mode, we display the actual text.
-    return _text;
+    return _wtext;
   }
 }
 
@@ -728,20 +727,20 @@ update_text() {
   nassertv(node != (TextNode *)NULL);
 
   if (_text_geom_stale || node != _last_text_def) {
-    const string &display_text = get_display_text();
+    const wstring &display_wtext = get_display_wtext();
 
     // We need to regenerate.
     _last_text_def = node;
 
     if (_max_width > 0.0f && _num_lines > 1) {
       // Fold the text into multiple lines.
-      string ww_text = 
-        _last_text_def->wordwrap_to(display_text, _max_width, true);
+      wstring ww_text = 
+        _last_text_def->wordwrap_to(display_wtext, _max_width, true);
 
       // And chop the lines up into pieces.
       _ww_lines.clear();
       size_t p = 0;
-      size_t q = ww_text.find('\n');
+      size_t q = ww_text.find((wchar_t)'\n');
       while (q != string::npos) {
         _ww_lines.push_back(WWLine());
         WWLine &line = _ww_lines.back();
@@ -749,8 +748,8 @@ update_text() {
 
         // Get the left edge of the text at this line.
         line._left = 0.0f;
-        if (_last_text_def->get_align() != TM_ALIGN_LEFT) {
-          _last_text_def->set_text(line._str);
+        if (_last_text_def->get_align() != TextNode::A_left) {
+          _last_text_def->set_wtext(line._str);
           line._left = _last_text_def->get_left();
         }
 
@@ -763,21 +762,21 @@ update_text() {
       
       // Get the left edge of the text at this line.
       line._left = 0.0f;
-      if (_last_text_def->get_align() != TM_ALIGN_LEFT) {
-        _last_text_def->set_text(line._str);
+      if (_last_text_def->get_align() != TextNode::A_left) {
+        _last_text_def->set_wtext(line._str);
         line._left = _last_text_def->get_left();
       }
 
-      _last_text_def->set_text(ww_text);
+      _last_text_def->set_wtext(ww_text);
 
     } else {
       // Only one line.
       _ww_lines.clear();
       _ww_lines.push_back(WWLine());
       WWLine &line = _ww_lines.back();
-      line._str = display_text;
+      line._str = display_wtext;
 
-      _last_text_def->set_text(display_text);
+      _last_text_def->set_wtext(display_wtext);
       line._left = _last_text_def->get_left();
     }
 
@@ -804,7 +803,7 @@ update_cursor() {
   if (_cursor_stale || node != _last_text_def) {
     update_text();
 
-    _cursor_position = min(_cursor_position, (int)_text.length());
+    _cursor_position = min(_cursor_position, (int)_wtext.length());
 
     // Determine the row and column of the cursor.
     int row = 0;
