@@ -104,7 +104,14 @@ int main(int argc, char *argv[])
   // Create the server object.
   server = new WinStatsServer;
   if (!server->listen()) {
-    nout << "Unable to open port.\n";
+    ostringstream stream;
+    stream 
+      << "Unable to open port " << pstats_port
+      << ".  Try specifying a different\n"
+      << "port number using pstats-port in your Config file.";
+    string str = stream.str();
+    MessageBox(toplevel_window, str.c_str(), "PStats error", 
+               MB_OK | MB_ICONEXCLAMATION);
     exit(1);
   }
 
