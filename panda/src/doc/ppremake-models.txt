@@ -38,6 +38,18 @@ perform these steps, although it currently generates only a Unix-like
 makefile, so the at the moment a model tree can only be built on a
 Linux or Unix machine, or on a PC with Cygwin installed.
 
+See the dmodels tree in the Panda3D repository for an example of a
+simple buildable model tree.  This is different from the models tree,
+which is much simpler and includes only ready-to-load egg files; the
+dmodels tree is set up as a full-fledged buildable model tree using
+the ppremake system.  With a few small exceptions, the dmodels tree
+does not contain any egg files, although intermediate egg files are
+generated during the make process.  When you have finished building
+the dmodels tree, you will have generated a number of bam files that
+are fully optimized and ready to load for your current version of
+Panda.
+
+
 To set up a ppremake model tree, you must create a Sources.pp file in
 the directory with the models (or in the directory above the SoftImage
 tree in the case of SoftImage models).
@@ -411,4 +423,95 @@ filter_char_egg - Similar to filter_egg, above, except that one
       #defer COMMAND \
         egg-topstrip -i -t joint_pelvis -d $[TARGET_DIR] $[sources]
     #end filter_char_egg
-    
+
+
+HOW TO POPULATE A CVS-CONTROLLED MODEL TREE
+
+Since a model tree is really just a source tree like any other, you
+can check in the source files--the .mb files or .flt files, for
+instance, and all of the associated image files--as source files in a
+CVS directory.  Then any developer can check out the source tree,
+ppremake, and make install, exactly the same way you would build
+Panda.  Of course, .mb files and .flt files are binary files, but CVS
+(and most other revision control systems) allows you to add binary
+files to the system.  You just can't merge multiple changes coming in
+at once to the same file, so it's important to make frequent updates
+and commits in order to minimize the chance of an accidental
+collision with another artist.
+
+In order for this to work, the source files must reference texture
+paths and other external filenames using relative filenames--for
+instance, a model should apply a texture named "../maps/grid.tif"
+rather than "/home/drose/panda3d/dmodels/maps/grid.tif", for instance.
+This is because the entire model tree might be checked out by another
+developer within some other directory, and only relative paths within
+the model tree will be valid.
+
+For most modeling packages, it is not difficult to ensure that all of
+the external references use only relative paths.  Populating a model
+tree with, say, MultiGen source files may thus be as simple as copying
+the MultiGen files and the image files in and then adding them to cvs
+by hand (using -kb to indicate a binary file, of course).
+
+Maya, on the other hand, for some reason insists on storing texture
+references as full pathnames, even if you enter a relative path.  It
+is not possible using the Maya API to create an .mb file that
+references its textures using relative pathnames.  This makes it
+impossible to add a Maya file to a CVS repository in the normal way.
+
+However, it *is* possible to store relative paths within a Maya file
+if you use an OpenMaya program to generate the Maya file.  Panda
+provides a utility called mayacopy that does this (among other useful
+features).
+
+In fact, Panda provides a family of utilities, with similar behavior;
+at the time of this writing, the list includes mayacopy, fltcopy, and
+lwocopy.  (There is also a separate tool called softcvs, used for
+integrating SoftImage version 4.3 databases; this works differently
+from the others, because of the very different nature of a SoftImage
+scene.  The use of softcvs is not documented in this file.)
+
+In general, the copy tools work like this:
+
+  cd mymodels/src/mydir
+  mayacopy /path/to/my/maya.mb
+
+This copies the indicated Maya (or MultiGen, LightWave, etc.) file
+from the named directory into the current directory.  It also copies
+in all of the texture files referenced by the Maya file, and it
+modifies the Maya file to use only local pathnames to the newly copied
+texture files, instead of the full pathnames that would have been
+stored in the original Maya file.
+
+A little heuristic is used to decide where to place each texture image
+referenced by the Maya file.  The following rules are applied:
+
+  (1) If another texture file with the same name already exists
+      elsewhere in the source hierarchy, assume this texture image
+      represents the same image (or a new version of that image) and
+      overwrite it.  (Note that it is not a good idea to have
+      different texture images that are stored under the same
+      filename.  egg-palettize also makes the assumption that any two
+      files with the same filename represent the same texture image.)
+
+  (2) If the texture file does not already exist, copy it into src/maps.
+
+  (3) If the src/maps directory does not exist, copy the texture file
+      into the same directory with the source Maya file.
+
+As the Maya file and each texture file is copied into the source tree,
+the cvs command is automatically invoked to add the file(s) to the
+repository, if necessary.  It is still your responsibility to issue
+the cvs commit command when you are ready to make the changes
+permanent.
+
+You can use mayacopy, fltcopy, etc. to copy in a file from a
+completely different hierarchy, or to update a file already within the
+source tree.  It is particularly important to re-run mayacopy after
+modifying any .mb file using Maya, since Maya will replace all of the
+local pathnames with full pathnames each time you save the file.
+Re-running mayacopy on the same file will restore the relative
+pathnames again.
+
+
+
