@@ -52,6 +52,19 @@ PandaFramework() :
   _highlight_wireframe.set_color(1.0f, 0.0f, 0.0f, 1.0f, 1);
   _default_keys_enabled = false;
   _exit_flag = false;
+
+  if (!playback_session.empty()) {
+    // If the config file so indicates, create a recorder and start it
+    // playing.
+    _recorder = new RecorderController;
+    _recorder->begin_playback(Filename::from_os_specific(playback_session));
+    
+  } else if (!record_session.empty()) {
+    // If the config file so indicates, create a recorder and start it
+    // recording.
+    _recorder = new RecorderController;
+    _recorder->begin_record(Filename::from_os_specific(record_session));
+  } 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,6 +128,8 @@ close_framework() {
   _lighting_enabled = false;
   _default_keys_enabled = false;
   _exit_flag = false;
+
+  _recorder = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -603,7 +618,15 @@ do_frame() {
   DataGraphTraverser dg_trav;
   dg_trav.traverse(_data_root.node());
   _event_handler.process_events();
+  if (_recorder != (RecorderController *)NULL) {
+    _recorder->record_frame();
+  }
+
   _engine.render_frame();
+
+  if (_recorder != (RecorderController *)NULL) {
+    _recorder->play_frame();
+  }
 
   return !_exit_flag;
 }

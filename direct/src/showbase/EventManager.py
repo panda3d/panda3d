@@ -1,5 +1,4 @@
 
-from libpandaexpressModules import *
 from MessengerGlobal import *
 from TaskManagerGlobal import *
 from DirectNotifyGlobal import *
@@ -16,15 +15,8 @@ class EventManager:
         if (EventManager.notify == None):
             EventManager.notify = directNotify.newCategory("EventManager")
 
-        if eventQueue != None:
-            self.eventQueue = eventQueue
-        else:
-            self.eventQueue = EventQueue.getGlobalEventQueue()
-        
-        try:
-            self.eventHandler = EventHandler.getGlobalEventHandler(self.eventQueue)
-        except:
-            self.eventHandler = EventHandler(self.eventQueue)
+        self.eventQueue = eventQueue
+        self.eventHandler = None
 
     def doEvents(self):
         """
@@ -78,13 +70,29 @@ class EventManager:
             else:
                 messenger.send(eventName)
             # Also send the event down into C++ land
-            self.eventHandler.dispatchEvent(event)
+            if self.eventHandler:
+                self.eventHandler.dispatchEvent(event)
+            
         else:
             # An unnamed event from C++ is probably a bad thing
             EventManager.notify.warning('unnamed event in processEvent')
 
 
     def restart(self):
+        from PandaModules import EventQueue, EventHandler
+        
+        if self.eventQueue == None:
+            self.eventQueue = EventQueue.getGlobalEventQueue()
+
+        if self.eventHandler == None:
+            if self.eventQueue == EventQueue.getGlobalEventQueue():
+                # If we are using the global event queue, then we also
+                # want to use the global event handler.
+                self.eventHandler = EventHandler.getGlobalEventHandler(self.eventQueue)
+            else:
+                # Otherwise, we need our own event handler.
+                self.eventHandler = EventHandler(self.eventQueue)
+
         taskMgr.add(self.eventLoopTask, 'eventManager')
 
     def shutdown(self):

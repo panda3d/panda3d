@@ -44,6 +44,7 @@ class ConnectionRepository(DirectObject.DirectObject):
         self.cw = None
 
         self.tcpConn = None
+        self.recorder = None
 
         # Reader statistics
         self.rsDatagramCount = 0
@@ -64,6 +65,22 @@ class ConnectionRepository(DirectObject.DirectObject):
         the return status code giving reason for failure, if it is
         known.
         """
+
+        if self.recorder and self.recorder.isPlaying():
+
+            # If we have a recorder and it's already in playback mode,
+            # don't actually attempt to connect to a gameserver since
+            # we don't need to.  Just let it play back the data.
+            self.notify.info("Not connecting to gameserver; using playback data instead.")
+
+            self.connectHttp = 1
+            self.tcpConn = SocketStreamRecorder()
+            self.recorder.addRecorder('gameserver', self.tcpConn)
+            
+            self.startReaderPollTask()
+            if successCallback:
+                successCallback(*successArgs)
+            return
 
         hasProxy = 0
         if self.checkHttp():
@@ -151,6 +168,24 @@ class ConnectionRepository(DirectObject.DirectObject):
         if ch.isConnectionReady():
             self.tcpConn = ch.getConnection()
             self.tcpConn.userManagesMemory = 1
+
+            if self.recorder:
+                # If we have a recorder, we wrap the connect inside a
+                # SocketStreamRecorder, which will trap incoming data
+                # when the recorder is set to record mode.  (It will
+                # also play back data when the recorder is in playback
+                # mode, but in that case we never get this far in the
+                # code, since we just create an empty
+                # SocketStreamRecorder without actually connecting to
+                # the gameserver.)
+                stream = SocketStreamRecorder(self.tcpConn, 1)
+                self.recorder.addRecorder('gameserver', stream)
+
+                # In this case, we pass ownership of the original
+                # connection to the SocketStreamRecorder object.
+                self.tcpConn.userManagesMemory = 0
+                self.tcpConn = stream
+            
             self.startReaderPollTask()
             if successCallback:
                 successCallback(*successArgs)

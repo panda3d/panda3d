@@ -25,6 +25,8 @@
 #include "config_util.h"
 #include "pipelineCyclerBase.h"
 
+TypeHandle BamReader::_remove_flag;
+
 WritableFactory *BamReader::_factory = (WritableFactory*)0L;
 BamReader *const BamReader::Null = (BamReader*)0L;
 WritableFactory *const BamReader::NullFactory = (WritableFactory*)0L;
@@ -48,6 +50,8 @@ BamReader(DatagramGenerator *generator)
   _now_creating = _created_objs.end();
   _reading_cycler = (PipelineCyclerBase *)NULL;
   _pta_id = -1;
+  _long_object_id = false;
+  _long_pta_id = false;
 }
 
 
@@ -78,7 +82,7 @@ init() {
     return false;
   }
 
-  if (!_source->get_datagram(header)) {
+  if (!get_datagram(header)) {
     bam_cat.error()
       << "Unable to read Bam header.\n";
     return false;
@@ -122,6 +126,43 @@ init() {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::set_aux_data
+//       Access: Public
+//  Description: Associates an arbitrary pointer to the bam reader
+//               with the indicated name.  The name is an arbitrary
+//               user-defined key to access the data later.  This data
+//               is typically queried by objects reading themselves
+//               from the bam file; this is intended to provide some
+//               context information to objects in the bam file.  Set
+//               the aux data to NULL to remove it.
+////////////////////////////////////////////////////////////////////
+void BamReader::
+set_aux_data(const string &name, void *data) {
+  if (data == (void *)NULL) {
+    _aux_data.erase(name);
+  } else {
+    _aux_data[name] = data;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_aux_data
+//       Access: Public
+//  Description: Returns the pointer previously associated with the
+//               bam reader by a previous call to set_aux_data(), or
+//               NULL if the data with the indicated key has not been
+//               set.
+////////////////////////////////////////////////////////////////////
+void *BamReader::
+get_aux_data(const string &name) const {
+  AuxData::const_iterator di = _aux_data.find(name);
+  if (di != _aux_data.end()) {
+    return (*di).second;
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,6 +278,7 @@ resolve() {
 
       CreatedObjs::iterator ci = _created_objs.find(object_id);
       nassertr(ci != _created_objs.end(), false);
+
       CreatedObj &created_obj = (*ci).second;
       
       TypedWritable *object_ptr = created_obj._ptr;
@@ -425,7 +467,7 @@ read_pointer(DatagramIterator &scan) {
   int requestor_id = (*_now_creating).first;
 
   // Read the object ID, and associate it with the requesting object.
-  int object_id = scan.get_uint16();
+  int object_id = read_object_id(scan);
 
   if (_reading_cycler == (PipelineCyclerBase *)NULL) {
     // This is not being read within a read_cdata() call.
@@ -471,7 +513,7 @@ read_pointers(DatagramIterator &scan, int count) {
 ////////////////////////////////////////////////////////////////////
 void BamReader::
 skip_pointer(DatagramIterator &scan) {
-  scan.get_uint16();
+  read_object_id(scan);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -597,7 +639,7 @@ finalize_now(TypedWritable *whom) {
 void *BamReader::
 get_pta(DatagramIterator &scan) {
   nassertr(_pta_id == -1, (void *)NULL);
-  int id = scan.get_uint16();
+  int id = read_pta_id(scan);
 
   if (id == 0) {
     // As always, a 0 ID indicates a NULL pointer.  The caller will
@@ -641,12 +683,92 @@ register_pta(void *ptr) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::free_object_ids
+//       Access: Private
+//  Description: Handles a record that begins with the _remove_flag
+//               TypeHandle; this contains a list of object ID's that
+//               will no longer be used in this file and can safely be
+//               removed.
+////////////////////////////////////////////////////////////////////
+void BamReader::
+free_object_ids(DatagramIterator &scan) {
+  // We have to fully complete any objects before we remove them.
+  // Might as well try to complete everything before we get started.
+  resolve();
 
+  while (scan.get_remaining_size() > 0) {
+    int object_id = read_object_id(scan);
+
+    CreatedObjs::iterator ci = _created_objs.find(object_id);
+    if (ci == _created_objs.end()) {
+      util_cat.warning()
+        << "Bam file suggests eliminating object_id " << object_id
+        << ", already gone.\n";
+    } else {
+
+      // Make sure the object was successfully completed.
+      ObjectPointers::iterator oi = _object_pointers.find(object_id);
+      if (oi != _object_pointers.end()) {
+        util_cat.warning()
+          << "Unable to resolve object " << object_id
+          << " before removing from table.\n";
+      }
+
+      _created_objs.erase(ci);
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::read_object_id
+//       Access: Private
+//  Description: Reads an object id from the datagram.
+////////////////////////////////////////////////////////////////////
+int BamReader::
+read_object_id(DatagramIterator &scan) {
+  int object_id;
+
+  if (_long_object_id) {
+    object_id = scan.get_uint32();
+
+  } else {
+    object_id = scan.get_uint16();
+    if (object_id == 0xffff) {
+      _long_object_id = true;
+    }
+  }
+
+  return object_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::read_pta_id
+//       Access: Private
+//  Description: Reads an pta id from the datagram.
+////////////////////////////////////////////////////////////////////
+int BamReader::
+read_pta_id(DatagramIterator &scan) {
+  int pta_id;
+
+  if (_long_pta_id) {
+    pta_id = scan.get_uint32();
+
+  } else {
+    pta_id = scan.get_uint16();
+    if (pta_id == 0xffff) {
+      _long_pta_id = true;
+    }
+  }
+
+  return pta_id;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::p_read_object
 //       Access: Private
-//  Description: The private implementation of read_object(), this
+//  Description: The private implementation of read_object(); this
 //               reads an object from the file and returns its object
 //               ID.
 ////////////////////////////////////////////////////////////////////
@@ -654,14 +776,9 @@ int BamReader::
 p_read_object() {
   Datagram packet;
 
-  if (_source->is_error()) {
-    return 0;
-  }
-
   // First, read a datagram for the object.
-  if (!_source->get_datagram(packet)) {
+  if (!get_datagram(packet)) {
     // When we run out of datagrams, we're at the end of the file.
-
     if (bam_cat.is_debug()) {
       bam_cat.debug()
         << "Reached end of bam source.\n";
@@ -678,10 +795,24 @@ p_read_object() {
   // object.
 
   TypeHandle type = read_handle(scan);
-  int object_id = scan.get_uint16();
 
-  // There are two cases.  Either this is a new object definition, or
-  // this is a reference to an object that was previously defined.
+  if (type == _remove_flag) {
+    // The _remove_flag TypeHandle is a special case; it begins a
+    // record that simply lists all of the object ID's that are no
+    // longer important to the file and may be released.
+    free_object_ids(scan);
+
+    // Now that we've freed all of the object id's indicate, read the
+    // next object id in the stream.  It's easiest to do this by
+    // calling recursively.
+    return p_read_object();
+  }
+
+  int object_id = read_object_id(scan);
+
+  // There are two cases (not counting the special _remove_flag case,
+  // above).  Either this is a new object definition, or this is a
+  // reference to an object that was previously defined.
 
   // We use the TypeHandle to differentiate these two cases.  By
   // convention, we write a TypeHandle::none() to the Bam file when we
@@ -697,7 +828,7 @@ p_read_object() {
   if (type != TypeHandle::none()) {
     // Now we are going to read and create a new object.
 
-    // Defined the parameters for passing to the object factory.
+    // Define the parameters for passing to the object factory.
     FactoryParams fparams;
     fparams.add_param(new BamReaderParam(scan, this));
 
@@ -796,7 +927,6 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
   // in, we can't resolve this object--we can't do anything for a
   // given object until we have *all* outstanding pointers for
   // that object.
-  
   bool is_complete = true;
   vector_typedWritable references;
   
@@ -931,4 +1061,19 @@ finalize() {
 
     fi = _finalize_list.begin();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_datagram
+//       Access: Private
+//  Description: Reads a single datagram from the stream.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool BamReader::
+get_datagram(Datagram &datagram) {
+  if (_source->is_error()) {
+    return false;
+  }
+
+  return _source->get_datagram(datagram);
 }

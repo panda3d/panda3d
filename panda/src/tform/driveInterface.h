@@ -172,7 +172,7 @@ private:
   int _transform_output;
   int _velocity_output;
 
-  PT(EventStoreTransform) _transform;
+  CPT(TransformState) _transform;
   PT(EventStoreVec3) _velocity;
 
   // This is the smallest meaningful value we can set on the hpr via

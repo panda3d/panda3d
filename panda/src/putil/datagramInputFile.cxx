@@ -23,13 +23,8 @@
 #include "config_util.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
-
+#include "streamReader.h"
 #include "datagramInputFile.h"
-
-//#define SKYLER_TIMER 1
-#ifdef SKYLER_TIMER //[
-  EXPCL_PANDAEXPRESS ProfileTimer Skyler_timer_file;
-#endif //]
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::open
@@ -135,26 +130,22 @@ read_header(string &header, size_t num_bytes) {
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
 get_datagram(Datagram &data) {
-  #ifdef SKYLER_TIMER //[
-    Skyler_timer_file.on();
-  #endif //]
   nassertr(_in != (istream *)NULL, false);
   _read_first_datagram = true;
 
-  // First, get the size of the upcoming datagram.  We do this with
-  // the help of a second datagram.
-  char sizebuf[sizeof(PN_uint32)];
-  _in->read(sizebuf, sizeof(PN_uint32));
+  // First, get the size of the upcoming datagram.
+  StreamReader reader(_in, false);
+  PN_uint32 num_bytes = reader.get_uint32();
   if (_in->fail() || _in->eof()) {
-    #ifdef SKYLER_TIMER //[
-      Skyler_timer_file.off("DatagramInputFile::get_datagram");
-    #endif //]
     return false;
   }
 
-  Datagram size(sizebuf, sizeof(PN_uint32));
-  DatagramIterator di(size);
-  PN_uint32 num_bytes = di.get_uint32();
+  if (num_bytes == 0) {
+    // A special case for a zero-length datagram: no need to try to
+    // read any data.
+    data.clear();
+    return true;
+  }
 
   // Now, read the datagram itself.
   char *buffer = new char[num_bytes];
@@ -164,17 +155,12 @@ get_datagram(Datagram &data) {
   if (_in->fail() || _in->eof()) {
     _error = true;
     delete[] buffer;
-    #ifdef SKYLER_TIMER //[
-      Skyler_timer_file.off("DatagramInputFile::get_datagram");
-    #endif //]
     return false;
   }
 
   data = Datagram(buffer, num_bytes);
   delete[] buffer;
-  #ifdef SKYLER_TIMER //[
-    Skyler_timer_file.off("DatagramInputFile::get_datagram");
-  #endif //]
+
   return true;
 }
 

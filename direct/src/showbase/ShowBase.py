@@ -132,6 +132,28 @@ class ShowBase(DirectObject.DirectObject):
         self.cameraList = []
         self.camera2d = self.render2d.attachNewNode('camera2d')
 
+        # Maybe create a RecorderController to record and/or play back
+        # the user session.
+        self.recorder = None
+        playbackSession = self.config.GetString('playback-session', '')
+        recordSession = self.config.GetString('record-session', '')
+        if playbackSession:
+            self.recorder = RecorderController()
+            self.recorder.beginPlayback(Filename.fromOsSpecific(playbackSession))
+        elif recordSession:
+            self.recorder = RecorderController()
+            self.recorder.beginRecord(Filename.fromOsSpecific(recordSession))
+
+        if self.recorder:
+            # If we're either playing back or recording, pass the
+            # random seed into the system so each session will have
+            # the same random seed.
+            import random, whrandom
+
+            seed = self.recorder.getRandomSeed()
+            random.seed(seed)
+            whrandom.seed(seed & 0xff, (seed >> 8) & 0xff, (seed >> 16) & 0xff)
+
         # Now that we've set up the window structures, assign an exitfunc.
         self.oldexitfunc = getattr(sys, 'exitfunc', None)
         sys.exitfunc = self.exitfunc
@@ -563,6 +585,16 @@ class ShowBase(DirectObject.DirectObject):
         self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(win, 0, 'mak'))
         self.mouseWatcherNode = MouseWatcher('mouseWatcher')
         self.mouseWatcher = self.mak.attachNewNode(self.mouseWatcherNode)
+
+        if self.recorder:
+            # If we have a recorder, the mouseWatcher belongs under a
+            # special MouseRecorder node, which may intercept the
+            # mouse activity.
+            mouseRecorder = MouseRecorder('mouse')
+            self.recorder.addRecorder('mouse', mouseRecorder.upcastToRecorderBase())
+            np = self.mak.attachNewNode(mouseRecorder)
+            self.mouseWatcher.reparentTo(np)
+        
         mb = self.mouseWatcherNode.getModifierButtons()
         mb.addButton(KeyboardButton.shift())
         mb.addButton(KeyboardButton.control())
@@ -867,6 +899,9 @@ class ShowBase(DirectObject.DirectObject):
             # as we reasonably can before the renderFrame().
             onScreenDebug.render()
 
+        if self.recorder:
+            self.recorder.recordFrame()
+
         # Finally, render the frame.
         self.graphicsEngine.renderFrame()
         if self.clusterSyncFlag:
@@ -876,6 +911,9 @@ class ShowBase(DirectObject.DirectObject):
             # We clear the text buffer for the onScreenDebug as soon
             # as we reasonably can after the renderFrame().
             onScreenDebug.clear()
+
+        if self.recorder:
+            self.recorder.playFrame()
     
         if self.mainWinMinimized:
             # If the main window is minimized, slow down the app a bit

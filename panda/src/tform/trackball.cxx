@@ -43,9 +43,9 @@ Trackball(const string &name) :
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 
-  _transform_output = define_output("transform", EventStoreTransform::get_class_type());
+  _transform_output = define_output("transform", TransformState::get_class_type());
 
-  _transform = new EventStoreTransform(TransformState::make_identity());
+  _transform = TransformState::make_identity();
 
   _rotscale = 0.3f;
   _fwdscale = 0.3f;
@@ -570,6 +570,6 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   }
 
   // Now send our matrix down the pipe.
-  _transform->set_value(TransformState::make_mat(_mat));
+  _transform = TransformState::make_mat(_mat);
   output.set_data(_transform_output, EventParameter(_transform));
 }

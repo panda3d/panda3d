@@ -27,7 +27,7 @@
 #include "collisionRecorder.h"
 
 #include "transformState.h"
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 #include "luse.h"
 #include "pointerTo.h"
 #include "pandaNode.h"
@@ -47,7 +47,7 @@
 //               is up to the handler to determine what information is
 //               known and to do the right thing with it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionEntry : public TypedReferenceCount {
+class EXPCL_PANDA CollisionEntry : public TypedWritableReferenceCount {
 public:
   INLINE CollisionEntry();
   CollisionEntry(const CollisionEntry &copy);
@@ -150,9 +150,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "CollisionEntry",
-                  TypedReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

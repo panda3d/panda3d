@@ -482,3 +482,30 @@ INLINE size_t DatagramIterator::
 get_current_index() const {
   return _current_index;
 }
+
+INLINE void
+generic_read_datagram(bool &result, DatagramIterator &source) {
+  result = source.get_bool();
+}
+
+INLINE void
+generic_read_datagram(int &result, DatagramIterator &source) {
+  result = source.get_int32();
+}
+
+INLINE void
+generic_read_datagram(float &result, DatagramIterator &source) {
+  result = source.get_float32();
+}
+
+INLINE void
+generic_read_datagram(double &result, DatagramIterator &source) {
+  result = source.get_float64();
+}
+
+INLINE void
+generic_read_datagram(string &result, DatagramIterator &source) {
+  result = source.get_string();
+}
+
+

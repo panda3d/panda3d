@@ -173,6 +173,41 @@ get_highlight() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_recorder
+//       Access: Public
+//  Description: Returns the RecorderController that has been
+//               associated with the PandaFramework, if any, or NULL
+//               if none has (the normal case).
+//
+//               If a RecorderController is associated, it will
+//               presumably be used for recording user input to a
+//               session file, or for playing back the user input from
+//               a previously-recorded session.
+////////////////////////////////////////////////////////////////////
+INLINE RecorderController *PandaFramework::
+get_recorder() const {
+  return _recorder;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::set_recorder
+//       Access: Public
+//  Description: Assigns a RecorderController with the PandaFramework.
+//               This should be called before any windows are opened.
+//               The subsequently opened windows will register their
+//               user inputs with the recorder.
+//
+//               If a RecorderController is associated, it will
+//               presumably be used for recording user input to a
+//               session file, or for playing back the user input from
+//               a previously-recorded session.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaFramework::
+set_recorder(RecorderController *recorder) {
+  _recorder = recorder;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::set_exit_flag
 //       Access: Public
 //  Description: Sets the flag that indicates it is time for the

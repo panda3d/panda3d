@@ -34,7 +34,7 @@
 //               pass around pointers to things which are both
 //               TypedObjects and ReferenceCounters.
 //               
-//               See Also TypeObject for detailed instructions.
+//               See also TypedObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS TypedReferenceCount : public TypedObject, public ReferenceCount {
 public:

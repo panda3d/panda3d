@@ -41,3 +41,7 @@ const bool show_frame_rate_meter = config_framework.GetBool("show-frame-rate-met
 const float win_background_r = config_framework.GetFloat("win-background-r", 0.41);
 const float win_background_g = config_framework.GetFloat("win-background-g", 0.41);
 const float win_background_b = config_framework.GetFloat("win-background-b", 0.41);
+
+const string record_session = config_framework.GetString("record-session", "");
+const string playback_session = config_framework.GetString("playback-session", "");
+

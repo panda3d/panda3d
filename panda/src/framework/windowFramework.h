@@ -29,7 +29,7 @@
 #include "frameRateMeter.h"
 #include "pointerTo.h"
 #include "pvector.h"
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 
 class PandaFramework;
 class AmbientLight;
@@ -42,7 +42,7 @@ class GraphicsPipe;
 // Description : This encapsulates the data that is normally
 //               associated with a single window that we've opened.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_FRAMEWORK WindowFramework : public TypedReferenceCount {
+class EXPCL_FRAMEWORK WindowFramework : public TypedWritableReferenceCount {
 protected:
   WindowFramework(PandaFramework *panda_framework);
 public:
@@ -146,9 +146,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "WindowFramework",
-                  TypedReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -895,7 +895,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = button_events->get_event(i);
-      _mods.add_event(be);
+      be.update_mods(_mods);
 
       switch (be._type) {
       case ButtonEvent::T_down:

@@ -29,7 +29,7 @@
 #include "graphicsStateGuardian.h"
 #include "clearableRegion.h"
 
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 #include "mouseData.h"
 #include "modifierButtons.h"
 #include "buttonEvent.h"
@@ -55,8 +55,14 @@
 //               input.  The actual rendering, and anything associated
 //               with the graphics context itself, is managed by the
 //               window's GraphicsStateGuardian.
+//
+//               GraphicsWindows are not actually writable to bam
+//               files, of course, but they may be passed as event
+//               parameters, so they inherit from
+//               TypedWritableReferenceCount instead of
+//               TypedReferenceCount for that convenience.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsWindow : public TypedReferenceCount, public ClearableRegion {
+class EXPCL_PANDA GraphicsWindow : public TypedWritableReferenceCount, public ClearableRegion {
 protected:
   GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
 
@@ -183,9 +189,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "GraphicsWindow",
-                  TypedReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

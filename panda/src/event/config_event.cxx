@@ -17,21 +17,28 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_event.h"
+#include "buttonEventList.h"
 #include "event.h"
 #include "eventHandler.h"
 #include "eventParameter.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_event);
 NotifyCategoryDef(event, "");
 
 ConfigureFn(config_event) {
+  ButtonEventList::init_type();
   Event::init_type();
   EventHandler::init_type();
   EventStoreValueBase::init_type();
   EventStoreInt::init_type("EventStoreInt");
   EventStoreDouble::init_type("EventStoreDouble");
   EventStoreString::init_type("EventStoreString");
+
+  ButtonEventList::register_with_read_factory();
+  EventStoreInt::register_with_read_factory();
+  EventStoreDouble::register_with_read_factory();
+  EventStoreString::register_with_read_factory();
 }
 

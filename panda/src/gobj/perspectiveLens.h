@@ -48,6 +48,12 @@ protected:
   virtual float film_to_fov(float film_size, float focal_length, bool horiz) const;
 
 public:
+  static void register_with_read_factory();
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
+public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }

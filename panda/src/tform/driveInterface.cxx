@@ -109,10 +109,10 @@ DriveInterface(const string &name) :
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 
-  _transform_output = define_output("transform", EventStoreTransform::get_class_type());
+  _transform_output = define_output("transform", TransformState::get_class_type());
   _velocity_output = define_output("velocity", EventStoreVec3::get_class_type());
 
-  _transform = new EventStoreTransform(TransformState::make_identity());
+  _transform = TransformState::make_identity();
   _velocity = new EventStoreVec3(LVector3f::zero());
 
   _forward_speed = drive_forward_speed;
@@ -219,7 +219,7 @@ get_mat() {
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 force_dgraph() {
-  _transform->set_value(TransformState::make_pos_hpr(_xyz, _hpr));
+  _transform = TransformState::make_pos_hpr(_xyz, _hpr);
   _velocity->set_value(_vel);
 
   DataNodeTransmit output;
@@ -429,13 +429,13 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
           // We only trap button down events if (a) the mouse is in the
           // window, and (b) we aren't set to ignore the mouse.
           if (got_mouse && !_ignore_mouse) {
-            _mods.add_event(be);
+            be.update_mods(_mods);
           }
         } else {
           // However, we always trap button up events, so we don't get
           // confused and believe a button is still being held down when
           // it is not.
-          _mods.add_event(be);
+          be.update_mods(_mods);
         }
         
         if (be._button == KeyboardButton::up()) {
@@ -452,7 +452,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   }
 
   apply(x, y, _mods.is_any_down());
-  _transform->set_value(TransformState::make_pos_hpr(_xyz, _hpr));
+  _transform = TransformState::make_pos_hpr(_xyz, _hpr);
   _velocity->set_value(_vel);
   output.set_data(_transform_output, EventParameter(_transform));
   output.set_data(_velocity_output, EventParameter(_velocity));

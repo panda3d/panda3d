@@ -22,20 +22,20 @@
 #include "pandabase.h"
 
 #include "mouseWatcherParameter.h"
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGMouseWatcherParameter
 // Description : This specialization on MouseWatcherParameter allows
 //               us to tag on additional elements to events for the
 //               gui system, and also inherits from
-//               TypedReferenceCount so we can attach this thing to an
+//               TypedWritableReferenceCount so we can attach this thing to an
 //               event.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGMouseWatcherParameter : public TypedReferenceCount, public MouseWatcherParameter {
-  // For now, this must inherit from TypedReferenceCount on the left,
-  // because MSVC++ wants to make that base class be the one at the
-  // front of the structure, not MouseWatcherParameter for some
+class EXPCL_PANDA PGMouseWatcherParameter : public TypedWritableReferenceCount, public MouseWatcherParameter {
+  // For now, this must inherit from TypedWritableReferenceCount on
+  // the left, because MSVC++ wants to make that base class be the one
+  // at the front of the structure, not MouseWatcherParameter for some
   // reason, and interrogate assumes that whichever base class is on
   // the left will be at the front of the structure.
 public:
@@ -52,9 +52,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "PGMouseWatcherParameter",
-                  TypedReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

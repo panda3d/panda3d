@@ -23,23 +23,26 @@
 
 #include "typedef.h"
 #include "typedObject.h"
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EventParameter
 // Description : An optional parameter associated with an event.  Each
 //               event may have zero or more of these.  Each parameter
-//               stores a pointer to a TypedReferenceCount object,
-//               which of course could be pretty much anything.  To
-//               store a simple value like a double or a string, the
-//               EventParameter constructors transparently use the
-//               EventStoreValue template class, defined below.
+//               stores a pointer to a TypedWritableReferenceCount
+//               object, which of course could be pretty much
+//               anything.  To store a simple value like a double or a
+//               string, the EventParameter constructors transparently
+//               use the EventStoreValue template class, defined
+//               below.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS EventParameter {
+class EXPCL_PANDA EventParameter {
 PUBLISHED:
   INLINE EventParameter();
-  INLINE EventParameter(const TypedReferenceCount *ptr);
+  INLINE EventParameter(const TypedWritableReferenceCount *ptr);
   INLINE EventParameter(int value);
   INLINE EventParameter(double value);
   INLINE EventParameter(const string &value);
@@ -60,12 +63,12 @@ PUBLISHED:
   INLINE bool is_string() const;
   INLINE string get_string_value() const;
 
-  INLINE TypedReferenceCount *get_ptr() const;
+  INLINE TypedWritableReferenceCount *get_ptr() const;
 
   void output(ostream &out) const;
 
 private:
-  PT(TypedReferenceCount) _ptr;
+  PT(TypedWritableReferenceCount) _ptr;
 };
 
 INLINE ostream &operator << (ostream &out, const EventParameter &param);
@@ -76,7 +79,7 @@ INLINE ostream &operator << (ostream &out, const EventParameter &param);
 //               which serves mainly to define the placeholder for the
 //               virtual output function.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS EventStoreValueBase : public TypedReferenceCount {
+class EXPCL_PANDAEXPRESS EventStoreValueBase : public TypedWritableReferenceCount {
 public:
   virtual void output(ostream &out) const=0;
 
@@ -89,9 +92,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "EventStoreValueBase",
-                  TypedReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
 
 private:
@@ -103,12 +106,15 @@ private:
 // Description : A handy class object for storing simple values (like
 //               integers or strings) passed along with an Event.
 //               This is essentially just a wrapper around whatever
-//               data type you like, to make it a TypedReferenceCount
-//               object which can be passed along inside an
-//               EventParameter.
+//               data type you like, to make it a
+//               TypedWritableReferenceCount object which can be
+//               passed along inside an EventParameter.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
 class EventStoreValue : public EventStoreValueBase {
+private:
+  // This constructor is only for make_from_bam().
+  EventStoreValue() { }
 public:
   EventStoreValue(const Type &value) : _value(value) { }
 
@@ -118,6 +124,14 @@ public:
   virtual void output(ostream &out) const;
 
   Type _value;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {
@@ -141,9 +155,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, EventStoreValue<int>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, EventStoreValue<double>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, EventStoreValue<std::string>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<int>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<double>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<std::string>);
 
 typedef EventStoreValue<int> EventStoreInt;
 typedef EventStoreValue<double> EventStoreDouble;

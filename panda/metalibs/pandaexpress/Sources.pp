@@ -8,7 +8,7 @@
 #define BUILDING_DLL BUILDING_PANDAEXPRESS
 #define USE_PACKAGES net
 
-#define COMPONENT_LIBS downloader event ipc express pandabase
+#define COMPONENT_LIBS downloader ipc express pandabase
 #define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target

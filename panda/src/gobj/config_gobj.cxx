@@ -208,5 +208,8 @@ ConfigureFn(config_gobj) {
   GeomTrifan::register_with_read_factory();
   GeomSphere::register_with_read_factory();
   Material::register_with_read_factory();
+  OrthographicLens::register_with_read_factory();
+  MatrixLens::register_with_read_factory();
+  PerspectiveLens::register_with_read_factory();
   Texture::register_with_read_factory();
 }

@@ -27,10 +27,10 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : MatrixLens
 // Description : A completely generic linear lens.  This is provided
-//               for the benefit low-level code that wants to specify
-//               a perspective or orthographic frustum via an explicit
-//               projection matrix, but not mess around with fov's or
-//               focal lengths or any of that nonsense.
+//               for the benefit of low-level code that wants to
+//               specify a perspective or orthographic frustum via an
+//               explicit projection matrix, but not mess around with
+//               fov's or focal lengths or any of that nonsense.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MatrixLens : public Lens {
 PUBLISHED:
@@ -55,6 +55,12 @@ protected:
 
 private:
   LMatrix4f _user_mat;
+
+public:
+  static void register_with_read_factory();
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   virtual TypeHandle get_type() const {

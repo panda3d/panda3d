@@ -1,4 +1,4 @@
-#define LOCAL_LIBS express pandabase
+#define LOCAL_LIBS putil express pandabase
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 
@@ -8,20 +8,28 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
   
   #define SOURCES \
-     config_event.h event.I event.h eventHandler.h eventHandler.I eventParameter.I \
-     eventParameter.h eventQueue.I eventQueue.h eventReceiver.h \
-     pt_Event.h throw_event.I throw_event.h 
+    config_event.h \
+    buttonEvent.I buttonEvent.h \
+    buttonEventList.I buttonEventList.h \
+    event.I event.h eventHandler.h eventHandler.I \
+    eventParameter.I eventParameter.h \
+    eventQueue.I eventQueue.h eventReceiver.h \
+    pt_Event.h throw_event.I throw_event.h 
     
   #define INCLUDED_SOURCES \
-     config_event.cxx event.cxx eventHandler.cxx \ 
-     eventParameter.cxx eventQueue.cxx eventReceiver.cxx \
-     pt_Event.cxx
+    buttonEvent.cxx \
+    buttonEventList.cxx \
+    config_event.cxx event.cxx eventHandler.cxx \ 
+    eventParameter.cxx eventQueue.cxx eventReceiver.cxx \
+    pt_Event.cxx
 
-  #define INSTALL_HEADERS                                       \
-    event.I event.h eventHandler.h eventHandler.I eventParameter.I eventParameter.h    \
-    eventQueue.h eventQueue.I throw_event.h throw_event.I       \
-    eventReceiver.h                                             \
-    pt_Event.h
+  #define INSTALL_HEADERS \
+    buttonEvent.I buttonEvent.h \
+    buttonEventList.I buttonEventList.h \
+    event.I event.h eventHandler.h eventHandler.I \
+    eventParameter.I eventParameter.h \
+    eventQueue.I eventQueue.h eventReceiver.h \
+    pt_Event.h throw_event.I throw_event.h 
 
   #define IGATESCAN all
 

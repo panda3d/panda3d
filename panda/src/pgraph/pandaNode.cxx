@@ -2047,6 +2047,27 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::write_recorder
+//       Access: Public
+//  Description: This method is provided for the benefit of classes
+//               (like MouseRecorder) that inherit from PandaMode and
+//               also RecorderBase.  It's not virtual at this level
+//               since it doesn't need to be (it's called up from the
+//               derived class).
+//
+//               This method acts very like write_datagram, but it
+//               writes the node as appropriate for writing a
+//               RecorderBase object as described in the beginning of
+//               a session file, meaning it doesn't need to write
+//               things such as children.  It balances with
+//               fillin_recorder().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+write_recorder(BamWriter *, Datagram &dg) {
+  dg.add_string(get_name());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
@@ -2081,4 +2102,19 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(name);
 
   manager->read_cdata(scan, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::fillin_recorder
+//       Access: Protected
+//  Description: This internal function is called by make_recorder (in
+//               classes derived from RecorderBase, such as
+//               MouseRecorder) to read in all of the relevant data
+//               from the session file.  It balances with
+//               write_recorder().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+fillin_recorder(DatagramIterator &scan, BamReader *) {
+  string name = scan.get_string();
+  set_name(name);
 }

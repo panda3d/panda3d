@@ -46,6 +46,11 @@ length(const FLOATNAME(LVector2) &a);
 INLINE_LINMATH FLOATNAME(LVector2)
 normalize(const FLOATNAME(LVector2) &v);
 
+INLINE_LINMATH void
+generic_write_datagram(Datagram &dest, const FLOATNAME(LVecBase2) &value);
+INLINE_LINMATH void
+generic_read_datagram(FLOATNAME(LVecBase2) &result, DatagramIterator &source);
+
 
 #include "lvec2_ops_src.I"
 

@@ -125,3 +125,23 @@ operator < (const ButtonEvent &other) const {
 
   return _type < other._type;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEvent::update_mods
+//       Access: Published
+//  Description: Calls button_down() or button_up(), as appropriate,
+//               according to the ButtonEvent.
+////////////////////////////////////////////////////////////////////
+INLINE bool ButtonEvent::
+update_mods(ModifierButtons &mods) const {
+  switch (_type) {
+  case T_down:
+    return mods.button_down(_button);
+
+  case T_up:
+    return mods.button_up(_button);
+
+  default:
+    return false;
+  }
+}

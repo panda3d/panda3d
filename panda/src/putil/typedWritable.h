@@ -21,6 +21,7 @@
 
 #include "typedObject.h"
 #include "vector_typedWritable.h"
+#include "pvector.h"
 
 class BamReader;
 class BamWriter;
@@ -32,7 +33,7 @@ class DatagramIterator;
 // Description : Base class for objects that can be written to and
 //               read from Bam files.
 //               
-//               See Also TypeObject for detailed instructions.
+//               See also TypedObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDA TypedWritable : public TypedObject {
@@ -53,6 +54,13 @@ public:
 
 protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
+
+private:
+  // We need to store a list of the BamWriter(s) that have a reference
+  // to this object, so that we can remove the object from those
+  // tables when it destructs.
+  typedef pvector<BamWriter *> BamWriters;
+  BamWriters _bam_writers;
 
 PUBLISHED:
   static TypeHandle get_class_type() {
@@ -76,6 +84,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class BamWriter;
 };
 
 #include "typedWritable.I"

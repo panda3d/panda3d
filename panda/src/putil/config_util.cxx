@@ -18,7 +18,6 @@
 
 #include "config_util.h"
 #include "bamReaderParam.h"
-#include "buttonEventList.h"
 #include "clockObject.h"
 #include "configurable.h"
 #include "datagram.h"
@@ -43,7 +42,6 @@ NotifyCategoryDef(bam, util_cat);
 
 ConfigureFn(config_util) {
   BamReaderParam::init_type();
-  ButtonEventList::init_type();
   Configurable::init_type();
   Datagram::init_type();
   FactoryParam::init_type();
@@ -58,6 +56,8 @@ ConfigureFn(config_util) {
 
   KeyboardButton::init_keyboard_buttons();
   MouseButton::init_mouse_buttons();
+
+  register_type(BamReader::_remove_flag, "remove");
 }
 
 

@@ -27,6 +27,8 @@
 #include "pvector.h"
 
 class ModifierButtons;
+class Datagram;
+class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ButtonEventList
@@ -45,6 +47,7 @@ public:
   INLINE const ButtonEvent &get_event(int n) const;
   INLINE void clear();
 
+  void add_events(const ButtonEventList &other);
   void update_mods(ModifierButtons &mods) const;
 
   virtual void output(ostream &out) const;
@@ -53,6 +56,16 @@ public:
 private:
   typedef pvector<ButtonEvent> Events;
   Events _events;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
+public:
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:
   static TypeHandle get_class_type() {

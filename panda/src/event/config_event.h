@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(event, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 

@@ -456,3 +456,28 @@ operator < (const Datagram &other) const {
   // One of the pointers is NULL, but not the other one.
   return _data.size() < other._data.size();
 }
+
+INLINE void
+generic_write_datagram(Datagram &dest, bool value) {
+  dest.add_bool(value);
+}
+
+INLINE void
+generic_write_datagram(Datagram &dest, int value) {
+  dest.add_int32(value);
+}
+
+INLINE void
+generic_write_datagram(Datagram &dest, float value) {
+  dest.add_float32(value);
+}
+
+INLINE void
+generic_write_datagram(Datagram &dest, double value) {
+  dest.add_float64(value);
+}
+
+INLINE void
+generic_write_datagram(Datagram &dest, const string &value) {
+  dest.add_string(value);
+}

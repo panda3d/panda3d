@@ -35,16 +35,24 @@ bool
 _dcast_verify(TypeHandle want_handle, size_t want_size, 
               const TypedObject *ptr) {
   if (get_verify_dcast()) {
-    if ((ptr == (const TypedObject *)NULL)
+    if (ptr == (const TypedObject *)NULL) {
+      // This is allowed these days.  It used to be an error, but
+      // what the heck.
+      if (express_cat->is_debug()) {
+        express_cat->debug()
+          << "Attempt to cast NULL pointer to " 
+          << want_handle << "\n";
+      }
+      return true;
+    }
 #if defined(_DEBUG) && defined(_WIN32)
-        || IsBadWritePtr((TypedObject *)ptr, want_size)
-#endif
-        ) {
+    if (IsBadWritePtr((TypedObject *)ptr, want_size)) {
       express_cat->warning()
-        << "Attempt to cast NULL or invalid pointer to " 
+        << "Attempt to cast invalid pointer to " 
         << want_handle << "\n";
       return false;
     }
+#endif
     if (!ptr->is_of_type(want_handle)) {
       express_cat->error()
         << "Attempt to cast pointer from " << ptr->get_type()

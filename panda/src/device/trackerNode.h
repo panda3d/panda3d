@@ -63,7 +63,7 @@ private:
   // outputs
   int _transform_output;
 
-  PT(EventStoreTransform) _transform;
+  CPT(TransformState) _transform;
 
 private:
   PT(ClientTrackerDevice) _tracker;

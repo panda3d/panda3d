@@ -54,7 +54,9 @@ PUBLISHED:
   bool open_read(const Filename &bam_filename, bool report_errors = true);
   bool open_read(istream &in, const string &bam_filename = "stream",
                  bool report_errors = true);
+
   TypedWritable *read_object();
+
   bool is_eof() const;
   bool resolve();
 

@@ -141,8 +141,7 @@ void LensNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
 
-  // We should actually write out the lens.  Easy to do, but not
-  // immediately pressing; I hope no one gets burned by the omission.
+  manager->write_pointer(dg, _lens);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,7 +154,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int LensNode::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = PandaNode::complete_pointers(p_list, manager);
-
+  _lens = DCAST(Lens, p_list[pi++]);
   return pi;
 }
 

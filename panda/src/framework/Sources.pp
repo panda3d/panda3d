@@ -5,7 +5,7 @@
   #define TARGET framework
   #define BUILDING_DLL BUILDING_FRAMEWORK
   #define LOCAL_LIBS \
-    pgui pgraph putil collide chan text chancfg \
+    recorder pgui pgraph putil collide chan text chancfg \
     pnmimage pnmimagetypes event
 
   #define SOURCES \

@@ -38,4 +38,7 @@ extern const float win_background_r;
 extern const float win_background_g;
 extern const float win_background_b;
 
+extern const string record_session;
+extern const string playback_session;
+
 #endif

@@ -1,0 +1,102 @@
+// Filename: recorderBase.h
+// Created by:  drose (25Jan04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef RECORDERBASE_H
+#define RECORDERBASE_H
+
+#include "pandabase.h"
+#include "referenceCount.h"
+
+class BamReader;
+class BamWriter;
+class Datagram;
+class DatagramIterator;
+class TypedWritable;
+
+////////////////////////////////////////////////////////////////////
+//       Class : RecorderBase
+// Description : This is the base class to a number of objects that
+//               record particular kinds of user input (like a
+//               MouseRecorder) to use in conjunction with a
+//               RecorderController to record the user's inputs
+//               for a session.
+//
+//               Note that RecorderBase does not actually inherit from
+//               TypedObject, even though it defines get_type().  The
+//               assumption is that the classes that derive from
+//               RecorderBase might also inherit independently from
+//               TypedObject.
+//
+//               It also does not inherit from TypedWritable, but it
+//               defines a method called write_recorder() which is
+//               very similar to a TypedWritable's write_datagram().
+//               Classes that derive from RecorderBase and also
+//               inherit from TypedWritable may choose to remap
+//               write_recorder() to do exactly the same thing as
+//               write_datagram(), or they may choose to write
+//               something slightly different.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA RecorderBase : virtual public ReferenceCount {
+protected:
+  RecorderBase();
+
+PUBLISHED:
+  virtual ~RecorderBase();
+
+  INLINE bool is_recording() const;
+  INLINE bool is_playing() const;
+
+public:
+  virtual void record_frame(BamWriter *manager, Datagram &dg);
+  virtual void play_frame(DatagramIterator &scan, BamReader *manager);
+
+  virtual void write_recorder(BamWriter *manager, Datagram &dg);
+
+protected:
+  void fillin_recorder(DatagramIterator &scan, BamReader *manager);
+
+private:
+  enum Flags {
+    F_recording = 0x0001,
+    F_playing   = 0x0002,
+  };
+  short _flags;
+  
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    ReferenceCount::init_type();
+    register_type(_type_handle, "RecorderBase",
+                  ReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class RecorderController;
+};
+
+#include "recorderBase.I"
+
+#endif
+

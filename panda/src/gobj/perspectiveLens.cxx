@@ -150,3 +150,34 @@ float PerspectiveLens::
 film_to_fov(float film_size, float focal_length, bool) const {
   return rad_2_deg(catan(film_size * 0.5f / focal_length)) * 2.0f;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerspectiveLens::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               Lens.
+////////////////////////////////////////////////////////////////////
+void PerspectiveLens::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerspectiveLens::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type Lens is encountered
+//               in the Bam file.  It should create the Lens
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *PerspectiveLens::
+make_from_bam(const FactoryParams &params) {
+  PerspectiveLens *lens = new PerspectiveLens;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  lens->fillin(scan, manager);
+
+  return lens;
+}

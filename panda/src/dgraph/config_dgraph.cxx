@@ -18,12 +18,16 @@
 
 #include "config_dgraph.h"
 #include "dataNode.h"
+#include "dataNodeTransmit.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_dgraph);
 NotifyCategoryDef(dgraph, "");
 
 ConfigureFn(config_dgraph) {
   DataNode::init_type();
+  DataNodeTransmit::init_type();
+
+  DataNodeTransmit::register_with_read_factory();
 }

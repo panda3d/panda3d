@@ -120,6 +120,23 @@ private:
   static TypeHandle _type_handle;
 };
 
+// These generic functions are primarily for writing a value to a
+// datagram from within a template in which the actual type of the
+// value is not known.  If you do know the type, it's preferable to
+// use the explicit add_*() method from above instead.
+
+INLINE void
+generic_write_datagram(Datagram &dest, bool value);
+INLINE void
+generic_write_datagram(Datagram &dest, int value);
+INLINE void
+generic_write_datagram(Datagram &dest, float value);
+INLINE void
+generic_write_datagram(Datagram &dest, double value);
+INLINE void
+generic_write_datagram(Datagram &dest, const string &value);
+
+
 #include "datagram.I"
 
 #endif

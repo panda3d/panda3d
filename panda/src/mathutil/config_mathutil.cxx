@@ -46,5 +46,9 @@ ConfigureFn(config_mathutil) {
   EventStoreVec2::init_type("EventStoreVec2");
   EventStoreVec3::init_type("EventStoreVec3");
   EventStoreMat4::init_type("EventStoreMat4");
+
+  EventStoreVec2::register_with_read_factory();
+  EventStoreVec3::register_with_read_factory();
+  EventStoreMat4::register_with_read_factory();
 }
 

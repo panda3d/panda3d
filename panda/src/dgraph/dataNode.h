@@ -120,6 +120,12 @@ private:
   DataConnections _data_connections;
 
 public:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

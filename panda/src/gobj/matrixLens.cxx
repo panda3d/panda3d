@@ -68,3 +68,34 @@ compute_projection_mat() {
   adjust_comp_flags(CF_projection_mat_inv, 
                     CF_projection_mat);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               Lens.
+////////////////////////////////////////////////////////////////////
+void MatrixLens::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MatrixLens::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type Lens is encountered
+//               in the Bam file.  It should create the Lens
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *MatrixLens::
+make_from_bam(const FactoryParams &params) {
+  MatrixLens *lens = new MatrixLens;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  lens->fillin(scan, manager);
+
+  return lens;
+}

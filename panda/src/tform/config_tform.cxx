@@ -26,7 +26,7 @@
 #include "trackball.h"
 #include "transform2sg.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_tform);
 NotifyCategoryDef(tform, "");

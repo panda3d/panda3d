@@ -53,6 +53,12 @@ protected:
   virtual void compute_projection_mat();
 
 public:
+  static void register_with_read_factory();
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
+public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }

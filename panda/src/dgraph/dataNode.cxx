@@ -333,3 +333,26 @@ reconnect() {
       << "No data connected to " << *this << "\n";
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DataNode::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void DataNode::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  PandaNode::write_datagram(manager, dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DataNode::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Lens.
+////////////////////////////////////////////////////////////////////
+void DataNode::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  PandaNode::fillin(scan, manager);
+}

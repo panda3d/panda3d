@@ -1,5 +1,5 @@
-// Filename: eventHandler.h
-// Created by:  drose (08Feb99)
+// Filename: eventHandler.I
+// Created by:  skyler (27Jan04)
 //
 ////////////////////////////////////////////////////////////////////
 //

@@ -71,3 +71,22 @@ normalize(const FLOATNAME(LVector2) &v) {
   v1.normalize();
   return v1;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: generic_write_datagram
+//  Description: Writes the value to the datagram.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void
+generic_write_datagram(Datagram &dest, const FLOATNAME(LVecBase2) &value) {
+  value.write_datagram(dest);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: generic_read_datagram
+//  Description: Reads the value from the datagram.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void
+generic_read_datagram(FLOATNAME(LVecBase2) &result, DatagramIterator &source) {
+  result.read_datagram(source);
+}

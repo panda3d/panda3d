@@ -25,6 +25,9 @@
 #include "typedWritable.h"
 #include "datagramSink.h"
 #include "pdeque.h"
+#include "pset.h"
+#include "pmap.h"
+#include "vector_int.h"
 
 struct PipelineCyclerBase;
 
@@ -71,7 +74,7 @@ struct PipelineCyclerBase;
 //               See also BamFile, which defines a higher-level
 //               interface to read and write Bam files on disk.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BamWriter{
+class EXPCL_PANDA BamWriter {
 public:
   BamWriter(DatagramSink *sink);
   ~BamWriter();
@@ -90,11 +93,12 @@ public:
   bool register_pta(Datagram &packet, const void *ptr);
   void write_handle(Datagram &packet, TypeHandle type);
 
-  
-
 private:
-  int enqueue_object(const TypedWritable *object);
+  void object_destructs(TypedWritable *object);
 
+  void write_object_id(Datagram &dg, int object_id);
+  void write_pta_id(Datagram &dg, int pta_id);
+  int enqueue_object(const TypedWritable *object);
 
   // This is the set of all TypeHandles already written.
   pset<int> _types_written;
@@ -114,20 +118,30 @@ private:
 
   // This is the next object ID that will be assigned to a new object.
   int _next_object_id;
+  bool _long_object_id;
 
   // This is the queue of objects that need to be written when the
   // current object is finished.
   typedef pdeque<const TypedWritable *> ObjectQueue;
   ObjectQueue _object_queue;
 
+  // This is the set of object_id's that we won't be using any more;
+  // we'll encode this set into the bam stream so the BamReader will
+  // be able to clean up its internal structures.
+  typedef vector_int FreedObjectIds;
+  FreedObjectIds _freed_object_ids;
+
   // These are used by register_pta() to unify multiple references to
   // the same PointerToArray.
   typedef pmap<const void *, int> PTAMap;
   PTAMap _pta_map;
   int _next_pta_id;
+  bool _long_pta_id;
 
   // The destination to write all the output to.
   DatagramSink *_target;
+
+  friend class TypedWritable;
 };
 
 #include "bamWriter.I"

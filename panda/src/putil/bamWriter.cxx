@@ -25,6 +25,8 @@
 #include "bamWriter.h"
 #include "bamReader.h"
 
+#include <algorithm>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::Constructor
 //       Access: Public
@@ -43,6 +45,16 @@ BamWriter(DatagramSink *sink) :
 ////////////////////////////////////////////////////////////////////
 BamWriter::
 ~BamWriter() {
+  // Tell all the TypedWritables whose pointer we are still keeping to
+  // forget about us.
+  StateMap::iterator si;
+  for (si = _state_map.begin(); si != _state_map.end(); ++si) {
+    TypedWritable *object = (TypedWritable *)(*si).first;
+    TypedWritable::BamWriters::iterator wi = 
+      find(object->_bam_writers.begin(), object->_bam_writers.end(), this);
+    nassertv(wi != object->_bam_writers.end());
+    object->_bam_writers.erase(wi);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +72,9 @@ init() {
   // Initialize the next object and PTA ID's.  These start counting at
   // 1, since 0 is reserved for NULL.
   _next_object_id = 1;
+  _long_object_id = false;
   _next_pta_id = 1;
+  _long_pta_id = false;
 
   // Write out the current major and minor BAM file version numbers.
   Datagram header;
@@ -104,6 +118,24 @@ write_object(const TypedWritable *object) {
 
   int object_id = enqueue_object(object);
   nassertr(object_id != 0, false);
+
+  // If there are any freed objects to indicate, write them out now.
+  if (!_freed_object_ids.empty()) {
+    Datagram dg;
+    write_handle(dg, BamReader::_remove_flag);
+
+    FreedObjectIds::iterator fi;
+    for (fi = _freed_object_ids.begin(); fi != _freed_object_ids.end(); ++fi) {
+      write_object_id(dg, (*fi));
+    }
+    _freed_object_ids.clear();
+
+    if (!_target->put_datagram(dg)) {
+      util_cat.error()
+        << "Unable to write data to output.\n";
+      return false;
+    }
+  }
 
   // Now we write out all the objects in the queue, in order.  The
   // first one on the queue will, of course, be this object we just
@@ -151,7 +183,7 @@ write_object(const TypedWritable *object) {
       }
 
       write_handle(dg, type);
-      dg.add_uint16(object_id);
+      write_object_id(dg, object_id);
 
       // We cast the const pointer to non-const so that we may call
       // write_datagram() on it.  Really, write_datagram() should be a
@@ -170,12 +202,12 @@ write_object(const TypedWritable *object) {
       // BamReader that this is a previously-written object.
 
       write_handle(dg, TypeHandle::none());
-      dg.add_uint16(object_id);
+      write_object_id(dg, object_id);
     }
 
     if (!_target->put_datagram(dg)) {
       util_cat.error()
-        << "Unable to write datagram to file.\n";
+        << "Unable to write data to output.\n";
       return false;
     }
   }
@@ -215,7 +247,7 @@ write_pointer(Datagram &packet, const TypedWritable *object) {
   // If the pointer is NULL, we always simply write a zero for an
   // object ID and leave it at that.
   if (object == (const TypedWritable *)NULL) {
-    packet.add_uint16(0);
+    write_object_id(packet, 0);
 
   } else {
     StateMap::iterator si = _state_map.find(object);
@@ -223,12 +255,12 @@ write_pointer(Datagram &packet, const TypedWritable *object) {
       // We have not written this pointer out yet.  This means we must
       // queue the object definition up for later.
       int object_id = enqueue_object(object);
-      packet.add_uint16(object_id);
+      write_object_id(packet, object_id);
 
     } else {
       // We have already assigned this pointer an ID; thus, we can
       // simply write out the ID.
-      packet.add_uint16((*si).second._object_id);
+      write_object_id(packet, (*si).second._object_id);
     }
   }
 }
@@ -273,7 +305,7 @@ register_pta(Datagram &packet, const void *ptr) {
   if (ptr == (const void *)NULL) {
     // A zero for the PTA ID indicates a NULL pointer.  This is a
     // special case.
-    packet.add_uint16(0);
+    write_pta_id(packet, 0);
 
     // We return false to indicate the user must now write out the
     // "definition" of the NULL pointer.  This is necessary because of
@@ -292,14 +324,10 @@ register_pta(Datagram &packet, const void *ptr) {
     int pta_id = _next_pta_id;
     _next_pta_id++;
 
-    // Make sure our PTA ID will fit within the PN_uint16 we have
-    // allocated for it.
-    nassertr(pta_id <= 65535, 0);
-
     bool inserted = _pta_map.insert(PTAMap::value_type(ptr, pta_id)).second;
     nassertr(inserted, false);
 
-    packet.add_uint16(pta_id);
+    write_pta_id(packet, pta_id);
 
     // Return false to indicate the caller must now write out the
     // array definition.
@@ -308,7 +336,7 @@ register_pta(Datagram &packet, const void *ptr) {
   } else {
     // We have encountered this pointer before.
     int pta_id = (*pi).second;
-    packet.add_uint16(pta_id);
+    write_pta_id(packet, pta_id);
 
     // Return true to indicate the caller need do nothing further.
     return true;
@@ -336,7 +364,7 @@ write_handle(Datagram &packet, TypeHandle type) {
   int index = type.get_index();
 
   // Also make sure the index number fits within a PN_uint16.
-  nassertv(index <= 65535);
+  nassertv(index <= 0xffff);
 
   packet.add_uint16(index);
 
@@ -357,6 +385,70 @@ write_handle(Datagram &packet, TypeHandle type) {
       for (int i = 0; i < num_parent_classes; i++) {
         write_handle(packet, type.get_parent_class(i));
       }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::object_destructs
+//       Access: Private
+//  Description: This is called by the TypedWritable destructor.  It
+//               should remove the pointer from any structures that
+//               keep a reference to it, and also write a flag to the
+//               bam file (if it is open) so that a reader will know
+//               the object id will no longer be used.
+////////////////////////////////////////////////////////////////////
+void BamWriter::
+object_destructs(TypedWritable *object) {
+  StateMap::iterator si = _state_map.find(object);
+  if (si != _state_map.end()) {
+    // We ought to have written out the object by the time it
+    // destructs, or we're in trouble when we do write it out.
+    nassertv((*si).second._written);
+
+    int object_id = (*si).second._object_id;
+    _freed_object_ids.push_back(object_id);
+
+    _state_map.erase(si);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::write_object_id
+//       Access: Private
+//  Description: Writes the indicated object id to the datagram.
+////////////////////////////////////////////////////////////////////
+void BamWriter::
+write_object_id(Datagram &dg, int object_id) {
+  if (_long_object_id) {
+    dg.add_uint32(object_id);
+    
+  } else {
+    dg.add_uint16(object_id);
+    // Once we fill up our uint16, we write all object id's
+    // thereafter with a uint32.
+    if (object_id == 0xffff) {
+      _long_object_id = true;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::write_pta_id
+//       Access: Private
+//  Description: Writes the indicated pta id to the datagram.
+////////////////////////////////////////////////////////////////////
+void BamWriter::
+write_pta_id(Datagram &dg, int pta_id) {
+  if (_long_pta_id) {
+    dg.add_uint32(pta_id);
+    
+  } else {
+    dg.add_uint16(pta_id);
+    // Once we fill up our uint16, we write all pta id's
+    // thereafter with a uint32.
+    if (pta_id == 0xffff) {
+      _long_pta_id = true;
     }
   }
 }
@@ -392,28 +484,22 @@ enqueue_object(const TypedWritable *object) {
   // We need to assign a unique index number to every object we write
   // out.  Has this object been assigned a number yet?
   int object_id;
-  //  bool already_written;
 
   StateMap::iterator si = _state_map.find(object);
   if (si == _state_map.end()) {
     // No, it hasn't, so assign it the next number in sequence
     // arbitrarily.
     object_id = _next_object_id;
-    //    already_written = false;
-
-    // Make sure our object ID will fit within the PN_uint16 we have
-    // allocated for it.
-    nassertr(object_id <= 65535, 0);
 
     bool inserted =
       _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id))).second;
     nassertr(inserted, false);
+    ((TypedWritable *)object)->_bam_writers.push_back(this);
     _next_object_id++;
 
   } else {
     // Yes, it has; get the object ID.
     object_id = (*si).second._object_id;
-    //    already_written = (*si).second._written;
   }
 
   _object_queue.push_back(object);

@@ -1734,3 +1734,50 @@ sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin,
   float leg = d.dot(norm);
   return hyp_2 - leg * leg;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void Lens::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritable::write_datagram(manager, dg);
+
+  dg.add_string(_change_event);
+  dg.add_uint8((int)_cs);
+  _film_size.write_datagram(dg);
+  _film_offset.write_datagram(dg);
+  dg.add_float32(_focal_length);
+  _fov.write_datagram(dg);
+  dg.add_float32(_aspect_ratio);
+  dg.add_float32(_near_distance);
+  dg.add_float32(_far_distance);
+  dg.add_uint16(_user_flags);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Lens.
+////////////////////////////////////////////////////////////////////
+void Lens::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
+
+  _change_event = scan.get_string();
+  _cs = (CoordinateSystem)scan.get_uint8();
+  _film_size.read_datagram(scan);
+  _film_offset.read_datagram(scan);
+  _focal_length = scan.get_float32();
+  _fov.read_datagram(scan);
+  _aspect_ratio = scan.get_float32();
+  _near_distance = scan.get_float32();
+  _far_distance = scan.get_float32();
+  _user_flags = scan.get_uint16();
+
+  _comp_flags = 0;
+}

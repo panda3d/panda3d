@@ -41,6 +41,15 @@ operator * (const FLOATNAME(LVector3) &v, const FLOATNAME(LMatrix4) &m);
 INLINE_LINMATH FLOATNAME(LPoint3)
 operator * (const FLOATNAME(LPoint3) &v, const FLOATNAME(LMatrix4) &m);
 
+INLINE_LINMATH void
+generic_write_datagram(Datagram &dest, const FLOATNAME(LMatrix3) &value);
+INLINE_LINMATH void
+generic_read_datagram(FLOATNAME(LMatrix3) &result, DatagramIterator &source);
+INLINE_LINMATH void
+generic_write_datagram(Datagram &dest, const FLOATNAME(LMatrix4) &value);
+INLINE_LINMATH void
+generic_read_datagram(FLOATNAME(LMatrix4) &result, DatagramIterator &source);
+
 END_PUBLISH
 
 #include "lmat_ops_src.I"

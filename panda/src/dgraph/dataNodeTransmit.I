@@ -48,15 +48,6 @@ operator = (const DataNodeTransmit &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DataNodeTransmit::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE DataNodeTransmit::
-~DataNodeTransmit() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DataNodeTransmit::reserve
 //       Access: Public
 //  Description: Tells the DataNodeTransmit object how many wires it

@@ -35,8 +35,8 @@ EventParameter() {
 //     Function: EventParameter::Pointer constructor
 //       Access: Public
 //  Description: Defines an EventParameter that stores a pointer to
-//               any kind of TypedReferenceCount object.  This is the
-//               most general constructor.
+//               any kind of TypedWritableReferenceCount object.  This
+//               is the most general constructor.
 //
 //               This accepts a const pointer, even though it stores
 //               (and eventually returns) a non-const pointer.  This
@@ -45,7 +45,7 @@ EventParameter() {
 //               constness.  Be careful.
 ////////////////////////////////////////////////////////////////////
 INLINE EventParameter::
-EventParameter(const TypedReferenceCount *ptr) : _ptr((TypedReferenceCount *)ptr) { }
+EventParameter(const TypedWritableReferenceCount *ptr) : _ptr((TypedWritableReferenceCount *)ptr) { }
 
 
 ////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ operator = (const EventParameter &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EventParameter::
 is_empty() const {
-  return (_ptr == (TypedReferenceCount *)NULL);
+  return (_ptr == (TypedWritableReferenceCount *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ get_string_value() const {
 //               contains.  This is the only way to retrieve the value
 //               when it is not one of the above predefined types.
 ////////////////////////////////////////////////////////////////////
-INLINE TypedReferenceCount *EventParameter::
+INLINE TypedWritableReferenceCount *EventParameter::
 get_ptr() const {
   return _ptr;
 }
@@ -247,4 +247,64 @@ template<class Type>
 void EventStoreValue<Type>::
 output(ostream &out) const {
   out << _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreValue::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               Lens.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+void EventStoreValue<Type>::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreValue::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+void EventStoreValue<Type>::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritable::write_datagram(manager, dg);
+  generic_write_datagram(dg, _value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreValue::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type Lens is encountered
+//               in the Bam file.  It should create the Lens
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+TypedWritable *EventStoreValue<Type>::
+make_from_bam(const FactoryParams &params) {
+  EventStoreValue<Type> *esv = new EventStoreValue<Type>;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  esv->fillin(scan, manager);
+
+  return esv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventStoreValue::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Lens.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+void EventStoreValue<Type>::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
+  generic_read_datagram(_value, scan);
 }

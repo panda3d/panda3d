@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                   dtoolutil:c dtoolbase:c dtool:m
-#define LOCAL_LIBS express event pandabase
+#define LOCAL_LIBS express pandabase
 
 #begin lib_target
   #define TARGET putil
@@ -10,8 +10,7 @@
   #define SOURCES \
     bam.h bamReader.I bamReader.N bamReader.h bamReaderParam.I \
     bamReaderParam.h bamWriter.I bamWriter.h bitMask.I \
-    bitMask.h buttonEvent.I buttonEvent.h \
-    buttonEventList.I buttonEventList.h \
+    bitMask.h \
     buttonHandle.I \
     buttonHandle.h buttonRegistry.I buttonRegistry.h \
     collideMask.h \
@@ -53,8 +52,6 @@
     
  #define INCLUDED_SOURCES \
     bamReader.cxx bamReaderParam.cxx bamWriter.cxx bitMask.cxx \
-    buttonEvent.cxx \
-    buttonEventList.cxx \
     buttonHandle.cxx buttonRegistry.cxx \
     config_util.cxx configurable.cxx \
     cycleData.cxx \
@@ -83,9 +80,7 @@
 
   #define INSTALL_HEADERS \
     bam.h bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
-    bamWriter.I bamWriter.h bitMask.I bitMask.h buttonEvent.I \
-    buttonEvent.h \
-    buttonEventList.I buttonEventList.h \
+    bamWriter.I bamWriter.h bitMask.I bitMask.h \
     buttonHandle.I buttonHandle.h buttonRegistry.I \
     buttonRegistry.h collideMask.h \
     compareTo.I compareTo.h \
@@ -112,7 +107,8 @@
     pipelineCycler.h pipelineCycler.I \
     pipelineCyclerBase.h pipelineCyclerBase.I \
     pta_double.h \
-    pta_float.h pta_int.h pta_ushort.h string_utils.I \
+    pta_float.h pta_int.h pta_ushort.h \
+    string_utils.I \
     string_utils.h timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \

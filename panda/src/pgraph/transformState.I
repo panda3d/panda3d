@@ -582,34 +582,3 @@ is_destructing() const {
   return false;
 #endif
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventStoreTransform::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE EventStoreTransform::
-EventStoreTransform(const TransformState *value) :
-  _value(value)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventStoreTransform::set_value
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void EventStoreTransform::
-set_value(const TransformState *value) {
-  _value = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventStoreTransform::get_value
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *EventStoreTransform::
-get_value() const {
-  return _value;
-}

@@ -28,6 +28,7 @@
 #include "graphicsPipe.h"
 #include "graphicsEngine.h"
 #include "graphicsWindow.h"
+#include "recorderController.h"
 #include "pointerTo.h"
 
 #include "pvector.h"
@@ -98,6 +99,9 @@ public:
   void clear_highlight();
   INLINE bool has_highlight() const;
   INLINE const NodePath &get_highlight() const;
+
+  INLINE RecorderController *get_recorder() const;
+  INLINE void set_recorder(RecorderController *recorder);
 
   void enable_default_keys();
 
@@ -177,6 +181,8 @@ private:
   KeyDefinitions _key_definitions;
 
   NodePath _help_text;
+
+  PT(RecorderController) _recorder;
 };
 
 #include "pandaFramework.I"

@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "namable.h"
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 #include "luse.h"
 #include "buttonHandle.h"
 #include "modifierButtons.h"
@@ -34,7 +34,7 @@ class MouseWatcherParameter;
 // Description : This is the class that defines a rectangular region
 //               on the screen for the MouseWatcher.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseWatcherRegion : public TypedReferenceCount, public Namable {
+class EXPCL_PANDA MouseWatcherRegion : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   INLINE MouseWatcherRegion(const string &name, float left, float right,
                             float bottom, float top);
@@ -98,10 +98,10 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     Namable::init_type();
     register_type(_type_handle, "MouseWatcherRegion",
-                  TypedReferenceCount::get_class_type(),
+                  TypedWritableReferenceCount::get_class_type(),
                   Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {

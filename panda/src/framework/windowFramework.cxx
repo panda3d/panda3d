@@ -19,6 +19,7 @@
 #include "windowFramework.h"
 #include "pandaFramework.h"
 #include "mouseAndKeyboard.h"
+#include "mouseRecorder.h"
 #include "buttonThrower.h"
 #include "transform2sg.h"
 #include "dSearchPath.h"
@@ -292,6 +293,14 @@ get_mouse() {
     MouseAndKeyboard *mouse_node = 
       new MouseAndKeyboard(_window, 0, "mouse");
     _mouse = data_root.attach_new_node(mouse_node);
+
+    RecorderController *recorder = _panda_framework->get_recorder();
+    if (recorder != (RecorderController *)NULL) {
+      // If we're in recording or playback mode, associate a recorder.
+      MouseRecorder *mouse_recorder = new MouseRecorder("mouse");
+      _mouse = _mouse.attach_new_node(mouse_recorder);
+      recorder->add_recorder("mouse", mouse_recorder);
+    }
   }
   return _mouse;
 }

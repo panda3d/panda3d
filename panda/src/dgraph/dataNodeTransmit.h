@@ -21,6 +21,12 @@
 
 #include "pandabase.h"
 #include "eventParameter.h"
+#include "typedWritable.h"
+
+class Datagram;
+class DatagramIterator;
+class BamReader;
+class BamWriter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DataNodeTransmit
@@ -29,12 +35,12 @@
 //               array of EventParameters, one for each registered
 //               input or output wire.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DataNodeTransmit {
+class EXPCL_PANDA DataNodeTransmit : public TypedWritable {
 public:
   INLINE DataNodeTransmit();
   INLINE DataNodeTransmit(const DataNodeTransmit &copy);
   INLINE void operator = (const DataNodeTransmit &copy);
-  INLINE ~DataNodeTransmit();
+  virtual ~DataNodeTransmit();
 
   INLINE void reserve(int num_wires);
 
@@ -47,6 +53,33 @@ private:
 
   typedef pvector<EventParameter> Data;
   Data _data;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist,
+                                BamReader *manager);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+  
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedWritable::init_type();
+    register_type(_type_handle, "DataNodeTransmit",
+                  TypedWritable::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "dataNodeTransmit.I"

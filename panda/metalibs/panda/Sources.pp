@@ -10,15 +10,15 @@
 #define WIN_SYS_LIBS $[WIN_SYS_LIBS] Ws2_32.lib
 
 #define COMPONENT_LIBS \
-    pgraph \
+    recorder pgraph \
     pvrpn grutil chan chancfg pstatclient \
     char chat collide cull device \
-    dgraph display gobj graph gsgbase \
+    dgraph display event gobj graph gsgbase \
     gsgmisc light linmath mathutil net \
     parametrics pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode pnmtext text tform tiff lerp loader putil \
-    audio pgui pandabase 
+    audio pgui pandabase
 
 
 

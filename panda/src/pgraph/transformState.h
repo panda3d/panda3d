@@ -244,40 +244,6 @@ INLINE ostream &operator << (ostream &out, const TransformState &state) {
   return out;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//       Class : EventStoreTransform
-// Description : This class is used to pass TransformState pointers as
-//               parameters to events, or as elements on a data graph.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA EventStoreTransform : public EventStoreValueBase {
-public:
-  INLINE EventStoreTransform(const TransformState *value);
-  INLINE void set_value(const TransformState *value);
-  INLINE const TransformState *get_value() const;
-
-  virtual void output(ostream &out) const;
-
-  CPT(TransformState) _value;
-
-public:
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    EventStoreValueBase::init_type();
-    register_type(_type_handle, "EventStoreTransform",
-                  EventStoreValueBase::get_class_type());
-  }
-
-private:
-  static TypeHandle _type_handle;
-};
-
 #include "transformState.I"
 
 #endif

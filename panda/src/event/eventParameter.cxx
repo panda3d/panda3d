@@ -33,7 +33,7 @@ TypeHandle EventStoreValueBase::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void EventParameter::
 output(ostream &out) const {
-  if (_ptr == (TypedReferenceCount *)NULL) {
+  if (_ptr == (TypedWritableReferenceCount *)NULL) {
     out << "(empty)";
 
   } else if (_ptr->is_of_type(EventStoreValueBase::get_class_type())) {

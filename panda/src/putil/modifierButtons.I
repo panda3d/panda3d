@@ -93,26 +93,6 @@ get_button(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::add_event
-//       Access: Published
-//  Description: Calls button_down() or button_up(), as appropriate,
-//               according to the indicated ButtonEvent.
-////////////////////////////////////////////////////////////////////
-INLINE bool ModifierButtons::
-add_event(const ButtonEvent &event) {
-  switch (event._type) {
-  case ButtonEvent::T_down:
-    return button_down(event._button);
-
-  case ButtonEvent::T_up:
-    return button_up(event._button);
-
-  default:
-    return false;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::all_buttons_up
 //       Access: Published
 //  Description: Marks all monitored buttons as being in the "up"

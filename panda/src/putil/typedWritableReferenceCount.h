@@ -34,16 +34,13 @@
 //               pass around pointers to things which are both
 //               TypedWritables and ReferenceCounters.
 //               
-//               See Also TypeObject for detailed instructions.
+//               See also TypedObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TypedWritableReferenceCount : public TypedWritable, public ReferenceCount {
 public:
   INLINE TypedWritableReferenceCount();
   INLINE TypedWritableReferenceCount(const TypedWritableReferenceCount &copy);
   INLINE void operator = (const TypedWritableReferenceCount &copy);
-
-public:
-  virtual void write_datagram(BamWriter *, Datagram &) = 0;
 
 public:
   virtual TypeHandle get_type() const {

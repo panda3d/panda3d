@@ -80,6 +80,22 @@ private:
   size_t _current_index;
 };
 
+// These generic functions are primarily for reading a value from a
+// datagram from within a template in which the actual type of the
+// value is not known.  If you do know the type, it's preferable to
+// use the explicit get_*() method from above instead.
+
+INLINE void
+generic_read_datagram(bool &result, DatagramIterator &source);
+INLINE void
+generic_read_datagram(int &result, DatagramIterator &source);
+INLINE void
+generic_read_datagram(float &result, DatagramIterator &source);
+INLINE void
+generic_read_datagram(double &result, DatagramIterator &source);
+INLINE void
+generic_read_datagram(string &result, DatagramIterator &source);
+
 #include "datagramIterator.I"
 
 #endif

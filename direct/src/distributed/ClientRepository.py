@@ -17,6 +17,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def __init__(self, dcFileName):
         ConnectionRepository.ConnectionRepository.__init__(self, base.config)
+
+        self.recorder = base.recorder
         
         self.number2cdc={}
         self.name2cdc={}

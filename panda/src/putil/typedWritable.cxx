@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "typedWritable.h"
+#include "bamWriter.h"
 
 TypeHandle TypedWritable::_type_handle;
 TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
@@ -26,7 +27,14 @@ TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-TypedWritable::~TypedWritable() {
+TypedWritable::
+~TypedWritable() {
+  // Remove the object pointer from the BamWriters that reference it.
+  BamWriters::iterator wi;
+  for (wi = _bam_writers.begin(); wi != _bam_writers.end(); ++wi) {
+    BamWriter *writer = (*wi);
+    writer->object_destructs(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -99,3 +99,39 @@ operator * (const FLOATNAME(LPoint3) &v, const FLOATNAME(LMatrix4) &m) {
   return m.xform_point(v);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: generic_write_datagram
+//  Description: Writes the value to the datagram.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void
+generic_write_datagram(Datagram &dest, const FLOATNAME(LMatrix3) &value) {
+  value.write_datagram(dest);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: generic_read_datagram
+//  Description: Reads the value from the datagram.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void
+generic_read_datagram(FLOATNAME(LMatrix3) &result, DatagramIterator &source) {
+  result.read_datagram(source);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: generic_write_datagram
+//  Description: Writes the value to the datagram.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void
+generic_write_datagram(Datagram &dest, const FLOATNAME(LMatrix4) &value) {
+  value.write_datagram(dest);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: generic_read_datagram
+//  Description: Reads the value from the datagram.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void
+generic_read_datagram(FLOATNAME(LMatrix4) &result, DatagramIterator &source) {
+  result.read_datagram(source);
+}

@@ -83,10 +83,11 @@ get_current_minor_ver() const {
 //  Description: Returns the global WritableFactory for generating
 //               TypedWritable objects
 ////////////////////////////////////////////////////////////////////
-INLINE WritableFactory* BamReader::
+INLINE WritableFactory *BamReader::
 get_factory() {
-  if (_factory == NullFactory)
+  if (_factory == (WritableFactory *)NULL) {
     create_factory();
+  }
   return _factory;
 }
 

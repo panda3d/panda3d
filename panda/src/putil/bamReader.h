@@ -29,6 +29,7 @@
 #include "factory.h"
 #include "vector_int.h"
 #include "pset.h"
+#include "pmap.h"
 #include "dcast.h"
 
 #include <algorithm>
@@ -92,11 +93,14 @@ public:
   static WritableFactory *const NullFactory;
 
   // The primary interface for a caller.
-
   BamReader(DatagramGenerator *generator);
   ~BamReader();
 
   bool init();
+
+  void set_aux_data(const string &name, void *data);
+  void *get_aux_data(const string &name) const;
+
   TypedWritable *read_object();
   INLINE bool is_eof() const;
   bool resolve();
@@ -106,6 +110,10 @@ public:
 
   INLINE int get_current_major_ver() const;
   INLINE int get_current_minor_ver() const;
+
+  // This special TypeHandle is written to the bam file to indicate an
+  // object id is no longer needed.
+  static TypeHandle _remove_flag;
 
 public:
   // Functions to support classes that read themselves from the Bam.
@@ -135,15 +143,23 @@ private:
   INLINE static void create_factory();
 
 private:
+  void free_object_ids(DatagramIterator &scan);
+  int read_object_id(DatagramIterator &scan);
+  int read_pta_id(DatagramIterator &scan);
   int p_read_object();
   bool resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids);
   bool resolve_cycler_pointers(PipelineCyclerBase *cycler, const vector_int &pointer_ids);
   void finalize();
 
+  bool get_datagram(Datagram &datagram);
+
 private:
   static WritableFactory *_factory;
 
   DatagramGenerator *_source;
+  
+  bool _long_object_id;
+  bool _long_pta_id;
 
   // This maps the type index numbers encountered within the Bam file
   // to actual TypeHandles.
@@ -201,6 +217,10 @@ private:
   // objects of these types.
   typedef pset<TypeHandle> NewTypes;
   static NewTypes _new_types;
+
+  // This is used in support of set_aux_data() and get_aux_data().
+  typedef pmap<string, void *> AuxData;
+  AuxData _aux_data;
 
   int _file_major, _file_minor;
   static const int _cur_major;

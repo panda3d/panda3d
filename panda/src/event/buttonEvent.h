@@ -23,6 +23,10 @@
 
 #include "buttonHandle.h"
 #include "clockObject.h"
+#include "modifierButtons.h"
+
+class Datagram;
+class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ButtonEvent
@@ -81,8 +85,14 @@ public:
   INLINE bool operator != (const ButtonEvent &other) const;
   INLINE bool operator < (const ButtonEvent &other) const;
 
+  INLINE bool update_mods(ModifierButtons &mods) const;
+
   void output(ostream &out) const;
 
+  void write_datagram(Datagram &dg) const;
+  void read_datagram(DatagramIterator &scan);
+
+public:
   // _button will be filled in if type is T_down, T_resume_down, or
   // T_up.
   ButtonHandle _button;
