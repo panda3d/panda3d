@@ -1160,8 +1160,8 @@ find_on_searchpath(const DSearchPath &searchpath) {
 bool Filename::
 scan_directory(vector_string &contents) const {
 #if defined(WIN32_VC)
-  // Use FindFirstFile()/FindNextFile() to walk through the list of
-  // files in a directory.
+  // Use Windows' FindFirstFile() / FindNextFile() to walk through the
+  // list of files in a directory.
   size_t orig_size = contents.size();
 
   string match;
@@ -1194,17 +1194,61 @@ scan_directory(vector_string &contents) const {
   sort(contents.begin() + orig_size, contents.end());
   return scan_ok;
 
+#elif defined(HAVE_DIRENT_H)
+  // Use Posix's opendir() / readir() to walk through the list of
+  // files in a directory.
+  size_t orig_size = contents.size();
+
+  string dirname;
+  if (empty()) {
+    dirname = ".";
+  } else {
+    dirname = _filename;
+  }
+  DIR *root = opendir(dirname.c_str());
+  if (root == (DIR *)NULL) {
+    perror(dirname.c_str());
+    return false;
+  }
+
+  struct dirent *d;
+  d = readdir(root);
+  while (d != (struct dirent *)NULL) {
+    if (d->d_name[0] != '.') {
+      contents.push_back(d->d_name);
+    }
+    d = readdir(root);
+  }
+
+  // It turns out to be a mistake to check the value of errno after
+  // calling readdir(), since it might have been set to non-zero
+  // during some internal operation of readdir(), even though there
+  // wasn't really a problem with scanning the directory itself.
+  /*
+  if (errno != 0 && errno != ENOENT && errno != ENOTDIR) {
+    cerr << "Error occurred while scanning directory " << dirname << "\n";
+    perror(dirname.c_str());
+    closedir(root);
+    return false;
+  }
+  */
+  closedir(root);
+
+  sort(contents.begin() + orig_size, contents.end());
+  return true;
+
 #elif defined(HAVE_GLOB_H)
-  // In some cases, particularly with NFS, it seems that opendir()
-  // .. readdir() fails to properly read the entire directory ("Value
-  // too large for defined data type"), but glob() succeeds.
+  // It's hard to imagine a system that provides glob.h but does not
+  // provide openddir() .. readdir(), but this code is leftover from a
+  // time when there was an undetected bug in the above readdir()
+  // loop, and it works, so we might as well keep it around for now.
   string dirname;
   if (empty()) {
     dirname = "*";
   } else if (_filename[_filename.length() - 1] == '/') {
     dirname = _filename + "*";
   } else {
-    dirname = _filename + "/*";
+    dirname = _filename + "/*";   /* comment to fix emacs syntax hilight */
   }
 
   glob_t globbuf;
@@ -1234,41 +1278,6 @@ scan_directory(vector_string &contents) const {
   }
   globfree(&globbuf);
 
-  return true;
-
-#elif defined(HAVE_DIRENT_H)
-  size_t orig_size = contents.size();
-
-  string dirname;
-  if (empty()) {
-    dirname = ".";
-  } else {
-    dirname = _filename;
-  }
-  DIR *root = opendir(dirname.c_str());
-  if (root == (DIR *)NULL) {
-    perror(dirname.c_str());
-    return false;
-  }
-
-  errno = 0;
-  struct dirent *d;
-  d = readdir(root);
-  while (d != (struct dirent *)NULL) {
-    if (d->d_name[0] != '.') {
-      contents.push_back(d->d_name);
-    }
-    d = readdir(root);
-  }
-  if (errno != 0 && errno != ENOENT && errno != ENOTDIR) {
-    cerr << "Error occurred while scanning directory " << dirname << "\n";
-    perror(dirname.c_str());
-    closedir(root);
-    return false;
-  }
-  closedir(root);
-
-  sort(contents.begin() + orig_size, contents.end());
   return true;
   
 #else
