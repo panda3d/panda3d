@@ -106,11 +106,11 @@ class DirectScrolledList(DirectFrame):
         #    print "buttontext[",i,"]",self["items"][i]["text"]
 
         if(len(self["items"])==0):
-            return
+            return 0
 
         if(type(self["items"][0])!=types.InstanceType):
             print "warning: getItemIndexForItemID: cant find itemID for non-class list items!"
-            return
+            return 0
 
         for i in range(len(self["items"])):
             if(self["items"][i].itemID == itemID):
