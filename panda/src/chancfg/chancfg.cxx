@@ -247,8 +247,18 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
      dr->set_camera(cam);
      _display_region.push_back(dr);
      SetupFOV fov = (*k).getFOV();
-     fov = ChanResolveFOV(fov, xsize*(v2.right()-v2.left()),
-                          ysize*(v2.top()-v2.bottom()));
+     float xConsoleSize = xsize*(v2.right()-v2.left());
+     float yConsoleSize = ysize*(v2.top()-v2.bottom());
+     float xDisplaySize, yDisplaySize;
+     if ( (*k).getOrientation() == SetupItem::Left ||
+          (*k).getOrientation() == SetupItem::Right ) {
+        xDisplaySize = yConsoleSize;
+        yDisplaySize = xConsoleSize;
+     } else {
+        xDisplaySize = xConsoleSize;
+        yDisplaySize = yConsoleSize;
+     }
+     fov = ChanResolveFOV(fov, xDisplaySize, yDisplaySize);
      if (chancfg_cat->is_debug()) {
        chancfg_cat->debug() << "ChanEval:: FOVhoriz = " << fov.getHoriz()
           << "  FOVvert = " << fov.getVert() << endl;
@@ -277,7 +287,7 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
          break;
        case SetupItem::Right:
          // vertical and horizontal FOV are being switched
-         hFov = fov.getHoriz(); vFov = fov.getVert();
+         hFov = fov.getVert(); vFov = fov.getHoriz();
          orient = new TransformTransition(
            LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
          break;
