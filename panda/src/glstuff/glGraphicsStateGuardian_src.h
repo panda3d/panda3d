@@ -174,35 +174,6 @@ protected:
                                                  CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
 
-  INLINE void call_glClearColor(GLclampf red, GLclampf green, GLclampf blue,
-                                GLclampf alpha);
-  INLINE void call_glClearDepth(GLclampd depth);
-  INLINE void call_glClearStencil(GLint s);
-  INLINE void call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
-                                GLclampf alpha);
-  INLINE void call_glShadeModel(GLenum mode);
-  INLINE void call_glBlendFunc(GLenum sfunc, GLenum dfunc);
-  INLINE void call_glCullFace(GLenum mode);
-  INLINE void call_glScissor(GLint x, GLint y, GLsizei width, GLsizei height);
-  INLINE void call_glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
-  INLINE void call_glLightModelLocal(GLboolean local);
-  INLINE void call_glLightModelTwoSide(GLboolean twoside);
-  INLINE void call_glStencilFunc(GLenum func,GLint refval,GLuint mask);
-  INLINE void call_glStencilOp(GLenum fail,GLenum zfail,GLenum pass);
-  INLINE void call_glClipPlane(GLenum plane, const double equation[4]);
-  INLINE void call_glLineWidth(GLfloat width);
-  INLINE void call_glPointSize(GLfloat size);
-  INLINE void call_glFogMode(GLint mode);
-  INLINE void call_glFogStart(GLfloat start);
-  INLINE void call_glFogEnd(GLfloat end);
-  INLINE void call_glFogDensity(GLfloat density);
-  INLINE void call_glFogColor(const Colorf &color);
-  INLINE void call_glAlphaFunc(GLenum func, GLclampf ref);
-  INLINE void call_glPolygonMode(GLenum mode);
-
-  INLINE void set_pack_alignment(GLint alignment);
-  INLINE void set_unpack_alignment(GLint alignment);
-
   INLINE void enable_multisample(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_point_smooth(bool val);
@@ -253,40 +224,6 @@ protected:
   void build_phony_mipmap_level(int level, int xsize, int ysize);
   void save_mipmap_images(Texture *tex);
 #endif
-
-  GLclampf _clear_color_red, _clear_color_green, _clear_color_blue,
-    _clear_color_alpha;
-  GLclampd _clear_depth;
-  GLint _clear_stencil;
-  GLclampf _clear_accum_red, _clear_accum_green, _clear_accum_blue,
-    _clear_accum_alpha;
-  GLenum _shade_model_mode;
-  GLint _scissor_x;
-  GLint _scissor_y;
-  GLsizei _scissor_width;
-  GLsizei _scissor_height;
-  GLint _viewport_x;
-  GLint _viewport_y;
-  GLsizei _viewport_width;
-  GLsizei _viewport_height;
-  GLboolean _lmodel_local;
-  GLboolean _lmodel_twoside;
-  GLfloat _line_width;
-  GLfloat _point_size;
-  GLenum _blend_source_func;
-  GLenum _blend_dest_func;
-  GLboolean _depth_mask;
-  GLint _fog_mode;
-  GLfloat _fog_start;
-  GLfloat _fog_end;
-  GLfloat _fog_density;
-  Colorf _fog_color;
-  GLenum _alpha_func;
-  GLclampf _alpha_func_ref;
-  GLenum _polygon_mode;
-
-  GLint _pack_alignment;
-  GLint _unpack_alignment;
 
   bool _multisample_enabled;
   bool _line_smooth_enabled;

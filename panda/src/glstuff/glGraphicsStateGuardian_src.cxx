@@ -396,47 +396,8 @@ reset() {
   }
 #endif
 
-  // Set up our clear values to invalid values, so the GLP(Clear)* calls
-  // will be made initially.
-  _clear_color_red = -1.0f;
-  _clear_color_green = -1.0f;
-  _clear_color_blue = -1.0f;
-  _clear_color_alpha = -1.0f;
-  _clear_depth = -1.0f;
-  _clear_stencil = -1;
-  _clear_accum_red = -1.0f;
-  _clear_accum_green = -1.0f;
-  _clear_accum_blue = -1.0f;
-  _clear_accum_alpha = -1.0f;
-
   // Set up the specific state values to GL's known initial values.
-  _shade_model_mode = GL_SMOOTH;
   GLP(FrontFace)(GL_CCW);
-
-  _scissor_x = 0;
-  _scissor_y = 0;
-  _scissor_width = -1;
-  _scissor_height = -1;
-  _viewport_x = 0;
-  _viewport_y = 0;
-  _viewport_width = -1;
-  _viewport_height = -1;
-  _lmodel_local = 0;
-  _lmodel_twoside = 0;
-  _line_width = 1.0f;
-  _point_size = 1.0f;
-  _blend_source_func = GL_ONE;
-  _blend_dest_func = GL_ZERO;
-  _depth_mask = false;
-  _fog_mode = GL_EXP;
-  _fog_density = 1.0f;
-  _fog_color.set(0.0f, 0.0f, 0.0f, 0.0f);
-  _alpha_func = GL_ALWAYS;
-  _alpha_func_ref = 0;
-  _polygon_mode = GL_FILL;
-
-  _pack_alignment = 4;
-  _unpack_alignment = 4;
 
   // Set up all the enabled/disabled flags to GL's known initial
   // values: everything off.
@@ -555,10 +516,10 @@ do_clear(const RenderBuffer &buffer) {
   CPT(RenderState) state = RenderState::make_empty();
 
   if (buffer_type & RenderBuffer::T_color) {
-    call_glClearColor(_color_clear_value[0],
-                      _color_clear_value[1],
-                      _color_clear_value[2],
-                      _color_clear_value[3]);
+    GLP(ClearColor)(_color_clear_value[0],
+                    _color_clear_value[1],
+                    _color_clear_value[2],
+                    _color_clear_value[3]);
     state = state->add_attrib(ColorWriteAttrib::make(ColorWriteAttrib::M_on));
     mask |= GL_COLOR_BUFFER_BIT;
 
@@ -566,26 +527,24 @@ do_clear(const RenderBuffer &buffer) {
   }
 
   if (buffer_type & RenderBuffer::T_depth) {
-    call_glClearDepth(_depth_clear_value);
+    GLP(ClearDepth)(_depth_clear_value);
     mask |= GL_DEPTH_BUFFER_BIT;
 
     // In order to clear the depth buffer, the depth mask must enable
     // writing to the depth buffer.
-    if (!_depth_mask) {
-      state = state->add_attrib(DepthWriteAttrib::make(DepthWriteAttrib::M_on));
-    }
+    state = state->add_attrib(DepthWriteAttrib::make(DepthWriteAttrib::M_on));
   }
 
   if (buffer_type & RenderBuffer::T_stencil) {
-    call_glClearStencil(_stencil_clear_value != false);
+    GLP(ClearStencil)(_stencil_clear_value != false);
     mask |= GL_STENCIL_BUFFER_BIT;
   }
 
   if (buffer_type & RenderBuffer::T_accum) {
-    call_glClearAccum(_accum_clear_value[0],
-                      _accum_clear_value[1],
-                      _accum_clear_value[2],
-                      _accum_clear_value[3]);
+    GLP(ClearAccum)(_accum_clear_value[0],
+                    _accum_clear_value[1],
+                    _accum_clear_value[2],
+                    _accum_clear_value[3]);
     mask |= GL_ACCUM_BUFFER_BIT;
   }
 
@@ -636,8 +595,8 @@ prepare_display_region() {
     GLsizei height = GLsizei(h);
 
     enable_scissor( true );
-    call_glScissor( x, y, width, height );
-    call_glViewport( x, y, width, height );
+    GLP(Scissor)( x, y, width, height );
+    GLP(Viewport)( x, y, width, height );
   }
   report_my_gl_errors();
 }
@@ -712,6 +671,8 @@ begin_frame() {
   _vertices_display_list_pcollector.clear_level();
 #endif
 
+  _actual_display_region = NULL;
+
   report_my_gl_errors();
   return true;
 }
@@ -762,7 +723,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 #endif
 
-  call_glPointSize(geom->get_size());
+  GLP(PointSize)(geom->get_size());
   issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
@@ -831,7 +792,7 @@ draw_line(GeomLine *geom, GeomContext *gc) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 #endif
 
-  call_glLineWidth(geom->get_width());
+  GLP(LineWidth)(geom->get_width());
   issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
@@ -862,9 +823,9 @@ draw_line(GeomLine *geom, GeomContext *gc) {
   // Otherwise we want flat shading for performance reasons.
   if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    call_glShadeModel(GL_SMOOTH);
+    GLP(ShadeModel)(GL_SMOOTH);
   } else {
-    call_glShadeModel(GL_FLAT);
+    GLP(ShadeModel)(GL_FLAT);
   }
 
   // Draw overall
@@ -913,7 +874,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
 #endif
 
-  call_glLineWidth(geom->get_width());
+  GLP(LineWidth)(geom->get_width());
   issue_scene_graph_color();
 
   int nprims = geom->get_num_prims();
@@ -945,9 +906,9 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
   // Otherwise we want flat shading for performance reasons.
   if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    call_glShadeModel(GL_SMOOTH);
+    GLP(ShadeModel)(GL_SMOOTH);
   } else {
-    call_glShadeModel(GL_FLAT);
+    GLP(ShadeModel)(GL_FLAT);
   }
 
   // Draw overall
@@ -1323,9 +1284,9 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
   // Otherwise we want flat shading for performance reasons.
   if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    call_glShadeModel(GL_SMOOTH);
+    GLP(ShadeModel)(GL_SMOOTH);
   } else {
-    call_glShadeModel(GL_FLAT);
+    GLP(ShadeModel)(GL_FLAT);
   }
 
   // Draw overall
@@ -1409,9 +1370,9 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
   // Otherwise we want flat shading for performance reasons.
   if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    call_glShadeModel(GL_SMOOTH);
+    GLP(ShadeModel)(GL_SMOOTH);
   } else {
-    call_glShadeModel(GL_FLAT);
+    GLP(ShadeModel)(GL_FLAT);
   }
 
   // Draw overall
@@ -1493,9 +1454,9 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
   // Otherwise we want flat shading for performance reasons.
   if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    call_glShadeModel(GL_SMOOTH);
+    GLP(ShadeModel)(GL_SMOOTH);
   } else {
-    call_glShadeModel(GL_FLAT);
+    GLP(ShadeModel)(GL_FLAT);
   }
 
   // Draw overall
@@ -1577,9 +1538,9 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
   // Otherwise we want flat shading for performance reasons.
   if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    call_glShadeModel(GL_SMOOTH);
+    GLP(ShadeModel)(GL_SMOOTH);
   } else {
-    call_glShadeModel(GL_FLAT);
+    GLP(ShadeModel)(GL_FLAT);
   }
 
   // Draw overall
@@ -1683,9 +1644,9 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
   // Otherwise we want flat shading for performance reasons.
   if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    call_glShadeModel(GL_SMOOTH);
+    GLP(ShadeModel)(GL_SMOOTH);
   } else {
-    call_glShadeModel(GL_FLAT);
+    GLP(ShadeModel)(GL_FLAT);
   }
 
   // Draw overall
@@ -1783,9 +1744,9 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
                     ti);
 
   if (wants_normals()) {
-    call_glShadeModel(GL_SMOOTH);
+    GLP(ShadeModel)(GL_SMOOTH);
   } else {
-    call_glShadeModel(GL_FLAT);
+    GLP(ShadeModel)(GL_FLAT);
   }
 
   // Draw overall
@@ -2145,7 +2106,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 bool CLP(GraphicsStateGuardian)::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   nassertr(pb != NULL && dr != NULL, false);
-  set_pack_alignment(1);
+  GLP(PixelStorei)(GL_PACK_ALIGNMENT, 1);
 
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
   // for GLP(ReadPixels)() to work
@@ -2267,8 +2228,8 @@ void CLP(GraphicsStateGuardian)::apply_material(const Material *material) {
     GLP(Enable)(GL_COLOR_MATERIAL);
   }
 
-  call_glLightModelLocal(material->get_local());
-  call_glLightModelTwoSide(material->get_twoside());
+  GLP(LightModeli)(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
+  GLP(LightModeli)(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
   report_my_gl_errors();
 }
 
@@ -2280,20 +2241,20 @@ void CLP(GraphicsStateGuardian)::apply_material(const Material *material) {
 void CLP(GraphicsStateGuardian)::
 apply_fog(Fog *fog) {
   Fog::Mode fmode = fog->get_mode();
-  call_glFogMode(get_fog_mode_type(fmode));
+  GLP(Fogi)(GL_FOG_MODE, get_fog_mode_type(fmode));
 
   if (fmode == Fog::M_linear) {
     float onset, opaque;
     fog->get_linear_range(onset, opaque);
-    call_glFogStart(onset);
-    call_glFogEnd(opaque);
+    GLP(Fogf)(GL_FOG_START, onset);
+    GLP(Fogf)(GL_FOG_END, opaque);
 
   } else {
     // Exponential fog is always camera-relative.
-    call_glFogDensity(fog->get_exp_density());
+    GLP(Fogf)(GL_FOG_DENSITY, fog->get_exp_density());
   }
 
-  call_glFogColor(fog->get_color());
+  GLP(Fogfv)(GL_FOG_COLOR, fog->get_color().get_data());
   report_my_gl_errors();
 }
 
@@ -2543,12 +2504,12 @@ issue_render_mode(const RenderModeAttrib *attrib) {
 
   switch (mode) {
   case RenderModeAttrib::M_filled:
-    call_glPolygonMode(GL_FILL);
+    GLP(PolygonMode)(GL_FRONT_AND_BACK, GL_FILL);
     break;
 
   case RenderModeAttrib::M_wireframe:
-    call_glLineWidth(attrib->get_line_width());
-    call_glPolygonMode(GL_LINE);
+    GLP(LineWidth)(attrib->get_line_width());
+    GLP(PolygonMode)(GL_FRONT_AND_BACK, GL_LINE);
     break;
 
   default:
@@ -2630,7 +2591,7 @@ issue_alpha_test(const AlphaTestAttrib *attrib) {
     enable_alpha_test(false);
   } else {
     assert(GL_NEVER==(AlphaTestAttrib::M_never-1+0x200));
-    call_glAlphaFunc(PANDA_TO_GL_COMPAREFUNC(mode), attrib->get_reference_alpha());
+    GLP(AlphaFunc)(PANDA_TO_GL_COMPAREFUNC(mode), attrib->get_reference_alpha());
     enable_alpha_test(true);
   }
 }
@@ -3353,7 +3314,7 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
   nassertr(wanted_size == (int)pb->_image.size(), false);
 #endif  // NDEBUG
 
-  set_unpack_alignment(1);
+  GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
 
 #ifdef GSG_VERBOSE
   GLCAT.debug()
@@ -3598,7 +3559,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   }
   set_transform(TransformState::make_identity());
 
-  set_unpack_alignment(1);
+  GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
 
   WindowProperties props = _win->get_properties();
 
@@ -4276,7 +4237,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    call_glBlendFunc(GL_ZERO, GL_ONE);
+    GLP(BlendFunc)(GL_ZERO, GL_ONE);
     return;
   }
 
@@ -4289,21 +4250,21 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    call_glBlendFunc(GL_DST_COLOR, GL_ZERO);
+    GLP(BlendFunc)(GL_DST_COLOR, GL_ZERO);
     return;
 
   case ColorBlendAttrib::M_add:
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    call_glBlendFunc(GL_ONE, GL_ONE);
+    GLP(BlendFunc)(GL_ONE, GL_ONE);
     return;
 
   case ColorBlendAttrib::M_multiply_add:
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    call_glBlendFunc(GL_DST_COLOR, GL_ONE);
+    GLP(BlendFunc)(GL_DST_COLOR, GL_ONE);
     return;
 
   default:
@@ -4331,7 +4292,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
         enable_multisample_alpha_one(false);
         enable_multisample_alpha_mask(false);
         enable_blend(true);
-        call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         return;
     
       case TransparencyAttrib::M_multisample:
@@ -4747,7 +4708,7 @@ save_mipmap_images(Texture *tex) {
   int ysize = pb->get_ysize();
 
   // Specify byte-alignment for the pixels on output.
-  set_pack_alignment(1);
+  GLP(PixelStorei)(GL_PACK_ALIGNMENT, 1);
 
   int mipmap_level = 0;
   do {
