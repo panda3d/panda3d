@@ -3,6 +3,7 @@
 from ClockDelta import *
 from PythonUtil import Functor, sameElements, list2dict, uniqueElements
 from IntervalGlobal import *
+from ToontownMsgTypes import *
 import ToontownGlobals
 import DistributedObject
 import Level
@@ -58,6 +59,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
             )
         self.zonesEnteredList = []
         self.fColorZones = 0
+        # we use these to track setZone requests
+        self.setZonesRequested = 0
+        self.setZonesReceived = 0
 
     def generate(self):
         DistributedLevel.notify.debug('generate')
@@ -412,6 +416,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     self.camEnterZone(zoneNum)
         self.accept('on-floor', handleCameraRayFloorCollision)
 
+        # register our datagram handler to listen for setZone msgs
+        self.oldTcrHandler = toonbase.tcr.handler
+        toonbase.tcr.handler = self.handleDatagram
+
         # if no viz, listen to all the zones
         if not DistributedLevel.WantVisibility:
             zoneNums = list(self.zoneNums)
@@ -426,6 +434,24 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def shutdownVisibility(self):
         taskMgr.remove(self.uniqueName(DistributedLevel.VisChangeTaskName))
+        toonbase.tcr.handler = self.oldTcrHandler
+
+    def getSetZoneCompleteEvent(self, num):
+        return self.uniqueName('setZoneComplete-%s' % num)
+
+    def getNextSetZoneCompleteEvent(self):
+        return self.uniqueName('setZoneComplete-%s' % self.setZonesRequested)
+
+    def handleDatagram(self, msgType, di):
+        if msgType == CLIENT_DONE_SET_ZONE_RESP:
+            print 'setZone %s complete' % self.setZonesReceived
+            messenger.send(self.getSetZoneCompleteEvent(self.setZonesReceived))
+            self.setZonesReceived += 1
+            
+        if self.oldTcrHandler is None:
+            toonbase.tcr.handleUnexpectedMsgType(msgType, di)
+        else:
+            self.oldTcrHandler(msgType, di)
 
     def toonEnterZone(self, zoneNum, ouchLevel=None):
         """
@@ -516,6 +542,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 self.hideZone(rz)
 
         self.setVisibility(visibleZoneNums.keys())
+        self.setZonesRequested += 1
 
         self.curZoneNum = zoneNum
         self.curVisibleZoneNums = visibleZoneNums
