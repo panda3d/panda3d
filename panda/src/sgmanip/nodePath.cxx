@@ -2347,6 +2347,25 @@ set_material(Material *mat, int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_material_off
+//       Access: Published
+//  Description: Sets the geometry at this level and below to render
+//               using no material.  This is normally the default, but
+//               it may be useful to use this to contradict
+//               set_material() at a higher node level (or, with a
+//               priority, to override a set_material() at a lower
+//               level).
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_material_off(int priority) {
+  nassertv_always(has_arcs());
+
+  MaterialTransition *mat_trans =
+    new MaterialTransition(MaterialTransition::off());
+  arc()->set_transition(mat_trans, priority);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_material
 //       Access: Published
 //  Description: Returns true if a material has been applied to this

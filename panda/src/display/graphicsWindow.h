@@ -221,7 +221,7 @@ protected:
   Callback *_draw_callback;
   Callback *_idle_callback;
 
-public:
+PUBLISHED:
   virtual GraphicsChannel *get_channel(int index);
   void remove_channel(int index);
 

@@ -470,6 +470,7 @@ PUBLISHED:
   Texture *get_texture() const;
 
   void set_material(Material *tex, int priority = 0);
+  void set_material_off(int priority = 0);
   INLINE void clear_material();
   bool has_material() const;
   PT(Material) get_material() const;
