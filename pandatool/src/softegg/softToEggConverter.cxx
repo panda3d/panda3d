@@ -955,6 +955,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
   SAA_Boolean visible;
 
   int i, idx;
+
   
   SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible ); 
   cout << "model visibility: " << visible << endl; 
@@ -978,7 +979,16 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
 
       string vpool_name = name + ".verts";
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
-      egg_group->add_child(vpool);
+
+      // add the vertices in the _tree._root node, so that 
+      // they will be written out first in egg file. This 
+      // solves a problem of soft-skinning trying to access
+      // vertex pool before it is defined.
+
+      //_tree.get_egg_root()->add_child(vpool);
+      _tree.get_egg_root()->insert(_tree.get_egg_root()->begin(), vpool);
+
+      //egg_group->add_child(vpool);
 
       /*
       // create a copy of vpool in node_desc which will be used later
@@ -1083,9 +1093,9 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           
           cout << "indices[" << i << "] = " << indices[i] << "\n";
           cout << "cvert[" << i << "] = " << cvertPos[i].x << " " << cvertPos[i].y
-               << " " << cvertPos[i].z << " " << cvertPos[i].w << "\n";
+                              << " " << cvertPos[i].z << " " << cvertPos[i].w << "\n";
           cout << " global cvert[" << i << "] = " << global.x << " " << global.y
-               << " " << global.z << " " << global.w << "\n";
+                              << " " << global.z << " " << global.w << "\n";
           
           //      LPoint3d p3d(cvertPos[i].x, cvertPos[i].y, cvertPos[i].z);
           LPoint3d p3d(global.x, global.y, global.z);
@@ -1126,7 +1136,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
             u = uCoords[i];
             v = 1.0f - vCoords[i];
             cout << "texcoords[" << i << "] = " << u << " " 
-                 << v << endl;
+                                << v << endl;
             
             vert.set_uv(TexCoordd(u, v));
             //        vert.set_uv(TexCoordd(uCoords[i], vCoords[i]));
@@ -1431,7 +1441,7 @@ make_soft_skin() {
                 exit(1);
               }
               string vpool_name = s_name + ".verts";
-              DCAST_INTO_R(vpool, mesh_node->get_egg_group()->find_child(vpool_name), NULL);
+              DCAST_INTO_R(vpool, _tree.get_egg_root()->find_child(vpool_name), NULL);
 
               // find the mapping of the vertices that match this envelop
               if (vpool) {

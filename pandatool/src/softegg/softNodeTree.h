@@ -53,6 +53,7 @@ public:
   char *GetName(SAA_Scene *scene, SAA_Elem *element);
   char *GetFullName(SAA_Scene *scene, SAA_Elem *element);
 
+  EggGroupNode *get_egg_root() {return _egg_root;}
   EggGroup *get_egg_group(SoftNodeDesc *node_desc);
   EggTable *get_egg_table(SoftNodeDesc *node_desc);
   EggXfmSAnim *get_egg_anim(SoftNodeDesc *node_desc);
