@@ -222,9 +222,9 @@ $[target] : $[sources]
     #define target $[pal_egg_dir]/$[egg]
 $[target] : $[source] $[pt]
     #if $[PHASE]
-	egg-palettize-new $[PALETTIZE_OPTS] -C -dr $[install_dir] -dm $[install_dir]/%s/maps -g phase_$[PHASE] -gdir phase_$[PHASE] -P256,256 -2 -o $[target] $[texattrib_file] $[source]
+	egg-palettize-new $[PALETTIZE_OPTS] -type jpg,rgb -C -dr $[install_dir] -dm $[install_dir]/%s/maps -g phase_$[PHASE] -gdir phase_$[PHASE] -P256,256 -2 -o $[target] $[texattrib_file] $[source]
     #else
-	egg-palettize-new $[PALETTIZE_OPTS] -C -dr $[install_dir] -dm $[install_dir]/maps -P256,256 -2 -o $[target] $[texattrib_file] $[source]
+	egg-palettize-new $[PALETTIZE_OPTS] -type jpg,rgb -C -dr $[install_dir] -dm $[install_dir]/maps -P256,256 -2 -o $[target] $[texattrib_file] $[source]
     #endif
 
 $[pt] :
@@ -240,14 +240,14 @@ $[pt] :
     #define source $[pal_egg_dir]/$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source]
-	egg2bam -tp $[install_dir] -o $[target] $[source]
+	egg2bam -kp -tp $[install_dir] -o $[target] $[source]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source]
-	egg2bam -tp $[install_dir] -o $[target] $[source]
+	egg2bam -kp -tp $[install_dir] -o $[target] $[source]
 
   #end egg
 #end install_egg
