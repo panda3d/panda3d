@@ -24,9 +24,13 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ImageFilter::
-ImageFilter() {
+ImageFilter(bool allow_last_param) :
+  ImageWriter(allow_last_param)
+{
   clear_runlines();
-  add_runline("[opts] inputimage outputimage");
+  if (_allow_last_param) {
+    add_runline("[opts] inputimage outputimage");
+  }
   add_runline("[opts] -o outputimage inputimage");
 }
 
@@ -40,21 +44,8 @@ ImageFilter() {
 ////////////////////////////////////////////////////////////////////
 bool ImageFilter::
 handle_args(ProgramBase::Args &args) {
-  if (!_got_output_filename) {
-    if (args.size() != 2) {
-      nout << "You must specify the input and output filenames on the "
-           << "command line, or use -o to specify the output filename.\n";
-      return false;
-    }
-
-    if (!_image.read(args[0])) {
-      nout << "Unable to read image file.\n";
-      return false;
-    }
-
-    _output_filename = args[1];
-    _got_output_filename = true;
-    return true;
+  if (!check_last_arg(args, 1)) {
+    return false;
   }
 
   return ImageReader::handle_args(args);

@@ -19,9 +19,9 @@
 #ifndef IMAGETRANS_H
 #define IMAGETRANS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <imageFilter.h>
+#include "imageFilter.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ImageTrans
@@ -34,6 +34,24 @@ public:
   ImageTrans();
 
   void run();
+
+private:
+  static bool dispatch_channels(const string &opt, const string &arg, void *var);
+  void extract_alpha();
+
+  enum Channels {
+    C_default,
+    C_l = 1,
+    C_la = 2,
+    C_rgb = 3,
+    C_rgba = 4,
+    C_r,
+    C_g,
+    C_b,
+    C_a
+  };
+    
+  Channels _channels;
 };
 
 #endif

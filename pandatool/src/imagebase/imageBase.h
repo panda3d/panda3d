@@ -19,11 +19,11 @@
 #ifndef IMAGEBASE_H
 #define IMAGEBASE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <programBase.h>
-#include <coordinateSystem.h>
-#include <pnmImage.h>
+#include "programBase.h"
+#include "coordinateSystem.h"
+#include "pnmImage.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ImageBase

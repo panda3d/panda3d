@@ -19,32 +19,26 @@
 #ifndef IMAGEWRITER_H
 #define IMAGEWRITER_H
 
-#include <pandatoolbase.h>
-
+#include "pandatoolbase.h"
 #include "imageBase.h"
+#include "withOutputFile.h"
 
-#include <filename.h>
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ImageWriter
 // Description : This is the base class for a program that generates
 //               an image file output, but doesn't read any for input.
 ////////////////////////////////////////////////////////////////////
-class ImageWriter : virtual public ImageBase {
+class ImageWriter : virtual public ImageBase, public WithOutputFile {
 public:
-  ImageWriter();
+  ImageWriter(bool allow_last_param);
 
   INLINE void write_image();
   void write_image(const PNMImage &image);
 
 protected:
   virtual bool handle_args(Args &args);
-
-protected:
-  bool _got_output_filename, _bDoResize, _bUseHighQualityFiltering;
-  int _newsize[2];
-  double _filter_radius;
-  Filename _output_filename;
 };
 
 #include "imageWriter.I"

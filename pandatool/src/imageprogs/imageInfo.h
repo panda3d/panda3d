@@ -1,5 +1,5 @@
-// Filename: imageFilter.h
-// Created by:  drose (19Jun00)
+// Filename: imageInfo.h
+// Created by:  drose (13Mar03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,28 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef IMAGEFILTER_H
-#define IMAGEFILTER_H
+#ifndef IMAGEINFO_H
+#define IMAGEINFO_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include "imageReader.h"
-#include "imageWriter.h"
+#include "programBase.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ImageFilter
-// Description : This is the base class for a program that reads an
-//               image file, operates on it, and writes another image
-//               file out.
+//       Class : ImageInfo
+// Description : This program reads the headers of a series of one or
+//               more images and reports their sizes to standard
+//               output.
 ////////////////////////////////////////////////////////////////////
-class ImageFilter : public ImageReader, public ImageWriter {
+class ImageInfo : public ProgramBase {
 public:
-  ImageFilter(bool allow_last_param);
+  ImageInfo();
+
+  void run();
 
 protected:
   virtual bool handle_args(Args &args);
+
+  Args _filenames;
 };
 
 #endif
-
 

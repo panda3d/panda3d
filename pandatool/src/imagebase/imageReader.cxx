@@ -47,7 +47,7 @@ handle_args(ProgramBase::Args &args) {
   }
 
   if (!_image.read(args[0])) {
-    nout << "Unable to read image file.\n";
+    nout << "Unable to read image file " << args[0] << ".\n";
     return false;
   }
 
