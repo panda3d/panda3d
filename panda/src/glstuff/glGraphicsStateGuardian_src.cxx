@@ -119,14 +119,24 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
   glgsg->issue_transformed_color(color);
 }
 
-// This noop function is assigned to _glActiveTexture in case we don't
-// have multitexturing support, so it will always be safe to call
-// _glActiveTexture().
+// The following noop functions are assigned to the corresponding
+// glext function pointers in the class, in case the functions are not
+// defined by the GL, just so it will always be safe to call the
+// extension functions.
+
 static void APIENTRY
 null_glActiveTexture(GLenum gl_texture_stage) {
   // If we don't support multitexture, we'd better not try to request
   // a texture beyond the first texture stage.
   nassertv(gl_texture_stage == GL_TEXTURE0);
+}
+
+static void APIENTRY
+null_glBlendEquation(GLenum) {
+}
+
+static void APIENTRY
+null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,6 +343,32 @@ reset() {
   }
   if (!_supports_multitexture) {
     _glActiveTexture = null_glActiveTexture;
+  }
+
+  _glBlendEquation = NULL;
+  if (has_extension("GL_EXT_blend_minmax") || is_at_least_version(1, 2)) {
+    _glBlendEquation = (PFNGLBLENDEQUATIONEXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BlendEquationEXT");
+    if (_glBlendEquation == NULL) {
+      GLCAT.warning()
+        << "BlendEquation advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    }
+  }
+  if (_glBlendEquation == NULL) {
+    _glBlendEquation = null_glBlendEquation;
+  }
+
+  _glBlendColor = NULL;
+  if (has_extension("GL_EXT_blend_color") || is_at_least_version(1, 2)) {
+    _glBlendColor = (PFNGLBLENDCOLOREXTPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BlendColorEXT");
+    if (_glBlendColor == NULL) {
+      GLCAT.warning()
+        << "BlendColor advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    }
+  }
+  if (_glBlendColor == NULL) {
+    _glBlendColor = null_glBlendColor;
   }
 
   _edge_clamp = GL_CLAMP;
@@ -3440,7 +3476,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
       ColorWriteAttrib::make(ColorWriteAttrib::M_on),
       RenderModeAttrib::make(RenderModeAttrib::M_filled),
       //TexMatrixAttrib::make(LMatrix4f::ident_mat()),
-      ColorBlendAttrib::make(ColorBlendAttrib::M_none),
+      ColorBlendAttrib::make_off(),
       TransparencyAttrib::make(TransparencyAttrib::M_none),
     };
     basic_state = 
@@ -3641,7 +3677,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 //               GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_wrap_mode(Texture::WrapMode wm) {
+get_texture_wrap_mode(Texture::WrapMode wm) const {
   if (CLP(ignore_clamp)) {
     return GL_REPEAT;
   }
@@ -3670,7 +3706,7 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_texture_filter_type
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the Texture's internal filter type symbols
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
@@ -3717,7 +3753,7 @@ get_texture_filter_type(Texture::FilterType ft) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_image_type
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the PixelBuffer's internal Type symbols
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
@@ -3746,7 +3782,7 @@ get_image_type(PixelBuffer::Type type) {
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_external_image_format(PixelBuffer::Format format) {
+get_external_image_format(PixelBuffer::Format format) const {
   switch (format) {
   case PixelBuffer::F_color_index:
     return GL_COLOR_INDEX;
@@ -3789,7 +3825,7 @@ get_external_image_format(PixelBuffer::Format format) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_internal_image_format
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the PixelBuffer's Format symbols to a
 //               suitable internal format for GL textures.
 ////////////////////////////////////////////////////////////////////
@@ -3841,12 +3877,12 @@ get_internal_image_format(PixelBuffer::Format format) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_texture_apply_mode_type
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the texture stage's mode types
 //               to the corresponding OpenGL ids
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_texture_apply_mode_type(TextureStage::Mode am) const {
+get_texture_apply_mode_type(TextureStage::Mode am) {
   switch (am) {
   case TextureStage::M_modulate: return GL_MODULATE;
   case TextureStage::M_decal: return GL_DECAL;
@@ -3863,12 +3899,12 @@ get_texture_apply_mode_type(TextureStage::Mode am) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_texture_combine_type
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the texture stage's CombineMode types
 //               to the corresponding OpenGL ids
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_texture_combine_type(TextureStage::CombineMode cm) const {
+get_texture_combine_type(TextureStage::CombineMode cm) {
   switch (cm) {
   case TextureStage::CM_undefined: // fall through
   case TextureStage::CM_replace: return GL_REPLACE;
@@ -3887,12 +3923,12 @@ get_texture_combine_type(TextureStage::CombineMode cm) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_texture_src_type
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the texture stage's CombineSource types
 //               to the corresponding OpenGL ids
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_texture_src_type(TextureStage::CombineSource cs) const {
+get_texture_src_type(TextureStage::CombineSource cs) {
   switch (cs) {
   case TextureStage::CS_undefined: // fall through
   case TextureStage::CS_texture: return GL_TEXTURE;
@@ -3908,12 +3944,12 @@ get_texture_src_type(TextureStage::CombineSource cs) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_texture_operand_type
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the texture stage's CombineOperand types
 //               to the corresponding OpenGL ids
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_texture_operand_type(TextureStage::CombineOperand co) const {
+get_texture_operand_type(TextureStage::CombineOperand co) {
   switch (co) {
   case TextureStage::CO_undefined: // fall through
   case TextureStage::CO_src_alpha: return GL_SRC_ALPHA;
@@ -3929,11 +3965,11 @@ get_texture_operand_type(TextureStage::CombineOperand co) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_fog_mode_type
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_fog_mode_type(Fog::Mode m) const {
+get_fog_mode_type(Fog::Mode m) {
   switch(m) {
   case Fog::M_linear: return GL_LINEAR;
   case Fog::M_exponential: return GL_EXP;
@@ -3947,6 +3983,97 @@ get_fog_mode_type(Fog::Mode m) const {
     return GL_EXP;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_blend_equation_type
+//       Access: Protected, Static
+//  Description: Maps from ColorBlendAttrib::Mode to glBlendEquation
+//               value.
+////////////////////////////////////////////////////////////////////
+GLenum CLP(GraphicsStateGuardian)::
+get_blend_equation_type(ColorBlendAttrib::Mode mode) {
+  switch (mode) {
+  case ColorBlendAttrib::M_add:
+    return GL_FUNC_ADD;
+    
+  case ColorBlendAttrib::M_subtract:
+    return GL_FUNC_SUBTRACT;
+    
+  case ColorBlendAttrib::M_inv_subtract:
+    return GL_FUNC_REVERSE_SUBTRACT;
+    
+  case ColorBlendAttrib::M_min:
+    return GL_MIN;
+    
+  case ColorBlendAttrib::M_max:
+    return GL_MAX;
+  }    
+
+  GLCAT.error()
+    << "Unknown color blend mode " << (int)mode << endl;
+  return GL_FUNC_ADD;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_blend_func
+//       Access: Protected, Static
+//  Description: Maps from ColorBlendAttrib::Operand to glBlendFunc
+//               value.
+////////////////////////////////////////////////////////////////////
+GLenum CLP(GraphicsStateGuardian)::
+get_blend_func(ColorBlendAttrib::Operand operand) {
+  switch (operand) {
+  case ColorBlendAttrib::O_zero:
+    return GL_ZERO;
+
+  case ColorBlendAttrib::O_one:
+    return GL_ONE;
+
+  case ColorBlendAttrib::O_incoming_color:
+    return GL_SRC_COLOR;
+
+  case ColorBlendAttrib::O_one_minus_incoming_color:
+    return GL_ONE_MINUS_SRC_COLOR;
+
+  case ColorBlendAttrib::O_fbuffer_color:
+    return GL_DST_COLOR;
+
+  case ColorBlendAttrib::O_one_minus_fbuffer_color:
+    return GL_ONE_MINUS_DST_COLOR;
+
+  case ColorBlendAttrib::O_incoming_alpha:
+    return GL_SRC_ALPHA;
+
+  case ColorBlendAttrib::O_one_minus_incoming_alpha:
+    return GL_ONE_MINUS_SRC_ALPHA;
+
+  case ColorBlendAttrib::O_fbuffer_alpha:
+    return GL_DST_ALPHA;
+
+  case ColorBlendAttrib::O_one_minus_fbuffer_alpha:
+    return GL_ONE_MINUS_DST_ALPHA;
+
+  case ColorBlendAttrib::O_constant_color:
+    return GL_CONSTANT_COLOR;
+
+  case ColorBlendAttrib::O_one_minus_constant_color:
+    return GL_ONE_MINUS_CONSTANT_COLOR;
+
+  case ColorBlendAttrib::O_constant_alpha:
+    return GL_CONSTANT_ALPHA;
+
+  case ColorBlendAttrib::O_one_minus_constant_alpha:
+    return GL_ONE_MINUS_CONSTANT_ALPHA;
+
+  case ColorBlendAttrib::O_incoming_color_saturate:
+    return GL_SRC_ALPHA_SATURATE;
+  }
+
+  GLCAT.error()
+    << "Unknown color blend operand " << (int)operand << endl;
+  return GL_ZERO;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::print_gfx_visual
@@ -4237,80 +4364,63 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
+    _glBlendEquation(GL_FUNC_ADD);
     GLP(BlendFunc)(GL_ZERO, GL_ONE);
     return;
   }
 
   // Is there a color blend set?
-  switch (color_blend_mode) {
-  case ColorBlendAttrib::M_none:
-    break;
-
-  case ColorBlendAttrib::M_multiply:
+  if (color_blend_mode != ColorBlendAttrib::M_none) {
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    GLP(BlendFunc)(GL_DST_COLOR, GL_ZERO);
+    _glBlendEquation(get_blend_equation_type(color_blend_mode));
+    GLP(BlendFunc)(get_blend_func(_color_blend->get_operand_a()),
+                   get_blend_func(_color_blend->get_operand_b()));
+    Colorf c = _color_blend->get_color();
+    _glBlendColor(c[0], c[1], c[2], c[3]);
     return;
-
-  case ColorBlendAttrib::M_add:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    GLP(BlendFunc)(GL_ONE, GL_ONE);
-    return;
-
-  case ColorBlendAttrib::M_multiply_add:
-    enable_multisample_alpha_one(false);
-    enable_multisample_alpha_mask(false);
-    enable_blend(true);
-    GLP(BlendFunc)(GL_DST_COLOR, GL_ONE);
-    return;
-
-  default:
-    GLCAT.error()
-      << "Unknown color blend mode " << (int)color_blend_mode << endl;
-    break;
   }
 
   // No color blend; is there a transparency set?
   switch (transparency_mode) {
-      case TransparencyAttrib::M_none:
-      case TransparencyAttrib::M_binary:
-        break;
+  case TransparencyAttrib::M_none:
+  case TransparencyAttrib::M_binary:
+    break;
     
-      case TransparencyAttrib::M_alpha:
-      case TransparencyAttrib::M_alpha_sorted:
-      case TransparencyAttrib::M_dual:
-        // Should we really have an "alpha" and an "alpha_sorted"
-        // mode, like Performer does?  (The difference is that
-        // "alpha_sorted" is with the write to the depth buffer
-        // disabled.)  Or should we just use the separate depth write
-        // transition to control this?  Doing it implicitly requires a
-        // bit more logic here and in the state management; for now we
-        // require the user to explicitly turn off the depth write.
-        enable_multisample_alpha_one(false);
-        enable_multisample_alpha_mask(false);
-        enable_blend(true);
-        GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        return;
+  case TransparencyAttrib::M_alpha:
+  case TransparencyAttrib::M_alpha_sorted:
+  case TransparencyAttrib::M_dual:
+    // Should we really have an "alpha" and an "alpha_sorted"
+    // mode, like Performer does?  (The difference is that
+    // "alpha_sorted" is with the write to the depth buffer
+    // disabled.)  Or should we just use the separate depth write
+    // transition to control this?  Doing it implicitly requires a
+    // bit more logic here and in the state management; for now we
+    // require the user to explicitly turn off the depth write.
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    _glBlendEquation(GL_FUNC_ADD);
+    GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    return;
     
-      case TransparencyAttrib::M_multisample:
-        enable_multisample_alpha_one(true);
-        enable_multisample_alpha_mask(true);
-        enable_blend(false);
-        return;
+  case TransparencyAttrib::M_multisample:
+    enable_multisample_alpha_one(true);
+    enable_multisample_alpha_mask(true);
+    enable_blend(false);
+    return;
     
-      case TransparencyAttrib::M_multisample_mask:
-        enable_multisample_alpha_one(false);
-        enable_multisample_alpha_mask(true);
-        enable_blend(false);
-        return;
+  case TransparencyAttrib::M_multisample_mask:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(true);
+    enable_blend(false);
+    return;
     
-      default:
-        GLCAT.error()
-          << "invalid transparency mode " << (int)transparency_mode << endl;
-        break;
+  default:
+    GLCAT.error()
+      << "invalid transparency mode " << (int)transparency_mode << endl;
+    break;
   }
 
   // Nothing's set, so disable blending.

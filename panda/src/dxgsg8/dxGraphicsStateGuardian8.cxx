@@ -1093,6 +1093,70 @@ void DXGraphicsStateGuardian8::set_clipper(RECT cliprect) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_blend_func
+//       Access: Protected, Static
+//  Description: Maps from ColorBlendAttrib::Operand to D3DBLEND
+//               value.
+////////////////////////////////////////////////////////////////////
+D3DBLEND DXGraphicsStateGuardian8::
+get_blend_func(ColorBlendAttrib::Operand operand) {
+  switch (operand) {
+  case ColorBlendAttrib::O_zero:
+    return D3DBLEND_ZERO;
+
+  case ColorBlendAttrib::O_one:
+    return D3DBLEND_ONE;
+
+  case ColorBlendAttrib::O_incoming_color:
+    return D3DBLEND_SRCCOLOR;
+
+  case ColorBlendAttrib::O_one_minus_incoming_color:
+    return D3DBLEND_INVSRCCOLOR;
+
+  case ColorBlendAttrib::O_fbuffer_color:
+    return D3DBLEND_DESTCOLOR;
+
+  case ColorBlendAttrib::O_one_minus_fbuffer_color:
+    return D3DBLEND_INVDESTCOLOR;
+
+  case ColorBlendAttrib::O_incoming_alpha:
+    return D3DBLEND_SRCALPHA;
+
+  case ColorBlendAttrib::O_one_minus_incoming_alpha:
+    return D3DBLEND_INVSRCALPHA;
+
+  case ColorBlendAttrib::O_fbuffer_alpha:
+    return D3DBLEND_DESTALPHA;
+
+  case ColorBlendAttrib::O_one_minus_fbuffer_alpha:
+    return D3DBLEND_INVDESTALPHA;
+
+  case ColorBlendAttrib::O_constant_color:
+    // Not supported by DX.
+    return D3DBLEND_SRCCOLOR;
+
+  case ColorBlendAttrib::O_one_minus_constant_color:
+    // Not supported by DX.
+    return D3DBLEND_INVSRCCOLOR;
+
+  case ColorBlendAttrib::O_constant_alpha:
+    // Not supported by DX.
+    return D3DBLEND_SRCALPHA;
+
+  case ColorBlendAttrib::O_one_minus_constant_alpha:
+    // Not supported by DX.
+    return D3DBLEND_INVSRCALPHA;
+
+  case ColorBlendAttrib::O_incoming_color_saturate:
+    return D3DBLEND_SRCALPHASAT;
+  }
+
+  dxgsg8_cat.error()
+    << "Unknown color blend operand " << (int)operand << endl;
+  return D3DBLEND_ZERO;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::report_texmgr_stats
 //       Access: Protected
 //  Description: Reports the DX texture manager's activity to PStats.
@@ -4241,29 +4305,34 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   }
 
   // Is there a color blend set?
-  switch (color_blend_mode) {
-  case ColorBlendAttrib::M_none:
-    break;
-
-  case ColorBlendAttrib::M_multiply:
+  if (color_blend_mode != ColorBlendAttrib::M_none) {
     enable_blend(true);
-    call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ZERO);
-    return;
+  
+    switch (color_blend_mode) {
+    case ColorBlendAttrib::M_add:
+      _pD3DDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+      break;
 
-  case ColorBlendAttrib::M_add:
-    enable_blend(true);
-    call_dxBlendFunc(D3DBLEND_ONE, D3DBLEND_ONE);
-    return;
+    case ColorBlendAttrib::M_subtract:
+      _pD3DDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
+      break;
 
-  case ColorBlendAttrib::M_multiply_add:
-    enable_blend(true);
-    call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ONE);
-    return;
+    case ColorBlendAttrib::M_inv_subtract:
+      _pD3DDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
+      break;
 
-  default:
-    dxgsg8_cat.error()
-      << "Unknown color blend mode " << (int)color_blend_mode << endl;
-    break;
+    case ColorBlendAttrib::M_min:
+      _pD3DDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MIN);
+      break;
+
+    case ColorBlendAttrib::M_max:
+      _pD3DDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_MAX);
+      break;
+    }
+  
+    call_dxBlendFunc(get_blend_func(_color_blend->get_operand_a()),
+                     get_blend_func(_color_blend->get_operand_b()));
+    return;
   }
 
   // No color blend; is there a transparency set?
@@ -4278,6 +4347,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   case TransparencyAttrib::M_multisample_mask:
   case TransparencyAttrib::M_dual:
     enable_blend(true);
+    _pD3DDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
     call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
     return;
 

@@ -814,6 +814,7 @@ issue_transparency(const TransparencyAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 issue_color_blend(const ColorBlendAttrib *attrib) {
+  _color_blend = attrib;
   _color_blend_mode = attrib->get_mode();
   set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);
 }

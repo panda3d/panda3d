@@ -27,13 +27,44 @@
 TypeHandle ColorBlendAttrib::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorBlendAttrib::make_off
+//       Access: Published, Static
+//  Description: Constructs a new ColorBlendAttrib object that
+//               disables special-effect blending, allowing normal
+//               transparency to be used instead.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ColorBlendAttrib::
+make_off() {
+  ColorBlendAttrib *attrib = new ColorBlendAttrib;
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorBlendAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new ColorBlendAttrib object.
+//  Description: Constructs a new ColorBlendAttrib object.  This
+//               constructor is deprecated; use the one below, which
+//               takes three or four parameters, instead.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode) {
-  ColorBlendAttrib *attrib = new ColorBlendAttrib(mode);
+  ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, O_one, O_one,
+                                                  Colorf::zero());
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorBlendAttrib::make
+//       Access: Published, Static
+//  Description: Constructs a new ColorBlendAttrib object that enables
+//               special-effect blending.  This supercedes
+//               transparency.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ColorBlendAttrib::
+make(ColorBlendAttrib::Mode mode, 
+     ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
+     const Colorf &color) {
+  ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, a, b, color);
   return return_new(attrib);
 }
 
@@ -58,23 +89,16 @@ issue(GraphicsStateGuardianBase *gsg) const {
 ////////////////////////////////////////////////////////////////////
 void ColorBlendAttrib::
 output(ostream &out) const {
-  out << get_type() << ":";
-  switch (get_mode()) {
-  case M_none:
-    out << "none";
-    break;
+  out << get_type() << ":" << get_mode();
 
-  case M_multiply:
-    out << "multiply";
-    break;
-
-  case M_add:
-    out << "add";
-    break;
-
-  case M_multiply_add:
-    out << "multiply_add";
-    break;
+  if (get_mode() != M_none) {
+    out << "(" << get_operand_a()
+        << "," << get_operand_b();
+    if (involves_constant_color(get_operand_a()) ||
+        involves_constant_color(get_operand_b())) {
+      out << "," << get_color();
+    }
+    out << ")";
   }
 }
 
@@ -97,7 +121,20 @@ int ColorBlendAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ColorBlendAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  return (int)_mode - (int)ta->_mode;
+
+  if (_mode != ta->_mode) {
+    return (int)_mode - (int)ta->_mode;
+  }
+
+  if (_a != ta->_a) {
+    return (int)_a - (int)ta->_a;
+  }
+
+  if (_b != ta->_b) {
+    return (int)_b - (int)ta->_b;
+  }
+
+  return _color.compare_to(ta->_color);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,7 +174,10 @@ void ColorBlendAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
-  dg.add_int8(_mode);
+  dg.add_uint8(_mode);
+  dg.add_uint8(_a);
+  dg.add_uint8(_b);
+  _color.write_datagram(dg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,5 +211,93 @@ void ColorBlendAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  _mode = (Mode)scan.get_int8();
+  _mode = (Mode)scan.get_uint8();
+  _a = (Operand)scan.get_uint8();
+  _b = (Operand)scan.get_uint8();
+  _color.read_datagram(scan);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ostream << ColorBlendAttrib::Mode
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, ColorBlendAttrib::Mode mode) {
+  switch (mode) {
+  case ColorBlendAttrib::M_none:
+    return out << "none";
+
+  case ColorBlendAttrib::M_add:
+    return out << "add";
+
+  case ColorBlendAttrib::M_subtract:
+    return out << "subtract";
+
+  case ColorBlendAttrib::M_inv_subtract:
+    return out << "inv_subtract";
+
+  case ColorBlendAttrib::M_min:
+    return out << "min";
+
+  case ColorBlendAttrib::M_max:
+    return out << "max";
+  }
+
+  return out << "**invalid ColorBlendAttrib::Mode(" << (int)mode << ")**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ostream << ColorBlendAttrib::Operand
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, ColorBlendAttrib::Operand operand) {
+  switch (operand) {
+  case ColorBlendAttrib::O_zero:
+    return out << "0";
+
+  case ColorBlendAttrib::O_one:
+    return out << "1";
+
+  case ColorBlendAttrib::O_incoming_color:
+    return out << "ic";
+
+  case ColorBlendAttrib::O_one_minus_incoming_color:
+    return out << "1-ic";
+
+  case ColorBlendAttrib::O_fbuffer_color:
+    return out << "fc";
+
+  case ColorBlendAttrib::O_one_minus_fbuffer_color:
+    return out << "1-fc";
+
+  case ColorBlendAttrib::O_incoming_alpha:
+    return out << "ia";
+
+  case ColorBlendAttrib::O_one_minus_incoming_alpha:
+    return out << "1-ia";
+
+  case ColorBlendAttrib::O_fbuffer_alpha:
+    return out << "fa";
+
+  case ColorBlendAttrib::O_one_minus_fbuffer_alpha:
+    return out << "1-fa";
+
+  case ColorBlendAttrib::O_constant_color:
+    return out << "cc";
+
+  case ColorBlendAttrib::O_one_minus_constant_color:
+    return out << "1-cc";
+
+  case ColorBlendAttrib::O_constant_alpha:
+    return out << "ca";
+
+  case ColorBlendAttrib::O_one_minus_constant_alpha:
+    return out << "1-ca";
+
+  case ColorBlendAttrib::O_incoming_color_saturate:
+    return out << "ics";
+  }
+
+  return out << "**invalid ColorBlendAttrib::Operand(" << (int)operand << ")**";
 }

@@ -269,6 +269,7 @@ protected:
   ColorWriteAttrib::Mode _color_write_mode;
   ColorBlendAttrib::Mode _color_blend_mode;
   TransparencyAttrib::Mode _transparency_mode;
+  CPT(ColorBlendAttrib) _color_blend;
 
   bool _needs_reset;
   bool _closing_gsg;

@@ -895,6 +895,70 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD,DWOR
 #endif
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian7::get_blend_func
+//       Access: Protected, Static
+//  Description: Maps from ColorBlendAttrib::Operand to D3DBLEND
+//               value.
+////////////////////////////////////////////////////////////////////
+D3DBLEND DXGraphicsStateGuardian7::
+get_blend_func(ColorBlendAttrib::Operand operand) {
+  switch (operand) {
+  case ColorBlendAttrib::O_zero:
+    return D3DBLEND_ZERO;
+
+  case ColorBlendAttrib::O_one:
+    return D3DBLEND_ONE;
+
+  case ColorBlendAttrib::O_incoming_color:
+    return D3DBLEND_SRCCOLOR;
+
+  case ColorBlendAttrib::O_one_minus_incoming_color:
+    return D3DBLEND_INVSRCCOLOR;
+
+  case ColorBlendAttrib::O_fbuffer_color:
+    return D3DBLEND_DESTCOLOR;
+
+  case ColorBlendAttrib::O_one_minus_fbuffer_color:
+    return D3DBLEND_INVDESTCOLOR;
+
+  case ColorBlendAttrib::O_incoming_alpha:
+    return D3DBLEND_SRCALPHA;
+
+  case ColorBlendAttrib::O_one_minus_incoming_alpha:
+    return D3DBLEND_INVSRCALPHA;
+
+  case ColorBlendAttrib::O_fbuffer_alpha:
+    return D3DBLEND_DESTALPHA;
+
+  case ColorBlendAttrib::O_one_minus_fbuffer_alpha:
+    return D3DBLEND_INVDESTALPHA;
+
+  case ColorBlendAttrib::O_constant_color:
+    // Not supported by DX.
+    return D3DBLEND_SRCCOLOR;
+
+  case ColorBlendAttrib::O_one_minus_constant_color:
+    // Not supported by DX.
+    return D3DBLEND_INVSRCCOLOR;
+
+  case ColorBlendAttrib::O_constant_alpha:
+    // Not supported by DX.
+    return D3DBLEND_SRCALPHA;
+
+  case ColorBlendAttrib::O_one_minus_constant_alpha:
+    // Not supported by DX.
+    return D3DBLEND_INVSRCALPHA;
+
+  case ColorBlendAttrib::O_incoming_color_saturate:
+    return D3DBLEND_SRCALPHASAT;
+  }
+
+  dxgsg7_cat.error()
+    << "Unknown color blend operand " << (int)operand << endl;
+  return D3DBLEND_ZERO;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian7::report_texmgr_stats
 //       Access: Protected
 //  Description: Reports the DX texture manager's activity to PStats.
@@ -4536,31 +4600,18 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
     return;
   }
-
+  
   // Is there a color blend set?
-  switch (color_blend_mode) {
-  case ColorBlendAttrib::M_none:
-    break;
-
-  case ColorBlendAttrib::M_multiply:
+  if (color_blend_mode != ColorBlendAttrib::M_none) {
     enable_blend(true);
-    call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ZERO);
-    return;
 
-  case ColorBlendAttrib::M_add:
-    enable_blend(true);
-    call_dxBlendFunc(D3DBLEND_ONE, D3DBLEND_ONE);
+    // DX7 supports only ColorBlendAttrib::M_add.  Assume that's what
+    // we've got; if the user asked for anything else, give him M_add
+    // instead.
+  
+    call_dxBlendFunc(get_blend_func(_color_blend->get_operand_a()),
+                     get_blend_func(_color_blend->get_operand_b()));
     return;
-
-  case ColorBlendAttrib::M_multiply_add:
-    enable_blend(true);
-    call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ONE);
-    return;
-
-  default:
-    dxgsg7_cat.error()
-      << "Unknown color blend mode " << (int)color_blend_mode << endl;
-    break;
   }
 
   // No color blend; is there a transparency set?

@@ -20,7 +20,7 @@
 #define COLORBLENDATTRIB_H
 
 #include "pandabase.h"
-
+#include "luse.h"
 #include "renderAttrib.h"
 
 class FactoryParams;
@@ -35,19 +35,48 @@ class EXPCL_PANDA ColorBlendAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     M_none,             // Blending is disabled
-    M_multiply,         // color already in fbuffer * incoming color
-    M_add,              // color already in fbuffer + incoming color
-    M_multiply_add,     // color already in fbuffer * incoming color +
-                        //   color already in fbuffer
+    M_add,              // incoming color * A + fbuffer color * B
+    M_subtract,         // incoming color * A - fbuffer color * B
+    M_inv_subtract,     // fbuffer color * B - incoming color * A
+    M_min,              // min(incoming color, fbuffer color)
+    M_max               // max(incoming color, fbuffer color)
+  };
+
+  enum Operand {
+    O_zero,
+    O_one,
+    O_incoming_color,
+    O_one_minus_incoming_color,
+    O_fbuffer_color,
+    O_one_minus_fbuffer_color,
+    O_incoming_alpha,
+    O_one_minus_incoming_alpha,
+    O_fbuffer_alpha,
+    O_one_minus_fbuffer_alpha,
+    O_constant_color,
+    O_one_minus_constant_color,
+    O_constant_alpha,
+    O_one_minus_constant_alpha,
+    O_incoming_color_saturate,  // valid only for operand a
   };
 
 private:
-  INLINE ColorBlendAttrib(Mode mode = M_none);
+  INLINE ColorBlendAttrib();
+  INLINE ColorBlendAttrib(Mode mode, Operand a, Operand b,
+                          const Colorf &color);
 
 PUBLISHED:
+  static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make(Mode mode);
+  static CPT(RenderAttrib) make(Mode mode, Operand a, Operand b,
+                                const Colorf &color = Colorf::zero());
 
   INLINE Mode get_mode() const;
+  INLINE Operand get_operand_a() const;
+  INLINE Operand get_operand_b() const;
+  INLINE Colorf get_color() const;
+
+  INLINE static bool involves_constant_color(Operand operand);
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -59,6 +88,8 @@ protected:
 
 private:
   Mode _mode;
+  Operand _a, _b;
+  Colorf _color;
 
 public:
   static void register_with_read_factory();
@@ -85,6 +116,9 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+ostream &operator << (ostream &out, ColorBlendAttrib::Mode mode);
+ostream &operator << (ostream &out, ColorBlendAttrib::Operand operand);
 
 #include "colorBlendAttrib.I"
 

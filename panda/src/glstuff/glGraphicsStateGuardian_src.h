@@ -206,16 +206,18 @@ protected:
   void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                          const RenderBuffer &rb);
 
-  GLenum get_texture_wrap_mode(Texture::WrapMode wm);
-  GLenum get_texture_filter_type(Texture::FilterType ft);
-  GLenum get_image_type(PixelBuffer::Type type);
-  GLint get_external_image_format(PixelBuffer::Format format);
-  GLint get_internal_image_format(PixelBuffer::Format format);
-  GLint get_texture_apply_mode_type(TextureStage::Mode am) const;
-  GLint get_texture_combine_type(TextureStage::CombineMode cm) const;
-  GLint get_texture_src_type(TextureStage::CombineSource cs) const;
-  GLint get_texture_operand_type(TextureStage::CombineOperand co) const;
-  GLenum get_fog_mode_type(Fog::Mode m) const;
+  GLenum get_texture_wrap_mode(Texture::WrapMode wm) const;
+  static GLenum get_texture_filter_type(Texture::FilterType ft);
+  static GLenum get_image_type(PixelBuffer::Type type);
+  GLint get_external_image_format(PixelBuffer::Format format) const;
+  static GLint get_internal_image_format(PixelBuffer::Format format);
+  static GLint get_texture_apply_mode_type(TextureStage::Mode am);
+  static GLint get_texture_combine_type(TextureStage::CombineMode cm);
+  static GLint get_texture_src_type(TextureStage::CombineSource cs);
+  static GLint get_texture_operand_type(TextureStage::CombineOperand co);
+  static GLenum get_fog_mode_type(Fog::Mode m);
+  static GLenum get_blend_equation_type(ColorBlendAttrib::Mode mode);
+  static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
 
   static CPT(RenderState) get_untextured_state();
 
@@ -276,6 +278,9 @@ public:
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
   PFNGLMULTITEXCOORD2FVPROC _glMultiTexCoord2fv;
+
+  PFNGLBLENDEQUATIONEXTPROC _glBlendEquation;
+  PFNGLBLENDCOLOREXTPROC _glBlendColor;
 
   GLenum _edge_clamp;
   GLenum _border_clamp;

@@ -217,6 +217,7 @@ protected:
   INLINE void call_dxLightModelAmbient(const Colorf& color);
   INLINE void call_dxAlphaFunc(D3DCMPFUNC func, float ref);
   INLINE void call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc);
+  static D3DBLEND get_blend_func(ColorBlendAttrib::Operand operand);
   INLINE void enable_dither(bool val);
   INLINE void enable_stencil_test(bool val);
   void report_texmgr_stats();
