@@ -940,6 +940,15 @@ def randUint31(rng=random.random):
     rng must return float in [0..1]"""
     return int(rng() * 0x7FFFFFFF)
 
+def randInt32(rng=random.random):
+    """returns a random integer in [-2147483648..2147483647].
+    rng must return float in [0..1]
+    """
+    i = int(rng() * 0x7FFFFFFF)
+    if rng() < .5:
+        i += 0x80000000
+    return i
+
 class Enum:
     """Pass in list of strings or string of comma-separated strings.
     Items are accessible as instance.item, and are assigned unique,
