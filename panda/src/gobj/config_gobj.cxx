@@ -99,7 +99,7 @@ ConfigureFn(config_gobj) {
 
   } else {
     textures_up_power_2 = false;
-    textures_down_power_2 = config_gobj.GetBool("textures-power-2", true);
+    textures_down_power_2 = config_gobj.GetBool("textures-power-2", false);
   }
 
   string textures_square = config_gobj.GetString("textures-square", "");
