@@ -64,6 +64,7 @@ class Placer(AppShell):
         self.initPos = Vec3(0)
         self.initHpr = Vec3(0)
         self.initScale = Vec3(1)
+        self.deltaHpr = Vec3(0)
 
         # Offset for orbital mode
         self.posOffset = Vec3(0)
@@ -450,7 +451,7 @@ class Placer(AppShell):
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
-                    direct.selected.getWrtAll()
+                    direct.selected.getWrtAll()                    
         # Update active node path
         self.setActiveNodePath(nodePath)
 
@@ -459,10 +460,19 @@ class Placer(AppShell):
         if self['nodePath']:
             self.nodePathMenuEntry.configure(
                 background = self.nodePathMenuBG)
+            # Check to see if node path and ref node path are the same
+            if ((self.refCS != None) &
+                (self.refCS.id() == self['nodePath'].id())):
+                # Yes they are, use temp CS as ref
+                # This calls updatePlacer
+                self.setReferenceNodePath(self.tempCS)
+                # update listbox accordingly
+                self.refNodePathMenu.selectitem('self')
+            else:
+                # Record initial value and initialize the widgets
+                self.updatePlacer()
             # Record initial position
             self.updateResetValues(self['nodePath'])
-            # Record initial value and initialize the widgets
-            self.updatePlacer()
         else:
             # Flash entry
             self.nodePathMenuEntry.configure(background = 'Pink')
@@ -494,7 +504,12 @@ class Placer(AppShell):
                     # Clear bogus entry from listbox
                     listbox = self.refNodePathMenu.component('scrolledlist')
                     listbox.setlist(self.refNodePathNames)
-        # Update ref node path accordingly
+        # Check to see if node path and ref node path are the same
+        if (nodePath != None) & (nodePath.id() == self['nodePath'].id()):
+            # Yes they are, use temp CS and update listbox accordingly
+            nodePath = self.tempCS
+            self.refNodePathMenu.selectitem('self')
+        # Update ref node path
         self.setReferenceNodePath(nodePath)
 
     def setReferenceNodePath(self, nodePath):
@@ -594,6 +609,8 @@ class Placer(AppShell):
             taskMgr.removeTasksNamed('followSelectedNodePath')
             # Record relationship between selected nodes and widget
             direct.selected.getWrtAll()
+        # Record initial state
+        self.deltaHpr = self['nodePath'].getHpr(self.refCS)
         # Update placer to reflect new state
         self.updatePlacer()
         
@@ -609,7 +626,6 @@ class Placer(AppShell):
 
     def xformRelative(self, value, axis):
         nodePath = self['nodePath']
-        
         if (nodePath != None) & (self.refCS != None):
             if axis == 'x':
                 nodePath.setX(self.refCS, value)
@@ -617,12 +633,15 @@ class Placer(AppShell):
                 nodePath.setY(self.refCS, value)
             elif axis == 'z':
                 nodePath.setZ(self.refCS, value)
-            elif axis == 'h':
-                nodePath.setH(self.refCS, value)
-            elif axis == 'p':
-                nodePath.setP(self.refCS, value)
-            elif axis == 'r':
-                nodePath.setR(self.refCS, value)
+            else:
+                if axis == 'h':
+                    self.deltaHpr.setX(value)
+                elif axis == 'p':
+                    self.deltaHpr.setY(value)
+                elif axis == 'r':
+                    self.deltaHpr.setZ(value)
+                # Put node path at new hpr
+                nodePath.setHpr(self.refCS, self.deltaHpr)
 
     def xformOrbit(self, value, axis):
         nodePath = self['nodePath']

@@ -2,8 +2,6 @@ from PandaObject import *
 from DirectGeometry import *
 
 MANIPULATION_MOVE_DELAY = 0.65
-UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
-              'GridBack']
 
 class DirectManipulationControl(PandaObject):
     def __init__(self):
@@ -24,7 +22,6 @@ class DirectManipulationControl(PandaObject):
         self.fWidgetTop = 0
         self.fFreeManip = 1
         self.fScaling = 0
-        self.unpickable = UNPICKABLE
         self.mode = None
         self.actionEvents = [
             ['handleMouse1', self.manipulationStart],
@@ -35,26 +32,19 @@ class DirectManipulationControl(PandaObject):
             [',', self.objectHandles.multiplyScalingFactorBy, 0.5],
             ['<', self.objectHandles.multiplyScalingFactorBy, 0.5],
             ['F', self.objectHandles.growToFit],
+            ['p', self.plantSelectedNodePath],
             ]
 
     def manipulationStart(self):
         # Start out in select mode
         self.mode = 'select'
         # Check for a widget hit point
-        numEntries = direct.iRay.pickWidget(
-            render,direct.dr.mouseX,direct.dr.mouseY)
+        node, hitPt, hitPtDist = direct.iRay.pickWidget()
         # Did we hit a widget?
-        if(numEntries):
+        if node:
             # Yes!
-            # Entry 0 is the closest hit point if multiple hits
-            minPt = 0
-            # Find hit point in camera's space
-            self.hitPt = direct.iRay.camToHitPt(minPt)
-            self.hitPtDist = Vec3(self.hitPt - ZERO_POINT).length()
-            # Get the associated collision queue object
-            entry = direct.iRay.cq.getEntry(minPt)
-            # Extract the node
-            node = entry.getIntoNode()
+            self.hitPt.assign(hitPt)
+            self.hitPtDist = hitPtDist
             # Constraint determined by nodes name
             self.constraint = node.getName()
         else:
@@ -97,32 +87,11 @@ class DirectManipulationControl(PandaObject):
         # depending on flag.....
         if self.mode == 'select':
             # Check for object under mouse
-            numEntries = direct.iRay.pickGeom(
-                render,direct.dr.mouseX,direct.dr.mouseY)
-            # Pick out the closest object that isn't a widget
-            index = -1
-            for i in range(0,numEntries):
-                entry = direct.iRay.cq.getEntry(i)
-                node = entry.getIntoNode()
-                if node.isHidden():
-                    pass
-                # Is it a named node?, If so, see if it has a name
-                elif issubclass(node.__class__, NamedNode):
-                    name = node.getName()
-                    if name in self.unpickable:
-                        pass
-                    else:
-                        index = i
-                        break
-                else:
-                    # Not hidden and not one of the widgets, use it
-                    index = i
-            # Did we hit an object?
-            if(index >= 0):
-                # Yes!
-                # Find hit point in camera's space
-                self.hitPt = direct.iRay.camToHitPt(index)
-                self.hitPtDist = Vec3(self.hitPt - ZERO_POINT).length()
+            node, hitPt, hitPtDist = direct.iRay.pickGeom()
+            if node:
+                # Record hit point information
+                self.hitPt.assign(hitPt)
+                self.hitPtDist = hitPtDist
                 # Find the node path from the node found above
                 nodePath = render.findPathDownTo(node)
                 # Select it
@@ -479,15 +448,32 @@ class DirectManipulationControl(PandaObject):
              self.initScaleMag)
             )
         direct.widget.setScale(currScale)
-        
+
+    ## Utility functions ##
+    def plantSelectedNodePath(self):
+	""" Move selected object to intersection point of cursor on scene """
+        # Check for intersection
+        node, hitPt, hitPtDist = direct.iRay.pickGeom(
+            fIntersectUnpickable = 1)
+        # MRM: Need to handle moving COA
+        if (node != None) & (direct.selected.last != None):
+            # Record undo point
+            direct.pushUndo(direct.selected)
+            # Record wrt matrix
+            direct.selected.getWrtAll()
+            # Move selected
+            direct.widget.setPos(direct.camera, hitPt)
+            # Move all the selected objects with widget
+            # Move the objects with the widget
+            direct.selected.moveWrtWidgetAll()
+            # Let everyone know that something was moved
+            messenger.send('manipulateObjectCleanup')
 
 class ObjectHandles(NodePath,PandaObject):
     def __init__(self):
         # Initialize the superclass
         NodePath.__init__(self)
 
-        # Starts off deactivated
-        self.fActive = 0
         # Load up object handles model and assign it to self
         self.assign(loader.loadModel('models/misc/objectHandles'))
         self.node().setName('objectHandles')
@@ -540,6 +526,10 @@ class ObjectHandles(NodePath,PandaObject):
         self.createGuideLines()
         self.hideGuides()
 
+        # Start with widget handles hidden
+        self.fActive = 1
+        self.toggleWidget()
+
         # Make sure object handles are never lit or drawn in wireframe
         useDirectRenderStyle(self)
 
@@ -551,10 +541,10 @@ class ObjectHandles(NodePath,PandaObject):
 
     def toggleWidget(self):
         if self.fActive:
-            self.reparentTo(hidden)
+            self.scalingNode.reparentTo(hidden)
             self.fActive = 0
         else:
-            self.reparentTo(direct.group)
+            self.scalingNode.reparentTo(self)
             self.fActive = 1
 
     def showWidgetIfActive(self):

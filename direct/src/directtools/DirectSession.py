@@ -79,9 +79,8 @@ class DirectSession(PandaObject):
             ['SGENodePath_Delete', self.removeNodePath],
             ]
         self.keyEvents = ['left', 'right', 'up', 'down',
-                          'escape', 'space', 'delete',
+                          'escape', 'delete', 'control', 'control-up',
                           'shift', 'shift-up', 'alt', 'alt-up',
-                          'control', 'control-up',
                           'page_up', 'page_down', 'tab',
                           '[', '{', ']', '}',
                           'b', 'c', 'f', 'l', 's', 't', 'v', 'w']
@@ -213,8 +212,8 @@ class DirectSession(PandaObject):
         elif (input == ']') | (input == '}'):
             self.redo()
         
-    def select(self, nodePath, fMultiselect = 0, fResetAncestry = 1):
-        dnp = self.selected.select(nodePath, fMultiselect)
+    def select(self, nodePath, fMultiSelect = 0, fResetAncestry = 1):
+        dnp = self.selected.select(nodePath, fMultiSelect)
         if dnp:
             messenger.send('preSelectNodePath', [dnp])
             if fResetAncestry:
@@ -465,6 +464,7 @@ class DirectSession(PandaObject):
     # UTILITY FUNCTIONS
     def useObjectHandles(self):
         self.widget = self.manipulationControl.objectHandles
+        self.widget.reparentTo(direct.group)
 
     def hideReadout(self):
 	self.readout.reparentTo(hidden)

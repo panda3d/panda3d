@@ -163,11 +163,11 @@ class VectorEntry(Pmw.MegaWidget):
     def getAt(self,index):
         return self._value[index]
                                                                                       
-    def set(self, value):
+    def set(self, value, fCommand = 0):
         for i in range(self['dim']):
             self._value[i] = value[i]
             self.variableList[i].set(self.entryFormat % value[i])
-        self.action()
+        self.action(fCommand)
 
     def setAt(self, index, value):
         self.variableList[index].set(self.entryFormat % value)
@@ -207,9 +207,9 @@ class VectorEntry(Pmw.MegaWidget):
         if self._floaters:
             self._floaters.set(self._value, 0)
         
-    def action(self):
+    def action(self, fCommand = 0):
         self._refreshFloaters()
-        if self['command']:
+        if fCommand & (self['command'] != None):
             self['command'](self._value)        
         
     def reset(self):

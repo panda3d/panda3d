@@ -2,6 +2,9 @@ from PandaObject import *
 from DirectGeometry import *
 from DirectSelection import *
 
+UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
+              'GridBack']
+
 # MRM: To do: handle broken node paths in selected and deselected dicts
 class DirectNodePath(NodePath):
     # A node path augmented with info, bounding box, and utility methods
@@ -394,14 +397,70 @@ class SelectionRay:
         self.ct = CollisionTraverser( RenderRelation.getClassType() )
         # Let the traverser know about the queue and the collision node
         self.ct.addCollider(self.rayCollisionNode, self.cq )
+        # List of objects that can't be selected
+        self.unpickable = UNPICKABLE
 
-    def pickGeom(self, targetNodePath, mouseX, mouseY):
+    def pickGeom(self, targetNodePath = render, fIntersectUnpickable = 0):
         self.collideWithGeom()
-        return self.pick(targetNodePath, mouseX, mouseY)
+        numEntries = self.pick(targetNodePath,
+                               direct.dr.mouseX,
+                               direct.dr.mouseY)
+        # Init index
+        index = -1
+        # Pick out the closest object that isn't a widget
+        for i in range(0,numEntries):
+            entry = direct.iRay.cq.getEntry(i)
+            node = entry.getIntoNode()
+            # Don't pick hidden nodes
+            if node.isHidden():
+                pass
+            # Can pick unpickable, use the first visible node
+            elif fIntersectUnpickable:
+                index = i
+                break
+            # Is it a named node?, If so, see if it has a name
+            elif issubclass(node.__class__, NamedNode):
+                name = node.getName()
+                if name in self.unpickable:
+                    pass
+                else:
+                    index = i
+                    break
+            # Not hidden and not one of the widgets, use it
+            else:
+                index = i
+                break
+        # Did we hit an object?
+        if(index >= 0):
+            # Yes!
+            # Find hit point in camera's space
+            hitPt = direct.iRay.camToHitPt(index)
+            hitPtDist = Vec3(hitPt - ZERO_POINT).length()
+            return (node, hitPt, hitPtDist)
+        else:
+            return (None, ZERO_POINT, 0)
 
-    def pickWidget(self, targetNodePath, mouseX, mouseY):
+    def pickWidget(self, targetNodePath = render):
         self.collideWithWidget()
-        return self.pick(targetNodePath, mouseX, mouseY)
+        numEntries = self.pick(targetNodePath,
+                               direct.dr.mouseX,
+                               direct.dr.mouseY)
+        # Did we hit a widget?
+        if numEntries:
+            # Yes!
+            # Entry 0 is the closest hit point if multiple hits
+            minPt = 0
+            # Find hit point in camera's space
+            hitPt = direct.iRay.camToHitPt(minPt)
+            hitPtDist = Vec3(hitPt).length()
+            # Get the associated collision queue object
+            entry = direct.iRay.cq.getEntry(minPt)
+            # Extract the node
+            node = entry.getIntoNode()
+            # Return info
+            return (node, hitPt, hitPtDist)
+        else:
+            return (None, ZERO_POINT, 0)
 
     def pick(self, targetNodePath, mouseX, mouseY):
         # Determine ray direction based upon the mouse coordinates

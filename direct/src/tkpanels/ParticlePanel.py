@@ -59,23 +59,23 @@ class ParticlePanel(AppShell):
         ## SYSTEM PAGE ##
         # Create system floaters
         systemFloaterDefs = (
-            ('System Pool size',
+            ('System Pool Size',
              'Size of particle pool',
              self.setSystemPoolSize,
              1.0, 1.0),
-            ('System Birth rate',
+            ('System Birth Rate',
              'Seconds between particle births',
              self.setSystemBirthRate,
              0.0, None),
-            ('System Litter size',
+            ('System Litter Size',
              'Number of particle created at each birth',
              self.setSystemLitterSize,
              1.0, 1.0),
-            ('System Litter spread',
+            ('System Litter Spread',
              'Variation in litter size',
              self.setSystemLitterSpread,
              0.0, 1.0),
-            ('System lifespan',
+            ('System Lifespan',
              'Age in seconds at which system should die',
              self.setSystemLifespan,
              0.0, None)
@@ -83,17 +83,17 @@ class ParticlePanel(AppShell):
         self.createFloaters(systemPage, systemFloaterDefs)
         # Checkboxes
         self.systemLocalVelocity = self.createCheckbutton(
-            systemPage, 'Local velocity',
+            systemPage, 'System Local Velocity',
             self.toggleSystemLocalVelocity, 0)
         self.systemGrowsOlder = self.createCheckbutton(
-            systemPage, 'System grows older', 
+            systemPage, 'System Grows Older', 
             self.toggleSystemGrowsOlder, 0)
         # Vector widgets
-        pos = self.createVector3Entry(systemPage, 'Pos',
+        pos = self.createVector3Entry(systemPage, 'System Pos',
                                       'Particle system position',
                                       command = self.setSystemPos)
         pos.addMenuItem('Popup Placer Panel', Placer.Placer)
-        hpr = self.createVector3Entry(systemPage, 'Hpr',
+        hpr = self.createVector3Entry(systemPage, 'System Hpr',
                                      'Particle system orientation',
                                       fGroup_labels = ('H', 'P', 'R'),
                                       command = self.setSystemHpr)
@@ -107,27 +107,27 @@ class ParticlePanel(AppShell):
             ('Point', 'Z Spin', 'Oriented'),
             self.selectFactoryType)
         factoryWidgets = (
-            ('Life span',
+            ('Factory Life Span',
              'Average lifespan in seconds',
              self.setFactoryLifeSpan,
              0.0, None),
-            ('Life span spread',
+            ('Factory Life Span Spread',
              'Variation in lifespan',
              self.setFactoryLifeSpanSpread,
              0.0, None),
-            ('Mass',
+            ('Factory Mass',
              'Average particle mass',
              self.setFactoryParticleMass,
              0.0, None),
-            ('Mass spread',
+            ('Factory Mass Spread',
              'Variation in particle mass',
              self.setFactoryParticleMassSpread,
              0.0, None),
-            ('Terminal velocity',
+            ('Factory Terminal Velocity',
              'Average particle terminal velocity',
              self.setFactoryTerminalVelocity,
              0.0, None),
-            ('Terminal vel. spread',
+            ('Factory Terminal Vel. Spread',
              'Variation in terminal velocity',
              self.setFactoryTerminalVelocitySpread,
              0.0, None))
@@ -138,13 +138,13 @@ class ParticlePanel(AppShell):
         factoryPointPage = self.factoryNotebook.add('Point')
         # Z spin page #
         zSpinPage = self.factoryNotebook.add('Z Spin')
-        self.createAngleDial(zSpinPage, 'Initial angle',
+        self.createAngleDial(zSpinPage, 'Z Spin Initial Angle',
                              'Starting angle in degrees',
                              command = self.setFactoryZSpinInitialAngle)
-        self.createAngleDial(zSpinPage, 'Final angle',
+        self.createAngleDial(zSpinPage, 'Z Spin Final Angle',
                              'Final angle in degrees',
                              command = self.setFactoryZSpinFinalAngle)
-        self.createAngleDial(zSpinPage, 'Angle spread',
+        self.createAngleDial(zSpinPage, 'Z Spin Angle Spread',
                              'Spread of the final angle',
                              command = self.setFactoryZSpinAngleSpread)
         # Oriented page #
@@ -164,18 +164,19 @@ class ParticlePanel(AppShell):
         self.emitterNotebook = Pmw.NoteBook(emitterPage, tabpos = None)
         # Box page #
         boxPage = self.emitterNotebook.add('Box')
-        self.createVector3Entry(boxPage, 'Point 1',
-                               'Point defining emitter box',
+        self.createVector3Entry(boxPage, 'Box Emitter Min',
+                                'Min point defining emitter box',
                                 command = self.setEmitterBoxPoint1)
-        self.createVector3Entry(boxPage, 'Point 2',
-                               'Point defining emitter box',
+        self.createVector3Entry(boxPage, 'Box Emitter Max',
+                                'Max point defining emitter box',
                                 command = self.setEmitterBoxPoint2,
                                 initialValue = (1.0, 1.0, 1.0))
         self.createVector3Entry(boxPage, 'Velocity vector',
-                               'Initial particle velocity vector',
+                                'Initial particle velocity vector',
                                 command = self.setEmitterBoxVelocityVector)
         # Disc page #
         discPage = self.emitterNotebook.add('Disc')
+        self.emitter
         self.createFloater(discPage, 'Radius', 'Radius of disc',
                            command = self.setEmitterDiscRadius)
         self.createAngleDial(discPage, 'Inner angle',
@@ -195,23 +196,24 @@ class ParticlePanel(AppShell):
             self.toggleEmitterDiscCubicLerping, 0)
         # Line page #
         linePage = self.emitterNotebook.add('Line')
-        self.createVector3Entry(linePage, 'Point 1',
-                               'Point defining emitter line',
+        self.createVector3Entry(linePage, 'Line Emitter Min',
+                                'Min point defining emitter line',
                                 command = self.setEmitterLinePoint1)
-        self.createVector3Entry(linePage, 'Point 2',
-                               'Point defining emitter line',
+        self.createVector3Entry(linePage, 'Line Emitter Max',
+                                'Max point defining emitter line',
                                 command = self.setEmitterLinePoint2,
                                 initialValue = (1.0, 0.0, 0.0))
-        self.createVector3Entry(linePage, 'Velocity Vector',
+        self.createVector3Entry(linePage, 'Line Emitter Velocity',
                                'Initial particle velocity vector',
                                 command = self.setEmitterLineVelocityVector,
                                 initialValue = (0.0, 0.0, 1.0))
         # Point page #
         emitterPointPage = self.emitterNotebook.add('Point')
-        self.createVector3Entry(emitterPointPage, 'Position',
+        self.createVector3Entry(emitterPointPage, 'Point Emitter Position',
                                'Position of emitter point',
                                 command = self.setEmitterPointPosition)
-        self.createVector3Entry(emitterPointPage, 'Velocity vector',
+        self.createVector3Entry(emitterPointPage,
+                                'Point Emitter Velocity',
                                'Initial particle velocity vector',
                                 command = self.setEmitterPointVelocityVector,
                                 initialValue = (0.0, 0.0, 1.0))
@@ -374,11 +376,12 @@ class ParticlePanel(AppShell):
     def createCheckbutton(self, parent, text, command, initialState):
         bool = BooleanVar()
         bool.set(initialState)
-        cb = Checkbutton(parent, text = text, anchor = W,
+        widget = Checkbutton(parent, text = text, anchor = W,
                          variable = bool)
         # Do this after the widget so command isn't called on creation
-        cb.command = command
-        cb.pack(fill = X)
+        widget['command'] = command
+        widget.pack(fill = X)
+        self.widgetDict['text'] = widget
         return bool
         
     def createFloaters(self, parent, widgetDefinitions):
@@ -412,6 +415,7 @@ class ParticlePanel(AppShell):
         widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
+        self.widgetDict['text'] = widget
         return widget
 
     def createVector3Entry(self, parent, text, balloonHelp,
@@ -423,6 +427,7 @@ class ParticlePanel(AppShell):
         widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
+        self.widgetDict['text'] = widget
         return widget
 
     def createColorEntry(self, parent, text, balloonHelp,
@@ -434,6 +439,7 @@ class ParticlePanel(AppShell):
         widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
+        self.widgetDict['text'] = widget
         return widget
 
     def createOptionMenu(self, parent, text, balloonHelp, items, command):
@@ -447,6 +453,7 @@ class ParticlePanel(AppShell):
         widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget.component('menubutton'), balloonHelp)
+        self.widgetDict['text'] = widget
         return optionVar
 
     ### PARTICLE SYSTEM COMMANDS ###
@@ -500,6 +507,39 @@ class ParticlePanel(AppShell):
     def selectEmitterType(self, type):
         self.emitterNotebook.selectpage(type)
 	self.particles.setEmitter(type)
+        self.updateEmitterWidgets()
+        
+    def updateEmitterWidgets(self):
+        emitter = self.particles.emitter
+        if isinstance(emitter, BoxEmitter):
+            min = emitter.getMinBound()
+            self.emitterBoxPoint1VectorEntry.set(
+                [min[0], min[1], min[2]])
+            max = emitter.getMaxBound()
+            self.emitterBoxPoint2VectorEntry.set(
+                [max[0], max[1], max[2]])
+        elif isinstance(emitter, DiscEmitter):
+            radius = emitter.getRadius()
+            cubicLerping = emitter.getCubicLerping()
+            innerAngle = emitter.getInnerAngle()
+            getInnerMagnitude
+            getOuterAngle    
+            getOuterMagnitude
+        elif isinstance(emitter, LineEmitter):
+            pass
+        elif isinstance(emitter, PointEmitter):
+            pass
+        elif isinstance(emitter, RectangleEmitter):
+            pass
+        elif isinstance(emitter, RingEmitter):
+            pass
+        elif isinstance(emitter, SphereVolumeEmitter):
+            pass
+        elif isinstance(emitter, SphereSurfaceEmitter):
+            pass
+        elif isinstance(emitter, TangentRingEmitter):
+            pass
+        
     # Box #
     def setEmitterBoxPoint1(self, point):
 	self.particles.emitter.setMinBound(Point3(point[0],

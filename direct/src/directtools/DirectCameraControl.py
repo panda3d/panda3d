@@ -15,7 +15,7 @@ class DirectCameraControl(PandaObject):
         self.coaMarker = loader.loadModel('models/misc/sphere')
         self.coaMarker.setName('DirectCameraCOAMarker')
         self.coaMarker.setColor(1,0,0)
-        self.coaMarker.setPos(0,0,0)
+        self.coaMarker.setPos(0,100,0)
         useDirectRenderStyle(self.coaMarker)
         self.coaMarkerPos = Point3(0)
 	self.camManipRef = direct.group.attachNewNode('camManipRef')
@@ -56,27 +56,15 @@ class DirectCameraControl(PandaObject):
             self.coaMarker.hide()
             # Check for a hit point based on
             # current mouse position
+            # Allow intersection with unpickable objects
             # And then spawn task to determine mouse mode
-            numEntries = direct.iRay.pickGeom(
-                render,direct.dr.mouseX,direct.dr.mouseY)
-            # Then filter out hidden nodes from entry list
-            indexList = []
-            for i in range(0,numEntries):
-                entry = direct.iRay.cq.getEntry(i)
-                node = entry.getIntoNode()
-                if node.isHidden():
-                    pass
-                else:
-                    # Not one of the widgets, use it
-                    indexList.append(i)
+            node, hitPt, hitPtDist = direct.iRay.pickGeom(
+                fIntersectUnpickable = 1)
             coa = Point3(0)
-            if(indexList):
-                # Grab first point (it should be the closest)
-                minPt = indexList[0]
-                # Find hit point in camera's space
-                hitPt = direct.iRay.camToHitPt(minPt)
-                coa.set(hitPt[0],hitPt[1],hitPt[2])
-                coaDist = Vec3(coa - ZERO_POINT).length()
+            if node:
+                # Set center of action
+                coa.assign(hitPt)
+                coaDist = hitPtDist
                 # Handle case of bad coa point (too close or too far)
                 if ((coaDist < (1.1 * direct.dr.near)) |
                     (coaDist > direct.dr.far)):
