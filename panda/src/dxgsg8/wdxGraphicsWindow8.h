@@ -43,6 +43,7 @@ public:
                      const string &name);
   virtual ~wdxGraphicsWindow8();
   virtual bool open_window(void);
+  virtual void close_window(void);
   virtual void reset_window(bool swapchain);
 
   virtual int verify_window_sizes(int numsizes, int *dimen);

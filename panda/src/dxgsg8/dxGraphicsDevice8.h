@@ -38,8 +38,8 @@ public:
   DXGraphicsDevice8(wdxGraphicsPipe8 *pipe);
   ~DXGraphicsDevice8();
 
-  DXScreenData *_pScrn;
-  LPDIRECT3DDEVICE8 _pD3DDevice;  // same as pScrn->_pD3DDevice, cached for spd
+  DXScreenData _Scrn;
+  LPDIRECT3DDEVICE8 _pD3DDevice;  // same as Scrn._pD3DDevice, cached for spd
   IDirect3DSwapChain8 *_pSwapChain;
 
 #if 0

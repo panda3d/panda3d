@@ -54,7 +54,7 @@ public:
 
   bool find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
                        D3DFORMAT *pBestFmt, bool bWantStencil,
-                       bool bForce16bpp, bool bVerboseMode = false) const;
+                       bool bForce16bpp, bool bVerboseMode = true) const;
 
   void search_for_valid_displaymode(DXScreenData &scrn,
                              UINT RequestedX_Size, UINT RequestedY_Size,
@@ -63,7 +63,7 @@ public:
                              bool *pCouldntFindAnyValidZBuf,
                              D3DFORMAT *pSuggestedPixFmt,
                              bool bForce16bppZBuffer,
-                             bool bVerboseMode = false);
+                             bool bVerboseMode = true);
 
    bool special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size,UINT y_size);
 

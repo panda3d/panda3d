@@ -108,7 +108,7 @@ make_current(void) {
   // reset() requires having a current context.)
   dxgsg->reset_if_new();
 
-  //  wdxdisplay8_cat.debug() << "this is " << this << "\n";
+  //wdxdisplay8_cat.debug() << "this is " << _wcontext.pSwapChain << "\n";
 }
 
 /* BUGBUG:  need to reinstate these methods ASAP.  they were incorrectly moved from the GraphicsWindow to the GSG
@@ -412,6 +412,21 @@ support_overlay_window(bool flag) {
   if (_dxgsg != (DXGraphicsStateGuardian8 *)NULL) {
     _dxgsg->support_overlay_window(flag);
   }
+}
+
+//////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow::close_window
+//       Access: Public
+//  Description: Some cleanup is necessary for directx closeup of window.
+//               Handle close window events for this particular
+//               window.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow8::
+close_window() {
+  wdxdisplay8_cat.debug() << "wdx closed window\n";
+  if (multiple_windows)
+    _dxgsg->release_swap_chain(&_wcontext);
+  WinGraphicsWindow::close_window();
 }
 
 #if 1
@@ -1520,16 +1535,17 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   DXScreenData *pScrn;
   D3DPRESENT_PARAMETERS d3dpp;
   memcpy(&d3dpp, &_wcontext.PresParams, sizeof(D3DPRESENT_PARAMETERS));
-  d3dpp.BackBufferWidth = new_xsize;
-  d3dpp.BackBufferHeight = new_ysize;
+  _wcontext.PresParams.BackBufferWidth = new_xsize;
+  _wcontext.PresParams.BackBufferHeight = new_ysize;
   make_current();
-  HRESULT hr = _dxgsg->reset_d3d_device(&d3dpp, &pScrn);
-  
+  HRESULT hr = _dxgsg->reset_d3d_device(&_wcontext.PresParams, &pScrn);
+
   if (FAILED(hr)) {
     bRetval = false;
     wdxdisplay8_cat.error()
       << "reset_device_resize_window Reset() failed" << D3DERRORSTRING(hr);
     if (hr == D3DERR_OUTOFVIDEOMEMORY) {
+      memcpy(&_wcontext.PresParams, &d3dpp, sizeof(D3DPRESENT_PARAMETERS));
       hr = _dxgsg->reset_d3d_device(&_wcontext.PresParams, &pScrn);
       if (FAILED(hr)) {
         wdxdisplay8_cat.error()
@@ -1548,7 +1564,8 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
     }
   }
   // before you init_resized_window you need to copy certain changes to _wcontext
-  _wcontext.pSwapChain = pScrn->pSwapChain;
+  if (pScrn)
+    _wcontext.pSwapChain = pScrn->pSwapChain;
   wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   init_resized_window();
   return bRetval;
@@ -1620,6 +1637,9 @@ init_resized_window() {
   assert(_wcontext.hWnd!=NULL);
   ClearToBlack(_wcontext.hWnd, get_properties());
 
+  //wdxdisplay8_cat.debug() << "wcontext = " << &_wcontext << " and device = " << _wcontext.pD3DDevice << "\n";
+
+#if 0
   // clear textures and VB's out of video&AGP mem, so cache is reset
   hr = _wcontext.pD3DDevice->ResourceManagerDiscardBytes(0);
   if (FAILED(hr)) {
@@ -1627,6 +1647,7 @@ init_resized_window() {
       << "ResourceManagerDiscardBytes failed for device #" 
       << _wcontext.CardIDNum << D3DERRORSTRING(hr);
   }
+#endif
 
   _dxgsg->set_context(&_wcontext); 
   // Note: dx_init will fill in additional fields in _wcontext, like supportedtexfmts
@@ -1749,6 +1770,11 @@ open_window(void) {
   // In that case just create an additional swapchain for this window
 
   if (dxgsg->get_pipe()->get_device() == NULL) {
+
+    if (wdxdisplay8_cat.is_debug()) {
+      wdxdisplay8_cat.debug() << "device is null \n";
+    }
+
     create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
     dxgsg->get_pipe()->make_device((void*)(&_wcontext));
     dxgsg->copy_pres_reset(&_wcontext);
@@ -1760,23 +1786,29 @@ open_window(void) {
   } else {
     // fill in the DXScreenData from dxdevice here and change the
     // reference to hWnd.
+    if (wdxdisplay8_cat.is_debug()) {
+      wdxdisplay8_cat.debug() << "device is not null\n";
+    }
     dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
     props = get_properties();
 
-    memcpy(&_wcontext,dxdev->_pScrn,sizeof(DXScreenData));
+    wdxdisplay8_cat.debug() << "dxdev_pScrn = " << &dxdev->_Scrn << ", _pScrn_device = " << dxdev->_Scrn.pD3DDevice
+                            << ", dxdev_device = " << dxdev->_pD3DDevice << "\n";
+    wdxdisplay8_cat.debug() << "_wcontext = " << &_wcontext << ", device = " << _wcontext.pD3DDevice << "\n";
+
+    memcpy(&_wcontext,&dxdev->_Scrn,sizeof(DXScreenData));
     _wcontext.hWnd = _hWnd;
+    //    _wcontext.pD3DDevice = dxdev->_pD3DDevice; // copy the current device
     _wcontext.PresParams.hDeviceWindow = _hWnd;
     _wcontext.PresParams.BackBufferWidth = props.get_x_size();
     _wcontext.PresParams.BackBufferHeight = props.get_y_size();
 
-    wdxdisplay8_cat.debug()<<"device width "<<_wcontext.PresParams.BackBufferWidth<<"\n";
-
+    //wdxdisplay8_cat.debug()<<"device width "<<_wcontext.PresParams.BackBufferWidth<<"\n";
+    //wdxdisplay8_cat.debug()<<"debug pSwapChain "<<_wcontext.pSwapChain<<"\n";
+    dxgsg->create_swap_chain(&_wcontext);
     init_resized_window();
 
-    if (wdxdisplay8_cat.is_debug()) {
-      wdxdisplay8_cat.debug() << "Current device is " << dxdev << "\n";
-    }
-    dxgsg->create_swap_chain(&_wcontext);
+    //wdxdisplay8_cat.debug() << "Current device is " << dxdev << "\n";
   }
   wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   return true;

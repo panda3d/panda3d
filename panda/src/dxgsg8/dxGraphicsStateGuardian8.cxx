@@ -998,10 +998,23 @@ prepare_display_region() {
     HRESULT hr = _pD3DDevice->SetViewport( &vp );
     if (FAILED(hr)) {
       dxgsg8_cat.error()
+        << "pScrn_SwapChain = " << _pScrn->pSwapChain << " SwapChain = " << _pSwapChain << "\n";
+      dxgsg8_cat.error()
         << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
         << ") failed" << D3DERRORSTRING(hr);
-      throw_event("panda3d-render-error");
-      nassertv(false);
+#if 0
+      D3DVIEWPORT8 vp_old;
+      _pD3DDevice->GetViewport( &vp_old );
+      dxgsg8_cat.error()
+        << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", " 
+        << vp_old.Height << ") returned: Trying to set that vp---->\n";
+      hr = _pD3DDevice->SetViewport( &vp_old );
+#endif
+      if (FAILED(hr)) {
+        dxgsg8_cat.error() << "Failed again\n";
+        throw_event("panda3d-render-error");
+        nassertv(false);
+      }
     }
     // Note: for DX9, also change scissor clipping state here
   }
@@ -4522,6 +4535,7 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     // unsafe to do the D3D releases after exit() called, since DLL_PROCESS_DETACH
     // msg already delivered to d3d.dll and it's unloaded itself
 
+    wdxdisplay8_cat.debug() << "called dx_cleanup\n";
     free_nondx_resources();
 
     PRINT_REFCNT(dxgsg8,_pD3DDevice);
@@ -4555,7 +4569,7 @@ set_context(DXScreenData *pNewContextData) {
     _pD3DDevice = _pScrn->pD3DDevice;   //copy this one field for speed of deref
     _pSwapChain = _pScrn->pSwapChain;   //copy this one field for speed of deref
  
-    //    wdxdisplay8_cat.debug() << "SwapChain = "<< _pSwapChain << "\n";
+    //wdxdisplay8_cat.debug() << "SwapChain = "<< _pSwapChain << "\n";
 }
 
 void DXGraphicsStateGuardian8::  
@@ -4569,13 +4583,15 @@ create_swap_chain(DXScreenData *pNewContextData) {
     hr = pNewContextData->pD3DDevice->CreateAdditionalSwapChain(&pNewContextData->PresParams, &pNewContextData->pSwapChain);
     if (FAILED(hr))
       wdxdisplay8_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
-    //    set_context(pNewContextData);
 }
 
 void DXGraphicsStateGuardian8::  
 release_swap_chain(DXScreenData *pNewContextData) {
     // Release the swap chain on this DXScreenData
-    pNewContextData->pSwapChain->Release();
+  HRESULT hr;
+  hr = pNewContextData->pSwapChain->Release();
+  if (FAILED(hr))
+    wdxdisplay8_cat.debug() << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
@@ -4808,42 +4824,53 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
        _pScrn->pD3D8->GetAdapterDisplayMode(_pScrn->CardIDNum, &_pScrn->DisplayMode);
        pPresParams->BackBufferFormat = _pScrn->DisplayMode.Format;
   }
-  // here we have to look at the device's frame buffer dimension
-  // if current window's dimension is bigger than device's frame buffer
+  // here we have to look at the _PresReset frame buffer dimension
+  // if current window's dimension is bigger than _PresReset 
   // we have to reset the device before creating new swapchain.
   // inorder to reset properly, we need to release all swapchains
-  D3DSURFACE_DESC DeviceDesc;
-  LPDIRECT3DSURFACE8 pDeviceBack;
-  _pD3DDevice->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pDeviceBack);
-  pDeviceBack->GetDesc(&DeviceDesc);
-  pDeviceBack->Release();
+
   if ( !(_pScrn->pSwapChain)
-       || (DeviceDesc.Width < pPresParams->BackBufferWidth)
-       || (DeviceDesc.Height < pPresParams->BackBufferHeight) ) {
+       || (_PresReset.BackBufferWidth < pPresParams->BackBufferWidth)
+       || (_PresReset.BackBufferHeight < pPresParams->BackBufferHeight) ) {
+
+    wdxdisplay8_cat.debug() << "Swpachain = " << _pScrn->pSwapChain << " _PresReset = "
+                            << _PresReset.BackBufferWidth << "x" << _PresReset.BackBufferHeight << "pPresParams = "
+                            << pPresParams->BackBufferWidth << "x" << pPresParams->BackBufferHeight << "\n";
 
     get_engine()->reset_all_windows(false);// reset old swapchain by releasing
 
-    _PresReset.BackBufferWidth = pPresParams->BackBufferWidth;
-    _PresReset.BackBufferHeight = pPresParams->BackBufferHeight;
+    _PresReset.BackBufferWidth = max(_PresReset.BackBufferWidth, pPresParams->BackBufferWidth);
+    _PresReset.BackBufferHeight = max(_PresReset.BackBufferHeight, pPresParams->BackBufferHeight);
     hr=_pD3DDevice->Reset(&_PresReset);
     if (FAILED(hr)) {
       return hr;
     }
 
     get_engine()->reset_all_windows(true);// reset with new swapchains by creating
+
+    *pScrn = NULL;
+    if(pPresParams!=&_pScrn->PresParams)
+      memcpy(&_pScrn->PresParams,pPresParams,sizeof(D3DPRESENT_PARAMETERS));
+    return hr;
   }
+
   // release the old swapchain and create a new one
   if (_pScrn->pSwapChain) {
     _pScrn->pSwapChain->Release();
+    wdxdisplay8_cat.debug() << "SwapChain " << _pScrn->pSwapChain << " is released\n";
     _pScrn->pSwapChain = NULL;
     hr=_pD3DDevice->CreateAdditionalSwapChain(pPresParams,&_pScrn->pSwapChain);
   }
   if(SUCCEEDED(hr)) {
      if(pPresParams!=&_pScrn->PresParams)
          memcpy(&_pScrn->PresParams,pPresParams,sizeof(D3DPRESENT_PARAMETERS));
-     if (pScrn)
+     if (pScrn) {
        *pScrn = _pScrn;
+       wdxdisplay8_cat.debug() << "_pScrn = " << _pScrn << ", _pScrn_device = " << _pScrn->pD3DDevice << "\n";
+     }
   }
+  else
+    while(1);
   return hr;
 }
 

@@ -396,7 +396,7 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
   *pBestFmt = D3DFMT_UNKNOWN;
   HRESULT hr;
 
-    // nvidia likes zbuf depth to match rendertarget depth
+  // nvidia likes zbuf depth to match rendertarget depth
   bool bOnlySelect16bpp = (bForce16bpp ||
                            (IS_NVIDIA(Display.DXDeviceID) && IS_16BPP_DISPLAY_FORMAT(TestDisplayMode.Format)));
 
@@ -760,8 +760,8 @@ search_for_valid_displaymode(DXScreenData &scrn,
 PT(GraphicsDevice) wdxGraphicsPipe8::
 make_device(void *scrn) {
   PT(DXGraphicsDevice8) device = new DXGraphicsDevice8(this);
-  device->_pScrn = (DXScreenData*) scrn;
-  device->_pD3DDevice = device->_pScrn->pD3DDevice;
+  memcpy(&device->_Scrn, scrn, sizeof(device->_Scrn));
+  device->_pD3DDevice = device->_Scrn.pD3DDevice;
 
   _device = device;
   wdxdisplay8_cat.error() << "walla: device" << device << "\n";
