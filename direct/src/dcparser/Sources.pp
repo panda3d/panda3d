@@ -27,6 +27,7 @@
      dcParameter.h dcClassParameter.h dcArrayParameter.h dcSimpleParameter.h \
      dcNumericRange.h dcNumericRange.I \
      dcTypedef.h \
+     dcPython.h \
      dcbase.h dcindent.h hashGenerator.h  \
      primeNumberGenerator.h  
 
@@ -44,6 +45,9 @@
      dcTypedef.cxx \
      dcindent.cxx  \
      hashGenerator.cxx primeNumberGenerator.cxx 
+
+  //  #define SOURCES $[SOURCES] $[INCLUDED_SOURCES]
+  //  #define COMBINED_SOURCES
 
   #define IGATESCAN all
 #end lib_target

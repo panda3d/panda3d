@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcClass.h"
+#include "dcAtomicField.h"
 #include "dcParameter.h"
 #include "hashGenerator.h"
 #include "dcindent.h"

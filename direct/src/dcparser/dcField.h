@@ -21,17 +21,7 @@
 
 #include "dcbase.h"
 #include "dcPackerInterface.h"
-
-#ifdef HAVE_PYTHON
-
-#undef HAVE_LONG_LONG  // NSPR and Python both define this.
-#include <Python.h>
-
-// We only need these headers if we are also building a Python interface.
-#include "datagram.h"
-#include "datagramIterator.h"
-
-#endif  // HAVE_PYTHON
+#include "dcPython.h"
 
 class DCAtomicField;
 class DCMolecularField;

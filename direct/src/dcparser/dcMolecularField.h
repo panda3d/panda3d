@@ -23,6 +23,7 @@
 #include "dcField.h"
 
 class DCAtomicField;
+class DCParameter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCMolecularField

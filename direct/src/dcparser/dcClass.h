@@ -22,6 +22,7 @@
 #include "dcbase.h"
 #include "dcField.h"
 #include "dcDeclaration.h"
+#include "dcPython.h"
 
 class HashGenerator;
 class DCParameter;
