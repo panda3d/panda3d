@@ -19,7 +19,7 @@
 #ifndef NOTIFY_H
 #define NOTIFY_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "notifyCategory.h"
 #include "notifySeverity.h"
@@ -75,7 +75,7 @@ PUBLISHED:
   static Notify *ptr();
 
 public:
-  static long get_literal_flag();
+  static ios::fmtflags get_literal_flag();
 
   bool assert_failure(const char *expression, int line,
                       const char *source_file);

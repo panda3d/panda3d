@@ -130,7 +130,7 @@ rotate_back() {
 template <class PrimType>
 INLINE TYPENAME MesherStrip<PrimType>::Edge MesherStrip<PrimType>::
 get_head_edge() const {
-  Verts::const_iterator vi = _verts.begin();
+  TYPENAME Verts::const_iterator vi = _verts.begin();
   return Edge(_verts.front(), *++vi);
 }
 
@@ -145,7 +145,7 @@ get_head_edge() const {
 template <class PrimType>
 INLINE TYPENAME MesherStrip<PrimType>::Edge MesherStrip<PrimType>::
 get_tail_edge() const {
-  Verts::const_reverse_iterator vi = _verts.rbegin();
+  TYPENAME Verts::const_reverse_iterator vi = _verts.rbegin();
   return Edge(*++vi, _verts.back());
 }
 
@@ -262,7 +262,7 @@ make_prim(const BuilderBucket &bucket) {
   if (dest_type != BPT_tristrip && dest_type != BPT_trifan) {
     // The easy case: a simple primitive.
     p.set_attrib(_prims.front());
-    Verts::iterator vi;
+    TYPENAME Verts::iterator vi;
     for (vi = _verts.begin(); vi != _verts.end(); ++vi) {
       const Vertex *v = *vi;
       nassertr(v != (Vertex *)NULL, p);
@@ -279,8 +279,8 @@ make_prim(const BuilderBucket &bucket) {
 
     // Now store all the vertices, as well as each individual
     // triangle's attributes.
-    Verts::iterator vi;
-    Prims::iterator pi;
+    TYPENAME Verts::iterator vi;
+    TYPENAME Prims::iterator pi;
     pi = _prims.begin();
     int count = 0;
     for (vi = _verts.begin();
@@ -342,8 +342,8 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
 
   _row_id = this_row_id;
 
-  Edges::iterator ei;
-  Edge::Strips::iterator si;
+  TYPENAME Edges::iterator ei;
+  TYPENAME Edge::Strips::iterator si;
 
   if (_type == BPT_quad) {
     // If this is a quad, it has four neighbors: two in the direction
@@ -395,7 +395,7 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
           // there will only be one besides ourselves, but there may be
           // more.  Pick the best.
 
-          Edge::Strips &strips = (*ei)->_strips;
+          TYPENAME Edge::Strips &strips = (*ei)->_strips;
           MesherStrip *mate = NULL;
           for (si = strips.begin(); si != strips.end(); ++si) {
             if ((*si)->_row_id < first_row_id) {
@@ -428,7 +428,7 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
       if (!(*ei)->matches(*edge)) {
         // Here's the edge.  Same drill as above.
 
-        Edge::Strips &strips = (*ei)->_strips;
+        TYPENAME Edge::Strips &strips = (*ei)->_strips;
         MesherStrip *mate = NULL;
         for (si = strips.begin(); si != strips.end(); ++si) {
           if ((*si)->_row_id < first_row_id) {
@@ -455,8 +455,8 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
 template <class PrimType>
 void MesherStrip<PrimType>::
 cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
-  Edges::iterator ei;
-  Edge::Strips::iterator si;
+  TYPENAME Edges::iterator ei;
+  TYPENAME Edge::Strips::iterator si;
 
   // First, start the process going on any neighbors that belong to a
   // later row.  (We must do these first, because we'll change our
@@ -470,7 +470,7 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
   StripPtrs strip_ptrs;
 
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
-    Edge::Strips &strips = (*ei)->_strips;
+    TYPENAME Edge::Strips &strips = (*ei)->_strips;
     for (si = strips.begin(); si != strips.end(); ++si) {
       if ((*si)->_row_id > _row_id) {
         // Here's a different row in the sheet!
@@ -482,7 +482,7 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
   // Now walk the temporary list and do some damage.  We pass do_mate
   // = true to each of these neighbors, because as far as we know,
   // they're the first nodes of a particular row.
-  StripPtrs::iterator spi;
+  TYPENAME StripPtrs::iterator spi;
   for (spi = strip_ptrs.begin(); spi != strip_ptrs.end(); ++spi) {
     if ((*spi)->_status == MS_alive) {
       (*spi)->cut_sheet(first_row_id, true, bucket);
@@ -498,7 +498,7 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
 
       ei = _edges.begin();
       while (ei != _edges.end() && not_any) {
-        Edge::Strips &strips = (*ei)->_strips;
+        TYPENAME Edge::Strips &strips = (*ei)->_strips;
         si = strips.begin();
         while (si != strips.end() && not_any) {
           if (*si != this && (*si)->_row_id == _row_id) {
@@ -586,14 +586,14 @@ template <class PrimType>
 bool MesherStrip<PrimType>::
 find_ideal_mate(MesherStrip *&mate, Edge *&common_edge,
               const BuilderBucket &bucket) {
-  Edges::iterator ei;
+  TYPENAME Edges::iterator ei;
 
   mate = NULL;
   common_edge = NULL;
 
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
-    Edge::Strips &strips = (*ei)->_strips;
-    Edge::Strips::iterator si;
+    TYPENAME Edge::Strips &strips = (*ei)->_strips;
+    TYPENAME Edge::Strips::iterator si;
     for (si = strips.begin(); si != strips.end(); ++si) {
       if (*si != this) {
         if (mate==NULL || pick_mate(**si, *mate, **ei, *common_edge,
@@ -649,8 +649,8 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
       // Now we just need to find the right place to insert it.  It
       // belongs in the middle of the common edge, i.e. after the first
       // vertex that is on the common edge and before the second vertex.
-      Verts::iterator a = front._verts.begin();
-      Verts::iterator b = a;
+      TYPENAME Verts::iterator a = front._verts.begin();
+      TYPENAME Verts::iterator b = a;
       ++b;
 
       if (common_edge->contains_vertex(*a)) {
@@ -1010,7 +1010,7 @@ template <class PrimType>
 int MesherStrip<PrimType>::
 count_neighbors() const {
   int count = 0;
-  Edges::const_iterator ei;
+  TYPENAME Edges::const_iterator ei;
 
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     count += (*ei)->_strips.size();
@@ -1026,8 +1026,8 @@ count_neighbors() const {
 template <class PrimType>
 ostream &MesherStrip<PrimType>::
 show_neighbors(ostream &out) const {
-  Edges::const_iterator ei;
-  Edge::Strips::const_iterator si;
+  TYPENAME Edges::const_iterator ei;
+  TYPENAME Edge::Strips::const_iterator si;
 
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     for (si = (*ei)->_strips.begin();
@@ -1051,7 +1051,7 @@ find_uncommon_vertex(const Edge *edge) const {
   const Vertex *a = edge->_a;
   const Vertex *b = edge->_b;
 
-  Edges::const_iterator ei;
+  TYPENAME Edges::const_iterator ei;
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     Edge *e = (*ei);
 
@@ -1075,7 +1075,7 @@ find_uncommon_vertex(const Edge *edge) const {
 template <class PrimType>
 const TYPENAME MesherStrip<PrimType>::Edge *MesherStrip<PrimType>::
 find_opposite_edge(const Vertex *vertex) const {
-  Edges::const_iterator ei;
+  TYPENAME Edges::const_iterator ei;
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     Edge *e = (*ei);
     if (!e->contains_vertex(vertex)) {
@@ -1099,7 +1099,7 @@ find_opposite_edge(const Edge *edge) const {
   const Vertex *a = edge->_a;
   const Vertex *b = edge->_b;
 
-  Edges::const_iterator ei;
+  TYPENAME Edges::const_iterator ei;
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     Edge *e = (*ei);
     if (!e->contains_vertex(a) && !e->contains_vertex(b)) {
@@ -1123,7 +1123,7 @@ find_adjacent_edge(const Edge *edge) const {
   const Vertex *a = edge->_a;
   const Vertex *b = edge->_b;
 
-  Edges::const_iterator ei;
+  TYPENAME Edges::const_iterator ei;
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     Edge *e = (*ei);
     if (e->contains_vertex(a) != e->contains_vertex(b)) {
@@ -1148,7 +1148,7 @@ rotate_to_front(const Edge *edge) {
 
   // See if we're already there.
   if (_verts.front() == a || _verts.front() == b) {
-    Verts::iterator vi = _verts.begin();
+    TYPENAME Verts::iterator vi = _verts.begin();
     ++vi;
     if (*vi == a || *vi == b) {
       // Yes!
@@ -1170,7 +1170,7 @@ rotate_to_front(const Edge *edge) {
   }
 
   // Now make sure the edge actually exists.
-  Verts::iterator vi = _verts.begin();
+  TYPENAME Verts::iterator vi = _verts.begin();
   ++vi;
   nassertv(*vi == a || *vi == b);
 }
@@ -1189,7 +1189,7 @@ rotate_to_back(const Edge *edge) {
 
   // See if we're already there.
   if (_verts.back() == a || _verts.back() == b) {
-    Verts::reverse_iterator vi = _verts.rbegin();
+    TYPENAME Verts::reverse_iterator vi = _verts.rbegin();
     ++vi;
     if (*vi == a || *vi == b) {
       // Yes!
@@ -1211,7 +1211,7 @@ rotate_to_back(const Edge *edge) {
   }
 
   // Now make sure the edge actually exists.
-  Verts::reverse_iterator vi = _verts.rbegin();
+  TYPENAME Verts::reverse_iterator vi = _verts.rbegin();
   ++vi;
   nassertv(*vi == a || *vi == b);
 }
@@ -1243,7 +1243,7 @@ invert() {
   if (!can_invert()) {
     return false;
   }
-  Verts::iterator vi, vi2;
+  TYPENAME Verts::iterator vi, vi2;
   vi = _verts.begin();
   while (vi != _verts.end()) {
     vi2 = vi;
@@ -1346,7 +1346,7 @@ would_reverse_tail(BuilderPrimType wantType) const {
 template <class PrimType>
 void MesherStrip<PrimType>::
 convert_to_type(BuilderPrimType wantType) {
-  Verts::iterator vi, vi2;
+  TYPENAME Verts::iterator vi, vi2;
   int even;
 
   if (_type==wantType) {
@@ -1418,7 +1418,7 @@ convert_to_type(BuilderPrimType wantType) {
 template <class PrimType>
 void MesherStrip<PrimType>::
 combine_edges(MesherStrip<PrimType> &other, int removeSides) {
-  Edges::iterator ei;
+  TYPENAME Edges::iterator ei;
   for (ei = other._edges.begin(); ei != other._edges.end(); ++ei) {
     (*ei)->change_strip(&other, this);
   }
@@ -1439,7 +1439,7 @@ combine_edges(MesherStrip<PrimType> &other, int removeSides) {
 
     Edges junk_edges;
 
-    Edges::iterator next_ei;
+    TYPENAME Edges::iterator next_ei;
     ei = _edges.begin();
     while (ei != _edges.end()) {
       next_ei = ei;
@@ -1479,7 +1479,7 @@ remove_all_edges() {
   junk_edges.splice(junk_edges.end(), _edges);
 
   // Now we can safely remove all the to-be-junked edges.
-  Edges::iterator ei;
+  TYPENAME Edges::iterator ei;
   for (ei = junk_edges.begin(); ei != junk_edges.end(); ++ei) {
     (*ei)->remove(this);
   }
@@ -1632,7 +1632,7 @@ output(ostream &out) const {
 
   out << " " << _index << " [";
 
-  Verts::const_iterator vi;
+  TYPENAME Verts::const_iterator vi;
   for (vi = _verts.begin(); vi != _verts.end(); vi++) {
     out << " " << **vi;
   }
@@ -1642,7 +1642,7 @@ output(ostream &out) const {
   show_neighbors(out);
 
   out << " edges";
-  Edges::const_iterator ei;
+  TYPENAME Edges::const_iterator ei;
   for (ei = _edges.begin(); ei != _edges.end(); ei++) {
     out << " " << (void *)(*ei);
   }

@@ -40,7 +40,7 @@ has_table(char table_id) const {
   if (table_index < 0) {
     return false;
   }
-  return !(_tables[table_index] == NULL);
+  return !(_tables[table_index] == (const float *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

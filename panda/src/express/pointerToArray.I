@@ -288,7 +288,7 @@ erase(iterator first, iterator last) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-INLINE PointerToArray<Element>::reference PointerToArray<Element>::
+INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 operator [](size_type n) const {
   nassertd(_ptr != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
@@ -298,6 +298,17 @@ operator [](size_type n) const {
   }
   nassertr(n < _ptr->size(), _ptr->operator[](0));
   return _ptr->operator[](n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::Indexing operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
+operator [](int n) const {
+  return operator[]((size_type)n);
 }
 #endif
 
@@ -614,7 +625,7 @@ capacity() const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
-operator[](size_type n) const {
+operator [](size_type n) const {
   nassertd(_ptr != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
@@ -623,6 +634,17 @@ operator[](size_type n) const {
   }
   nassertr(n < _ptr->size(), _ptr->operator[](0));
   return _ptr->operator[](n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::Indexing operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
+operator [](int n) const {
+  return operator[]((size_type)n);
 }
 #endif
 

@@ -163,6 +163,60 @@ INLINE bool PointerToBase<T>::
 operator >= (const To *other) const {
   return _ptr >= other;
 }
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::Equivalence operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE bool PointerToBase<T>::
+operator == (To *other) const {
+  return _ptr == other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::Nonequivalence operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE bool PointerToBase<T>::
+operator != (To *other) const {
+  return _ptr != other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::Greater-than operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE bool PointerToBase<T>::
+operator > (To *other) const {
+  return _ptr > other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::Less-than-or-equal operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE bool PointerToBase<T>::
+operator <= (To *other) const {
+  return _ptr <= other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::Greater-than-or-equal operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE bool PointerToBase<T>::
+operator >= (To *other) const {
+  return _ptr >= other;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Equivalence operator

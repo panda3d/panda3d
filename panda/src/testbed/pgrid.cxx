@@ -67,7 +67,7 @@ typedef enum {None,Rotation,LinearMotion} GriddedMotionType;
 #define GRIDCELLSIZE 5.0
 static int gridwidth;  // cells/side
 
-#define MIN_WANDERAREA_DIMENSION 120.0
+#define MIN_WANDERAREA_DIMENSION 120.0f
 
 static float grid_pos_offset;  // origin of grid
 static float wander_area_pos_offset;
@@ -249,7 +249,7 @@ load_gridded_models(WindowFramework *window,
   }
   
   grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
-  wander_area_pos_offset = -max(fabs(grid_pos_offset),MIN_WANDERAREA_DIMENSION/2.0);
+  wander_area_pos_offset = -max(fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
 
   // Now walk through the list again, copying models into the scene
   // graph as we go.

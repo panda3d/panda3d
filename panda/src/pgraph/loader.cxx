@@ -337,7 +337,7 @@ process_request() {
     PT(LoaderToken) tok = _token_board->_waiting.front();
     _token_board->_waiting.pop_front();
     tok->_node = load_file(tok->_path);
-    if (tok->_node == NULL) {
+    if (tok->_node == (PandaNode *)NULL) {
       loader_cat.error()
         << "Loader::callback() - couldn't find file: "
         << tok->_path << "\n";

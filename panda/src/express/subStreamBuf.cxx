@@ -84,10 +84,8 @@ SubStreamBuf() {
 
   init_lock();
 
-#ifdef WIN32_VC
-  // In spite of the claims of the MSDN Library to the contrary,
-  // Windows doesn't seem to provide an allocate() function, so we'll
-  // do it by hand.
+#ifdef HAVE_IOSTREAM
+  // The new-style iostream library doesn't seem to support allocate().
   char *buf = new char[4096];
   char *ebuf = buf + 4096;
   setg(buf, ebuf, ebuf);
@@ -144,7 +142,12 @@ close() {
 //  Description: Implements seeking within the stream.
 ////////////////////////////////////////////////////////////////////
 streampos SubStreamBuf::
-seekoff(streamoff off, ios::seek_dir dir, int mode) {
+#ifdef HAVE_IOSTREAM
+seekoff(streamoff off, ios::seekdir dir, ios::openmode mode)
+#else
+seekoff(streamoff off, ios::seek_dir dir, int mode)
+#endif
+{
   // Invariant: _cur points to the file location of the buffer at
   // egptr().
 
@@ -154,7 +157,10 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
   streampos new_pos = cur_pos;
 
   // Now adjust the data pointer appropriately.
-  switch (dir) {
+
+  // Casting this to int to prevent GCC 3.2 compiler warnings.  Very
+  // suspicious, need to investigate further.
+  switch ((int)dir) {
   case ios::beg:
     new_pos = _start + off;
     break;
@@ -210,19 +216,14 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
 //               function as well.
 ////////////////////////////////////////////////////////////////////
 streampos SubStreamBuf::
-seekpos(streampos pos, int mode) {
+#ifdef HAVE_IOSTREAM
+seekpos(streampos pos, ios::openmode mode) 
+#else
+seekpos(streampos pos, int mode) 
+#endif
+{
   return seekoff(pos, ios::beg, mode);
 }
-
-#ifdef WIN32_VC
-// Windows seems to be a little confused about the proper definition
-// of seekoff().  We have to define both variants in order to get
-// reliable seeking.
-streampos SubStreamBuf::
-seekoff(streamoff off, ios::seekdir dir, ios::openmode mode) {
-  return seekoff(off, (ios::seek_dir)dir, (int)mode);
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SubStreamBuf::overflow

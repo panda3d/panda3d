@@ -19,13 +19,9 @@
 #ifndef EGGOBJECT_H
 #define EGGOBJECT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <typedReferenceCount.h>
-
-#ifndef WIN32_VC
-class ostream;
-#endif
+#include "typedReferenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggObject

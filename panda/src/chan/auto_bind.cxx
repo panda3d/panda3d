@@ -75,7 +75,7 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
       }
 
       if (chan_cat.is_info()) {
-        if (control == NULL) {
+        if (control == (AnimControl *)NULL) {
           chan_cat.info()
             << "Bind failed.\n";
         } else {

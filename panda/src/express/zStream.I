@@ -43,7 +43,7 @@ IDecompressStream(istream *source, bool owns_source) : istream(&_buf) {
 ////////////////////////////////////////////////////////////////////
 INLINE IDecompressStream &IDecompressStream::
 open(istream *source, bool owns_source) {
-  clear(0);
+  clear((ios::iostate)0);
   _buf.open_read(source, owns_source);
   return *this;
 }
@@ -89,7 +89,7 @@ OCompressStream(ostream *dest, bool owns_dest, int compression_level) :
 ////////////////////////////////////////////////////////////////////
 INLINE OCompressStream &OCompressStream::
 open(ostream *dest, bool owns_dest, int compression_level) {
-  clear(0);
+  clear((ios::iostate)0);
   _buf.open_write(dest, owns_dest, compression_level);
   return *this;
 }

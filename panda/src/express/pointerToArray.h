@@ -150,6 +150,7 @@ public:
 PUBLISHED:
 #if !defined(WIN32_VC)
   INLINE reference operator [](size_type n) const;
+  INLINE reference operator [](int n) const;
 #endif
   INLINE void push_back(const Element &x);
   INLINE void pop_back();
@@ -232,7 +233,8 @@ public:
   // Functions specific to vectors.
   INLINE size_type capacity() const;
 #ifndef WIN32_VC
-  INLINE reference operator[](size_type n) const;
+  INLINE reference operator [](size_type n) const;
+  INLINE reference operator [](int n) const;
 #endif
   INLINE reference front() const;
   INLINE reference back() const;

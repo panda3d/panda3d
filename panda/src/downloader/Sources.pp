@@ -29,7 +29,7 @@
     multiplexStreamBuf.I multiplexStreamBuf.h \
     socketStream.h socketStream.I \
     urlSpec.I urlSpec.h \
-    $[if $[HAVE_NET], downloadDb.I downloadDb.h downloader.I downloader.h] \
+    $[if $[HAVE_NET], downloadDb.I downloadDb.h] \
     $[if $[HAVE_ZLIB], decompressor.h download_utils.h] \
     $[if $[HAVE_CRYPTO], patcher.cxx patcher.h patcher.I]
     
@@ -51,7 +51,7 @@
     multiplexStream.cxx multiplexStreamBuf.cxx \
     socketStream.cxx \
     urlSpec.cxx \
-    $[if $[HAVE_NET], downloadDb.cxx downloader.cxx] \
+    $[if $[HAVE_NET], downloadDb.cxx] \
     $[if $[HAVE_ZLIB], decompressor.cxx download_utils.cxx]
 
   #define INSTALL_HEADERS \
@@ -63,7 +63,6 @@
     config_downloader.h \
     decompressor.h \
     download_utils.h downloadDb.h downloadDb.I \
-    downloader.h downloader.I \
     extractor.h \
     httpAuthorization.I httpAuthorization.h \
     httpBasicAuthorization.I httpBasicAuthorization.h \

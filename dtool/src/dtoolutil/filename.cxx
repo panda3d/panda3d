@@ -1171,7 +1171,7 @@ bool Filename::
 open_read(ifstream &stream) const {
   assert(is_text() || is_binary());
 
-  int open_mode = ios::in;
+  ios::openmode open_mode = ios::in;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1206,7 +1206,7 @@ bool Filename::
 open_write(ofstream &stream, bool truncate) const {
   assert(is_text() || is_binary());
 
-  int open_mode = ios::out;
+  ios::openmode open_mode = ios::out;
 
   if (truncate) {
     open_mode |= ios::trunc;
@@ -1232,10 +1232,10 @@ open_write(ofstream &stream, bool truncate) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef WIN32_VC
-  stream.open(os_specific.c_str(), open_mode);
-#else
+#ifdef HAVE_OPEN_MASK
   stream.open(os_specific.c_str(), open_mode, 0666);
+#else
+  stream.open(os_specific.c_str(), open_mode);
 #endif
 
   return (!stream.fail());
@@ -1256,7 +1256,7 @@ bool Filename::
 open_append(ofstream &stream) const {
   assert(is_text() || is_binary());
 
-  int open_mode = ios::app;
+  ios::openmode open_mode = ios::app;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1268,10 +1268,10 @@ open_append(ofstream &stream) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef WIN32_VC
-  stream.open(os_specific.c_str(), open_mode);
-#else
+#ifdef HAVE_OPEN_MASK
   stream.open(os_specific.c_str(), open_mode, 0666);
+#else
+  stream.open(os_specific.c_str(), open_mode);
 #endif
 
   return (!stream.fail());
@@ -1292,7 +1292,7 @@ bool Filename::
 open_read_write(fstream &stream) const {
   assert(is_text() || is_binary());
 
-  int open_mode = ios::in | ios::out;
+  ios::openmode open_mode = ios::in | ios::out;
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1304,10 +1304,10 @@ open_read_write(fstream &stream) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef WIN32_VC
-  stream.open(os_specific.c_str(), open_mode);
-#else
+#ifdef HAVE_OPEN_MASK
   stream.open(os_specific.c_str(), open_mode, 0666);
+#else
+  stream.open(os_specific.c_str(), open_mode);
 #endif
 
   return (!stream.fail());

@@ -351,7 +351,7 @@ texture_body:
       texture->set_magfilter(f);
     }
   } else if (cmp_nocase_uh(name, "anisotropic_degree") == 0) {
-    texture->set_anisotropic_degree(value);
+    texture->set_anisotropic_degree((int)value);
 
   } else if (cmp_nocase_uh(name, "envtype") == 0) {
     EggTexture::EnvType e = EggTexture::string_env_type(strval);
@@ -901,11 +901,11 @@ group_body:
   } else if (cmp_nocase_uh(name, "bin") == 0) {
     group->set_bin(strval);
   } else if (cmp_nocase_uh(name, "collide_mask") == 0) {
-    group->set_collide_mask(value);
+    group->set_collide_mask((int)value);
   } else if (cmp_nocase_uh(name, "from_collide_mask") == 0) {
-    group->set_from_collide_mask(value);
+    group->set_from_collide_mask((int)value);
   } else if (cmp_nocase_uh(name, "into_collide_mask") == 0) {
-    group->set_into_collide_mask(value);
+    group->set_into_collide_mask((int)value);
   } else {
     eggyywarning("Unknown group scalar " + name);
   }
@@ -1492,9 +1492,9 @@ nurbs_surface_body:
   } else if (cmp_nocase_uh(name, "bin") == 0) {
     primitive->set_bin(strval);
   } else if (cmp_nocase_uh(name, "u_subdiv") == 0) {
-    primitive->set_u_subdiv(value);
+    primitive->set_u_subdiv((int)value);
   } else if (cmp_nocase_uh(name, "v_subdiv") == 0) {
-    primitive->set_v_subdiv(value);
+    primitive->set_v_subdiv((int)value);
   } else {
     eggyywarning("Unknown scalar " + name);
   }
@@ -1556,7 +1556,7 @@ nurbs_curve_body:
   } else if (cmp_nocase_uh(name, "bin") == 0) {
     primitive->set_bin(strval);
   } else if (cmp_nocase_uh(name, "subdiv") == 0) {
-    primitive->set_subdiv(value);
+    primitive->set_subdiv((int)value);
   } else if (cmp_nocase_uh(name, "type") == 0) {
     EggCurve::CurveType a = EggCurve::string_curve_type(strval);
     if (a == EggCurve::CT_none) {

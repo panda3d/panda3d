@@ -199,7 +199,7 @@ private:
 
   static TypeHandle _type_handle;
 
-  friend TextureContext;
+  friend class TextureContext;
 };
 
 #include "texture.I"

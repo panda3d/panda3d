@@ -41,6 +41,8 @@
 template<class Type>
 class pvector : public vector<Type, pallocator<Type> > {
 public:
+  typedef TYPENAME vector<Type, pallocator<Type> >::size_type size_type;
+
   pvector() : vector<Type, pallocator<Type> >() { }
   pvector(const pvector<Type> &copy) : vector<Type, pallocator<Type> >(copy) { }
   pvector(size_type n) : vector<Type, pallocator<Type> >(n) { }

@@ -53,7 +53,7 @@ add_prim(const Prim &prim, MesherStripOrigin origin) {
 
   // Get the common vertex pointers for the primitive's vertices.
   for (i = 0; i < num_verts; i++) {
-    Verts::iterator n =
+    TYPENAME Verts::iterator n =
       _verts.insert(Verts::value_type(prim.get_vertex(i), EdgePtrs())).first;
     vptrs[i] = &(*n).first;
     eptrs[i] = &(*n).second;
@@ -117,11 +117,11 @@ mesh() {
 
   if (_bucket->_show_quads) {
     // If we're showing quads, we shouldn't do any more meshing.
-    Strips::iterator si;
+    TYPENAME Strips::iterator si;
     for (si = _quads.begin(); si != _quads.end(); ++si) {
       if ((*si)._status == MS_alive) {
         (*si)._status = MS_done;
-    }
+      }
     }
     for (si = _strips.begin(); si != _strips.end(); ++si) {
       if ((*si)._status == MS_alive) {
@@ -347,13 +347,13 @@ show(ostream &out) {
   */
 
   out << _verts.size() << " verts:\n";
-  Verts::const_iterator vi;
+  TYPENAME Verts::const_iterator vi;
 
   for (vi = _verts.begin(); vi != _verts.end(); ++vi) {
     const Vertex &v = (*vi).first;
     const EdgePtrs &edges = (*vi).second;
     out << v << " shares " << count_vert_edges(edges) << " edges:\n";
-    EdgePtrs::const_iterator ei;
+    TYPENAME EdgePtrs::const_iterator ei;
     for (ei = edges.begin(); ei != edges.end(); ++ei) {
       if (!(*ei)->_strips.empty() || !(*ei)->_opposite->_strips.empty()) {
         out << "  " << **ei << "\n";
@@ -361,14 +361,21 @@ show(ostream &out) {
     }
   }
 
+  TYPENAME Strips::const_iterator si;
   out << _tris.size() << " tris:\n";
-  copy(_tris.begin(), _tris.end(), ostream_iterator<Strip>(out, "\n"));
+  for (si = _tris.begin(); si != _tris.end(); ++si) {
+    out << (*si) << "\n";
+  }
 
   out << _quads.size() << " quads:\n";
-  copy(_quads.begin(), _quads.end(), ostream_iterator<Strip>(out, "\n"));
+  for (si = _quads.begin(); si != _quads.end(); ++si) {
+    out << (*si) << "\n";
+  }
 
   out << _strips.size() << " strips:\n";
-  copy(_strips.begin(), _strips.end(), ostream_iterator<Strip>(out, "\n"));
+  for (si = _strips.begin(); si != _strips.end(); ++si) {
+    out << (*si) << "\n";
+  }
 }
 
 
@@ -376,7 +383,7 @@ template <class PrimType>
 int MesherTempl<PrimType>::
 count_vert_edges(const EdgePtrs &edges) const {
   int count = 0;
-  EdgePtrs::const_iterator ei;
+  TYPENAME EdgePtrs::const_iterator ei;
   for (ei = edges.begin(); ei != edges.end(); ++ei) {
     count += (!(*ei)->_strips.empty() || !(*ei)->_opposite->_strips.empty());
   }
@@ -426,7 +433,7 @@ build_sheets() {
   while (!pre_sheeted.empty()) {
     // Pick the first quad on the list.
 
-    Strips::iterator best = pre_sheeted.begin();
+    TYPENAME Strips::iterator best = pre_sheeted.begin();
 
     // If the row_id is negative, we've already built a sheet out of
     // this quad.  Leave it alone.  We also need to leave it be if it
@@ -500,7 +507,7 @@ find_fans() {
   // Consider all vertices.  Any vertex with over a certain number of
   // edges connected to it is eligible to become a fan.
 
-  Verts::iterator vi;
+  TYPENAME Verts::iterator vi;
 
   for (vi = _verts.begin(); vi != _verts.end(); ++vi) {
     EdgePtrs &edges = (*vi).second;
@@ -519,8 +526,8 @@ find_fans() {
 
       FanMakers fans;
 
-      EdgePtrs::iterator ei;
-      Edge::Strips::iterator si;
+      TYPENAME EdgePtrs::iterator ei;
+      TYPENAME Edge::Strips::iterator si;
       for (ei = edges.begin(); ei != edges.end(); ++ei) {
         for (si = (*ei)->_strips.begin();
              si != (*ei)->_strips.end();
@@ -537,7 +544,7 @@ find_fans() {
       fans.erase(unique(fans.begin(), fans.end()),
                  fans.end());
 
-      FanMakers::iterator fi, fi2;
+      TYPENAME FanMakers::iterator fi, fi2;
 
       // Now pull out connected edges.
       int joined_any;
@@ -568,7 +575,7 @@ find_fans() {
   // until we're done traversing all the vertices and primitives we
   // had in the first place (since adding them will affect the edge
   // lists).
-  pvector<Prim>::iterator ti;
+  TYPENAME pvector<Prim>::iterator ti;
   for (ti = unrolled_tris.begin(); ti != unrolled_tris.end(); ++ti) {
     add_prim(*ti);
   }
@@ -607,7 +614,7 @@ make_quads() {
   Strip *tri, *mate, *mate2;
   Edge *common_edge, *common_edge2;
 
-  Strips::iterator si;
+  TYPENAME Strips::iterator si;
   for (si = _tris.begin(); si != _tris.end(); ++si) {
     tri = &(*si);
 
@@ -629,7 +636,7 @@ make_quads() {
 
   // Now that we've found all the tris that are sure about each other,
   // mate them.
-  SoulMates::iterator mi;
+  TYPENAME SoulMates::iterator mi;
   for (mi = soulmates.begin(); mi != soulmates.end(); ++mi) {
     tri = (*mi).first.first;
     mate = (*mi).first.second;
@@ -645,7 +652,7 @@ make_quads() {
   }
 
   // Now move all the strips off the tri list that no longer belong.
-  Strips::iterator next;
+  TYPENAME Strips::iterator next;
   si = _tris.begin();
   while (si != _tris.end()) {
     next = si;
@@ -666,7 +673,7 @@ meshList(Strips &strips) {
   while (!strips.empty()) {
     // Pick the first strip on the list.
 
-    Strips::iterator best = strips.begin();
+    TYPENAME Strips::iterator best = strips.begin();
 
     if ((*best)._status == MS_alive) {
       (*best).mate(*_bucket);

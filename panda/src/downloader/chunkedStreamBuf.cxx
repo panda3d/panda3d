@@ -37,10 +37,7 @@ ChunkedStreamBuf() {
   _chunk_remaining = 0;
   _done = true;
 
-#ifdef WIN32_VC
-  // In spite of the claims of the MSDN Library to the contrary,
-  // Windows doesn't seem to provide an allocate() function, so we'll
-  // do it by hand.
+#ifdef HAVE_IOSTREAM
   char *buf = new char[4096];
   char *ebuf = buf + 4096;
   setg(buf, ebuf, ebuf);

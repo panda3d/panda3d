@@ -113,6 +113,11 @@ public:
   INLINE bool operator > (const To *other) const;
   INLINE bool operator <= (const To *other) const;
   INLINE bool operator >= (const To *other) const;
+  INLINE bool operator == (To *other) const;
+  INLINE bool operator != (To *other) const;
+  INLINE bool operator > (To *other) const;
+  INLINE bool operator <= (To *other) const;
+  INLINE bool operator >= (To *other) const;
 
   INLINE bool operator == (const PointerToBase<To> &other) const;
   INLINE bool operator != (const PointerToBase<To> &other) const;
@@ -145,6 +150,8 @@ INLINE ostream &operator <<(ostream &out, const PointerToBase<T> &pointer) {
 ////////////////////////////////////////////////////////////////////
 template <class T>
 class PointerTo : public PointerToBase<T> {
+public:
+  typedef TYPENAME PointerToBase<T>::To To;
 PUBLISHED:
   INLINE PointerTo(To *ptr = (To *)NULL);
   INLINE PointerTo(const PointerTo<T> &copy);
@@ -152,7 +159,7 @@ PUBLISHED:
 public:
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
-  INLINE operator PointerToBase<T>::To *() const;
+  INLINE operator TYPENAME PointerToBase<T>::To *() const;
 
 PUBLISHED:
   // When downcasting to a derived class from a PointerTo<BaseClass>,
@@ -199,6 +206,8 @@ PUBLISHED:
 ////////////////////////////////////////////////////////////////////
 template <class T>
 class ConstPointerTo : public PointerToBase<T> {
+public:
+  typedef TYPENAME PointerToBase<T>::To To;
 PUBLISHED:
   INLINE ConstPointerTo(const To *ptr = (const To *)NULL);
   INLINE ConstPointerTo(const PointerTo<T> &copy);
@@ -207,7 +216,7 @@ PUBLISHED:
 public:
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
-  INLINE operator const PointerToBase<T>::To *() const;
+  INLINE operator const TYPENAME PointerToBase<T>::To *() const;
 
 PUBLISHED:
   INLINE const To *p() const;

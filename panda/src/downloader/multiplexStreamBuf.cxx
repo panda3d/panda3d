@@ -95,9 +95,8 @@ write_string(const string &str) {
 ////////////////////////////////////////////////////////////////////
 MultiplexStreamBuf::
 MultiplexStreamBuf() {
-#ifndef WIN32_VC
-  // These lines, which are essential on Irix and Linux, seem to be
-  // unnecessary and not understood on Windows.
+#ifndef HAVE_IOSTREAM
+  // Older iostream implementations required this.
   allocate();
   setp(base(), ebuf());
 #endif
@@ -229,7 +228,10 @@ sync() {
 void MultiplexStreamBuf::
 write_chars(const char *start, int length, bool flush) {
   size_t orig = _line_buffer.length();
-  string latest(start, length);
+  string latest;
+  if (length != 0) {
+    latest = string(start, length);
+  }
   string line;
 
   if (flush) {

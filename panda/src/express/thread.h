@@ -67,7 +67,8 @@ private:
   bool _started;
   string _name;
   ThreadImpl _impl;
-  friend ThreadImpl;
+  friend class ThreadDummyImpl;
+  friend class ThreadNsprImpl;
 
 
 public:

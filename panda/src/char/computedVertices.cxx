@@ -58,7 +58,7 @@ template<class ValueType, class MorphType>
 static void
 compute_morphs(ValueType *table, const pvector<MorphType> &morph_list,
                Character *character) {
-  pvector<MorphType>::const_iterator mli;
+  TYPENAME pvector<MorphType>::const_iterator mli;
   for (mli = morph_list.begin(); mli != morph_list.end(); ++mli) {
     const MorphType &morph = (*mli);
     const CharacterSlider *slider;
@@ -71,7 +71,7 @@ compute_morphs(ValueType *table, const pvector<MorphType> &morph_list,
       typedef TYPENAME MorphType::MorphValue MorphValue;
       TYPENAME Morphs::const_iterator mi;
       for (mi = morph._morphs.begin(); mi != morph._morphs.end(); ++mi) {
-        typedef typename MorphValue::VecType VecType;
+        typedef TYPENAME MorphValue::VecType VecType;
         ushort index = (*mi)._index;
         const VecType &v = (*mi)._vector;
         

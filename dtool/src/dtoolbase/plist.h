@@ -40,16 +40,16 @@
 template<class Type>
 class plist : public list<Type, pallocator<Type> > {
 public:
+  typedef TYPENAME list<Type, pallocator<Type> >::size_type size_type;
   plist() : list<Type, pallocator<Type> >() { }
   plist(const plist<Type> &copy) : list<Type, pallocator<Type> >(copy) { }
   plist(size_type n) : list<Type, pallocator<Type> >(n) { }
   plist(size_type n, const Type &value) : list<Type, pallocator<Type> >(n, value) { }
 
-  // VC++ doesn't seem to inherit these properly.
-  typedef list<Type, pallocator<Type> >::iterator iterator;
-  typedef list<Type, pallocator<Type> >::const_iterator const_iterator;
-  typedef list<Type, pallocator<Type> >::reverse_iterator reverse_iterator;
-  typedef list<Type, pallocator<Type> >::const_reverse_iterator const_reverse_iterator;
+  typedef TYPENAME list<Type, pallocator<Type> >::iterator iterator;
+  typedef TYPENAME list<Type, pallocator<Type> >::const_iterator const_iterator;
+  typedef TYPENAME list<Type, pallocator<Type> >::reverse_iterator reverse_iterator;
+  typedef TYPENAME list<Type, pallocator<Type> >::const_reverse_iterator const_reverse_iterator;
 };
 
 #endif  // NO_STYLE_ALLOCATOR

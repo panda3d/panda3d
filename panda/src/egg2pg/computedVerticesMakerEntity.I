@@ -66,7 +66,7 @@ add_value(const ValueType &value, const MorphType &morphs,
           PTA(ValueType) &table) {
   // First, see if we have such an entity already.
   ComputedVerticesMakerEntity<ValueType, MorphType> entity(value, morphs);
-  MapType::const_iterator mi = _map.find(entity);
+  TYPENAME MapType::const_iterator mi = _map.find(entity);
   if (mi != _map.end()) {
     // We do!  Return its index number.
     return (*mi).second;

@@ -261,7 +261,7 @@ get_channel(int index) {
     GraphicsPipe *pipe = _pipe;
     if (pipe != (GraphicsPipe *)NULL) {
       chan = _pipe->get_hw_channel(this, index);
-      if (chan == NULL) {
+      if (chan == (GraphicsChannel *)NULL) {
         display_cat.error()
           << "GraphicsWindow::get_channel() - got a NULL channel" << endl;
       } else {

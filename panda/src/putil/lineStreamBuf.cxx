@@ -24,6 +24,23 @@ typedef int streamsize;
 #endif
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LineStreamBuf::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+LineStreamBuf::
+LineStreamBuf() {
+  _has_newline = false;
+
+  // The LineStreamBuf doesn't actually need a buffer--it's happy
+  // writing characters one at a time, since they're just getting
+  // stuffed into a string.  (Although the code is written portably
+  // enough to use a buffer correctly, if we had one.)
+  setg(0, 0, 0);
+  setp(0, 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LineStreamBuf::Destructor
 //       Access: Public, Virtual
 //  Description:

@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool AnimChannelScalarTable::
 has_table() const {
-  return !(_table == NULL);
+  return _table != (const float *)NULL;
 }
 
 

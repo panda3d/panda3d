@@ -137,6 +137,9 @@ $[cdefine HAVE_NAMESPACE]
 /* Define if the C++ iostream library supports ios::binary.  */
 $[cdefine HAVE_IOS_BINARY]
 
+/* Define if fstream::open() accepts a third parameter for umask. */
+$[cdefine HAVE_OPEN_MASK]
+
 /* Define if the C++ compiler supports the typename keyword.  */
 $[cdefine HAVE_TYPENAME]
 

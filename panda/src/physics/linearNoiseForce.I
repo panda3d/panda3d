@@ -33,7 +33,7 @@ prn_lookup(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char LinearNoiseForce::
 get_prn_entry(const LPoint3f& point) const {
-  return prn_lookup(point[0] + prn_lookup(point[1] + prn_lookup(point[2])));
+  return prn_lookup((int)(point[0] + prn_lookup((int)(point[1] + prn_lookup((int)point[2])))));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ get_prn_entry(const LPoint3f& point) const {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char LinearNoiseForce::
 get_prn_entry(const float x, const float y, const float z) const {
-  return prn_lookup(x + prn_lookup(y + prn_lookup(z)));
+  return prn_lookup((int)(x + prn_lookup((int)(y + prn_lookup((int)z)))));
 }
 
 ////////////////////////////////////////////////////////////////////

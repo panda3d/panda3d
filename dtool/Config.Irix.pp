@@ -74,6 +74,10 @@
 // Do we have a true stringstream class defined in <sstream>?
 #define HAVE_SSTREAM
 
+// Does fstream::open() require a third parameter, specifying the
+// umask?
+#define HAVE_OPEN_MASK 1
+
 // Do we have <new>?
 #define HAVE_NEW
 

@@ -84,7 +84,7 @@ make_copy() const {
 bool LensNode::
 is_in_view(const LPoint3f &pos) {
   PT(BoundingVolume) bv = _lens->make_bounds();
-  if (bv == NULL) {
+  if (bv == (BoundingVolume *)NULL) {
     return false;
   }
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bv);

@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LineStreamBuf : public streambuf {
 public:
-  INLINE LineStreamBuf();
+  LineStreamBuf();
   virtual ~LineStreamBuf();
 
   INLINE bool is_text_available() const;

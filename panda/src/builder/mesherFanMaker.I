@@ -134,7 +134,7 @@ compute_angle() const {
   double angle = 0.0;
   Vertexf v0 = _vertex->get_coord_value(*_bucket);
 
-  Edges::const_iterator ei;
+  TYPENAME Edges::const_iterator ei;
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     Normalf v1 = (*ei)->_a->get_coord_value(*_bucket) - v0;
     Normalf v2 = (*ei)->_b->get_coord_value(*_bucket) - v0;
@@ -179,8 +179,8 @@ build(pvector<Prim> &unrolled_tris) {
     // noncoplanar or which do not share identical properties.  Then
     // we can send each piece between the seams to unroll().
 
-    Strips::iterator si, last_si;
-    Edges::iterator ei, last_ei;
+    TYPENAME Strips::iterator si, last_si;
+    TYPENAME Edges::iterator ei, last_ei;
 
     // First, rotate the fan so it begins at a seam.  We do this so we
     // won't be left out with part of one piece at the beginning and
@@ -230,12 +230,12 @@ build(pvector<Prim> &unrolled_tris) {
     new_fan._verts.push_back(_vertex);
 
     new_fan._verts.push_back(_edges.front()->_a);
-    Edges::iterator ei;
+    TYPENAME Edges::iterator ei;
     for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
       new_fan._verts.push_back((*ei)->_b);
     }
 
-    Strips::iterator si;
+    TYPENAME Strips::iterator si;
     for (si = _strips.begin(); si != _strips.end(); ++si) {
       new_fan._prims.splice(new_fan._prims.end(), (*si)->_prims);
       (*si)->remove_all_edges();
@@ -263,8 +263,8 @@ int MesherFanMaker<PrimType>::
 unroll(TYPENAME Strips::iterator strip_begin, TYPENAME Strips::iterator strip_end,
        TYPENAME Edges::iterator edge_begin, TYPENAME Edges::iterator edge_end,
        pvector<Prim> &unrolled_tris) {
-  Edges::iterator ei;
-  Strips::iterator si;
+  TYPENAME Edges::iterator ei;
+  TYPENAME Strips::iterator si;
 
   int num_tris = 0;
   for (ei = edge_begin; ei != edge_end; ++ei) {
@@ -340,7 +340,7 @@ ostream &MesherFanMaker<PrimType>::
 output(ostream &out) const {
   out << *_vertex << ":[";
   if (!_edges.empty()) {
-    Edges::const_iterator ei;
+    TYPENAME Edges::const_iterator ei;
     for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
       out << " " << *(*ei)->_a;
     }

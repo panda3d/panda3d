@@ -170,4 +170,7 @@
   #define SOURCES \
     test_linestream.cxx
 
+  #define LOCAL_LIBS $[LOCAL_LIBS] putil
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
+
 #end test_bin_target

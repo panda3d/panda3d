@@ -813,7 +813,7 @@ read(istream &read_stream, bool want_server_info) {
   uchar *header_buf = new uchar[_header_length];
   // Read the header
   read_stream.read((char *)header_buf, _header_length);
-  if (read_stream.gcount() != (size_t)_header_length) {
+  if (read_stream.gcount() != _header_length) {
     downloader_cat.error() << "DownloadDb::read() - Empty file" << endl;
     return false;
   }

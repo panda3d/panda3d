@@ -1089,7 +1089,7 @@ read_index() {
 
   char this_header[_header_size];
   _read->read(this_header, _header_size);
-  if (_read->fail() || _read->gcount() != _header_size) {
+  if (_read->fail() || _read->gcount() != (unsigned)_header_size) {
     express_cat.info()
       << "Unable to read Multifile header " << _multifile_name << ".\n";
     close();

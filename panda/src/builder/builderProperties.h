@@ -22,7 +22,9 @@
 
 #include "builderTypes.h"
 
-#ifndef WIN32_VC
+#ifndef HAVE_IOSTREAM
+// We assume if your C++ library defines <iostream.h>, then it also
+// defines <stl_config.h>.
 #include <stl_config.h>
 #endif
 

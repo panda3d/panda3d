@@ -29,6 +29,9 @@
 
 // We need to expose one method in each class to force it to publish.
 // We should fix that sometime.
+class ios {
+  typedef long fmtflags;
+};
 class ostream {
 __published:
   void put(char c);

@@ -100,7 +100,7 @@ protected:
 
   double getTime();
 
-  friend ProfileTimer::AutoTimer;
+  friend class ProfileTimer::AutoTimer;
 };
 
 #include "profileTimer.I"

@@ -754,7 +754,7 @@ remove_doubled_verts(int closed) {
   // 'sc' used without having been initialized" warning messages.
   SameCoord<Vertex> sc = SameCoord<Vertex>();
 
-  Verts::iterator new_end = unique(_verts.begin(), _verts.end(), sc);
+  TYPENAME Verts::iterator new_end = unique(_verts.begin(), _verts.end(), sc);
   _verts.erase(new_end, _verts.end());
 
   if (closed) {

@@ -40,6 +40,7 @@
 template<class Type>
 class pdeque : public deque<Type, pallocator<Type> > {
 public:
+  typedef TYPENAME deque<Type, pallocator<Type> >::size_type size_type;
   pdeque() : deque<Type, pallocator<Type> >() { }
   pdeque(const pdeque<Type> &copy) : deque<Type, pallocator<Type> >(copy) { }
   pdeque(size_type n) : deque<Type, pallocator<Type> >(n) { }

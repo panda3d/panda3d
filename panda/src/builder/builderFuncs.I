@@ -838,7 +838,7 @@ __mesh_and_build(InputIterator first, InputIterator last,
 
   int count = 0;
   if (!prims.empty()) {
-    Prims::iterator pi, last_pi;
+    TYPENAME Prims::iterator pi, last_pi;
     pi = prims.begin();
     last_pi = pi;
     for (++pi; pi != prims.end(); ++pi) {

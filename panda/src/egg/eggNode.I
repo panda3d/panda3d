@@ -137,7 +137,7 @@ is_local_coord() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4d &EggNode::
 get_vertex_frame() const {
-  if (_vertex_frame == NULL) {
+  if (_vertex_frame == (LMatrix4d *)NULL) {
     return LMatrix4d::ident_mat();
   } else {
     return *_vertex_frame;
@@ -154,7 +154,7 @@ get_vertex_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4d &EggNode::
 get_node_frame() const {
-  if (_node_frame == NULL) {
+  if (_node_frame == (LMatrix4d *)NULL) {
     return LMatrix4d::ident_mat();
   } else {
     return *_node_frame;
@@ -169,7 +169,7 @@ get_node_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4d &EggNode::
 get_vertex_frame_inv() const {
-  if (_vertex_frame_inv == NULL) {
+  if (_vertex_frame_inv == (LMatrix4d *)NULL) {
     return LMatrix4d::ident_mat();
   } else {
     return *_vertex_frame_inv;
@@ -185,7 +185,7 @@ get_vertex_frame_inv() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4d &EggNode::
 get_node_frame_inv() const {
-  if (_node_frame_inv == NULL) {
+  if (_node_frame_inv == (LMatrix4d *)NULL) {
     return LMatrix4d::ident_mat();
   } else {
     return *_node_frame_inv;
@@ -205,7 +205,7 @@ get_node_frame_inv() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4d &EggNode::
 get_vertex_to_node() const {
-  if (_vertex_to_node == NULL) {
+  if (_vertex_to_node == (LMatrix4d *)NULL) {
     return LMatrix4d::ident_mat();
   } else {
     return *_vertex_to_node;

@@ -7,7 +7,7 @@
 //
 
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -D__i386__
+#define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
@@ -69,10 +69,14 @@
 // Should we include <iostream> or <iostream.h>?  Define HAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use
 // <iostream.h>.
-#define HAVE_IOSTREAM
+#define HAVE_IOSTREAM 1
 
 // Do we have a true stringstream class defined in <sstream>?
-#define HAVE_SSTREAM
+#define HAVE_SSTREAM 1
+
+// Does fstream::open() require a third parameter, specifying the
+// umask?  Versions of gcc prior to 3.2 had this.
+#define HAVE_OPEN_MASK
 
 // Do we have <new>?
 #define HAVE_NEW 1

@@ -174,7 +174,7 @@ template<class MorphType>
 pair<TYPENAME EggMorphList<MorphType>::iterator, bool> EggMorphList<MorphType>::
 insert(const MorphType &value) {
   pair<iterator, bool> result;
-  Morphs::iterator mi;
+  TYPENAME Morphs::iterator mi;
   for (mi = _morphs.begin(); mi != _morphs.end(); ++mi) {
     if ((*mi) == value) {
       // This value is already present.

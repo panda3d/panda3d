@@ -19,15 +19,11 @@
 #ifndef EGGNAMEDOBJECT_H
 #define EGGNAMEDOBJECT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggObject.h"
-#include <namable.h>
-#include <referenceCount.h>
-
-#ifndef WIN32_VC
-class ostream;
-#endif
+#include "namable.h"
+#include "referenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggNamedObject

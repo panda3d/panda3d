@@ -29,10 +29,9 @@ PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) :
 {
   init_pipe();
 
-#ifndef WIN32_VC
-  // taken from Dr. Ose.
-  // These lines, which are essential on Irix and Linux, seem to be
-  // unnecessary and not understood on Windows.
+#ifndef HAVE_IOSTREAM
+  // These lines, which are essential on older implementations of the
+  // iostream library, are not understood by more recent versions.
   allocate();
   assert((dir == Input) || (dir == Output));
   if (dir == Input) {
@@ -40,7 +39,7 @@ PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) :
   } else {
     setp(base(), ebuf());
   }
-#endif /* WIN32_VC */
+#endif /* HAVE_IOSTREAM */
 }
 
 PipeStreamBuf::
@@ -102,7 +101,7 @@ int PipeStreamBuf::underflow(void) {
   assert(_dir == Input);
   if ((eback() == (char*)0L) || (gptr() == (char*)0L) ||
       (egptr() == (char*)0L)) {
-    // must be in win32
+    // must be new-style iostream library
     char* buf = new char[4096];
     char* ebuf = &(buf[4096]);
     setg(buf, ebuf, ebuf);
@@ -114,22 +113,22 @@ int PipeStreamBuf::underflow(void) {
   if (eof_pipe()) {
     return EOF;
   }
-#ifdef WIN32_VC
+#ifdef HAVE_IOSTREAM
   size_t len = 4096;
-#else /* WIN32_VC */
+#else /* HAVE_IOSTREAM */
   size_t len = ebuf() - base();
-#endif /* WIN32_VC */
+#endif /* HAVE_IOSTREAM */
   char* buf = new char[len];
   size_t n = read_pipe(buf, len);
   int ret = buf[0];
   if (n == 0)
     ret = EOF;
   else {
-#ifdef WIN32_VC
+#ifdef HAVE_IOSTREAM
     memcpy(eback()+(len-n), buf, n);
-#else /* WIN32_VC */
+#else /* HAVE_IOSTREAM */
     memcpy(base()+(len-n), buf, n);
-#endif /* WIN32_VC */
+#endif /* HAVE_IOSTREAM */
     gbump(-((int)n));
   }
   delete buf;

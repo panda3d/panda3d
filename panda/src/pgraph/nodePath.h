@@ -570,7 +570,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class NodePathCollection;
-  friend WorkingNodePath;
+  friend class WorkingNodePath;
 };
 
 INLINE ostream &operator << (ostream &out, const NodePath &node_path);

@@ -843,7 +843,7 @@ write_verbose(ostream &out, int indent_level) const {
     << get_type() << " contains "
     << get_num_prims() << " primitives:\n";
 
-  if ((i_coords == NULL) && (g_coords == NULL)) {
+  if ((i_coords == (ushort *)NULL) && (g_coords == (Vertexf *)NULL)) {
     indent(out, indent_level)
       << "No coords\n";
   } else if (i_coords!=(ushort*)0L) {

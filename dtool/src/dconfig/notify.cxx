@@ -109,18 +109,18 @@ get_ostream_ptr() const {
 //               case this does nothing.  But the flag is available in
 //               case any extended types want to make use of it.
 ////////////////////////////////////////////////////////////////////
-long Notify::
+ios::fmtflags Notify::
 get_literal_flag() {
   static bool got_flag = false;
-  static long flag;
+  static ios::fmtflags flag;
 
   if (!got_flag) {
-#ifndef WIN32_VC
+#ifndef HAVE_IOSTREAM
     flag = ios::bitalloc();
 #else
     // We lost bitalloc in the new iostream?  This feature will just be
-    // disabled in Windows for now.  No big deal.
-    flag = 0;
+    // disabled for now.  No big deal.
+    flag = (ios::fmtflags)0;
 #endif
     got_flag = true;
   }

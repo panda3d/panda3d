@@ -1281,8 +1281,13 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       if (!expanded.insert(objecttype).second) {
         egg2pg_cat.error()
           << "Cycle in ObjectType expansions:\n";
-        copy(expanded_history.begin(), expanded_history.end(),
-             ostream_iterator<string>(egg2pg_cat.error(false), " -> "));
+	pvector<string>::const_iterator pi;
+	for (pi = expanded_history.begin();
+	     pi != expanded_history.end();
+	     ++pi) {
+	  egg2pg_cat.error(false) 
+	    << (*pi) << " -> ";
+	}
         egg2pg_cat.error(false) << objecttype << "\n";
         _error = true;
         break;

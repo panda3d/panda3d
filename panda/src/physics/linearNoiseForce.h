@@ -19,6 +19,7 @@
 #ifndef LINEARNOISEFORCE_H
 #define LINEARNOISEFORCE_H
 
+#include "pandabase.h"
 #include "linearRandomForce.h"
 
 ////////////////////////////////////////////////////////////////////

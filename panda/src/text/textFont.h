@@ -29,8 +29,8 @@
 class Node;
 class TextGlyph;
 
-#ifdef __GNUC__
-// For some reason, gcc's <string> doesn't define this.
+#if defined(__GNUC__) && !defined(HAVE_IOSTREAM)
+// For some reason, early versions of gcc's <string> didn't define this.
 typedef basic_string<wchar_t> wstring;
 #endif
 

@@ -74,7 +74,10 @@ explode() const {
 void GeomLinestrip::
 write_datagram(BamWriter *manager, Datagram &me) {
   Geom::write_datagram(manager, me);
-  me.add_uint32(_width);
+  // Changed from uint32 to float32 on 1/16/02; didn't bother to
+  // update the bam version on the assumption that no actual bam files
+  // contain GeomLinestrip objects.
+  me.add_float32(_width);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,7 +109,7 @@ make_GeomLinestrip(const FactoryParams &params) {
 void GeomLinestrip::
 fillin(DatagramIterator& scan, BamReader* manager) {
   Geom::fillin(scan, manager);
-  _width = scan.get_uint32();
+  _width = scan.get_float32();
 }
 
 ////////////////////////////////////////////////////////////////////

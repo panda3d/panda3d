@@ -496,9 +496,9 @@ intersect_regions(MouseWatcher::VRegions &result,
 void MouseWatcher::
 remove_region_from(MouseWatcher::VRegions &regions,
                    MouseWatcherRegion *region) {
-  VRegions::iterator ri = 
-    lower_bound(regions.begin(), regions.end(), region);
-  if (ri != regions.end() && (*ri) == region) {
+  PT(MouseWatcherRegion) ptr = region;
+  VRegions::iterator ri = lower_bound(regions.begin(), regions.end(), ptr);
+  if (ri != regions.end() && (*ri) == ptr) {
     // The region is in the vector.  Remove it.
     regions.erase(ri);
   }

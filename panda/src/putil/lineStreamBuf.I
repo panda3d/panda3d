@@ -18,16 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LineStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE LineStreamBuf::
-LineStreamBuf() {
-  _has_newline = false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LineStreamBuf::is_text_available
 //       Access: Public
 //  Description:
@@ -56,5 +46,7 @@ has_newline() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void LineStreamBuf::
 write_chars(const char *start, int length) {
-  _data += string(start, length);
+  if (length > 0) {
+    _data += string(start, length);
+  }
 }

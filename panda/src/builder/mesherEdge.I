@@ -114,7 +114,7 @@ remove(Strip *strip) {
 template <class PrimType>
 void MesherEdge<PrimType>::
 change_strip(Strip *from, Strip *to) {
-  Strips::iterator si;
+  TYPENAME Strips::iterator si;
 
   for (si = _strips.begin(); si != _strips.end(); ++si) {
     if (*si == from) {
@@ -142,7 +142,7 @@ output(ostream &out) const {
   out << "Edge [" << *_a << " to " << *_b << "], "
       << _strips.size() << " strips:";
 
-  Strips::const_iterator si;
+  TYPENAME Strips::const_iterator si;
   for (si = _strips.begin(); si != _strips.end(); ++si) {
     out << " " << (*si)->_index;
   }
