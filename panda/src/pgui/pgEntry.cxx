@@ -471,7 +471,8 @@ candidate(const MouseWatcherParameter &param, bool background) {
       _candidate_highlight_end = param.get_highlight_end();
       _candidate_cursor_pos = param.get_cursor_pos();
       _text_geom_stale = true;
-      type(param);
+      if (!_candidate_wtext.empty())
+        type(param);
     }
   }
   PGItem::candidate(param, background);

@@ -300,6 +300,17 @@ move_pointer(int, int, int) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::close_ime
+//       Access: Published, Virtual
+//  Description: Forces the ime window to close if any
+//
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+close_ime() {
+  return;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::has_button_event
 //       Access: Public
 //  Description: Returns true if the indicated device has a pending

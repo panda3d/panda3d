@@ -47,6 +47,8 @@ public:
 
   virtual bool move_pointer(int device, int x, int y);
 
+  virtual void close_ime();
+
   virtual void begin_flip();
 
   virtual void process_events();

@@ -65,6 +65,7 @@ PUBLISHED:
 
   MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
+  virtual void close_ime();
 
 public:
   // No need to publish these.

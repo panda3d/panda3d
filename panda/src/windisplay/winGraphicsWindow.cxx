@@ -113,6 +113,31 @@ move_pointer(int device, int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::close_ime
+//       Access: Published, Virtual
+//  Description: Forces the ime window to close, if any
+//
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+close_ime() {
+  // Check if the ime window is open
+  if (!_ime_open)
+    return;
+
+  HIMC hIMC = ImmGetContext(_hWnd);
+  if (hIMC != 0) {
+    if (!ImmSetOpenStatus(hIMC, false)) {
+      windisplay_cat.debug() << "ImmSetOpenStatus failed\n";
+    }
+    ImmReleaseContext(_hWnd, hIMC);
+  }
+  _ime_open = false;
+  _ime_active = false;
+  windisplay_cat.debug() << "success: closed ime window\n";
+  return;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::begin_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
