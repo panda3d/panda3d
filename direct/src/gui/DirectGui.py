@@ -4,7 +4,9 @@ from OnscreenGeom import *
 from OnscreenImage import *
 
 # Set up default font
-PGItem.getTextNode().setFont(getDefaultFont())
+defaultFont = getDefaultFont()
+if defaultFont:
+    PGItem.getTextNode().setFont(defaultFont)
 
 # Direct Gui Classes
 from DirectFrame import *
