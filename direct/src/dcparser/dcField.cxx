@@ -19,6 +19,7 @@
 #include "dcField.h"
 #include "hashGenerator.h"
 #include "dcmsgtypes.h"
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::get_number
@@ -79,7 +80,12 @@ pack_args(Datagram &datagram, PyObject *tuple) const {
   nassertv(PySequence_Check(tuple));
   int index = 0;
   bool enough_args = do_pack_args(datagram, tuple, index);
-  nassertv(enough_args && index == PySequence_Size(tuple));
+  if (!enough_args || index != PySequence_Size(tuple)) {
+    ostringstream strm;
+    strm << "Wrong number of arguments to field " << get_name();
+    nassert_raise(strm.str());
+    return;
+  }
 }
 #endif  // HAVE_PYTHON
 

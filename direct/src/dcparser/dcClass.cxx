@@ -321,9 +321,11 @@ void DCClass::
 pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
   DCAtomicField *atom = field->as_atomic_field();
   if (atom == (DCAtomicField *)NULL) {
-    cerr << "Cannot pack non-atomic field " << field->get_name()
-         << " for generate\n";
-    nassertv(false);
+    ostringstream strm;
+    strm << "Cannot pack non-atomic field " << field->get_name()
+         << " for generate";
+    nassert_raise(strm.str());
+    return;
   }
 
   // We need to get the initial value of this field.  There isn't a
@@ -335,15 +337,18 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
   if (atom->get_num_elements() == 0) {
     // It sure doesn't make sense to have a required field with no
     // parameters.  What data, exactly, is required?
-    cerr << "Required field " << set_name << " has no parameters!\n";
-    nassertv(false);
+    ostringstream strm;
+    strm << "Required field " << set_name << " has no parameters!";
+    nassert_raise(strm.str());
+    return;
   }
   
   if (set_name.substr(0, 3) != "set") {
     // This is required to suit our set/get mangling convention.
-    cerr << "Required field " << set_name
-         << " does not begin with 'set'\n";
-    nassertv(false);
+    ostringstream strm;
+    strm << "Required field " << set_name << " does not begin with 'set'";
+    nassert_raise(strm.str());
+    return;
   }
   string get_name = set_name;
   get_name[0] = 'g';
@@ -351,9 +356,11 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
   // Now we have to look up the getter on the distributed object
   // and call it.
   if (!PyObject_HasAttrString(distobj, (char *)get_name.c_str())) {
-    cerr << "Required field " << set_name
-         << " doesn't have matching field named " << get_name << "\n";
-    nassertv(false);
+    ostringstream strm;
+    strm << "Required field " << set_name
+         << " doesn't have matching field named " << get_name;
+    nassert_raise(strm.str());
+    return;
   }
   PyObject *func = 
     PyObject_GetAttrString(distobj, (char *)get_name.c_str());
@@ -471,9 +478,11 @@ ai_format_generate(PyObject *distobj, int do_id,
 
       DCField *field = get_field_by_name(field_name);
       if (field == (DCField *)NULL) {
-        cerr << "No field named " << field_name << " in class " << get_name()
+        ostringstream strm;
+        strm << "No field named " << field_name << " in class " << get_name()
              << "\n";
-        nassertr(false, Datagram());
+        nassert_raise(strm.str());
+        return Datagram();
       }
 
       pack_required_field(dg, distobj, field);
