@@ -18,7 +18,7 @@ class SoundInterval(Interval.Interval):
     # seems to be some timing in the audio such that the stop doesn't
     # kill the looping sound until the next time around if duration
     # of the interval equals duration of the sound
-    def __init__(self, sound, loop = 0, duration = 0.0, name = None, volume = 1.0):
+    def __init__(self, sound, loop = 0, duration = 0.0, name = None, volume = 1.0, startTime = 0.0):
         """__init__(sound, loop, name)
         """
         # Generate unique name
@@ -28,9 +28,10 @@ class SoundInterval(Interval.Interval):
         self.sound = sound
         self.loop = loop
         self.volume = volume
+        self.startTime = startTime
         # If no duration given use sound's duration as interval's duration
         if duration == 0.0 and self.sound != None:
-            duration = self.sound.length()
+            duration = self.sound.length() - self.startTime
             if (duration == 0):
                 self.notify.warning('zero length duration!')
             # MPG - hack for Miles bug
@@ -57,13 +58,14 @@ class SoundInterval(Interval.Interval):
             # IVAL_INIT event, start new sound
             # If its within a 10th of a second of the start,
             # start at the beginning
-            if (t < 0.1):
-                t = 0.0
+            t1 = t + self.startTime
+            if (t1 < 0.1):
+                t1 = 0.0
             if self.sound:
                 # Start sound
-                self.sound.setTime(t)
-                self.sound.setLoop(self.loop)
                 self.sound.setVolume(self.volume)
+                self.sound.setTime(t1)
+                self.sound.setLoop(self.loop)
                 self.sound.play()
 
         # Print debug information
