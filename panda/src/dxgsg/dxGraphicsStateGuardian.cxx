@@ -99,10 +99,14 @@ const int VERT_BUFFER_SIZE = (32*6*1024L);
 TypeHandle DXGraphicsStateGuardian::_type_handle;
 
 // bit masks used for drawing primitives
-#define PER_TEXCOORD 0x8
-#define PER_COLOR    0x4
-#define PER_NORMAL   0x2
-#define PER_COORD    0x1
+// bitmask type: normal=0x1,color=0x2,texcoord=0x4
+typedef enum { NothingSet=0,NormalOnly,ColorOnly,Normal_Color,TexCoordOnly,
+               Normal_TexCoord,Color_TexCoord,Normal_Color_TexCoord
+} DrawLoopFlags;
+
+#define PER_NORMAL   NormalOnly
+#define PER_COLOR    ColorOnly
+#define PER_TEXCOORD TexCoordOnly
 
 // technically DX7's front-end has no limit on the number of lights, but it's simpler for
 // this implementation to set a small GL-like limit to make the light array traversals short
@@ -1809,6 +1813,16 @@ draw_prim_setup(const Geom *geom) {
     }}
 
 ////////
+    
+   // this stuff should eventually replace the iterators below
+   geom->get_coords(_coords,_vindexes);
+   if(_vindexes!=NULL) {
+      _pCurCoordIndex = &_vindexes[0];
+   } else {
+      _pCurCoord = &_coords[0];
+   }
+
+   ///////////////
 
    vi = geom->make_vertex_iterator();
    _curFVFflags = D3DFVF_XYZ;
@@ -1846,10 +1860,21 @@ draw_prim_setup(const Geom *geom) {
             p_normal = geom->get_next_normal(ni);    // set overall normal if there is one
    }
 
-   if (geom->get_binding(G_TEXCOORD) != G_OFF) {
-        ti = geom->make_texcoord_iterator();
-        _curFVFflags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
-        vertex_size += sizeof(float) * 2;
+
+   GeomBindType TexCoordBinding;
+   geom->get_texcoords(_texcoords,TexCoordBinding,_texcoord_indexes);
+   if (TexCoordBinding != G_OFF) {
+
+       // used by faster path
+       if(_texcoord_indexes!=NULL) {
+           _pCurTexCoordIndex = &_texcoord_indexes[0];
+       } else {
+           _pCurTexCoord = &_texcoords[0];
+       }
+
+       ti = geom->make_texcoord_iterator();
+       _curFVFflags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+       vertex_size += sizeof(float) * 2;
    }
 
     // If we have per-vertex colors or normals, we need smooth shading.
@@ -1903,36 +1928,34 @@ wants_colors() const {
 //               for component normals and color
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
-
+draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags) {
     Vertexf NextVert;
-    perFlags &= ~PER_COORD;  // should always be set anyway
 
     for(;nVerts > 0;nVerts--) {
-
          // coord info will always be _perVertex
         GET_NEXT_VERTEX(NextVert);     // need to optimize these 
         add_to_FVFBuf((void *)&NextVert, sizeof(D3DVECTOR));
 
-        if(perFlags==0xC) {
-            // break out the common case first
+        if(perFlags==(ushort)TexCoordOnly) {
+            // break out the common case (for animated chars) 1st
             GET_NEXT_TEXCOORD();
-            GET_NEXT_COLOR();
         } else {
-            switch (perFlags) {
-                case 0x4:
+            switch (DrawLoopFlags(perFlags)) {
+                case Color_TexCoord:
+                    GET_NEXT_TEXCOORD();
+                case ColorOnly:
                     GET_NEXT_COLOR();
                     break;
-                case 0x6:
+                case Normal_Color:
                     GET_NEXT_COLOR();
-                case 0x2:
+                case NormalOnly:
                     GET_NEXT_NORMAL();
                     break;
-                case 0xE:
+                case Normal_Color_TexCoord:
                     GET_NEXT_COLOR();
-                case 0xA:
+                case Normal_TexCoord:
                     GET_NEXT_NORMAL();
-                case 0x8:
+                // case TexCoordOnly:
                     GET_NEXT_TEXCOORD();
                     break;
             }
@@ -1945,6 +1968,54 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
         if (_curFVFflags & D3DFVF_TEXCOUNT_MASK)
             add_to_FVFBuf((void *)&p_texcoord, sizeof(TexCoordf));
     }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::draw_prim_inner_loop_coordtexonly
+//       Access: Private
+//  Description: FastPath loop used by animated character data
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
+    // inc'ing local ptrs avoids 'this' ptr derefs for member fields
+    Vertexf *pCurVert = _pCurCoord;
+    ushort *pCurVertIndex = _pCurCoordIndex;
+    TexCoordf *pCurTexCoord = _pCurTexCoord;
+    ushort *pCurTexCoordIndex = _pCurTexCoordIndex;
+    char *LocalFvfBufPtr=_pCurFvfBufPtr;
+    DWORD cur_color = _curD3Dcolor;
+    bool bDoIndexedTexCoords = (_texcoord_indexes != NULL);
+    bool bDoIndexedCoords = (_vindexes != NULL);
+
+    for(;nVerts > 0;nVerts--) {
+        if(bDoIndexedCoords) {
+           memcpy(LocalFvfBufPtr,(void*)&_coords[*pCurVertIndex],sizeof(D3DVECTOR));
+           pCurVertIndex++;           
+        } else {
+           memcpy(LocalFvfBufPtr,(void*)pCurVert,sizeof(D3DVECTOR));
+           pCurVert++;
+        }
+
+        LocalFvfBufPtr+=sizeof(D3DVECTOR);
+
+        *((DWORD *)LocalFvfBufPtr) = cur_color;
+        LocalFvfBufPtr += sizeof(DWORD);
+
+        if(bDoIndexedTexCoords) {
+           memcpy(LocalFvfBufPtr,(void*)&_texcoords[*pCurTexCoordIndex],sizeof(TexCoordf));
+           pCurTexCoordIndex++;
+        } else {
+           memcpy(LocalFvfBufPtr,(void*)pCurTexCoord,sizeof(TexCoordf));
+           pCurTexCoord++;
+        }
+        LocalFvfBufPtr+=sizeof(TexCoordf);
+    }
+
+    _pCurFvfBufPtr=LocalFvfBufPtr;
+    _pCurCoord = pCurVert;
+    _pCurCoordIndex = pCurVertIndex;
+    _pCurTexCoord = pCurTexCoord;
+    _pCurTexCoordIndex = pCurTexCoordIndex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2016,9 +2087,8 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
     // values (may only be possible to handle certain cases without reverting to old pipeline)
     if (GeomVrtFmt!=FlatVerts) {
 
-        _perVertex = PER_COORD;
+        _perVertex = 0x0; 
         _perPrim = 0;
-        if (geom->get_binding(G_COORD) == G_PER_VERTEX)  _perVertex |= PER_COORD;
         if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) _perVertex |= PER_NORMAL;
         if (geom->get_binding(G_COLOR) == G_PER_VERTEX) _perVertex |= PER_COLOR;
 
@@ -2123,9 +2193,9 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     }
 
     assert(geom->get_binding(G_COORD) == G_PER_VERTEX);
-    _perVertex = PER_COORD;
+    _perVertex = 0x0;
+    _perPrim = _perComp = 0x0;
 
-    _perPrim = _perComp = 0;
     switch(geom->get_binding(G_NORMAL)) {
         case G_PER_VERTEX:
             _perVertex |=  PER_NORMAL;
@@ -2226,7 +2296,7 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
     }
 
     assert(geom->get_binding(G_COORD) == G_PER_VERTEX);
-    _perVertex = PER_COORD;
+    _perVertex = 0x0;
 
     _perPrim = _perComp = 0;
     switch(geom->get_binding(G_NORMAL)) {
@@ -2252,6 +2322,7 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
     }
 
     size_t vertex_size = draw_prim_setup(geom);
+    ushort perFlags = _perVertex | _perComp;
 
     for (int i = 0; i < nPrims; i++) {
         if (_perPrim & PER_COLOR) {
@@ -2260,18 +2331,16 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
 
         int nVerts;
 
-        if(plen==NULL) {
-            nVerts=4;  // we've been called by draw_quad, which has no lengths array
-        } else {
+        if(plen!=NULL) {
             nVerts= *(plen++);
             nassertv(nVerts >= 2);
+        } else {
+            nVerts=4;  // we've been called by draw_quad, which has no lengths array
         }
 
         nassertv(_pCurFvfBufPtr == NULL);   // make sure the storage pointer is clean.
         nassertv(nVerts * vertex_size < VERT_BUFFER_SIZE);
         _pCurFvfBufPtr = _pFvfBufBasePtr;   // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
-
-        DWORD perFlags = _perVertex | _perComp;
 
         draw_prim_inner_loop(nVerts, geom, perFlags);
 
@@ -2830,15 +2899,21 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
     if (GeomVrtFmt!=FlatVerts) {
         // this is the old geom setup, it reformats every vtx into an output array passed to d3d
 
-        _perVertex = PER_COORD;
+        _perVertex = 0x0;
+        _perPrim = 0x0;
 
-        if (NormalBinding == G_PER_VERTEX)   _perVertex |= PER_NORMAL;
-        if (ColorBinding == G_PER_VERTEX)    _perVertex |= PER_COLOR;
-        if (TexCoordBinding == G_PER_VERTEX) _perVertex |= PER_TEXCOORD;
+        if(NormalBinding == G_PER_VERTEX)   
+          _perVertex |= PER_NORMAL;
+         else if(NormalBinding == G_PER_PRIM) 
+                 _perPrim |= PER_NORMAL;
 
-        _perPrim = 0;
-        if (NormalBinding == G_PER_PRIM) _perPrim |= PER_NORMAL;
-        if (ColorBinding == G_PER_PRIM)  _perPrim |= PER_COLOR;
+        if(ColorBinding == G_PER_PRIM)  
+           _perPrim |= PER_COLOR;
+          else if(ColorBinding == G_PER_VERTEX)    
+                 _perVertex |= PER_COLOR;
+
+        if (TexCoordBinding == G_PER_VERTEX) 
+           _perVertex |= PER_TEXCOORD;
 
         size_t vertex_size = draw_prim_setup(geom);
 
@@ -2856,7 +2931,10 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
             if (_perPrim & PER_NORMAL)
                 p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
 
-            draw_prim_inner_loop(3, geom, _perVertex);
+
+            if(_perVertex==TexCoordOnly)
+               draw_prim_inner_loop_coordtexonly(3, geom);   
+             else draw_prim_inner_loop(3, geom, _perVertex);
         }
 
         DWORD nVerts=nPrims*3;
@@ -3181,10 +3259,12 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     if (GeomVrtFmt!=FlatVerts) {
 
         // this is the old geom setup, it reformats every vtx into an output array passed to d3d
-        _perVertex = PER_COORD;
+        _perVertex = 0x0;
         _perPrim = _perComp = 0;
 
         switch (NormalBinding) {
+            case G_OFF:
+                break;
             case G_PER_VERTEX:
                 _perVertex |= PER_NORMAL;
                 break;
@@ -3197,14 +3277,14 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
         }
 
         switch (ColorBinding) {
-            case G_PER_VERTEX:
-                _perVertex |= PER_COLOR;
-                break;
             case G_PER_PRIM:
                 _perPrim |= PER_COLOR;
                 break;
             case G_PER_COMPONENT:
                 _perComp |= PER_COLOR;
+                break;
+            case G_PER_VERTEX:
+                _perVertex |= PER_COLOR;
                 break;
         }
 
@@ -3240,7 +3320,9 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             _pCurFvfBufPtr = _pFvfBufBasePtr;            // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
             if(_perComp==0x0) {
-                    draw_prim_inner_loop(nVerts, geom, _perVertex);
+                 if(_perVertex==TexCoordOnly)
+                    draw_prim_inner_loop_coordtexonly(nVerts, geom);   
+                   else draw_prim_inner_loop(nVerts, geom, _perVertex);
             } else {
                     if(trilisttype==D3DPT_TRIANGLESTRIP) {
                        // in flat shade mode, D3D strips color using the 1st vertex. 
@@ -3960,36 +4042,6 @@ apply_texture(TextureContext *tc) {
 
         D3DTEXTUREMINFILTER minfilter = PandaToD3DMinType[(DWORD)ft];
         D3DTEXTUREMIPFILTER mipfilter = PandaToD3DMipType[(DWORD)ft];
-/*
-        switch (ft) {
-            case Texture::FT_nearest:
-                minfilter = D3DTFN_POINT;
-                mipfilter = D3DTFP_NONE;
-                break;
-            case Texture::FT_linear:
-                minfilter = D3DTFN_LINEAR;
-                mipfilter = D3DTFP_NONE;
-                break;
-            case Texture::FT_nearest_mipmap_nearest:
-                minfilter = D3DTFN_POINT;
-                mipfilter = D3DTFP_POINT;
-                break;
-            case Texture::FT_linear_mipmap_nearest:
-                minfilter = D3DTFN_LINEAR;
-                mipfilter = D3DTFP_POINT;
-                break;
-            case Texture::FT_nearest_mipmap_linear:
-                minfilter = D3DTFN_POINT;
-                mipfilter = D3DTFP_LINEAR;
-                break;
-            case Texture::FT_linear_mipmap_linear:
-                minfilter = D3DTFN_LINEAR;
-                mipfilter = D3DTFP_LINEAR;
-                break;
-            default:
-                dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
-        }
-*/
 
         #ifndef NDEBUG
             extern char *PandaFilterNameStrs[];

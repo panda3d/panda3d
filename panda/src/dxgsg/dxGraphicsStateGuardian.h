@@ -310,23 +310,19 @@ protected:
   INLINE void enable_dither(bool val);
   INLINE void enable_stencil_test(bool val);
   bool enable_light(int light, bool val);
-
-  void draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags);
-  size_t draw_prim_setup(const Geom *geom) ;
+  void report_texmgr_stats();
   void draw_multitri(Geom *geom, D3DPRIMITIVETYPE tri_id);
 
-  void report_texmgr_stats();
+  void draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags);
+  void draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom);
+  size_t draw_prim_setup(const Geom *geom) ;
 
   //   for drawing primitives
-  //  Colorf    p_color;  bypassed by _curD3Dcolor;
-  //  Vertexf   p_vertex;
   Normalf   p_normal;  // still used to hold G_OVERALL, G_PER_PRIM values
   TexCoordf p_texcoord;
   D3DCOLOR  _curD3Dcolor;
   DWORD     _curFVFflags;
-  short     _perPrim;
-  short     _perVertex;
-  short     _perComp;
+  DWORD     _perPrim,_perVertex,_perComp;   //  these hold DrawLoopFlags bitmask values
 
   bool  _issued_color_enabled;      // WBD ADDED
   bool  _enable_all_color;
@@ -352,11 +348,16 @@ protected:
   PTA_ushort _vindexes;
   ushort *_pCurCoordIndex;  
 
+  PTA_TexCoordf _texcoords;
+  TexCoordf *_pCurTexCoord;
+  PTA_ushort _texcoord_indexes;
+  ushort *_pCurTexCoordIndex;  
 
+/*  not used yet
   PTA_Normalf _norms;
   PTA_Colorf _colors;
-  PTA_TexCoordf _texcoords;
-  PTA_ushort _cindexes,_nindexes,_tindexes;
+  PTA_ushort _cindexes,_nindexes;
+*/  
 
   Colorf _lmodel_ambient;
   float _material_ambient;
