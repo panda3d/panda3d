@@ -213,16 +213,18 @@ class Track(Interval):
                     currentInterval = ival
                 elif (t > tEnd):
                     # Crossing over interval end 
-                    if ((((event == IVAL_NONE) or (event == IVAL_DONE)) and
-                         (self.prev_t < tEnd))
-                        or
-                        ((event == IVAL_INIT) and ival.getfOpenEnded())):
-                        # If we've just crossed the end of this interval
+                    if (((event == IVAL_NONE) or (event == IVAL_DONE)) and
+                        (self.prev_t < tEnd)):
+                        # We've just crossed the end of this interval,
+                        # execute the interval at its end time
+                        # and flag event as IVAL_DONE
+                        ival.setT(ival.getDuration(), IVAL_DONE)
+                    elif ((event == IVAL_INIT) and ival.getfOpenEnded()):
                         # or its an INIT event after the interval's end
                         # and the interval is openended,
                         # then execute the interval at its end time
-                        ival.setT(ival.getDuration(), event)
-                     # May not be the last, keep checking other intervals
+                        ival.setT(ival.getDuration(), IVAL_INIT)
+                    # May not be the last, keep checking other intervals
             # Record current interval (may be None)
             self.currentInterval = currentInterval
 
