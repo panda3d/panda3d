@@ -54,14 +54,15 @@ event_W(CPT_Event, void *) {
 void 
 usage() {
   cerr <<
-    "Usage: pview [opts] model [model ...]\n";
-    "       pview -h\n";
+    "\n"
+    "Usage: pview [opts] model [model ...]\n"
+    "       pview -h\n\n";
 }
 
 void 
 help() {
   usage();
-  cerr << "\n"
+  cerr <<
     "pview opens a quick Panda window for viewing one or more models and/or\n"
     "animations.\n\n"
 
@@ -82,7 +83,7 @@ main(int argc, char *argv[]) {
 
   bool auto_center = false;
 
-  extern char *optarg;
+  //  extern char *optarg;
   extern int optind;
   static const char *optflags = "ch";
   int flag = getopt(argc, argv, optflags);
