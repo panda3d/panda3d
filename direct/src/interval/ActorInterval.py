@@ -37,9 +37,8 @@ class ActorInterval(Interval):
 	Interval.__init__(self, name, duration)
         # Update stopEvent
         if self.loop:
-            stopEvent = id + '_stopEvent'
-            self.stopEventList = [stopEvent]
-            self.accept(stopEvent, self.actor.stop)
+            self.stopEvent = id + '_stopEvent'
+            self.stopEventList = [self.stopEvent]
 
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
@@ -49,6 +48,8 @@ class ActorInterval(Interval):
         # Pose or stop anim
         if (t >= self.getDuration()):
             self.actor.stop()
+            if self.loop:
+                self.ignore(self.stopEvent)
         elif self.loop == 1:
             if event == IVAL_INIT:
                 # Determine the current frame
@@ -58,6 +59,7 @@ class ActorInterval(Interval):
                 self.actor.pose(self.animName, frame)
                 # And start loop, restart flag says continue from current frame
                 self.actor.loop(self.animName, restart=0)
+                self.accept(self.stopEvent, self.actor.stop)
         else:
             # Determine the current frame
             frame = (int(self.actor.getFrameRate(self.animName) * t) %

@@ -17,6 +17,7 @@ dock = loader.loadModel('models/directmodels/smiley')
 dock.reparentTo(render)
 
 sound = loader.loadSound('phase_6/audio/sfx/SZ_DD_waterlap.mp3')
+foghorn = loader.loadSound('phase_6/audio/sfx/SZ_DD_foghorn.mp3')
 
 mp = Mopath.Mopath()
 mp.loadFile(Filename('phase_6/paths/dd-e-w'))
@@ -62,16 +63,20 @@ waterDone = EventInterval('water-is-done')
 waterEventTrack = Track([waterDone])
 waterEventTrack.setIntervalStartTime('water-is-done', eventTime)
 
-mtrack = MultiTrack([boatTrack, dockTrack, soundTrack, waterEventTrack,
-                     donaldSteerTrack])
-# Print out MultiTrack parameters
-print(mtrack)
-
 def handleWaterDone():
     print 'water is done'
 
-messenger.accept('water-is-done', 1, handleWaterDone)
+# Interval can handle its own event
+messenger.accept('water-is-done', waterDone, handleWaterDone)
 
+foghornStartTime = BOAT_START + 4.0
+foghornSound = SoundInterval(foghorn, name='foghorn')
+soundTrack2 = Track([(foghornStartTime, foghornSound)], 'soundtrack2')
+
+mtrack = MultiTrack([boatTrack, dockTrack, soundTrack, soundTrack2, waterEventTrack,
+                     donaldSteerTrack])
+# Print out MultiTrack parameters
+print(mtrack)
 
 ### Using lambdas and functions ###
 # Using a lambda

@@ -43,9 +43,8 @@ class SoundInterval(Interval):
 	Interval.__init__(self, name, duration)
         # Update stopEvent
         if self.wantSound:
-            stopEvent = id + '_stopEvent'
-            self.stopEventList = [stopEvent]
-            self.accept(stopEvent, lambda s = self: AudioManager.stop(s.sound))
+            self.stopEvent = id + '_stopEvent'
+            self.stopEventList = [self.stopEvent]
         
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
@@ -57,6 +56,7 @@ class SoundInterval(Interval):
         if (t >= self.getDuration()):
             # If end of sound reached or stop event received, stop sound
             AudioManager.stop(self.sound)
+            self.ignore(self.stopEvent)
         elif (event == IVAL_INIT):
             # IVAL_INIT event, start new sound
             # If its within a 10th of a second of the start,
@@ -68,3 +68,5 @@ class SoundInterval(Interval):
             # Loop in necessary
 	    if (self.loop):
 		AudioManager.setLoop(self.sound, 1)
+            # Accept event to kill sound
+            self.accept(self.stopEvent, lambda s = self: AudioManager.stop(s.sound))
