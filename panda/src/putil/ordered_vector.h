@@ -216,6 +216,22 @@ private:
 template<class Key, class Compare = less<Key> >
 class ov_set : public ordered_vector<Key, Compare> {
 public:
+  // The Intel compiler doesn't seem to inherit these typedefs
+  // completely--it gets confused in certain cases.  We'll make it
+  // explicit.
+  typedef ordered_vector<Key, Compare>::key_type key_type;
+  typedef ordered_vector<Key, Compare>::value_type value_type;
+  typedef ordered_vector<Key, Compare>::reference reference;
+  typedef ordered_vector<Key, Compare>::const_reference const_reference;
+  typedef ordered_vector<Key, Compare>::key_compare key_compare;
+  typedef ordered_vector<Key, Compare>::value_compare value_compare;
+  typedef ordered_vector<Key, Compare>::iterator iterator;
+  typedef ordered_vector<Key, Compare>::const_iterator const_iterator;
+  typedef ordered_vector<Key, Compare>::reverse_iterator reverse_iterator;
+  typedef ordered_vector<Key, Compare>::const_reverse_iterator const_reverse_iterator;
+  typedef ordered_vector<Key, Compare>::difference_type difference_type;
+  typedef ordered_vector<Key, Compare>::size_type size_type;
+
   INLINE ov_set(const Compare &compare = Compare());
   INLINE ov_set(const ov_set<Key, Compare> &copy);
   INLINE ov_set<Key, Compare> &operator = (const ov_set<Key, Compare> &copy);
@@ -235,6 +251,22 @@ public:
 template<class Key, class Compare = less<Key> >
 class ov_multiset : public ordered_vector<Key, Compare> {
 public:
+  // The Intel compiler doesn't seem to inherit these typedefs
+  // completely--it gets confused in certain cases.  We'll make it
+  // explicit.
+  typedef ordered_vector<Key, Compare>::key_type key_type;
+  typedef ordered_vector<Key, Compare>::value_type value_type;
+  typedef ordered_vector<Key, Compare>::reference reference;
+  typedef ordered_vector<Key, Compare>::const_reference const_reference;
+  typedef ordered_vector<Key, Compare>::key_compare key_compare;
+  typedef ordered_vector<Key, Compare>::value_compare value_compare;
+  typedef ordered_vector<Key, Compare>::iterator iterator;
+  typedef ordered_vector<Key, Compare>::const_iterator const_iterator;
+  typedef ordered_vector<Key, Compare>::reverse_iterator reverse_iterator;
+  typedef ordered_vector<Key, Compare>::const_reverse_iterator const_reverse_iterator;
+  typedef ordered_vector<Key, Compare>::difference_type difference_type;
+  typedef ordered_vector<Key, Compare>::size_type size_type;
+
   INLINE ov_multiset(const Compare &compare = Compare());
   INLINE ov_multiset(const ov_multiset<Key, Compare> &copy);
   INLINE ov_multiset<Key, Compare> &operator = (const ov_multiset<Key, Compare> &copy);
