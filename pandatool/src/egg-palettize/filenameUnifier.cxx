@@ -128,7 +128,7 @@ make_user_filename(Filename filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FilenameUnifier::make_canonical
-//       Access: Private, Static
+//       Access: Public, Static
 //  Description: Does the same thing as Filename::make_canonical()--it
 //               converts the filename to its canonical form--but
 //               caches the operation so that repeated calls to

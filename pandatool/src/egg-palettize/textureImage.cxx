@@ -689,7 +689,7 @@ copy_unplaced(bool redo_all) {
         placement->get_omit_reason() != OR_unknown) {
       DestTextureImage *dest = new DestTextureImage(placement);
       Filename filename = dest->get_filename();
-      filename.make_canonical();
+      FilenameUnifier::make_canonical(filename);
 
       pair<Dests::iterator, bool> insert_result = generate.insert
         (Dests::value_type(filename, dest));

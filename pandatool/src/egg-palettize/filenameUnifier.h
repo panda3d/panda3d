@@ -44,9 +44,9 @@ public:
   static Filename get_bam_filename(Filename filename);
   static Filename make_egg_filename(Filename filename);
   static Filename make_user_filename(Filename filename);
+  static void make_canonical(Filename &filename);
 
 private:
-  static void make_canonical(Filename &filename);
 
   static Filename _txa_filename;
   static Filename _txa_dir;
