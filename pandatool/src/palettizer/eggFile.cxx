@@ -496,7 +496,7 @@ has_data() const {
 //     Function: EggFile::had_data
 //       Access: Public
 //  Description: Returns true if the EggData for this EggFile has ever
-//               been loaded.
+//               been loaded in this session.
 ////////////////////////////////////////////////////////////////////
 bool EggFile::
 had_data() const {

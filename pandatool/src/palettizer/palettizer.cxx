@@ -361,6 +361,7 @@ read_txa_file(istream &txa_file, const string &txa_filename) {
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     PaletteGroup *group = (*gi).second;
     group->clear_depends();
+    group->set_dirname("");
   }
 
   // Also reset _shadow_color_type.
@@ -581,6 +582,9 @@ process_all(bool force_texture_read, const Filename &state_filename) {
     texture->pre_txa_file();
     _txa_file.match_texture(texture);
     texture->post_txa_file();
+
+    // We need to do this to avoid bloating memory.
+    texture->release_source_image();
   }
 
   // And now, assign each texture to an appropriate group or groups.
@@ -689,7 +693,7 @@ read_stale_eggs(bool redo_all) {
   EggFiles::iterator ei;
   for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
     EggFile *egg_file = (*ei).second;
-    if (!egg_file->has_data() &&
+    if (!egg_file->had_data() &&
         (egg_file->is_stale() || redo_all)) {
       if (!egg_file->read_egg(_noabs)) {
         invalid_eggs.push_back(ei);

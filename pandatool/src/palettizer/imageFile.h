@@ -41,7 +41,7 @@ class ImageFile : public TypedWritable {
 public:
   ImageFile();
 
-  void make_shadow_image(const string &basename);
+  bool make_shadow_image(const string &basename);
 
   bool is_size_known() const;
   int get_x_size() const;
@@ -53,8 +53,8 @@ public:
   void clear_basic_properties();
   void update_properties(const TextureProperties &properties);
 
-  void set_filename(PaletteGroup *group, const string &basename);
-  void set_filename(const string &dirname, const string &basename);
+  bool set_filename(PaletteGroup *group, const string &basename);
+  bool set_filename(const string &dirname, const string &basename);
   const Filename &get_filename() const;
   const Filename &get_alpha_filename() const;
   int get_alpha_file_channel() const;

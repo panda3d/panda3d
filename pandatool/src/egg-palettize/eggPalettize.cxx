@@ -781,7 +781,17 @@ run() {
 
   if (okflag) {
     pal->generate_images(_redo_all);
+
+    if (_redo_eggs) {
+      // generate_images() might have made a few more stale egg files
+      // (particularly if a texture palette changed filenames).
+      if (!pal->read_stale_eggs(false)) {
+        okflag = false;
+      }
+    }
+  }
     
+  if (okflag) {
     if (!pal->write_eggs()) {
       okflag = false;
     }

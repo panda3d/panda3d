@@ -177,54 +177,7 @@ PaletteImage(PalettePage *page, int index) :
   _new_image = true;
   _got_image = false;
 
-  // Build up the basename for the palette image, based on the
-  // supplied image pattern.
-  string::iterator si = pal->_generated_image_pattern.begin();
-  while (si != pal->_generated_image_pattern.end()) {
-    if ((*si) == '%') {
-      // Some keycode.
-      ++si;
-      if (si != pal->_generated_image_pattern.end()) {
-        switch (*si) {
-        case '%':
-          _basename += '%';
-          break;
-
-        case 'g':
-          _basename += page->get_group()->get_name();
-          break;
-
-        case 'p':
-          _basename += page->get_name();
-          break;
-
-        case 'i':
-          _basename += format_string(index + 1);
-          break;
-
-        default:
-          _basename += '%';
-          _basename += (*si);
-        }
-        ++si;
-      }
-    } else {
-      // A literal character.
-      _basename += (*si);
-      ++si;
-    }
-  }
-    
-  // We must end the basename with a dot, so that it does not appear
-  // to have a filename extension.  Otherwise, an embedded dot in the
-  // group's name would make everything following appear to be an
-  // extension, which would get lost in the set_filename() call.
-  if (_basename.empty() || _basename[_basename.length() - 1] != '.') {
-    _basename += '.';
-  }
-
-  set_filename(page->get_group(), _basename);
-  _shadow_image.make_shadow_image(_basename);
+  setup_filename();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -592,6 +545,9 @@ update_image(bool redo_all) {
     remove_image();
   }
 
+  // Check the filename too.
+  update_filename();
+
   // Do we need to update?
   bool needs_update =
     _new_image || !exists() ||
@@ -658,6 +614,129 @@ update_image(bool redo_all) {
   release_image();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::update_filename
+//       Access: Public
+//  Description: Changes the image filename to match the current
+//               naming scheme, assuming something has changed since
+//               the image was created.  Returns true if the image
+//               filename changes (which means update_image() should
+//               be called).
+////////////////////////////////////////////////////////////////////
+bool PaletteImage::
+update_filename() {
+  Filename orig_filename = _filename;
+  Filename orig_alpha_filename = _alpha_filename;
+  Filename orig_shadow_filename = _shadow_image.get_filename();
+
+  if (setup_filename()) {
+    nout << "Renaming " << FilenameUnifier::make_user_filename(orig_filename) 
+         << " to " << FilenameUnifier::make_user_filename(_filename) << "\n";
+
+    if (!orig_filename.empty() && orig_filename.exists()) {
+      nout << "Deleting " << FilenameUnifier::make_user_filename(orig_filename) << "\n";
+      orig_filename.unlink();
+    }
+    if (!orig_alpha_filename.empty() && orig_alpha_filename.exists()) {
+      nout << "Deleting " << FilenameUnifier::make_user_filename(orig_alpha_filename) << "\n";
+      orig_alpha_filename.unlink();
+    }
+    if (!orig_shadow_filename.empty() && orig_shadow_filename.exists()) {
+      nout << "Deleting " << FilenameUnifier::make_user_filename(orig_shadow_filename) << "\n";
+      orig_shadow_filename.unlink();
+    }
+    _new_image = true;
+
+    // Since the palette filename has changed, we need to mark all of
+    // the egg files that referenced the old filename as stale.
+
+    // Marking egg files stale at this late point can cause minor
+    // problems; because we might do this, it's necessary for
+    // eggPalettize.cxx to call read_stale_eggs() twice.
+    Placements::iterator pi;
+    for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
+      TexturePlacement *placement = (*pi);
+      placement->mark_eggs_stale();
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::setup_filename
+//       Access: Private
+//  Description: Sets up the image's filename (and that of the
+//               _shadow_pal) according to the specified properties.
+//
+//               Returns true if the filename changes from what it was
+//               previously, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PaletteImage::
+setup_filename() {
+  // Build up the basename for the palette image, based on the
+  // supplied image pattern.
+  _basename = string();
+
+  string::iterator si = pal->_generated_image_pattern.begin();
+  while (si != pal->_generated_image_pattern.end()) {
+    if ((*si) == '%') {
+      // Some keycode.
+      ++si;
+      if (si != pal->_generated_image_pattern.end()) {
+        switch (*si) {
+        case '%':
+          _basename += '%';
+          break;
+
+        case 'g':
+          _basename += _page->get_group()->get_name();
+          break;
+
+        case 'p':
+          _basename += _page->get_name();
+          break;
+
+        case 'i':
+          _basename += format_string(_index + 1);
+          break;
+
+        default:
+          _basename += '%';
+          _basename += (*si);
+        }
+        ++si;
+      }
+    } else {
+      // A literal character.
+      _basename += (*si);
+      ++si;
+    }
+  }
+    
+  // We must end the basename with a dot, so that it does not appear
+  // to have a filename extension.  Otherwise, an embedded dot in the
+  // group's name would make everything following appear to be an
+  // extension, which would get lost in the set_filename() call.
+  if (_basename.empty() || _basename[_basename.length() - 1] != '.') {
+    _basename += '.';
+  }
+
+  bool any_changed = false;
+
+  if (set_filename(_page->get_group(), _basename)) {
+    any_changed = true;
+  }
+
+  if (_shadow_image.make_shadow_image(_basename)) {
+    any_changed = true;
+  }
+
+  return any_changed;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::find_hole

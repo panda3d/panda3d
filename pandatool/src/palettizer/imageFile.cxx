@@ -52,13 +52,27 @@ ImageFile() {
 //               ImageFile that's used to read and write the shadow
 //               palette image, which is used to keep a working copy
 //               of the palette.
+//
+//               Returns true if the filename changes from what it was
+//               previously, false otherwise.
 ////////////////////////////////////////////////////////////////////
-void ImageFile::
+bool ImageFile::
 make_shadow_image(const string &basename) {
-  _properties._color_type = pal->_shadow_color_type;
-  _properties._alpha_type = pal->_shadow_alpha_type;
+  bool any_changed = false;
+  
+  if (_properties._color_type != pal->_shadow_color_type ||
+      _properties._alpha_type != pal->_shadow_alpha_type) {
 
-  set_filename(pal->_shadow_dirname, basename);
+    _properties._color_type = pal->_shadow_color_type;
+    _properties._alpha_type = pal->_shadow_alpha_type;
+    any_changed = true;
+  }
+
+  if (set_filename(pal->_shadow_dirname, basename)) {
+    any_changed = true;
+  }
+
+  return any_changed;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,8 +177,11 @@ update_properties(const TextureProperties &properties) {
 //               extension appropriate to the image file type
 //               specified in _color_type (and _alpha_type) is
 //               automatically applied.
+//
+//               Returns true if the filename changes from what it was
+//               previously, false otherwise.
 ////////////////////////////////////////////////////////////////////
-void ImageFile::
+bool ImageFile::
 set_filename(PaletteGroup *group, const string &basename) {
   // Synthesize the directory name based on the map_dirname set to the
   // palettizer, and the group's dirname.
@@ -191,7 +208,7 @@ set_filename(PaletteGroup *group, const string &basename) {
     ++pi;
   }
 
-  set_filename(dirname, basename);
+  return set_filename(dirname, basename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,9 +219,15 @@ set_filename(PaletteGroup *group, const string &basename) {
 //               extension appropriate to the image file type
 //               specified in _color_type (and _alpha_type) is
 //               automatically applied.
+//
+//               Returns true if the filename changes from what it was
+//               previously, false otherwise.
 ////////////////////////////////////////////////////////////////////
-void ImageFile::
+bool ImageFile::
 set_filename(const string &dirname, const string &basename) {
+  Filename orig_filename = _filename;
+  Filename orig_alpha_filename = _alpha_filename;
+  
   _filename = Filename(dirname, basename);
 
   // Since we use set_extension() here, if the file already contains a
@@ -226,7 +249,12 @@ set_filename(const string &dirname, const string &basename) {
     _alpha_filename = _filename.get_fullpath_wo_extension() + "_a.";
     _alpha_filename.set_extension
       (_properties._alpha_type->get_suggested_extension());
+  } else {
+    _alpha_filename = Filename();
   }
+
+  return (_filename != orig_filename ||
+          _alpha_filename != orig_alpha_filename);
 }
 
 ////////////////////////////////////////////////////////////////////

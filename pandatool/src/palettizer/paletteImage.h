@@ -62,7 +62,10 @@ public:
   void setup_shadow_image();
   void update_image(bool redo_all);
 
+  bool update_filename();
+
 private:
+  bool setup_filename();
   bool find_hole(int &x, int &y, int x_size, int y_size) const;
   TexturePlacement *find_overlap(int x, int y, int x_size, int y_size) const;
   void get_image();
