@@ -45,7 +45,7 @@ operator = (const CollisionHandlerEvent::SortEntries &) {
 //                  %fn  - the name of the "from" object's node
 //                  %in  - the name of the "into" object's node
 //                  %ft  - 't' if "from" is tangible, 'i' if intangible
-//                  %ft  - 't' if "into" is tangible, 'i' if intangible
+//                  %it  - 't' if "into" is tangible, 'i' if intangible
 //
 //               The event name will be based on the in_pattern
 //               string specified here, with all occurrences of the
@@ -82,7 +82,7 @@ get_in_pattern() const {
 //  Description: Sets the pattern string that indicates how the event
 //               names are generated when a collision between two
 //               particular nodes is *still* detected.  This event is
-//               each consecutive time a collision between two
+//               thrown each consecutive time a collision between two
 //               particular nodes is detected, starting with the
 //               second time.
 //

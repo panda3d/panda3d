@@ -186,7 +186,7 @@ test_intersection_from_segment(CollisionHandler *record,
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
   LPoint3f from_a = segment->get_point_a() * entry.get_wrt_space();
-  LVector3f from_b = segment->get_point_b() * entry.get_wrt_space();
+  LPoint3f from_b = segment->get_point_b() * entry.get_wrt_space();
   LVector3f from_direction = from_b - from_a;
 
   double t1, t2;
@@ -210,9 +210,13 @@ test_intersection_from_segment(CollisionHandler *record,
 
   LPoint3f into_intersection_point;
   if (t1 < 0.0) {
-    into_intersection_point = from_a + t2 * from_direction;
+    // Point a is within the sphere.  The first intersection point is
+    // point a itself.
+    into_intersection_point = from_a;
   } else {
-    into_intersection_point = from_b + t1 * from_direction;
+    // Point a is outside the sphere, and point b is either inside the
+    // sphere or beyond it.  The first intersection point is at t1.
+    into_intersection_point = from_a + t1 * from_direction;
   }
   new_entry->set_into_intersection_point(into_intersection_point);
 

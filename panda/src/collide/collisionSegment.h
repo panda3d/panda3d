@@ -17,6 +17,11 @@ class ProjectionNode;
 // Description : A finite line segment, with two specific endpoints
 //               but no thickness.  It's similar to a CollisionRay,
 //               except it does not continue to infinity.
+//
+//               It does have an ordering, from point A to point B.
+//               If more than a single point of the segment is
+//               intersecting a solid, the reported intersection point
+//               is generally the closest on the segment to point A.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionSegment : public CollisionSolid {
 PUBLISHED:
