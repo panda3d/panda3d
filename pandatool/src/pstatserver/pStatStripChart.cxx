@@ -57,9 +57,6 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
   if (client_data->has_collector(_collector_index)) {
     const PStatCollectorDef &def = client_data->get_collector_def(_collector_index);
     _unit_name = def._level_units;
-    if (!_unit_name.empty()) {
-      _guide_bar_units = GBU_named;
-    }
   }
 
   set_default_vertical_scale();
@@ -604,21 +601,26 @@ get_average_net_value() const {
     const PStatThreadData *thread_data = _view.get_thread_data();
     
     float net_value = 0.0f;
+    float net_time = 0.0f;
 
     // We start with just the portion of frame then_i that actually
     // does fall within our "then to now" window (usually some portion
     // of it will).
     if (thread_data->get_frame(then_i).get_end() > then) {
-      net_value += get_net_value(then_i) * (thread_data->get_frame(then_i).get_end() - then);
+      float this_time = (thread_data->get_frame(then_i).get_end() - then);
+      net_value += get_net_value(then_i) * this_time;
+      net_time += this_time;
     }
-    // Then we get all of each of the rest of the frames.
+    // Then we get all of each of the remaining frames.
     for (int frame_number = then_i + 1; 
          frame_number <= now_i; 
          frame_number++) {
-      net_value += get_net_value(frame_number) * thread_data->get_frame(frame_number).get_net_time();
+      float this_time = thread_data->get_frame(frame_number).get_net_time();
+      net_value += get_net_value(frame_number) * this_time;
+      net_time += this_time;
     }
-    
-    return net_value / (now - then);
+
+    return net_value / net_time;
   }
 }
 
