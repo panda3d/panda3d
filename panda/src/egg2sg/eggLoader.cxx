@@ -1136,7 +1136,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
   }
   curve->set_name(egg_curve->get_name());
 
-  if (!nurbs->recompute()) {
+  if (!curve->recompute()) {
     egg2sg_cat.error()
       << "Invalid NURBSCurve " << egg_curve->get_name() << "\n";
     return (RenderRelation *)NULL;
