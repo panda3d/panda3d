@@ -715,18 +715,20 @@ def describeException(backTrace = 4):
 
     stack = []
     while trace.tb_next:
+        # We need to call byteOffsetToLineno to determine the true
+        # line number at which the exception occurred, even though we
+        # have both trace.tb_lineno and frame.f_lineno, which return
+        # the correct line number only in non-optimized mode.
         frame = trace.tb_frame
         module = frame.f_globals.get('__name__', None)
-        lineno = frame.f_lineno
-        truelineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
-        stack.append("%s:%s(%s), " % (module, lineno, truelineno))
+        lineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
+        stack.append("%s:%s, " % (module, lineno))
         trace = trace.tb_next
 
     frame = trace.tb_frame
     module = frame.f_globals.get('__name__', None)
-    lineno = frame.f_lineno
-    truelineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
-    stack.append("%s:%s(%s), " % (module, lineno, truelineno))
+    lineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
+    stack.append("%s:%s, " % (module, lineno))
 
     description = ""
     for i in range(len(stack) - 1, max(len(stack) - backTrace, 0) - 1, -1):
