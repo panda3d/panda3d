@@ -24,6 +24,7 @@ public:
 
   INLINE int get_num_rows() const;
   INLINE double get_value(int row) const;
+  INLINE void set_value(int row, double value);
 
   void optimize();
 

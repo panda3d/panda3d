@@ -79,7 +79,7 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
       PT(AnimControl) control = 
 	part->bind_anim(anim, hierarchy_match_flags);
       if (control != (AnimControl *)NULL) {
-	controls.store_anim(control, (*ani)->get_name());
+	controls.store_anim(control, anim->get_name());
       }
 
       if (chan_cat.is_info()) {

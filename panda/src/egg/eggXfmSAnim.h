@@ -43,9 +43,13 @@ public:
   INLINE CoordinateSystem get_coordinate_system() const;
 
   void optimize();
+  void normalize();
 
   int get_num_rows() const;
   void get_value(int row, LMatrix4d &mat) const;
+  bool set_value(int row, const LMatrix4d &mat);
+
+  INLINE void clear_data();
   bool add_data(const LMatrix4d &mat);
 
   virtual void write(ostream &out, int indent_level) const;

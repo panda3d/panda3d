@@ -87,6 +87,85 @@ optimize() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::normalize
+//       Access: Public
+//  Description: The inverse operation of optimize(), this ensures
+//               that all the sub-tables have the same length by
+//               duplicating rows as necessary.  This is needed before
+//               doing operations like add_data() or set_value() on an
+//               existing table.
+////////////////////////////////////////////////////////////////////
+void EggXfmSAnim::
+normalize() {
+  iterator ci;
+
+  // First, determine which tables we already have, and how long they
+  // are.
+  int num_tables = 0;
+  int table_length = 1;
+  string remaining_tables = "ijkhprxyz";
+
+  for (ci = begin(); ci != end(); ++ci) {
+    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
+      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
+
+      nassertv(sanim->get_name().length() == 1);
+      char name = sanim->get_name()[0];
+      size_t p = remaining_tables.find(name);
+      nassertv(p != string::npos);
+      remaining_tables[p] = ' ';
+
+      num_tables++;
+      if (sanim->get_num_rows() > 1) {
+	if (table_length == 1) {
+	  table_length = sanim->get_num_rows();
+	} else {
+	  nassertv(sanim->get_num_rows() == table_length);
+	}
+      }
+    }
+  }
+
+  if (num_tables < 9) {
+    // Create new, default, children for each table we lack.
+    for (size_t p = 0; p < remaining_tables.length(); p++) {
+      if (remaining_tables[p] != ' ') {
+	double default_value;
+	switch (remaining_tables[p]) {
+	case 'i':
+	case 'j':
+	case 'k':
+	  default_value = 1.0;
+	  break;
+
+	default:
+	  default_value = 0.0;
+	}
+
+	string name(1, remaining_tables[p]);
+	EggSAnimData *sanim = new EggSAnimData(name);
+	add_child(sanim);
+	sanim->add_data(default_value);
+      }
+    }
+  }
+
+  // Now expand any one-row tables as needed.
+  for (ci = begin(); ci != end(); ++ci) {
+    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
+      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
+      if (sanim->get_num_rows() == 1) {
+	double value = sanim->get_value(0);
+	for (int i = 1; i < table_length; i++) {
+	  sanim->add_data(value);
+	}
+      }
+      nassertv(sanim->get_num_rows() == table_length);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::write
 //       Access: Public, Virtual
 //  Description: Writes the data to the indicated output stream in Egg
@@ -230,7 +309,101 @@ get_value(int row, LMatrix4d &mat) const {
   // So now we've got the nine components; build a matrix.
   compose_matrix(mat, scale, hpr, translate, _coordsys);
 }
+  
+////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::set_value
+//       Access: Public
+//  Description: Replaces the indicated row of the table with the
+//               given matrix.
+//
+//               This function can only be called if all the
+//               constraints of add_data(), below, are met.  Call
+//               normalize() first if you are not sure.
+//
+//               The return value is true if the matrix can be
+//               decomposed and stored as scale, rotate, and
+//               translate, or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggXfmSAnim::
+set_value(int row, const LMatrix4d &mat) {
+  LVector3d scale, hpr, translate;
+  bool result = decompose_matrix(mat, scale, hpr, translate, _coordsys);
+  if (!result) {
+    return false;
+  }
 
+  // Sanity check our sub-tables.
+#ifndef NDEBUG
+  int table_length = -1;
+  int num_tables = 0;
+#endif
+
+  const_iterator ci;
+  for (ci = begin(); ci != end(); ++ci) {
+    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
+      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
+
+#ifndef NDEBUG
+      num_tables++;
+
+      // Each table must have the same length.
+      if (table_length < 0) {
+	table_length = sanim->get_num_rows();
+      } else {
+	nassertr(sanim->get_num_rows() == table_length, false);
+      }
+#endif
+
+      // Each child SAnimData table should have a one-letter name.
+      nassertr(sanim->get_name().length() == 1, false);
+
+      switch (sanim->get_name()[0]) {
+      case 'i':
+	sanim->set_value(row, scale[0]);
+	break;
+
+      case 'j':
+	sanim->set_value(row, scale[1]);
+	break;
+
+      case 'k':
+	sanim->set_value(row, scale[2]);
+	break;
+
+      case 'h':
+	sanim->set_value(row, hpr[0]);
+	break;
+
+      case 'p':
+	sanim->set_value(row, hpr[1]);
+	break;
+
+      case 'r':
+	sanim->set_value(row, hpr[2]);
+	break;
+
+      case 'x':
+	sanim->set_value(row, translate[0]);
+	break;
+     
+      case 'y':
+	sanim->set_value(row, translate[1]);
+	break;
+
+      case 'z':
+	sanim->set_value(row, translate[2]);
+	break;
+
+      default:
+	// One of the child tables had an invalid name.
+	nassertr(false, false);
+      }
+    }
+  }
+
+  nassertr(num_tables == 9, false);
+  return true;
+}
   
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::add_data
@@ -251,7 +424,8 @@ get_value(int row, LMatrix4d &mat) const {
 //               EggXfmSAnim object and start adding matrices to the
 //               end; you must clear out the original data first.  (As
 //               a special exception, if no tables exist, they will be
-//               created.)
+//               created.)  The method normalize() will do this for
+//               you on an existing EggXfmSAnim.
 //
 //               This function may fail silently if the matrix cannot
 //               be decomposed into scale, rotate, and translate.  In

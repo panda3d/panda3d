@@ -145,3 +145,14 @@ INLINE CoordinateSystem EggXfmSAnim::
 get_coordinate_system() const {
   return _coordsys;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::clear_data
+//       Access: Public
+//  Description: Removes all data from the table.  It does this by
+//               removing all of its children.
+////////////////////////////////////////////////////////////////////
+INLINE void EggXfmSAnim::
+clear_data() {
+  EggGroupNode::clear();
+}

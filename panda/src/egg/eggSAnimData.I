@@ -62,3 +62,16 @@ get_value(int row) const {
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggSAnimData::set_value
+//       Access: Public
+//  Description: Changes the value at the indicated row.  Row must be
+//               in the range 0 <= row < get_num_rows().
+////////////////////////////////////////////////////////////////////
+INLINE void EggSAnimData::
+set_value(int row, double value) {
+  nassertv(row >= 0 && row < get_num_rows());
+  _data[row] = value;
+}
+
+
