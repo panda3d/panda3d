@@ -144,6 +144,10 @@ CData(const PandaNode::CData &copy) :
   _fixed_internal_bound(copy._fixed_internal_bound)
 {
   _net_collide_mask = CollideMask::all_off();
+
+  // Note that this copy constructor is not used by the PandaNode copy
+  // constructor!  Any elements that must be copied between nodes
+  // should also be explicitly copied there.
 }
 
 ////////////////////////////////////////////////////////////////////

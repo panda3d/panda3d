@@ -380,7 +380,10 @@ PandaNode(const PandaNode &copy) :
   cdata->_state = copy_cdata->_state;
   cdata->_effects = copy_cdata->_effects;
   cdata->_transform = copy_cdata->_transform;
+  cdata->_prev_transform = copy_cdata->_prev_transform;
+  cdata->_tag_data = copy_cdata->_tag_data;
   cdata->_draw_mask = copy_cdata->_draw_mask;
+  cdata->_fixed_internal_bound = copy_cdata->_fixed_internal_bound;
 }
 
 ////////////////////////////////////////////////////////////////////
