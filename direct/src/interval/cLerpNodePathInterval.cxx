@@ -185,47 +185,72 @@ priv_step(double t) {
     // computed, above.
     switch (_flags & (F_end_pos | F_end_hpr | F_end_scale)) {
     case F_end_pos:
-      transform = transform->set_pos(pos);
+      if (_other.is_empty()) {
+        _node.set_pos(pos);
+      } else {
+        _node.set_pos(_other, pos);
+      }
       break;
 
     case F_end_hpr:
-      transform = transform->set_hpr(hpr);
+      if (_other.is_empty()) {
+        _node.set_hpr(hpr);
+      } else {
+        _node.set_hpr(_other, hpr);
+      }
       break;
 
     case F_end_scale:
-      transform = transform->set_scale(scale);
+      if (_other.is_empty()) {
+        _node.set_scale(scale);
+      } else {
+        _node.set_scale(_other, scale);
+      }
       break;
 
     case F_end_hpr | F_end_scale:
-      transform = TransformState::make_pos_hpr_scale(transform->get_pos(), hpr, scale);
+      if (_other.is_empty()) {
+        _node.set_hpr_scale(hpr, scale);
+      } else {
+        _node.set_hpr_scale(hpr, scale);
+      }
       break;
 
     case F_end_pos | F_end_hpr:
-      transform = TransformState::make_pos_hpr_scale(pos, hpr, transform->get_scale());
+      if (_other.is_empty()) {
+        _node.set_pos_hpr(pos, hpr);
+      } else {
+        _node.set_pos_hpr(_other, pos, hpr);
+      }
       break;
 
     case F_end_pos | F_end_scale:
       if (transform->quat_given()) {
-        transform = TransformState::make_pos_quat_scale(pos, transform->get_quat(), scale);
+        if (_other.is_empty()) {
+          _node.set_pos_quat_scale(pos, transform->get_quat(), scale);
+        } else {
+          _node.set_pos_quat_scale(_other, pos, transform->get_quat(), scale);
+        }
       } else {
-        transform = TransformState::make_pos_hpr_scale(pos, transform->get_hpr(), scale);
+        if (_other.is_empty()) {
+          _node.set_pos_hpr_scale(pos, transform->get_hpr(), scale);
+        } else {
+          _node.set_pos_hpr_scale(_other, pos, transform->get_hpr(), scale);
+        }
       }
       break;
 
     case F_end_pos | F_end_hpr | F_end_scale:
-      transform = TransformState::make_pos_hpr_scale(pos, hpr, scale);
+      if (_other.is_empty()) {
+        _node.set_pos_hpr_scale(pos, hpr, scale);
+      } else {
+        _node.set_pos_hpr_scale(_other, pos, hpr, scale);
+      }
       break;
 
     default:
       interval_cat.error()
         << "Internal error in CLerpNodePathInterval::priv_step().\n";
-    }
-
-    // Now apply the new transform back to the node.
-    if (_other.is_empty()) {
-      _node.set_transform(transform);
-    } else {
-      _node.set_transform(_other, transform);
     }
   }
 
