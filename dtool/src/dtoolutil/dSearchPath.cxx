@@ -281,7 +281,7 @@ find_file(const Filename &filename) const {
           // A special case for the "." directory: to avoid prefixing
           // an endless stream of ./ in front of files, if the
           // filename already has a ./ prefixed
-          // (i.e. is_fully_fully_qualified() is true), we don't
+          // (i.e. is_fully_qualified() is true), we don't
           // prefix another one.
           return filename;
         } else {
@@ -320,7 +320,7 @@ find_all_files(const Filename &filename,
           // A special case for the "." directory: to avoid prefixing
           // an endless stream of ./ in front of files, if the
           // filename already has a ./ prefixed
-          // (i.e. is_fully_fully_qualified() is true), we don't
+          // (i.e. is_fully_qualified() is true), we don't
           // prefix another one.
           results.add_file(filename);
         } else {
