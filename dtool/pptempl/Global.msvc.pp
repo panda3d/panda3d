@@ -107,11 +107,10 @@
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
 
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
-#defer LDFLAGS_OPT1 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB /WARN:3 
-#defer LDFLAGS_OPT2 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB /WARN:3 
-#defer LDFLAGS_OPT3 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 /OPT:REF
-#defer LDFLAGS_OPT4 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 /OPT:REF
-
+#defer LDFLAGS_OPT1 $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB 
+#defer LDFLAGS_OPT2 $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB 
+#defer LDFLAGS_OPT3 $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
+#defer LDFLAGS_OPT4 $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
 
 // $[build_pdbs] will be nonempty (true) if we should expect to
 // generate a .pdb file when we build a DLL or EXE.

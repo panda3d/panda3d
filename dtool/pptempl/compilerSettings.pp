@@ -7,6 +7,7 @@
   #define OPTFLAGS /O2 /Ob1 /G6
   #define OPT1FLAGS /GZ 
 
+  // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
   #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #define RELEASEFLAGS /MD
@@ -21,7 +22,7 @@
   #endif
  
   // Note: all Opts will link w/debug info now 
-  #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS]
+  #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /WARN:3 
   
 // in case we have mixed intel/msvc build
   #define EXTRA_LIBPATH /ia32/lib

@@ -82,23 +82,27 @@
   #define dlllib dll
 #endif
 
+#include $[THISDIRPREFIX]compilerSettings.pp
+
+// multi-proc PCH /Z7 workaround conflicts with our need to have pdb at Opt3/4 with no increase in file size,
+// so commenting this out and removing all pch for now
+
+//#if $[and $[DO_PCH],$[>= $[NUMBER_OF_PROCESSORS],2]]
 // multi-processor PCH cannot use .pdb debug fmt because
 // .pdb file name must be the same for obj and pch header obj
 // and currently every cxx generates its own separate pdb
 // to avoid write file conflict in multi-proc build
-
-#include $[THISDIRPREFIX]compilerSettings.pp
-
-#if $[and $[DO_PCH],$[>= $[NUMBER_OF_PROCESSORS],2]]
 // multi-proc case
 // single-processor case will act like nmake, conditionally renaming .pdb each file in Template.gmsvc.pp
-#defer DEBUGFLAGS $[patsubst /Fd%,,$[subst /Zi,/Z7, $[DEBUGFLAGS]]]
-#define NO_PDB 1
-#else
+// Note: need to do /Z7 for /Zi subst to support precomp pch headers on multi-proc build
+//#defer DEBUGFLAGS $[patsubst /Fd%,,$[subst /Zi,/Z7, $[DEBUGFLAGS]]]
+//#define NO_PDB 1
+//#else
+//
 // on multi-proc, since /Z7 opt required by precomp hdrs on multi-proc puts debug info into dlls,
 // dont want to force debug flag by default since it expands dll size
-#define FORCE_DEBUG_FLAGS 1
-#endif
+//#define FORCE_DEBUG_FLAGS 1
+//#endif
 
 #define WARNING_LEVEL_FLAG /W3
 
@@ -115,29 +119,29 @@
 #defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS]
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
 
-//  /GZ disables OPT flags, so OPT1 only
+//  Opt1 /GZ disables OPT flags, so make sure its OPT1 only
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS] 
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS] 
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
 
-#if $[FORCE_DEBUG_FLAGS]
+//#if $[FORCE_DEBUG_FLAGS]
 // make them all link with non-debug msvc runtime dlls for this case
-#defer DEBUGFLAGS $[subst /MDd,,$[DEBUGFLAGS]]
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
-#define LINKER_FLAGS $[LINKER_FLAGS] /debug
-#else
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
-#endif
+//#defer DEBUGFLAGS $[subst /MDd,,$[DEBUGFLAGS]]
+//#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
+//#define LINKER_FLAGS $[LINKER_FLAGS] /debug
+//#else
+//#endif
 
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
-#defer LDFLAGS_OPT1 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[LINKER_FLAGS]
-#defer LDFLAGS_OPT2 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[LINKER_FLAGS] 
-#defer LDFLAGS_OPT3 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[LINKER_FLAGS] /OPT:REF
-#defer LDFLAGS_OPT4 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[LINKER_FLAGS] /OPT:REF
+#defer LDFLAGS_OPT1 $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB 
+#defer LDFLAGS_OPT2 $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB 
+#defer LDFLAGS_OPT3 $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
+#defer LDFLAGS_OPT4 $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
 
 // $[build_pdbs] will be nonempty (true) if we should expect to
 // generate a .pdb file when we build a DLL or EXE.
-#if $[and $[eq $[USE_COMPILER], MSVC],$[<= $[OPTIMIZE],2]]
+#if $[eq $[USE_COMPILER], MSVC]
   #define build_pdbs yes
 #else
   #define build_pdbs
