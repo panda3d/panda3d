@@ -22,7 +22,7 @@
 #include "dtoolbase.h"
 #include "functionWriter.h"
 
-#include <set.h>
+#include <set>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FunctionWriters

@@ -127,7 +127,8 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
   out << "/*\n"
       << " * Python object wrapper for\n";
 
-  for (int def_index = 0; def_index < (int)_def.size(); ++def_index) {
+  int def_index;
+  for (def_index = 0; def_index < (int)_def.size(); ++def_index) {
     const FunctionDef *def = _def[def_index];
     out << " * " << def->_description << "\n";
     if (def->_is_method) {
@@ -153,7 +154,7 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
   write_spam_message(0, out);
   string expected_params = "Arguments must match one of:";
 
-  for (int def_index = 0; def_index < (int)_def.size(); ++def_index) {
+  for (def_index = 0; def_index < (int)_def.size(); ++def_index) {
     const FunctionDef *def = _def[def_index];
     out << "  {\n"
         << "    /* " << def->_description << " */\n"
