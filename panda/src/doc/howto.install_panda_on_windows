@@ -1,3 +1,14 @@
+WARNING: This document is an internal VR Studio document describing
+how to set up Panda on a new PC using our internal development
+environment.  It is not useful for programmers who are not within the
+VR Studio firewall.
+
+If you are looking for documentation on installing Panda in the rest
+of the world, see INSTALL.txt in this directory.
+
+
+
+
 To install Panda3D on WinNT or Win98:
 -------------------------------------
 Notes:
