@@ -767,27 +767,33 @@ class DisplayRegionList(PandaObject):
         self.displayRegionLookup = {}
         i = 0
 
-        for cameraGroup in base.cameraList:
-            # This is following the old way of setting up
-            # display regions.  A display region is set up for
-            # each camera node in the scene graph.  This was done
-            # so that only display regions in the scene graph are
-            # considered.  The right way to do this is to set up
-            # a display region for each real display region, and then
-            # keep track of which are currently active (e.g. use a flag)
-            # processing only them.
-            camList=cameraGroup.findAllMatches('**/+Camera')
-            for cameraIndex in range(camList.getNumPaths()):
-                camera = camList[cameraIndex]
-                if camera.getName()=='<noname>':
-                    camera.setName('Camera%d' % cameraIndex)
-                group = base.groupList[cameraIndex]
-                self.displayRegionList.append(
-                    DisplayRegionContext(base.win,
-                                         camera,group))
-                if camera.getName()!='<noname>' or len(camera.getName())==0:
-                    self.displayRegionLookup[camera.getName()]=i
-                    i = i + 1
+        # Things are funky if we are oobe
+        if (hasattr(base, 'oobeMode') and base.oobeMode):
+            # assume we only have one cam at this point
+            self.displayRegionList.append(DisplayRegionContext(base.win, base.cam, base.groupList[0]))
+        else:
+            for cameraGroup in base.cameraList:
+                # This is following the old way of setting up
+                # display regions.  A display region is set up for
+                # each camera node in the scene graph.  This was done
+                # so that only display regions in the scene graph are
+                # considered.  The right way to do this is to set up
+                # a display region for each real display region, and then
+                # keep track of which are currently active (e.g. use a flag)
+                # processing only them.
+                camList=cameraGroup.findAllMatches('**/+Camera')
+                for cameraIndex in range(camList.getNumPaths()):
+                    camera = camList[cameraIndex]
+                    if camera.getName()=='<noname>':
+                        camera.setName('Camera%d' % cameraIndex)
+                    group = base.groupList[cameraIndex]
+                    self.displayRegionList.append(
+                        DisplayRegionContext(base.win,
+                                             camera,group))
+                    if camera.getName()!='<noname>' or len(camera.getName())==0:
+                        self.displayRegionLookup[camera.getName()]=i
+                        i = i + 1
+
         self.accept("CamChange",self.camUpdate)
         self.accept("DIRECT-mouse1",self.mouseUpdate)
         self.accept("DIRECT-mouse2",self.mouseUpdate)
