@@ -34,6 +34,8 @@ public:
   void report(ostream &out, int indent_level);
 
 private:
+  static ostream &format_memory_fraction(ostream &out, int fraction_bytes,
+					 int palette_bytes);
   void add_palette(PaletteImage *image);
   void add_texture(TextureImage *texture, int bytes);
   int count_bytes(ImageFile *image);
@@ -47,6 +49,7 @@ private:
   int _bytes;
   int _unused_bytes;
   int _duplicate_bytes;
+  int _coverage_bytes;
 
   typedef map<TextureImage *, int> Textures;
   Textures _textures;

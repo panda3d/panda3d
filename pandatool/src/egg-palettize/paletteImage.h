@@ -35,6 +35,7 @@ public:
 
   bool is_empty() const;
   double count_utilization() const;
+  double count_coverage() const;
 
   bool place(TexturePlacement *placement);
   void unplace(TexturePlacement *placement);

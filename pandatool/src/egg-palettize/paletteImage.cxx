@@ -223,13 +223,52 @@ count_utilization() const {
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
 
-    int texture_pixels = placement->get_x_size() * placement->get_y_size();
+    int texture_pixels = 
+      placement->get_placed_x_size() * 
+      placement->get_placed_y_size();
     used_pixels += texture_pixels;
   }
 
   int total_pixels = get_x_size() * get_y_size();
 
   return (double)used_pixels / (double)total_pixels;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::count_coverage
+//       Access: Public
+//  Description: Returns the a weighted average of the fraction of
+//               coverage represented by all of the textures placed on
+//               the palette.  This number represents the fraction of
+//               wasted pixels in the palette image consumed by
+//               copying the same pixels multiple times into the
+//               palette, or if the number is negative, it represents
+//               the fraction of pixels saved by not having to copy
+//               the entire texture into the palette.
+////////////////////////////////////////////////////////////////////
+double PaletteImage::
+count_coverage() const {
+  int coverage_pixels = 0;
+
+  Placements::const_iterator pi;
+  for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
+    TexturePlacement *placement = (*pi);
+    TextureImage *texture = placement->get_texture();
+    nassertr(texture != (TextureImage *)NULL, 0.0);
+
+    int orig_pixels = 
+      texture->get_x_size() *
+      texture->get_y_size();
+    int placed_pixels = 
+      placement->get_placed_x_size() * 
+      placement->get_placed_y_size();
+
+    coverage_pixels += placed_pixels - orig_pixels;
+  }
+
+  int total_pixels = get_x_size() * get_y_size();
+
+  return (double)coverage_pixels / (double)total_pixels;
 }
 
 ////////////////////////////////////////////////////////////////////

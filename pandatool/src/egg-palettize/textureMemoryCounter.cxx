@@ -38,6 +38,7 @@ reset() {
   _bytes = 0;
   _unused_bytes = 0;
   _duplicate_bytes = 0;
+  _coverage_bytes = 0;
   _textures.clear();
   _palettes.clear();
 }
@@ -90,17 +91,43 @@ report(ostream &out, int indent_level) {
     << (_bytes + 512) / 1024 << "k estimated texture memory required.\n";
 
   if (_bytes != 0) {
-    indent(out, indent_level + 2)
-      << "Of this, "
-      << floor(1000.0 * (double)_unused_bytes / (double)_bytes + 0.5) / 10.0
-      << "% is wasted because of unused palette space.\n";
+    if (_unused_bytes != 0) {
+      indent(out, indent_level + 2);
+      format_memory_fraction(out, _unused_bytes, _bytes)
+	<< " is wasted because of unused palette space.\n";
+    }
+    
+    if (_coverage_bytes > 0) {
+      indent(out, indent_level + 2);
+      format_memory_fraction(out, _coverage_bytes, _bytes)
+	<< " is wasted for repeating textures and margins.\n";
+
+    } else if (_coverage_bytes < 0) {
+      indent(out, indent_level + 2);
+      format_memory_fraction(out, -_coverage_bytes, _bytes)
+	<< " is *saved* for palettizing partial textures.\n";
+    }
     
     if (_duplicate_bytes != 0) {
-      indent(out, indent_level + 2)
-	<< "And " << 100.0 * (double)_duplicate_bytes / (double)_bytes
-	<< "% is wasted because of a texture appearing in multiple places.\n";
+      indent(out, indent_level + 2);
+      format_memory_fraction(out, _duplicate_bytes, _bytes)
+	<< " is wasted because of a texture appearing in multiple groups.\n";
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureMemoryCounter::format_memory_fraction
+//       Access: Private, Static
+//  Description: Writes to the indicated ostream an indication of the
+//               fraction of the total memory usage that is
+//               represented by fraction_bytes.
+////////////////////////////////////////////////////////////////////
+ostream &TextureMemoryCounter::
+format_memory_fraction(ostream &out, int fraction_bytes, int palette_bytes) {
+  out << floor(1000.0 * (double)fraction_bytes / (double)palette_bytes + 0.5) / 10.0
+      << "% (" << (fraction_bytes + 512) / 1024 << "k)";
+  return out;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,10 +146,13 @@ add_palette(PaletteImage *image) {
   }
 
   int bytes = count_bytes(image);
-  double wasted = 1.0 - image->count_utilization();
+  double unused = 1.0 - image->count_utilization();
+  double coverage = image->count_coverage();
 
   _bytes += bytes;
-  _unused_bytes += (int)(wasted * bytes);
+  _unused_bytes += (int)(unused * bytes);
+  _coverage_bytes += (int)(coverage * bytes);
+  
   _num_palettes++;
 }
 
