@@ -391,7 +391,7 @@
 // tells us where to look for the various files.  On Windows, we need to
 // supply this information explicitly.
 #define FREETYPE_CONFIG freetype-config
-#defer HAVE_FREETYPE $[bintest $[FREETYPE_CONFIG]]
+#defer HAVE_FREETYPE $[or $[libtest $[FREETYPE_LPATH],$[FREETYPE_LIBS]],$[bintest $[FREETYPE_CONFIG]]]
 #define FREETYPE_CFLAGS
 #define FREETYPE_IPATH
 #define FREETYPE_LPATH
