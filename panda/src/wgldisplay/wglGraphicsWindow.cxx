@@ -3329,15 +3329,23 @@ void set_global_parameters(void) {
   // cursor alpha blending
 
   // this is a win2k/xp only param, could use GetVersionEx to do it just for win2k
+#ifdef SPI_SETCURSORSHADOW
   SystemParametersInfo(SPI_GETCURSORSHADOW,NULL,&bCursorShadowOn,NULL);
   SystemParametersInfo(SPI_SETCURSORSHADOW,NULL,(PVOID)false,NULL);
+#endif
 
+#ifdef SPI_SETMOUSETRAILS
   SystemParametersInfo(SPI_GETMOUSETRAILS,NULL,&iMouseTrails,NULL);
   SystemParametersInfo(SPI_SETMOUSETRAILS,NULL,(PVOID)0,NULL);
+#endif
 }
 
 void restore_global_parameters(void) {
+#ifdef SPI_SETCURSORSHADOW
   SystemParametersInfo(SPI_SETCURSORSHADOW,NULL,(PVOID)bCursorShadowOn,NULL);
+#endif
+#ifdef SPI_SETMOUSETRAILS
   SystemParametersInfo(SPI_SETMOUSETRAILS,NULL,(PVOID)iMouseTrails,NULL);
+#endif
 }
 
