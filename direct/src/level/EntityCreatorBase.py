@@ -20,7 +20,9 @@ class EntityCreatorBase:
                               (entType, entId))
 
         # inheritor must define doCreateEntity
-        return self.doCreateEntity(self.entType2Ctor[entType], entId)
+        ent = self.doCreateEntity(self.entType2Ctor[entType], entId)
+        assert ent is not None # must be Entity or 'nothing'
+        return ent
 
     def getEntityTypes(self):
         """by definition, this object knows the full list of entity types

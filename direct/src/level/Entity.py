@@ -14,9 +14,10 @@ class Entity(DirectObject):
         self.initializeEntity(level, entId)
 
     def initializeEntity(self, level, entId):
-        """Distributed entities don't know their level or entId values
-        until they've been generated, so they call this after they've
-        been generated. At that point, the entity is good to go."""
+        """Distributed entities on the client don't know their level or
+        entId values until they've been generated, so they call this
+        after they've been generated. At that point, the entity is good
+        to go."""
         self.level = level
         self.entId = entId
         if (self.level is not None) and (self.entId is not None):

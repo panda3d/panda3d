@@ -156,7 +156,12 @@ class DistributedLevel(DistributedObject.DistributedObject,
         assert len(self.parent2ChildIds) == 0
         # make sure the zoneNums from the model match the zoneNums from
         # the zone entities
-        assert sameElements(self.zoneNums, self.zoneNum2entId.keys())
+        modelZoneNums = self.zoneNums
+        entityZoneNums = self.zoneNum2entId.keys()
+        if not sameElements(modelZoneNums, entityZoneNums):
+            DistributedLevel.notify.error(
+                'model zone nums (%s) do not match entity zone nums (%s)' %
+                (modelZoneNums, entityZoneNums))
 
         # load stuff
         self.initVisibility()
@@ -177,7 +182,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def __handleLevelMgrCreated(self):
         # as soon as the levelMgr has been created, load up the model
         # and extract zone info
-        self.geom = self.levelMgr.geom
+        levelMgr = self.getEntity(LevelConstants.LevelMgrEntId)
+        self.geom = levelMgr.geom
 
         def findNumberedNodes(baseString, model=self.geom, self=self):
             # finds nodes whose name follows the pattern 'baseString#'
@@ -387,6 +393,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
             return
         
         if zoneNum == self.curZoneNum:
+            return
+
+        if zoneNum not in self.zoneNum2entId:
+            DistributedLevel.notify.error(
+                'no ZoneEntity for this zone (%s)!!' % zoneNum)
             return
 
         zoneEntId = self.zoneNum2entId[zoneNum]

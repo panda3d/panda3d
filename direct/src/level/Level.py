@@ -4,6 +4,7 @@ import DirectNotifyGlobal
 import string
 import LevelConstants
 from PythonUtil import lineInfo, uniqueElements
+import types
 
 """
 Any data that can be edited by a level editor must be represented as
@@ -62,20 +63,26 @@ class Level:
         # TODO: maybe we should leave this to a subclass or the level user
         self.createAllEntities(priorityTypes=['levelMgr','zone'])
 
+        # check on the singleton entities
+        # we make our own references to them rather than expect them to
+        # create the references so that the editor can create dummy
+        # do-nothing entities
+
         # there should be one and only one levelMgr
         assert len(self.entType2ids['levelMgr']) == 1
-        self.levelMgrEntity = self.getEntity(self.entType2ids['levelMgr'][0])
-        assert self.levelMgrEntity.entId == LevelConstants.LevelMgrEntId
+        assert self.entType2ids['levelMgr'][0] == LevelConstants.LevelMgrEntId
+        self.levelMgrEntity = self.getEntity(LevelConstants.LevelMgrEntId)
 
         if __debug__:
             # there should be one and only one editMgr
             assert len(self.entType2ids['editMgr']) == 1
-            self.editMgrEntity = self.getEntity(self.entType2ids['editMgr'][0])
-            assert self.editMgrEntity.entId == LevelConstants.EditMgrEntId
+            assert self.entType2ids['editMgr'][0] == \
+                   LevelConstants.EditMgrEntId
+            self.editMgrEntity = self.getEntity(LevelConstants.EditMgrEntId)
 
-        # make sure the uberzone is there
+        # there should be one and only one UberZone
         assert LevelConstants.UberZoneEntId in self.entType2ids['zone']
-        self.UberZoneEntity = self.getEntity(LevelConstants.UberZoneEntId)
+        self.uberZoneEntity = self.getEntity(LevelConstants.UberZoneEntId)
 
         self.initialized = 1
 
@@ -153,7 +160,7 @@ class Level:
         # NOTE: the entity is not considered to really be created until
         # it has all of its initial spec data; see 'initializeEntity'
         # below.
-        if entity is not None:
+        if entity is not 'nothing':
             assert uniqueElements(self.createdEntIds)
             assert entId not in self.createdEntIds
             self.createdEntIds.append(entId)

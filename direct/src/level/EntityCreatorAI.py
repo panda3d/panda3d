@@ -10,6 +10,7 @@ from PythonUtil import Functor
 # some useful constructor functions
 # ctor functions for entities must take
 #  (level, entId, zoneId)
+# and they must return the entity that was created, or 'nothing'
 
 # this func creates distributed entities whose constructors take
 #  (air, level doId, entId)
@@ -25,11 +26,12 @@ def createDistributedEntity(AIclass, level, entId, zoneId):
 def createLocalEntity(AIclass, level, entId, zoneId):
     """create a local entity"""
     ent = AIclass(level, entId)
+    return ent
 
 # take any number of args to support local and distributed entities
 def nothing(*args):
     """Create entity that doesn't have a server side representation."""
-    return None
+    return 'nothing'
 
 class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
     """This class is responsible for creating instances of Entities on the AI.

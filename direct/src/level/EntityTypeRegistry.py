@@ -44,6 +44,14 @@ class EntityTypeRegistry:
                     self.output2typeNames.setdefault(outputType, [])
                     self.output2typeNames[outputType].append(typename)
 
+        # create list of permanent entity typenames (entity types that cannot
+        # be inserted or removed in the editor)
+        self.permanentTypeNames = []
+        for typename, typeDesc in self.entTypeName2typeDesc.items():
+            if typeDesc.isPermanent():
+                assert typeDesc.isConcrete()
+                self.permanentTypeNames.append(typename)
+
         # create mapping of entity typename (abstract or concrete) to list
         # of entity typenames are concrete and are of that type or derive
         # from that type
@@ -79,6 +87,9 @@ class EntityTypeRegistry:
 
     def isDerivedAndBase(self, entType, baseEntType):
         return entType in self.getDerivedTypeNames(baseEntType)
+
+    def getPermanentTypeNames(self):
+        return self.permanentTypeNames
 
     def __hash__(self):
         return hash(repr(self))

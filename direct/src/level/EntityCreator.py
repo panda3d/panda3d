@@ -11,9 +11,10 @@ import ModelEntity
 
 # some useful constructor functions
 # ctor functions must take (level, entId)
+# and they must return the entity that was created, or 'nothing'
 def nothing(*args):
     """For entities that don't need to be created by the client"""
-    return None
+    return 'nothing'
 
 class EntityCreator(EntityCreatorBase.EntityCreatorBase):
     """

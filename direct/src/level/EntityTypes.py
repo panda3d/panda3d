@@ -14,6 +14,7 @@ class Entity(EntityTypeDesc):
 
 class LevelMgr(Entity):
     type = 'levelMgr'
+    permanent = 1
     attribs = (
         ('cogLevel', 0, 'int', {'min':0, 'max':11}),
         ('cogTrack', 'c', 'choice', {'choiceSet':['c','s','l','m']}),
@@ -22,23 +23,12 @@ class LevelMgr(Entity):
 
 class EditMgr(Entity):
     type = 'editMgr'
+    permanent = 1
     attribs = (
         ('requestSave', None),
         ('requestNewEntity', None),
         ('insertEntity', None),
         ('removeEntity', None),
-        )
-
-class LogicGate(Entity):
-    type = 'logicGate'
-    output = 'bool'
-    attribs = (
-        ('input1Event', 0, 'entId', {'output':'bool'}),
-        ('input2Event', 0, 'entId', {'output':'bool'}),
-        ('isInput1', 0, 'bool'),
-        ('isInput2', 0, 'bool'),
-        ('logicType', 'or', 'choice',
-         {'choiceSet':['or','and','xor','nand','nor','xnor']}),
         )
 
 class Nodepath(Entity):
@@ -51,6 +41,7 @@ class Nodepath(Entity):
 
 class Zone(Nodepath):
     type = 'zone'
+    permanent = 1
     delAttribs = (
         'parentEntId',
         'pos',
@@ -58,8 +49,20 @@ class Zone(Nodepath):
         )
     attribs = (
         ('description', '', 'string'),
-        ('modelZoneNum', None, 'int'),
+        ('modelZoneNum', -1, 'int'),
         ('visibility', [], 'visZoneList'),
+        )
+
+class LogicGate(Entity):
+    type = 'logicGate'
+    output = 'bool'
+    attribs = (
+        ('input1Event', 0, 'entId', {'output':'bool'}),
+        ('input2Event', 0, 'entId', {'output':'bool'}),
+        ('isInput1', 0, 'bool'),
+        ('isInput2', 0, 'bool'),
+        ('logicType', 'or', 'choice',
+         {'choiceSet':['or','and','xor','nand','nor','xnor']}),
         )
 
 class CutScene(Entity):

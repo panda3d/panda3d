@@ -26,7 +26,13 @@ class EntityTypeDesc:
             self.attribDescDict[attribName] = desc
 
     def isConcrete(self):
+        """ means that entity of this exact type can be created """
         return not self.__class__.__dict__.has_key('abstract')
+
+    def isPermanent(self):
+        """ means that entity of this exact type cannot be inserted or
+        removed in the editor """
+        return self.__class__.__dict__.has_key('permanent')
 
     def getOutputType(self):
         return self.output

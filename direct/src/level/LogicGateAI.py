@@ -96,12 +96,11 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
 
     def destroy(self):
         assert(self.debugPrint("destroy()"))
-        self.ignore(self.input1)
-        self.input1 = None
-        self.ignore(self.input2)
-        self.input2 = None
+        self.ignore(self.input1Event)
+        self.input1Event = None
+        self.ignore(self.input2Event)
+        self.input2Event = None
         Entity.Entity.destroy(self)
-        PandaObject.PandaObject.destroy(self)
     
     def setLogicType(self, logicType):
         assert(self.debugPrint("setLogicType(logicType=%s)"%(logicType,)))
@@ -111,15 +110,15 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
     
     def setIsInput1(self, isTrue):
         assert(self.debugPrint("setIsInput1(isTrue=%s)"%(isTrue,)))
-        if 1 or (not isTrue) != (not self.input1):
-            # ...the logical state of self.input1 has changed.
+        if 1 or (not isTrue) != (not self.input1Event):
+            # ...the logical state of self.input1Event has changed.
             self.isInput1=isTrue
             self.logicTest(self, isTrue, self.isInput2)
     
     def setIsInput2(self, isTrue):
         assert(self.debugPrint("setIsInput1(isTrue=%s)"%(isTrue,)))
-        if 1 or (not isTrue) != (not self.input2):
-            # ...the logical state of self.input2 has changed.
+        if 1 or (not isTrue) != (not self.input2Event):
+            # ...the logical state of self.input2Event has changed.
             self.isInput2=isTrue
             self.logicTest(self, isTrue, self.isInput1)
     

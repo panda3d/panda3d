@@ -4,15 +4,9 @@ import DirectNotifyGlobal
 from PythonUtil import list2dict, uniqueElements
 import string
 import LevelConstants
+import types
 if __debug__:
     import os
-
-if __debug__:
-    def makeNewSpec(filename, modelPath, ):
-        spec = LevelSpec()
-        spec.doSetAttrib(LevelConstants.LevelMgrEntId,
-                         'modelFilename', modelPath)
-        spec.saveToDisk(filename, makeBackup=0)
 
 class LevelSpec:
     """contains spec data for a level, is responsible for handing the data
@@ -20,8 +14,14 @@ class LevelSpec:
     saving out modified spec data"""
     notify = DirectNotifyGlobal.directNotify.newCategory("LevelSpec")
     
-    def __init__(self, specDict=None, scenario=0):
-        self.specDict = specDict
+    def __init__(self, spec=None, scenario=0):
+        """spec must be passed in as a python module or a dictionary"""
+        if type(spec) is types.ModuleType:
+            self.specDict = spec.levelSpec
+        else:
+            # we need this for repr/eval-ing LevelSpecs
+            assert type(spec) is types.DictType
+            self.specDict = spec
 
         if __debug__:
             newSpec = 0
@@ -179,6 +179,8 @@ class LevelSpec:
             if self.hasLevel():
                 # notify the level
                 self.level.handleEntityInsert(entId)
+            else:
+                LevelSpec.notify.warning('no level to be notified of insertion')
             
         def removeEntity(self, entId):
             LevelSpec.notify.info('removing entity %s' % entId)
@@ -187,6 +189,8 @@ class LevelSpec:
             if self.hasLevel():
                 # notify the level
                 self.level.handleEntityRemove(entId)
+            else:
+                LevelSpec.notify.warning('no level to be notified of removal')
 
             # remove the entity's spec
             dict = self.entId2specDict[entId]
