@@ -285,7 +285,7 @@ press(const MouseWatcherParameter &param) {
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button previously depressed with
-//               press() is released
+//               press() is released.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 release(const MouseWatcherParameter &param) {
