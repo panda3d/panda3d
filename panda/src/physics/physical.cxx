@@ -144,7 +144,7 @@ void Physical::
 write_physics_objects(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
-  out<<""<<"_physics_objects ("<<_physics_objects.size()<<" forces)\n";
+  out<<""<<"_physics_objects ("<<_physics_objects.size()<<" objects)\n";
   for (PhysicsObjectVector::const_iterator i=_physics_objects.begin();
        i != _physics_objects.end();
        ++i) {
