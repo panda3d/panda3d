@@ -37,6 +37,7 @@
 #include "materialPool.h"
 #include "geomNode.h"
 #include "sequenceNode.h"
+#include "switchNode.h"
 #include "lodNode.h"
 #include "modelNode.h"
 #include "modelRoot.h"
@@ -1380,12 +1381,16 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     }
     return node;
 
-  } else if (egg_group->get_switch_flag() &&
-             egg_group->get_switch_fps() != 0.0) {
-    // Create a sequence node.
-    node = new SequenceNode(egg_group->get_switch_fps(), 
+  } else if (egg_group->get_switch_flag()) {
+    if (egg_group->get_switch_fps() != 0.0) {
+      // Create a sequence node.
+      node = new SequenceNode(egg_group->get_switch_fps(), 
                               egg_group->get_name());
-
+    } else {
+      // Create a switch node.
+      node = new SwitchNode(egg_group->get_name());
+    }
+      
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       make_node(*ci, node);
