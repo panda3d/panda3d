@@ -17,7 +17,7 @@
 #endif
 
 #print
-#print Optional third-party packages configured in:
+#print Configuring support for the following optional third-party packages:
 #if $[HAVE_NSPR]
 #print - NSPR
 #endif
