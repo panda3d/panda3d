@@ -276,6 +276,17 @@ transform(const LMatrix4d &mat) {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::has_gref
+//       Access: Public
+//  Description: Returns true if the indicated group references this
+//               vertex, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggVertex::
+has_gref(const EggGroup *group) const {
+  return _gref.count((EggGroup *)group) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::copy_grefs_from
 //       Access: Public
 //  Description: Copies all the group references from the other vertex
@@ -327,6 +338,17 @@ clear_grefs() {
 
   // Now we should have no more refs.
   nassertv(_gref.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::has_pref
+//       Access: Public
+//  Description: Returns the number of times the vertex appears in the
+//               indicated primitive, or 0 if it does not appear.
+////////////////////////////////////////////////////////////////////
+int EggVertex::
+has_pref(const EggPrimitive *prim) const {
+  return _pref.count((EggPrimitive *)prim);
 }
 
 #ifndef NDEBUG

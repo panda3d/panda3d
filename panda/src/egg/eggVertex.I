@@ -170,6 +170,9 @@ get_index() const {
 //               gref_end(), be used to traverse the entire set of
 //               groups that reference this vertex.  Each iterator
 //               returns a pointer to a group.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertex::GroupRef::const_iterator EggVertex::
 gref_begin() const {
@@ -183,6 +186,9 @@ gref_begin() const {
 //               gref_begin(), be used to traverse the entire set of
 //               groups that reference this vertex.  Each iterator
 //               returns a pointer to a group.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertex::GroupRef::const_iterator EggVertex::
 gref_end() const {
@@ -194,6 +200,9 @@ gref_end() const {
 //       Access: Public
 //  Description: Returns the number of elements between gref_begin()
 //               and gref_end().
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertex::GroupRef::size_type EggVertex::
 gref_size() const {
@@ -202,23 +211,15 @@ gref_size() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::has_gref
-//       Access: Public
-//  Description: Returns true if the indicated group references this
-//               vertex, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool EggVertex::
-has_gref(const EggGroup *group) const {
-  return _gref.count((EggGroup *)group) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::pref_begin
 //       Access: Public
 //  Description: Returns an iterator that can, in conjunction with
 //               pref_end(), be used to traverse the entire set of
 //               primitives that reference this vertex.  Each iterator
 //               returns a pointer to a primitive.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertex::PrimitiveRef::const_iterator EggVertex::
 pref_begin() const {
@@ -232,6 +233,9 @@ pref_begin() const {
 //               pref_begin(), be used to traverse the entire set of
 //               primitives that reference this vertex.  Each iterator
 //               returns a pointer to a primitive.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertex::PrimitiveRef::const_iterator EggVertex::
 pref_end() const {
@@ -243,22 +247,13 @@ pref_end() const {
 //       Access: Public
 //  Description: Returns the number of elements between pref_begin()
 //               and pref_end().
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertex::GroupRef::size_type EggVertex::
 pref_size() const {
   return _pref.size();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::has_pref
-//       Access: Public
-//  Description: Returns the number of times the vertex appears in the
-//               indicated primitive, or 0 if it does not appear.
-////////////////////////////////////////////////////////////////////
-INLINE int EggVertex::
-has_pref(const EggPrimitive *prim) const {
-  return _pref.count((EggPrimitive *)prim);
 }
 
 

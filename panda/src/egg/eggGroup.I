@@ -621,3 +621,48 @@ get_lod() const {
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::vref_begin
+//       Access: Public
+//  Description: Returns an iterator that can, in conjunction with
+//               vref_end(), be used to traverse the entire set of
+//               referenced vertices.  Each iterator returns a
+//               pair<PT(EggVertex), double>.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggGroup::VertexRef::const_iterator EggGroup::
+vref_begin() const {
+  return _vref.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::vref_end
+//       Access: Public
+//  Description: Returns an iterator that can, in conjunction with
+//               vref_begin(), be used to traverse the entire set of
+//               referenced vertices.  Each iterator returns a
+//               pair<PT(EggVertex), double>.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggGroup::VertexRef::const_iterator EggGroup::
+vref_end() const {
+  return _vref.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGrop::vref_size
+//       Access: Public
+//  Description: Returns the number of elements between vref_begin()
+//               and vref_end().
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggGroup::VertexRef::size_type EggGroup::
+vref_size() const {
+  return _vref.size();
+}

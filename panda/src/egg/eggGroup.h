@@ -167,9 +167,9 @@ public:
   void unref_all_vertices();
   double get_vertex_membership(const EggVertex *vert) const;
 
-  VertexRef::const_iterator vref_begin() const;
-  VertexRef::const_iterator vref_end() const;
-  VertexRef::size_type vref_size() const;
+  INLINE VertexRef::const_iterator vref_begin() const;
+  INLINE VertexRef::const_iterator vref_end() const;
+  INLINE VertexRef::size_type vref_size() const;
 
 #ifndef NDEBUG
   void test_vref_integrity() const;
