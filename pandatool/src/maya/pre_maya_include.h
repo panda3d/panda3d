@@ -32,5 +32,7 @@
 // instead of the old <iostream.h> headers.  It also says this is for
 // Linux only, but it seems to work just fine on Windows, obviating
 // the need for sneaky #defines in this and in post_maya_include.h.
+#ifdef HAVE_IOSTREAM
 #define REQUIRE_IOSTREAM
+#endif  // HAVE_IOSTREAM
 

@@ -328,7 +328,8 @@ get_enum_attribute(MObject &node, const string &attribute_name,
     return false;
   }
 
-  MFnEnumAttribute enum_attrib(plug.attribute(), &status);
+  MObject attrib = plug.attribute();
+  MFnEnumAttribute enum_attrib(attrib, &status);
   if (!status) {
     maya_cat.error()
       << "Not an enum attribute: " << attribute_name << "\n";
@@ -466,67 +467,66 @@ string_mfndata_type(MFnData::Type type) {
   switch (type) {
   case MFnData::kInvalid:
     return "kInvalid";
-    break;
+
   case MFnData::kNumeric:
     return "kNumeric";
-    break;
+
   case MFnData::kPlugin:
     return "kPlugin";
-    break;
+
   case MFnData::kPluginGeometry:
     return "kPluginGeometry";
-    break;
+
   case MFnData::kString:
     return "kString";
-    break;
+
   case MFnData::kMatrix:
     return "kMatrix";
-    break;
+
   case MFnData::kStringArray:
     return "kStringArray";
-    break;
+
   case MFnData::kDoubleArray:
     return "kDoubleArray";
-    break;
+
   case MFnData::kIntArray:
     return "kIntArray";
-    break;
+
   case MFnData::kPointArray:
     return "kPointArray";
-    break;
+
   case MFnData::kVectorArray:
     return "kVectorArray";
-    break;
+
   case MFnData::kComponentList:
     return "kComponentList";
-    break;
+
   case MFnData::kMesh:
     return "kMesh";
-    break;
+
   case MFnData::kLattice:
     return "kLattice";
-    break;
+
   case MFnData::kNurbsCurve:
     return "kNurbsCurve";
-    break;
+
   case MFnData::kNurbsSurface:
     return "kNurbsSurface";
-    break;
+
   case MFnData::kSphere:
     return "kSphere";
-    break;
+
   case MFnData::kDynArrayAttrs:
     return "kDynArrayAttrs";
-    break;
+
   case MFnData::kDynSweptGeometry:
     return "kDynSweptGeometry";
-    break;
+
   case MFnData::kSubdSurface:
     return "kSubdSurface";
-    break;
+
   case MFnData::kLast:
     return "kLast";
-    break;
   }
 
   return "**invalid**";
