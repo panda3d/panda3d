@@ -65,18 +65,22 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
   physics_debug("  force "<<force<<" len "<<force.length());
   LVector3f old_vel=vel;
 
-  NodePath np(def._node);
-  CPT(TransformState) trans = np.get_net_transform();
-  if (force!=force*trans->get_mat()) {
-    cerr<<"\nforce!=force*trans->get_mat()"<<force<<(force*trans->get_mat())<<endl;
-  }
-
   // Copy the force vector while translating it 
   // into the physics object coordinate system:
-  LVector3f adjustment=(force * trans->get_mat())*actor->get_physics_object()->get_lcs();
+  LVector3f adjustment=force;
   physics_debug("  adjustment set "<<adjustment<<" len "<<adjustment.length());
+
+  NodePath np(def._node);
+  CPT(TransformState) trans = np.get_net_transform();
+  adjustment=adjustment*trans->get_mat();
+  physics_debug("  adjustment trn "<<adjustment<<" len "<<adjustment.length());
+
+  adjustment=adjustment*actor->get_physics_object()->get_lcs();
+  physics_debug("  adjustment lcs "<<adjustment<<" len "<<adjustment.length());
+
   adjustment.normalize();
   physics_debug("  adjustment nrm "<<adjustment<<" len "<<adjustment.length());
+
   float adjustmentLength=-(adjustment.dot(vel));
   physics_debug("  adjustmentLength "<<adjustmentLength);
   // Are we in contact with something:
