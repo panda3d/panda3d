@@ -18,31 +18,83 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::insert
+//     Function: ordered_vector::insert_unique
 //       Access: Public
 //  Description: Inserts the indicated key into the ordered vector.
 //               The iterator is a hint to the expected position; if
 //               this is correct, the insert operation is likely to be
 //               faster.  The return value is the iterator referencing
 //               the new element.
+//
+//               This flavor of insert does not allow multiple copies
+//               of the same key to be inserted.  If the key is
+//               already present, it is not inserted, and the iterator
+//               referencing the original value is returned.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
 ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
-insert(ordered_vector<Key, Compare>::iterator position, 
-       const ordered_vector<Key, Compare>::value_type &key) {
+insert_unique(ordered_vector<Key, Compare>::iterator position, 
+              const ordered_vector<Key, Compare>::value_type &key) {
+  if (position != end()) {
+    // If we're not inserting at the end, the element we're
+    // inserting before should not lexicographically precede this one.
+    if (_compare(*position, key)) {
+      return insert_unique(key).first;
+
+    } else if (!_compare(key, *position)) {
+      // Oops, !(*position < key) and !(key < *position).  That means
+      // they're equivalent, and we shouldn't insert a new one.
+      return position;
+    }
+  }
+
   if (position != begin()) {
     // If we're not inserting at the beginning, this element should
     // not lexicographically precede the one we're inserting after.
     if (_compare(key, *(position - 1))) {
-      return insert(key);
+      return insert_unique(key).first;
+
+    } else if (!_compare(*(position - 1), key)) {
+      // Once again, they're equivalent.
+      return position - 1;
     }
   }
 
+  // Otherwise, we may insert where the caller requested.
+  iterator result = _vector.insert(position, key);
+  verify_list();
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::insert_nonunique
+//       Access: Public
+//  Description: Inserts the indicated key into the ordered vector.
+//               The iterator is a hint to the expected position; if
+//               this is correct, the insert operation is likely to be
+//               faster.  The return value is the iterator referencing
+//               the new element.
+//
+//               This flavor of insert allows multiple copies of the
+//               same key to be inserted.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
+insert_nonunique(ordered_vector<Key, Compare>::iterator position, 
+                 const ordered_vector<Key, Compare>::value_type &key) {
   if (position != end()) {
-    // If we're not inserting at the beginning, the element we're
+    // If we're not inserting at the end, the element we're
     // inserting before should not lexicographically precede this one.
     if (_compare(*position, key)) {
-      return insert(key);
+      return insert_nonunique(key);
+    }
+  }
+
+  if (position != begin()) {
+    // If we're not inserting at the beginning, this element should
+    // not lexicographically precede the one we're inserting after.
+    if (_compare(key, *(position - 1))) {
+      return insert_nonunique(key);
     }
   }
 

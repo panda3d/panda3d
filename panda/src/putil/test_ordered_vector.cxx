@@ -18,7 +18,7 @@
 
 #include "ordered_vector.h"
 
-typedef ordered_vector<int> myvec;
+typedef ov_multiset<int> myvec;
 
 void
 search(myvec &v, int element) {

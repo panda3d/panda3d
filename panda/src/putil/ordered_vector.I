@@ -18,6 +18,31 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::EquivalentTest::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ordered_vector<Key, Compare>::EquivalentTest::
+EquivalentTest(const Compare &compare) :
+  _compare(compare)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::EquivalentTest::operator ()
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE bool ordered_vector<Key, Compare>::EquivalentTest::
+operator () (const ordered_vector<Key, Compare>::key_type &a,
+             const ordered_vector<Key, Compare>::key_type &b) {
+  nassertr(!_compare(b, a), false);
+  return !_compare(a, b);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ordered_vector::Constructor
 //       Access: Public
 //  Description: 
@@ -162,6 +187,28 @@ rend() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::operator []
+//       Access: Public
+//  Description: Returns the nth element.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ordered_vector<Key, Compare>::reference ordered_vector<Key, Compare>::
+operator [] (ordered_vector<Key, Compare>::size_type n) {
+  return _vector[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::operator []
+//       Access: Public
+//  Description: Returns the nth element.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ordered_vector<Key, Compare>::const_reference ordered_vector<Key, Compare>::
+operator [] (ordered_vector<Key, Compare>::size_type n) const {
+  return _vector[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ordered_vector::size
 //       Access: Public
 //  Description: Returns the number of elements in the ordered vector.
@@ -274,17 +321,54 @@ operator >= (const ordered_vector<Key, Compare> &other) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::insert
+//     Function: ordered_vector::insert_unique
+//       Access: Public
+//  Description: Inserts the indicated key into the ordered vector, at
+//               the appropriate place.  If there is already an element
+//               sorting equivalent to the key in the vector, the new
+//               key is not inserted.
+//
+//               The return value is a pair, where the first component
+//               is the iterator referencing the new element (or the
+//               original element), and the second componet is true if
+//               the insert operation has taken place.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE pair<ordered_vector<Key, Compare>::iterator, bool> ordered_vector<Key, Compare>::
+insert_unique(const ordered_vector<Key, Compare>::value_type &key) {
+  iterator position = find_insert_position(begin(), end(), key);
+#ifdef NDEBUG
+  pair<iterator, bool> bogus_result(end(), false);
+  nassertr(position >= begin() && position <= end(), bogus_result);
+#endif
+
+  // If there's already an equivalent key in the vector, it's at
+  // *(position - 1).
+  if (position != begin() && !_compare(*(position - 1), key)) {
+    pair<iterator, bool> result(position - 1, false);
+    nassertr(!_compare(key, *(position - 1)), result);
+    return result;
+  }
+
+  iterator result = _vector.insert(position, key);
+  verify_list();
+  return pair<iterator, bool>(result, true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::insert_nonunique
 //       Access: Public
 //  Description: Inserts the indicated key into the ordered vector, at
 //               the appropriate place.  If there are already elements
 //               sorting equivalent to the key in the vector, the new
-//               value is inserted following them.  The return value
-//               is the iterator referencing the new element.
+//               value is inserted following them.  
+
+//               The return value is the iterator referencing the new
+//               element.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
 INLINE ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
-insert(const ordered_vector<Key, Compare>::value_type &key) {
+insert_nonunique(const ordered_vector<Key, Compare>::value_type &key) {
   iterator position = find_insert_position(begin(), end(), key);
   nassertr(position >= begin() && position <= end(), end());
 
@@ -528,17 +612,52 @@ reserve(ordered_vector<Key, Compare>::size_type n) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::sort
+//     Function: ordered_vector::sort_unique
 //       Access: Public
 //  Description: Ensures that the vector is properly sorted after a
 //               potentially damaging operation.  This should not
 //               normally need to be called, unless the user has
-//               written to the vector using the non-const iterators.
+//               written to the vector using the non-const iterators
+//               or has called push_back().
+//
+//               This flavor of sort also eliminates repeated
+//               elements.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
-sort() {
-  ::sort(begin(), end(), _compare);
+sort_unique() {
+  sort(begin(), end(), _compare);
+  iterator new_end = unique(begin(), end(), EquivalentTest(_compare));
+  erase(new_end, end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::sort_nonunique
+//       Access: Public
+//  Description: Ensures that the vector is properly sorted after a
+//               potentially damaging operation.  This should not
+//               normally need to be called, unless the user has
+//               written to the vector using the non-const iterators
+//               or has called push_back().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE void ordered_vector<Key, Compare>::
+sort_nonunique() {
+  sort(begin(), end(), _compare);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::push_back
+//       Access: Public
+//  Description: Adds the new element to the end of the vector without
+//               regard for proper sorting.  This is a bad idea to do
+//               except to populate the vector the first time; be sure
+//               to call sort() after you have added all the elements.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE void ordered_vector<Key, Compare>::
+push_back(const value_type &key) {
+  _vector.push_back(key);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -605,4 +724,144 @@ verify_list() {
   }
 #endif
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_set::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ov_set<Key, Compare>::
+ov_set(const Compare &compare) :
+  ordered_vector(compare)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_set::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ov_set<Key, Compare>::
+ov_set(const ov_set<Key, Compare> &copy) :
+  ordered_vector(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_set::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ov_set<Key, Compare> &ov_set<Key, Compare>::
+operator = (const ov_set<Key, Compare> &copy) {
+  ordered_vector::operator = (copy);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_set::insert
+//       Access: Public
+//  Description: Maps to insert_unique().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ov_set<Key, Compare>::iterator ov_set<Key, Compare>::
+insert(ordered_vector<Key, Compare>::iterator position, 
+       const ordered_vector<Key, Compare>::value_type &key) {
+  return ordered_vector::insert_unique(position, key);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_set::insert
+//       Access: Public
+//  Description: Maps to insert_unique().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE pair<ov_set<Key, Compare>::iterator, bool> ov_set<Key, Compare>::
+insert(const ordered_vector<Key, Compare>::value_type &key) {
+  return ordered_vector::insert_unique(key);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_set::sort
+//       Access: Public
+//  Description: Maps to sort_unique().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE void ov_set<Key, Compare>::
+sort() {
+  return ordered_vector::sort_unique();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_multiset::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ov_multiset<Key, Compare>::
+ov_multiset(const Compare &compare) :
+  ordered_vector(compare)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_multiset::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ov_multiset<Key, Compare>::
+ov_multiset(const ov_multiset<Key, Compare> &copy) :
+  ordered_vector(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_multiset::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ov_multiset<Key, Compare> &ov_multiset<Key, Compare>::
+operator = (const ov_multiset<Key, Compare> &copy) {
+  ordered_vector::operator = (copy);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_multiset::insert
+//       Access: Public
+//  Description: Maps to insert_nonunique().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ov_multiset<Key, Compare>::iterator ov_multiset<Key, Compare>::
+insert(ordered_vector<Key, Compare>::iterator position, 
+       const ordered_vector<Key, Compare>::value_type &key) {
+  return ordered_vector::insert_nonunique(position, key);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_multiset::insert
+//       Access: Public
+//  Description: Maps to insert_nonunique().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE pair<ov_multiset<Key, Compare>::iterator, bool> ov_multiset<Key, Compare>::
+insert(const ordered_vector<Key, Compare>::value_type &key) {
+  return ordered_vector::insert_nonunique(key);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_multiset::sort
+//       Access: Public
+//  Description: Maps to sort_nonunique().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE void ov_multiset<Key, Compare>::
+sort() {
+  return ordered_vector::sort_nonunique();
 }

@@ -29,13 +29,38 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : ordered_vector
 // Description : This template class presents an interface similar to
-//               the STL multiset, but it is implemented using a vector
-//               that is kept always in sorted order.
+//               the STL set or multiset (and ov_set and ov_multiset
+//               are implemented specifically, below), but it is
+//               implemented using a vector that is kept always in
+//               sorted order.
 //
-//               This allows the ordered_vector to maintain stability
-//               of order between elements that sort equally: they are
-//               stored in the order in which they were added, from
-//               back to front.
+//               In most cases, an ov_set or ov_multiset may be
+//               dropped in transparently in place of a set or
+//               multiset, but the implementation difference has a few
+//               implications:
+//
+//               (1) The ov_multiset will maintain stability of order
+//               between elements that sort equally: they are stored
+//               in the order in which they were added, from back to
+//               front.
+//
+//               (2) Insert and erase operations into the middle of
+//               the set can be slow, just as inserting into the
+//               middle of a vector can be slow.  In fact, building up
+//               an ov_set by inserting elements one at a time is an
+//               n^2 operation.  On the other hand, building up an
+//               ov_set by adding elements to the end, one at time, is
+//               somewhat faster than building up a traditional set;
+//               and you can even add unsorted elements with
+//               push_back() and then call sort() when you're done,
+//               for a log(n) operation.
+//
+//               (3) Iterators may not be valid for the life of the
+//               ordered_vector.  If the vector reallocates itself,
+//               all iterators are invalidated.
+//
+//               (4) Random access into the set is easy with the []
+//               operator.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = less<Key> >
 class ordered_vector {
@@ -81,6 +106,10 @@ public:
   INLINE const_reverse_iterator rbegin() const;
   INLINE const_reverse_iterator rend() const;
 
+  // Random access.
+  INLINE reference operator [] (size_type n);
+  INLINE const_reference operator [] (size_type n) const;
+
   // Size information.
   INLINE size_type size() const;
   INLINE size_type max_size() const;
@@ -96,8 +125,10 @@ public:
   INLINE bool operator >= (const ordered_vector<Key, Compare> &other) const;
 
   // Insert operations.
-  iterator insert(iterator position, const value_type &key);
-  INLINE iterator insert(const value_type &key);
+  iterator insert_unique(iterator position, const value_type &key);
+  iterator insert_nonunique(iterator position, const value_type &key);
+  INLINE pair<iterator, bool> insert_unique(const value_type &key);
+  INLINE iterator insert_nonunique(const value_type &key);
 
   // Erase operations.
   INLINE iterator erase(iterator position);
@@ -122,7 +153,10 @@ public:
   // Special operations.
   INLINE void swap(ordered_vector<Key, Compare> &other);
   INLINE void reserve(size_type n);
-  INLINE void sort();
+  INLINE void sort_unique();
+  INLINE void sort_nonunique();
+
+  INLINE void push_back(const value_type &key);
 
 private:
   INLINE iterator nci(const_iterator iterator);
@@ -151,8 +185,55 @@ private:
   bool verify_list_impl(iterator first, iterator last);
 #endif
 
+  // This function object is used in sort_unique().  It returns true
+  // if two consecutive sorted elements are equivalent.
+  class EquivalentTest {
+  public:
+    INLINE EquivalentTest(const Compare &compare);
+    INLINE bool operator () (const key_type &a, const key_type &b);
+    Compare _compare;
+  };
+
   Compare _compare;
   Vector _vector;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : ov_set
+// Description : A specialization of ordered_vector that emulates a
+//               standard STL set: one copy of each element is
+//               allowed.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare = less<Key> >
+class ov_set : public ordered_vector<Key, Compare> {
+public:
+  INLINE ov_set(const Compare &compare = Compare());
+  INLINE ov_set(const ov_set<Key, Compare> &copy);
+  INLINE ov_set<Key, Compare> &operator = (const ov_set<Key, Compare> &copy);
+
+  INLINE iterator insert(iterator position, const value_type &key);
+  INLINE pair<iterator, bool> insert(const value_type &key);
+
+  INLINE void sort();
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : ov_multiset
+// Description : A specialization of ordered_vector that emulates a
+//               standard STL set: many copies of each element are
+//               allowed.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare = less<Key> >
+class ov_multiset : public ordered_vector<Key, Compare> {
+public:
+  INLINE ov_multiset(const Compare &compare = Compare());
+  INLINE ov_multiset(const ov_multiset<Key, Compare> &copy);
+  INLINE ov_multiset<Key, Compare> &operator = (const ov_multiset<Key, Compare> &copy);
+
+  INLINE iterator insert(iterator position, const value_type &key);
+  INLINE pair<iterator, bool> insert(const value_type &key);
+
+  INLINE void sort();
 };
 
 #include "ordered_vector.I"
