@@ -276,9 +276,11 @@ main(int argc, char *argv[]) {
 
   string platform;
   char *platform_env = getenv("PPREMAKE_PLATFORM");
-  if(platform_env==NULL) 
-     platform=PLATFORM;
-    else platform=platform_env;
+  if(platform_env==NULL) { 
+    platform=PLATFORM;
+  } else {
+    platform=platform_env;
+  }
 
   string ppremake_config;
   bool got_ppremake_config = false;
