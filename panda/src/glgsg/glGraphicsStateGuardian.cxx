@@ -251,10 +251,10 @@ reset() {
     glEnable(GL_NORMALIZE);
   }
 
-  // Set up the light id map
+  // Count the max number of lights
   GLint max_lights;
   glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
-  init_lights(max_lights);
+  _max_lights = max_lights;
 
   // Set up the clip plane id map
   GLint max_clip_planes;
@@ -3345,6 +3345,24 @@ issue_transformed_color(const Colorf &color) const {
      (color[3] * _current_color_scale[3]) + _current_color_offset[3]);
 
   glColor4fv(transformed.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::slot_new_light
+//       Access: Protected, Virtual
+//  Description: This will be called by the base class before a
+//               particular light id will be used for the first time.
+//               It is intended to allow the derived class to reserve
+//               any additional resources, if required, for the new
+//               light; and also to indicate whether the hardware
+//               supports this many simultaneous lights.
+//
+//               The return value should be true if the additional
+//               light is supported, or false if it is not.
+////////////////////////////////////////////////////////////////////
+bool GLGraphicsStateGuardian::
+slot_new_light(int light_id) {
+  return (light_id < _max_lights);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -337,6 +337,6 @@ get_coordinate_system() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Light *GraphicsStateGuardian::
 get_light(int light_id) const {
-  nassertr(light_id >= 0 && light_id < _max_lights, (Light *)NULL);
+  nassertr(light_id >= 0 && light_id < (int)_light_info.size(), (Light *)NULL);
   return _light_info[light_id]._light;
 }

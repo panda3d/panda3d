@@ -104,10 +104,6 @@ GraphicsStateGuardian(GraphicsWindow *win) {
   _coordinate_system = default_coordinate_system;
   _current_display_region = (DisplayRegion*)0L;
   _current_lens = (Lens *)NULL;
-
-  _light_info = (LightInfo *)NULL;
-  _max_lights = 0;
-
   reset();
 }
 
@@ -118,7 +114,6 @@ GraphicsStateGuardian(GraphicsWindow *win) {
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
-  init_lights(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -421,7 +416,7 @@ begin_frame() {
   // to be reissued, in case their parameters or positions have
   // changed between frames.
   if (_lighting_enabled_this_frame) {
-    for (int i = 0; i < _max_lights; i++) {
+    for (int i = 0; i < (int)_light_info.size(); i++) {
       if (_light_info[i]._enabled) {
         enable_light(i, false);
         _light_info[i]._enabled = false;
@@ -688,13 +683,14 @@ issue_color(const ColorAttrib *attrib) {
 //     Function: GraphicsStateGuardian::issue_light
 //       Access: Public, Virtual
 //  Description: The default implementation of issue_light() assumes
-//               we have a limited number of equivalent hardware
-//               lights available (which were set up by the
-//               init_lights() call which should have been made in
-//               reset()).  This function assigns each light to a
+//               we have a limited number of hardware lights
+//               available.  This function assigns each light to a
 //               different hardware light id, trying to keep each
 //               light associated with the same id where possible, but
-//               reusing id's when necessary.
+//               reusing id's when necessary.  When it is no longer
+//               possible to reuse existing id's (e.g. all id's are in
+//               use), slot_light() is called to prepare the next
+//               sequential light id.
 //
 //               It will call apply_light() each time a light is
 //               assigned to a particular id for the first time in a
@@ -710,17 +706,12 @@ issue_color(const ColorAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 issue_light(const LightAttrib *attrib) {
-  if (_max_lights == 0) {
-    // If we don't have any lights configured--no one called
-    // init_lights()--then forget it.
-    return;
-  }
-
   // Initialize the current ambient light total and newly enabled
   // light list
   Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 1.0f);
   int i;
-  for (i = 0; i < _max_lights; i++) {
+  int max_lights = (int)_light_info.size();
+  for (i = 0; i < max_lights; i++) {
     _light_info[i]._next_enabled = false;
   }
 
@@ -750,7 +741,7 @@ issue_light(const LightAttrib *attrib) {
     } else {
       // Check to see if this light has already been bound to an id
       int cur_light_id = -1;
-      for (i = 0; i < _max_lights; i++) {
+      for (i = 0; i < max_lights; i++) {
         if (_light_info[i]._light == light) {
           // Light has already been bound to an id, we only need to
           // enable the light, not reapply it.
@@ -764,7 +755,7 @@ issue_light(const LightAttrib *attrib) {
         
       // See if there are any unbound light ids
       if (cur_light_id == -1) {
-        for (i = 0; i < _max_lights; i++) {
+        for (i = 0; i < max_lights; i++) {
           if (_light_info[i]._light == (Light *)NULL) {
             _light_info[i]._light = light;
             cur_light_id = i;
@@ -776,12 +767,22 @@ issue_light(const LightAttrib *attrib) {
       // If there were no unbound light ids, see if we can replace
       // a currently unused but previously bound id
       if (cur_light_id == -1) {
-        for (i = 0; i < _max_lights; i++) {
+        for (i = 0; i < max_lights; i++) {
           if (!attrib->has_light(_light_info[i]._light)) {
             _light_info[i]._light = light;
             cur_light_id = i;
             break;
           }
+        }
+      }
+
+      // If we *still* don't have a light id, slot a new one.
+      if (cur_light_id == -1) {
+        if (slot_new_light(max_lights)) {
+          cur_light_id = max_lights;
+          _light_info.push_back(LightInfo());
+          max_lights++;
+          nassertv(max_lights == (int)_light_info.size());
         }
       }
         
@@ -807,7 +808,7 @@ issue_light(const LightAttrib *attrib) {
   }
 
   // Disable all unused lights
-  for (i = 0; i < _max_lights; i++) {
+  for (i = 0; i < max_lights; i++) {
     if (!_light_info[i]._next_enabled) {
       enable_light(i, false);
       _light_info[i]._enabled = false;
@@ -897,25 +898,21 @@ bind_light(Spotlight *light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::init_lights
-//       Access: Protected
-//  Description: Should be called by a derived class, usually in the
-//               reset() function, to initialize the table of lights
-//               according to the number of hardware lights available.
-//               If the derived class overrides issue_light(), this
-//               function is not necessary.
+//     Function: GraphicsStateGuardian::slot_new_light
+//       Access: Protected, Virtual
+//  Description: This will be called by the base class before a
+//               particular light id will be used for the first time.
+//               It is intended to allow the derived class to reserve
+//               any additional resources, if required, for the new
+//               light; and also to indicate whether the hardware
+//               supports this many simultaneous lights.
+//
+//               The return value should be true if the additional
+//               light is supported, or false if it is not.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-init_lights(int num_lights) {
-  if (_light_info != (LightInfo *)NULL) {
-    delete[] _light_info;
-    _light_info = (LightInfo *)NULL;
-  }
-
-  _max_lights = num_lights;
-  if (_max_lights > 0) {
-    _light_info = new LightInfo[_max_lights];
-  }
+bool GraphicsStateGuardian::
+slot_new_light(int light_id) {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

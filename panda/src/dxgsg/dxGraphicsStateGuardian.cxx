@@ -93,11 +93,6 @@ typedef enum { NothingSet=0,NormalOnly,ColorOnly,Normal_Color,TexCoordOnly,
 #define PER_COLOR    ColorOnly
 #define PER_TEXCOORD TexCoordOnly
 
-// technically DX7's front-end has no limit on the number of lights, but it's simpler for
-// this implementation to set a small GL-like limit to make the light array traversals short
-// and so I dont have to write code that reallocs light arrays
-#define DXGSG_MAX_LIGHTS 8
-
 static D3DMATRIX matIdentity;
 
 #ifdef COUNT_DRAWPRIMS
@@ -715,14 +710,6 @@ dx_init( void) {
     scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
 
     scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
-
-    // technically DX7's front-end has no limit on the number of lights, but it's simpler for
-    // this implementation to set a small GL-like limit to make the light array traversals short
-    // and so I dont have to write code that reallocs light arrays
-    assert((scrn.D3DDevDesc.dwMaxActiveLights==0) ||  // 0 means infinite lights
-           (DXGSG_MAX_LIGHTS <= scrn.D3DDevDesc.dwMaxActiveLights));
-
-    init_lights(DXGSG_MAX_LIGHTS);
 
     if(dx_auto_normalize_lighting)
          scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, true);

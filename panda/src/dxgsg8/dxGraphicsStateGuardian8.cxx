@@ -89,9 +89,6 @@ typedef enum { NothingSet=0,NormalOnly,ColorOnly,Normal_Color,TexCoordOnly,
 #define PER_COLOR    ColorOnly
 #define PER_TEXCOORD TexCoordOnly
 
-// DX8's SW front-end has no limit on the number of lights, but HW is usually limited to 8
-#define DXGSG_MAX_LIGHTS 8
-
 // xform mat for vshader will usually be loaded at constant regs c4-c7
 #define VSHADER_XFORMMATRIX_CONSTANTREGNUMSTART 4
 
@@ -773,12 +770,19 @@ dx_init(HCURSOR hMouseCursor) {
 
     scrn.pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);  // Use the diffuse vertex color. 
 
+    /*
+      Panda no longer requires us to specify the maximum number of
+      lights up front, but instead we can define slot_new_light() to
+      decide one-at-a-time whether a particular light fits within our
+      limit or not.  Until we override this function, there is no
+      limit.
+
     if(scrn.d3dcaps.MaxActiveLights==0) {  
         // 0 indicates no limit on # of lights, but we use DXGSG_MAX_LIGHTS anyway for now
       init_lights(DXGSG_MAX_LIGHTS);
     } else {
       init_lights(min(DXGSG_MAX_LIGHTS,scrn.d3dcaps.MaxActiveLights));
-    }
+    } */
 
     if(dx_auto_normalize_lighting)
          scrn.pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);

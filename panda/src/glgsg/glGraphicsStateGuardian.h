@@ -146,6 +146,7 @@ public:
   void issue_transformed_color(const Colorf &color) const;
 
 protected:
+  virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
@@ -305,7 +306,7 @@ protected:
   bool _polygon_offset_enabled;
   int _decal_level;
 
-  int _cur_light_id;
+  int _max_lights;
 
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;

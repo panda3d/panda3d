@@ -155,7 +155,7 @@ public:
 
 protected:
   INLINE Light *get_light(int light_id) const;
-  void init_lights(int num_lights);
+  virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
@@ -282,8 +282,7 @@ private:
     bool _next_enabled;
   };
 
-  int _max_lights;
-  LightInfo *_light_info;          // LightInfo[_max_lights]
+  pvector<LightInfo> _light_info;
   bool _lighting_enabled_this_frame;
 
   // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access
