@@ -1,0 +1,158 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.61C-SGI [en] (X11; U; IRIX64 6.5 IP19) [Netscape]">
+</head>
+<body>
+&nbsp;
+<center>
+<p><b><font size=+1>SoftImage Tips and Tricks</font></b>
+<p><font size=-1>gregw@wdi.disney.com</font>
+<br><font size=-1>updated 2/26/2002</font></center>
+
+<p><br>
+<br>
+<br>
+<br>
+<p>The following document contains certain advice for getting models and
+animations through the
+<br>soft2egg converter in one piece.&nbsp; Some of these restraints are
+due to differences between Panda
+<br>and SoftImage and some are workarounds for SoftImage&nbsp; idiosyncrasies.&nbsp;
+The first section is advice
+<br>for set-up, modelling, and animation. The second section describes
+some frequently seen problems
+<br>after conversion attempts. If you have any questions please don't hesitate
+to ask.
+<br>&nbsp;
+<br>&nbsp;
+<p><b><u>Section I&nbsp; - Set-up</u></b>
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>Hierarchy naming:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The converter needs to ignore
+most of the constraint hierarchies and they are not always
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; flagged invisible so the
+code will ignore any nodes (and anything below them) with the
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; following strings in their
+names:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+con-
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+con_
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+fing-
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+eyes-
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+faces-
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+head-
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+camRIG
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+bars
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If you don't do this, the
+converter will make geometry for the sliders and the camera. I freely
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; admit there is some kruft
+in this keyword list.
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>Model naming:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Try to make the models have
+consistent names through the revision process. SoftImage is
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; terrible about appending
+version numbers onto everything in the scene file (null12_1_1, etc.)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Each time a model name changes
+it's highly likely that a makefile or the show code will break.
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; While it is possible to
+"fix" this with wildcards (null12*) it is undesirable as this is no longer
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; unique and can cause other
+problems.
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>NURBS Textures:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Textures applied to closed
+NURBS surfaces in Soft will have problems in Panda. This is because
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Soft uses phantom vertices
+in their NURBS representation and this seems to affect where they
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; start and stop applying
+the texture. This can be fixed by shifting the NURBS parameterization.
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; You can do this on the surface
+in question through the Soft GUI, or you can do for all surfaces
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; in the scene upon conversion
+with the "-x" option to soft2egg.
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>Model scale:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; It seems the general convention
+here in the VR Studio has been for the animators to scale the
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; character models up by a
+factor of four while animating. I believe this is because Soft has limited
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; precision. Thus models should
+be scaled by a factor of one fourth to look right in Panda.
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>Non-uniform scaling of joints:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A non-uniform scale is one
+that is not the same in all three axes (ie x=1, y=1, z=0.5). If an
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; animation puts a non-uniform
+scale on any joint then you must place the key word "scale-" in
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the name of the joint that
+does that scale.
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>Face shape trickiness:</u>
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Currently SAAPHIRE (the SoftImage
+API) is broken when it comes to reading expressions
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; which determine shape weights.
+Because of this you MUST put the expressions in strict order
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; of the shape numbers they
+affect (ie the expression for shape 0 must be before 1, etc.)
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>Animating Nulls:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; When constructing a skeleton
+for the player the converter looks at the skeleton nodes in Soft.
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If you are animating a null
+directly through some relationship you need to make the converter
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aware of that by flagging
+the null with the prefix "joint-" in its name.&nbsp; Alternatively, you
+can
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; do a "GroupAsSkeleton" on
+the null in question to make it actually part of the skeleton. It will
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; then have a tiny "Skel"
+above the node in the Soft's schematic view.
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>The Minus One Frame:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Our animation system works
+by computing offsets from a neutral pose in the -1 frame of the
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scene file. If the character
+is not in the "jesus pose" at frame "-1" all bets are off. Animation
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; should not start on anything
+in the scene until frame "1".
+<br>&nbsp;
+<br>&nbsp;
+<p><b><u>Section II&nbsp; - Known Pathologies</u></b>
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>Part not where it should be:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Frequently Soft does not
+update the position of parts that are moved and skinned. It will look
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; right in Soft until you
+cut it out of the hierarchy. If the geometry stays where it is after cutting
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; it&nbsp; is fine. If it
+pops to a different position it will be problematic. We never did find
+a way to make
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Soft update its position
+but we did find a fix: do a "duplicate immediate" on the geometry while
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; it is in the correct position;
+cut out the old geometry and delete it; skin up the new copy you just
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; made.
+<br>&nbsp;
+<p>&nbsp;&nbsp;&nbsp; <u>Part stretched out while animating:</u>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If you put a non-uniform
+scale on a joint and don't tag it as described above it will most likely
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; be extremely stretched out
+and creepy looking on playback (like Edward Scissorhands). There are
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other things that can cause
+this too (like scaling an egg model and not the egg anim channel and
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; vice versa). But when in
+doubt, throw in the "scale-" flag.
+<br>&nbsp;
+</body>
+</html>
