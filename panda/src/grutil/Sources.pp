@@ -7,10 +7,12 @@
     sgraph gobj linmath putil
 
   #define SOURCES \
-    config_grutil.cxx config_grutil.h lineSegs.I lineSegs.cxx \
-    lineSegs.h
+    cardMaker.I cardMaker.cxx cardMaker.h \
+    config_grutil.cxx config_grutil.h \
+    lineSegs.I lineSegs.cxx lineSegs.h
 
   #define INSTALL_HEADERS \
+    cardMaker.I cardMaker.h \
     lineSegs.I lineSegs.h
 
   #define IGATESCAN all
