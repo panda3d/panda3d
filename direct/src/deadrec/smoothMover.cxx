@@ -279,7 +279,7 @@ bool SmoothMover::
 get_latest_position() {
   if (_points.empty()) {
     // Nothing to do if there are no points.
-    return false;
+    return _smooth_position_known;
   }
 
   const SamplePoint &point = _points.back();
