@@ -45,7 +45,7 @@ pyDir=$DIRECT/lib/py
 extDir=$DIRECT/src/extensions
 pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
 
-if [ $(uname) = "CYGWIN_NT-5.0" -o $(uname) = "CYGWIN_NT-5.1" ]; then
+if [ $(uname | grep CYGWIN) ]; then
   install_dir="$(cygpath -aw $install_dir)"
   pyDir="$(cygpath -w $pyDir)"
   extDir="$(cygpath -w $extDir)"
@@ -97,6 +97,7 @@ else
     echo RENAMING PandaModulesUnsqueezed.py to PandaModules.py
     cd $pyDir              || exit
     rm -f PandaModules.py* || exit
+    echo # junk line needed to keep mv from failing
     mv PandaModulesUnsqueezed.py PandaModules.py || exit
 fi
 
