@@ -136,8 +136,8 @@ private:
                           pvector<EggGroup *> &joints, MFloatArray &weights);
   //  void set_shader_attributes(EggPrimitive &primitive,
   //                             const MayaShader &shader);
-  void set_shader_attributes(EggPrimitive &primitive,
-                             const MayaShader &shader, const MItMeshPolygon *pi=NULL);
+  void set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
+                             const MItMeshPolygon *pi=NULL, const pvector<string> uvset_names=NULL);
   void apply_texture_properties(EggTexture &tex, 
                                 const MayaShaderColorDef &color_def);
   bool compare_texture_properties(EggTexture &tex, 
