@@ -359,7 +359,7 @@ $[varname] = $[sources]
 
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
 #if $[GENERATE_BUILDDATE]
-.NOTPARALLEL $[target] : $[sources] $[static_lib_dependencies] $[dtool_ver_dir_cyg]/version.rc $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
+.NOTPARALLEL $[target] : $[sources] $[static_lib_dependencies] $[dtool_ver_dir_cyg]/version.rc $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
 // first generate builddate for rc compiler using compiler preprocessor
 $[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
  #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
@@ -371,7 +371,7 @@ $[TAB] $[SHARED_LIB_C++] $[VER_RESOURCE]
 $[TAB] $[SHARED_LIB_C] $[VER_RESOURCE]
   #endif
 #else
-.NOTPARALLEL $[target] : $[sources] $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
+.NOTPARALLEL $[target] : $[sources] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
   #else

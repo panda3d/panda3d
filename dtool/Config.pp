@@ -486,7 +486,7 @@
 // this variable, $[source] is the name of the file to read, $[target]
 // is the name of the file to generate, and $[script] is the one-line
 // sed script to run.
-#defer SED ppremake -s '$[script]' <$[source] >$[target]
+#defer SED ppremake -s "$[script]" <$[source] >$[target]
 
 // What directory name (within each source directory) should the .o
 // (or .obj) files be written to?  This can be any name, and it can be
