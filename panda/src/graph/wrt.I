@@ -779,6 +779,25 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
       result.write(wrt_cat.spam(false), 2);
     }
 #endif
+
+    if (to->get_num_parents(graph_type) != 1) {
+      // Oops!  We *don't* have exactly one parent.  This means our
+      // cache is stale in some surprising way.  To recover, we'll
+      // force a recompute of the cache by asking for the wrt() from
+      // the very latest timestamp.
+
+      // This, of course, assumes we haven't just asked for the wrt()
+      // from the very latest timestamp.
+#ifndef NDEBUG
+      if (wrt_cat.is_info()) {
+	wrt_cat.info()
+	  << "Recovering from stale cache.\n";
+      }
+#endif
+      nassertr(as_of != UpdateSeq::fresh(), NULL);
+      return cached_wrt_subtree(arc, to, UpdateSeq::fresh(), 
+				UpdateSeq::fresh(), result, graph_type);
+    }
     
     nassertr(to->get_num_parents(graph_type) == 1, NULL);
     NodeRelation *to_arc = to->get_parent(graph_type, 0);
