@@ -305,7 +305,7 @@ class GravityWalker(DirectObject.DirectObject):
         # del self.cFloorSphereNodePath
 
         del self.pusher
-        del self.pusherFloor
+        # del self.pusherFloor
         del self.event
         del self.lifter
         
