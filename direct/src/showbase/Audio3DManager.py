@@ -14,7 +14,7 @@ class Audio3DManager:
         # sound is an AudioSound
         # object is any Panda object with coordinates
         for known_object in self.sound_dict.keys():
-            if sound_dict[known_object].count(sound):
+            if self.sound_dict[known_object].count(sound):
                 # This sound is already attached to something
                 return 0
                 
@@ -27,9 +27,9 @@ class Audio3DManager:
 
     def detachSound(self, sound):
         for known_object in self.sound_dict.keys():
-            if sound_dict[known_object].count(sound):
-                self.sound_dict[known_object].remove()
-                if len(sound_dict[known_object]) == 0:
+            if self.sound_dict[known_object].count(sound):
+                self.sound_dict[known_object].remove(sound)
+                if len(self.sound_dict[known_object]) == 0:
                     # if there are no other sounds, don't track
                     # the object any more
                     del self.sound_dict[known_object]
