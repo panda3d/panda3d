@@ -93,13 +93,6 @@ $[define] HAVE_GL 1
 $[undef] HAVE_GL
 #endif
 
-/* Define if we have GLU installed.  */
-#if $[HAVE_GLU]
-$[define] HAVE_GLU 1
-#else
-$[undef] HAVE_GLU
-#endif
-
 /* Define if we have GLX installed and want to build for GLX.  */
 #if $[HAVE_GLX]
 $[define] HAVE_GLX 1
@@ -154,6 +147,13 @@ $[undef] HAVE_GETOPT
 $[define] HAVE_GETOPT_LONG_ONLY 1
 #else
 $[undef] HAVE_GETOPT_LONG_ONLY
+#endif
+
+/* Define if you have ioctl(TIOCGWINSZ) to determine terminal width. */
+#if $[IOCTL_TERMINAL_WIDTH]
+$[define] IOCTL_TERMINAL_WIDTH 1
+#else
+$[undef] IOCTL_TERMINAL_WIDTH
 #endif
 
 /* Define if you have the <io.h> header file.  */

@@ -26,11 +26,6 @@
 // to redefine the same variables in different packages (for instance,
 // in dtool and in panda).
 //
-// If you *do* decide to make changes directly to this file, you
-// should also comment out the line near the bottom that includes the
-// file $[TOPDIRPREFIX]Config.$[PLATFORM].pp, to avoid stomping on the
-// changes you make.
-//
 // The syntax in this file resembles some hybrid between C++
 // preprocessor declarations and GNU make variables.  This is the same
 // syntax used in the various ppremake system configure files; it's
@@ -85,52 +80,78 @@
 // define the variable to be a nonempty string.  To indicate "no",
 // define the variable to be an empty string.
 
+// Many of the HAVE_* variables are defined in terms of expressions
+// based on the paths and library names, etc., defined above.  These
+// are defined using the "defer" command, so that they are not
+// evaluated right away, giving the user an opportunity to redefine
+// the variables they depend on, or to redefine the HAVE_* variables
+// themselves (you can explicitly define a HAVE_* variable to some
+// nonempty string to force the package to be marked as installed).
+
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?  (If the directory
 // is someplace standard like /usr/include, you may leave it blank.)
-#define HAVE_PYTHON 1
-#define PYTHON_INCLUDE /usr/local/include/python1.6
-#define PYTHON_LIB
+#define PYTHON_IPATH /usr/local/include/python1.6
+#define PYTHON_LPATH
+#defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 
 // Is NSPR installed, and where?
-#define HAVE_NSPR 1
-#define NSPR_INCLUDE /usr/local/mozilla/dist/*/include
-#define NSPR_LIB
+#define NSPR_IPATH /usr/local/mozilla/dist/*/include
+#define NSPR_LPATH
+#define NSPR_LIBS nspr3
+#defer HAVE_NSPR $[libtest $[NSPR_LPATH],$[NSPR_LIBS]]
 
 // Is VRPN installed, and where?
-#define HAVE_VRPN
-#define VRPN_INCLUDE
-#define VRPN_LIB
+#define VRPN_IPATH
+#define VRPN_LPATH
+#defer HAVE_VRPN $[isdir $[VRPN_IPATH]]
 
 // Is ZLIB installed, and where?
-#define HAVE_ZLIB 1
-#define ZLIB_INCLUDE
-#define ZLIB_LIB
+#define ZLIB_IPATH
+#define ZLIB_LPATH
+#define ZLIB_LIBS z
+#defer HAVE_ZLIB $[libtest $[ZLIB_LPATH],$[ZLIB_LIBS]]
 
 // Is the sox libst library installed, and where?
-#define HAVE_SOXST
-#define SOXST_INCLUDE
-#define SOXST_LIB
+#define SOXST_IPATH
+#define SOXST_LPATH
+#define SOXST_LIBS st
+#defer HAVE_SOXST $[libtest $[SOXST_LPATH],$[SOXST_LIBS]]
 
-// Is OpenGL installed, and where?
-#define HAVE_GL 1
-#define GL_INCLUDE
-#define GL_LIB
-#define GLU_INCLUDE
-#define GLU_LIB
+// Is OpenGL installed, and where?  This should include libGL as well
+// as libGLU, if they are in different places.
+#define GL_IPATH
+#define GL_LPATH
+#if $[eq $[PLATFORM],Win32]
+  #define GL_LIBS \
+     opengl32.lib glu32.lib winmm.lib kernel32.lib \
+     oldnames.lib mswsock.lib ws2_32.lib \
+     advapi32.lib user32.lib gdi32.lib comdlg32.lib winspool.lib
+#else
+  #define GL_LIBS GL GLU
+#endif
+#defer HAVE_GL $[libtest $[GL_LPATH],$[GL_LIBS]]
 
 // How about GLX?
-#define HAVE_GLX 1
-#define GLX_INCLUDE
-#define GLX_LIB
+#define GLX_IPATH
+#define GLX_LPATH
+#if $[eq $[PLATFORM],Win32]
+  #defer HAVE_GLX
+#else
+  #defer HAVE_GLX $[HAVE_GL]
+#endif
 
 // Glut?
-#define HAVE_GLUT
-#define GLUT_INCLUDE
-#define GLUT_LIB
+#define GLUT_IPATH
+#define GLUT_LPATH
+#define GLUT_LIBS glut
+#defer HAVE_GLUT $[libtest $[GLUT_LPATH],$[GLUT_LIBS]]
 
 // Should we try to build the WGL interface?
 #define HAVE_WGL
+
+// Should we try to build the SGI-specific glxdisplay?
+#define HAVE_SGIGL
 
 // Should we try to build the DirectX interface?
 #define HAVE_DX
@@ -138,11 +159,30 @@
 // Do you want to build the Renderman interface?
 #define HAVE_RIB
 
-// Is Mikmod installed?
-#define HAVE_MIKMOD
-#define MIKMOD_CFLAGS
-#define MIKMOD_INCLUDE
-#define MIKMOD_LIB
+// Is Mikmod installed?  How should we run the libmikmod-config program?
+#define MIKMOD_CONFIG libmikmod-config
+#defer HAVE_MIKMOD $[bintest $[MIKMOD_CONFIG]]
+
+// Is Gtk-- installed?  How should we run the gtkmm-config program?
+// This matters only to programs in PANDATOOL.
+#define GTKMM_CONFIG gtkmm-config
+#defer HAVE_GTKMM $[bintest $[GTKMM_CONFIG]]
+
+// Is Maya installed?  This matters only to programs in PANDATOOL.
+#define MAYA_LOCATION /usr/aw/maya2.5
+#defer HAVE_MAYA $[isdir $[MAYA_LOCATION]]
+
+// What additional libraries must we link with for network-dependent
+// code?
+#if $[eq $[PLATFORM],Win32]
+  #define NET_LIBS ws2_32.lib
+#endif
+
+// What additional libraries must we link with for audio-dependent
+// code?
+#if $[eq $[PLATFORM],Win32]
+  #define AUDIO_LIBS winmm.lib dsound.lib user32.lib ole32.lib dxguid.lib
+#endif
 
 
 //////////////////////////////////////////////////////////////////////
@@ -152,21 +192,3 @@
 // these variables for correctness too.  As above, these are
 // unnecessary when BUILD_TYPE is "autoconf".
 //////////////////////////////////////////////////////////////////////
-#include $[TOPDIRPREFIX]Config.$[PLATFORM].pp
-
-
-// Also pull in whatever package-specific variables there may be.
-#include $[TOPDIRPREFIX]Package.pp
-
-
-// If the environment variable PPREMAKE_CONFIG is set, it points to a
-// user-customized Config.pp file, for instance in the user's home
-// directory.  This file might redefine any of the variables defined
-// above.
-#if $[ne $[PPREMAKE_CONFIG],]
-  #include $[PPREMAKE_CONFIG]
-#endif
-
-
-// Finally, include the system configure file.
-#include $[PPREMAKE_DIR]/System.pp

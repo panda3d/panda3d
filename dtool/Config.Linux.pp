@@ -28,6 +28,9 @@
 #define HAVE_GETOPT 1
 #define HAVE_GETOPT_LONG_ONLY 1
 
+// Can we determine the terminal width by making an ioctl(TIOCGWINSZ) call?
+#define IOCTL_TERMINAL_WIDTH 1
+
 // Should we include <iostream> or <iostream.h>?  Define HAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use
 // <iostream.h>.
