@@ -141,6 +141,18 @@ read_chars(char *start, size_t length) {
     // file.
     (*_source)->read(start, length);
     read_count = (*_source)->gcount();
+  
+    if (read_count == 0) {
+      if ((*_source)->is_closed()) {
+        // socket closed; we're done.
+        if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+          // An IdentityStreamBuf doesn't have a trailer, so we've already
+          // "read" it.
+          _doc->_state = HTTPChannel::S_read_trailer;
+        }
+      }
+      return 0;
+    }
 
   } else {
     // Extract some of the bytes remaining in the chunk.
@@ -150,6 +162,16 @@ read_chars(char *start, size_t length) {
       (*_source)->read(start, length);
       read_count = (*_source)->gcount();
       _bytes_remaining -= read_count;
+  
+      if (read_count == 0) {
+        if ((*_source)->is_closed()) {
+          // socket closed unexpectedly; problem.
+          if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+            _doc->_state = HTTPChannel::S_failure;
+          }
+        }
+        return 0;
+      }
     }
       
     if (_bytes_remaining == 0) {
@@ -160,18 +182,6 @@ read_chars(char *start, size_t length) {
         _doc->_state = HTTPChannel::S_read_trailer;
       }
     }
-  }
-  
-  if (read_count == 0) {
-    if ((*_source)->is_closed()) {
-      // socket closed; we're done.
-      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-        // An IdentityStreamBuf doesn't have a trailer, so we've already
-        // "read" it.
-        _doc->_state = HTTPChannel::S_read_trailer;
-      }
-    }
-    return 0;
   }
 
   return read_count;

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "chunkedStreamBuf.h"
+#include <ctype.h>
 
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_SSL
@@ -149,13 +150,34 @@ read_chars(char *start, size_t length) {
     (*_source)->read(start, length);
     size_t read_count = (*_source)->gcount();
     _chunk_remaining -= read_count;
+
+    if (read_count == 0 && (*_source)->is_closed()) {
+      // Whoops, the socket closed while we were downloading.
+      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+        _doc->_state = HTTPChannel::S_failure;
+      }
+    }
+
     return read_count;
   }
 
   // Read the next chunk.
   string line;
-  if (!http_getline(line)) {
+  bool got_line = http_getline(line);
+  while (got_line && line.empty()) {
+    // Skip blank lines.  There really should be exactly one blank
+    // line, but who's counting?  It's tricky to count and maintain
+    // reentry for nonblocking I/O.
+    got_line = http_getline(line);
+  }
+  if (!got_line) {
     // EOF (or data unavailable) while trying to read the chunk size.
+    if ((*_source)->is_closed()) {
+      // Whoops, the socket closed while we were downloading.
+      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+        _doc->_state = HTTPChannel::S_failure;
+      }
+    }
     return 0;
   }
   size_t chunk_size = (size_t)strtol(line.c_str(), NULL, 16);
@@ -192,11 +214,18 @@ http_getline(string &str) {
     switch (ch) {
     case '\n':
       // end-of-line character, we're done.
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam() << "recv: " << _working_getline << "\n";
-      }
       str = _working_getline;
       _working_getline = string();
+      {
+        // Trim trailing whitespace.  We're not required to do this per the
+        // HTTP spec, but let's be generous.
+        size_t p = str.length();
+        while (p > 0 && isspace(str[p - 1])) {
+          --p;
+        }
+        str = str.substr(0, p);
+      }
+
       return true;
 
     case '\r':

@@ -21,6 +21,7 @@
 #include "bioStream.h"
 #include "chunkedStream.h"
 #include "identityStream.h"
+#include "buffer.h"  // for Ramfile
 
 #ifdef HAVE_SSL
 
@@ -57,10 +58,12 @@ HTTPChannel(HTTPClient *client) :
   _http_version_string = _client->get_http_version_string();
   _state = S_new;
   _done_state = S_new;
+  _started_download = false;
   _sent_so_far = 0;
   _proxy_tunnel = false;
   _body_stream = NULL;
   _sbio = NULL;
+  _download_to_ramfile = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,6 +74,7 @@ HTTPChannel(HTTPClient *client) :
 HTTPChannel::
 ~HTTPChannel() {
   free_bio();
+  reset_download_to();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,13 +194,33 @@ write_headers(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run() {
+  if (_state == _done_state || _state == S_failure) {
+    if (!reached_done_state()) {
+      return false;
+    }
+  }
+
+  if (_started_download) {
+    switch (_download_dest) {
+    case DD_none:
+      return false;  // We're done.
+
+    case DD_file:
+      return run_download_to_file();
+
+    case DD_ram:
+      return run_download_to_ram();
+    }
+  }
+
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
       << "begin run(), _state = " << (int)_state << ", _done_state = "
       << (int)_done_state << "\n";
   }
-  if (_state == _done_state || _state == S_failure) {
-    return false;
+
+  if (_state == _done_state) {
+    return reached_done_state();
   }
 
   bool repeat_later;
@@ -288,18 +312,13 @@ run() {
 
     if (_state == _done_state || _state == S_failure) {
       // We've reached our terminal state.
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam()
-          << "terminating run(), _state = " << (int)_state
-          << ", _done_state = " << (int)_done_state << "\n";
-      }
-      return false;
+      return reached_done_state();
     }
   } while (!repeat_later || _bio.is_null());
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << "continue run() later, _state = " << (int)_state
+      << "later run(), _state = " << (int)_state
       << ", _done_state = " << (int)_done_state << "\n";
   }
   return true;
@@ -309,7 +328,13 @@ run() {
 //     Function: HTTPChannel::read_body
 //       Access: Published
 //  Description: Returns a newly-allocated istream suitable for
-//               reading the body of the document.
+//               reading the body of the document.  This may only be
+//               called immediately after a call to get_document() or
+//               post_form(), or after a call to run() has returned
+//               false.
+//
+//               The user is responsible for deleting the returned
+//               istream later.
 ////////////////////////////////////////////////////////////////////
 ISocketStream *HTTPChannel::
 read_body() {
@@ -342,6 +367,131 @@ read_body() {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::download_to_file
+//       Access: Published
+//  Description: Specifies the name of a file to download the
+//               resulting document to.  This should be called
+//               immediately after get_document() or
+//               request_document() or related functions.
+//
+//               In the case of the blocking I/O methods like
+//               get_document(), this function will download the
+//               entire document to the file and return true if it was
+//               successfully downloaded, false otherwise.
+//
+//               In the case of non-blocking I/O methods like
+//               request_document(), this function simply indicates an
+//               intention to download to the indicated file.  It
+//               returns true if the file can be opened for writing,
+//               false otherwise, but the contents will not be
+//               completely downloaded until run() has returned false.
+//               At this time, it is possible that a communications
+//               error will have left a partial file, so
+//               is_download_complete() may be called to test this.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+download_to_file(const Filename &filename) {
+  reset_download_to();
+  _download_to_filename = filename;
+  _download_to_filename.set_binary();
+  if (!_download_to_filename.open_write(_download_to_file)) {
+    downloader_cat.info()
+      << "Could not open " << filename << " for writing.\n";
+    return false;
+  }
+
+  _download_dest = DD_file;
+
+  if (_nonblocking) {
+    // In nonblocking mode, we can't start the download yet; that will
+    // be done later as run() is called.
+    return true;
+  }
+
+  // In normal, blocking mode, go ahead and do the download.
+  run();
+  return is_download_complete();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::download_to_ram
+//       Access: Published
+//  Description: Specifies a Ramfile object to download the
+//               resulting document to.  This should be called
+//               immediately after get_document() or
+//               request_document() or related functions.
+//
+//               In the case of the blocking I/O methods like
+//               get_document(), this function will download the
+//               entire document to the Ramfile and return true if it
+//               was successfully downloaded, false otherwise.
+//
+//               In the case of non-blocking I/O methods like
+//               request_document(), this function simply indicates an
+//               intention to download to the indicated Ramfile.  It
+//               returns true if the file can be opened for writing,
+//               false otherwise, but the contents will not be
+//               completely downloaded until run() has returned false.
+//               At this time, it is possible that a communications
+//               error will have left a partial file, so
+//               is_download_complete() may be called to test this.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+download_to_ram(Ramfile *ramfile) {
+  nassertr(ramfile != (Ramfile *)NULL, false);
+  reset_download_to();
+  ramfile->_pos = 0;
+  ramfile->_data = string();
+  _download_to_ramfile = ramfile;
+  _download_dest = DD_ram;
+
+  if (_nonblocking) {
+    // In nonblocking mode, we can't start the download yet; that will
+    // be done later as run() is called.
+    return true;
+  }
+
+  // In normal, blocking mode, go ahead and do the download.
+  run();
+  return is_download_complete();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::reached_done_state
+//       Access: Private
+//  Description: Called by run() after it reaches the done state, this
+//               simply checks to see if a download was requested, and
+//               begins the download if it has been.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+reached_done_state() {
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "terminating run(), _state = " << (int)_state
+      << ", _done_state = " << (int)_done_state << "\n";
+  }
+
+  if (_state == S_failure || _download_dest == DD_none) {
+    // All done.
+    return false;
+    
+  } else {
+    // Oops, we have to download the body now.
+    _body_stream = read_body();
+    if (_body_stream == (ISocketStream *)NULL) {
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "Unable to download body.\n";
+      }
+      return false;
+    } else {
+      _started_download = true;
+      return true;
+    }
+  }
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -942,6 +1092,66 @@ run_read_trailer() {
   return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_download_to_file
+//       Access: Private
+//  Description: After the headers, etc. have been read, this streams
+//               the download to the named file.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_download_to_file() {
+  nassertr(_body_stream != (ISocketStream *)NULL, false);
+
+  int ch = _body_stream->get();
+  while (!_body_stream->eof() && !_body_stream->fail()) {
+    _download_to_file.put(ch);
+    ch = _body_stream->get();
+  }
+
+  if (_download_to_file.fail()) {
+    downloader_cat.warning()
+      << "Error writing to " << _download_to_filename << "\n";
+    _state = S_failure;
+    _download_to_file.close();
+    return false;
+  }
+
+  if (_body_stream->is_closed()) {
+    // Done.
+    _download_to_file.close();
+    return false;
+  } else {
+    // More to come.
+    return true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_download_to_ram
+//       Access: Private
+//  Description: After the headers, etc. have been read, this streams
+//               the download to the specified Ramfile object.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_download_to_ram() {
+  nassertr(_body_stream != (ISocketStream *)NULL, false);
+  nassertr(_download_to_ramfile != (Ramfile *)NULL, false);
+
+  int ch = _body_stream->get();
+  while (!_body_stream->eof() && !_body_stream->fail()) {
+    _download_to_ramfile->_data += (char)ch;
+    ch = _body_stream->get();
+  }
+
+  if (_body_stream->is_closed()) {
+    // Done.
+    return false;
+  } else {
+    // More to come.
+    return true;
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::begin_request
@@ -953,6 +1163,7 @@ run_read_trailer() {
 void HTTPChannel::
 begin_request(const string &method, const URLSpec &url, const string &body,
               bool nonblocking) {
+  reset_download_to();
   _status_code = 0;
   _status_string = string();
   _redirect_trail.clear();
@@ -1026,11 +1237,20 @@ http_getline(string &str) {
     switch (ch) {
     case '\n':
       // end-of-line character, we're done.
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam() << "recv: " << _working_getline << "\n";
-      }
       str = _working_getline;
       _working_getline = string();
+      {
+        // Trim trailing whitespace.  We're not required to do this per the
+        // HTTP spec, but let's be generous.
+        size_t p = str.length();
+        while (p > 0 && isspace(str[p - 1])) {
+          --p;
+        }
+        str = str.substr(0, p);
+      }
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam() << "recv: " << str << "\n";
+      }
       return true;
 
     case '\r':
@@ -1874,6 +2094,21 @@ free_bio() {
   _proxy_tunnel = false;
   _read_index++;
   _state = S_new;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::reset_download_to
+//       Access: Private
+//  Description: Resets the indication of how the document will be
+//               downloaded.  This must be re-specified after each
+//               get_document() (or related) call.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+reset_download_to() {
+  _started_download = false;
+  _download_to_file.close();
+  _download_to_ramfile = (Ramfile *)NULL;
+  _download_dest = DD_none;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -277,6 +277,21 @@ request_header(const URLSpec &url) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::is_download_complete
+//       Access: Published
+//  Description: Returns true when a download_to() or
+//               download_to_ram() has executed and the file has been
+//               fully downloaded.  If this still returns false after
+//               processing has completed, there was an error in
+//               transmission.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+is_download_complete() const {
+  return (_download_dest != DD_none &&
+          (_state == S_read_body || _state == S_read_trailer));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::check_socket
 //       Access: Private
 //  Description: Checks whether the connection to the server has been

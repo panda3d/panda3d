@@ -36,8 +36,10 @@
 #include "pmap.h"
 #include "pointerTo.h"
 #include "config_downloader.h"
+#include "filename.h"
 #include <openssl/ssl.h>
 
+class Ramfile;
 class HTTPClient;
 
 ////////////////////////////////////////////////////////////////////
@@ -98,8 +100,13 @@ PUBLISHED:
   bool run();
 
   ISocketStream *read_body();
+  bool download_to_file(const Filename &filename);
+  bool download_to_ram(Ramfile *ramfile);
+
+  INLINE bool is_download_complete() const;
 
 private:
+  bool reached_done_state();
   bool run_connecting();
   bool run_proxy_ready();
   bool run_proxy_request_sent();
@@ -114,6 +121,9 @@ private:
   bool run_reading_body();
   bool run_read_body();
   bool run_read_trailer();
+
+  bool run_download_to_file();
+  bool run_download_to_ram();
 
   void begin_request(const string &method, const URLSpec &url, 
                      const string &body, bool nonblocking);
@@ -148,6 +158,7 @@ private:
 #endif
 
   void free_bio();
+  void reset_download_to();
 
   HTTPClient *_client;
   URLSpec _proxy;
@@ -160,6 +171,16 @@ private:
   string _method;
   string _header;
   string _body;
+
+  enum DownloadDest {
+    DD_none,
+    DD_file,
+    DD_ram,
+  };
+  DownloadDest _download_dest;
+  Filename _download_to_filename;
+  ofstream _download_to_file;
+  Ramfile *_download_to_ramfile;
 
   int _read_index;
 
@@ -201,6 +222,7 @@ private:
   };
   State _state;
   State _done_state;
+  bool _started_download;
   string _proxy_header;
   string _proxy_request_text;
   bool _proxy_tunnel;
