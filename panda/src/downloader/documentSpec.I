@@ -25,6 +25,7 @@
 INLINE DocumentSpec::
 DocumentSpec() {
   _request_mode = RM_any;
+  _cache_control = CC_allow_cache;
   _flags = 0;
 }
 
@@ -38,6 +39,7 @@ DocumentSpec(const string &url) :
   _url(url)
 {
   _request_mode = RM_any;
+  _cache_control = CC_allow_cache;
   _flags = 0;
 }
 
@@ -51,6 +53,7 @@ DocumentSpec(const URLSpec &url) :
   _url(url)
 {
   _request_mode = RM_any;
+  _cache_control = CC_allow_cache;
   _flags = 0;
 }
 
@@ -65,6 +68,7 @@ DocumentSpec(const DocumentSpec &copy) :
   _tag(copy._tag),
   _date(copy._date),
   _request_mode(copy._request_mode),
+  _cache_control(copy._cache_control),
   _flags(copy._flags)
 {
 }
@@ -80,6 +84,7 @@ operator = (const DocumentSpec &copy) {
   _tag = copy._tag;
   _date = copy._date;
   _request_mode = copy._request_mode;
+  _cache_control = copy._cache_control;
   _flags = copy._flags;
 }
 
@@ -288,6 +293,44 @@ set_request_mode(DocumentSpec::RequestMode request_mode) {
 INLINE DocumentSpec::RequestMode DocumentSpec::
 get_request_mode() const {
   return _request_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DocumentSpec::set_cache_control
+//       Access: Published
+//  Description: Specifies what kind of cached value is acceptable for
+//               this document.  Warning: some HTTP proxies may not
+//               respect this setting and may return a cached result
+//               anyway.
+//
+//                 CC_allow_cache: the normal HTTP behavior; the
+//                 server may return a cached value if it believes it
+//                 is valid.
+//
+//                 CC_revalidate: a proxy is forced to contact the
+//                 origin server and verify that is cached value is in
+//                 fact still valid before it returns it.
+//
+//                 CC_no_cache: a proxy must not return its cached
+//                 value at all, but is forced to go all the way back
+//                 to the origin server for the official document.
+//
+//               The default mode is CC_allow_cache.
+////////////////////////////////////////////////////////////////////
+INLINE void DocumentSpec::
+set_cache_control(DocumentSpec::CacheControl cache_control) {
+  _cache_control = cache_control;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DocumentSpec::get_cache_control
+//       Access: Published
+//  Description: Returns the request mode of this DocumentSpec.  See
+//               set_cache_control().
+////////////////////////////////////////////////////////////////////
+INLINE DocumentSpec::CacheControl DocumentSpec::
+get_cache_control() const {
+  return _cache_control;
 }
 
 INLINE istream &

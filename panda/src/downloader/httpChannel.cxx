@@ -813,6 +813,8 @@ run_proxy_reading_header() {
   }
 
   _redirect = get_header_value("Location");
+  // We can take the proxy's word for it that this is the actual URL
+  // for the redirect.
 
   _server_response_has_no_body = 
     (get_status_code() / 100 == 1 ||
@@ -1164,6 +1166,13 @@ run_reading_header() {
   }
   _redirect = get_header_value("Location");
 
+  // The server might have given us just a filename for the redirect.
+  // In that case, it's relative to the same server.
+  if (!_redirect.has_authority()) {
+    _redirect.set_scheme(_document_spec.get_url().get_scheme());
+    _redirect.set_authority(_document_spec.get_url().get_authority());
+  }
+
   _state = S_read_header;
 
   if (_server_response_has_no_body && will_close_connection()) {
@@ -1230,7 +1239,7 @@ run_reading_header() {
           new_url.set_username(_request.get_url().get_username());
         }
         reset_url(_request.get_url(), new_url);
-        _document_spec.set_url(new_url);
+        _request.set_url(new_url);
         make_header();
         make_request_text();
 
@@ -2376,6 +2385,25 @@ make_header() {
         << "If-Modified-Since: " << (_request.get_date() - 1).get_string()
         << "\r\n";
     }
+    break;
+  }
+
+  switch (_request.get_cache_control()) {
+  case DocumentSpec::CC_allow_cache:
+    // Normal, caching behavior.
+    break;
+
+  case DocumentSpec::CC_revalidate:
+    // Request the server to revalidate its cache before returning it.
+    stream
+      << "Cache-Control: max-age=0\r\n";
+    break;
+
+  case DocumentSpec::CC_no_cache:
+    // Request the server to get a fresh copy regardless of its cache.
+    stream
+      << "Cache-Control: no-cache\r\n"
+      << "Pragma: no-cache\r\n";
     break;
   }
 

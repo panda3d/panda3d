@@ -70,6 +70,15 @@ PUBLISHED:
   INLINE void set_request_mode(RequestMode request_mode);
   INLINE RequestMode get_request_mode() const;
 
+  enum CacheControl {
+    CC_allow_cache,
+    CC_revalidate,
+    CC_no_cache,
+  };
+
+  INLINE void set_cache_control(CacheControl cache_control);
+  INLINE CacheControl get_cache_control() const;
+
   bool input(istream &in);
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -79,6 +88,7 @@ private:
   HTTPEntityTag _tag;
   HTTPDate _date;
   RequestMode _request_mode;
+  CacheControl _cache_control;
 
   enum Flags {
     F_has_tag    = 0x0001,
