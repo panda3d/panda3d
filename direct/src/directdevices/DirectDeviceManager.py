@@ -5,7 +5,6 @@ from PandaModules import *
 
 ANALOG_MIN = -0.95
 ANALOG_MAX = 0.95
-ANALOG_RANGE = ANALOG_MAX - ANALOG_MIN
 ANALOG_DEADBAND = 0.125
 
 try:
@@ -18,7 +17,7 @@ class DirectDeviceManager(VrpnClient, DirectObject):
 
         # Determine which server to use
         if server != None:
-            # One give as constructor argument
+            # One given as constructor argument
             self.server = server
         else:
             # Check config file, if that fails, use default
@@ -91,6 +90,12 @@ class DirectAnalogs(AnalogNode, DirectObject):
         AnalogNode.__init__(self, vrpnClient, device)
         # Attach node to data graph
         self.nodePath = myBase.dataRoot.attachNewNode(self)
+        # See if any of the parameters are dconfig'd
+        self.analogDeadband = myBase.config.GetFloat('vrpn-analog-deadband',
+                                                     ANALOG_DEADBAND)
+        self.analogMin = myBase.config.GetFloat('vrpn-analog-min', ANALOG_MIN)
+        self.analogMax = myBase.config.GetFloat('vrpn-analog-max', ANALOG_MAX)
+        self.analogRange = self.analogMax - self.analogMin
     
     def __getitem__(self, index):
         if (index < 0) or (index >= self.getNumControls()):
@@ -113,13 +118,12 @@ class DirectAnalogs(AnalogNode, DirectObject):
         else:
             sign = 1
         # Zero out values in deadband
-#        print ANALOG_DEADBAND
-        val = sign * max(abs(val) - ANALOG_DEADBAND, 0.0)
+        val = sign * max(abs(val) - self.analogDeadband, 0.0)
         # Now clamp value between minVal and maxVal
-        val = min( max( val, ANALOG_MIN ), ANALOG_MAX )
-#        val = CLAMP(val, ANALOG_MIN, ANALOG_MAX)
-        return (((maxVal - minVal) * ((val - ANALOG_MIN) / ANALOG_RANGE))
-                + minVal)
+        val = min( max( val, self.analogMin ), self.analogMax )
+#        val = CLAMP(val, self.analogMin, self.analogMax)
+        return (((maxVal - minVal) *
+                 ((val - self.analogMin) / self.analogRange)) + minVal)
     
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:
