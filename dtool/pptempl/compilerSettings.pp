@@ -73,6 +73,9 @@
   // We assume the Intel compiler installation dir is mounted as /ia32.
   #define EXTRA_LIBPATH /ia32/lib
   #define EXTRA_INCPATH /ia32/include  
+  
+  // Note: all Opts will link w/debug info now 
+  #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /WARN:3
 #else
   #error Invalid value specified for USE_COMPILER.
 #endif
