@@ -61,6 +61,10 @@ if [ "$FOURD" ]; then
     FOURD=`cygpath -w $FOURD`
     export FOURD
 fi
+if [ "$PARALLAX" ]; then
+    PARALLAX=`cygpath -w $PARALLAX`
+    export PARALLAX
+fi
 if [ "$TTMODELS" ]; then
     TTMODELS=`cygpath -w $TTMODELS`
     export TTMODELS
