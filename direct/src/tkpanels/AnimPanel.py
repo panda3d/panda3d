@@ -402,8 +402,13 @@ class ActorControl(Pmw.MegaWidget):
         self.fScaleCommand = 0
 
     def selectAnimNamed(self, name):
+        # Update active anim
         self['active'] = name
-        self.updateDisplay()
+        # Reset play rate
+        self.component('playRateMenu').selectitem('1.0')
+        self.setPlayRate('1.0')
+        # Move slider to zero
+        self.resetToZero()
 
     def setPlayRate(self, rate):
         self['actor'].setPlayRate(eval(rate), self['active'])
