@@ -25,26 +25,26 @@ wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
   : InteractiveGraphicsPipe(spec)
 {
   // Register a standard window class
-  WNDCLASS stdwc;
+  WNDCLASS wc;
   HINSTANCE hinstance = GetModuleHandle(NULL);
 
   // Clear before filling in window structure!
-  memset(&stdwc, 0, sizeof(WNDCLASS));
-  stdwc.style		= CS_OWNDC;
-  stdwc.lpfnWndProc	= (WNDPROC)static_window_proc;
-  stdwc.hInstance	= hinstance;
-  stdwc.hCursor		= LoadCursor(NULL, IDC_CROSS);
-  stdwc.hbrBackground	= NULL;
-  stdwc.lpszMenuName	= NULL;
-  stdwc.lpszClassName	= "wglStandard";
+  memset(&wc, 0, sizeof(WNDCLASS));
+  wc.style		    = CS_OWNDC;
+  wc.lpfnWndProc	= (WNDPROC)static_window_proc;
+  wc.hInstance	    = hinstance;
+  wc.hCursor		= LoadCursor(NULL, IDC_CROSS);
+  wc.hbrBackground	= NULL;
+  wc.lpszMenuName	= NULL;
+  wc.lpszClassName	= "wglStandard";
 
   if(!IconFileName.empty()) {
-	  stdwc.hIcon = (HICON) LoadImage(NULL, IconFileName.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+	  wc.hIcon = (HICON) LoadImage(NULL, IconFileName.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
   } else {
-	  stdwc.hIcon = NULL; // use default app icon
+	  wc.hIcon = NULL; // use default app icon
   }
 
-  if (!RegisterClass(&stdwc)) {
+  if (!RegisterClass(&wc)) {
     wgldisplay_cat.fatal()
       << "wglGraphicsPipe::construct(): could not register standard window "
 	<< "class" << endl;
@@ -52,20 +52,10 @@ wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
   }
 
   // Register a fullscreen window class
-  WNDCLASS fswc;
+  wc.style                = CS_HREDRAW | CS_VREDRAW;
+  wc.lpszClassName      = "wglFullscreen";
 
-  // Clear before filling in window structure!
-  memset(&fswc, 0, sizeof(WNDCLASS));
-  fswc.style              = CS_HREDRAW | CS_VREDRAW;
-  fswc.lpfnWndProc        = (WNDPROC)static_window_proc;
-  fswc.hInstance          = hinstance;
-  fswc.hIcon              = NULL;
-  fswc.hCursor            = LoadCursor(hinstance, IDC_CROSS);
-  fswc.hbrBackground      = NULL;
-  fswc.lpszMenuName       = NULL;
-  fswc.lpszClassName      = "wglFullscreen";
-
-  if (!RegisterClass(&fswc)) {
+  if (!RegisterClass(&wc)) {
     wgldisplay_cat.fatal()
       << "wglGraphicsPipe::construct(): could not register fullscreen window "
         << "class" << endl;
