@@ -65,6 +65,7 @@ $[cdefine HAVE_NURBSPP]
 $[cdefine HAVE_VRPN]
 
 /* Define if we have zlib installed.  */
+/* $[ZLIB_LPATH] */
 $[cdefine HAVE_ZLIB]
 
 /* Define if we have sox libst installed.  */
@@ -72,6 +73,13 @@ $[cdefine HAVE_SOXST]
 
 /* Define if we have OpenGL installed and want to build for GL.  */
 $[cdefine HAVE_GL]
+
+/* Define if we have Chromium OpenGL installed and want to build for GL.  */
+/* $[CHROMIUM_LPATH] */
+$[cdefine HAVE_CHROMIUM]
+
+/* Define if we have Chromium installed and want to run it in Windows.  */
+$[cdefine HAVE_WCR]
 
 /* Define if we want to build with SGI OpenGL extensions.  */
 $[cdefine HAVE_SGIGL]

@@ -240,11 +240,19 @@
 
 // Is OpenGL installed, and where?  This should include libGL as well
 // as libGLU, if they are in different places.
-
 #defer GL_IPATH
 #defer GL_LPATH /usr/X11R6/lib
 #defer GL_LIBS GL GLU
 #defer HAVE_GL $[libtest $[GL_LPATH],$[GL_LIBS]]
+
+// Is Chromium OpenGL installed, and where?  This should include libcr_opengl32.
+#defer CHROMIUM_IPATH
+#defer CHROMIUM_LPATH /usr/X11R6/lib
+#defer GL_LIBS GL GLU
+#defer HAVE_CHROMIUM $[libtest $[CHROMIUM_LPATH],$[CHROMIUM_LIBS]]
+
+// Should we try to build the WCR interface?
+#define HAVE_WCR $[eq $[PLATFORM],Win32]
 
 // How about GLX?
 #define GLX_IPATH
@@ -316,6 +324,13 @@
 #define RAD_MSS_LPATH /usr/lib/Miles6/lib/win
 #define RAD_MSS_LIBS Mss32
 #defer HAVE_RAD_MSS $[libtest $[RAD_MSS_LPATH],$[RAD_MSS_LIBS]]
+
+// Info for http://www.sourceforge.net/projects/chromium
+// note this may be overwritten in wintools Config.pp
+#define CHROMIUM_IPATH /usr/include/chromium/include
+#define CHROMIUM_LPATH /usr/lib/chromium/bin/WINT_NT
+#define CHROMIUM_LIBS spuload
+#defer HAVE_CHROMIUM $[libtest $[CHROMIUM_LPATH],$[CHROMIUM_LIBS]]
 
 // Is Gtk-- installed?  How should we run the gtkmm-config program?
 // This matters only to programs in PANDATOOL.

@@ -119,6 +119,13 @@
   #define gl_libs $[GL_LIBS]
 #endif
 
+#if $[HAVE_CHROMIUM]
+  #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
+  #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]
+  #define chromium_cflags $[CHROMIUM_CFLAGS]
+  #define chromium_libs $[CHROMIUM_LIBS]
+#endif
+
 #if $[HAVE_GLX]
   #define glx_ipath $[wildcard $[GLX_IPATH]]
   #define glx_lpath $[wildcard $[GLX_LPATH]]
@@ -220,6 +227,12 @@
   #define rad_mss_libs $[RAD_MSS_LIBS]
 #endif
 
+#if $[HAVE_CHROMIUM]
+  #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
+  #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]
+  #define chromium_libs $[CHROMIUM_LIBS]
+#endif
+
 // This variable, when evaluated in the scope of a particular directory,
 // will indicate true (i.e. nonempty) when the directory is truly built,
 // or false (empty) when the directory is not to be built.
@@ -231,6 +244,7 @@
      $[or $[not $[DIRECTORY_IF_ZLIB]],$[HAVE_ZLIB]], \
      $[or $[not $[DIRECTORY_IF_SOXST]],$[HAVE_SOXST]], \
      $[or $[not $[DIRECTORY_IF_GL]],$[HAVE_GL]], \
+     $[or $[not $[DIRECTORY_IF_CHROMIUM]],$[HAVE_CHROMIUM]], \
      $[or $[not $[DIRECTORY_IF_DX]],$[HAVE_DX]], \
      $[or $[not $[DIRECTORY_IF_GLX]],$[HAVE_GLX]], \
      $[or $[not $[DIRECTORY_IF_GLUT]],$[HAVE_GLUT]], \
@@ -261,6 +275,7 @@
      $[or $[not $[TARGET_IF_ZLIB]],$[HAVE_ZLIB]], \
      $[or $[not $[TARGET_IF_SOXST]],$[HAVE_SOXST]], \
      $[or $[not $[TARGET_IF_GL]],$[HAVE_GL]], \
+     $[or $[not $[TARGET_IF_CHROMIUM]],$[HAVE_CHROMIUM]], \
      $[or $[not $[TARGET_IF_DX]],$[HAVE_DX]], \
      $[or $[not $[TARGET_IF_GLX]],$[HAVE_GLX]], \
      $[or $[not $[TARGET_IF_GLUT]],$[HAVE_GLUT]], \
@@ -392,6 +407,9 @@
   #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[gl_cflags]
   #endif
+  #if $[ne $[USE_CHROMIUM] $[components $[USE_CHROMIUM],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[chromium_cflags]
+  #endif
   #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[glx_cflags]
   #endif
@@ -459,6 +477,9 @@
   #endif
   #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[gl_ipath]
+  #endif
+  #if $[ne $[USE_CHROMIUM] $[components $[USE_CHROMIUM],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[chromium_ipath]
   #endif
   #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[glx_ipath]
@@ -531,6 +552,9 @@
   #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[gl_lpath]
   #endif
+  #if $[ne $[USE_CHROMIUM] $[components $[USE_CHROMIUM],$[active_component_libs] $[transitive_link]],]
+    #set alt_lpath $[alt_lpath] $[chromium_lpath]
+  #endif
   #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[glx_lpath]
   #endif
@@ -599,6 +623,9 @@
   #endif
   #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[gl_libs]
+  #endif
+  #if $[ne $[USE_CHROMIUM] $[components $[USE_CHROMIUM],$[active_component_libs] $[transitive_link]],]
+    #set alt_libs $[alt_libs] $[chromium_libs]
   #endif
   #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[glx_libs]

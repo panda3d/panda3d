@@ -13,6 +13,9 @@
 #if $[DIRECTORY_IF_GL]
   #set omit $[not $[HAVE_GL]]
 #endif
+#if $[DIRECTORY_IF_CHROMIUM]
+  #set omit $[not $[HAVE_CHROMIUM]]
+#endif
 #if $[DIRECTORY_IF_GLX]
   #set omit $[not $[HAVE_GLX]]
 #endif
