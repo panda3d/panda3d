@@ -37,7 +37,7 @@ class Button(DirectObject):
             if width == None:
                 width = self.lUp.getWidth() / scale
                 self.width = width
-            
+
             self.lLit = Label.textLabel(self.label, litStyle,
                                         scale, width, drawOrder, font)
             self.lDown = Label.textLabel(self.label, downStyle,
@@ -75,7 +75,7 @@ class Button(DirectObject):
                                                   style = inactiveStyle,
                                                   scale = scale,
                                                   drawOrder = drawOrder)
-            
+
         else:
             # label provided, use it for all labels
             self.lUp = self.lLit = self.lDown = self.lInactive = label
@@ -102,23 +102,23 @@ class Button(DirectObject):
         self.lInactive = None
         self.button = None
 	return None
-        
+
     def __str__(self):
         return "Button: %s" % self.name
 
-    
+
     def getName(self):
         return self.name
 
     def getLabel(self):
         return self.label
-    
+
     def getGuiItem(self):
         return self.button
 
     def getWidth(self):
         return self.width
-    
+
     def setWidth(self, width):
         self.lUp.setWidth(width)
         self.lLit.setWidth(width)
@@ -138,7 +138,7 @@ class Button(DirectObject):
 ##         self.lDown.thaw()
 ##         self.lInactive.thaw()
 ##         self.button.thaw()
-        
+
     def manage(self, nodepath = aspect2d):
         if nodepath:
             self.button.manage(guiMgr, base.eventMgr.eventHandler,
@@ -153,13 +153,22 @@ class Button(DirectObject):
 
     def getPos(self):
         return self.button.getPos()
-    
+
     def setPos(self, x, y, node = None):
         if node == None:
             v3 = Vec3(x, 0., y)
         else:
             mat = node.getMat(base.render2d)
             v3 = Vec3(mat.xformPoint(Point3(x, 0., y)))
-            
+
         self.button.setPos(v3)
+
+    def setBehaviorEvent(self, eventName):
+        self.button.setBehaviorEvent(eventName)
+
+    def startBehavior(self):
+        self.button.startBehavior()
+
+    def stopBehavior(self):
+        self.button.stopBehavior()
 
