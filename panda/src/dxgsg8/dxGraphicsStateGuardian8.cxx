@@ -1352,7 +1352,7 @@ render_frame() {
         }
     
         DWORD nVerts = (NUM_FPSMETER_LETTERS+1)*2*3;   // +1 for suffix square
-        HRESULT hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_TRIANGLELIST, _fpsmeter_fvfflags, _fpsmeter_verts, nVerts, NULL);
+        HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, _fpsmeter_fvfflags, _fpsmeter_verts, nVerts, NULL);
         TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,NUM_FPSMETER_LETTERS*2,0);
     
         #ifdef MAKE_FPSMETER_TRANSPARENT    
@@ -2125,7 +2125,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
         draw_prim_inner_loop(nPrims, geom, _perVertex | _perPrim);
 
         if(!_bDrawPrimDoSetupVertexBuffer) {
-           HRESULT hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_POINTLIST, _curFVFflags, _pFvfBufBasePtr, nPrims, NULL);   
+           HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, _curFVFflags, _pFvfBufBasePtr, nPrims, NULL);   
            TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,nPrims,0);
         } else {
             COPYVERTDATA_2_VERTEXBUFFER(D3DPT_POINTLIST,nPrims);
@@ -2223,10 +2223,10 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     if(!_bDrawPrimDoSetupVertexBuffer) {
         if (_tmp_fvfOverrunBuf == NULL) {
             nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
-            hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINELIST, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
+            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
         } else {
             nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_tmp_fvfOverrunBuf));
-            hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINELIST, _curFVFflags, _tmp_fvfOverrunBuf, nVerts, NULL);
+            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, _curFVFflags, _tmp_fvfOverrunBuf, nVerts, NULL);
             delete [] _tmp_fvfOverrunBuf;
         }
         TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,nVerts,0);
@@ -2344,7 +2344,7 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
         nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
         if(!_bDrawPrimDoSetupVertexBuffer) {
-            HRESULT hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINESTRIP, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
+            HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
             TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,nVerts,0);
         } else {
             COPYVERTDATA_2_VERTEXBUFFER(D3DPT_LINESTRIP,nVerts);
@@ -2764,7 +2764,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     // cant do tristrip/fan since it would require 1 call want to make 1 call for multiple quads which arent connected
     // best we can do is indexed primitive, which sends 2 redundant indices instead of sending 2 redundant full verts
-    HRESULT hr = scrn.pD3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, _curFVFflags, _pFvfBufBasePtr, 4*nprims, _index_buf,QUADVERTLISTLEN*nprims,NULL);
+    HRESULT hr = scrn.pD3DDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, _curFVFflags, _pFvfBufBasePtr, 4*nprims, _index_buf,QUADVERTLISTLEN*nprims,NULL);
     TestDrawPrimFailure(DrawIndexedPrim,hr,scrn.pDD,QUADVERTLISTLEN*nprims,nprims);
 
     _pCurFvfBufPtr = NULL;
@@ -2924,7 +2924,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
         if(!_bDrawPrimDoSetupVertexBuffer) {
-            hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_TRIANGLELIST, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
+            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
             TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,nVerts,nPrims);
         } else {
             COPYVERTDATA_2_VERTEXBUFFER(D3DPT_TRIANGLELIST,nVerts);
@@ -2947,7 +2947,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
     scrn.pD3DDevice->SetTextureStageState(0,D3DTSS_BORDERCOLOR,MY_D3DRGBA(0,0,0,0));
 
     _curFVFflags =  D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
-    HRESULT hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_TRIANGLELIST,  _curFVFflags, vert_buf, nPrims*3, NULL);
+    HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST,  _curFVFflags, vert_buf, nPrims*3, NULL);
     TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,nPrims*3,nPrims);
 #endif
 }
@@ -3134,7 +3134,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             assert((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
             if(!_bDrawPrimDoSetupVertexBuffer) {
-                hr = scrn.pD3DDevice->DrawPrimitive(trilisttype,  _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
+                hr = scrn.pD3DDevice->DrawPrimitiveUP(trilisttype,  _curFVFflags, _pFvfBufBasePtr, nVerts, NULL);
                 TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,nVerts,nVerts-2);
             } else {
                 COPYVERTDATA_2_VERTEXBUFFER(trilisttype,nVerts);
@@ -3441,7 +3441,7 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 
         // possible optimization: make DP 1 for all spheres call here, since trilist is independent tris.
         // indexes couldnt start w/0 tho, need to pass offset to gensph
-        HRESULT hr = scrn.pD3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,  _curFVFflags, _pFvfBufBasePtr, nVerts, _index_buf,nIndices,NULL);
+        HRESULT hr = scrn.pD3DDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST,  _curFVFflags, _pFvfBufBasePtr, nVerts, _index_buf,nIndices,NULL);
         TestDrawPrimFailure(DrawIndexedPrim,hr,scrn.pDD,nVerts,(nIndices>>2));
     }
 
@@ -4323,7 +4323,7 @@ issue_transform(const TransformTransition *attrib) {
             {0.0f, 0.0f, 3.0,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},       // blu
         };
 
-        HRESULT hr = scrn.pD3DDevice->DrawPrimitive(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
+        HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
                                   vert_buf, 6, NULL);
         TestDrawPrimFailure(DrawPrim,hr,scrn.pDD,6,0);
 

@@ -38,49 +38,10 @@
 #include <pointerToArray.h>
 #include <planeNode.h>
 
+#include "dxgsg8base.h"
 #include "dxGeomNodeContext8.h"
 #include "dxTextureContext8.h"
 #include <vector>
-
-#define FLG(NN) (1<<NN)
-#define MAX_POSSIBLE_TEXFMTS 32
-typedef enum {
-    R8G8B8_FLAG =       FLG(0),
-    A8R8G8B8_FLAG =     FLG(1),
-    X8R8G8B8_FLAG =     FLG(2),
-    R5G6B5_FLAG =       FLG(3),
-    X1R5G5B5_FLAG =     FLG(4),
-    A1R5G5B5_FLAG =     FLG(5),
-    A4R4G4B4_FLAG =     FLG(6),
-    R3G3B2_FLAG =       FLG(7),
-    A8_FLAG =           FLG(8),
-    A8R3G3B2_FLAG =     FLG(9),
-    X4R4G4B4_FLAG =     FLG(10),
-    A2B10G10R10_FLAG =  FLG(12),
-//  G16R16_FLAG =       FLG(13),  leaving this 1 out to fit in 32 bits
-    A8P8_FLAG =         FLG(13),
-    P8_FLAG =           FLG(14),
-    L8_FLAG =           FLG(15),
-    A8L8_FLAG =         FLG(16),
-    A4L4_FLAG =         FLG(17),
-    V8U8_FLAG =         FLG(18),
-    L6V5U5_FLAG =       FLG(19),
-    X8L8V8U8_FLAG =     FLG(20),
-    Q8W8V8U8_FLAG =     FLG(21),
-    V16U16_FLAG =       FLG(22),
-    W11V11U10_FLAG =    FLG(23),
-    A2W10V10U10_FLAG =  FLG(24),
-    UYVY_FLAG =         FLG(25),
-    YUY2_FLAG =         FLG(26),
-    DXT1_FLAG =         FLG(27),
-    DXT2_FLAG =         FLG(28),
-    DXT3_FLAG =         FLG(29),
-    DXT4_FLAG =         FLG(30),
-    DXT5_FLAG =         FLG(31)
-} D3DFORMAT_FLAG;
-
-#define IS_16BPP_FORMAT(FMT) (((FMT)>=D3DFMT_R5G6B5)&&((FMT)<=D3DFMT_A1R5G5B5))
-#define IS_STENCIL_FORMAT(FMT) (((FMT)==D3DFMT_D24S8) || ((FMT)==D3DFMT_D15S1) || ((FMT)==D3DFMT_D24X4S4))
 
 class PlaneNode;
 class Light;
@@ -91,59 +52,6 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
   return output_gl_enum(out, v);
 }
 #endif
-
-#ifdef DO_PSTATS
-#define DO_PSTATS_STUFF(XX) XX;
-#else
-#define DO_PSTATS_STUFF(XX)
-#endif
-
-#define DX_DECLARE_CLEAN(type, var) \
-    type var;                       \
-    ZeroMemory(&var, sizeof(type)); \
-    var.dwSize = sizeof(type);
-
-#define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
-#define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
-
-// this is bDoDownToZero argument to RELEASE()
-#define RELEASE_DOWN_TO_ZERO true
-#define RELEASE_ONCE false
-
-// #define DEBUG_RELEASES
-
-#ifdef DEBUG_RELEASES
-#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             \
-   if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) {         \
-        refcnt = (OBJECT)->Release();                           \
-        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << endl;  \
-        if((bDoDownToZero) && (refcnt>0)) {                     \
-              MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
-              do {                                \
-                refcnt = (OBJECT)->Release();     \
-              } while(refcnt>0);                  \
-        }                                         \
-        (OBJECT) = NULL;                          \
-      } else {                                    \
-        MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << endl;  \
-      } 
-
-#define PRINTREFCNT(OBJECT,STR)  {  (OBJECT)->AddRef();  dxgsg_cat.debug() << STR << " refcnt = " << (OBJECT)->Release() << endl; }
-#else
-#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)     \
-   if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) { \
-        refcnt=(OBJECT)->Release();                     \
-        if((bDoDownToZero) && (refcnt>0)) {             \
-              MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
-              do {                                \
-                refcnt = (OBJECT)->Release();     \
-              } while(refcnt>0);                  \
-        }                                         \
-        (OBJECT) = NULL;                          \
-   }
-
-#define PRINTREFCNT(OBJECT,STR)  
-#endif    
 
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
 #ifdef _DEBUG
@@ -156,10 +64,6 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 #define PRINTVIDMEM(pDD,pCaps,pMsg) dbgPrintVidMem(pDD,pCaps,pMsg)
 #else
 #define PRINTVIDMEM(pDD,pCaps,pMsg)
-#endif
-
-#ifndef D3DERRORSTRING
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__"), hr=" <<  DXGetErrorString8(HRESULT) << ": " << DXGetErrorDescription8(HRESULT) << endl
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -517,8 +421,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-#define ISPOW2(X) (((X) & ((X)-1))==0)
 
 #include "dxGraphicsStateGuardian8.I"
 

@@ -19,52 +19,11 @@
 #ifndef DXTEXTURECONTEXT_H
 #define DXTEXTURECONTEXT_H
 
-#include <pandabase.h>
-
-//#define DO_CUSTOM_CONVERSIONS
-
-#define WIN32_LEAN_AND_MEAN
-#ifndef STRICT
-// enable strict type checking in windows.h, see msdn
-#define STRICT
-#endif
-
-#include <windows.h>
-#include <ddraw.h>
-
-#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
-#include <d3d8.h>
-#include <d3dx8.h>
-#include <dxerr8.h>
-#undef WIN32_LEAN_AND_MEAN
-
-
-#ifndef D3DERRORSTRING
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString8(HRESULT) << ": " << DXGetErrorDescription8(HRESULT) << endl
-#endif
-
+#include "dxgsg8base.h"
 #include <texture.h>
 #include <textureContext.h>
 
-typedef struct {
-      LPDIRECT3DDEVICE8 pD3DDevice;
-      LPDIRECT3D8       pD3D8;
-      HWND              hWnd;
-      HMONITOR          hMon;
-      RECT              view_rect,clip_rect;
-      DWORD             MaxAvailVidMem;
-      bool              bIsLowVidMemCard;
-      bool              bIsTNLDevice;
-      bool              bIsDX81;
-      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
-      ushort            CardIDNum;  // adapter ID
-      DWORD             dwSupportedScreenDepthsMask;
-      DWORD             SupportedTexFmtsMask;
-      D3DCAPS8          d3dcaps;
-      D3DDISPLAYMODE    DisplayMode;
-      D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
-      D3DADAPTER_IDENTIFIER8 DXDeviceID;
-} DXScreenData;
+//#define DO_CUSTOM_CONVERSIONS
 
 ////////////////////////////////////////////////////////////////////
 //   Class : DXTextureContext
