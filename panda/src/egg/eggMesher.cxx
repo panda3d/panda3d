@@ -184,6 +184,18 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool EggMesher::
 add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
+  if (egg_poly->size() != 3 && egg_poly->size() != 4) {
+    // If we have a higher-order polygon, triangulate it
+    // automatically.
+    PT(EggGroupNode) temp_group = new EggGroupNode;
+    bool result = egg_poly->triangulate_into(temp_group, true);
+    EggGroupNode::iterator ci;
+    for (ci = temp_group->begin(); ci != temp_group->end(); ++ci) {
+      add_polygon(DCAST(EggPolygon, *ci), EggMesherStrip::MO_user);
+    }
+    return true;
+  }
+
   if (_vertex_pool == NULL) {
     _vertex_pool = egg_poly->get_pool();
   } else {
@@ -215,44 +227,31 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
   }
 
   // Now identify the common edges.
-
-  if (egg_poly->size() != 3 && egg_poly->size() != 4) {
-    // If we have a higher-order polygon, triangulate it
-    // automatically.
-    PT(EggGroupNode) temp_group = new EggGroupNode;
-    egg_poly->triangulate_into(temp_group, true);
-    EggGroupNode::iterator ci;
-    for (ci = temp_group->begin(); ci != temp_group->end(); ++ci) {
-      add_polygon(DCAST(EggPolygon, *ci), EggMesherStrip::MO_user);
-    }
+  for (i = 0; i < num_verts; i++) {
+    // Define an inner and outer edge.  A polygon shares an edge with a
+    // neighbor only when one of its inner edges matches a neighbor's
+    // outer edge (and vice-versa).
+    EggMesherEdge inner(vptrs[i], vptrs[(i+1) % num_verts]);
+    EggMesherEdge outer(vptrs[(i+1) % num_verts], vptrs[i]);
     
-  } else {
-    for (i = 0; i < num_verts; i++) {
-      // Define an inner and outer edge.  A polygon shares an edge with a
-      // neighbor only when one of its inner edges matches a neighbor's
-      // outer edge (and vice-versa).
-      EggMesherEdge inner(vptrs[i], vptrs[(i+1) % num_verts]);
-      EggMesherEdge outer(vptrs[(i+1) % num_verts], vptrs[i]);
-      
-      // Add it to the list and get its common pointer.
-      EggMesherEdge &inner_ref = (EggMesherEdge &)*_edges.insert(inner).first;
-      EggMesherEdge &outer_ref = (EggMesherEdge &)*_edges.insert(outer).first;
-      
-      // Tell the edges about each other.
-      inner_ref._opposite = &outer_ref;
-      outer_ref._opposite = &inner_ref;
-      
-      // Associate the common edge to the strip.
-      strip._edges.push_back(&inner_ref);
-      
-      // Associate the strip, as well as the original prim, to the edge.
-      outer_ref._strips.push_back(&strip);
-      
-      // Associate the common edge with the vertices that share it.
-      //      EggMesherEdge *edge_ptr = inner_ref.common_ptr();
-      eptrs[i]->insert(&outer_ref);
-      eptrs[(i+1) % num_verts]->insert(&outer_ref);
-    }
+    // Add it to the list and get its common pointer.
+    EggMesherEdge &inner_ref = (EggMesherEdge &)*_edges.insert(inner).first;
+    EggMesherEdge &outer_ref = (EggMesherEdge &)*_edges.insert(outer).first;
+    
+    // Tell the edges about each other.
+    inner_ref._opposite = &outer_ref;
+    outer_ref._opposite = &inner_ref;
+    
+    // Associate the common edge to the strip.
+    strip._edges.push_back(&inner_ref);
+    
+    // Associate the strip, as well as the original prim, to the edge.
+    outer_ref._strips.push_back(&strip);
+    
+    // Associate the common edge with the vertices that share it.
+    //      EggMesherEdge *edge_ptr = inner_ref.common_ptr();
+    eptrs[i]->insert(&outer_ref);
+    eptrs[(i+1) % num_verts]->insert(&outer_ref);
   }
   
   return true;
