@@ -109,6 +109,8 @@ public:
   PT(EggNode) remove_child(PT(EggNode) node);
   void steal_children(EggGroupNode &other);
 
+  EggNode *find_child(const string &name) const;
+
   void resolve_filenames(const DSearchPath &searchpath);
   void reverse_vertex_ordering();
 

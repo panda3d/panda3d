@@ -289,6 +289,25 @@ steal_children(EggGroupNode &other) {
   _children.splice(_children.end(), other._children);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::find_child
+//       Access: Public
+//  Description: Returns the child of this node whose name is the
+//               indicated string, or NULL if there is no child of
+//               this node by that name.  Does not search recursively.
+////////////////////////////////////////////////////////////////////
+EggNode *EggGroupNode::
+find_child(const string &name) const {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = (*ci);
+    if (child->get_name() == name) {
+      return child;
+    }
+  }
+
+  return NULL;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::resolve_filenames
