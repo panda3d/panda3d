@@ -1670,7 +1670,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         // endianness of this.  I guess it's safe to assume all Win32
         // machines are little-endian.
         for (DWORD i = 0; i < result_size; i += 2) {
-          int result = (int)(ime_result[i + 1] << 8) | ime_result[i];
+          int result = ((int)ime_result[i + 1] << 8) | ime_result[i];
           _input_devices[0].keystroke(result);
         }
         return 0;
