@@ -92,7 +92,7 @@ get_window(int n) const {
 //  Description: Closes the indicated WindowFramework window and
 //               removes it from the list.
 ////////////////////////////////////////////////////////////////////
-void PandaFramework::
+INLINE void PandaFramework::
 close_window(WindowFramework *wf) {
   int n = find_window(wf);
   if (n >= 0) {
@@ -182,4 +182,15 @@ get_highlight() const {
 INLINE void PandaFramework::
 set_exit_flag() {
   _exit_flag = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::clear_exit_flag
+//       Access: Public
+//  Description: Resets the exit flag after it has previously been
+//               set.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaFramework::
+clear_exit_flag() {
+  _exit_flag = false;
 }

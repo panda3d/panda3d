@@ -98,6 +98,7 @@ public:
   void main_loop();
 
   INLINE void set_exit_flag();
+  INLINE void clear_exit_flag();
 
 protected:
   virtual PT(WindowFramework) make_window_framework();
