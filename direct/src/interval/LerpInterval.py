@@ -24,9 +24,7 @@ class LerpInterval(Interval):
 	    self.lerp = Lerp.Lerp(self.functorFunc(), self.duration, 
                                   self.blendType)
         # Make sure lerp exists
-        try:
-            self.lerp
-        except AttributeError:
+	if (not self.lerp):
 	    self.lerp = Lerp.Lerp(self.functorFunc(), self.duration, 
                                   self.blendType)
         # Evaluate the lerp
