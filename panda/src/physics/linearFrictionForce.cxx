@@ -75,7 +75,7 @@ get_child_vector(const PhysicsObject* po) {
   physics_debug(" v "<<v<<" len "<<v.length()
       <<" friction "<<friction<<" len "<<friction.length()
       <<" dot "<<(normalize(v).dot(normalize(friction))));
-  assert(friction.almostEqual(LVector3f::zero()) 
+  assert(friction.almost_equal(LVector3f::zero()) 
       || IS_NEARLY_EQUAL(normalize(v).dot(normalize(friction)), -1.0f));
   // cary said to cap this at zero so that friction can't reverse
   // your direction, but it seems to me that if you're computing:
