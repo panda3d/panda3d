@@ -36,7 +36,8 @@ class GraphicsStateGuardianBase;
 // Description : A table of objects that are saved within the graphics
 //               context for reference by handle later.  Generally,
 //               this represents things like OpenGL texture objects or
-//               display lists.
+//               display lists (or their equivalent on other
+//               platforms).
 //
 //               This object simply records the pointers to the
 //               context objects created by the individual GSG's;
