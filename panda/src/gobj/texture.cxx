@@ -246,9 +246,17 @@ read(const Filename &fullpath, const Filename &alpha_fullpath) {
 
   // Make the original image a 4-component image
   image.add_alpha();
-  for (int x = 0; x < image.get_x_size(); x++) {
-    for (int y = 0; y < image.get_y_size(); y++) {
-      image.set_alpha(x, y, alpha_image.get_gray(x, y));
+  if (alpha_image.has_alpha()) {
+    for (int x = 0; x < image.get_x_size(); x++) {
+      for (int y = 0; y < image.get_y_size(); y++) {
+        image.set_alpha(x, y, alpha_image.get_alpha(x, y));
+      }
+    }
+  } else {
+    for (int x = 0; x < image.get_x_size(); x++) {
+      for (int y = 0; y < image.get_y_size(); y++) {
+        image.set_alpha(x, y, alpha_image.get_gray(x, y));
+      }
     }
   }
 

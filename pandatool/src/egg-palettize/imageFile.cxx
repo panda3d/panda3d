@@ -293,9 +293,17 @@ read(PNMImage &image) const {
     }
 
     image.add_alpha();
-    for (int y = 0; y < image.get_y_size(); y++) {
-      for (int x = 0; x < image.get_x_size(); x++) {
-        image.set_alpha(x, y, alpha_image.get_gray(x, y));
+    if (alpha_image.has_alpha()) {
+      for (int y = 0; y < image.get_y_size(); y++) {
+        for (int x = 0; x < image.get_x_size(); x++) {
+          image.set_alpha(x, y, alpha_image.get_alpha(x, y));
+        }
+      }
+    } else {
+      for (int y = 0; y < image.get_y_size(); y++) {
+        for (int x = 0; x < image.get_x_size(); x++) {
+          image.set_alpha(x, y, alpha_image.get_gray(x, y));
+        }
       }
     }
   }
