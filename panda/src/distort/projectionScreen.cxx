@@ -197,6 +197,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
   float t = (distance - lens->get_near()) / (lens->get_far() - lens->get_near());
 
   PTA_Vertexf coords;
+  PTA_Normalf norms;
   coords.reserve(num_verts);
   float x_scale = 2.0f / (num_x_verts - 1);
   float y_scale = 2.0f / (num_y_verts - 1);
@@ -211,11 +212,15 @@ generate_screen(const NodePath &projector, const string &screen_name,
 
       LPoint3f near_point, far_point;
       lens->extrude(film, near_point, far_point);
-      
       LPoint3f point = near_point + t * (far_point - near_point);
-      point = point * rel_mat;
-      
-      coords.push_back(point);
+
+      // Normals aren't often needed on projection screens, but you
+      // never know.
+      LVector3f normal;
+      lens->extrude_vec(film, normal);
+
+      coords.push_back(point * rel_mat);
+      norms.push_back(-normalize(normal * rel_mat));
     }
   }
   nassertr((int)coords.size() == num_verts, NULL);
@@ -257,6 +262,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
   geom->set_lengths(lengths);
 
   geom->set_coords(coords, G_PER_VERTEX, vindex);
+  geom->set_normals(norms, G_PER_VERTEX, vindex);
 
   // Make it white.
   PTA_Colorf colors;

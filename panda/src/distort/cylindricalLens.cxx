@@ -66,7 +66,7 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
   csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
   // Define a unit vector (well, a unit vector in the XY plane, at
-  // least) that reprents the vector corresponding to this point.
+  // least) that represents the vector corresponding to this point.
   LPoint3f v(sinAngle, cosAngle, f[1] / focal_length);
 
   // And we'll need to account for the lens's rotations, etc. at the
@@ -75,6 +75,42 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 
   near_point = (v * get_near()) * lens_mat;
   far_point = (v * get_far()) * lens_mat;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CylindricalLens::extrude_vec_impl
+//       Access: Protected, Virtual
+//  Description: Given a 2-d point in the range (-1,1) in both
+//               dimensions, where (0,0) is the center of the
+//               lens and (-1,-1) is the lower-left corner,
+//               compute the vector that corresponds to the view
+//               direction.  This will be parallel to the normal on
+//               the surface (the far plane) corresponding to the lens
+//               shape at this point.
+//
+//               See the comment block on Lens::extrude_vec_impl() for
+//               a more in-depth comment on the meaning of this
+//               vector.
+//
+//               The z coordinate of the 2-d point is ignored.
+//
+//               Returns true if the vector is defined, or false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool CylindricalLens::
+extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
+  // Undo the shifting from film offsets, etc.  This puts the point
+  // into the range [-film_size/2, film_size/2] in x and y.
+  LPoint3f f = point2d * get_film_mat_inv();
+
+  float focal_length = get_focal_length();
+  float angle = f[0] * cylindrical_k / focal_length;
+  float sinAngle, cosAngle;
+  csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
+
+  vec = LVector3f(sinAngle, cosAngle, 0.0f) * get_lens_mat();
+
   return true;
 }
 

@@ -53,6 +53,8 @@ PUBLISHED:
                       LPoint3f &near_point, LPoint3f &far_point) const;
   INLINE bool extrude(const LPoint3f &point2d,
                       LPoint3f &near_point, LPoint3f &far_point) const;
+  INLINE bool extrude_vec(const LPoint2f &point2d, LVector3f &vec3d) const;
+  INLINE bool extrude_vec(const LPoint3f &point2d, LVector3f &vec3d) const;
   INLINE bool project(const LPoint3f &point3d, LPoint3f &point2d) const;
   INLINE bool project(const LPoint3f &point3d, LPoint2f &point2d) const;
 
@@ -153,6 +155,7 @@ protected:
 
   virtual bool extrude_impl(const LPoint3f &point2d,
                             LPoint3f &near_point, LPoint3f &far_point) const;
+  virtual bool extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const;
   virtual bool project_impl(const LPoint3f &point3d, LPoint3f &point2d) const;
 
   virtual void compute_film_size();

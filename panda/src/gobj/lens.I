@@ -61,6 +61,54 @@ extrude(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point) cons
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::extrude_vec
+//       Access: Published
+//  Description: Given a 2-d point in the range (-1,1) in both
+//               dimensions, where (0,0) is the center of the
+//               lens and (-1,-1) is the lower-left corner,
+//               compute the vector that corresponds to the view
+//               direction.  This will be parallel to the normal on
+//               the surface (the far plane) corresponding to the lens
+//               shape at this point.
+//
+//               See the comment block on Lens::extrude_vec_impl() for
+//               a more in-depth comment on the meaning of this
+//               vector.
+//
+//               Returns true if the vector is defined, or false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Lens::
+extrude_vec(const LPoint2f &point2d, LVector3f &vec) const {
+  return extrude_vec_impl(LPoint3f(point2d[0], point2d[1], 0.0f), vec);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::extrude_vec
+//       Access: Published
+//  Description: Given a 2-d point in the range (-1,1) in both
+//               dimensions, where (0,0) is the center of the
+//               lens and (-1,-1) is the lower-left corner,
+//               compute the vector that corresponds to the view
+//               direction.  This will be parallel to the normal on
+//               the surface (the far plane) corresponding to the lens
+//               shape at this point.
+//
+//               See the comment block on Lens::extrude_vec_impl() for
+//               a more in-depth comment on the meaning of this
+//               vector.
+//
+//               The z coordinate of the 2-d point is ignored.
+//
+//               Returns true if the vector is defined, or false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Lens::
+extrude_vec(const LPoint3f &point2d, LVector3f &vec) const {
+  return extrude_vec_impl(point2d, vec);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::project
 //       Access: Published
 //  Description: Given a 3-d point in space, determine the 2-d point

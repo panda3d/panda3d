@@ -1118,6 +1118,41 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::extrude_vec_impl
+//       Access: Protected, Virtual
+//  Description: Given a 2-d point in the range (-1,1) in both
+//               dimensions, where (0,0) is the center of the
+//               lens and (-1,-1) is the lower-left corner,
+//               compute the vector that corresponds to the view
+//               direction.  This will be parallel to the normal on
+//               the surface (the far plane) corresponding to the lens
+//               shape at this point.
+//
+//               Generally, for all rational lenses, the center of the
+//               film at (0,0) computes a vector that is in the same
+//               direction as the vector specified by
+//               set_view_vector().
+//
+//               For all linear lenses, including perspective and
+//               ortographic lenses, all points on the film compute
+//               this same vector (the far plane is a flat plane, so
+//               the normal is the same everywhere).  For curved
+//               lenses like fisheye and cylindrical lenses, different
+//               points may compute different vectors (the far "plane"
+//               on these lenses is a curved surface).
+//
+//               The z coordinate of the 2-d point is ignored.
+//
+//               Returns true if the vector is defined, or false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool Lens::
+extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
+  vec = LVector3f::forward(_cs) * get_lens_mat();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::project_impl
 //       Access: Protected, Virtual
 //  Description: Given a 3-d point in space, determine the 2-d point

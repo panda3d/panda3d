@@ -259,10 +259,11 @@ set_source_camera(int index, const NodePath &source_camera) {
 void NonlinearImager::
 set_screen_active(int index, bool active) {
   nassertv(index >= 0 && index < (int)_screens.size());
-  _screens[index]._active = active;
+
+  Screen &screen = _screens[index];
+  screen._active = active;
 
   if (!active) {
-    Screen &screen = _screens[index];
     // If we've just made this screen inactive, remove its meshes.
     for (size_t vi = 0; vi < screen._meshes.size(); vi++) {
       screen._meshes[vi]._mesh.remove_node();
@@ -275,9 +276,16 @@ set_screen_active(int index, bool active) {
       nassertv(removed);
     }
 
+    // Hide the screen in the dark room.  This doesn't really matter,
+    // since the dark room isn't normally rendered, but hide it anyway
+    // in case the user stuck a camera in there for fun.
+    screen._screen.hide();
+
   } else {
     // If we've just made it active, it needs to be recomputed.
     _stale = true;
+
+    screen._screen.show();
   }
 }
 
@@ -688,10 +696,10 @@ recompute_screen(NonlinearImager::Screen &screen, size_t vi) {
   if (screen._buffer != (GraphicsOutput *)NULL) {
     screen._meshes[vi]._mesh.set_texture(screen._buffer->get_texture());
 
-    // We don't really need to set the texture on the external screen,
-    // since that's normally not rendered, but we do anyway just for
-    // debugging purposes (in case the user does try to render it, to
-    // see what's going on).
+    // We don't really need to set the texture on the dark room
+    // screen, since that's normally not rendered, but we do anyway
+    // just for debugging purposes (in case the user does try to
+    // render it, to see what's going on).
     screen._screen.set_texture(screen._buffer->get_texture());
   }
 

@@ -111,6 +111,38 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FisheyeLens::extrude_vec_impl
+//       Access: Protected, Virtual
+//  Description: Given a 2-d point in the range (-1,1) in both
+//               dimensions, where (0,0) is the center of the
+//               lens and (-1,-1) is the lower-left corner,
+//               compute the vector that corresponds to the view
+//               direction.  This will be parallel to the normal on
+//               the surface (the far plane) corresponding to the lens
+//               shape at this point.
+//
+//               See the comment block on Lens::extrude_vec_impl() for
+//               a more in-depth comment on the meaning of this
+//               vector.
+//
+//               The z coordinate of the 2-d point is ignored.
+//
+//               Returns true if the vector is defined, or false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool FisheyeLens::
+extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
+  LPoint3f near_point, far_point;
+  if (!extrude_impl(point2d, near_point, far_point)) {
+    return false;
+  }
+
+  vec = far_point - near_point;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FisheyeLens::project_impl
 //       Access: Protected, Virtual
 //  Description: Given a 3-d point in space, determine the 2-d point
