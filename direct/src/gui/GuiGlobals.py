@@ -9,6 +9,7 @@ guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(),
 font = None
 panel = None
 drawOrder = 100
+massiveLeak = []
 
 def getDefaultFont():
     global font
@@ -34,20 +35,31 @@ def setDefaultDrawOrder(newDrawOrder):
     global drawOrder
     drawOrder = newDrawOrder
 
-def getNewRolloverFunctor():
+def getNewRolloverFunctor(sound = None):
     val = None
     if base.wantSound:
-        roll = loader.loadSound("phase_3/audio/sfr/GUI_rollover.mp3")
+        if sound:
+            roll = sound
+        else:
+            roll = loader.loadSound("phase_3/audio/sfr/GUI_rollover.mp3")
         val = AudioGuiFunctor(roll)
     else:
         val = AudioGuiFunctor()
+    global massiveLeak
+    massiveLeak.append(val)
     return val
 
-def getNewClickFunctor():
+def getNewClickFunctor(sound = None):
     val = None
     if base.wantSound:
-        click = loader.loadSound("phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
+        if sound:
+            click = sound
+        else:
+            click = loader.loadSound(
+                "phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
         val = AudioGuiFunctor(click)
     else:
         val = AudioGuiFunctor()
+    global massiveLeak
+    massiveLeak.append(val)
     return val

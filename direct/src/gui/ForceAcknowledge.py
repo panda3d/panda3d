@@ -11,8 +11,6 @@ class ForceAcknowledge(StateData.StateData):
     def __init__(self, doneEvent, message):
 	"""___init___(self, Event)"""
 	StateData.StateData.__init__(self, doneEvent)
-	self.soundRollover = None
-	self.soundOk = None
 	return None
 
     def enter(self, message):
@@ -27,7 +25,6 @@ class ForceAcknowledge(StateData.StateData):
 
 	if self.okButton:
 	    self.okButton.manage()
-	    self.accept("ForceAcknowledge-rollover", self.__handleRollover)
 	    self.accept("ForceAcknowledge-ok", self.__handleOk)
 	return None
 
@@ -37,7 +34,6 @@ class ForceAcknowledge(StateData.StateData):
 	if self.isLoaded == 0:
 	    return None
 
-	self.ignore("ForceAcknowledge-rollover")
 	self.ignore("ForceAcknowledge-ok")
 
 	self.text.reparentTo(hidden)
@@ -55,11 +51,10 @@ class ForceAcknowledge(StateData.StateData):
                                               scale = 0.08,
                                               pos = (0.0, 0.25))
 	# create a button
-	self.okButton = Button.Button("ForceAcknowledge", "OK")
+	self.okButton = Button.Button("ForceAcknowledge", "OK",
+                                      event = "ForceAcknowledge-ok")
 	self.okButton.setPos(0.0, -0.5)
 	# set rollover event
-	self.okButton.button.setUpRolloverEvent("ForceAcknowledge-rollover")
-	self.okButton.button.setDownRolloverEvent("ForceAcknowledge-ok")
 	self.okButton.button.setPriority(self.okButton.button, GuiItem.PHighest)
 
 	self.isLoaded = 1
@@ -79,16 +74,7 @@ class ForceAcknowledge(StateData.StateData):
 	self.isLoaded = 0
 	return None
 
-    def __handleRollover(self):
-	return None
-
-    def __handleOk(self):
-	self.doneStatus = "ok"	
-	messenger.send(self.doneEvent)
-
-
-
-
-
-
-
+    def __handleOk(self, item):
+        if (item == self.okButton.button):
+            self.doneStatus = "ok"	
+            messenger.send(self.doneEvent)

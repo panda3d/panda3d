@@ -22,7 +22,7 @@ class Button(DirectObject):
                  litStyle = Label.ButtonLit,
                  downStyle = Label.ButtonDown,
                  inactiveStyle = Label.ButtonInactive,
-                 event = None):
+                 event = None, rolloverSound = None, clickSound = None):
         self.name = name
         self.width = width
 
@@ -94,8 +94,11 @@ class Button(DirectObject):
             self.lInactive = self.lUp
 
         self.button = GuiButton.GuiButton(self.name, self.lUp, self.lLit,
-                                          self.lDown, self.lDown, self.lInactive)
+                                          self.lDown, self.lDown,
+                                          self.lInactive)
         self.button.setDrawOrder(drawOrder)
+        self.button.setRolloverFunctor(getNewRolloverFunctor(rolloverSound))
+        self.button.setBehaviorFunctor(getNewClickFunctor(clickSound))
 
         if (event != None):
             self.button.setBehaviorEvent(event)
