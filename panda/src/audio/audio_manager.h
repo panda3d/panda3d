@@ -33,32 +33,34 @@ class EXPCL_PANDA AudioManager {
   typedef pset<AudioSound*> LoopSet;
 
 PUBLISHED:
-  INLINE static void play(AudioSound*, float = 0.0);
+  INLINE static void play(AudioSound*, float start_time= 0.0, int loop=0);
   INLINE static void stop(AudioSound*);
   
-  INLINE static void set_loop(AudioSound*, bool);
-  INLINE static bool get_loop(AudioSound*);
+  #ifndef AUDIO_USE_RAD_MSS //[
+    INLINE static void set_loop(AudioSound*, bool loop);
+    INLINE static bool get_loop(AudioSound*);
+  #endif //]
   
-  INLINE static void set_volume(AudioSound*, float);
+  INLINE static void set_volume(AudioSound*, float volume);
   
   INLINE static void update();
   INLINE static void spawn_update();
   
   INLINE static void shutdown();
   
-  INLINE static void set_master_sfx_volume(float);
+  static void set_master_sfx_volume(float volume);
   INLINE static float get_master_sfx_volume();
   
-  INLINE static void set_master_music_volume(float);
+  static void set_master_music_volume(float volume);
   INLINE static float get_master_music_volume();
   
   INLINE static void set_all_sound_active(bool);
   INLINE static bool get_all_sound_active();
   
-  INLINE static void set_sfx_active(bool);
+  static void set_sfx_active(bool);
   INLINE static bool get_sfx_active();
   
-  INLINE static void set_music_active(bool);
+  static void set_music_active(bool);
   INLINE static bool get_music_active();
 
 public:
@@ -74,11 +76,13 @@ private:
   INLINE AudioManager();
 
   void copy_loopset();
-  void ns_play(AudioSound*, float);
+  void ns_play(AudioSound*, float start_time, int loop);
   void ns_stop(AudioSound*);
-  void ns_set_loop(AudioSound*, bool);
-  bool ns_get_loop(AudioSound*);
-  void ns_set_volume(AudioSound*, float);
+  #ifndef AUDIO_USE_RAD_MSS //[
+    void ns_set_loop(AudioSound*, bool loop);
+    bool ns_get_loop(AudioSound*);
+  #endif //]
+  void ns_set_volume(AudioSound*, float volume);
   void ns_spawn_update();
   void ns_shutdown();
   void ns_update();
@@ -90,7 +94,7 @@ private:
   static UpdateFunc* _update_func;
   static ShutdownFunc* _shutdown_func;
   static mutex _manager_mutex;
-  static bool _quit;
+  volatile static bool _quit;
   static thread* _spawned;
   static LoopSet* _loopset;
   static LoopSet* _loopcopy;

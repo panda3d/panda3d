@@ -23,11 +23,14 @@
 #ifndef __AUDIO_WIN_TRAITS_H__
 #define __AUDIO_WIN_TRAITS_H__
 
+#error You should try the Miles version.
+
 #include <filename.h>
 
 #include <windows.h>
 #include <dsound.h>
 #include <dmusici.h>
+#include "config_audio.h"
 
 class WinSamplePlaying;
 

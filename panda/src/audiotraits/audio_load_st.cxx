@@ -400,6 +400,14 @@ AudioTraits::SoundClass* AudioLoadSt(Filename) {
   return (AudioTraits::SoundClass*)0L;
 }
 
+#elif defined(AUDIO_USE_RAD_MSS)
+
+#include "audio_rad_mss_traits.h"
+
+EXPCL_MISC AudioTraits::SoundClass* AudioLoadSt(Filename filename) {
+  return MilesSound::load(filename);
+}
+
 #elif defined(AUDIO_USE_WIN32)
 
 #include "audio_win_traits.h"

@@ -33,11 +33,32 @@ class AudioManager;
 class EXPCL_PANDA AudioSound : public TypedObject, public Namable {
 */
 class EXPCL_PANDA AudioSound : public TypedReferenceCount, public Namable {
+PUBLISHED:
+  virtual ~AudioSound();
+  INLINE bool operator==(const AudioSound&) const;
+  INLINE bool operator!=(const AudioSound&) const;
+
+  enum Category { EFFECT, MUSIC }; // sync with AudioTraits::PlayingClass.
+  enum SoundStatus { BAD, READY, PLAYING };
+
+  float length() const;
+  SoundStatus status() const;
+  
+  void set_category(Category category) {
+    _state->set_category(
+      static_cast<AudioTraits::PlayingClass::Category>(category)
+    );
+  }
+  Category get_category() const {
+    return static_cast<Category>(_state->get_category());
+  }
+
 private:
   PT(AudioTraits::SoundClass) _sound;
   AudioTraits::PlayingClass *_state;
   AudioTraits::PlayerClass *_player;
   AudioTraits::DeletePlayingFunc *_delstate;
+
 protected:
   INLINE AudioSound(AudioTraits::SoundClass*, AudioTraits::PlayingClass*,
                     AudioTraits::PlayerClass*, AudioTraits::DeletePlayingFunc*,
@@ -51,15 +72,7 @@ protected:
 
   friend class AudioPool;
   friend class AudioManager;
-PUBLISHED:
-  virtual ~AudioSound();
-  INLINE bool operator==(const AudioSound&) const;
-  INLINE bool operator!=(const AudioSound&) const;
 
-  enum SoundStatus { BAD, READY, PLAYING } ;
-
-  float length() const;
-  SoundStatus status() const;
 public:
   // type stuff
   static TypeHandle get_class_type() {

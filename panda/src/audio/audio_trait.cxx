@@ -56,7 +56,7 @@ AudioTraits::PlayerClass::~PlayerClass() {
 }
 
 void AudioTraits::PlayerClass::play_sound(AudioTraits::SoundClass*,
-                                          AudioTraits::PlayingClass*, float) {
+                                          AudioTraits::PlayingClass*, float, int) {
   audio_cat->error() << "In abstract PlayerClass::play_sound!" << endl;
 }
 

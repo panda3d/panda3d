@@ -16,43 +16,56 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-INLINE WinSample::WinSample() : AudioTraits::SoundClass(), _data(NULL),
-                                    _len(0) {
+INLINE WinSample::
+WinSample() 
+    : AudioTraits::SoundClass(), _data(NULL), _len(0) {
 }
 
-INLINE DWORD WinSample::get_length() const {
+INLINE DWORD WinSample::
+get_length() const {
   return _len;
 }
 
-INLINE WAVEFORMATEX WinSample::get_format() const {
+INLINE WAVEFORMATEX WinSample::
+get_format() const {
   return _info;
 }
 
-INLINE WinMusic::WinMusic() : AudioTraits::SoundClass(),
-                                  _performance(NULL), _music(NULL),
-                                  _buffer(NULL), _synth(NULL) {
+INLINE WinMusic::
+WinMusic() 
+    : AudioTraits::SoundClass(), 
+    _performance(NULL), _music(NULL),
+    _buffer(NULL), _synth(NULL) {
   init();
 }
 
-INLINE IDirectMusicPerformance* WinMusic::get_performance() const {
+INLINE IDirectMusicPerformance* WinMusic::
+get_performance() const {
   return _performance;
 }
 
-INLINE IDirectMusicSegment* WinMusic::get_music() {
+INLINE IDirectMusicSegment* WinMusic::
+get_music() {
   return _music;
 }
 
-INLINE LPDIRECTSOUNDBUFFER WinSamplePlaying::get_channel() {
+INLINE LPDIRECTSOUNDBUFFER WinSamplePlaying::
+get_channel() {
   return _channel;
 }
 
-INLINE IDirectMusicPerformance* WinMusicPlaying::get_performance() const {
+INLINE IDirectMusicPerformance* WinMusicPlaying::
+get_performance() const {
   WinMusic* wmusic = (WinMusic*)_sound;
   return wmusic->get_performance();
 }
 
-INLINE WinSamplePlayer::WinSamplePlayer() : AudioTraits::PlayerClass() {
+INLINE WinSamplePlayer::
+WinSamplePlayer() 
+    : AudioTraits::PlayerClass() {
 }
 
-INLINE WinMusicPlayer::WinMusicPlayer() : AudioTraits::PlayerClass() {
+INLINE WinMusicPlayer::
+WinMusicPlayer() 
+    : AudioTraits::PlayerClass() {
 }

@@ -177,17 +177,17 @@ class ShowBase:
         self.messenger = messenger
         self.taskMgr = taskMgr
 
-	# Particle manager
-	self.particleMgr = particleMgr
-	self.particleMgr.setFrameStepping(1)
-	self.particleMgrEnabled = 0
+        # Particle manager
+        self.particleMgr = particleMgr
+        self.particleMgr.setFrameStepping(1)
+        self.particleMgrEnabled = 0
 
-	# Physics manager
-	self.physicsMgr = physicsMgr
-	integrator = LinearEulerIntegrator()
-	self.physicsMgr.attachLinearIntegrator(integrator)
-	self.physicsMgrEnabled = 0
-	self.physicsMgrAngular = 0
+        # Physics manager
+        self.physicsMgr = physicsMgr
+        integrator = LinearEulerIntegrator()
+        self.physicsMgr.attachLinearIntegrator(integrator)
+        self.physicsMgrEnabled = 0
+        self.physicsMgrAngular = 0
 
         self.createAudioManager()
         self.createStats()
@@ -221,25 +221,25 @@ class ShowBase:
         self.restart()
 
     def addAngularIntegrator(self):
-	"""addAngularIntegrator(self)"""
-	if (self.physicsMgrAngular == 0):
-	    self.physicsMgrAngular = 1
-	    integrator = AngularEulerIntegrator()
-	    self.physicsMgr.attachAngularIntegrator(integrator)
+        """addAngularIntegrator(self)"""
+        if (self.physicsMgrAngular == 0):
+            self.physicsMgrAngular = 1
+            integrator = AngularEulerIntegrator()
+            self.physicsMgr.attachAngularIntegrator(integrator)
 
     def enableParticles(self):
-	"""enableParticles(self)"""
-	self.particleMgrEnabled = 1
-	self.physicsMgrEnabled = 1
-	self.taskMgr.removeTasksNamed('manager-update')
-	self.taskMgr.spawnTaskNamed(Task.Task(self.updateManagers),
-					'manager-update')
+        """enableParticles(self)"""
+        self.particleMgrEnabled = 1
+        self.physicsMgrEnabled = 1
+        self.taskMgr.removeTasksNamed('manager-update')
+        self.taskMgr.spawnTaskNamed(Task.Task(self.updateManagers),
+                                        'manager-update')
 
     def disableParticles(self):
-	"""enableParticles(self)"""
-	self.particleMgrEnabled = 0
-	self.physicsMgrEnabled = 0
-	self.taskMgr.removeTasksNamed('manager-update')
+        """enableParticles(self)"""
+        self.particleMgrEnabled = 0
+        self.physicsMgrEnabled = 0
+        self.taskMgr.removeTasksNamed('manager-update')
 
     def toggleParticles(self):
         if self.particleMgrEnabled == 0:
@@ -254,13 +254,13 @@ class ShowBase:
         return self.physicsMgrEnabled
 
     def updateManagers(self, state):
-	"""updateManagers(self)"""
-	dt = min(globalClock.getDt(), 0.1)
-	if (self.particleMgrEnabled == 1):
-	    self.particleMgr.doParticles(dt)
-	if (self.physicsMgrEnabled == 1):
-	    self.physicsMgr.doPhysics(dt)
-	return Task.cont
+        """updateManagers(self)"""
+        dt = min(globalClock.getDt(), 0.1)
+        if (self.particleMgrEnabled == 1):
+            self.particleMgr.doParticles(dt)
+        if (self.physicsMgrEnabled == 1):
+            self.physicsMgr.doPhysics(dt)
+        return Task.cont
 
     def createStats(self):
         # You must specify a pstats-host in your configrc
@@ -274,11 +274,17 @@ class ShowBase:
 
     def loadSfx(self, name):
         if (name and base.wantSfx):
-            return loader.loadSound(name)
+            sound=loader.loadSound(name)
+            if sound:
+                sound.setCategory(sound.EFFECT)
+            return sound
 
     def loadMusic(self, name):
         if (name and base.wantMusic):
-            return loader.loadSound(name)
+            sound=loader.loadSound(name)
+            if sound:
+                sound.setCategory(sound.MUSIC)
+            return sound
 
     def unloadSfx(self, sfx):
         if sfx:
@@ -288,29 +294,25 @@ class ShowBase:
         if music:
             loader.unloadSound(music)
 
-    def playSfx(self, sfx, looping = None, interupt = 1, volume = None,
+    def playSfx(self, sfx, looping = 0, interupt = 1, volume = None,
                 time = 0.):
         if (sfx and base.wantSfx):
             if not interupt:
                 if not (sfx.status() == AudioSound.PLAYING):
-                    AudioManager.play(sfx, time)
+                    AudioManager.play(sfx, time, looping)
             else:
-                AudioManager.play(sfx, time)
-            if looping:
-                AudioManager.setLoop(sfx, 1)
+                AudioManager.play(sfx, time, looping)
             if volume:
                 AudioManager.setVolume(sfx, volume)
 
-    def playMusic(self, music, looping = None, interupt = 1, volume = None,
+    def playMusic(self, music, looping = 0, interupt = 1, volume = None,
                   restart = None, time = 0.):
         if (music and base.wantMusic):
             if not interupt:
                 if not (music.status() == AudioSound.PLAYING):
-                    AudioManager.play(music, time)
+                    AudioManager.play(music, time, looping)
             else:
-                AudioManager.play(music, time)
-            if looping:
-                AudioManager.setLoop(music, 1)
+                AudioManager.play(music, time, looping)
             if volume:
                 AudioManager.setVolume(music, volume)
             if restart:

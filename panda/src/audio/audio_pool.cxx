@@ -148,8 +148,9 @@ void AudioPool::ns_release_sound(AudioSound* sound) {
   string filename = sound->get_name();
   SoundMap::iterator si;
   si = _sounds.find(filename);
-  if (si != _sounds.end() && (*si).second == sound->get_sound())
+  if (si != _sounds.end() && (*si).second == sound->get_sound()) {
     _sounds.erase(si);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -21,9 +21,9 @@
 //       Access: Public, Static
 //  Description: Play some audio
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::play(AudioSound* sound, float start_time) {
+INLINE void AudioManager::play(AudioSound* sound, float start_time, int loop) {
   if (audio_is_active)
-    get_ptr()->ns_play(sound, start_time);
+    get_ptr()->ns_play(sound, start_time, loop);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,6 +88,7 @@ INLINE void AudioManager::stop(AudioSound* sound) {
   }
 }
 
+#ifndef AUDIO_USE_RAD_MSS //[
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::stop
 //       Access: Public, Static
@@ -107,6 +108,7 @@ INLINE void AudioManager::set_loop(AudioSound* sound, bool state) {
 INLINE bool AudioManager::get_loop(AudioSound* sound) {
   return get_ptr()->ns_get_loop(sound);
 }
+#endif //]
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::Constructor
@@ -120,27 +122,6 @@ INLINE AudioManager::AudioManager() {
   _music_active = _hard_music_active = audio_music_active;
   _master_sfx_volume = audio_master_sfx_volume;
   _master_music_volume = audio_master_music_volume;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::set_master_sfx_volume
-//       Access: Public, Static
-//  Description: set the overall volume of SFX
-////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::set_master_sfx_volume(float v) {
-  AudioManager::_master_sfx_volume = v;
-  AudioManager::_master_volume_change = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::set_master_music_volume
-//       Access: Public, Static
-//  Description: set the overall volume of music
-////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::set_master_music_volume(float v) {
-  get_ptr();
-  AudioManager::_master_music_volume = v;
-  AudioManager::_master_volume_change = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,42 +162,6 @@ INLINE void AudioManager::set_all_sound_active(bool f) {
 INLINE bool AudioManager::get_all_sound_active() {
   get_ptr();
   return audio_is_active;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::set_sfx_active
-//       Access: Public, Static
-//  Description: turn on/off SFX
-////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::set_sfx_active(bool f) {
-  get_ptr();
-  if (f) {
-    if (AudioManager::_hard_sfx_active) {
-      AudioManager::_sfx_active = f;
-      AudioManager::_master_volume_change = true;
-    }
-  } else {
-    AudioManager::_sfx_active = f;
-    AudioManager::_master_volume_change = true;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::set_music_active
-//       Access: Public, Static
-//  Description: turn on/off music
-////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::set_music_active(bool f) {
-  get_ptr();
-  if (f) {
-    if (AudioManager::_hard_music_active) {
-      AudioManager::_music_active = f;
-      AudioManager::_master_volume_change = true;
-    }
-  } else {
-    AudioManager::_music_active = f;
-    AudioManager::_master_volume_change = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

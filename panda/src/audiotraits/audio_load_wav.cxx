@@ -32,6 +32,14 @@ AudioTraits::SoundClass* AudioLoadWav(Filename filename) {
   return MikModSample::load_wav(filename);
 }
 
+#elif defined(AUDIO_USE_RAD_MSS)
+
+#include "audio_rad_mss_traits.h"
+
+EXPCL_MISC AudioTraits::SoundClass* AudioLoadWav(Filename filename) {
+  return MilesSound::load(filename);
+}
+
 #elif defined(AUDIO_USE_WIN32)
 
 #include "audio_win_traits.h"

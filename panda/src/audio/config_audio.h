@@ -50,10 +50,14 @@ extern EXPCL_PANDA void audio_load_loaders();
 
   #define audio_info(msg) \
     audio_cat->info() << msg << endl
+
+  #define audio_warning(msg) \
+    audio_cat->warning() << msg << endl
 #else //][
   // Release build:
   #define audio_debug(msg) ((void)0)
   #define audio_info(msg) ((void)0)
+  #define audio_warning(msg) ((void)0)
 #endif //]
 
 #define audio_error(msg) \

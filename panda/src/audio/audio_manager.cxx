@@ -19,12 +19,17 @@
 #include "audio_manager.h"
 #include "config_audio.h"
 
+#ifdef AUDIO_USE_RAD_MSS //[
+#include "mss.h"
+#endif //]
+
+
 // Statics (all default to zero):
 AudioManager* AudioManager::_global_ptr;
 AudioManager::UpdateFunc* AudioManager::_update_func;
 AudioManager::ShutdownFunc* AudioManager::_shutdown_func;
 mutex AudioManager::_manager_mutex;
-bool AudioManager::_quit;
+volatile bool AudioManager::_quit;
 thread* AudioManager::_spawned;
 AudioManager::LoopSet* AudioManager::_loopset;
 AudioManager::LoopSet* AudioManager::_loopcopy;
@@ -84,26 +89,28 @@ copy_loopset() {
 ////////////////////////////////////////////////////////////////////
 void AudioManager::
 ns_update() {
-  // handle looping
-  if (_loopcopy) {
-    LoopSet::iterator i=_loopcopy->begin();
-    for (; i!=_loopcopy->end(); ++i) {
-      AudioSound* sound = *i;
-      if (sound->status() == AudioSound::READY) {
-        audio_debug("AudioManager::ns_update looping '" 
-            << sound->get_name() << "'");
-        AudioManager::play(sound);
-        AudioManager::set_loop(sound, true);
-      } else if (AudioManager::_master_volume_change) {
-        if (sound->get_player()->adjust_volume(sound->get_state())) {
-          audio_debug("AudioManager::ns_update sound is turned "
-              << "off, stopping '" << sound->get_name() << "'");
-          AudioManager::stop(sound);
+  #ifndef AUDIO_USE_RAD_MSS //[
+    // handle looping
+    if (_loopcopy) {
+      LoopSet::iterator i=_loopcopy->begin();
+      for (; i!=_loopcopy->end(); ++i) {
+        AudioSound* sound = *i;
+        if (sound->status() == AudioSound::READY) {
+          audio_debug("AudioManager::ns_update looping '" 
+              << sound->get_name() << "'");
+          AudioManager::play(sound);
+          AudioManager::set_loop(sound, true);
+        } else if (AudioManager::_master_volume_change) {
+          if (sound->get_player()->adjust_volume(sound->get_state())) {
+            audio_debug("AudioManager::ns_update sound is turned "
+                << "off, stopping '" << sound->get_name() << "'");
+            AudioManager::stop(sound);
+          }
         }
       }
     }
-  }
-  AudioManager::_master_volume_change = false;
+    AudioManager::_master_volume_change = false;
+  #endif //]
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,15 +147,21 @@ get_ptr() {
 //  Description: get the player off the sound, and start it playing
 ////////////////////////////////////////////////////////////////////
 void AudioManager::
-ns_play(AudioSound* sound, float start_time) {
-  audio_debug("AudioManager: playing sound 0x" 
-      << (void*)sound << " (" << sound->get_name() << ")");
+ns_play(AudioSound* sound, float start_time, int loop) {
+  audio_debug("AudioManager::ns_play(sound=0x"<<(void*)sound<<", start_time="<<start_time<<", loop="<<loop<<")");
+  audio_debug("  name="<<sound->get_name());
   if (sound->status() == AudioSound::PLAYING) {
     this->ns_stop(sound);
   }
-  sound->get_player()->play_sound(sound->get_sound(), 
-      sound->get_state(), start_time);
-  sound->get_player()->adjust_volume(sound->get_state());
+  #ifndef AUDIO_USE_RAD_MSS //[
+    sound->get_player()->play_sound(sound->get_sound(), 
+        sound->get_state(), start_time);
+    ns_set_loop(sound, loop);
+    sound->get_player()->adjust_volume(sound->get_state());
+  #else //][
+    sound->get_player()->play_sound(sound->get_sound(), 
+        sound->get_state(), start_time, loop);
+  #endif //]
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,12 +173,15 @@ void AudioManager::
 ns_stop(AudioSound* sound) {
   audio_debug("AudioManager: stopping sound 0x" 
       << (void*)sound << " (" << sound->get_name() << ")");
-  this->ns_set_loop(sound, false);
+  #ifndef AUDIO_USE_RAD_MSS //[
+    this->ns_set_loop(sound, false);
+  #endif //]
   if (sound->status() == AudioSound::PLAYING) {
     sound->get_player()->stop_sound(sound->get_sound(), sound->get_state());
   }
 }
 
+#ifndef AUDIO_USE_RAD_MSS //[
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::ns_set_loop (AudioSound)
 //       Access: Private
@@ -173,15 +189,19 @@ ns_stop(AudioSound* sound) {
 ////////////////////////////////////////////////////////////////////
 void AudioManager::
 ns_set_loop(AudioSound* sound, bool state) {
-  mutex_lock l(_manager_mutex);
-  if (!_loopset) {
-    _loopset = new LoopSet;
-  }
-  if (state) {
-    _loopset->insert(sound);
-  } else {
-    _loopset->erase(sound);
-  }
+  #ifndef AUDIO_USE_RAD_MSS //[
+    mutex_lock l(_manager_mutex);
+    if (!_loopset) {
+      _loopset = new LoopSet;
+    }
+    if (state) {
+      _loopset->insert(sound);
+    } else {
+      _loopset->erase(sound);
+    }
+  #else //][
+    /////sound->get_player()->set_loop_count((state)?0:1);
+  #endif //]
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,6 +218,7 @@ ns_get_loop(AudioSound* sound) {
   LoopSet::iterator i = _loopset->find(sound);
   return i != _loopset->end();
 }
+#endif //]
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::spawned_update
@@ -206,23 +227,27 @@ ns_get_loop(AudioSound* sound) {
 ////////////////////////////////////////////////////////////////////
 void* AudioManager::
 spawned_update(void* data) {
-  bool* flag = (bool*)data;
-  try {
-    // *flag connects to AudioManager::_quit
-    while (! (*flag)) {
-      AudioManager::update();
-      ipc_traits::sleep(0, audio_auto_update_delay);
+  #ifndef HAVE_RAD_MSS //[
+    bool* flag = (bool*)data;
+    try {
+      // *flag connects to AudioManager::_quit
+      while (! (*flag)) {
+        AudioManager::update();
+        ipc_traits::sleep(0, audio_auto_update_delay);
+      }
+    } catch (...) {
+      audio_error("Uncought Exception in audio update thread.");
+      throw;
     }
-  } catch (...) {
-    audio_error("Uncought Exception in audio update thread.");
-    throw;
-  }
-  // Switch the flag back to false,
-  // so AudioManager::ns_shutdown()
-  // knows we're done:
-  *flag = false;
-  audio_debug("exiting update thread");
-  return 0;
+    // Switch the flag back to false,
+    // so AudioManager::ns_shutdown()
+    // knows we're done:
+    *flag = false;
+    audio_debug("exiting update thread");
+    return 0;
+  #else //][
+    return 0;
+  #endif //]
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -236,35 +261,124 @@ ns_set_volume(AudioSound* sound, float v) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_master_sfx_volume
+//       Access: Public, Static
+//  Description: set the overall volume of SFX
+////////////////////////////////////////////////////////////////////
+void AudioManager::set_master_sfx_volume(float v) {
+  AudioManager::_master_sfx_volume = v;
+  AudioManager::_master_volume_change = true;
+  #ifdef AUDIO_USE_RAD_MSS //[
+    HDIGDRIVER dig;
+    AIL_quick_handles(&dig, 0, 0);
+    S32 volume=((int)(127*v))%128;
+    AIL_set_digital_master_volume(dig, volume);
+  #endif //]
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_master_music_volume
+//       Access: Public, Static
+//  Description: set the overall volume of music
+////////////////////////////////////////////////////////////////////
+void AudioManager::set_master_music_volume(float v) {
+  get_ptr();
+  AudioManager::_master_music_volume = v;
+  AudioManager::_master_volume_change = true;
+  #ifdef AUDIO_USE_RAD_MSS //[
+    HMDIDRIVER mdi;
+    AIL_quick_handles(0, &mdi, 0);
+    S32 volume=((int)(127*v))%128;
+    AIL_set_XMIDI_master_volume(mdi, volume);
+  #endif //]
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_sfx_active
+//       Access: Public, Static
+//  Description: turn on/off SFX
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::set_sfx_active(bool f) {
+  get_ptr();
+  if (f) {
+    if (AudioManager::_hard_sfx_active) {
+      AudioManager::_sfx_active = f;
+      AudioManager::_master_volume_change = true;
+    }
+  } else {
+    AudioManager::_sfx_active = f;
+    AudioManager::_master_volume_change = true;
+  }
+  #ifdef AUDIO_USE_RAD_MSS //[
+    if (f) {
+      set_master_sfx_volume(_master_sfx_volume);
+    } else {
+      HDIGDRIVER dig;
+      AIL_quick_handles(&dig, 0, 0);
+      AIL_set_digital_master_volume(dig, 0);
+    }
+  #endif //]
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_music_active
+//       Access: Public, Static
+//  Description: turn on/off music
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::set_music_active(bool f) {
+  get_ptr();
+  if (f) {
+    if (AudioManager::_hard_music_active) {
+      AudioManager::_music_active = f;
+      AudioManager::_master_volume_change = true;
+    }
+  } else {
+    AudioManager::_music_active = f;
+    AudioManager::_master_volume_change = true;
+  }
+  #ifdef AUDIO_USE_RAD_MSS //[
+    if (f) {
+      set_master_music_volume(_master_music_volume);
+    } else {
+      HMDIDRIVER mdi;
+      AIL_quick_handles(0, &mdi, 0);
+      AIL_set_XMIDI_master_volume(mdi, 0);
+    }
+  #endif //]
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::ns_spawn_update
 //       Access: Private
 //  Description: spawn a thread that calls update every so often
 ////////////////////////////////////////////////////////////////////
 void AudioManager::
 ns_spawn_update() {
-  if (!_spawned) {
-    _quit = false;
-    thread::priority_t pri;
-    switch (audio_thread_priority) {
-    case 0:
-      pri = thread::PRIORITY_LOW;
-      break;
-    case 1:
-      pri = thread::PRIORITY_NORMAL;
-      break;
-    case 2:
-      pri = thread::PRIORITY_HIGH;
-      break;
-    default:
-      audio_error("audio-thread-priority set to something other "
-          << "then low, normal, or high");
-      audio_thread_priority = 1;
-      pri = thread::PRIORITY_NORMAL;
+  #ifndef HAVE_RAD_MSS //[
+    if (!_spawned) {
+      _quit = false;
+      thread::priority_t pri;
+      switch (audio_thread_priority) {
+      case 0:
+        pri = thread::PRIORITY_LOW;
+        break;
+      case 1:
+        pri = thread::PRIORITY_NORMAL;
+        break;
+      case 2:
+        pri = thread::PRIORITY_HIGH;
+        break;
+      default:
+        audio_error("audio-thread-priority set to something other "
+            << "then low, normal, or high");
+        audio_thread_priority = 1;
+        pri = thread::PRIORITY_NORMAL;
+      }
+      _spawned = thread::create(spawned_update, (void*)&_quit, pri);
+    } else {
+      audio_error("tried to spawn 2 update threads");
     }
-    _spawned = thread::create(spawned_update, &_quit, pri);
-  } else {
-    audio_error("tried to spawn 2 update threads");
-  }
+  #endif //]
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,10 +393,12 @@ ns_shutdown() {
   if (_shutdown_func) {
     (*_shutdown_func)();
   }
-  if (_spawned) {
-    while (_quit) {
-      // waiting on update thread to stop spinning.
+  #ifndef HAVE_RAD_MSS //[
+    if (_spawned) {
+      while (_quit) {
+        // waiting on update thread to stop spinning.
+      }
     }
-  }
+  #endif //]
   audio_debug("update thread has shutdown");
 }
