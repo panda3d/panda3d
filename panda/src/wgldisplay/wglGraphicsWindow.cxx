@@ -189,6 +189,8 @@ void AtExitFn() {
 #ifdef _DEBUG
     wgldisplay_cat.spam() << "AtExitFn called\n";
 #endif
+
+     restore_global_parameters();
   
      DestroyAllWindows(true);
 }
@@ -1048,7 +1050,7 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
           bIsGoodmode=false;
       } else {
           if(_bIsLowVidMemCard) {
-              bIsGoodmode=((dwWidth*dwHeight)<=(640*480));
+              bIsGoodmode=((float)(dwWidth*(float)dwHeight)<=(float)(640*480));
           } else {
               bIsGoodmode = find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm);
           }
@@ -3315,5 +3317,27 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
 
             return buff;
     }
+}
+
+// Global system parameters we want to modify during our run
+static int iMouseTrails;
+static bool bCursorShadowOn;
+
+void set_global_parameters(void) {
+  // turn off mousetrails and cursor shadow.
+  // cursor shadow causes cursor blink and reduced frame rate due to lack of driver support for 
+  // cursor alpha blending
+
+  // this is a win2k/xp only param, could use GetVersionEx to do it just for win2k
+  SystemParametersInfo(SPI_GETCURSORSHADOW,NULL,&bCursorShadowOn,NULL);
+  SystemParametersInfo(SPI_SETCURSORSHADOW,NULL,(PVOID)false,NULL);
+
+  SystemParametersInfo(SPI_GETMOUSETRAILS,NULL,&iMouseTrails,NULL);
+  SystemParametersInfo(SPI_SETMOUSETRAILS,NULL,(PVOID)0,NULL);
+}
+
+void restore_global_parameters(void) {
+  SystemParametersInfo(SPI_SETCURSORSHADOW,NULL,(PVOID)bCursorShadowOn,NULL);
+  SystemParametersInfo(SPI_SETMOUSETRAILS,NULL,(PVOID)iMouseTrails,NULL);
 }
 

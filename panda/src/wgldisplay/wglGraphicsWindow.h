@@ -163,4 +163,7 @@ private:
   static TypeHandle _type_handle;
 };
 
+extern void set_global_parameters();
+extern void restore_global_parameters();
+
 #endif

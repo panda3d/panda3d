@@ -68,6 +68,8 @@ init_libwgldisplay() {
                 wglGraphicsWindow::make_wglGraphicsWindow);
 
   atexit(AtExitFn);
+
+  set_global_parameters();
 }
 
 // cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var
