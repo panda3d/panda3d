@@ -1625,6 +1625,7 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
                          bIsGoodMode = ((((float)xsize*(float)ysize)*6+REQD_TEXMEM) < (float)_dxgsg->scrn.MaxAvailVidMem);
                      }
              }
+           }
        }
 
        if(bIsGoodMode)
