@@ -8,6 +8,10 @@ class PieMenu(NodePath, PandaObject):
         self.assign(hidden.attachNewNode(NamedNode('PieMenu')))
         # Attach the menu
         self.menu = menu
+        # Create a scene graph reducer to flatten the menu
+        self.sgReducer = SceneGraphReducer(RenderRelation.getClassType())
+        self.sgReducer.applyTransitions(self.menu.node())
+        self.sgReducer.flatten(self.menu.node(), 0)
         self.menu.reparentTo(self)
         # Initialize instance variables
         self.direct = direct
