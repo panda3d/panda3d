@@ -116,6 +116,11 @@ See the Python Mode home page for details:
   :type 'string
   :group 'python)
 
+(defcustom pyo-python-command "python"
+  "*Shell command used to start Python interpreter."
+  :type 'string
+  :group 'python)
+
 (defcustom py-jpython-command "jpython"
   "*Shell command used to start the JPython interpreter."
   :type 'string
@@ -152,6 +157,11 @@ mode buffer is visited during an Emacs session.  After that, use
   :group 'python)
 
 (defcustom pyd-python-command-args '("-u" "-i")
+  "*List of string arguments to be used when starting a Python shell."
+  :type '(repeat string)
+  :group 'python)
+
+(defcustom pyo-python-command-args '("-i" "-OO")
   "*List of string arguments to be used when starting a Python shell."
   :type '(repeat string)
   :group 'python)
@@ -1167,19 +1177,24 @@ If an exception occurred return t, otherwise return nil.  BUF must exist."
 (defvar py-which-shell nil)
 (defvar ppy-which-shell nil)
 (defvar pyd-which-shell nil)
+(defvar pyo-which-shell nil)
 (defvar py-which-args  py-python-command-args)
 (defvar ppy-which-args  ppy-python-command-args)
 (defvar pyd-which-args  pyd-python-command-args)
+(defvar pyo-which-args  pyo-python-command-args)
 (defvar py-which-bufname "Python")
 (make-variable-buffer-local 'py-which-shell)
 (make-variable-buffer-local 'ppy-which-shell)
 (make-variable-buffer-local 'pyd-which-shell)
+(make-variable-buffer-local 'pyo-which-shell)
 (make-variable-buffer-local 'py-which-args)
 (make-variable-buffer-local 'ppy-which-args)
 (make-variable-buffer-local 'pyd-which-args)
+(make-variable-buffer-local 'pyo-which-args)
 (make-variable-buffer-local 'py-which-bufname)
 (make-variable-buffer-local 'ppy-which-bufname)
 (make-variable-buffer-local 'pyd-which-bufname)
+(make-variable-buffer-local 'pyo-which-bufname)
 
 (defun py-toggle-shells (arg)
   "Toggles between the CPython and JPython shells.
@@ -1210,9 +1225,11 @@ Programmatically, ARG can also be one of the symbols `cpython' or
       (setq py-which-shell py-python-command
 	    ppy-which-shell ppy-python-command
 	    pyd-which-shell pyd-python-command
+	    pyo-which-shell pyo-python-command
 	    py-which-args py-python-command-args
 	    ppy-which-args ppy-python-command-args
 	    pyd-which-args pyd-python-command-args
+	    pyo-which-args pyo-python-command-args
 	    py-which-bufname "Python"
 	    msg "CPython"
 	    mode-name "Python"))
@@ -1220,6 +1237,7 @@ Programmatically, ARG can also be one of the symbols `cpython' or
       (setq py-which-shell py-jpython-command
 	    ppy-which-shell ppy-jpython-command
 	    pyd-which-shell pyd-python-command
+	    pyo-which-shell pyo-python-command
 	    py-which-args py-jpython-command-args
 	    py-which-bufname "JPython"
 	    msg "JPython"
@@ -1310,6 +1328,33 @@ filter."
 			       ))))
     (switch-to-buffer ;; -other-window
      (apply 'make-comint py-which-bufname pyd-which-shell nil args))
+    (make-local-variable 'comint-prompt-regexp)
+    (setq comint-prompt-regexp "^>>> \\|^[.][.][.] \\|^(pdb) ")
+    (add-hook 'comint-output-filter-functions
+	      'py-comint-output-filter-function)
+    (set-syntax-table py-mode-syntax-table)
+    (use-local-map py-shell-map)
+    ))
+
+(defun pyo-shell (&optional argprompt)
+  "This is Jesse's hacked version of py-shell which runs the debug python"
+  (interactive "P")
+  ;; Set the default shell if not already set
+  (when (null pyo-which-shell)
+    (py-toggle-shells py-default-interpreter))
+  (let ((args pyo-which-args))
+    (when (and argprompt
+	       (interactive-p)
+	       (fboundp 'split-string))
+      ;; TBD: Perhaps force "-i" in the final list?
+      (setq args (split-string
+		  (read-string (concat py-which-bufname
+				       " arguments: ")
+			       (concat
+				(mapconcat 'identity py-which-args " ") " ")
+			       ))))
+    (switch-to-buffer ;; -other-window
+     (apply 'make-comint py-which-bufname pyo-which-shell nil args))
     (make-local-variable 'comint-prompt-regexp)
     (setq comint-prompt-regexp "^>>> \\|^[.][.][.] \\|^(pdb) ")
     (add-hook 'comint-output-filter-functions
