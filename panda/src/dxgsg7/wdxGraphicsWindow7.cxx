@@ -170,6 +170,7 @@ open_window(void) {
   }
 
   _wcontext.hWnd = _hWnd;
+  wdxdisplay7_cat.debug() << "hWnd = " << _hWnd << "\n";
   set_coop_levels_and_display_modes();
   create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
 
@@ -1028,6 +1029,31 @@ choose_device(int devnum, DXDeviceInfo *pDevinfo) {
 
   assert(dxpipe->_DirectDrawCreateEx != NULL);
 
+#if 0 test code
+  // lets try a little cleanup
+  if (_wcontext.pddsPrimary) {
+    _wcontext.pddsPrimary->Release();
+    _wcontext.pddsPrimary = NULL;
+  }
+  if (_wcontext.pddsBack) {
+    _wcontext.pddsBack->Release();
+    _wcontext.pddsBack = NULL;
+  }
+  if (_wcontext.pddsZBuf) {
+    _wcontext.pddsZBuf->Release();
+    _wcontext.pddsZBuf = NULL;
+  }
+
+  if (_wcontext.pD3D) {
+    _wcontext.pD3D->Release();
+    _wcontext.pD3D = NULL;
+  }
+  if (_wcontext.pDD) {
+    _wcontext.pDD->Release();
+    _wcontext.pDD = NULL;
+  }
+#endif
+
   // Create the Direct Draw Objects
   hr = (*dxpipe->_DirectDrawCreateEx)(pDDDeviceGUID, (void **)&pDD, 
                                       IID_IDirectDraw7, NULL);
@@ -1314,7 +1340,7 @@ set_coop_levels_and_display_modes() {
         wdxdisplay7_cat.fatal() 
           << "SetCooperativeLevel failed for device #" << devnum 
           << ": result = " << ConvD3DErrorToString(hr) << endl;
-        exit(1);
+        exit(1);  //let it run, see what happens
       }
     }
     
