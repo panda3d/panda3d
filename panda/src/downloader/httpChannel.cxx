@@ -1732,10 +1732,21 @@ run_reading_header() {
     }
   }
 
-  if ((get_status_code() / 100) == 3 && get_status_code() != 305) {
+  if ((get_status_code() / 100) == 3 && get_status_code() != 305 &&
+      !get_redirect().empty()) {
     // Redirect.  Should we handle it automatically?
-    if (!get_redirect().empty() && (_method == HTTPEnum::M_get || 
-                                    _method == HTTPEnum::M_head)) {
+
+    // According to the letter of RFC 2616, 301 and 302 responses to
+    // POST requests must not be automatically redirected without
+    // confirmation by the user.  In reality, browsers do allow
+    // automatic redirection of these responses, changing the POST to
+    // a GET, and we reproduce this behavior here.
+    if (_method == HTTPEnum::M_post) {
+      _method = HTTPEnum::M_get;
+      _body = string();
+    }
+
+    if (_method == HTTPEnum::M_get || _method == HTTPEnum::M_head) {
       // Sure!
       URLSpec new_url = get_redirect();
       if (find(_redirect_trail.begin(), _redirect_trail.end(),
