@@ -219,7 +219,9 @@ has_idle() {
 ////////////////////////////////////////////////////////////////////
 bool GtkStatsMonitor::
 is_thread_safe() {
-  return true;
+  // Temporarily set to false to check a possible threading bug.  In
+  // principle, this should work at true.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -127,9 +127,10 @@ get_frame(int frame_number) const {
   }
 
   if (rel_frame >= 0 && rel_frame < num_frames) {
-    nassertr(_frames[rel_frame] != (PStatFrameData *)NULL, _null_frame);
-    nassertr(_frames[rel_frame]->get_start() >= 0.0, _null_frame);
-    return *_frames[rel_frame];
+    PStatFrameData *frame = _frames[rel_frame];
+    nassertr(frame != (PStatFrameData *)NULL, _null_frame);
+    nassertr(frame->get_start() >= 0.0, _null_frame);
+    return *frame;
   }
 
   nassertr(_null_frame.get_start() >= 0.0, _null_frame);
@@ -205,10 +206,14 @@ get_frame_number_at_time(float time, int hint) const {
   // backwards.
 
   int i = _frames.size() - 1;
-  while (i >= 0 && (_frames[i] == (PStatFrameData *)NULL ||
-                    _frames[i]->get_start() > time)) {
+  while (i >= 0) {
+    const PStatFrameData *frame = _frames[i];
+    if (frame != (PStatFrameData *)NULL && frame->get_start() <= time) {
+      break;
+    }
     --i;
   }
+
   return _first_frame_number + i;
 }
 
