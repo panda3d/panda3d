@@ -23,7 +23,7 @@ class DecompressorToken;
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Decompressor : public AsyncUtility {
-public:
+PUBLISHED:
   Decompressor(void);
   Decompressor(PT(Buffer) buffer);
   virtual ~Decompressor(void);

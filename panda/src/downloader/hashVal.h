@@ -15,7 +15,7 @@
 // Description : A sixteen-byte hash value sent to the crypt library.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS HashVal {
-public:
+PUBLISHED:
   INLINE HashVal();
   INLINE bool operator == (const HashVal &other) const;
   INLINE uint get_value(int val) const;

@@ -25,14 +25,15 @@
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS AsyncUtility {
+PUBLISHED:
+  INLINE void set_frequency(float frequency);
+  INLINE float get_frequency(void) const;
+
 public:
   AsyncUtility(float frequency = 0.2);
   virtual ~AsyncUtility(void);
 
   void create_thread(void);
-
-  INLINE void set_frequency(float frequency);
-  INLINE float get_frequency(void) const;
 
 protected:
   void destroy_thread(void);

@@ -45,8 +45,7 @@ typedef int Version;
 typedef int Phase;
 
 class EXPCL_PANDAEXPRESS DownloadDb {
-public:
-
+PUBLISHED:
   // Status of a multifile is stored in this enum
   // Note these values are in increasing order of "doneness"
   // So if you are decompressed, you are complete
@@ -190,20 +189,22 @@ public:
     bool write_header(ofstream &write_stream);
   };
 
+PUBLISHED:
   Db read_db(Filename &file);
   bool write_db(Filename &file, Db db);
 
+public:
   // The doenload db stores two databases, one that represents the client's state
   // and one that represents the server state
   Db _client_db;
   Db _server_db;
   
-public:
   // Magic number for knowing this is a download Db
   static PN_uint32 _magic_number;  
-
   typedef vector<HashVal> vectorHash;
   typedef map<string, vectorHash> VersionMap;
+
+PUBLISHED:
   void add_version(const Filename &name, HashVal hash, Version version);
   void add_version(const string &name, HashVal hash, Version version);
   int get_version(const Filename &name, HashVal hash);
