@@ -1,6 +1,6 @@
 #define INSTALL_HEADERS \
     Makefile.a2egg-static.rules Makefile.a2egg.rules \
-    Makefile.char-egg.rules Makefile.findlatest Makefile.flt-egg.rules \
+    Makefile.char-egg.rules Makefile.flt-egg.rules \
     Makefile.inst-egg.vars Makefile.soft2egg.rules \
     Makefile.source-egg.rules Makefile.textures.rules
 

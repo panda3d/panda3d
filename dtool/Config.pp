@@ -60,6 +60,9 @@
 //              files, to ease transition to the new system.
 //  unix      - Generate makefiles suitable for most Unix platforms,
 //              without using autoconf.
+//  msvc      - Generate makefiles suitable for building on Windows platforms
+//              (e.g. Windows NT, Windows 2000) using the Microsoft Visual C++
+//              command-line compiler.
 //
 #define BUILD_TYPE stopgap
 
