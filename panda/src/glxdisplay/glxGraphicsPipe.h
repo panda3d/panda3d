@@ -32,6 +32,8 @@ typedef int Window;
 typedef int XErrorEvent;
 typedef int XVisualInfo;
 typedef int Atom;
+typedef int XIM;
+typedef int XIC;
 #else
 #include <X11/Xlib.h>
 #include <GL/glx.h>
@@ -54,6 +56,7 @@ public:
   INLINE Display *get_display() const;
   INLINE int get_screen() const;
   INLINE Window get_root() const;
+  INLINE XIM get_im() const;
 
   INLINE Atom get_wm_delete_window() const;
 
@@ -73,6 +76,7 @@ private:
   Display *_display;
   int _screen;
   Window _root;
+  XIM _im;
 
   Atom _wm_protocols;
   Atom _wm_delete_window;

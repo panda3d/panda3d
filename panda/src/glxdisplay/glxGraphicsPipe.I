@@ -59,3 +59,15 @@ INLINE Atom glxGraphicsPipe::
 get_wm_delete_window() const {
   return _wm_delete_window;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::get_im
+//       Access: Public
+//  Description: Returns the input method opened for the pipe, or NULL
+//               if the input method could not be opened for some
+//               reason.
+////////////////////////////////////////////////////////////////////
+INLINE XIM glxGraphicsPipe::
+get_im() const {
+  return _im;
+}

@@ -46,6 +46,8 @@ glxGraphicsPipe(const string &display) {
     display_spec = ExecutionEnvironment::get_environment_variable("DISPLAY");
   }
 
+  setlocale(LC_ALL, "");
+
   _is_valid = false;
   _supports_fullscreen = false;
   _display = NULL;
@@ -61,6 +63,12 @@ glxGraphicsPipe(const string &display) {
     return;
   }
 
+  if (!XSupportsLocale()) {
+    glxdisplay_cat.warning()
+      << "X does not support locale " << setlocale(LC_ALL, NULL) << "\n";
+  }
+  XSetLocaleModifiers("");
+
   int errorBase, eventBase;
   if (!glXQueryExtension(_display, &errorBase, &eventBase)) {
     glxdisplay_cat.error()
@@ -75,6 +83,27 @@ glxGraphicsPipe(const string &display) {
   _display_height = DisplayHeight(_display, _screen);
   _is_valid = true;
 
+  // Connect to an input method for supporting international text
+  // entry.
+  _im = XOpenIM(_display, NULL, NULL, NULL);
+  if (_im == (XIM)NULL) {
+    glxdisplay_cat.warning()
+      << "Couldn't open input method.\n";
+  }
+
+  // What styles does the current input method support?
+  /*
+  XIMStyles *im_supported_styles;
+  XGetIMValues(_im, XNQueryInputStyle, &im_supported_styles, NULL);
+
+  for (int i = 0; i < im_supported_styles->count_styles; i++) {
+    XIMStyle style = im_supported_styles->supported_styles[i];
+    cerr << "style " << i << ". " << hex << style << dec << "\n";
+  }
+
+  XFree(im_supported_styles);
+  */
+
   // Get the X atom number.
   _wm_delete_window = XInternAtom(_display, "WM_DELETE_WINDOW", false);
 }
@@ -86,6 +115,9 @@ glxGraphicsPipe(const string &display) {
 ////////////////////////////////////////////////////////////////////
 glxGraphicsPipe::
 ~glxGraphicsPipe() {
+  if (_im) {
+    XCloseIM(_im);
+  }
   if (_display) {
     XCloseDisplay(_display);
   }

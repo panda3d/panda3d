@@ -48,6 +48,7 @@ glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
   _display = glx_pipe->get_display();
   _screen = glx_pipe->get_screen();
   _xwindow = (Window)NULL;
+  _ic = (XIC)NULL;
   _awaiting_configure = false;
   _wm_delete_window = glx_pipe->get_wm_delete_window();
 
@@ -162,6 +163,10 @@ process_events() {
 
   XEvent event;
   while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
+    if (XFilterEvent(&event, None)) {
+      continue;
+    }
+
     WindowProperties properties;
     ButtonHandle button;
 
@@ -195,13 +200,22 @@ process_events() {
     case KeyPress:
       {
         _input_devices[0].set_pointer_in_window(event.xkey.x, event.xkey.y);
-        int index = ((event.xkey.state & ShiftMask) != 0) ? 1 : 0;
 
-        // First, get the keystroke, as modified by the shift key.
-        KeySym key = XLookupKeysym(&event.xkey, index);
-        if (key > 0 && key < 128) {
-          // If it's an ASCII key, press it.
-          _input_devices[0].keystroke(key);
+        // First, get the keystroke as a wide-character sequence.
+        static const int buffer_size = 256;
+        wchar_t buffer[buffer_size];
+        Status status;
+        int len = XwcLookupString(_ic, &event.xkey, buffer, buffer_size, NULL,
+                                  &status);
+        if (status == XBufferOverflow) {
+          glxdisplay_cat.error()
+            << "Overflowed input buffer.\n";
+        }
+
+        // Now each of the returned wide characters represents a
+        // keystroke.
+        for (int i = 0; i < len; i++) {
+          _input_devices[0].keystroke(buffer[i]);
         }
 
         // Now get the raw unshifted button.
@@ -349,9 +363,14 @@ set_properties_now(WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 close_window() {
+  if (_ic != (XIC)NULL) {
+    XDestroyIC(_ic);
+    _ic = (XIC)NULL;
+  }
+
   if (_xwindow != (Window)NULL) {
     XDestroyWindow(_display, _xwindow);
-    _xwindow = (Window)0;
+    _xwindow = (Window)NULL;
 
     // This may be necessary if we just closed the last X window in an
     // application, so the server hears the close request.
@@ -422,6 +441,19 @@ open_window() {
     return false;
   }
   set_wm_properties(_properties);
+
+  // We don't specify any fancy properties of the XIC.  It would be
+  // nicer if we could support fancy IM's that want preedit callbacks,
+  // etc., but that can wait until we have an X server that actually
+  // supports these to test it on.
+  _ic = XCreateIC
+    (glx_pipe->get_im(),
+     XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+     NULL);
+  if (_ic == (XIC)NULL) {
+    glxdisplay_cat.warning()
+      << "Couldn't create input context.\n";
+  }
 
   XMapWindow(_display, _xwindow);
 

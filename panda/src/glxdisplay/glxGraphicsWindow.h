@@ -65,6 +65,8 @@ private:
   int _screen;
   Window _xwindow;
   Colormap _colormap;
+  XIC _ic;
+
   long _event_mask;
   bool _awaiting_configure;
   Atom _wm_delete_window;
