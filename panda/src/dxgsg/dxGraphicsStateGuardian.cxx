@@ -917,7 +917,10 @@ add_to_FVFBuf(void *data,  size_t bytes)
 
 }
 
-#define ADD_DWORD_TO_FVFBUF(data) { *((DWORD *)_pCurFvfBufPtr) = data;  _pCurFvfBufPtr += sizeof(DWORD);}
+// generates slightly fewer instrs
+#define add_DWORD_to_FVFBuf(data) { *((DWORD *)_pCurFvfBufPtr) = (DWORD) data;  _pCurFvfBufPtr += sizeof(DWORD);}
+
+typedef enum {FlatVerts,IndexedVerts,MixedFmtVerts} GeomVertFormat;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_point
@@ -950,26 +953,6 @@ draw_point(const GeomPoint *geom) {
      }
 #endif
 
-#if 0
-  perVertex = perPrim = 0;
-  if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PerCoord;
-  if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX) perVertex |= PerColor;
-
-  size_t vertex_size = draw_prim_setup(geom);
-
-  nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
-  nassertv(nPrims * vertex_size < VERT_BUFFER_SIZE);
-  _pCurFvfBufPtr = _pFvfBufBasePtr;          // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
-
-    // iterate through the point
-  draw_prim_inner_loop2(nPrims, geom, perPrim);
-
-  _d3dDevice->DrawPrimitive(D3DPT_POINTLIST, p_flags, _pFvfBufBasePtr, nPrims, NULL);
-#else
-
-  size_t vertex_size = draw_prim_setup(geom);
-
   nassertv(nPrims < D3DMAXNUMVERTICES );
 
   PTA_Vertexf coords;
@@ -983,6 +966,44 @@ draw_point(const GeomPoint *geom) {
   geom->get_normals(norms,bind,nindexes);
   geom->get_colors(colors,bind,cindexes);
   geom->get_texcoords(texcoords,bind,tindexes);
+
+  GeomVertFormat GeomVrtFmt=FlatVerts;
+
+  // first determine if we're indexed or non-indexed
+
+  if((vindexes!=NULL)&&(cindexes!=NULL)&&(tindexes!=NULL)&&(nindexes!=NULL)) {
+	  GeomVrtFmt=IndexedVerts;
+  } else if(!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
+		 GeomVrtFmt=MixedFmtVerts;
+
+#ifdef DONT_USE_DRAWPRIMSTRIDED
+    GeomVrtFmt=MixedFmtVerts;
+#endif
+
+  // for Indexed Prims and mixed indexed/non-indexed prims, we will use old pipeline for now
+  // need to add code to handle fully indexed mode (and handle cases with index arrays of different lengths,
+  // values (may only be possible to handle certain cases without reverting to old pipeline)
+  if(GeomVrtFmt!=FlatVerts) {
+	
+	  perVertex = PerCoord;
+	  perPrim = 0;
+	  if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PerCoord;
+	  if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
+	  if (geom->get_binding(G_COLOR) == G_PER_VERTEX) perVertex |= PerColor;
+	
+	  size_t vertex_size = draw_prim_setup(geom);
+	
+	  nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
+	  nassertv(nPrims * vertex_size < VERT_BUFFER_SIZE);
+	  _pCurFvfBufPtr = _pFvfBufBasePtr;          // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
+	
+		// iterate through the point
+	  draw_prim_inner_loop2(nPrims, geom, perPrim);
+	
+	  _d3dDevice->DrawPrimitive(D3DPT_POINTLIST, p_flags, _pFvfBufBasePtr, nPrims, NULL);
+  } else {
+
+  size_t vertex_size = draw_prim_setup(geom);
 
   // new code only handles non-indexed pointlists (is this enough?)
   nassertv((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL));
@@ -1005,10 +1026,7 @@ draw_point(const GeomPoint *geom) {
 
 	  for(int i=0;i<nPrims;i++) {
 		  Colorf colf=colors[i];
-		  D3DCOLOR d3dcolr;
-
-		  d3dcolr = D3DRGBA(colf[0], colf[1], colf[2], colf[3]);
-		  add_to_FVFBuf((void *)&d3dcolr, sizeof(D3DCOLOR));
+		  add_DWORD_to_FVFBuf(D3DRGBA(colf[0], colf[1], colf[2], colf[3]));
 	  }
 
       dps_data.diffuse.lpvData = (VOID*)_pFvfBufBasePtr;
@@ -1021,7 +1039,7 @@ draw_point(const GeomPoint *geom) {
   }
 
   _d3dDevice->DrawPrimitiveStrided(D3DPT_POINTLIST, p_flags, &dps_data, nPrims, NULL);
-#endif
+  }
 
   _pCurFvfBufPtr = NULL;
 }
@@ -1553,7 +1571,7 @@ draw_sprite(const GeomSprite *geom) {
 	if(bDoColor) {
 		if(!color_overall)  // otherwise its already been set globally
 			CurColor = cur_image._c;
-		add_to_FVFBuf((void *)&CurColor, sizeof(D3DCOLOR)); // only need to cpy color on 1st vert, others are just empty ignored space
+		add_DWORD_to_FVFBuf(CurColor); // only need to cpy color on 1st vert, others are just empty ignored space
 	}
 	add_to_FVFBuf((void *)TexCrdSets[0], sizeof(float)*2);
 
@@ -1569,7 +1587,7 @@ draw_sprite(const GeomSprite *geom) {
 
     add_to_FVFBuf((void *)ur.get_data(), sizeof(D3DVECTOR));
 	if(bDoColor) 
-		add_to_FVFBuf((void *)&CurColor, sizeof(D3DCOLOR));
+		add_DWORD_to_FVFBuf(CurColor);
 	add_to_FVFBuf((void *)TexCrdSets[3], sizeof(float)*2);
 
 	for (int ii=0;ii<QUADVERTLISTLEN;ii++) {
@@ -1733,8 +1751,8 @@ draw_prim_setup(const Geom *geom) {
 //  Description: This adds data to the flexible vertex format
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_prim_inner_loop(int loops, const Geom *geom) 
-{
+draw_prim_inner_loop(int loops, const Geom *geom)  {
+
     while (--loops >= 0)
         {
         switch(perVertex)
@@ -1785,18 +1803,17 @@ draw_prim_inner_loop(int loops, const Geom *geom)
                 p_texcoord = geom->get_next_texcoord(ti);
                 break;
             }
-        if (p_flags & D3DFVF_XYZ)
-            add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
+
+        add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
+
         if (p_flags & D3DFVF_NORMAL)
             add_to_FVFBuf((void *)&p_normal, sizeof(D3DVECTOR));
         if (p_flags & D3DFVF_DIFFUSE)
-            add_to_FVFBuf((void *)&p_colr, sizeof(D3DCOLOR));
+            add_DWORD_to_FVFBuf(p_colr);
         if (p_flags & D3DFVF_TEXCOUNT_MASK)
             add_to_FVFBuf((void *)&p_texcoord, sizeof(TexCoordf));
         }
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_prim_inner_loop2
@@ -1805,81 +1822,73 @@ draw_prim_inner_loop(int loops, const Geom *geom)
 //               for component normals and color
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-draw_prim_inner_loop2(int loops, const Geom *geom, short& per ) 
-{
-    while (--loops >= 0)
-        {
-        if (per & PerColor)
-          {
-          p_color = geom->get_next_color(ci);       // set overall color if there is one
-          p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-          }
-        if (per & PerNormal)
-            p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+draw_prim_inner_loop2(int loops, const Geom *geom, short& per ) {
 
-        switch(perVertex)
-            {
+#define GET_NEXT_VERTEX() { \
+	p_vertex = geom->get_next_vertex(vi); }
+
+#define GET_NEXT_NORMAL() { \
+    p_normal = geom->get_next_normal(ni); }
+
+#define GET_NEXT_COLOR() { \
+    p_color = geom->get_next_color(ci); \
+    p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]); }
+
+#define GET_NEXT_TEXCOORD() { \
+    p_texcoord = geom->get_next_texcoord(ti); }
+
+    while (--loops >= 0) {
+
+		GET_NEXT_VERTEX();   // coord info will always be perVertex
+
+        switch(perVertex | (DWORD)per) {
             case 0x3:
-                p_normal = geom->get_next_normal(ni);
+			    GET_NEXT_NORMAL();
             case 0x1:
-                p_vertex = geom->get_next_vertex(vi);
                 break;
             case 0x5:
-                p_vertex = geom->get_next_vertex(vi);
             case 0x4:
-                p_color = geom->get_next_color(ci);
-                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+			    GET_NEXT_COLOR();
                 break;
             case 0x7:
-                p_vertex = geom->get_next_vertex(vi);
             case 0x6:
-                p_color = geom->get_next_color(ci);
-                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+			    GET_NEXT_COLOR();
             case 0x2:
-                p_normal = geom->get_next_normal(ni);
+			    GET_NEXT_NORMAL();
                 break;
             case 0x9:
-                p_vertex = geom->get_next_vertex(vi);
             case 0x8:
-                p_texcoord = geom->get_next_texcoord(ti);
+				GET_NEXT_TEXCOORD();
                 break;
             case 0xB:
-                p_vertex = geom->get_next_vertex(vi);
             case 0xA:
-                p_normal = geom->get_next_normal(ni);
-                p_texcoord = geom->get_next_texcoord(ti);
+			    GET_NEXT_NORMAL();
+				GET_NEXT_TEXCOORD();
                 break;
             case 0xD:
-                p_vertex = geom->get_next_vertex(vi);
             case 0xC:
-                p_color = geom->get_next_color(ci);
-                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-                p_texcoord = geom->get_next_texcoord(ti);
+			    GET_NEXT_COLOR();
+				GET_NEXT_TEXCOORD();
                 break;
             case 0xF:
-                p_vertex = geom->get_next_vertex(vi);
             case 0xE:
-                p_normal = geom->get_next_normal(ni);
-                p_color = geom->get_next_color(ci);
-                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-                p_texcoord = geom->get_next_texcoord(ti);
+			    GET_NEXT_NORMAL();
+			    GET_NEXT_COLOR();
+				GET_NEXT_TEXCOORD();
                 break;
             }
-        if (p_flags & D3DFVF_XYZ)
-            add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
+
+        add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
+
         if (p_flags & D3DFVF_NORMAL)
             add_to_FVFBuf((void *)&p_normal, sizeof(D3DVECTOR));
         if (p_flags & D3DFVF_DIFFUSE)
-//            add_to_FVFBuf((void *)&p_colr, sizeof(D3DCOLOR));
-			ADD_DWORD_TO_FVFBUF(p_colr);
-
-        if (p_flags & D3DFVF_TEXCOUNT_MASK)
-            add_to_FVFBuf((void *)&p_texcoord, sizeof(TexCoordf));
-        }
+			add_DWORD_to_FVFBuf(p_colr);
+		if (p_flags & D3DFVF_TEXCOUNT_MASK)
+			add_to_FVFBuf((void *)&p_texcoord, sizeof(TexCoordf));
+	}
 }
 
-
-typedef enum {FlatVerts,IndexedVerts,MixedFmtVerts} GeomVertFormat;
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_tri
 //       Access: Public, Virtual
@@ -1953,7 +1962,7 @@ draw_tri(const GeomTri *geom) {
 	  nassertv(nPrims * 3 * vertex_size < VERT_BUFFER_SIZE);
 	  _pCurFvfBufPtr = _pFvfBufBasePtr;          // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 	
-		// iterate through the triangle primitive
+	  // iterate through the triangle primitive
 	
 	  for (int i = 0; i < nPrims; i++) {
 		if (perPrim & PerColor)
@@ -2224,85 +2233,13 @@ draw_quad(const GeomQuad *geom) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_tristrip(const GeomTristrip *geom) {
-    activate();
+//    activate();
 
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
 
-#ifdef WBD_GL_MODE
-
-  int nPrims = geom->get_num_prims();
-  const int *plen = geom->get_lengths();
-
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-
-  GeomIssuer issuer(geom, this,
-            issue_vertex_gl,
-            issue_normal_gl,
-            issue_texcoord_gl,
-            issue_color_gl);
-
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX || 
-      geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
-    call_glShadeModel(GL_SMOOTH);
-  } else {
-    call_glShadeModel(GL_FLAT);
-  }
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni); 
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    int num_verts = *(plen++);
-    nassertv(num_verts >= 3);
-
-    glBegin(GL_TRIANGLE_STRIP);
-
-    // Per-component attributes for the first triangle?
-    issuer.issue_color(G_PER_COMPONENT, ci);
-    issuer.issue_normal(G_PER_COMPONENT, ni);
-    
-    // Draw the first three vertices.
-    int v;
-    for (v = 0; v < 3; v++) {
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-    
-    // Now draw each of the remaining vertices.  Each vertex from
-    // this point on defines a new triangle.
-    for (v = 3; v < num_verts; v++) {
-      // Per-component attributes?
-      issuer.issue_color(G_PER_COMPONENT, ci);
-      issuer.issue_normal(G_PER_COMPONENT, ni);
-      
-      // Per-vertex attributes.
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-    glEnd();
-  }
-#else
-
   draw_multitri(geom, D3DPT_TRIANGLESTRIP);
-
-#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2312,86 +2249,14 @@ draw_tristrip(const GeomTristrip *geom) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_trifan(const GeomTrifan *geom) {
-  activate();
+//  activate();
 
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
 
-#ifdef WBD_GL_MODE
-  int nprims = geom->get_num_prims();
-  const int *plen = geom->get_lengths();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::NormalIterator ni = geom->make_normal_iterator();
-  Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
-  Geom::ColorIterator ci = geom->make_color_iterator();
-
-
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_texcoord_gl,
-                    issue_color_gl);
-
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX ||
-      geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
-    call_glShadeModel(GL_SMOOTH);
-  } else {
-    call_glShadeModel(GL_FLAT);
-  }
-
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-    issuer.issue_normal(G_PER_PRIM, ni);
-
-    int num_verts = *(plen++);
-    nassertv(num_verts >= 3);
-
-    glBegin(GL_TRIANGLE_FAN);
-
-    // Per-component attributes for the first triangle?
-    issuer.issue_color(G_PER_COMPONENT, ci);
-    issuer.issue_normal(G_PER_COMPONENT, ni);
-   
-    // Draw the first three vertices.
-    int v;
-    for (v = 0; v < 3; v++) {
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-
-    // Now draw each of the remaining vertices.  Each vertex from
-    // this point on defines a new triangle.
-    for (v = 3; v < num_verts; v++) {
-      // Per-component attributes?
-      issuer.issue_color(G_PER_COMPONENT, ci);
-      issuer.issue_normal(G_PER_COMPONENT, ni);
-
-      // Per-vertex attributes.
-      issuer.issue_color(G_PER_VERTEX, ci);
-      issuer.issue_normal(G_PER_VERTEX, ni);
-      issuer.issue_texcoord(G_PER_VERTEX, ti);
-      issuer.issue_vertex(G_PER_VERTEX, vi);
-    }
-    glEnd();
-  }
-#else      // the DX way
-
-    draw_multitri(geom, D3DPT_TRIANGLEFAN);
-
-#endif              // WBD_GL_MODE
+  draw_multitri(geom, D3DPT_TRIANGLEFAN);
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_multitri
@@ -2445,19 +2310,35 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 	if(GeomVrtFmt!=FlatVerts) {
 
 	  // this is the old geom setup, it reformats every vtx into an output array passed to d3d
-	  perVertex = 0;
-	  if (geom->get_binding(G_COORD) == G_PER_VERTEX)  perVertex |= PerCoord;
-	  if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
-	  if (geom->get_binding(G_COLOR) == G_PER_VERTEX) perVertex |= PerColor;
-	  if (geom->get_binding(G_TEXCOORD) == G_PER_VERTEX) perVertex |= PerTexcoord;
-	
-	  perPrim = 0;
-	  if (geom->get_binding(G_NORMAL) == G_PER_PRIM) perPrim |= PerNormal;
-	  if (geom->get_binding(G_COLOR) == G_PER_PRIM) perPrim |= PerColor;
-	
-	  perComp = 0;
-	  if (geom->get_binding(G_NORMAL) == G_PER_COMPONENT) perComp |= PerNormal;
-	  if (geom->get_binding(G_COLOR) == G_PER_COMPONENT) perComp |= PerColor;
+	  perVertex = PerCoord;
+	  perPrim = perComp = 0;
+
+	  switch(geom->get_binding(G_NORMAL)) {
+		  case G_PER_VERTEX:
+			  perVertex |= PerNormal;
+			  break;
+		  case G_PER_PRIM:
+			  perPrim |= PerNormal;
+			  break;
+		  case G_PER_COMPONENT:
+			  perComp |= PerNormal;
+			  break;
+	  }
+
+	  switch(geom->get_binding(G_COLOR)) {
+		  case G_PER_VERTEX:
+			  perVertex |= PerColor;
+			  break;
+		  case G_PER_PRIM:
+			  perPrim |= PerColor;
+			  break;
+		  case G_PER_COMPONENT:
+			  perComp |= PerColor;
+			  break;
+	  }
+		 
+	  if (geom->get_binding(G_TEXCOORD) == G_PER_VERTEX) 
+		  perVertex |= PerTexcoord;
 	
 	  size_t vertex_size = draw_prim_setup(geom);
 	  
@@ -2712,154 +2593,234 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
   _pCurFvfBufPtr = NULL;
  }
 }
-#if 0
-static INLINE void
-sincosf(float angle, float *psin, float *pcos) {
-
-#ifdef _X86_
-#define fsincos __asm _emit 0xd9 __asm _emit 0xfb
-    __asm {
-        mov eax, psin
-        mov edx, pcos
-        fld angle
-        fsincos
-        fstp DWORD ptr [edx]
-        fstp DWORD ptr [eax]
-    }
-#undef fsincos
-#else //!_X86_
-    *psin = sinf(angle);
-    *pcos = cosf(angle);
-#endif //!_X86_
-}
 
 //-----------------------------------------------------------------------------
 // Name: GenerateSphere()
 // Desc: Makes vertex and index data for ellipsoid w/scaling factors sx,sy,sz
+//       tries to match gluSphere behavior
 //-----------------------------------------------------------------------------
   
-void GenerateSphere(void *pVertexSpace,WORD *pwIndices,D3DVECTOR& vCenter, float fRadius, 
-					WORD wNumRings, WORD wNumSections, float sx, float sy, float sz,
-					DWORD *pNumVertices,DWORD *pNumIndices)
-{
-    FLOAT x, y, z, v, rsintheta; // Temporary variables
-    WORD  i, j, n, m;            // counters
+void DXGraphicsStateGuardian::
+GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
+			   void *pIndexSpace,DWORD dwIndexSpaceByteSize,
+			   D3DVECTOR *pCenter, float fRadius, 
+			   DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
+			   DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize) {
+
+    float x, y, z, rsintheta;
     D3DVECTOR vPoint;
 
-#define M_PI 3.1415926f
+//#define DBG_GENSPHERE
+#define M_PI 3.1415926f   // probably should get this from mathNumbers.h instead
 
-    //Generate space for the required triangles and vertices.
-    WORD       wNumTriangles = (wNumRings + 1) * wNumSections * 2;
-	DWORD dwNumVertices,dwNumIndices;
-    dwNumIndices = *pNumIndices = wNumTriangles*3;
-    dwNumVertices = *pNumVertices  = (wNumRings + 1) * wNumSections + 2;
-//    D3DVERTEX* pvVertices     = new D3DVERTEX[dwNumVertices];
-//    WORD*      pwIndices      = new WORD[3*wNumTriangles];
-//    D3DVERTEX* pvVertices     = (D3DVERTEX*) _pFvfBufBasePtr;
-//    WORD*      pwIndices      = _index_buf;
+    nassertv(wNumRings>=2 && wNumSections>=2);
+	wNumRings--;  // wNumRings indicates number of vertex rings (not tri-rings). 
+                  // gluSphere 'stacks' arg for 1 vert ring is 2, so convert to our '1'.
+	wNumSections++;  // to make us equiv to gluSphere 
 
-    D3DVERTEX* pvVertices = (D3DVERTEX*) pVertexSpace;
+    //Figure out needed space for the triangles and vertices.
+	DWORD dwNumVertices,dwNumIndices,dwNumTriangles;
 
-    nassertv(dwNumVertices*sizeof(D3DVERTEX) < VERT_BUFFER_SIZE);
+	#define DOTEXTURING (fvfFlags & D3DFVF_TEXCOUNT_MASK)
+	#define DONORMAL (fvfFlags & D3DFVF_NORMAL)
+	#define DOCOLOR (fvfFlags & D3DFVF_DIFFUSE)
+
+	if(DOTEXTURING) {
+		// if texturing, we need full rings of identical position verts at poles to hold diff texture coords
+		wNumRings+=2;
+		dwNumVertices =	*pNumVertices = wNumRings * wNumSections;
+		dwNumTriangles = (wNumRings-1) * wNumSections * 2;
+	} else {
+		dwNumVertices =	*pNumVertices = wNumRings * wNumSections + 2;
+		dwNumTriangles = (wNumRings+1) * wNumSections * 2;
+	}
+
+    dwNumIndices = *pNumIndices = dwNumTriangles*3;
+
+    D3DVERTEX* pvVertices = (D3DVERTEX*) pVertexSpace;  
+	WORD *pwIndices = (WORD *) pIndexSpace;
+
+    nassertv(dwNumVertices*dwVertSize < VERT_BUFFER_SIZE);
     nassertv(dwNumIndices < D3DMAXNUMVERTICES );
 
-	// possible optimizations: turn off normal generation if lighting not enabled.  note if we ever store this geom
-	// persistently, we should not do this optimization
+    // Generate vertex at the top point
+    D3DVECTOR vTopPoint  = *pCenter + D3DVECTOR( 0.0f, +sy*fRadius, 0.0f);
+    D3DVECTOR vBotPoint  = *pCenter + D3DVECTOR( 0.0f, -sy*fRadius, 0.0f);
+    D3DVECTOR vNormal = D3DVECTOR( 0.0f, 1.0f, 0.0f );
+	float texCoords[2];
+	 
+	nassertv(pVertexSpace==_pCurFvfBufPtr);  // add_to_FVFBuf requires this
+	
+#define ADD_GENSPHERE_VERTEX_TO_BUFFER(VERT)                      \
+    add_to_FVFBuf((void *)&(VERT), sizeof(D3DVECTOR));            \
+    if(fvfFlags & D3DFVF_NORMAL)                                  \
+		add_to_FVFBuf((void *)&vNormal, sizeof(D3DVECTOR));       \
+    if(fvfFlags & D3DFVF_DIFFUSE)                                 \
+		add_DWORD_to_FVFBuf(p_colr);                              \
+	if(fvfFlags & D3DFVF_TEXCOUNT_MASK)                           \
+		add_to_FVFBuf((void *)texCoords, sizeof(TexCoordf));   
+	
 
-    // Generate vertices at the top and bottom points.
-    D3DVECTOR vTopPoint  = vCenter + D3DVECTOR( 0.0f, +sy*fRadius, 0.0f);
-    D3DVECTOR vBotPoint  = vCenter + D3DVECTOR( 0.0f, -sy*fRadius, 0.0f);
-    D3DVECTOR vNormal = D3DVECTOR( 0.0f, 0.0f, 1.0f );
-    pvVertices[0]               = D3DVERTEX( vTopPoint,  vNormal, 0.0f, 0.0f );
-    pvVertices[dwNumVertices-1] = D3DVERTEX( vBotPoint, -vNormal, 0.0f, 0.0f );
+	if(! DOTEXTURING) {
+		ADD_GENSPHERE_VERTEX_TO_BUFFER(vTopPoint);
+	}
 
     // Generate vertex points for rings
-    FLOAT dtheta = (float)(M_PI / (wNumRings + 2));     //Angle between each ring
-    FLOAT dphi   = (float)(2*M_PI / wNumSections); 		//Angle between each section
-    FLOAT theta  = dtheta;
-    n = 1; //vertex being generated, begins at 1 to skip top point
 	float inv_radius = 1.0f/fRadius;
+	const float reciprocal_PI=1.0f/M_PI;
+	const float reciprocal_2PI=1.0f/(2.0*M_PI);
+	DWORD i;
+    float theta,dtheta;
 
-	// could optimize all this sin/cos stuff w/tables
+	if(DOTEXTURING) {
+		// numRings already includes 1st and last rings for this case
+		dtheta = (float)(M_PI / (wNumRings-1));     //Angle between each ring (ignore 2 fake rings)  
+		theta = 0.0;
+	} else  {
+		dtheta = (float)(M_PI / (wNumRings + 1));   //Angle between each ring		 
+		theta = dtheta;
+	}
+    float phi,dphi   = (float)(2*M_PI / (wNumSections-1)); //Angle between each section
 
-    for( i = 0; i < (wNumRings+1); i++ )
-    {
+#ifdef DBG_GENSPHERE
+	int nvs_written=0;
+    memset(pVertexSpace,0xFF,dwNumVertices*dwVertSize);
+#endif
+    
+    for(i = 0; i < wNumRings; i++ ) {
 		float costheta,sintheta,cosphi,sinphi;
+        phi =	0.0;
 
-		sincosf(theta,&sintheta,&costheta);
+		if(DOTEXTURING) {
+			texCoords[1] = theta * reciprocal_PI;  // v is the same for each ring
+		}
 
-        y = fRadius * costheta; // y is the same for each ring
-        v = theta / M_PI;     			 // v is the same for each ring
-        rsintheta = fRadius * sintheta;
-        FLOAT phi = 0.0f;
+		// could optimize all this sin/cos stuff w/tables
+		csincos(theta,&sintheta,&costheta);
+        y = fRadius * costheta; 	// y is the same for each ring
 
-        for( j = 0; j < wNumSections; j++ )
-        {
-			sincosf(phi,&sinphi,&cosphi);
+		rsintheta = fRadius * sintheta;
+
+        for(DWORD j = 0; j < wNumSections; j++) {
+			csincos(phi,&sinphi,&cosphi);
             x = rsintheta * sinphi;
             z = rsintheta * cosphi;
-        
-            FLOAT u = (FLOAT)(1.0 - phi / (2*M_PI) );
-            
-            vPoint        = vCenter + D3DVECTOR( sx*x, sy*y, sz*z );
-            vNormal       = D3DVECTOR( x*inv_radius, y*inv_radius, z*inv_radius );  // this is wrong for the non-spherical case (need 2 mul by sx, etc?)
-            pvVertices[n] = D3DVERTEX( vPoint, vNormal, u, v );
+
+#ifdef DBG_GENSPHERE
+			nvs_written++;
+#endif
+            vPoint = *pCenter + D3DVECTOR( sx*x, sy*y, sz*z );
+
+			add_to_FVFBuf((void *)&vPoint, sizeof(D3DVECTOR));
+
+			if(DONORMAL) {
+				// this is wrong normal for the non-spherical case (i think you need to multiply by 1/scale factor per component)
+				vNormal = Normalize(D3DVECTOR( x*inv_radius, y*inv_radius, z*inv_radius )); 
+				add_to_FVFBuf((void *)&vNormal, sizeof(D3DVECTOR));
+			}
+
+			if(DOCOLOR)
+				add_DWORD_to_FVFBuf(p_colr);
+
+			if(DOTEXTURING) {
+				texCoords[0] = 1.0 - phi*reciprocal_2PI;
+				add_to_FVFBuf((void *)texCoords, sizeof(TexCoordf));   
+			}
 
             phi += dphi;
-            n++;
         }
         theta += dtheta;
     }
+	
+#ifdef DBG_GENSPHERE
+	assert(nvs_written == dwNumVertices);
+#endif
 
-    // Generate triangles for top and bottom caps.
-    for( i = 0; i < wNumSections; i++ )
-    {
-		DWORD TopCapIndex=3*i;
-		DWORD BotCapIndex=3*(wNumTriangles - wNumSections + i);
-		DWORD i_incd = ((i + 1) % wNumSections);
+	if(! DOTEXTURING) {
+		// Generate bottom vertex
+		vNormal = D3DVECTOR( 0.0f, -1.0f, 0.0f );
+		ADD_GENSPHERE_VERTEX_TO_BUFFER(vBotPoint);
+	}
 
-        pwIndices[TopCapIndex] = 0;
-        pwIndices[TopCapIndex+1] = i + 1;
-        pwIndices[TopCapIndex+2] = 1 + i_incd;
+#ifdef DBG_GENSPHERE
+    memset(pwIndices,0xFF,dwNumIndices*sizeof(WORD));
+#endif
 
-        pwIndices[BotCapIndex] = (WORD)( dwNumVertices - 1 );
-        pwIndices[BotCapIndex+1] = (WORD)( dwNumVertices - 2 - i );
-        pwIndices[BotCapIndex+2] = (WORD)( dwNumVertices - 2 - i_incd);
-    }
+	// inited for textured case
+	DWORD cur_vertring_startidx=0;    // first vertex in current ring
+	DWORD CurFinalTriIndex = 0;       // index of next tri to be written
 
-    // Generate triangles for the rings
-    m = 1;            // first vertex in current ring,begins at 1 to skip top point
-    n = wNumSections; // triangle being generated, skip the top cap 
-        
-    for( i = 0; i < wNumRings; i++ )
-    {
-        for( j = 0; j < wNumSections; j++ )
-        {
-			DWORD j_incd,three_n,base_index;
+	if(! DOTEXTURING) {
+		// Generate caps using unique the bot/top vert
+		// for non-textured case, could render the caps as indexed trifans,
+		// but should be no perf difference b/w indexed trilists and indexed trifans
+		// and this has advantage of being aggregable into 1 big DPrim call for whole sphere
 
-			three_n=base_index=3*n;
-			j_incd=(j+1) % wNumSections;
+		for(i = 0; i < wNumSections; i++ ) {
+			 DWORD TopCapTriIndex=3*i;
+			 DWORD BotCapTriIndex=3*(dwNumTriangles - wNumSections + i);
+			 DWORD i_incd = ((i + 1) % wNumSections);
+	
+			 pwIndices[TopCapTriIndex++] = 0;
+			 pwIndices[TopCapTriIndex++] = i + 1;
+			 pwIndices[TopCapTriIndex] =  i_incd + 1;
+	
+			 pwIndices[BotCapTriIndex++] = (WORD)( dwNumVertices - 1 );
+			 pwIndices[BotCapTriIndex++] = (WORD)( dwNumVertices - 2 - i );
+			 pwIndices[BotCapTriIndex] = (WORD)( dwNumVertices - 2 - i_incd);
+		 }
 
-            pwIndices[base_index] = m + j;
-			base_index++;
-            pwIndices[base_index] = m + j+ wNumSections;
-			base_index++;
-            pwIndices[base_index] = m + j_incd + wNumSections;
-            
-			base_index++;
-            pwIndices[base_index] = pwIndices[three_n];
-			base_index++;
-            pwIndices[base_index] = pwIndices[three_n+2];
-			base_index++;
-            pwIndices[base_index] = m + j_incd;
-            
-            n += 2;
-        }
-        m += wNumSections;
-    }
+		cur_vertring_startidx = 1;          // first vertex in current ring (skip top vert)
+	    CurFinalTriIndex = wNumSections;    // index of tri to be written, wNumSections to skip the top cap row
+	} 
+
+	DWORD j_incd,base_index;
+
+	// technically we could break into a strip for every row (or 1 big strip connected w/degenerate tris)
+	// but indexed trilists should actually be just as fast on HW
+
+  	// Generate triangles for the rings
+	for(i = 0; i < wNumRings-1; i++ ) {
+		 for(DWORD j = 0; j < wNumSections; j++ ) {
+
+			 base_index=3*CurFinalTriIndex;  // final vert index is 3*finaltriindex
+			 j_incd=(j+1) % wNumSections;
+
+			 DWORD v1_row1_idx,v2_row1_idx,v1_row2_idx,v2_row2_idx;
+
+			 v1_row1_idx = cur_vertring_startidx + j;
+			 v2_row1_idx = cur_vertring_startidx + j_incd;
+			 v1_row2_idx = v1_row1_idx + wNumSections;
+			 v2_row2_idx = v2_row1_idx + wNumSections;
+
+			 #ifdef DBG_GENSPHERE
+			   assert(v2_row2_idx<dwNumVertices);
+			   assert(v1_row2_idx<dwNumVertices);
+			   assert(v2_row1_idx<dwNumVertices);
+			   assert(v1_row1_idx<dwNumVertices);
+			 #endif
+
+			 pwIndices[base_index++] = v1_row1_idx;
+			 pwIndices[base_index++] = v1_row2_idx;
+			 pwIndices[base_index++] = v2_row2_idx;
+
+			 pwIndices[base_index++] = v1_row1_idx;
+			 pwIndices[base_index++] = v2_row2_idx;
+			 pwIndices[base_index++] = v2_row1_idx;
+
+			 CurFinalTriIndex += 2;  // we wrote 2 tris, add 2 to finaltriindex
+		 }
+		 cur_vertring_startidx += wNumSections;
+	 }
+
+#ifdef DBG_GENSPHERE
+	 assert(CurFinalTriIndex == dwNumTriangles); 
+	 assert(base_index == dwNumIndices);
+ 	 for(i = 0; i < dwNumIndices; i++ ) 
+		 assert(pwIndices[i] <dwNumVertices);
+#endif
 }
 
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_sphere
@@ -2868,21 +2829,14 @@ void GenerateSphere(void *pVertexSpace,WORD *pwIndices,D3DVECTOR& vCenter, float
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_sphere(const GeomSphere *geom) {
-  activate();
 
-#ifdef _DEBUG
-  dxgsg_cat.debug() << "draw_sphere() unimplemented in DX!!\n";
-
-#endif
-
-  return;
-
-  // we can implement this either using a box placeholder, or by generating the sphere on the fly (probably would not be fast)
+#define SPHERE_NUMSLICES 16
+#define SPHERE_NUMSTACKS 10
  
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
-#if 0
+
   int nprims = geom->get_num_prims();
 
   if(nprims==0) {
@@ -2891,88 +2845,42 @@ draw_sphere(const GeomSphere *geom) {
   }
 
   Geom::VertexIterator vi = geom->make_vertex_iterator();
-  Geom::ColorIterator ci = geom->make_color_iterator();
+  Geom::ColorIterator ci;
+  bool bPerPrimColor = (geom->get_binding(G_COLOR) == G_PER_PRIM);
+  if(bPerPrimColor)
+	  ci = geom->make_color_iterator();
 
   for (int i = 0; i < nprims; i++) {
 
+	DWORD nVerts,nIndices;
     Vertexf center = geom->get_next_vertex(vi);
     Vertexf edge = geom->get_next_vertex(vi);
     LVector3f v = edge - center;
-    float r = sqrt(dot(v, v));
-// need to gen texcoords and colors for verts too
-  
-void GenerateSphere(void *pVertexSpace,WORD *pwIndices,D3DVECTOR& vCenter, float fRadius, 
-					WORD wNumRings, WORD wNumSections, float sx, float sy, float sz,
-					DWORD *pNumVertices,DWORD *pNumIndices)
+    float fRadius = sqrt(dot(v, v));
 
-  }
-    // Since gluSphere doesn't have a center parameter, we have to use
-    // a matrix transform.
+	size_t vertex_size = draw_prim_setup(geom);
 
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glMultMatrixf(LMatrix4f::translate_mat(center).get_data());
+	_pCurFvfBufPtr = _pFvfBufBasePtr;
 
-    // Now render the sphere using GLU calls.
-    gluSphere(sph, r, 16, 10);
+	if(bPerPrimColor) {
+			p_color = geom->get_next_color(ci);  
+			p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+	}
 
+    GenerateSphere(_pCurFvfBufPtr, VERT_BUFFER_SIZE,
+				   _index_buf, D3DMAXNUMVERTICES,
+				    (D3DVECTOR *)&center, fRadius, 
+					SPHERE_NUMSTACKS, SPHERE_NUMSLICES,
+				    1.0f, 1.0f, 1.0f,  // no scaling factors, do a sphere not ellipsoid
+					&nVerts,&nIndices,p_flags,vertex_size);
 
-#endif
-
-#ifdef WBD_GL_MODE
-  GeomIssuer issuer(geom, this,
-                    issue_vertex_gl,
-                    issue_normal_gl,
-                    issue_texcoord_gl,
-                    issue_color_gl);
-
-  if (wants_normals()) {
-    call_glShadeModel(GL_SMOOTH);
-  } else {
-    call_glShadeModel(GL_FLAT);
+	// possible optimization: make DP 1 for all spheres call here, since trilist is independent tris.
+	// indexes couldnt start w/0 tho, need to pass offset to gensph
+	_d3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,  p_flags, _pFvfBufBasePtr, nVerts, _index_buf,nIndices,NULL);
   }
 
-  // Draw overall
-  issuer.issue_color(G_OVERALL, ci);
- 
-  GLUquadricObj *sph = gluNewQuadric();
-  gluQuadricNormals(sph, wants_normals() ? (GLenum)GLU_SMOOTH : (GLenum)GLU_NONE);
-  gluQuadricTexture(sph, wants_texcoords() ? (GLenum)GL_TRUE : (GLenum)GL_FALSE);
-  gluQuadricOrientation(sph, (GLenum)GLU_OUTSIDE);
-  gluQuadricDrawStyle(sph, (GLenum)GLU_FILL);
-  //gluQuadricDrawStyle(sph, (GLenum)GLU_LINE);
-
-  for (int i = 0; i < nprims; i++) {
-    // Draw per primitive
-    issuer.issue_color(G_PER_PRIM, ci);
-
-    for (int j = 0; j < 2; j++) {
-      // Draw per vertex
-      issuer.issue_color(G_PER_VERTEX, ci);
-    }
-    Vertexf center = geom->get_next_vertex(vi);
-    Vertexf edge = geom->get_next_vertex(vi);
-    LVector3f v = edge - center;
-    float r = sqrt(dot(v, v));
-
-    // Since gluSphere doesn't have a center parameter, we have to use
-    // a matrix transform.
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glMultMatrixf(LMatrix4f::translate_mat(center).get_data());
-
-    // Now render the sphere using GLU calls.
-    gluSphere(sph, r, 16, 10);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-  }
-
-  gluDeleteQuadric(sph);
-#endif              // WBD_GL_MODE
+  _pCurFvfBufPtr = NULL;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_color_transform
@@ -3479,8 +3387,8 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     case GL_UNSIGNED_BYTE: 
       dxgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
       break;
-    case GL_FLOAT: 
-      dxgsg_cat.debug(false) << "GL_FLOAT, "; 
+    case GL_float: 
+      dxgsg_cat.debug(false) << "GL_float, "; 
       break;
   default: 
     dxgsg_cat.debug(false) << "unknown, "; 
@@ -3619,8 +3527,8 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   case GL_UNSIGNED_BYTE: 
     dxgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, "; 
     break;
-  case GL_FLOAT:
-    dxgsg_cat.debug(false) << "GL_FLOAT, ";
+  case GL_float:
+    dxgsg_cat.debug(false) << "GL_float, ";
     break;
   default: 
     dxgsg_cat.debug(false) << "unknown, "; 
@@ -5511,7 +5419,7 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DVECTOR& vFrom, D3DVECTOR& vAt,
     // difference from the eyepoint to the lookat point.
     D3DVECTOR vView = vAt - vFrom;
 
-    FLOAT fLength = Magnitude( vView );
+    float fLength = Magnitude( vView );
     if( fLength < 1e-6f )
         return E_INVALIDARG;
 
@@ -5520,7 +5428,7 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DVECTOR& vFrom, D3DVECTOR& vAt,
 
     // Get the dot product, and calculate the projection of the z basis
     // vector onto the up vector. The projection is the y basis vector.
-    FLOAT fDotProduct = DotProduct( vWorldUp, vView );
+    float fDotProduct = DotProduct( vWorldUp, vView );
 
     D3DVECTOR vUp = vWorldUp - fDotProduct * vView;
 

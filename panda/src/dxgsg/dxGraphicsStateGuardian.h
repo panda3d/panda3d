@@ -213,6 +213,11 @@ protected:
   D3DDEVICEDESC7    _D3DDevDesc;
 
   void set_clipper(RECT cliprect);
+  void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
+					void *pIndexSpace,DWORD dwIndexSpaceByteSize,
+					D3DVECTOR *pCenter, float fRadius, 
+					DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
+					DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize);
 
   INLINE void set_pack_alignment(int alignment);
   INLINE void set_unpack_alignment(int alignment);
