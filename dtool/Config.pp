@@ -56,6 +56,8 @@
 //
 //  unix      - Generate makefiles suitable for most Unix platforms.
 //  msvc      - Generate Visual C++ project files (still a work in progress)
+//  nmake     - Generate makefiles for Microsoft Visual C++, using 
+//              Microsoft's nmake utility.
 //  gmsvc     - Generate makefiles similar to the above, using Microsoft
 //              Visual C++, but uses the Cygwin-supplied GNU make
 //              instead of Microsoft nmake.  This is potentially
@@ -65,8 +67,7 @@
 //              the overhead associated with Cygwin fork() calls.
 
 #if $[eq $[PLATFORM], Win32]
-//  #define BUILD_TYPE msvc  // not ready yet.
-  #define BUILD_TYPE gmsvc
+  #define BUILD_TYPE nmake
 #elif $[eq $[PLATFORM], Cygwin]
   #define BUILD_TYPE gmsvc
 #elif $[eq $[PLATFORM], osx]
@@ -289,8 +290,8 @@
 
 // Is Cg installed, and where?
 #if $[WINDOWS_PLATFORM]
-  #define CG_IPATH /c/Progra~1/Micros~1.NET/Vc7/include
-  #define CG_LPATH /c/Progra~1/Micros~1.NET/Vc7/lib
+  #define CG_IPATH c:/Progra~1/Micros~1.NET/Vc7/include
+  #define CG_LPATH c:/Progra~1/Micros~1.NET/Vc7/lib
   #define CG_LIBS cg.lib
 #else
   #define CG_IPATH
