@@ -82,6 +82,5 @@ class DistributedSmoothNodeBase:
         # this task accurately aligned with its period and starting time.
         self.d_broadcastPosHpr()
         taskName = self.taskName("sendPosHpr")
-        taskMgr.doMethodLater(self.__broadcastPeriod,
-                              self.__posHprBroadcast, taskName)
-        return Task.done
+        task.delayTime = self.__broadcastPeriod
+        return Task.again
