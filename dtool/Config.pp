@@ -349,6 +349,11 @@
 // possible.
 #defer DO_PSTATS $[or $[and $[HAVE_NET],$[< $[OPTIMIZE], 4]], $[DO_PSTATS]]
 
+// Do you want to build the debugging tools for recording and
+// visualizing intersection tests by the collision system?  Enabling
+// this increases runtime collision overhead just a tiny bit.
+#defer DO_COLLISION_RECORDING $[< $[OPTIMIZE], 4]
+
 // Do you want to include the "debug" and "spam" Notify messages?
 // Normally, these are stripped out when we build with OPTIMIZE = 4, but
 // sometimes it's useful to keep them around.  Redefine this in your

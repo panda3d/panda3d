@@ -110,6 +110,10 @@ $[cdefine HAVE_BISON]
 /* Define if we want to use PStats.  */
 $[cdefine DO_PSTATS]
 
+/* Define if we want to provide collision system recording and
+   visualization tools. */
+$[cdefine DO_COLLISION_RECORDING]
+
 /* Define if we want to track callbacks from within the show code.  */
 $[cdefine TRACK_IN_INTERPRETER]
 
