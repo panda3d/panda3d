@@ -21,6 +21,25 @@ AT_char = 5
 AT_void = 6
 AT_string = 7
 
+def cullOverloadedMethods(fullMethodDict):
+    """
+    Find all the entries that have multiple indexes for the same method name
+    Get rid of all others.
+    """
+    tmpDict = {}
+    # For each class
+    for methodName in fullMethodDict.keys():
+        methodList = fullMethodDict[methodName]
+        # See if this method has more than one function index (overloaded)
+        if (len(methodList) > 1):
+            tmpDict[methodName] = methodList
+            # Mark all the method specifications as overloaded
+            for methodSpec in methodList:
+                methodSpec.overloaded = 1
+
+    return tmpDict
+
+
 def getTypeName(classTypeDesc, typeDesc):
     """
     Map the interrogate primitive type names to python type names.
@@ -161,10 +180,11 @@ class FFIMethodArgumentTreeCollection:
         # Constructors are not treated as static. They are special because
         # they are not really constructors, they are instance methods that fill
         # in the this pointer.
+        # Global functions do not need static versions
         if (self.methodSpecList[0].isStatic() and 
             (not self.methodSpecList[0].isConstructor())):
-                indent(file, nesting+1, 'def ' +
-                       self.methodSpecList[0].name + '(*_args):\n')
+            indent(file, nesting+1, 'def ' +
+                   self.methodSpecList[0].name + '(*_args):\n')
         else:
             indent(file, nesting+1, 'def ' +
                    self.methodSpecList[0].name + '(self, *_args):\n')
@@ -180,7 +200,8 @@ class FFIMethodArgumentTreeCollection:
         # in the this pointer.
 
         if (self.methodSpecList[0].isStatic() and
-            (not self.methodSpecList[0].isConstructor())):
+            (not self.methodSpecList[0].isConstructor()) and
+            (not isinstance(self.methodSpecList[0], FFISpecs.GlobalFunctionSpecification))):
                 self.outputOverloadedStaticFooter(file, nesting)
         indent(file, nesting+1, '\n')
 
@@ -216,7 +237,7 @@ class FFIMethodArgumentTreeCollection:
                 else:
                     indent(file, nesting+2, 'elif (numArgs == ' + `numArgs` + '):\n')
                 tree.setup()
-                tree.traverse(file, nesting+1)
+                tree.traverse(file, nesting+1, 0)
 
         # If the overloaded function got all the way through the if statements
         # it must have had the wrong number or type of arguments
@@ -278,7 +299,7 @@ class FFIMethodArgumentTree:
                     # This subtree has no method spec
                     self.tree[typeDesc] = [subTree, None]
 
-    def traverse(self, file, level=1):
+    def traverse(self, file, nesting, level):
         oneTreeHasArgs = 0
         typeNameList = []
         # Make a copy of the keys so we can sort them in place
@@ -291,7 +312,7 @@ class FFIMethodArgumentTree:
             if (typeDesc == 0):
                 # Output the function
                 methodSpec = self.tree[0][1]
-                indent(file, level+2, 'return ')
+                indent(file, nesting+2, 'return ')
                 methodSpec.outputOverloadedCall(file, self.classTypeDesc, 0)
             else:
                 # Specify that at least one of these trees had arguments
@@ -300,32 +321,32 @@ class FFIMethodArgumentTree:
                 typeName = getTypeName(self.classTypeDesc, typeDesc)
                 typeNameList.append(typeName)
                 if (i == 0):
-                    indent(file, level+2, 'if (isinstance(_args[' + `level-1` + '], '
+                    indent(file, nesting+2, 'if (isinstance(_args[' + `level` + '], '
                            + typeName
                            + '))')
                 else:
-                    indent(file, level+2, 'elif (isinstance(_args[' + `level-1` + '], '
+                    indent(file, nesting+2, 'elif (isinstance(_args[' + `level` + '], '
                            + typeName
                            + '))')                    
                 # If it is looking for a float, make it accept an integer too
                 if (typeName == 'types.FloatType'):
-                    file.write(' or (isinstance(_args[' + `level-1` + '], '
+                    file.write(' or (isinstance(_args[' + `level` + '], '
                                + 'types.IntType'
                                + '))')
                 file.write(':\n')
                 # Get to the bottom of this chain
                 if (self.tree[typeDesc][0] != None):
-                    self.tree[typeDesc][0].traverse(file, level+1)
+                    self.tree[typeDesc][0].traverse(file, nesting+1, level+1)
                 else:
                     # Output the function
                     methodSpec = self.tree[typeDesc][1]
-                    indent(file, level+3, 'return ')
-                    numArgs = level
+                    indent(file, nesting+3, 'return ')
+                    numArgs = level+1
                     methodSpec.outputOverloadedCall(file, self.classTypeDesc, numArgs)
         # Output an else clause if one of the trees had arguments
         if oneTreeHasArgs:
-            indent(file, level+2, 'else:\n')
-            indent(file, level+3, "raise TypeError, 'Invalid argument " + `level-1` + ", expected one of: ")
+            indent(file, nesting+2, 'else:\n')
+            indent(file, nesting+3, "raise TypeError, 'Invalid argument " + `level` + ", expected one of: ")
             for name in typeNameList:
                 indent(file, 0, ('<' + name + '> '))
             indent(file, 0, "'\n")

@@ -13,7 +13,7 @@ import FFISpecs
 import FFIRename
 import FFIConstants
 import FFIOverload
-
+from PythonUtil import *
 
 # FFIConstants.notify.setDebug(1)
 FFIConstants.notify.info('Importing interrogate library: ' + FFIConstants.InterrogateModuleName)
@@ -622,35 +622,6 @@ class FFIInterrogateDatabase:
                 newGlob = self.constructGlobalFunction(funcIndex)
                 if newGlob:
                     self.environment.addGlobalFunction(newGlob)
-
-        """
-        # Take all the global functions that have a Panda Class as their
-        # first argument and make them class methods on that class
-        # For example the global function
-        #    get_distance(node1, node2)
-        # becomes:
-        #    node1.getDistance(node2)
-
-        # Functions that do not get moved will be stored here temporarily
-        tempGlobalFunctions = []
-        for funcSpec in self.environment.globalFunctions:
-            # If there are any arguments
-            if (len(funcSpec.typeDescriptor.argumentTypes) > 0):
-                # If the first argument is a class type descriptor
-                methodArgSpec = funcSpec.typeDescriptor.argumentTypes[0]
-                argBaseType = methodArgSpec.typeDescriptor.recursiveTypeDescriptor()
-                if isinstance(argBaseType, FFITypes.ClassTypeDescriptor):
-                    # Move this global function into the class
-                    argBaseType.globalMethods.append(funcSpec)
-                else:
-                    # Copy this function into the temp list
-                    tempGlobalFunctions.append(funcSpec)
-            else:
-                # Copy this function into the temp list
-                tempGlobalFunctions.append(funcSpec)
-        # Copy the temp list back over the real list
-        self.environment.globalFunctions = tempGlobalFunctions
-        """
                     
     def addGlobalValues(self, CModuleName):
         numGlobals = interrogate_number_of_globals()
@@ -659,7 +630,6 @@ class FFIInterrogateDatabase:
             newGlob = self.constructGlobal(globalIndex, CModuleName)
             if newGlob:
                 self.environment.addGlobalValue(newGlob)
-
 
     def constructManifest(self, manifestIndex):
         descriptor = None
@@ -756,6 +726,18 @@ class FFIInterrogateDatabase:
                 globalFunctions.append(globalValue.setter)
         # Output all the imports based on this list of functions
         outputGlobalFileImports(globalFile, globalFunctions, CModuleName)
+
+        # Generate overloading
+        overloadedGlobalFunctions = {}
+        for methodSpec in globalFunctions:
+            methodList = ifAbsentPut(overloadedGlobalFunctions, methodSpec.name, [])
+            methodList.append(methodSpec)
+
+        overloadedGlobalFunctions = FFIOverload.cullOverloadedMethods(overloadedGlobalFunctions)
+
+        for methodSpecList in overloadedGlobalFunctions.values():
+            treeColl = FFIOverload.FFIMethodArgumentTreeCollection(None, methodSpecList)
+            treeColl.generateCode(globalFile, -1)
 
         FFIConstants.notify.info( 'Generating global value code...')
         for type in self.environment.globalValues:

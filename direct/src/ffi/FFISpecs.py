@@ -99,18 +99,29 @@ class FunctionSpecification:
           
         These do not get indented because they are not the beginning of the line
 
-        """
-        if (self.isStatic() and not self.isConstructor()):
-            indent(file, 0, classTypeDesc.foreignTypeName + '.' + self.getFinalName() + '(')
-        else:
-            indent(file, 0, 'self.' + self.getFinalName() + '(')
-            
-        for i in range(numArgs):
-            file.write('_args[' + `i` + ']')
-            if (i != (numArgs - 1)):
-                file.write(', ')
-        file.write(')\n')
+        If classTypeDesc is None, then this is a global function and should
+        output code as such
 
+        """
+        if classTypeDesc:
+            if (self.isStatic() and not self.isConstructor()):
+                indent(file, 0, classTypeDesc.foreignTypeName + '.' + self.getFinalName() + '(')
+            else:
+                indent(file, 0, 'self.' + self.getFinalName() + '(')
+
+            for i in range(numArgs):
+                file.write('_args[' + `i` + ']')
+                if (i != (numArgs - 1)):
+                    file.write(', ')
+            file.write(')\n')
+        else:
+            indent(file, 0, self.getFinalName() + '(')
+            for i in range(numArgs):
+                file.write('_args[' + `i` + ']')
+                if (i != (numArgs - 1)):
+                    file.write(', ')
+            file.write(')\n')
+            
 
 class GlobalFunctionSpecification(FunctionSpecification):
     def __init__(self):

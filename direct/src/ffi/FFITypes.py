@@ -338,37 +338,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
     def cullOverloadedMethods(self):
         """
         Find all the entries that have multiple indexes for the same method name
-        Get rid of all others.
+        Get rid of all others. Do this for class methods and instance methods
         """
-        tmpDict = {}
-        # For each class
-        for methodName in self.overloadedClassMethods.keys():
-            methodList = self.overloadedClassMethods[methodName]
-            # See if this method has more than one function index (overloaded)
-            if (len(methodList) > 1):
-                tmpDict[methodName] = methodList
-                # Mark all the method specifications as overloaded
-                for methodSpec in methodList:
-                    methodSpec.overloaded = 1
-        
-        # Now we are done. Jam the tmpDict into the real one
-        self.overloadedClassMethods = tmpDict
-        
-        # Now do the same for instance methods
-        tmpDict = {}
-        # For each class
-        for methodName in self.overloadedInstanceMethods.keys():
-            methodList = self.overloadedInstanceMethods[methodName]
-            # See if this method has more than one function index (overloaded)
-            if (len(methodList) > 1):
-                # Copy over the method list
-                tmpDict[methodName] = methodList
-                # Mark all the method specifications as overloaded
-                for methodSpec in methodList:
-                    methodSpec.overloaded = 1
-        
-        # Now we are done. Jam the tmpDict into the real one
-        self.overloadedInstanceMethods = tmpDict
+        self.overloadedClassMethods = FFIOverload.cullOverloadedMethods(self.overloadedClassMethods)
+        self.overloadedInstanceMethods = FFIOverload.cullOverloadedMethods(self.overloadedInstanceMethods)
 
     def filterOutStaticMethods(self):
         """
