@@ -16,6 +16,7 @@ class CRCache:
         """
         Delete each item in the cache then clear all references to them
         """
+        assert(self.checkCache())
         CRCache.notify.debug("Flushing the cache")
         for distObj in self.dict.values():
             distObj.delete()
@@ -26,6 +27,7 @@ class CRCache:
     def cache(self, distObj):
         # Only distributed objects are allowed in the cache
         assert(isinstance(distObj, DistributedObject.DistributedObject))
+        assert(self.checkCache())
         # Get the doId
         doId = distObj.getDoId()
         # Error check
@@ -53,6 +55,7 @@ class CRCache:
         return None
 
     def retrieve(self, doId):
+        assert(self.checkCache())
         if self.dict.has_key(doId):
             # Find the object
             distObj = self.dict[doId]
@@ -70,6 +73,7 @@ class CRCache:
         return self.dict.has_key(doId)
     
     def delete(self, doId):
+        assert(self.checkCache())
         assert(self.dict.has_key(doId))
         # Look it up
         distObj = self.dict[doId]
@@ -79,3 +83,11 @@ class CRCache:
         # and delete it
         distObj.delete()
         
+    def checkCache(self):
+        # For debugging; this verifies that the cache is sensible and
+        # returns true if so.
+        from PandaModules import NodePath
+        for obj in self.dict.values():
+            if isinstance(obj, NodePath):
+                assert(not obj.isEmpty() and obj.getTopNode() == hidden.node())
+        return 1

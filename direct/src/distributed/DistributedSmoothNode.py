@@ -327,8 +327,3 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
             self.reloadPosition()
         else:
             NodePath.wrtReparentTo(self, parent)
-
-
-    def isLocal(self):
-        # Local toon will override this to return true
-        return 0

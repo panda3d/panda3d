@@ -34,6 +34,12 @@ class DistributedObject(PandaObject):
             # This flag tells whether a delete has been requested on this
             # object.
             self.deleteImminent = 0
+
+            # It's useful to have a "disabled" flag.  This is only
+            # trustworthy if the inheriting class properly calls up
+            # the chain for disable() and generate().
+            self.disabled = 1
+            
         return None
 
     #def __del__(self):
@@ -118,7 +124,7 @@ class DistributedObject(PandaObject):
         """disable(self)
         Inheritors should redefine this to take appropriate action on disable
         """
-        pass
+        self.disabled = 1
 
     def delete(self):
         """delete(self)
@@ -135,7 +141,7 @@ class DistributedObject(PandaObject):
         """generate(self)
         Inheritors should redefine this to take appropriate action on generate
         """
-        pass
+        self.disabled = 0
 
     def generateInit(self):
         """generateInit(self)
@@ -176,6 +182,13 @@ class DistributedObject(PandaObject):
     
     def uniqueName(self, idString):
         return (idString + "-" + str(self.getDoId()))
+
+    def isLocal(self):
+        # This returns true if the distributed object is "local,"
+        # which means the client created it instead of the AI, and it
+        # gets some other special handling.  Normally, only the local
+        # avatar class overrides this to return true.
+        return 0
     
 
 

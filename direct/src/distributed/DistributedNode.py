@@ -1,11 +1,11 @@
 """DistributedNode module: contains the DistributedNode class"""
 
 from ShowBaseGlobal import *
-import NodePath
+from PandaModules import NodePath
 import DistributedObject
 import Task
 
-class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
+class DistributedNode(DistributedObject.DistributedObject, NodePath):
     """Distributed Node class:"""
 
     def __init__(self, cr):
@@ -65,9 +65,10 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         DistributedAvatar) to override the behavior of setParent if
         desired.
         """
-        assert(self.cr.token2nodePath.has_key(parentToken))
-        parent = self.cr.token2nodePath[parentToken]
-        self.wrtReparentTo(parent)
+        if not self.disabled:
+            assert(self.cr.token2nodePath.has_key(parentToken))
+            parent = self.cr.token2nodePath[parentToken]
+            self.wrtReparentTo(parent)
         return None
 
     ###### set pos and hpr functions #######
